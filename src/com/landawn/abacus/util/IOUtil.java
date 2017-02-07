@@ -534,7 +534,7 @@ public final class IOUtil {
     }
 
     public static byte[] readBytes(final File file, final long offset, final int maxLen) {
-        final Holder<ZipFile> outputZipFile = new Holder<ZipFile>();
+        final Holder<ZipFile> outputZipFile = new Holder<>();
         InputStream is = null;
 
         try {
@@ -605,7 +605,7 @@ public final class IOUtil {
     }
 
     public static char[] readChars(final File file, final long offset, final int maxLen, final Charset encoding) {
-        final Holder<ZipFile> outputZipFile = new Holder<ZipFile>();
+        final Holder<ZipFile> outputZipFile = new Holder<>();
         InputStream is = null;
 
         try {
@@ -743,7 +743,7 @@ public final class IOUtil {
     }
 
     public static String readLine(final File file, final int lineIndex, final Charset encoding) {
-        final Holder<ZipFile> outputZipFile = new Holder<ZipFile>();
+        final Holder<ZipFile> outputZipFile = new Holder<>();
         InputStream is = null;
 
         try {
@@ -804,7 +804,7 @@ public final class IOUtil {
     }
 
     public static List<String> readLines(final File file, final int offset, final int count, final Charset encoding) {
-        final Holder<ZipFile> outputZipFile = new Holder<ZipFile>();
+        final Holder<ZipFile> outputZipFile = new Holder<>();
         InputStream is = null;
 
         try {
@@ -2220,7 +2220,7 @@ public final class IOUtil {
 
         // split the path apart
         String[] components = N.split(pathname, '/', true);
-        List<String> path = new ArrayList<String>();
+        List<String> path = new ArrayList<>();
 
         // resolve ., .., and //
         for (String component : components) {
@@ -3181,7 +3181,7 @@ public final class IOUtil {
         String prefix = file.getName().substring(0, index);
         String postfix = (index > 0) ? file.getName().substring(index) : "";
 
-        final Holder<ZipFile> outputZipFile = new Holder<ZipFile>();
+        final Holder<ZipFile> outputZipFile = new Holder<>();
         InputStream is = null;
 
         BufferedReader br = null;
@@ -3243,7 +3243,7 @@ public final class IOUtil {
      * @return
      */
     private static long estimateLineCount(final File file, final int byReadingLineNum) {
-        final Holder<ZipFile> outputZipFile = new Holder<ZipFile>();
+        final Holder<ZipFile> outputZipFile = new Holder<>();
         InputStream is = null;
         BufferedReader br = null;
 
@@ -3763,7 +3763,7 @@ public final class IOUtil {
      * The last line will always be null to identity the ending of line reading even offset/count is specified.
      * 
      * @param file parse all the sub files recursively if it's a directory.
-     * @param lineParser always remember to handle line <code>null</code>
+     * @param lineParser always remember to handle the ending element <code>null</code>
      */
     public static void parse(final File file, final Consumer<String> lineParser) {
         parse(file, 0, Long.MAX_VALUE, lineParser);
@@ -3776,7 +3776,7 @@ public final class IOUtil {
      * @param file parse all the sub files recursively if it's a directory.
      * @param processThreadNumber thread number used to parse/process the lines/records
      * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-     * @param lineParser always remember to handle line <code>null</code>
+     * @param lineParser always remember to handle the ending element <code>null</code>
      */
     @Deprecated
     static void parse(final File file, final int processThreadNumber, final int queueSize, final Consumer<String> lineParser) {
@@ -3790,7 +3790,7 @@ public final class IOUtil {
      * @param file parse all the sub files recursively if it's a directory.
      * @param lineOffset
      * @param count
-     * @param lineParser always remember to handle line <code>null</code>
+     * @param lineParser always remember to handle the ending element <code>null</code>
      */
     public static void parse(final File file, final long lineOffset, final long count, final Consumer<String> lineParser) {
         parse(file, lineOffset, count, 0, 0, lineParser);
@@ -3805,7 +3805,7 @@ public final class IOUtil {
      * @param count
      * @param processThreadNumber thread number used to parse/process the lines/records
      * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-     * @param lineParser always remember to handle line <code>null</code>
+     * @param lineParser always remember to handle the ending element <code>null</code>
      */
     public static void parse(final File file, final long lineOffset, final long count, final int processThreadNumber, final int queueSize,
             final Consumer<String> lineParser) {
@@ -3817,7 +3817,7 @@ public final class IOUtil {
      * The last line will always be null to identity the ending of line reading even offset/count is specified.
      * 
      * @param files parse all the sub files recursively if the element is a directory.
-     * @param lineParser always remember to handle line <code>null</code>
+     * @param lineParser always remember to handle the ending element <code>null</code>
      */
     public static void parse(final List<File> files, final Consumer<String> lineParser) {
         parse(files, 0, Long.MAX_VALUE, lineParser);
@@ -3830,7 +3830,7 @@ public final class IOUtil {
      * @param files parse all the sub files recursively if the element is a directory.
      * @param processThreadNumber thread number used to parse/process the lines/records
      * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-     * @param lineParser always remember to handle line <code>null</code>
+     * @param lineParser always remember to handle the ending element <code>null</code>
      */
     @Deprecated
     static void parse(final List<File> files, final int processThreadNumber, final int queueSize, final Consumer<String> lineParser) {
@@ -3844,7 +3844,7 @@ public final class IOUtil {
      * @param files parse all the sub files recursively if the element is a directory.
      * @param lineOffset
      * @param count
-     * @param lineParser always remember to handle line <code>null</code>
+     * @param lineParser always remember to handle the ending element <code>null</code>
      */
     public static void parse(final List<File> files, final long lineOffset, final long count, final Consumer<String> lineParser) {
         parse(files, lineOffset, count, 0, 0, lineParser);
@@ -3859,7 +3859,7 @@ public final class IOUtil {
      * @param count
      * @param processThreadNumber thread number used to parse/process the lines/records
      * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-     * @param lineParser always remember to handle line <code>null</code>
+     * @param lineParser always remember to handle the ending element <code>null</code>
      */
     public static void parse(final List<File> files, final long lineOffset, final long count, final int processThreadNumber, final int queueSize,
             final Consumer<String> lineParser) {
@@ -3900,7 +3900,7 @@ public final class IOUtil {
      * 
      * @param file parse all the sub files recursively if it's a directory.
      * @param readThreadNumber
-     * @param lineParser always remember to handle line <code>null</code>
+     * @param lineParser always remember to handle the ending element <code>null</code>
      */
     @Deprecated
     static void parse(final File file, final int readThreadNumber, final Consumer<String> lineParser) {
@@ -3915,7 +3915,7 @@ public final class IOUtil {
      * @param readThreadNumber
      * @param processThreadNumber thread number used to parse/process the lines/records
      * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-     * @param lineParser always remember to handle line <code>null</code>
+     * @param lineParser always remember to handle the ending element <code>null</code>
      */
     public static void parse(final File file, final int readThreadNumber, final int processThreadNumber, final int queueSize,
             final Consumer<String> lineParser) {
@@ -3934,7 +3934,7 @@ public final class IOUtil {
      * 
      * @param files parse all the sub files recursively if the element is a directory.
      * @param readThreadNumber
-     * @param lineParser always remember to handle line <code>null</code>
+     * @param lineParser always remember to handle the ending element <code>null</code>
      */
     @Deprecated
     static void parse(final List<File> files, final int readThreadNumber, final Consumer<String> lineParser) {
@@ -3949,7 +3949,7 @@ public final class IOUtil {
      * @param readThreadNumber
      * @param processThreadNumber thread number used to parse/process the lines/records
      * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-     * @param lineParser always remember to handle line <code>null</code>
+     * @param lineParser always remember to handle the ending element <code>null</code>
      */
 
     public static void parse(final List<File> files, final int readThreadNumber, final int processThreadNumber, final int queueSize,
@@ -3995,7 +3995,7 @@ public final class IOUtil {
      * The last line will always be null to identity the ending of line reading even offset/count is specified.
      * 
      * @param is
-     * @param lineParser always remember to handle line <code>null</code>
+     * @param lineParser always remember to handle the ending element <code>null</code>
      */
     public static void parse(final InputStream is, final Consumer<String> lineParser) {
         parse(is, 0, Long.MAX_VALUE, lineParser);
@@ -4008,7 +4008,7 @@ public final class IOUtil {
      * @param is
      * @param processThreadNumber thread number used to parse/process the lines/records
      * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-     * @param lineParser always remember to handle line <code>null</code>
+     * @param lineParser always remember to handle the ending element <code>null</code>
      */
     @Deprecated
     static void parse(final InputStream is, final int processThreadNumber, final int queueSize, final Consumer<String> lineParser) {
@@ -4022,7 +4022,7 @@ public final class IOUtil {
      * @param is
      * @param lineOffset
      * @param count
-     * @param lineParser always remember to handle line <code>null</code>
+     * @param lineParser always remember to handle the ending element <code>null</code>
      */
     public static void parse(final InputStream is, final long lineOffset, final long count, final Consumer<String> lineParser) {
         parse(is, lineOffset, count, 0, 0, lineParser);
@@ -4037,7 +4037,7 @@ public final class IOUtil {
      * @param count
      * @param processThreadNumber thread number used to parse/process the lines/records
      * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-     * @param lineParser always remember to handle line <code>null</code>
+     * @param lineParser always remember to handle the ending element <code>null</code>
      */
     public static void parse(final InputStream is, final long lineOffset, final long count, final int processThreadNumber, final int queueSize,
             final Consumer<String> lineParser) {
@@ -4055,7 +4055,7 @@ public final class IOUtil {
      * The last line will always be null to identity the ending of line reading even offset/count is specified.
      * 
      * @param reader
-     * @param lineParser always remember to handle line <code>null</code>
+     * @param lineParser always remember to handle the ending element <code>null</code>
      */
     public static void parse(final Reader reader, final Consumer<String> lineParser) {
         parse(reader, 0, Long.MAX_VALUE, lineParser);
@@ -4068,7 +4068,7 @@ public final class IOUtil {
      * @param reader
      * @param processThreadNumber thread number used to parse/process the lines/records
      * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-     * @param lineParser always remember to handle line <code>null</code>
+     * @param lineParser always remember to handle the ending element <code>null</code>
      */
     @Deprecated
     static void parse(final Reader reader, final int processThreadNumber, final int queueSize, final Consumer<String> lineParser) {
@@ -4082,7 +4082,7 @@ public final class IOUtil {
      * @param reader
      * @param lineOffset
      * @param count
-     * @param lineParser always remember to handle line <code>null</code>
+     * @param lineParser always remember to handle the ending element <code>null</code>
      */
     public static void parse(final Reader reader, final long lineOffset, final long count, final Consumer<String> lineParser) {
         parse(reader, lineOffset, count, 0, 0, lineParser);
@@ -4097,7 +4097,7 @@ public final class IOUtil {
      * @param count
      * @param processThreadNumber thread number used to parse/process the lines/records
      * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-     * @param lineParser always remember to handle line <code>null</code>
+     * @param lineParser always remember to handle the ending element <code>null</code>
      */
     public static void parse(final Reader reader, final long lineOffset, final long count, final int processThreadNumber, final int queueSize,
             final Consumer<String> lineParser) {
@@ -4254,7 +4254,7 @@ public final class IOUtil {
      * @param count
      * @param processThreadNumber thread number used to parse/process the lines/records
      * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-     * @param elementParser always remember to handle line <code>null</code>
+     * @param elementParser always remember to handle the ending element <code>null</code>
      */
     public static <T> void parse(final Iterator<? extends T> iter, long offset, long count, final int processThreadNumber, final int queueSize,
             final Consumer<? super T> elementParser) {
@@ -4283,7 +4283,7 @@ public final class IOUtil {
      * @param count
      * @param processThreadNumber thread number used to parse/process the lines/records
      * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-     * @param elementParser always remember to handle line <code>null</code>
+     * @param elementParser always remember to handle the ending element <code>null</code>
      */
     public static <T> void parse(final Collection<? extends Iterator<? extends T>> iterators, final long offset, final long count, final int readThreadNumber,
             final int processThreadNumber, final int queueSize, final Consumer<? super T> elementParser) {
@@ -4316,7 +4316,7 @@ public final class IOUtil {
             } else {
                 final AtomicInteger activeThreadNum = new AtomicInteger();
                 final ExecutorService executorService = Executors.newFixedThreadPool(processThreadNumber);
-                final Holder<Throwable> errorHolder = new Holder<Throwable>();
+                final Holder<Throwable> errorHolder = new Holder<>();
 
                 for (int i = 0; i < processThreadNumber; i++) {
                     activeThreadNum.incrementAndGet();

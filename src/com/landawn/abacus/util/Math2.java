@@ -226,6 +226,42 @@ public final class Math2 {
         throw new AssertionError();
     }
 
+    public static boolean isPerfectSquare(int n) {
+        if (n < 0) {
+            return false;
+        }
+
+        switch (n & 0xF) {
+            case 0:
+            case 1:
+            case 4:
+            case 9:
+                long tst = (long) Math.sqrt(n);
+                return tst * tst == n;
+
+            default:
+                return false;
+        }
+    }
+
+    public static boolean isPerfectSquare(long n) {
+        if (n < 0) {
+            return false;
+        }
+
+        switch ((int) (n & 0xF)) {
+            case 0:
+            case 1:
+            case 4:
+            case 9:
+                long tst = (long) Math.sqrt(n);
+                return tst * tst == n;
+
+            default:
+                return false;
+        }
+    }
+
     public static boolean isPowerOfTwo(int x) {
         return x > 0 & (x & (x - 1)) == 0;
     }
@@ -245,6 +281,14 @@ public final class Math2 {
         N.requireNonNull(x);
         return x.signum() > 0 && x.getLowestSetBit() == x.bitLength() - 1;
     }
+
+    //    public static boolean isPowerOfFour(int n) {
+    //        return (n > 0) && ((n & (n - 1)) == 0) && ((n & 0x55555555) == n);
+    //    }
+    //
+    //    public static boolean isPowerOfFour(long n) {
+    //        return (n > 0) && ((n & (n - 1)) == 0) && ((n & 0x5555555555555555L) == n);
+    //    }
 
     public static double log(double a) {
         return Math.log(a);

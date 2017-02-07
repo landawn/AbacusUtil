@@ -1894,7 +1894,7 @@ public final class JdbcUtil {
      * 
      * @param conn
      * @param sql
-     * @param rowParser always remember to handle row <code>null</code>
+     * @param rowParser always remember to handle the ending element <code>null</code>
      */
     public static void parse(final Connection conn, final String sql, final Consumer<Object[]> rowParser) {
         parse(conn, sql, 0, Long.MAX_VALUE, rowParser);
@@ -1908,7 +1908,7 @@ public final class JdbcUtil {
      * @param sql
      * @param offset
      * @param count
-     * @param rowParser always remember to handle row <code>null</code>
+     * @param rowParser always remember to handle the ending element <code>null</code>
      */
     public static void parse(final Connection conn, final String sql, final long offset, final long count, final Consumer<Object[]> rowParser) {
         parse(conn, sql, offset, count, 0, 0, rowParser);
@@ -1922,7 +1922,7 @@ public final class JdbcUtil {
     //     * @param sql
     //     * @param processThreadNumber thread number used to parse/process the lines/records
     //     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-    //     * @param rowParser always remember to handle row <code>null</code>
+    //     * @param rowParser always remember to handle the ending element <code>null</code>
     //     */
     //    @Deprecated
     //    static void parse(final Connection conn, final String sql, final int processThreadNumber, final int queueSize, final Consumer<Object[]> rowParser) {
@@ -1939,7 +1939,7 @@ public final class JdbcUtil {
      * @param count
      * @param processThreadNumber thread number used to parse/process the lines/records
      * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-     * @param rowParser always remember to handle row <code>null</code>
+     * @param rowParser always remember to handle the ending element <code>null</code>
      */
     public static void parse(final Connection conn, final String sql, final long offset, final long count, final int processThreadNumber, final int queueSize,
             final Consumer<Object[]> rowParser) {
@@ -1964,7 +1964,7 @@ public final class JdbcUtil {
     //     * @param conn
     //     * @param sql
     //     * @param parameters
-    //     * @param rowParser always remember to handle row <code>null</code>
+    //     * @param rowParser always remember to handle the ending element <code>null</code>
     //     */
     //    static void parse(final Connection conn, final String sql, final List<?> parameters, final Consumer<Object[]> rowParser) {
     //        parse(conn, sql, parameters, 0, Long.MAX_VALUE, rowParser);
@@ -1979,7 +1979,7 @@ public final class JdbcUtil {
     //     * @param parameters
     //     * @param offset
     //     * @param count
-    //     * @param rowParser always remember to handle row <code>null</code>
+    //     * @param rowParser always remember to handle the ending element <code>null</code>
     //     */
     //    static void parse(final Connection conn, final String sql, final List<?> parameters, final long offset, final long count,
     //            final Consumer<Object[]> rowParser) {
@@ -1995,7 +1995,7 @@ public final class JdbcUtil {
     //     * @param parameters
     //     * @param processThreadNumber thread number used to parse/process the lines/records
     //     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-    //     * @param rowParser always remember to handle row <code>null</code>
+    //     * @param rowParser always remember to handle the ending element <code>null</code>
     //     */
     //    @Deprecated
     //    static void parse(final Connection conn, final String sql, final List<?> parameters, final int processThreadNumber, final int queueSize,
@@ -2014,7 +2014,7 @@ public final class JdbcUtil {
     //     * @param count
     //     * @param processThreadNumber thread number used to parse/process the lines/records
     //     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-    //     * @param rowParser always remember to handle row <code>null</code>
+    //     * @param rowParser always remember to handle the ending element <code>null</code>
     //     */
     //    static void parse(final Connection conn, final String sql, final List<?> parameters, final long offset, final long count, final int processThreadNumber,
     //            final int queueSize, final Consumer<Object[]> rowParser) {
@@ -2038,7 +2038,7 @@ public final class JdbcUtil {
      * The last row will always be null to identity the ending of row set even offset/count is specified.
      * 
      * @param stmt
-     * @param rowParser always remember to handle row <code>null</code>
+     * @param rowParser always remember to handle the ending element <code>null</code>
      */
     public static void parse(final PreparedStatement stmt, final Consumer<Object[]> rowParser) {
         parse(stmt, 0, Long.MAX_VALUE, rowParser);
@@ -2051,7 +2051,7 @@ public final class JdbcUtil {
      * @param stmt
      * @param offset
      * @param count
-     * @param rowParser always remember to handle row <code>null</code>
+     * @param rowParser always remember to handle the ending element <code>null</code>
      */
     public static void parse(final PreparedStatement stmt, final long offset, final long count, final Consumer<Object[]> rowParser) {
         parse(stmt, offset, count, 0, 0, rowParser);
@@ -2064,7 +2064,7 @@ public final class JdbcUtil {
     //     * @param stmt
     //     * @param processThreadNumber thread number used to parse/process the lines/records
     //     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-    //     * @param rowParser always remember to handle row <code>null</code>
+    //     * @param rowParser always remember to handle the ending element <code>null</code>
     //     */
     //    @Deprecated
     //    static void parse(final PreparedStatement stmt, final int processThreadNumber, final int queueSize, final Consumer<Object[]> rowParser) {
@@ -2080,7 +2080,7 @@ public final class JdbcUtil {
      * @param count
      * @param processThreadNumber thread number used to parse/process the lines/records
      * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-     * @param rowParser always remember to handle row <code>null</code>
+     * @param rowParser always remember to handle the ending element <code>null</code>
      */
     public static void parse(final PreparedStatement stmt, final long offset, final long count, final int processThreadNumber, final int queueSize,
             final Consumer<Object[]> rowParser) {
@@ -2102,7 +2102,7 @@ public final class JdbcUtil {
      * The last row will always be null to identity the ending of row set even offset/count is specified.
      * 
      * @param rs
-     * @param rowParser always remember to handle row <code>null</code>
+     * @param rowParser always remember to handle the ending element <code>null</code>
      */
     public static void parse(final ResultSet rs, final Consumer<Object[]> rowParser) {
         parse(rs, 0, Long.MAX_VALUE, rowParser);
@@ -2115,7 +2115,7 @@ public final class JdbcUtil {
      * @param rs
      * @param offset
      * @param count
-     * @param rowParser always remember to handle row <code>null</code>
+     * @param rowParser always remember to handle the ending element <code>null</code>
      */
     public static void parse(final ResultSet rs, long offset, long count, final Consumer<Object[]> rowParser) {
         parse(rs, offset, count, 0, 0, rowParser);
@@ -2128,7 +2128,7 @@ public final class JdbcUtil {
     //     * @param rs
     //     * @param processThreadNumber thread number used to parse/process the lines/records
     //     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-    //     * @param rowParser always remember to handle row <code>null</code>
+    //     * @param rowParser always remember to handle the ending element <code>null</code>
     //     */
     //    @Deprecated
     //    static void parse(final ResultSet rs, final int processThreadNumber, final int queueSize, final Consumer<Object[]> rowParser) {
@@ -2144,7 +2144,7 @@ public final class JdbcUtil {
      * @param count
      * @param processThreadNumber thread number used to parse/process the lines/records
      * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-     * @param rowParser always remember to handle row <code>null</code>
+     * @param rowParser always remember to handle the ending element <code>null</code>
      */
     public static void parse(final ResultSet rs, long offset, long count, final int processThreadNumber, final int queueSize,
             final Consumer<Object[]> rowParser) {
@@ -2156,7 +2156,7 @@ public final class JdbcUtil {
      * The last row will always be null to identity the ending of row set even offset/count is specified.
      * 
      * @param iter must not return <code>null</code> because <code>null</code> will be set automatically to identify the end of lines/rows.
-     * @param rowParser always remember to handle row <code>null</code>
+     * @param rowParser always remember to handle the ending element <code>null</code>
      */
     public static void parse(final RowIterator iter, final Consumer<Object[]> rowParser) {
         parse(iter, 0, Long.MAX_VALUE, rowParser);
@@ -2169,7 +2169,7 @@ public final class JdbcUtil {
      * @param iter must not return <code>null</code> because <code>null</code> will be set automatically to identify the end of lines/rows.
      * @param offset
      * @param count
-     * @param rowParser always remember to handle row <code>null</code>
+     * @param rowParser always remember to handle the ending element <code>null</code>
      */
     public static void parse(final RowIterator iter, long offset, long count, final Consumer<Object[]> rowParser) {
         parse(iter, offset, count, 0, 0, rowParser);
@@ -2182,7 +2182,7 @@ public final class JdbcUtil {
     //     * @param iter must not return <code>null</code> because <code>null</code> will be set automatically to identify the end of lines/rows.
     //     * @param processThreadNumber thread number used to parse/process the lines/records
     //     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-    //     * @param rowParser always remember to handle row <code>null</code>
+    //     * @param rowParser always remember to handle the ending element <code>null</code>
     //     */
     //    @Deprecated
     //    static void parse(final RowIterator iter, final int processThreadNumber, final int queueSize, final Consumer<Object[]> rowParser) {
@@ -2198,7 +2198,7 @@ public final class JdbcUtil {
      * @param count
      * @param processThreadNumber thread number used to parse/process the lines/records
      * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-     * @param rowParser always remember to handle row <code>null</code>
+     * @param rowParser always remember to handle the ending element <code>null</code>
      */
     public static void parse(final RowIterator iter, long offset, long count, final int processThreadNumber, final int queueSize,
             final Consumer<Object[]> rowParser) {

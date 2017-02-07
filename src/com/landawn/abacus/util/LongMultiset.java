@@ -16,6 +16,7 @@
 
 package com.landawn.abacus.util;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -29,6 +30,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import com.landawn.abacus.annotation.Internal;
+import com.landawn.abacus.util.Pair.Pair0;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
@@ -117,7 +119,7 @@ public final class LongMultiset<E> implements Iterable<E> {
     //    }
 
     public static <T> LongMultiset<T> from(final Collection<? extends T> coll) {
-        return new LongMultiset<T>(coll);
+        return new LongMultiset<>(coll);
     }
 
     //    @SuppressWarnings("rawtypes")
@@ -154,7 +156,7 @@ public final class LongMultiset<E> implements Iterable<E> {
     public static <T> LongMultiset<T> from(final Multiset<? extends T> multiset) {
         final LongMultiset<T> result = new LongMultiset<>(N.initHashCapacity(multiset.size()));
 
-        for (Map.Entry<? extends T, MutableInt> entry : multiset.entrySet()) {
+        for (Map.Entry<? extends T, MutableInt> entry : multiset.valueMap.entrySet()) {
             result.set(entry.getKey(), entry.getValue().intValue());
         }
 
@@ -346,7 +348,7 @@ public final class LongMultiset<E> implements Iterable<E> {
      */
     public LongMultiset<E> setAll(final LongMultiset<? extends E> multiset) throws IllegalArgumentException {
         if (N.notNullOrEmpty(multiset)) {
-            for (Map.Entry<? extends E, MutableLong> entry : multiset.entrySet()) {
+            for (Map.Entry<? extends E, MutableLong> entry : multiset.valueMap.entrySet()) {
                 set(entry.getKey(), entry.getValue().value());
             }
         }
@@ -606,7 +608,7 @@ public final class LongMultiset<E> implements Iterable<E> {
             return false;
         }
 
-        for (Map.Entry<? extends E, MutableLong> entry : multiset.entrySet()) {
+        for (Map.Entry<? extends E, MutableLong> entry : multiset.valueMap.entrySet()) {
             add(entry.getKey(), entry.getValue().value());
         }
 
@@ -886,7 +888,7 @@ public final class LongMultiset<E> implements Iterable<E> {
             return false;
         }
 
-        for (Map.Entry<?, MutableLong> entry : multiset.entrySet()) {
+        for (Map.Entry<?, MutableLong> entry : multiset.valueMap.entrySet()) {
             remove(entry.getKey(), entry.getValue().value());
         }
 
@@ -894,12 +896,27 @@ public final class LongMultiset<E> implements Iterable<E> {
     }
 
     public void replaceAll(BiFunction<? super E, ? super Long, Long> function) {
+        List<E> keyToRemove = null;
         Long newVal = null;
 
         for (Map.Entry<E, MutableLong> entry : this.valueMap.entrySet()) {
             newVal = function.apply(entry.getKey(), entry.getValue().value());
-            checkOccurrences(newVal);
-            entry.getValue().setValue(newVal);
+
+            if (newVal == null || newVal.longValue() <= 0) {
+                if (keyToRemove == null) {
+                    keyToRemove = new ArrayList<>();
+                }
+
+                keyToRemove.add(entry.getKey());
+            } else {
+                entry.getValue().setValue(newVal);
+            }
+        }
+
+        if (N.notNullOrEmpty(keyToRemove)) {
+            for (E key : keyToRemove) {
+                valueMap.remove(key);
+            }
         }
     }
 
@@ -978,9 +995,9 @@ public final class LongMultiset<E> implements Iterable<E> {
         return valueMap.keySet().iterator();
     }
 
-    public Set<Map.Entry<E, MutableLong>> entrySet() {
-        return valueMap.entrySet();
-    }
+    //    public Set<Map.Entry<E, MutableLong>> entrySet() {
+    //        return valueMap.entrySet();
+    //    }
 
     public Object[] toArray() {
         return valueMap.keySet().toArray();
@@ -1038,7 +1055,7 @@ public final class LongMultiset<E> implements Iterable<E> {
             return new LinkedHashMap<>();
         }
 
-        final Map.Entry<E, MutableLong>[] entries = entrySet().toArray(new Map.Entry[size()]);
+        final Map.Entry<E, MutableLong>[] entries = valueMap.entrySet().toArray(new Map.Entry[size()]);
         Arrays.sort(entries, cmp);
 
         final Map<E, Long> sortedValues = new LinkedHashMap<>(N.initHashCapacity(size()));
@@ -1094,11 +1111,11 @@ public final class LongMultiset<E> implements Iterable<E> {
      * @param predicate break if the <code>predicate</code> returns false.
      * @return
      */
-    public <R> R forEach(final R seed, TriFunction<R, ? super E, Long, R> accumulator, final TriPredicate<? super E, Long, ? super R> predicate) {
+    public <R> R forEach(final R seed, TriFunction<? super E, Long, R, R> accumulator, final TriPredicate<? super E, Long, ? super R> predicate) {
         R result = seed;
 
         for (Map.Entry<E, MutableLong> entry : valueMap.entrySet()) {
-            result = accumulator.apply(result, entry.getKey(), entry.getValue().value());
+            result = accumulator.apply(entry.getKey(), entry.getValue().value(), result);
 
             if (predicate.test(entry.getKey(), entry.getValue().value(), result) == false) {
                 break;
@@ -1282,7 +1299,7 @@ public final class LongMultiset<E> implements Iterable<E> {
         return Stream.of(valueMap.entrySet()).map(new Function<Map.Entry<E, MutableLong>, Map.Entry<E, Long>>() {
             @Override
             public Entry<E, Long> apply(Entry<E, MutableLong> t) {
-                return MapEntry.of(t.getKey(), t.getValue().value());
+                return Pair0.of(t.getKey(), t.getValue().value());
             }
         });
     }

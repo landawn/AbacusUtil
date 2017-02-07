@@ -34303,7 +34303,7 @@ public final class N {
     //     * @param count
     //     * @param processThreadNumber thread number used to parse/process the lines/records
     //     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-    //     * @param elementParser always remember to handle line <code>null</code>
+    //     * @param elementParser always remember to handle the ending element <code>null</code>
     //     */
     //    public static <T> void parse(final Iterator<? extends T> iter, long offset, long count, final int processThreadNumber, final int queueSize,
     //            final Consumer<? super T> elementParser) {
@@ -34323,7 +34323,7 @@ public final class N {
     //     * @param count
     //     * @param processThreadNumber thread number used to parse/process the lines/records
     //     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-    //     * @param elementParser always remember to handle line <code>null</code>
+    //     * @param elementParser always remember to handle the ending element <code>null</code>
     //     */
     //    public static <T> void parse(final Collection<? extends Iterator<? extends T>> iterators, final long offset, final long count, final int readThreadNumber,
     //            final int processThreadNumber, final int queueSize, final Consumer<? super T> elementParser) {
@@ -34425,7 +34425,7 @@ public final class N {
      * @param count
      * @param processThreadNumber thread number used to parse/process the lines/records
      * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-     * @param elementParser always remember to handle line <code>null</code>
+     * @param elementParser always remember to handle the ending element <code>null</code>
      */
     public static <T> void parse(final Iterator<? extends T> iter, long offset, long count, final int processThreadNumber, final int queueSize,
             final Consumer<? super T> elementParser) {
@@ -34454,7 +34454,7 @@ public final class N {
      * @param count
      * @param processThreadNumber thread number used to parse/process the lines/records
      * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-     * @param elementParser always remember to handle line <code>null</code>
+     * @param elementParser always remember to handle the ending element <code>null</code>
      */
     public static <T> void parse(final Collection<? extends Iterator<? extends T>> iterators, final long offset, final long count, final int readThreadNumber,
             final int processThreadNumber, final int queueSize, final Consumer<? super T> elementParser) {
