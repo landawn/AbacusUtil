@@ -614,6 +614,7 @@ public abstract class Stream<T>
 
     /**
      * Distinct by the value mapped from <code>keyMapper</code>
+     * 
      * <br />
      * This method only run sequentially, even in parallel stream.
      * 
@@ -672,11 +673,83 @@ public abstract class Stream<T>
      */
     public abstract <U> U forEach(final U seed, BiFunction<? super T, U, U> accumulator, final BiPredicate<? super T, ? super U> predicate);
 
+    /**
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param seed
+     * @param predicate
+     * @return
+     */
     public abstract <U> OptionalNullable<T> findFirst(final U seed, final BiPredicate<? super T, ? super U> predicate);
 
+    /**
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param seed
+     * @param predicate
+     * @return
+     */
     public abstract <U> OptionalNullable<T> findLast(final U seed, final BiPredicate<? super T, ? super U> predicate);
 
+    /**
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param seed
+     * @param predicate
+     * @return
+     */
     public abstract <U> OptionalNullable<T> findAny(final U seed, final BiPredicate<? super T, ? super U> predicate);
+
+    /**
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param seed
+     * @param predicateForFirst
+     * @param predicateForLast
+     * @return
+     */
+    public abstract <U> OptionalNullable<T> findFirstOrLast(final U seed, final BiPredicate<? super T, ? super U> predicateForFirst,
+            final BiPredicate<? super T, ? super U> predicateForLast);
+
+    /**
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param preFunc
+     * @param predicateForFirst
+     * @param predicateForLast
+     * @return
+     */
+    public abstract <U> OptionalNullable<T> findFirstOrLast(final Function<? super T, U> preFunc, final BiPredicate<? super T, ? super U> predicateForFirst,
+            final BiPredicate<? super T, ? super U> predicateForLast);
+
+    /**
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param seed
+     * @param predicateForFirst
+     * @param predicateForLast
+     * @return
+     */
+    public abstract <U> Pair<OptionalNullable<T>, OptionalNullable<T>> findFirstAndLast(final U seed, final BiPredicate<? super T, ? super U> predicateForFirst,
+            final BiPredicate<? super T, ? super U> predicateForLast);
+
+    /**
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param preFunc
+     * @param predicateForFirst
+     * @param predicateForLast
+     * @return
+     */
+    public abstract <U> Pair<OptionalNullable<T>, OptionalNullable<T>> findFirstAndLast(final Function<? super T, U> preFunc,
+            final BiPredicate<? super T, ? super U> predicateForFirst, final BiPredicate<? super T, ? super U> predicateForLast);
 
     public abstract <U> boolean anyMatch(final U seed, final BiPredicate<? super T, ? super U> predicate);
 
@@ -1234,18 +1307,67 @@ public abstract class Stream<T>
 
     public abstract DoubleSummaryStatistics summarizeDouble(ToDoubleFunction<? super T> mapper);
 
+    /**
+     * <br />
+     * All elements will be loaded to memory and sorted if not yet.
+     * 
+     * @param mapper
+     * @return
+     */
     public abstract Pair<CharSummaryStatistics, Optional<Map<Percentage, Character>>> summarizeChar2(ToCharFunction<? super T> mapper);
 
+    /**
+     * <br />
+     * All elements will be loaded to memory and sorted if not yet.
+     * 
+     * @param mapper
+     * @return
+     */
     public abstract Pair<ByteSummaryStatistics, Optional<Map<Percentage, Byte>>> summarizeByte2(ToByteFunction<? super T> mapper);
 
+    /**
+     * <br />
+     * All elements will be loaded to memory and sorted if not yet.
+     * 
+     * @param mapper
+     * @return
+     */
     public abstract Pair<ShortSummaryStatistics, Optional<Map<Percentage, Short>>> summarizeShort2(ToShortFunction<? super T> mapper);
 
+    /**
+     * <br />
+     * All elements will be loaded to memory and sorted if not yet.
+     * 
+     * @param mapper
+     * @return
+     */
     public abstract Pair<IntSummaryStatistics, Optional<Map<Percentage, Integer>>> summarizeInt2(ToIntFunction<? super T> mapper);
 
+    /**
+     * <br />
+     * All elements will be loaded to memory and sorted if not yet.
+     * 
+     * @param mapper
+     * @return
+     */
     public abstract Pair<LongSummaryStatistics, Optional<Map<Percentage, Long>>> summarizeLong2(ToLongFunction<? super T> mapper);
 
+    /**
+     * <br />
+     * All elements will be loaded to memory and sorted if not yet.
+     * 
+     * @param mapper
+     * @return
+     */
     public abstract Pair<FloatSummaryStatistics, Optional<Map<Percentage, Float>>> summarizeFloat2(ToFloatFunction<? super T> mapper);
 
+    /**
+     * <br />
+     * All elements will be loaded to memory and sorted if not yet.
+     * 
+     * @param mapper
+     * @return
+     */
     public abstract Pair<DoubleSummaryStatistics, Optional<Map<Percentage, Double>>> summarizeDouble2(ToDoubleFunction<? super T> mapper);
 
     public abstract boolean hasDuplicates();
@@ -1253,7 +1375,7 @@ public abstract class Stream<T>
     public abstract Stream<T> skipNull();
 
     /**
-     * Intersect with the specified Collection by the values mapped by <code>mapper</code>
+     * Intersect with the specified Collection by the values mapped by <code>mapper</code>.
      * 
      * @param mapper
      * @param c
@@ -1263,7 +1385,7 @@ public abstract class Stream<T>
     public abstract Stream<T> intersection(Function<? super T, ?> mapper, Collection<?> c);
 
     /**
-     * Except with the specified Collection by the values mapped by <code>mapper</code>
+     * Except with the specified Collection by the values mapped by <code>mapper</code>.
      * 
      * @param mapper
      * @param c

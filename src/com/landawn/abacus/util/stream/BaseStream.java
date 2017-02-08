@@ -35,6 +35,7 @@ import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.Optional;
+import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiFunction;
@@ -167,6 +168,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * </pre>
      * 
      * This stream should be sorted by value which is used to verify the border.
+     * <br />
      * This method only run sequentially, even in parallel stream.
      * 
      * @param identity
@@ -187,6 +189,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * </pre>
      * 
      * This stream should be sorted by value which is used to verify the border.
+     * <br />
      * This method only run sequentially, even in parallel stream.
      * 
      * @param identity
@@ -270,6 +273,9 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
     Stream<PL> sliding0(int windowSize, int increment);
 
     /**
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
      * @param c
      * @return
      * @see IntList#intersection(IntList)
@@ -277,6 +283,9 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
     S intersection(Collection<?> c);
 
     /**
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
      * @param c
      * @return
      * @see IntList#difference(IntList)
@@ -284,6 +293,9 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
     S difference(Collection<?> c);
 
     /**
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
      * @param c
      * @return
      * @see IntList#symmetricDifference(IntList)
@@ -291,6 +303,8 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
     S symmetricDifference(Collection<T> c);
 
     /**
+     * <br />
+     * All elements will be loaded to memory and sorted if not yet.
      * 
      * @return
      */
@@ -579,6 +593,34 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
     OT findLast(P predicate);
 
     /**
+     * Returns the first element which is tested by the specified <code>predicateForFirst</code>,
+     *  or the last element which is tested by the specified <code>predicateForLast</code> if the first element is not found.
+     *  or an empty Optional if both first and last elements are not found. 
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param predicateForFirst
+     * @param predicateForLast
+     * @return
+     */
+    OT findFirstOrLast(P predicateForFirst, P predicateForLast);
+
+    /**
+     * Returns the first element which is tested by the specified <code>predicateForFirst</code>,
+     *  and the last element which is tested by the specified <code>predicateForLast</code>.
+     *  or an empty Optional if the first or last element is not found. 
+     *  
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param predicateForFirst
+     * @param predicateForLast
+     * @return
+     */
+    Pair<OT, OT> findFirstAndLast(P predicateForFirst, P predicateForLast);
+
+    /**
      * Returns an {@link Optional} describing some element of the stream, or an
      * empty {@code Optional} if the stream is empty.
      *
@@ -760,7 +802,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      *  
      * <b>Comparison:</b>
      * <ul>
-     * <li>Again, do NOT and should NOT use parallel Streams if you don't have any problem with sequential Streams, because using parallel Streams has extra cost.</li>
+     * <li>Again, do NOT and should NOT use parallel Streams if you don't have any performance problem with sequential Streams, because using parallel Streams has extra cost.</li>
      * <li>Again, consider using parallel Streams only when <a href="http://gee.cs.oswego.edu/dl/html/StreamParallelGuidance.html">N(the number of elements) * Q(cost per element of F, the per-element function (usually a lambda)) is big enough</a>.</li>
      * <li>The implementation of parallel Streams in Abacus is more than 10 times, slower than parallel Streams in JDK when Q is tiny(here is less than 0.0002 milliseconds by the test): </li>
      * <ul>
@@ -793,8 +835,8 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * Because the sequential way is as fast, or even faster than the parallel way for some methods, or is pretty difficult, if not possible, to implement the method by parallel approach.
      * Here are the methods which are executed sequentially even in parallel Streams.  
      * <br></br>
-     * <i>split/splitAt/splitBy/sliding, distinct, toArray, toObjectList, toList, toSet, toMultiset, toLongMultiset, kthLargest, 
-     * count, difference(Collection c), intersection(Collection c), forEach(identity, accumulator, predicate)</i>
+     * <i>splitXXX/splitAt/splitBy/slidingXXX, distinct, reverse, rotate, shuffle, indexed, cached, top, kthLargest, count, toArray, toObjectList, toList, toSet, toMultiset, toLongMultiset, 
+     * intersection(Collection c), difference(Collection c), symmetricDifference(Collection c), forEach(identity, accumulator, predicate), findFirstOrLast, findFirstAndLast</i>
      * 
      * @param maxThreadNum Default value is the number of cpu-cores. Steps/operations will be executed sequentially if <code>maxThreadNum</code> is 1.
      * @param splitor The target array is split by ranges for multiple threads if splitor is <code>splitor.ARRAY</code> and target stream composed by array. It looks like:

@@ -895,6 +895,11 @@ public final class LongMultiset<E> implements Iterable<E> {
         return true;
     }
 
+    /**
+     * The associated elements will be removed if zero or negative occurrences are returned by the specified <code>function</code>.
+     * 
+     * @param function
+     */
     public void replaceAll(BiFunction<? super E, ? super Long, Long> function) {
         List<E> keyToRemove = null;
         Long newVal = null;

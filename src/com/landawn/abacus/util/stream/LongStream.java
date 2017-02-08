@@ -205,8 +205,22 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
 
     public abstract <T> Stream<T> flatMapToObj(LongFunction<? extends Stream<T>> mapper);
 
+    /**
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param n
+     * @return
+     */
     public abstract LongStream top(int n);
 
+    /**
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param n
+     * @return
+     */
     public abstract LongStream top(final int n, Comparator<? super Long> comparator);
 
     // public abstract LongStream parallelSorted();

@@ -27,6 +27,7 @@ import com.landawn.abacus.util.Joiner;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableLong;
+import com.landawn.abacus.util.MutableShort;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.Optional;
@@ -276,6 +277,61 @@ abstract class AbstractShortStream extends ShortStream {
         }
 
         return OptionalShort.of(next);
+    }
+
+    @Override
+    public OptionalShort findFirstOrLast(ShortPredicate predicateForFirst, ShortPredicate predicateForLast) {
+        final ImmutableShortIterator iter = shortIterator();
+        MutableShort last = null;
+        short next = 0;
+
+        while (iter.hasNext()) {
+            next = iter.next();
+
+            if (predicateForFirst.test(next)) {
+                return OptionalShort.of(next);
+            } else if (predicateForLast.test(next)) {
+                if (last == null) {
+                    last = MutableShort.of(next);
+                } else {
+                    last.setValue(next);
+                }
+            }
+        }
+
+        return last == null ? OptionalShort.empty() : OptionalShort.of(last.value());
+    }
+
+    @Override
+    public Pair<OptionalShort, OptionalShort> findFirstAndLast(ShortPredicate predicateForFirst, ShortPredicate predicateForLast) {
+        final Pair<OptionalShort, OptionalShort> result = new Pair<>();
+        final ImmutableShortIterator iter = shortIterator();
+        MutableShort last = null;
+        short next = 0;
+
+        while (iter.hasNext()) {
+            next = iter.next();
+
+            if (result.left == null && predicateForFirst.test(next)) {
+                result.left = OptionalShort.of(next);
+            }
+
+            if (predicateForLast.test(next)) {
+                if (last == null) {
+                    last = MutableShort.of(next);
+                } else {
+                    last.setValue(next);
+                }
+            }
+        }
+
+        if (result.left == null) {
+            result.left = OptionalShort.empty();
+        }
+
+        result.right = last == null ? OptionalShort.empty() : OptionalShort.of(last.value());
+
+        return result;
     }
 
     @Override

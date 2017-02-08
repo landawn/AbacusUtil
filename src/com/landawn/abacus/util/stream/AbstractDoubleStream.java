@@ -30,6 +30,7 @@ import com.landawn.abacus.util.IndexedDouble;
 import com.landawn.abacus.util.Joiner;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
+import com.landawn.abacus.util.MutableDouble;
 import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
@@ -341,6 +342,61 @@ abstract class AbstractDoubleStream extends DoubleStream {
         }
 
         return OptionalDouble.of(next);
+    }
+
+    @Override
+    public OptionalDouble findFirstOrLast(DoublePredicate predicateForFirst, DoublePredicate predicateForLast) {
+        final ImmutableDoubleIterator iter = doubleIterator();
+        MutableDouble last = null;
+        double next = 0;
+
+        while (iter.hasNext()) {
+            next = iter.next();
+
+            if (predicateForFirst.test(next)) {
+                return OptionalDouble.of(next);
+            } else if (predicateForLast.test(next)) {
+                if (last == null) {
+                    last = MutableDouble.of(next);
+                } else {
+                    last.setValue(next);
+                }
+            }
+        }
+
+        return last == null ? OptionalDouble.empty() : OptionalDouble.of(last.value());
+    }
+
+    @Override
+    public Pair<OptionalDouble, OptionalDouble> findFirstAndLast(DoublePredicate predicateForFirst, DoublePredicate predicateForLast) {
+        final Pair<OptionalDouble, OptionalDouble> result = new Pair<>();
+        final ImmutableDoubleIterator iter = doubleIterator();
+        MutableDouble last = null;
+        double next = 0;
+
+        while (iter.hasNext()) {
+            next = iter.next();
+
+            if (result.left == null && predicateForFirst.test(next)) {
+                result.left = OptionalDouble.of(next);
+            }
+
+            if (predicateForLast.test(next)) {
+                if (last == null) {
+                    last = MutableDouble.of(next);
+                } else {
+                    last.setValue(next);
+                }
+            }
+        }
+
+        if (result.left == null) {
+            result.left = OptionalDouble.empty();
+        }
+
+        result.right = last == null ? OptionalDouble.empty() : OptionalDouble.of(last.value());
+
+        return result;
     }
 
     @Override

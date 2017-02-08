@@ -30,6 +30,7 @@ import com.landawn.abacus.util.IndexedByte;
 import com.landawn.abacus.util.Joiner;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
+import com.landawn.abacus.util.MutableByte;
 import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
@@ -276,6 +277,61 @@ abstract class AbstractByteStream extends ByteStream {
         }
 
         return OptionalByte.of(next);
+    }
+
+    @Override
+    public OptionalByte findFirstOrLast(BytePredicate predicateForFirst, BytePredicate predicateForLast) {
+        final ImmutableByteIterator iter = byteIterator();
+        MutableByte last = null;
+        byte next = 0;
+
+        while (iter.hasNext()) {
+            next = iter.next();
+
+            if (predicateForFirst.test(next)) {
+                return OptionalByte.of(next);
+            } else if (predicateForLast.test(next)) {
+                if (last == null) {
+                    last = MutableByte.of(next);
+                } else {
+                    last.setValue(next);
+                }
+            }
+        }
+
+        return last == null ? OptionalByte.empty() : OptionalByte.of(last.value());
+    }
+
+    @Override
+    public Pair<OptionalByte, OptionalByte> findFirstAndLast(BytePredicate predicateForFirst, BytePredicate predicateForLast) {
+        final Pair<OptionalByte, OptionalByte> result = new Pair<>();
+        final ImmutableByteIterator iter = byteIterator();
+        MutableByte last = null;
+        byte next = 0;
+
+        while (iter.hasNext()) {
+            next = iter.next();
+
+            if (result.left == null && predicateForFirst.test(next)) {
+                result.left = OptionalByte.of(next);
+            }
+
+            if (predicateForLast.test(next)) {
+                if (last == null) {
+                    last = MutableByte.of(next);
+                } else {
+                    last.setValue(next);
+                }
+            }
+        }
+
+        if (result.left == null) {
+            result.left = OptionalByte.empty();
+        }
+
+        result.right = last == null ? OptionalByte.empty() : OptionalByte.of(last.value());
+
+        return result;
     }
 
     @Override

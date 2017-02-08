@@ -170,8 +170,22 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
 
     public abstract <T> Stream<T> flatMapToObj(ShortFunction<? extends Stream<T>> mapper);
 
+    /**
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param n
+     * @return
+     */
     public abstract ShortStream top(int n);
 
+    /**
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param n
+     * @return
+     */
     public abstract ShortStream top(final int n, Comparator<? super Short> comparator);
 
     public abstract ShortList toShortList();

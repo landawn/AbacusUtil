@@ -30,6 +30,7 @@ import com.landawn.abacus.util.IndexedChar;
 import com.landawn.abacus.util.Joiner;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
+import com.landawn.abacus.util.MutableChar;
 import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
@@ -277,6 +278,61 @@ abstract class AbstractCharStream extends CharStream {
         }
 
         return OptionalChar.of(next);
+    }
+
+    @Override
+    public OptionalChar findFirstOrLast(CharPredicate predicateForFirst, CharPredicate predicateForLast) {
+        final ImmutableCharIterator iter = charIterator();
+        MutableChar last = null;
+        char next = 0;
+
+        while (iter.hasNext()) {
+            next = iter.next();
+
+            if (predicateForFirst.test(next)) {
+                return OptionalChar.of(next);
+            } else if (predicateForLast.test(next)) {
+                if (last == null) {
+                    last = MutableChar.of(next);
+                } else {
+                    last.setValue(next);
+                }
+            }
+        }
+
+        return last == null ? OptionalChar.empty() : OptionalChar.of(last.value());
+    }
+
+    @Override
+    public Pair<OptionalChar, OptionalChar> findFirstAndLast(CharPredicate predicateForFirst, CharPredicate predicateForLast) {
+        final Pair<OptionalChar, OptionalChar> result = new Pair<>();
+        final ImmutableCharIterator iter = charIterator();
+        MutableChar last = null;
+        char next = 0;
+
+        while (iter.hasNext()) {
+            next = iter.next();
+
+            if (result.left == null && predicateForFirst.test(next)) {
+                result.left = OptionalChar.of(next);
+            }
+
+            if (predicateForLast.test(next)) {
+                if (last == null) {
+                    last = MutableChar.of(next);
+                } else {
+                    last.setValue(next);
+                }
+            }
+        }
+
+        if (result.left == null) {
+            result.left = OptionalChar.empty();
+        }
+
+        result.right = last == null ? OptionalChar.empty() : OptionalChar.of(last.value());
+
+        return result;
     }
 
     @Override

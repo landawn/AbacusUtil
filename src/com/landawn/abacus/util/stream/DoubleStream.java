@@ -204,8 +204,23 @@ public abstract class DoubleStream
 
     public abstract <T> Stream<T> flatMapToObj(DoubleFunction<? extends Stream<T>> mapper);
 
+    /**
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param n
+     * @return
+     */
     public abstract DoubleStream top(int n);
 
+    /**
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param n
+     * @param comparator
+     * @return
+     */
     public abstract DoubleStream top(final int n, Comparator<? super Double> comparator);
 
     public abstract DoubleList toDoubleList();
@@ -264,8 +279,7 @@ public abstract class DoubleStream
      * @return
      * @see Collectors#toMap(Function, Function, Supplier)
      */
-    public abstract <K, U, M extends Map<K, U>> M toMap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends U> valueMapper,
-            Supplier<M> mapFactory);
+    public abstract <K, U, M extends Map<K, U>> M toMap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends U> valueMapper, Supplier<M> mapFactory);
 
     /**
      * 

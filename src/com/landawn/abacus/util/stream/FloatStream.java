@@ -204,8 +204,22 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
 
     public abstract <T> Stream<T> flatMapToObj(FloatFunction<? extends Stream<T>> mapper);
 
+    /**
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param n
+     * @return
+     */
     public abstract FloatStream top(int n);
 
+    /**
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param n
+     * @return
+     */
     public abstract FloatStream top(final int n, Comparator<? super Float> comparator);
 
     // public abstract FloatStream parallelSorted();

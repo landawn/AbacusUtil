@@ -902,6 +902,156 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
+    public OptionalNullable<T> findFirstOrLast(final Predicate<? super T> predicateForFirst, final Predicate<? super T> predicateForLast) {
+        final ImmutableIterator<T> iter = iterator();
+        T last = (T) NONE;
+        T next = null;
+
+        while (iter.hasNext()) {
+            next = iter.next();
+
+            if (predicateForFirst.test(next)) {
+                return OptionalNullable.of(next);
+            } else if (predicateForLast.test(next)) {
+                last = next;
+            }
+        }
+
+        return last == NONE ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(last);
+    }
+
+    @Override
+    public <U> OptionalNullable<T> findFirstOrLast(final U seed, final BiPredicate<? super T, ? super U> predicateForFirst,
+            final BiPredicate<? super T, ? super U> predicateForLast) {
+        final ImmutableIterator<T> iter = iterator();
+        T last = (T) NONE;
+        T next = null;
+
+        while (iter.hasNext()) {
+            next = iter.next();
+
+            if (predicateForFirst.test(next, seed)) {
+                return OptionalNullable.of(next);
+            } else if (predicateForLast.test(next, seed)) {
+                last = next;
+            }
+        }
+
+        return last == NONE ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(last);
+    }
+
+    @Override
+    public <U> OptionalNullable<T> findFirstOrLast(final Function<? super T, U> preFunc, final BiPredicate<? super T, ? super U> predicateForFirst,
+            final BiPredicate<? super T, ? super U> predicateForLast) {
+        final ImmutableIterator<T> iter = iterator();
+        U seed = null;
+        T last = (T) NONE;
+        T next = null;
+
+        while (iter.hasNext()) {
+            next = iter.next();
+            seed = preFunc.apply(next);
+
+            if (predicateForFirst.test(next, seed)) {
+                return OptionalNullable.of(next);
+            } else if (predicateForLast.test(next, seed)) {
+                last = next;
+            }
+        }
+
+        return last == NONE ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(last);
+    }
+
+    @Override
+    public Pair<OptionalNullable<T>, OptionalNullable<T>> findFirstAndLast(final Predicate<? super T> predicateForFirst,
+            final Predicate<? super T> predicateForLast) {
+        final Pair<OptionalNullable<T>, OptionalNullable<T>> result = new Pair<>();
+        final ImmutableIterator<T> iter = iterator();
+        T last = (T) NONE;
+        T next = null;
+
+        while (iter.hasNext()) {
+            next = iter.next();
+
+            if (result.left == null && predicateForFirst.test(next)) {
+                result.left = OptionalNullable.of(next);
+            }
+
+            if (predicateForLast.test(next)) {
+                last = next;
+            }
+        }
+
+        if (result.left == null) {
+            result.left = OptionalNullable.empty();
+        }
+
+        result.right = last == NONE ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(last);
+
+        return result;
+    }
+
+    @Override
+    public <U> Pair<OptionalNullable<T>, OptionalNullable<T>> findFirstAndLast(final U seed, final BiPredicate<? super T, ? super U> predicateForFirst,
+            final BiPredicate<? super T, ? super U> predicateForLast) {
+        final Pair<OptionalNullable<T>, OptionalNullable<T>> result = new Pair<>();
+        final ImmutableIterator<T> iter = iterator();
+        T last = (T) NONE;
+        T next = null;
+
+        while (iter.hasNext()) {
+            next = iter.next();
+
+            if (result.left == null && predicateForFirst.test(next, seed)) {
+                result.left = OptionalNullable.of(next);
+            }
+
+            if (predicateForLast.test(next, seed)) {
+                last = next;
+            }
+        }
+
+        if (result.left == null) {
+            result.left = OptionalNullable.empty();
+        }
+
+        result.right = last == NONE ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(last);
+
+        return result;
+    }
+
+    @Override
+    public <U> Pair<OptionalNullable<T>, OptionalNullable<T>> findFirstAndLast(final Function<? super T, U> preFunc,
+            final BiPredicate<? super T, ? super U> predicateForFirst, final BiPredicate<? super T, ? super U> predicateForLast) {
+        final Pair<OptionalNullable<T>, OptionalNullable<T>> result = new Pair<>();
+        final ImmutableIterator<T> iter = iterator();
+        U seed = null;
+        T last = (T) NONE;
+        T next = null;
+
+        while (iter.hasNext()) {
+            next = iter.next();
+            seed = preFunc.apply(next);
+
+            if (result.left == null && predicateForFirst.test(next, seed)) {
+                result.left = OptionalNullable.of(next);
+            }
+
+            if (predicateForLast.test(next, seed)) {
+                last = next;
+            }
+        }
+
+        if (result.left == null) {
+            result.left = OptionalNullable.empty();
+        }
+
+        result.right = last == NONE ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(last);
+
+        return result;
+    }
+
+    @Override
     public <U> boolean anyMatch(final U seed, final BiPredicate<? super T, ? super U> predicate) {
         return anyMatch(new Predicate<T>() {
             @Override

@@ -30,6 +30,7 @@ import com.landawn.abacus.util.IntSummaryStatistics;
 import com.landawn.abacus.util.Joiner;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
+import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
@@ -277,6 +278,61 @@ abstract class AbstractIntStream extends IntStream {
         }
 
         return OptionalInt.of(next);
+    }
+
+    @Override
+    public OptionalInt findFirstOrLast(IntPredicate predicateForFirst, IntPredicate predicateForLast) {
+        final ImmutableIntIterator iter = intIterator();
+        MutableInt last = null;
+        int next = 0;
+
+        while (iter.hasNext()) {
+            next = iter.next();
+
+            if (predicateForFirst.test(next)) {
+                return OptionalInt.of(next);
+            } else if (predicateForLast.test(next)) {
+                if (last == null) {
+                    last = MutableInt.of(next);
+                } else {
+                    last.setValue(next);
+                }
+            }
+        }
+
+        return last == null ? OptionalInt.empty() : OptionalInt.of(last.value());
+    }
+
+    @Override
+    public Pair<OptionalInt, OptionalInt> findFirstAndLast(IntPredicate predicateForFirst, IntPredicate predicateForLast) {
+        final Pair<OptionalInt, OptionalInt> result = new Pair<>();
+        final ImmutableIntIterator iter = intIterator();
+        MutableInt last = null;
+        int next = 0;
+
+        while (iter.hasNext()) {
+            next = iter.next();
+
+            if (result.left == null && predicateForFirst.test(next)) {
+                result.left = OptionalInt.of(next);
+            }
+
+            if (predicateForLast.test(next)) {
+                if (last == null) {
+                    last = MutableInt.of(next);
+                } else {
+                    last.setValue(next);
+                }
+            }
+        }
+
+        if (result.left == null) {
+            result.left = OptionalInt.empty();
+        }
+
+        result.right = last == null ? OptionalInt.empty() : OptionalInt.of(last.value());
+
+        return result;
     }
 
     @Override

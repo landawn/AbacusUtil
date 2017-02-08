@@ -30,6 +30,7 @@ import com.landawn.abacus.util.IndexedFloat;
 import com.landawn.abacus.util.Joiner;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
+import com.landawn.abacus.util.MutableFloat;
 import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
@@ -341,6 +342,61 @@ abstract class AbstractFloatStream extends FloatStream {
         }
 
         return OptionalFloat.of(next);
+    }
+
+    @Override
+    public OptionalFloat findFirstOrLast(FloatPredicate predicateForFirst, FloatPredicate predicateForLast) {
+        final ImmutableFloatIterator iter = floatIterator();
+        MutableFloat last = null;
+        float next = 0;
+
+        while (iter.hasNext()) {
+            next = iter.next();
+
+            if (predicateForFirst.test(next)) {
+                return OptionalFloat.of(next);
+            } else if (predicateForLast.test(next)) {
+                if (last == null) {
+                    last = MutableFloat.of(next);
+                } else {
+                    last.setValue(next);
+                }
+            }
+        }
+
+        return last == null ? OptionalFloat.empty() : OptionalFloat.of(last.value());
+    }
+
+    @Override
+    public Pair<OptionalFloat, OptionalFloat> findFirstAndLast(FloatPredicate predicateForFirst, FloatPredicate predicateForLast) {
+        final Pair<OptionalFloat, OptionalFloat> result = new Pair<>();
+        final ImmutableFloatIterator iter = floatIterator();
+        MutableFloat last = null;
+        float next = 0;
+
+        while (iter.hasNext()) {
+            next = iter.next();
+
+            if (result.left == null && predicateForFirst.test(next)) {
+                result.left = OptionalFloat.of(next);
+            }
+
+            if (predicateForLast.test(next)) {
+                if (last == null) {
+                    last = MutableFloat.of(next);
+                } else {
+                    last.setValue(next);
+                }
+            }
+        }
+
+        if (result.left == null) {
+            result.left = OptionalFloat.empty();
+        }
+
+        result.right = last == null ? OptionalFloat.empty() : OptionalFloat.of(last.value());
+
+        return result;
     }
 
     @Override

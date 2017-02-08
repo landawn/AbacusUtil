@@ -885,6 +885,11 @@ public final class Multimap<K, E, V extends Collection<E>> {
         return modified;
     }
 
+    /**
+     * The associated keys will be removed if null or empty values are returned by the specified <code>function</code>.
+     * 
+     * @param function
+     */
     public void replaceAll(BiFunction<? super K, ? super V, ? extends V> function) {
         List<K> keyToRemove = null;
         V newVal = null;
