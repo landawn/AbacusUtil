@@ -926,7 +926,7 @@ public final class LongMultiset<E> implements Iterable<E> {
     }
 
     public boolean replaceIf(final long newOccurrences, Predicate<? super E> predicate) {
-        checkOccurrences(newOccurrences);
+        checkNewOccurrences(newOccurrences);
 
         boolean modified = false;
 
@@ -942,7 +942,7 @@ public final class LongMultiset<E> implements Iterable<E> {
     }
 
     public boolean replaceIf(final long newOccurrences, BiPredicate<? super E, ? super Long> predicate) {
-        checkOccurrences(newOccurrences);
+        checkNewOccurrences(newOccurrences);
 
         boolean modified = false;
 
@@ -1326,7 +1326,13 @@ public final class LongMultiset<E> implements Iterable<E> {
 
     private static void checkOccurrences(final long occurrences) {
         if (occurrences < 0) {
-            throw new IllegalArgumentException("The specified 'occurrences' can not be less than 1");
+            throw new IllegalArgumentException("The specified 'occurrences' can not be less than 0");
+        }
+    }
+
+    private static void checkNewOccurrences(final long newOccurrences) {
+        if (newOccurrences < 1) {
+            throw new IllegalArgumentException("The specified 'newOccurrences' can not be less than 1");
         }
     }
 }

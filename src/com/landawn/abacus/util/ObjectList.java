@@ -655,6 +655,14 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         return result;
     }
 
+    public ObjectList<T> intersection(final Object[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        }
+
+        return intersection(of(a));
+    }
+
     /**
      * 
      * @param b
@@ -673,6 +681,14 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         }
 
         return result;
+    }
+
+    public ObjectList<T> difference(final Object[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return of(N.copyOfRange(elementData, 0, size()));
+        }
+
+        return difference(of(a));
     }
 
     /**
@@ -703,6 +719,14 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         }
 
         return result;
+    }
+
+    public ObjectList<T> symmetricDifference(final T[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return of(N.copyOfRange(elementData, 0, size()));
+        }
+
+        return symmetricDifference(of(a));
     }
 
     public int indexOf(Object e) {

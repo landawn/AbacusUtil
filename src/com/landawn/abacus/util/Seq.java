@@ -283,6 +283,14 @@ public class Seq<T> implements Collection<T> {
         return result;
     }
 
+    public Seq<T> intersection(final Object[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return new Seq<>();
+        }
+
+        return intersection(Arrays.asList(a));
+    }
+
     /**
      * 
      * @param b
@@ -300,6 +308,14 @@ public class Seq<T> implements Collection<T> {
         }
 
         return result;
+    }
+
+    public Seq<T> difference(final Object[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return new Seq<>(new ArrayList<>(coll));
+        }
+
+        return difference(Arrays.asList(a));
     }
 
     /**
@@ -329,6 +345,14 @@ public class Seq<T> implements Collection<T> {
         }
 
         return result;
+    }
+
+    public Seq<T> symmetricDifference(final T[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return new Seq<>(new ArrayList<>(coll));
+        }
+
+        return symmetricDifference(Arrays.asList(a));
     }
 
     @SuppressWarnings("rawtypes")

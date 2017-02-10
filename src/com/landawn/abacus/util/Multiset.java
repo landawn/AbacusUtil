@@ -896,7 +896,7 @@ public final class Multiset<E> implements Iterable<E> {
     }
 
     public boolean replaceIf(final int newOccurrences, Predicate<? super E> predicate) {
-        checkOccurrences(newOccurrences);
+        checkNewOccurrences(newOccurrences);
 
         boolean modified = false;
 
@@ -912,7 +912,7 @@ public final class Multiset<E> implements Iterable<E> {
     }
 
     public boolean replaceIf(final int newOccurrences, BiPredicate<? super E, ? super Integer> predicate) {
-        checkOccurrences(newOccurrences);
+        checkNewOccurrences(newOccurrences);
 
         boolean modified = false;
 
@@ -1295,7 +1295,13 @@ public final class Multiset<E> implements Iterable<E> {
 
     private static void checkOccurrences(final int occurrences) {
         if (occurrences < 0) {
-            throw new IllegalArgumentException("The specified 'occurrences' can not be less than 1");
+            throw new IllegalArgumentException("The specified 'occurrences' can not be less than 0");
+        }
+    }
+
+    private static void checkNewOccurrences(final int newOccurrences) {
+        if (newOccurrences < 1) {
+            throw new IllegalArgumentException("The specified 'newOccurrences' can not be less than 1");
         }
     }
 }

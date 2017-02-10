@@ -1793,59 +1793,388 @@ public abstract class Stream<T>
     }
 
     public static Stream<Character> from(char... a) {
-        return CharStream.of(a).boxed();
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        }
+
+        return from(a, 0, a.length);
     }
 
-    public static Stream<Character> from(char[] a, final int fromIndex, final int toIndex) {
-        return CharStream.of(a, fromIndex, toIndex).boxed();
+    public static Stream<Character> from(final char[] a, final int fromIndex, final int toIndex) {
+        Stream.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        }
+
+        return of(new ImmutableIterator<Character>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public Character next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return a[cursor++];
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            }
+
+            @Override
+            public <A> A[] toArray(A[] a2) {
+                a2 = a2.length >= toIndex - cursor ? a2 : (A[]) N.newArray(a2.getClass().getComponentType(), toIndex - cursor);
+
+                for (int i = 0, len = toIndex - cursor; i < len; i++) {
+                    a2[i] = (A) Character.valueOf(a[cursor++]);
+                }
+
+                return a2;
+            }
+        });
     }
 
     public static Stream<Byte> from(byte... a) {
-        return ByteStream.of(a).boxed();
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        }
+
+        return from(a, 0, a.length);
     }
 
-    public static Stream<Byte> from(byte[] a, final int fromIndex, final int toIndex) {
-        return ByteStream.of(a, fromIndex, toIndex).boxed();
+    public static Stream<Byte> from(final byte[] a, final int fromIndex, final int toIndex) {
+        Stream.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        }
+
+        return of(new ImmutableIterator<Byte>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public Byte next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return a[cursor++];
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            }
+
+            @Override
+            public <A> A[] toArray(A[] a2) {
+                a2 = a2.length >= toIndex - cursor ? a2 : (A[]) N.newArray(a2.getClass().getComponentType(), toIndex - cursor);
+
+                for (int i = 0, len = toIndex - cursor; i < len; i++) {
+                    a2[i] = (A) Byte.valueOf(a[cursor++]);
+                }
+
+                return a2;
+            }
+        });
     }
 
     public static Stream<Short> from(short... a) {
-        return ShortStream.of(a).boxed();
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        }
+
+        return from(a, 0, a.length);
     }
 
-    public static Stream<Short> from(short[] a, final int fromIndex, final int toIndex) {
-        return ShortStream.of(a, fromIndex, toIndex).boxed();
+    public static Stream<Short> from(final short[] a, final int fromIndex, final int toIndex) {
+        Stream.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        }
+
+        return of(new ImmutableIterator<Short>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public Short next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return a[cursor++];
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            }
+
+            @Override
+            public <A> A[] toArray(A[] a2) {
+                a2 = a2.length >= toIndex - cursor ? a2 : (A[]) N.newArray(a2.getClass().getComponentType(), toIndex - cursor);
+
+                for (int i = 0, len = toIndex - cursor; i < len; i++) {
+                    a2[i] = (A) Short.valueOf(a[cursor++]);
+                }
+
+                return a2;
+            }
+        });
     }
 
     public static Stream<Integer> from(int... a) {
-        return IntStream.of(a).boxed();
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        }
+
+        return from(a, 0, a.length);
     }
 
-    public static Stream<Integer> from(int[] a, final int fromIndex, final int toIndex) {
-        return IntStream.of(a, fromIndex, toIndex).boxed();
+    public static Stream<Integer> from(final int[] a, final int fromIndex, final int toIndex) {
+        Stream.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        }
+
+        return of(new ImmutableIterator<Integer>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public Integer next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return a[cursor++];
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            }
+
+            @Override
+            public <A> A[] toArray(A[] a2) {
+                a2 = a2.length >= toIndex - cursor ? a2 : (A[]) N.newArray(a2.getClass().getComponentType(), toIndex - cursor);
+
+                for (int i = 0, len = toIndex - cursor; i < len; i++) {
+                    a2[i] = (A) Integer.valueOf(a[cursor++]);
+                }
+
+                return a2;
+            }
+        });
     }
 
     public static Stream<Long> from(long... a) {
-        return LongStream.of(a).boxed();
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        }
+
+        return from(a, 0, a.length);
     }
 
-    public static Stream<Long> from(long[] a, final int fromIndex, final int toIndex) {
-        return LongStream.of(a, fromIndex, toIndex).boxed();
+    public static Stream<Long> from(final long[] a, final int fromIndex, final int toIndex) {
+        Stream.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        }
+
+        return of(new ImmutableIterator<Long>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public Long next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return a[cursor++];
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            }
+
+            @Override
+            public <A> A[] toArray(A[] a2) {
+                a2 = a2.length >= toIndex - cursor ? a2 : (A[]) N.newArray(a2.getClass().getComponentType(), toIndex - cursor);
+
+                for (int i = 0, len = toIndex - cursor; i < len; i++) {
+                    a2[i] = (A) Long.valueOf(a[cursor++]);
+                }
+
+                return a2;
+            }
+        });
     }
 
     public static Stream<Float> from(float... a) {
-        return FloatStream.of(a).boxed();
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        }
+
+        return from(a, 0, a.length);
     }
 
-    public static Stream<Float> from(float[] a, final int fromIndex, final int toIndex) {
-        return FloatStream.of(a, fromIndex, toIndex).boxed();
+    public static Stream<Float> from(final float[] a, final int fromIndex, final int toIndex) {
+        Stream.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        }
+
+        return of(new ImmutableIterator<Float>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public Float next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return a[cursor++];
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            }
+
+            @Override
+            public <A> A[] toArray(A[] a2) {
+                a2 = a2.length >= toIndex - cursor ? a2 : (A[]) N.newArray(a2.getClass().getComponentType(), toIndex - cursor);
+
+                for (int i = 0, len = toIndex - cursor; i < len; i++) {
+                    a2[i] = (A) Float.valueOf(a[cursor++]);
+                }
+
+                return a2;
+            }
+        });
     }
 
     public static Stream<Double> from(double... a) {
-        return DoubleStream.of(a).boxed();
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        }
+
+        return from(a, 0, a.length);
     }
 
-    public static Stream<Double> from(double[] a, final int fromIndex, final int toIndex) {
-        return DoubleStream.of(a, fromIndex, toIndex).boxed();
+    public static Stream<Double> from(final double[] a, final int fromIndex, final int toIndex) {
+        Stream.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        }
+
+        return of(new ImmutableIterator<Double>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public Double next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return a[cursor++];
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            }
+
+            @Override
+            public <A> A[] toArray(A[] a2) {
+                a2 = a2.length >= toIndex - cursor ? a2 : (A[]) N.newArray(a2.getClass().getComponentType(), toIndex - cursor);
+
+                for (int i = 0, len = toIndex - cursor; i < len; i++) {
+                    a2[i] = (A) Double.valueOf(a[cursor++]);
+                }
+
+                return a2;
+            }
+        });
     }
 
     public static <T> Stream<T> repeat(final T element, final long n) {
