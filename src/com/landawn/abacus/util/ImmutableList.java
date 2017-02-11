@@ -16,7 +16,7 @@ package com.landawn.abacus.util;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
+import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 
@@ -30,11 +30,12 @@ public final class ImmutableList<E> extends ImmutableCollection<E> implements Li
     private final List<E> list;
 
     ImmutableList(List<? extends E> list) {
-        this.list = (List<E>) list;
+        super(Collections.unmodifiableList(list));
+        this.list = (List<E>) c;
     }
 
     public static <E> ImmutableList<E> of(E... a) {
-        return new ImmutableList<E>(Arrays.asList(a));
+        return new ImmutableList<>(Arrays.asList(a));
     }
 
     /**
@@ -43,7 +44,7 @@ public final class ImmutableList<E> extends ImmutableCollection<E> implements Li
      * @return
      */
     public static <E> ImmutableList<E> of(List<? extends E> list) {
-        return new ImmutableList<E>(list);
+        return new ImmutableList<>(list);
     }
 
     @Override
@@ -74,21 +75,6 @@ public final class ImmutableList<E> extends ImmutableCollection<E> implements Li
     @Override
     public List<E> subList(int fromIndex, int toIndex) {
         return list.subList(fromIndex, toIndex);
-    }
-
-    @Override
-    public Iterator<E> iterator() {
-        return list.iterator();
-    }
-
-    @Override
-    public boolean contains(Object o) {
-        return list.contains(o);
-    }
-
-    @Override
-    public int size() {
-        return list.size();
     }
 
     /**
@@ -125,30 +111,5 @@ public final class ImmutableList<E> extends ImmutableCollection<E> implements Li
     @Override
     public final E remove(int index) {
         throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public Object[] toArray() {
-        return list.toArray();
-    }
-
-    @Override
-    public <T> T[] toArray(T[] a) {
-        return list.toArray(a);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return obj instanceof ImmutableList && ((ImmutableList<E>) obj).list.equals(list);
-    }
-
-    @Override
-    public int hashCode() {
-        return list.hashCode();
-    }
-
-    @Override
-    public String toString() {
-        return list.toString();
     }
 }

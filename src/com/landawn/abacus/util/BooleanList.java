@@ -26,6 +26,7 @@ import java.util.Set;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
+import com.landawn.abacus.util.function.BooleanBinaryOperator;
 import com.landawn.abacus.util.function.BooleanConsumer;
 import com.landawn.abacus.util.function.BooleanFunction;
 import com.landawn.abacus.util.function.BooleanPredicate;
@@ -884,6 +885,77 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(mapper.apply(elementData[i]));
+        }
+
+        return result;
+    }
+
+    /**
+     * This is equivalent to:
+     * <pre>
+     * <code>
+     *    if (isEmpty()) {
+     *        return OptionalBoolean.empty();
+     *    }
+     *
+     *    boolean result = elementData[0];
+     *
+     *    for (int i = 1; i < size; i++) {
+     *        result = accumulator.applyAsBoolean(result, elementData[i]);
+     *    }
+     *
+     *    return OptionalBoolean.of(result);
+     * </code>
+     * </pre>
+     * 
+     * @param accumulator
+     * @return
+     */
+    public OptionalBoolean reduce(final BooleanBinaryOperator accumulator) {
+        if (isEmpty()) {
+            return OptionalBoolean.empty();
+        }
+
+        boolean result = elementData[0];
+
+        for (int i = 1; i < size; i++) {
+            result = accumulator.applyAsBoolean(result, elementData[i]);
+        }
+
+        return OptionalBoolean.of(result);
+    }
+
+    /**
+     * This is equivalent to:
+     * <pre>
+     * <code>
+     *     if (isEmpty()) {
+     *         return identity;
+     *     }
+     * 
+     *     boolean result = identity;
+     * 
+     *     for (int i = 0; i < size; i++) {
+     *         result = accumulator.applyAsBoolean(result, elementData[i]);
+     *    }
+     * 
+     *     return result;
+     * </code>
+     * </pre>
+     * 
+     * @param identity
+     * @param accumulator
+     * @return
+     */
+    public boolean reduce(final boolean identity, final BooleanBinaryOperator accumulator) {
+        if (isEmpty()) {
+            return identity;
+        }
+
+        boolean result = identity;
+
+        for (int i = 0; i < size; i++) {
+            result = accumulator.applyAsBoolean(result, elementData[i]);
         }
 
         return result;

@@ -1601,7 +1601,7 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
      * @param accumulator
      * @return
      */
-    public OptionalNullable<T> reduce(BinaryOperator<T> accumulator) {
+    public OptionalNullable<T> reduce(final BinaryOperator<T> accumulator) {
         if (isEmpty()) {
             return OptionalNullable.empty();
         }
@@ -1637,7 +1637,7 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
      * @param accumulator
      * @return
      */
-    public <U> U reduce(U identity, BiFunction<U, ? super T, U> accumulator) {
+    public <U> U reduce(final U identity, final BiFunction<U, ? super T, U> accumulator) {
         if (isEmpty()) {
             return identity;
         }

@@ -15,6 +15,7 @@
 package com.landawn.abacus.util;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -28,7 +29,7 @@ public final class ImmutableMap<K, V> implements Map<K, V> {
     private final Map<K, V> map;
 
     ImmutableMap(final Map<? extends K, ? extends V> map) {
-        this.map = (Map<K, V>) map;
+        this.map = Collections.unmodifiableMap(map);
     }
 
     public static <K, V, k extends K, v extends V> ImmutableMap<K, V> of(final k k1, final v v1) {
@@ -72,7 +73,7 @@ public final class ImmutableMap<K, V> implements Map<K, V> {
 
     public static <K, V, k extends K, v extends V> ImmutableMap<K, V> of(final Object... a) {
         final Map<K, V> map = (a.length == 1 && a[0] instanceof Map) ? (Map<K, V>) a[0] : (Map<K, V>) N.asLinkedHashMap(a);
-        return new ImmutableMap<K, V>(map);
+        return new ImmutableMap<>(map);
     }
 
     /**
@@ -81,7 +82,7 @@ public final class ImmutableMap<K, V> implements Map<K, V> {
      * @return
      */
     public static <K, V> ImmutableMap<K, V> of(Map<? extends K, ? extends V> map) {
-        return new ImmutableMap<K, V>(map);
+        return new ImmutableMap<>(map);
     }
 
     /**
@@ -132,7 +133,7 @@ public final class ImmutableMap<K, V> implements Map<K, V> {
 
     @Override
     public boolean containsValue(Object value) {
-        return values().contains(value);
+        return map.containsValue(value);
     }
 
     @Override

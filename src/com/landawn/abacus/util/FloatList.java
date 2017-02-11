@@ -27,6 +27,7 @@ import java.util.Set;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
+import com.landawn.abacus.util.function.FloatBinaryOperator;
 import com.landawn.abacus.util.function.FloatConsumer;
 import com.landawn.abacus.util.function.FloatFunction;
 import com.landawn.abacus.util.function.FloatPredicate;
@@ -1013,6 +1014,77 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(mapper.apply(elementData[i]));
+        }
+
+        return result;
+    }
+
+    /**
+     * This is equivalent to:
+     * <pre>
+     * <code>
+     *    if (isEmpty()) {
+     *        return OptionalFloat.empty();
+     *    }
+     *
+     *    float result = elementData[0];
+     *
+     *    for (int i = 1; i < size; i++) {
+     *        result = accumulator.applyAsFloat(result, elementData[i]);
+     *    }
+     *
+     *    return OptionalFloat.of(result);
+     * </code>
+     * </pre>
+     * 
+     * @param accumulator
+     * @return
+     */
+    public OptionalFloat reduce(final FloatBinaryOperator accumulator) {
+        if (isEmpty()) {
+            return OptionalFloat.empty();
+        }
+
+        float result = elementData[0];
+
+        for (int i = 1; i < size; i++) {
+            result = accumulator.applyAsFloat(result, elementData[i]);
+        }
+
+        return OptionalFloat.of(result);
+    }
+
+    /**
+     * This is equivalent to:
+     * <pre>
+     * <code>
+     *     if (isEmpty()) {
+     *         return identity;
+     *     }
+     * 
+     *     float result = identity;
+     * 
+     *     for (int i = 0; i < size; i++) {
+     *         result = accumulator.applyAsFloat(result, elementData[i]);
+     *    }
+     * 
+     *     return result;
+     * </code>
+     * </pre>
+     * 
+     * @param identity
+     * @param accumulator
+     * @return
+     */
+    public float reduce(final float identity, final FloatBinaryOperator accumulator) {
+        if (isEmpty()) {
+            return identity;
+        }
+
+        float result = identity;
+
+        for (int i = 0; i < size; i++) {
+            result = accumulator.applyAsFloat(result, elementData[i]);
         }
 
         return result;

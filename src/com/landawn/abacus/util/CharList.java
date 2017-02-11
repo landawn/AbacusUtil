@@ -26,6 +26,7 @@ import java.util.Set;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
+import com.landawn.abacus.util.function.CharBinaryOperator;
 import com.landawn.abacus.util.function.CharConsumer;
 import com.landawn.abacus.util.function.CharFunction;
 import com.landawn.abacus.util.function.CharPredicate;
@@ -1017,6 +1018,77 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(mapper.apply(elementData[i]));
+        }
+
+        return result;
+    }
+
+    /**
+     * This is equivalent to:
+     * <pre>
+     * <code>
+     *    if (isEmpty()) {
+     *        return OptionalChar.empty();
+     *    }
+     *
+     *    char result = elementData[0];
+     *
+     *    for (int i = 1; i < size; i++) {
+     *        result = accumulator.applyAsChar(result, elementData[i]);
+     *    }
+     *
+     *    return OptionalChar.of(result);
+     * </code>
+     * </pre>
+     * 
+     * @param accumulator
+     * @return
+     */
+    public OptionalChar reduce(final CharBinaryOperator accumulator) {
+        if (isEmpty()) {
+            return OptionalChar.empty();
+        }
+
+        char result = elementData[0];
+
+        for (int i = 1; i < size; i++) {
+            result = accumulator.applyAsChar(result, elementData[i]);
+        }
+
+        return OptionalChar.of(result);
+    }
+
+    /**
+     * This is equivalent to:
+     * <pre>
+     * <code>
+     *     if (isEmpty()) {
+     *         return identity;
+     *     }
+     * 
+     *     char result = identity;
+     * 
+     *     for (int i = 0; i < size; i++) {
+     *         result = accumulator.applyAsChar(result, elementData[i]);
+     *    }
+     * 
+     *     return result;
+     * </code>
+     * </pre>
+     * 
+     * @param identity
+     * @param accumulator
+     * @return
+     */
+    public char reduce(final char identity, final CharBinaryOperator accumulator) {
+        if (isEmpty()) {
+            return identity;
+        }
+
+        char result = identity;
+
+        for (int i = 0; i < size; i++) {
+            result = accumulator.applyAsChar(result, elementData[i]);
         }
 
         return result;

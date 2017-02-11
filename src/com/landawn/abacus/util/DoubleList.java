@@ -27,6 +27,7 @@ import java.util.Set;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
+import com.landawn.abacus.util.function.DoubleBinaryOperator;
 import com.landawn.abacus.util.function.DoubleConsumer;
 import com.landawn.abacus.util.function.DoubleFunction;
 import com.landawn.abacus.util.function.DoublePredicate;
@@ -999,6 +1000,77 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(mapper.apply(elementData[i]));
+        }
+
+        return result;
+    }
+
+    /**
+     * This is equivalent to:
+     * <pre>
+     * <code>
+     *    if (isEmpty()) {
+     *        return OptionalDouble.empty();
+     *    }
+     *
+     *    double result = elementData[0];
+     *
+     *    for (int i = 1; i < size; i++) {
+     *        result = accumulator.applyAsDouble(result, elementData[i]);
+     *    }
+     *
+     *    return OptionalDouble.of(result);
+     * </code>
+     * </pre>
+     * 
+     * @param accumulator
+     * @return
+     */
+    public OptionalDouble reduce(final DoubleBinaryOperator accumulator) {
+        if (isEmpty()) {
+            return OptionalDouble.empty();
+        }
+
+        double result = elementData[0];
+
+        for (int i = 1; i < size; i++) {
+            result = accumulator.applyAsDouble(result, elementData[i]);
+        }
+
+        return OptionalDouble.of(result);
+    }
+
+    /**
+     * This is equivalent to:
+     * <pre>
+     * <code>
+     *     if (isEmpty()) {
+     *         return identity;
+     *     }
+     * 
+     *     double result = identity;
+     * 
+     *     for (int i = 0; i < size; i++) {
+     *         result = accumulator.applyAsDouble(result, elementData[i]);
+     *    }
+     * 
+     *     return result;
+     * </code>
+     * </pre>
+     * 
+     * @param identity
+     * @param accumulator
+     * @return
+     */
+    public double reduce(final double identity, final DoubleBinaryOperator accumulator) {
+        if (isEmpty()) {
+            return identity;
+        }
+
+        double result = identity;
+
+        for (int i = 0; i < size; i++) {
+            result = accumulator.applyAsDouble(result, elementData[i]);
         }
 
         return result;

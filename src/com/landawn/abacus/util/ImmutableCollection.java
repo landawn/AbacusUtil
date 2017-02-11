@@ -16,6 +16,7 @@ package com.landawn.abacus.util;
 
 import java.util.AbstractCollection;
 import java.util.Collection;
+import java.util.Iterator;
 
 /**
  * 
@@ -24,7 +25,10 @@ import java.util.Collection;
  * @author Haiyang Li
  */
 abstract class ImmutableCollection<E> extends AbstractCollection<E> {
-    protected ImmutableCollection() {
+    final Collection<E> c;
+
+    protected ImmutableCollection(Collection<? extends E> c) {
+        this.c = (Collection<E>) c;
     }
 
     /**
@@ -79,5 +83,45 @@ abstract class ImmutableCollection<E> extends AbstractCollection<E> {
     @Override
     public final void clear() {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean contains(Object o) {
+        return c.contains(o);
+    }
+
+    @Override
+    public Iterator<E> iterator() {
+        return c.iterator();
+    }
+
+    @Override
+    public int size() {
+        return c.size();
+    }
+
+    @Override
+    public Object[] toArray() {
+        return c.toArray();
+    }
+
+    @Override
+    public <T> T[] toArray(T[] a) {
+        return c.toArray(a);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof ImmutableCollection && ((ImmutableCollection<E>) obj).c.equals(c);
+    }
+
+    @Override
+    public int hashCode() {
+        return c.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return c.toString();
     }
 }

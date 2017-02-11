@@ -26,6 +26,7 @@ import java.util.Set;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
+import com.landawn.abacus.util.function.ByteBinaryOperator;
 import com.landawn.abacus.util.function.ByteConsumer;
 import com.landawn.abacus.util.function.ByteFunction;
 import com.landawn.abacus.util.function.BytePredicate;
@@ -991,6 +992,77 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(mapper.apply(elementData[i]));
+        }
+
+        return result;
+    }
+
+    /**
+     * This is equivalent to:
+     * <pre>
+     * <code>
+     *    if (isEmpty()) {
+     *        return OptionalByte.empty();
+     *    }
+     *
+     *    byte result = elementData[0];
+     *
+     *    for (int i = 1; i < size; i++) {
+     *        result = accumulator.applyAsByte(result, elementData[i]);
+     *    }
+     *
+     *    return OptionalByte.of(result);
+     * </code>
+     * </pre>
+     * 
+     * @param accumulator
+     * @return
+     */
+    public OptionalByte reduce(final ByteBinaryOperator accumulator) {
+        if (isEmpty()) {
+            return OptionalByte.empty();
+        }
+
+        byte result = elementData[0];
+
+        for (int i = 1; i < size; i++) {
+            result = accumulator.applyAsByte(result, elementData[i]);
+        }
+
+        return OptionalByte.of(result);
+    }
+
+    /**
+     * This is equivalent to:
+     * <pre>
+     * <code>
+     *     if (isEmpty()) {
+     *         return identity;
+     *     }
+     * 
+     *     byte result = identity;
+     * 
+     *     for (int i = 0; i < size; i++) {
+     *         result = accumulator.applyAsByte(result, elementData[i]);
+     *    }
+     * 
+     *     return result;
+     * </code>
+     * </pre>
+     * 
+     * @param identity
+     * @param accumulator
+     * @return
+     */
+    public byte reduce(final byte identity, final ByteBinaryOperator accumulator) {
+        if (isEmpty()) {
+            return identity;
+        }
+
+        byte result = identity;
+
+        for (int i = 0; i < size; i++) {
+            result = accumulator.applyAsByte(result, elementData[i]);
         }
 
         return result;

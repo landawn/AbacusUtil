@@ -2458,6 +2458,12 @@ public final class Array {
             return;
         }
 
+        if (c instanceof ObjectList) {
+            sort((T[]) ((ObjectList<T>) c).array(), fromIndex, toIndex, cmp);
+
+            return;
+        }
+
         if (N.isListElementDataFieldGettable && N.listElementDataField != null && c instanceof ArrayList) {
             T[] array = null;
 
@@ -2655,7 +2661,7 @@ public final class Array {
 
         final Queue<Pair0<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
         final AtomicInteger activeThreadNum = new AtomicInteger();
-        final Holder<Throwable> errorHolder = new Holder<Throwable>();
+        final Holder<Throwable> errorHolder = new Holder<>();
         final int lenOfSubArray = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
 
         for (int i = 0; i < CPU_CORES; i++) {
@@ -2776,7 +2782,7 @@ public final class Array {
 
         final Queue<Pair0<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
         final AtomicInteger activeThreadNum = new AtomicInteger();
-        final Holder<Throwable> errorHolder = new Holder<Throwable>();
+        final Holder<Throwable> errorHolder = new Holder<>();
         final int lenOfSubArray = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
 
         for (int i = 0; i < CPU_CORES; i++) {
@@ -2897,7 +2903,7 @@ public final class Array {
 
         final Queue<Pair0<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
         final AtomicInteger activeThreadNum = new AtomicInteger();
-        final Holder<Throwable> errorHolder = new Holder<Throwable>();
+        final Holder<Throwable> errorHolder = new Holder<>();
         final int lenOfSubArray = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
 
         for (int i = 0; i < CPU_CORES; i++) {
@@ -3018,7 +3024,7 @@ public final class Array {
 
         final Queue<Pair0<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
         final AtomicInteger activeThreadNum = new AtomicInteger();
-        final Holder<Throwable> errorHolder = new Holder<Throwable>();
+        final Holder<Throwable> errorHolder = new Holder<>();
         final int lenOfSubArray = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
 
         for (int i = 0; i < CPU_CORES; i++) {
@@ -3139,7 +3145,7 @@ public final class Array {
 
         final Queue<Pair0<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
         final AtomicInteger activeThreadNum = new AtomicInteger();
-        final Holder<Throwable> errorHolder = new Holder<Throwable>();
+        final Holder<Throwable> errorHolder = new Holder<>();
         final int lenOfSubArray = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
 
         for (int i = 0; i < CPU_CORES; i++) {
@@ -3260,7 +3266,7 @@ public final class Array {
 
         final Queue<Pair0<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
         final AtomicInteger activeThreadNum = new AtomicInteger();
-        final Holder<Throwable> errorHolder = new Holder<Throwable>();
+        final Holder<Throwable> errorHolder = new Holder<>();
         final int lenOfSubArray = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
 
         for (int i = 0; i < CPU_CORES; i++) {
@@ -3400,7 +3406,7 @@ public final class Array {
 
         final Queue<Pair0<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
         final AtomicInteger activeThreadNum = new AtomicInteger();
-        final Holder<Throwable> errorHolder = new Holder<Throwable>();
+        final Holder<Throwable> errorHolder = new Holder<>();
         final int lenOfSubArray = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
 
         for (int i = 0; i < CPU_CORES; i++) {
@@ -3553,7 +3559,7 @@ public final class Array {
 
         final Queue<Pair0<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
         final AtomicInteger activeThreadNum = new AtomicInteger();
-        final Holder<Throwable> errorHolder = new Holder<Throwable>();
+        final Holder<Throwable> errorHolder = new Holder<>();
         final int lenOfSubArray = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
 
         for (int i = 0; i < CPU_CORES; i++) {
@@ -3674,6 +3680,11 @@ public final class Array {
     @SuppressWarnings("rawtypes")
     static <T> void parallelSort(final List<? extends T> c, final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
         if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+            return;
+        }
+        if (c instanceof ObjectList) {
+            parallelSort((T[]) ((ObjectList<T>) c).array(), fromIndex, toIndex, cmp);
+
             return;
         }
 
@@ -4396,6 +4407,10 @@ public final class Array {
             return N.INDEX_NOT_FOUND;
         }
 
+        if (list instanceof ObjectList) {
+            return binarySearch((T[]) ((ObjectList<T>) list).array(), fromIndex, toIndex, key, cmp == null ? N.OBJECT_COMPARATOR : cmp);
+        }
+
         if (N.isListElementDataFieldGettable && N.listElementDataField != null && list instanceof ArrayList) {
             T[] array = null;
 
@@ -4509,7 +4524,7 @@ public final class Array {
         Queue<Character> queue = null;
 
         if (k <= len / 2) {
-            queue = new PriorityQueue<Character>(k);
+            queue = new PriorityQueue<>(k);
 
             for (int i = fromIndex; i < toIndex; i++) {
                 if (queue.size() < k) {
@@ -4524,7 +4539,7 @@ public final class Array {
         } else {
             k = len - k + 1;
 
-            queue = new PriorityQueue<Character>(k, new Comparator<Character>() {
+            queue = new PriorityQueue<>(k, new Comparator<Character>() {
                 @Override
                 public int compare(final Character o1, final Character o2) {
                     return o2.compareTo(o1);
@@ -4568,7 +4583,7 @@ public final class Array {
         Queue<Byte> queue = null;
 
         if (k <= len / 2) {
-            queue = new PriorityQueue<Byte>(k);
+            queue = new PriorityQueue<>(k);
 
             for (int i = fromIndex; i < toIndex; i++) {
                 if (queue.size() < k) {
@@ -4583,7 +4598,7 @@ public final class Array {
         } else {
             k = len - k + 1;
 
-            queue = new PriorityQueue<Byte>(k, new Comparator<Byte>() {
+            queue = new PriorityQueue<>(k, new Comparator<Byte>() {
                 @Override
                 public int compare(final Byte o1, final Byte o2) {
                     return o2.compareTo(o1);
@@ -4627,7 +4642,7 @@ public final class Array {
         Queue<Short> queue = null;
 
         if (k <= len / 2) {
-            queue = new PriorityQueue<Short>(k);
+            queue = new PriorityQueue<>(k);
 
             for (int i = fromIndex; i < toIndex; i++) {
                 if (queue.size() < k) {
@@ -4642,7 +4657,7 @@ public final class Array {
         } else {
             k = len - k + 1;
 
-            queue = new PriorityQueue<Short>(k, new Comparator<Short>() {
+            queue = new PriorityQueue<>(k, new Comparator<Short>() {
                 @Override
                 public int compare(final Short o1, final Short o2) {
                     return o2.compareTo(o1);
@@ -4686,7 +4701,7 @@ public final class Array {
         Queue<Integer> queue = null;
 
         if (k <= len / 2) {
-            queue = new PriorityQueue<Integer>(k);
+            queue = new PriorityQueue<>(k);
 
             for (int i = fromIndex; i < toIndex; i++) {
                 if (queue.size() < k) {
@@ -4701,7 +4716,7 @@ public final class Array {
         } else {
             k = len - k + 1;
 
-            queue = new PriorityQueue<Integer>(k, new Comparator<Integer>() {
+            queue = new PriorityQueue<>(k, new Comparator<Integer>() {
                 @Override
                 public int compare(final Integer o1, final Integer o2) {
                     return o2.compareTo(o1);
@@ -4745,7 +4760,7 @@ public final class Array {
         Queue<Long> queue = null;
 
         if (k <= len / 2) {
-            queue = new PriorityQueue<Long>(k);
+            queue = new PriorityQueue<>(k);
 
             for (int i = fromIndex; i < toIndex; i++) {
                 if (queue.size() < k) {
@@ -4760,7 +4775,7 @@ public final class Array {
         } else {
             k = len - k + 1;
 
-            queue = new PriorityQueue<Long>(k, new Comparator<Long>() {
+            queue = new PriorityQueue<>(k, new Comparator<Long>() {
                 @Override
                 public int compare(final Long o1, final Long o2) {
                     return o2.compareTo(o1);
@@ -4804,7 +4819,7 @@ public final class Array {
         Queue<Float> queue = null;
 
         if (k <= len / 2) {
-            queue = new PriorityQueue<Float>(k);
+            queue = new PriorityQueue<>(k);
 
             for (int i = fromIndex; i < toIndex; i++) {
                 if (queue.size() < k) {
@@ -4819,7 +4834,7 @@ public final class Array {
         } else {
             k = len - k + 1;
 
-            queue = new PriorityQueue<Float>(k, new Comparator<Float>() {
+            queue = new PriorityQueue<>(k, new Comparator<Float>() {
                 @Override
                 public int compare(final Float o1, final Float o2) {
                     return o2.compareTo(o1);
@@ -4863,7 +4878,7 @@ public final class Array {
         Queue<Double> queue = null;
 
         if (k <= len / 2) {
-            queue = new PriorityQueue<Double>(k);
+            queue = new PriorityQueue<>(k);
 
             for (int i = fromIndex; i < toIndex; i++) {
                 if (queue.size() < k) {
@@ -4878,7 +4893,7 @@ public final class Array {
         } else {
             k = len - k + 1;
 
-            queue = new PriorityQueue<Double>(k, new Comparator<Double>() {
+            queue = new PriorityQueue<>(k, new Comparator<Double>() {
                 @Override
                 public int compare(final Double o1, final Double o2) {
                     return o2.compareTo(o1);
@@ -4931,7 +4946,7 @@ public final class Array {
         Queue<T> queue = null;
 
         if (k <= len / 2) {
-            queue = new PriorityQueue<T>(k, comparator);
+            queue = new PriorityQueue<>(k, comparator);
 
             for (int i = fromIndex; i < toIndex; i++) {
                 if (queue.size() < k) {
@@ -4946,7 +4961,7 @@ public final class Array {
         } else {
             k = len - k + 1;
 
-            queue = new PriorityQueue<T>(k, new Comparator<T>() {
+            queue = new PriorityQueue<>(k, new Comparator<T>() {
                 @Override
                 public int compare(final T o1, final T o2) {
                     return comparator.compare(o2, o1);
@@ -5000,7 +5015,7 @@ public final class Array {
         Queue<T> queue = null;
 
         if (k <= len / 2) {
-            queue = new PriorityQueue<T>(k);
+            queue = new PriorityQueue<>(k);
             int cursor = 0;
 
             while (cursor < fromIndex && iter.hasNext()) {
@@ -5026,7 +5041,7 @@ public final class Array {
         } else {
             k = len - k + 1;
 
-            queue = new PriorityQueue<T>(k, new Comparator<T>() {
+            queue = new PriorityQueue<>(k, new Comparator<T>() {
                 @Override
                 public int compare(final T o1, final T o2) {
                     return comparator.compare(o2, o1);

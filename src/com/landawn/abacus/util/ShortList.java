@@ -30,6 +30,7 @@ import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IndexedShortConsumer;
 import com.landawn.abacus.util.function.IntFunction;
+import com.landawn.abacus.util.function.ShortBinaryOperator;
 import com.landawn.abacus.util.function.ShortConsumer;
 import com.landawn.abacus.util.function.ShortFunction;
 import com.landawn.abacus.util.function.ShortPredicate;
@@ -989,6 +990,77 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(mapper.apply(elementData[i]));
+        }
+
+        return result;
+    }
+
+    /**
+     * This is equivalent to:
+     * <pre>
+     * <code>
+     *    if (isEmpty()) {
+     *        return OptionalShort.empty();
+     *    }
+     *
+     *    short result = elementData[0];
+     *
+     *    for (int i = 1; i < size; i++) {
+     *        result = accumulator.applyAsShort(result, elementData[i]);
+     *    }
+     *
+     *    return OptionalShort.of(result);
+     * </code>
+     * </pre>
+     * 
+     * @param accumulator
+     * @return
+     */
+    public OptionalShort reduce(final ShortBinaryOperator accumulator) {
+        if (isEmpty()) {
+            return OptionalShort.empty();
+        }
+
+        short result = elementData[0];
+
+        for (int i = 1; i < size; i++) {
+            result = accumulator.applyAsShort(result, elementData[i]);
+        }
+
+        return OptionalShort.of(result);
+    }
+
+    /**
+     * This is equivalent to:
+     * <pre>
+     * <code>
+     *     if (isEmpty()) {
+     *         return identity;
+     *     }
+     * 
+     *     short result = identity;
+     * 
+     *     for (int i = 0; i < size; i++) {
+     *         result = accumulator.applyAsShort(result, elementData[i]);
+     *    }
+     * 
+     *     return result;
+     * </code>
+     * </pre>
+     * 
+     * @param identity
+     * @param accumulator
+     * @return
+     */
+    public short reduce(final short identity, final ShortBinaryOperator accumulator) {
+        if (isEmpty()) {
+            return identity;
+        }
+
+        short result = identity;
+
+        for (int i = 0; i < size; i++) {
+            result = accumulator.applyAsShort(result, elementData[i]);
         }
 
         return result;

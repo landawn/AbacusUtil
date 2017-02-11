@@ -1507,6 +1507,10 @@ public abstract class Stream<T>
             throw new IllegalArgumentException("startIndex(" + startIndex + ") or endIndex(" + endIndex + ") is invalid");
         }
 
+        if (c instanceof ObjectList) {
+            return of((T[]) ((ObjectList<T>) c).array(), startIndex, endIndex);
+        }
+
         // return new CollectionStream<T>(c);
         // return new ArrayStream<T>((T[]) c.toArray()); // faster
 

@@ -30,6 +30,7 @@ import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IndexedLongConsumer;
 import com.landawn.abacus.util.function.IntFunction;
+import com.landawn.abacus.util.function.LongBinaryOperator;
 import com.landawn.abacus.util.function.LongConsumer;
 import com.landawn.abacus.util.function.LongFunction;
 import com.landawn.abacus.util.function.LongPredicate;
@@ -1033,6 +1034,77 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(mapper.apply(elementData[i]));
+        }
+
+        return result;
+    }
+
+    /**
+     * This is equivalent to:
+     * <pre>
+     * <code>
+     *    if (isEmpty()) {
+     *        return OptionalLong.empty();
+     *    }
+     *
+     *    long result = elementData[0];
+     *
+     *    for (int i = 1; i < size; i++) {
+     *        result = accumulator.applyAsLong(result, elementData[i]);
+     *    }
+     *
+     *    return OptionalLong.of(result);
+     * </code>
+     * </pre>
+     * 
+     * @param accumulator
+     * @return
+     */
+    public OptionalLong reduce(final LongBinaryOperator accumulator) {
+        if (isEmpty()) {
+            return OptionalLong.empty();
+        }
+
+        long result = elementData[0];
+
+        for (int i = 1; i < size; i++) {
+            result = accumulator.applyAsLong(result, elementData[i]);
+        }
+
+        return OptionalLong.of(result);
+    }
+
+    /**
+     * This is equivalent to:
+     * <pre>
+     * <code>
+     *     if (isEmpty()) {
+     *         return identity;
+     *     }
+     * 
+     *     long result = identity;
+     * 
+     *     for (int i = 0; i < size; i++) {
+     *         result = accumulator.applyAsLong(result, elementData[i]);
+     *    }
+     * 
+     *     return result;
+     * </code>
+     * </pre>
+     * 
+     * @param identity
+     * @param accumulator
+     * @return
+     */
+    public long reduce(final long identity, final LongBinaryOperator accumulator) {
+        if (isEmpty()) {
+            return identity;
+        }
+
+        long result = identity;
+
+        for (int i = 0; i < size; i++) {
+            result = accumulator.applyAsLong(result, elementData[i]);
         }
 
         return result;
