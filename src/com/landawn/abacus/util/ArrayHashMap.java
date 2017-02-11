@@ -119,7 +119,7 @@ public class ArrayHashMap<K, V> implements Map<K, V> {
 
     @Override
     public Set<K> keySet() {
-        return new ArrayHashSet<K>(map.keySet());
+        return new ArrayHashSet<>(map.keySet());
     }
 
     @Override
@@ -129,7 +129,7 @@ public class ArrayHashMap<K, V> implements Map<K, V> {
 
     @Override
     public Set<java.util.Map.Entry<K, V>> entrySet() {
-        return new ArrayEntrySet<K, V>(map.entrySet());
+        return new ArrayEntrySet<>(map.entrySet());
     }
 
     @Override
@@ -204,7 +204,7 @@ public class ArrayHashMap<K, V> implements Map<K, V> {
             if (o instanceof Map.Entry) {
                 final Map.Entry<K, V> entry = (Map.Entry<K, V>) o;
 
-                return set.contains(new MapEntry<Wrapper<K>, V>(Wrapper.of(entry.getKey()), entry.getValue()));
+                return set.contains(Pair.of(Wrapper.of(entry.getKey()), entry.getValue()));
             }
 
             return false;
@@ -212,7 +212,7 @@ public class ArrayHashMap<K, V> implements Map<K, V> {
 
         @Override
         public Iterator<java.util.Map.Entry<K, V>> iterator() {
-            return new ArrayEntryIterator<K, V>(set.iterator());
+            return new ArrayEntryIterator<>(set.iterator());
         }
 
         @Override
@@ -227,7 +227,7 @@ public class ArrayHashMap<K, V> implements Map<K, V> {
             int i = 0;
 
             for (Map.Entry<Wrapper<K>, V> e : set) {
-                result[i++] = new ArrayEntry<K, V>(e);
+                result[i++] = new ArrayEntry<>(e);
             }
 
             return result;
@@ -245,7 +245,7 @@ public class ArrayHashMap<K, V> implements Map<K, V> {
             int i = 0;
 
             for (Map.Entry<Wrapper<K>, V> e : set) {
-                result[i++] = new ArrayEntry<K, V>(e);
+                result[i++] = new ArrayEntry<>(e);
             }
 
             return a;
@@ -296,7 +296,7 @@ public class ArrayHashMap<K, V> implements Map<K, V> {
 
         @Override
         public java.util.Map.Entry<K, V> next() {
-            return new ArrayEntry<K, V>(it.next());
+            return new ArrayEntry<>(it.next());
         }
 
         @Override

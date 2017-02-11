@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -947,16 +948,16 @@ public final class Multimap<K, E, V extends Collection<E>> {
         return val == null ? false : (N.isNullOrEmpty(c) ? true : val.containsAll(c));
     }
 
-    public Set<K> keySet() {
-        return valueMap.keySet();
-    }
+    public Multimap<K, E, List<E>> filter(BiPredicate<? super K, ? super V> filter) {
+        final Multimap<K, E, List<E>> result = new Multimap<>(valueMap instanceof LinkedHashMap ? LinkedHashMap.class : HashMap.class, List.class);
 
-    public Collection<V> values() {
-        return valueMap.values();
-    }
+        for (Map.Entry<K, V> entry : valueMap.entrySet()) {
+            if (filter.test(entry.getKey(), entry.getValue())) {
+                result.putAll(entry.getKey(), entry.getValue());
+            }
+        }
 
-    public Set<Map.Entry<K, V>> entrySet() {
-        return valueMap.entrySet();
+        return result;
     }
 
     public void forEach(BiConsumer<? super K, ? super V> action) {
@@ -1204,6 +1205,18 @@ public final class Multimap<K, E, V extends Collection<E>> {
         }
 
         return newValue;
+    }
+
+    public Set<K> keySet() {
+        return valueMap.keySet();
+    }
+
+    public Collection<V> values() {
+        return valueMap.values();
+    }
+
+    public Set<Map.Entry<K, V>> entrySet() {
+        return valueMap.entrySet();
     }
 
     public Map<K, V> toMap() {

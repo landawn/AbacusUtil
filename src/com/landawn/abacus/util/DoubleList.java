@@ -16,12 +16,12 @@
 
 package com.landawn.abacus.util;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import com.landawn.abacus.util.function.BiConsumer;
@@ -46,6 +46,8 @@ import com.landawn.abacus.util.stream.DoubleStream;
  * @author Haiyang Li
  */
 public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredicate, Double, double[], DoubleList> {
+    private static final long serialVersionUID = 766157472430159621L;
+
     private double[] elementData = N.EMPTY_DOUBLE_ARRAY;
     private int size = 0;
 
@@ -266,7 +268,11 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
         size++;
     }
 
-    public void addAll(DoubleList c) {
+    public boolean addAll(DoubleList c) {
+        if (N.isNullOrEmpty(c)) {
+            return false;
+        }
+
         int numNew = c.size();
 
         ensureCapacityInternal(size + numNew);
@@ -274,10 +280,16 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
         N.copy(c.array(), 0, elementData, size, numNew);
 
         size += numNew;
+
+        return true;
     }
 
-    public void addAll(int index, DoubleList c) {
+    public boolean addAll(int index, DoubleList c) {
         rangeCheckForAdd(index);
+
+        if (N.isNullOrEmpty(c)) {
+            return false;
+        }
 
         int numNew = c.size();
 
@@ -292,19 +304,21 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
         N.copy(c.array(), 0, elementData, index, numNew);
 
         size += numNew;
+
+        return true;
     }
 
     @Override
-    public void addAll(double[] a) {
-        addAll(size(), a);
+    public boolean addAll(double[] a) {
+        return addAll(size(), a);
     }
 
     @Override
-    public void addAll(int index, double[] a) {
+    public boolean addAll(int index, double[] a) {
         rangeCheckForAdd(index);
 
         if (N.isNullOrEmpty(a)) {
-            return;
+            return false;
         }
 
         int numNew = a.length;
@@ -320,6 +334,8 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
         N.copy(a, 0, elementData, index, numNew);
 
         size += numNew;
+
+        return true;
     }
 
     private void rangeCheckForAdd(int index) {
@@ -382,6 +398,10 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
     }
 
     public boolean removeAll(DoubleList c) {
+        if (N.isNullOrEmpty(c)) {
+            return false;
+        }
+
         return batchRemove(c, false) > 0;
     }
 
@@ -588,17 +608,13 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
         return disjoint(of(b));
     }
 
-    public int occurrencesOf(final double objectToFind) {
-        return N.occurrencesOf(elementData, objectToFind);
-    }
-
     /**
      * 
      * @param b
      * @return
      * @see IntList#intersection(IntList)
      */
-    public DoubleList intersection(DoubleList b) {
+    public DoubleList intersection(final DoubleList b) {
         final Multiset<Double> bOccurrences = b.toMultiset();
 
         final DoubleList c = new DoubleList(N.min(9, size(), b.size()));
@@ -610,6 +626,14 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
         }
 
         return c;
+    }
+
+    public DoubleList intersection(final double[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        }
+
+        return intersection(of(a));
     }
 
     /**
@@ -630,6 +654,14 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
         }
 
         return c;
+    }
+
+    public DoubleList difference(final double[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return of(N.copyOfRange(elementData, 0, size()));
+        }
+
+        return difference(of(a));
     }
 
     /**
@@ -660,6 +692,18 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
         }
 
         return c;
+    }
+
+    public DoubleList symmetricDifference(final double[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return of(N.copyOfRange(elementData, 0, size()));
+        }
+
+        return symmetricDifference(of(a));
+    }
+
+    public int occurrencesOf(final double objectToFind) {
+        return N.occurrencesOf(elementData, objectToFind);
     }
 
     public int indexOf(double e) {
@@ -1091,14 +1135,15 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
     }
 
     @Override
-    public List<DoubleList> split(final int fromIndex, final int toIndex, final int size) {
+    public ObjectList<DoubleList> split(final int fromIndex, final int toIndex, final int size) {
         checkIndex(fromIndex, toIndex);
 
-        final List<double[]> list = N.split(elementData, fromIndex, toIndex, size);
-        final List<DoubleList> result = new ArrayList<>(list.size());
+        final ObjectList<double[]> list = N.split(elementData, fromIndex, toIndex, size);
+        @SuppressWarnings("rawtypes")
+        final ObjectList<DoubleList> result = (ObjectList) list;
 
-        for (double[] a : list) {
-            result.add(DoubleList.of(a));
+        for (int i = 0, len = list.size(); i < len; i++) {
+            result.set(i, of(list.get(i)));
         }
 
         return result;
@@ -1355,11 +1400,40 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
     //        return Seq.of(c);
     //    }
 
-    public DoubleStream stream() {
+    public DoubleIterator doubleIterator() {
+        if (isEmpty()) {
+            return DoubleIterator.EMPTY;
+        }
+
+        return new DoubleIterator() {
+            private int cursor = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < size;
+            }
+
+            @Override
+            public double next() {
+                if (cursor >= size) {
+                    throw new NoSuchElementException();
+                }
+
+                return elementData[cursor++];
+            }
+
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        };
+    }
+
+    public DoubleStream stream0() {
         return DoubleStream.of(elementData, 0, size());
     }
 
-    public DoubleStream stream(final int fromIndex, final int toIndex) {
+    public DoubleStream stream0(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
         return DoubleStream.of(elementData, fromIndex, toIndex);

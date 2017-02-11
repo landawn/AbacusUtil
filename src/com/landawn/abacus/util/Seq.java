@@ -57,6 +57,7 @@ import com.landawn.abacus.util.stream.Collectors;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
+ * It'a wrapper for <code>Collection</code> to more daily used and functional methods.
  * 
  * @since 0.8
  * 
@@ -73,12 +74,25 @@ public class Seq<T> implements Collection<T> {
         this.coll = new ArrayList<>(initialCapacity);
     }
 
+    /**
+     * The returned <code>Seq</code> and the specified <code>Collection</code> are backed by the same data.
+     * Any changes to one will appear in the other.
+     * 
+     * @param c
+     */
     public Seq(final Collection<T> c) {
         N.requireNonNull(c);
 
         this.coll = c;
     }
 
+    /**
+     * The returned <code>Seq</code> and the specified <code>Collection</code> are backed by the same data.
+     * Any changes to one will appear in the other.
+     * 
+     * @param c
+     * @return
+     */
     public static <T> Seq<T> of(Collection<T> c) {
         return new Seq<>(c);
     }
@@ -90,10 +104,18 @@ public class Seq<T> implements Collection<T> {
 
     @Override
     public boolean addAll(Collection<? extends T> c) {
+        if (N.isNullOrEmpty(c)) {
+            return false;
+        }
+
         return coll.addAll(c);
     }
 
     public boolean addAll(T[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return false;
+        }
+
         return addAll(Arrays.asList(a));
     }
 
@@ -125,10 +147,18 @@ public class Seq<T> implements Collection<T> {
      */
     @Override
     public boolean removeAll(Collection<?> c) {
+        if (N.isNullOrEmpty(c)) {
+            return false;
+        }
+
         return coll.removeAll(c);
     }
 
     public boolean removeAll(Object[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return false;
+        }
+
         return coll.removeAll(Arrays.asList(a));
     }
 
@@ -260,10 +290,6 @@ public class Seq<T> implements Collection<T> {
         return disjoint(Arrays.asList(a));
     }
 
-    public int occurrencesOf(final Object objectToFind) {
-        return N.occurrencesOf(coll, objectToFind);
-    }
-
     /**
      * 
      * @param b
@@ -353,6 +379,10 @@ public class Seq<T> implements Collection<T> {
         }
 
         return symmetricDifference(Arrays.asList(a));
+    }
+
+    public int occurrencesOf(final Object objectToFind) {
+        return N.occurrencesOf(coll, objectToFind);
     }
 
     @SuppressWarnings("rawtypes")
@@ -689,6 +719,59 @@ public class Seq<T> implements Collection<T> {
         });
     }
 
+    public ObjectList<T> takeWhile(Predicate<? super T> filter) {
+        final ObjectList<T> result = new ObjectList<>(N.min(9, size()));
+
+        for (T e : coll) {
+            if (filter.test(e)) {
+                result.add(e);
+            } else {
+                break;
+            }
+        }
+
+        return result;
+    }
+
+    public <U> ObjectList<T> takeWhile(final U seed, final BiPredicate<? super T, ? super U> predicate) {
+        return takeWhile(new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return predicate.test(value, seed);
+            }
+        });
+    }
+
+    public ObjectList<T> dropWhile(Predicate<? super T> filter) {
+        final ObjectList<T> result = new ObjectList<>(N.min(9, size()));
+        final Iterator<T> iter = coll.iterator();
+        T e = null;
+
+        while (iter.hasNext()) {
+            e = iter.next();
+
+            if (filter.test(e) == false) {
+                result.add(e);
+                break;
+            }
+        }
+
+        while (iter.hasNext()) {
+            result.add(iter.next());
+        }
+
+        return result;
+    }
+
+    public <U> ObjectList<T> dropWhile(final U seed, final BiPredicate<? super T, ? super U> predicate) {
+        return dropWhile(new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return predicate.test(value, seed);
+            }
+        });
+    }
+
     public <R> ObjectList<R> map(final Function<? super T, ? extends R> func) {
         return N.map(coll, func);
     }
@@ -856,6 +939,17 @@ public class Seq<T> implements Collection<T> {
         return Seq.zip(this, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
     }
 
+    public ObjectList<Indexed<T>> indexed() {
+        final ObjectList<Indexed<T>> result = new ObjectList<>(size());
+        int idx = 0;
+
+        for (T e : coll) {
+            result.add(Indexed.of(idx++, e));
+        }
+
+        return result;
+    }
+
     public void reverse() {
         if (size() > 1) {
             if (coll instanceof List) {
@@ -927,12 +1021,13 @@ public class Seq<T> implements Collection<T> {
      *
      * @return
      */
-    public List<Seq<T>> split(int size) {
-        final List<List<T>> list = N.split(coll, size);
-        final List<Seq<T>> result = new ArrayList<>(list.size());
+    public ObjectList<Seq<T>> split(int size) {
+        final ObjectList<List<T>> list = N.split(coll, size);
+        @SuppressWarnings("rawtypes")
+        final ObjectList<Seq<T>> result = (ObjectList) list;
 
-        for (List<T> e : list) {
-            result.add(of(e));
+        for (int i = 0, len = list.size(); i < len; i++) {
+            result.set(i, of(list.get(i)));
         }
 
         return result;
@@ -1244,6 +1339,94 @@ public class Seq<T> implements Collection<T> {
     //        return stream0().toMap2(keyMapper, valueMapper, mapFactory);
     //    }
 
+    public Seq<T> copyToList() {
+        return new Seq<>(new ArrayList<>(coll));
+    }
+
+    @SuppressWarnings("rawtypes")
+    public Seq<T> copyToList(final int fromIndex, final int toIndex) {
+        if (coll instanceof List) {
+            return new Seq<>(N.copyOfRange((List) coll, fromIndex, toIndex));
+        } else {
+            return subSeq(fromIndex, toIndex).copyToList();
+        }
+    }
+
+    /**
+     * @param from
+     * @param to
+     * @param step
+     * 
+     * @see N#copyOfRange(int[], int, int, int)
+     */
+    @SuppressWarnings("rawtypes")
+    public Seq<T> copyToList(final int from, final int to, final int step) {
+        N.checkIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from, coll.size());
+
+        if (coll instanceof List) {
+            return new Seq<>(N.copyOfRange((List) coll, from, to, step));
+        } else {
+            final T[] a = (T[]) (coll instanceof ObjectList ? ((ObjectList) coll).array() : coll.toArray());
+            final T[] b = N.copyOfRange(a, from, to, step);
+
+            return new Seq<>(Object[].class.equals(b.getClass()) ? N.asList2(b) : N.asList(b));
+        }
+    }
+
+    public Seq<T> copyToSet() {
+        return new Seq<>(new HashSet<>(coll));
+    }
+
+    public Seq<T> copyToSet(final int fromIndex, final int toIndex) {
+        return subSeq(fromIndex, toIndex).copyToSet();
+    }
+
+    /**
+     * @param from
+     * @param to
+     * @param step
+     * 
+     * @see N#copyOfRange(int[], int, int, int)
+     */
+    public Seq<T> copyToSet(final int from, final int to, final int step) {
+        N.checkIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from, coll.size());
+
+        @SuppressWarnings("rawtypes")
+        final T[] a = (T[]) (coll instanceof ObjectList ? ((ObjectList) coll).array() : coll.toArray());
+        return new Seq<>(new HashSet<>(Arrays.asList(N.copyOfRange(a, from, to, step))));
+    }
+
+    public Seq<T> copyTo(final IntFunction<? extends Collection<T>> supplier) {
+        final Collection<T> c = supplier.apply(coll.size());
+        c.addAll(coll);
+
+        return new Seq<>(c);
+    }
+
+    public Seq<T> copyTo(final IntFunction<? extends Collection<T>> supplier, final int fromIndex, final int toIndex) {
+        return subSeq(fromIndex, toIndex).copyTo(supplier);
+    }
+
+    /**
+     * @param from
+     * @param to
+     * @param step
+     * 
+     * @see N#copyOfRange(int[], int, int, int)
+     */
+    public Seq<T> copyTo(final IntFunction<? extends Collection<T>> supplier, final int from, final int to, final int step) {
+        N.checkIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from, coll.size());
+
+        @SuppressWarnings("rawtypes")
+        final T[] a = (T[]) (coll instanceof ObjectList ? ((ObjectList) coll).array() : coll.toArray());
+        final T[] b = N.copyOfRange(a, from, to, step);
+
+        final Collection<T> c = supplier.apply(b.length);
+        c.addAll(Arrays.asList(b));
+
+        return new Seq<>(c);
+    }
+
     /**
      * Returns a read-only <code>Seq</code>.
      * 
@@ -1307,6 +1490,10 @@ public class Seq<T> implements Collection<T> {
         N.println(toString());
     }
 
+    public static <T> ObjectList<T> merge(final T[] a, final T[] b, final BiFunction<? super T, ? super T, Nth> nextSelector) {
+        return merge(Arrays.asList(a), Arrays.asList(b), nextSelector);
+    }
+
     public static <T> ObjectList<T> merge(final Collection<? extends T> a, final Collection<? extends T> b,
             final BiFunction<? super T, ? super T, Nth> nextSelector) {
         final ObjectList<T> result = new ObjectList<>(a.size() + b.size());
@@ -1365,6 +1552,10 @@ public class Seq<T> implements Collection<T> {
         return result;
     }
 
+    public static <A, B, R> ObjectList<R> zip(final A[] a, final B[] b, final BiFunction<? super A, ? super B, R> zipFunction) {
+        return zip(Arrays.asList(a), Arrays.asList(b), zipFunction);
+    }
+
     public static <A, B, R> ObjectList<R> zip(final Collection<A> a, final Collection<B> b, final BiFunction<? super A, ? super B, R> zipFunction) {
         final ObjectList<R> result = new ObjectList<>(N.min(a.size(), b.size()));
 
@@ -1384,6 +1575,10 @@ public class Seq<T> implements Collection<T> {
         return result;
     }
 
+    public static <A, B, C, R> ObjectList<R> zip(final A[] a, final B[] b, final C[] c, final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
+        return zip(Arrays.asList(a), Arrays.asList(b), Arrays.asList(c), zipFunction);
+    }
+
     public static <A, B, C, R> ObjectList<R> zip(final Collection<A> a, final Collection<B> b, final Collection<C> c,
             final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
         final ObjectList<R> result = new ObjectList<>(N.min(a.size(), b.size(), c.size()));
@@ -1397,6 +1592,11 @@ public class Seq<T> implements Collection<T> {
         }
 
         return result;
+    }
+
+    public static <A, B, R> ObjectList<R> zip(final A[] a, final B[] b, final A valueForNoneA, final B valueForNoneB,
+            final BiFunction<? super A, ? super B, R> zipFunction) {
+        return zip(Arrays.asList(a), Arrays.asList(b), valueForNoneA, valueForNoneB, zipFunction);
     }
 
     public static <A, B, R> ObjectList<R> zip(final Collection<A> a, final Collection<B> b, final A valueForNoneA, final B valueForNoneB,
@@ -1419,6 +1619,11 @@ public class Seq<T> implements Collection<T> {
         return result;
     }
 
+    public static <A, B, C, R> ObjectList<R> zip(final A[] a, final B[] b, final C[] c, final A valueForNoneA, final B valueForNoneB, final C valueForNoneC,
+            final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
+        return zip(Arrays.asList(a), Arrays.asList(b), Arrays.asList(c), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
+    }
+
     public static <A, B, C, R> ObjectList<R> zip(final Collection<A> a, final Collection<B> b, final Collection<C> c, final A valueForNoneA,
             final B valueForNoneB, final C valueForNoneC, final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
         final ObjectList<R> result = new ObjectList<>(N.max(a.size(), b.size(), c.size()));
@@ -1433,6 +1638,46 @@ public class Seq<T> implements Collection<T> {
         }
 
         return result;
+    }
+
+    static <K, V> void replaceAll(Map<K, V> map, BiFunction<? super K, ? super V, ? extends V> function) {
+        Objects.requireNonNull(function);
+        for (Map.Entry<K, V> entry : map.entrySet()) {
+            K k;
+            V v;
+            try {
+                k = entry.getKey();
+                v = entry.getValue();
+            } catch (IllegalStateException ise) {
+                // this usually means the entry is no longer in the map.
+                throw new ConcurrentModificationException(ise);
+            }
+
+            // ise thrown from function is not a cme.
+            v = function.apply(k, v);
+
+            try {
+                entry.setValue(v);
+            } catch (IllegalStateException ise) {
+                // this usually means the entry is no longer in the map.
+                throw new ConcurrentModificationException(ise);
+            }
+        }
+    }
+
+    static <K, V> V merge(Map<K, V> map, K key, V value, BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
+        Objects.requireNonNull(remappingFunction);
+        Objects.requireNonNull(value);
+
+        V oldValue = map.get(key);
+        V newValue = (oldValue == null) ? value : remappingFunction.apply(oldValue, value);
+        if (newValue == null) {
+            map.remove(key);
+        } else {
+            map.put(key, newValue);
+        }
+
+        return newValue;
     }
 
     static class SubCollection<E> implements Collection<E> {
@@ -1573,45 +1818,5 @@ public class Seq<T> implements Collection<T> {
 
             return a;
         }
-    }
-
-    static <K, V> void replaceAll(Map<K, V> map, BiFunction<? super K, ? super V, ? extends V> function) {
-        Objects.requireNonNull(function);
-        for (Map.Entry<K, V> entry : map.entrySet()) {
-            K k;
-            V v;
-            try {
-                k = entry.getKey();
-                v = entry.getValue();
-            } catch (IllegalStateException ise) {
-                // this usually means the entry is no longer in the map.
-                throw new ConcurrentModificationException(ise);
-            }
-
-            // ise thrown from function is not a cme.
-            v = function.apply(k, v);
-
-            try {
-                entry.setValue(v);
-            } catch (IllegalStateException ise) {
-                // this usually means the entry is no longer in the map.
-                throw new ConcurrentModificationException(ise);
-            }
-        }
-    }
-
-    static <K, V> V merge(Map<K, V> map, K key, V value, BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
-        Objects.requireNonNull(remappingFunction);
-        Objects.requireNonNull(value);
-
-        V oldValue = map.get(key);
-        V newValue = (oldValue == null) ? value : remappingFunction.apply(oldValue, value);
-        if (newValue == null) {
-            map.remove(key);
-        } else {
-            map.put(key, newValue);
-        }
-
-        return newValue;
     }
 }

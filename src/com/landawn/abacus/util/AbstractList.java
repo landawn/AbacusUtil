@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.RandomAccess;
 import java.util.Set;
 
 import com.landawn.abacus.util.function.IntFunction;
@@ -33,7 +34,9 @@ import com.landawn.abacus.util.function.IntFunction;
  *
  * @author Haiyang Li
  */
-public abstract class AbstractList<C, P, E, A, L extends AbstractList<C, P, E, A, L>> {
+public abstract class AbstractList<C, P, E, A, L extends AbstractList<C, P, E, A, L>> implements RandomAccess, java.io.Serializable {
+    private static final long serialVersionUID = 1504784980113045443L;
+
     /**
      * Default initial capacity.
      */
@@ -59,14 +62,14 @@ public abstract class AbstractList<C, P, E, A, L extends AbstractList<C, P, E, A
      * 
      * @param a
      */
-    public abstract void addAll(A a);
+    public abstract boolean addAll(A a);
 
     /**
      * 
      * @param index
      * @param a
      */
-    public abstract void addAll(int index, A a);
+    public abstract boolean addAll(int index, A a);
 
     /**
      * 
@@ -286,7 +289,7 @@ public abstract class AbstractList<C, P, E, A, L extends AbstractList<C, P, E, A
      *
      * @return
      */
-    public List<L> split(int size) {
+    public ObjectList<L> split(int size) {
         return split(0, size(), size);
     }
 
@@ -297,7 +300,7 @@ public abstract class AbstractList<C, P, E, A, L extends AbstractList<C, P, E, A
      * @param size
      * @return
      */
-    public abstract List<L> split(final int fromIndex, final int toIndex, int size);
+    public abstract ObjectList<L> split(final int fromIndex, final int toIndex, int size);
 
     //    public List<L> split(P predicate) {
     //        return split(0, size(), predicate);

@@ -23,14 +23,14 @@ import java.util.NoSuchElementException;
  * @author Haiyang Li
  */
 public interface DoubleIterator {
-    public static final FloatIterator EMPTY = new FloatIterator() {
+    public static final DoubleIterator EMPTY = new DoubleIterator() {
         @Override
         public boolean hasNext() {
             return false;
         }
 
         @Override
-        public float next() {
+        public double next() {
             throw new NoSuchElementException();
         }
 

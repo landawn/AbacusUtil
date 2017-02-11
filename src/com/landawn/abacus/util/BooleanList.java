@@ -16,11 +16,11 @@
 
 package com.landawn.abacus.util;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import com.landawn.abacus.util.function.BiConsumer;
@@ -45,6 +45,8 @@ import com.landawn.abacus.util.stream.Stream;
  * @author Haiyang Li
  */
 public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPredicate, Boolean, boolean[], BooleanList> {
+    private static final long serialVersionUID = -1194435277403867258L;
+
     private boolean[] elementData = N.EMPTY_BOOLEAN_ARRAY;
     private int size = 0;
 
@@ -205,7 +207,11 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
         size++;
     }
 
-    public void addAll(BooleanList c) {
+    public boolean addAll(BooleanList c) {
+        if (N.isNullOrEmpty(c)) {
+            return false;
+        }
+
         int numNew = c.size();
 
         ensureCapacityInternal(size + numNew);
@@ -213,10 +219,16 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
         N.copy(c.array(), 0, elementData, size, numNew);
 
         size += numNew;
+
+        return true;
     }
 
-    public void addAll(int index, BooleanList c) {
+    public boolean addAll(int index, BooleanList c) {
         rangeCheckForAdd(index);
+
+        if (N.isNullOrEmpty(c)) {
+            return false;
+        }
 
         int numNew = c.size();
 
@@ -231,19 +243,21 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
         N.copy(c.array(), 0, elementData, index, numNew);
 
         size += numNew;
+
+        return true;
     }
 
     @Override
-    public void addAll(boolean[] a) {
-        addAll(size(), a);
+    public boolean addAll(boolean[] a) {
+        return addAll(size(), a);
     }
 
     @Override
-    public void addAll(int index, boolean[] a) {
+    public boolean addAll(int index, boolean[] a) {
         rangeCheckForAdd(index);
 
         if (N.isNullOrEmpty(a)) {
-            return;
+            return false;
         }
 
         int numNew = a.length;
@@ -259,6 +273,8 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
         N.copy(a, 0, elementData, index, numNew);
 
         size += numNew;
+
+        return true;
     }
 
     private void rangeCheckForAdd(int index) {
@@ -321,6 +337,10 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
     }
 
     public boolean removeAll(BooleanList c) {
+        if (N.isNullOrEmpty(c)) {
+            return false;
+        }
+
         return batchRemove(c, false) > 0;
     }
 
@@ -527,17 +547,13 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
         return disjoint(of(b));
     }
 
-    public int occurrencesOf(final boolean objectToFind) {
-        return N.occurrencesOf(elementData, objectToFind);
-    }
-
     /**
      * 
      * @param b
      * @return
      * @see IntList#intersection(IntList)
      */
-    public BooleanList intersection(BooleanList b) {
+    public BooleanList intersection(final BooleanList b) {
         final Multiset<Boolean> bOccurrences = b.toMultiset();
 
         final BooleanList c = new BooleanList(N.min(9, size(), b.size()));
@@ -551,13 +567,21 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
         return c;
     }
 
+    public BooleanList intersection(final boolean[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        }
+
+        return intersection(of(a));
+    }
+
     /**
      * 
      * @param b
      * @return
      * @see IntList#difference(IntList)
      */
-    public BooleanList difference(BooleanList b) {
+    public BooleanList difference(final BooleanList b) {
         final Multiset<Boolean> bOccurrences = b.toMultiset();
 
         final BooleanList c = new BooleanList(N.min(size(), N.max(9, size() - b.size())));
@@ -571,19 +595,21 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
         return c;
     }
 
+    public BooleanList difference(final boolean[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return of(N.copyOfRange(elementData, 0, size()));
+        }
+
+        return difference(of(a));
+    }
+
     /**
      * 
      * @param b
      * @return this.difference(b).addAll(b.difference(this))
      * @see IntList#symmetricDifference(IntList)
      */
-    public BooleanList symmetricDifference(BooleanList b) {
-        //        final BooleanList result = this.difference(b);
-        //
-        //        result.addAll(b.difference(this));
-        //
-        //        return result;
-
+    public BooleanList symmetricDifference(final BooleanList b) {
         final Multiset<Boolean> bOccurrences = b.toMultiset();
 
         final BooleanList c = new BooleanList(N.max(9, Math.abs(size() - b.size())));
@@ -605,6 +631,18 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
         }
 
         return c;
+    }
+
+    public BooleanList symmetricDifference(final boolean[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return of(N.copyOfRange(elementData, 0, size()));
+        }
+
+        return symmetricDifference(of(a));
+    }
+
+    public int occurrencesOf(final boolean objectToFind) {
+        return N.occurrencesOf(elementData, objectToFind);
     }
 
     public int indexOf(boolean e) {
@@ -946,14 +984,15 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
     }
 
     @Override
-    public List<BooleanList> split(final int fromIndex, final int toIndex, final int size) {
+    public ObjectList<BooleanList> split(final int fromIndex, final int toIndex, final int size) {
         checkIndex(fromIndex, toIndex);
 
-        final List<boolean[]> list = N.split(elementData, fromIndex, toIndex, size);
-        final List<BooleanList> result = new ArrayList<>(list.size());
+        final ObjectList<boolean[]> list = N.split(elementData, fromIndex, toIndex, size);
+        @SuppressWarnings("rawtypes")
+        final ObjectList<BooleanList> result = (ObjectList) list;
 
-        for (boolean[] a : list) {
-            result.add(of(a));
+        for (int i = 0, len = list.size(); i < len; i++) {
+            result.set(i, of(list.get(i)));
         }
 
         return result;
@@ -1219,11 +1258,40 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
     //        return Builder.of(this).__(func);
     //    }
 
-    public Stream<Boolean> stream() {
+    public BooleanIterator booleanIterator() {
+        if (isEmpty()) {
+            return BooleanIterator.EMPTY;
+        }
+
+        return new BooleanIterator() {
+            private int cursor = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < size;
+            }
+
+            @Override
+            public boolean next() {
+                if (cursor >= size) {
+                    throw new NoSuchElementException();
+                }
+
+                return elementData[cursor++];
+            }
+
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        };
+    }
+
+    public Stream<Boolean> stream0() {
         return Stream.from(elementData, 0, size());
     }
 
-    public Stream<Boolean> stream(final int fromIndex, final int toIndex) {
+    public Stream<Boolean> stream0(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
         return Stream.from(elementData, fromIndex, toIndex);

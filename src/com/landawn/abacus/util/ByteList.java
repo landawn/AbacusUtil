@@ -16,11 +16,11 @@
 
 package com.landawn.abacus.util;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import com.landawn.abacus.util.function.BiConsumer;
@@ -45,6 +45,8 @@ import com.landawn.abacus.util.stream.Collectors;
  * @author Haiyang Li
  */
 public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, Byte, byte[], ByteList> {
+    private static final long serialVersionUID = 6361439693114081075L;
+
     private byte[] elementData = N.EMPTY_BYTE_ARRAY;
     private int size = 0;
 
@@ -257,7 +259,11 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
         size++;
     }
 
-    public void addAll(ByteList c) {
+    public boolean addAll(ByteList c) {
+        if (N.isNullOrEmpty(c)) {
+            return false;
+        }
+
         int numNew = c.size();
 
         ensureCapacityInternal(size + numNew);
@@ -265,10 +271,16 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
         N.copy(c.array(), 0, elementData, size, numNew);
 
         size += numNew;
+
+        return true;
     }
 
-    public void addAll(int index, ByteList c) {
+    public boolean addAll(int index, ByteList c) {
         rangeCheckForAdd(index);
+
+        if (N.isNullOrEmpty(c)) {
+            return false;
+        }
 
         int numNew = c.size();
 
@@ -283,19 +295,21 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
         N.copy(c.array(), 0, elementData, index, numNew);
 
         size += numNew;
+
+        return true;
     }
 
     @Override
-    public void addAll(byte[] a) {
-        addAll(size(), a);
+    public boolean addAll(byte[] a) {
+        return addAll(size(), a);
     }
 
     @Override
-    public void addAll(int index, byte[] a) {
+    public boolean addAll(int index, byte[] a) {
         rangeCheckForAdd(index);
 
         if (N.isNullOrEmpty(a)) {
-            return;
+            return false;
         }
 
         int numNew = a.length;
@@ -311,6 +325,8 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
         N.copy(a, 0, elementData, index, numNew);
 
         size += numNew;
+
+        return true;
     }
 
     private void rangeCheckForAdd(int index) {
@@ -374,6 +390,10 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
     }
 
     public boolean removeAll(ByteList c) {
+        if (N.isNullOrEmpty(c)) {
+            return false;
+        }
+
         return batchRemove(c, false) > 0;
     }
 
@@ -580,17 +600,13 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
         return disjoint(of(b));
     }
 
-    public int occurrencesOf(final byte objectToFind) {
-        return N.occurrencesOf(elementData, objectToFind);
-    }
-
     /**
      * 
      * @param b
      * @return
      * @see IntList#intersection(IntList)
      */
-    public ByteList intersection(ByteList b) {
+    public ByteList intersection(final ByteList b) {
         final Multiset<Byte> bOccurrences = b.toMultiset();
 
         final ByteList c = new ByteList(N.min(9, size(), b.size()));
@@ -602,6 +618,14 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
         }
 
         return c;
+    }
+
+    public ByteList intersection(final byte[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        }
+
+        return intersection(of(a));
     }
 
     /**
@@ -624,6 +648,14 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
         return c;
     }
 
+    public ByteList difference(final byte[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return of(N.copyOfRange(elementData, 0, size()));
+        }
+
+        return difference(of(a));
+    }
+
     /**
      * 
      * @param b
@@ -631,12 +663,6 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
      * @see IntList#symmetricDifference(IntList)
      */
     public ByteList symmetricDifference(ByteList b) {
-        //        final ByteList result = this.difference(b);
-        //
-        //        result.addAll(b.difference(this));
-        //
-        //        return result; 
-
         final Multiset<Byte> bOccurrences = b.toMultiset();
 
         final ByteList c = new ByteList(N.max(9, Math.abs(size() - b.size())));
@@ -658,6 +684,18 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
         }
 
         return c;
+    }
+
+    public ByteList symmetricDifference(final byte[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return of(N.copyOfRange(elementData, 0, size()));
+        }
+
+        return symmetricDifference(of(a));
+    }
+
+    public int occurrencesOf(final byte objectToFind) {
+        return N.occurrencesOf(elementData, objectToFind);
     }
 
     public int indexOf(byte e) {
@@ -1069,14 +1107,15 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
     }
 
     @Override
-    public List<ByteList> split(final int fromIndex, final int toIndex, final int size) {
+    public ObjectList<ByteList> split(final int fromIndex, final int toIndex, final int size) {
         checkIndex(fromIndex, toIndex);
 
-        final List<byte[]> list = N.split(elementData, fromIndex, toIndex, size);
-        final List<ByteList> result = new ArrayList<>(list.size());
+        final ObjectList<byte[]> list = N.split(elementData, fromIndex, toIndex, size);
+        @SuppressWarnings("rawtypes")
+        final ObjectList<ByteList> result = (ObjectList) list;
 
-        for (byte[] a : list) {
-            result.add(of(a));
+        for (int i = 0, len = list.size(); i < len; i++) {
+            result.set(i, of(list.get(i)));
         }
 
         return result;
@@ -1337,11 +1376,40 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
     //        return Seq.of(c);
     //    }
 
-    public ByteStream stream() {
+    public ByteIterator byteIterator() {
+        if (isEmpty()) {
+            return ByteIterator.EMPTY;
+        }
+
+        return new ByteIterator() {
+            private int cursor = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < size;
+            }
+
+            @Override
+            public byte next() {
+                if (cursor >= size) {
+                    throw new NoSuchElementException();
+                }
+
+                return elementData[cursor++];
+            }
+
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        };
+    }
+
+    public ByteStream stream0() {
         return ByteStream.of(elementData, 0, size());
     }
 
-    public ByteStream stream(final int fromIndex, final int toIndex) {
+    public ByteStream stream0(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
         return ByteStream.of(elementData, fromIndex, toIndex);

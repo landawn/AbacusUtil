@@ -16,11 +16,11 @@
 
 package com.landawn.abacus.util;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import com.landawn.abacus.util.function.BiConsumer;
@@ -45,6 +45,8 @@ import com.landawn.abacus.util.stream.Collectors;
  * @author Haiyang Li
  */
 public final class CharList extends AbstractList<CharConsumer, CharPredicate, Character, char[], CharList> {
+    private static final long serialVersionUID = 7293826835233022514L;
+
     private char[] elementData = N.EMPTY_CHAR_ARRAY;
     private int size = 0;
 
@@ -284,7 +286,11 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
         size++;
     }
 
-    public void addAll(CharList c) {
+    public boolean addAll(CharList c) {
+        if (N.isNullOrEmpty(c)) {
+            return false;
+        }
+
         int numNew = c.size();
 
         ensureCapacityInternal(size + numNew);
@@ -292,10 +298,16 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
         N.copy(c.array(), 0, elementData, size, numNew);
 
         size += numNew;
+
+        return true;
     }
 
-    public void addAll(int index, CharList c) {
+    public boolean addAll(int index, CharList c) {
         rangeCheckForAdd(index);
+
+        if (N.isNullOrEmpty(c)) {
+            return false;
+        }
 
         int numNew = c.size();
 
@@ -310,19 +322,21 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
         N.copy(c.array(), 0, elementData, index, numNew);
 
         size += numNew;
+
+        return true;
     }
 
     @Override
-    public void addAll(char[] a) {
-        addAll(size(), a);
+    public boolean addAll(char[] a) {
+        return addAll(size(), a);
     }
 
     @Override
-    public void addAll(int index, char[] a) {
+    public boolean addAll(int index, char[] a) {
         rangeCheckForAdd(index);
 
         if (N.isNullOrEmpty(a)) {
-            return;
+            return false;
         }
 
         int numNew = a.length;
@@ -338,6 +352,8 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
         N.copy(a, 0, elementData, index, numNew);
 
         size += numNew;
+
+        return true;
     }
 
     private void rangeCheckForAdd(int index) {
@@ -400,6 +416,10 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
     }
 
     public boolean removeAll(CharList c) {
+        if (N.isNullOrEmpty(c)) {
+            return false;
+        }
+
         return batchRemove(c, false) > 0;
     }
 
@@ -606,21 +626,13 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
         return disjoint(of(b));
     }
 
-    public int occurrencesOf(final char objectToFind) {
-        return N.occurrencesOf(elementData, objectToFind);
-    }
-
-    public int indexOf(char e) {
-        return indexOf(0, e);
-    }
-
     /**
      * 
      * @param b
      * @return
      * @see IntList#intersection(IntList)
      */
-    public CharList intersection(CharList b) {
+    public CharList intersection(final CharList b) {
         final Multiset<Character> bOccurrences = b.toMultiset();
 
         final CharList c = new CharList(N.min(9, size(), b.size()));
@@ -632,6 +644,14 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
         }
 
         return c;
+    }
+
+    public CharList intersection(final char[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        }
+
+        return intersection(of(a));
     }
 
     /**
@@ -652,6 +672,14 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
         }
 
         return c;
+    }
+
+    public CharList difference(final char[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return of(N.copyOfRange(elementData, 0, size()));
+        }
+
+        return difference(of(a));
     }
 
     /**
@@ -682,6 +710,22 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
         }
 
         return c;
+    }
+
+    public CharList symmetricDifference(final char[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return of(N.copyOfRange(elementData, 0, size()));
+        }
+
+        return symmetricDifference(of(a));
+    }
+
+    public int occurrencesOf(final char objectToFind) {
+        return N.occurrencesOf(elementData, objectToFind);
+    }
+
+    public int indexOf(char e) {
+        return indexOf(0, e);
     }
 
     public int indexOf(final int fromIndex, char e) {
@@ -1089,14 +1133,15 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
     }
 
     @Override
-    public List<CharList> split(final int fromIndex, final int toIndex, final int size) {
+    public ObjectList<CharList> split(final int fromIndex, final int toIndex, final int size) {
         checkIndex(fromIndex, toIndex);
 
-        final List<char[]> list = N.split(elementData, fromIndex, toIndex, size);
-        final List<CharList> result = new ArrayList<>(list.size());
+        final ObjectList<char[]> list = N.split(elementData, fromIndex, toIndex, size);
+        @SuppressWarnings("rawtypes")
+        final ObjectList<CharList> result = (ObjectList) list;
 
-        for (char[] a : list) {
-            result.add(of(a));
+        for (int i = 0, len = list.size(); i < len; i++) {
+            result.set(i, of(list.get(i)));
         }
 
         return result;
@@ -1358,11 +1403,40 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
     //        return Seq.of(c);
     //    }
 
-    public CharStream stream() {
+    public CharIterator charIterator() {
+        if (isEmpty()) {
+            return CharIterator.EMPTY;
+        }
+
+        return new CharIterator() {
+            private int cursor = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < size;
+            }
+
+            @Override
+            public char next() {
+                if (cursor >= size) {
+                    throw new NoSuchElementException();
+                }
+
+                return elementData[cursor++];
+            }
+
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        };
+    }
+
+    public CharStream stream0() {
         return CharStream.of(elementData, 0, size());
     }
 
-    public CharStream stream(final int fromIndex, final int toIndex) {
+    public CharStream stream0(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
         return CharStream.of(elementData, fromIndex, toIndex);

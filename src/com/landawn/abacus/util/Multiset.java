@@ -326,7 +326,7 @@ public final class Multiset<E> implements Iterable<E> {
         return this;
     }
 
-    public Optional<Map.Entry<E, Integer>> minOccurrences() {
+    public Optional<Pair<E, Integer>> minOccurrences() {
         if (size() == 0) {
             return Optional.empty();
         }
@@ -345,10 +345,10 @@ public final class Multiset<E> implements Iterable<E> {
             }
         }
 
-        return Optional.of((Map.Entry<E, Integer>) MapEntry.of(minCountElement, minCount));
+        return Optional.of(Pair.of(minCountElement, minCount));
     }
 
-    public Optional<Map.Entry<E, Integer>> maxOccurrences() {
+    public Optional<Pair<E, Integer>> maxOccurrences() {
         if (size() == 0) {
             return Optional.empty();
         }
@@ -367,7 +367,7 @@ public final class Multiset<E> implements Iterable<E> {
             }
         }
 
-        return Optional.of((Map.Entry<E, Integer>) MapEntry.of(maxCountElement, maxCount));
+        return Optional.of(Pair.of(maxCountElement, maxCount));
     }
 
     public Long sumOfOccurrences() {
@@ -518,6 +518,10 @@ public final class Multiset<E> implements Iterable<E> {
      * @throws IllegalArgumentException if the occurrences of element after this operation is bigger than Integer.MAX_VALUE.
      */
     public boolean addAll(final Collection<? extends E> c) throws IllegalArgumentException {
+        if (N.isNullOrEmpty(c)) {
+            return false;
+        }
+
         return addAll(c, 1);
     }
 
@@ -788,6 +792,10 @@ public final class Multiset<E> implements Iterable<E> {
      * @see Collection#removeAll(Collection)
      */
     public boolean removeAll(final Collection<?> c) {
+        if (N.isNullOrEmpty(c)) {
+            return false;
+        }
+
         return removeAll(c, Integer.MAX_VALUE);
     }
 
@@ -1065,10 +1073,6 @@ public final class Multiset<E> implements Iterable<E> {
         }
 
         return ObjectList.of((E[]) a);
-    }
-
-    public List<E> flatten2() {
-        return N.asList2((E[]) flatten().array());
     }
 
     public void forEach(BiConsumer<? super E, Integer> action) {

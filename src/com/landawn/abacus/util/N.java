@@ -12947,6 +12947,10 @@ public final class N {
         return (m == null) || (m.isEmpty());
     }
 
+    public static boolean isNullOrEmpty(final ObjectList<?> list) {
+        return (list == null) || (list.isEmpty());
+    }
+
     @SuppressWarnings("rawtypes")
     public static boolean isNullOrEmpty(final AbstractList list) {
         return (list == null) || (list.isEmpty());
@@ -13040,6 +13044,10 @@ public final class N {
 
     public static boolean notNullOrEmpty(final Map<?, ?> m) {
         return (m != null) && (m.size() > 0);
+    }
+
+    public static boolean notNullOrEmpty(final ObjectList<?> list) {
+        return (list != null) && (list.size() > 0);
     }
 
     @SuppressWarnings("rawtypes")
@@ -13279,6 +13287,31 @@ public final class N {
         return parameter;
     }
 
+    public static <T> ObjectList<T> checkNullOrEmpty(final ObjectList<T> parameter, final String msg) {
+        if (parameter == null || parameter.isEmpty()) {
+            if (isErrorMsg(msg)) {
+                throw new IllegalArgumentException(msg);
+            } else {
+                throw new IllegalArgumentException(msg + " can not be null or empty");
+            }
+        }
+
+        return parameter;
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static <T extends AbstractList> T checkNullOrEmpty(final T parameter, final String msg) {
+        if (parameter == null || parameter.isEmpty()) {
+            if (isErrorMsg(msg)) {
+                throw new IllegalArgumentException(msg);
+            } else {
+                throw new IllegalArgumentException(msg + " can not be null or empty");
+            }
+        }
+
+        return parameter;
+    }
+
     /**
      * Check if the specified parameter is null or empty
      *
@@ -13308,19 +13341,6 @@ public final class N {
      * @throws IllegalArgumentException if the specified parameter is null or empty.
      */
     public static <K, V, T extends Map<K, V>> T checkNullOrEmpty(final T parameter, final String msg) {
-        if (parameter == null || parameter.isEmpty()) {
-            if (isErrorMsg(msg)) {
-                throw new IllegalArgumentException(msg);
-            } else {
-                throw new IllegalArgumentException(msg + " can not be null or empty");
-            }
-        }
-
-        return parameter;
-    }
-
-    @SuppressWarnings("rawtypes")
-    public static <T extends AbstractList> T checkNullOrEmpty(final T parameter, final String msg) {
         if (parameter == null || parameter.isEmpty()) {
             if (isErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
@@ -17855,11 +17875,13 @@ public final class N {
     public static <T> List<T> copyOfRange(final List<T> c, final int from, final int to) {
         N.checkIndex(from, to, c.size());
 
-        final List<T> result = new ArrayList<>(to - from);
-
-        result.addAll(c.subList(from, to));
-
-        return result;
+        if (c instanceof ObjectList && ((ObjectList<T>) c).array().getClass().equals(Object[].class)) {
+            return N.asList2(N.copyOfRange((T[]) ((ObjectList<T>) c).array(), from, to));
+        } else {
+            final List<T> result = new ArrayList<>(to - from);
+            result.addAll(c.subList(from, to));
+            return result;
+        }
     }
 
     /**
@@ -22463,79 +22485,25 @@ public final class N {
         return result;
     }
 
-    public static <T> T[] filter2(final T[] a, final Predicate<? super T> filter) {
-        if (N.isNullOrEmpty(a)) {
-            return a;
-        }
-
-        return filter2(a, filter, Integer.MAX_VALUE);
-    }
-
-    public static <T> T[] filter2(final T[] a, final Predicate<? super T> filter, final int max) {
-        if (N.isNullOrEmpty(a)) {
-            return a;
-        }
-
-        return filter2(a, 0, a.length, filter, max);
-    }
-
-    public static <T> T[] filter2(final T[] a, final int fromIndex, final int toIndex, final Predicate<? super T> filter) {
-        return filter2(a, fromIndex, toIndex, filter, Integer.MAX_VALUE);
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param filter
-     * @param max
-     * @return
-     */
-    public static <T> T[] filter2(final T[] a, final int fromIndex, final int toIndex, final Predicate<? super T> filter, final int max) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
-            return a;
-        }
-
-        final List<T> list = ObjectFactory.createList();
-
-        for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
-            if (filter.test(a[i])) {
-                list.add(a[i]);
-                cnt++;
-            }
-        }
-
-        T[] result = (T[]) list.toArray((Object[]) N.newArray(a.getClass().getComponentType(), list.size()));
-
-        ObjectFactory.recycle(list);
-
-        return result;
-    }
-
-    public static <T, R extends Collection<T>> R filter2(final T[] a, final Predicate<? super T> filter, final IntFunction<R> supplier) {
+    public static <T, R extends Collection<T>> R filter(final T[] a, final Predicate<? super T> filter, final IntFunction<R> supplier) {
         if (N.isNullOrEmpty(a)) {
             return supplier.apply(0);
         }
 
-        return filter2(a, filter, Integer.MAX_VALUE, supplier);
+        return filter(a, filter, Integer.MAX_VALUE, supplier);
     }
 
-    public static <T, R extends Collection<T>> R filter2(final T[] a, final Predicate<? super T> filter, final int max, final IntFunction<R> supplier) {
+    public static <T, R extends Collection<T>> R filter(final T[] a, final Predicate<? super T> filter, final int max, final IntFunction<R> supplier) {
         if (N.isNullOrEmpty(a)) {
             return supplier.apply(0);
         }
 
-        return filter2(a, 0, a.length, filter, max, supplier);
+        return filter(a, 0, a.length, filter, max, supplier);
     }
 
-    public static <T, R extends Collection<T>> R filter2(final T[] a, final int fromIndex, final int toIndex, final Predicate<? super T> filter,
+    public static <T, R extends Collection<T>> R filter(final T[] a, final int fromIndex, final int toIndex, final Predicate<? super T> filter,
             final IntFunction<R> supplier) {
-        return filter2(a, fromIndex, toIndex, filter, Integer.MAX_VALUE, supplier);
+        return filter(a, fromIndex, toIndex, filter, Integer.MAX_VALUE, supplier);
     }
 
     /**
@@ -22550,7 +22518,7 @@ public final class N {
      * @param supplier
      * @return
      */
-    public static <T, R extends Collection<T>> R filter2(final T[] a, final int fromIndex, final int toIndex, final Predicate<? super T> filter, final int max,
+    public static <T, R extends Collection<T>> R filter(final T[] a, final int fromIndex, final int toIndex, final Predicate<? super T> filter, final int max,
             final IntFunction<R> supplier) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
@@ -22570,61 +22538,29 @@ public final class N {
         return result;
     }
 
-    public static <T> List<T> filter2(final Collection<? extends T> c, final Predicate<? super T> filter) {
-        if (N.isNullOrEmpty(c)) {
-            return new ArrayList<>();
-        }
-
-        return filter2(c, filter, Integer.MAX_VALUE);
-    }
-
-    public static <T> List<T> filter2(final Collection<? extends T> c, final Predicate<? super T> filter, final int max) {
-        if (N.isNullOrEmpty(c)) {
-            return new ArrayList<>();
-        }
-
-        return filter2(c, 0, c.size(), filter, max);
-    }
-
-    public static <T> List<T> filter2(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Predicate<? super T> filter) {
-        return filter2(c, fromIndex, toIndex, filter, Integer.MAX_VALUE);
-    }
-
-    public static <T> List<T> filter2(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Predicate<? super T> filter,
-            final int max) {
-        if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
-            return new ArrayList<>();
-        }
-
-        @SuppressWarnings("rawtypes")
-        final IntFunction<List<T>> supplier = (IntFunction) IntFunction.LIST_FACTORY;
-
-        return filter2(c, fromIndex, toIndex, filter, max, supplier);
-    }
-
-    public static <T, R extends Collection<T>> R filter2(final Collection<? extends T> c, final Predicate<? super T> filter, final IntFunction<R> supplier) {
+    public static <T, R extends Collection<T>> R filter(final Collection<? extends T> c, final Predicate<? super T> filter, final IntFunction<R> supplier) {
         if (N.isNullOrEmpty(c)) {
             return supplier.apply(0);
         }
 
-        return filter2(c, filter, Integer.MAX_VALUE, supplier);
+        return filter(c, filter, Integer.MAX_VALUE, supplier);
     }
 
-    public static <T, R extends Collection<T>> R filter2(final Collection<? extends T> c, final Predicate<? super T> filter, final int max,
+    public static <T, R extends Collection<T>> R filter(final Collection<? extends T> c, final Predicate<? super T> filter, final int max,
             final IntFunction<R> supplier) {
         if (N.isNullOrEmpty(c)) {
             return supplier.apply(0);
         }
 
-        return filter2(c, 0, c.size(), filter, max, supplier);
+        return filter(c, 0, c.size(), filter, max, supplier);
     }
 
-    public static <T, R extends Collection<T>> R filter2(final Collection<? extends T> c, final int fromIndex, final int toIndex,
+    public static <T, R extends Collection<T>> R filter(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Predicate<? super T> filter, final IntFunction<R> supplier) {
-        return filter2(c, fromIndex, toIndex, filter, Integer.MAX_VALUE, supplier);
+        return filter(c, fromIndex, toIndex, filter, Integer.MAX_VALUE, supplier);
     }
 
-    public static <T, R extends Collection<T>> R filter2(final Collection<? extends T> c, final int fromIndex, final int toIndex,
+    public static <T, R extends Collection<T>> R filter(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Predicate<? super T> filter, final int max, final IntFunction<R> supplier) {
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
@@ -22676,16 +22612,16 @@ public final class N {
         return result;
     }
 
-    //    static <T, U> T[] filter2(final T[] a, final U seed, final BiPredicate<? super T, ? super U> filter) {
+    //    static <T, U> T[] filter(final T[] a, final U seed, final BiPredicate<? super T, ? super U> filter) {
     //        if (N.isNullOrEmpty(a)) {
     //            return a;
     //        }
     //
-    //        return filter2(a, 0, a.length, seed, filter);
+    //        return filter(a, 0, a.length, seed, filter);
     //    }
     //
-    //    static <T, U> T[] filter2(final T[] a, final int fromIndex, final int toIndex, final U seed, final BiPredicate<? super T, ? super U> filter) {
-    //        return filter2(a, fromIndex, toIndex, new Predicate<T>() {
+    //    static <T, U> T[] filter(final T[] a, final int fromIndex, final int toIndex, final U seed, final BiPredicate<? super T, ? super U> filter) {
+    //        return filter(a, fromIndex, toIndex, new Predicate<T>() {
     //            @Override
     //            public boolean test(T value) {
     //                return filter.test(value, seed);
@@ -22693,17 +22629,17 @@ public final class N {
     //        });
     //    }
     //
-    //    static <T, U, R extends Collection<T>> R filter2(final T[] a, final U seed, final BiPredicate<? super T, ? super U> filter, final IntFunction<R> supplier) {
+    //    static <T, U, R extends Collection<T>> R filter(final T[] a, final U seed, final BiPredicate<? super T, ? super U> filter, final IntFunction<R> supplier) {
     //        if (N.isNullOrEmpty(a)) {
     //            return supplier.apply(0);
     //        }
     //
-    //        return filter2(a, 0, a.length, seed, filter, supplier);
+    //        return filter(a, 0, a.length, seed, filter, supplier);
     //    }
     //
-    //    static <T, U, R extends Collection<T>> R filter2(final T[] a, final int fromIndex, final int toIndex, final U seed,
+    //    static <T, U, R extends Collection<T>> R filter(final T[] a, final int fromIndex, final int toIndex, final U seed,
     //            final BiPredicate<? super T, ? super U> filter, final IntFunction<R> supplier) {
-    //        return filter2(a, fromIndex, toIndex, new Predicate<T>() {
+    //        return filter(a, fromIndex, toIndex, new Predicate<T>() {
     //            @Override
     //            public boolean test(T value) {
     //                return filter.test(value, seed);
@@ -22711,12 +22647,12 @@ public final class N {
     //        }, supplier);
     //    }
     //
-    //    static <T, U> List<T> filter2(final Collection<? extends T> c, final U seed, final BiPredicate<? super T, ? super U> filter) {
+    //    static <T, U> List<T> filter(final Collection<? extends T> c, final U seed, final BiPredicate<? super T, ? super U> filter) {
     //        if (N.isNullOrEmpty(c)) {
     //            return new ArrayList<>();
     //        }
     //
-    //        return filter2(c, new Predicate<T>() {
+    //        return filter(c, new Predicate<T>() {
     //            @Override
     //            public boolean test(T value) {
     //                return filter.test(value, seed);
@@ -22724,9 +22660,9 @@ public final class N {
     //        });
     //    }
     //
-    //    static <T, U> List<T> filter2(final Collection<? extends T> c, final int fromIndex, final int toIndex, final U seed,
+    //    static <T, U> List<T> filter(final Collection<? extends T> c, final int fromIndex, final int toIndex, final U seed,
     //            final BiPredicate<? super T, ? super U> filter) {
-    //        return filter2(c, fromIndex, toIndex, new Predicate<T>() {
+    //        return filter(c, fromIndex, toIndex, new Predicate<T>() {
     //            @Override
     //            public boolean test(T value) {
     //                return filter.test(value, seed);
@@ -22734,13 +22670,13 @@ public final class N {
     //        });
     //    }
     //
-    //    static <T, U, R extends Collection<T>> R filter2(final Collection<? extends T> c, final U seed, final BiPredicate<? super T, ? super U> filter,
+    //    static <T, U, R extends Collection<T>> R filter(final Collection<? extends T> c, final U seed, final BiPredicate<? super T, ? super U> filter,
     //            final IntFunction<R> supplier) {
     //        if (N.isNullOrEmpty(c)) {
     //            return supplier.apply(0);
     //        }
     //
-    //        return filter2(c, new Predicate<T>() {
+    //        return filter(c, new Predicate<T>() {
     //            @Override
     //            public boolean test(T value) {
     //                return filter.test(value, seed);
@@ -22748,9 +22684,9 @@ public final class N {
     //        }, supplier);
     //    }
     //
-    //    static <T, U, R extends Collection<T>> R filter2(final Collection<? extends T> c, final int fromIndex, final int toIndex, final U seed,
+    //    static <T, U, R extends Collection<T>> R filter(final Collection<? extends T> c, final int fromIndex, final int toIndex, final U seed,
     //            final BiPredicate<? super T, ? super U> filter, final IntFunction<R> supplier) {
-    //        return filter2(c, fromIndex, toIndex, new Predicate<T>() {
+    //        return filter(c, fromIndex, toIndex, new Predicate<T>() {
     //            @Override
     //            public boolean test(T value) {
     //                return filter.test(value, seed);
@@ -23534,46 +23470,12 @@ public final class N {
         return result;
     }
 
-    public static <T, R> List<R> map2(final T[] a, final Function<? super T, ? extends R> func) {
-        if (N.isNullOrEmpty(a)) {
-            return new ArrayList<>();
-        }
-
-        return map2(a, 0, a.length, func);
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param func 
-     * @return
-     */
-    public static <T, R> List<R> map2(final T[] a, final int fromIndex, final int toIndex, final Function<? super T, ? extends R> func) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
-            return new ArrayList<>();
-        }
-
-        final List<R> result = new ArrayList<>(toIndex - fromIndex);
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.add(func.apply(a[i]));
-        }
-
-        return result;
-    }
-
-    public static <T, R, C extends Collection<R>> C map2(final T[] a, final Function<? super T, ? extends R> func, final IntFunction<C> supplier) {
+    public static <T, R, C extends Collection<R>> C map(final T[] a, final Function<? super T, ? extends R> func, final IntFunction<C> supplier) {
         if (N.isNullOrEmpty(a)) {
             return supplier.apply(0);
         }
 
-        return map2(a, 0, a.length, func, supplier);
+        return map(a, 0, a.length, func, supplier);
     }
 
     /**
@@ -23588,7 +23490,7 @@ public final class N {
      * @param supplier
      * @return
      */
-    public static <T, R, C extends Collection<R>> C map2(final T[] a, final int fromIndex, final int toIndex, final Function<? super T, ? extends R> func,
+    public static <T, R, C extends Collection<R>> C map(final T[] a, final int fromIndex, final int toIndex, final Function<? super T, ? extends R> func,
             final IntFunction<C> supplier) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
@@ -23605,65 +23507,13 @@ public final class N {
         return result;
     }
 
-    public static <T, R> List<R> map2(final Collection<? extends T> c, final Function<? super T, ? extends R> func) {
-        if (N.isNullOrEmpty(c)) {
-            return new ArrayList<>();
-        }
-
-        return map2(c, 0, c.size(), func);
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param func 
-     * @return
-     */
-    public static <T, R> List<R> map2(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Function<? super T, ? extends R> func) {
-        checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
-
-        if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
-            return new ArrayList<>();
-        }
-
-        final List<R> result = new ArrayList<>(toIndex - fromIndex);
-
-        if (c instanceof List && c instanceof RandomAccess) {
-            final List<T> list = (List<T>) c;
-
-            for (int i = fromIndex; i < toIndex; i++) {
-                result.add(func.apply(list.get(i)));
-            }
-        } else {
-            int idx = 0;
-
-            for (T e : c) {
-                if (idx++ < fromIndex) {
-                    continue;
-                }
-
-                result.add(func.apply(e));
-
-                if (idx >= toIndex) {
-                    break;
-                }
-            }
-        }
-
-        return result;
-    }
-
-    public static <T, R, C extends Collection<R>> C map2(final Collection<? extends T> c, final Function<? super T, ? extends R> func,
+    public static <T, R, C extends Collection<R>> C map(final Collection<? extends T> c, final Function<? super T, ? extends R> func,
             final IntFunction<C> supplier) {
         if (N.isNullOrEmpty(c)) {
             return supplier.apply(0);
         }
 
-        return map2(c, 0, c.size(), func, supplier);
+        return map(c, 0, c.size(), func, supplier);
     }
 
     /**
@@ -23678,7 +23528,7 @@ public final class N {
      * @param supplier
      * @return
      */
-    public static <T, R, C extends Collection<R>> C map2(final Collection<? extends T> c, final int fromIndex, final int toIndex,
+    public static <T, R, C extends Collection<R>> C map(final Collection<? extends T> c, final int fromIndex, final int toIndex,
             final Function<? super T, ? extends R> func, final IntFunction<C> supplier) {
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
@@ -25464,17 +25314,17 @@ public final class N {
      * @param size
      * @return
      */
-    public static List<boolean[]> split(final boolean[] a, final int size) {
+    public static ObjectList<boolean[]> split(final boolean[] a, final int size) {
         if (size < 1) {
             throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ArrayList<>();
+            return new ObjectList<>();
         }
 
         final int len = a.length;
-        final List<boolean[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final ObjectList<boolean[]> res = new ObjectList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = 0, toIndex = a.length; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -25493,7 +25343,7 @@ public final class N {
      * @param size
      * @return
      */
-    public static List<boolean[]> split(final boolean[] a, final int fromIndex, final int toIndex, final int size) {
+    public static ObjectList<boolean[]> split(final boolean[] a, final int fromIndex, final int toIndex, final int size) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (size < 1) {
@@ -25501,11 +25351,11 @@ public final class N {
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ArrayList<>();
+            return new ObjectList<>();
         }
 
         final int len = toIndex - fromIndex;
-        final List<boolean[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final ObjectList<boolean[]> res = new ObjectList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = fromIndex; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -25522,17 +25372,17 @@ public final class N {
      * @param size
      * @return
      */
-    public static List<char[]> split(final char[] a, final int size) {
+    public static ObjectList<char[]> split(final char[] a, final int size) {
         if (size < 1) {
             throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ArrayList<>();
+            return new ObjectList<>();
         }
 
         final int len = a.length;
-        final List<char[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final ObjectList<char[]> res = new ObjectList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = 0, toIndex = a.length; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -25551,7 +25401,7 @@ public final class N {
      * @param size
      * @return
      */
-    public static List<char[]> split(final char[] a, final int fromIndex, final int toIndex, final int size) {
+    public static ObjectList<char[]> split(final char[] a, final int fromIndex, final int toIndex, final int size) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (size < 1) {
@@ -25559,11 +25409,11 @@ public final class N {
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ArrayList<>();
+            return new ObjectList<>();
         }
 
         final int len = toIndex - fromIndex;
-        final List<char[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final ObjectList<char[]> res = new ObjectList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = fromIndex; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -25580,17 +25430,17 @@ public final class N {
      * @param size
      * @return
      */
-    public static List<byte[]> split(final byte[] a, final int size) {
+    public static ObjectList<byte[]> split(final byte[] a, final int size) {
         if (size < 1) {
             throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ArrayList<>();
+            return new ObjectList<>();
         }
 
         final int len = a.length;
-        final List<byte[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final ObjectList<byte[]> res = new ObjectList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = 0, toIndex = a.length; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -25609,7 +25459,7 @@ public final class N {
      * @param size
      * @return
      */
-    public static List<byte[]> split(final byte[] a, final int fromIndex, final int toIndex, final int size) {
+    public static ObjectList<byte[]> split(final byte[] a, final int fromIndex, final int toIndex, final int size) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (size < 1) {
@@ -25617,11 +25467,11 @@ public final class N {
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ArrayList<>();
+            return new ObjectList<>();
         }
 
         final int len = toIndex - fromIndex;
-        final List<byte[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final ObjectList<byte[]> res = new ObjectList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = fromIndex; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -25638,17 +25488,17 @@ public final class N {
      * @param size
      * @return
      */
-    public static List<short[]> split(final short[] a, final int size) {
+    public static ObjectList<short[]> split(final short[] a, final int size) {
         if (size < 1) {
             throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ArrayList<>();
+            return new ObjectList<>();
         }
 
         final int len = a.length;
-        final List<short[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final ObjectList<short[]> res = new ObjectList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = 0, toIndex = a.length; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -25667,7 +25517,7 @@ public final class N {
      * @param size
      * @return
      */
-    public static List<short[]> split(final short[] a, final int fromIndex, final int toIndex, final int size) {
+    public static ObjectList<short[]> split(final short[] a, final int fromIndex, final int toIndex, final int size) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (size < 1) {
@@ -25675,11 +25525,11 @@ public final class N {
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ArrayList<>();
+            return new ObjectList<>();
         }
 
         final int len = toIndex - fromIndex;
-        final List<short[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final ObjectList<short[]> res = new ObjectList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = fromIndex; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -25696,17 +25546,17 @@ public final class N {
      * @param size
      * @return
      */
-    public static List<int[]> split(final int[] a, final int size) {
+    public static ObjectList<int[]> split(final int[] a, final int size) {
         if (size < 1) {
             throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ArrayList<>();
+            return new ObjectList<>();
         }
 
         final int len = a.length;
-        final List<int[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final ObjectList<int[]> res = new ObjectList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = 0, toIndex = a.length; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -25725,7 +25575,7 @@ public final class N {
      * @param size
      * @return
      */
-    public static List<int[]> split(final int[] a, final int fromIndex, final int toIndex, final int size) {
+    public static ObjectList<int[]> split(final int[] a, final int fromIndex, final int toIndex, final int size) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (size < 1) {
@@ -25733,11 +25583,11 @@ public final class N {
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ArrayList<>();
+            return new ObjectList<>();
         }
 
         final int len = toIndex - fromIndex;
-        final List<int[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final ObjectList<int[]> res = new ObjectList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = fromIndex; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -25760,11 +25610,11 @@ public final class N {
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ArrayList<>();
+            return new ObjectList<>();
         }
 
         final int len = a.length;
-        final List<long[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final ObjectList<long[]> res = new ObjectList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = 0, toIndex = a.length; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -25783,7 +25633,7 @@ public final class N {
      * @param size
      * @return
      */
-    public static List<long[]> split(final long[] a, final int fromIndex, final int toIndex, final int size) {
+    public static ObjectList<long[]> split(final long[] a, final int fromIndex, final int toIndex, final int size) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (size < 1) {
@@ -25791,11 +25641,11 @@ public final class N {
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ArrayList<>();
+            return new ObjectList<>();
         }
 
         final int len = toIndex - fromIndex;
-        final List<long[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final ObjectList<long[]> res = new ObjectList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = fromIndex; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -25812,17 +25662,17 @@ public final class N {
      * @param size
      * @return
      */
-    public static List<float[]> split(final float[] a, final int size) {
+    public static ObjectList<float[]> split(final float[] a, final int size) {
         if (size < 1) {
             throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ArrayList<>();
+            return new ObjectList<>();
         }
 
         final int len = a.length;
-        final List<float[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final ObjectList<float[]> res = new ObjectList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = 0, toIndex = a.length; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -25841,7 +25691,7 @@ public final class N {
      * @param size
      * @return
      */
-    public static List<float[]> split(final float[] a, final int fromIndex, final int toIndex, final int size) {
+    public static ObjectList<float[]> split(final float[] a, final int fromIndex, final int toIndex, final int size) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (size < 1) {
@@ -25849,11 +25699,11 @@ public final class N {
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ArrayList<>();
+            return new ObjectList<>();
         }
 
         final int len = toIndex - fromIndex;
-        final List<float[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final ObjectList<float[]> res = new ObjectList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = fromIndex; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -25870,17 +25720,17 @@ public final class N {
      * @param size
      * @return
      */
-    public static List<double[]> split(final double[] a, final int size) {
+    public static ObjectList<double[]> split(final double[] a, final int size) {
         if (size < 1) {
             throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ArrayList<>();
+            return new ObjectList<>();
         }
 
         final int len = a.length;
-        final List<double[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final ObjectList<double[]> res = new ObjectList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = 0, toIndex = a.length; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -25899,7 +25749,7 @@ public final class N {
      * @param size
      * @return
      */
-    public static List<double[]> split(final double[] a, final int fromIndex, final int toIndex, final int size) {
+    public static ObjectList<double[]> split(final double[] a, final int fromIndex, final int toIndex, final int size) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (size < 1) {
@@ -25907,11 +25757,11 @@ public final class N {
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ArrayList<>();
+            return new ObjectList<>();
         }
 
         final int len = toIndex - fromIndex;
-        final List<double[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final ObjectList<double[]> res = new ObjectList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = fromIndex; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -25928,17 +25778,17 @@ public final class N {
      * @param size
      * @return
      */
-    public static <T> List<T[]> split(final T[] a, final int size) {
+    public static <T> ObjectList<T[]> split(final T[] a, final int size) {
         if (size < 1) {
             throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ArrayList<>();
+            return new ObjectList<>();
         }
 
         final int len = a.length;
-        final List<T[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final ObjectList<T[]> res = new ObjectList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = 0, toIndex = a.length; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -25957,7 +25807,7 @@ public final class N {
      * @param size
      * @return
      */
-    public static <T> List<T[]> split(final T[] a, final int fromIndex, final int toIndex, final int size) {
+    public static <T> ObjectList<T[]> split(final T[] a, final int fromIndex, final int toIndex, final int size) {
         checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (size < 1) {
@@ -25965,11 +25815,11 @@ public final class N {
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ArrayList<>();
+            return new ObjectList<>();
         }
 
         final int len = toIndex - fromIndex;
-        final List<T[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final ObjectList<T[]> res = new ObjectList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = fromIndex; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -25986,13 +25836,13 @@ public final class N {
      * @param size
      * @return
      */
-    public static <T> List<List<T>> split(final Collection<? extends T> c, final int size) {
+    public static <T> ObjectList<List<T>> split(final Collection<? extends T> c, final int size) {
         if (size < 1) {
             throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
         }
 
         if (N.isNullOrEmpty(c)) {
-            return new ArrayList<>();
+            return new ObjectList<>();
         }
 
         return split(c, 0, c.size(), size);
@@ -26008,7 +25858,7 @@ public final class N {
      * @param size
      * @return
      */
-    public static <T> List<List<T>> split(final Collection<? extends T> c, final int fromIndex, final int toIndex, final int size) {
+    public static <T> ObjectList<List<T>> split(final Collection<? extends T> c, final int fromIndex, final int toIndex, final int size) {
         checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if (size < 1) {
@@ -26016,11 +25866,11 @@ public final class N {
         }
 
         if (N.isNullOrEmpty(c)) {
-            return new ArrayList<>();
+            return new ObjectList<>();
         }
 
         final int len = toIndex - fromIndex;
-        final List<List<T>> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final ObjectList<List<T>> res = new ObjectList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         if (c instanceof List) {
             final List<T> list = (List<T>) c;

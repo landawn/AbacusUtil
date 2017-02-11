@@ -16,12 +16,12 @@
 
 package com.landawn.abacus.util;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import com.landawn.abacus.util.function.BiConsumer;
@@ -46,6 +46,8 @@ import com.landawn.abacus.util.stream.LongStream;
  * @author Haiyang Li
  */
 public final class LongList extends AbstractList<LongConsumer, LongPredicate, Long, long[], LongList> {
+    private static final long serialVersionUID = -7764836427712181163L;
+
     private long[] elementData = N.EMPTY_LONG_ARRAY;
     private int size = 0;
 
@@ -300,7 +302,11 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
         size++;
     }
 
-    public void addAll(LongList c) {
+    public boolean addAll(LongList c) {
+        if (N.isNullOrEmpty(c)) {
+            return false;
+        }
+
         int numNew = c.size();
 
         ensureCapacityInternal(size + numNew);
@@ -308,10 +314,16 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
         N.copy(c.array(), 0, elementData, size, numNew);
 
         size += numNew;
+
+        return true;
     }
 
-    public void addAll(int index, LongList c) {
+    public boolean addAll(int index, LongList c) {
         rangeCheckForAdd(index);
+
+        if (N.isNullOrEmpty(c)) {
+            return false;
+        }
 
         int numNew = c.size();
 
@@ -326,19 +338,21 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
         N.copy(c.array(), 0, elementData, index, numNew);
 
         size += numNew;
+
+        return true;
     }
 
     @Override
-    public void addAll(long[] a) {
-        addAll(size(), a);
+    public boolean addAll(long[] a) {
+        return addAll(size(), a);
     }
 
     @Override
-    public void addAll(int index, long[] a) {
+    public boolean addAll(int index, long[] a) {
         rangeCheckForAdd(index);
 
         if (N.isNullOrEmpty(a)) {
-            return;
+            return false;
         }
 
         int numNew = a.length;
@@ -354,6 +368,8 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
         N.copy(a, 0, elementData, index, numNew);
 
         size += numNew;
+
+        return true;
     }
 
     private void rangeCheckForAdd(int index) {
@@ -416,6 +432,10 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
     }
 
     public boolean removeAll(LongList c) {
+        if (N.isNullOrEmpty(c)) {
+            return false;
+        }
+
         return batchRemove(c, false) > 0;
     }
 
@@ -622,17 +642,13 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
         return disjoint(of(b));
     }
 
-    public int occurrencesOf(final long objectToFind) {
-        return N.occurrencesOf(elementData, objectToFind);
-    }
-
     /**
      * 
      * @param b
      * @return
      * @see IntList#intersection(IntList)
      */
-    public LongList intersection(LongList b) {
+    public LongList intersection(final LongList b) {
         final Multiset<Long> bOccurrences = b.toMultiset();
 
         final LongList c = new LongList(N.min(9, size(), b.size()));
@@ -644,6 +660,14 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
         }
 
         return c;
+    }
+
+    public LongList intersection(final long[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        }
+
+        return intersection(of(a));
     }
 
     /**
@@ -666,6 +690,14 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
         return c;
     }
 
+    public LongList difference(final long[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return of(N.copyOfRange(elementData, 0, size()));
+        }
+
+        return difference(of(a));
+    }
+
     /**
      * 
      * @param b
@@ -673,12 +705,6 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
      * @see IntList#symmetricDifference(IntList)
      */
     public LongList symmetricDifference(LongList b) {
-        //        final LongList result = this.difference(b);
-        //
-        //        result.addAll(b.difference(this));
-        //
-        //        return result;
-
         final Multiset<Long> bOccurrences = b.toMultiset();
 
         final LongList c = new LongList(N.max(9, Math.abs(size() - b.size())));
@@ -700,6 +726,18 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
         }
 
         return c;
+    }
+
+    public LongList symmetricDifference(final long[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return of(N.copyOfRange(elementData, 0, size()));
+        }
+
+        return symmetricDifference(of(a));
+    }
+
+    public int occurrencesOf(final long objectToFind) {
+        return N.occurrencesOf(elementData, objectToFind);
     }
 
     public int indexOf(long e) {
@@ -1131,14 +1169,15 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
     }
 
     @Override
-    public List<LongList> split(final int fromIndex, final int toIndex, final int size) {
+    public ObjectList<LongList> split(final int fromIndex, final int toIndex, final int size) {
         checkIndex(fromIndex, toIndex);
 
-        final List<long[]> list = N.split(elementData, fromIndex, toIndex, size);
-        final List<LongList> result = new ArrayList<>(list.size());
+        final ObjectList<long[]> list = N.split(elementData, fromIndex, toIndex, size);
+        @SuppressWarnings("rawtypes")
+        final ObjectList<LongList> result = (ObjectList) list;
 
-        for (long[] a : list) {
-            result.add(LongList.of(a));
+        for (int i = 0, len = list.size(); i < len; i++) {
+            result.set(i, of(list.get(i)));
         }
 
         return result;
@@ -1403,11 +1442,40 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
     //        return Seq.of(c);
     //    }
 
-    public LongStream stream() {
+    public LongIterator longIterator() {
+        if (isEmpty()) {
+            return LongIterator.EMPTY;
+        }
+
+        return new LongIterator() {
+            private int cursor = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < size;
+            }
+
+            @Override
+            public long next() {
+                if (cursor >= size) {
+                    throw new NoSuchElementException();
+                }
+
+                return elementData[cursor++];
+            }
+
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        };
+    }
+
+    public LongStream stream0() {
         return LongStream.of(elementData, 0, size());
     }
 
-    public LongStream stream(final int fromIndex, final int toIndex) {
+    public LongStream stream0(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
         return LongStream.of(elementData, fromIndex, toIndex);

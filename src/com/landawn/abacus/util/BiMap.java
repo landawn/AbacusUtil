@@ -226,7 +226,7 @@ public final class BiMap<K, V> implements Map<K, V> {
      * @return
      */
     public BiMap<V, K> inverse() {
-        return (inverse == null) ? inverse = new BiMap<V, K>(valueMap, keyMap) : inverse;
+        return (inverse == null) ? inverse = new BiMap<>(valueMap, keyMap) : inverse;
     }
 
     @Override
@@ -239,7 +239,7 @@ public final class BiMap<K, V> implements Map<K, V> {
         return keyMap.size();
     }
 
-    public Stream<Map.Entry<K, V>> stream() {
+    public Stream<Map.Entry<K, V>> stream0() {
         return Stream.of(keyMap.entrySet());
     }
 

@@ -16,12 +16,12 @@
 
 package com.landawn.abacus.util;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import com.landawn.abacus.util.function.BiConsumer;
@@ -45,6 +45,8 @@ import com.landawn.abacus.util.stream.IntStream;
  * @author Haiyang Li
  */
 public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integer, int[], IntList> {
+    private static final long serialVersionUID = 8661773953226671696L;
+
     private int[] elementData = N.EMPTY_INT_ARRAY;
     private int size = 0;
 
@@ -406,7 +408,11 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
         size++;
     }
 
-    public void addAll(IntList c) {
+    public boolean addAll(IntList c) {
+        if (N.isNullOrEmpty(c)) {
+            return false;
+        }
+
         int numNew = c.size();
 
         ensureCapacityInternal(size + numNew);
@@ -414,10 +420,16 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
         N.copy(c.array(), 0, elementData, size, numNew);
 
         size += numNew;
+
+        return true;
     }
 
-    public void addAll(int index, IntList c) {
+    public boolean addAll(int index, IntList c) {
         rangeCheckForAdd(index);
+
+        if (N.isNullOrEmpty(c)) {
+            return false;
+        }
 
         int numNew = c.size();
 
@@ -432,19 +444,21 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
         N.copy(c.array(), 0, elementData, index, numNew);
 
         size += numNew;
+
+        return true;
     }
 
     @Override
-    public void addAll(int[] a) {
-        addAll(size(), a);
+    public boolean addAll(int[] a) {
+        return addAll(size(), a);
     }
 
     @Override
-    public void addAll(int index, int[] a) {
+    public boolean addAll(int index, int[] a) {
         rangeCheckForAdd(index);
 
         if (N.isNullOrEmpty(a)) {
-            return;
+            return false;
         }
 
         int numNew = a.length;
@@ -460,6 +474,8 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
         N.copy(a, 0, elementData, index, numNew);
 
         size += numNew;
+
+        return true;
     }
 
     private void rangeCheckForAdd(int index) {
@@ -522,6 +538,10 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
     }
 
     public boolean removeAll(IntList c) {
+        if (N.isNullOrEmpty(c)) {
+            return false;
+        }
+
         return batchRemove(c, false) > 0;
     }
 
@@ -728,10 +748,6 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
         return disjoint(of(b));
     }
 
-    public int occurrencesOf(final int objectToFind) {
-        return N.occurrencesOf(elementData, objectToFind);
-    }
-
     /**
      * Returns a new list with all the elements occurred in both <code>a</code> and <code>b</code> by occurrences.
      * 
@@ -748,7 +764,7 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
      * @param b
      * @return
      */
-    public IntList intersection(IntList b) {
+    public IntList intersection(final IntList b) {
         final Multiset<Integer> bOccurrences = b.toMultiset();
 
         final IntList c = new IntList(N.min(9, size(), b.size()));
@@ -760,6 +776,14 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
         }
 
         return c;
+    }
+
+    public IntList intersection(final int[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        }
+
+        return intersection(of(a));
     }
 
     /**
@@ -778,7 +802,7 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
      * @param b
      * @return
      */
-    public IntList difference(IntList b) {
+    public IntList difference(final IntList b) {
         final Multiset<Integer> bOccurrences = b.toMultiset();
 
         final IntList c = new IntList(N.min(size(), N.max(9, size() - b.size())));
@@ -792,6 +816,14 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
         return c;
     }
 
+    public IntList difference(final int[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return of(N.copyOfRange(elementData, 0, size()));
+        }
+
+        return difference(of(a));
+    }
+
     /**
      * <pre>
      * IntList a = IntList.of(0, 1, 2, 2, 3);
@@ -803,13 +835,7 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
      * @return this.difference(b).addAll(b.difference(this))
      * @see IntList#difference(IntList)
      */
-    public IntList symmetricDifference(IntList b) {
-        //        final IntList result = this.difference(b);
-        //
-        //        result.addAll(b.difference(this));
-        //
-        //        return result;
-
+    public IntList symmetricDifference(final IntList b) {
         final Multiset<Integer> bOccurrences = b.toMultiset();
 
         final IntList c = new IntList(N.max(9, Math.abs(size() - b.size())));
@@ -831,6 +857,18 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
         }
 
         return c;
+    }
+
+    public IntList symmetricDifference(final int[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return of(N.copyOfRange(elementData, 0, size()));
+        }
+
+        return symmetricDifference(of(a));
+    }
+
+    public int occurrencesOf(final int objectToFind) {
+        return N.occurrencesOf(elementData, objectToFind);
     }
 
     public int indexOf(int e) {
@@ -1280,14 +1318,15 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
     }
 
     @Override
-    public List<IntList> split(final int fromIndex, final int toIndex, final int size) {
+    public ObjectList<IntList> split(final int fromIndex, final int toIndex, final int size) {
         checkIndex(fromIndex, toIndex);
 
-        final List<int[]> list = N.split(elementData, fromIndex, toIndex, size);
-        final List<IntList> result = new ArrayList<>(list.size());
+        final ObjectList<int[]> list = N.split(elementData, fromIndex, toIndex, size);
+        @SuppressWarnings("rawtypes")
+        final ObjectList<IntList> result = (ObjectList) list;
 
-        for (int[] a : list) {
-            result.add(IntList.of(a));
+        for (int i = 0, len = list.size(); i < len; i++) {
+            result.set(i, of(list.get(i)));
         }
 
         return result;
@@ -1556,11 +1595,40 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
     //        return Seq.of(c);
     //    }
 
-    public IntStream stream() {
+    public IntIterator intIterator() {
+        if (isEmpty()) {
+            return IntIterator.EMPTY;
+        }
+
+        return new IntIterator() {
+            private int cursor = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < size;
+            }
+
+            @Override
+            public int next() {
+                if (cursor >= size) {
+                    throw new NoSuchElementException();
+                }
+
+                return elementData[cursor++];
+            }
+
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        };
+    }
+
+    public IntStream stream0() {
         return IntStream.of(elementData, 0, size());
     }
 
-    public IntStream stream(final int fromIndex, final int toIndex) {
+    public IntStream stream0(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
         return IntStream.of(elementData, fromIndex, toIndex);

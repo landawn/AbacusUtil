@@ -202,6 +202,11 @@ public class Joiner {
         return this;
     }
 
+    public Joiner add(String newElement) {
+        prepareBuilder().append(newElement);
+        return this;
+    }
+
     /**
      * Adds a copy of the given {@code CharSequence} value as the next
      * element of the {@code StringJoiner} value. If {@code newElement} is
@@ -678,6 +683,168 @@ public class Joiner {
         }
 
         return this;
+    }
+
+    public Joiner join(final BooleanList c) {
+        if (N.isNullOrEmpty(c)) {
+            return this;
+        }
+
+        return join(c.array(), 0, c.size());
+    }
+
+    public Joiner join(final BooleanList c, final int fromIndex, final int toIndex) {
+        N.checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+            return this;
+        }
+
+        return join(c.array(), fromIndex, toIndex);
+    }
+
+    public Joiner join(final CharList c) {
+        if (N.isNullOrEmpty(c)) {
+            return this;
+        }
+
+        return join(c.array(), 0, c.size());
+    }
+
+    public Joiner join(final CharList c, final int fromIndex, final int toIndex) {
+        N.checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+            return this;
+        }
+
+        return join(c.array(), fromIndex, toIndex);
+    }
+
+    public Joiner join(final ByteList c) {
+        if (N.isNullOrEmpty(c)) {
+            return this;
+        }
+
+        return join(c.array(), 0, c.size());
+    }
+
+    public Joiner join(final ByteList c, final int fromIndex, final int toIndex) {
+        N.checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+            return this;
+        }
+
+        return join(c.array(), fromIndex, toIndex);
+    }
+
+    public Joiner join(final ShortList c) {
+        if (N.isNullOrEmpty(c)) {
+            return this;
+        }
+
+        return join(c.array(), 0, c.size());
+    }
+
+    public Joiner join(final ShortList c, final int fromIndex, final int toIndex) {
+        N.checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+            return this;
+        }
+
+        return join(c.array(), fromIndex, toIndex);
+    }
+
+    public Joiner join(final IntList c) {
+        if (N.isNullOrEmpty(c)) {
+            return this;
+        }
+
+        return join(c.array(), 0, c.size());
+    }
+
+    public Joiner join(final IntList c, final int fromIndex, final int toIndex) {
+        N.checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+            return this;
+        }
+
+        return join(c.array(), fromIndex, toIndex);
+    }
+
+    public Joiner join(final LongList c) {
+        if (N.isNullOrEmpty(c)) {
+            return this;
+        }
+
+        return join(c.array(), 0, c.size());
+    }
+
+    public Joiner join(final LongList c, final int fromIndex, final int toIndex) {
+        N.checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+            return this;
+        }
+
+        return join(c.array(), fromIndex, toIndex);
+    }
+
+    public Joiner join(final FloatList c) {
+        if (N.isNullOrEmpty(c)) {
+            return this;
+        }
+
+        return join(c.array(), 0, c.size());
+    }
+
+    public Joiner join(final FloatList c, final int fromIndex, final int toIndex) {
+        N.checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+            return this;
+        }
+
+        return join(c.array(), fromIndex, toIndex);
+    }
+
+    public Joiner join(final DoubleList c) {
+        if (N.isNullOrEmpty(c)) {
+            return this;
+        }
+
+        return join(c.array(), 0, c.size());
+    }
+
+    public Joiner join(final DoubleList c, final int fromIndex, final int toIndex) {
+        N.checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+            return this;
+        }
+
+        return join(c.array(), fromIndex, toIndex);
+    }
+
+    public Joiner join(final ObjectList<?> c) {
+        if (N.isNullOrEmpty(c)) {
+            return this;
+        }
+
+        return join(c.array(), 0, c.size());
+    }
+
+    public Joiner join(final ObjectList<?> c, final int fromIndex, final int toIndex) {
+        N.checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+            return this;
+        }
+
+        return join(c.array(), fromIndex, toIndex);
     }
 
     /**

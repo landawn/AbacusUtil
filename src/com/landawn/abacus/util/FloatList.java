@@ -16,12 +16,12 @@
 
 package com.landawn.abacus.util;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import com.landawn.abacus.util.function.BiConsumer;
@@ -46,6 +46,8 @@ import com.landawn.abacus.util.stream.FloatStream;
  * @author Haiyang Li
  */
 public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate, Float, float[], FloatList> {
+    private static final long serialVersionUID = 6459013170687883950L;
+
     private float[] elementData = N.EMPTY_FLOAT_ARRAY;
     private int size = 0;
 
@@ -280,7 +282,11 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
         size++;
     }
 
-    public void addAll(FloatList c) {
+    public boolean addAll(FloatList c) {
+        if (N.isNullOrEmpty(c)) {
+            return false;
+        }
+
         int numNew = c.size();
 
         ensureCapacityInternal(size + numNew);
@@ -288,10 +294,16 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
         N.copy(c.array(), 0, elementData, size, numNew);
 
         size += numNew;
+
+        return true;
     }
 
-    public void addAll(int index, FloatList c) {
+    public boolean addAll(int index, FloatList c) {
         rangeCheckForAdd(index);
+
+        if (N.isNullOrEmpty(c)) {
+            return false;
+        }
 
         int numNew = c.size();
 
@@ -306,19 +318,21 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
         N.copy(c.array(), 0, elementData, index, numNew);
 
         size += numNew;
+
+        return true;
     }
 
     @Override
-    public void addAll(float[] a) {
-        addAll(size(), a);
+    public boolean addAll(float[] a) {
+        return addAll(size(), a);
     }
 
     @Override
-    public void addAll(int index, float[] a) {
+    public boolean addAll(int index, float[] a) {
         rangeCheckForAdd(index);
 
         if (N.isNullOrEmpty(a)) {
-            return;
+            return false;
         }
 
         int numNew = a.length;
@@ -334,6 +348,8 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
         N.copy(a, 0, elementData, index, numNew);
 
         size += numNew;
+
+        return true;
     }
 
     private void rangeCheckForAdd(int index) {
@@ -396,6 +412,10 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
     }
 
     public boolean removeAll(FloatList c) {
+        if (N.isNullOrEmpty(c)) {
+            return false;
+        }
+
         return batchRemove(c, false) > 0;
     }
 
@@ -602,17 +622,13 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
         return disjoint(of(b));
     }
 
-    public int occurrencesOf(final float objectToFind) {
-        return N.occurrencesOf(elementData, objectToFind);
-    }
-
     /**
      * 
      * @param b
      * @return
      * @see IntList#intersection(IntList)
      */
-    public FloatList intersection(FloatList b) {
+    public FloatList intersection(final FloatList b) {
         final Multiset<Float> bOccurrences = b.toMultiset();
 
         final FloatList c = new FloatList(N.min(9, size(), b.size()));
@@ -624,6 +640,14 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
         }
 
         return c;
+    }
+
+    public FloatList intersection(final float[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        }
+
+        return intersection(of(a));
     }
 
     /**
@@ -644,6 +668,14 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
         }
 
         return c;
+    }
+
+    public FloatList difference(final float[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return of(N.copyOfRange(elementData, 0, size()));
+        }
+
+        return difference(of(a));
     }
 
     /**
@@ -674,6 +706,18 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
         }
 
         return c;
+    }
+
+    public FloatList symmetricDifference(final float[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return of(N.copyOfRange(elementData, 0, size()));
+        }
+
+        return symmetricDifference(of(a));
+    }
+
+    public int occurrencesOf(final float objectToFind) {
+        return N.occurrencesOf(elementData, objectToFind);
     }
 
     public int indexOf(float e) {
@@ -1105,14 +1149,15 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
     }
 
     @Override
-    public List<FloatList> split(final int fromIndex, final int toIndex, final int size) {
+    public ObjectList<FloatList> split(final int fromIndex, final int toIndex, final int size) {
         checkIndex(fromIndex, toIndex);
 
-        final List<float[]> list = N.split(elementData, fromIndex, toIndex, size);
-        final List<FloatList> result = new ArrayList<>(list.size());
+        final ObjectList<float[]> list = N.split(elementData, fromIndex, toIndex, size);
+        @SuppressWarnings("rawtypes")
+        final ObjectList<FloatList> result = (ObjectList) list;
 
-        for (float[] a : list) {
-            result.add(FloatList.of(a));
+        for (int i = 0, len = list.size(); i < len; i++) {
+            result.set(i, of(list.get(i)));
         }
 
         return result;
@@ -1373,11 +1418,40 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
     //        return Seq.of(c);
     //    }
 
-    public FloatStream stream() {
+    public FloatIterator floatIterator() {
+        if (isEmpty()) {
+            return FloatIterator.EMPTY;
+        }
+
+        return new FloatIterator() {
+            private int cursor = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < size;
+            }
+
+            @Override
+            public float next() {
+                if (cursor >= size) {
+                    throw new NoSuchElementException();
+                }
+
+                return elementData[cursor++];
+            }
+
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        };
+    }
+
+    public FloatStream stream0() {
         return FloatStream.of(elementData, 0, size());
     }
 
-    public FloatStream stream(final int fromIndex, final int toIndex) {
+    public FloatStream stream0(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
         return FloatStream.of(elementData, fromIndex, toIndex);

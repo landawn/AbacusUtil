@@ -16,12 +16,16 @@
 
 package com.landawn.abacus.util;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.RandomAccess;
 import java.util.Set;
 
 import com.landawn.abacus.util.function.BiConsumer;
@@ -54,7 +58,9 @@ import com.landawn.abacus.util.stream.Stream;
  * 
  * @author Haiyang Li
  */
-public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<? super T>, T, T[], ObjectList<T>> {
+public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<? super T>, T, T[], ObjectList<T>> implements List<T> {
+    private static final long serialVersionUID = 5075714034035989332L;
+
     private T[] elementData = (T[]) N.EMPTY_OBJECT_ARRAY;
     private int size = 0;
 
@@ -227,6 +233,7 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         return elementData;
     }
 
+    @Override
     public T get(int index) {
         rangeCheck(index);
 
@@ -245,6 +252,7 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
      * @param e
      * @return the old value in the specified position.
      */
+    @Override
     public T set(int index, T e) {
         rangeCheck(index);
 
@@ -258,11 +266,15 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
     /**
      * 
      * @param e
+     * @return always return <code>true</code>
      */
-    public void add(T e) {
+    @Override
+    public boolean add(T e) {
         ensureCapacityInternal(size + 1);
 
         elementData[size++] = e;
+
+        return true;
     }
 
     /**
@@ -270,6 +282,7 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
      * @param index
      * @param e
      */
+    @Override
     public void add(int index, T e) {
         rangeCheckForAdd(index);
 
@@ -286,18 +299,38 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         size++;
     }
 
-    public void addAll(ObjectList<? extends T> c) {
+    @Override
+    public boolean addAll(Collection<? extends T> c) {
+        if (N.isNullOrEmpty(c)) {
+            return false;
+        }
+
         int numNew = c.size();
 
         ensureCapacityInternal(size + numNew);
 
-        N.copy(c.array(), 0, elementData, size, numNew);
+        if (c instanceof ObjectList) {
+            N.copy(((ObjectList<T>) c).array(), 0, elementData, size, numNew);
+        } else {
+            int idx = size();
+
+            for (T e : c) {
+                elementData[idx++] = e;
+            }
+        }
 
         size += numNew;
+
+        return true;
     }
 
-    public void addAll(int index, ObjectList<? extends T> c) {
+    @Override
+    public boolean addAll(int index, Collection<? extends T> c) {
         rangeCheckForAdd(index);
+
+        if (N.isNullOrEmpty(c)) {
+            return false;
+        }
 
         int numNew = c.size();
 
@@ -309,9 +342,19 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
             N.copy(elementData, index, elementData, index + numNew, numMoved);
         }
 
-        N.copy(c.array(), 0, elementData, index, numNew);
+        if (c instanceof ObjectList) {
+            N.copy(((ObjectList<T>) c).array(), 0, elementData, index, numNew);
+        } else {
+            int idx = index;
+
+            for (T e : c) {
+                elementData[idx++] = e;
+            }
+        }
 
         size += numNew;
+
+        return true;
     }
 
     private void rangeCheckForAdd(int index) {
@@ -321,16 +364,16 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
     }
 
     @Override
-    public void addAll(T[] a) {
-        addAll(size(), a);
+    public boolean addAll(T[] a) {
+        return addAll(size(), a);
     }
 
     @Override
-    public void addAll(int index, T[] a) {
+    public boolean addAll(int index, T[] a) {
         rangeCheckForAdd(index);
 
         if (N.isNullOrEmpty(a)) {
-            return;
+            return false;
         }
 
         int numNew = a.length;
@@ -346,6 +389,8 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         N.copy(a, 0, elementData, index, numNew);
 
         size += numNew;
+
+        return true;
     }
 
     /**
@@ -353,6 +398,7 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
      * @param e
      * @return <tt>true</tt> if this list contained the specified element
      */
+    @Override
     public boolean remove(Object e) {
         for (int i = 0; i < size; i++) {
             if (N.equals(elementData[i], e)) {
@@ -408,7 +454,12 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
      * @return
      * @see Collection#removeAll(Collection)
      */
-    public boolean removeAll(ObjectList<?> c) {
+    @Override
+    public boolean removeAll(Collection<?> c) {
+        if (N.isNullOrEmpty(c)) {
+            return false;
+        }
+
         return batchRemove(c, false) > 0;
     }
 
@@ -446,7 +497,8 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
      * @return
      * @see Collection#retainAll(Collection)
      */
-    public boolean retainAll(ObjectList<?> c) {
+    @Override
+    public boolean retainAll(Collection<?> c) {
         return batchRemove(c, true) > 0;
     }
 
@@ -454,13 +506,13 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         return retainAll(a == null ? empty() : ObjectList.of(a));
     }
 
-    private int batchRemove(ObjectList<?> c, boolean complement) {
+    private int batchRemove(Collection<?> c, boolean complement) {
         final T[] elementData = this.elementData;
 
         int w = 0;
 
         if (c.size() > 3 && size() > 9) {
-            final Set<?> set = c.toSet();
+            final Set<?> set = c instanceof Set ? (Set<?>) c : new HashSet<>(c);
 
             for (int i = 0; i < size; i++) {
                 if (set.contains(elementData[i]) == complement) {
@@ -484,6 +536,11 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         }
 
         return numRemoved;
+    }
+
+    @Override
+    public T remove(int index) {
+        return delete(index);
     }
 
     /**
@@ -564,24 +621,24 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         N.fill(elementData, fromIndex, toIndex, val);
     }
 
+    @Override
     public boolean contains(Object e) {
         return indexOf(e) >= 0;
     }
 
-    public boolean containsAll(ObjectList<?> c) {
-        final Object[] srcElementData = c.array();
-
+    @Override
+    public boolean containsAll(Collection<?> c) {
         if (c.size() > 3 && size() > 9) {
-            final Set<?> set = c.toSet();
+            final Set<?> set = c instanceof Set ? (Set<?>) c : new HashSet<>(c);
 
-            for (int i = 0, srcSize = c.size(); i < srcSize; i++) {
-                if (set.contains(srcElementData[i]) == false) {
+            for (Object e : c) {
+                if (set.contains(e) == false) {
                     return false;
                 }
             }
         } else {
-            for (int i = 0, srcSize = c.size(); i < srcSize; i++) {
-                if (contains(srcElementData[i]) == false) {
+            for (Object e : c) {
+                if (contains(e) == false) {
                     return false;
                 }
             }
@@ -599,21 +656,21 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         return containsAll(of(a));
     }
 
-    public boolean disjoint(final ObjectList<?> c) {
-        final ObjectList<?> container = size() >= c.size() ? this : c;
-        final Object[] iterElements = size() >= c.size() ? c.array() : this.array();
+    public boolean disjoint(final Collection<?> c) {
+        final Collection<?> container = c instanceof Set || c.size() >= size() ? c : this;
+        final Collection<?> iterElements = container == c ? this : c;
 
-        if (iterElements.length > 3 && container.size() > 9) {
-            final Set<?> set = container.toSet();
+        if (iterElements.size() > 3 && container.size() > 9) {
+            final Set<?> set = container instanceof Set ? (Set<?>) container : new HashSet<>(container);
 
-            for (int i = 0, srcSize = size() >= c.size() ? c.size() : this.size(); i < srcSize; i++) {
-                if (set.contains(iterElements[i])) {
+            for (Object e : iterElements) {
+                if (set.contains(e)) {
                     return false;
                 }
             }
         } else {
-            for (int i = 0, srcSize = size() >= c.size() ? c.size() : this.size(); i < srcSize; i++) {
-                if (container.contains(iterElements[i])) {
+            for (Object e : iterElements) {
+                if (container.contains(e)) {
                     return false;
                 }
             }
@@ -631,18 +688,14 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         return disjoint(of(a));
     }
 
-    public int occurrencesOf(final Object objectToFind) {
-        return N.occurrencesOf(elementData, objectToFind);
-    }
-
     /**
      * 
      * @param b
      * @return
      * @see IntList#intersection(IntList)
      */
-    public ObjectList<T> intersection(ObjectList<?> b) {
-        final Multiset<?> bOccurrences = b.toMultiset();
+    public ObjectList<T> intersection(final Collection<?> b) {
+        final Multiset<?> bOccurrences = Multiset.from(b);
 
         final ObjectList<T> result = new ObjectList<>((T[]) N.newArray(getComponentType(), N.min(9, size(), b.size())));
 
@@ -669,8 +722,8 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
      * @return
      * @see IntList#difference(IntList)
      */
-    public ObjectList<T> difference(ObjectList<?> b) {
-        final Multiset<?> bOccurrences = b.toMultiset();
+    public ObjectList<T> difference(final Collection<?> b) {
+        final Multiset<?> bOccurrences = Multiset.from(b);
 
         final ObjectList<T> result = new ObjectList<>((T[]) N.newArray(getComponentType(), N.min(size(), N.max(9, size() - b.size()))));
 
@@ -697,8 +750,8 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
      * @return this.difference(b).addAll(b.difference(this))
      * @see IntList#symmetricDifference(IntList)
      */
-    public ObjectList<T> symmetricDifference(ObjectList<T> b) {
-        final Multiset<T> bOccurrences = b.toMultiset();
+    public ObjectList<T> symmetricDifference(final Collection<T> b) {
+        final Multiset<T> bOccurrences = Multiset.from(b);
 
         final ObjectList<T> result = new ObjectList<>((T[]) N.newArray(getComponentType(), N.max(9, Math.abs(size() - b.size()))));
 
@@ -708,9 +761,9 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
             }
         }
 
-        for (int i = 0, len = b.size(); i < len; i++) {
-            if (bOccurrences.getAndRemove(b.elementData[i]) > 0) {
-                result.add(b.elementData[i]);
+        for (T e : b) {
+            if (bOccurrences.getAndRemove(e) > 0) {
+                result.add(e);
             }
 
             if (bOccurrences.isEmpty()) {
@@ -729,6 +782,11 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         return symmetricDifference(of(a));
     }
 
+    public int occurrencesOf(final Object objectToFind) {
+        return N.occurrencesOf(elementData, objectToFind);
+    }
+
+    @Override
     public int indexOf(Object e) {
         return indexOf(0, e);
     }
@@ -745,6 +803,7 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         return -1;
     }
 
+    @Override
     public int lastIndexOf(Object e) {
         return lastIndexOf(size, e);
     }
@@ -1764,14 +1823,15 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
     }
 
     @Override
-    public List<ObjectList<T>> split(final int fromIndex, final int toIndex, final int size) {
+    public ObjectList<ObjectList<T>> split(final int fromIndex, final int toIndex, final int size) {
         checkIndex(fromIndex, toIndex);
 
-        final List<T[]> list = N.split(elementData, fromIndex, toIndex, size);
-        final List<ObjectList<T>> result = new ArrayList<>(list.size());
+        final ObjectList<T[]> list = N.split(elementData, fromIndex, toIndex, size);
+        @SuppressWarnings("rawtypes")
+        final ObjectList<ObjectList<T>> result = (ObjectList) list;
 
-        for (T[] a : list) {
-            result.add(of(a));
+        for (int i = 0, len = list.size(); i < len; i++) {
+            result.set(i, of(list.get(i)));
         }
 
         return result;
@@ -2151,11 +2211,64 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
     //        return Seq.of(c);
     //    }
 
-    public Stream<T> stream() {
+    @Override
+    public List<T> subList(int fromIndex, int toIndex) {
+        this.checkIndex(fromIndex, toIndex);
+
+        return asList().subList(fromIndex, toIndex);
+    }
+
+    @Override
+    public Iterator<T> iterator() {
+        if (isEmpty()) {
+            return com.landawn.abacus.util.Iterator.EMPTY;
+        }
+
+        return new com.landawn.abacus.util.Iterator<T>() {
+            private int cursor = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < size;
+            }
+
+            @Override
+            public T next() {
+                if (cursor >= size) {
+                    throw new NoSuchElementException();
+                }
+
+                return elementData[cursor++];
+            }
+
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        };
+    }
+
+    @Override
+    public ListIterator<T> listIterator() {
+        return asList().listIterator();
+    }
+
+    @Override
+    public ListIterator<T> listIterator(int index) {
+        rangeCheck(index);
+
+        return asList().listIterator(index);
+    }
+
+    private List<T> asList() {
+        return new ArrayList2<>(elementData, size);
+    }
+
+    public Stream<T> stream0() {
         return Stream.of(elementData, 0, size());
     }
 
-    public Stream<T> stream(final int fromIndex, final int toIndex) {
+    public Stream<T> stream0(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
         return Stream.of(elementData, fromIndex, toIndex);
@@ -2168,6 +2281,22 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
     //    public ObjectListBuilder<T> __(Consumer<? super ObjectList<T>> func) {
     //        return Builder.of(this).__(func);
     //    }
+
+    @Override
+    public Object[] toArray() {
+        return N.copyOfRange(elementData, 0, size);
+    }
+
+    @Override
+    public <A> A[] toArray(A[] a) {
+        if (a.length < size) {
+            return N.copyOfRange(elementData, 0, size, (Class<? extends A[]>) a.getClass());
+        }
+
+        N.copy(elementData, 0, a, 0, size());
+
+        return a;
+    }
 
     public T[] toArray(Class<T[]> cls) {
         return N.copyOfRange(elementData, 0, size, cls);
@@ -2229,5 +2358,92 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         }
 
         elementData = Arrays.copyOf(elementData, newCapacity);
+    }
+
+    /**
+     * @serial include
+     */
+    static final class ArrayList2<E> extends java.util.AbstractList<E> implements RandomAccess {
+        private final E[] a;
+        private final int size;
+
+        ArrayList2(final E[] array, final int size) {
+            this.a = array;
+            this.size = size;
+        }
+
+        @Override
+        public int size() {
+            return size;
+        }
+
+        @Override
+        public Object[] toArray() {
+            return N.copyOfRange(a, 0, size);
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public <T> T[] toArray(final T[] a) {
+            if (a.length < size) {
+                return N.copyOfRange(this.a, 0, size, (Class<? extends T[]>) a.getClass());
+            }
+
+            System.arraycopy(this.a, 0, a, 0, size);
+
+            return a;
+        }
+
+        @Override
+        public E get(int index) {
+            rangeCheck(index);
+
+            return a[index];
+        }
+
+        @Override
+        public E set(int index, E element) {
+            rangeCheck(index);
+
+            E oldValue = a[index];
+            a[index] = element;
+            return oldValue;
+        }
+
+        @Override
+        public int indexOf(Object o) {
+            final E[] a = this.a;
+
+            if (o == null) {
+                for (int i = 0; i < size; i++) {
+                    if (a[i] == null) {
+                        return i;
+                    }
+                }
+            } else {
+                for (int i = 0; i < size; i++) {
+                    if (o.equals(a[i])) {
+                        return i;
+                    }
+                }
+            }
+
+            return -1;
+        }
+
+        @Override
+        public boolean contains(Object o) {
+            return indexOf(o) != -1;
+        }
+
+        public void sort(Comparator<? super E> c) {
+            N.sort(a, 0, size, c);
+        }
+
+        private void rangeCheck(int index) {
+            if (index >= size) {
+                throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
+            }
+        }
     }
 }

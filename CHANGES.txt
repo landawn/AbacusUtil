@@ -1,7 +1,21 @@
 
 ========Changes in 0.9.48=========================================================================
 
-3, Improvements and bug fix.
+1, Add filter(BiPredicate<? super K, ? super V> filter)  to Multimap
+
+2, Add one more intersection/difference/symmetricDifference to Seq/ObjectList/IntList/... for array.
+
+3, Add takeWhile/dropWhile/copyToList/copyToSet/copyTo to Seq.
+
+4*, Rename stream() to stream0() in BiMap/ObjectList/ByteList/IntList/... to void the conflict if stream() is added to Map in JDK in the future.  
+
+5*, Refactoring ObjectList to extend List<T> interface. 
+
+6*, Remove flatten2 from Multiset/LongMultiset.
+
+7*, Remove filter2/map2 from N.
+
+8, Improvements and bug fix.
 
 
 ========Changes in 0.9.47=========================================================================

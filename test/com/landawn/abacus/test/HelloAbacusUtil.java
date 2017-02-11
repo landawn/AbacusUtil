@@ -79,11 +79,4 @@ public class HelloAbacusUtil {
         account2 = jsonParser.deserialize(Account.class, json);
         assertEquals(account, account2);
     }
-
-    @Test
-    public void test_lambda() {
-        Account[] accounts = N.asArray(N.fill(Account.class), N.fill(Account.class));
-        Account[] accounts2 = N.filter2(accounts, e -> e.getFirstName().equals(accounts[1].getFirstName()));
-        assertEquals(accounts[1], accounts2[0]);
-    }
 }

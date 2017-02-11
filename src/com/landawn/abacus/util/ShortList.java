@@ -16,12 +16,12 @@
 
 package com.landawn.abacus.util;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import com.landawn.abacus.util.function.BiConsumer;
@@ -46,6 +46,8 @@ import com.landawn.abacus.util.stream.ShortStream;
  * @author Haiyang Li
  */
 public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate, Short, short[], ShortList> {
+    private static final long serialVersionUID = 25682021483156507L;
+
     private short[] elementData = N.EMPTY_SHORT_ARRAY;
     private int size = 0;
 
@@ -256,7 +258,11 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
         size++;
     }
 
-    public void addAll(ShortList c) {
+    public boolean addAll(ShortList c) {
+        if (N.isNullOrEmpty(c)) {
+            return false;
+        }
+
         int numNew = c.size();
 
         ensureCapacityInternal(size + numNew);
@@ -264,10 +270,16 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
         N.copy(c.array(), 0, elementData, size, numNew);
 
         size += numNew;
+
+        return true;
     }
 
-    public void addAll(int index, ShortList c) {
+    public boolean addAll(int index, ShortList c) {
         rangeCheckForAdd(index);
+
+        if (N.isNullOrEmpty(c)) {
+            return false;
+        }
 
         int numNew = c.size();
 
@@ -282,19 +294,21 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
         N.copy(c.array(), 0, elementData, index, numNew);
 
         size += numNew;
+
+        return true;
     }
 
     @Override
-    public void addAll(short[] a) {
-        addAll(size(), a);
+    public boolean addAll(short[] a) {
+        return addAll(size(), a);
     }
 
     @Override
-    public void addAll(int index, short[] a) {
+    public boolean addAll(int index, short[] a) {
         rangeCheckForAdd(index);
 
         if (N.isNullOrEmpty(a)) {
-            return;
+            return false;
         }
 
         int numNew = a.length;
@@ -310,6 +324,8 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
         N.copy(a, 0, elementData, index, numNew);
 
         size += numNew;
+
+        return true;
     }
 
     private void rangeCheckForAdd(int index) {
@@ -372,6 +388,10 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
     }
 
     public boolean removeAll(ShortList c) {
+        if (N.isNullOrEmpty(c)) {
+            return false;
+        }
+
         return batchRemove(c, false) > 0;
     }
 
@@ -578,17 +598,13 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
         return disjoint(of(b));
     }
 
-    public int occurrencesOf(final short objectToFind) {
-        return N.occurrencesOf(elementData, objectToFind);
-    }
-
     /**
      * 
      * @param b
      * @return
      * @see IntList#intersection(IntList)
      */
-    public ShortList intersection(ShortList b) {
+    public ShortList intersection(final ShortList b) {
         final Multiset<Short> bOccurrences = b.toMultiset();
 
         final ShortList c = new ShortList(N.min(9, size(), b.size()));
@@ -602,13 +618,21 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
         return c;
     }
 
+    public ShortList intersection(final short[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        }
+
+        return intersection(of(a));
+    }
+
     /**
      * 
      * @param b
      * @return
      * @see IntList#difference(IntList)
      */
-    public ShortList difference(ShortList b) {
+    public ShortList difference(final ShortList b) {
         final Multiset<Short> bOccurrences = b.toMultiset();
 
         final ShortList c = new ShortList(N.min(size(), N.max(9, size() - b.size())));
@@ -622,13 +646,21 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
         return c;
     }
 
+    public ShortList difference(final short[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return of(N.copyOfRange(elementData, 0, size()));
+        }
+
+        return difference(of(a));
+    }
+
     /**
      * 
      * @param b
      * @return this.difference(b).addAll(b.difference(this))
      * @see IntList#symmetricDifference(IntList)
      */
-    public ShortList symmetricDifference(ShortList b) {
+    public ShortList symmetricDifference(final ShortList b) {
         final Multiset<Short> bOccurrences = b.toMultiset();
 
         final ShortList c = new ShortList(N.max(9, Math.abs(size() - b.size())));
@@ -650,6 +682,18 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
         }
 
         return c;
+    }
+
+    public ShortList symmetricDifference(final short[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return of(N.copyOfRange(elementData, 0, size()));
+        }
+
+        return symmetricDifference(of(a));
+    }
+
+    public int occurrencesOf(final short objectToFind) {
+        return N.occurrencesOf(elementData, objectToFind);
     }
 
     public int indexOf(short e) {
@@ -1081,14 +1125,15 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
     }
 
     @Override
-    public List<ShortList> split(final int fromIndex, final int toIndex, final int size) {
+    public ObjectList<ShortList> split(final int fromIndex, final int toIndex, final int size) {
         checkIndex(fromIndex, toIndex);
 
-        final List<short[]> list = N.split(elementData, fromIndex, toIndex, size);
-        final List<ShortList> result = new ArrayList<>(list.size());
+        final ObjectList<short[]> list = N.split(elementData, fromIndex, toIndex, size);
+        @SuppressWarnings("rawtypes")
+        final ObjectList<ShortList> result = (ObjectList) list;
 
-        for (short[] a : list) {
-            result.add(ShortList.of(a));
+        for (int i = 0, len = list.size(); i < len; i++) {
+            result.set(i, of(list.get(i)));
         }
 
         return result;
@@ -1349,11 +1394,40 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
     //        return Seq.of(c);
     //    }
 
-    public ShortStream stream() {
+    public ShortIterator shortIterator() {
+        if (isEmpty()) {
+            return ShortIterator.EMPTY;
+        }
+
+        return new ShortIterator() {
+            private int cursor = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < size;
+            }
+
+            @Override
+            public short next() {
+                if (cursor >= size) {
+                    throw new NoSuchElementException();
+                }
+
+                return elementData[cursor++];
+            }
+
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        };
+    }
+
+    public ShortStream stream0() {
         return ShortStream.of(elementData, 0, size());
     }
 
-    public ShortStream stream(final int fromIndex, final int toIndex) {
+    public ShortStream stream0(final int fromIndex, final int toIndex) {
         checkIndex(fromIndex, toIndex);
 
         return ShortStream.of(elementData, fromIndex, toIndex);
