@@ -1089,11 +1089,11 @@ public final class Multiset<E> implements Iterable<E> {
      * @param predicate break if the <code>predicate</code> returns false.
      * @return
      */
-    public <R> R forEach(final R seed, TriFunction<? super E, Integer, R, R> accumulator, final TriPredicate<? super E, Integer, ? super R> predicate) {
+    public <R> R forEach(final R seed, TriFunction<R, ? super E, Integer, R> accumulator, final TriPredicate<? super E, Integer, ? super R> predicate) {
         R result = seed;
 
         for (Map.Entry<E, MutableInt> entry : valueMap.entrySet()) {
-            result = accumulator.apply(entry.getKey(), entry.getValue().value(), result);
+            result = accumulator.apply(result, entry.getKey(), entry.getValue().value());
 
             if (predicate.test(entry.getKey(), entry.getValue().value(), result) == false) {
                 break;

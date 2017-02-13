@@ -1120,11 +1120,11 @@ public final class LongMultiset<E> implements Iterable<E> {
      * @param predicate break if the <code>predicate</code> returns false.
      * @return
      */
-    public <R> R forEach(final R seed, TriFunction<? super E, Long, R, R> accumulator, final TriPredicate<? super E, Long, ? super R> predicate) {
+    public <R> R forEach(final R seed, TriFunction<R, ? super E, Long, R> accumulator, final TriPredicate<? super E, Long, ? super R> predicate) {
         R result = seed;
 
         for (Map.Entry<E, MutableLong> entry : valueMap.entrySet()) {
-            result = accumulator.apply(entry.getKey(), entry.getValue().value(), result);
+            result = accumulator.apply(result, entry.getKey(), entry.getValue().value());
 
             if (predicate.test(entry.getKey(), entry.getValue().value(), result) == false) {
                 break;

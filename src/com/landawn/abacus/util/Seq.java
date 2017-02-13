@@ -507,47 +507,38 @@ public class Seq<T> implements Collection<T> {
         return size() == 0 ? OptionalDouble.empty() : N.averageDouble(coll, mapper);
     }
 
-    public void forEach(Consumer<? super T> action) {
-        for (T e : coll) {
-            action.accept(e);
-        }
+    public void forEach(final Consumer<? super T> action) {
+        forEach(0, size(), action);
     }
 
-    public void forEach(final IndexedConsumer<T, Seq<T>> action) {
-        int idx = 0;
-
-        for (T e : coll) {
-            action.accept(idx++, e, this);
-        }
+    public void forEach(int fromIndex, final int toIndex, final Consumer<? super T> action) {
+        N.forEach(coll, fromIndex, toIndex, action);
     }
 
-    public <R> R forEach(final R seed, final BiFunction<? super T, R, R> accumulator, final BiPredicate<? super T, ? super R> predicate) {
-        R result = seed;
-
-        for (T e : coll) {
-            result = accumulator.apply(e, result);
-
-            if (predicate.test(e, result) == false) {
-                break;
-            }
-        }
-
-        return result;
+    public void forEach(final IndexedConsumer<? super T, Collection<T>> action) {
+        forEach(0, size(), action);
     }
 
-    public <R> R forEach(final R seed, final IndexedBiFunction<? super T, Seq<T>, R, R> accumulator, final BiPredicate<? super T, ? super R> predicate) {
-        R result = seed;
-        int idx = 0;
+    public void forEach(int fromIndex, final int toIndex, final IndexedConsumer<? super T, Collection<T>> action) {
+        N.forEach(coll, fromIndex, toIndex, action);
+    }
 
-        for (T e : coll) {
-            result = accumulator.apply(idx++, e, this, result);
+    public <R> R forEach(final R seed, BiFunction<R, ? super T, R> accumulator, final BiPredicate<? super T, ? super R> predicate) {
+        return forEach(0, size(), seed, accumulator, predicate);
+    }
 
-            if (predicate.test(e, result) == false) {
-                break;
-            }
-        }
+    public <R> R forEach(int fromIndex, final int toIndex, final R seed, final BiFunction<R, ? super T, R> accumulator,
+            final BiPredicate<? super T, ? super R> predicate) {
+        return N.forEach(coll, fromIndex, toIndex, seed, accumulator, predicate);
+    }
 
-        return result;
+    public <R> R forEach(final R seed, final IndexedBiFunction<R, ? super T, Collection<T>, R> accumulator, final BiPredicate<? super T, ? super R> predicate) {
+        return forEach(0, size(), seed, accumulator, predicate);
+    }
+
+    public <R> R forEach(int fromIndex, final int toIndex, final R seed, final IndexedBiFunction<R, ? super T, Collection<T>, R> accumulator,
+            final BiPredicate<? super T, ? super R> predicate) {
+        return N.forEach(coll, fromIndex, toIndex, seed, accumulator, predicate);
     }
 
     public OptionalNullable<T> first() {

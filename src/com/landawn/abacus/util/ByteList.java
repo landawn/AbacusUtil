@@ -799,11 +799,7 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
 
     @Override
     public void forEach(final int fromIndex, final int toIndex, ByteConsumer action) {
-        if (fromIndex <= toIndex) {
-            checkIndex(fromIndex, toIndex);
-        } else {
-            checkIndex(toIndex, fromIndex);
-        }
+        N.checkIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, size);
 
         if (size > 0) {
             if (fromIndex <= toIndex) {
@@ -811,7 +807,7 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
                     action.accept(elementData[i]);
                 }
             } else {
-                for (int i = fromIndex - 1; i >= toIndex; i--) {
+                for (int i = N.min(size - 1, fromIndex); i > toIndex; i--) {
                     action.accept(elementData[i]);
                 }
             }
@@ -823,11 +819,7 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
     }
 
     public void forEach(final int fromIndex, final int toIndex, IndexedByteConsumer action) {
-        if (fromIndex <= toIndex) {
-            checkIndex(fromIndex, toIndex);
-        } else {
-            checkIndex(toIndex, fromIndex);
-        }
+        N.checkIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, size);
 
         if (size > 0) {
             if (fromIndex <= toIndex) {
@@ -835,7 +827,7 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
                     action.accept(i, elementData[i], elementData);
                 }
             } else {
-                for (int i = fromIndex - 1; i >= toIndex; i--) {
+                for (int i = N.min(size - 1, fromIndex); i > toIndex; i--) {
                     action.accept(i, elementData[i], elementData);
                 }
             }

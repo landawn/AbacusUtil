@@ -818,11 +818,11 @@ public interface DataSet extends Iterable<Object[]> {
      */
     void forEach(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Consumer<? super Object[]> action, boolean shareRowArray);
 
-    <R> R forEach(R seed, BiFunction<? super Object[], R, R> accumulator, BiPredicate<? super Object[], ? super R> predicate);
+    <R> R forEach(R seed, BiFunction<R, ? super Object[], R> accumulator, BiPredicate<? super Object[], ? super R> predicate);
 
-    <R> R forEach(R seed, BiFunction<? super Object[], R, R> accumulator, BiPredicate<? super Object[], ? super R> predicate, boolean shareRowArray);
+    <R> R forEach(R seed, BiFunction<R, ? super Object[], R> accumulator, BiPredicate<? super Object[], ? super R> predicate, boolean shareRowArray);
 
-    <R> R forEach(Collection<String> columnNames, R seed, BiFunction<? super Object[], R, R> accumulator, BiPredicate<? super Object[], ? super R> predicate);
+    <R> R forEach(Collection<String> columnNames, R seed, BiFunction<R, ? super Object[], R> accumulator, BiPredicate<? super Object[], ? super R> predicate);
 
     /**
      * Execute <code>accumulator</code> on each element till <code>predicate</code> returns false.
@@ -834,15 +834,15 @@ public interface DataSet extends Iterable<Object[]> {
      * @param shareRowArray
      * @return
      */
-    <R> R forEach(Collection<String> columnNames, R seed, BiFunction<? super Object[], R, R> accumulator, BiPredicate<? super Object[], ? super R> predicate,
+    <R> R forEach(Collection<String> columnNames, R seed, BiFunction<R, ? super Object[], R> accumulator, BiPredicate<? super Object[], ? super R> predicate,
             boolean shareRowArray);
 
-    <R> R forEach(int fromRowIndex, int toRowIndex, R seed, BiFunction<? super Object[], R, R> accumulator, BiPredicate<? super Object[], ? super R> predicate);
+    <R> R forEach(int fromRowIndex, int toRowIndex, R seed, BiFunction<R, ? super Object[], R> accumulator, BiPredicate<? super Object[], ? super R> predicate);
 
-    <R> R forEach(int fromRowIndex, int toRowIndex, R seed, BiFunction<? super Object[], R, R> accumulator, BiPredicate<? super Object[], ? super R> predicate,
+    <R> R forEach(int fromRowIndex, int toRowIndex, R seed, BiFunction<R, ? super Object[], R> accumulator, BiPredicate<? super Object[], ? super R> predicate,
             boolean shareRowArray);
 
-    <R> R forEach(Collection<String> columnNames, int fromRowIndex, int toRowIndex, R seed, BiFunction<? super Object[], R, R> accumulator,
+    <R> R forEach(Collection<String> columnNames, int fromRowIndex, int toRowIndex, R seed, BiFunction<R, ? super Object[], R> accumulator,
             BiPredicate<? super Object[], ? super R> predicate);
 
     /**
@@ -857,7 +857,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param shareRowArray
      * @return
      */
-    <R> R forEach(Collection<String> columnNames, int fromRowIndex, int toRowIndex, R seed, BiFunction<? super Object[], R, R> accumulator,
+    <R> R forEach(Collection<String> columnNames, int fromRowIndex, int toRowIndex, R seed, BiFunction<R, ? super Object[], R> accumulator,
             BiPredicate<? super Object[], ? super R> predicate, boolean shareRowArray);
 
     /**

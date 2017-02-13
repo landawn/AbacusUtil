@@ -3,6 +3,8 @@
 
 1, Add reduce method to ByteList/IntList/...
 
+2*, Refactoring: forEach(..., <..., R, R> accumulator, ...) to forEach(..., <R, ..., R> accumulator, ...) to keep consistent with reduce method.
+
 3, Improvements and bug fix.
 
 

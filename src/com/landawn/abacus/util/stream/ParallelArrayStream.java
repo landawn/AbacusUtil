@@ -1795,7 +1795,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <U> U forEach(U seed, BiFunction<? super T, U, U> accumulator, BiPredicate<? super T, ? super U> predicate) {
+    public <U> U forEach(U seed, BiFunction<U, ? super T, U> accumulator, BiPredicate<? super T, ? super U> predicate) {
         if (logger.isWarnEnabled()) {
             logger.warn("'forEach' is sequentially executed in parallel stream");
         }

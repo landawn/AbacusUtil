@@ -109,7 +109,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> filter(final Predicate<? super T> predicate) {
-        return new IteratorStream<T>(new ImmutableIterator<T>() {
+        return new IteratorStream<>(new ImmutableIterator<T>() {
             private boolean hasNext = false;
             private T next = null;
 
@@ -144,7 +144,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> takeWhile(final Predicate<? super T> predicate) {
-        return new IteratorStream<T>(new ImmutableIterator<T>() {
+        return new IteratorStream<>(new ImmutableIterator<T>() {
             private boolean hasMore = true;
             private boolean hasNext = false;
             private T next = null;
@@ -180,7 +180,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> dropWhile(final Predicate<? super T> predicate) {
-        return new IteratorStream<T>(new ImmutableIterator<T>() {
+        return new IteratorStream<>(new ImmutableIterator<T>() {
             private boolean hasNext = false;
             private T next = null;
             private boolean dropped = false;
@@ -224,7 +224,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public <R> Stream<R> map(final Function<? super T, ? extends R> mapper) {
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -424,7 +424,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     <R> Stream<R> flatMap0(final Function<? super T, ? extends Iterator<? extends R>> mapper) {
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             private Iterator<? extends R> cur = null;
 
             @Override
@@ -626,7 +626,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
     public Stream<ObjectList<T>> split0(final int size) {
         N.checkArgument(size > 0, "'size' must be bigger than 0");
 
-        return new IteratorStream<ObjectList<T>>(new ImmutableIterator<ObjectList<T>>() {
+        return new IteratorStream<>(new ImmutableIterator<ObjectList<T>>() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -652,7 +652,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<List<T>> split2(final int size) {
-        return new IteratorStream<List<T>>(new ImmutableIterator<List<T>>() {
+        return new IteratorStream<>(new ImmutableIterator<List<T>>() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -680,7 +680,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<Set<T>> split3(final int size) {
-        return new IteratorStream<Set<T>>(new ImmutableIterator<Set<T>>() {
+        return new IteratorStream<>(new ImmutableIterator<Set<T>>() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -709,7 +709,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
     @Override
     public <U> Stream<ObjectList<T>> split0(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
-        return new IteratorStream<ObjectList<T>>(new ImmutableIterator<ObjectList<T>>() {
+        return new IteratorStream<>(new ImmutableIterator<ObjectList<T>>() {
             private T next = (T) NONE;
             private boolean preCondition = false;
 
@@ -755,7 +755,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public <U> Stream<List<T>> split2(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
-        return new IteratorStream<List<T>>(new ImmutableIterator<List<T>>() {
+        return new IteratorStream<>(new ImmutableIterator<List<T>>() {
             private T next = (T) NONE;
             private boolean preCondition = false;
 
@@ -801,7 +801,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public <U> Stream<Set<T>> split3(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
-        return new IteratorStream<Set<T>>(new ImmutableIterator<Set<T>>() {
+        return new IteratorStream<>(new ImmutableIterator<Set<T>>() {
             private T next = (T) NONE;
             private boolean preCondition = false;
 
@@ -851,7 +851,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
             throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
         }
 
-        return new IteratorStream<ObjectList<T>>(new ImmutableIterator<ObjectList<T>>() {
+        return new IteratorStream<>(new ImmutableIterator<ObjectList<T>>() {
             private ObjectList<T> prev = null;
 
             @Override
@@ -882,7 +882,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
                     cnt = windowSize - increment;
 
                     if (cnt <= 8) {
-                        result = new ObjectList<T>(windowSize);
+                        result = new ObjectList<>(windowSize);
 
                         for (int i = windowSize - cnt; i < windowSize; i++) {
                             result.add(prev.get(i));
@@ -893,7 +893,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
                         result = ObjectList.of((T[]) dest, cnt);
                     }
                 } else {
-                    result = new ObjectList<T>(windowSize);
+                    result = new ObjectList<>(windowSize);
                 }
 
                 while (cnt++ < windowSize && elements.hasNext()) {
@@ -911,7 +911,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
             throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
         }
 
-        return new IteratorStream<List<T>>(new ImmutableIterator<List<T>>() {
+        return new IteratorStream<>(new ImmutableIterator<List<T>>() {
             private List<T> prev = null;
 
             @Override
@@ -968,7 +968,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
     public Stream<T> top(final int n, final Comparator<? super T> comparator) {
         N.checkArgument(n > 0, "'n' must be bigger than 0");
 
-        return new IteratorStream<T>(new ImmutableIterator<T>() {
+        return new IteratorStream<>(new ImmutableIterator<T>() {
             T[] a = null;
             int cursor = 0;
             int toIndex;
@@ -1047,7 +1047,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
                         }
                     };
 
-                    final Queue<Pair<T, Long>> heap = new PriorityQueue<Pair<T, Long>>(n, pairCmp);
+                    final Queue<Pair<T, Long>> heap = new PriorityQueue<>(n, pairCmp);
 
                     Pair<T, Long> pair = null;
                     for (long i = 0; elements.hasNext(); i++) {
@@ -1095,7 +1095,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
             return this;
         }
 
-        return new IteratorStream<T>(new ImmutableIterator<T>() {
+        return new IteratorStream<>(new ImmutableIterator<T>() {
             T[] a = null;
             int toIndex = 0;
             int cursor = 0;
@@ -1178,7 +1178,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> peek(final Consumer<? super T> action) {
-        return new IteratorStream<T>(new ImmutableIterator<T>() {
+        return new IteratorStream<>(new ImmutableIterator<T>() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -1199,7 +1199,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
             throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
         }
 
-        return new IteratorStream<T>(new ImmutableIterator<T>() {
+        return new IteratorStream<>(new ImmutableIterator<T>() {
             private long cnt = 0;
 
             @Override
@@ -1232,7 +1232,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
             return this;
         }
 
-        return new IteratorStream<T>(new ImmutableIterator<T>() {
+        return new IteratorStream<>(new ImmutableIterator<T>() {
             private boolean skipped = false;
 
             @Override
@@ -1295,13 +1295,13 @@ final class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <U> U forEach(U seed, BiFunction<? super T, U, U> accumulator, BiPredicate<? super T, ? super U> predicate) {
+    public <U> U forEach(U seed, BiFunction<U, ? super T, U> accumulator, BiPredicate<? super T, ? super U> predicate) {
         U result = seed;
         T next = null;
 
         while (elements.hasNext()) {
             next = elements.next();
-            result = accumulator.apply(next, result);
+            result = accumulator.apply(result, next);
 
             if (predicate.test(next, result) == false) {
                 break;
@@ -1550,7 +1550,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
             }
 
             head = elements.next();
-            tail = new IteratorStream<T>(elements, closeHandlers, sorted, cmp);
+            tail = new IteratorStream<>(elements, closeHandlers, sorted, cmp);
         }
 
         return head;
@@ -1564,7 +1564,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
             }
 
             head = elements.next();
-            tail = new IteratorStream<T>(elements, closeHandlers, sorted, cmp);
+            tail = new IteratorStream<>(elements, closeHandlers, sorted, cmp);
         }
 
         return tail;
@@ -1578,7 +1578,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
             }
 
             final Object[] a = this.toArray();
-            head2 = new ArrayStream<T>((T[]) a, 0, a.length - 1, closeHandlers, sorted, cmp);
+            head2 = new ArrayStream<>((T[]) a, 0, a.length - 1, closeHandlers, sorted, cmp);
             tail2 = (T) a[a.length - 1];
         }
 
@@ -1593,7 +1593,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
             }
 
             final Object[] a = this.toArray();
-            head2 = new ArrayStream<T>((T[]) a, 0, a.length - 1, closeHandlers, sorted, cmp);
+            head2 = new ArrayStream<>((T[]) a, 0, a.length - 1, closeHandlers, sorted, cmp);
             tail2 = (T) a[a.length - 1];
         }
 
@@ -1671,7 +1671,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
         }
 
         comparator = comparator == null ? OBJECT_COMPARATOR : comparator;
-        final Queue<T> queue = new PriorityQueue<T>(k, comparator);
+        final Queue<T> queue = new PriorityQueue<>(k, comparator);
         T e = null;
 
         while (elements.hasNext()) {
@@ -1792,7 +1792,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
             throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
 
-        return new ParallelIteratorStream<T>(elements, closeHandlers, sorted, cmp, maxThreadNum, splitor);
+        return new ParallelIteratorStream<>(elements, closeHandlers, sorted, cmp, maxThreadNum, splitor);
     }
 
     @Override
@@ -1805,6 +1805,6 @@ final class IteratorStream<T> extends AbstractStream<T> {
 
         newCloseHandlers.add(closeHandler);
 
-        return new IteratorStream<T>(elements, newCloseHandlers, sorted, cmp);
+        return new IteratorStream<>(elements, newCloseHandlers, sorted, cmp);
     }
 }

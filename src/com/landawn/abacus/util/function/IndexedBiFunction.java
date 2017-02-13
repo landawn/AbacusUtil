@@ -24,13 +24,13 @@ import com.landawn.abacus.util.N;
  * 
  * @author Haiyang Li
  */
-public interface IndexedBiFunction<T, A, U, R> {
+public interface IndexedBiFunction<U, T, A, R> {
 
-    R apply(int idx, T e, A a, U u);
+    R apply(U u, int idx, T e, A a);
 
-    default <V> IndexedBiFunction<T, A, U, V> andThen(Function<? super R, ? extends V> after) {
+    default <V> IndexedBiFunction<U, T, A, V> andThen(Function<? super R, ? extends V> after) {
         N.requireNonNull(after);
 
-        return (idx, e, a, u) -> after.apply(apply(idx, e, a, u));
+        return (u, idx, e, a) -> after.apply(apply(u, idx, e, a));
     }
 }

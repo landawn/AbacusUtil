@@ -21480,7 +21480,7 @@ public final class N {
     }
 
     public static <T> void forEach(final T[] a, final int fromIndex, final int toIndex, final IndexedConsumer<? super T, T[]> action) {
-        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
             return;
@@ -21491,13 +21491,13 @@ public final class N {
                 action.accept(i, a[i], a);
             }
         } else {
-            for (int i = fromIndex - 1; i >= toIndex; i--) {
+            for (int i = min(a.length - 1, toIndex); i > toIndex; i--) {
                 action.accept(i, a[i], a);
             }
         }
     }
 
-    public static <T, R> R forEach(final T[] a, final R seed, final BiFunction<? super T, R, R> accumulator,
+    public static <T, R> R forEach(final T[] a, final R seed, final BiFunction<R, ? super T, R> accumulator,
             final BiPredicate<? super T, ? super R> predicate) {
         if (N.isNullOrEmpty(a)) {
             return seed;
@@ -21516,16 +21516,38 @@ public final class N {
      * @param predicate break if the <code>predicate</code> returns false.
      * @return
      */
-    public static <T, R> R forEach(final T[] a, final int fromIndex, final int toIndex, final R seed, final BiFunction<? super T, R, R> accumulator,
+    public static <T, R> R forEach(final T[] a, final int fromIndex, final int toIndex, final R seed, final BiFunction<R, ? super T, R> accumulator,
             final BiPredicate<? super T, ? super R> predicate) {
+        N.checkIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, a == null ? 0 : a.length);
+
         if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
             return seed;
         }
 
-        return ObjectList.of(a).forEach(seed, accumulator, predicate);
+        R result = seed;
+
+        if (fromIndex <= toIndex) {
+            for (int i = fromIndex; i < toIndex; i++) {
+                result = accumulator.apply(result, a[i]);
+
+                if (predicate.test(a[i], result) == false) {
+                    break;
+                }
+            }
+        } else {
+            for (int i = N.min(a.length - 1, fromIndex); i > toIndex; i--) {
+                result = accumulator.apply(result, a[i]);
+
+                if (predicate.test(a[i], result) == false) {
+                    break;
+                }
+            }
+        }
+
+        return result;
     }
 
-    public static <T, R> R forEach(final T[] a, final R seed, final IndexedBiFunction<? super T, T[], R, R> accumulator,
+    public static <T, R> R forEach(final T[] a, final R seed, final IndexedBiFunction<R, ? super T, T[], R> accumulator,
             final BiPredicate<? super T, ? super R> predicate) {
         if (N.isNullOrEmpty(a)) {
             return seed;
@@ -21544,9 +21566,9 @@ public final class N {
      * @param predicate break if the <code>till</code> returns false.
      * @return
      */
-    public static <T, R> R forEach(final T[] a, final int fromIndex, final int toIndex, final R seed, final IndexedBiFunction<? super T, T[], R, R> accumulator,
+    public static <T, R> R forEach(final T[] a, final int fromIndex, final int toIndex, final R seed, final IndexedBiFunction<R, ? super T, T[], R> accumulator,
             final BiPredicate<? super T, ? super R> predicate) {
-        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
             return seed;
@@ -21556,15 +21578,15 @@ public final class N {
 
         if (fromIndex <= toIndex) {
             for (int i = fromIndex; i < toIndex; i++) {
-                result = accumulator.apply(i, a[i], a, result);
+                result = accumulator.apply(result, i, a[i], a);
 
                 if (predicate.test(a[i], result) == false) {
                     break;
                 }
             }
         } else {
-            for (int i = fromIndex - 1; i >= toIndex; i--) {
-                result = accumulator.apply(i, a[i], a, result);
+            for (int i = N.min(a.length - 1, fromIndex); i > toIndex; i--) {
+                result = accumulator.apply(result, i, a[i], a);
 
                 if (predicate.test(a[i], result) == false) {
                     break;
@@ -21597,16 +21619,14 @@ public final class N {
      * @param toIndex
      * @param action
      */
-    public static <T, C extends Collection<? extends T>> void forEach(final C c, final int fromIndex, final int toIndex, final Consumer<? super T> action) {
-        if (fromIndex <= toIndex) {
-            N.checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
-        } else {
-            N.checkIndex(toIndex, fromIndex, c == null ? 0 : c.size());
-        }
+    public static <T, C extends Collection<? extends T>> void forEach(final C c, int fromIndex, final int toIndex, final Consumer<? super T> action) {
+        N.checkIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, c == null ? 0 : c.size());
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return;
         }
+
+        fromIndex = N.min(c.size() - 1, fromIndex);
 
         if (c instanceof List && c instanceof RandomAccess) {
             final List<T> list = (List<T>) c;
@@ -21616,7 +21636,7 @@ public final class N {
                     action.accept(list.get(i));
                 }
             } else {
-                for (int i = fromIndex - 1; i >= toIndex; i--) {
+                for (int i = fromIndex; i > toIndex; i--) {
                     action.accept(list.get(i));
                 }
             }
@@ -21638,7 +21658,7 @@ public final class N {
                     }
                 }
             } else {
-                while (idx < toIndex && iter.hasNext()) {
+                while (idx <= toIndex && iter.hasNext()) {
                     iter.next();
                     idx++;
                 }
@@ -21646,9 +21666,9 @@ public final class N {
                 final T[] a = (T[]) new Object[fromIndex - toIndex];
 
                 while (iter.hasNext()) {
-                    a[idx - toIndex] = iter.next();
+                    a[idx - 1 - toIndex] = iter.next();
 
-                    if (++idx >= fromIndex) {
+                    if (idx++ >= fromIndex) {
                         break;
                     }
                 }
@@ -21683,17 +21703,14 @@ public final class N {
      * @param toIndex
      * @param action
      */
-    public static <T, C extends Collection<? extends T>> void forEach(final C c, final int fromIndex, final int toIndex,
-            final IndexedConsumer<? super T, C> action) {
-        if (fromIndex <= toIndex) {
-            N.checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
-        } else {
-            N.checkIndex(toIndex, fromIndex, c == null ? 0 : c.size());
-        }
+    public static <T, C extends Collection<? extends T>> void forEach(final C c, int fromIndex, final int toIndex, final IndexedConsumer<? super T, C> action) {
+        N.checkIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, c == null ? 0 : c.size());
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return;
         }
+
+        fromIndex = N.min(c.size() - 1, fromIndex);
 
         if (c instanceof List && c instanceof RandomAccess) {
             final List<T> list = (List<T>) c;
@@ -21703,7 +21720,7 @@ public final class N {
                     action.accept(i, list.get(i), c);
                 }
             } else {
-                for (int i = fromIndex - 1; i >= toIndex; i--) {
+                for (int i = fromIndex; i > toIndex; i--) {
                     action.accept(i, list.get(i), c);
                 }
             }
@@ -21725,7 +21742,7 @@ public final class N {
                     }
                 }
             } else {
-                while (idx < toIndex && iter.hasNext()) {
+                while (idx <= toIndex && iter.hasNext()) {
                     iter.next();
                     idx++;
                 }
@@ -21733,21 +21750,21 @@ public final class N {
                 final T[] a = (T[]) new Object[fromIndex - toIndex];
 
                 while (iter.hasNext()) {
-                    a[idx - toIndex] = iter.next();
+                    a[idx - 1 - toIndex] = iter.next();
 
-                    if (++idx >= fromIndex) {
+                    if (idx++ >= fromIndex) {
                         break;
                     }
                 }
 
                 for (int i = a.length - 1; i >= 0; i--) {
-                    action.accept(i + toIndex, a[i], c);
+                    action.accept(i + toIndex + 1, a[i], c);
                 }
             }
         }
     }
 
-    public static <T, C extends Collection<? extends T>, R> R forEach(final C c, final R seed, BiFunction<? super T, R, R> accumulator,
+    public static <T, C extends Collection<? extends T>, R> R forEach(final C c, final R seed, BiFunction<R, ? super T, R> accumulator,
             final BiPredicate<? super T, ? super R> predicate) {
         if (N.isNullOrEmpty(c)) {
             return seed;
@@ -21766,17 +21783,15 @@ public final class N {
      * @param predicate break if the <code>predicate</code> returns false.
      * @return
      */
-    public static <T, C extends Collection<? extends T>, R> R forEach(final C c, final int fromIndex, final int toIndex, final R seed,
-            final BiFunction<? super T, R, R> accumulator, final BiPredicate<? super T, ? super R> predicate) {
-        if (fromIndex <= toIndex) {
-            N.checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
-        } else {
-            N.checkIndex(toIndex, fromIndex, c == null ? 0 : c.size());
-        }
+    public static <T, C extends Collection<? extends T>, R> R forEach(final C c, int fromIndex, final int toIndex, final R seed,
+            final BiFunction<R, ? super T, R> accumulator, final BiPredicate<? super T, ? super R> predicate) {
+        N.checkIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, c == null ? 0 : c.size());
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return seed;
         }
+
+        fromIndex = N.min(c.size() - 1, fromIndex);
 
         R result = seed;
 
@@ -21785,15 +21800,15 @@ public final class N {
 
             if (fromIndex <= toIndex) {
                 for (int i = fromIndex; i < toIndex; i++) {
-                    result = accumulator.apply(list.get(i), result);
+                    result = accumulator.apply(result, list.get(i));
 
                     if (predicate.test(list.get(i), result) == false) {
                         break;
                     }
                 }
             } else {
-                for (int i = fromIndex - 1; i >= toIndex; i--) {
-                    result = accumulator.apply(list.get(i), result);
+                for (int i = fromIndex; i > toIndex; i--) {
+                    result = accumulator.apply(result, list.get(i));
 
                     if (predicate.test(list.get(i), result) == false) {
                         break;
@@ -21814,7 +21829,7 @@ public final class N {
                 while (iter.hasNext()) {
                     next = iter.next();
 
-                    result = accumulator.apply(next, result);
+                    result = accumulator.apply(result, next);
 
                     if (predicate.test(next, result) == false) {
                         break;
@@ -21825,7 +21840,7 @@ public final class N {
                     }
                 }
             } else {
-                while (idx < toIndex && iter.hasNext()) {
+                while (idx <= toIndex && iter.hasNext()) {
                     iter.next();
                     idx++;
                 }
@@ -21833,15 +21848,15 @@ public final class N {
                 final T[] a = (T[]) new Object[fromIndex - toIndex];
 
                 while (iter.hasNext()) {
-                    a[idx - toIndex] = iter.next();
+                    a[idx - 1 - toIndex] = iter.next();
 
-                    if (++idx >= fromIndex) {
+                    if (idx++ >= fromIndex) {
                         break;
                     }
                 }
 
                 for (int i = a.length - 1; i >= 0; i--) {
-                    result = accumulator.apply(a[i], result);
+                    result = accumulator.apply(result, a[i]);
 
                     if (predicate.test(a[i], result) == false) {
                         break;
@@ -21853,7 +21868,7 @@ public final class N {
         return result;
     }
 
-    public static <T, C extends Collection<? extends T>, R> R forEach(final C c, final R seed, final IndexedBiFunction<? super T, C, R, R> accumulator,
+    public static <T, C extends Collection<? extends T>, R> R forEach(final C c, final R seed, final IndexedBiFunction<R, ? super T, C, R> accumulator,
             final BiPredicate<? super T, ? super R> predicate) {
         if (N.isNullOrEmpty(c)) {
             return seed;
@@ -21872,17 +21887,15 @@ public final class N {
      * @param predicate break if the <code>predicate</code> returns false.
      * @return
      */
-    public static <T, C extends Collection<? extends T>, R> R forEach(final C c, final int fromIndex, final int toIndex, final R seed,
-            final IndexedBiFunction<? super T, C, R, R> accumulator, final BiPredicate<? super T, ? super R> predicate) {
-        if (fromIndex <= toIndex) {
-            N.checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
-        } else {
-            N.checkIndex(toIndex, fromIndex, c == null ? 0 : c.size());
-        }
+    public static <T, C extends Collection<? extends T>, R> R forEach(final C c, int fromIndex, final int toIndex, final R seed,
+            final IndexedBiFunction<R, ? super T, C, R> accumulator, final BiPredicate<? super T, ? super R> predicate) {
+        N.checkIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, c == null ? 0 : c.size());
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return seed;
         }
+
+        fromIndex = N.min(c.size() - 1, fromIndex);
 
         R result = seed;
 
@@ -21891,15 +21904,15 @@ public final class N {
 
             if (fromIndex <= toIndex) {
                 for (int i = fromIndex; i < toIndex; i++) {
-                    result = accumulator.apply(i, list.get(i), c, result);
+                    result = accumulator.apply(result, i, list.get(i), c);
 
                     if (predicate.test(list.get(i), result) == false) {
                         break;
                     }
                 }
             } else {
-                for (int i = fromIndex - 1; i >= toIndex; i--) {
-                    result = accumulator.apply(i, list.get(i), c, result);
+                for (int i = fromIndex; i > toIndex; i--) {
+                    result = accumulator.apply(result, i, list.get(i), c);
 
                     if (predicate.test(list.get(i), result) == false) {
                         break;
@@ -21920,7 +21933,7 @@ public final class N {
 
                 while (iter.hasNext()) {
                     next = iter.next();
-                    result = accumulator.apply(idx, iter.next(), c, result);
+                    result = accumulator.apply(result, idx, iter.next(), c);
 
                     if (predicate.test(next, result) == false) {
                         break;
@@ -21931,7 +21944,7 @@ public final class N {
                     }
                 }
             } else {
-                while (idx < toIndex && iter.hasNext()) {
+                while (idx <= toIndex && iter.hasNext()) {
                     iter.next();
                     idx++;
                 }
@@ -21939,15 +21952,15 @@ public final class N {
                 final T[] a = (T[]) new Object[fromIndex - toIndex];
 
                 while (iter.hasNext()) {
-                    a[idx - toIndex] = iter.next();
+                    a[idx - 1 - toIndex] = iter.next();
 
-                    if (++idx >= fromIndex) {
+                    if (idx++ >= fromIndex) {
                         break;
                     }
                 }
 
                 for (int i = a.length - 1; i >= 0; i--) {
-                    result = accumulator.apply(i + toIndex, a[i], c, result);
+                    result = accumulator.apply(result, i + toIndex + 1, a[i], c);
 
                     if (predicate.test(a[i], result) == false) {
                         break;

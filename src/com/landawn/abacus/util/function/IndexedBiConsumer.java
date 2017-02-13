@@ -22,16 +22,16 @@ import com.landawn.abacus.util.N;
  * 
  * @author Haiyang Li
  */
-public interface IndexedBiConsumer<T, A, U> {
+public interface IndexedBiConsumer<U, T, A> {
 
-    void accept(int idx, T e, A a, U u);
+    void accept(U u, int idx, T e, A a);
 
-    default IndexedBiConsumer<T, A, U> andThen(IndexedBiConsumer<T, A, U> after) {
+    default IndexedBiConsumer<U, T, A> andThen(IndexedBiConsumer<U, T, A> after) {
         N.requireNonNull(after);
 
-        return (idx, e, a, u) -> {
-            accept(idx, e, a, u);
-            after.accept(idx, e, a, u);
+        return (u, idx, e, a) -> {
+            accept(u, idx, e, a);
+            after.accept(u, idx, e, a);
         };
     }
 }

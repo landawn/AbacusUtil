@@ -100,7 +100,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> filter(final Predicate<? super T> predicate) {
-        return new IteratorStream<T>(new ImmutableIterator<T>() {
+        return new IteratorStream<>(new ImmutableIterator<T>() {
             private boolean hasNext = false;
             private int cursor = fromIndex;
 
@@ -133,7 +133,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> takeWhile(final Predicate<? super T> predicate) {
-        return new IteratorStream<T>(new ImmutableIterator<T>() {
+        return new IteratorStream<>(new ImmutableIterator<T>() {
             private boolean hasMore = true;
             private boolean hasNext = false;
             private int cursor = fromIndex;
@@ -166,7 +166,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> dropWhile(final Predicate<? super T> predicate) {
-        return new IteratorStream<T>(new ImmutableIterator<T>() {
+        return new IteratorStream<>(new ImmutableIterator<T>() {
             private boolean hasNext = false;
             private int cursor = fromIndex;
             private boolean dropped = false;
@@ -206,7 +206,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public <R> Stream<R> map(final Function<? super T, ? extends R> mapper) {
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             int cursor = fromIndex;
 
             @Override
@@ -542,7 +542,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     <R> Stream<R> flatMap0(final Function<? super T, ? extends Iterator<? extends R>> mapper) {
-        return new IteratorStream<R>(new ImmutableIterator<R>() {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
             private int cursor = fromIndex;
             private Iterator<? extends R> cur = null;
 
@@ -752,7 +752,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
     public Stream<Stream<T>> split(final int size) {
         N.checkArgument(size > 0, "'size' must be bigger than 0");
 
-        return new IteratorStream<Stream<T>>(new ImmutableIterator<Stream<T>>() {
+        return new IteratorStream<>(new ImmutableIterator<Stream<T>>() {
             private int cursor = fromIndex;
 
             @Override
@@ -766,7 +766,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
                     throw new NoSuchElementException();
                 }
 
-                return new ArrayStream<T>(elements, cursor, (cursor = size < toIndex - cursor ? cursor + size : toIndex), null, sorted, cmp);
+                return new ArrayStream<>(elements, cursor, (cursor = size < toIndex - cursor ? cursor + size : toIndex), null, sorted, cmp);
             }
 
         }, closeHandlers);
@@ -776,7 +776,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
     public Stream<ObjectList<T>> split0(final int size) {
         N.checkArgument(size > 0, "'size' must be bigger than 0");
 
-        return new IteratorStream<ObjectList<T>>(new ImmutableIterator<ObjectList<T>>() {
+        return new IteratorStream<>(new ImmutableIterator<ObjectList<T>>() {
             private int cursor = fromIndex;
 
             @Override
@@ -798,7 +798,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<List<T>> split2(final int size) {
-        return new IteratorStream<List<T>>(new ImmutableIterator<List<T>>() {
+        return new IteratorStream<>(new ImmutableIterator<List<T>>() {
             private int cursor = fromIndex;
 
             @Override
@@ -820,7 +820,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<Set<T>> split3(final int size) {
-        return new IteratorStream<Set<T>>(new ImmutableIterator<Set<T>>() {
+        return new IteratorStream<>(new ImmutableIterator<Set<T>>() {
             private int cursor = fromIndex;
 
             @Override
@@ -848,7 +848,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public <U> Stream<Stream<T>> split(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
-        return new IteratorStream<Stream<T>>(new ImmutableIterator<Stream<T>>() {
+        return new IteratorStream<>(new ImmutableIterator<Stream<T>>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
 
@@ -880,7 +880,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
                     }
                 }
 
-                return new ArrayStream<T>(elements, from, cursor, null, sorted, cmp);
+                return new ArrayStream<>(elements, from, cursor, null, sorted, cmp);
             }
         }, closeHandlers);
     }
@@ -888,7 +888,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
     @Override
     public <U> Stream<ObjectList<T>> split0(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
-        return new IteratorStream<ObjectList<T>>(new ImmutableIterator<ObjectList<T>>() {
+        return new IteratorStream<>(new ImmutableIterator<ObjectList<T>>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
 
@@ -920,14 +920,14 @@ final class ArrayStream<T> extends AbstractStream<T> {
                     }
                 }
 
-                return new ObjectList<T>(N.copyOfRange(elements, from, cursor));
+                return new ObjectList<>(N.copyOfRange(elements, from, cursor));
             }
         }, closeHandlers);
     }
 
     @Override
     public <U> Stream<List<T>> split2(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
-        return new IteratorStream<List<T>>(new ImmutableIterator<List<T>>() {
+        return new IteratorStream<>(new ImmutableIterator<List<T>>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
 
@@ -969,7 +969,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public <U> Stream<Set<T>> split3(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
-        return new IteratorStream<Set<T>>(new ImmutableIterator<Set<T>>() {
+        return new IteratorStream<>(new ImmutableIterator<Set<T>>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
 
@@ -1017,8 +1017,8 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
         final Stream<T>[] a = new Stream[2];
         final int middleIndex = n < toIndex - fromIndex ? fromIndex + n : toIndex;
-        a[0] = middleIndex == fromIndex ? (Stream<T>) Stream.empty() : new ArrayStream<T>(elements, fromIndex, middleIndex, null, sorted, cmp);
-        a[1] = middleIndex == toIndex ? (Stream<T>) Stream.empty() : new ArrayStream<T>(elements, middleIndex, toIndex, null, sorted, cmp);
+        a[0] = middleIndex == fromIndex ? (Stream<T>) Stream.empty() : new ArrayStream<>(elements, fromIndex, middleIndex, null, sorted, cmp);
+        a[1] = middleIndex == toIndex ? (Stream<T>) Stream.empty() : new ArrayStream<>(elements, middleIndex, toIndex, null, sorted, cmp);
 
         return new ArrayStream<>(a, closeHandlers);
     }
@@ -1046,7 +1046,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
             throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
         }
 
-        return new IteratorStream<Stream<T>>(new ImmutableIterator<Stream<T>>() {
+        return new IteratorStream<>(new ImmutableIterator<Stream<T>>() {
             private int cursor = fromIndex;
 
             @Override
@@ -1060,7 +1060,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
                     throw new NoSuchElementException();
                 }
 
-                final Stream<T> result = new ArrayStream<T>(elements, cursor, windowSize < toIndex - cursor ? cursor + windowSize : toIndex, null, sorted, cmp);
+                final Stream<T> result = new ArrayStream<>(elements, cursor, windowSize < toIndex - cursor ? cursor + windowSize : toIndex, null, sorted, cmp);
 
                 cursor = increment < toIndex - cursor && windowSize < toIndex - cursor ? cursor + increment : toIndex;
 
@@ -1076,7 +1076,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
             throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
         }
 
-        return new IteratorStream<ObjectList<T>>(new ImmutableIterator<ObjectList<T>>() {
+        return new IteratorStream<>(new ImmutableIterator<ObjectList<T>>() {
             private int cursor = fromIndex;
 
             @Override
@@ -1106,7 +1106,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
             throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
         }
 
-        return new IteratorStream<List<T>>(new ImmutableIterator<List<T>>() {
+        return new IteratorStream<>(new ImmutableIterator<List<T>>() {
             private int cursor = fromIndex;
 
             @Override
@@ -1142,9 +1142,9 @@ final class ArrayStream<T> extends AbstractStream<T> {
         if (n >= toIndex - fromIndex) {
             return this;
         } else if (sorted && isSameComparator(comparator, cmp)) {
-            return new ArrayStream<T>(elements, toIndex - n, toIndex, closeHandlers, sorted, cmp);
+            return new ArrayStream<>(elements, toIndex - n, toIndex, closeHandlers, sorted, cmp);
         } else {
-            return new ArrayStream<T>(N.top(elements, fromIndex, toIndex, n, comparator), closeHandlers, sorted, cmp);
+            return new ArrayStream<>(N.top(elements, fromIndex, toIndex, n, comparator), closeHandlers, sorted, cmp);
         }
     }
 
@@ -1161,12 +1161,12 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
         final T[] a = N.copyOfRange(elements, fromIndex, toIndex);
         N.sort(a, comparator);
-        return new ArrayStream<T>(a, closeHandlers, true, comparator);
+        return new ArrayStream<>(a, closeHandlers, true, comparator);
     }
 
     @Override
     public Stream<T> peek(final Consumer<? super T> action) {
-        return new IteratorStream<T>(new ImmutableIterator<T>() {
+        return new IteratorStream<>(new ImmutableIterator<T>() {
             int cursor = fromIndex;
 
             @Override
@@ -1208,7 +1208,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
             return this;
         }
 
-        return new ArrayStream<T>(elements, fromIndex, (int) (fromIndex + maxSize), closeHandlers, sorted, cmp);
+        return new ArrayStream<>(elements, fromIndex, (int) (fromIndex + maxSize), closeHandlers, sorted, cmp);
     }
 
     @Override
@@ -1220,9 +1220,9 @@ final class ArrayStream<T> extends AbstractStream<T> {
         }
 
         if (n >= toIndex - fromIndex) {
-            return new ArrayStream<T>(elements, toIndex, toIndex, closeHandlers, sorted, cmp);
+            return new ArrayStream<>(elements, toIndex, toIndex, closeHandlers, sorted, cmp);
         } else {
-            return new ArrayStream<T>(elements, (int) (fromIndex + n), toIndex, closeHandlers, sorted, cmp);
+            return new ArrayStream<>(elements, (int) (fromIndex + n), toIndex, closeHandlers, sorted, cmp);
         }
     }
 
@@ -1234,11 +1234,11 @@ final class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <U> U forEach(U seed, BiFunction<? super T, U, U> accumulator, BiPredicate<? super T, ? super U> predicate) {
+    public <U> U forEach(U seed, BiFunction<U, ? super T, U> accumulator, BiPredicate<? super T, ? super U> predicate) {
         U result = seed;
 
         for (int i = fromIndex; i < toIndex; i++) {
-            result = accumulator.apply(elements[i], result);
+            result = accumulator.apply(result, elements[i]);
 
             if (predicate.test(elements[i], result) == false) {
                 break;
@@ -1514,7 +1514,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
             throw new IllegalStateException();
         }
 
-        return new ArrayStream<T>(elements, fromIndex + 1, toIndex, closeHandlers, sorted, cmp);
+        return new ArrayStream<>(elements, fromIndex + 1, toIndex, closeHandlers, sorted, cmp);
     }
 
     @Override
@@ -1523,7 +1523,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
             throw new IllegalStateException();
         }
 
-        return new ArrayStream<T>(elements, fromIndex, toIndex - 1, closeHandlers, sorted, cmp);
+        return new ArrayStream<>(elements, fromIndex, toIndex - 1, closeHandlers, sorted, cmp);
     }
 
     @Override
@@ -1700,7 +1700,7 @@ final class ArrayStream<T> extends AbstractStream<T> {
             throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
 
-        return new ParallelArrayStream<T>(elements, fromIndex, toIndex, closeHandlers, sorted, cmp, maxThreadNum, splitor);
+        return new ParallelArrayStream<>(elements, fromIndex, toIndex, closeHandlers, sorted, cmp, maxThreadNum, splitor);
     }
 
     @Override
@@ -1713,6 +1713,6 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
         newCloseHandlers.add(closeHandler);
 
-        return new ArrayStream<T>(elements, fromIndex, toIndex, newCloseHandlers, sorted, cmp);
+        return new ArrayStream<>(elements, fromIndex, toIndex, newCloseHandlers, sorted, cmp);
     }
 }
