@@ -23,6 +23,8 @@ import java.util.Set;
 
 import com.landawn.abacus.DataSet;
 import com.landawn.abacus.annotation.Beta;
+import com.landawn.abacus.util.function.BiFunction;
+import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -55,7 +57,29 @@ public interface Sheet<R, C, E> {
 
     void addRow(R rowKey, Collection<? extends E> row);
 
+    void addRow(int rowIndex, R rowKey, Collection<? extends E> row);
+
+    void updateRow(R rowKey, Function<? super E, E> func);
+
     void removeRow(Object rowKey);
+
+    /**
+     * Move the specified row to the new position.
+     * 
+     * @param rowKey
+     * @param newRowIndex
+     */
+    void moveRow(Object rowKey, int newRowIndex);
+
+    /**
+     * Swap the positions of the two specified rows.
+     * 
+     * @param rowKeyA
+     * @param rowKeyB
+     */
+    void swapRow(Object rowKeyA, Object rowKeyB);
+
+    void renameRow(R rowKey, R newRowKey);
 
     boolean containsRow(Object rowKey);
 
@@ -69,7 +93,29 @@ public interface Sheet<R, C, E> {
 
     void addColumn(C columnKey, Collection<? extends E> column);
 
+    void addColumn(int columnIndex, C columnKey, Collection<? extends E> column);
+
+    void updateColumn(C columnKey, Function<? super E, E> func);
+
     void removeColumn(Object columnKey);
+
+    /**
+     * Move the specified column to the new position.
+     * 
+     * @param columnKey
+     * @param newColumnIndex
+     */
+    void moveColumn(Object columnKey, int newColumnIndex);
+
+    /**
+     * Swap the positions of the two specified columns.
+     * 
+     * @param columnKeyA
+     * @param columnKeyB
+     */
+    void swapColumn(Object columnKeyA, Object columnKeyB);
+
+    void renameColumn(C columnKey, C newColumnKey);
 
     boolean containsColumn(Object columnKey);
 
@@ -91,13 +137,45 @@ public interface Sheet<R, C, E> {
      */
     int columnLength();
 
+    void updateAll(Function<? super E, E> func);
+
+    Sheet<R, C, E> copy();
+
+    Sheet<R, C, E> copy(Collection<R> rowKeySet, Collection<C> columnKeySet);
+
+    /**
+     * Deeply copy each element in this <code>Sheet</code> by Serialization/Deserialization.
+     * 
+     * @return
+     */
+    Sheet<R, C, E> clone();
+
+    /**
+     * Deeply copy each element in this <code>Sheet</code> by Serialization/Deserialization.
+     * 
+     * @return
+     */
+    Sheet<R, C, E> clone(boolean freeze);
+
+    Sheet<R, C, E> merge(Sheet<? extends R, ? extends C, ? extends E> source, BiFunction<? super E, ? super E, E> mergeFunction);
+
+    Sheet<C, R, E> transpose();
+
+    /**
+     * Method freeze
+     */
+    void freeze();
+
+    /**
+     * Method frozen
+     *
+     * @return
+     */
+    boolean frozen();
+
     void clear();
 
     void trimToSize();
-
-    <T extends Sheet<R, C, E>> T copy();
-
-    Sheet<C, R, E> transpose();
 
     /**
      * 

@@ -1512,11 +1512,11 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         return DoubleList.of(res);
     }
 
-    public <R> ObjectList<R> flatMap(final Function<? super T, ? extends ObjectList<R>> func) {
+    public <R> ObjectList<R> flatMap(final Function<? super T, ? extends Collection<R>> func) {
         return flatMap(0, size(), func);
     }
 
-    public <R> ObjectList<R> flatMap(final int fromIndex, final int toIndex, final Function<? super T, ? extends ObjectList<R>> func) {
+    public <R> ObjectList<R> flatMap(final int fromIndex, final int toIndex, final Function<? super T, ? extends Collection<R>> func) {
         checkIndex(fromIndex, toIndex);
 
         final ObjectList<R> result = new ObjectList<>(size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : size() * 2);
@@ -1528,31 +1528,11 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         return result;
     }
 
-    public <R> ObjectList<R> flatMap2(final Function<? super T, ? extends Collection<R>> func) {
+    public <R> ObjectList<R> flatMap2(final Function<? super T, ? extends R[]> func) {
         return flatMap2(0, size(), func);
     }
 
-    public <R> ObjectList<R> flatMap2(final int fromIndex, final int toIndex, final Function<? super T, ? extends Collection<R>> func) {
-        checkIndex(fromIndex, toIndex);
-
-        final ObjectList<R> result = new ObjectList<>(size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : size() * 2);
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            final Collection<R> c = func.apply(elementData[i]);
-
-            for (R e : c) {
-                result.add(e);
-            }
-        }
-
-        return result;
-    }
-
-    public <R> ObjectList<R> flatMap3(final Function<? super T, ? extends R[]> func) {
-        return flatMap3(0, size(), func);
-    }
-
-    public <R> ObjectList<R> flatMap3(final int fromIndex, final int toIndex, final Function<? super T, ? extends R[]> func) {
+    public <R> ObjectList<R> flatMap2(final int fromIndex, final int toIndex, final Function<? super T, ? extends R[]> func) {
         checkIndex(fromIndex, toIndex);
 
         final ObjectList<R> result = new ObjectList<>(size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : size() * 2);

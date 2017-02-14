@@ -1,4 +1,17 @@
 
+========Changes in 0.9.50=========================================================================
+
+1*, Remove flatMap3 from ObjectList/Seq.
+
+2*, Remove convertColumn from DataSet, replaced with updateColumn/updateRow/updateAll.
+
+3, Add updateColumn/updateRow/updateAll/swapColumn/swapRow/moveRow to DataSet.
+
+4, Add renameRow/renameColumn/updateRow/updateColumn/updateAll/copy(rowKeySet, columnKeySet)/addRow(rowIndex,...)/addColumn(columnIndex,...)/moveRow/moveColumn/swapRow/swapColumn/merge/freeze/frozen/clone to Sheet.
+
+5, Improvements and bug fix.
+
+
 ========Changes in 0.9.49=========================================================================
 
 1, Add reduce method to ByteList/IntList/...

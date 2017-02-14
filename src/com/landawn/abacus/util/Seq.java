@@ -799,7 +799,7 @@ public class Seq<T> implements Collection<T> {
         return N.mapToDouble(coll, func);
     }
 
-    public <R> ObjectList<R> flatMap(final Function<? super T, ? extends ObjectList<R>> func) {
+    public <R> ObjectList<R> flatMap(final Function<? super T, ? extends Collection<R>> func) {
         final ObjectList<R> result = new ObjectList<>(coll.size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : coll.size() * 2);
 
         for (T e : coll) {
@@ -809,21 +809,7 @@ public class Seq<T> implements Collection<T> {
         return result;
     }
 
-    public <R> ObjectList<R> flatMap2(final Function<? super T, ? extends Collection<R>> func) {
-        final ObjectList<R> result = new ObjectList<>(coll.size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : coll.size() * 2);
-
-        for (T e : coll) {
-            final Collection<R> c = func.apply(e);
-
-            for (R e2 : c) {
-                result.add(e2);
-            }
-        }
-
-        return result;
-    }
-
-    public <R> ObjectList<R> flatMap3(final Function<? super T, ? extends R[]> func) {
+    public <R> ObjectList<R> flatMap2(final Function<? super T, ? extends R[]> func) {
         final ObjectList<R> result = new ObjectList<>(coll.size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : coll.size() * 2);
 
         for (T e : coll) {

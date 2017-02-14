@@ -175,6 +175,30 @@ public interface DataSet extends Iterable<Object[]> {
     void moveColumn(Map<String, Integer> columnNameNewPositionMap);
 
     /**
+     * Swap the positions of the two specified columns.
+     * 
+     * @param columnNameA
+     * @param columnNameB
+     */
+    void swapColumn(String columnNameA, String columnNameB);
+
+    /**
+     * Move the specified row to the new position.
+     * 
+     * @param rowIndex
+     * @param newRowIndex
+     */
+    void moveRow(int rowIndex, int newRowIndex);
+
+    /**
+     * Swap the positions of the two specified rows.
+     * 
+     * @param columnNameA
+     * @param columnNameB
+     */
+    void swapRow(int rowIndexA, int rowIndexB);
+
+    /**
      *
      * @param rowIndex
      * @param columnIndex
@@ -518,7 +542,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param columnName
      * @param func
      */
-    void convertColumn(String columnName, Function<?, ?> func);
+    void updateColumn(String columnName, Function<?, ?> func);
 
     /**
      * convert values of the specified columns by the specified function.
@@ -526,7 +550,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param columnNames
      * @param func
      */
-    void convertColumn(Collection<String> columnNames, Function<?, ?> func);
+    void updateColumn(Collection<String> columnNames, Function<?, ?> func);
 
     //
     //    /**
@@ -574,6 +598,12 @@ public interface DataSet extends Iterable<Object[]> {
      * @param indices
      */
     void removeRowAll(int... indices);
+
+    void updateRow(int rowIndex, Function<?, ?> func);
+
+    void updateRow(int[] indices, Function<?, ?> func);
+
+    void updateAll(Function<?, ?> func);
 
     /**
      * Returns the current row number.

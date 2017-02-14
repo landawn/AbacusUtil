@@ -15,7 +15,10 @@ package com.landawn.abacus.util;
  * limitations under the License.
  */
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.ConcurrentModificationException;
+import java.util.List;
 import java.util.Map;
 
 import com.landawn.abacus.util.function.BiConsumer;
@@ -32,6 +35,32 @@ import com.landawn.abacus.util.function.Function;
 public final class Maps {
     private Maps() {
         // singleton.
+    }
+
+    public static <K, V> List<V> getAll(final Map<K, V> map, final Collection<?> keys) {
+        final List<V> result = new ArrayList<>(keys.size());
+
+        for (Object key : keys) {
+            result.add(map.get(key));
+        }
+
+        return result;
+    }
+
+    public static <K, V> List<V> getAllOrDefault(final Map<K, V> map, final Collection<?> keys, final V defaultValue) {
+        final List<V> result = new ArrayList<>(keys.size());
+
+        for (Object key : keys) {
+            result.add(getOrDefault(map, key, defaultValue));
+        }
+
+        return result;
+    }
+
+    public static <K, V> void removeAll(final Map<K, V> map, final Collection<?> keys) {
+        for (Object key : keys) {
+            map.remove(key);
+        }
     }
 
     /**
