@@ -3425,7 +3425,7 @@ public final class N {
         if (N.isNullOrEmpty(columnNameList)) {
             final Set<String> columnNameSet = new LinkedHashSet<>();
             Set<Class<?>> clsSet = null;
-            Map<Class<?>, Set<String>> clsSignedPropNameSetMap = null;
+            Map<Class<?>, Set<String>> clsSignedPropNameSetMap = new HashMap<>();
 
             Class<?> cls = null;
             Type<?> type = null;
@@ -3442,29 +3442,18 @@ public final class N {
                     columnNameSet.addAll(((Map<String, Object>) e).keySet());
                 } else if (type.isEntity()) {
                     if (e instanceof DirtyMarker) {
-                        Set<String> clsSignedPropNameSet = null;
+                        Set<String> clsSignedPropNameSet = clsSignedPropNameSetMap.get(cls);
 
-                        if (rowSize > 3) {
-                            if (clsSignedPropNameSetMap == null) {
-                                clsSignedPropNameSetMap = new HashMap<>();
-                            }
-
-                            clsSignedPropNameSet = clsSignedPropNameSetMap.get(cls);
-
-                            if (clsSignedPropNameSet == null) {
-                                clsSignedPropNameSet = new HashSet<>();
-                            }
+                        if (clsSignedPropNameSet == null) {
+                            clsSignedPropNameSet = new HashSet<>();
+                            clsSignedPropNameSetMap.put(cls, clsSignedPropNameSet);
                         }
 
                         Method method = null;
 
                         for (String signedPropName : ((DirtyMarker) e).signedPropNames()) {
-                            if (clsSignedPropNameSet != null) {
-                                if (clsSignedPropNameSet.contains(signedPropName)) {
-                                    continue;
-                                } else {
-                                    clsSignedPropNameSet.add(signedPropName);
-                                }
+                            if (clsSignedPropNameSet.add(signedPropName) == false) {
+                                continue;
                             }
 
                             method = N.getPropGetMethod(cls, signedPropName);
@@ -3488,6 +3477,13 @@ public final class N {
                 } else {
                     throw new IllegalArgumentException("'columnNameList' is required if the sepcified row type is not Entity or Map");
                 }
+            }
+
+            // re-order column.
+            for (Map.Entry<Class<?>, Set<String>> entry : clsSignedPropNameSetMap.entrySet()) {
+                final List<String> intersecion = N.intersection(getPropGetMethodList(entry.getKey()).keySet(), columnNameSet);
+                columnNameSet.removeAll(intersecion);
+                columnNameSet.addAll(intersecion);
             }
 
             columnNameList = new ArrayList<>(columnNameSet);
@@ -20676,57 +20672,57 @@ public final class N {
         return firstDiff;
     }
 
-    // Difference
-    // -----------------------------------------------------------------------
-    /**
-     * <p>
-     * Compares two Strings, and returns the portion where they differ. More
-     * precisely, return the remainder of the second String, starting from where
-     * it's different from the first. This means that the difference between
-     * "abc" and "ab" is the empty String and not "c".
-     * </p>
-     *
-     * <p>
-     * For example,
-     * {@code difference("i am a machine", "i am a robot") -> "robot"}.
-     * </p>
-     *
-     * <pre>
-     * N.differenceOf(null, null) = ""
-     * N.differenceOf("", "") = ""
-     * N.differenceOf("", "abc") = "abc"
-     * N.differenceOf("abc", "") = ""
-     * N.differenceOf("abc", "abc") = ""
-     * N.differenceOf("abc", "ab") = ""
-     * N.differenceOf("ab", "abxyz") = "xyz"
-     * N.differenceOf("abcde", "abxyz") = "xyz"
-     * N.differenceOf("abcde", "xyz") = "xyz"
-     * </pre>
-     *
-     * @param a
-     *            the first String, may be null
-     * @param b
-     *            the second String, may be null
-     * @return the portion of str2 where it differs from str1; returns the empty
-     *         String if they are equal or both null/empty
-     */
-    public static String differenceOf(final String a, final String b) {
-        if (a == b || N.isNullOrEmpty(b)) {
-            return N.EMPTY_STRING;
-        }
-
-        if (N.isNullOrEmpty(a)) {
-            return b.toString();
-        }
-
-        final int at = indexOfDifference(a, b);
-
-        if (at == N.INDEX_NOT_FOUND) {
-            return N.EMPTY_STRING;
-        }
-
-        return b.substring(at); // b.subSequence(at, b.length()).toString();
-    }
+    //    // Difference
+    //    // -----------------------------------------------------------------------
+    //    /**
+    //     * <p>
+    //     * Compares two Strings, and returns the portion where they differ. More
+    //     * precisely, return the remainder of the second String, starting from where
+    //     * it's different from the first. This means that the difference between
+    //     * "abc" and "ab" is the empty String and not "c".
+    //     * </p>
+    //     *
+    //     * <p>
+    //     * For example,
+    //     * {@code difference("i am a machine", "i am a robot") -> "robot"}.
+    //     * </p>
+    //     *
+    //     * <pre>
+    //     * N.differenceOf(null, null) = ""
+    //     * N.differenceOf("", "") = ""
+    //     * N.differenceOf("", "abc") = "abc"
+    //     * N.differenceOf("abc", "") = ""
+    //     * N.differenceOf("abc", "abc") = ""
+    //     * N.differenceOf("abc", "ab") = ""
+    //     * N.differenceOf("ab", "abxyz") = "xyz"
+    //     * N.differenceOf("abcde", "abxyz") = "xyz"
+    //     * N.differenceOf("abcde", "xyz") = "xyz"
+    //     * </pre>
+    //     *
+    //     * @param a
+    //     *            the first String, may be null
+    //     * @param b
+    //     *            the second String, may be null
+    //     * @return the portion of str2 where it differs from str1; returns the empty
+    //     *         String if they are equal or both null/empty
+    //     */
+    //    public static String differenceOf(final String a, final String b) {
+    //        if (a == b || N.isNullOrEmpty(b)) {
+    //            return N.EMPTY_STRING;
+    //        }
+    //
+    //        if (N.isNullOrEmpty(a)) {
+    //            return b.toString();
+    //        }
+    //
+    //        final int at = indexOfDifference(a, b);
+    //
+    //        if (at == N.INDEX_NOT_FOUND) {
+    //            return N.EMPTY_STRING;
+    //        }
+    //
+    //        return b.substring(at); // b.subSequence(at, b.length()).toString();
+    //    }
 
     // --------- from Google Guava
 

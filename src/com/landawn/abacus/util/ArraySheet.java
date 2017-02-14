@@ -53,6 +53,11 @@ public final class ArraySheet<R, C, E> implements Sheet<R, C, E> {
     private boolean _initialized = false;
     private boolean _isFrozen = false;
 
+    // For Kryo.
+    ArraySheet() {
+        this(N.EMPTY_LIST, N.EMPTY_LIST);
+    }
+
     public ArraySheet(Collection<R> rowKeySet, Collection<C> columnKeySet) {
         this._rowKeySet = new LinkedHashSet<>(rowKeySet);
         this._columnKeySet = new LinkedHashSet<>(columnKeySet);
