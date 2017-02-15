@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.landawn.abacus.util.Sheet;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.ObjectList;
@@ -35,7 +36,6 @@ import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalNullable;
 import com.landawn.abacus.util.Properties;
-import com.landawn.abacus.util.Sheet;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.Consumer;
@@ -574,6 +574,8 @@ public interface DataSet extends Iterable<Object[]> {
     void combineColumn(Predicate<String> columnNameFilter, String newColumnName, Class<?> newColumnClass);
 
     void combineColumn(Predicate<String> columnNameFilter, String newColumnName, Function<? super Object[], ?> combineFunc);
+
+    void divideColumn(String columnName, Collection<String> newColumnNames, Function<?, ? extends List<?>> divideFunc);
 
     /**
      * 

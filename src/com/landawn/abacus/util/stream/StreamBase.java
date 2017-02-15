@@ -32,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
+import com.landawn.abacus.util.Sheet;
 import com.landawn.abacus.util.AsyncExecutor;
 import com.landawn.abacus.util.BiMap;
 import com.landawn.abacus.util.BooleanList;
@@ -63,7 +64,6 @@ import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.ObjectList;
-import com.landawn.abacus.util.Sheet;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.ShortList;
 import com.landawn.abacus.util.Try;
@@ -694,17 +694,17 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
 
     protected <E> Stream<E> newStream(final E[] a, final boolean sorted, final Comparator<? super E> comparator) {
         if (this.isParallel()) {
-            return new ParallelArrayStream<E>(a, 0, a.length, closeHandlers, sorted, comparator, this.maxThreadNum(), this.splitor());
+            return new ParallelArrayStream<>(a, 0, a.length, closeHandlers, sorted, comparator, this.maxThreadNum(), this.splitor());
         } else {
-            return new ArrayStream<E>(a, closeHandlers, sorted, comparator);
+            return new ArrayStream<>(a, closeHandlers, sorted, comparator);
         }
     }
 
     protected <E> Stream<E> newStream(final Iterator<E> iter, final boolean sorted, final Comparator<? super E> comparator) {
         if (this.isParallel()) {
-            return new ParallelIteratorStream<E>(iter, closeHandlers, sorted, comparator, this.maxThreadNum(), this.splitor());
+            return new ParallelIteratorStream<>(iter, closeHandlers, sorted, comparator, this.maxThreadNum(), this.splitor());
         } else {
-            return new IteratorStream<E>(iter, closeHandlers, sorted, comparator);
+            return new IteratorStream<>(iter, closeHandlers, sorted, comparator);
         }
     }
 

@@ -16,7 +16,9 @@
 
 package com.landawn.abacus.util;
 
+import java.util.AbstractSet;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -200,17 +202,71 @@ public final class BiMap<K, V> implements Map<K, V> {
 
     @Override
     public Set<K> keySet() {
-        return keyMap.keySet();
+        return ImmutableSet.of(keyMap.keySet());
     }
 
     @Override
     public Set<V> values() {
-        return valueMap.keySet();
+        return ImmutableSet.of(valueMap.keySet());
     }
 
     @Override
-    public Set<java.util.Map.Entry<K, V>> entrySet() {
-        return keyMap.entrySet();
+    public Set<Map.Entry<K, V>> entrySet() {
+        return new AbstractSet<Map.Entry<K, V>>() {
+            @Override
+            public Iterator<Map.Entry<K, V>> iterator() {
+                return new Iterator<Map.Entry<K, V>>() {
+                    private final Iterator<Map.Entry<K, V>> keyValueEntryIter = keyMap.entrySet().iterator();
+
+                    @Override
+                    public boolean hasNext() {
+                        return keyValueEntryIter.hasNext();
+                    }
+
+                    @Override
+                    public Map.Entry<K, V> next() {
+                        final Map.Entry<K, V> entry = keyValueEntryIter.next();
+
+                        return new Map.Entry<K, V>() {
+                            @Override
+                            public K getKey() {
+                                return entry.getKey();
+                            }
+
+                            @Override
+                            public V getValue() {
+                                return entry.getValue();
+                            }
+
+                            @Override
+                            public V setValue(V value) {
+                                if (N.equals(entry.getValue(), value)) {
+                                    return entry.getValue();
+                                }
+
+                                //    if (valueMap.containsKey(value)) {
+                                //        throw new IllegalStateException("Value: " + N.toString(value) + " already existed.");
+                                //    }
+
+                                valueMap.remove(entry.getValue());
+                                valueMap.put(value, entry.getKey());
+                                return entry.setValue(value);
+                            }
+                        };
+                    }
+
+                    @Override
+                    public void remove() {
+                        throw new UnsupportedOperationException();
+                    }
+                };
+            }
+
+            @Override
+            public int size() {
+                return keyMap.size();
+            }
+        };
     }
 
     @Override

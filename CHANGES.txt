@@ -7,11 +7,13 @@
 
 3*, Remove differenceOf from N, replaced with indexOfDifference
 
-4, Add updateColumn/updateRow/updateAll/swapColumn/swapRow/moveRow to DataSet.
+4, Add divideColumn/updateColumn/updateRow/updateAll/swapColumn/swapRow/moveColumn/moveRow to DataSet.
 
 5, Add renameRow/renameColumn/updateRow/updateColumn/updateAll/copy(rowKeySet, columnKeySet)/addRow(rowIndex,...)/addColumn(columnIndex,...)/moveRow/moveColumn/swapRow/swapColumn/merge/freeze/frozen/clone to Sheet.
 
-6, Improvements and bug fix.
+6, Remove Sheet and rename ArraySheet to Sheet.
+
+7, Improvements and bug fix.
 
 
 ========Changes in 0.9.49=========================================================================
