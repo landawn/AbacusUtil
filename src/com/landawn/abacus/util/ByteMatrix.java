@@ -405,6 +405,48 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteMatri
         return ByteList.of(c);
     }
 
+    /**
+     * 
+     * @param b
+     * @return
+     * @see IntMatrix#vstack(IntMatrix)
+     */
+    public ByteMatrix vstack(final ByteMatrix b) {
+        N.checkArgument(this.m == b.m, "The count of column in this matrix and the specified matrix are not equals");
+
+        final byte[][] c = new byte[this.n + b.n][];
+        int j = 0;
+
+        for (int i = 0; i < n; i++) {
+            c[j++] = a[i].clone();
+        }
+
+        for (int i = 0; i < b.n; i++) {
+            c[j++] = b.a[i].clone();
+        }
+
+        return ByteMatrix.of(c);
+    }
+
+    /**
+     * 
+     * @param b
+     * @return
+     * @see IntMatrix#hstack(IntMatrix)
+     */
+    public ByteMatrix hstack(final ByteMatrix b) {
+        N.checkArgument(this.n == b.n, "The count of row in this matrix and the specified matrix are not equals");
+
+        final byte[][] c = new byte[n][m + b.m];
+
+        for (int i = 0; i < n; i++) {
+            N.copy(a[i], 0, c[i], 0, m);
+            N.copy(b.a[i], 0, c[i], m, b.m);
+        }
+
+        return ByteMatrix.of(c);
+    }
+
     public ByteMatrix add(final ByteMatrix b) {
         N.checkArgument(this.n == b.n && this.m == b.m, "The 'n' and length are not equal");
 
@@ -913,31 +955,61 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteMatri
         }
 
         return ByteStream.of(new ImmutableByteIterator() {
-            private final long toIndex = toRowIndex * m * 1L;
-            private long cursor = fromRowIndex * m * 1L;
+            private int i = fromRowIndex;
+            private int j = 0;
 
             @Override
             public boolean hasNext() {
-                return cursor < toIndex;
+                return i < toRowIndex;
             }
 
             @Override
             public byte next() {
-                if (cursor >= toIndex) {
+                if (i >= toRowIndex) {
                     throw new NoSuchElementException();
                 }
 
-                return a[(int) (cursor / m)][(int) (cursor++ % m)];
+                final byte result = a[i][j++];
+
+                if (j >= m) {
+                    i++;
+                    j = 0;
+                }
+
+                return result;
             }
 
             @Override
             public void skip(long n) {
-                cursor = n < toIndex - cursor ? cursor + n : toIndex;
+                if (n >= (toRowIndex - i) * m * 1L - j) {
+                    i = toRowIndex;
+                    j = 0;
+                } else {
+                    i += (n + j) / m;
+                    j += (n + j) % m;
+                }
             }
 
             @Override
             public long count() {
-                return toIndex - cursor;
+                return (toRowIndex - i) * m * 1L - j;
+            }
+
+            @Override
+            public byte[] toArray() {
+                final int len = (int) count();
+                final byte[] c = new byte[len];
+
+                for (int k = 0; k < len; k++) {
+                    c[k] = a[i][j++];
+
+                    if (j >= m) {
+                        i++;
+                        j = 0;
+                    }
+                }
+
+                return c;
             }
         });
     }
@@ -966,31 +1038,60 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteMatri
         }
 
         return ByteStream.of(new ImmutableByteIterator() {
-            private final long toIndex = toColumnIndex * n * 1L;
-            private long cursor = fromColumnIndex * n * 1L;
+            private int i = 0;
+            private int j = fromColumnIndex;
 
             @Override
             public boolean hasNext() {
-                return cursor < toIndex;
+                return j < toColumnIndex;
             }
 
             @Override
             public byte next() {
-                if (cursor >= toIndex) {
+                if (j >= toColumnIndex) {
                     throw new NoSuchElementException();
                 }
 
-                return a[(int) (cursor % n)][(int) (cursor++ / n)];
+                final byte result = a[i++][j];
+
+                if (i >= n) {
+                    i = 0;
+                    j++;
+                }
+                return result;
             }
 
             @Override
             public void skip(long n) {
-                cursor = n < toIndex - cursor ? cursor + n : toIndex;
+                if (n >= (toColumnIndex - j) * ByteMatrix.this.n * 1L - i) {
+                    i = 0;
+                    j = toColumnIndex;
+                } else {
+                    i += (n + i) % ByteMatrix.this.n;
+                    j += (n + i) / ByteMatrix.this.n;
+                }
             }
 
             @Override
             public long count() {
-                return toIndex - cursor;
+                return (toColumnIndex - j) * n - i;
+            }
+
+            @Override
+            public byte[] toArray() {
+                final int len = (int) count();
+                final byte[] c = new byte[len];
+
+                for (int k = 0; k < len; k++) {
+                    c[k] = a[i++][j];
+
+                    if (i >= n) {
+                        i = 0;
+                        j++;
+                    }
+                }
+
+                return c;
             }
         });
     }

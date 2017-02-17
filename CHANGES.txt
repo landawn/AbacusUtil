@@ -1,3 +1,11 @@
+========Changes in 0.9.51=========================================================================
+
+1, Support customized type in serialization/deserialization by TypeFactory.register(type).
+
+2, Add vstack/hstack to Matrix/IntMatrix/ByteMatrix...
+
+3, Improvements and bug fix.
+
 
 ========Changes in 0.9.50=========================================================================
 

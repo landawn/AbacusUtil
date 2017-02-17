@@ -782,6 +782,48 @@ public final class Matrix<T> extends AbstractMatrix<T[], ObjectList<T>, Matrix<T
 
     /**
      * 
+     * @param b
+     * @return
+     * @see IntMatrix#vstack(IntMatrix)
+     */
+    public Matrix<T> vstack(final Matrix<? extends T> b) {
+        N.checkArgument(this.m == b.m, "The count of column in this matrix and the specified matrix are not equals");
+
+        final T[][] c = N.newArray(arrayType, this.n + b.n);
+        int j = 0;
+
+        for (int i = 0; i < n; i++) {
+            c[j++] = a[i].clone();
+        }
+
+        for (int i = 0; i < b.n; i++) {
+            c[j++] = b.a[i].clone();
+        }
+
+        return Matrix.of(c);
+    }
+
+    /**
+     * 
+     * @param b
+     * @return
+     * @see IntMatrix#hstack(IntMatrix)
+     */
+    public Matrix<T> hstack(final Matrix<T> b) {
+        N.checkArgument(this.n == b.n, "The count of row in this matrix and the specified matrix are not equals");
+
+        final T[][] c = N.newArray(arrayType, n);
+
+        for (int i = 0; i < n; i++) {
+            c[i] = N.copyOf(a[i], m + b.m);
+            N.copy(b.a[i], 0, c[i], m, b.m);
+        }
+
+        return Matrix.of(c);
+    }
+
+    /**
+     * 
      * @return a stream composed by elements on the diagonal line from left up to right down.
      */
     public Stream<T> diagonal() {
@@ -994,31 +1036,64 @@ public final class Matrix<T> extends AbstractMatrix<T[], ObjectList<T>, Matrix<T
         }
 
         return Stream.of(new ImmutableIterator<T>() {
-            private final long toIndex = toRowIndex * m * 1L;
-            private long cursor = fromRowIndex * m * 1L;
+            private int i = fromRowIndex;
+            private int j = 0;
 
             @Override
             public boolean hasNext() {
-                return cursor < toIndex;
+                return i < toRowIndex;
             }
 
             @Override
             public T next() {
-                if (cursor >= toIndex) {
+                if (i >= toRowIndex) {
                     throw new NoSuchElementException();
                 }
 
-                return a[(int) (cursor / m)][(int) (cursor++ % m)];
+                final T result = a[i][j++];
+
+                if (j >= m) {
+                    i++;
+                    j = 0;
+                }
+
+                return result;
             }
 
             @Override
             public void skip(long n) {
-                cursor = n < toIndex - cursor ? cursor + n : toIndex;
+                if (n >= (toRowIndex - i) * m * 1L - j) {
+                    i = toRowIndex;
+                    j = 0;
+                } else {
+                    i += (n + j) / m;
+                    j += (n + j) % m;
+                }
             }
 
             @Override
             public long count() {
-                return toIndex - cursor;
+                return (toRowIndex - i) * m * 1L - j;
+            }
+
+            @Override
+            public <A> A[] toArray(A[] c) {
+                final int len = (int) count();
+
+                if (c.length < len) {
+                    c = N.copyOf(c, len);
+                }
+
+                for (int k = 0; k < len; k++) {
+                    c[k] = (A) a[i][j++];
+
+                    if (j >= m) {
+                        i++;
+                        j = 0;
+                    }
+                }
+
+                return c;
             }
         });
     }
@@ -1047,31 +1122,64 @@ public final class Matrix<T> extends AbstractMatrix<T[], ObjectList<T>, Matrix<T
         }
 
         return Stream.of(new ImmutableIterator<T>() {
-            private final long toIndex = toColumnIndex * n * 1L;
-            private long cursor = fromColumnIndex * n * 1L;
+            private int i = 0;
+            private int j = fromColumnIndex;
 
             @Override
             public boolean hasNext() {
-                return cursor < toIndex;
+                return j < toColumnIndex;
             }
 
             @Override
             public T next() {
-                if (cursor >= toIndex) {
+                if (j >= toColumnIndex) {
                     throw new NoSuchElementException();
                 }
 
-                return a[(int) (cursor % n)][(int) (cursor++ / n)];
+                final T result = a[i++][j];
+
+                if (i >= n) {
+                    i = 0;
+                    j++;
+                }
+
+                return result;
             }
 
             @Override
             public void skip(long n) {
-                cursor = n < toIndex - cursor ? cursor + n : toIndex;
+                if (n >= (toColumnIndex - j) * Matrix.this.n * 1L - i) {
+                    i = 0;
+                    j = toColumnIndex;
+                } else {
+                    i += (n + i) % Matrix.this.n;
+                    j += (n + i) / Matrix.this.n;
+                }
             }
 
             @Override
             public long count() {
-                return toIndex - cursor;
+                return (toColumnIndex - j) * n - i;
+            }
+
+            @Override
+            public <A> A[] toArray(A[] c) {
+                final int len = (int) count();
+
+                if (c.length < len) {
+                    c = N.copyOf(c, len);
+                }
+
+                for (int k = 0; k < len; k++) {
+                    c[k] = (A) a[i++][j];
+
+                    if (i >= n) {
+                        i = 0;
+                        j++;
+                    }
+                }
+
+                return c;
             }
         });
     }
