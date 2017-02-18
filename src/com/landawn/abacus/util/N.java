@@ -460,94 +460,41 @@ public final class N {
     static final char[] ELEMENT_SEPARATOR_CHAR_ARRAY = Type.ELEMENT_SEPARATOR_CHAR_ARRAY;
 
     /**
-     * An empty immutable {@code boolean} array.
-     */
-    public static final boolean[] EMPTY_BOOLEAN_ARRAY = new boolean[0];
-    /**
      * An empty immutable {@code Boolean} array.
      */
     static final Boolean[] EMPTY_BOOLEAN_OBJECT_ARRAY = new Boolean[0];
-    /**
-     * An empty immutable {@code char} array.
-     */
-    public static final char[] EMPTY_CHAR_ARRAY = new char[0];
     /**
      * An empty immutable {@code Character} array.
      */
     static final Character[] EMPTY_CHARACTER_OBJECT_ARRAY = new Character[0];
     /**
-     * An empty immutable {@code byte} array.
-     */
-    public static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
-    /**
      * An empty immutable {@code Byte} array.
      */
     static final Byte[] EMPTY_BYTE_OBJECT_ARRAY = new Byte[0];
-    /**
-     * An empty immutable {@code short} array.
-     */
-    public static final short[] EMPTY_SHORT_ARRAY = new short[0];
     /**
      * An empty immutable {@code Short} array.
      */
     static final Short[] EMPTY_SHORT_OBJECT_ARRAY = new Short[0];
     /**
-     * An empty immutable {@code int} array.
-     */
-    public static final int[] EMPTY_INT_ARRAY = new int[0];
-    /**
      * An empty immutable {@code Integer} array.
      */
     static final Integer[] EMPTY_INTEGER_OBJECT_ARRAY = new Integer[0];
-    /**
-     * An empty immutable {@code long} array.
-     */
-    public static final long[] EMPTY_LONG_ARRAY = new long[0];
     /**
      * An empty immutable {@code Long} array.
      */
     static final Long[] EMPTY_LONG_OBJECT_ARRAY = new Long[0];
     /**
-     * An empty immutable {@code float} array.
-     */
-    public static final float[] EMPTY_FLOAT_ARRAY = new float[0];
-    /**
      * An empty immutable {@code Float} array.
      */
     static final Float[] EMPTY_FLOAT_OBJECT_ARRAY = new Float[0];
-    /**
-     * An empty immutable {@code double} array.
-     */
-    public static final double[] EMPTY_DOUBLE_ARRAY = new double[0];
     /**
      * An empty immutable {@code Double} array.
      */
     static final Double[] EMPTY_DOUBLE_OBJECT_ARRAY = new Double[0];
     /**
-     * An empty immutable {@code String} array.
-     */
-    public static final String[] EMPTY_STRING_ARRAY = new String[0];
-    /**
      * An empty immutable {@code Class} array.
      */
     static final Class<?>[] EMPTY_CLASS_ARRAY = new Class[0];
-    /**
-     * An empty immutable {@code Object} array.
-     */
-    public static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
-
-    @SuppressWarnings("rawtypes")
-    public static final List EMPTY_LIST = Collections.EMPTY_LIST;
-    @SuppressWarnings("rawtypes")
-    public static final Set EMPTY_SET = Collections.EMPTY_SET;
-    @SuppressWarnings("rawtypes")
-    public static final Map EMPTY_MAP = Collections.EMPTY_MAP;
-
-    @SuppressWarnings("rawtypes")
-    public static final Iterator EMPTY_ITERATOR = EMPTY_LIST.iterator();
-
-    // ...
-    public static final String EMPTY_STRING = "".intern();
     static final String NULL_STRING = "null".intern();
     static final char[] NULL_CHAR_ARRAY = NULL_STRING.toCharArray();
     static final String TRUE = Boolean.TRUE.toString().intern();
@@ -642,6 +589,56 @@ public final class N {
         dataTypeFactory = temp;
     }
 
+    /**
+     * An empty immutable {@code boolean} array.
+     */
+    public static final boolean[] EMPTY_BOOLEAN_ARRAY = new boolean[0];
+    /**
+     * An empty immutable {@code char} array.
+     */
+    public static final char[] EMPTY_CHAR_ARRAY = new char[0];
+    /**
+     * An empty immutable {@code byte} array.
+     */
+    public static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
+    /**
+     * An empty immutable {@code short} array.
+     */
+    public static final short[] EMPTY_SHORT_ARRAY = new short[0];
+    /**
+     * An empty immutable {@code int} array.
+     */
+    public static final int[] EMPTY_INT_ARRAY = new int[0];
+    /**
+     * An empty immutable {@code long} array.
+     */
+    public static final long[] EMPTY_LONG_ARRAY = new long[0];
+    /**
+     * An empty immutable {@code float} array.
+     */
+    public static final float[] EMPTY_FLOAT_ARRAY = new float[0];
+    /**
+     * An empty immutable {@code double} array.
+     */
+    public static final double[] EMPTY_DOUBLE_ARRAY = new double[0];
+    /**
+     * An empty immutable {@code String} array.
+     */
+    public static final String[] EMPTY_STRING_ARRAY = new String[0];
+    /**
+     * An empty immutable {@code Object} array.
+     */
+    public static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
+    @SuppressWarnings("rawtypes")
+    public static final List EMPTY_LIST = Collections.EMPTY_LIST;
+    @SuppressWarnings("rawtypes")
+    public static final Set EMPTY_SET = Collections.EMPTY_SET;
+    @SuppressWarnings("rawtypes")
+    public static final Map EMPTY_MAP = Collections.EMPTY_MAP;
+    @SuppressWarnings("rawtypes")
+    public static final Iterator EMPTY_ITERATOR = EMPTY_LIST.iterator();
+    // ...
+    public static final String EMPTY_STRING = "".intern();
     @SuppressWarnings("rawtypes")
     public static final IntFunction<List<Object>> LIST_FACTORY = (IntFunction) IntFunction.LIST_FACTORY;
     @SuppressWarnings("rawtypes")
@@ -671,9 +668,9 @@ public final class N {
     // ...
     public static final Object NULL_MASK = new NullMask();
 
-    public static final Class<?> CLASS_MASK = ClassMask.class;
-    public static final Method METHOD_MASK = internalGetDeclaredMethod(ClassMask.class, "methodMask");
-    public static final Field FIELD_MASK;
+    static final Class<?> CLASS_MASK = ClassMask.class;
+    static final Method METHOD_MASK = internalGetDeclaredMethod(ClassMask.class, "methodMask");
+    static final Field FIELD_MASK;
 
     static {
         try {
@@ -6987,18 +6984,14 @@ public final class N {
      * @see Comparator
      */
     public static <T> int compare(final T a, final T b, final Comparator<? super T> cmp) {
-        return a == null ? (b == null ? 0 : -1) : (b == null ? 1 : cmp.compare(a, b));
+        return a == null ? (b == null ? 0 : -1) : (b == null ? 1 : (cmp == null ? OBJECT_COMPARATOR : cmp).compare(a, b));
     }
 
     public static int compare(final boolean[] a, final boolean[] b) {
-        return compare(a, b, false);
-    }
-
-    public static int compare(final boolean[] a, final boolean[] b, boolean nullIsBigger) {
         if (N.isNullOrEmpty(a)) {
-            return N.isNullOrEmpty(b) ? 0 : (nullIsBigger ? 1 : -1);
+            return N.isNullOrEmpty(b) ? 0 : -1;
         } else if (N.isNullOrEmpty(b)) {
-            return nullIsBigger ? -1 : 1;
+            return 1;
         }
 
         for (int i = 0, minLen = min(a.length, b.length); i < minLen; i++) {
@@ -7007,18 +7000,14 @@ public final class N {
             }
         }
 
-        return a.length == b.length ? 0 : (nullIsBigger ? (a.length > b.length ? -1 : 1) : (a.length > b.length ? 1 : -1));
+        return a.length - b.length;
     }
 
     public static int compare(final char[] a, final char[] b) {
-        return compare(a, b, false);
-    }
-
-    public static int compare(final char[] a, final char[] b, boolean nullIsBigger) {
         if (N.isNullOrEmpty(a)) {
-            return N.isNullOrEmpty(b) ? 0 : (nullIsBigger ? 1 : -1);
+            return N.isNullOrEmpty(b) ? 0 : -1;
         } else if (N.isNullOrEmpty(b)) {
-            return nullIsBigger ? -1 : 1;
+            return 1;
         }
 
         for (int i = 0, minLen = min(a.length, b.length); i < minLen; i++) {
@@ -7027,18 +7016,14 @@ public final class N {
             }
         }
 
-        return a.length == b.length ? 0 : (nullIsBigger ? (a.length > b.length ? -1 : 1) : (a.length > b.length ? 1 : -1));
+        return a.length - b.length;
     }
 
     public static int compare(final byte[] a, final byte[] b) {
-        return compare(a, b, false);
-    }
-
-    public static int compare(final byte[] a, final byte[] b, boolean nullIsBigger) {
         if (N.isNullOrEmpty(a)) {
-            return N.isNullOrEmpty(b) ? 0 : (nullIsBigger ? 1 : -1);
+            return N.isNullOrEmpty(b) ? 0 : -1;
         } else if (N.isNullOrEmpty(b)) {
-            return nullIsBigger ? -1 : 1;
+            return 1;
         }
 
         for (int i = 0, minLen = min(a.length, b.length); i < minLen; i++) {
@@ -7047,18 +7032,14 @@ public final class N {
             }
         }
 
-        return a.length == b.length ? 0 : (nullIsBigger ? (a.length > b.length ? -1 : 1) : (a.length > b.length ? 1 : -1));
+        return a.length - b.length;
     }
 
     public static int compare(final short[] a, final short[] b) {
-        return compare(a, b, false);
-    }
-
-    public static int compare(final short[] a, final short[] b, boolean nullIsBigger) {
         if (N.isNullOrEmpty(a)) {
-            return N.isNullOrEmpty(b) ? 0 : (nullIsBigger ? 1 : -1);
+            return N.isNullOrEmpty(b) ? 0 : -1;
         } else if (N.isNullOrEmpty(b)) {
-            return nullIsBigger ? -1 : 1;
+            return 1;
         }
 
         for (int i = 0, minLen = min(a.length, b.length); i < minLen; i++) {
@@ -7067,18 +7048,14 @@ public final class N {
             }
         }
 
-        return a.length == b.length ? 0 : (nullIsBigger ? (a.length > b.length ? -1 : 1) : (a.length > b.length ? 1 : -1));
+        return a.length - b.length;
     }
 
     public static int compare(final int[] a, final int[] b) {
-        return compare(a, b, false);
-    }
-
-    public static int compare(final int[] a, final int[] b, boolean nullIsBigger) {
         if (N.isNullOrEmpty(a)) {
-            return N.isNullOrEmpty(b) ? 0 : (nullIsBigger ? 1 : -1);
+            return N.isNullOrEmpty(b) ? 0 : -1;
         } else if (N.isNullOrEmpty(b)) {
-            return nullIsBigger ? -1 : 1;
+            return 1;
         }
 
         for (int i = 0, minLen = min(a.length, b.length); i < minLen; i++) {
@@ -7087,18 +7064,14 @@ public final class N {
             }
         }
 
-        return a.length == b.length ? 0 : (nullIsBigger ? (a.length > b.length ? -1 : 1) : (a.length > b.length ? 1 : -1));
+        return a.length - b.length;
     }
 
     public static int compare(final long[] a, final long[] b) {
-        return compare(a, b, false);
-    }
-
-    public static int compare(final long[] a, final long[] b, boolean nullIsBigger) {
         if (N.isNullOrEmpty(a)) {
-            return N.isNullOrEmpty(b) ? 0 : (nullIsBigger ? 1 : -1);
+            return N.isNullOrEmpty(b) ? 0 : -1;
         } else if (N.isNullOrEmpty(b)) {
-            return nullIsBigger ? -1 : 1;
+            return 1;
         }
 
         for (int i = 0, minLen = min(a.length, b.length); i < minLen; i++) {
@@ -7107,18 +7080,14 @@ public final class N {
             }
         }
 
-        return a.length == b.length ? 0 : (nullIsBigger ? (a.length > b.length ? -1 : 1) : (a.length > b.length ? 1 : -1));
+        return a.length - b.length;
     }
 
     public static int compare(final float[] a, final float[] b) {
-        return compare(a, b, false);
-    }
-
-    public static int compare(final float[] a, final float[] b, boolean nullIsBigger) {
         if (N.isNullOrEmpty(a)) {
-            return N.isNullOrEmpty(b) ? 0 : (nullIsBigger ? 1 : -1);
+            return N.isNullOrEmpty(b) ? 0 : -1;
         } else if (N.isNullOrEmpty(b)) {
-            return nullIsBigger ? -1 : 1;
+            return 1;
         }
 
         int value = 0;
@@ -7129,18 +7098,14 @@ public final class N {
             }
         }
 
-        return a.length == b.length ? 0 : (nullIsBigger ? (a.length > b.length ? -1 : 1) : (a.length > b.length ? 1 : -1));
+        return a.length - b.length;
     }
 
     public static int compare(final double[] a, final double[] b) {
-        return compare(a, b, false);
-    }
-
-    public static int compare(final double[] a, final double[] b, boolean nullIsBigger) {
         if (N.isNullOrEmpty(a)) {
-            return N.isNullOrEmpty(b) ? 0 : (nullIsBigger ? 1 : -1);
+            return N.isNullOrEmpty(b) ? 0 : -1;
         } else if (N.isNullOrEmpty(b)) {
-            return nullIsBigger ? -1 : 1;
+            return 1;
         }
 
         int value = 0;
@@ -7151,27 +7116,22 @@ public final class N {
             }
         }
 
-        return a.length == b.length ? 0 : (nullIsBigger ? (a.length > b.length ? -1 : 1) : (a.length > b.length ? 1 : -1));
+        return a.length - b.length;
     }
 
-    public static int compare(final Object[] a, final Object[] b) {
-        return compare(a, b, false);
-    }
-
-    public static int compare(final Object[] a, final Object[] b, boolean nullIsBigger) {
-        return compare(a, b, nullIsBigger ? N.NULL_MAX_COMPARATOR : N.NULL_MIN_COMPARATOR, nullIsBigger);
+    public static <T extends Comparable<? super T>> int compare(final T[] a, final T[] b) {
+        final Comparator<T> cmp = NULL_MIN_COMPARATOR;
+        return compare(a, b, cmp);
     }
 
     public static <T> int compare(final T[] a, final T[] b, Comparator<? super T> cmp) {
-        return compare(a, b, cmp, false);
-    }
-
-    public static <T> int compare(final T[] a, final T[] b, Comparator<? super T> cmp, boolean nullIsBigger) {
         if (N.isNullOrEmpty(a)) {
-            return N.isNullOrEmpty(b) ? 0 : (nullIsBigger ? 1 : -1);
+            return N.isNullOrEmpty(b) ? 0 : -1;
         } else if (N.isNullOrEmpty(b)) {
-            return nullIsBigger ? -1 : 1;
+            return 1;
         }
+
+        cmp = cmp == null ? NULL_MIN_COMPARATOR : cmp;
 
         int value = 0;
 
@@ -7181,27 +7141,22 @@ public final class N {
             }
         }
 
-        return a.length == b.length ? 0 : (nullIsBigger ? (a.length > b.length ? -1 : 1) : (a.length > b.length ? 1 : -1));
+        return a.length - b.length;
     }
 
     public static <T extends Comparable<? super T>> int compare(final Collection<T> a, final Collection<T> b) {
-        return compare(a, b, false);
-    }
-
-    public static <T extends Comparable<? super T>> int compare(final Collection<T> a, final Collection<T> b, boolean nullIsBigger) {
-        return compare(a, b, nullIsBigger ? N.NULL_MAX_COMPARATOR : N.NULL_MIN_COMPARATOR, nullIsBigger);
+        final Comparator<T> cmp = NULL_MIN_COMPARATOR;
+        return compare(a, b, cmp);
     }
 
     public static <T> int compare(final Collection<T> a, final Collection<T> b, Comparator<? super T> cmp) {
-        return compare(a, b, cmp, false);
-    }
-
-    public static <T> int compare(final Collection<T> a, final Collection<T> b, Comparator<? super T> cmp, boolean nullIsBigger) {
         if (N.isNullOrEmpty(a)) {
-            return N.isNullOrEmpty(b) ? 0 : (nullIsBigger ? 1 : -1);
+            return N.isNullOrEmpty(b) ? 0 : -1;
         } else if (N.isNullOrEmpty(b)) {
-            return nullIsBigger ? -1 : 1;
+            return 1;
         }
+
+        cmp = cmp == null ? NULL_MIN_COMPARATOR : cmp;
 
         final Iterator<T> iterA = a.iterator();
         final Iterator<T> iterB = b.iterator();
@@ -7213,7 +7168,7 @@ public final class N {
             }
         }
 
-        return a.size() == b.size() ? 0 : (nullIsBigger ? (a.size() > b.size() ? -1 : 1) : (a.size() > b.size() ? 1 : -1));
+        return a.size() - b.size();
     }
 
     // Abbreviating
@@ -31923,8 +31878,12 @@ public final class N {
         return Math.min(a, b);
     }
 
+    public static <T extends Comparable<? super T>> T min(final T a, final T b) {
+        return (T) min(a, b, NULL_MAX_COMPARATOR);
+    }
+
     public static <T> T min(final T a, final T b, final Comparator<? super T> cmp) {
-        return cmp.compare(a, b) <= 0 ? a : b;
+        return (cmp == null ? NULL_MAX_COMPARATOR : cmp).compare(a, b) <= 0 ? a : b;
     }
 
     /**
@@ -32033,6 +31992,10 @@ public final class N {
      */
     public static double min(final double a, final double b, final double c) {
         return Math.min(Math.min(a, b), c);
+    }
+
+    public static <T extends Comparable<? super T>> T min(final T a, final T b, final T c) {
+        return (T) min(a, b, c, NULL_MAX_COMPARATOR);
     }
 
     public static <T> T min(final T a, final T b, final T c, final Comparator<? super T> cmp) {
@@ -32296,7 +32259,7 @@ public final class N {
     }
 
     public static <T extends Comparable<? super T>> T min(final T[] a, final int from, final int to) {
-        return (T) min(a, from, to, OBJECT_COMPARATOR);
+        return (T) min(a, from, to, NULL_MAX_COMPARATOR);
     }
 
     /**
@@ -32320,7 +32283,7 @@ public final class N {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
 
-        cmp = cmp == null ? OBJECT_COMPARATOR : cmp;
+        cmp = cmp == null ? NULL_MAX_COMPARATOR : cmp;
 
         T candidate = a[from];
         for (int i = from + 1; i < to; i++) {
@@ -32328,7 +32291,7 @@ public final class N {
                 candidate = a[i];
             }
 
-            if (candidate == null && cmp == OBJECT_COMPARATOR) {
+            if (candidate == null && cmp == NULL_MIN_COMPARATOR) {
                 return null;
             }
         }
@@ -32349,7 +32312,7 @@ public final class N {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
 
-        return (T) min(c, from, to, OBJECT_COMPARATOR);
+        return (T) min(c, from, to, NULL_MAX_COMPARATOR);
     }
 
     public static <T> T min(final Collection<? extends T> c, Comparator<? super T> cmp) {
@@ -32376,7 +32339,7 @@ public final class N {
             throw new IllegalArgumentException("The size of collection can't be null or empty");
         }
 
-        cmp = cmp == null ? OBJECT_COMPARATOR : cmp;
+        cmp = cmp == null ? NULL_MAX_COMPARATOR : cmp;
 
         T candidate = null;
         T e = null;
@@ -32392,7 +32355,7 @@ public final class N {
                     candidate = e;
                 }
 
-                if (candidate == null && cmp == OBJECT_COMPARATOR) {
+                if (candidate == null && cmp == NULL_MIN_COMPARATOR) {
                     return null;
                 }
             }
@@ -32412,7 +32375,7 @@ public final class N {
                         candidate = e;
                     }
 
-                    if (candidate == null && cmp == OBJECT_COMPARATOR) {
+                    if (candidate == null && cmp == NULL_MIN_COMPARATOR) {
                         return null;
                     }
                 }
@@ -32513,8 +32476,12 @@ public final class N {
         return Math.max(a, b);
     }
 
+    public static <T extends Comparable<? super T>> T max(final T a, final T b) {
+        return (T) max(a, b, NULL_MIN_COMPARATOR);
+    }
+
     public static <T> T max(final T a, final T b, final Comparator<? super T> cmp) {
-        return cmp.compare(a, b) >= 0 ? a : b;
+        return (cmp == null ? NULL_MIN_COMPARATOR : cmp).compare(a, b) >= 0 ? a : b;
     }
 
     /**
@@ -32609,6 +32576,10 @@ public final class N {
      */
     public static double max(final double a, final double b, final double c) {
         return Math.max(Math.max(a, b), c);
+    }
+
+    public static <T extends Comparable<? super T>> T max(final T a, final T b, final T c) {
+        return (T) max(a, b, c, NULL_MIN_COMPARATOR);
     }
 
     public static <T> T max(final T a, final T b, final T c, final Comparator<? super T> cmp) {
@@ -32872,7 +32843,7 @@ public final class N {
     }
 
     public static <T extends Comparable<? super T>> T max(final T[] a, final int from, final int to) {
-        return (T) max(a, from, to, OBJECT_COMPARATOR);
+        return (T) max(a, from, to, NULL_MIN_COMPARATOR);
     }
 
     /**
@@ -32896,12 +32867,16 @@ public final class N {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
 
-        cmp = cmp == null ? OBJECT_COMPARATOR : cmp;
+        cmp = cmp == null ? NULL_MIN_COMPARATOR : cmp;
 
         T candidate = a[from];
         for (int i = from + 1; i < to; i++) {
             if (cmp.compare(a[i], candidate) > 0) {
                 candidate = a[i];
+            }
+
+            if (candidate == null && cmp == NULL_MAX_COMPARATOR) {
+                return null;
             }
         }
 
@@ -32921,7 +32896,7 @@ public final class N {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
 
-        return (T) max(c, from, to, OBJECT_COMPARATOR);
+        return (T) max(c, from, to, NULL_MIN_COMPARATOR);
     }
 
     public static <T> T max(final Collection<? extends T> c, Comparator<? super T> cmp) {
@@ -32948,7 +32923,7 @@ public final class N {
             throw new IllegalArgumentException("The size of collection can't be null or empty");
         }
 
-        cmp = cmp == null ? OBJECT_COMPARATOR : cmp;
+        cmp = cmp == null ? NULL_MIN_COMPARATOR : cmp;
 
         T candidate = null;
         T e = null;
@@ -32962,6 +32937,10 @@ public final class N {
 
                 if (cmp.compare(e, candidate) > 0) {
                     candidate = e;
+                }
+
+                if (candidate == null && cmp == NULL_MAX_COMPARATOR) {
+                    return null;
                 }
             }
         } else {
@@ -32979,6 +32958,10 @@ public final class N {
                     if (cmp.compare(e, candidate) > 0) {
                         candidate = e;
                     }
+                }
+
+                if (candidate == null && cmp == NULL_MAX_COMPARATOR) {
+                    return null;
                 }
             }
         }
@@ -33163,6 +33146,10 @@ public final class N {
         } else {
             return c;
         }
+    }
+
+    public static <T extends Comparable<? super T>> T median(final T a, final T b, final T c) {
+        return (T) median(a, b, c, NULL_MIN_COMPARATOR);
     }
 
     public static <T> T median(final T a, final T b, final T c, final Comparator<? super T> cmp) {

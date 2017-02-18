@@ -4,9 +4,13 @@
 
 2, Add vstack/hstack/setRow/setColumnfill to Matrix/IntMatrix/ByteMatrix...
 
-3, Replace N.asList2(...) with Array.asList(...).
+3*, Replace N.asList2(...) with Array.asList(...).
 
-4, Improvements and bug fix.
+4*, Rename reverseOrder to reversedOrder, nullMinComparator to nullMinOrder, nullMaxComparator to nullMaxOrder in N.
+
+5*, Refactoring compare in N.
+
+6, Improvements and bug fix.
 
 
 ========Changes in 0.9.50=========================================================================
