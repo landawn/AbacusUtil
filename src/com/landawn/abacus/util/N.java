@@ -3950,46 +3950,6 @@ public final class N {
         return list;
     }
 
-    /**
-     * Create an array list by initializing its elements data with the specified array <code>a</code>.
-     * The returned list may share the same elements with the specified array <code>a</code>.
-     * That's to say any change on the List/Array will affect the Array/List.
-     * 
-     * @param a
-     * @return
-     */
-    public static <T> List<T> asList2(final T... a) {
-        if (a.length == 0) {
-            return new ArrayList<>();
-        }
-
-        if (isListElementDataFieldSettable && listElementDataField != null && listSizeField != null) {
-            final List<T> list = new ArrayList<>();
-
-            try {
-                listElementDataField.set(list, a);
-                listSizeField.set(list, a.length);
-
-                return list;
-            } catch (Throwable e) {
-                // ignore;
-                isListElementDataFieldSettable = false;
-            }
-        }
-
-        final List<T> list = new ArrayList<>(a.length);
-
-        if (a.length < 9) {
-            for (T e : a) {
-                list.add(e);
-            }
-        } else {
-            list.addAll(Arrays.asList(a));
-        }
-
-        return list;
-    }
-
     public static <T> LinkedList<T> asLinkedList(final T... a) {
         if (a.length == 0) {
             return new LinkedList<>();
@@ -6924,12 +6884,50 @@ public final class N {
     //        return res;
     //    }
 
-    public static <T> Comparator<T> nullMinComparator() {
+    public static <T extends Comparable<?>> Comparator<T> nullMinOrder() {
         return NULL_MIN_COMPARATOR;
     }
 
-    public static <T> Comparator<T> nullMaxComparator() {
+    public static <T> Comparator<T> nullMinOrder(final Comparator<T> cmp) {
+        if (cmp == null) {
+            return NULL_MIN_COMPARATOR;
+        }
+
+        return new Comparator<T>() {
+            @Override
+            public int compare(T a, T b) {
+                return a == null ? (b == null ? 0 : -1) : (b == null ? 1 : cmp.compare(a, b));
+            }
+        };
+    }
+
+    public static <T extends Comparable<?>> Comparator<T> nullMaxOrder() {
         return NULL_MAX_COMPARATOR;
+    }
+
+    public static <T> Comparator<T> nullMaxOrder(final Comparator<T> cmp) {
+        if (cmp == null) {
+            return NULL_MAX_COMPARATOR;
+        }
+
+        return new Comparator<T>() {
+            @Override
+            public int compare(T a, T b) {
+                return a == null ? (b == null ? 0 : 1) : (b == null ? -1 : cmp.compare(a, b));
+            }
+        };
+    }
+
+    public static <T extends Comparable<?>> Comparator<T> reversedOrder() {
+        return REVERSED_COMPARATOR;
+    }
+
+    public static <T> Comparator<T> reversedOrder(Comparator<T> cmp) {
+        if (cmp == null) {
+            return REVERSED_COMPARATOR;
+        }
+
+        return Collections.reverseOrder(cmp);
     }
 
     public static int compare(final boolean a, final boolean b) {
@@ -17872,7 +17870,7 @@ public final class N {
         N.checkIndex(from, to, c.size());
 
         if (c instanceof ObjectList && ((ObjectList<T>) c).array().getClass().equals(Object[].class)) {
-            return N.asList2(N.copyOfRange((T[]) ((ObjectList<T>) c).array(), from, to));
+            return Array.asList(N.copyOfRange((T[]) ((ObjectList<T>) c).array(), from, to));
         } else {
             final List<T> result = new ArrayList<>(to - from);
             result.addAll(c.subList(from, to));
@@ -17916,7 +17914,7 @@ public final class N {
             }
         } else {
             final T[] a = (T[]) c.toArray();
-            result = N.asList2(N.copyOfRange(a, from, to, step));
+            result = Array.asList(N.copyOfRange(a, from, to, step));
         }
 
         return result;
@@ -31925,6 +31923,10 @@ public final class N {
         return Math.min(a, b);
     }
 
+    public static <T> T min(final T a, final T b, final Comparator<? super T> cmp) {
+        return cmp.compare(a, b) <= 0 ? a : b;
+    }
+
     /**
      * <p>
      * Gets the minimum of three <code>char</code> values.
@@ -32031,6 +32033,10 @@ public final class N {
      */
     public static double min(final double a, final double b, final double c) {
         return Math.min(Math.min(a, b), c);
+    }
+
+    public static <T> T min(final T a, final T b, final T c, final Comparator<? super T> cmp) {
+        return min(min(a, b, cmp), c, cmp);
     }
 
     /**
@@ -32507,6 +32513,10 @@ public final class N {
         return Math.max(a, b);
     }
 
+    public static <T> T max(final T a, final T b, final Comparator<? super T> cmp) {
+        return cmp.compare(a, b) >= 0 ? a : b;
+    }
+
     /**
      * Gets the maximum of three <code>char</code> values.
      * 
@@ -32599,6 +32609,10 @@ public final class N {
      */
     public static double max(final double a, final double b, final double c) {
         return Math.max(Math.max(a, b), c);
+    }
+
+    public static <T> T max(final T a, final T b, final T c, final Comparator<? super T> cmp) {
+        return max(max(a, b, cmp), c, cmp);
     }
 
     /**
@@ -33106,9 +33120,13 @@ public final class N {
      * @return the median of the values
      */
     public static float median(final float a, final float b, final float c) {
-        if ((Float.compare(a, b) >= 0 && Float.compare(a, c) <= 0) || (Float.compare(a, c) >= 0 && Float.compare(a, b) <= 0)) {
+        int ab = Float.compare(a, b);
+        int ac = Float.compare(a, c);
+        int bc = 0;
+
+        if ((ab >= 0 && ac <= 0) || (ac >= 0 && ab <= 0)) {
             return a;
-        } else if ((Float.compare(b, a) >= 0 && Float.compare(b, c) <= 0) || (Float.compare(b, c) >= 0 && Float.compare(b, a) <= 0)) {
+        } else if ((((bc = Float.compare(b, c)) <= 0) && ab <= 0) || (bc >= 0 && ab >= 0)) {
             return b;
         } else {
             return c;
@@ -33134,9 +33152,27 @@ public final class N {
      * @return the median of the values
      */
     public static double median(final double a, final double b, final double c) {
-        if ((Double.compare(a, b) >= 0 && Double.compare(a, c) <= 0) || (Double.compare(a, c) >= 0 && Double.compare(a, b) <= 0)) {
+        int ab = Double.compare(a, b);
+        int ac = Double.compare(a, c);
+        int bc = 0;
+
+        if ((ab >= 0 && ac <= 0) || (ac >= 0 && ab <= 0)) {
             return a;
-        } else if ((Double.compare(b, a) >= 0 && Double.compare(b, c) <= 0) || (Double.compare(b, c) >= 0 && Double.compare(b, a) <= 0)) {
+        } else if ((((bc = Double.compare(b, c)) <= 0) && ab <= 0) || (bc >= 0 && ab >= 0)) {
+            return b;
+        } else {
+            return c;
+        }
+    }
+
+    public static <T> T median(final T a, final T b, final T c, final Comparator<? super T> cmp) {
+        int ab = cmp.compare(a, b);
+        int ac = cmp.compare(a, c);
+        int bc = 0;
+
+        if ((ab >= 0 && ac <= 0) || (ac >= 0 && ab <= 0)) {
+            return a;
+        } else if ((((bc = cmp.compare(b, c)) <= 0) && ab <= 0) || (bc >= 0 && ab >= 0)) {
             return b;
         } else {
             return c;
@@ -34318,14 +34354,6 @@ public final class N {
     public static <T> void parse(final Collection<? extends Iterator<? extends T>> iterators, final long offset, final long count, final int readThreadNumber,
             final int processThreadNumber, final int queueSize, final Consumer<? super T> elementParser) {
         IOUtil.parse(iterators, offset, count, readThreadNumber, processThreadNumber, queueSize, elementParser);
-    }
-
-    public static <T> Comparator<T> reverseOrder() {
-        return REVERSED_COMPARATOR;
-    }
-
-    public static <T> Comparator<T> reverseOrder(Comparator<T> cmp) {
-        return Collections.reverseOrder(cmp);
     }
 
     public static <E> Set<Set<E>> powerSet(Set<E> set) {

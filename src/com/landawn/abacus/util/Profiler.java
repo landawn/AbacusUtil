@@ -36,7 +36,30 @@ import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
 
 /**
- * A simple way to run function performance by unit test.
+ * A simple way to run load/performance test.
+ * 
+ * <br />
+ * <br />
+ * Caution: if the loop number is too big, it may take a lot of memory to save the test result and impact the test result.
+ * <br />
+ * So instead of running the performance with big loop number:
+ * <pre>
+ * <code>
+ * final int bigLoopNum = 1000_000;
+ * Profiler.run(threadNum, bigLoopNum, roundNum, "yourMethod", () -> yourMethod());
+ * </code>
+ * 
+ * <b>// reduce the 'bigLoopNum' by for-loop:</b>
+ * 
+ * <code>
+ * Profiler.run(threadNum, bigLoopNum / 1000, roundNum, "yourMethod", () -> 
+ *  {
+ *      for (int i = 0; i < 1000; i++) {
+ *          yourMethod();
+ *      }
+ *  });
+ * </code>
+ * </pre>
  * 
  * @since 0.8
  * 

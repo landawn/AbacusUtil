@@ -5085,6 +5085,46 @@ public final class Array {
         }
     }
 
+    /**
+     * Create an array list by initializing its elements data with the specified array <code>a</code>.
+     * The returned list may share the same elements with the specified array <code>a</code>.
+     * That's to say any change on the List/Array will affect the Array/List.
+     * 
+     * @param a
+     * @return
+     */
+    public static <T> List<T> asList(final T... a) {
+        if (a.length == 0) {
+            return new ArrayList<>();
+        }
+    
+        if (N.isListElementDataFieldSettable && N.listElementDataField != null && N.listSizeField != null) {
+            final List<T> list = new ArrayList<>();
+    
+            try {
+                N.listElementDataField.set(list, a);
+                N.listSizeField.set(list, a.length);
+    
+                return list;
+            } catch (Throwable e) {
+                // ignore;
+                N.isListElementDataFieldSettable = false;
+            }
+        }
+    
+        final List<T> list = new ArrayList<>(a.length);
+    
+        if (a.length < 9) {
+            for (T e : a) {
+                list.add(e);
+            }
+        } else {
+            list.addAll(Arrays.asList(a));
+        }
+    
+        return list;
+    }
+
     //    static double medianOfTwoSortedArrays(final int[] a, final int[] b) {
     //        final int n = a.length;
     //        final int m = b.length;

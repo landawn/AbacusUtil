@@ -131,7 +131,7 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatM
         return a[rowIndex];
     }
 
-    public float[] col(final int columnIndex) {
+    public float[] column(final int columnIndex) {
         N.checkArgument(columnIndex >= 0 && columnIndex < m, "Invalid column Index: %s", columnIndex);
 
         final float[] c = new float[n];
@@ -143,9 +143,36 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatM
         return c;
     }
 
+    public void setRow(int rowIndex, float[] row) {
+        N.checkArgument(row.length == m, "The size of the specified row doesn't match the length of column");
+
+        N.copy(row, 0, a[rowIndex], 0, m);
+    }
+
+    public void setColumn(int columnIndex, float[] column) {
+        N.checkArgument(column.length == n, "The size of the specified column doesn't match the length of row");
+
+        for (int i = 0; i < n; i++) {
+            a[i][columnIndex] = column[i];
+        }
+    }
+
     public void fill(final float val) {
         for (int i = 0; i < n; i++) {
             N.fill(a[i], val);
+        }
+    }
+
+    public void fill(final float[][] b) {
+        fill(0, 0, b);
+    }
+
+    public void fill(final int fromRowIndex, final int fromColumnIndex, final float[][] b) {
+        N.checkIndex(fromRowIndex, n, n);
+        N.checkIndex(fromColumnIndex, m, m);
+
+        for (int i = 0, minLen = N.min(n - fromRowIndex, b.length); i < minLen; i++) {
+            N.copy(b[i], 0, a[i + fromRowIndex], fromColumnIndex, N.min(b[i].length, m - fromColumnIndex));
         }
     }
 

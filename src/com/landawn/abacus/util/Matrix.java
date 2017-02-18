@@ -123,7 +123,7 @@ public final class Matrix<T> extends AbstractMatrix<T[], ObjectList<T>, Matrix<T
         return a[rowIndex];
     }
 
-    public T[] col(final int columnIndex) {
+    public T[] column(final int columnIndex) {
         N.checkArgument(columnIndex >= 0 && columnIndex < m, "Invalid column Index: %s", columnIndex);
 
         final T[] c = N.newArray(componentType, n);
@@ -135,9 +135,36 @@ public final class Matrix<T> extends AbstractMatrix<T[], ObjectList<T>, Matrix<T
         return c;
     }
 
+    public void setRow(int rowIndex, T[] row) {
+        N.checkArgument(row.length == m, "The size of the specified row doesn't match the length of column");
+
+        N.copy(row, 0, a[rowIndex], 0, m);
+    }
+
+    public void setColumn(int columnIndex, T[] column) {
+        N.checkArgument(column.length == n, "The size of the specified column doesn't match the length of row");
+
+        for (int i = 0; i < n; i++) {
+            a[i][columnIndex] = column[i];
+        }
+    }
+
     public void fill(final T val) {
         for (int i = 0; i < n; i++) {
             N.fill(a[i], val);
+        }
+    }
+
+    public void fill(final T[][] b) {
+        fill(0, 0, b);
+    }
+
+    public void fill(final int fromRowIndex, final int fromColumnIndex, final T[][] b) {
+        N.checkIndex(fromRowIndex, n, n);
+        N.checkIndex(fromColumnIndex, m, m);
+
+        for (int i = 0, minLen = N.min(n - fromRowIndex, b.length); i < minLen; i++) {
+            N.copy(b[i], 0, a[i + fromRowIndex], fromColumnIndex, N.min(b[i].length, m - fromColumnIndex));
         }
     }
 

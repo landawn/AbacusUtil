@@ -58,16 +58,6 @@ public class AsyncExecutor {
         this.maxConcurrentThreadNumber = maxConcurrentThreadNumber;
         this.keepAliveTime = keepAliveTime;
         this.unit = unit;
-    }
-
-    /**
-     * 
-     * @param asyncExecutor
-     */
-    public AsyncExecutor(final ExecutorService executorService) {
-        this(8, 300, TimeUnit.SECONDS);
-
-        this.executorService = executorService;
 
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
@@ -89,8 +79,18 @@ public class AsyncExecutor {
         });
     }
 
+    /**
+     * 
+     * @param asyncExecutor
+     */
+    public AsyncExecutor(final ExecutorService executorService) {
+        this(8, 300, TimeUnit.SECONDS);
+
+        this.executorService = executorService;
+    }
+
     public CompletableFuture<Void> execute(final Runnable command) {
-        final CompletableFuture<Void> future = new CompletableFuture<Void>(this, command, null);
+        final CompletableFuture<Void> future = new CompletableFuture<>(this, command, null);
 
         getExecutorService().execute(future);
 
@@ -118,7 +118,7 @@ public class AsyncExecutor {
     }
 
     public <T> CompletableFuture<T> execute(final Callable<T> command) {
-        final CompletableFuture<T> future = new CompletableFuture<T>(this, command);
+        final CompletableFuture<T> future = new CompletableFuture<>(this, command);
 
         getExecutorService().execute(future);
 

@@ -42,8 +42,16 @@ public abstract class AbstractMatrix<A, PL, X extends AbstractMatrix<A, PL, X>> 
         isParallelStreamSupported = tmp;
     }
 
+    /**
+     * Row length.
+     */
     public final int n;
+
+    /**
+     * Column length.
+     */
     public final int m;
+
     final A[] a;
     final long count;
 

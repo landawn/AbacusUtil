@@ -265,6 +265,21 @@ public final class PropertiesUtil {
         };
 
         scheduledExecutor.scheduleWithFixedDelay(refreshTask, 1000, 1000, TimeUnit.MICROSECONDS);
+
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                scheduledExecutor.shutdown();
+
+                try {
+                    scheduledExecutor.awaitTermination(180, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    if (logger.isWarnEnabled()) {
+                        logger.warn("Failed to commit task in the queue in class", e);
+                    }
+                }
+            }
+        });
     }
 
     private PropertiesUtil() {
@@ -380,7 +395,7 @@ public final class PropertiesUtil {
     private static Properties<String, String> create(Properties<String, String> targetProperties, java.util.Properties newProperties) {
         Properties<String, String> properties = null;
         if (targetProperties == null) {
-            properties = new Properties<String, String>();
+            properties = new Properties<>();
         } else {
             properties = targetProperties;
         }

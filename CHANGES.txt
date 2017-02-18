@@ -2,9 +2,11 @@
 
 1, Support customized type in serialization/deserialization by TypeFactory.register(type).
 
-2, Add vstack/hstack to Matrix/IntMatrix/ByteMatrix...
+2, Add vstack/hstack/setRow/setColumnfill to Matrix/IntMatrix/ByteMatrix...
 
-3, Improvements and bug fix.
+3, Replace N.asList2(...) with Array.asList(...).
+
+4, Improvements and bug fix.
 
 
 ========Changes in 0.9.50=========================================================================

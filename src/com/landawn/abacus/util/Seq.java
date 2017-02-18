@@ -1346,7 +1346,7 @@ public class Seq<T> implements Collection<T> {
             final T[] a = (T[]) (coll instanceof ObjectList ? ((ObjectList) coll).array() : coll.toArray());
             final T[] b = N.copyOfRange(a, from, to, step);
 
-            return new Seq<>(Object[].class.equals(b.getClass()) ? N.asList2(b) : N.asList(b));
+            return new Seq<>(Object[].class.equals(b.getClass()) ? Array.asList(b) : N.asList(b));
         }
     }
 

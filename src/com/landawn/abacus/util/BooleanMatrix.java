@@ -113,7 +113,7 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
         return a[rowIndex];
     }
 
-    public boolean[] col(final int columnIndex) {
+    public boolean[] column(final int columnIndex) {
         N.checkArgument(columnIndex >= 0 && columnIndex < m, "Invalid column Index: %s", columnIndex);
 
         final boolean[] c = new boolean[n];
@@ -125,9 +125,36 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
         return c;
     }
 
+    public void setRow(int rowIndex, boolean[] row) {
+        N.checkArgument(row.length == m, "The size of the specified row doesn't match the length of column");
+
+        N.copy(row, 0, a[rowIndex], 0, m);
+    }
+
+    public void setColumn(int columnIndex, boolean[] column) {
+        N.checkArgument(column.length == n, "The size of the specified column doesn't match the length of row");
+
+        for (int i = 0; i < n; i++) {
+            a[i][columnIndex] = column[i];
+        }
+    }
+
     public void fill(final boolean val) {
         for (int i = 0; i < n; i++) {
             N.fill(a[i], val);
+        }
+    }
+
+    public void fill(final boolean[][] b) {
+        fill(0, 0, b);
+    }
+
+    public void fill(final int fromRowIndex, final int fromColumnIndex, final boolean[][] b) {
+        N.checkIndex(fromRowIndex, n, n);
+        N.checkIndex(fromColumnIndex, m, m);
+
+        for (int i = 0, minLen = N.min(n - fromRowIndex, b.length); i < minLen; i++) {
+            N.copy(b[i], 0, a[i + fromRowIndex], fromColumnIndex, N.min(b[i].length, m - fromColumnIndex));
         }
     }
 
@@ -144,6 +171,7 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
                 });
             } else {
                 IntStream.range(0, m).parallel().forEach(new IntConsumer() {
+
                     @Override
                     public void accept(final int j) {
                         for (int i = 0; i < n; i++) {
@@ -154,7 +182,9 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
             }
         } else {
             if (n <= m) {
-                for (int i = 0; i < n; i++) {
+                for (
+
+                        int i = 0; i < n; i++) {
                     for (int j = 0; j < m; j++) {
                         a[i][j] = operator.applyAsBoolean(a[i][j]);
                     }
@@ -549,6 +579,7 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
                 });
             } else {
                 IntStream.range(0, m).parallel().forEach(new IntConsumer() {
+
                     @Override
                     public void accept(final int j) {
                         for (int i = 0; i < n; i++) {
@@ -559,7 +590,9 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
             }
         } else {
             if (n <= m) {
-                for (int i = 0; i < n; i++) {
+                for (
+
+                        int i = 0; i < n; i++) {
                     for (int j = 0; j < m; j++) {
                         result[i][j] = zipFunction.apply(a[i][j], b[i][j]);
                     }
@@ -595,6 +628,7 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
                 });
             } else {
                 IntStream.range(0, m).parallel().forEach(new IntConsumer() {
+
                     @Override
                     public void accept(final int j) {
                         for (int i = 0; i < n; i++) {
@@ -605,7 +639,9 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
             }
         } else {
             if (n <= m) {
-                for (int i = 0; i < n; i++) {
+                for (
+
+                        int i = 0; i < n; i++) {
                     for (int j = 0; j < m; j++) {
                         result[i][j] = zipFunction.apply(a[i][j], b[i][j], c[i][j]);
                     }
