@@ -46,12 +46,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.datastax.driver.core.ResultSet;
-import com.landawn.abacus.DataSet;
 import com.landawn.abacus.DirtyMarker;
 import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.condition.Between;
@@ -67,7 +64,7 @@ import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
 
 /**
- * It's easier to write/maintain the CQL by <code>CQLBuilder<ResultSet></code> and more efficient, comparing to write Cassandra CQL in plain text. 
+ * It's easier to write/maintain the CQL by <code>CQLBuilder</code> and more efficient, comparing to write Cassandra CQL in plain text. 
  * <br>The <code>cql()</code> or <code>pair()</code> method must be called to release resources.
  * <br />Here is a sample:
  * <p>
@@ -79,13 +76,13 @@ import com.landawn.abacus.logging.LoggerFactory;
  * 
  * @author Haiyang Li
  */
-public abstract class CQLBuilder<T> {
+public abstract class CQLBuilder {
     private static final Logger logger = LoggerFactory.getLogger(CQLBuilder.class);
 
     public static final String DISTINCT = D.DISTINCT;
     public static final String COUNT_ALL = "count(*)";
 
-    private static final Map<String, Map<String, String>> entityTablePropColumnNameMap = new ObjectPool<String, Map<String, String>>(1024);
+    private static final Map<String, Map<String, String>> entityTablePropColumnNameMap = new ObjectPool<>(1024);
     private static final Map<String, char[]> tableDeleteFrom = new ConcurrentHashMap<>();
     private static final Map<Class<?>, List<String>> classPropNameListPool = new ConcurrentHashMap<>();
     // private static final Map<Class<?>, Set<String>> classPropNameSetPool = new ConcurrentHashMap<>();
@@ -115,7 +112,7 @@ public abstract class CQLBuilder<T> {
     CQLBuilder(final NamingPolicy namingPolicy, final CQLPolicy cqlPolicy) {
         if (activeStringBuilderCounter.incrementAndGet() > 1024) {
             logger.error("Too many(" + activeStringBuilderCounter.get()
-                    + ") StringBuilder instances are created in CQLBuilder<ResultSet>. The method cql()/pair() must be called to release resources and close CQLBuilder<ResultSet>");
+                    + ") StringBuilder instances are created in CQLBuilder. The method cql()/pair() must be called to release resources and close CQLBuilder");
         }
 
         this.sb = ObjectFactory.createStringBuilder();
@@ -233,7 +230,7 @@ public abstract class CQLBuilder<T> {
         return m;
     }
 
-    public CQLBuilder<T> into(final String tableName) {
+    public CQLBuilder into(final String tableName) {
         if (op != OperationType.ADD) {
             throw new AbacusException("Invalid operation: " + op);
         }
@@ -406,11 +403,11 @@ public abstract class CQLBuilder<T> {
         return this;
     }
 
-    public CQLBuilder<T> into(final Class<?> entityClass) {
+    public CQLBuilder into(final Class<?> entityClass) {
         return into(N.getSimpleClassName(entityClass));
     }
 
-    public CQLBuilder<T> from(String expr) {
+    public CQLBuilder from(String expr) {
         expr = expr.trim();
         String tableName = expr.indexOf(D._COMMA) > 0 ? N.split(expr, D._COMMA, true)[0] : expr;
 
@@ -421,7 +418,7 @@ public abstract class CQLBuilder<T> {
         return from(tableName, expr);
     }
 
-    public CQLBuilder<T> from(final String... tableNames) {
+    public CQLBuilder from(final String... tableNames) {
         if (tableNames.length == 1) {
             return from(tableNames[0]);
         } else {
@@ -435,7 +432,7 @@ public abstract class CQLBuilder<T> {
         }
     }
 
-    public CQLBuilder<T> from(final Collection<String> tableNames) {
+    public CQLBuilder from(final Collection<String> tableNames) {
         String tableName = tableNames.iterator().next().trim();
 
         if (tableName.indexOf(D.SPACE) > 0) {
@@ -445,7 +442,7 @@ public abstract class CQLBuilder<T> {
         return from(tableName, N.join(tableNames, D.SPACE));
     }
 
-    public CQLBuilder<T> from(final Map<String, String> tableAliases) {
+    public CQLBuilder from(final Map<String, String> tableAliases) {
         String tableName = tableAliases.keySet().iterator().next().trim();
 
         if (tableName.indexOf(D.SPACE) > 0) {
@@ -466,7 +463,7 @@ public abstract class CQLBuilder<T> {
         return from(tableName, expr);
     }
 
-    private CQLBuilder<T> from(final String tableName, final String fromCause) {
+    private CQLBuilder from(final String tableName, final String fromCause) {
         if (op != OperationType.QUERY && op != OperationType.DELETE) {
             throw new AbacusException("Invalid operation: " + op);
         }
@@ -550,11 +547,11 @@ public abstract class CQLBuilder<T> {
         return this;
     }
 
-    public CQLBuilder<T> from(final Class<?> entityClass) {
+    public CQLBuilder from(final Class<?> entityClass) {
         return from(N.getSimpleClassName(entityClass));
     }
 
-    public CQLBuilder<T> where(final String expr) {
+    public CQLBuilder where(final String expr) {
         init(true);
 
         sb.append(_SPACE_WHERE_SPACE);
@@ -569,7 +566,7 @@ public abstract class CQLBuilder<T> {
      * @param cond any literal written in <code>Expression</code> condition won't be formalized
      * @return
      */
-    public CQLBuilder<T> where(final Condition cond) {
+    public CQLBuilder where(final Condition cond) {
         init(true);
 
         sb.append(_SPACE_WHERE_SPACE);
@@ -597,7 +594,7 @@ public abstract class CQLBuilder<T> {
         }
     }
 
-    public CQLBuilder<T> orderBy(final String expr) {
+    public CQLBuilder orderBy(final String expr) {
         sb.append(_SPACE_ORDER_BY_SPACE);
 
         if (expr.indexOf(D._SPACE) > 0) {
@@ -610,7 +607,7 @@ public abstract class CQLBuilder<T> {
         return this;
     }
 
-    public CQLBuilder<T> orderBy(final String... columnNames) {
+    public CQLBuilder orderBy(final String... columnNames) {
         sb.append(_SPACE_ORDER_BY_SPACE);
 
         if (columnNames.length == 1) {
@@ -635,7 +632,7 @@ public abstract class CQLBuilder<T> {
         return this;
     }
 
-    public CQLBuilder<T> orderBy(final String columnName, final SortDirection direction) {
+    public CQLBuilder orderBy(final String columnName, final SortDirection direction) {
         orderBy(columnName);
 
         sb.append(D._SPACE);
@@ -644,7 +641,7 @@ public abstract class CQLBuilder<T> {
         return this;
     }
 
-    public CQLBuilder<T> orderBy(final Collection<String> columnNames) {
+    public CQLBuilder orderBy(final Collection<String> columnNames) {
         sb.append(_SPACE_ORDER_BY_SPACE);
 
         final Map<String, String> propColumnNameMap = entityTablePropColumnNameMap.get(tableName);
@@ -660,7 +657,7 @@ public abstract class CQLBuilder<T> {
         return this;
     }
 
-    public CQLBuilder<T> orderBy(final Collection<String> columnNames, final SortDirection direction) {
+    public CQLBuilder orderBy(final Collection<String> columnNames, final SortDirection direction) {
         orderBy(columnNames);
 
         sb.append(D._SPACE);
@@ -669,7 +666,7 @@ public abstract class CQLBuilder<T> {
         return this;
     }
 
-    public CQLBuilder<T> orderBy(final Map<String, SortDirection> orders) {
+    public CQLBuilder orderBy(final Map<String, SortDirection> orders) {
         sb.append(_SPACE_ORDER_BY_SPACE);
 
         final Map<String, String> propColumnNameMap = entityTablePropColumnNameMap.get(tableName);
@@ -688,7 +685,7 @@ public abstract class CQLBuilder<T> {
         return this;
     }
 
-    public CQLBuilder<T> limit(final int count) {
+    public CQLBuilder limit(final int count) {
         sb.append(_SPACE_LIMIT_SPACE);
 
         sb.append(count);
@@ -696,11 +693,11 @@ public abstract class CQLBuilder<T> {
         return this;
     }
 
-    public CQLBuilder<T> set(final String expr) {
+    public CQLBuilder set(final String expr) {
         return set(Array.of(expr));
     }
 
-    public CQLBuilder<T> set(final String... columnNames) {
+    public CQLBuilder set(final String... columnNames) {
         init(false);
 
         sb.append(_SPACE_SET_SPACE);
@@ -773,7 +770,7 @@ public abstract class CQLBuilder<T> {
         return this;
     }
 
-    public CQLBuilder<T> set(final Collection<String> columnNames) {
+    public CQLBuilder set(final Collection<String> columnNames) {
         init(false);
 
         sb.append(_SPACE_SET_SPACE);
@@ -845,7 +842,7 @@ public abstract class CQLBuilder<T> {
         return this;
     }
 
-    public CQLBuilder<T> set(final Map<String, Object> props) {
+    public CQLBuilder set(final Map<String, Object> props) {
         init(false);
 
         sb.append(_SPACE_SET_SPACE);
@@ -937,7 +934,7 @@ public abstract class CQLBuilder<T> {
      * @return
      */
     @SuppressWarnings("deprecation")
-    public CQLBuilder<T> set(final Object entity) {
+    public CQLBuilder set(final Object entity) {
         if (entity instanceof String) {
             return set(Array.of((String) entity));
         } else if (entity instanceof Map) {
@@ -959,15 +956,15 @@ public abstract class CQLBuilder<T> {
         }
     }
 
-    public CQLBuilder<T> set(Class<?> entityClass) {
+    public CQLBuilder set(Class<?> entityClass) {
         return set(entityClass, null);
     }
 
-    public CQLBuilder<T> set(Class<?> entityClass, final Set<String> excludedPropNames) {
+    public CQLBuilder set(Class<?> entityClass, final Set<String> excludedPropNames) {
         return set(getPropNamesByClass(entityClass, excludedPropNames));
     }
 
-    CQLBuilder<T> using(String... options) {
+    CQLBuilder using(String... options) {
         init(false);
 
         sb.append(_SPACE_USING_SPACE);
@@ -983,11 +980,11 @@ public abstract class CQLBuilder<T> {
         return this;
     }
 
-    public CQLBuilder<T> usingTTL(long timestamp) {
+    public CQLBuilder usingTTL(long timestamp) {
         return usingTTL(String.valueOf(timestamp));
     }
 
-    public CQLBuilder<T> usingTTL(String timestamp) {
+    public CQLBuilder usingTTL(String timestamp) {
         init(false);
 
         sb.append(_SPACE_USING_TTL_SPACE);
@@ -996,15 +993,15 @@ public abstract class CQLBuilder<T> {
         return this;
     }
 
-    public CQLBuilder<T> usingTimestamp(Date timestamp) {
+    public CQLBuilder usingTimestamp(Date timestamp) {
         return usingTimestamp(timestamp.getTime());
     }
 
-    public CQLBuilder<T> usingTimestamp(long timestamp) {
+    public CQLBuilder usingTimestamp(long timestamp) {
         return usingTimestamp(String.valueOf(timestamp));
     }
 
-    public CQLBuilder<T> usingTimestamp(String timestamp) {
+    public CQLBuilder usingTimestamp(String timestamp) {
         init(false);
 
         sb.append(_SPACE_USING_TIMESTAMP_SPACE);
@@ -1013,7 +1010,7 @@ public abstract class CQLBuilder<T> {
         return this;
     }
 
-    public CQLBuilder<T> iF(final String expr) {
+    public CQLBuilder iF(final String expr) {
         init(true);
 
         sb.append(_SPACE_IF_SPACE);
@@ -1028,7 +1025,7 @@ public abstract class CQLBuilder<T> {
      * @param cond any literal written in <code>Expression</code> condition won't be formalized
      * @return
      */
-    public CQLBuilder<T> iF(final Condition cond) {
+    public CQLBuilder iF(final Condition cond) {
         init(true);
 
         sb.append(_SPACE_IF_SPACE);
@@ -1038,7 +1035,7 @@ public abstract class CQLBuilder<T> {
         return this;
     }
 
-    public CQLBuilder<T> ifExists() {
+    public CQLBuilder ifExists() {
         init(true);
 
         sb.append(_SPACE_IF_EXISTS);
@@ -1046,7 +1043,7 @@ public abstract class CQLBuilder<T> {
         return this;
     }
 
-    public CQLBuilder<T> ifNotExists() {
+    public CQLBuilder ifNotExists() {
         init(true);
 
         sb.append(_SPACE_IF_NOT_EXISTS);
@@ -1054,7 +1051,7 @@ public abstract class CQLBuilder<T> {
         return this;
     }
 
-    public CQLBuilder<T> allowFiltering() {
+    public CQLBuilder allowFiltering() {
         init(true);
 
         sb.append(_SPACE_ALLOW_FILTERING);
@@ -1063,13 +1060,13 @@ public abstract class CQLBuilder<T> {
     }
 
     /**
-     * This CQLBuilder<ResultSet> will be closed after <code>cql()</code> is called.
+     * This CQLBuilder will be closed after <code>cql()</code> is called.
      * 
      * @return
      */
     public String cql() {
         if (sb == null) {
-            throw new AbacusException("This CQLBuilder<ResultSet> has been closed after cql() was called previously");
+            throw new AbacusException("This CQLBuilder has been closed after cql() was called previously");
         }
 
         init(true);
@@ -1089,7 +1086,7 @@ public abstract class CQLBuilder<T> {
     }
 
     /**
-     *  This CQLBuilder<ResultSet> will be closed after <code>pair()</code> is called.
+     *  This CQLBuilder will be closed after <code>pair()</code> is called.
      *  
      * @return the pair of cql and parameters.
      */
@@ -1097,178 +1094,178 @@ public abstract class CQLBuilder<T> {
         return Pair3.of(cql(), parameters);
     }
 
-    /**
-     * 
-     * @param cassandraExecutor
-     * @return
-     */
-    @Beta
-    public boolean exists(final CassandraExecutor cassandraExecutor) {
-        if (op != OperationType.QUERY) {
-            throw new IllegalArgumentException("Only SELECT statement is supported");
-        }
-
-        return cassandraExecutor.exists(cql(), this.parameters);
-    }
-
-    /**
-     * 
-     * @param cassandraExecutor
-     * @return
-     */
-    @Beta
-    public boolean exists(final CassandraExecutor cassandraExecutor, final Object... parameters) {
-        if (op != OperationType.QUERY) {
-            throw new IllegalArgumentException("Only SELECT statement is supported");
-        }
-
-        if (N.isNullOrEmpty(parameters)) {
-            return cassandraExecutor.exists(cql(), this.parameters);
-        } else {
-            return cassandraExecutor.exists(cql(), parameters);
-        }
-    }
-
-    /**
-     * 
-     * @param cassandraExecutor
-     * @return <code>DataSet</code> if it's a <code>SELECT</code> statement, otherwise, <code>ResultSet</code> is returned.
-     */
-    @Beta
-    public T execute(final CassandraExecutor cassandraExecutor) {
-        if (op == OperationType.QUERY) {
-            return (T) cassandraExecutor.query(cql(), this.parameters);
-        } else {
-            return (T) cassandraExecutor.execute(cql(), this.parameters);
-        }
-    }
-
-    /**
-     * 
-     * @param cassandraExecutor
-     * @param parameters
-     * @return <code>DataSet</code> if it's a <code>SELECT</code> statement, otherwise, <code>ResultSet</code> is returned.
-     */
-    @Beta
-    public T execute(final CassandraExecutor cassandraExecutor, final Object... parameters) {
-        if (N.isNullOrEmpty(parameters)) {
-            if (op == OperationType.QUERY) {
-                return (T) cassandraExecutor.query(cql(), this.parameters);
-            } else {
-                return (T) cassandraExecutor.execute(cql(), this.parameters);
-            }
-        } else {
-            if (op == OperationType.QUERY) {
-                return (T) cassandraExecutor.query(cql(), parameters);
-            } else {
-                return (T) cassandraExecutor.execute(cql(), parameters);
-            }
-        }
-    }
-
-    /**
-     * Returns the target result executed by calling <code>queryForEntity</code> if the target class is entity or map, otherwise <code>queryForSingleResult</code>
-     * 
-     * @param targetClass
-     * @param cassandraExecutor
-     * @return 
-     */
-    @Beta
-    public <R> OptionalNullable<R> execute(final Class<R> targetClass, final CassandraExecutor cassandraExecutor) {
-        if (op != OperationType.QUERY) {
-            throw new IllegalArgumentException("Only SELECT statement is supported");
-        }
-
-        if (N.isEntity(targetClass) || Map.class.isAssignableFrom(targetClass)) {
-            return OptionalNullable.from(cassandraExecutor.queryForEntity(targetClass, cql(), this.parameters));
-        } else {
-            return cassandraExecutor.queryForSingleResult(targetClass, cql(), this.parameters);
-        }
-    }
-
-    /**
-     * Returns the target result executed by calling <code>queryForEntity</code> if the target class is entity or map, otherwise <code>queryForSingleResult</code>
-     * 
-     * @param targetClass
-     * @param cassandraExecutor
-     * @param parameters
-     * @return
-     */
-    @Beta
-    public <R> OptionalNullable<R> execute(final Class<R> targetClass, final CassandraExecutor cassandraExecutor, final Object... parameters) {
-        if (op != OperationType.QUERY) {
-            throw new IllegalArgumentException("Only SELECT statement is supported");
-        }
-
-        if (N.isNullOrEmpty(parameters)) {
-            if (N.isEntity(targetClass) || Map.class.isAssignableFrom(targetClass)) {
-                return OptionalNullable.from(cassandraExecutor.queryForEntity(targetClass, cql(), this.parameters));
-            } else {
-                return cassandraExecutor.queryForSingleResult(targetClass, cql(), this.parameters);
-            }
-        } else {
-            if (N.isEntity(targetClass) || Map.class.isAssignableFrom(targetClass)) {
-                return OptionalNullable.from(cassandraExecutor.queryForEntity(targetClass, cql(), parameters));
-            } else {
-                return cassandraExecutor.queryForSingleResult(targetClass, cql(), parameters);
-            }
-        }
-    }
-
-    @Beta
-    public CompletableFuture<T> asyncExecute(final CassandraExecutor cassandraExecutor) {
-        if (op == OperationType.QUERY) {
-            return (CompletableFuture<T>) cassandraExecutor.asyncQuery(cql(), this.parameters);
-        } else {
-            return (CompletableFuture<T>) cassandraExecutor.asyncExecute(cql(), this.parameters);
-        }
-    }
-
-    @Beta
-    public CompletableFuture<T> asyncExecute(final CassandraExecutor cassandraExecutor, final Object... parameters) {
-        if (N.isNullOrEmpty(parameters)) {
-            if (op == OperationType.QUERY) {
-                return (CompletableFuture<T>) cassandraExecutor.asyncQuery(cql(), this.parameters);
-            } else {
-                return (CompletableFuture<T>) cassandraExecutor.asyncExecute(cql(), this.parameters);
-            }
-        } else {
-            if (op == OperationType.QUERY) {
-                return (CompletableFuture<T>) cassandraExecutor.asyncQuery(cql(), parameters);
-            } else {
-                return (CompletableFuture<T>) cassandraExecutor.asyncExecute(cql(), parameters);
-            }
-        }
-    }
-
-    @Beta
-    public <R> CompletableFuture<OptionalNullable<R>> asyncExecute(final Class<R> targetClass, final CassandraExecutor cassandraExecutor) {
-        if (op != OperationType.QUERY) {
-            throw new IllegalArgumentException("Only SELECT statement is supported");
-        }
-
-        return cassandraExecutor.asyncExecutor().execute(new Callable<OptionalNullable<R>>() {
-            @Override
-            public OptionalNullable<R> call() throws Exception {
-                return execute(targetClass, cassandraExecutor);
-            }
-        });
-    }
-
-    @Beta
-    public <R> CompletableFuture<OptionalNullable<R>> asyncExecute(final Class<R> targetClass, final CassandraExecutor cassandraExecutor,
-            final Object... parameters) {
-        if (op != OperationType.QUERY) {
-            throw new IllegalArgumentException("Only SELECT statement is supported");
-        }
-
-        return cassandraExecutor.asyncExecutor().execute(new Callable<OptionalNullable<R>>() {
-            @Override
-            public OptionalNullable<R> call() throws Exception {
-                return execute(targetClass, cassandraExecutor, parameters);
-            }
-        });
-    }
+    //    /**
+    //     * 
+    //     * @param cassandraExecutor
+    //     * @return
+    //     */
+    //    @Beta
+    //    public boolean exists(final CassandraExecutor cassandraExecutor) {
+    //        if (op != OperationType.QUERY) {
+    //            throw new IllegalArgumentException("Only SELECT statement is supported");
+    //        }
+    //
+    //        return cassandraExecutor.exists(cql(), this.parameters);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * @param cassandraExecutor
+    //     * @return
+    //     */
+    //    @Beta
+    //    public boolean exists(final CassandraExecutor cassandraExecutor, final Object... parameters) {
+    //        if (op != OperationType.QUERY) {
+    //            throw new IllegalArgumentException("Only SELECT statement is supported");
+    //        }
+    //
+    //        if (N.isNullOrEmpty(parameters)) {
+    //            return cassandraExecutor.exists(cql(), this.parameters);
+    //        } else {
+    //            return cassandraExecutor.exists(cql(), parameters);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * @param cassandraExecutor
+    //     * @return <code>DataSet</code> if it's a <code>SELECT</code> statement, otherwise, <code>ResultSet</code> is returned.
+    //     */
+    //    @Beta
+    //    public T execute(final CassandraExecutor cassandraExecutor) {
+    //        if (op == OperationType.QUERY) {
+    //            return (T) cassandraExecutor.query(cql(), this.parameters);
+    //        } else {
+    //            return (T) cassandraExecutor.execute(cql(), this.parameters);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * @param cassandraExecutor
+    //     * @param parameters
+    //     * @return <code>DataSet</code> if it's a <code>SELECT</code> statement, otherwise, <code>ResultSet</code> is returned.
+    //     */
+    //    @Beta
+    //    public T execute(final CassandraExecutor cassandraExecutor, final Object... parameters) {
+    //        if (N.isNullOrEmpty(parameters)) {
+    //            if (op == OperationType.QUERY) {
+    //                return (T) cassandraExecutor.query(cql(), this.parameters);
+    //            } else {
+    //                return (T) cassandraExecutor.execute(cql(), this.parameters);
+    //            }
+    //        } else {
+    //            if (op == OperationType.QUERY) {
+    //                return (T) cassandraExecutor.query(cql(), parameters);
+    //            } else {
+    //                return (T) cassandraExecutor.execute(cql(), parameters);
+    //            }
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Returns the target result executed by calling <code>queryForEntity</code> if the target class is entity or map, otherwise <code>queryForSingleResult</code>
+    //     * 
+    //     * @param targetClass
+    //     * @param cassandraExecutor
+    //     * @return 
+    //     */
+    //    @Beta
+    //    public <R> OptionalNullable<R> execute(final Class<R> targetClass, final CassandraExecutor cassandraExecutor) {
+    //        if (op != OperationType.QUERY) {
+    //            throw new IllegalArgumentException("Only SELECT statement is supported");
+    //        }
+    //
+    //        if (N.isEntity(targetClass) || Map.class.isAssignableFrom(targetClass)) {
+    //            return OptionalNullable.from(cassandraExecutor.queryForEntity(targetClass, cql(), this.parameters));
+    //        } else {
+    //            return cassandraExecutor.queryForSingleResult(targetClass, cql(), this.parameters);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Returns the target result executed by calling <code>queryForEntity</code> if the target class is entity or map, otherwise <code>queryForSingleResult</code>
+    //     * 
+    //     * @param targetClass
+    //     * @param cassandraExecutor
+    //     * @param parameters
+    //     * @return
+    //     */
+    //    @Beta
+    //    public <R> OptionalNullable<R> execute(final Class<R> targetClass, final CassandraExecutor cassandraExecutor, final Object... parameters) {
+    //        if (op != OperationType.QUERY) {
+    //            throw new IllegalArgumentException("Only SELECT statement is supported");
+    //        }
+    //
+    //        if (N.isNullOrEmpty(parameters)) {
+    //            if (N.isEntity(targetClass) || Map.class.isAssignableFrom(targetClass)) {
+    //                return OptionalNullable.from(cassandraExecutor.queryForEntity(targetClass, cql(), this.parameters));
+    //            } else {
+    //                return cassandraExecutor.queryForSingleResult(targetClass, cql(), this.parameters);
+    //            }
+    //        } else {
+    //            if (N.isEntity(targetClass) || Map.class.isAssignableFrom(targetClass)) {
+    //                return OptionalNullable.from(cassandraExecutor.queryForEntity(targetClass, cql(), parameters));
+    //            } else {
+    //                return cassandraExecutor.queryForSingleResult(targetClass, cql(), parameters);
+    //            }
+    //        }
+    //    }
+    //
+    //    @Beta
+    //    public CompletableFuture asyncExecute(final CassandraExecutor cassandraExecutor) {
+    //        if (op == OperationType.QUERY) {
+    //            return (CompletableFuture) cassandraExecutor.asyncQuery(cql(), this.parameters);
+    //        } else {
+    //            return (CompletableFuture) cassandraExecutor.asyncExecute(cql(), this.parameters);
+    //        }
+    //    }
+    //
+    //    @Beta
+    //    public CompletableFuture asyncExecute(final CassandraExecutor cassandraExecutor, final Object... parameters) {
+    //        if (N.isNullOrEmpty(parameters)) {
+    //            if (op == OperationType.QUERY) {
+    //                return (CompletableFuture) cassandraExecutor.asyncQuery(cql(), this.parameters);
+    //            } else {
+    //                return (CompletableFuture) cassandraExecutor.asyncExecute(cql(), this.parameters);
+    //            }
+    //        } else {
+    //            if (op == OperationType.QUERY) {
+    //                return (CompletableFuture) cassandraExecutor.asyncQuery(cql(), parameters);
+    //            } else {
+    //                return (CompletableFuture) cassandraExecutor.asyncExecute(cql(), parameters);
+    //            }
+    //        }
+    //    }
+    //
+    //    @Beta
+    //    public <R> CompletableFuture<OptionalNullable<R>> asyncExecute(final Class<R> targetClass, final CassandraExecutor cassandraExecutor) {
+    //        if (op != OperationType.QUERY) {
+    //            throw new IllegalArgumentException("Only SELECT statement is supported");
+    //        }
+    //
+    //        return cassandraExecutor.asyncExecutor().execute(new Callable<OptionalNullable<R>>() {
+    //            @Override
+    //            public OptionalNullable<R> call() throws Exception {
+    //                return execute(targetClass, cassandraExecutor);
+    //            }
+    //        });
+    //    }
+    //
+    //    @Beta
+    //    public <R> CompletableFuture<OptionalNullable<R>> asyncExecute(final Class<R> targetClass, final CassandraExecutor cassandraExecutor,
+    //            final Object... parameters) {
+    //        if (op != OperationType.QUERY) {
+    //            throw new IllegalArgumentException("Only SELECT statement is supported");
+    //        }
+    //
+    //        return cassandraExecutor.asyncExecutor().execute(new Callable<OptionalNullable<R>>() {
+    //            @Override
+    //            public OptionalNullable<R> call() throws Exception {
+    //                return execute(targetClass, cassandraExecutor, parameters);
+    //            }
+    //        });
+    //    }
 
     void init(boolean setForUpdate) {
         if (sb.length() > 0) {
@@ -1627,8 +1624,8 @@ public abstract class CQLBuilder<T> {
     //            return true;
     //        }
     //
-    //        if (obj instanceof CQLBuilder<ResultSet>) {
-    //            final CQLBuilder<ResultSet> other = (CQLBuilder<ResultSet>) obj;
+    //        if (obj instanceof CQLBuilder) {
+    //            final CQLBuilder other = (CQLBuilder) obj;
     //
     //            return N.equals(this.sb, other.sb) && N.equals(this.parameters, other.parameters);
     //        }
@@ -1641,7 +1638,7 @@ public abstract class CQLBuilder<T> {
         return sb.toString();
     }
 
-    private static void parseInsertEntity(final CQLBuilder<ResultSet> instance, final Object entity, final Set<String> excludedPropNames) {
+    private static void parseInsertEntity(final CQLBuilder instance, final Object entity, final Set<String> excludedPropNames) {
         if (entity instanceof String) {
             instance.columnNames = Array.of((String) entity);
         } else if (entity instanceof Map) {
@@ -1713,21 +1710,21 @@ public abstract class CQLBuilder<T> {
      * @author haiyang li 
      *
      */
-    public static final class E<T> extends CQLBuilder<T> {
+    public static final class E extends CQLBuilder {
         E() {
             super(NamingPolicy.LOWER_CASE_WITH_UNDERSCORE, CQLPolicy.CQL);
         }
 
-        static <T> E<T> createInstance() {
-            return new E<T>();
+        static E createInstance() {
+            return new E();
         }
 
-        public static CQLBuilder<ResultSet> insert(final String expr) {
+        public static CQLBuilder insert(final String expr) {
             return insert(Array.of(expr));
         }
 
-        public static CQLBuilder<ResultSet> insert(final String... columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNames = columnNames;
@@ -1735,8 +1732,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Collection<String> columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNameList = columnNames;
@@ -1744,8 +1741,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Map<String, Object> props) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final Map<String, Object> props) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.props = props;
@@ -1753,12 +1750,12 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Object entity) {
+        public static CQLBuilder insert(final Object entity) {
             return insert(entity, null);
         }
 
-        public static CQLBuilder<ResultSet> insert(final Object entity, final Set<String> excludedPropNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final Object entity, final Set<String> excludedPropNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
 
@@ -1767,28 +1764,28 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Class<?> entityClass) {
+        public static CQLBuilder insert(final Class<?> entityClass) {
             return insert(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static CQLBuilder<ResultSet> insertInto(final Class<?> entityClass) {
+        public static CQLBuilder insertInto(final Class<?> entityClass) {
             return insertInto(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(entityClass, excludedPropNames).into(entityClass);
         }
 
-        public static CQLBuilder<DataSet> select(final String expr) {
+        public static CQLBuilder select(final String expr) {
             return select(Array.of(expr));
         }
 
-        public static CQLBuilder<DataSet> select(final String... columnNames) {
-            final CQLBuilder<DataSet> instance = createInstance();
+        public static CQLBuilder select(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNames = columnNames;
@@ -1796,8 +1793,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<DataSet> select(final Collection<String> columnNames) {
-            final CQLBuilder<DataSet> instance = createInstance();
+        public static CQLBuilder select(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNameList = columnNames;
@@ -1811,8 +1808,8 @@ public abstract class CQLBuilder<T> {
          * @param columnNames
          * @return
          */
-        public static CQLBuilder<DataSet> select(final String expr, final Collection<String> columnNames) {
-            final CQLBuilder<DataSet> instance = createInstance();
+        public static CQLBuilder select(final String expr, final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -1821,8 +1818,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<DataSet> select(final Map<String, String> columnAliases) {
-            final CQLBuilder<DataSet> instance = createInstance();
+        public static CQLBuilder select(final Map<String, String> columnAliases) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnAliases = columnAliases;
@@ -1836,8 +1833,8 @@ public abstract class CQLBuilder<T> {
          * @param columnAliases
          * @return
          */
-        public static CQLBuilder<DataSet> select(final String expr, final Map<String, String> columnAliases) {
-            final CQLBuilder<DataSet> instance = createInstance();
+        public static CQLBuilder select(final String expr, final Map<String, String> columnAliases) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -1846,24 +1843,24 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<DataSet> select(final Class<?> entityClass) {
+        public static CQLBuilder select(final Class<?> entityClass) {
             return select(entityClass, null);
         }
 
-        public static CQLBuilder<DataSet> select(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder select(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static CQLBuilder<DataSet> selectFrom(final Class<?> entityClass) {
+        public static CQLBuilder selectFrom(final Class<?> entityClass) {
             return selectFrom(entityClass, null);
         }
 
-        public static CQLBuilder<DataSet> selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(entityClass, excludedPropNames).from(entityClass);
         }
 
-        public static CQLBuilder<ResultSet> update(final String tableName) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder update(final String tableName) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.UPDATE;
             instance.tableName = tableName;
@@ -1871,12 +1868,12 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> update(final Class<?> entityClass) {
+        public static CQLBuilder update(final Class<?> entityClass) {
             return update(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> update(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder update(final Class<?> entityClass, final Set<String> excludedPropNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.UPDATE;
             instance.tableName = N.getSimpleClassName(entityClass);
@@ -1885,12 +1882,12 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> delete(final String expr) {
+        public static CQLBuilder delete(final String expr) {
             return delete(Array.of(expr));
         }
 
-        public static CQLBuilder<ResultSet> delete(final String... columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder delete(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.columnNames = columnNames;
@@ -1898,8 +1895,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> delete(final Collection<String> columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder delete(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.columnNameList = columnNames;
@@ -1907,16 +1904,16 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> delete(final Class<?> entityClass) {
+        public static CQLBuilder delete(final Class<?> entityClass) {
             return delete(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> delete(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder delete(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return delete(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static CQLBuilder<ResultSet> deleteFrom(final String tableName) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder deleteFrom(final String tableName) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.tableName = tableName;
@@ -1924,11 +1921,11 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> deleteFrom(final Class<?> entityClass) {
+        public static CQLBuilder deleteFrom(final Class<?> entityClass) {
             return deleteFrom(N.getSimpleClassName(entityClass));
         }
 
-        public static CQLBuilder<ResultSet> deleteFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder deleteFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return delete(entityClass, excludedPropNames).from(entityClass);
         }
     }
@@ -1939,21 +1936,21 @@ public abstract class CQLBuilder<T> {
      * @author haiyang li 
      *
      */
-    public static final class RE<T> extends CQLBuilder<T> {
+    public static final class RE extends CQLBuilder {
         RE() {
             super(NamingPolicy.LOWER_CASE_WITH_UNDERSCORE, CQLPolicy.RAW_CQL);
         }
 
-        static <T> RE<T> createInstance() {
-            return new RE<T>();
+        static RE createInstance() {
+            return new RE();
         }
 
-        public static CQLBuilder<ResultSet> insert(final String expr) {
+        public static CQLBuilder insert(final String expr) {
             return insert(Array.of(expr));
         }
 
-        public static CQLBuilder<ResultSet> insert(final String... columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNames = columnNames;
@@ -1961,8 +1958,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Collection<String> columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNameList = columnNames;
@@ -1970,8 +1967,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Map<String, Object> props) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final Map<String, Object> props) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.props = props;
@@ -1979,12 +1976,12 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Object entity) {
+        public static CQLBuilder insert(final Object entity) {
             return insert(entity, null);
         }
 
-        public static CQLBuilder<ResultSet> insert(final Object entity, final Set<String> excludedPropNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final Object entity, final Set<String> excludedPropNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
 
@@ -1993,28 +1990,28 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Class<?> entityClass) {
+        public static CQLBuilder insert(final Class<?> entityClass) {
             return insert(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static CQLBuilder<ResultSet> insertInto(final Class<?> entityClass) {
+        public static CQLBuilder insertInto(final Class<?> entityClass) {
             return insertInto(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(entityClass, excludedPropNames).into(entityClass);
         }
 
-        public static CQLBuilder<DataSet> select(final String expr) {
+        public static CQLBuilder select(final String expr) {
             return select(Array.of(expr));
         }
 
-        public static CQLBuilder<DataSet> select(final String... columnNames) {
-            final CQLBuilder<DataSet> instance = createInstance();
+        public static CQLBuilder select(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNames = columnNames;
@@ -2022,8 +2019,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<DataSet> select(final Collection<String> columnNames) {
-            final CQLBuilder<DataSet> instance = createInstance();
+        public static CQLBuilder select(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNameList = columnNames;
@@ -2037,8 +2034,8 @@ public abstract class CQLBuilder<T> {
          * @param columnNames
          * @return
          */
-        public static CQLBuilder<DataSet> select(final String expr, final Collection<String> columnNames) {
-            final CQLBuilder<DataSet> instance = createInstance();
+        public static CQLBuilder select(final String expr, final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -2047,8 +2044,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<DataSet> select(final Map<String, String> columnAliases) {
-            final CQLBuilder<DataSet> instance = createInstance();
+        public static CQLBuilder select(final Map<String, String> columnAliases) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnAliases = columnAliases;
@@ -2062,8 +2059,8 @@ public abstract class CQLBuilder<T> {
          * @param columnAliases
          * @return
          */
-        public static CQLBuilder<DataSet> select(final String expr, final Map<String, String> columnAliases) {
-            final CQLBuilder<DataSet> instance = createInstance();
+        public static CQLBuilder select(final String expr, final Map<String, String> columnAliases) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -2072,24 +2069,24 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<DataSet> select(final Class<?> entityClass) {
+        public static CQLBuilder select(final Class<?> entityClass) {
             return select(entityClass, null);
         }
 
-        public static CQLBuilder<DataSet> select(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder select(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static CQLBuilder<DataSet> selectFrom(final Class<?> entityClass) {
+        public static CQLBuilder selectFrom(final Class<?> entityClass) {
             return selectFrom(entityClass, null);
         }
 
-        public static CQLBuilder<DataSet> selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(entityClass, excludedPropNames).from(entityClass);
         }
 
-        public static CQLBuilder<ResultSet> update(final String tableName) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder update(final String tableName) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.UPDATE;
             instance.tableName = tableName;
@@ -2097,12 +2094,12 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> update(final Class<?> entityClass) {
+        public static CQLBuilder update(final Class<?> entityClass) {
             return update(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> update(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder update(final Class<?> entityClass, final Set<String> excludedPropNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.UPDATE;
             instance.tableName = N.getSimpleClassName(entityClass);
@@ -2111,12 +2108,12 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> delete(final String expr) {
+        public static CQLBuilder delete(final String expr) {
             return delete(Array.of(expr));
         }
 
-        public static CQLBuilder<ResultSet> delete(final String... columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder delete(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.columnNames = columnNames;
@@ -2124,8 +2121,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> delete(final Collection<String> columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder delete(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.columnNameList = columnNames;
@@ -2133,16 +2130,16 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> delete(final Class<?> entityClass) {
+        public static CQLBuilder delete(final Class<?> entityClass) {
             return delete(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> delete(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder delete(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return delete(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static CQLBuilder<ResultSet> deleteFrom(final String tableName) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder deleteFrom(final String tableName) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.tableName = tableName;
@@ -2150,11 +2147,11 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> deleteFrom(final Class<?> entityClass) {
+        public static CQLBuilder deleteFrom(final Class<?> entityClass) {
             return deleteFrom(N.getSimpleClassName(entityClass));
         }
 
-        public static CQLBuilder<ResultSet> deleteFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder deleteFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return delete(entityClass, excludedPropNames).from(entityClass);
         }
     }
@@ -2164,21 +2161,21 @@ public abstract class CQLBuilder<T> {
      * @author haiyang li 
      *
      */
-    public static final class NE<T> extends CQLBuilder<T> {
+    public static final class NE extends CQLBuilder {
         NE() {
             super(NamingPolicy.LOWER_CASE_WITH_UNDERSCORE, CQLPolicy.NAMED_CQL);
         }
 
-        static <T> NE<T> createInstance() {
-            return new NE<T>();
+        static NE createInstance() {
+            return new NE();
         }
 
-        public static CQLBuilder<ResultSet> insert(final String expr) {
+        public static CQLBuilder insert(final String expr) {
             return insert(Array.of(expr));
         }
 
-        public static CQLBuilder<ResultSet> insert(final String... columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNames = columnNames;
@@ -2186,8 +2183,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Collection<String> columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNameList = columnNames;
@@ -2195,8 +2192,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Map<String, Object> props) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final Map<String, Object> props) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.props = props;
@@ -2204,12 +2201,12 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Object entity) {
+        public static CQLBuilder insert(final Object entity) {
             return insert(entity, null);
         }
 
-        public static CQLBuilder<ResultSet> insert(final Object entity, final Set<String> excludedPropNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final Object entity, final Set<String> excludedPropNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
 
@@ -2218,28 +2215,28 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Class<?> entityClass) {
+        public static CQLBuilder insert(final Class<?> entityClass) {
             return insert(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static CQLBuilder<ResultSet> insertInto(final Class<?> entityClass) {
+        public static CQLBuilder insertInto(final Class<?> entityClass) {
             return insertInto(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(entityClass, excludedPropNames).into(entityClass);
         }
 
-        public static CQLBuilder<DataSet> select(final String expr) {
+        public static CQLBuilder select(final String expr) {
             return select(Array.of(expr));
         }
 
-        public static CQLBuilder<DataSet> select(final String... columnNames) {
-            final CQLBuilder<DataSet> instance = createInstance();
+        public static CQLBuilder select(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNames = columnNames;
@@ -2247,8 +2244,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<DataSet> select(final Collection<String> columnNames) {
-            final CQLBuilder<DataSet> instance = createInstance();
+        public static CQLBuilder select(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNameList = columnNames;
@@ -2262,8 +2259,8 @@ public abstract class CQLBuilder<T> {
          * @param columnNames
          * @return
          */
-        public static CQLBuilder<DataSet> select(final String expr, final Collection<String> columnNames) {
-            final CQLBuilder<DataSet> instance = createInstance();
+        public static CQLBuilder select(final String expr, final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -2272,8 +2269,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<DataSet> select(final Map<String, String> columnAliases) {
-            final CQLBuilder<DataSet> instance = createInstance();
+        public static CQLBuilder select(final Map<String, String> columnAliases) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnAliases = columnAliases;
@@ -2287,8 +2284,8 @@ public abstract class CQLBuilder<T> {
          * @param columnAliases
          * @return
          */
-        public static CQLBuilder<DataSet> select(final String expr, final Map<String, String> columnAliases) {
-            final CQLBuilder<DataSet> instance = createInstance();
+        public static CQLBuilder select(final String expr, final Map<String, String> columnAliases) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -2297,24 +2294,24 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<DataSet> select(final Class<?> entityClass) {
+        public static CQLBuilder select(final Class<?> entityClass) {
             return select(entityClass, null);
         }
 
-        public static CQLBuilder<DataSet> select(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder select(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static CQLBuilder<DataSet> selectFrom(final Class<?> entityClass) {
+        public static CQLBuilder selectFrom(final Class<?> entityClass) {
             return selectFrom(entityClass, null);
         }
 
-        public static CQLBuilder<DataSet> selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(entityClass, excludedPropNames).from(entityClass);
         }
 
-        public static CQLBuilder<ResultSet> update(final String tableName) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder update(final String tableName) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.UPDATE;
             instance.tableName = tableName;
@@ -2322,12 +2319,12 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> update(final Class<?> entityClass) {
+        public static CQLBuilder update(final Class<?> entityClass) {
             return update(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> update(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder update(final Class<?> entityClass, final Set<String> excludedPropNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.UPDATE;
             instance.tableName = N.getSimpleClassName(entityClass);
@@ -2336,12 +2333,12 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> delete(final String expr) {
+        public static CQLBuilder delete(final String expr) {
             return delete(Array.of(expr));
         }
 
-        public static CQLBuilder<ResultSet> delete(final String... columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder delete(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.columnNames = columnNames;
@@ -2349,8 +2346,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> delete(final Collection<String> columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder delete(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.columnNameList = columnNames;
@@ -2358,16 +2355,16 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> delete(final Class<?> entityClass) {
+        public static CQLBuilder delete(final Class<?> entityClass) {
             return delete(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> delete(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder delete(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return delete(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static CQLBuilder<ResultSet> deleteFrom(final String tableName) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder deleteFrom(final String tableName) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.tableName = tableName;
@@ -2375,11 +2372,11 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> deleteFrom(final Class<?> entityClass) {
+        public static CQLBuilder deleteFrom(final Class<?> entityClass) {
             return deleteFrom(N.getSimpleClassName(entityClass));
         }
 
-        public static CQLBuilder<ResultSet> deleteFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder deleteFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return delete(entityClass, excludedPropNames).from(entityClass);
         }
     }
@@ -2390,7 +2387,7 @@ public abstract class CQLBuilder<T> {
      * @author haiyang li 
      *
      */
-    static final class SE extends CQLBuilder<ResultSet> {
+    static final class SE extends CQLBuilder {
         SE() {
             super(NamingPolicy.LOWER_CASE_WITH_UNDERSCORE, CQLPolicy.IBATIS_CQL);
         }
@@ -2399,12 +2396,12 @@ public abstract class CQLBuilder<T> {
             return new SE();
         }
 
-        public static CQLBuilder<ResultSet> insert(final String expr) {
+        public static CQLBuilder insert(final String expr) {
             return insert(Array.of(expr));
         }
 
-        public static CQLBuilder<ResultSet> insert(final String... columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNames = columnNames;
@@ -2412,8 +2409,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Collection<String> columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNameList = columnNames;
@@ -2421,8 +2418,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Map<String, Object> props) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final Map<String, Object> props) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.props = props;
@@ -2430,12 +2427,12 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Object entity) {
+        public static CQLBuilder insert(final Object entity) {
             return insert(entity, null);
         }
 
-        public static CQLBuilder<ResultSet> insert(final Object entity, final Set<String> excludedPropNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final Object entity, final Set<String> excludedPropNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
 
@@ -2444,28 +2441,28 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Class<?> entityClass) {
+        public static CQLBuilder insert(final Class<?> entityClass) {
             return insert(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static CQLBuilder<ResultSet> insertInto(final Class<?> entityClass) {
+        public static CQLBuilder insertInto(final Class<?> entityClass) {
             return insertInto(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(entityClass, excludedPropNames).into(entityClass);
         }
 
-        public static CQLBuilder<ResultSet> select(final String expr) {
+        public static CQLBuilder select(final String expr) {
             return select(Array.of(expr));
         }
 
-        public static CQLBuilder<ResultSet> select(final String... columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder select(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNames = columnNames;
@@ -2473,8 +2470,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> select(final Collection<String> columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder select(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNameList = columnNames;
@@ -2488,8 +2485,8 @@ public abstract class CQLBuilder<T> {
          * @param columnNames
          * @return
          */
-        public static CQLBuilder<ResultSet> select(final String expr, final Collection<String> columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder select(final String expr, final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -2498,8 +2495,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> select(final Map<String, String> columnAliases) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder select(final Map<String, String> columnAliases) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnAliases = columnAliases;
@@ -2513,8 +2510,8 @@ public abstract class CQLBuilder<T> {
          * @param columnAliases
          * @return
          */
-        public static CQLBuilder<ResultSet> select(final String expr, final Map<String, String> columnAliases) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder select(final String expr, final Map<String, String> columnAliases) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -2523,24 +2520,24 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> select(final Class<?> entityClass) {
+        public static CQLBuilder select(final Class<?> entityClass) {
             return select(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> select(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder select(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static CQLBuilder<ResultSet> selectFrom(final Class<?> entityClass) {
+        public static CQLBuilder selectFrom(final Class<?> entityClass) {
             return selectFrom(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(entityClass, excludedPropNames).from(entityClass);
         }
 
-        public static CQLBuilder<ResultSet> update(final String tableName) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder update(final String tableName) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.UPDATE;
             instance.tableName = tableName;
@@ -2548,16 +2545,16 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> update(final Class<?> entityClass) {
+        public static CQLBuilder update(final Class<?> entityClass) {
             return update(N.getSimpleClassName(entityClass));
         }
 
-        public static CQLBuilder<ResultSet> delete(final String expr) {
+        public static CQLBuilder delete(final String expr) {
             return delete(Array.of(expr));
         }
 
-        public static CQLBuilder<ResultSet> delete(final String... columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder delete(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.columnNames = columnNames;
@@ -2565,8 +2562,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> delete(final Collection<String> columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder delete(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.columnNameList = columnNames;
@@ -2574,16 +2571,16 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> delete(final Class<?> entityClass) {
+        public static CQLBuilder delete(final Class<?> entityClass) {
             return delete(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> delete(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder delete(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return delete(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static CQLBuilder<ResultSet> deleteFrom(final String tableName) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder deleteFrom(final String tableName) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.tableName = tableName;
@@ -2591,11 +2588,11 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> deleteFrom(final Class<?> entityClass) {
+        public static CQLBuilder deleteFrom(final Class<?> entityClass) {
             return deleteFrom(N.getSimpleClassName(entityClass));
         }
 
-        public static CQLBuilder<ResultSet> deleteFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder deleteFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return delete(entityClass, excludedPropNames).from(entityClass);
         }
     }
@@ -2606,21 +2603,21 @@ public abstract class CQLBuilder<T> {
      * @author haiyang li
      *
      */
-    public static final class E2<T> extends CQLBuilder<T> {
+    public static final class E2 extends CQLBuilder {
         E2() {
             super(NamingPolicy.UPPER_CASE_WITH_UNDERSCORE, CQLPolicy.CQL);
         }
 
-        static <T> E2<T> createInstance() {
-            return new E2<T>();
+        static E2 createInstance() {
+            return new E2();
         }
 
-        public static CQLBuilder<ResultSet> insert(final String expr) {
+        public static CQLBuilder insert(final String expr) {
             return insert(Array.of(expr));
         }
 
-        public static CQLBuilder<ResultSet> insert(final String... columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNames = columnNames;
@@ -2628,8 +2625,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Collection<String> columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNameList = columnNames;
@@ -2637,8 +2634,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Map<String, Object> props) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final Map<String, Object> props) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.props = props;
@@ -2646,12 +2643,12 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Object entity) {
+        public static CQLBuilder insert(final Object entity) {
             return insert(entity, null);
         }
 
-        public static CQLBuilder<ResultSet> insert(final Object entity, final Set<String> excludedPropNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final Object entity, final Set<String> excludedPropNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
 
@@ -2660,28 +2657,28 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Class<?> entityClass) {
+        public static CQLBuilder insert(final Class<?> entityClass) {
             return insert(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static CQLBuilder<ResultSet> insertInto(final Class<?> entityClass) {
+        public static CQLBuilder insertInto(final Class<?> entityClass) {
             return insertInto(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(entityClass, excludedPropNames).into(entityClass);
         }
 
-        public static CQLBuilder<DataSet> select(final String expr) {
+        public static CQLBuilder select(final String expr) {
             return select(Array.of(expr));
         }
 
-        public static CQLBuilder<DataSet> select(final String... columnNames) {
-            final CQLBuilder<DataSet> instance = createInstance();
+        public static CQLBuilder select(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNames = columnNames;
@@ -2689,8 +2686,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<DataSet> select(final Collection<String> columnNames) {
-            final CQLBuilder<DataSet> instance = createInstance();
+        public static CQLBuilder select(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNameList = columnNames;
@@ -2704,8 +2701,8 @@ public abstract class CQLBuilder<T> {
          * @param columnNames
          * @return
          */
-        public static CQLBuilder<DataSet> select(final String expr, final Collection<String> columnNames) {
-            final CQLBuilder<DataSet> instance = createInstance();
+        public static CQLBuilder select(final String expr, final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -2714,8 +2711,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<DataSet> select(final Map<String, String> columnAliases) {
-            final CQLBuilder<DataSet> instance = createInstance();
+        public static CQLBuilder select(final Map<String, String> columnAliases) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnAliases = columnAliases;
@@ -2729,8 +2726,8 @@ public abstract class CQLBuilder<T> {
          * @param columnAliases
          * @return
          */
-        public static CQLBuilder<DataSet> select(final String expr, final Map<String, String> columnAliases) {
-            final CQLBuilder<DataSet> instance = createInstance();
+        public static CQLBuilder select(final String expr, final Map<String, String> columnAliases) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -2739,24 +2736,24 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<DataSet> select(final Class<?> entityClass) {
+        public static CQLBuilder select(final Class<?> entityClass) {
             return select(entityClass, null);
         }
 
-        public static CQLBuilder<DataSet> select(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder select(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static CQLBuilder<DataSet> selectFrom(final Class<?> entityClass) {
+        public static CQLBuilder selectFrom(final Class<?> entityClass) {
             return selectFrom(entityClass, null);
         }
 
-        public static CQLBuilder<DataSet> selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(entityClass, excludedPropNames).from(entityClass);
         }
 
-        public static CQLBuilder<ResultSet> update(final String tableName) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder update(final String tableName) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.UPDATE;
             instance.tableName = tableName;
@@ -2764,12 +2761,12 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> update(final Class<?> entityClass) {
+        public static CQLBuilder update(final Class<?> entityClass) {
             return update(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> update(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder update(final Class<?> entityClass, final Set<String> excludedPropNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.UPDATE;
             instance.tableName = N.getSimpleClassName(entityClass);
@@ -2778,12 +2775,12 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> delete(final String expr) {
+        public static CQLBuilder delete(final String expr) {
             return delete(Array.of(expr));
         }
 
-        public static CQLBuilder<ResultSet> delete(final String... columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder delete(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.columnNames = columnNames;
@@ -2791,8 +2788,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> delete(final Collection<String> columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder delete(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.columnNameList = columnNames;
@@ -2800,16 +2797,16 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> delete(final Class<?> entityClass) {
+        public static CQLBuilder delete(final Class<?> entityClass) {
             return delete(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> delete(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder delete(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return delete(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static CQLBuilder<ResultSet> deleteFrom(final String tableName) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder deleteFrom(final String tableName) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.tableName = tableName;
@@ -2817,11 +2814,11 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> deleteFrom(final Class<?> entityClass) {
+        public static CQLBuilder deleteFrom(final Class<?> entityClass) {
             return deleteFrom(N.getSimpleClassName(entityClass));
         }
 
-        public static CQLBuilder<ResultSet> deleteFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder deleteFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return delete(entityClass, excludedPropNames).from(entityClass);
         }
     }
@@ -2832,21 +2829,21 @@ public abstract class CQLBuilder<T> {
      * @author haiyang li
      *
      */
-    public static final class RE2<T> extends CQLBuilder<T> {
+    public static final class RE2 extends CQLBuilder {
         RE2() {
             super(NamingPolicy.UPPER_CASE_WITH_UNDERSCORE, CQLPolicy.RAW_CQL);
         }
 
-        static <T> RE2<T> createInstance() {
-            return new RE2<T>();
+        static RE2 createInstance() {
+            return new RE2();
         }
 
-        public static CQLBuilder<ResultSet> insert(final String expr) {
+        public static CQLBuilder insert(final String expr) {
             return insert(Array.of(expr));
         }
 
-        public static CQLBuilder<ResultSet> insert(final String... columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNames = columnNames;
@@ -2854,8 +2851,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Collection<String> columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNameList = columnNames;
@@ -2863,8 +2860,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Map<String, Object> props) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final Map<String, Object> props) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.props = props;
@@ -2872,12 +2869,12 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Object entity) {
+        public static CQLBuilder insert(final Object entity) {
             return insert(entity, null);
         }
 
-        public static CQLBuilder<ResultSet> insert(final Object entity, final Set<String> excludedPropNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final Object entity, final Set<String> excludedPropNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
 
@@ -2886,28 +2883,28 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Class<?> entityClass) {
+        public static CQLBuilder insert(final Class<?> entityClass) {
             return insert(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static CQLBuilder<ResultSet> insertInto(final Class<?> entityClass) {
+        public static CQLBuilder insertInto(final Class<?> entityClass) {
             return insertInto(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(entityClass, excludedPropNames).into(entityClass);
         }
 
-        public static CQLBuilder<DataSet> select(final String expr) {
+        public static CQLBuilder select(final String expr) {
             return select(Array.of(expr));
         }
 
-        public static CQLBuilder<DataSet> select(final String... columnNames) {
-            final CQLBuilder<DataSet> instance = createInstance();
+        public static CQLBuilder select(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNames = columnNames;
@@ -2915,8 +2912,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<DataSet> select(final Collection<String> columnNames) {
-            final CQLBuilder<DataSet> instance = createInstance();
+        public static CQLBuilder select(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNameList = columnNames;
@@ -2930,8 +2927,8 @@ public abstract class CQLBuilder<T> {
          * @param columnNames
          * @return
          */
-        public static CQLBuilder<DataSet> select(final String expr, final Collection<String> columnNames) {
-            final CQLBuilder<DataSet> instance = createInstance();
+        public static CQLBuilder select(final String expr, final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -2940,8 +2937,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<DataSet> select(final Map<String, String> columnAliases) {
-            final CQLBuilder<DataSet> instance = createInstance();
+        public static CQLBuilder select(final Map<String, String> columnAliases) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnAliases = columnAliases;
@@ -2955,8 +2952,8 @@ public abstract class CQLBuilder<T> {
          * @param columnAliases
          * @return
          */
-        public static CQLBuilder<DataSet> select(final String expr, final Map<String, String> columnAliases) {
-            final CQLBuilder<DataSet> instance = createInstance();
+        public static CQLBuilder select(final String expr, final Map<String, String> columnAliases) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -2965,24 +2962,24 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<DataSet> select(final Class<?> entityClass) {
+        public static CQLBuilder select(final Class<?> entityClass) {
             return select(entityClass, null);
         }
 
-        public static CQLBuilder<DataSet> select(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder select(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static CQLBuilder<DataSet> selectFrom(final Class<?> entityClass) {
+        public static CQLBuilder selectFrom(final Class<?> entityClass) {
             return selectFrom(entityClass, null);
         }
 
-        public static CQLBuilder<DataSet> selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(entityClass, excludedPropNames).from(entityClass);
         }
 
-        public static CQLBuilder<ResultSet> update(final String tableName) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder update(final String tableName) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.UPDATE;
             instance.tableName = tableName;
@@ -2990,12 +2987,12 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> update(final Class<?> entityClass) {
+        public static CQLBuilder update(final Class<?> entityClass) {
             return update(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> update(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder update(final Class<?> entityClass, final Set<String> excludedPropNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.UPDATE;
             instance.tableName = N.getSimpleClassName(entityClass);
@@ -3004,12 +3001,12 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> delete(final String expr) {
+        public static CQLBuilder delete(final String expr) {
             return delete(Array.of(expr));
         }
 
-        public static CQLBuilder<ResultSet> delete(final String... columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder delete(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.columnNames = columnNames;
@@ -3017,8 +3014,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> delete(final Collection<String> columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder delete(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.columnNameList = columnNames;
@@ -3026,16 +3023,16 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> delete(final Class<?> entityClass) {
+        public static CQLBuilder delete(final Class<?> entityClass) {
             return delete(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> delete(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder delete(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return delete(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static CQLBuilder<ResultSet> deleteFrom(final String tableName) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder deleteFrom(final String tableName) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.tableName = tableName;
@@ -3043,11 +3040,11 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> deleteFrom(final Class<?> entityClass) {
+        public static CQLBuilder deleteFrom(final Class<?> entityClass) {
             return deleteFrom(N.getSimpleClassName(entityClass));
         }
 
-        public static CQLBuilder<ResultSet> deleteFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder deleteFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return delete(entityClass, excludedPropNames).from(entityClass);
         }
     }
@@ -3058,21 +3055,21 @@ public abstract class CQLBuilder<T> {
      * @author haiyang li
      *
      */
-    public static final class NE2<T> extends CQLBuilder<T> {
+    public static final class NE2 extends CQLBuilder {
         NE2() {
             super(NamingPolicy.UPPER_CASE_WITH_UNDERSCORE, CQLPolicy.NAMED_CQL);
         }
 
-        static <T> NE2<T> createInstance() {
-            return new NE2<T>();
+        static NE2 createInstance() {
+            return new NE2();
         }
 
-        public static CQLBuilder<ResultSet> insert(final String expr) {
+        public static CQLBuilder insert(final String expr) {
             return insert(Array.of(expr));
         }
 
-        public static CQLBuilder<ResultSet> insert(final String... columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNames = columnNames;
@@ -3080,8 +3077,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Collection<String> columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNameList = columnNames;
@@ -3089,8 +3086,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Map<String, Object> props) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final Map<String, Object> props) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.props = props;
@@ -3098,12 +3095,12 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Object entity) {
+        public static CQLBuilder insert(final Object entity) {
             return insert(entity, null);
         }
 
-        public static CQLBuilder<ResultSet> insert(final Object entity, final Set<String> excludedPropNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final Object entity, final Set<String> excludedPropNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
 
@@ -3112,28 +3109,28 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Class<?> entityClass) {
+        public static CQLBuilder insert(final Class<?> entityClass) {
             return insert(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static CQLBuilder<ResultSet> insertInto(final Class<?> entityClass) {
+        public static CQLBuilder insertInto(final Class<?> entityClass) {
             return insertInto(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(entityClass, excludedPropNames).into(entityClass);
         }
 
-        public static CQLBuilder<DataSet> select(final String expr) {
+        public static CQLBuilder select(final String expr) {
             return select(Array.of(expr));
         }
 
-        public static CQLBuilder<DataSet> select(final String... columnNames) {
-            final CQLBuilder<DataSet> instance = createInstance();
+        public static CQLBuilder select(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNames = columnNames;
@@ -3141,8 +3138,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<DataSet> select(final Collection<String> columnNames) {
-            final CQLBuilder<DataSet> instance = createInstance();
+        public static CQLBuilder select(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNameList = columnNames;
@@ -3156,8 +3153,8 @@ public abstract class CQLBuilder<T> {
          * @param columnNames
          * @return
          */
-        public static CQLBuilder<DataSet> select(final String expr, final Collection<String> columnNames) {
-            final CQLBuilder<DataSet> instance = createInstance();
+        public static CQLBuilder select(final String expr, final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -3166,8 +3163,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<DataSet> select(final Map<String, String> columnAliases) {
-            final CQLBuilder<DataSet> instance = createInstance();
+        public static CQLBuilder select(final Map<String, String> columnAliases) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnAliases = columnAliases;
@@ -3181,8 +3178,8 @@ public abstract class CQLBuilder<T> {
          * @param columnAliases
          * @return
          */
-        public static CQLBuilder<DataSet> select(final String expr, final Map<String, String> columnAliases) {
-            final CQLBuilder<DataSet> instance = createInstance();
+        public static CQLBuilder select(final String expr, final Map<String, String> columnAliases) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -3191,24 +3188,24 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<DataSet> select(final Class<?> entityClass) {
+        public static CQLBuilder select(final Class<?> entityClass) {
             return select(entityClass, null);
         }
 
-        public static CQLBuilder<DataSet> select(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder select(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static CQLBuilder<DataSet> selectFrom(final Class<?> entityClass) {
+        public static CQLBuilder selectFrom(final Class<?> entityClass) {
             return selectFrom(entityClass, null);
         }
 
-        public static CQLBuilder<DataSet> selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(entityClass, excludedPropNames).from(entityClass);
         }
 
-        public static CQLBuilder<ResultSet> update(final String tableName) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder update(final String tableName) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.UPDATE;
             instance.tableName = tableName;
@@ -3216,12 +3213,12 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> update(final Class<?> entityClass) {
+        public static CQLBuilder update(final Class<?> entityClass) {
             return update(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> update(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder update(final Class<?> entityClass, final Set<String> excludedPropNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.UPDATE;
             instance.tableName = N.getSimpleClassName(entityClass);
@@ -3230,12 +3227,12 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> delete(final String expr) {
+        public static CQLBuilder delete(final String expr) {
             return delete(Array.of(expr));
         }
 
-        public static CQLBuilder<ResultSet> delete(final String... columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder delete(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.columnNames = columnNames;
@@ -3243,8 +3240,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> delete(final Collection<String> columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder delete(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.columnNameList = columnNames;
@@ -3252,16 +3249,16 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> delete(final Class<?> entityClass) {
+        public static CQLBuilder delete(final Class<?> entityClass) {
             return delete(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> delete(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder delete(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return delete(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static CQLBuilder<ResultSet> deleteFrom(final String tableName) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder deleteFrom(final String tableName) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.tableName = tableName;
@@ -3269,11 +3266,11 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> deleteFrom(final Class<?> entityClass) {
+        public static CQLBuilder deleteFrom(final Class<?> entityClass) {
             return deleteFrom(N.getSimpleClassName(entityClass));
         }
 
-        public static CQLBuilder<ResultSet> deleteFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder deleteFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return delete(entityClass, excludedPropNames).from(entityClass);
         }
     }
@@ -3284,7 +3281,7 @@ public abstract class CQLBuilder<T> {
      * @author haiyang li
      *
      */
-    static final class SE2 extends CQLBuilder<ResultSet> {
+    static final class SE2 extends CQLBuilder {
         SE2() {
             super(NamingPolicy.UPPER_CASE_WITH_UNDERSCORE, CQLPolicy.IBATIS_CQL);
         }
@@ -3293,12 +3290,12 @@ public abstract class CQLBuilder<T> {
             return new SE2();
         }
 
-        public static CQLBuilder<ResultSet> insert(final String expr) {
+        public static CQLBuilder insert(final String expr) {
             return insert(Array.of(expr));
         }
 
-        public static CQLBuilder<ResultSet> insert(final String... columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNames = columnNames;
@@ -3306,8 +3303,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Collection<String> columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNameList = columnNames;
@@ -3315,8 +3312,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Map<String, Object> props) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final Map<String, Object> props) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.props = props;
@@ -3324,12 +3321,12 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Object entity) {
+        public static CQLBuilder insert(final Object entity) {
             return insert(entity, null);
         }
 
-        public static CQLBuilder<ResultSet> insert(final Object entity, final Set<String> excludedPropNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final Object entity, final Set<String> excludedPropNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
 
@@ -3338,28 +3335,28 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Class<?> entityClass) {
+        public static CQLBuilder insert(final Class<?> entityClass) {
             return insert(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static CQLBuilder<ResultSet> insertInto(final Class<?> entityClass) {
+        public static CQLBuilder insertInto(final Class<?> entityClass) {
             return insertInto(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(entityClass, excludedPropNames).into(entityClass);
         }
 
-        public static CQLBuilder<ResultSet> select(final String expr) {
+        public static CQLBuilder select(final String expr) {
             return select(Array.of(expr));
         }
 
-        public static CQLBuilder<ResultSet> select(final String... columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder select(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNames = columnNames;
@@ -3367,8 +3364,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> select(final Collection<String> columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder select(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNameList = columnNames;
@@ -3382,8 +3379,8 @@ public abstract class CQLBuilder<T> {
          * @param columnNames
          * @return
          */
-        public static CQLBuilder<ResultSet> select(final String expr, final Collection<String> columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder select(final String expr, final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -3392,8 +3389,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> select(final Map<String, String> columnAliases) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder select(final Map<String, String> columnAliases) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnAliases = columnAliases;
@@ -3407,8 +3404,8 @@ public abstract class CQLBuilder<T> {
          * @param columnAliases
          * @return
          */
-        public static CQLBuilder<ResultSet> select(final String expr, final Map<String, String> columnAliases) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder select(final String expr, final Map<String, String> columnAliases) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -3417,24 +3414,24 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> select(final Class<?> entityClass) {
+        public static CQLBuilder select(final Class<?> entityClass) {
             return select(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> select(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder select(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static CQLBuilder<ResultSet> selectFrom(final Class<?> entityClass) {
+        public static CQLBuilder selectFrom(final Class<?> entityClass) {
             return selectFrom(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(entityClass, excludedPropNames).from(entityClass);
         }
 
-        public static CQLBuilder<ResultSet> update(final String tableName) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder update(final String tableName) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.UPDATE;
             instance.tableName = tableName;
@@ -3442,16 +3439,16 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> update(final Class<?> entityClass) {
+        public static CQLBuilder update(final Class<?> entityClass) {
             return update(N.getSimpleClassName(entityClass));
         }
 
-        public static CQLBuilder<ResultSet> delete(final String expr) {
+        public static CQLBuilder delete(final String expr) {
             return delete(Array.of(expr));
         }
 
-        public static CQLBuilder<ResultSet> delete(final String... columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder delete(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.columnNames = columnNames;
@@ -3459,8 +3456,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> delete(final Collection<String> columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder delete(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.columnNameList = columnNames;
@@ -3468,16 +3465,16 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> delete(final Class<?> entityClass) {
+        public static CQLBuilder delete(final Class<?> entityClass) {
             return delete(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> delete(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder delete(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return delete(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static CQLBuilder<ResultSet> deleteFrom(final String tableName) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder deleteFrom(final String tableName) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.tableName = tableName;
@@ -3485,11 +3482,11 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> deleteFrom(final Class<?> entityClass) {
+        public static CQLBuilder deleteFrom(final Class<?> entityClass) {
             return deleteFrom(N.getSimpleClassName(entityClass));
         }
 
-        public static CQLBuilder<ResultSet> deleteFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder deleteFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return delete(entityClass, excludedPropNames).from(entityClass);
         }
     }
@@ -3500,21 +3497,21 @@ public abstract class CQLBuilder<T> {
      * @author haiyang li
      *
      */
-    public static final class E3<T> extends CQLBuilder<T> {
+    public static final class E3 extends CQLBuilder {
         E3() {
             super(NamingPolicy.CAMEL_CASE, CQLPolicy.CQL);
         }
 
-        static <T> E3<T> createInstance() {
-            return new E3<T>();
+        static E3 createInstance() {
+            return new E3();
         }
 
-        public static CQLBuilder<ResultSet> insert(final String expr) {
+        public static CQLBuilder insert(final String expr) {
             return insert(Array.of(expr));
         }
 
-        public static CQLBuilder<ResultSet> insert(final String... columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNames = columnNames;
@@ -3522,8 +3519,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Collection<String> columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNameList = columnNames;
@@ -3531,8 +3528,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Map<String, Object> props) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final Map<String, Object> props) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.props = props;
@@ -3540,12 +3537,12 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Object entity) {
+        public static CQLBuilder insert(final Object entity) {
             return insert(entity, null);
         }
 
-        public static CQLBuilder<ResultSet> insert(final Object entity, final Set<String> excludedPropNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final Object entity, final Set<String> excludedPropNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
 
@@ -3554,28 +3551,28 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Class<?> entityClass) {
+        public static CQLBuilder insert(final Class<?> entityClass) {
             return insert(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static CQLBuilder<ResultSet> insertInto(final Class<?> entityClass) {
+        public static CQLBuilder insertInto(final Class<?> entityClass) {
             return insertInto(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(entityClass, excludedPropNames).into(entityClass);
         }
 
-        public static CQLBuilder<DataSet> select(final String expr) {
+        public static CQLBuilder select(final String expr) {
             return select(Array.of(expr));
         }
 
-        public static CQLBuilder<DataSet> select(final String... columnNames) {
-            final CQLBuilder<DataSet> instance = createInstance();
+        public static CQLBuilder select(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNames = columnNames;
@@ -3583,8 +3580,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<DataSet> select(final Collection<String> columnNames) {
-            final CQLBuilder<DataSet> instance = createInstance();
+        public static CQLBuilder select(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNameList = columnNames;
@@ -3598,8 +3595,8 @@ public abstract class CQLBuilder<T> {
          * @param columnNames
          * @return
          */
-        public static CQLBuilder<DataSet> select(final String expr, final Collection<String> columnNames) {
-            final CQLBuilder<DataSet> instance = createInstance();
+        public static CQLBuilder select(final String expr, final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -3608,8 +3605,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<DataSet> select(final Map<String, String> columnAliases) {
-            final CQLBuilder<DataSet> instance = createInstance();
+        public static CQLBuilder select(final Map<String, String> columnAliases) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnAliases = columnAliases;
@@ -3623,8 +3620,8 @@ public abstract class CQLBuilder<T> {
          * @param columnAliases
          * @return
          */
-        public static CQLBuilder<DataSet> select(final String expr, final Map<String, String> columnAliases) {
-            final CQLBuilder<DataSet> instance = createInstance();
+        public static CQLBuilder select(final String expr, final Map<String, String> columnAliases) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -3633,24 +3630,24 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<DataSet> select(final Class<?> entityClass) {
+        public static CQLBuilder select(final Class<?> entityClass) {
             return select(entityClass, null);
         }
 
-        public static CQLBuilder<DataSet> select(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder select(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static CQLBuilder<DataSet> selectFrom(final Class<?> entityClass) {
+        public static CQLBuilder selectFrom(final Class<?> entityClass) {
             return selectFrom(entityClass, null);
         }
 
-        public static CQLBuilder<DataSet> selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(entityClass, excludedPropNames).from(entityClass);
         }
 
-        public static CQLBuilder<ResultSet> update(final String tableName) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder update(final String tableName) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.UPDATE;
             instance.tableName = tableName;
@@ -3658,12 +3655,12 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> update(final Class<?> entityClass) {
+        public static CQLBuilder update(final Class<?> entityClass) {
             return update(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> update(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder update(final Class<?> entityClass, final Set<String> excludedPropNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.UPDATE;
             instance.tableName = N.getSimpleClassName(entityClass);
@@ -3672,12 +3669,12 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> delete(final String expr) {
+        public static CQLBuilder delete(final String expr) {
             return delete(Array.of(expr));
         }
 
-        public static CQLBuilder<ResultSet> delete(final String... columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder delete(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.columnNames = columnNames;
@@ -3685,8 +3682,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> delete(final Collection<String> columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder delete(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.columnNameList = columnNames;
@@ -3694,16 +3691,16 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> delete(final Class<?> entityClass) {
+        public static CQLBuilder delete(final Class<?> entityClass) {
             return delete(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> delete(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder delete(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return delete(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static CQLBuilder<ResultSet> deleteFrom(final String tableName) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder deleteFrom(final String tableName) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.tableName = tableName;
@@ -3711,11 +3708,11 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> deleteFrom(final Class<?> entityClass) {
+        public static CQLBuilder deleteFrom(final Class<?> entityClass) {
             return deleteFrom(N.getSimpleClassName(entityClass));
         }
 
-        public static CQLBuilder<ResultSet> deleteFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder deleteFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return delete(entityClass, excludedPropNames).from(entityClass);
         }
     }
@@ -3726,21 +3723,21 @@ public abstract class CQLBuilder<T> {
      * @author haiyang li
      *
      */
-    public static final class RE3<T> extends CQLBuilder<T> {
+    public static final class RE3 extends CQLBuilder {
         RE3() {
             super(NamingPolicy.CAMEL_CASE, CQLPolicy.RAW_CQL);
         }
 
-        static <T> RE3<T> createInstance() {
-            return new RE3<T>();
+        static RE3 createInstance() {
+            return new RE3();
         }
 
-        public static CQLBuilder<ResultSet> insert(final String expr) {
+        public static CQLBuilder insert(final String expr) {
             return insert(Array.of(expr));
         }
 
-        public static CQLBuilder<ResultSet> insert(final String... columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNames = columnNames;
@@ -3748,8 +3745,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Collection<String> columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNameList = columnNames;
@@ -3757,8 +3754,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Map<String, Object> props) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final Map<String, Object> props) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.props = props;
@@ -3766,12 +3763,12 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Object entity) {
+        public static CQLBuilder insert(final Object entity) {
             return insert(entity, null);
         }
 
-        public static CQLBuilder<ResultSet> insert(final Object entity, final Set<String> excludedPropNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final Object entity, final Set<String> excludedPropNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
 
@@ -3780,28 +3777,28 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Class<?> entityClass) {
+        public static CQLBuilder insert(final Class<?> entityClass) {
             return insert(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static CQLBuilder<ResultSet> insertInto(final Class<?> entityClass) {
+        public static CQLBuilder insertInto(final Class<?> entityClass) {
             return insertInto(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(entityClass, excludedPropNames).into(entityClass);
         }
 
-        public static CQLBuilder<DataSet> select(final String expr) {
+        public static CQLBuilder select(final String expr) {
             return select(Array.of(expr));
         }
 
-        public static CQLBuilder<DataSet> select(final String... columnNames) {
-            final CQLBuilder<DataSet> instance = createInstance();
+        public static CQLBuilder select(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNames = columnNames;
@@ -3809,8 +3806,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<DataSet> select(final Collection<String> columnNames) {
-            final CQLBuilder<DataSet> instance = createInstance();
+        public static CQLBuilder select(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNameList = columnNames;
@@ -3824,8 +3821,8 @@ public abstract class CQLBuilder<T> {
          * @param columnNames
          * @return
          */
-        public static CQLBuilder<DataSet> select(final String expr, final Collection<String> columnNames) {
-            final CQLBuilder<DataSet> instance = createInstance();
+        public static CQLBuilder select(final String expr, final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -3834,8 +3831,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<DataSet> select(final Map<String, String> columnAliases) {
-            final CQLBuilder<DataSet> instance = createInstance();
+        public static CQLBuilder select(final Map<String, String> columnAliases) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnAliases = columnAliases;
@@ -3849,8 +3846,8 @@ public abstract class CQLBuilder<T> {
          * @param columnAliases
          * @return
          */
-        public static CQLBuilder<DataSet> select(final String expr, final Map<String, String> columnAliases) {
-            final CQLBuilder<DataSet> instance = createInstance();
+        public static CQLBuilder select(final String expr, final Map<String, String> columnAliases) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -3859,24 +3856,24 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<DataSet> select(final Class<?> entityClass) {
+        public static CQLBuilder select(final Class<?> entityClass) {
             return select(entityClass, null);
         }
 
-        public static CQLBuilder<DataSet> select(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder select(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static CQLBuilder<DataSet> selectFrom(final Class<?> entityClass) {
+        public static CQLBuilder selectFrom(final Class<?> entityClass) {
             return selectFrom(entityClass, null);
         }
 
-        public static CQLBuilder<DataSet> selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(entityClass, excludedPropNames).from(entityClass);
         }
 
-        public static CQLBuilder<ResultSet> update(final String tableName) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder update(final String tableName) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.UPDATE;
             instance.tableName = tableName;
@@ -3884,12 +3881,12 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> update(final Class<?> entityClass) {
+        public static CQLBuilder update(final Class<?> entityClass) {
             return update(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> update(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder update(final Class<?> entityClass, final Set<String> excludedPropNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.UPDATE;
             instance.tableName = N.getSimpleClassName(entityClass);
@@ -3898,12 +3895,12 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> delete(final String expr) {
+        public static CQLBuilder delete(final String expr) {
             return delete(Array.of(expr));
         }
 
-        public static CQLBuilder<ResultSet> delete(final String... columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder delete(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.columnNames = columnNames;
@@ -3911,8 +3908,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> delete(final Collection<String> columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder delete(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.columnNameList = columnNames;
@@ -3920,16 +3917,16 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> delete(final Class<?> entityClass) {
+        public static CQLBuilder delete(final Class<?> entityClass) {
             return delete(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> delete(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder delete(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return delete(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static CQLBuilder<ResultSet> deleteFrom(final String tableName) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder deleteFrom(final String tableName) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.tableName = tableName;
@@ -3937,11 +3934,11 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> deleteFrom(final Class<?> entityClass) {
+        public static CQLBuilder deleteFrom(final Class<?> entityClass) {
             return deleteFrom(N.getSimpleClassName(entityClass));
         }
 
-        public static CQLBuilder<ResultSet> deleteFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder deleteFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return delete(entityClass, excludedPropNames).from(entityClass);
         }
     }
@@ -3952,21 +3949,21 @@ public abstract class CQLBuilder<T> {
      * @author haiyang li
      *
      */
-    public static final class NE3<T> extends CQLBuilder<T> {
+    public static final class NE3 extends CQLBuilder {
         NE3() {
             super(NamingPolicy.CAMEL_CASE, CQLPolicy.NAMED_CQL);
         }
 
-        static <T> NE3<T> createInstance() {
-            return new NE3<T>();
+        static NE3 createInstance() {
+            return new NE3();
         }
 
-        public static CQLBuilder<ResultSet> insert(final String expr) {
+        public static CQLBuilder insert(final String expr) {
             return insert(Array.of(expr));
         }
 
-        public static CQLBuilder<ResultSet> insert(final String... columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNames = columnNames;
@@ -3974,8 +3971,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Collection<String> columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNameList = columnNames;
@@ -3983,8 +3980,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Map<String, Object> props) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final Map<String, Object> props) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.props = props;
@@ -3992,12 +3989,12 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Object entity) {
+        public static CQLBuilder insert(final Object entity) {
             return insert(entity, null);
         }
 
-        public static CQLBuilder<ResultSet> insert(final Object entity, final Set<String> excludedPropNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final Object entity, final Set<String> excludedPropNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
 
@@ -4006,28 +4003,28 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Class<?> entityClass) {
+        public static CQLBuilder insert(final Class<?> entityClass) {
             return insert(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static CQLBuilder<ResultSet> insertInto(final Class<?> entityClass) {
+        public static CQLBuilder insertInto(final Class<?> entityClass) {
             return insertInto(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(entityClass, excludedPropNames).into(entityClass);
         }
 
-        public static CQLBuilder<DataSet> select(final String expr) {
+        public static CQLBuilder select(final String expr) {
             return select(Array.of(expr));
         }
 
-        public static CQLBuilder<DataSet> select(final String... columnNames) {
-            final CQLBuilder<DataSet> instance = createInstance();
+        public static CQLBuilder select(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNames = columnNames;
@@ -4035,8 +4032,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<DataSet> select(final Collection<String> columnNames) {
-            final CQLBuilder<DataSet> instance = createInstance();
+        public static CQLBuilder select(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNameList = columnNames;
@@ -4050,8 +4047,8 @@ public abstract class CQLBuilder<T> {
          * @param columnNames
          * @return
          */
-        public static CQLBuilder<DataSet> select(final String expr, final Collection<String> columnNames) {
-            final CQLBuilder<DataSet> instance = createInstance();
+        public static CQLBuilder select(final String expr, final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -4060,8 +4057,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<DataSet> select(final Map<String, String> columnAliases) {
-            final CQLBuilder<DataSet> instance = createInstance();
+        public static CQLBuilder select(final Map<String, String> columnAliases) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnAliases = columnAliases;
@@ -4075,8 +4072,8 @@ public abstract class CQLBuilder<T> {
          * @param columnAliases
          * @return
          */
-        public static CQLBuilder<DataSet> select(final String expr, final Map<String, String> columnAliases) {
-            final CQLBuilder<DataSet> instance = createInstance();
+        public static CQLBuilder select(final String expr, final Map<String, String> columnAliases) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -4085,24 +4082,24 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<DataSet> select(final Class<?> entityClass) {
+        public static CQLBuilder select(final Class<?> entityClass) {
             return select(entityClass, null);
         }
 
-        public static CQLBuilder<DataSet> select(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder select(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static CQLBuilder<DataSet> selectFrom(final Class<?> entityClass) {
+        public static CQLBuilder selectFrom(final Class<?> entityClass) {
             return selectFrom(entityClass, null);
         }
 
-        public static CQLBuilder<DataSet> selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(entityClass, excludedPropNames).from(entityClass);
         }
 
-        public static CQLBuilder<ResultSet> update(final String tableName) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder update(final String tableName) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.UPDATE;
             instance.tableName = tableName;
@@ -4110,12 +4107,12 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> update(final Class<?> entityClass) {
+        public static CQLBuilder update(final Class<?> entityClass) {
             return update(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> update(final Class<?> entityClass, final Set<String> excludedPropNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder update(final Class<?> entityClass, final Set<String> excludedPropNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.UPDATE;
             instance.tableName = N.getSimpleClassName(entityClass);
@@ -4124,12 +4121,12 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> delete(final String expr) {
+        public static CQLBuilder delete(final String expr) {
             return delete(Array.of(expr));
         }
 
-        public static CQLBuilder<ResultSet> delete(final String... columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder delete(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.columnNames = columnNames;
@@ -4137,8 +4134,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> delete(final Collection<String> columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder delete(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.columnNameList = columnNames;
@@ -4146,16 +4143,16 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> delete(final Class<?> entityClass) {
+        public static CQLBuilder delete(final Class<?> entityClass) {
             return delete(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> delete(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder delete(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return delete(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static CQLBuilder<ResultSet> deleteFrom(final String tableName) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder deleteFrom(final String tableName) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.tableName = tableName;
@@ -4163,11 +4160,11 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> deleteFrom(final Class<?> entityClass) {
+        public static CQLBuilder deleteFrom(final Class<?> entityClass) {
             return deleteFrom(N.getSimpleClassName(entityClass));
         }
 
-        public static CQLBuilder<ResultSet> deleteFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder deleteFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return delete(entityClass, excludedPropNames).from(entityClass);
         }
     }
@@ -4178,7 +4175,7 @@ public abstract class CQLBuilder<T> {
      * @author haiyang li
      *
      */
-    static final class SE3 extends CQLBuilder<ResultSet> {
+    static final class SE3 extends CQLBuilder {
         SE3() {
             super(NamingPolicy.CAMEL_CASE, CQLPolicy.IBATIS_CQL);
         }
@@ -4187,12 +4184,12 @@ public abstract class CQLBuilder<T> {
             return new SE3();
         }
 
-        public static CQLBuilder<ResultSet> insert(final String expr) {
+        public static CQLBuilder insert(final String expr) {
             return insert(Array.of(expr));
         }
 
-        public static CQLBuilder<ResultSet> insert(final String... columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNames = columnNames;
@@ -4200,8 +4197,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Collection<String> columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.columnNameList = columnNames;
@@ -4209,8 +4206,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Map<String, Object> props) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final Map<String, Object> props) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
             instance.props = props;
@@ -4218,12 +4215,12 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Object entity) {
+        public static CQLBuilder insert(final Object entity) {
             return insert(entity, null);
         }
 
-        public static CQLBuilder<ResultSet> insert(final Object entity, final Set<String> excludedPropNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder insert(final Object entity, final Set<String> excludedPropNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.ADD;
 
@@ -4232,28 +4229,28 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> insert(final Class<?> entityClass) {
+        public static CQLBuilder insert(final Class<?> entityClass) {
             return insert(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder insert(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static CQLBuilder<ResultSet> insertInto(final Class<?> entityClass) {
+        public static CQLBuilder insertInto(final Class<?> entityClass) {
             return insertInto(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder insertInto(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return insert(entityClass, excludedPropNames).into(entityClass);
         }
 
-        public static CQLBuilder<ResultSet> select(final String expr) {
+        public static CQLBuilder select(final String expr) {
             return select(Array.of(expr));
         }
 
-        public static CQLBuilder<ResultSet> select(final String... columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder select(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNames = columnNames;
@@ -4261,8 +4258,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> select(final Collection<String> columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder select(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnNameList = columnNames;
@@ -4276,8 +4273,8 @@ public abstract class CQLBuilder<T> {
          * @param columnNames
          * @return
          */
-        public static CQLBuilder<ResultSet> select(final String expr, final Collection<String> columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder select(final String expr, final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -4286,8 +4283,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> select(final Map<String, String> columnAliases) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder select(final Map<String, String> columnAliases) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.columnAliases = columnAliases;
@@ -4301,8 +4298,8 @@ public abstract class CQLBuilder<T> {
          * @param columnAliases
          * @return
          */
-        public static CQLBuilder<ResultSet> select(final String expr, final Map<String, String> columnAliases) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder select(final String expr, final Map<String, String> columnAliases) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.QUERY;
             instance.predicates = expr;
@@ -4311,24 +4308,24 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> select(final Class<?> entityClass) {
+        public static CQLBuilder select(final Class<?> entityClass) {
             return select(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> select(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder select(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static CQLBuilder<ResultSet> selectFrom(final Class<?> entityClass) {
+        public static CQLBuilder selectFrom(final Class<?> entityClass) {
             return selectFrom(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder selectFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return select(entityClass, excludedPropNames).from(entityClass);
         }
 
-        public static CQLBuilder<ResultSet> update(final String tableName) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder update(final String tableName) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.UPDATE;
             instance.tableName = tableName;
@@ -4336,16 +4333,16 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> update(final Class<?> entityClass) {
+        public static CQLBuilder update(final Class<?> entityClass) {
             return update(N.getSimpleClassName(entityClass));
         }
 
-        public static CQLBuilder<ResultSet> delete(final String expr) {
+        public static CQLBuilder delete(final String expr) {
             return delete(Array.of(expr));
         }
 
-        public static CQLBuilder<ResultSet> delete(final String... columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder delete(final String... columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.columnNames = columnNames;
@@ -4353,8 +4350,8 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> delete(final Collection<String> columnNames) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder delete(final Collection<String> columnNames) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.columnNameList = columnNames;
@@ -4362,16 +4359,16 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> delete(final Class<?> entityClass) {
+        public static CQLBuilder delete(final Class<?> entityClass) {
             return delete(entityClass, null);
         }
 
-        public static CQLBuilder<ResultSet> delete(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder delete(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return delete(getPropNamesByClass(entityClass, excludedPropNames));
         }
 
-        public static CQLBuilder<ResultSet> deleteFrom(final String tableName) {
-            final CQLBuilder<ResultSet> instance = createInstance();
+        public static CQLBuilder deleteFrom(final String tableName) {
+            final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.DELETE;
             instance.tableName = tableName;
@@ -4379,11 +4376,11 @@ public abstract class CQLBuilder<T> {
             return instance;
         }
 
-        public static CQLBuilder<ResultSet> deleteFrom(final Class<?> entityClass) {
+        public static CQLBuilder deleteFrom(final Class<?> entityClass) {
             return deleteFrom(N.getSimpleClassName(entityClass));
         }
 
-        public static CQLBuilder<ResultSet> deleteFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
+        public static CQLBuilder deleteFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
             return delete(entityClass, excludedPropNames).from(entityClass);
         }
     }
