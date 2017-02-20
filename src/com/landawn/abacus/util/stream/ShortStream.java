@@ -640,6 +640,29 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
 
                 return next++;
             }
+
+            @Override
+            public void skip(long n) {
+                cnt = n >= cnt ? 0 : cnt - (int) n;
+            }
+
+            @Override
+            public long count() {
+                return cnt;
+            }
+
+            @Override
+            public short[] toArray() {
+                final short[] result = new short[cnt];
+
+                for (int i = 0; i < cnt; i++) {
+                    result[i] = next++;
+                }
+
+                cnt = 0;
+
+                return result;
+            }
         });
     }
 
@@ -671,6 +694,29 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
                 next += by;
                 return result;
             }
+
+            @Override
+            public void skip(long n) {
+                cnt = n >= cnt ? 0 : cnt - (int) n;
+            }
+
+            @Override
+            public long count() {
+                return cnt;
+            }
+
+            @Override
+            public short[] toArray() {
+                final short[] result = new short[cnt];
+
+                for (int i = 0; i < cnt; i++, next += by) {
+                    result[i] = next;
+                }
+
+                cnt = 0;
+
+                return result;
+            }
         });
     }
 
@@ -697,6 +743,29 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
                 }
 
                 return next++;
+            }
+
+            @Override
+            public void skip(long n) {
+                cnt = n >= cnt ? 0 : cnt - (int) n;
+            }
+
+            @Override
+            public long count() {
+                return cnt;
+            }
+
+            @Override
+            public short[] toArray() {
+                final short[] result = new short[cnt];
+
+                for (int i = 0; i < cnt; i++) {
+                    result[i] = next++;
+                }
+
+                cnt = 0;
+
+                return result;
             }
         });
     }
@@ -731,6 +800,29 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
                 next += by;
                 return result;
             }
+
+            @Override
+            public void skip(long n) {
+                cnt = n >= cnt ? 0 : cnt - (int) n;
+            }
+
+            @Override
+            public long count() {
+                return cnt;
+            }
+
+            @Override
+            public short[] toArray() {
+                final short[] result = new short[cnt];
+
+                for (int i = 0; i < cnt; i++, next += by) {
+                    result[i] = next;
+                }
+
+                cnt = 0;
+
+                return result;
+            }
         });
     }
 
@@ -742,21 +834,43 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
         }
 
         return new IteratorShortStream(new ImmutableShortIterator() {
-            private long cnt = 0;
+            private long cnt = n;
 
             @Override
             public boolean hasNext() {
-                return cnt < n;
+                return cnt > 0;
             }
 
             @Override
             public short next() {
-                if (cnt >= n) {
+                if (cnt-- <= 0) {
                     throw new NoSuchElementException();
                 }
 
-                cnt++;
                 return element;
+            }
+
+            @Override
+            public void skip(long n) {
+                cnt = n >= cnt ? 0 : cnt - (int) n;
+            }
+
+            @Override
+            public long count() {
+                return cnt;
+            }
+
+            @Override
+            public short[] toArray() {
+                final short[] result = new short[(int) cnt];
+
+                for (int i = 0; i < cnt; i++) {
+                    result[i] = element;
+                }
+
+                cnt = 0;
+
+                return result;
             }
         });
     }

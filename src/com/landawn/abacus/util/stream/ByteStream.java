@@ -625,6 +625,29 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
 
                 return next++;
             }
+
+            @Override
+            public void skip(long n) {
+                cnt = n >= cnt ? 0 : cnt - (int) n;
+            }
+
+            @Override
+            public long count() {
+                return cnt;
+            }
+
+            @Override
+            public byte[] toArray() {
+                final byte[] result = new byte[cnt];
+
+                for (int i = 0; i < cnt; i++) {
+                    result[i] = next++;
+                }
+
+                cnt = 0;
+
+                return result;
+            }
         });
     }
 
@@ -656,6 +679,29 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
                 next += by;
                 return result;
             }
+
+            @Override
+            public void skip(long n) {
+                cnt = n >= cnt ? 0 : cnt - (int) n;
+            }
+
+            @Override
+            public long count() {
+                return cnt;
+            }
+
+            @Override
+            public byte[] toArray() {
+                final byte[] result = new byte[cnt];
+
+                for (int i = 0; i < cnt; i++, next += by) {
+                    result[i] = next;
+                }
+
+                cnt = 0;
+
+                return result;
+            }
         });
     }
 
@@ -682,6 +728,29 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
                 }
 
                 return next++;
+            }
+
+            @Override
+            public void skip(long n) {
+                cnt = n >= cnt ? 0 : cnt - (int) n;
+            }
+
+            @Override
+            public long count() {
+                return cnt;
+            }
+
+            @Override
+            public byte[] toArray() {
+                final byte[] result = new byte[cnt];
+
+                for (int i = 0; i < cnt; i++) {
+                    result[i] = next++;
+                }
+
+                cnt = 0;
+
+                return result;
             }
         });
     }
@@ -716,6 +785,29 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
                 next += by;
                 return result;
             }
+
+            @Override
+            public void skip(long n) {
+                cnt = n >= cnt ? 0 : cnt - (int) n;
+            }
+
+            @Override
+            public long count() {
+                return cnt;
+            }
+
+            @Override
+            public byte[] toArray() {
+                final byte[] result = new byte[cnt];
+
+                for (int i = 0; i < cnt; i++, next += by) {
+                    result[i] = next;
+                }
+
+                cnt = 0;
+
+                return result;
+            }
         });
     }
 
@@ -727,21 +819,43 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
         }
 
         return new IteratorByteStream(new ImmutableByteIterator() {
-            private long cnt = 0;
+            private long cnt = n;
 
             @Override
             public boolean hasNext() {
-                return cnt < n;
+                return cnt > 0;
             }
 
             @Override
             public byte next() {
-                if (cnt >= n) {
+                if (cnt-- <= 0) {
                     throw new NoSuchElementException();
                 }
 
-                cnt++;
                 return element;
+            }
+
+            @Override
+            public void skip(long n) {
+                cnt = n >= cnt ? 0 : cnt - (int) n;
+            }
+
+            @Override
+            public long count() {
+                return cnt;
+            }
+
+            @Override
+            public byte[] toArray() {
+                final byte[] result = new byte[(int) cnt];
+
+                for (int i = 0; i < cnt; i++) {
+                    result[i] = element;
+                }
+
+                cnt = 0;
+
+                return result;
             }
         });
     }
