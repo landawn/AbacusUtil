@@ -636,24 +636,30 @@ abstract class AbstractStream<T> extends Stream<T> {
 
         return this.newStream(new ImmutableIterator<T>() {
             private T pre = (T) NONE;
-            private T res = null;
 
             @Override
             public boolean hasNext() {
-                return iter.hasNext();
+                return pre != NONE || iter.hasNext();
             }
 
             @Override
             public T next() {
-                T next = iter.next();
+                T res = pre == NONE ? (pre = iter.next()) : pre;
 
-                if (pre == NONE || collapsible.test(pre, next) == false) {
-                    res = next;
-                } else {
-                    res = mergeFunction.apply(res, next);
+                boolean hasMore = false;
+
+                while (iter.hasNext()) {
+                    if (collapsible.test(pre, (pre = iter.next()))) {
+                        res = mergeFunction.apply(res, pre);
+                    } else {
+                        hasMore = true;
+                        break;
+                    }
                 }
 
-                pre = next;
+                if (hasMore == false) {
+                    pre = (T) NONE;
+                }
 
                 return res;
             }
@@ -666,24 +672,30 @@ abstract class AbstractStream<T> extends Stream<T> {
 
         return this.newStream(new ImmutableIterator<R>() {
             private T pre = (T) NONE;
-            private R res = null;
 
             @Override
             public boolean hasNext() {
-                return iter.hasNext();
+                return pre != NONE || iter.hasNext();
             }
 
             @Override
             public R next() {
-                T next = iter.next();
+                R res = mergeFunction.apply(seed, pre == NONE ? (pre = iter.next()) : pre);
 
-                if (pre == NONE || collapsible.test(pre, next) == false) {
-                    res = mergeFunction.apply(seed, next);
-                } else {
-                    res = mergeFunction.apply(res, next);
+                boolean hasMore = false;
+
+                while (iter.hasNext()) {
+                    if (collapsible.test(pre, (pre = iter.next()))) {
+                        res = mergeFunction.apply(res, pre);
+                    } else {
+                        hasMore = true;
+                        break;
+                    }
                 }
 
-                pre = next;
+                if (hasMore == false) {
+                    pre = (T) NONE;
+                }
 
                 return res;
             }
@@ -697,24 +709,31 @@ abstract class AbstractStream<T> extends Stream<T> {
 
         return this.newStream(new ImmutableIterator<C>() {
             private T pre = (T) NONE;
-            private C res = null;
 
             @Override
             public boolean hasNext() {
-                return iter.hasNext();
+                return pre != NONE || iter.hasNext();
             }
 
             @Override
             public C next() {
-                T next = iter.next();
+                final C res = supplier.get();
+                mergeFunction.accept(res, pre == NONE ? (pre = iter.next()) : pre);
 
-                if (pre == NONE || collapsible.test(pre, next) == false) {
-                    res = supplier.get();
+                boolean hasMore = false;
+
+                while (iter.hasNext()) {
+                    if (collapsible.test(pre, (pre = iter.next()))) {
+                        mergeFunction.accept(res, pre);
+                    } else {
+                        hasMore = true;
+                        break;
+                    }
                 }
 
-                mergeFunction.accept(res, next);
-
-                pre = next;
+                if (hasMore == false) {
+                    pre = (T) NONE;
+                }
 
                 return res;
             }
