@@ -1295,7 +1295,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <U> U forEach(U seed, BiFunction<U, ? super T, U> accumulator, BiPredicate<? super T, ? super U> predicate) {
+    public <U> U forEach(U seed, BiFunction<U, ? super T, U> accumulator, BiPredicate<? super T, ? super U> conditionToBreak) {
         U result = seed;
         T next = null;
 
@@ -1303,7 +1303,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
             next = elements.next();
             result = accumulator.apply(result, next);
 
-            if (predicate.test(next, result) == false) {
+            if (conditionToBreak.test(next, result)) {
                 break;
             }
         }

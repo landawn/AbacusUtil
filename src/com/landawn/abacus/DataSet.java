@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.landawn.abacus.util.Sheet;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.ObjectList;
@@ -36,6 +35,7 @@ import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalNullable;
 import com.landawn.abacus.util.Properties;
+import com.landawn.abacus.util.Sheet;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.Consumer;
@@ -850,47 +850,49 @@ public interface DataSet extends Iterable<Object[]> {
      */
     void forEach(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Consumer<? super Object[]> action, boolean shareRowArray);
 
-    <R> R forEach(R seed, BiFunction<R, ? super Object[], R> accumulator, BiPredicate<? super Object[], ? super R> predicate);
+    <R> R forEach(R seed, BiFunction<R, ? super Object[], R> accumulator, BiPredicate<? super Object[], ? super R> conditionToBreak);
 
-    <R> R forEach(R seed, BiFunction<R, ? super Object[], R> accumulator, BiPredicate<? super Object[], ? super R> predicate, boolean shareRowArray);
+    <R> R forEach(R seed, BiFunction<R, ? super Object[], R> accumulator, BiPredicate<? super Object[], ? super R> conditionToBreak, boolean shareRowArray);
 
-    <R> R forEach(Collection<String> columnNames, R seed, BiFunction<R, ? super Object[], R> accumulator, BiPredicate<? super Object[], ? super R> predicate);
+    <R> R forEach(Collection<String> columnNames, R seed, BiFunction<R, ? super Object[], R> accumulator,
+            BiPredicate<? super Object[], ? super R> conditionToBreak);
 
     /**
-     * Execute <code>accumulator</code> on each element till <code>predicate</code> returns false.
+     * Execute <code>accumulator</code> on each element till <code>true</code> is returned by <code>conditionToBreak</code>
      * 
      * @param columnNames
      * @param seed
      * @param accumulator
-     * @param predicate break if the <code>predicate</code> returns false.
+     * @param conditionToBreak break if <code>true</code> is return.
      * @param shareRowArray
      * @return
      */
-    <R> R forEach(Collection<String> columnNames, R seed, BiFunction<R, ? super Object[], R> accumulator, BiPredicate<? super Object[], ? super R> predicate,
-            boolean shareRowArray);
+    <R> R forEach(Collection<String> columnNames, R seed, BiFunction<R, ? super Object[], R> accumulator,
+            BiPredicate<? super Object[], ? super R> conditionToBreak, boolean shareRowArray);
 
-    <R> R forEach(int fromRowIndex, int toRowIndex, R seed, BiFunction<R, ? super Object[], R> accumulator, BiPredicate<? super Object[], ? super R> predicate);
+    <R> R forEach(int fromRowIndex, int toRowIndex, R seed, BiFunction<R, ? super Object[], R> accumulator,
+            BiPredicate<? super Object[], ? super R> conditionToBreak);
 
-    <R> R forEach(int fromRowIndex, int toRowIndex, R seed, BiFunction<R, ? super Object[], R> accumulator, BiPredicate<? super Object[], ? super R> predicate,
-            boolean shareRowArray);
+    <R> R forEach(int fromRowIndex, int toRowIndex, R seed, BiFunction<R, ? super Object[], R> accumulator,
+            BiPredicate<? super Object[], ? super R> conditionToBreak, boolean shareRowArray);
 
     <R> R forEach(Collection<String> columnNames, int fromRowIndex, int toRowIndex, R seed, BiFunction<R, ? super Object[], R> accumulator,
-            BiPredicate<? super Object[], ? super R> predicate);
+            BiPredicate<? super Object[], ? super R> conditionToBreak);
 
     /**
-     * Execute <code>accumulator</code> on each element till <code>predicate</code> returns false.
+     * Execute <code>accumulator</code> on each element till <code>true</code> is returned by <code>conditionToBreak</code>
      * 
      * @param columnNames
      * @param fromRowIndex
      * @param toRowIndex
      * @param seed
      * @param accumulator
-     * @param predicate break if the <code>predicate</code> returns false.
+     * @param conditionToBreak break if <code>true</code> is return.
      * @param shareRowArray
      * @return
      */
     <R> R forEach(Collection<String> columnNames, int fromRowIndex, int toRowIndex, R seed, BiFunction<R, ? super Object[], R> accumulator,
-            BiPredicate<? super Object[], ? super R> predicate, boolean shareRowArray);
+            BiPredicate<? super Object[], ? super R> conditionToBreak, boolean shareRowArray);
 
     /**
      *

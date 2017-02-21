@@ -81,14 +81,14 @@ public final class MutableChar implements Comparable<MutableChar>, Mutable {
     }
 
     public char getAndSet(final char value) {
-        char result = value;
+        final char result = this.value;
         this.value = value;
         return result;
     }
 
     public char setAndGet(final char value) {
         this.value = value;
-        return value;
+        return this.value;
     }
 
     //-----------------------------------------------------------------------

@@ -89,14 +89,14 @@ public final class MutableFloat extends Number implements Comparable<MutableFloa
     }
 
     public float getAndSet(final float value) {
-        float result = value;
+        final float result = this.value;
         this.value = value;
         return result;
     }
 
     public float setAndGet(final float value) {
         this.value = value;
-        return value;
+        return this.value;
     }
 
     //-----------------------------------------------------------------------

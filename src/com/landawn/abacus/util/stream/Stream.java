@@ -613,6 +613,49 @@ public abstract class Stream<T>
     public abstract Stream<List<T>> sliding2(int windowSize, int increment);
 
     /**
+     * Merge series of adjacent elements which satisfy the given predicate using
+     * the merger function and return a new stream.
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param collapsible
+     * @param mergeFunction
+     * @return
+     */
+    public abstract Stream<T> collapse(final BiPredicate<? super T, ? super T> collapsible, final BiFunction<? super T, ? super T, T> mergeFunction);
+
+    /**
+     * Merge series of adjacent elements which satisfy the given predicate using
+     * the merger function and return a new stream.
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param seed
+     * @param collapsible
+     * @param mergeFunction
+     * @return
+     */
+    public abstract <R> Stream<R> collapse(final R seed, final BiPredicate<? super T, ? super T> collapsible,
+            final BiFunction<? super R, ? super T, R> mergeFunction);
+
+    /**
+     * Merge series of adjacent elements which satisfy the given predicate using
+     * the merger function and return a new stream.
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param supplier usually it's a creator of collection.
+     * @param collapsible
+     * @param mergeFunction
+     * @return
+     */
+    public abstract <C> Stream<C> collapse(final Supplier<C> supplier, final BiPredicate<? super T, ? super T> collapsible,
+            final BiConsumer<? super C, ? super T> mergeFunction);
+
+    /**
      * Distinct by the value mapped from <code>keyMapper</code>
      * 
      * <br />
@@ -661,17 +704,17 @@ public abstract class Stream<T>
     public abstract Stream<T> sorted(Comparator<? super T> comparator);
 
     /**
-     * Execute <code>accumulator</code> on each element till <code>predicate</code> returns false.
+     * Execute <code>accumulator</code> on each element till <code>true</code> is returned by <code>conditionToBreak</code>
      * 
      * <br />
      * This method only run sequentially, even in parallel stream.
      * 
      * @param seed
      * @param accumulator
-     * @param predicate break if the <code>predicate</code> returns false.
+     * @param conditionToBreak break if <code>true</code> is return.
      * @return
      */
-    public abstract <U> U forEach(final U seed, BiFunction<U, ? super T, U> accumulator, final BiPredicate<? super T, ? super U> predicate);
+    public abstract <U> U forEach(final U seed, BiFunction<U, ? super T, U> accumulator, final BiPredicate<? super T, ? super U> conditionToBreak);
 
     /**
      * <br />
@@ -1393,6 +1436,10 @@ public abstract class Stream<T>
      * @see IntList#difference(IntList)
      */
     public abstract Stream<T> difference(Function<? super T, ?> mapper, Collection<?> c);
+
+    public abstract Stream<T> append(Collection<? extends T> c);
+
+    public abstract Stream<T> prepend(Collection<? extends T> c);
 
     /**
      * Returns a reusable stream which can be repeatedly used.

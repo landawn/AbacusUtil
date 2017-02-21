@@ -89,14 +89,14 @@ public final class MutableDouble extends Number implements Comparable<MutableDou
     }
 
     public double getAndSet(final double value) {
-        double result = value;
+        final double result = this.value;
         this.value = value;
         return result;
     }
 
     public double setAndGet(final double value) {
         this.value = value;
-        return value;
+        return this.value;
     }
 
     //-----------------------------------------------------------------------

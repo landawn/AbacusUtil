@@ -1,9 +1,13 @@
 
 ========Changes in 0.9.52=========================================================================
 
-1, Refactoring: SQLBuilder and CQLBuilder.
+1*, Reverse the condition to break the for loop in forEach : forEach(seed, accumulator, conditionToContinue) to forEach(seed, accumulator, conditionToBreak) in DataSet/Stream/N/ObjectList/Seq/Multiset/LongMultiset/Multimap.
 
-3, Improvements and bug fix.
+2, Remove type parameter from SQLBuilder and CQLBuilder.
+
+3, Import collapse from StreamEx.
+
+4, Improvements and bug fix.
 
 
 ========Changes in 0.9.51=========================================================================

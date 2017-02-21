@@ -1120,22 +1120,22 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         }
     }
 
-    public <R> R forEach(final R seed, BiFunction<R, ? super T, R> accumulator, final BiPredicate<? super T, ? super R> predicate) {
-        return forEach(0, size(), seed, accumulator, predicate);
+    public <R> R forEach(final R seed, BiFunction<R, ? super T, R> accumulator, final BiPredicate<? super T, ? super R> conditionToBreak) {
+        return forEach(0, size(), seed, accumulator, conditionToBreak);
     }
 
     /**
-     * Execute <code>accumulator</code> on each element till <code>predicate</code> returns false.
+     * Execute <code>accumulator</code> on each element till <code>true</code> is returned by <code>conditionToBreak</code>
      * 
      * @param fromIndex
      * @param toIndex
      * @param seed
      * @param accumulator
-     * @param predicate break if the <code>predicate</code> returns false.
+     * @param conditionToBreak break if <code>true</code> is return.
      * @return
      */
     public <R> R forEach(final int fromIndex, final int toIndex, final R seed, BiFunction<R, ? super T, R> accumulator,
-            final BiPredicate<? super T, ? super R> predicate) {
+            final BiPredicate<? super T, ? super R> conditionToBreak) {
         N.checkIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, size);
 
         R result = seed;
@@ -1145,7 +1145,7 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
                 for (int i = fromIndex; i < toIndex; i++) {
                     result = accumulator.apply(result, elementData[i]);
 
-                    if (predicate.test(elementData[i], result) == false) {
+                    if (conditionToBreak.test(elementData[i], result)) {
                         break;
                     }
                 }
@@ -1153,7 +1153,7 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
                 for (int i = N.min(size - 1, fromIndex); i > toIndex; i--) {
                     result = accumulator.apply(result, elementData[i]);
 
-                    if (predicate.test(elementData[i], result) == false) {
+                    if (conditionToBreak.test(elementData[i], result)) {
                         break;
                     }
                 }
@@ -1163,22 +1163,22 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
         return result;
     }
 
-    public <R> R forEach(final R seed, IndexedBiFunction<R, ? super T, ObjectList<T>, R> accumulator, BiPredicate<? super T, ? super R> predicate) {
-        return forEach(0, size(), seed, accumulator, predicate);
+    public <R> R forEach(final R seed, IndexedBiFunction<R, ? super T, ObjectList<T>, R> accumulator, BiPredicate<? super T, ? super R> conditionToBreak) {
+        return forEach(0, size(), seed, accumulator, conditionToBreak);
     }
 
     /**
-     * Execute <code>accumulator</code> on each element till <code>predicate</code> returns false.
+     * Execute <code>accumulator</code> on each element till <code>true</code> is returned by <code>conditionToBreak</code>
      * 
      * @param fromIndex
      * @param toIndex
      * @param seed
      * @param accumulator
-     * @param predicate break if the <code>predicate</code> returns false.
+     * @param conditionToBreak break if <code>true</code> is return.
      * @return
      */
     public <R> R forEach(final int fromIndex, final int toIndex, final R seed, IndexedBiFunction<R, ? super T, ObjectList<T>, R> accumulator,
-            final BiPredicate<? super T, ? super R> predicate) {
+            final BiPredicate<? super T, ? super R> conditionToBreak) {
         N.checkIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, size);
 
         R result = seed;
@@ -1188,7 +1188,7 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
                 for (int i = fromIndex; i < toIndex; i++) {
                     result = accumulator.apply(result, i, elementData[i], this);
 
-                    if (predicate.test(elementData[i], result) == false) {
+                    if (conditionToBreak.test(elementData[i], result)) {
                         break;
                     }
                 }
@@ -1196,7 +1196,7 @@ public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<?
                 for (int i = N.min(size - 1, fromIndex); i > toIndex; i--) {
                     result = accumulator.apply(result, i, elementData[i], this);
 
-                    if (predicate.test(elementData[i], result) == false) {
+                    if (conditionToBreak.test(elementData[i], result)) {
                         break;
                     }
                 }

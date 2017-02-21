@@ -631,6 +631,97 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
+    public Stream<T> collapse(final BiPredicate<? super T, ? super T> collapsible, final BiFunction<? super T, ? super T, T> mergeFunction) {
+        final ImmutableIterator<T> iter = iterator();
+
+        return this.newStream(new ImmutableIterator<T>() {
+            private T pre = (T) NONE;
+            private T res = null;
+
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public T next() {
+                T next = iter.next();
+
+                if (pre == NONE || collapsible.test(pre, next) == false) {
+                    res = next;
+                } else {
+                    res = mergeFunction.apply(res, next);
+                }
+
+                pre = next;
+
+                return res;
+            }
+        }, false, null);
+    }
+
+    @Override
+    public <R> Stream<R> collapse(final R seed, final BiPredicate<? super T, ? super T> collapsible, final BiFunction<? super R, ? super T, R> mergeFunction) {
+        final ImmutableIterator<T> iter = iterator();
+
+        return this.newStream(new ImmutableIterator<R>() {
+            private T pre = (T) NONE;
+            private R res = null;
+
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public R next() {
+                T next = iter.next();
+
+                if (pre == NONE || collapsible.test(pre, next) == false) {
+                    res = mergeFunction.apply(seed, next);
+                } else {
+                    res = mergeFunction.apply(res, next);
+                }
+
+                pre = next;
+
+                return res;
+            }
+        }, false, null);
+    }
+
+    @Override
+    public <C> Stream<C> collapse(final Supplier<C> supplier, final BiPredicate<? super T, ? super T> collapsible,
+            final BiConsumer<? super C, ? super T> mergeFunction) {
+        final ImmutableIterator<T> iter = iterator();
+
+        return this.newStream(new ImmutableIterator<C>() {
+            private T pre = (T) NONE;
+            private C res = null;
+
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public C next() {
+                T next = iter.next();
+
+                if (pre == NONE || collapsible.test(pre, next) == false) {
+                    res = supplier.get();
+                }
+
+                mergeFunction.accept(res, next);
+
+                pre = next;
+
+                return res;
+            }
+        }, false, null);
+    }
+
+    @Override
     public <K> Stream<Entry<K, List<T>>> groupBy(final Function<? super T, ? extends K> classifier) {
         final Map<K, List<T>> map = collect(Collectors.groupingBy(classifier));
 
@@ -1538,8 +1629,18 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
+    public Stream<T> append(Collection<? extends T> c) {
+        return append(Stream.of(c));
+    }
+
+    @Override
     public Stream<T> prepend(Stream<T> stream) {
         return Stream.concat(stream, this);
+    }
+
+    @Override
+    public Stream<T> prepend(Collection<? extends T> c) {
+        return prepend(Stream.of(c));
     }
 
     @Override

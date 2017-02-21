@@ -89,14 +89,14 @@ public final class MutableShort extends Number implements Comparable<MutableShor
     }
 
     public short getAndSet(final short value) {
-        short result = value;
+        final short result = this.value;
         this.value = value;
         return result;
     }
 
     public short setAndGet(final short value) {
         this.value = value;
-        return value;
+        return this.value;
     }
 
     //-----------------------------------------------------------------------

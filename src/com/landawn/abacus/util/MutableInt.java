@@ -89,14 +89,14 @@ public final class MutableInt extends Number implements Comparable<MutableInt>, 
     }
 
     public int getAndSet(final int value) {
-        int result = value;
+        final int result = this.value;
         this.value = value;
         return result;
     }
 
     public int setAndGet(final int value) {
         this.value = value;
-        return value;
+        return this.value;
     }
 
     //-----------------------------------------------------------------------

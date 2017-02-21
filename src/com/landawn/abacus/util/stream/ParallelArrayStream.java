@@ -1514,21 +1514,21 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public <U> Stream<Stream<T>> split(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
-        return new ParallelIteratorStream<>(sequential().split(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null,
-                maxThreadNum, splitor);
+        return new ParallelIteratorStream<>(sequential().split(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null, maxThreadNum,
+                splitor);
     }
 
     @Override
     public <U> Stream<ObjectList<T>> split0(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
-        return new ParallelIteratorStream<>(sequential().split0(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null,
-                maxThreadNum, splitor);
+        return new ParallelIteratorStream<>(sequential().split0(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null, maxThreadNum,
+                splitor);
     }
 
     @Override
     public <U> Stream<List<T>> split2(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
-        return new ParallelIteratorStream<>(sequential().split2(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null,
-                maxThreadNum, splitor);
+        return new ParallelIteratorStream<>(sequential().split2(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null, maxThreadNum,
+                splitor);
     }
 
     @Override
@@ -1572,8 +1572,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<ObjectList<T>> sliding0(final int windowSize, final int increment) {
-        return new ParallelIteratorStream<>(sequential().sliding0(windowSize, increment).iterator(), closeHandlers, false, null, maxThreadNum,
-                splitor);
+        return new ParallelIteratorStream<>(sequential().sliding0(windowSize, increment).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
     }
 
     @Override
@@ -1795,12 +1794,12 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <U> U forEach(U seed, BiFunction<U, ? super T, U> accumulator, BiPredicate<? super T, ? super U> predicate) {
+    public <U> U forEach(U seed, BiFunction<U, ? super T, U> accumulator, BiPredicate<? super T, ? super U> conditionToBreak) {
         if (logger.isWarnEnabled()) {
-            logger.warn("'forEach' is sequentially executed in parallel stream");
+            logger.warn("The 'forEach' with break condition is sequentially executed in parallel stream");
         }
 
-        return sequential().forEach(seed, accumulator, predicate);
+        return sequential().forEach(seed, accumulator, conditionToBreak);
     }
 
     @Override

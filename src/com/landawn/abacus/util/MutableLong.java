@@ -89,14 +89,14 @@ public final class MutableLong extends Number implements Comparable<MutableLong>
     }
 
     public long getAndSet(final long value) {
-        long result = value;
+        final long result = this.value;
         this.value = value;
         return result;
     }
 
     public long setAndGet(final long value) {
         this.value = value;
-        return value;
+        return this.value;
     }
 
     //-----------------------------------------------------------------------

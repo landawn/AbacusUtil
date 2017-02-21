@@ -32,7 +32,6 @@ import java.util.concurrent.TimeUnit;
 
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
-import com.landawn.abacus.util.Sheet;
 import com.landawn.abacus.util.AsyncExecutor;
 import com.landawn.abacus.util.BiMap;
 import com.landawn.abacus.util.BooleanList;
@@ -64,6 +63,7 @@ import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.ObjectList;
+import com.landawn.abacus.util.Sheet;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.ShortList;
 import com.landawn.abacus.util.Try;
@@ -765,9 +765,9 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
             return defaultComparator.containsValue(b);
         } else if (b == null) {
             return defaultComparator.containsValue(a);
+        } else {
+            return (a == OBJECT_COMPARATOR && defaultComparator.containsValue(b)) || (b == OBJECT_COMPARATOR && defaultComparator.containsValue(a));
         }
-
-        return false;
     }
 
     static void checkIndex(int fromIndex, final int toIndex, int length) {

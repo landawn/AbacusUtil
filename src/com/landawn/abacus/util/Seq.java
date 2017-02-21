@@ -523,22 +523,33 @@ public class Seq<T> implements Collection<T> {
         N.forEach(coll, fromIndex, toIndex, action);
     }
 
-    public <R> R forEach(final R seed, BiFunction<R, ? super T, R> accumulator, final BiPredicate<? super T, ? super R> predicate) {
-        return forEach(0, size(), seed, accumulator, predicate);
+    public <R> R forEach(final R seed, BiFunction<R, ? super T, R> accumulator, final BiPredicate<? super T, ? super R> conditionToBreak) {
+        return forEach(0, size(), seed, accumulator, conditionToBreak);
     }
 
     public <R> R forEach(int fromIndex, final int toIndex, final R seed, final BiFunction<R, ? super T, R> accumulator,
-            final BiPredicate<? super T, ? super R> predicate) {
-        return N.forEach(coll, fromIndex, toIndex, seed, accumulator, predicate);
+            final BiPredicate<? super T, ? super R> conditionToBreak) {
+        return N.forEach(coll, fromIndex, toIndex, seed, accumulator, conditionToBreak);
     }
 
-    public <R> R forEach(final R seed, final IndexedBiFunction<R, ? super T, Collection<T>, R> accumulator, final BiPredicate<? super T, ? super R> predicate) {
-        return forEach(0, size(), seed, accumulator, predicate);
+    public <R> R forEach(final R seed, final IndexedBiFunction<R, ? super T, Collection<T>, R> accumulator,
+            final BiPredicate<? super T, ? super R> conditionToBreak) {
+        return forEach(0, size(), seed, accumulator, conditionToBreak);
     }
 
+    /**
+     * Execute <code>accumulator</code> on each element till <code>true</code> is returned by <code>conditionToBreak</code>
+     * 
+     * @param fromIndex
+     * @param toIndex
+     * @param seed
+     * @param accumulator
+     * @param conditionToBreak break if <code>true</code> is return.
+     * @return
+     */
     public <R> R forEach(int fromIndex, final int toIndex, final R seed, final IndexedBiFunction<R, ? super T, Collection<T>, R> accumulator,
-            final BiPredicate<? super T, ? super R> predicate) {
-        return N.forEach(coll, fromIndex, toIndex, seed, accumulator, predicate);
+            final BiPredicate<? super T, ? super R> conditionToBreak) {
+        return N.forEach(coll, fromIndex, toIndex, seed, accumulator, conditionToBreak);
     }
 
     public OptionalNullable<T> first() {

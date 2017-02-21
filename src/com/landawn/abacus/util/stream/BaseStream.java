@@ -835,7 +835,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * Because the sequential way is as fast, or even faster than the parallel way for some methods, or is pretty difficult, if not possible, to implement the method by parallel approach.
      * Here are the methods which are executed sequentially even in parallel Streams.  
      * <br></br>
-     * <i>splitXXX/splitAt/splitBy/slidingXXX, distinct, reverse, rotate, shuffle, indexed, cached, top, kthLargest, count, toArray, toObjectList, toList, toSet, toMultiset, toLongMultiset, 
+     * <i>splitXXX/splitAt/splitBy/slidingXXX/collapse, distinct, reverse, rotate, shuffle, indexed, cached, top, kthLargest, count, toArray, toObjectList, toList, toSet, toMultiset, toLongMultiset, 
      * intersection(Collection c), difference(Collection c), symmetricDifference(Collection c), forEach(identity, accumulator, predicate), findFirstOrLast, findFirstAndLast</i>
      * 
      * @param maxThreadNum Default value is the number of cpu-cores. Steps/operations will be executed sequentially if <code>maxThreadNum</code> is 1.

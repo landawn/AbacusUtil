@@ -967,20 +967,21 @@ public final class Multimap<K, E, V extends Collection<E>> {
     }
 
     /**
-     * Execute <code>accumulator</code> on each element till <code>predicate</code> returns false.
+     * Execute <code>accumulator</code> on each element till <code>true</code> is returned by <code>conditionToBreak</code>
      * 
      * @param seed
      * @param accumulator
-     * @param predicate break if the <code>predicate</code> returns false.
+     * @param conditionToBreak break if <code>true</code> is return.
      * @return
      */
-    public <R> R forEach(final R seed, TriFunction<R, ? super K, ? super V, R> accumulator, final TriPredicate<? super K, ? super V, ? super R> predicate) {
+    public <R> R forEach(final R seed, TriFunction<R, ? super K, ? super V, R> accumulator,
+            final TriPredicate<? super K, ? super V, ? super R> conditionToBreak) {
         R result = seed;
 
         for (Map.Entry<K, V> entry : valueMap.entrySet()) {
             result = accumulator.apply(result, entry.getKey(), entry.getValue());
 
-            if (predicate.test(entry.getKey(), entry.getValue(), result) == false) {
+            if (conditionToBreak.test(entry.getKey(), entry.getValue(), result)) {
                 break;
             }
         }

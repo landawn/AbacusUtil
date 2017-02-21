@@ -89,14 +89,14 @@ public final class MutableByte extends Number implements Comparable<MutableByte>
     }
 
     public byte getAndSet(final byte value) {
-        byte result = value;
+        final byte result = this.value;
         this.value = value;
         return result;
     }
 
     public byte setAndGet(final byte value) {
         this.value = value;
-        return value;
+        return this.value;
     }
 
     //-----------------------------------------------------------------------

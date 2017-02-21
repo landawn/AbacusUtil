@@ -92,14 +92,14 @@ public final class MutableBoolean implements Mutable, Serializable, Comparable<M
     }
 
     public boolean getAndSet(final boolean value) {
-        boolean result = value;
+        final boolean result = this.value;
         this.value = value;
         return result;
     }
 
     public boolean setAndGet(final boolean value) {
         this.value = value;
-        return value;
+        return this.value;
     }
 
     /**
