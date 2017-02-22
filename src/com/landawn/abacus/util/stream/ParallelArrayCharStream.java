@@ -354,7 +354,7 @@ final class ParallelArrayCharStream extends AbstractCharStream {
         final Holder<Throwable> eHolder = new Holder<>();
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
+            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
@@ -590,7 +590,7 @@ final class ParallelArrayCharStream extends AbstractCharStream {
         final Holder<Throwable> eHolder = new Holder<>();
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
+            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
@@ -678,7 +678,7 @@ final class ParallelArrayCharStream extends AbstractCharStream {
         final Holder<Throwable> eHolder = new Holder<>();
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
+            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
@@ -783,7 +783,7 @@ final class ParallelArrayCharStream extends AbstractCharStream {
         final Holder<Throwable> eHolder = new Holder<>();
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
+            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
@@ -908,7 +908,7 @@ final class ParallelArrayCharStream extends AbstractCharStream {
         }
 
         final List<CompletableFuture<Character>> futureList = new ArrayList<>(maxThreadNum);
-        final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
+        final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
         for (int i = 0; i < maxThreadNum; i++) {
             final int sliceIndex = i;
@@ -954,7 +954,7 @@ final class ParallelArrayCharStream extends AbstractCharStream {
         }
 
         final List<CompletableFuture<Character>> futureList = new ArrayList<>(maxThreadNum);
-        final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
+        final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
         for (int i = 0; i < maxThreadNum; i++) {
             final int sliceIndex = i;
@@ -1010,7 +1010,7 @@ final class ParallelArrayCharStream extends AbstractCharStream {
         }
 
         final List<CompletableFuture<Long>> futureList = new ArrayList<>(maxThreadNum);
-        final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
+        final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
         for (int i = 0; i < maxThreadNum; i++) {
             final int sliceIndex = i;
@@ -1073,7 +1073,7 @@ final class ParallelArrayCharStream extends AbstractCharStream {
         }
 
         final List<CompletableFuture<CharSummaryStatistics>> futureList = new ArrayList<>(maxThreadNum);
-        final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
+        final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
         for (int i = 0; i < maxThreadNum; i++) {
             final int sliceIndex = i;
@@ -1126,7 +1126,7 @@ final class ParallelArrayCharStream extends AbstractCharStream {
         final MutableBoolean result = MutableBoolean.of(false);
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
+            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
@@ -1198,7 +1198,7 @@ final class ParallelArrayCharStream extends AbstractCharStream {
         final MutableBoolean result = MutableBoolean.of(true);
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
+            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
@@ -1270,7 +1270,7 @@ final class ParallelArrayCharStream extends AbstractCharStream {
         final MutableBoolean result = MutableBoolean.of(true);
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
+            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
@@ -1342,7 +1342,7 @@ final class ParallelArrayCharStream extends AbstractCharStream {
         final Holder<Pair<Integer, Character>> resultHolder = new Holder<>();
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
+            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
@@ -1429,7 +1429,7 @@ final class ParallelArrayCharStream extends AbstractCharStream {
         final Holder<Pair<Integer, Character>> resultHolder = new Holder<>();
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
+            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
@@ -1516,7 +1516,7 @@ final class ParallelArrayCharStream extends AbstractCharStream {
         final Holder<Object> resultHolder = Holder.of(NONE);
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
+            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;

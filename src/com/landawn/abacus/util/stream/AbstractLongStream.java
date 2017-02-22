@@ -43,6 +43,7 @@ import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.LongBiFunction;
+import com.landawn.abacus.util.function.LongBiPredicate;
 import com.landawn.abacus.util.function.LongConsumer;
 import com.landawn.abacus.util.function.LongFunction;
 import com.landawn.abacus.util.function.LongPredicate;
@@ -169,6 +170,36 @@ abstract class AbstractLongStream extends LongStream {
                 return new ArrayLongStream(t.array(), 0, t.size(), null, sorted);
             }
         });
+    }
+
+    @Override
+    public LongStream collapse(final LongBiPredicate collapsible, final LongBiFunction<Long> mergeFunction) {
+        final ImmutableLongIterator iter = longIterator();
+
+        return this.newStream(new ImmutableLongIterator() {
+            private long pre = 0;
+            private boolean hasNext = false;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public long next() {
+                long res = hasNext ? pre : (pre = iter.next());
+
+                while ((hasNext = iter.hasNext())) {
+                    if (collapsible.test(pre, (pre = iter.next()))) {
+                        res = mergeFunction.apply(res, pre);
+                    } else {
+                        break;
+                    }
+                }
+
+                return res;
+            }
+        }, false);
     }
 
     @Override

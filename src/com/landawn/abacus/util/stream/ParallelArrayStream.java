@@ -103,7 +103,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         final List<Iterator<T>> iters = new ArrayList<>(maxThreadNum);
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
+            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
@@ -318,7 +318,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         final List<Iterator<R>> iters = new ArrayList<>(maxThreadNum);
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
+            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
@@ -379,6 +379,157 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
+    public <R> Stream<R> map2(final BiFunction<? super T, ? super T, ? extends R> mapper, final boolean ignoreNotPaired) {
+        if (maxThreadNum <= 1) {
+            return new ParallelIteratorStream<>(sequential().map2(mapper, ignoreNotPaired).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
+        }
+
+        final int atLeast = ignoreNotPaired ? 2 : 1;
+        final int count = (toIndex - fromIndex) / 2 + (ignoreNotPaired || (toIndex - fromIndex) % 2 == 0 ? 0 : 1);
+        final List<Iterator<R>> iters = new ArrayList<>(maxThreadNum);
+
+        if (splitor == Splitor.ARRAY) {
+            final int sliceSize = count / maxThreadNum + (count % maxThreadNum == 0 ? 0 : 1);
+
+            for (int i = 0; i < maxThreadNum; i++) {
+                final int sliceIndex = i;
+                iters.add(new ImmutableIterator<R>() {
+                    private int cursor = fromIndex + sliceIndex * sliceSize * 2;
+                    private final int to = toIndex - cursor > sliceSize * 2 ? cursor + sliceSize * 2 : toIndex;
+
+                    @Override
+                    public boolean hasNext() {
+                        return to - cursor >= atLeast;
+                    }
+
+                    @Override
+                    public R next() {
+                        if (to - cursor < atLeast) {
+                            throw new NoSuchElementException();
+                        }
+
+                        return mapper.apply(elements[cursor++], cursor == toIndex ? null : elements[cursor++]);
+                    }
+                });
+            }
+        } else {
+            final MutableInt cursor = MutableInt.of(fromIndex);
+
+            for (int i = 0; i < maxThreadNum; i++) {
+                iters.add(new ImmutableIterator<R>() {
+                    private Object pre = NONE;
+                    private Object next = NONE;
+
+                    @Override
+                    public boolean hasNext() {
+                        if (pre == NONE) {
+                            synchronized (elements) {
+                                if (toIndex - cursor.intValue() >= atLeast) {
+                                    pre = elements[cursor.getAndIncrement()];
+                                    next = cursor.intValue() == toIndex ? null : elements[cursor.getAndIncrement()];
+                                }
+                            }
+                        }
+
+                        return pre != NONE;
+                    }
+
+                    @Override
+                    public R next() {
+                        if (pre == NONE && hasNext() == false) {
+                            throw new NoSuchElementException();
+                        }
+
+                        final R result = mapper.apply((T) pre, (T) next);
+                        pre = NONE;
+                        next = NONE;
+                        return result;
+                    }
+                });
+            }
+        }
+
+        return new ParallelIteratorStream<>(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, null, maxThreadNum, splitor);
+    }
+
+    @Override
+    public <R> Stream<R> map3(final TriFunction<? super T, ? super T, ? super T, ? extends R> mapper, final boolean ignoreNotPaired) {
+        if (maxThreadNum <= 1) {
+            return new ParallelIteratorStream<>(sequential().map3(mapper, ignoreNotPaired).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
+        }
+
+        final int atLeast = ignoreNotPaired ? 3 : 1;
+        final int count = (toIndex - fromIndex) / 3 + (ignoreNotPaired || (toIndex - fromIndex) % 3 == 0 ? 0 : 1);
+        final List<Iterator<R>> iters = new ArrayList<>(maxThreadNum);
+
+        if (splitor == Splitor.ARRAY) {
+            final int sliceSize = count / maxThreadNum + (count % maxThreadNum == 0 ? 0 : 1);
+
+            for (int i = 0; i < maxThreadNum; i++) {
+                final int sliceIndex = i;
+                iters.add(new ImmutableIterator<R>() {
+                    private int cursor = fromIndex + sliceIndex * sliceSize * 3;
+                    private final int to = toIndex - cursor > sliceSize * 3 ? cursor + sliceSize * 3 : toIndex;
+
+                    @Override
+                    public boolean hasNext() {
+                        return to - cursor >= atLeast;
+                    }
+
+                    @Override
+                    public R next() {
+                        if (to - cursor < atLeast) {
+                            throw new NoSuchElementException();
+                        }
+
+                        return mapper.apply(elements[cursor++], cursor == toIndex ? null : elements[cursor++], cursor == toIndex ? null : elements[cursor++]);
+                    }
+                });
+            }
+        } else {
+            final MutableInt cursor = MutableInt.of(fromIndex);
+
+            for (int i = 0; i < maxThreadNum; i++) {
+                iters.add(new ImmutableIterator<R>() {
+                    private Object prepre = NONE;
+                    private Object pre = NONE;
+                    private Object next = NONE;
+
+                    @Override
+                    public boolean hasNext() {
+                        if (prepre == NONE) {
+                            synchronized (elements) {
+                                if (toIndex - cursor.intValue() >= atLeast) {
+                                    prepre = elements[cursor.getAndIncrement()];
+                                    pre = cursor.intValue() == toIndex ? null : elements[cursor.getAndIncrement()];
+                                    next = cursor.intValue() == toIndex ? null : elements[cursor.getAndIncrement()];
+                                }
+                            }
+                        }
+
+                        return prepre != NONE;
+                    }
+
+                    @Override
+                    public R next() {
+                        if (prepre == NONE && hasNext() == false) {
+                            throw new NoSuchElementException();
+                        }
+
+                        final R result = mapper.apply((T) prepre, (T) pre, (T) next);
+                        prepre = NONE;
+                        pre = NONE;
+                        next = NONE;
+                        return result;
+                    }
+                });
+            }
+        }
+
+        return new ParallelIteratorStream<>(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, null, maxThreadNum, splitor);
+    }
+
+    @Override
     public CharStream mapToChar(final ToCharFunction<? super T> mapper) {
         if (maxThreadNum <= 1) {
             return new ParallelIteratorCharStream(sequential().mapToChar(mapper).charIterator(), closeHandlers, false, maxThreadNum, splitor);
@@ -387,7 +538,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         final List<ImmutableIterator<Character>> iters = new ArrayList<>(maxThreadNum);
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
+            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
@@ -456,7 +607,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         final List<ImmutableIterator<Byte>> iters = new ArrayList<>(maxThreadNum);
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
+            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
@@ -525,7 +676,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         final List<ImmutableIterator<Short>> iters = new ArrayList<>(maxThreadNum);
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
+            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
@@ -594,7 +745,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         final List<ImmutableIterator<Integer>> iters = new ArrayList<>(maxThreadNum);
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
+            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
@@ -663,7 +814,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         final List<ImmutableIterator<Long>> iters = new ArrayList<>(maxThreadNum);
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
+            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
@@ -732,7 +883,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         final List<ImmutableIterator<Float>> iters = new ArrayList<>(maxThreadNum);
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
+            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
@@ -801,7 +952,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         final List<ImmutableIterator<Double>> iters = new ArrayList<>(maxThreadNum);
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
+            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
@@ -870,7 +1021,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         final List<Iterator<R>> iters = new ArrayList<>(maxThreadNum);
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
+            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
@@ -949,7 +1100,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         final List<Iterator<Character>> iters = new ArrayList<>(maxThreadNum);
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
+            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
@@ -1028,7 +1179,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         final List<Iterator<Byte>> iters = new ArrayList<>(maxThreadNum);
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
+            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
@@ -1107,7 +1258,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         final List<Iterator<Short>> iters = new ArrayList<>(maxThreadNum);
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
+            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
@@ -1186,7 +1337,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         final List<Iterator<Integer>> iters = new ArrayList<>(maxThreadNum);
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
+            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
@@ -1265,7 +1416,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         final List<Iterator<Long>> iters = new ArrayList<>(maxThreadNum);
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
+            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
@@ -1344,7 +1495,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         final List<Iterator<Float>> iters = new ArrayList<>(maxThreadNum);
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
+            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
@@ -1423,7 +1574,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         final List<Iterator<Double>> iters = new ArrayList<>(maxThreadNum);
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
+            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
@@ -1640,7 +1791,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         final List<Iterator<T>> iters = new ArrayList<>(maxThreadNum);
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
+            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
@@ -1740,7 +1891,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         final Holder<Throwable> eHolder = new Holder<>();
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
+            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
@@ -1961,7 +2112,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         final Holder<Throwable> eHolder = new Holder<>();
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
+            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
@@ -2049,7 +2200,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         final Holder<Throwable> eHolder = new Holder<>();
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
+            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
@@ -2154,7 +2305,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         final Holder<Throwable> eHolder = new Holder<>();
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
+            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
@@ -2244,7 +2395,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         final Holder<Throwable> eHolder = new Holder<>();
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
+            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
@@ -2337,7 +2488,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         final Holder<Throwable> eHolder = new Holder<>();
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
+            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
@@ -2503,7 +2654,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         final MutableBoolean result = MutableBoolean.of(false);
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
+            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
@@ -2575,7 +2726,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         final MutableBoolean result = MutableBoolean.of(true);
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
+            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
@@ -2647,7 +2798,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         final MutableBoolean result = MutableBoolean.of(true);
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
+            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
@@ -2719,7 +2870,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         final Holder<Pair<Integer, T>> resultHolder = new Holder<>();
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
+            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
@@ -2806,7 +2957,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         final Holder<Pair<Integer, T>> resultHolder = new Holder<>();
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
+            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
@@ -2893,7 +3044,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         final Holder<T> resultHolder = Holder.of((T) NONE);
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
+            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
@@ -3066,7 +3217,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         final AtomicLong result = new AtomicLong();
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) % maxThreadNum == 0 ? (toIndex - fromIndex) / maxThreadNum : (toIndex - fromIndex) / maxThreadNum + 1;
+            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;

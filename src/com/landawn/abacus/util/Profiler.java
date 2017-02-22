@@ -28,7 +28,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.landawn.abacus.exception.AbacusException;
@@ -221,7 +222,7 @@ public final class Profiler {
 
         N.sleep(1000);
 
-        final AsyncExecutor asyncExecutor = new AsyncExecutor(threadNum, 300, TimeUnit.SECONDS);
+        final ExecutorService asyncExecutor = Executors.newFixedThreadPool(threadNum);
         final AtomicInteger threadCounter = new AtomicInteger();
 
         // MXBean mxBean = new MXBean();

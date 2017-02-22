@@ -52,6 +52,7 @@ import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.ByteBiFunction;
+import com.landawn.abacus.util.function.ByteBiPredicate;
 import com.landawn.abacus.util.function.ByteBinaryOperator;
 import com.landawn.abacus.util.function.ByteConsumer;
 import com.landawn.abacus.util.function.ByteFunction;
@@ -168,6 +169,19 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
     public abstract IntStream flatMapToInt(ByteFunction<? extends IntStream> mapper);
 
     public abstract <T> Stream<T> flatMapToObj(ByteFunction<? extends Stream<T>> mapper);
+
+    /**
+     * Merge series of adjacent elements which satisfy the given predicate using
+     * the merger function and return a new stream.
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param collapsible
+     * @param mergeFunction
+     * @return
+     */
+    public abstract ByteStream collapse(final ByteBiPredicate collapsible, final ByteBiFunction<Byte> mergeFunction);
 
     public abstract ByteList toByteList();
 

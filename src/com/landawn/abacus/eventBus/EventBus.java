@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
@@ -36,6 +38,8 @@ import com.landawn.abacus.util.ThreadMode;
 
 public class EventBus {
     private static final Logger logger = LoggerFactory.getLogger(EventBus.class);
+
+    private static final ExecutorService asyncExecutor = Executors.newFixedThreadPool(32);
 
     private static final Multimap<Class<?>, Method, List<Method>> classSubscriberMethodMap = new Multimap<>(ConcurrentHashMap.class, ArrayList.class);
 
@@ -207,7 +211,7 @@ public class EventBus {
                 return;
 
             case THREAD_POOL_EXECUTOR:
-                N.asyncExecute(new Runnable() {
+                asyncExecutor.execute(new Runnable() {
                     @Override
                     public void run() {
                         invokeMethod(obj, method, event);

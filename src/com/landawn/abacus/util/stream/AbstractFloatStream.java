@@ -44,6 +44,7 @@ import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.FloatBiFunction;
+import com.landawn.abacus.util.function.FloatBiPredicate;
 import com.landawn.abacus.util.function.FloatConsumer;
 import com.landawn.abacus.util.function.FloatFunction;
 import com.landawn.abacus.util.function.FloatPredicate;
@@ -164,14 +165,6 @@ abstract class AbstractFloatStream extends FloatStream {
     }
 
     @Override
-    public <K> Map<K, List<Float>> toMap(FloatFunction<? extends K> classifier) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, List<Float>>> mapFactory = (Supplier) Supplier.MAP;
-
-        return toMap(classifier, mapFactory);
-    }
-
-    @Override
     public Stream<FloatStream> sliding(final int windowSize, final int increment) {
         return sliding0(windowSize, increment).map(new Function<FloatList, FloatStream>() {
             @Override
@@ -179,6 +172,44 @@ abstract class AbstractFloatStream extends FloatStream {
                 return new ArrayFloatStream(t.array(), 0, t.size(), null, sorted);
             }
         });
+    }
+
+    @Override
+    public FloatStream collapse(final FloatBiPredicate collapsible, final FloatBiFunction<Float> mergeFunction) {
+        final ImmutableFloatIterator iter = floatIterator();
+
+        return this.newStream(new ImmutableFloatIterator() {
+            private float pre = 0;
+            private boolean hasNext = false;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public float next() {
+                float res = hasNext ? pre : (pre = iter.next());
+
+                while ((hasNext = iter.hasNext())) {
+                    if (collapsible.test(pre, (pre = iter.next()))) {
+                        res = mergeFunction.apply(res, pre);
+                    } else {
+                        break;
+                    }
+                }
+
+                return res;
+            }
+        }, false);
+    }
+
+    @Override
+    public <K> Map<K, List<Float>> toMap(FloatFunction<? extends K> classifier) {
+        @SuppressWarnings("rawtypes")
+        final Supplier<Map<K, List<Float>>> mapFactory = (Supplier) Supplier.MAP;
+
+        return toMap(classifier, mapFactory);
     }
 
     @Override

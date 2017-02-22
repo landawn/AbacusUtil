@@ -43,6 +43,7 @@ import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.DoubleBiFunction;
+import com.landawn.abacus.util.function.DoubleBiPredicate;
 import com.landawn.abacus.util.function.DoubleConsumer;
 import com.landawn.abacus.util.function.DoubleFunction;
 import com.landawn.abacus.util.function.DoublePredicate;
@@ -170,6 +171,36 @@ abstract class AbstractDoubleStream extends DoubleStream {
                 return new ArrayDoubleStream(t.array(), 0, t.size(), null, sorted);
             }
         });
+    }
+
+    @Override
+    public DoubleStream collapse(final DoubleBiPredicate collapsible, final DoubleBiFunction<Double> mergeFunction) {
+        final ImmutableDoubleIterator iter = doubleIterator();
+
+        return this.newStream(new ImmutableDoubleIterator() {
+            private double pre = 0;
+            private boolean hasNext = false;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public double next() {
+                double res = hasNext ? pre : (pre = iter.next());
+
+                while ((hasNext = iter.hasNext())) {
+                    if (collapsible.test(pre, (pre = iter.next()))) {
+                        res = mergeFunction.apply(res, pre);
+                    } else {
+                        break;
+                    }
+                }
+
+                return res;
+            }
+        }, false);
     }
 
     @Override

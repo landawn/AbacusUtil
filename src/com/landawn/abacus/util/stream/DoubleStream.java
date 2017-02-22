@@ -52,6 +52,7 @@ import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.DoubleBiFunction;
+import com.landawn.abacus.util.function.DoubleBiPredicate;
 import com.landawn.abacus.util.function.DoubleBinaryOperator;
 import com.landawn.abacus.util.function.DoubleConsumer;
 import com.landawn.abacus.util.function.DoubleFunction;
@@ -203,6 +204,19 @@ public abstract class DoubleStream
     public abstract FloatStream flatMapToFloat(DoubleFunction<? extends FloatStream> mapper);
 
     public abstract <T> Stream<T> flatMapToObj(DoubleFunction<? extends Stream<T>> mapper);
+
+    /**
+     * Merge series of adjacent elements which satisfy the given predicate using
+     * the merger function and return a new stream.
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param collapsible
+     * @param mergeFunction
+     * @return
+     */
+    public abstract DoubleStream collapse(final DoubleBiPredicate collapsible, final DoubleBiFunction<Double> mergeFunction);
 
     /**
      * <br />

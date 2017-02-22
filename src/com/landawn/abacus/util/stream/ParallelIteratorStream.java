@@ -327,6 +327,106 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
+    public <R> Stream<R> map2(final BiFunction<? super T, ? super T, ? extends R> mapper, final boolean ignoreNotPaired) {
+        if (maxThreadNum <= 1) {
+            return new ParallelIteratorStream<>(sequential().map2(mapper, ignoreNotPaired).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
+        }
+
+        final List<Iterator<R>> iters = new ArrayList<>(maxThreadNum);
+
+        for (int i = 0; i < maxThreadNum; i++) {
+            iters.add(new ImmutableIterator<R>() {
+                private Object pre = NONE;
+                private Object next = NONE;
+
+                @Override
+                public boolean hasNext() {
+                    if (pre == NONE) {
+                        synchronized (elements) {
+                            if (elements.hasNext()) {
+                                pre = elements.next();
+
+                                if (elements.hasNext()) {
+                                    next = elements.next();
+                                }
+                            }
+                        }
+                    }
+
+                    return ignoreNotPaired ? next != NONE : pre != NONE;
+                }
+
+                @Override
+                public R next() {
+                    if (next == NONE && hasNext() == false) {
+                        throw new NoSuchElementException();
+                    }
+
+                    final R result = mapper.apply((T) pre, next == NONE ? null : (T) next);
+                    pre = NONE;
+                    next = NONE;
+                    return result;
+                }
+            });
+        }
+
+        return new ParallelIteratorStream<>(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, null, maxThreadNum, splitor);
+    }
+
+    @Override
+    public <R> Stream<R> map3(final TriFunction<? super T, ? super T, ? super T, ? extends R> mapper, final boolean ignoreNotPaired) {
+        if (maxThreadNum <= 1) {
+            return new ParallelIteratorStream<>(sequential().map3(mapper, ignoreNotPaired).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
+        }
+
+        final List<Iterator<R>> iters = new ArrayList<>(maxThreadNum);
+
+        for (int i = 0; i < maxThreadNum; i++) {
+            iters.add(new ImmutableIterator<R>() {
+                private Object prepre = NONE;
+                private Object pre = NONE;
+                private Object next = NONE;
+
+                @Override
+                public boolean hasNext() {
+                    if (prepre == NONE) {
+                        synchronized (elements) {
+                            if (elements.hasNext()) {
+                                prepre = elements.next();
+
+                                if (elements.hasNext()) {
+                                    pre = elements.next();
+
+                                    if (elements.hasNext()) {
+                                        next = elements.next();
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    return ignoreNotPaired ? next != NONE : prepre != NONE;
+                }
+
+                @Override
+                public R next() {
+                    if (next == NONE && hasNext() == false) {
+                        throw new NoSuchElementException();
+                    }
+
+                    final R result = mapper.apply((T) prepre, pre == NONE ? null : (T) pre, next == NONE ? null : (T) next);
+                    prepre = NONE;
+                    pre = NONE;
+                    next = NONE;
+                    return result;
+                }
+            });
+        }
+
+        return new ParallelIteratorStream<>(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, null, maxThreadNum, splitor);
+    }
+
+    @Override
     public CharStream mapToChar(final ToCharFunction<? super T> mapper) {
         if (maxThreadNum <= 1) {
             return new ParallelIteratorCharStream(sequential().mapToChar(mapper).charIterator(), closeHandlers, false, maxThreadNum, splitor);

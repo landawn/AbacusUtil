@@ -55,6 +55,7 @@ import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.LongBiFunction;
+import com.landawn.abacus.util.function.LongBiPredicate;
 import com.landawn.abacus.util.function.LongBinaryOperator;
 import com.landawn.abacus.util.function.LongConsumer;
 import com.landawn.abacus.util.function.LongFunction;
@@ -204,6 +205,8 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
     public abstract DoubleStream flatMapToDouble(LongFunction<? extends DoubleStream> mapper);
 
     public abstract <T> Stream<T> flatMapToObj(LongFunction<? extends Stream<T>> mapper);
+
+    public abstract LongStream collapse(final LongBiPredicate collapsible, final LongBiFunction<Long> mergeFunction);
 
     /**
      * <br />

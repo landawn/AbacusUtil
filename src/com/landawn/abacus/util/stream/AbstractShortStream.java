@@ -46,6 +46,7 @@ import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.ObjShortConsumer;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.ShortBiFunction;
+import com.landawn.abacus.util.function.ShortBiPredicate;
 import com.landawn.abacus.util.function.ShortConsumer;
 import com.landawn.abacus.util.function.ShortFunction;
 import com.landawn.abacus.util.function.ShortPredicate;
@@ -170,6 +171,36 @@ abstract class AbstractShortStream extends ShortStream {
                 return new ArrayShortStream(t.array(), 0, t.size(), null, sorted);
             }
         });
+    }
+
+    @Override
+    public ShortStream collapse(final ShortBiPredicate collapsible, final ShortBiFunction<Short> mergeFunction) {
+        final ImmutableShortIterator iter = shortIterator();
+
+        return this.newStream(new ImmutableShortIterator() {
+            private short pre = 0;
+            private boolean hasNext = false;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public short next() {
+                short res = hasNext ? pre : (pre = iter.next());
+
+                while ((hasNext = iter.hasNext())) {
+                    if (collapsible.test(pre, (pre = iter.next()))) {
+                        res = mergeFunction.apply(res, pre);
+                    } else {
+                        break;
+                    }
+                }
+
+                return res;
+            }
+        }, false);
     }
 
     @Override

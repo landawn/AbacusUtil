@@ -42,6 +42,7 @@ import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.CharBiFunction;
+import com.landawn.abacus.util.function.CharBiPredicate;
 import com.landawn.abacus.util.function.CharConsumer;
 import com.landawn.abacus.util.function.CharFunction;
 import com.landawn.abacus.util.function.CharPredicate;
@@ -170,6 +171,36 @@ abstract class AbstractCharStream extends CharStream {
                 return new ArrayCharStream(t.array(), 0, t.size(), null, sorted);
             }
         });
+    }
+
+    @Override
+    public CharStream collapse(final CharBiPredicate collapsible, final CharBiFunction<Character> mergeFunction) {
+        final ImmutableCharIterator iter = charIterator();
+
+        return this.newStream(new ImmutableCharIterator() {
+            private char pre = 0;
+            private boolean hasNext = false;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public char next() {
+                char res = hasNext ? pre : (pre = iter.next());
+
+                while ((hasNext = iter.hasNext())) {
+                    if (collapsible.test(pre, (pre = iter.next()))) {
+                        res = mergeFunction.apply(res, pre);
+                    } else {
+                        break;
+                    }
+                }
+
+                return res;
+            }
+        }, false);
     }
 
     @Override

@@ -230,6 +230,16 @@ abstract class AbstractStream<T> extends Stream<T> {
         });
     }
 
+    @Override
+    public <R> Stream<R> map2(BiFunction<? super T, ? super T, ? extends R> mapper) {
+        return map2(mapper, false);
+    }
+
+    @Override
+    public <R> Stream<R> map3(TriFunction<? super T, ? super T, ? super T, ? extends R> mapper) {
+        return map3(mapper, false);
+    }
+
     abstract <R> Stream<R> flatMap0(final Function<? super T, ? extends Iterator<? extends R>> mapper);
 
     @Override
@@ -635,30 +645,24 @@ abstract class AbstractStream<T> extends Stream<T> {
         final ImmutableIterator<T> iter = iterator();
 
         return this.newStream(new ImmutableIterator<T>() {
-            private T pre = (T) NONE;
+            private T pre = null;
+            private boolean hasNext = false;
 
             @Override
             public boolean hasNext() {
-                return pre != NONE || iter.hasNext();
+                return hasNext || iter.hasNext();
             }
 
             @Override
             public T next() {
-                T res = pre == NONE ? (pre = iter.next()) : pre;
+                T res = hasNext ? pre : (pre = iter.next());
 
-                boolean hasMore = false;
-
-                while (iter.hasNext()) {
+                while ((hasNext = iter.hasNext())) {
                     if (collapsible.test(pre, (pre = iter.next()))) {
                         res = mergeFunction.apply(res, pre);
                     } else {
-                        hasMore = true;
                         break;
                     }
-                }
-
-                if (hasMore == false) {
-                    pre = (T) NONE;
                 }
 
                 return res;
@@ -671,30 +675,24 @@ abstract class AbstractStream<T> extends Stream<T> {
         final ImmutableIterator<T> iter = iterator();
 
         return this.newStream(new ImmutableIterator<R>() {
-            private T pre = (T) NONE;
+            private T pre = null;
+            private boolean hasNext = false;
 
             @Override
             public boolean hasNext() {
-                return pre != NONE || iter.hasNext();
+                return hasNext || iter.hasNext();
             }
 
             @Override
             public R next() {
-                R res = mergeFunction.apply(seed, pre == NONE ? (pre = iter.next()) : pre);
+                R res = mergeFunction.apply(seed, hasNext ? pre : (pre = iter.next()));
 
-                boolean hasMore = false;
-
-                while (iter.hasNext()) {
+                while ((hasNext = iter.hasNext())) {
                     if (collapsible.test(pre, (pre = iter.next()))) {
                         res = mergeFunction.apply(res, pre);
                     } else {
-                        hasMore = true;
                         break;
                     }
-                }
-
-                if (hasMore == false) {
-                    pre = (T) NONE;
                 }
 
                 return res;
@@ -708,34 +706,28 @@ abstract class AbstractStream<T> extends Stream<T> {
         final ImmutableIterator<T> iter = iterator();
 
         return this.newStream(new ImmutableIterator<C>() {
-            private T pre = (T) NONE;
+            private T pre = null;
+            private boolean hasNext = false;
 
             @Override
             public boolean hasNext() {
-                return pre != NONE || iter.hasNext();
+                return hasNext || iter.hasNext();
             }
 
             @Override
             public C next() {
-                final C res = supplier.get();
-                mergeFunction.accept(res, pre == NONE ? (pre = iter.next()) : pre);
+                final C c = supplier.get();
+                mergeFunction.accept(c, hasNext ? pre : (pre = iter.next()));
 
-                boolean hasMore = false;
-
-                while (iter.hasNext()) {
+                while ((hasNext = iter.hasNext())) {
                     if (collapsible.test(pre, (pre = iter.next()))) {
-                        mergeFunction.accept(res, pre);
+                        mergeFunction.accept(c, pre);
                     } else {
-                        hasMore = true;
                         break;
                     }
                 }
 
-                if (hasMore == false) {
-                    pre = (T) NONE;
-                }
-
-                return res;
+                return c;
             }
         }, false, null);
     }

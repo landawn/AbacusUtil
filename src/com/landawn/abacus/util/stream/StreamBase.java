@@ -89,7 +89,7 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
     static final AsyncExecutor asyncExecutor;
 
     static {
-        final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(CORE_THREAD_POOL_SIZE, MAX_THREAD_POOL_SIZE, 300L, TimeUnit.SECONDS,
+        final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(CORE_THREAD_POOL_SIZE, MAX_THREAD_POOL_SIZE, 0L, TimeUnit.SECONDS,
                 new LinkedBlockingQueue<Runnable>(1));
 
         asyncExecutor = new AsyncExecutor(threadPoolExecutor) {

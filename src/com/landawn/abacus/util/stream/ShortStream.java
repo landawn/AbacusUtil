@@ -55,6 +55,7 @@ import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.ObjShortConsumer;
 import com.landawn.abacus.util.function.ShortBiFunction;
+import com.landawn.abacus.util.function.ShortBiPredicate;
 import com.landawn.abacus.util.function.ShortBinaryOperator;
 import com.landawn.abacus.util.function.ShortConsumer;
 import com.landawn.abacus.util.function.ShortFunction;
@@ -169,6 +170,8 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
     public abstract IntStream flatMapToInt(ShortFunction<? extends IntStream> mapper);
 
     public abstract <T> Stream<T> flatMapToObj(ShortFunction<? extends Stream<T>> mapper);
+
+    public abstract ShortStream collapse(final ShortBiPredicate collapsible, final ShortBiFunction<Short> mergeFunction);
 
     /**
      * <br />

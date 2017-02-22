@@ -53,6 +53,7 @@ import com.landawn.abacus.util.function.ToFloatFunction;
 import com.landawn.abacus.util.function.ToIntFunction;
 import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.function.ToShortFunction;
+import com.landawn.abacus.util.function.TriFunction;
 
 /**
  * This class is a sequential, stateful and immutable stream implementation.
@@ -239,6 +240,102 @@ final class ArrayStream<T> extends AbstractStream<T> {
 
                 for (int i = 0, len = toIndex - cursor; i < len; i++) {
                     a[i] = (A) mapper.apply(elements[cursor++]);
+                }
+
+                return a;
+            }
+        }, closeHandlers);
+    }
+
+    @Override
+    public <R> Stream<R> map2(final BiFunction<? super T, ? super T, ? extends R> mapper, final boolean ignoreNotPaired) {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
+            private final int atLeast = ignoreNotPaired ? 2 : 1;
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return toIndex - cursor >= atLeast;
+            }
+
+            @Override
+            public R next() {
+                if (toIndex - cursor < atLeast) {
+                    throw new NoSuchElementException();
+                }
+
+                return mapper.apply(elements[cursor++], cursor == toIndex ? null : elements[cursor++]);
+            }
+
+            @Override
+            public long count() {
+                return (toIndex - cursor) / 2 + (ignoreNotPaired || (toIndex - cursor) % 2 == 0 ? 0 : 1);
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n < count() ? cursor + (int) n * 2 : toIndex;
+            }
+
+            @Override
+            public <A> A[] toArray(A[] a) {
+                final int len = (int) count();
+                a = a.length >= len ? a : (A[]) N.newArray(a.getClass().getComponentType(), len);
+
+                for (int i = 0, len2 = (toIndex - cursor) / 2; i < len2; i++) {
+                    a[i] = (A) mapper.apply(elements[cursor++], elements[cursor++]);
+                }
+
+                if (cursor < toIndex) {
+                    a[len - 1] = (A) mapper.apply(elements[cursor++], null);
+                }
+
+                return a;
+            }
+        }, closeHandlers);
+    }
+
+    @Override
+    public <R> Stream<R> map3(final TriFunction<? super T, ? super T, ? super T, ? extends R> mapper, final boolean ignoreNotPaired) {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
+            private final int atLeast = ignoreNotPaired ? 3 : 1;
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return toIndex - cursor >= atLeast;
+            }
+
+            @Override
+            public R next() {
+                if (toIndex - cursor < atLeast) {
+                    throw new NoSuchElementException();
+                }
+
+                return mapper.apply(elements[cursor++], cursor == toIndex ? null : elements[cursor++], cursor == toIndex ? null : elements[cursor++]);
+            }
+
+            @Override
+            public long count() {
+                return (toIndex - cursor) / 3 + (ignoreNotPaired || (toIndex - cursor) % 3 == 0 ? 0 : 1);
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n < count() ? cursor + (int) n * 3 : toIndex;
+            }
+
+            @Override
+            public <A> A[] toArray(A[] a) {
+                final int len = (int) count();
+                a = a.length >= len ? a : (A[]) N.newArray(a.getClass().getComponentType(), len);
+
+                for (int i = 0, len2 = (toIndex - cursor) / 3; i < len2; i++) {
+                    a[i] = (A) mapper.apply(elements[cursor++], elements[cursor++], elements[cursor++]);
+                }
+
+                if (cursor < toIndex) {
+                    a[len - 1] = (A) mapper.apply(elements[cursor++], cursor == toIndex ? null : elements[cursor++], null);
                 }
 
                 return a;

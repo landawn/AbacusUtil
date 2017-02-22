@@ -54,6 +54,7 @@ import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntBiFunction;
+import com.landawn.abacus.util.function.IntBiPredicate;
 import com.landawn.abacus.util.function.IntBinaryOperator;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.function.IntFunction;
@@ -218,6 +219,19 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
     public abstract DoubleStream flatMapToDouble(IntFunction<? extends DoubleStream> mapper);
 
     public abstract <T> Stream<T> flatMapToObj(IntFunction<? extends Stream<T>> mapper);
+
+    /**
+     * Merge series of adjacent elements which satisfy the given predicate using
+     * the merger function and return a new stream.
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param collapsible
+     * @param mergeFunction
+     * @return
+     */
+    public abstract IntStream collapse(final IntBiPredicate collapsible, final IntBiFunction<Integer> mergeFunction);
 
     /**
      * 

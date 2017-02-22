@@ -299,6 +299,30 @@ public abstract class Stream<T>
 
     public abstract <U, R> Stream<R> map(U seed, BiFunction<? super T, ? super U, ? extends R> mapper);
 
+    public abstract <R> Stream<R> map2(BiFunction<? super T, ? super T, ? extends R> mapper);
+
+    /**
+     * Returns a stream consisting of the results of applying the given function
+     * to the every two adjacent elements of this stream.
+     * 
+     * @param mapper
+     * @param ignoreNotPaired flag to identify if need to ignore the last element when the total length of the stream is odd number. Default value is false
+     * @return
+     */
+    public abstract <R> Stream<R> map2(BiFunction<? super T, ? super T, ? extends R> mapper, boolean ignoreNotPaired);
+
+    public abstract <R> Stream<R> map3(TriFunction<? super T, ? super T, ? super T, ? extends R> mapper);
+
+    /**
+     * Returns a stream consisting of the results of applying the given function
+     * to the every three adjacent elements of this stream.
+     * 
+     * @param mapper
+     * @param ignoreNotPaired  flag to identify if need to ignore the last one or two elements when the total length of the stream is not multiple of 3. Default value is false
+     * @return
+     */
+    public abstract <R> Stream<R> map3(TriFunction<? super T, ? super T, ? super T, ? extends R> mapper, boolean ignoreNotPaired);
+
     public abstract CharStream mapToChar(ToCharFunction<? super T> mapper);
 
     public abstract ByteStream mapToByte(ToByteFunction<? super T> mapper);

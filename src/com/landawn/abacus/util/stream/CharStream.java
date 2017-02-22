@@ -52,6 +52,7 @@ import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.CharBiFunction;
+import com.landawn.abacus.util.function.CharBiPredicate;
 import com.landawn.abacus.util.function.CharBinaryOperator;
 import com.landawn.abacus.util.function.CharConsumer;
 import com.landawn.abacus.util.function.CharFunction;
@@ -168,6 +169,19 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
      * @see Stream#flatMap(Function)
      */
     public abstract <T> Stream<T> flatMapToObj(CharFunction<? extends Stream<T>> mapper);
+
+    /**
+     * Merge series of adjacent elements which satisfy the given predicate using
+     * the merger function and return a new stream.
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param collapsible
+     * @param mergeFunction
+     * @return
+     */
+    public abstract CharStream collapse(final CharBiPredicate collapsible, final CharBiFunction<Character> mergeFunction);
 
     public abstract CharList toCharList();
 

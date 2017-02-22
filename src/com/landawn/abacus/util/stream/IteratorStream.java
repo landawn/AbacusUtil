@@ -58,6 +58,7 @@ import com.landawn.abacus.util.function.ToFloatFunction;
 import com.landawn.abacus.util.function.ToIntFunction;
 import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.function.ToShortFunction;
+import com.landawn.abacus.util.function.TriFunction;
 import com.landawn.abacus.util.stream.ImmutableIterator.QueuedIterator;
 
 /**
@@ -243,6 +244,84 @@ final class IteratorStream<T> extends AbstractStream<T> {
             @Override
             public void skip(long n) {
                 elements.skip(n);
+            }
+        }, closeHandlers);
+    }
+
+    @Override
+    public <R> Stream<R> map2(final BiFunction<? super T, ? super T, ? extends R> mapper, final boolean ignoreNotPaired) {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
+            private T pre = (T) NONE;
+
+            @Override
+            public boolean hasNext() {
+                if (ignoreNotPaired && pre == NONE) {
+                    if (elements.hasNext()) {
+                        pre = elements.next();
+                    } else {
+                        return false;
+                    }
+                }
+
+                return elements.hasNext();
+            }
+
+            @Override
+            public R next() {
+                if (!hasNext()) {
+                    throw new NoSuchElementException();
+                }
+
+                if (ignoreNotPaired) {
+                    final R res = mapper.apply(pre, elements.next());
+                    pre = (T) NONE;
+                    return res;
+                } else {
+                    return mapper.apply(elements.next(), elements.hasNext() ? elements.next() : null);
+                }
+            }
+        }, closeHandlers);
+    }
+
+    @Override
+    public <R> Stream<R> map3(final TriFunction<? super T, ? super T, ? super T, ? extends R> mapper, final boolean ignoreNotPaired) {
+        return new IteratorStream<>(new ImmutableIterator<R>() {
+            private T prepre = (T) NONE;
+            private T pre = (T) NONE;
+
+            @Override
+            public boolean hasNext() {
+                if (ignoreNotPaired && pre == NONE) {
+                    if (elements.hasNext()) {
+                        prepre = elements.next();
+
+                        if (elements.hasNext()) {
+                            pre = elements.next();
+                        } else {
+                            return false;
+                        }
+                    } else {
+                        return false;
+                    }
+                }
+
+                return elements.hasNext();
+            }
+
+            @Override
+            public R next() {
+                if (!hasNext()) {
+                    throw new NoSuchElementException();
+                }
+
+                if (ignoreNotPaired) {
+                    final R res = mapper.apply(prepre, pre, elements.next());
+                    prepre = (T) NONE;
+                    pre = (T) NONE;
+                    return res;
+                } else {
+                    return mapper.apply(elements.next(), elements.hasNext() ? elements.next() : null, elements.hasNext() ? elements.next() : null);
+                }
             }
         }, closeHandlers);
     }

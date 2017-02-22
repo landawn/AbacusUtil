@@ -42,6 +42,7 @@ import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.ByteBiFunction;
+import com.landawn.abacus.util.function.ByteBiPredicate;
 import com.landawn.abacus.util.function.ByteConsumer;
 import com.landawn.abacus.util.function.ByteFunction;
 import com.landawn.abacus.util.function.BytePredicate;
@@ -170,6 +171,36 @@ abstract class AbstractByteStream extends ByteStream {
                 return new ArrayByteStream(t.array(), 0, t.size(), null, sorted);
             }
         });
+    }
+
+    @Override
+    public ByteStream collapse(final ByteBiPredicate collapsible, final ByteBiFunction<Byte> mergeFunction) {
+        final ImmutableByteIterator iter = byteIterator();
+
+        return this.newStream(new ImmutableByteIterator() {
+            private byte pre = 0;
+            private boolean hasNext = false;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public byte next() {
+                byte res = hasNext ? pre : (pre = iter.next());
+
+                while ((hasNext = iter.hasNext())) {
+                    if (collapsible.test(pre, (pre = iter.next()))) {
+                        res = mergeFunction.apply(res, pre);
+                    } else {
+                        break;
+                    }
+                }
+
+                return res;
+            }
+        }, false);
     }
 
     @Override

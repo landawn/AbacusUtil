@@ -44,6 +44,7 @@ import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntBiFunction;
+import com.landawn.abacus.util.function.IntBiPredicate;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.IntPredicate;
@@ -170,6 +171,36 @@ abstract class AbstractIntStream extends IntStream {
                 return new ArrayIntStream(t.array(), 0, t.size(), null, sorted);
             }
         });
+    }
+
+    @Override
+    public IntStream collapse(final IntBiPredicate collapsible, final IntBiFunction<Integer> mergeFunction) {
+        final ImmutableIntIterator iter = intIterator();
+
+        return this.newStream(new ImmutableIntIterator() {
+            private int pre = 0;
+            private boolean hasNext = false;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public int next() {
+                int res = hasNext ? pre : (pre = iter.next());
+
+                while ((hasNext = iter.hasNext())) {
+                    if (collapsible.test(pre, (pre = iter.next()))) {
+                        res = mergeFunction.apply(res, pre);
+                    } else {
+                        break;
+                    }
+                }
+
+                return res;
+            }
+        }, false);
     }
 
     @Override
