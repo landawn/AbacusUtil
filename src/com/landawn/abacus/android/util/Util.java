@@ -385,7 +385,19 @@ public abstract class Util {
      * @see SQLiteExecutor#toContentValues(Object)
      */
     public static ContentValues toContentValues(final Object obj) {
-        return SQLiteExecutor.toContentValues(obj);
+        return SQLiteExecutor.toContentValues(obj, null);
+    }
+
+    /**
+     * 
+     * @param obj
+     * @param ignoredPropNames
+     * @return
+     * 
+     * @see SQLiteExecutor#toContentValues(Object)
+     */
+    public static ContentValues toContentValues(final Object obj, final Collection<String> ignoredPropNames) {
+        return SQLiteExecutor.toContentValues(obj, ignoredPropNames);
     }
 
     /**
@@ -397,7 +409,20 @@ public abstract class Util {
      * @see SQLiteExecutor#toContentValues(Object, NamingPolicy)
      */
     public static ContentValues toContentValues(final Object obj, final NamingPolicy namingPolicy) {
-        return SQLiteExecutor.toContentValues(obj, namingPolicy);
+        return SQLiteExecutor.toContentValues(obj, null, namingPolicy);
+    }
+
+    /**
+     * 
+     * @param obj an instance of Map or Entity.
+     * @param ignoredPropNames
+     * @param namingPolicy
+     * @return
+     * 
+     * @see SQLiteExecutor#toContentValues(Object, NamingPolicy)
+     */
+    public static ContentValues toContentValues(final Object obj, final Collection<String> ignoredPropNames, final NamingPolicy namingPolicy) {
+        return SQLiteExecutor.toContentValues(obj, ignoredPropNames, namingPolicy);
     }
 
     @SuppressWarnings("rawtypes")
@@ -460,7 +485,7 @@ public abstract class Util {
      */
     public static <T> List<T> query(Class<T> targetClass, final Uri uri, String projection, String selection, String[] selectionArgs, String sortOrder,
             CancellationSignal cancellationSignal) {
-        final Cursor cursor = context.getContentResolver().query(uri, Array.of(projection), selection, selectionArgs, sortOrder, cancellationSignal);
+        final Cursor cursor = getContentResolver().query(uri, Array.of(projection), selection, selectionArgs, sortOrder, cancellationSignal);
 
         try {
             return toList(targetClass, cursor);
@@ -510,7 +535,7 @@ public abstract class Util {
      */
     public static <T> List<T> query(Class<T> targetClass, final Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder,
             CancellationSignal cancellationSignal) {
-        final Cursor cursor = context.getContentResolver().query(uri, projection, selection, selectionArgs, sortOrder);
+        final Cursor cursor = getContentResolver().query(uri, projection, selection, selectionArgs, sortOrder);
 
         try {
             return toList(targetClass, cursor);
@@ -564,7 +589,7 @@ public abstract class Util {
     @SuppressWarnings("rawtypes")
     public static List<Map<String, Object>> query(final Uri uri, Map<String, Class> projectionTypeMap, String selection, String[] selectionArgs,
             String sortOrder, CancellationSignal cancellationSignal) {
-        final Cursor cursor = context.getContentResolver().query(uri, projectionTypeMap.keySet().toArray(new String[projectionTypeMap.size()]), selection,
+        final Cursor cursor = getContentResolver().query(uri, projectionTypeMap.keySet().toArray(new String[projectionTypeMap.size()]), selection,
                 selectionArgs, sortOrder);
 
         try {

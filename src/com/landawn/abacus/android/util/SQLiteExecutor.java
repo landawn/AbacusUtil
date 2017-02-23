@@ -426,8 +426,8 @@ public final class SQLiteExecutor {
         }
     }
 
-    static ContentValues toContentValues(Object obj) {
-        return toContentValues(obj, DEFAULT_NAMING_POLICY);
+    static ContentValues toContentValues(final Object obj, final Collection<String> ignoredPropNames) {
+        return toContentValues(obj, ignoredPropNames, DEFAULT_NAMING_POLICY);
     }
 
     /**
@@ -436,8 +436,8 @@ public final class SQLiteExecutor {
      * @param namingPolicy
      * @return
      */
-    static ContentValues toContentValues(Object obj, NamingPolicy namingPolicy) {
-        return toContentValues(obj, namingPolicy, false);
+    static ContentValues toContentValues(final Object obj, final Collection<String> ignoredPropNames, final NamingPolicy namingPolicy) {
+        return toContentValues(obj, ignoredPropNames, namingPolicy, false);
     }
 
     public <T> T get(Class<T> targetClass, long id) {
@@ -465,7 +465,8 @@ public final class SQLiteExecutor {
     }
 
     @SuppressWarnings("deprecation")
-    private static ContentValues toContentValues(Object obj, NamingPolicy namingPolicy, boolean isForUpdate) {
+    private static ContentValues toContentValues(final Object obj, final Collection<String> ignoredPropNames, final NamingPolicy namingPolicy,
+            final boolean isForUpdate) {
         final ContentValues result = new ContentValues();
 
         @SuppressWarnings("rawtypes")
@@ -476,6 +477,10 @@ public final class SQLiteExecutor {
             switch (namingPolicy) {
                 case CAMEL_CASE: {
                     for (Map.Entry<String, Object> entry : props.entrySet()) {
+                        if (N.notNullOrEmpty(ignoredPropNames) && ignoredPropNames.contains(entry.getKey())) {
+                            continue;
+                        }
+
                         if (entry.getValue() == null) {
                             result.putNull(entry.getKey());
                         } else {
@@ -488,12 +493,20 @@ public final class SQLiteExecutor {
                 }
 
                 case LOWER_CASE_WITH_UNDERSCORE: {
+                    String propName = null;
+
                     for (Map.Entry<String, Object> entry : props.entrySet()) {
+                        propName = N.toLowerCaseWithUnderscore(entry.getKey());
+
+                        if (N.notNullOrEmpty(ignoredPropNames) && (ignoredPropNames.contains(propName) || ignoredPropNames.contains(entry.getKey()))) {
+                            continue;
+                        }
+
                         if (entry.getValue() == null) {
-                            result.putNull(N.toLowerCaseWithUnderscore(entry.getKey()));
+                            result.putNull(propName);
                         } else {
                             type = Type.valueOf(entry.getValue().getClass());
-                            type.set(result, N.toLowerCaseWithUnderscore(entry.getKey()), entry.getValue());
+                            type.set(result, propName, entry.getValue());
                         }
                     }
 
@@ -501,12 +514,20 @@ public final class SQLiteExecutor {
                 }
 
                 case UPPER_CASE_WITH_UNDERSCORE: {
+                    String propName = null;
+
                     for (Map.Entry<String, Object> entry : props.entrySet()) {
+                        propName = N.toUpperCaseWithUnderscore(entry.getKey());
+
+                        if (N.notNullOrEmpty(ignoredPropNames) && (ignoredPropNames.contains(propName) || ignoredPropNames.contains(entry.getKey()))) {
+                            continue;
+                        }
+
                         if (entry.getValue() == null) {
-                            result.putNull(N.toUpperCaseWithUnderscore(entry.getKey()));
+                            result.putNull(propName);
                         } else {
                             type = Type.valueOf(entry.getValue().getClass());
-                            type.set(result, N.toUpperCaseWithUnderscore(entry.getKey()), entry.getValue());
+                            type.set(result, propName, entry.getValue());
                         }
                     }
 
@@ -519,8 +540,8 @@ public final class SQLiteExecutor {
 
         } else if (N.isEntity(obj.getClass())) {
             if (obj instanceof DirtyMarker) {
-                Class<?> srCls = obj.getClass();
-                Set<String> updatePropNames = isForUpdate ? ((DirtyMarker) obj).dirtyPropNames() : ((DirtyMarker) obj).signedPropNames();
+                final Class<?> srCls = obj.getClass();
+                final Set<String> updatePropNames = isForUpdate ? ((DirtyMarker) obj).dirtyPropNames() : ((DirtyMarker) obj).signedPropNames();
 
                 if (updatePropNames.size() == 0) {
                     // logger.warn("No property is signed/updated in the specified source entity: " + N.toString(entity));
@@ -533,6 +554,11 @@ public final class SQLiteExecutor {
                             for (String propName : updatePropNames) {
                                 propGetMethod = N.getPropGetMethod(srCls, propName);
                                 propName = N.getPropNameByMethod(propGetMethod);
+
+                                if (N.notNullOrEmpty(ignoredPropNames) && ignoredPropNames.contains(propName)) {
+                                    continue;
+                                }
+
                                 propValue = N.getPropValue(obj, propGetMethod);
 
                                 if (propValue == null) {
@@ -550,6 +576,11 @@ public final class SQLiteExecutor {
                             for (String propName : updatePropNames) {
                                 propGetMethod = N.getPropGetMethod(srCls, propName);
                                 propName = N.getPropNameByMethod(propGetMethod);
+
+                                if (N.notNullOrEmpty(ignoredPropNames) && ignoredPropNames.contains(propName)) {
+                                    continue;
+                                }
+
                                 propValue = N.getPropValue(obj, propGetMethod);
 
                                 if (propValue == null) {
@@ -567,6 +598,11 @@ public final class SQLiteExecutor {
                             for (String propName : updatePropNames) {
                                 propGetMethod = N.getPropGetMethod(srCls, propName);
                                 propName = N.getPropNameByMethod(propGetMethod);
+
+                                if (N.notNullOrEmpty(ignoredPropNames) && ignoredPropNames.contains(propName)) {
+                                    continue;
+                                }
+
                                 propValue = N.getPropValue(obj, propGetMethod);
 
                                 if (propValue == null) {
@@ -593,6 +629,11 @@ public final class SQLiteExecutor {
                     case CAMEL_CASE: {
                         for (Map.Entry<String, Method> entry : getterMethodList.entrySet()) {
                             propName = entry.getKey();
+
+                            if (N.notNullOrEmpty(ignoredPropNames) && ignoredPropNames.contains(propName)) {
+                                continue;
+                            }
+
                             propValue = N.getPropValue(obj, entry.getValue());
 
                             if (propValue == null) {
@@ -609,6 +650,11 @@ public final class SQLiteExecutor {
                     case LOWER_CASE_WITH_UNDERSCORE: {
                         for (Map.Entry<String, Method> entry : getterMethodList.entrySet()) {
                             propName = entry.getKey();
+
+                            if (N.notNullOrEmpty(ignoredPropNames) && ignoredPropNames.contains(propName)) {
+                                continue;
+                            }
+
                             propValue = N.getPropValue(obj, entry.getValue());
 
                             if (propValue == null) {
@@ -625,6 +671,11 @@ public final class SQLiteExecutor {
                     case UPPER_CASE_WITH_UNDERSCORE: {
                         for (Map.Entry<String, Method> entry : getterMethodList.entrySet()) {
                             propName = entry.getKey();
+
+                            if (N.notNullOrEmpty(ignoredPropNames) && ignoredPropNames.contains(propName)) {
+                                continue;
+                            }
+
                             propValue = N.getPropValue(obj, entry.getValue());
 
                             if (propValue == null) {
@@ -718,7 +769,7 @@ public final class SQLiteExecutor {
      */
     public long insert(String table, Object record, int conflictAlgorithm) {
         table = formatName(table);
-        final ContentValues contentValues = toContentValues(record, columnNamingPolicy, false);
+        final ContentValues contentValues = record instanceof ContentValues ? (ContentValues) record : toContentValues(record, null, columnNamingPolicy, false);
 
         removeIdDefaultValue(contentValues);
 
@@ -914,7 +965,7 @@ public final class SQLiteExecutor {
      */
     public int update(String table, Object record, Condition whereClause) {
         table = formatName(table);
-        final ContentValues contentValues = toContentValues(record, columnNamingPolicy, true);
+        final ContentValues contentValues = record instanceof ContentValues ? (ContentValues) record : toContentValues(record, null, columnNamingPolicy, true);
         removeIdDefaultValue(contentValues);
 
         if (whereClause == null) {
@@ -2448,7 +2499,7 @@ public final class SQLiteExecutor {
             }
         };
 
-        private static final Map<Class<?>, Type<?>> classSQLiteTypePool = new ObjectPool<Class<?>, Type<?>>(64);
+        private static final Map<Class<?>, Type<?>> classSQLiteTypePool = new ObjectPool<>(64);
 
         static {
             classSQLiteTypePool.put(String.class, STRING);

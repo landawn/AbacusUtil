@@ -18,6 +18,10 @@ package com.landawn.abacus.util;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+
+import com.landawn.abacus.util.function.Consumer;
+import com.landawn.abacus.util.stream.Stream;
 
 /**
  * 
@@ -27,11 +31,59 @@ import java.util.Iterator;
  *
  */
 public abstract class Tuple {
+    public static final Tuple EMPTY = new Tuple() {
+        @Override
+        public int arity() {
+            return 0;
+        }
+
+        @Override
+        public Object[] toArray() {
+            return N.EMPTY_OBJECT_ARRAY;
+        }
+
+        @Override
+        public <A> A[] toArray(A[] a) {
+            return a;
+        }
+
+        @Override
+        public <T> List<T> asList() {
+            return Array.asList();
+        }
+
+        @Override
+        public void forEach(Consumer<?> comsumer) {
+            // do nothing.
+        }
+
+        @Override
+        public <T> Stream<T> stream() {
+            return Stream.empty();
+        }
+
+        @Override
+        public String toString() {
+            return "[]";
+        }
+    };
 
     Tuple() {
     }
 
     public abstract int arity();
+
+    public abstract Object[] toArray();
+
+    public abstract <A> A[] toArray(A[] a);
+
+    public abstract <T> List<T> asList();
+
+    public abstract void forEach(Consumer<?> comsumer);
+
+    public <T> Stream<T> stream() {
+        return (Stream<T>) Stream.of(toArray());
+    }
 
     public static <T1> Tuple1<T1> of(T1 _1) {
         return new Tuple1<>(_1);
@@ -68,7 +120,7 @@ public abstract class Tuple {
 
         switch (len) {
             case 0:
-                result = new Tuple0();
+                result = EMPTY;
                 break;
 
             case 1:
@@ -111,7 +163,7 @@ public abstract class Tuple {
 
         switch (len) {
             case 0:
-                result = new Tuple0();
+                result = EMPTY;
                 break;
 
             case 1:
@@ -146,37 +198,13 @@ public abstract class Tuple {
         return (T) result;
     }
 
-    public static class Tuple0 extends Tuple {
-        public Tuple0() {
-        }
-
-        @Override
-        public int arity() {
-            return 0;
-        }
-
-        @Override
-        public int hashCode() {
-            return 0;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-
-            return obj != null && obj.getClass().equals(Tuple0.class);
-        }
-
-        @Override
-        public String toString() {
-            return "[]";
-        }
-    }
-
-    public static class Tuple1<T1> extends Tuple0 {
+    public static class Tuple1<T1> extends Tuple {
         public final T1 _1;
+
+        // For Kryo
+        Tuple1() {
+            this(null);
+        }
 
         public Tuple1(T1 _1) {
             this._1 = _1;
@@ -189,6 +217,34 @@ public abstract class Tuple {
         @Override
         public int arity() {
             return 1;
+        }
+
+        @Override
+        public void forEach(Consumer<?> comsumer) {
+            final Consumer<Object> objComsumer = (Consumer<Object>) comsumer;
+
+            objComsumer.accept(_1);
+        }
+
+        @Override
+        public Object[] toArray() {
+            return new Object[] { _1 };
+        }
+
+        @Override
+        public <A> A[] toArray(A[] a) {
+            if (a.length < 1) {
+                a = N.copyOf(a, 1);
+            }
+
+            a[0] = (A) _1;
+
+            return a;
+        }
+
+        @Override
+        public <T> List<T> asList() {
+            return (List<T>) Array.asList(_1);
         }
 
         @Override
@@ -223,6 +279,11 @@ public abstract class Tuple {
     public static class Tuple2<T1, T2> extends Tuple1<T1> {
         public final T2 _2;
 
+        // For Kryo
+        Tuple2() {
+            this(null, null);
+        }
+
         public Tuple2(T1 _1, T2 _2) {
             super(_1);
             this._2 = _2;
@@ -235,6 +296,36 @@ public abstract class Tuple {
         @Override
         public int arity() {
             return 2;
+        }
+
+        @Override
+        public Object[] toArray() {
+            return new Object[] { _1, _2 };
+        }
+
+        @Override
+        public <A> A[] toArray(A[] a) {
+            if (a.length < 2) {
+                a = N.copyOf(a, 2);
+            }
+
+            a[0] = (A) _1;
+            a[1] = (A) _2;
+
+            return a;
+        }
+
+        @Override
+        public <T> List<T> asList() {
+            return (List<T>) Array.asList(_1, _2);
+        }
+
+        @Override
+        public void forEach(Consumer<?> comsumer) {
+            final Consumer<Object> objComsumer = (Consumer<Object>) comsumer;
+
+            objComsumer.accept(_1);
+            objComsumer.accept(_2);
         }
 
         @Override
@@ -270,6 +361,11 @@ public abstract class Tuple {
     public static class Tuple3<T1, T2, T3> extends Tuple2<T1, T2> {
         public final T3 _3;
 
+        // For Kryo
+        Tuple3() {
+            this(null, null, null);
+        }
+
         public Tuple3(T1 _1, T2 _2, T3 _3) {
             super(_1, _2);
             this._3 = _3;
@@ -282,6 +378,38 @@ public abstract class Tuple {
         @Override
         public int arity() {
             return 3;
+        }
+
+        @Override
+        public Object[] toArray() {
+            return new Object[] { _1, _2, _3 };
+        }
+
+        @Override
+        public <A> A[] toArray(A[] a) {
+            if (a.length < 3) {
+                a = N.copyOf(a, 3);
+            }
+
+            a[0] = (A) _1;
+            a[1] = (A) _2;
+            a[2] = (A) _3;
+
+            return a;
+        }
+
+        @Override
+        public <T> List<T> asList() {
+            return (List<T>) Array.asList(_1, _2, _3);
+        }
+
+        @Override
+        public void forEach(Consumer<?> comsumer) {
+            final Consumer<Object> objComsumer = (Consumer<Object>) comsumer;
+
+            objComsumer.accept(_1);
+            objComsumer.accept(_2);
+            objComsumer.accept(_3);
         }
 
         @Override
@@ -318,6 +446,11 @@ public abstract class Tuple {
     public static class Tuple4<T1, T2, T3, T4> extends Tuple3<T1, T2, T3> {
         public final T4 _4;
 
+        // For Kryo
+        Tuple4() {
+            this(null, null, null, null);
+        }
+
         public Tuple4(T1 _1, T2 _2, T3 _3, T4 _4) {
             super(_1, _2, _3);
             this._4 = _4;
@@ -330,6 +463,40 @@ public abstract class Tuple {
         @Override
         public int arity() {
             return 4;
+        }
+
+        @Override
+        public Object[] toArray() {
+            return new Object[] { _1, _2, _3, _4 };
+        }
+
+        @Override
+        public <A> A[] toArray(A[] a) {
+            if (a.length < 4) {
+                a = N.copyOf(a, 4);
+            }
+
+            a[0] = (A) _1;
+            a[1] = (A) _2;
+            a[2] = (A) _3;
+            a[3] = (A) _4;
+
+            return a;
+        }
+
+        @Override
+        public <T> List<T> asList() {
+            return (List<T>) Array.asList(_1, _2, _3, _4);
+        }
+
+        @Override
+        public void forEach(Consumer<?> comsumer) {
+            final Consumer<Object> objComsumer = (Consumer<Object>) comsumer;
+
+            objComsumer.accept(_1);
+            objComsumer.accept(_2);
+            objComsumer.accept(_3);
+            objComsumer.accept(_4);
         }
 
         @Override
@@ -367,6 +534,11 @@ public abstract class Tuple {
     public static class Tuple5<T1, T2, T3, T4, T5> extends Tuple4<T1, T2, T3, T4> {
         public final T5 _5;
 
+        // For Kryo
+        Tuple5() {
+            this(null, null, null, null, null);
+        }
+
         public Tuple5(T1 _1, T2 _2, T3 _3, T4 _4, T5 _5) {
             super(_1, _2, _3, _4);
             this._5 = _5;
@@ -379,6 +551,42 @@ public abstract class Tuple {
         @Override
         public int arity() {
             return 5;
+        }
+
+        @Override
+        public Object[] toArray() {
+            return new Object[] { _1, _2, _3, _4, _5 };
+        }
+
+        @Override
+        public <A> A[] toArray(A[] a) {
+            if (a.length < 5) {
+                a = N.copyOf(a, 5);
+            }
+
+            a[0] = (A) _1;
+            a[1] = (A) _2;
+            a[2] = (A) _3;
+            a[3] = (A) _4;
+            a[4] = (A) _5;
+
+            return a;
+        }
+
+        @Override
+        public <T> List<T> asList() {
+            return (List<T>) Array.asList(_1, _2, _3, _4, _5);
+        }
+
+        @Override
+        public void forEach(Consumer<?> comsumer) {
+            final Consumer<Object> objComsumer = (Consumer<Object>) comsumer;
+
+            objComsumer.accept(_1);
+            objComsumer.accept(_2);
+            objComsumer.accept(_3);
+            objComsumer.accept(_4);
+            objComsumer.accept(_5);
         }
 
         @Override
@@ -418,6 +626,11 @@ public abstract class Tuple {
     public static class Tuple6<T1, T2, T3, T4, T5, T6> extends Tuple5<T1, T2, T3, T4, T5> {
         public final T6 _6;
 
+        // For Kryo
+        Tuple6() {
+            this(null, null, null, null, null, null);
+        }
+
         public Tuple6(T1 _1, T2 _2, T3 _3, T4 _4, T5 _5, T6 _6) {
             super(_1, _2, _3, _4, _5);
             this._6 = _6;
@@ -430,6 +643,44 @@ public abstract class Tuple {
         @Override
         public int arity() {
             return 6;
+        }
+
+        @Override
+        public Object[] toArray() {
+            return new Object[] { _1, _2, _3, _4, _5, _6 };
+        }
+
+        @Override
+        public <A> A[] toArray(A[] a) {
+            if (a.length < 6) {
+                a = N.copyOf(a, 6);
+            }
+
+            a[0] = (A) _1;
+            a[1] = (A) _2;
+            a[2] = (A) _3;
+            a[3] = (A) _4;
+            a[4] = (A) _5;
+            a[5] = (A) _6;
+
+            return a;
+        }
+
+        @Override
+        public <T> List<T> asList() {
+            return (List<T>) Array.asList(_1, _2, _3, _4, _5, _6);
+        }
+
+        @Override
+        public void forEach(Consumer<?> comsumer) {
+            final Consumer<Object> objComsumer = (Consumer<Object>) comsumer;
+
+            objComsumer.accept(_1);
+            objComsumer.accept(_2);
+            objComsumer.accept(_3);
+            objComsumer.accept(_4);
+            objComsumer.accept(_5);
+            objComsumer.accept(_6);
         }
 
         @Override
@@ -471,6 +722,11 @@ public abstract class Tuple {
     public static class Tuple7<T1, T2, T3, T4, T5, T6, T7> extends Tuple6<T1, T2, T3, T4, T5, T6> {
         public final T7 _7;
 
+        // For Kryo
+        Tuple7() {
+            this(null, null, null, null, null, null, null);
+        }
+
         public Tuple7(T1 _1, T2 _2, T3 _3, T4 _4, T5 _5, T6 _6, T7 _7) {
             super(_1, _2, _3, _4, _5, _6);
             this._7 = _7;
@@ -483,6 +739,46 @@ public abstract class Tuple {
         @Override
         public int arity() {
             return 7;
+        }
+
+        @Override
+        public Object[] toArray() {
+            return new Object[] { _1, _2, _3, _4, _5, _6, _7 };
+        }
+
+        @Override
+        public <A> A[] toArray(A[] a) {
+            if (a.length < 7) {
+                a = N.copyOf(a, 7);
+            }
+
+            a[0] = (A) _1;
+            a[1] = (A) _2;
+            a[2] = (A) _3;
+            a[3] = (A) _4;
+            a[4] = (A) _5;
+            a[5] = (A) _6;
+            a[6] = (A) _7;
+
+            return a;
+        }
+
+        @Override
+        public <T> List<T> asList() {
+            return (List<T>) Array.asList(_1, _2, _3, _4, _5, _6, _7);
+        }
+
+        @Override
+        public void forEach(Consumer<?> comsumer) {
+            final Consumer<Object> objComsumer = (Consumer<Object>) comsumer;
+
+            objComsumer.accept(_1);
+            objComsumer.accept(_2);
+            objComsumer.accept(_3);
+            objComsumer.accept(_4);
+            objComsumer.accept(_5);
+            objComsumer.accept(_6);
+            objComsumer.accept(_7);
         }
 
         @Override

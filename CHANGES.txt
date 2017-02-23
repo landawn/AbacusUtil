@@ -1,4 +1,11 @@
 
+========Changes in 0.9.53=========================================================================
+
+1, Improve Pair/Triple/Tuple...
+
+3, Improvements and bug fix.
+
+
 ========Changes in 0.9.52=========================================================================
 
 1*, Reverse the condition to break the for loop in forEach : forEach(seed, accumulator, conditionToContinue) to forEach(seed, accumulator, conditionToBreak) in DataSet/Stream/N/ObjectList/Seq/Multiset/LongMultiset/Multimap.

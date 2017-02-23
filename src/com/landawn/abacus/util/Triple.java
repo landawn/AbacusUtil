@@ -18,6 +18,10 @@ package com.landawn.abacus.util;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+
+import com.landawn.abacus.util.function.Consumer;
+import com.landawn.abacus.util.stream.Stream;
 
 /**
  * 
@@ -136,6 +140,38 @@ public final class Triple<L, M, R> {
         return new Triple<>(this.left, this.middle, this.right);
     }
 
+    public Object[] toArray() {
+        return new Object[] { right, middle, left };
+    }
+
+    public <A> A[] toArray(A[] a) {
+        if (a.length < 3) {
+            a = N.copyOf(a, 3);
+        }
+
+        a[0] = (A) right;
+        a[1] = (A) middle;
+        a[2] = (A) left;
+
+        return a;
+    }
+
+    public <T> List<T> asList() {
+        return (List<T>) Array.asList(right, middle, left);
+    }
+
+    public void forEach(Consumer<?> comsumer) {
+        final Consumer<Object> objComsumer = (Consumer<Object>) comsumer;
+
+        objComsumer.accept(right);
+        objComsumer.accept(middle);
+        objComsumer.accept(left);
+    }
+
+    public <T> Stream<T> stream() {
+        return (Stream<T>) Stream.of(toArray());
+    }
+
     public Triple0<L, M, R> __() {
         return Triple0.of(left, middle, right);
     }
@@ -181,6 +217,11 @@ public final class Triple<L, M, R> {
         public final L left;
         public final M middle;
         public final R right;
+
+        // for Kryo.
+        Triple0() {
+            this(null, null, null);
+        }
 
         public Triple0(final L l, final M m, final R r) {
             this.left = l;
@@ -228,6 +269,38 @@ public final class Triple<L, M, R> {
 
         public R right() {
             return right;
+        }
+
+        public Object[] toArray() {
+            return new Object[] { right, middle, left };
+        }
+
+        public <A> A[] toArray(A[] a) {
+            if (a.length < 3) {
+                a = N.copyOf(a, 3);
+            }
+
+            a[0] = (A) right;
+            a[1] = (A) middle;
+            a[2] = (A) left;
+
+            return a;
+        }
+
+        public <T> List<T> asList() {
+            return (List<T>) Array.asList(right, middle, left);
+        }
+
+        public void forEach(Consumer<?> comsumer) {
+            final Consumer<Object> objComsumer = (Consumer<Object>) comsumer;
+
+            objComsumer.accept(right);
+            objComsumer.accept(middle);
+            objComsumer.accept(left);
+        }
+
+        public <T> Stream<T> stream() {
+            return (Stream<T>) Stream.of(toArray());
         }
 
         public Triple<L, M, R> __() {
