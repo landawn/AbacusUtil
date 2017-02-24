@@ -19,6 +19,8 @@ package com.landawn.abacus.util;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -184,6 +186,520 @@ public class AsyncExecutor {
         });
     }
 
+    /**
+     * Returns the first result, which could be an exception.
+     * 
+     * @param a
+     * @return
+     */
+    public static <T> Optional<Pair<T, Throwable>> firstResult(final CompletableFuture<? extends T>... a) {
+        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(2);
+
+        for (CompletableFuture<? extends T> future : a) {
+            ((CompletableFuture<T>) future).callback(new Callback<T>() {
+                @Override
+                public void on(Throwable e, T result) {
+                    queue.offer(Pair.of(result, e));
+                }
+            });
+        }
+
+        try {
+            Pair<T, Throwable> result = null;
+
+            for (int i = 0, len = a.length; i < len; i++) {
+                result = queue.poll(Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
+
+                if (result != null) {
+                    return Optional.of(result);
+                }
+            }
+        } catch (InterruptedException e) {
+            // throw N.toRuntimeException(e);
+            return Optional.empty();
+        }
+
+        return Optional.empty();
+    }
+
+    /**
+     * Returns the first result, which could be an exception.
+     * 
+     * @param c
+     * @return
+     */
+    public static <T> Optional<Pair<T, Throwable>> firstResult(final Collection<? extends CompletableFuture<? extends T>> c) {
+        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(2);
+
+        for (CompletableFuture<? extends T> future : c) {
+            ((CompletableFuture<T>) future).callback(new Callback<T>() {
+                @Override
+                public void on(Throwable e, T result) {
+                    queue.offer(Pair.of(result, e));
+                }
+            });
+        }
+
+        try {
+            Pair<T, Throwable> result = null;
+
+            for (int i = 0, len = c.size(); i < len; i++) {
+                result = queue.poll(Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
+
+                if (result != null) {
+                    return Optional.of(result);
+                }
+            }
+        } catch (InterruptedException e) {
+            // throw N.toRuntimeException(e);
+            return Optional.empty();
+        }
+
+        return Optional.empty();
+    }
+
+    /**
+     * Returns the first result, which could be an exception.
+     * 
+     * @param c
+     * @param maxTimeout
+     * @return
+     */
+    public static <T> Optional<Pair<T, Throwable>> firstResult(final Collection<? extends CompletableFuture<? extends T>> c, final long maxTimeout) {
+        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(2);
+
+        for (CompletableFuture<? extends T> future : c) {
+            ((CompletableFuture<T>) future).callback(new Callback<T>() {
+                @Override
+                public void on(Throwable e, T result) {
+                    queue.offer(Pair.of(result, e));
+                }
+            });
+        }
+
+        final long endTime = N.currentMillis() + maxTimeout;
+
+        try {
+            Pair<T, Throwable> result = null;
+
+            for (int i = 0, len = c.size(); i < len; i++) {
+                long timeout = endTime - N.currentMillis();
+
+                if (timeout <= 0) {
+                    return Optional.empty();
+                }
+
+                result = queue.poll(timeout, TimeUnit.MILLISECONDS);
+
+                if (result != null) {
+                    return Optional.of(result);
+                }
+            }
+        } catch (InterruptedException e) {
+            // throw N.toRuntimeException(e);
+            return Optional.empty();
+        }
+
+        return Optional.empty();
+    }
+
+    /**
+     * Returns the first non-exception result or empty if fail to get result for all futures.
+     * 
+     * @param a
+     * @return
+     */
+    public static <T> OptionalNullable<T> firstSuccessResult(final CompletableFuture<? extends T>... a) {
+        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(2);
+
+        for (CompletableFuture<? extends T> future : a) {
+            ((CompletableFuture<T>) future).callback(new Callback<T>() {
+                @Override
+                public void on(Throwable e, T result) {
+                    queue.offer(Pair.of(result, e));
+                }
+            });
+        }
+
+        try {
+            Pair<T, Throwable> result = null;
+
+            for (int i = 0, len = a.length; i < len; i++) {
+                result = queue.poll(Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
+
+                if (result != null && result.right == null) {
+                    return OptionalNullable.of(result.left);
+                }
+            }
+        } catch (InterruptedException e) {
+            // throw N.toRuntimeException(e);
+            return OptionalNullable.empty();
+        }
+
+        return OptionalNullable.empty();
+    }
+
+    /**
+     * Returns the first non-exception result or empty if fail to get result for all futures.
+     * 
+     * @param c
+     * @return
+     */
+    public static <T> OptionalNullable<T> firstSuccessResult(final Collection<? extends CompletableFuture<? extends T>> c) {
+        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(2);
+
+        for (CompletableFuture<? extends T> future : c) {
+            ((CompletableFuture<T>) future).callback(new Callback<T>() {
+                @Override
+                public void on(Throwable e, T result) {
+                    queue.offer(Pair.of(result, e));
+                }
+            });
+        }
+
+        try {
+            Pair<T, Throwable> result = null;
+
+            for (int i = 0, len = c.size(); i < len; i++) {
+                result = queue.poll(Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
+
+                if (result != null && result.right == null) {
+                    return OptionalNullable.of(result.left);
+                }
+            }
+        } catch (InterruptedException e) {
+            // throw N.toRuntimeException(e);
+            return OptionalNullable.empty();
+        }
+
+        return OptionalNullable.empty();
+    }
+
+    /**
+     * Returns the first result, which could be an exception.
+     * 
+     * @param c
+     * @param maxTimeout
+     * @return
+     */
+    public static <T> OptionalNullable<T> firstSuccessResult(final Collection<? extends CompletableFuture<? extends T>> c, final long maxTimeout) {
+        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(2);
+
+        for (CompletableFuture<? extends T> future : c) {
+            ((CompletableFuture<T>) future).callback(new Callback<T>() {
+                @Override
+                public void on(Throwable e, T result) {
+                    queue.offer(Pair.of(result, e));
+                }
+            });
+        }
+
+        final long endTime = N.currentMillis() + maxTimeout;
+
+        try {
+            Pair<T, Throwable> result = null;
+
+            for (int i = 0, len = c.size(); i < len; i++) {
+                long timeout = endTime - N.currentMillis();
+
+                if (timeout <= 0) {
+                    return OptionalNullable.empty();
+                }
+
+                result = queue.poll(timeout, TimeUnit.MILLISECONDS);
+
+                if (result != null && result.right == null) {
+                    return OptionalNullable.of(result.left);
+                }
+            }
+        } catch (InterruptedException e) {
+            // throw N.toRuntimeException(e);
+            return OptionalNullable.empty();
+        }
+
+        return OptionalNullable.empty();
+    }
+
+    /**
+     * Returns the first result, which could be an exception.
+     * 
+     * @param a
+     * @return
+     */
+    public static <T> Optional<Pair<T, Throwable>> lastResult(final CompletableFuture<? extends T>... a) {
+        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(2);
+
+        for (CompletableFuture<? extends T> future : a) {
+            ((CompletableFuture<T>) future).callback(new Callback<T>() {
+                @Override
+                public void on(Throwable e, T result) {
+                    queue.offer(Pair.of(result, e));
+                }
+            });
+        }
+
+        final Holder<Pair<T, Throwable>> holder = new Holder<>((Pair<T, Throwable>) N.NULL_MASK);
+
+        try {
+            Pair<T, Throwable> result = null;
+
+            for (int i = 0, len = a.length; i < len; i++) {
+                result = queue.poll(Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
+
+                if (result != null) {
+                    holder.setValue(result);
+                }
+            }
+        } catch (InterruptedException e) {
+            // throw N.toRuntimeException(e);
+            return Optional.empty();
+        }
+
+        return holder.value == N.NULL_MASK ? Optional.empty() : Optional.of(holder.value);
+    }
+
+    /**
+     * Returns the first result, which could be an exception.
+     * 
+     * @param c
+     * @return
+     */
+    public static <T> Optional<Pair<T, Throwable>> lastResult(final Collection<? extends CompletableFuture<? extends T>> c) {
+        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(2);
+
+        for (CompletableFuture<? extends T> future : c) {
+            ((CompletableFuture<T>) future).callback(new Callback<T>() {
+                @Override
+                public void on(Throwable e, T result) {
+                    queue.offer(Pair.of(result, e));
+                }
+            });
+        }
+
+        final Holder<Pair<T, Throwable>> holder = new Holder<>((Pair<T, Throwable>) N.NULL_MASK);
+
+        try {
+            Pair<T, Throwable> result = null;
+
+            for (int i = 0, len = c.size(); i < len; i++) {
+                result = queue.poll(Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
+
+                if (result != null) {
+                    holder.setValue(result);
+                }
+            }
+        } catch (InterruptedException e) {
+            // throw N.toRuntimeException(e);
+            return Optional.empty();
+        }
+
+        return holder.value == N.NULL_MASK ? Optional.empty() : Optional.of(holder.value);
+    }
+
+    /**
+     * Returns the first result, which could be an exception.
+     * 
+     * @param c
+     * @param maxTimeout
+     * @return
+     */
+    public static <T> Optional<Pair<T, Throwable>> lastResult(final Collection<? extends CompletableFuture<? extends T>> c, final long maxTimeout) {
+        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(2);
+
+        for (CompletableFuture<? extends T> future : c) {
+            ((CompletableFuture<T>) future).callback(new Callback<T>() {
+                @Override
+                public void on(Throwable e, T result) {
+                    queue.offer(Pair.of(result, e));
+                }
+            });
+        }
+
+        final Holder<Pair<T, Throwable>> holder = new Holder<>((Pair<T, Throwable>) N.NULL_MASK);
+        final long endTime = N.currentMillis() + maxTimeout;
+
+        try {
+            Pair<T, Throwable> result = null;
+
+            for (int i = 0, len = c.size(); i < len; i++) {
+                long timeout = endTime - N.currentMillis();
+
+                if (timeout <= 0) {
+                    break;
+                }
+
+                result = queue.poll(timeout, TimeUnit.MILLISECONDS);
+
+                if (result != null) {
+                    holder.setValue(result);
+                }
+            }
+        } catch (InterruptedException e) {
+            // throw N.toRuntimeException(e);
+            return Optional.empty();
+        }
+
+        return holder.value == N.NULL_MASK ? Optional.empty() : Optional.of(holder.value);
+    }
+
+    /**
+     * Returns the first non-exception result or empty if fail to get result for all futures.
+     * 
+     * @param a
+     * @return
+     */
+    public static <T> OptionalNullable<T> lastSuccessResult(final CompletableFuture<? extends T>... a) {
+        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(2);
+
+        for (CompletableFuture<? extends T> future : a) {
+            ((CompletableFuture<T>) future).callback(new Callback<T>() {
+                @Override
+                public void on(Throwable e, T result) {
+                    queue.offer(Pair.of(result, e));
+                }
+            });
+        }
+
+        final Holder<T> holder = new Holder<>((T) N.NULL_MASK);
+
+        try {
+            Pair<T, Throwable> result = null;
+
+            for (int i = 0, len = a.length; i < len; i++) {
+                result = queue.poll(Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
+
+                if (result != null && result.right == null) {
+                    holder.setValue(result.left);
+                }
+            }
+        } catch (InterruptedException e) {
+            // throw N.toRuntimeException(e);
+            return OptionalNullable.empty();
+        }
+
+        return holder.value == N.NULL_MASK ? OptionalNullable.empty() : OptionalNullable.of(holder.value);
+    }
+
+    /**
+     * Returns the first non-exception result or empty if fail to get result for all futures.
+     * 
+     * @param c
+     * @return
+     */
+    public static <T> OptionalNullable<T> lastSuccessResult(final Collection<? extends CompletableFuture<? extends T>> c) {
+        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(2);
+
+        for (CompletableFuture<? extends T> future : c) {
+            ((CompletableFuture<T>) future).callback(new Callback<T>() {
+                @Override
+                public void on(Throwable e, T result) {
+                    queue.offer(Pair.of(result, e));
+                }
+            });
+        }
+
+        final Holder<T> holder = new Holder<>((T) N.NULL_MASK);
+
+        try {
+            Pair<T, Throwable> result = null;
+
+            for (int i = 0, len = c.size(); i < len; i++) {
+                result = queue.poll(Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
+
+                if (result != null && result.right == null) {
+                    holder.setValue(result.left);
+                }
+            }
+        } catch (InterruptedException e) {
+            // throw N.toRuntimeException(e);
+            return OptionalNullable.empty();
+        }
+
+        return holder.value == N.NULL_MASK ? OptionalNullable.empty() : OptionalNullable.of(holder.value);
+    }
+
+    /**
+     * Returns the first result, which could be an exception.
+     * 
+     * @param c
+     * @param maxTimeout
+     * @return
+     */
+    public static <T> OptionalNullable<T> lastSuccessResult(final Collection<? extends CompletableFuture<? extends T>> c, final long maxTimeout) {
+        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(2);
+
+        for (CompletableFuture<? extends T> future : c) {
+            ((CompletableFuture<T>) future).callback(new Callback<T>() {
+                @Override
+                public void on(Throwable e, T result) {
+                    queue.offer(Pair.of(result, e));
+                }
+            });
+        }
+
+        final Holder<T> holder = new Holder<>((T) N.NULL_MASK);
+        final long endTime = N.currentMillis() + maxTimeout;
+
+        try {
+            Pair<T, Throwable> result = null;
+
+            for (int i = 0, len = c.size(); i < len; i++) {
+                long timeout = endTime - N.currentMillis();
+
+                if (timeout <= 0) {
+                    break;
+                }
+
+                result = queue.poll(timeout, TimeUnit.MILLISECONDS);
+
+                if (result != null && result.right == null) {
+                    holder.setValue(result.left);
+                }
+            }
+        } catch (InterruptedException e) {
+            // throw N.toRuntimeException(e);
+            return OptionalNullable.empty();
+        }
+
+        return holder.value == N.NULL_MASK ? OptionalNullable.empty() : OptionalNullable.of(holder.value);
+    }
+
+    public static <T> BlockingQueue<Pair<T, Throwable>> concat(final CompletableFuture<? extends T>... a) {
+        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(2);
+
+        for (CompletableFuture<? extends T> future : a) {
+            ((CompletableFuture<T>) future).callback(new Callback<T>() {
+                @Override
+                public void on(Throwable e, T result) {
+                    queue.offer(Pair.of(result, e));
+                }
+            });
+        }
+
+        return queue;
+    }
+
+    /**
+     * Returns the first result, which could be an exception.
+     * 
+     * @param c
+     * @return
+     */
+    public static <T> BlockingQueue<Pair<T, Throwable>> concat(final Collection<? extends CompletableFuture<? extends T>> c) {
+        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(2);
+
+        for (CompletableFuture<? extends T> future : c) {
+            ((CompletableFuture<T>) future).callback(new Callback<T>() {
+                @Override
+                public void on(Throwable e, T result) {
+                    queue.offer(Pair.of(result, e));
+                }
+            });
+        }
+
+        return queue;
+    }
+
     ExecutorService getExecutorService() {
         if (executorService == null) {
             synchronized (this) {
@@ -203,7 +719,7 @@ public class AsyncExecutor {
      * Short name for AsyncExecutor
      */
     @Beta
-    static final class Async extends AsyncExecutor {
+    static final class Asyn extends AsyncExecutor {
 
     }
 }

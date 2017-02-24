@@ -468,6 +468,7 @@ public final class SQLiteExecutor {
     private static ContentValues toContentValues(final Object obj, final Collection<String> ignoredPropNames, final NamingPolicy namingPolicy,
             final boolean isForUpdate) {
         final ContentValues result = new ContentValues();
+        final boolean notNullOrEmptyIgnorePropNames = N.notNullOrEmpty(ignoredPropNames);
 
         @SuppressWarnings("rawtypes")
         Type type = null;
@@ -477,7 +478,7 @@ public final class SQLiteExecutor {
             switch (namingPolicy) {
                 case CAMEL_CASE: {
                     for (Map.Entry<String, Object> entry : props.entrySet()) {
-                        if (N.notNullOrEmpty(ignoredPropNames) && ignoredPropNames.contains(entry.getKey())) {
+                        if (notNullOrEmptyIgnorePropNames && ignoredPropNames.contains(entry.getKey())) {
                             continue;
                         }
 
@@ -498,7 +499,7 @@ public final class SQLiteExecutor {
                     for (Map.Entry<String, Object> entry : props.entrySet()) {
                         propName = N.toLowerCaseWithUnderscore(entry.getKey());
 
-                        if (N.notNullOrEmpty(ignoredPropNames) && (ignoredPropNames.contains(propName) || ignoredPropNames.contains(entry.getKey()))) {
+                        if (notNullOrEmptyIgnorePropNames && (ignoredPropNames.contains(entry.getKey()) || ignoredPropNames.contains(propName))) {
                             continue;
                         }
 
@@ -519,7 +520,7 @@ public final class SQLiteExecutor {
                     for (Map.Entry<String, Object> entry : props.entrySet()) {
                         propName = N.toUpperCaseWithUnderscore(entry.getKey());
 
-                        if (N.notNullOrEmpty(ignoredPropNames) && (ignoredPropNames.contains(propName) || ignoredPropNames.contains(entry.getKey()))) {
+                        if (notNullOrEmptyIgnorePropNames && (ignoredPropNames.contains(entry.getKey()) || ignoredPropNames.contains(propName))) {
                             continue;
                         }
 
@@ -555,7 +556,7 @@ public final class SQLiteExecutor {
                                 propGetMethod = N.getPropGetMethod(srCls, propName);
                                 propName = N.getPropNameByMethod(propGetMethod);
 
-                                if (N.notNullOrEmpty(ignoredPropNames) && ignoredPropNames.contains(propName)) {
+                                if (notNullOrEmptyIgnorePropNames && ignoredPropNames.contains(propName)) {
                                     continue;
                                 }
 
@@ -577,7 +578,7 @@ public final class SQLiteExecutor {
                                 propGetMethod = N.getPropGetMethod(srCls, propName);
                                 propName = N.getPropNameByMethod(propGetMethod);
 
-                                if (N.notNullOrEmpty(ignoredPropNames) && ignoredPropNames.contains(propName)) {
+                                if (notNullOrEmptyIgnorePropNames && ignoredPropNames.contains(propName)) {
                                     continue;
                                 }
 
@@ -599,7 +600,7 @@ public final class SQLiteExecutor {
                                 propGetMethod = N.getPropGetMethod(srCls, propName);
                                 propName = N.getPropNameByMethod(propGetMethod);
 
-                                if (N.notNullOrEmpty(ignoredPropNames) && ignoredPropNames.contains(propName)) {
+                                if (notNullOrEmptyIgnorePropNames && ignoredPropNames.contains(propName)) {
                                     continue;
                                 }
 
@@ -630,7 +631,7 @@ public final class SQLiteExecutor {
                         for (Map.Entry<String, Method> entry : getterMethodList.entrySet()) {
                             propName = entry.getKey();
 
-                            if (N.notNullOrEmpty(ignoredPropNames) && ignoredPropNames.contains(propName)) {
+                            if (notNullOrEmptyIgnorePropNames && ignoredPropNames.contains(propName)) {
                                 continue;
                             }
 
@@ -651,7 +652,7 @@ public final class SQLiteExecutor {
                         for (Map.Entry<String, Method> entry : getterMethodList.entrySet()) {
                             propName = entry.getKey();
 
-                            if (N.notNullOrEmpty(ignoredPropNames) && ignoredPropNames.contains(propName)) {
+                            if (notNullOrEmptyIgnorePropNames && ignoredPropNames.contains(propName)) {
                                 continue;
                             }
 
@@ -672,7 +673,7 @@ public final class SQLiteExecutor {
                         for (Map.Entry<String, Method> entry : getterMethodList.entrySet()) {
                             propName = entry.getKey();
 
-                            if (N.notNullOrEmpty(ignoredPropNames) && ignoredPropNames.contains(propName)) {
+                            if (notNullOrEmptyIgnorePropNames && ignoredPropNames.contains(propName)) {
                                 continue;
                             }
 

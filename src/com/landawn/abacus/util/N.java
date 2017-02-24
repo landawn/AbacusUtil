@@ -145,6 +145,13 @@ import com.landawn.abacus.type.TypeFactory;
 import com.landawn.abacus.util.Pair.Pair0;
 import com.landawn.abacus.util.Retry.Retry0;
 import com.landawn.abacus.util.Triple.Triple0;
+import com.landawn.abacus.util.Tuple.Tuple1;
+import com.landawn.abacus.util.Tuple.Tuple2;
+import com.landawn.abacus.util.Tuple.Tuple3;
+import com.landawn.abacus.util.Tuple.Tuple4;
+import com.landawn.abacus.util.Tuple.Tuple5;
+import com.landawn.abacus.util.Tuple.Tuple6;
+import com.landawn.abacus.util.Tuple.Tuple7;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BooleanPredicate;
@@ -979,6 +986,14 @@ public final class N {
         BUILT_IN_TYPE.put(Pair0.class.getCanonicalName(), Pair0.class);
         BUILT_IN_TYPE.put(Triple.class.getCanonicalName(), Triple.class);
         BUILT_IN_TYPE.put(Triple0.class.getCanonicalName(), Triple0.class);
+        BUILT_IN_TYPE.put(Tuple.class.getCanonicalName(), Tuple.class);
+        BUILT_IN_TYPE.put(Tuple1.class.getCanonicalName(), Tuple1.class);
+        BUILT_IN_TYPE.put(Tuple2.class.getCanonicalName(), Tuple2.class);
+        BUILT_IN_TYPE.put(Tuple3.class.getCanonicalName(), Tuple3.class);
+        BUILT_IN_TYPE.put(Tuple4.class.getCanonicalName(), Tuple4.class);
+        BUILT_IN_TYPE.put(Tuple5.class.getCanonicalName(), Tuple5.class);
+        BUILT_IN_TYPE.put(Tuple6.class.getCanonicalName(), Tuple6.class);
+        BUILT_IN_TYPE.put(Tuple7.class.getCanonicalName(), Tuple7.class);
 
         BUILT_IN_TYPE.put(ArrayHashMap.class.getCanonicalName(), ArrayHashMap.class);
         BUILT_IN_TYPE.put(ArrayHashSet.class.getCanonicalName(), ArrayHashSet.class);

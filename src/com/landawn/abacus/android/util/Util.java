@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 
 import com.landawn.abacus.DataSet;
+import com.landawn.abacus.android.util.SQLiteExecutor.Type;
 import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
@@ -425,6 +426,88 @@ public abstract class Util {
         return SQLiteExecutor.toContentValues(obj, ignoredPropNames, namingPolicy);
     }
 
+    public static final ContentValues asContentValues(String key1, Object value1) {
+        final ContentValues result = new ContentValues();
+
+        if (value1 == null) {
+            result.putNull(key1);
+        } else {
+            Type.valueOf(value1.getClass()).set(result, key1, value1);
+        }
+
+        return result;
+    }
+
+    public static final ContentValues asContentValues(String key1, Object value1, String key2, Object value2) {
+        final ContentValues result = new ContentValues();
+
+        if (value1 == null) {
+            result.putNull(key1);
+        } else {
+            Type.valueOf(value1.getClass()).set(result, key1, value1);
+        }
+
+        if (value2 == null) {
+            result.putNull(key2);
+        } else {
+            Type.valueOf(value2.getClass()).set(result, key2, value2);
+        }
+
+        return result;
+    }
+
+    public static final ContentValues asContentValues(String key1, Object value1, String key2, Object value2, String key3, Object value3) {
+        final ContentValues result = new ContentValues();
+
+        if (value1 == null) {
+            result.putNull(key1);
+        } else {
+            Type.valueOf(value1.getClass()).set(result, key1, value1);
+        }
+
+        if (value2 == null) {
+            result.putNull(key2);
+        } else {
+            Type.valueOf(value2.getClass()).set(result, key2, value2);
+        }
+
+        if (value3 == null) {
+            result.putNull(key3);
+        } else {
+            Type.valueOf(value3.getClass()).set(result, key3, value3);
+        }
+
+        return result;
+    }
+
+    public static final ContentValues asContentValues(final Object... a) {
+        final ContentValues result = new ContentValues();
+
+        if ((a.length % 2) != 0) {
+            throw new IllegalArgumentException(
+                    "The parameters must be the pairs of property name and value, or Map, or an entity class with getter/setter methods.");
+        }
+
+        @SuppressWarnings("rawtypes")
+        Type type = null;
+        String key = null;
+        Object value = null;
+
+        for (int i = 0, len = a.length; i < len; i++) {
+            key = (String) a[i];
+            value = a[++i];
+
+            if (a[i] == null) {
+                result.putNull(key);
+            } else {
+                type = Type.valueOf(value.getClass());
+                type.set(result, key, value);
+            }
+        }
+
+        return result;
+    }
+
     @SuppressWarnings("rawtypes")
     public static Map<String, Class> asColumnTypes(String c1, Class t1) {
         return N.asMap(c1, t1);
@@ -438,6 +521,11 @@ public abstract class Util {
     @SuppressWarnings("rawtypes")
     public static Map<String, Class> asColumnTypes(String c1, Class t1, String c2, Class t2, String c3, Class t3) {
         return N.asMap(c1, t1, c2, t2, c3, t3);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static Map<String, Class> asColumnTypes(final Object... a) {
+        return N.asMap(a);
     }
 
     public static ContentResolver getContentResolver() {
