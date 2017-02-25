@@ -58,7 +58,7 @@ import com.landawn.abacus.util.stream.Stream;
  * 
  * @author Haiyang Li
  */
-public class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<? super T>, T, T[], ObjectList<T>> implements List<T> {
+public final class ObjectList<T> extends AbstractList<Consumer<? super T>, Predicate<? super T>, T, T[], ObjectList<T>> implements List<T> {
     private static final long serialVersionUID = 5075714034035989332L;
 
     private T[] elementData = (T[]) N.EMPTY_OBJECT_ARRAY;

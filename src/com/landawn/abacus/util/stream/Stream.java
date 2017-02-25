@@ -6242,7 +6242,7 @@ public abstract class Stream<T>
             iterList.add(e.iterator());
         }
 
-        return parallelZip2(iterList, zipFunction).onClose(newCloseHandler(c));
+        return parallelZip2(iterList, zipFunction, queueSize).onClose(newCloseHandler(c));
     }
 
     /**
@@ -6408,7 +6408,7 @@ public abstract class Stream<T>
     //     */
     //    public static <A, B, R> Stream<R> parallelZip(final A[] a, final B[] b, final A valueForNoneA, final B valueForNoneB,
     //            final BiFunction<? super A, ? super B, R> zipFunction, final int queueSize) {
-    //        return parallelZip(ImmutableIterator.of(a), ImmutableIterator.of(b), valueForNoneA, valueForNoneB, zipFunction);
+    //        return parallelZip(ImmutableIterator.of(a), ImmutableIterator.of(b), valueForNoneA, valueForNoneB, zipFunction, queueSize);
     //    }
     //
     //    /**
@@ -6455,7 +6455,7 @@ public abstract class Stream<T>
     //     */
     //    public static <A, B, C, R> Stream<R> parallelZip(final A[] a, final B[] b, final C[] c, final A valueForNoneA, final B valueForNoneB, final C valueForNoneC,
     //            final TriFunction<? super A, ? super B, ? super C, R> zipFunction, final int queueSize) {
-    //        return parallelZip(ImmutableIterator.of(a), ImmutableIterator.of(b), ImmutableIterator.of(c), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
+    //        return parallelZip(ImmutableIterator.of(a), ImmutableIterator.of(b), ImmutableIterator.of(c), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction, queueSize);
     //    }
     //
     //    /**
@@ -6498,7 +6498,7 @@ public abstract class Stream<T>
     //     */
     //    public static <A, B, R> Stream<R> parallelZip(final Collection<? extends A> a, final Collection<? extends B> b, final A valueForNoneA,
     //            final B valueForNoneB, final BiFunction<? super A, ? super B, R> zipFunction, final int queueSize) {
-    //        return parallelZip(a.iterator(), b.iterator(), valueForNoneA, valueForNoneB, zipFunction);
+    //        return parallelZip(a.iterator(), b.iterator(), valueForNoneA, valueForNoneB, zipFunction, queueSize);
     //    }
     //
     //    /**
@@ -6546,7 +6546,7 @@ public abstract class Stream<T>
     //    public static <A, B, C, R> Stream<R> parallelZip(final Collection<? extends A> a, final Collection<? extends B> b, final Collection<? extends C> c,
     //            final A valueForNoneA, final B valueForNoneB, final C valueForNoneC, final TriFunction<? super A, ? super B, ? super C, R> zipFunction,
     //            final int queueSize) {
-    //        return parallelZip(a.iterator(), b.iterator(), c.iterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
+    //        return parallelZip(a.iterator(), b.iterator(), c.iterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction, queueSize);
     //    }
 
     /**
@@ -6830,7 +6830,7 @@ public abstract class Stream<T>
      */
     public static <A, B, R> Stream<R> parallelZip(final Stream<A> a, final Stream<B> b, final A valueForNoneA, final B valueForNoneB,
             final BiFunction<? super A, ? super B, R> zipFunction, final int queueSize) {
-        return parallelZip(a.iterator(), b.iterator(), valueForNoneA, valueForNoneB, zipFunction).onClose(newCloseHandler(N.asList(a, b)));
+        return parallelZip(a.iterator(), b.iterator(), valueForNoneA, valueForNoneB, zipFunction, queueSize).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -6877,7 +6877,7 @@ public abstract class Stream<T>
      */
     public static <A, B, C, R> Stream<R> parallelZip(final Stream<A> a, final Stream<B> b, final Stream<C> c, final A valueForNoneA, final B valueForNoneB,
             final C valueForNoneC, final TriFunction<? super A, ? super B, ? super C, R> zipFunction, final int queueSize) {
-        return parallelZip(a.iterator(), b.iterator(), c.iterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction)
+        return parallelZip(a.iterator(), b.iterator(), c.iterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction, queueSize)
                 .onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
@@ -6933,7 +6933,7 @@ public abstract class Stream<T>
             iterList.add(e.iterator());
         }
 
-        return parallelZip2(iterList, valuesForNone, zipFunction).onClose(newCloseHandler(c));
+        return parallelZip2(iterList, valuesForNone, zipFunction, queueSize).onClose(newCloseHandler(c));
     }
 
     /**
@@ -7332,7 +7332,7 @@ public abstract class Stream<T>
             iterList.add(e.iterator());
         }
 
-        return parallelMerge2(iterList, nextSelector).onClose(newCloseHandler(c));
+        return parallelMerge2(iterList, nextSelector, maxThreadNum).onClose(newCloseHandler(c));
     }
 
     /**

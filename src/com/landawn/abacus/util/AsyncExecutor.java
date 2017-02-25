@@ -455,7 +455,11 @@ public class AsyncExecutor {
             return Optional.empty();
         }
 
-        return holder.value == N.NULL_MASK ? Optional.empty() : Optional.of(holder.value);
+        if (holder.value == N.NULL_MASK) {
+            return Optional.empty();
+        } else {
+            return Optional.of(holder.value);
+        }
     }
 
     /**
@@ -493,7 +497,11 @@ public class AsyncExecutor {
             return Optional.empty();
         }
 
-        return holder.value == N.NULL_MASK ? Optional.empty() : Optional.of(holder.value);
+        if (holder.value == N.NULL_MASK) {
+            return Optional.empty();
+        } else {
+            return Optional.of(holder.value);
+        }
     }
 
     /**
@@ -539,7 +547,11 @@ public class AsyncExecutor {
             return Optional.empty();
         }
 
-        return holder.value == N.NULL_MASK ? Optional.empty() : Optional.of(holder.value);
+        if (holder.value == N.NULL_MASK) {
+            return Optional.empty();
+        } else {
+            return Optional.of(holder.value);
+        }
     }
 
     /**
@@ -577,7 +589,11 @@ public class AsyncExecutor {
             return OptionalNullable.empty();
         }
 
-        return holder.value == N.NULL_MASK ? OptionalNullable.empty() : OptionalNullable.of(holder.value);
+        if (holder.value == N.NULL_MASK) {
+            return OptionalNullable.empty();
+        } else {
+            return OptionalNullable.of(holder.value);
+        }
     }
 
     /**
@@ -615,7 +631,11 @@ public class AsyncExecutor {
             return OptionalNullable.empty();
         }
 
-        return holder.value == N.NULL_MASK ? OptionalNullable.empty() : OptionalNullable.of(holder.value);
+        if (holder.value == N.NULL_MASK) {
+            return OptionalNullable.empty();
+        } else {
+            return OptionalNullable.of(holder.value);
+        }
     }
 
     /**
@@ -661,7 +681,11 @@ public class AsyncExecutor {
             return OptionalNullable.empty();
         }
 
-        return holder.value == N.NULL_MASK ? OptionalNullable.empty() : OptionalNullable.of(holder.value);
+        if (holder.value == N.NULL_MASK) {
+            return OptionalNullable.empty();
+        } else {
+            return OptionalNullable.of(holder.value);
+        }
     }
 
     public static <T> BlockingQueue<Pair<T, Throwable>> concat(final CompletableFuture<? extends T>... a) {

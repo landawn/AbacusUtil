@@ -63,7 +63,7 @@ import com.landawn.abacus.util.stream.Stream;
  * 
  * @author Haiyang Li
  */
-public class Seq<T> implements Collection<T> {
+public final class Seq<T> implements Collection<T> {
     private final Collection<T> coll;
 
     public Seq() {

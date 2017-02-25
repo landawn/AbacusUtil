@@ -1375,6 +1375,22 @@ public final class N {
                                 }
                             }
                         }
+
+                        if (cls == null) {
+                            newClassName = clsName;
+                            int lastIndex = -1;
+
+                            while ((lastIndex = newClassName.lastIndexOf(D._PERIOD)) > 0) {
+                                newClassName = newClassName.substring(0, lastIndex) + "$" + newClassName.substring(lastIndex + 1);
+
+                                try {
+                                    cls = Class.forName(newClassName);
+                                    break;
+                                } catch (ClassNotFoundException e3) {
+                                    // ignore.
+                                }
+                            }
+                        }
                     }
                 }
             }

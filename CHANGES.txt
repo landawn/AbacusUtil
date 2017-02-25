@@ -3,6 +3,8 @@
 
 1, Improve Pair/Triple/Tuple...
 
+2, Add firstResult/firstSuccessResult/lastResult/lastSuccessResult to AsyncExecutor.
+
 3, Improvements and bug fix.
 
 
