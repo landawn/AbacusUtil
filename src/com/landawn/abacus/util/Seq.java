@@ -57,7 +57,7 @@ import com.landawn.abacus.util.stream.Collectors;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
- * It'a wrapper for <code>Collection</code> to more daily used and functional methods.
+ * It'a wrapper for <code>Collection</code> to support more daily used/functional methods.
  * 
  * @since 0.8
  * 
@@ -1349,6 +1349,10 @@ public final class Seq<T> implements Collection<T> {
      */
     @SuppressWarnings("rawtypes")
     public Seq<T> copyToList(final int from, final int to, final int step) {
+        if (step == 1) {
+            return copyToList(from, to);
+        }
+
         N.checkIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from, coll.size());
 
         if (coll instanceof List) {
@@ -1377,6 +1381,10 @@ public final class Seq<T> implements Collection<T> {
      * @see N#copyOfRange(int[], int, int, int)
      */
     public Seq<T> copyToSet(final int from, final int to, final int step) {
+        if (step == 1) {
+            return copyToSet(from, to);
+        }
+
         N.checkIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from, coll.size());
 
         @SuppressWarnings("rawtypes")
@@ -1403,6 +1411,10 @@ public final class Seq<T> implements Collection<T> {
      * @see N#copyOfRange(int[], int, int, int)
      */
     public Seq<T> copyTo(final IntFunction<? extends Collection<T>> supplier, final int from, final int to, final int step) {
+        if (step == 1) {
+            return copyTo(supplier, from, to);
+        }
+
         N.checkIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from, coll.size());
 
         @SuppressWarnings("rawtypes")

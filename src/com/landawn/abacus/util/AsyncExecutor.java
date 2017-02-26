@@ -193,7 +193,7 @@ public class AsyncExecutor {
      * @return
      */
     public static <T> Optional<Pair<T, Throwable>> firstResult(final CompletableFuture<? extends T>... a) {
-        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(2);
+        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(a.length);
 
         for (CompletableFuture<? extends T> future : a) {
             ((CompletableFuture<T>) future).callback(new Callback<T>() {
@@ -216,6 +216,7 @@ public class AsyncExecutor {
             }
         } catch (InterruptedException e) {
             // throw N.toRuntimeException(e);
+            logger.error("Thread is interrupted while retriving result from queue", e);
             return Optional.empty();
         }
 
@@ -229,7 +230,7 @@ public class AsyncExecutor {
      * @return
      */
     public static <T> Optional<Pair<T, Throwable>> firstResult(final Collection<? extends CompletableFuture<? extends T>> c) {
-        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(2);
+        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(c.size());
 
         for (CompletableFuture<? extends T> future : c) {
             ((CompletableFuture<T>) future).callback(new Callback<T>() {
@@ -252,6 +253,7 @@ public class AsyncExecutor {
             }
         } catch (InterruptedException e) {
             // throw N.toRuntimeException(e);
+            logger.error("Thread is interrupted while retriving result from queue", e);
             return Optional.empty();
         }
 
@@ -266,7 +268,7 @@ public class AsyncExecutor {
      * @return
      */
     public static <T> Optional<Pair<T, Throwable>> firstResult(final Collection<? extends CompletableFuture<? extends T>> c, final long maxTimeout) {
-        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(2);
+        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(c.size());
 
         for (CompletableFuture<? extends T> future : c) {
             ((CompletableFuture<T>) future).callback(new Callback<T>() {
@@ -297,6 +299,7 @@ public class AsyncExecutor {
             }
         } catch (InterruptedException e) {
             // throw N.toRuntimeException(e);
+            logger.error("Thread is interrupted while retriving result from queue", e);
             return Optional.empty();
         }
 
@@ -310,7 +313,7 @@ public class AsyncExecutor {
      * @return
      */
     public static <T> OptionalNullable<T> firstSuccessResult(final CompletableFuture<? extends T>... a) {
-        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(2);
+        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(a.length);
 
         for (CompletableFuture<? extends T> future : a) {
             ((CompletableFuture<T>) future).callback(new Callback<T>() {
@@ -333,6 +336,7 @@ public class AsyncExecutor {
             }
         } catch (InterruptedException e) {
             // throw N.toRuntimeException(e);
+            logger.error("Thread is interrupted while retriving result from queue", e);
             return OptionalNullable.empty();
         }
 
@@ -346,7 +350,7 @@ public class AsyncExecutor {
      * @return
      */
     public static <T> OptionalNullable<T> firstSuccessResult(final Collection<? extends CompletableFuture<? extends T>> c) {
-        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(2);
+        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(c.size());
 
         for (CompletableFuture<? extends T> future : c) {
             ((CompletableFuture<T>) future).callback(new Callback<T>() {
@@ -369,6 +373,7 @@ public class AsyncExecutor {
             }
         } catch (InterruptedException e) {
             // throw N.toRuntimeException(e);
+            logger.error("Thread is interrupted while retriving result from queue", e);
             return OptionalNullable.empty();
         }
 
@@ -383,7 +388,7 @@ public class AsyncExecutor {
      * @return
      */
     public static <T> OptionalNullable<T> firstSuccessResult(final Collection<? extends CompletableFuture<? extends T>> c, final long maxTimeout) {
-        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(2);
+        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(c.size());
 
         for (CompletableFuture<? extends T> future : c) {
             ((CompletableFuture<T>) future).callback(new Callback<T>() {
@@ -414,6 +419,7 @@ public class AsyncExecutor {
             }
         } catch (InterruptedException e) {
             // throw N.toRuntimeException(e);
+            logger.error("Thread is interrupted while retriving result from queue", e);
             return OptionalNullable.empty();
         }
 
@@ -427,7 +433,7 @@ public class AsyncExecutor {
      * @return
      */
     public static <T> Optional<Pair<T, Throwable>> lastResult(final CompletableFuture<? extends T>... a) {
-        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(2);
+        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(a.length);
 
         for (CompletableFuture<? extends T> future : a) {
             ((CompletableFuture<T>) future).callback(new Callback<T>() {
@@ -452,6 +458,7 @@ public class AsyncExecutor {
             }
         } catch (InterruptedException e) {
             // throw N.toRuntimeException(e);
+            logger.error("Thread is interrupted while retriving result from queue", e);
             return Optional.empty();
         }
 
@@ -469,7 +476,7 @@ public class AsyncExecutor {
      * @return
      */
     public static <T> Optional<Pair<T, Throwable>> lastResult(final Collection<? extends CompletableFuture<? extends T>> c) {
-        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(2);
+        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(c.size());
 
         for (CompletableFuture<? extends T> future : c) {
             ((CompletableFuture<T>) future).callback(new Callback<T>() {
@@ -494,6 +501,7 @@ public class AsyncExecutor {
             }
         } catch (InterruptedException e) {
             // throw N.toRuntimeException(e);
+            logger.error("Thread is interrupted while retriving result from queue", e);
             return Optional.empty();
         }
 
@@ -512,7 +520,7 @@ public class AsyncExecutor {
      * @return
      */
     public static <T> Optional<Pair<T, Throwable>> lastResult(final Collection<? extends CompletableFuture<? extends T>> c, final long maxTimeout) {
-        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(2);
+        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(c.size());
 
         for (CompletableFuture<? extends T> future : c) {
             ((CompletableFuture<T>) future).callback(new Callback<T>() {
@@ -544,6 +552,7 @@ public class AsyncExecutor {
             }
         } catch (InterruptedException e) {
             // throw N.toRuntimeException(e);
+            logger.error("Thread is interrupted while retriving result from queue", e);
             return Optional.empty();
         }
 
@@ -561,7 +570,7 @@ public class AsyncExecutor {
      * @return
      */
     public static <T> OptionalNullable<T> lastSuccessResult(final CompletableFuture<? extends T>... a) {
-        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(2);
+        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(a.length);
 
         for (CompletableFuture<? extends T> future : a) {
             ((CompletableFuture<T>) future).callback(new Callback<T>() {
@@ -586,6 +595,7 @@ public class AsyncExecutor {
             }
         } catch (InterruptedException e) {
             // throw N.toRuntimeException(e);
+            logger.error("Thread is interrupted while retriving result from queue", e);
             return OptionalNullable.empty();
         }
 
@@ -603,7 +613,7 @@ public class AsyncExecutor {
      * @return
      */
     public static <T> OptionalNullable<T> lastSuccessResult(final Collection<? extends CompletableFuture<? extends T>> c) {
-        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(2);
+        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(c.size());
 
         for (CompletableFuture<? extends T> future : c) {
             ((CompletableFuture<T>) future).callback(new Callback<T>() {
@@ -628,6 +638,7 @@ public class AsyncExecutor {
             }
         } catch (InterruptedException e) {
             // throw N.toRuntimeException(e);
+            logger.error("Thread is interrupted while retriving result from queue", e);
             return OptionalNullable.empty();
         }
 
@@ -646,7 +657,7 @@ public class AsyncExecutor {
      * @return
      */
     public static <T> OptionalNullable<T> lastSuccessResult(final Collection<? extends CompletableFuture<? extends T>> c, final long maxTimeout) {
-        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(2);
+        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(c.size());
 
         for (CompletableFuture<? extends T> future : c) {
             ((CompletableFuture<T>) future).callback(new Callback<T>() {
@@ -678,6 +689,7 @@ public class AsyncExecutor {
             }
         } catch (InterruptedException e) {
             // throw N.toRuntimeException(e);
+            logger.error("Thread is interrupted while retriving result from queue", e);
             return OptionalNullable.empty();
         }
 
@@ -689,7 +701,7 @@ public class AsyncExecutor {
     }
 
     public static <T> BlockingQueue<Pair<T, Throwable>> concat(final CompletableFuture<? extends T>... a) {
-        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(2);
+        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(a.length);
 
         for (CompletableFuture<? extends T> future : a) {
             ((CompletableFuture<T>) future).callback(new Callback<T>() {
@@ -710,7 +722,7 @@ public class AsyncExecutor {
      * @return
      */
     public static <T> BlockingQueue<Pair<T, Throwable>> concat(final Collection<? extends CompletableFuture<? extends T>> c) {
-        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(2);
+        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(c.size());
 
         for (CompletableFuture<? extends T> future : c) {
             ((CompletableFuture<T>) future).callback(new Callback<T>() {
