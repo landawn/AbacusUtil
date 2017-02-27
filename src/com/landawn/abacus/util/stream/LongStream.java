@@ -1142,6 +1142,10 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
         });
     }
 
+    public static LongStream interval(final long intervalInMillis) {
+        return interval(N.currentMillis(), intervalInMillis);
+    }
+
     /**
      * Generates the long value by the specified period.
      * 

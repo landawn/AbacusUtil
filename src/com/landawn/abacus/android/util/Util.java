@@ -700,11 +700,12 @@ public abstract class Util {
      * 
      * @param action
      */
-    public static void runInBackground(final Runnable action) {
+    public static CompletableFuture<Void> runInBackground(final Runnable action) {
         if (isUiThread()) {
-            AsyncExecutor.execute(action);
+            return AsyncExecutor.execute(action);
         } else {
             action.run();
+            return CompletableFuture.completed(null);
         }
     }
 
@@ -726,14 +727,14 @@ public abstract class Util {
      * @param action
      * @return
      */
-    public static <T> void runInBackground(final Callable<T> action) {
+    public static <T> CompletableFuture<T> runInBackground(final Callable<T> action) {
         if (isUiThread()) {
-            AsyncExecutor.execute(action);
+            return AsyncExecutor.execute(action);
         } else {
             try {
-                action.call();
+                return CompletableFuture.completed(action.call());
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw N.toRuntimeException(e);
             }
         }
     }
@@ -756,11 +757,12 @@ public abstract class Util {
      * 
      * @param action
      */
-    public static void runInParallel(final Runnable action) {
+    public static CompletableFuture<Void> runInParallel(final Runnable action) {
         if (isUiThread()) {
-            AsyncExecutor.executeInParallel(action);
+            return AsyncExecutor.executeInParallel(action);
         } else {
             action.run();
+            return CompletableFuture.completed(null);
         }
     }
 
@@ -782,14 +784,14 @@ public abstract class Util {
      * @param action
      * @return
      */
-    public static <T> void runInParallel(final Callable<T> action) {
+    public static <T> CompletableFuture<T> runInParallel(final Callable<T> action) {
         if (isUiThread()) {
-            AsyncExecutor.executeInParallel(action);
+            return AsyncExecutor.executeInParallel(action);
         } else {
             try {
-                action.call();
+                return CompletableFuture.completed(action.call());
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw N.toRuntimeException(e);
             }
         }
     }
@@ -812,11 +814,12 @@ public abstract class Util {
      * 
      * @param action
      */
-    public static void runOnUiThread(final Runnable action) {
+    public static CompletableFuture<Void> runOnUiThread(final Runnable action) {
         if (isUiThread()) {
             action.run();
+            return CompletableFuture.completed(null);
         } else {
-            AsyncExecutor.executeOnUiThread(action);
+            return AsyncExecutor.executeOnUiThread(action);
         }
     }
 
@@ -838,15 +841,15 @@ public abstract class Util {
      * @param action
      * @return
      */
-    public static <T> void runOnUiThread(final Callable<T> action) {
+    public static <T> CompletableFuture<T> runOnUiThread(final Callable<T> action) {
         if (isUiThread()) {
             try {
-                action.call();
+                return CompletableFuture.completed(action.call());
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw N.toRuntimeException(e);
             }
         } else {
-            AsyncExecutor.executeOnUiThread(action);
+            return AsyncExecutor.executeOnUiThread(action);
         }
     }
 
@@ -873,7 +876,7 @@ public abstract class Util {
     //            try {
     //                AsyncExecutor.execute(action).get();
     //            } catch (InterruptedException | ExecutionException e) {
-    //                throw new RuntimeException(e);
+    //                throw N.toRuntimeException(e);
     //            }
     //        } else {
     //            action.run();
@@ -903,13 +906,13 @@ public abstract class Util {
     //            try {
     //                return AsyncExecutor.execute(action).get();
     //            } catch (InterruptedException | ExecutionException e) {
-    //                throw new RuntimeException(e);
+    //                throw N.toRuntimeException(e);
     //            }
     //        } else {
     //            try {
     //                return action.call();
     //            } catch (Exception e) {
-    //                throw new RuntimeException(e);
+    //                throw N.toRuntimeException(e);
     //            }
     //        }
     //    }
@@ -941,7 +944,7 @@ public abstract class Util {
     //            try {
     //                AsyncExecutor.executeInParallel(action).get();
     //            } catch (InterruptedException | ExecutionException e) {
-    //                throw new RuntimeException(e);
+    //                throw N.toRuntimeException(e);
     //            }
     //        } else {
     //            action.run();
@@ -971,13 +974,13 @@ public abstract class Util {
     //            try {
     //                return AsyncExecutor.executeInParallel(action).get();
     //            } catch (InterruptedException | ExecutionException e) {
-    //                throw new RuntimeException(e);
+    //                throw N.toRuntimeException(e);
     //            }
     //        } else {
     //            try {
     //                return action.call();
     //            } catch (Exception e) {
-    //                throw new RuntimeException(e);
+    //                throw N.toRuntimeException(e);
     //            }
     //        }
     //    }
@@ -1011,7 +1014,7 @@ public abstract class Util {
     //            try {
     //                AsyncExecutor.executeOnUiThread(action).get();
     //            } catch (InterruptedException | ExecutionException e) {
-    //                throw new RuntimeException(e);
+    //                throw N.toRuntimeException(e);
     //            }
     //        }
     //    }
@@ -1039,13 +1042,13 @@ public abstract class Util {
     //            try {
     //                return action.call();
     //            } catch (Exception e) {
-    //                throw new RuntimeException(e);
+    //                throw N.toRuntimeException(e);
     //            }
     //        } else {
     //            try {
     //                return AsyncExecutor.executeOnUiThread(action).get();
     //            } catch (InterruptedException | ExecutionException e) {
-    //                throw new RuntimeException(e);
+    //                throw N.toRuntimeException(e);
     //            }
     //        }
     //    }

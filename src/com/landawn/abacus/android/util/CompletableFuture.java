@@ -24,6 +24,7 @@ import java.util.concurrent.TimeoutException;
 import com.landawn.abacus.util.Callback;
 import com.landawn.abacus.util.Callback2;
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.ThreadMode;
 
 /**
@@ -39,11 +40,11 @@ public class CompletableFuture<T> implements RunnableFuture<T> {
     private volatile boolean actionExecuted = false;
 
     CompletableFuture(Callable<T> callable) {
-        this.futureTask = new FutureTask<T>(callable);
+        this.futureTask = new FutureTask<>(callable);
     }
 
     CompletableFuture(Runnable runnable, T result) {
-        this.futureTask = new FutureTask<T>(runnable, result);
+        this.futureTask = new FutureTask<>(runnable, result);
     }
 
     /**
@@ -52,7 +53,7 @@ public class CompletableFuture<T> implements RunnableFuture<T> {
      * @return a {@code CompletableFuture} which is already completed.
      */
     public static <T> CompletableFuture<T> completed(T result) {
-        return new CompletedFuture<T>(result);
+        return new CompletedFuture<>(result);
     }
 
     @Override
@@ -73,6 +74,14 @@ public class CompletableFuture<T> implements RunnableFuture<T> {
     @Override
     public T get() throws InterruptedException, ExecutionException {
         return futureTask.get();
+    }
+
+    public Pair<T, Throwable> get2() {
+        try {
+            return Pair.of(get(), null);
+        } catch (Throwable e) {
+            return Pair.of(null, e);
+        }
     }
 
     @Override

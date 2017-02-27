@@ -875,7 +875,42 @@ public class AsyncExecutor {
         }
     }
 
-    public static <T> BlockingQueue<Pair<T, Throwable>> concat(final CompletableFuture<? extends T>... a) {
+    public static <T> List<Pair<T, Throwable>> concat(final CompletableFuture<? extends T>... a) {
+        final List<Pair<T, Throwable>> queue = new ArrayList<>(a.length);
+
+        for (CompletableFuture<? extends T> future : a) {
+            ((CompletableFuture<T>) future).get(new Callback<T>() {
+                @Override
+                public void on(Throwable e, T result) {
+                    queue.add(Pair.of(result, e));
+                }
+            });
+        }
+
+        return queue;
+    }
+
+    /**
+     * 
+     * @param c
+     * @return
+     */
+    public static <T> List<Pair<T, Throwable>> concat(final Collection<? extends CompletableFuture<? extends T>> c) {
+        final List<Pair<T, Throwable>> queue = new ArrayList<>(c.size());
+
+        for (CompletableFuture<? extends T> future : c) {
+            ((CompletableFuture<T>) future).get(new Callback<T>() {
+                @Override
+                public void on(Throwable e, T result) {
+                    queue.add(Pair.of(result, e));
+                }
+            });
+        }
+
+        return queue;
+    }
+
+    public static <T> BlockingQueue<Pair<T, Throwable>> parallelConcat(final CompletableFuture<? extends T>... a) {
         final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(a.length);
 
         for (CompletableFuture<? extends T> future : a) {
@@ -891,12 +926,11 @@ public class AsyncExecutor {
     }
 
     /**
-     * Returns the first result, which could be an exception.
      * 
      * @param c
      * @return
      */
-    public static <T> BlockingQueue<Pair<T, Throwable>> concat(final Collection<? extends CompletableFuture<? extends T>> c) {
+    public static <T> BlockingQueue<Pair<T, Throwable>> parallelConcat(final Collection<? extends CompletableFuture<? extends T>> c) {
         final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(c.size());
 
         for (CompletableFuture<? extends T> future : c) {
