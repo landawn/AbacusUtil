@@ -16,23 +16,11 @@
 
 package com.landawn.abacus.android.util;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Executor;
+import java.util.concurrent.FutureTask;
 
 import com.landawn.abacus.annotation.Beta;
-import com.landawn.abacus.logging.Logger;
-import com.landawn.abacus.logging.LoggerFactory;
-import com.landawn.abacus.util.Callback;
-import com.landawn.abacus.util.Holder;
-import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.Optional;
-import com.landawn.abacus.util.OptionalNullable;
-import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Retry;
 import com.landawn.abacus.util.Retry.Retry0;
 import com.landawn.abacus.util.function.BiFunction;
@@ -44,7 +32,7 @@ import android.os.Looper;
 
 /**
  * <pre>
- * AsyncExecutor.executeInParallel(() -> { // download image })
+ * AsyncExecutor.executeWithThreadPool(() -> { // download image })
     .executeOnUiThread((e, image) -> {// refresh UI })
     .execute((e, image) -> {// convert image to bitmap format})
     .callbackOnUiThread((e, bitmap) -> {// update UI});
@@ -55,8 +43,10 @@ import android.os.Looper;
  * @author Haiyang Li
  */
 public class AsyncExecutor {
-    private static final Logger logger = LoggerFactory.getLogger(Asyn.class);
-    private static final Handler HANDLER = new Handler(Looper.getMainLooper());
+
+    static final UIExecutor UI_EXECUTOR = new UIExecutor();
+    static final Executor SERIAL_EXECUTOR = AsyncTask.SERIAL_EXECUTOR;
+    static final Executor THREAD_POOL_EXECUTOR = AsyncTask.THREAD_POOL_EXECUTOR;
 
     private AsyncExecutor() {
         // Singleton
@@ -69,7 +59,7 @@ public class AsyncExecutor {
      * @return
      */
     public static CompletableFuture<Void> execute(final Runnable action) {
-        return execute(new CompletableFuture<Void>(action, null));
+        return execute(new FutureTask<Void>(action, null), SERIAL_EXECUTOR);
     }
 
     public static CompletableFuture<Void> execute(final Runnable action, final int retryTimes, final long retryInterval,
@@ -82,17 +72,6 @@ public class AsyncExecutor {
         });
     }
 
-    @Beta
-    static List<CompletableFuture<Void>> execute(final List<? extends Runnable> actions) {
-        final List<CompletableFuture<Void>> results = new ArrayList<>(actions.size());
-
-        for (Runnable cmd : actions) {
-            results.add(execute(cmd));
-        }
-
-        return results;
-    }
-
     /**
      * The action will be asynchronously executed with {@code android.io.AsyncTask#SERIAL_EXECUTOR} in background.
      * 
@@ -100,7 +79,7 @@ public class AsyncExecutor {
      * @return
      */
     public static <T> CompletableFuture<T> execute(final Callable<T> action) {
-        return execute(new CompletableFuture<>(action));
+        return execute(new FutureTask<>(action), SERIAL_EXECUTOR);
     }
 
     public static <T> CompletableFuture<T> execute(final Callable<T> action, final int retryTimes, final long retryInterval,
@@ -115,41 +94,18 @@ public class AsyncExecutor {
     }
 
     /**
-     * The actions will be asynchronously executed with {@code android.io.AsyncTask#SERIAL_EXECUTOR} in background.
-     * 
-     * @param actions
-     * @return
-     */
-    @Beta
-    static <T> List<CompletableFuture<T>> execute(final Collection<? extends Callable<T>> actions) {
-        final List<CompletableFuture<T>> results = new ArrayList<>(actions.size());
-
-        for (Callable<T> cmd : actions) {
-            results.add(execute(cmd));
-        }
-
-        return results;
-    }
-
-    private static <T> CompletableFuture<T> execute(final CompletableFuture<T> callableFuture) {
-        AsyncTask.SERIAL_EXECUTOR.execute(callableFuture);
-
-        return callableFuture;
-    }
-
-    /**
      * The action will be asynchronously executed with {@code android.io.AsyncTask#THREAD_POOL_EXECUTOR} in background.
      * 
      * @param action
      * @return
      */
-    public static CompletableFuture<Void> executeInParallel(final Runnable action) {
-        return executeInParallel(new CompletableFuture<Void>(action, null));
+    public static CompletableFuture<Void> executeWithThreadPool(final Runnable action) {
+        return execute(new FutureTask<Void>(action, null), THREAD_POOL_EXECUTOR);
     }
 
-    public static CompletableFuture<Void> executeInParallel(final Runnable action, final int retryTimes, final long retryInterval,
+    public static CompletableFuture<Void> executeWithThreadPool(final Runnable action, final int retryTimes, final long retryInterval,
             final Function<Throwable, Boolean> retryCondition) {
-        return executeInParallel(new Runnable() {
+        return executeWithThreadPool(new Runnable() {
             @Override
             public void run() {
                 Retry.of(retryTimes, retryInterval, retryCondition).run(action);
@@ -158,35 +114,18 @@ public class AsyncExecutor {
     }
 
     /**
-     * The actions will be asynchronously executed with {@code android.io.AsyncTask#THREAD_POOL_EXECUTOR} in background.
-     * 
-     * @param actions
-     * @return
-     */
-    @Beta
-    static List<CompletableFuture<Void>> executeInParallel(final List<? extends Runnable> actions) {
-        final List<CompletableFuture<Void>> results = new ArrayList<>(actions.size());
-
-        for (Runnable cmd : actions) {
-            results.add(executeInParallel(cmd));
-        }
-
-        return results;
-    }
-
-    /**
      * The action will be asynchronously executed with {@code android.io.AsyncTask#THREAD_POOL_EXECUTOR} in background.
      * 
      * @param action
      * @return
      */
-    public static <T> CompletableFuture<T> executeInParallel(final Callable<T> action) {
-        return executeInParallel(new CompletableFuture<>(action));
+    public static <T> CompletableFuture<T> executeWithThreadPool(final Callable<T> action) {
+        return execute(new FutureTask<>(action), THREAD_POOL_EXECUTOR);
     }
 
-    public static <T> CompletableFuture<T> executeInParallel(final Callable<T> action, final int retryTimes, final long retryInterval,
+    public static <T> CompletableFuture<T> executeWithThreadPool(final Callable<T> action, final int retryTimes, final long retryInterval,
             final BiFunction<? super T, Throwable, Boolean> retryCondition) {
-        return executeInParallel(new Callable<T>() {
+        return executeWithThreadPool(new Callable<T>() {
             @Override
             public T call() throws Exception {
                 final Retry0<T> retry = Retry0.of(retryTimes, retryInterval, retryCondition);
@@ -196,36 +135,13 @@ public class AsyncExecutor {
     }
 
     /**
-     * The actions will be asynchronously executed with {@code android.io.AsyncTask#THREAD_POOL_EXECUTOR} in background.
-     * 
-     * @param actions
-     * @return
-     */
-    @Beta
-    static <T> List<CompletableFuture<T>> executeInParallel(final Collection<? extends Callable<T>> actions) {
-        final List<CompletableFuture<T>> results = new ArrayList<>(actions.size());
-
-        for (Callable<T> cmd : actions) {
-            results.add(executeInParallel(cmd));
-        }
-
-        return results;
-    }
-
-    private static <T> CompletableFuture<T> executeInParallel(final CompletableFuture<T> callableFuture) {
-        AsyncTask.THREAD_POOL_EXECUTOR.execute(callableFuture);
-
-        return callableFuture;
-    }
-
-    /**
      * The action will be asynchronously executed in UI thread.
      * 
      * @param action
      * @return
      */
     public static CompletableFuture<Void> executeOnUiThread(final Runnable action) {
-        return executeOnUiThread(new CompletableFuture<Void>(action, null), 0);
+        return executeOnUiThread(action, 0);
     }
 
     /**
@@ -236,7 +152,7 @@ public class AsyncExecutor {
      * @return
      */
     public static CompletableFuture<Void> executeOnUiThread(final Runnable action, final long delay) {
-        return executeOnUiThread(new CompletableFuture<Void>(action, null), delay);
+        return execute(new FutureTask<Void>(action, null), UI_EXECUTOR, delay);
     }
 
     public static CompletableFuture<Void> executeOnUiThread(final Runnable action, final int retryTimes, final long retryInterval,
@@ -250,48 +166,13 @@ public class AsyncExecutor {
     }
 
     /**
-     * The actions will be asynchronously executed in UI thread.
-     * 
-     * @param actions
-     * @return
-     */
-    @Beta
-    static List<CompletableFuture<Void>> executeOnUiThread(final List<? extends Runnable> actions) {
-        final List<CompletableFuture<Void>> results = new ArrayList<>(actions.size());
-
-        for (Runnable cmd : actions) {
-            results.add(executeOnUiThread(cmd));
-        }
-
-        return results;
-    }
-
-    /**
-     * The actions will be asynchronously executed in UI thread.
-     * 
-     * @param actions
-     * @param delay
-     * @return
-     */
-    @Beta
-    static List<CompletableFuture<Void>> executeOnUiThread(final List<? extends Runnable> actions, final long delay) {
-        final List<CompletableFuture<Void>> results = new ArrayList<>(actions.size());
-
-        for (Runnable cmd : actions) {
-            results.add(executeOnUiThread(cmd, delay));
-        }
-
-        return results;
-    }
-
-    /**
      * The action will be asynchronously executed in UI thread.
      * 
      * @param action
      * @return
      */
     public static <T> CompletableFuture<T> executeOnUiThread(final Callable<T> action) {
-        return executeOnUiThread(new CompletableFuture<>(action), 0);
+        return executeOnUiThread(action, 0);
     }
 
     /**
@@ -302,7 +183,7 @@ public class AsyncExecutor {
      * @return
      */
     public static <T> CompletableFuture<T> executeOnUiThread(final Callable<T> action, final long delay) {
-        return executeOnUiThread(new CompletableFuture<>(action), delay);
+        return execute(new FutureTask<>(action), UI_EXECUTOR, delay);
     }
 
     public static <T> CompletableFuture<T> executeOnUiThread(final Callable<T> action, final int retryTimes, final long retryInterval,
@@ -316,633 +197,33 @@ public class AsyncExecutor {
         });
     }
 
-    /**
-     * The actions will be asynchronously executed in UI thread.
-     * 
-     * @param actions
-     * @return
-     */
-    @Beta
-    static <T> List<CompletableFuture<T>> executeOnUiThread(final Collection<? extends Callable<T>> actions) {
-        final List<CompletableFuture<T>> results = new ArrayList<>(actions.size());
+    private static <T> CompletableFuture<T> execute(final FutureTask<T> futureTask, final Executor executor) {
+        executor.execute(futureTask);
 
-        for (Callable<T> cmd : actions) {
-            results.add(executeOnUiThread(cmd));
-        }
-
-        return results;
+        return new CompletableFuture<>(futureTask, executor);
     }
 
-    /**
-     * The actions will be asynchronously executed in UI thread.
-     * 
-     * @param actions
-     * @param delay
-     * @return
-     */
-    @Beta
-    static <T> List<CompletableFuture<T>> executeOnUiThread(final Collection<? extends Callable<T>> actions, final long delay) {
-        final List<CompletableFuture<T>> results = new ArrayList<>(actions.size());
+    private static <T> CompletableFuture<T> execute(final FutureTask<T> futureTask, final UIExecutor executor, final long delay) {
+        executor.execute(futureTask, delay);
 
-        for (Callable<T> cmd : actions) {
-            results.add(executeOnUiThread(cmd, delay));
-        }
-
-        return results;
+        return new CompletableFuture<>(futureTask, executor);
     }
 
-    private static <T> CompletableFuture<T> executeOnUiThread(final CompletableFuture<T> callableFuture, final long delay) {
-        if (delay > 0) {
-            HANDLER.postDelayed(callableFuture, delay);
-        } else {
-            HANDLER.post(callableFuture);
+    static final class UIExecutor implements Executor {
+        private static final Handler HANDLER = new Handler(Looper.getMainLooper());
+
+        @Override
+        public void execute(Runnable command) {
+            HANDLER.post(command);
         }
 
-        return callableFuture;
-    }
-
-    /**
-     * Returns the first result, which could be an exception.
-     * 
-     * @param a
-     * @return
-     */
-    public static <T> Optional<Pair<T, Throwable>> firstResult(final CompletableFuture<? extends T>... a) {
-        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(a.length);
-
-        for (CompletableFuture<? extends T> future : a) {
-            ((CompletableFuture<T>) future).callback(new Callback<T>() {
-                @Override
-                public void on(Throwable e, T result) {
-                    queue.offer(Pair.of(result, e));
-                }
-            });
-        }
-
-        try {
-            Pair<T, Throwable> result = null;
-
-            for (int i = 0, len = a.length; i < len; i++) {
-                result = queue.poll(Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
-
-                if (result != null) {
-                    return Optional.of(result);
-                }
+        public void execute(Runnable command, final long delay) {
+            if (delay > 0) {
+                HANDLER.postDelayed(command, delay);
+            } else {
+                HANDLER.post(command);
             }
-        } catch (InterruptedException e) {
-            // throw N.toRuntimeException(e);
-            logger.error("Thread is interrupted while retriving result from queue", e);
-            return Optional.empty();
         }
-
-        return Optional.empty();
-    }
-
-    /**
-     * Returns the first result, which could be an exception.
-     * 
-     * @param c
-     * @return
-     */
-    public static <T> Optional<Pair<T, Throwable>> firstResult(final Collection<? extends CompletableFuture<? extends T>> c) {
-        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(c.size());
-
-        for (CompletableFuture<? extends T> future : c) {
-            ((CompletableFuture<T>) future).callback(new Callback<T>() {
-                @Override
-                public void on(Throwable e, T result) {
-                    queue.offer(Pair.of(result, e));
-                }
-            });
-        }
-
-        try {
-            Pair<T, Throwable> result = null;
-
-            for (int i = 0, len = c.size(); i < len; i++) {
-                result = queue.poll(Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
-
-                if (result != null) {
-                    return Optional.of(result);
-                }
-            }
-        } catch (InterruptedException e) {
-            // throw N.toRuntimeException(e);
-            logger.error("Thread is interrupted while retriving result from queue", e);
-            return Optional.empty();
-        }
-
-        return Optional.empty();
-    }
-
-    /**
-     * Returns the first result, which could be an exception.
-     * 
-     * @param c
-     * @param maxTimeout
-     * @return
-     */
-    public static <T> Optional<Pair<T, Throwable>> firstResult(final Collection<? extends CompletableFuture<? extends T>> c, final long maxTimeout) {
-        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(c.size());
-
-        for (CompletableFuture<? extends T> future : c) {
-            ((CompletableFuture<T>) future).callback(new Callback<T>() {
-                @Override
-                public void on(Throwable e, T result) {
-                    queue.offer(Pair.of(result, e));
-                }
-            });
-        }
-
-        final long endTime = N.currentMillis() + maxTimeout;
-
-        try {
-            Pair<T, Throwable> result = null;
-
-            for (int i = 0, len = c.size(); i < len; i++) {
-                long timeout = endTime - N.currentMillis();
-
-                if (timeout <= 0) {
-                    return Optional.empty();
-                }
-
-                result = queue.poll(timeout, TimeUnit.MILLISECONDS);
-
-                if (result != null) {
-                    return Optional.of(result);
-                }
-            }
-        } catch (InterruptedException e) {
-            // throw N.toRuntimeException(e);
-            logger.error("Thread is interrupted while retriving result from queue", e);
-            return Optional.empty();
-        }
-
-        return Optional.empty();
-    }
-
-    /**
-     * Returns the first non-exception result or empty if fail to get result for all futures.
-     * 
-     * @param a
-     * @return
-     */
-    public static <T> OptionalNullable<T> firstSuccessResult(final CompletableFuture<? extends T>... a) {
-        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(a.length);
-
-        for (CompletableFuture<? extends T> future : a) {
-            ((CompletableFuture<T>) future).callback(new Callback<T>() {
-                @Override
-                public void on(Throwable e, T result) {
-                    queue.offer(Pair.of(result, e));
-                }
-            });
-        }
-
-        try {
-            Pair<T, Throwable> result = null;
-
-            for (int i = 0, len = a.length; i < len; i++) {
-                result = queue.poll(Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
-
-                if (result != null && result.right == null) {
-                    return OptionalNullable.of(result.left);
-                }
-            }
-        } catch (InterruptedException e) {
-            // throw N.toRuntimeException(e);
-            logger.error("Thread is interrupted while retriving result from queue", e);
-            return OptionalNullable.empty();
-        }
-
-        return OptionalNullable.empty();
-    }
-
-    /**
-     * Returns the first non-exception result or empty if fail to get result for all futures.
-     * 
-     * @param c
-     * @return
-     */
-    public static <T> OptionalNullable<T> firstSuccessResult(final Collection<? extends CompletableFuture<? extends T>> c) {
-        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(c.size());
-
-        for (CompletableFuture<? extends T> future : c) {
-            ((CompletableFuture<T>) future).callback(new Callback<T>() {
-                @Override
-                public void on(Throwable e, T result) {
-                    queue.offer(Pair.of(result, e));
-                }
-            });
-        }
-
-        try {
-            Pair<T, Throwable> result = null;
-
-            for (int i = 0, len = c.size(); i < len; i++) {
-                result = queue.poll(Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
-
-                if (result != null && result.right == null) {
-                    return OptionalNullable.of(result.left);
-                }
-            }
-        } catch (InterruptedException e) {
-            // throw N.toRuntimeException(e);
-            logger.error("Thread is interrupted while retriving result from queue", e);
-            return OptionalNullable.empty();
-        }
-
-        return OptionalNullable.empty();
-    }
-
-    /**
-     * Returns the first result, which could be an exception.
-     * 
-     * @param c
-     * @param maxTimeout
-     * @return
-     */
-    public static <T> OptionalNullable<T> firstSuccessResult(final Collection<? extends CompletableFuture<? extends T>> c, final long maxTimeout) {
-        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(c.size());
-
-        for (CompletableFuture<? extends T> future : c) {
-            ((CompletableFuture<T>) future).callback(new Callback<T>() {
-                @Override
-                public void on(Throwable e, T result) {
-                    queue.offer(Pair.of(result, e));
-                }
-            });
-        }
-
-        final long endTime = N.currentMillis() + maxTimeout;
-
-        try {
-            Pair<T, Throwable> result = null;
-
-            for (int i = 0, len = c.size(); i < len; i++) {
-                long timeout = endTime - N.currentMillis();
-
-                if (timeout <= 0) {
-                    return OptionalNullable.empty();
-                }
-
-                result = queue.poll(timeout, TimeUnit.MILLISECONDS);
-
-                if (result != null && result.right == null) {
-                    return OptionalNullable.of(result.left);
-                }
-            }
-        } catch (InterruptedException e) {
-            // throw N.toRuntimeException(e);
-            logger.error("Thread is interrupted while retriving result from queue", e);
-            return OptionalNullable.empty();
-        }
-
-        return OptionalNullable.empty();
-    }
-
-    /**
-     * Returns the first result, which could be an exception.
-     * 
-     * @param a
-     * @return
-     */
-    public static <T> Optional<Pair<T, Throwable>> lastResult(final CompletableFuture<? extends T>... a) {
-        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(a.length);
-
-        for (CompletableFuture<? extends T> future : a) {
-            ((CompletableFuture<T>) future).callback(new Callback<T>() {
-                @Override
-                public void on(Throwable e, T result) {
-                    queue.offer(Pair.of(result, e));
-                }
-            });
-        }
-
-        final Holder<Pair<T, Throwable>> holder = new Holder<>((Pair<T, Throwable>) N.NULL_MASK);
-
-        try {
-            Pair<T, Throwable> result = null;
-
-            for (int i = 0, len = a.length; i < len; i++) {
-                result = queue.poll(Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
-
-                if (result != null) {
-                    holder.setValue(result);
-                }
-            }
-        } catch (InterruptedException e) {
-            // throw N.toRuntimeException(e);
-            logger.error("Thread is interrupted while retriving result from queue", e);
-            return Optional.empty();
-        }
-
-        if (holder.value == N.NULL_MASK) {
-            return Optional.empty();
-        } else {
-            return Optional.of(holder.value);
-        }
-    }
-
-    /**
-     * Returns the first result, which could be an exception.
-     * 
-     * @param c
-     * @return
-     */
-    public static <T> Optional<Pair<T, Throwable>> lastResult(final Collection<? extends CompletableFuture<? extends T>> c) {
-        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(c.size());
-
-        for (CompletableFuture<? extends T> future : c) {
-            ((CompletableFuture<T>) future).callback(new Callback<T>() {
-                @Override
-                public void on(Throwable e, T result) {
-                    queue.offer(Pair.of(result, e));
-                }
-            });
-        }
-
-        final Holder<Pair<T, Throwable>> holder = new Holder<>((Pair<T, Throwable>) N.NULL_MASK);
-
-        try {
-            Pair<T, Throwable> result = null;
-
-            for (int i = 0, len = c.size(); i < len; i++) {
-                result = queue.poll(Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
-
-                if (result != null) {
-                    holder.setValue(result);
-                }
-            }
-        } catch (InterruptedException e) {
-            // throw N.toRuntimeException(e);
-            logger.error("Thread is interrupted while retriving result from queue", e);
-            return Optional.empty();
-        }
-
-        if (holder.value == N.NULL_MASK) {
-            return Optional.empty();
-        } else {
-            return Optional.of(holder.value);
-        }
-    }
-
-    /**
-     * Returns the first result, which could be an exception.
-     * 
-     * @param c
-     * @param maxTimeout
-     * @return
-     */
-    public static <T> Optional<Pair<T, Throwable>> lastResult(final Collection<? extends CompletableFuture<? extends T>> c, final long maxTimeout) {
-        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(c.size());
-
-        for (CompletableFuture<? extends T> future : c) {
-            ((CompletableFuture<T>) future).callback(new Callback<T>() {
-                @Override
-                public void on(Throwable e, T result) {
-                    queue.offer(Pair.of(result, e));
-                }
-            });
-        }
-
-        final Holder<Pair<T, Throwable>> holder = new Holder<>((Pair<T, Throwable>) N.NULL_MASK);
-        final long endTime = N.currentMillis() + maxTimeout;
-
-        try {
-            Pair<T, Throwable> result = null;
-
-            for (int i = 0, len = c.size(); i < len; i++) {
-                long timeout = endTime - N.currentMillis();
-
-                if (timeout <= 0) {
-                    break;
-                }
-
-                result = queue.poll(timeout, TimeUnit.MILLISECONDS);
-
-                if (result != null) {
-                    holder.setValue(result);
-                }
-            }
-        } catch (InterruptedException e) {
-            // throw N.toRuntimeException(e);
-            logger.error("Thread is interrupted while retriving result from queue", e);
-            return Optional.empty();
-        }
-
-        if (holder.value == N.NULL_MASK) {
-            return Optional.empty();
-        } else {
-            return Optional.of(holder.value);
-        }
-    }
-
-    /**
-     * Returns the first non-exception result or empty if fail to get result for all futures.
-     * 
-     * @param a
-     * @return
-     */
-    public static <T> OptionalNullable<T> lastSuccessResult(final CompletableFuture<? extends T>... a) {
-        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(a.length);
-
-        for (CompletableFuture<? extends T> future : a) {
-            ((CompletableFuture<T>) future).callback(new Callback<T>() {
-                @Override
-                public void on(Throwable e, T result) {
-                    queue.offer(Pair.of(result, e));
-                }
-            });
-        }
-
-        final Holder<T> holder = new Holder<>((T) N.NULL_MASK);
-
-        try {
-            Pair<T, Throwable> result = null;
-
-            for (int i = 0, len = a.length; i < len; i++) {
-                result = queue.poll(Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
-
-                if (result != null && result.right == null) {
-                    holder.setValue(result.left);
-                }
-            }
-        } catch (InterruptedException e) {
-            // throw N.toRuntimeException(e);
-            logger.error("Thread is interrupted while retriving result from queue", e);
-            return OptionalNullable.empty();
-        }
-
-        if (holder.value == N.NULL_MASK) {
-            return OptionalNullable.empty();
-        } else {
-            return OptionalNullable.of(holder.value);
-        }
-    }
-
-    /**
-     * Returns the first non-exception result or empty if fail to get result for all futures.
-     * 
-     * @param c
-     * @return
-     */
-    public static <T> OptionalNullable<T> lastSuccessResult(final Collection<? extends CompletableFuture<? extends T>> c) {
-        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(c.size());
-
-        for (CompletableFuture<? extends T> future : c) {
-            ((CompletableFuture<T>) future).callback(new Callback<T>() {
-                @Override
-                public void on(Throwable e, T result) {
-                    queue.offer(Pair.of(result, e));
-                }
-            });
-        }
-
-        final Holder<T> holder = new Holder<>((T) N.NULL_MASK);
-
-        try {
-            Pair<T, Throwable> result = null;
-
-            for (int i = 0, len = c.size(); i < len; i++) {
-                result = queue.poll(Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
-
-                if (result != null && result.right == null) {
-                    holder.setValue(result.left);
-                }
-            }
-        } catch (InterruptedException e) {
-            // throw N.toRuntimeException(e);
-            logger.error("Thread is interrupted while retriving result from queue", e);
-            return OptionalNullable.empty();
-        }
-
-        if (holder.value == N.NULL_MASK) {
-            return OptionalNullable.empty();
-        } else {
-            return OptionalNullable.of(holder.value);
-        }
-    }
-
-    /**
-     * Returns the first result, which could be an exception.
-     * 
-     * @param c
-     * @param maxTimeout
-     * @return
-     */
-    public static <T> OptionalNullable<T> lastSuccessResult(final Collection<? extends CompletableFuture<? extends T>> c, final long maxTimeout) {
-        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(c.size());
-
-        for (CompletableFuture<? extends T> future : c) {
-            ((CompletableFuture<T>) future).callback(new Callback<T>() {
-                @Override
-                public void on(Throwable e, T result) {
-                    queue.offer(Pair.of(result, e));
-                }
-            });
-        }
-
-        final Holder<T> holder = new Holder<>((T) N.NULL_MASK);
-        final long endTime = N.currentMillis() + maxTimeout;
-
-        try {
-            Pair<T, Throwable> result = null;
-
-            for (int i = 0, len = c.size(); i < len; i++) {
-                long timeout = endTime - N.currentMillis();
-
-                if (timeout <= 0) {
-                    break;
-                }
-
-                result = queue.poll(timeout, TimeUnit.MILLISECONDS);
-
-                if (result != null && result.right == null) {
-                    holder.setValue(result.left);
-                }
-            }
-        } catch (InterruptedException e) {
-            // throw N.toRuntimeException(e);
-            logger.error("Thread is interrupted while retriving result from queue", e);
-            return OptionalNullable.empty();
-        }
-
-        if (holder.value == N.NULL_MASK) {
-            return OptionalNullable.empty();
-        } else {
-            return OptionalNullable.of(holder.value);
-        }
-    }
-
-    public static <T> List<Pair<T, Throwable>> concat(final CompletableFuture<? extends T>... a) {
-        final List<Pair<T, Throwable>> queue = new ArrayList<>(a.length);
-
-        for (CompletableFuture<? extends T> future : a) {
-            ((CompletableFuture<T>) future).get(new Callback<T>() {
-                @Override
-                public void on(Throwable e, T result) {
-                    queue.add(Pair.of(result, e));
-                }
-            });
-        }
-
-        return queue;
-    }
-
-    /**
-     * 
-     * @param c
-     * @return
-     */
-    public static <T> List<Pair<T, Throwable>> concat(final Collection<? extends CompletableFuture<? extends T>> c) {
-        final List<Pair<T, Throwable>> queue = new ArrayList<>(c.size());
-
-        for (CompletableFuture<? extends T> future : c) {
-            ((CompletableFuture<T>) future).get(new Callback<T>() {
-                @Override
-                public void on(Throwable e, T result) {
-                    queue.add(Pair.of(result, e));
-                }
-            });
-        }
-
-        return queue;
-    }
-
-    public static <T> BlockingQueue<Pair<T, Throwable>> parallelConcat(final CompletableFuture<? extends T>... a) {
-        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(a.length);
-
-        for (CompletableFuture<? extends T> future : a) {
-            ((CompletableFuture<T>) future).callback(new Callback<T>() {
-                @Override
-                public void on(Throwable e, T result) {
-                    queue.offer(Pair.of(result, e));
-                }
-            });
-        }
-
-        return queue;
-    }
-
-    /**
-     * 
-     * @param c
-     * @return
-     */
-    public static <T> BlockingQueue<Pair<T, Throwable>> parallelConcat(final Collection<? extends CompletableFuture<? extends T>> c) {
-        final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(c.size());
-
-        for (CompletableFuture<? extends T> future : c) {
-            ((CompletableFuture<T>) future).callback(new Callback<T>() {
-                @Override
-                public void on(Throwable e, T result) {
-                    queue.offer(Pair.of(result, e));
-                }
-            });
-        }
-
-        return queue;
     }
 
     /**

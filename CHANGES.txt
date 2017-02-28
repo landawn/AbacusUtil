@@ -3,9 +3,11 @@
 
 1, Improve Pair/Triple/Tuple...
 
-2, Add firstResult/firstSuccessResult/lastResult/lastSuccessResult to AsyncExecutor.
+2, Add firstResult/firstSuccessResult/lastResult/lastSuccessResult/parallelGet to CompletableFuture.
 
-3, Improvements and bug fix.
+3, Refactoring CompletableFuture/AsyncExecutor to keep consistent with CompletableFuture in JDK 8.
+
+4, Improvements and bug fix.
 
 
 ========Changes in 0.9.52=========================================================================
