@@ -2505,6 +2505,55 @@ public abstract class Stream<T>
         });
     }
 
+    /**
+     * Generate the pushable Stream.
+     * 
+     * @param queue
+     * @return
+     */
+    public static <T> Stream<T> pull(final BlockingQueue<T> queue) {
+        return pull(queue, Stream.NONE);
+    }
+
+    /**
+     * Generate the pushable Stream.
+     * 
+     * @param queue
+     * @param endOfQueue value to identify no more elements. Default is <code>Stream.NONE</code>
+     * @return
+     */
+    public static <T> Stream<T> pull(final BlockingQueue<T> queue, final Object endOfQueue) {
+        N.requireNonNull(endOfQueue);
+
+        return of(new ImmutableIterator<T>() {
+            private T next = null;
+
+            @Override
+            public boolean hasNext() {
+                if (next == null) {
+                    try {
+                        next = queue.poll(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+                    } catch (InterruptedException e) {
+                        throw N.toRuntimeException(e);
+                    }
+                }
+
+                return next != endOfQueue;
+            }
+
+            @Override
+            public T next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final T result = next;
+                next = null;
+                return result;
+            }
+        });
+    }
+
     public static <T> Stream<T> concat(final T[]... a) {
         return N.isNullOrEmpty(a) ? (Stream<T>) empty() : new IteratorStream<>(new ImmutableIterator<T>() {
             private final Iterator<T[]> iter = N.asList(a).iterator();

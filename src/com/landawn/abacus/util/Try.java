@@ -39,12 +39,12 @@ public final class Try<T extends AutoCloseable> {
     }
 
     public static <T extends AutoCloseable> Try<T> of(final T t) {
-        return new Try<T>(t);
+        return new Try<>(t);
     }
 
     public static <T extends AutoCloseable> Try<T> of(final Supplier<T> supplier) {
         try {
-            return new Try<T>(supplier.get());
+            return new Try<>(supplier.get());
         } catch (Exception e) {
             throw N.toRuntimeException(e);
         }
@@ -69,7 +69,7 @@ public final class Try<T extends AutoCloseable> {
     public static Try<Stream<String>> stream(final File file) {
         final Reader reader = IOUtil.newBufferedReader(file);
 
-        return new Try<Stream<String>>(Stream.of(reader).onClose(new java.lang.Runnable() {
+        return new Try<>(Stream.of(reader).onClose(new java.lang.Runnable() {
             @Override
             public void run() {
                 IOUtil.close(reader);
@@ -147,12 +147,12 @@ public final class Try<T extends AutoCloseable> {
         }
 
         public static <T extends AutoCloseable> Try0<T> of(final T t) {
-            return new Try0<T>(t);
+            return new Try0<>(t);
         }
 
         public static <T extends AutoCloseable> Try0<T> of(final Supplier<T> supplier) {
             try {
-                return new Try0<T>(supplier.get());
+                return new Try0<>(supplier.get());
             } catch (Exception e) {
                 throw N.toRuntimeException(e);
             }
@@ -228,7 +228,8 @@ public final class Try<T extends AutoCloseable> {
         void run() throws Exception;
     }
 
-    public static interface Callable<R> {
+    public static interface Callable<R> extends java.util.concurrent.Callable<R> {
+        @Override
         R call();
     }
 

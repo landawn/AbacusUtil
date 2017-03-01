@@ -14,8 +14,10 @@
 
 package com.landawn.abacus.android.util;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
@@ -36,17 +38,27 @@ import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalNullable;
 import com.landawn.abacus.util.Pair;
+import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.Tuple;
+import com.landawn.abacus.util.Tuple.Tuple2;
+import com.landawn.abacus.util.Tuple.Tuple3;
 import com.landawn.abacus.util.Tuple.Tuple4;
+import com.landawn.abacus.util.Tuple.Tuple5;
+import com.landawn.abacus.util.Tuple.Tuple6;
+import com.landawn.abacus.util.Tuple.Tuple7;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
+import com.landawn.abacus.util.function.TriFunction;
 
 /**
- * The <code>action</code> in all <code>*run*</code> methods will be executed by the specified or default <code>Executor</code>.
- * The <code>action</code> in other methods will be executed in the thread where the <code>get()</code> or <code>get(timeout, unit)</code> method is called.
+ * The <code>action</code> in all <code>*run*</code> methods will be executed asynchronously by the specified or default <code>Executor</code> eventually.
+ * The <code>action</code> in other methods (<code>apply/accept/combine/</code>) won't be executed until they're called/continued by <code>complete/get/*run*</code> methods and executed in the thread where the <code>complete/get/run/call</code> is called.
  * 
+ * <br />
+ * <br />
+ * <code>TP</code> -> <code>Thread Pool</code>
  * 
  * @since 0.8
  * 
@@ -88,7 +100,7 @@ public class CompletableFuture<T> implements Future<T> {
         return run(action, AsyncExecutor.SERIAL_EXECUTOR);
     }
 
-    public static <T> CompletableFuture<T> run(final Callable<T> action) {
+    public static <T> CompletableFuture<T> run(final Try.Callable<T> action) {
         return run(action, AsyncExecutor.SERIAL_EXECUTOR);
     }
 
@@ -96,7 +108,7 @@ public class CompletableFuture<T> implements Future<T> {
         return run(action, AsyncExecutor.UI_EXECUTOR);
     }
 
-    public static <T> CompletableFuture<T> runWithUIExecutor(final Callable<T> action) {
+    public static <T> CompletableFuture<T> runWithUIExecutor(final Try.Callable<T> action) {
         return run(action, AsyncExecutor.UI_EXECUTOR);
     }
 
@@ -104,16 +116,16 @@ public class CompletableFuture<T> implements Future<T> {
     //        return run(action, AsyncExecutor.SERIAL_EXECUTOR);
     //    }
     //
-    //    public static <T> CompletableFuture<T> runWithSerialExecutor(final Callable<T> action) {
+    //    public static <T> CompletableFuture<T> runWithSerialExecutor(final Try.Callable<T> action) {
     //        return run(action, AsyncExecutor.SERIAL_EXECUTOR);
     //    }
 
     public static CompletableFuture<Void> runWithTPExecutor(final Runnable action) {
-        return run(action, AsyncExecutor.THREAD_POOL_EXECUTOR);
+        return run(action, AsyncExecutor.TP_EXECUTOR);
     }
 
-    public static <T> CompletableFuture<T> runWithTPExecutor(final Callable<T> action) {
-        return run(action, AsyncExecutor.THREAD_POOL_EXECUTOR);
+    public static <T> CompletableFuture<T> runWithTPExecutor(final Try.Callable<T> action) {
+        return run(action, AsyncExecutor.TP_EXECUTOR);
     }
 
     public static CompletableFuture<Void> run(final Runnable action, final Executor executor) {
@@ -124,7 +136,7 @@ public class CompletableFuture<T> implements Future<T> {
         return new CompletableFuture<>(futureTask, executor);
     }
 
-    public static <T> CompletableFuture<T> run(final Callable<T> action, final Executor executor) {
+    public static <T> CompletableFuture<T> run(final Try.Callable<T> action, final Executor executor) {
         final FutureTask<T> futureTask = new FutureTask<>(action);
 
         executor.execute(futureTask);
@@ -182,6 +194,31 @@ public class CompletableFuture<T> implements Future<T> {
         return future.isDone();
     }
 
+    public void complete() throws InterruptedException, ExecutionException {
+        get();
+    }
+
+    public void complete(Consumer<? super T> action) {
+        try {
+            action.accept(get());
+        } catch (InterruptedException | ExecutionException e) {
+            throw N.toRuntimeException(e);
+        }
+    }
+
+    public void complete(BiConsumer<? super T, Throwable> action) {
+        T result = null;
+
+        try {
+            result = get();
+        } catch (Throwable e) {
+            action.accept(null, e);
+            return;
+        }
+
+        action.accept(result, null);
+    }
+
     @Override
     public T get() throws InterruptedException, ExecutionException {
         return future.get();
@@ -233,19 +270,27 @@ public class CompletableFuture<T> implements Future<T> {
     }
 
     public <U> U get(final BiFunction<? super T, Throwable, ? extends U> action) {
+        T result = null;
+
         try {
-            return action.apply(get(), null);
+            result = get();
         } catch (Throwable e) {
             return action.apply(null, e);
         }
+
+        return action.apply(result, null);
     }
 
     public <U> U get(final long timeout, final TimeUnit unit, final BiFunction<? super T, Throwable, ? extends U> action) {
+        T result = null;
+
         try {
-            return action.apply(get(timeout, unit), null);
+            result = get(timeout, unit);
         } catch (Throwable e) {
             return action.apply(null, e);
         }
+
+        return action.apply(result, null);
     }
 
     public <U> CompletableFuture<U> thenApply(final Function<? super T, ? extends U> action) {
@@ -436,7 +481,7 @@ public class CompletableFuture<T> implements Future<T> {
         });
     }
 
-    public <U> CompletableFuture<U> thenRun(final Callable<U> action) {
+    public <U> CompletableFuture<U> thenRun(final Try.Callable<U> action) {
         return execute(new Callable<U>() {
             @Override
             public U call() throws Exception {
@@ -461,11 +506,16 @@ public class CompletableFuture<T> implements Future<T> {
         return execute(new Runnable() {
             @Override
             public void run() {
+                T result = null;
+
                 try {
-                    action.accept(get(), null);
+                    result = get();
                 } catch (Throwable e) {
                     action.accept(null, e);
+                    return;
                 }
+
+                action.accept(result, null);
             }
         });
     }
@@ -483,11 +533,15 @@ public class CompletableFuture<T> implements Future<T> {
         return execute(new Callable<R>() {
             @Override
             public R call() throws Exception {
+                T result = null;
+
                 try {
-                    return action.apply(get(), null);
+                    result = get();
                 } catch (Throwable e) {
                     return action.apply(null, e);
                 }
+
+                return action.apply(result, null);
             }
         });
     }
@@ -496,7 +550,7 @@ public class CompletableFuture<T> implements Future<T> {
         return withUIExecutor().thenRun(action);
     }
 
-    public <U> CompletableFuture<U> thenRunWithUIExecutor(final Callable<U> action) {
+    public <U> CompletableFuture<U> thenRunWithUIExecutor(final Try.Callable<U> action) {
         return withUIExecutor().thenRun(action);
     }
 
@@ -520,7 +574,7 @@ public class CompletableFuture<T> implements Future<T> {
         return withSerialExecutor().thenRun(action);
     }
 
-    public <U> CompletableFuture<U> thenRunWithSerialExecutor(final Callable<U> action) {
+    public <U> CompletableFuture<U> thenRunWithSerialExecutor(final Try.Callable<U> action) {
         return withSerialExecutor().thenRun(action);
     }
 
@@ -544,7 +598,7 @@ public class CompletableFuture<T> implements Future<T> {
         return withTPExecutor().thenRun(action);
     }
 
-    public <U> CompletableFuture<U> thenRunWithTPExecutor(final Callable<U> action) {
+    public <U> CompletableFuture<U> thenRunWithTPExecutor(final Try.Callable<U> action) {
         return withTPExecutor().thenRun(action);
     }
 
@@ -576,7 +630,7 @@ public class CompletableFuture<T> implements Future<T> {
         });
     }
 
-    public <U> CompletableFuture<U> runAfterBoth(final CompletableFuture<?> other, final Callable<U> action) {
+    public <U> CompletableFuture<U> runAfterBoth(final CompletableFuture<?> other, final Try.Callable<U> action) {
         return execute(new Callable<U>() {
             @Override
             public U call() throws Exception {
@@ -634,7 +688,7 @@ public class CompletableFuture<T> implements Future<T> {
         return withUIExecutor().runAfterBoth(other, action);
     }
 
-    public <U> CompletableFuture<U> runWithUIExecutorAfterBoth(final CompletableFuture<?> other, final Callable<U> action) {
+    public <U> CompletableFuture<U> runWithUIExecutorAfterBoth(final CompletableFuture<?> other, final Try.Callable<U> action) {
         return withUIExecutor().runAfterBoth(other, action);
     }
 
@@ -659,7 +713,7 @@ public class CompletableFuture<T> implements Future<T> {
         return withSerialExecutor().runAfterBoth(other, action);
     }
 
-    public <U> CompletableFuture<U> runWithSerialExecutorAfterBoth(final CompletableFuture<?> other, final Callable<U> action) {
+    public <U> CompletableFuture<U> runWithSerialExecutorAfterBoth(final CompletableFuture<?> other, final Try.Callable<U> action) {
         return withSerialExecutor().runAfterBoth(other, action);
     }
 
@@ -685,7 +739,7 @@ public class CompletableFuture<T> implements Future<T> {
         return withTPExecutor().runAfterBoth(other, action);
     }
 
-    public <U> CompletableFuture<U> runWithTPExecutorAfterBoth(final CompletableFuture<?> other, final Callable<U> action) {
+    public <U> CompletableFuture<U> runWithTPExecutorAfterBoth(final CompletableFuture<?> other, final Try.Callable<U> action) {
         return withTPExecutor().runAfterBoth(other, action);
     }
 
@@ -717,7 +771,7 @@ public class CompletableFuture<T> implements Future<T> {
         });
     }
 
-    public <U> CompletableFuture<U> runAfterEither(final CompletableFuture<?> other, final Callable<U> action) {
+    public <U> CompletableFuture<U> runAfterEither(final CompletableFuture<?> other, final Try.Callable<U> action) {
         return execute(new Callable<U>() {
             @Override
             public U call() throws Exception {
@@ -776,7 +830,7 @@ public class CompletableFuture<T> implements Future<T> {
         return withUIExecutor().runAfterEither(other, action);
     }
 
-    public <U> CompletableFuture<U> runWithUIExecutorAfterEither(final CompletableFuture<?> other, final Callable<U> action) {
+    public <U> CompletableFuture<U> runWithUIExecutorAfterEither(final CompletableFuture<?> other, final Try.Callable<U> action) {
         return withUIExecutor().runAfterEither(other, action);
     }
 
@@ -801,7 +855,7 @@ public class CompletableFuture<T> implements Future<T> {
         return withSerialExecutor().runAfterEither(other, action);
     }
 
-    public <U> CompletableFuture<U> runWithSerialExecutorAfterEither(final CompletableFuture<?> other, final Callable<U> action) {
+    public <U> CompletableFuture<U> runWithSerialExecutorAfterEither(final CompletableFuture<?> other, final Try.Callable<U> action) {
         return withSerialExecutor().runAfterEither(other, action);
     }
 
@@ -827,7 +881,7 @@ public class CompletableFuture<T> implements Future<T> {
         return withTPExecutor().runAfterEither(other, action);
     }
 
-    public <U> CompletableFuture<U> runWithTPExecutorAfterEither(final CompletableFuture<?> other, final Callable<U> action) {
+    public <U> CompletableFuture<U> runWithTPExecutorAfterEither(final CompletableFuture<?> other, final Try.Callable<U> action) {
         return withTPExecutor().runAfterEither(other, action);
     }
 
@@ -867,7 +921,7 @@ public class CompletableFuture<T> implements Future<T> {
 
             @Override
             public U get() throws InterruptedException, ExecutionException {
-                final OptionalNullable<T> anySuccessResultOf = anySuccessResultOf(CompletableFuture.this, other);
+                final OptionalNullable<T> anySuccessResultOf = resultOfAnySuccess(CompletableFuture.this, other);
 
                 if (anySuccessResultOf.isPresent()) {
                     return action.apply(anySuccessResultOf.get());
@@ -878,7 +932,7 @@ public class CompletableFuture<T> implements Future<T> {
 
             @Override
             public U get(final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-                final OptionalNullable<T> anySuccessResultOf = anySuccessResultOf(Arrays.asList(CompletableFuture.this, other), unit.toMillis(timeout));
+                final OptionalNullable<T> anySuccessResultOf = resultOfAnySuccess(Arrays.asList(CompletableFuture.this, other), unit.toMillis(timeout));
 
                 if (anySuccessResultOf.isPresent()) {
                     return action.apply(anySuccessResultOf.get());
@@ -1022,22 +1076,28 @@ public class CompletableFuture<T> implements Future<T> {
     //
     //            @Override
     //            public U get() throws InterruptedException, ExecutionException {
+    //                T result = null;
+    //
     //                try {
-    //                    final T result = future.get();
-    //                    return action.apply(result, null);
+    //                    result = future.get();
     //                } catch (Throwable e) {
     //                    return action.apply(null, e);
     //                }
+    //
+    //                return action.apply(result, null);
     //            }
     //
     //            @Override
     //            public U get(final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+    //                T result = null;
+    //
     //                try {
-    //                    final T result = future.get(timeout, unit);
-    //                    return action.apply(result, null);
+    //                    result = future.get(timeout, unit);
     //                } catch (Throwable e) {
     //                    return action.apply(null, e);
     //                }
+    //
+    //                return action.apply(result, null);
     //            }
     //        }, asyncExecutor);
     //    }
@@ -1065,31 +1125,21 @@ public class CompletableFuture<T> implements Future<T> {
         return new CompletableFuture<>(futureTask, asyncExecutor);
     }
 
-    public CompletableFuture<T> withUIExecutor() {
-        return with(AsyncExecutor.UI_EXECUTOR);
-    }
+    public CompletableFuture<T> delayed(long delay, TimeUnit unit) {
+        if (delay <= 0) {
+            return this;
+        }
 
-    public CompletableFuture<T> withUIExecutor(final long delay) {
-        return with(AsyncExecutor.UI_EXECUTOR, delay);
-    }
-
-    public CompletableFuture<T> withSerialExecutor() {
-        return with(AsyncExecutor.SERIAL_EXECUTOR);
-    }
-
-    /**
-     * With Thread Pool Executor.
-     * @return
-     */
-    public CompletableFuture<T> withTPExecutor() {
-        return with(AsyncExecutor.THREAD_POOL_EXECUTOR);
+        return with(asyncExecutor, delay, TimeUnit.MILLISECONDS);
     }
 
     public CompletableFuture<T> with(Executor executor) {
-        return with(executor, 0);
+        return with(executor, 0, TimeUnit.MILLISECONDS);
     }
 
-    private CompletableFuture<T> with(final Executor executor, final long delay) {
+    public CompletableFuture<T> with(Executor executor, long delay, TimeUnit unit) {
+        N.requireNonNull(executor);
+
         return new CompletableFuture<>(new Future<T>() {
             @Override
             public boolean cancel(boolean mayInterruptIfRunning) {
@@ -1115,15 +1165,130 @@ public class CompletableFuture<T> implements Future<T> {
             public T get(final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
                 return future.get(timeout, unit);
             }
-        }, executor, delay);
+        }, executor, delay <= 0 ? 0 : unit.toMillis(delay));
     }
 
-    public static CompletableFuture<Void> allOf(final CompletableFuture<?>... cfs) {
-        return allOf(N.asList(cfs));
+    public CompletableFuture<T> withUIExecutor() {
+        return with(AsyncExecutor.UI_EXECUTOR);
     }
 
-    public static CompletableFuture<Void> allOf(final Collection<? extends CompletableFuture<?>> cfs) {
-        return new CompletableFuture<>(new Future<Void>() {
+    public CompletableFuture<T> withUIExecutor(final long delay) {
+        return with(AsyncExecutor.UI_EXECUTOR, delay, TimeUnit.MILLISECONDS);
+    }
+
+    public CompletableFuture<T> withSerialExecutor() {
+        return with(AsyncExecutor.SERIAL_EXECUTOR);
+    }
+
+    /**
+     * With Thread Pool Executor.
+     * @return
+     */
+    public CompletableFuture<T> withTPExecutor() {
+        return with(AsyncExecutor.TP_EXECUTOR);
+    }
+
+    public static <T1, T2> CompletableFuture<Tuple2<T1, T2>> combine(final CompletableFuture<? extends T1> cf1, final CompletableFuture<? extends T2> cf2) {
+        return ofAll(N.asList(cf1, cf2)).thenApply(new Function<List<Object>, Tuple2<T1, T2>>() {
+            @Override
+            public Tuple2<T1, T2> apply(List<Object> t) {
+                return Tuple.of((T1) t.get(0), (T2) t.get(1));
+            }
+        });
+    }
+
+    public static <T1, T2, T3> CompletableFuture<Tuple3<T1, T2, T3>> combine(final CompletableFuture<? extends T1> cf1,
+            final CompletableFuture<? extends T2> cf2, final CompletableFuture<? extends T3> cf3) {
+        return ofAll(N.asList(cf1, cf2, cf3)).thenApply(new Function<List<Object>, Tuple3<T1, T2, T3>>() {
+            @Override
+            public Tuple3<T1, T2, T3> apply(List<Object> t) {
+                return Tuple.of((T1) t.get(0), (T2) t.get(1), (T3) t.get(2));
+            }
+        });
+    }
+
+    public static <T1, T2, T3, T4> CompletableFuture<Tuple4<T1, T2, T3, T4>> combine(final CompletableFuture<? extends T1> cf1,
+            final CompletableFuture<? extends T2> cf2, final CompletableFuture<? extends T3> cf3, final CompletableFuture<? extends T4> cf4) {
+        return ofAll(N.asList(cf1, cf2, cf3, cf4)).thenApply(new Function<List<Object>, Tuple4<T1, T2, T3, T4>>() {
+            @Override
+            public Tuple4<T1, T2, T3, T4> apply(List<Object> t) {
+                return Tuple.of((T1) t.get(0), (T2) t.get(1), (T3) t.get(2), (T4) t.get(3));
+            }
+        });
+    }
+
+    public static <T1, T2, T3, T4, T5> CompletableFuture<Tuple5<T1, T2, T3, T4, T5>> combine(final CompletableFuture<? extends T1> cf1,
+            final CompletableFuture<? extends T2> cf2, final CompletableFuture<? extends T3> cf3, final CompletableFuture<? extends T4> cf4,
+            final CompletableFuture<? extends T5> cf5) {
+        return ofAll(N.asList(cf1, cf2, cf3, cf4, cf5)).thenApply(new Function<List<Object>, Tuple5<T1, T2, T3, T4, T5>>() {
+            @Override
+            public Tuple5<T1, T2, T3, T4, T5> apply(List<Object> t) {
+                return Tuple.of((T1) t.get(0), (T2) t.get(1), (T3) t.get(2), (T4) t.get(3), (T5) t.get(4));
+            }
+        });
+    }
+
+    public static <T1, T2, T3, T4, T5, T6> CompletableFuture<Tuple6<T1, T2, T3, T4, T5, T6>> combine(final CompletableFuture<? extends T1> cf1,
+            final CompletableFuture<? extends T2> cf2, final CompletableFuture<? extends T3> cf3, final CompletableFuture<? extends T4> cf4,
+            final CompletableFuture<? extends T5> cf5, final CompletableFuture<? extends T6> cf6) {
+        return ofAll(N.asList(cf1, cf2, cf3, cf4, cf5, cf6)).thenApply(new Function<List<Object>, Tuple6<T1, T2, T3, T4, T5, T6>>() {
+            @Override
+            public Tuple6<T1, T2, T3, T4, T5, T6> apply(List<Object> t) {
+                return Tuple.of((T1) t.get(0), (T2) t.get(1), (T3) t.get(2), (T4) t.get(3), (T5) t.get(4), (T6) t.get(5));
+            }
+        });
+    }
+
+    public static <T1, T2, T3, T4, T5, T6, T7> CompletableFuture<Tuple7<T1, T2, T3, T4, T5, T6, T7>> combine(final CompletableFuture<? extends T1> cf1,
+            final CompletableFuture<? extends T2> cf2, final CompletableFuture<? extends T3> cf3, final CompletableFuture<? extends T4> cf4,
+            final CompletableFuture<? extends T5> cf5, final CompletableFuture<? extends T6> cf6, final CompletableFuture<? extends T7> cf7) {
+        return ofAll(N.asList(cf1, cf2, cf3, cf4, cf5, cf6, cf7)).thenApply(new Function<List<Object>, Tuple7<T1, T2, T3, T4, T5, T6, T7>>() {
+            @Override
+            public Tuple7<T1, T2, T3, T4, T5, T6, T7> apply(List<Object> t) {
+                return Tuple.of((T1) t.get(0), (T2) t.get(1), (T3) t.get(2), (T4) t.get(3), (T5) t.get(4), (T6) t.get(5), (T7) t.get(6));
+            }
+        });
+    }
+
+    public static <T1, T2, R> CompletableFuture<R> combine(final CompletableFuture<? extends T1> cf1, final CompletableFuture<? extends T2> cf2,
+            final BiFunction<? super T1, ? super T2, ? extends R> action) {
+        return ofAll(N.asList(cf1, cf2)).thenApply(new Function<List<Object>, R>() {
+            @Override
+            public R apply(List<Object> t) {
+                return action.apply((T1) t.get(0), (T2) t.get(1));
+            }
+        });
+    }
+
+    public static <T1, T2, T3, R> CompletableFuture<R> combine(final CompletableFuture<? extends T1> cf1, final CompletableFuture<? extends T2> cf2,
+            final CompletableFuture<? extends T3> cf3, final TriFunction<? super T1, ? super T2, ? super T3, ? extends R> action) {
+        return ofAll(N.asList(cf1, cf2, cf3)).thenApply(new Function<List<Object>, R>() {
+            @Override
+            public R apply(List<Object> t) {
+                return action.apply((T1) t.get(0), (T2) t.get(1), (T3) t.get(2));
+            }
+        });
+    }
+
+    public static <R> CompletableFuture<R> combine(final Collection<? extends CompletableFuture<?>> cfs, final Function<List<Object>, ? extends R> action) {
+        return ofAll(cfs).thenApply(new Function<List<Object>, R>() {
+            @Override
+            public R apply(List<Object> t) {
+                return action.apply(t);
+            }
+        });
+    }
+
+    public static CompletableFuture<List<Object>> ofAll(final CompletableFuture<?>... cfs) {
+        N.checkArgument(N.notNullOrEmpty(cfs), "'cfs' can't be null or empty");
+
+        return ofAll(N.asList(cfs));
+    }
+
+    public static CompletableFuture<List<Object>> ofAll(final Collection<? extends CompletableFuture<?>> cfs) {
+        N.checkArgument(N.notNullOrEmpty(cfs), "'cfs' can't be null or empty");
+
+        return new CompletableFuture<>(new Future<List<Object>>() {
             @Override
             public boolean cancel(boolean mayInterruptIfRunning) {
                 for (CompletableFuture<?> future : cfs) {
@@ -1158,34 +1323,48 @@ public class CompletableFuture<T> implements Future<T> {
             }
 
             @Override
-            public Void get() throws InterruptedException, ExecutionException {
+            public List<Object> get() throws InterruptedException, ExecutionException {
+                final List<Object> result = new ArrayList<>(cfs.size());
+
                 for (CompletableFuture<?> future : cfs) {
-                    future.get();
+                    result.add(future.get());
                 }
 
-                return null;
+                return result;
             }
 
             @Override
-            public Void get(final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+            public List<Object> get(final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
                 final long timeoutInMillis = unit.toMillis(timeout);
                 final long now = N.currentMillis();
                 final long endTime = timeoutInMillis > Long.MAX_VALUE - now ? Long.MAX_VALUE : now + timeoutInMillis;
 
+                final List<Object> result = new ArrayList<>(cfs.size());
+
                 for (CompletableFuture<?> future : cfs) {
-                    future.get(N.max(0, endTime - N.currentMillis()), TimeUnit.MILLISECONDS);
+                    result.add(future.get(N.max(0, endTime - N.currentMillis()), TimeUnit.MILLISECONDS));
                 }
 
-                return null;
+                return result;
             }
         }, ((CompletableFuture<?>) cfs.iterator().next()).asyncExecutor);
     }
 
-    public static CompletableFuture<Object> anyOf(final CompletableFuture<?>... cfs) {
-        return anyOf(N.asList(cfs));
+    public static CompletableFuture<Object> ofAny(final CompletableFuture<?>... cfs) {
+        return ofAny2(N.asList(cfs));
     }
 
-    public static CompletableFuture<Object> anyOf(final Collection<? extends CompletableFuture<?>> cfs) {
+    public static CompletableFuture<Object> ofAny(final Collection<? extends CompletableFuture<?>> cfs) {
+        return ofAny2(cfs);
+    }
+
+    public static <T> CompletableFuture<T> ofAny(final List<? extends CompletableFuture<? extends T>> cfs) {
+        return (CompletableFuture<T>) ofAny2(cfs);
+    }
+
+    private static CompletableFuture<Object> ofAny2(final Collection<? extends CompletableFuture<?>> cfs) {
+        N.checkArgument(N.notNullOrEmpty(cfs), "'cfs' can't be null or empty");
+
         return new CompletableFuture<>(new Future<Object>() {
             @Override
             public boolean cancel(boolean mayInterruptIfRunning) {
@@ -1222,12 +1401,12 @@ public class CompletableFuture<T> implements Future<T> {
 
             @Override
             public Object get() throws InterruptedException, ExecutionException {
-                return get(anyResultOf(cfs));
+                return get(resultOfAny(cfs));
             }
 
             @Override
             public Object get(final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-                return get(anyResultOf(cfs, unit.toMillis(timeout)));
+                return get(resultOfAny(cfs, unit.toMillis(timeout)));
             }
 
             private Object get(final Optional<Pair<Object, Throwable>> op) throws InterruptedException, ExecutionException {
@@ -1256,8 +1435,8 @@ public class CompletableFuture<T> implements Future<T> {
      * @param a
      * @return
      */
-    public static <T> Optional<Pair<T, Throwable>> anyResultOf(final CompletableFuture<? extends T>... a) {
-        return anyResultOf(Arrays.asList(a));
+    public static <T> Optional<Pair<T, Throwable>> resultOfAny(final CompletableFuture<? extends T>... a) {
+        return resultOfAny(Arrays.asList(a));
     }
 
     /**
@@ -1266,9 +1445,9 @@ public class CompletableFuture<T> implements Future<T> {
      * @param c
      * @return
      */
-    public static <T> Optional<Pair<T, Throwable>> anyResultOf(final Collection<? extends CompletableFuture<? extends T>> c) {
+    public static <T> Optional<Pair<T, Throwable>> resultOfAny(final Collection<? extends CompletableFuture<? extends T>> c) {
         final MutableBoolean stopSign = MutableBoolean.of(false);
-        final BlockingQueue<Pair<T, Throwable>> queue = allResultOf(c, stopSign);
+        final BlockingQueue<Pair<T, Throwable>> queue = resultOfAll(c, stopSign);
 
         try {
             Pair<T, Throwable> result = null;
@@ -1299,9 +1478,9 @@ public class CompletableFuture<T> implements Future<T> {
      * @param maxTimeout
      * @return
      */
-    public static <T> Optional<Pair<T, Throwable>> anyResultOf(final Collection<? extends CompletableFuture<? extends T>> c, final long maxTimeout) {
+    public static <T> Optional<Pair<T, Throwable>> resultOfAny(final Collection<? extends CompletableFuture<? extends T>> c, final long maxTimeout) {
         final MutableBoolean stopSign = MutableBoolean.of(false);
-        final BlockingQueue<Pair<T, Throwable>> queue = allResultOf(c, stopSign);
+        final BlockingQueue<Pair<T, Throwable>> queue = resultOfAll(c, stopSign);
         final long now = N.currentMillis();
         final long endTime = maxTimeout > Long.MAX_VALUE - now ? Long.MAX_VALUE : now + maxTimeout;
 
@@ -1340,8 +1519,8 @@ public class CompletableFuture<T> implements Future<T> {
      * @param a
      * @return
      */
-    public static <T> OptionalNullable<T> anySuccessResultOf(final CompletableFuture<? extends T>... a) {
-        return anySuccessResultOf(Arrays.asList(a));
+    public static <T> OptionalNullable<T> resultOfAnySuccess(final CompletableFuture<? extends T>... a) {
+        return resultOfAnySuccess(Arrays.asList(a));
     }
 
     /**
@@ -1350,9 +1529,9 @@ public class CompletableFuture<T> implements Future<T> {
      * @param c
      * @return
      */
-    public static <T> OptionalNullable<T> anySuccessResultOf(final Collection<? extends CompletableFuture<? extends T>> c) {
+    public static <T> OptionalNullable<T> resultOfAnySuccess(final Collection<? extends CompletableFuture<? extends T>> c) {
         final MutableBoolean stopSign = MutableBoolean.of(false);
-        final BlockingQueue<Pair<T, Throwable>> queue = allResultOf(c, stopSign);
+        final BlockingQueue<Pair<T, Throwable>> queue = resultOfAll(c, stopSign);
 
         try {
             Pair<T, Throwable> result = null;
@@ -1383,9 +1562,9 @@ public class CompletableFuture<T> implements Future<T> {
      * @param maxTimeout
      * @return
      */
-    public static <T> OptionalNullable<T> anySuccessResultOf(final Collection<? extends CompletableFuture<? extends T>> c, final long maxTimeout) {
+    public static <T> OptionalNullable<T> resultOfAnySuccess(final Collection<? extends CompletableFuture<? extends T>> c, final long maxTimeout) {
         final MutableBoolean stopSign = MutableBoolean.of(false);
-        final BlockingQueue<Pair<T, Throwable>> queue = allResultOf(c, stopSign);
+        final BlockingQueue<Pair<T, Throwable>> queue = resultOfAll(c, stopSign);
         final long now = N.currentMillis();
         final long endTime = maxTimeout > Long.MAX_VALUE - now ? Long.MAX_VALUE : now + maxTimeout;
 
@@ -1418,8 +1597,8 @@ public class CompletableFuture<T> implements Future<T> {
         return OptionalNullable.empty();
     }
 
-    public static <T> BlockingQueue<Pair<T, Throwable>> allResultOf(final CompletableFuture<? extends T>... a) {
-        return allResultOf(Arrays.asList(a));
+    public static <T> BlockingQueue<Pair<T, Throwable>> resultOfAll(final CompletableFuture<? extends T>... a) {
+        return resultOfAll(Arrays.asList(a));
     }
 
     /**
@@ -1427,11 +1606,11 @@ public class CompletableFuture<T> implements Future<T> {
      * @param c
      * @return
      */
-    public static <T> BlockingQueue<Pair<T, Throwable>> allResultOf(final Collection<? extends CompletableFuture<? extends T>> c) {
-        return allResultOf(c, null);
+    public static <T> BlockingQueue<Pair<T, Throwable>> resultOfAll(final Collection<? extends CompletableFuture<? extends T>> c) {
+        return resultOfAll(c, null);
     }
 
-    private static <T> BlockingQueue<Pair<T, Throwable>> allResultOf(final Collection<? extends CompletableFuture<? extends T>> c,
+    private static <T> BlockingQueue<Pair<T, Throwable>> resultOfAll(final Collection<? extends CompletableFuture<? extends T>> c,
             final MutableBoolean stopSign) {
         final ExecutorService executor = Executors.newFixedThreadPool(c.size());
         final BlockingQueue<Pair<T, Throwable>> queue = new ArrayBlockingQueue<>(c.size());
@@ -1442,6 +1621,7 @@ public class CompletableFuture<T> implements Future<T> {
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
+                    // Most likely, the below condition will always be true.
                     if (stopSign == null || stopSign.value() == false) {
                         queue.offer(futuer.get2());
                     }

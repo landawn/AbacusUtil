@@ -557,7 +557,11 @@ public final class Seq<T> implements Collection<T> {
             return OptionalNullable.empty();
         }
 
-        return OptionalNullable.of(coll.iterator().next());
+        if (coll instanceof List && coll instanceof RandomAccess) {
+            return OptionalNullable.of(((List<T>) coll).get(0));
+        } else {
+            return OptionalNullable.of(coll.iterator().next());
+        }
     }
 
     public OptionalNullable<T> last() {

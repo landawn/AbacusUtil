@@ -44,9 +44,9 @@ import android.os.Looper;
  */
 public class AsyncExecutor {
 
-    static final UIExecutor UI_EXECUTOR = new UIExecutor();
-    static final Executor SERIAL_EXECUTOR = AsyncTask.SERIAL_EXECUTOR;
-    static final Executor THREAD_POOL_EXECUTOR = AsyncTask.THREAD_POOL_EXECUTOR;
+    public static final UIExecutor UI_EXECUTOR = new UIExecutor();
+    public static final Executor SERIAL_EXECUTOR = AsyncTask.SERIAL_EXECUTOR;
+    public static final Executor TP_EXECUTOR = AsyncTask.THREAD_POOL_EXECUTOR;
 
     private AsyncExecutor() {
         // Singleton
@@ -100,7 +100,7 @@ public class AsyncExecutor {
      * @return
      */
     public static CompletableFuture<Void> executeWithThreadPool(final Runnable action) {
-        return execute(new FutureTask<Void>(action, null), THREAD_POOL_EXECUTOR);
+        return execute(new FutureTask<Void>(action, null), TP_EXECUTOR);
     }
 
     public static CompletableFuture<Void> executeWithThreadPool(final Runnable action, final int retryTimes, final long retryInterval,
@@ -120,7 +120,7 @@ public class AsyncExecutor {
      * @return
      */
     public static <T> CompletableFuture<T> executeWithThreadPool(final Callable<T> action) {
-        return execute(new FutureTask<>(action), THREAD_POOL_EXECUTOR);
+        return execute(new FutureTask<>(action), TP_EXECUTOR);
     }
 
     public static <T> CompletableFuture<T> executeWithThreadPool(final Callable<T> action, final int retryTimes, final long retryInterval,
@@ -209,8 +209,12 @@ public class AsyncExecutor {
         return new CompletableFuture<>(futureTask, executor);
     }
 
-    static final class UIExecutor implements Executor {
+    public static final class UIExecutor implements Executor {
         private static final Handler HANDLER = new Handler(Looper.getMainLooper());
+
+        private UIExecutor() {
+            // Singleton.
+        }
 
         @Override
         public void execute(Runnable command) {
