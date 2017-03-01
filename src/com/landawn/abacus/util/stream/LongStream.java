@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Queue;
+import java.util.concurrent.TimeUnit;
 
 import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.util.CompletableFuture;
@@ -1178,6 +1179,18 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
                 return current;
             }
         });
+    }
+
+    /**
+     * Generates the long value by the specified period.
+     * 
+     * @param startTimeInMillis
+     * @param interval
+     * @param unit
+     * @return
+     */
+    public static LongStream interval(final long startTimeInMillis, final long interval, final TimeUnit unit) {
+        return interval(startTimeInMillis, unit.toMillis(interval));
     }
 
     public static LongStream concat(final long[]... a) {

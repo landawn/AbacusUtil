@@ -481,7 +481,7 @@ public class CompletableFuture<T> implements Future<T> {
         });
     }
 
-    public <U> CompletableFuture<U> thenRun(final Try.Callable<U> action) {
+    public <U> CompletableFuture<U> thenRun2(final Try.Callable<U> action) {
         return execute(new Callable<U>() {
             @Override
             public U call() throws Exception {
@@ -520,7 +520,7 @@ public class CompletableFuture<T> implements Future<T> {
         });
     }
 
-    public <R> CompletableFuture<R> thenRun(final Function<? super T, R> action) {
+    public <R> CompletableFuture<R> thenRun2(final Function<? super T, R> action) {
         return execute(new Callable<R>() {
             @Override
             public R call() throws Exception {
@@ -529,7 +529,7 @@ public class CompletableFuture<T> implements Future<T> {
         });
     }
 
-    public <R> CompletableFuture<R> thenRun(final BiFunction<? super T, Throwable, R> action) {
+    public <R> CompletableFuture<R> thenRun2(final BiFunction<? super T, Throwable, R> action) {
         return execute(new Callable<R>() {
             @Override
             public R call() throws Exception {
@@ -550,8 +550,8 @@ public class CompletableFuture<T> implements Future<T> {
         return withUIExecutor().thenRun(action);
     }
 
-    public <U> CompletableFuture<U> thenRunWithUIExecutor(final Try.Callable<U> action) {
-        return withUIExecutor().thenRun(action);
+    public <U> CompletableFuture<U> thenRunWithUIExecutor2(final Try.Callable<U> action) {
+        return withUIExecutor().thenRun2(action);
     }
 
     public CompletableFuture<Void> thenRunWithUIExecutor(final Consumer<? super T> action) {
@@ -562,20 +562,20 @@ public class CompletableFuture<T> implements Future<T> {
         return withUIExecutor().thenRun(action);
     }
 
-    public <R> CompletableFuture<R> thenRunWithUIExecutor(final Function<? super T, R> action) {
-        return withUIExecutor().thenRun(action);
+    public <R> CompletableFuture<R> thenRunWithUIExecutor2(final Function<? super T, R> action) {
+        return withUIExecutor().thenRun2(action);
     }
 
-    public <R> CompletableFuture<R> thenRunWithUIExecutor(final BiFunction<? super T, Throwable, R> action) {
-        return withUIExecutor().thenRun(action);
+    public <R> CompletableFuture<R> thenRunWithUIExecutor2(final BiFunction<? super T, Throwable, R> action) {
+        return withUIExecutor().thenRun2(action);
     }
 
     public CompletableFuture<Void> thenRunWithSerialExecutor(final Runnable action) {
         return withSerialExecutor().thenRun(action);
     }
 
-    public <U> CompletableFuture<U> thenRunWithSerialExecutor(final Try.Callable<U> action) {
-        return withSerialExecutor().thenRun(action);
+    public <U> CompletableFuture<U> thenRunWithSerialExecutor2(final Try.Callable<U> action) {
+        return withSerialExecutor().thenRun2(action);
     }
 
     public CompletableFuture<Void> thenRunWithSerialExecutor(final Consumer<? super T> action) {
@@ -586,20 +586,20 @@ public class CompletableFuture<T> implements Future<T> {
         return withSerialExecutor().thenRun(action);
     }
 
-    public <R> CompletableFuture<R> thenRunWithSerialExecutor(final Function<? super T, R> action) {
-        return withSerialExecutor().thenRun(action);
+    public <R> CompletableFuture<R> thenRunWithSerialExecutor2(final Function<? super T, R> action) {
+        return withSerialExecutor().thenRun2(action);
     }
 
-    public <R> CompletableFuture<R> thenRunWithSerialExecutor(final BiFunction<? super T, Throwable, R> action) {
-        return withSerialExecutor().thenRun(action);
+    public <R> CompletableFuture<R> thenRunWithSerialExecutor2(final BiFunction<? super T, Throwable, R> action) {
+        return withSerialExecutor().thenRun2(action);
     }
 
     public CompletableFuture<Void> thenRunWithTPExecutor(final Runnable action) {
         return withTPExecutor().thenRun(action);
     }
 
-    public <U> CompletableFuture<U> thenRunWithTPExecutor(final Try.Callable<U> action) {
-        return withTPExecutor().thenRun(action);
+    public <U> CompletableFuture<U> thenRunWithTPExecutor2(final Try.Callable<U> action) {
+        return withTPExecutor().thenRun2(action);
     }
 
     public CompletableFuture<Void> thenRunWithTPExecutor(final Consumer<? super T> action) {
@@ -610,12 +610,12 @@ public class CompletableFuture<T> implements Future<T> {
         return withTPExecutor().thenRun(action);
     }
 
-    public <R> CompletableFuture<R> thenRunWithTPExecutor(final Function<? super T, R> action) {
-        return withTPExecutor().thenRun(action);
+    public <R> CompletableFuture<R> thenRunWithTPExecutor2(final Function<? super T, R> action) {
+        return withTPExecutor().thenRun2(action);
     }
 
-    public <R> CompletableFuture<R> thenRunWithTPExecutor(final BiFunction<? super T, Throwable, R> action) {
-        return withTPExecutor().thenRun(action);
+    public <R> CompletableFuture<R> thenRunWithTPExecutor2(final BiFunction<? super T, Throwable, R> action) {
+        return withTPExecutor().thenRun2(action);
     }
 
     public CompletableFuture<Void> runAfterBoth(final CompletableFuture<?> other, final Runnable action) {
@@ -630,7 +630,7 @@ public class CompletableFuture<T> implements Future<T> {
         });
     }
 
-    public <U> CompletableFuture<U> runAfterBoth(final CompletableFuture<?> other, final Try.Callable<U> action) {
+    public <U> CompletableFuture<U> runAfterBoth2(final CompletableFuture<?> other, final Try.Callable<U> action) {
         return execute(new Callable<U>() {
             @Override
             public U call() throws Exception {
@@ -663,7 +663,7 @@ public class CompletableFuture<T> implements Future<T> {
         });
     }
 
-    public <U, R> CompletableFuture<R> runAfterBoth(final CompletableFuture<U> other, final BiFunction<T, U, R> action) {
+    public <U, R> CompletableFuture<R> runAfterBoth2(final CompletableFuture<U> other, final BiFunction<T, U, R> action) {
         return execute(new Callable<R>() {
             @Override
             public R call() throws Exception {
@@ -672,7 +672,7 @@ public class CompletableFuture<T> implements Future<T> {
         });
     }
 
-    public <U, R> CompletableFuture<R> runAfterBoth(final CompletableFuture<U> other, final Function<Tuple4<T, Throwable, U, Throwable>, R> action) {
+    public <U, R> CompletableFuture<R> runAfterBoth2(final CompletableFuture<U> other, final Function<Tuple4<T, Throwable, U, Throwable>, R> action) {
         return execute(new Callable<R>() {
             @Override
             public R call() throws Exception {
@@ -688,8 +688,8 @@ public class CompletableFuture<T> implements Future<T> {
         return withUIExecutor().runAfterBoth(other, action);
     }
 
-    public <U> CompletableFuture<U> runWithUIExecutorAfterBoth(final CompletableFuture<?> other, final Try.Callable<U> action) {
-        return withUIExecutor().runAfterBoth(other, action);
+    public <U> CompletableFuture<U> runWithUIExecutorAfterBoth2(final CompletableFuture<?> other, final Try.Callable<U> action) {
+        return withUIExecutor().runAfterBoth2(other, action);
     }
 
     public <U> CompletableFuture<Void> runWithUIExecutorAfterBoth(final CompletableFuture<U> other, final BiConsumer<T, U> action) {
@@ -700,21 +700,21 @@ public class CompletableFuture<T> implements Future<T> {
         return withUIExecutor().runAfterBoth(other, action);
     }
 
-    public <U, R> CompletableFuture<R> runWithUIExecutorAfterBoth(final CompletableFuture<U> other, final BiFunction<T, U, R> action) {
-        return withUIExecutor().runAfterBoth(other, action);
+    public <U, R> CompletableFuture<R> runWithUIExecutorAfterBoth2(final CompletableFuture<U> other, final BiFunction<T, U, R> action) {
+        return withUIExecutor().runAfterBoth2(other, action);
     }
 
-    public <U, R> CompletableFuture<R> runWithUIExecutorAfterBoth(final CompletableFuture<U> other,
+    public <U, R> CompletableFuture<R> runWithUIExecutorAfterBoth2(final CompletableFuture<U> other,
             final Function<Tuple4<T, Throwable, U, Throwable>, R> action) {
-        return withUIExecutor().runAfterBoth(other, action);
+        return withUIExecutor().runAfterBoth2(other, action);
     }
 
     public CompletableFuture<Void> runWithSerialExecutorAfterBoth(final CompletableFuture<?> other, final Runnable action) {
         return withSerialExecutor().runAfterBoth(other, action);
     }
 
-    public <U> CompletableFuture<U> runWithSerialExecutorAfterBoth(final CompletableFuture<?> other, final Try.Callable<U> action) {
-        return withSerialExecutor().runAfterBoth(other, action);
+    public <U> CompletableFuture<U> runWithSerialExecutorAfterBoth2(final CompletableFuture<?> other, final Try.Callable<U> action) {
+        return withSerialExecutor().runAfterBoth2(other, action);
     }
 
     public <U> CompletableFuture<Void> runWithSerialExecutorAfterBoth(final CompletableFuture<U> other, final BiConsumer<T, U> action) {
@@ -726,21 +726,21 @@ public class CompletableFuture<T> implements Future<T> {
         return withSerialExecutor().runAfterBoth(other, action);
     }
 
-    public <U, R> CompletableFuture<R> runWithSerialExecutorAfterBoth(final CompletableFuture<U> other, final BiFunction<T, U, R> action) {
-        return withSerialExecutor().runAfterBoth(other, action);
+    public <U, R> CompletableFuture<R> runWithSerialExecutorAfterBoth2(final CompletableFuture<U> other, final BiFunction<T, U, R> action) {
+        return withSerialExecutor().runAfterBoth2(other, action);
     }
 
-    public <U, R> CompletableFuture<R> runWithSerialExecutorAfterBoth(final CompletableFuture<U> other,
+    public <U, R> CompletableFuture<R> runWithSerialExecutorAfterBoth2(final CompletableFuture<U> other,
             final Function<Tuple4<T, Throwable, U, Throwable>, R> action) {
-        return withSerialExecutor().runAfterBoth(other, action);
+        return withSerialExecutor().runAfterBoth2(other, action);
     }
 
     public CompletableFuture<Void> runWithTPExecutorAfterBoth(final CompletableFuture<?> other, final Runnable action) {
         return withTPExecutor().runAfterBoth(other, action);
     }
 
-    public <U> CompletableFuture<U> runWithTPExecutorAfterBoth(final CompletableFuture<?> other, final Try.Callable<U> action) {
-        return withTPExecutor().runAfterBoth(other, action);
+    public <U> CompletableFuture<U> runWithTPExecutorAfterBoth2(final CompletableFuture<?> other, final Try.Callable<U> action) {
+        return withTPExecutor().runAfterBoth2(other, action);
     }
 
     public <U> CompletableFuture<Void> runWithTPExecutorAfterBoth(final CompletableFuture<U> other, final BiConsumer<T, U> action) {
@@ -751,13 +751,13 @@ public class CompletableFuture<T> implements Future<T> {
         return withTPExecutor().runAfterBoth(other, action);
     }
 
-    public <U, R> CompletableFuture<R> runWithTPExecutorAfterBoth(final CompletableFuture<U> other, final BiFunction<T, U, R> action) {
-        return withTPExecutor().runAfterBoth(other, action);
+    public <U, R> CompletableFuture<R> runWithTPExecutorAfterBoth2(final CompletableFuture<U> other, final BiFunction<T, U, R> action) {
+        return withTPExecutor().runAfterBoth2(other, action);
     }
 
-    public <U, R> CompletableFuture<R> runWithTPExecutorAfterBoth(final CompletableFuture<U> other,
+    public <U, R> CompletableFuture<R> runWithTPExecutorAfterBoth2(final CompletableFuture<U> other,
             final Function<Tuple4<T, Throwable, U, Throwable>, R> action) {
-        return withTPExecutor().runAfterBoth(other, action);
+        return withTPExecutor().runAfterBoth2(other, action);
     }
 
     public CompletableFuture<Void> runAfterEither(final CompletableFuture<?> other, final Runnable action) {
@@ -771,7 +771,7 @@ public class CompletableFuture<T> implements Future<T> {
         });
     }
 
-    public <U> CompletableFuture<U> runAfterEither(final CompletableFuture<?> other, final Try.Callable<U> action) {
+    public <U> CompletableFuture<U> runAfterEither2(final CompletableFuture<?> other, final Try.Callable<U> action) {
         return execute(new Callable<U>() {
             @Override
             public U call() throws Exception {
@@ -804,7 +804,7 @@ public class CompletableFuture<T> implements Future<T> {
         });
     }
 
-    public <R> CompletableFuture<R> runAfterEither(final CompletableFuture<? extends T> other, final Function<? super T, R> action) {
+    public <R> CompletableFuture<R> runAfterEither2(final CompletableFuture<? extends T> other, final Function<? super T, R> action) {
         return execute(new Callable<R>() {
             @Override
             public R call() throws Exception {
@@ -815,7 +815,7 @@ public class CompletableFuture<T> implements Future<T> {
         });
     }
 
-    public <R> CompletableFuture<R> runAfterEither(final CompletableFuture<? extends T> other, final BiFunction<? super T, Throwable, R> action) {
+    public <R> CompletableFuture<R> runAfterEither2(final CompletableFuture<? extends T> other, final BiFunction<? super T, Throwable, R> action) {
         return execute(new Callable<R>() {
             @Override
             public R call() throws Exception {
@@ -830,8 +830,8 @@ public class CompletableFuture<T> implements Future<T> {
         return withUIExecutor().runAfterEither(other, action);
     }
 
-    public <U> CompletableFuture<U> runWithUIExecutorAfterEither(final CompletableFuture<?> other, final Try.Callable<U> action) {
-        return withUIExecutor().runAfterEither(other, action);
+    public <U> CompletableFuture<U> runWithUIExecutorAfterEither2(final CompletableFuture<?> other, final Try.Callable<U> action) {
+        return withUIExecutor().runAfterEither2(other, action);
     }
 
     public <U> CompletableFuture<Void> runWithUIExecutorAfterEither(final CompletableFuture<? extends T> other, final Consumer<? super T> action) {
@@ -842,21 +842,21 @@ public class CompletableFuture<T> implements Future<T> {
         return withUIExecutor().runAfterEither(other, action);
     }
 
-    public <U, R> CompletableFuture<R> runWithUIExecutorAfterEither(final CompletableFuture<? extends T> other, final Function<? super T, R> action) {
-        return withUIExecutor().runAfterEither(other, action);
+    public <U, R> CompletableFuture<R> runWithUIExecutorAfterEither2(final CompletableFuture<? extends T> other, final Function<? super T, R> action) {
+        return withUIExecutor().runAfterEither2(other, action);
     }
 
-    public <U, R> CompletableFuture<R> runWithUIExecutorAfterEither(final CompletableFuture<? extends T> other,
+    public <U, R> CompletableFuture<R> runWithUIExecutorAfterEither2(final CompletableFuture<? extends T> other,
             final BiFunction<? super T, Throwable, R> action) {
-        return withUIExecutor().runAfterEither(other, action);
+        return withUIExecutor().runAfterEither2(other, action);
     }
 
     public CompletableFuture<Void> runWithSerialExecutorAfterEither(final CompletableFuture<?> other, final Runnable action) {
         return withSerialExecutor().runAfterEither(other, action);
     }
 
-    public <U> CompletableFuture<U> runWithSerialExecutorAfterEither(final CompletableFuture<?> other, final Try.Callable<U> action) {
-        return withSerialExecutor().runAfterEither(other, action);
+    public <U> CompletableFuture<U> runWithSerialExecutorAfterEither2(final CompletableFuture<?> other, final Try.Callable<U> action) {
+        return withSerialExecutor().runAfterEither2(other, action);
     }
 
     public <U> CompletableFuture<Void> runWithSerialExecutorAfterEither(final CompletableFuture<? extends T> other, final Consumer<? super T> action) {
@@ -868,21 +868,21 @@ public class CompletableFuture<T> implements Future<T> {
         return withSerialExecutor().runAfterEither(other, action);
     }
 
-    public <U, R> CompletableFuture<R> runWithSerialExecutorAfterEither(final CompletableFuture<? extends T> other, final Function<? super T, R> action) {
-        return withSerialExecutor().runAfterEither(other, action);
+    public <U, R> CompletableFuture<R> runWithSerialExecutorAfterEither2(final CompletableFuture<? extends T> other, final Function<? super T, R> action) {
+        return withSerialExecutor().runAfterEither2(other, action);
     }
 
-    public <U, R> CompletableFuture<R> runWithSerialExecutorAfterEither(final CompletableFuture<? extends T> other,
+    public <U, R> CompletableFuture<R> runWithSerialExecutorAfterEither2(final CompletableFuture<? extends T> other,
             final BiFunction<? super T, Throwable, R> action) {
-        return withSerialExecutor().runAfterEither(other, action);
+        return withSerialExecutor().runAfterEither2(other, action);
     }
 
     public CompletableFuture<Void> runWithTPExecutorAfterEither(final CompletableFuture<?> other, final Runnable action) {
         return withTPExecutor().runAfterEither(other, action);
     }
 
-    public <U> CompletableFuture<U> runWithTPExecutorAfterEither(final CompletableFuture<?> other, final Try.Callable<U> action) {
-        return withTPExecutor().runAfterEither(other, action);
+    public <U> CompletableFuture<U> runWithTPExecutorAfterEither2(final CompletableFuture<?> other, final Try.Callable<U> action) {
+        return withTPExecutor().runAfterEither2(other, action);
     }
 
     public <U> CompletableFuture<Void> runWithTPExecutorAfterEither(final CompletableFuture<? extends T> other, final Consumer<? super T> action) {
@@ -893,13 +893,13 @@ public class CompletableFuture<T> implements Future<T> {
         return withTPExecutor().runAfterEither(other, action);
     }
 
-    public <U, R> CompletableFuture<R> runWithTPExecutorAfterEither(final CompletableFuture<? extends T> other, final Function<? super T, R> action) {
-        return withTPExecutor().runAfterEither(other, action);
+    public <U, R> CompletableFuture<R> runWithTPExecutorAfterEither2(final CompletableFuture<? extends T> other, final Function<? super T, R> action) {
+        return withTPExecutor().runAfterEither2(other, action);
     }
 
-    public <U, R> CompletableFuture<R> runWithTPExecutorAfterEither(final CompletableFuture<? extends T> other,
+    public <U, R> CompletableFuture<R> runWithTPExecutorAfterEither2(final CompletableFuture<? extends T> other,
             final BiFunction<? super T, Throwable, R> action) {
-        return withTPExecutor().runAfterEither(other, action);
+        return withTPExecutor().runAfterEither2(other, action);
     }
 
     public <U> CompletableFuture<U> applyToEither(final CompletableFuture<? extends T> other, final Function<? super T, U> action) {

@@ -26,7 +26,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
 import com.landawn.abacus.util.Retry.Retry0;
@@ -180,12 +179,5 @@ public class AsyncExecutor {
         }
 
         return executorService;
-    }
-
-    /**
-     * Short name for AsyncExecutor
-     */
-    @Beta
-    static final class Asyn extends AsyncExecutor {
     }
 }

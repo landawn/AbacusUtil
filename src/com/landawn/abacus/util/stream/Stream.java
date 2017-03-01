@@ -2481,6 +2481,18 @@ public abstract class Stream<T>
 
     /**
      * 
+     * @param startTimeInMillis
+     * @param interval
+     * @param unit
+     * @param s
+     * @return
+     */
+    public static <T> Stream<T> interval(final long startTimeInMillis, final long interval, final TimeUnit unit, final Supplier<T> s) {
+        return interval(startTimeInMillis, unit.toMillis(interval), s);
+    }
+
+    /**
+     * 
      * @param startTimeInMillis first time value in milliseconds.
      * @param intervalInMillis use TimeUnit to convert interval to milliseconds.
      * @param s
@@ -2503,6 +2515,18 @@ public abstract class Stream<T>
                 return s.apply(timer.next());
             }
         });
+    }
+
+    /**
+     * 
+     * @param startTimeInMillis
+     * @param interval
+     * @param unit
+     * @param s
+     * @return
+     */
+    public static <T> Stream<T> interval(final long startTimeInMillis, final long interval, final TimeUnit unit, final LongFunction<T> s) {
+        return interval(startTimeInMillis, unit.toMillis(interval), s);
     }
 
     /**
