@@ -19,6 +19,7 @@ package com.landawn.abacus.eventBus;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -33,21 +34,51 @@ import java.util.concurrent.TimeUnit;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
 import com.landawn.abacus.util.Array;
-import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.ThreadMode;
 
+/**
+ * <pre>
+ * <code>
+ * final Object strSubscriber_1 = new Subscriber<String>() {
+ *     public void on(String event) {
+ *         System.out.println("Subscriber: strSubscriber_1, event: " + event);
+ *     }
+ * };
+ *
+ * final Object anySubscriber_2 = new Object() {
+ *    Subscribe(threadMode = ThreadMode.DEFAULT)
+ *    public void anyMethod(Object event) {
+ *        System.out.println("Subscriber: anySubscriber_2, event: " + event);
+ *    }
+ * };
+ *
+ * final EventBus eventBus = EventBus.getDefault();
+ *
+ * eventBus.register(strSubscriber_1);
+ * eventBus.register(anySubscriber_2, "eventId_2");
+ *
+ * eventBus.post("abc");
+ * eventBus.post("abc", "eventId_2");
+ *
+ * eventBus.post(123);
+ * eventBus.post(123, "eventId_2");
+ * </code>
+ * </pre>
+ * 
+ * @author haiyang li
+ *
+ */
 public class EventBus {
     private static final Logger logger = LoggerFactory.getLogger(EventBus.class);
 
     private static final ExecutorService asyncExecutor = Executors.newFixedThreadPool(32);
 
-    private static final Multimap<Class<?>, Method, List<Method>> classSubscriberMethodMap = new Multimap<>(ConcurrentHashMap.class, ArrayList.class);
-
-    private final Multimap<Object, MethodIdentifier, Set<MethodIdentifier>> subscriberMethodMap = new Multimap<>(LinkedHashMap.class, HashSet.class);
+    private static final Map<Class<?>, List<MethodIdentifier>> classSubscriberMethodMap = new ConcurrentHashMap<>();
 
     private static final EventBus INSTANCE = new EventBus();
 
+    private final Map<Object, List<MethodIdentifier>> subscriberEventMap = Collections.synchronizedMap(new LinkedHashMap<Object, List<MethodIdentifier>>());
     private final String identifier;
 
     static {
@@ -59,9 +90,7 @@ public class EventBus {
                 try {
                     asyncExecutor.awaitTermination(180, TimeUnit.SECONDS);
                 } catch (InterruptedException e) {
-                    if (logger.isWarnEnabled()) {
-                        logger.warn("Failed to commit task in the queue in EventBus", e);
-                    }
+                    logger.error("Failed to commit the tasks in queue in ExecutorService before shutdown", e);
                 }
             }
         });
@@ -84,11 +113,11 @@ public class EventBus {
     }
 
     public EventBus register(final Object subscriber) {
-        return register(subscriber, ThreadMode.DEFAULT);
+        return register(subscriber, (ThreadMode) null);
     }
 
     public EventBus register(final Object subscriber, final String eventId) {
-        return register(subscriber, eventId, ThreadMode.DEFAULT);
+        return register(subscriber, eventId, (ThreadMode) null);
     }
 
     public EventBus register(final Object subscriber, ThreadMode threadMode) {
@@ -96,69 +125,80 @@ public class EventBus {
     }
 
     public EventBus register(final Object subscriber, final String eventId, ThreadMode threadMode) {
-        if (threadMode == null) {
-            threadMode = ThreadMode.DEFAULT;
-        }
-
         if (!isSupportedThreadMode(threadMode)) {
-            throw new RuntimeException("Unsupported thread mode");
+            throw new RuntimeException("Unsupported thread mode: " + threadMode);
         }
 
-        synchronized (subscriberMethodMap) {
-            final Class<?> cls = subscriber.getClass();
-            List<Method> methods = classSubscriberMethodMap.get(cls);
-
-            if (methods == null) {
-                methods = new ArrayList<>();
-
-                if (subscriber instanceof Subscriber) {
-                    for (Method method : cls.getDeclaredMethods()) {
-                        if (method.getName().equals("on") && method.getParameterTypes().length == 1) {
-                            if (Object.class.equals(method.getParameterTypes()[0]) && N.isNullOrEmpty(eventId)) {
-                                throw new RuntimeException("General subscriber (parameter type is Object) only can be registered with event id");
-                            }
-
-                            if (!methods.contains(method)) {
-                                methods.add(method);
-                            }
-
-                            break;
-                        }
-                    }
-                }
-
-                final Set<Class<?>> allTypes = N.getSuperTypes(cls);
-                allTypes.add(cls);
-
-                for (Class<?> supertype : allTypes) {
-                    for (Method method : supertype.getDeclaredMethods()) {
-                        if (method.isAnnotationPresent(Subscribe.class) && !method.isSynthetic() && Modifier.isPublic(method.getModifiers())) {
-                            Class<?>[] parameterTypes = method.getParameterTypes();
-                            if (parameterTypes.length != 1) {
-                                throw new RuntimeException(
-                                        method.getName() + " has " + parameterTypes.length + " parameters. Subscriber methods must have exactly 1 parameter.");
-                            }
-
-                            if (!methods.contains(method)) {
-                                methods.add(method);
-                            }
-                        }
-                    }
-                }
-
-                classSubscriberMethodMap.putAll(cls, methods);
-            }
-
-            if (N.isNullOrEmpty(methods)) {
-                throw new RuntimeException("No subscriber method found in class: " + N.getCanonicalClassName(cls));
-            }
-
-            for (Method method : methods) {
-                subscriberMethodMap.put(subscriber, new MethodIdentifier(subscriber, method, eventId, threadMode));
-            }
+        if (logger.isInfoEnabled()) {
+            logger.info("Registering subscriber: " + subscriber);
         }
+
+        final Class<?> cls = subscriber.getClass();
+        final List<MethodIdentifier> subMethodList = getSubscriberMethodList(cls);
+
+        if (N.isNullOrEmpty(subMethodList)) {
+            throw new RuntimeException("No subscriber method found in class: " + N.getCanonicalClassName(cls));
+        }
+
+        final List<MethodIdentifier> eventSubList = new ArrayList<>(subMethodList.size());
+
+        for (MethodIdentifier e : subMethodList) {
+            if (e.isPossibleLambdaSubscriber && N.isNullOrEmpty(eventId)) {
+                throw new RuntimeException(
+                        "General subscriber (type is {@code Subscriber} and parameter type is Object, mostly created by lambda) only can be registered with event id");
+            }
+
+            eventSubList.add(new MethodIdentifier(subscriber, e.method, eventId, threadMode == null ? e.threadMode : threadMode));
+        }
+
+        subscriberEventMap.put(subscriber, eventSubList);
 
         return this;
+    }
+
+    private List<MethodIdentifier> getSubscriberMethodList(final Class<?> cls) {
+        List<MethodIdentifier> methods = classSubscriberMethodMap.get(cls);
+
+        if (methods == null) {
+            methods = new ArrayList<>();
+            final Set<Method> added = new HashSet<>();
+
+            final Set<Class<?>> allTypes = N.getSuperTypes(cls);
+            allTypes.add(cls);
+
+            for (Class<?> supertype : allTypes) {
+                for (Method method : supertype.getDeclaredMethods()) {
+                    if (method.isAnnotationPresent(Subscribe.class) && Modifier.isPublic(method.getModifiers()) && !method.isSynthetic()) {
+                        final Class<?>[] parameterTypes = method.getParameterTypes();
+
+                        if (parameterTypes.length != 1) {
+                            throw new RuntimeException(
+                                    method.getName() + " has " + parameterTypes.length + " parameters. Subscriber method must have exactly 1 parameter.");
+                        }
+
+                        if (added.add(method)) {
+                            methods.add(new MethodIdentifier(method));
+                        }
+                    }
+                }
+            }
+
+            if (Subscriber.class.isAssignableFrom(cls)) {
+                for (Method method : cls.getDeclaredMethods()) {
+                    if (method.getName().equals("on") && method.getParameterTypes().length == 1) {
+                        if (added.add(method)) {
+                            methods.add(new MethodIdentifier(method));
+                        }
+
+                        break;
+                    }
+                }
+            }
+
+            classSubscriberMethodMap.put(cls, methods);
+        }
+
+        return methods;
     }
 
     /**
@@ -178,7 +218,7 @@ public class EventBus {
      * @return
      */
     public <T> EventBus register(final Subscriber<T> subscriber, final String eventId) {
-        return register(subscriber, eventId, ThreadMode.DEFAULT);
+        return register(subscriber, eventId, (ThreadMode) null);
     }
 
     public <T> EventBus register(final Subscriber<T> subscriber, ThreadMode threadMode) {
@@ -197,9 +237,11 @@ public class EventBus {
     }
 
     public EventBus unregister(final Object subscriber) {
-        synchronized (subscriberMethodMap) {
-            subscriberMethodMap.removeAll(subscriber);
+        if (logger.isInfoEnabled()) {
+            logger.info("Unregistering subscriber: " + subscriber);
         }
+
+        subscriberEventMap.remove(subscriber);
 
         return this;
     }
@@ -210,32 +252,31 @@ public class EventBus {
 
     public EventBus post(final Object event, final String eventId) {
         final Class<?> cls = event.getClass();
+        final List<List<MethodIdentifier>> tmp = new ArrayList<>(subscriberEventMap.values()); // in case concurrent register/unregister.
 
-        synchronized (subscriberMethodMap) {
-            for (Set<MethodIdentifier> methodList : subscriberMethodMap.values()) {
-                for (MethodIdentifier identifier : methodList) {
-                    if (identifier.isMyEvent(cls, eventId)) {
-                        try {
-                            dispatch(identifier.obj, identifier.method, event, identifier.threadMode);
-                        } catch (Throwable e) {
-                            logger.error("Failed to execute event(" + N.toString(event) + ") for subscriber: " + N.toString(identifier.obj), e);
-                        }
+        for (List<MethodIdentifier> subEventList : tmp) {
+            for (MethodIdentifier identifier : subEventList) {
+                if (identifier.isMyEvent(cls, eventId)) {
+                    try {
+                        dispatch(identifier, event);
+                    } catch (Throwable e) {
+                        logger.error("Failed to post event(" + N.toString(event) + ") to subscriber: " + N.toString(identifier), e);
                     }
                 }
             }
-
-            return this;
         }
+
+        return this;
     }
 
     protected boolean isSupportedThreadMode(final ThreadMode threadMode) {
-        return threadMode == ThreadMode.DEFAULT || threadMode == ThreadMode.THREAD_POOL_EXECUTOR;
+        return threadMode == null || threadMode == ThreadMode.DEFAULT || threadMode == ThreadMode.THREAD_POOL_EXECUTOR;
     }
 
-    protected void dispatch(final Object obj, final Method method, final Object event, final ThreadMode threadMode) throws Throwable {
-        switch (threadMode) {
+    protected void dispatch(final MethodIdentifier identifier, final Object event) throws Throwable {
+        switch (identifier.threadMode) {
             case DEFAULT:
-                invokeMethod(obj, method, event);
+                post(identifier, event);
 
                 return;
 
@@ -243,7 +284,7 @@ public class EventBus {
                 asyncExecutor.execute(new Runnable() {
                     @Override
                     public void run() {
-                        invokeMethod(obj, method, event);
+                        post(identifier, event);
                     }
                 });
 
@@ -254,17 +295,15 @@ public class EventBus {
         }
     }
 
-    protected void invokeMethod(final Object obj, final Method method, final Object event) {
-        final boolean accessible = method.isAccessible();
+    protected void post(final MethodIdentifier identifier, final Object event) {
+        if (logger.isInfoEnabled()) {
+            logger.info("Posting event: " + N.toString(event) + " to subscriber: " + N.toString(identifier));
+        }
 
         try {
-            method.setAccessible(true);
-
-            method.invoke(obj, event);
+            identifier.method.invoke(identifier.obj, event);
         } catch (Throwable e) {
-            logger.error("Failed to execute event(" + N.toString(event) + ") for subscriber: " + N.toString(obj), e);
-        } finally {
-            method.setAccessible(accessible);
+            logger.error("Failed to post event(" + N.toString(event) + ") to subscriber: " + N.toString(identifier), e);
         }
     }
 
@@ -276,6 +315,11 @@ public class EventBus {
         final Class<?> parameterType2;
         final String eventId;
         final ThreadMode threadMode;
+        final boolean isPossibleLambdaSubscriber;
+
+        MethodIdentifier(Method method) {
+            this(null, method, null, method.isAnnotationPresent(Subscribe.class) ? method.getAnnotation(Subscribe.class).threadMode() : ThreadMode.DEFAULT);
+        }
 
         MethodIdentifier(Object obj, Method method, String eventId, ThreadMode threadMode) {
             this.obj = obj;
@@ -285,6 +329,13 @@ public class EventBus {
                     : (N.isPrimitiveWapper(parameterType) ? Array.unbox(parameterType) : null);
             this.eventId = eventId;
             this.threadMode = threadMode;
+
+            isPossibleLambdaSubscriber = Subscriber.class.isAssignableFrom(method.getDeclaringClass()) && method.getName().equals("on")
+                    && parameterType.equals(Object.class) && method.isAnnotationPresent(Subscribe.class) == false;
+
+            if (method.isAccessible() == false) {
+                method.setAccessible(true);
+            }
         }
 
         boolean isMyEvent(final Class<?> cls, final String eventId) {
@@ -301,6 +352,11 @@ public class EventBus {
             }
 
             return b;
+        }
+
+        @Override
+        public String toString() {
+            return "{method=" + method + ", eventId=" + eventId + ", threadMode=" + threadMode + "}";
         }
     }
 }

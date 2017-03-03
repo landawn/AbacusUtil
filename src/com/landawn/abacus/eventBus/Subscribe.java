@@ -19,13 +19,16 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
+import com.landawn.abacus.util.ThreadMode;
+
 /**
  * 
  * @since 0.8
  * 
  * @author Haiyang Li
  */
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
 public @interface Subscribe {
+    ThreadMode threadMode() default ThreadMode.DEFAULT;
 }
