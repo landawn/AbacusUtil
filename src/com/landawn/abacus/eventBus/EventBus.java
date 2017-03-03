@@ -28,6 +28,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
@@ -47,11 +48,39 @@ public class EventBus {
 
     private static final EventBus INSTANCE = new EventBus();
 
+    private final String identifier;
+
+    static {
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                asyncExecutor.shutdown();
+
+                try {
+                    asyncExecutor.awaitTermination(180, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    if (logger.isWarnEnabled()) {
+                        logger.warn("Failed to commit task in the queue in EventBus", e);
+                    }
+                }
+            }
+        });
+    }
+
     public EventBus() {
+        this("default");
+    }
+
+    public EventBus(String identifier) {
+        this.identifier = identifier;
     }
 
     public static EventBus getDefault() {
         return INSTANCE;
+    }
+
+    public String identifier() {
+        return identifier;
     }
 
     public EventBus register(final Object subscriber) {
@@ -187,7 +216,7 @@ public class EventBus {
                 for (MethodIdentifier identifier : methodList) {
                     if (identifier.isMyEvent(cls, eventId)) {
                         try {
-                            executeEvent(identifier.obj, identifier.method, event, identifier.threadMode);
+                            dispatch(identifier.obj, identifier.method, event, identifier.threadMode);
                         } catch (Throwable e) {
                             logger.error("Failed to execute event(" + N.toString(event) + ") for subscriber: " + N.toString(identifier.obj), e);
                         }
@@ -203,7 +232,7 @@ public class EventBus {
         return threadMode == ThreadMode.DEFAULT || threadMode == ThreadMode.THREAD_POOL_EXECUTOR;
     }
 
-    protected void executeEvent(final Object obj, final Method method, final Object event, final ThreadMode threadMode) throws Throwable {
+    protected void dispatch(final Object obj, final Method method, final Object event, final ThreadMode threadMode) throws Throwable {
         switch (threadMode) {
             case DEFAULT:
                 invokeMethod(obj, method, event);

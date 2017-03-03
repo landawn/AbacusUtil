@@ -34566,6 +34566,24 @@ public final class N {
         return obj;
     }
 
+//    public static void println(final Object key, final Object value) {
+//        final StringBuilder sb = ObjectFactory.createStringBuilder();
+//        try {
+//            System.out.println(sb.append(N.deepToString(key)).append(" : ").append(N.deepToString(value)).toString());
+//        } finally {
+//            ObjectFactory.recycle(sb);
+//        }
+//    }
+//    
+//    public static void println(final Object a, final Object b, final Object c) {
+//        final StringBuilder sb = ObjectFactory.createStringBuilder();
+//        try {
+//            System.out.println(sb.append(N.deepToString(a)).append(" : ").append(N.deepToString(b)).append(" : ").append(N.deepToString(c)).toString());
+//        } finally {
+//            ObjectFactory.recycle(sb);
+//        }
+//    }
+
     /**
      * 
      * @param format

@@ -17,6 +17,7 @@ package com.landawn.abacus.util;
 import java.util.AbstractCollection;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.function.Predicate;
 
 /**
  * 
@@ -45,6 +46,15 @@ abstract class ImmutableCollection<E> extends AbstractCollection<E> {
      */
     @Deprecated
     @Override
+    public final boolean addAll(Collection<? extends E> newElements) {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * @deprecated Unsupported operation.
+     */
+    @Deprecated
+    @Override
     public final boolean remove(Object object) {
         throw new UnsupportedOperationException();
     }
@@ -54,7 +64,7 @@ abstract class ImmutableCollection<E> extends AbstractCollection<E> {
      */
     @Deprecated
     @Override
-    public final boolean addAll(Collection<? extends E> newElements) {
+    public boolean removeIf(Predicate<? super E> filter) {
         throw new UnsupportedOperationException();
     }
 

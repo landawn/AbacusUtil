@@ -72,7 +72,7 @@ public class AsyncExecutor {
                     executorService.awaitTermination(180, TimeUnit.SECONDS);
                 } catch (InterruptedException e) {
                     if (logger.isWarnEnabled()) {
-                        logger.warn("Failed to commit task in the queue in class", e);
+                        logger.warn("Failed to commit task in the queue in AsyncExecutor", e);
                     }
                 }
             }

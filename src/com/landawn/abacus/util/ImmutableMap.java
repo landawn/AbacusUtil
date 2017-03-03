@@ -18,6 +18,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 /**
  * 
@@ -109,6 +111,78 @@ public final class ImmutableMap<K, V> implements Map<K, V> {
     @Deprecated
     @Override
     public final void putAll(Map<? extends K, ? extends V> map) {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * @deprecated Unsupported operation.
+     */
+    @Deprecated
+    @Override
+    public V putIfAbsent(K key, V value) {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * @deprecated Unsupported operation.
+     */
+    @Deprecated
+    @Override
+    public boolean remove(Object key, Object value) {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * @deprecated Unsupported operation.
+     */
+    @Deprecated
+    @Override
+    public boolean replace(K key, V oldValue, V newValue) {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * @deprecated Unsupported operation.
+     */
+    @Deprecated
+    @Override
+    public V replace(K key, V value) {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * @deprecated Unsupported operation.
+     */
+    @Deprecated
+    @Override
+    public V computeIfAbsent(K key, Function<? super K, ? extends V> mappingFunction) {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * @deprecated Unsupported operation.
+     */
+    @Deprecated
+    @Override
+    public V computeIfPresent(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * @deprecated Unsupported operation.
+     */
+    @Deprecated
+    @Override
+    public V compute(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * @deprecated Unsupported operation.
+     */
+    @Deprecated
+    @Override
+    public V merge(K key, V value, BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
         throw new UnsupportedOperationException();
     }
 
