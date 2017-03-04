@@ -31,4 +31,24 @@ import com.landawn.abacus.util.ThreadMode;
 @Target(ElementType.METHOD)
 public @interface Subscribe {
     ThreadMode threadMode() default ThreadMode.DEFAULT;
+
+    /**
+     * Only accept the events which have extract same class type as the method parameter if it's true.
+     * Otherwise, accept all the events which can be assigned to the parameter type.
+     * The precondition for both <code>true</code> and <code>false</code> is the event id has to match.
+     * 
+     * @return
+     */
+    boolean strictEventType() default false;
+
+    boolean sticky() default false;
+
+    String eventId() default "";
+
+    /**
+     * The event will be ignored if the interval between this event and last event is less than the specified <code>interval</code>.
+     * 
+     * @return
+     */
+    long interval() default 0; // Unit is milliseconds.
 }
