@@ -64,6 +64,7 @@ import com.landawn.abacus.util.Charsets;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.DoubleSummaryStatistics;
+import com.landawn.abacus.util.ExList;
 import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.FloatSummaryStatistics;
 import com.landawn.abacus.util.Holder;
@@ -81,7 +82,6 @@ import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.ExList;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalNullable;
@@ -2458,6 +2458,16 @@ public abstract class Stream<T>
 
     /**
      * 
+     * @param intervalInMillis
+     * @param s
+     * @return
+     */
+    public static <T> Stream<T> interval(final long intervalInMillis, final Supplier<T> s) {
+        return interval(System.currentTimeMillis(), intervalInMillis, s);
+    }
+
+    /**
+     * 
      * @param startTimeInMillis first time value in milliseconds.
      * @param intervalInMillis use TimeUnit to convert interval to milliseconds.
      * @param s
@@ -2493,6 +2503,10 @@ public abstract class Stream<T>
      */
     public static <T> Stream<T> interval(final long startTimeInMillis, final long interval, final TimeUnit unit, final Supplier<T> s) {
         return interval(startTimeInMillis, unit.toMillis(interval), s);
+    }
+
+    public static <T> Stream<T> interval(final long intervalInMillis, final LongFunction<T> s) {
+        return interval(System.currentTimeMillis(), intervalInMillis, s);
     }
 
     /**
@@ -6285,8 +6299,7 @@ public abstract class Stream<T>
      * @param zipFunction
      * @return
      */
-    public static <T, R> Stream<R> parallelZip(final Collection<? extends Stream<? extends T>> c,
-            final Function<? super ExList<? extends T>, R> zipFunction) {
+    public static <T, R> Stream<R> parallelZip(final Collection<? extends Stream<? extends T>> c, final Function<? super ExList<? extends T>, R> zipFunction) {
         return parallelZip(c, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
     }
 
@@ -6306,8 +6319,8 @@ public abstract class Stream<T>
      * @param queueSize for each iterator. Default value is 8
      * @return
      */
-    public static <T, R> Stream<R> parallelZip(final Collection<? extends Stream<? extends T>> c,
-            final Function<? super ExList<? extends T>, R> zipFunction, final int queueSize) {
+    public static <T, R> Stream<R> parallelZip(final Collection<? extends Stream<? extends T>> c, final Function<? super ExList<? extends T>, R> zipFunction,
+            final int queueSize) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
@@ -6356,8 +6369,8 @@ public abstract class Stream<T>
      * @param queueSize for each iterator. Default value is 8
      * @return
      */
-    public static <T, R> Stream<R> parallelZip2(final Collection<? extends Iterator<? extends T>> c,
-            final Function<? super ExList<? extends T>, R> zipFunction, final int queueSize) {
+    public static <T, R> Stream<R> parallelZip2(final Collection<? extends Iterator<? extends T>> c, final Function<? super ExList<? extends T>, R> zipFunction,
+            final int queueSize) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }

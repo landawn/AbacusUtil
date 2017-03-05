@@ -10,7 +10,9 @@
 
 5*, Rename ObjectList to ExList and Add ExCollection/ExSet/ExQueue/ExMap for Java 8.
 
-6, Improvements and bug fix.
+6, Add unzip to Seq.
+
+7, Improvements and bug fix.
 
 ========Changes in 0.9.54=========================================================================
 

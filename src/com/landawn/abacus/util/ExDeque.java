@@ -15,6 +15,7 @@
  */
 package com.landawn.abacus.util;
 
+import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Deque;
 import java.util.Iterator;
@@ -28,6 +29,18 @@ import java.util.LinkedList;
  */
 public interface ExDeque<T> extends Deque<T>, ExQueue<T> {
 
+    static <T> ExDeque<T> newDeque() {
+        return of(new LinkedList<T>());
+    }
+
+    static <T> ExDeque<T> newArrayDeque() {
+        return of(new ArrayDeque<T>());
+    }
+
+    static <T> ExDeque<T> newArrayDeque(int capacity) {
+        return of(new ArrayDeque<T>(capacity));
+    }
+
     static <T> ExDeque<T> of(final T... a) {
         final Deque<T> Deque = N.asDeque(a);
         return ExDeque.of(Deque);
@@ -39,192 +52,192 @@ public interface ExDeque<T> extends Deque<T>, ExQueue<T> {
 
             @Override
             public boolean offer(T e) {
-                return this.deque.offer(e);
+                return deque.offer(e);
             }
 
             @Override
             public T remove() {
-                return this.deque.remove();
+                return deque.remove();
             }
 
             @Override
             public T poll() {
-                return this.deque.poll();
+                return deque.poll();
             }
 
             @Override
             public T element() {
-                return this.deque.element();
+                return deque.element();
             }
 
             @Override
             public T peek() {
-                return this.deque.peek();
+                return deque.peek();
             }
 
             @Override
             public void addFirst(T e) {
-                this.deque.addFirst(e);
+                deque.addFirst(e);
             }
 
             @Override
             public void addLast(T e) {
-                this.deque.addLast(e);
+                deque.addLast(e);
             }
 
             @Override
             public boolean offerFirst(T e) {
-                return this.deque.offerFirst(e);
+                return deque.offerFirst(e);
             }
 
             @Override
             public boolean offerLast(T e) {
-                return this.deque.offerLast(e);
+                return deque.offerLast(e);
             }
 
             @Override
             public T removeFirst() {
-                return this.deque.removeFirst();
+                return deque.removeFirst();
             }
 
             @Override
             public T removeLast() {
-                return this.deque.removeLast();
+                return deque.removeLast();
             }
 
             @Override
             public T pollFirst() {
-                return this.deque.pollFirst();
+                return deque.pollFirst();
             }
 
             @Override
             public T pollLast() {
-                return this.deque.pollLast();
+                return deque.pollLast();
             }
 
             @Override
             public T getFirst() {
-                return this.deque.getFirst();
+                return deque.getFirst();
             }
 
             @Override
             public T getLast() {
-                return this.deque.getLast();
+                return deque.getLast();
             }
 
             @Override
             public T peekFirst() {
-                return this.deque.peekFirst();
+                return deque.peekFirst();
             }
 
             @Override
             public T peekLast() {
-                return this.deque.peekLast();
+                return deque.peekLast();
             }
 
             @Override
             public boolean removeFirstOccurrence(Object o) {
-                return this.deque.removeFirstOccurrence(o);
+                return deque.removeFirstOccurrence(o);
             }
 
             @Override
             public boolean removeLastOccurrence(Object o) {
-                return this.deque.removeLastOccurrence(o);
+                return deque.removeLastOccurrence(o);
             }
 
             @Override
             public void push(T e) {
-                this.deque.push(e);
+                deque.push(e);
             }
 
             @Override
             public T pop() {
-                return this.deque.pop();
+                return deque.pop();
             }
 
             @Override
             public Iterator<T> descendingIterator() {
-                return this.deque.descendingIterator();
+                return deque.descendingIterator();
             }
 
             @Override
             public int size() {
-                return this.deque.size();
+                return deque.size();
             }
 
             @Override
             public boolean isEmpty() {
-                return this.deque.isEmpty();
+                return deque.isEmpty();
             }
 
             @Override
             public boolean contains(Object o) {
-                return this.deque.contains(o);
+                return deque.contains(o);
             }
 
             @Override
             public Iterator<T> iterator() {
-                return this.deque.iterator();
+                return deque.iterator();
             }
 
             @Override
             public Object[] toArray() {
-                return this.deque.toArray();
+                return deque.toArray();
             }
 
             @Override
             public <A> A[] toArray(A[] a) {
-                return this.deque.toArray(a);
+                return deque.toArray(a);
             }
 
             @Override
             public boolean add(T e) {
-                return this.deque.add(e);
+                return deque.add(e);
             }
 
             @Override
             public boolean remove(Object o) {
-                return this.deque.remove(o);
+                return deque.remove(o);
             }
 
             @Override
             public boolean containsAll(Collection<?> c) {
-                return this.deque.containsAll(c);
+                return deque.containsAll(c);
             }
 
             @Override
             public boolean addAll(Collection<? extends T> c) {
-                return this.deque.addAll(c);
+                return deque.addAll(c);
             }
 
             @Override
             public boolean retainAll(Collection<?> c) {
-                return this.deque.retainAll(c);
+                return deque.retainAll(c);
             }
 
             @Override
             public boolean removeAll(Collection<?> c) {
-                return this.deque.removeAll(c);
+                return deque.removeAll(c);
             }
 
             @Override
             public void clear() {
-                this.deque.clear();
+                deque.clear();
             }
 
             @Override
             public int hashCode() {
-                return this.deque.hashCode();
+                return deque.hashCode();
             }
 
             @Override
             public boolean equals(Object obj) {
-                return this.deque.equals(obj);
+                return deque.equals(obj);
             }
 
             @Override
             public String toString() {
-                return this.deque.toString();
+                return deque.toString();
             }
         };
     }

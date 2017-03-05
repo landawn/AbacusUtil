@@ -19,6 +19,7 @@ package com.landawn.abacus.util;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -28,6 +29,22 @@ import java.util.Set;
  * @author Haiyang Li
  */
 public interface ExSet<T> extends Set<T>, ExCollection<T> {
+
+    static <T> ExSet<T> newHashSet() {
+        return of(new HashSet<T>());
+    }
+
+    static <T> ExSet<T> newHashSet(int initialCapacity) {
+        return of(new HashSet<T>(initialCapacity));
+    }
+
+    static <T> ExSet<T> newLinkedHashSet() {
+        return of(new LinkedHashSet<T>());
+    }
+
+    static <T> ExSet<T> newLinkedHashSet(int initialCapacity) {
+        return of(new LinkedHashSet<T>(initialCapacity));
+    }
 
     static <T> ExSet<T> of(final T... a) {
         final Set<T> set = N.asSet(a);
@@ -40,82 +57,82 @@ public interface ExSet<T> extends Set<T>, ExCollection<T> {
 
             @Override
             public int size() {
-                return this.set.size();
+                return set.size();
             }
 
             @Override
             public boolean isEmpty() {
-                return this.set.isEmpty();
+                return set.isEmpty();
             }
 
             @Override
             public boolean contains(Object o) {
-                return this.set.contains(o);
+                return set.contains(o);
             }
 
             @Override
             public Iterator<T> iterator() {
-                return this.set.iterator();
+                return set.iterator();
             }
 
             @Override
             public Object[] toArray() {
-                return this.set.toArray();
+                return set.toArray();
             }
 
             @Override
             public <A> A[] toArray(A[] a) {
-                return this.set.toArray(a);
+                return set.toArray(a);
             }
 
             @Override
             public boolean add(T e) {
-                return this.set.add(e);
+                return set.add(e);
             }
 
             @Override
             public boolean remove(Object o) {
-                return this.set.remove(o);
+                return set.remove(o);
             }
 
             @Override
             public boolean containsAll(Collection<?> c) {
-                return this.set.containsAll(c);
+                return set.containsAll(c);
             }
 
             @Override
             public boolean addAll(Collection<? extends T> c) {
-                return this.set.addAll(c);
+                return set.addAll(c);
             }
 
             @Override
             public boolean retainAll(Collection<?> c) {
-                return this.set.retainAll(c);
+                return set.retainAll(c);
             }
 
             @Override
             public boolean removeAll(Collection<?> c) {
-                return this.set.removeAll(c);
+                return set.removeAll(c);
             }
 
             @Override
             public void clear() {
-                this.set.clear();
+                set.clear();
             }
 
             @Override
             public int hashCode() {
-                return this.set.hashCode();
+                return set.hashCode();
             }
 
             @Override
             public boolean equals(Object obj) {
-                return this.set.equals(obj);
+                return set.equals(obj);
             }
 
             @Override
             public String toString() {
-                return this.set.toString();
+                return set.toString();
             }
         };
     }

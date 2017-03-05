@@ -98,6 +98,15 @@ public final class Seq<T> implements Collection<T> {
         return new Seq<>(c);
     }
 
+    /**
+     * Returns the <code>Collection</code> the <code>Seq</code> is backed with recursively.
+     * 
+     * @return
+     */
+    public Collection<T> interior() {
+        return coll instanceof Seq ? ((Seq<T>) coll).interior() : coll;
+    }
+
     @Override
     public boolean add(T e) {
         return coll.add(e);
@@ -1645,6 +1654,12 @@ public final class Seq<T> implements Collection<T> {
         return result;
     }
 
+    /**
+     * 
+     * @param c
+     * @param unzip the second parameter is an output parameter.
+     * @return
+     */
     public static <T, L, R> Pair<ExList<L>, ExList<R>> unzip(final Collection<? extends T> c, final BiConsumer<? super T, Pair<L, R>> unzip) {
         final ExList<L> l = new ExList<L>(c.size());
         final ExList<R> r = new ExList<R>(c.size());
@@ -1661,6 +1676,13 @@ public final class Seq<T> implements Collection<T> {
         return Pair.of(l, r);
     }
 
+    /**
+     * 
+     * @param supplier
+     * @param c
+     * @param unzip the second parameter is an output parameter.
+     * @return
+     */
     public static <T, L, R> Pair<Seq<L>, Seq<R>> unzip(final IntFunction<? extends Collection<?>> supplier, final Collection<? extends T> c,
             final BiConsumer<? super T, Pair<L, R>> unzip) {
         final Collection<L> l = (Collection<L>) supplier.apply(c.size());
@@ -1678,6 +1700,12 @@ public final class Seq<T> implements Collection<T> {
         return Pair.of(l instanceof Seq ? (Seq<L>) l : Seq.of(l), r instanceof Seq ? (Seq<R>) r : Seq.of(r));
     }
 
+    /**
+     * 
+     * @param c
+     * @param unzip the second parameter is an output parameter.
+     * @return
+     */
     public static <T, L, M, R> Triple<ExList<L>, ExList<M>, ExList<R>> unzip3(final Collection<? extends T> c,
             final BiConsumer<? super T, Triple<L, M, R>> unzip) {
         final ExList<L> l = new ExList<L>(c.size());
@@ -1697,6 +1725,13 @@ public final class Seq<T> implements Collection<T> {
         return Triple.of(l, m, r);
     }
 
+    /**
+     * 
+     * @param supplier
+     * @param c
+     * @param unzip the second parameter is an output parameter.
+     * @return
+     */
     public static <T, L, M, R> Triple<Seq<L>, Seq<M>, Seq<R>> unzip3(final IntFunction<? extends Collection<?>> supplier, final Collection<? extends T> c,
             final BiConsumer<? super T, Triple<L, M, R>> unzip) {
         final Collection<L> l = (Collection<L>) supplier.apply(c.size());

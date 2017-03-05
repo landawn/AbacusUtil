@@ -4273,7 +4273,8 @@ public final class N {
     }
 
     public static <K, V> Map<K, V> asImmutableMap(final Object... a) {
-        return ImmutableMap.of(N.asLinkedHashMap(a));
+        final Map<K, V> map = (a.length == 1 && a[0] instanceof Map) ? (Map<K, V>) a[0] : (Map<K, V>) N.asLinkedHashMap(a);
+        return new ImmutableMap<>(map);
     }
 
     /**

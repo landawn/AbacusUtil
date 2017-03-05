@@ -29,6 +29,10 @@ import java.util.Queue;
  */
 public interface ExQueue<T> extends Queue<T>, ExCollection<T> {
 
+    static <T> ExQueue<T> newQueue() {
+        return of(new LinkedList<T>());
+    }
+
     static <T> ExQueue<T> of(final T... a) {
         final Queue<T> Queue = N.asQueue(a);
         return ExQueue.of(Queue);
@@ -40,107 +44,107 @@ public interface ExQueue<T> extends Queue<T>, ExCollection<T> {
 
             @Override
             public boolean offer(T e) {
-                return this.queue.offer(e);
+                return queue.offer(e);
             }
 
             @Override
             public T remove() {
-                return this.queue.remove();
+                return queue.remove();
             }
 
             @Override
             public T poll() {
-                return this.queue.poll();
+                return queue.poll();
             }
 
             @Override
             public T element() {
-                return this.queue.element();
+                return queue.element();
             }
 
             @Override
             public T peek() {
-                return this.queue.peek();
+                return queue.peek();
             }
 
             @Override
             public int size() {
-                return this.queue.size();
+                return queue.size();
             }
 
             @Override
             public boolean isEmpty() {
-                return this.queue.isEmpty();
+                return queue.isEmpty();
             }
 
             @Override
             public boolean contains(Object o) {
-                return this.queue.contains(o);
+                return queue.contains(o);
             }
 
             @Override
             public Iterator<T> iterator() {
-                return this.queue.iterator();
+                return queue.iterator();
             }
 
             @Override
             public Object[] toArray() {
-                return this.queue.toArray();
+                return queue.toArray();
             }
 
             @Override
             public <A> A[] toArray(A[] a) {
-                return this.queue.toArray(a);
+                return queue.toArray(a);
             }
 
             @Override
             public boolean add(T e) {
-                return this.queue.add(e);
+                return queue.add(e);
             }
 
             @Override
             public boolean remove(Object o) {
-                return this.queue.remove(o);
+                return queue.remove(o);
             }
 
             @Override
             public boolean containsAll(Collection<?> c) {
-                return this.queue.containsAll(c);
+                return queue.containsAll(c);
             }
 
             @Override
             public boolean addAll(Collection<? extends T> c) {
-                return this.queue.addAll(c);
+                return queue.addAll(c);
             }
 
             @Override
             public boolean retainAll(Collection<?> c) {
-                return this.queue.retainAll(c);
+                return queue.retainAll(c);
             }
 
             @Override
             public boolean removeAll(Collection<?> c) {
-                return this.queue.removeAll(c);
+                return queue.removeAll(c);
             }
 
             @Override
             public void clear() {
-                this.queue.clear();
+                queue.clear();
             }
 
             @Override
             public int hashCode() {
-                return this.queue.hashCode();
+                return queue.hashCode();
             }
 
             @Override
             public boolean equals(Object obj) {
-                return this.queue.equals(obj);
+                return queue.equals(obj);
             }
 
             @Override
             public String toString() {
-                return this.queue.toString();
+                return queue.toString();
             }
         };
     }
