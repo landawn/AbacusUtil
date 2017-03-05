@@ -973,14 +973,14 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
         return N.filter(elementData, fromIndex, toIndex, filter, max);
     }
 
-    public <T> ObjectList<T> mapToObj(final ByteFunction<? extends T> mapper) {
+    public <T> ExList<T> mapToObj(final ByteFunction<? extends T> mapper) {
         return mapToObj(0, size, mapper);
     }
 
-    public <T> ObjectList<T> mapToObj(final int fromIndex, final int toIndex, final ByteFunction<? extends T> mapper) {
+    public <T> ExList<T> mapToObj(final int fromIndex, final int toIndex, final ByteFunction<? extends T> mapper) {
         checkIndex(fromIndex, toIndex);
 
-        final ObjectList<T> result = new ObjectList<>(toIndex - fromIndex);
+        final ExList<T> result = new ExList<>(toIndex - fromIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(mapper.apply(elementData[i]));
@@ -1171,12 +1171,12 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
     }
 
     @Override
-    public ObjectList<ByteList> split(final int fromIndex, final int toIndex, final int size) {
+    public ExList<ByteList> split(final int fromIndex, final int toIndex, final int size) {
         checkIndex(fromIndex, toIndex);
 
-        final ObjectList<byte[]> list = N.split(elementData, fromIndex, toIndex, size);
+        final ExList<byte[]> list = N.split(elementData, fromIndex, toIndex, size);
         @SuppressWarnings("rawtypes")
-        final ObjectList<ByteList> result = (ObjectList) list;
+        final ExList<ByteList> result = (ExList) list;
 
         for (int i = 0, len = list.size(); i < len; i++) {
             result.set(i, of(list.get(i)));
@@ -1255,11 +1255,11 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
         return size;
     }
 
-    public ObjectList<Byte> boxed() {
+    public ExList<Byte> boxed() {
         return boxed(0, size);
     }
 
-    public ObjectList<Byte> boxed(int fromIndex, int toIndex) {
+    public ExList<Byte> boxed(int fromIndex, int toIndex) {
         checkIndex(fromIndex, toIndex);
 
         final Byte[] b = new Byte[toIndex - fromIndex];
@@ -1268,7 +1268,7 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
             b[j] = elementData[i];
         }
 
-        return ObjectList.of(b);
+        return ExList.of(b);
     }
 
     public IntList toIntList() {

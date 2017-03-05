@@ -38,7 +38,7 @@ import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.ObjectList;
+import com.landawn.abacus.util.ExList;
 import com.landawn.abacus.util.OptionalNullable;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.ShortIterator;
@@ -702,22 +702,22 @@ final class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Stream<ObjectList<T>> split0(final int size) {
+    public Stream<ExList<T>> split0(final int size) {
         N.checkArgument(size > 0, "'size' must be bigger than 0");
 
-        return new IteratorStream<>(new ImmutableIterator<ObjectList<T>>() {
+        return new IteratorStream<>(new ImmutableIterator<ExList<T>>() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
             }
 
             @Override
-            public ObjectList<T> next() {
+            public ExList<T> next() {
                 if (hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
-                final ObjectList<T> result = new ObjectList<>(N.min(9, size));
+                final ExList<T> result = new ExList<>(N.min(9, size));
 
                 while (result.size() < size && elements.hasNext()) {
                     result.add(elements.next());
@@ -786,9 +786,9 @@ final class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <U> Stream<ObjectList<T>> split0(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate,
+    public <U> Stream<ExList<T>> split0(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
-        return new IteratorStream<>(new ImmutableIterator<ObjectList<T>>() {
+        return new IteratorStream<>(new ImmutableIterator<ExList<T>>() {
             private T next = (T) NONE;
             private boolean preCondition = false;
 
@@ -798,12 +798,12 @@ final class IteratorStream<T> extends AbstractStream<T> {
             }
 
             @Override
-            public ObjectList<T> next() {
+            public ExList<T> next() {
                 if (hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
-                final ObjectList<T> result = new ObjectList<>();
+                final ExList<T> result = new ExList<>();
 
                 if (next == NONE) {
                     next = elements.next();
@@ -925,13 +925,13 @@ final class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Stream<ObjectList<T>> sliding0(final int windowSize, final int increment) {
+    public Stream<ExList<T>> sliding0(final int windowSize, final int increment) {
         if (windowSize < 1 || increment < 1) {
             throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
         }
 
-        return new IteratorStream<>(new ImmutableIterator<ObjectList<T>>() {
-            private ObjectList<T> prev = null;
+        return new IteratorStream<>(new ImmutableIterator<ExList<T>>() {
+            private ExList<T> prev = null;
 
             @Override
             public boolean hasNext() {
@@ -949,19 +949,19 @@ final class IteratorStream<T> extends AbstractStream<T> {
             }
 
             @Override
-            public ObjectList<T> next() {
+            public ExList<T> next() {
                 if (hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
-                ObjectList<T> result = null;
+                ExList<T> result = null;
                 int cnt = 0;
 
                 if (prev != null && increment < windowSize) {
                     cnt = windowSize - increment;
 
                     if (cnt <= 8) {
-                        result = new ObjectList<>(windowSize);
+                        result = new ExList<>(windowSize);
 
                         for (int i = windowSize - cnt; i < windowSize; i++) {
                             result.add(prev.get(i));
@@ -969,10 +969,10 @@ final class IteratorStream<T> extends AbstractStream<T> {
                     } else {
                         final Object[] dest = new Object[windowSize];
                         N.copy(prev.trimToSize().array(), windowSize - cnt, dest, 0, cnt);
-                        result = ObjectList.of((T[]) dest, cnt);
+                        result = ExList.of((T[]) dest, cnt);
                     }
                 } else {
-                    result = new ObjectList<>(windowSize);
+                    result = new ExList<>(windowSize);
                 }
 
                 while (cnt++ < windowSize && elements.hasNext()) {
@@ -1405,8 +1405,8 @@ final class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public ObjectList<T> toObjectList() {
-        return ObjectList.of((T[]) toArray());
+    public ExList<T> toExList() {
+        return ExList.of((T[]) toArray());
     }
 
     @Override

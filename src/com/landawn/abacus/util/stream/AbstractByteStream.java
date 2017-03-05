@@ -583,6 +583,16 @@ abstract class AbstractByteStream extends ByteStream {
     }
 
     @Override
+    public Pair<Byte, ByteStream> headAndTail() {
+        return Pair.of(head(), tail());
+    }
+
+    @Override
+    public Pair<ByteStream, Byte> headAndTail2() {
+        return Pair.of(head2(), tail2());
+    }
+
+    @Override
     public Stream<IndexedByte> indexed() {
         final MutableLong idx = new MutableLong();
 

@@ -533,6 +533,10 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
      */
     public abstract float tail2();
 
+    public abstract Pair<Float, FloatStream> headAndTail();
+
+    public abstract Pair<FloatStream, Float> headAndTail2();
+
     /**
      * Returns an {@code OptionalFloat} describing the minimum element of this
      * stream, or an empty OptionalFloat if this stream is empty.  The minimum

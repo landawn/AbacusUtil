@@ -584,6 +584,16 @@ abstract class AbstractCharStream extends CharStream {
     }
 
     @Override
+    public Pair<Character, CharStream> headAndTail() {
+        return Pair.of(head(), tail());
+    }
+
+    @Override
+    public Pair<CharStream, Character> headAndTail2() {
+        return Pair.of(head2(), tail2());
+    }
+
+    @Override
     public Stream<IndexedChar> indexed() {
         final MutableLong idx = new MutableLong();
 

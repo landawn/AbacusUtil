@@ -36,11 +36,11 @@ import com.landawn.abacus.util.BooleanList;
 import com.landawn.abacus.util.ByteList;
 import com.landawn.abacus.util.CharList;
 import com.landawn.abacus.util.DoubleList;
+import com.landawn.abacus.util.ExList;
 import com.landawn.abacus.util.FloatList;
 import com.landawn.abacus.util.IntList;
 import com.landawn.abacus.util.LongList;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.ObjectList;
 import com.landawn.abacus.util.ShortList;
 
 /**
@@ -184,10 +184,10 @@ public interface IntFunction<R> extends java.util.function.IntFunction<R> {
     };
 
     @SuppressWarnings("rawtypes")
-    public static final IntFunction<ObjectList> OBJECT_LIST_FACTORY = new IntFunction<ObjectList>() {
+    public static final IntFunction<ExList> OBJECT_LIST_FACTORY = new IntFunction<ExList>() {
         @Override
-        public ObjectList apply(int value) {
-            return new ObjectList(value);
+        public ExList apply(int value) {
+            return new ExList(value);
         }
     };
 
@@ -309,7 +309,7 @@ public interface IntFunction<R> extends java.util.function.IntFunction<R> {
     }
 
     @SuppressWarnings("rawtypes")
-    static <T> IntFunction<ObjectList<T>> objectListFactory() {
+    static <T> IntFunction<ExList<T>> objectListFactory() {
         return (IntFunction) OBJECT_LIST_FACTORY;
     }
 

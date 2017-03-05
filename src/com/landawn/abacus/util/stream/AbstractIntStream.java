@@ -584,6 +584,16 @@ abstract class AbstractIntStream extends IntStream {
     }
 
     @Override
+    public Pair<Integer, IntStream> headAndTail() {
+        return Pair.of(head(), tail());
+    }
+
+    @Override
+    public Pair<IntStream, Integer> headAndTail2() {
+        return Pair.of(head2(), tail2());
+    }
+
+    @Override
     public Stream<IndexedInt> indexed() {
         final MutableLong idx = new MutableLong();
 

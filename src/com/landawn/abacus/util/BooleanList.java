@@ -866,14 +866,14 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
         return N.filter(elementData, fromIndex, toIndex, filter, max);
     }
 
-    public <T> ObjectList<T> mapToObj(final BooleanFunction<? extends T> mapper) {
+    public <T> ExList<T> mapToObj(final BooleanFunction<? extends T> mapper) {
         return mapToObj(0, size, mapper);
     }
 
-    public <T> ObjectList<T> mapToObj(final int fromIndex, final int toIndex, final BooleanFunction<? extends T> mapper) {
+    public <T> ExList<T> mapToObj(final int fromIndex, final int toIndex, final BooleanFunction<? extends T> mapper) {
         checkIndex(fromIndex, toIndex);
 
-        final ObjectList<T> result = new ObjectList<>(toIndex - fromIndex);
+        final ExList<T> result = new ExList<>(toIndex - fromIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(mapper.apply(elementData[i]));
@@ -1048,12 +1048,12 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
     }
 
     @Override
-    public ObjectList<BooleanList> split(final int fromIndex, final int toIndex, final int size) {
+    public ExList<BooleanList> split(final int fromIndex, final int toIndex, final int size) {
         checkIndex(fromIndex, toIndex);
 
-        final ObjectList<boolean[]> list = N.split(elementData, fromIndex, toIndex, size);
+        final ExList<boolean[]> list = N.split(elementData, fromIndex, toIndex, size);
         @SuppressWarnings("rawtypes")
-        final ObjectList<BooleanList> result = (ObjectList) list;
+        final ExList<BooleanList> result = (ExList) list;
 
         for (int i = 0, len = list.size(); i < len; i++) {
             result.set(i, of(list.get(i)));
@@ -1132,11 +1132,11 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
         return size;
     }
 
-    public ObjectList<Boolean> boxed() {
+    public ExList<Boolean> boxed() {
         return boxed(0, size);
     }
 
-    public ObjectList<Boolean> boxed(int fromIndex, int toIndex) {
+    public ExList<Boolean> boxed(int fromIndex, int toIndex) {
         checkIndex(fromIndex, toIndex);
 
         final Boolean[] b = new Boolean[toIndex - fromIndex];
@@ -1145,7 +1145,7 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
             b[j] = elementData[i];
         }
 
-        return ObjectList.of(b);
+        return ExList.of(b);
     }
 
     @Override

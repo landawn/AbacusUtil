@@ -7,7 +7,7 @@
  * published by the Free Software Foundation.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Oracle in the LICENSE file that accompanied this code.
- *
+ * 
  * This code is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
@@ -59,6 +59,7 @@ import com.landawn.abacus.util.CharList;
 import com.landawn.abacus.util.CharSummaryStatistics;
 import com.landawn.abacus.util.DoubleList;
 import com.landawn.abacus.util.DoubleSummaryStatistics;
+import com.landawn.abacus.util.ExList;
 import com.landawn.abacus.util.FloatList;
 import com.landawn.abacus.util.FloatSummaryStatistics;
 import com.landawn.abacus.util.IntList;
@@ -70,7 +71,6 @@ import com.landawn.abacus.util.LongSummaryStatistics;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.ObjectList;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalNullable;
 import com.landawn.abacus.util.ShortList;
@@ -406,24 +406,24 @@ public final class Collectors {
         return new CollectorImpl<>(supplier, accumulator, combiner, CH_UNORDERED_ID);
     }
 
-    public static <T> Collector<T, ?, ObjectList<T>> toObjectList() {
-        final Supplier<ObjectList<T>> supplier = new Supplier<ObjectList<T>>() {
+    public static <T> Collector<T, ?, ExList<T>> toExList() {
+        final Supplier<ExList<T>> supplier = new Supplier<ExList<T>>() {
             @Override
-            public ObjectList<T> get() {
-                return new ObjectList<>();
+            public ExList<T> get() {
+                return new ExList<>();
             }
         };
 
-        final BiConsumer<ObjectList<T>, T> accumulator = new BiConsumer<ObjectList<T>, T>() {
+        final BiConsumer<ExList<T>, T> accumulator = new BiConsumer<ExList<T>, T>() {
             @Override
-            public void accept(ObjectList<T> c, T t) {
+            public void accept(ExList<T> c, T t) {
                 c.add(t);
             }
         };
 
-        final BinaryOperator<ObjectList<T>> combiner = new BinaryOperator<ObjectList<T>>() {
+        final BinaryOperator<ExList<T>> combiner = new BinaryOperator<ExList<T>>() {
             @Override
-            public ObjectList<T> apply(ObjectList<T> a, ObjectList<T> b) {
+            public ExList<T> apply(ExList<T> a, ExList<T> b) {
                 a.addAll(b);
                 return a;
             }
@@ -445,31 +445,31 @@ public final class Collectors {
             throw new IllegalArgumentException("'fromIndex' can't be negative or bigger than array's length");
         }
 
-        final Supplier<ObjectList<A>> supplier = new Supplier<ObjectList<A>>() {
+        final Supplier<ExList<A>> supplier = new Supplier<ExList<A>>() {
             @Override
-            public ObjectList<A> get() {
-                return new ObjectList<>(array, fromIndex);
+            public ExList<A> get() {
+                return new ExList<>(array, fromIndex);
             }
         };
 
-        final BiConsumer<ObjectList<A>, T> accumulator = new BiConsumer<ObjectList<A>, T>() {
+        final BiConsumer<ExList<A>, T> accumulator = new BiConsumer<ExList<A>, T>() {
             @Override
-            public void accept(ObjectList<A> c, T t) {
+            public void accept(ExList<A> c, T t) {
                 c.add((A) t);
             }
         };
 
-        final BinaryOperator<ObjectList<A>> combiner = new BinaryOperator<ObjectList<A>>() {
+        final BinaryOperator<ExList<A>> combiner = new BinaryOperator<ExList<A>>() {
             @Override
-            public ObjectList<A> apply(ObjectList<A> a, ObjectList<A> b) {
+            public ExList<A> apply(ExList<A> a, ExList<A> b) {
                 a.addAll(b);
                 return a;
             }
         };
 
-        final Function<ObjectList<A>, A[]> finisher = new Function<ObjectList<A>, A[]>() {
+        final Function<ExList<A>, A[]> finisher = new Function<ExList<A>, A[]>() {
             @Override
-            public A[] apply(ObjectList<A> t) {
+            public A[] apply(ExList<A> t) {
                 return t.array() == array ? array : (A[]) t.trimToSize().array();
             }
         };

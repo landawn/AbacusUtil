@@ -548,6 +548,10 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      */
     public abstract int tail2();
 
+    public abstract Pair<Integer, IntStream> headAndTail();
+
+    public abstract Pair<IntStream, Integer> headAndTail2();
+
     /**
      * Returns an {@code OptionalInt} describing the minimum element of this
      * stream, or an empty optional if this stream is empty.  This is a special

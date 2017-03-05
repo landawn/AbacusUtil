@@ -999,14 +999,14 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
         return N.filter(elementData, fromIndex, toIndex, filter, max);
     }
 
-    public <T> ObjectList<T> mapToObj(final CharFunction<? extends T> mapper) {
+    public <T> ExList<T> mapToObj(final CharFunction<? extends T> mapper) {
         return mapToObj(0, size, mapper);
     }
 
-    public <T> ObjectList<T> mapToObj(final int fromIndex, final int toIndex, final CharFunction<? extends T> mapper) {
+    public <T> ExList<T> mapToObj(final int fromIndex, final int toIndex, final CharFunction<? extends T> mapper) {
         checkIndex(fromIndex, toIndex);
 
-        final ObjectList<T> result = new ObjectList<>(toIndex - fromIndex);
+        final ExList<T> result = new ExList<>(toIndex - fromIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(mapper.apply(elementData[i]));
@@ -1197,12 +1197,12 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
     }
 
     @Override
-    public ObjectList<CharList> split(final int fromIndex, final int toIndex, final int size) {
+    public ExList<CharList> split(final int fromIndex, final int toIndex, final int size) {
         checkIndex(fromIndex, toIndex);
 
-        final ObjectList<char[]> list = N.split(elementData, fromIndex, toIndex, size);
+        final ExList<char[]> list = N.split(elementData, fromIndex, toIndex, size);
         @SuppressWarnings("rawtypes")
-        final ObjectList<CharList> result = (ObjectList) list;
+        final ExList<CharList> result = (ExList) list;
 
         for (int i = 0, len = list.size(); i < len; i++) {
             result.set(i, of(list.get(i)));
@@ -1281,11 +1281,11 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
         return size;
     }
 
-    public ObjectList<Character> boxed() {
+    public ExList<Character> boxed() {
         return boxed(0, size);
     }
 
-    public ObjectList<Character> boxed(int fromIndex, int toIndex) {
+    public ExList<Character> boxed(int fromIndex, int toIndex) {
         checkIndex(fromIndex, toIndex);
 
         final Character[] b = new Character[toIndex - fromIndex];
@@ -1294,7 +1294,7 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
             b[j] = elementData[i];
         }
 
-        return ObjectList.of(b);
+        return ExList.of(b);
     }
 
     public IntList toIntList() {

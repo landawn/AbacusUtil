@@ -21,7 +21,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.landawn.abacus.util.function.Consumer;
-import com.landawn.abacus.util.stream.Stream;
+import com.landawn.abacus.util.function.TriConsumer;
+import com.landawn.abacus.util.function.TriFunction;
 
 /**
  * 
@@ -141,7 +142,7 @@ public final class Triple<L, M, R> {
     }
 
     public Object[] toArray() {
-        return new Object[] { right, middle, left };
+        return new Object[] { left, middle, right };
     }
 
     public <A> A[] toArray(A[] a) {
@@ -149,27 +150,31 @@ public final class Triple<L, M, R> {
             a = N.copyOf(a, 3);
         }
 
-        a[0] = (A) right;
+        a[0] = (A) left;
         a[1] = (A) middle;
-        a[2] = (A) left;
+        a[2] = (A) right;
 
         return a;
     }
 
-    public <T> List<T> asList() {
-        return (List<T>) Array.asList(right, middle, left);
+    public <T> List<T> toList() {
+        return (List<T>) Array.asList(left, middle, right);
     }
 
     public void forEach(Consumer<?> comsumer) {
         final Consumer<Object> objComsumer = (Consumer<Object>) comsumer;
 
-        objComsumer.accept(right);
-        objComsumer.accept(middle);
         objComsumer.accept(left);
+        objComsumer.accept(middle);
+        objComsumer.accept(right);
     }
 
-    public <T> Stream<T> stream() {
-        return (Stream<T>) Stream.of(toArray());
+    public void accept(final TriConsumer<? super L, ? super M, ? super R> action) {
+        action.accept(left, middle, right);
+    }
+
+    public <U> U apply(final TriFunction<? super L, ? super M, ? super R, U> action) {
+        return action.apply(left, middle, right);
     }
 
     public Triple0<L, M, R> __() {
@@ -272,7 +277,7 @@ public final class Triple<L, M, R> {
         }
 
         public Object[] toArray() {
-            return new Object[] { right, middle, left };
+            return new Object[] { left, middle, right };
         }
 
         public <A> A[] toArray(A[] a) {
@@ -280,27 +285,31 @@ public final class Triple<L, M, R> {
                 a = N.copyOf(a, 3);
             }
 
-            a[0] = (A) right;
+            a[0] = (A) left;
             a[1] = (A) middle;
-            a[2] = (A) left;
+            a[2] = (A) right;
 
             return a;
         }
 
-        public <T> List<T> asList() {
-            return (List<T>) Array.asList(right, middle, left);
+        public <T> List<T> toList() {
+            return (List<T>) Array.asList(left, middle, right);
         }
 
         public void forEach(Consumer<?> comsumer) {
             final Consumer<Object> objComsumer = (Consumer<Object>) comsumer;
 
-            objComsumer.accept(right);
-            objComsumer.accept(middle);
             objComsumer.accept(left);
+            objComsumer.accept(middle);
+            objComsumer.accept(right);
         }
 
-        public <T> Stream<T> stream() {
-            return (Stream<T>) Stream.of(toArray());
+        public void accept(final TriConsumer<? super L, ? super M, ? super R> action) {
+            action.accept(left, middle, right);
+        }
+
+        public <U> U apply(final TriFunction<? super L, ? super M, ? super R, U> action) {
+            return action.apply(left, middle, right);
         }
 
         public Triple<L, M, R> __() {

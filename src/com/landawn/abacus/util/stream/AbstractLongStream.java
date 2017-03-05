@@ -582,6 +582,16 @@ abstract class AbstractLongStream extends LongStream {
     }
 
     @Override
+    public Pair<Long, LongStream> headAndTail() {
+        return Pair.of(head(), tail());
+    }
+
+    @Override
+    public Pair<LongStream, Long> headAndTail2() {
+        return Pair.of(head2(), tail2());
+    }
+
+    @Override
     public Stream<IndexedLong> indexed() {
         final MutableLong idx = new MutableLong();
 

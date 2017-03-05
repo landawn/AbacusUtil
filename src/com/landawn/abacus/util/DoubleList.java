@@ -981,14 +981,14 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
         return N.filter(elementData, fromIndex, toIndex, filter, max);
     }
 
-    public <T> ObjectList<T> mapToObj(final DoubleFunction<? extends T> mapper) {
+    public <T> ExList<T> mapToObj(final DoubleFunction<? extends T> mapper) {
         return mapToObj(0, size, mapper);
     }
 
-    public <T> ObjectList<T> mapToObj(final int fromIndex, final int toIndex, final DoubleFunction<? extends T> mapper) {
+    public <T> ExList<T> mapToObj(final int fromIndex, final int toIndex, final DoubleFunction<? extends T> mapper) {
         checkIndex(fromIndex, toIndex);
 
-        final ObjectList<T> result = new ObjectList<>(toIndex - fromIndex);
+        final ExList<T> result = new ExList<>(toIndex - fromIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(mapper.apply(elementData[i]));
@@ -1199,12 +1199,12 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
     }
 
     @Override
-    public ObjectList<DoubleList> split(final int fromIndex, final int toIndex, final int size) {
+    public ExList<DoubleList> split(final int fromIndex, final int toIndex, final int size) {
         checkIndex(fromIndex, toIndex);
 
-        final ObjectList<double[]> list = N.split(elementData, fromIndex, toIndex, size);
+        final ExList<double[]> list = N.split(elementData, fromIndex, toIndex, size);
         @SuppressWarnings("rawtypes")
-        final ObjectList<DoubleList> result = (ObjectList) list;
+        final ExList<DoubleList> result = (ExList) list;
 
         for (int i = 0, len = list.size(); i < len; i++) {
             result.set(i, of(list.get(i)));
@@ -1283,11 +1283,11 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
         return size;
     }
 
-    public ObjectList<Double> boxed() {
+    public ExList<Double> boxed() {
         return boxed(0, size);
     }
 
-    public ObjectList<Double> boxed(int fromIndex, int toIndex) {
+    public ExList<Double> boxed(int fromIndex, int toIndex) {
         checkIndex(fromIndex, toIndex);
 
         final Double[] b = new Double[toIndex - fromIndex];
@@ -1296,7 +1296,7 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
             b[j] = elementData[i];
         }
 
-        return ObjectList.of(b);
+        return ExList.of(b);
     }
 
     @Override

@@ -583,6 +583,16 @@ abstract class AbstractShortStream extends ShortStream {
     }
 
     @Override
+    public Pair<Short, ShortStream> headAndTail() {
+        return Pair.of(head(), tail());
+    }
+
+    @Override
+    public Pair<ShortStream, Short> headAndTail2() {
+        return Pair.of(head2(), tail2());
+    }
+
+    @Override
     public Stream<IndexedShort> indexed() {
         return newStream(this.sequential().mapToObj(new ShortFunction<IndexedShort>() {
             final MutableLong idx = new MutableLong();

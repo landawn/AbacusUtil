@@ -644,13 +644,18 @@ public class EventBus {
 
     protected void post(final SubIdentifier sub, final Object event) {
         try {
-            if (sub.interval > 0) {
+            if (sub.interval > 0 || sub.deduplicate) {
                 synchronized (sub) {
-                    if (System.currentTimeMillis() - sub.lastPostTime < sub.interval) {
+                    if (sub.interval > 0 && System.currentTimeMillis() - sub.lastPostTime < sub.interval) {
                         // ignore.
                         if (logger.isInfoEnabled()) {
                             logger.info("Ignoring event: " + N.toString(event) + " to subscriber: " + N.toString(sub) + " because it's in the interval: "
                                     + sub.interval);
+                        }
+                    } else if (sub.deduplicate && (sub.previousEvent != null || sub.lastPostTime > 0) && N.equals(sub.previousEvent, event)) {
+                        // ignore.
+                        if (logger.isInfoEnabled()) {
+                            logger.info("Ignoring event: " + N.toString(event) + " to subscriber: " + N.toString(sub) + " because it's same as previous event");
                         }
                     } else {
                         if (logger.isInfoEnabled()) {
@@ -658,6 +663,11 @@ public class EventBus {
                         }
 
                         sub.lastPostTime = System.currentTimeMillis();
+
+                        if (sub.deduplicate) {
+                            sub.previousEvent = event;
+                        }
+
                         sub.method.invoke(sub.obj, event);
                     }
                 }
@@ -684,8 +694,10 @@ public class EventBus {
         final boolean strictEventType;
         final boolean sticky;
         final long interval;
+        final boolean deduplicate;
         final boolean isPossibleLambdaSubscriber;
         long lastPostTime = 0;
+        Object previousEvent = null;
 
         SubIdentifier(Method method) {
             final Subscribe subscribe = method.getAnnotation(Subscribe.class);
@@ -697,6 +709,7 @@ public class EventBus {
             this.strictEventType = subscribe == null ? false : subscribe.strictEventType();
             this.sticky = subscribe == null ? false : subscribe.sticky();
             this.interval = subscribe == null ? 0 : subscribe.interval();
+            this.deduplicate = subscribe == null ? false : subscribe.deduplicate();
 
             this.isPossibleLambdaSubscriber = Subscriber.class.isAssignableFrom(method.getDeclaringClass()) && method.getName().equals("on")
                     && parameterType.equals(Object.class) && subscribe == null;
@@ -715,6 +728,7 @@ public class EventBus {
             this.strictEventType = sub.strictEventType;
             this.sticky = sub.sticky;
             this.interval = sub.interval;
+            this.deduplicate = sub.deduplicate;
             this.isPossibleLambdaSubscriber = sub.isPossibleLambdaSubscriber;
         }
 
@@ -745,6 +759,7 @@ public class EventBus {
             h = 31 * h + N.hashCode(strictEventType);
             h = 31 * h + N.hashCode(sticky);
             h = 31 * h + N.hashCode(interval);
+            h = 31 * h + N.hashCode(deduplicate);
             h = 31 * h + N.hashCode(isPossibleLambdaSubscriber);
 
             return h;
@@ -761,7 +776,7 @@ public class EventBus {
 
                 return N.equals(obj, other.obj) && N.equals(method, other.method) && N.equals(parameterType, other.parameterType)
                         && N.equals(eventId, other.eventId) && N.equals(threadMode, other.threadMode) && N.equals(strictEventType, other.strictEventType)
-                        && N.equals(sticky, other.sticky) && N.equals(interval, other.interval)
+                        && N.equals(sticky, other.sticky) && N.equals(interval, other.interval) && N.equals(deduplicate, other.deduplicate)
                         && N.equals(isPossibleLambdaSubscriber, other.isPossibleLambdaSubscriber);
             }
 
@@ -772,8 +787,8 @@ public class EventBus {
         public String toString() {
             return "{obj=" + N.toString(obj) + ", method=" + N.toString(method) + ", parameterType=" + N.toString(parameterType) + ", eventId="
                     + N.toString(eventId) + ", threadMode=" + N.toString(threadMode) + ", strictEventType=" + N.toString(strictEventType) + ", sticky="
-                    + N.toString(sticky) + ", interval=" + N.toString(interval) + ", isPossibleLambdaSubscriber=" + N.toString(isPossibleLambdaSubscriber)
-                    + "}";
+                    + N.toString(sticky) + ", interval=" + N.toString(interval) + ", deduplicate=" + N.toString(deduplicate) + ", isPossibleLambdaSubscriber="
+                    + N.toString(isPossibleLambdaSubscriber) + "}";
         }
 
         //        public static void main(String[] args) {

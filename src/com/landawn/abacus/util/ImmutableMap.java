@@ -73,11 +73,6 @@ public final class ImmutableMap<K, V> implements Map<K, V> {
         return new ImmutableMap<K, V>(map);
     }
 
-    public static <K, V, k extends K, v extends V> ImmutableMap<K, V> of(final Object... a) {
-        final Map<K, V> map = (a.length == 1 && a[0] instanceof Map) ? (Map<K, V>) a[0] : (Map<K, V>) N.asLinkedHashMap(a);
-        return new ImmutableMap<>(map);
-    }
-
     /**
      * 
      * @param map the elements in this <code>map</code> are shared by the returned ImmutableMap.

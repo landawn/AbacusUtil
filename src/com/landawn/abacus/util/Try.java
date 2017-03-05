@@ -33,6 +33,7 @@ import com.landawn.abacus.util.stream.Stream;
  */
 public final class Try<T extends AutoCloseable> {
     private final T t;
+    private com.landawn.abacus.util.function.Function<? super Throwable, ?> action;
 
     Try(final T t) {
         this.t = t;
@@ -119,11 +120,31 @@ public final class Try<T extends AutoCloseable> {
         }
     }
 
+    public Try<T> acceptOnError(final com.landawn.abacus.util.function.Consumer<? super Throwable> action) {
+        return applyOnError(new com.landawn.abacus.util.function.Function<Throwable, Object>() {
+            @Override
+            public Object apply(Throwable e) {
+                action.accept(e);
+                return null;
+            }
+        });
+    }
+
+    public Try<T> applyOnError(final com.landawn.abacus.util.function.Function<? super Throwable, ?> action) {
+        this.action = action;
+
+        return this;
+    }
+
     public void run(final Try.Consumer<? super T> cmd) {
         try {
             cmd.accept(t);
-        } catch (Exception e) {
-            throw N.toRuntimeException(e);
+        } catch (Throwable e) {
+            if (action == null) {
+                throw N.toRuntimeException(e);
+            } else {
+                action.apply(e);
+            }
         } finally {
             IOUtil.close(t);
         }
@@ -132,8 +153,12 @@ public final class Try<T extends AutoCloseable> {
     public <R> R call(final Try.Function<? super T, R> cmd) {
         try {
             return cmd.apply(t);
-        } catch (Exception e) {
-            throw N.toRuntimeException(e);
+        } catch (Throwable e) {
+            if (action == null) {
+                throw N.toRuntimeException(e);
+            } else {
+                return (R) action.apply(e);
+            }
         } finally {
             IOUtil.close(t);
         }

@@ -1164,14 +1164,14 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
         return N.filter(elementData, fromIndex, toIndex, filter, max);
     }
 
-    public <T> ObjectList<T> mapToObj(final IntFunction<? extends T> mapper) {
+    public <T> ExList<T> mapToObj(final IntFunction<? extends T> mapper) {
         return mapToObj(0, size, mapper);
     }
 
-    public <T> ObjectList<T> mapToObj(final int fromIndex, final int toIndex, final IntFunction<? extends T> mapper) {
+    public <T> ExList<T> mapToObj(final int fromIndex, final int toIndex, final IntFunction<? extends T> mapper) {
         checkIndex(fromIndex, toIndex);
 
-        final ObjectList<T> result = new ObjectList<>(toIndex - fromIndex);
+        final ExList<T> result = new ExList<>(toIndex - fromIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(mapper.apply(elementData[i]));
@@ -1382,12 +1382,12 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
     }
 
     @Override
-    public ObjectList<IntList> split(final int fromIndex, final int toIndex, final int size) {
+    public ExList<IntList> split(final int fromIndex, final int toIndex, final int size) {
         checkIndex(fromIndex, toIndex);
 
-        final ObjectList<int[]> list = N.split(elementData, fromIndex, toIndex, size);
+        final ExList<int[]> list = N.split(elementData, fromIndex, toIndex, size);
         @SuppressWarnings("rawtypes")
-        final ObjectList<IntList> result = (ObjectList) list;
+        final ExList<IntList> result = (ExList) list;
 
         for (int i = 0, len = list.size(); i < len; i++) {
             result.set(i, of(list.get(i)));
@@ -1466,11 +1466,11 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
         return size;
     }
 
-    public ObjectList<Integer> boxed() {
+    public ExList<Integer> boxed() {
         return boxed(0, size);
     }
 
-    public ObjectList<Integer> boxed(int fromIndex, int toIndex) {
+    public ExList<Integer> boxed(int fromIndex, int toIndex) {
         checkIndex(fromIndex, toIndex);
 
         final Integer[] b = new Integer[toIndex - fromIndex];
@@ -1479,7 +1479,7 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
             b[j] = elementData[i];
         }
 
-        return ObjectList.of(b);
+        return ExList.of(b);
     }
 
     public LongList toLongList() {

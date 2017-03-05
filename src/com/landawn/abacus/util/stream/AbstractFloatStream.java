@@ -648,6 +648,16 @@ abstract class AbstractFloatStream extends FloatStream {
     }
 
     @Override
+    public Pair<Float, FloatStream> headAndTail() {
+        return Pair.of(head(), tail());
+    }
+
+    @Override
+    public Pair<FloatStream, Float> headAndTail2() {
+        return Pair.of(head2(), tail2());
+    }
+
+    @Override
     public Stream<IndexedFloat> indexed() {
         final MutableLong idx = new MutableLong();
 

@@ -289,7 +289,7 @@ public abstract class AbstractList<C, P, E, A, L extends AbstractList<C, P, E, A
      *
      * @return
      */
-    public ObjectList<L> split(int size) {
+    public ExList<L> split(int size) {
         return split(0, size(), size);
     }
 
@@ -300,7 +300,7 @@ public abstract class AbstractList<C, P, E, A, L extends AbstractList<C, P, E, A
      * @param size
      * @return
      */
-    public abstract ObjectList<L> split(final int fromIndex, final int toIndex, int size);
+    public abstract ExList<L> split(final int fromIndex, final int toIndex, int size);
 
     //    public List<L> split(P predicate) {
     //        return split(0, size(), predicate);

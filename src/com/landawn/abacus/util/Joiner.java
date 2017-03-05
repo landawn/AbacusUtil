@@ -829,7 +829,7 @@ public class Joiner {
         return join(c.array(), fromIndex, toIndex);
     }
 
-    public Joiner join(final ObjectList<?> c) {
+    public Joiner join(final ExList<?> c) {
         if (N.isNullOrEmpty(c)) {
             return this;
         }
@@ -837,7 +837,7 @@ public class Joiner {
         return join(c.array(), 0, c.size());
     }
 
-    public Joiner join(final ObjectList<?> c, final int fromIndex, final int toIndex) {
+    public Joiner join(final ExList<?> c, final int fromIndex, final int toIndex) {
         N.checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {

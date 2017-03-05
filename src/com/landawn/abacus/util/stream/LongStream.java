@@ -523,6 +523,10 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      */
     public abstract long tail2();
 
+    public abstract Pair<Long, LongStream> headAndTail();
+
+    public abstract Pair<LongStream, Long> headAndTail2();
+
     /**
      * Returns an {@code OptionalLong} describing the minimum element of this
      * stream, or an empty optional if this stream is empty.  This is a special

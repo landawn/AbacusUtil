@@ -971,14 +971,14 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
         return N.filter(elementData, fromIndex, toIndex, filter, max);
     }
 
-    public <T> ObjectList<T> mapToObj(final ShortFunction<? extends T> mapper) {
+    public <T> ExList<T> mapToObj(final ShortFunction<? extends T> mapper) {
         return mapToObj(0, size, mapper);
     }
 
-    public <T> ObjectList<T> mapToObj(final int fromIndex, final int toIndex, final ShortFunction<? extends T> mapper) {
+    public <T> ExList<T> mapToObj(final int fromIndex, final int toIndex, final ShortFunction<? extends T> mapper) {
         checkIndex(fromIndex, toIndex);
 
-        final ObjectList<T> result = new ObjectList<>(toIndex - fromIndex);
+        final ExList<T> result = new ExList<>(toIndex - fromIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(mapper.apply(elementData[i]));
@@ -1189,12 +1189,12 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
     }
 
     @Override
-    public ObjectList<ShortList> split(final int fromIndex, final int toIndex, final int size) {
+    public ExList<ShortList> split(final int fromIndex, final int toIndex, final int size) {
         checkIndex(fromIndex, toIndex);
 
-        final ObjectList<short[]> list = N.split(elementData, fromIndex, toIndex, size);
+        final ExList<short[]> list = N.split(elementData, fromIndex, toIndex, size);
         @SuppressWarnings("rawtypes")
-        final ObjectList<ShortList> result = (ObjectList) list;
+        final ExList<ShortList> result = (ExList) list;
 
         for (int i = 0, len = list.size(); i < len; i++) {
             result.set(i, of(list.get(i)));
@@ -1273,11 +1273,11 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
         return size;
     }
 
-    public ObjectList<Short> boxed() {
+    public ExList<Short> boxed() {
         return boxed(0, size);
     }
 
-    public ObjectList<Short> boxed(int fromIndex, int toIndex) {
+    public ExList<Short> boxed(int fromIndex, int toIndex) {
         checkIndex(fromIndex, toIndex);
 
         final Short[] b = new Short[toIndex - fromIndex];
@@ -1286,7 +1286,7 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
             b[j] = elementData[i];
         }
 
-        return ObjectList.of(b);
+        return ExList.of(b);
     }
 
     public IntList toIntList() {

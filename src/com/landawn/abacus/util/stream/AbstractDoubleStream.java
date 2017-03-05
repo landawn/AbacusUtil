@@ -648,6 +648,16 @@ abstract class AbstractDoubleStream extends DoubleStream {
     }
 
     @Override
+    public Pair<Double, DoubleStream> headAndTail() {
+        return Pair.of(head(), tail());
+    }
+
+    @Override
+    public Pair<DoubleStream, Double> headAndTail2() {
+        return Pair.of(head2(), tail2());
+    }
+
+    @Override
     public Stream<IndexedDouble> indexed() {
         final MutableLong idx = new MutableLong();
 

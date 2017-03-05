@@ -30,7 +30,7 @@ import java.util.Set;
 
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
-import com.landawn.abacus.util.ObjectList;
+import com.landawn.abacus.util.ExList;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalNullable;
@@ -58,7 +58,7 @@ import com.landawn.abacus.util.stream.Stream;
 public interface DataSet extends Iterable<Object[]> {
 
     @SuppressWarnings("rawtypes")
-    public static final IntFunction<ObjectList<Object>> OBJECT_LIST_FACTORY = (IntFunction) IntFunction.OBJECT_LIST_FACTORY;
+    public static final IntFunction<ExList<Object>> OBJECT_LIST_FACTORY = (IntFunction) IntFunction.OBJECT_LIST_FACTORY;
 
     @SuppressWarnings("rawtypes")
     public static final IntFunction<List<Object>> LIST_FACTORY = (IntFunction) IntFunction.LIST_FACTORY;
@@ -564,7 +564,7 @@ public interface DataSet extends Iterable<Object[]> {
      *
      * @param columnNames
      * @param newColumnName
-     * @param newColumnClass it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param newColumnClass it can be Object[]/ExList/List/Set/Map/Entity
      * @return
      */
     void combineColumn(Collection<String> columnNames, String newColumnName, Class<?> newColumnClass);
@@ -631,7 +631,7 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
      *
-     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
      * @param rowNum
      * @return
      */
@@ -639,7 +639,7 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
      *
-     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
      * @param columnNames
      * @param rowNum
      * @return
@@ -648,7 +648,7 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
      *
-     * @param rowSupplier it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowSupplier it can be Object[]/ExList/List/Set/Map/Entity
      * @param rowNum
      * @return
      */
@@ -656,7 +656,7 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
      *
-     * @param rowSupplier it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowSupplier it can be Object[]/ExList/List/Set/Map/Entity
      * @param columnNames
      * @param rowNum
      * @return
@@ -671,14 +671,14 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
      *
-     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
      * @return {@code Optional<E>}
      */
     <T> Optional<T> firstRow(Class<? extends T> rowClass);
 
     /**
      *
-     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
      * @param columnNames
      * @return {@code Optional<E>}
      */
@@ -686,14 +686,14 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
      *
-     * @param rowSupplier it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowSupplier it can be Object[]/ExList/List/Set/Map/Entity
      * @return {@code Optional<T>}
      */
     <T> Optional<T> firstRow(IntFunction<? extends T> rowSupplier);
 
     /**
      *
-     * @param rowSupplier it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowSupplier it can be Object[]/ExList/List/Set/Map/Entity
      * @param columnNames
      * @return {@code Optional<T>}
      */
@@ -707,14 +707,14 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
      *
-     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
      * @return {@code Optional<E>}
      */
     <T> Optional<T> lastRow(Class<? extends T> rowClass);
 
     /**
      *
-     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
      *            which can be object array/list/set/map/entity.
      * @param columnNames
      * @return {@code Optional<E>}
@@ -723,14 +723,14 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
      *
-     * @param rowSupplier it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowSupplier it can be Object[]/ExList/List/Set/Map/Entity
      * @return {@code Optional<T>}
      */
     <T> Optional<T> lastRow(IntFunction<? extends T> rowSupplier);
 
     /**
      *
-     * @param rowSupplier it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowSupplier it can be Object[]/ExList/List/Set/Map/Entity
      * @param columnNames
      * @return {@code Optional<T>}
      */
@@ -910,14 +910,14 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
      *
-     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
      * @return
      */
     <T> T[] toArray(Class<? extends T> rowClass);
 
     /**
      *
-     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity the class for the row value.
+     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity the class for the row value.
      * @param fromRowIndex
      * @param toRowIndex
      * @return
@@ -926,7 +926,7 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
     *
-    * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity the class for the row value.
+    * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity the class for the row value.
     * @param columnNames
     * @param fromRowIndex
     * @param toRowIndex
@@ -936,7 +936,7 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
      *
-     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity the class for the row value.
+     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity the class for the row value.
      * @param columnNames
      * @param fromRowIndex
      * @param toRowIndex
@@ -946,14 +946,14 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
      *
-     * @param rowSupplier it can be Object[]/ObjectList/List/Set/Map/Entity the class for the row value.
+     * @param rowSupplier it can be Object[]/ExList/List/Set/Map/Entity the class for the row value.
      * @return
      */
     <T> T[] toArray(IntFunction<? extends T> rowSupplier);
 
     /**
      *
-     * @param rowSupplier it can be Object[]/ObjectList/List/Set/Map/Entity the class for the row value.
+     * @param rowSupplier it can be Object[]/ExList/List/Set/Map/Entity the class for the row value.
      * @param fromRowIndex
      * @param toRowIndex
      * @return
@@ -962,7 +962,7 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
     *
-    * @param rowSupplier it can be Object[]/ObjectList/List/Set/Map/Entity the class for the row value.
+    * @param rowSupplier it can be Object[]/ExList/List/Set/Map/Entity the class for the row value.
     * @param columnNames
     * @param fromRowIndex
     * @param toRowIndex
@@ -972,7 +972,7 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
      *
-     * @param rowSupplier it can be Object[]/ObjectList/List/Set/Map/Entity the class for the row value.
+     * @param rowSupplier it can be Object[]/ExList/List/Set/Map/Entity the class for the row value.
      * @param columnNames
      * @param fromRowIndex
      * @param toRowIndex
@@ -996,14 +996,14 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
      *
-     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
      * @return
      */
     <T> List<T> toList(Class<? extends T> rowClass);
 
     /**
      *
-     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
      * @param fromRowIndex
      * @param toRowIndex
      * @return
@@ -1012,7 +1012,7 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
     *
-    * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+    * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
     * @param fromRowIndex
     * @param toRowIndex
     * @return
@@ -1021,7 +1021,7 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
      *
-     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
      * @param fromRowIndex
      * @param toRowIndex
      * @return
@@ -1030,14 +1030,14 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
      *
-     * @param rowSupplier it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowSupplier it can be Object[]/ExList/List/Set/Map/Entity
      * @return
      */
     <T> List<T> toList(IntFunction<? extends T> rowSupplier);
 
     /**
      *
-     * @param rowSupplier it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowSupplier it can be Object[]/ExList/List/Set/Map/Entity
      * @param fromRowIndex
      * @param toRowIndex
      * @return
@@ -1046,7 +1046,7 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
     *
-    * @param rowSupplier it can be Object[]/ObjectList/List/Set/Map/Entity
+    * @param rowSupplier it can be Object[]/ExList/List/Set/Map/Entity
     * @param fromRowIndex
     * @param toRowIndex
     * @return
@@ -1055,7 +1055,7 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
      *
-     * @param rowSupplier it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowSupplier it can be Object[]/ExList/List/Set/Map/Entity
      * @param fromRowIndex
      * @param toRowIndex
      * @return
@@ -1093,7 +1093,7 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
      *
-     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
      * @param keyColumnName
      * @param valueColumnNames
      * @return
@@ -1102,7 +1102,7 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
      *
-     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
      * @param keyColumnName
      * @param valueColumnNames
      * @param fromRowIndex
@@ -1113,7 +1113,7 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
      * 
-     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
      * @param keyColumnName
      * @param valueColumnNames
      * @param fromRowIndex
@@ -1126,7 +1126,7 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
      *
-     * @param rowSupplier it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowSupplier it can be Object[]/ExList/List/Set/Map/Entity
      * @param keyColumnName
      * @param valueColumnNames
      * @return
@@ -1135,7 +1135,7 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
      *
-     * @param rowSupplier it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowSupplier it can be Object[]/ExList/List/Set/Map/Entity
      * @param keyColumnName
      * @param valueColumnNames
      * @param fromRowIndex
@@ -1146,7 +1146,7 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
      * 
-     * @param rowSupplier it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowSupplier it can be Object[]/ExList/List/Set/Map/Entity
      * @param keyColumnName
      * @param valueColumnNames
      * @param fromRowIndex
@@ -1189,7 +1189,7 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
      *
-     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
      * @param keyColumnName
      * @param valueColumnNames
      * @return
@@ -1198,7 +1198,7 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
      *
-     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
      * @param keyColumnName
      * @param valueColumnNames
      * @param fromRowIndex
@@ -1210,7 +1210,7 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
      * 
-     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
      * @param keyColumnName
      * @param valueColumnNames
      * @param fromRowIndex
@@ -1223,7 +1223,7 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
      *
-     * @param rowSupplier it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowSupplier it can be Object[]/ExList/List/Set/Map/Entity
      * @param keyColumnName
      * @param valueColumnNames
      * @return
@@ -1232,7 +1232,7 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
      *
-     * @param rowSupplier it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowSupplier it can be Object[]/ExList/List/Set/Map/Entity
      * @param keyColumnName
      * @param valueColumnNames
      * @param fromRowIndex
@@ -1244,7 +1244,7 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
      * 
-     * @param rowSupplier it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowSupplier it can be Object[]/ExList/List/Set/Map/Entity
      * @param keyColumnName
      * @param valueColumnNames
      * @param fromRowIndex
@@ -1283,7 +1283,7 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
      * 
-     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
      * @param columnNames
      * @return
      */
@@ -1291,7 +1291,7 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
      * 
-     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
      * @param columnNames
      * @param fromRowIndex
      * @param toRowIndex
@@ -1301,7 +1301,7 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
      * 
-     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
      * @param columnNames
      * @param fromRowIndex
      * @param toRowIndex
@@ -1313,7 +1313,7 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
      * 
-     * @param rowSupplier it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowSupplier it can be Object[]/ExList/List/Set/Map/Entity
      * @param columnNames
      * @return
      */
@@ -1321,7 +1321,7 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
      * 
-     * @param rowSupplier it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowSupplier it can be Object[]/ExList/List/Set/Map/Entity
      * @param columnNames
      * @param fromRowIndex
      * @param toRowIndex
@@ -1331,7 +1331,7 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
      * 
-     * @param rowSupplier it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowSupplier it can be Object[]/ExList/List/Set/Map/Entity
      * @param columnNames
      * @param fromRowIndex
      * @param toRowIndex
@@ -2141,7 +2141,7 @@ public interface DataSet extends Iterable<Object[]> {
 
     //    /**
     //     *
-    //     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+    //     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
     //     * @param columnName
     //     * @param n
     //     * @return
@@ -2150,7 +2150,7 @@ public interface DataSet extends Iterable<Object[]> {
     //
     //    /**
     //     *
-    //     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+    //     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
     //     * @param columnName
     //     * @param n
     //     * @param cmp
@@ -2160,7 +2160,7 @@ public interface DataSet extends Iterable<Object[]> {
     //
     //    /**
     //     *
-    //     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+    //     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
     //     * @param columnName
     //     * @param fromRowIndex
     //     * @param toRowIndex
@@ -2172,7 +2172,7 @@ public interface DataSet extends Iterable<Object[]> {
     //
     //    /**
     //     *
-    //     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+    //     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
     //     * @param columnNames
     //     * @param n
     //     * @return
@@ -2181,7 +2181,7 @@ public interface DataSet extends Iterable<Object[]> {
     //
     //    /**
     //     *
-    //     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+    //     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
     //     * @param columnNames
     //     * @param n
     //     * @param cmp
@@ -2191,7 +2191,7 @@ public interface DataSet extends Iterable<Object[]> {
     //
     //    /**
     //     *
-    //     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+    //     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
     //     * @param columnNames
     //     * @param fromRowIndex
     //     * @param toRowIndex
@@ -2422,7 +2422,7 @@ public interface DataSet extends Iterable<Object[]> {
 
     //    /**
     //     *
-    //     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+    //     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
     //     * @param filter
     //     * @return
     //     */
@@ -2430,7 +2430,7 @@ public interface DataSet extends Iterable<Object[]> {
     //
     //    /**
     //     * 
-    //     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+    //     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
     //     * @param filter
     //     * @param max
     //     * @return
@@ -2439,7 +2439,7 @@ public interface DataSet extends Iterable<Object[]> {
     //
     //    /**
     //     *
-    //     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+    //     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
     //     * @param fromRowIndex
     //     * @param toRowIndex
     //     * @param filter
@@ -2449,7 +2449,7 @@ public interface DataSet extends Iterable<Object[]> {
     //
     //    /**
     //     * 
-    //     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+    //     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
     //     * @param fromRowIndex
     //     * @param toRowIndex
     //     * @param filter
@@ -2460,7 +2460,7 @@ public interface DataSet extends Iterable<Object[]> {
     //
     //    /**
     //     *
-    //     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+    //     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
     //     * @param columnName
     //     * @param filter
     //     * @return
@@ -2469,7 +2469,7 @@ public interface DataSet extends Iterable<Object[]> {
     //
     //    /**
     //     * 
-    //     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+    //     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
     //     * @param columnName
     //     * @param filter
     //     * @param max
@@ -2479,7 +2479,7 @@ public interface DataSet extends Iterable<Object[]> {
     //
     //    /**
     //     *
-    //     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+    //     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
     //     * @param columnName
     //     * @param fromRowIndex
     //     * @param toRowIndex
@@ -2490,7 +2490,7 @@ public interface DataSet extends Iterable<Object[]> {
     //
     //    /**
     //     * 
-    //     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+    //     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
     //     * @param columnName
     //     * @param fromRowIndex
     //     * @param toRowIndex
@@ -2502,7 +2502,7 @@ public interface DataSet extends Iterable<Object[]> {
 
     //    /**
     //     * 
-    //     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+    //     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
     //     * @param columnName
     //     * @param fromRowIndex
     //     * @param toRowIndex
@@ -2515,7 +2515,7 @@ public interface DataSet extends Iterable<Object[]> {
 
     //    /**
     //     *
-    //     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+    //     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
     //     * @param columnNames
     //     * @param filter
     //     * @return
@@ -2524,7 +2524,7 @@ public interface DataSet extends Iterable<Object[]> {
     //
     //    /**
     //     * 
-    //     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+    //     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
     //     * @param columnNames
     //     * @param filter
     //     * @param max
@@ -2534,7 +2534,7 @@ public interface DataSet extends Iterable<Object[]> {
     //
     //    /**
     //     *
-    //     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+    //     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
     //     * @param columnNames
     //     * @param fromRowIndex
     //     * @param toRowIndex
@@ -2545,7 +2545,7 @@ public interface DataSet extends Iterable<Object[]> {
     //
     //    /**
     //     * 
-    //     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+    //     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
     //     * @param columnNames
     //     * @param fromRowIndex
     //     * @param toRowIndex
@@ -2558,7 +2558,7 @@ public interface DataSet extends Iterable<Object[]> {
     //    /**
     //     * Filter the result by the specified columns {@code columnNames} with the specified {@code filter}.
     //     *
-    //     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+    //     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
     //     *            which can be list/set/map/entity with getter/setter methods
     //     * @param columnNames
     //     * @param fromRowIndex
@@ -3089,7 +3089,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param right
      * @param onColumnNames
      * @param newColumnName
-     * @param newColumnClass it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param newColumnClass it can be Object[]/ExList/List/Set/Map/Entity
      * @return a new DataSet
      */
     DataSet join(DataSet right, Map<String, String> onColumnNames, String newColumnName, Class<?> newColumnClass);
@@ -3100,7 +3100,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param right
      * @param onColumnNames
      * @param newColumnName
-     * @param newColumnClass it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param newColumnClass it can be Object[]/ExList/List/Set/Map/Entity
      * @param collClass it's for one-to-many join
      * @return a new DataSet
      */
@@ -3132,7 +3132,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param right
      * @param onColumnNames
      * @param newColumnName
-     * @param newColumnClass it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param newColumnClass it can be Object[]/ExList/List/Set/Map/Entity
      * @return a new DataSet
      */
     DataSet leftJoin(DataSet right, Map<String, String> onColumnNames, String newColumnName, Class<?> newColumnClass);
@@ -3143,7 +3143,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param right
      * @param onColumnNames
      * @param newColumnName
-     * @param newColumnClass it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param newColumnClass it can be Object[]/ExList/List/Set/Map/Entity
      * @param collClass it's for one-to-many join
      * @return a new DataSet
      */
@@ -3175,7 +3175,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param right
      * @param onColumnNames
      * @param newColumnName
-     * @param newColumnClass it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param newColumnClass it can be Object[]/ExList/List/Set/Map/Entity
      * @return a new DataSet
      */
     DataSet rightJoin(DataSet right, Map<String, String> onColumnNames, String newColumnName, Class<?> newColumnClass);
@@ -3186,7 +3186,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param right
      * @param onColumnNames
      * @param newColumnName
-     * @param newColumnClass it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param newColumnClass it can be Object[]/ExList/List/Set/Map/Entity
      * @param collClass it's for one-to-many join
      * @return a new DataSet
      */
@@ -3218,7 +3218,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param right
      * @param onColumnNames
      * @param newColumnName
-     * @param newColumnClass it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param newColumnClass it can be Object[]/ExList/List/Set/Map/Entity
      * @return a new DataSet
      */
     DataSet fullJoin(DataSet right, Map<String, String> onColumnNames, String newColumnName, Class<?> newColumnClass);
@@ -3229,7 +3229,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param right
      * @param onColumnNames
      * @param newColumnName
-     * @param newColumnClass it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param newColumnClass it can be Object[]/ExList/List/Set/Map/Entity
      * @param collClass it's for one-to-many join
      * @return a new DataSet
      */
@@ -3369,7 +3369,7 @@ public interface DataSet extends Iterable<Object[]> {
     /**
      * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
      * 
-     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
      * @param size
      * @return
      */
@@ -3378,7 +3378,7 @@ public interface DataSet extends Iterable<Object[]> {
     /**
      * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
      * 
-     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
      * @param size
      * @param columnNames
      * @return
@@ -3388,7 +3388,7 @@ public interface DataSet extends Iterable<Object[]> {
     /**
      * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
      * 
-     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
      * @param fromRowIndex
      * @param toRowIndex
      * @param size
@@ -3399,7 +3399,7 @@ public interface DataSet extends Iterable<Object[]> {
     /**
      * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
      * 
-     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
      * @param columnNames
      * @param fromRowIndex
      * @param toRowIndex
@@ -3411,7 +3411,7 @@ public interface DataSet extends Iterable<Object[]> {
     /**
      * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
      * 
-     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
      * @param size
      * @return
      */
@@ -3420,7 +3420,7 @@ public interface DataSet extends Iterable<Object[]> {
     /**
      * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
      * 
-     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
      * @param size
      * @param columnNames
      * @return
@@ -3430,7 +3430,7 @@ public interface DataSet extends Iterable<Object[]> {
     /**
      * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
      * 
-     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
      * @param fromRowIndex
      * @param toRowIndex
      * @param size
@@ -3441,7 +3441,7 @@ public interface DataSet extends Iterable<Object[]> {
     /**
      * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
      * 
-     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
      * @param columnNames
      * @param fromRowIndex
      * @param toRowIndex
@@ -3541,14 +3541,14 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
      *
-     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
      * @return
      */
     <T> Stream<T> stream(Class<? extends T> rowClass);
 
     /**
      *
-     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
      * @param fromRowIndex
      * @param toRowIndex
      * @return
@@ -3557,7 +3557,7 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
      *
-     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
      * @param fromRowIndex
      * @param toRowIndex
      * @return
@@ -3566,7 +3566,7 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
      *
-     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
      * @param fromRowIndex
      * @param toRowIndex
      * @return
@@ -3575,14 +3575,14 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
      *
-     * @param rowSupplier it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowSupplier it can be Object[]/ExList/List/Set/Map/Entity
      * @return
      */
     <T> Stream<T> stream(IntFunction<? extends T> rowSupplier);
 
     /**
      *
-     * @param rowSupplier it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowSupplier it can be Object[]/ExList/List/Set/Map/Entity
      * @param fromRowIndex
      * @param toRowIndex
      * @return
@@ -3591,7 +3591,7 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
      *
-     * @param rowSupplier it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowSupplier it can be Object[]/ExList/List/Set/Map/Entity
      * @param fromRowIndex
      * @param toRowIndex
      * @return
@@ -3600,7 +3600,7 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
      *
-     * @param rowSupplier it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowSupplier it can be Object[]/ExList/List/Set/Map/Entity
      * @param fromRowIndex
      * @param toRowIndex
      * @return
@@ -3681,7 +3681,7 @@ public interface DataSet extends Iterable<Object[]> {
     /**
      * Specify the concrete row type for operations: stream\split\toList\toArray\... with specified <code>rowClass</code>
      * 
-     * @param rowClass it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
      * @return
      */
     <T> __<T> __(Class<? extends T> rowClass);
@@ -3689,7 +3689,7 @@ public interface DataSet extends Iterable<Object[]> {
     /**
      * Specify the concrete row type for operations: stream\split\toList\toArray\... with specified <code>rowClass</code>
      * 
-     * @param rowSupplier it can be Object[]/ObjectList/List/Set/Map/Entity
+     * @param rowSupplier it can be Object[]/ExList/List/Set/Map/Entity
      * @return
      */
     <T> __<T> __(IntFunction<? extends T> rowSupplier);
@@ -3722,7 +3722,7 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
      *
-     * @param <T> it could be Object[]/ObjectList/List/Set/Map/Entity
+     * @param <T> it could be Object[]/ExList/List/Set/Map/Entity
      */
     static interface __<T> {
         /**

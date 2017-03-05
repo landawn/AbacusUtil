@@ -40,7 +40,7 @@ import com.landawn.abacus.util.stream.Stream;
  * 
  * @author Haiyang Li
  */
-public final class Matrix<T> extends AbstractMatrix<T[], ObjectList<T>, Matrix<T>> {
+public final class Matrix<T> extends AbstractMatrix<T[], ExList<T>, Matrix<T>> {
     private final Class<T[]> arrayType;
     private final Class<T> componentType;
 
@@ -246,13 +246,13 @@ public final class Matrix<T> extends AbstractMatrix<T[], ObjectList<T>, Matrix<T
     //    }
     //
     //    @Override
-    //    public ObjectList<T> row(final int i) {
-    //        return ObjectList.of(a[i].clone());
+    //    public ExList<T> row(final int i) {
+    //        return ExList.of(a[i].clone());
     //    }
     //
     //    @Override
-    //    public ObjectList<T> column(final int j) {
-    //        return ObjectList.of(column2(j));
+    //    public ExList<T> column(final int j) {
+    //        return ExList.of(column2(j));
     //    }
 
     public Matrix<T> map(final Function<? super T, T> func) {
@@ -797,14 +797,14 @@ public final class Matrix<T> extends AbstractMatrix<T[], ObjectList<T>, Matrix<T
     }
 
     @Override
-    public ObjectList<T> flatten() {
+    public ExList<T> flatten() {
         final T[] c = N.newArray(componentType, n * m);
 
         for (int i = 0; i < n; i++) {
             N.copy(a[i], 0, c, i * m, m);
         }
 
-        return ObjectList.of(c);
+        return ExList.of(c);
     }
 
     /**

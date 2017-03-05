@@ -2458,8 +2458,8 @@ public final class Array {
             return;
         }
 
-        if (c instanceof ObjectList) {
-            sort((T[]) ((ObjectList<T>) c).array(), fromIndex, toIndex, cmp);
+        if (c instanceof ExList) {
+            sort((T[]) ((ExList<T>) c).array(), fromIndex, toIndex, cmp);
 
             return;
         }
@@ -3682,8 +3682,8 @@ public final class Array {
         if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return;
         }
-        if (c instanceof ObjectList) {
-            parallelSort((T[]) ((ObjectList<T>) c).array(), fromIndex, toIndex, cmp);
+        if (c instanceof ExList) {
+            parallelSort((T[]) ((ExList<T>) c).array(), fromIndex, toIndex, cmp);
 
             return;
         }
@@ -4407,8 +4407,8 @@ public final class Array {
             return N.INDEX_NOT_FOUND;
         }
 
-        if (list instanceof ObjectList) {
-            return binarySearch((T[]) ((ObjectList<T>) list).array(), fromIndex, toIndex, key, cmp == null ? N.OBJECT_COMPARATOR : cmp);
+        if (list instanceof ExList) {
+            return binarySearch((T[]) ((ExList<T>) list).array(), fromIndex, toIndex, key, cmp == null ? N.OBJECT_COMPARATOR : cmp);
         }
 
         if (N.isListElementDataFieldGettable && N.listElementDataField != null && list instanceof ArrayList) {

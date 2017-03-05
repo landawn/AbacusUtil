@@ -61,7 +61,7 @@ import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.ObjectFactory;
-import com.landawn.abacus.util.ObjectList;
+import com.landawn.abacus.util.ExList;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalNullable;
@@ -612,9 +612,9 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<Stream<T>> split(final int size) {
-        return split0(size).map(new Function<ObjectList<T>, Stream<T>>() {
+        return split0(size).map(new Function<ExList<T>, Stream<T>>() {
             @Override
-            public Stream<T> apply(ObjectList<T> t) {
+            public Stream<T> apply(ExList<T> t) {
                 return new ArrayStream<>((T[]) t.array(), 0, t.size(), null, sorted, cmp);
             }
         });
@@ -622,9 +622,9 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public <U> Stream<Stream<T>> split(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
-        return split0(identity, predicate, identityUpdate).map(new Function<ObjectList<T>, Stream<T>>() {
+        return split0(identity, predicate, identityUpdate).map(new Function<ExList<T>, Stream<T>>() {
             @Override
-            public Stream<T> apply(ObjectList<T> t) {
+            public Stream<T> apply(ExList<T> t) {
                 return new ArrayStream<>((T[]) t.array(), 0, t.size(), null, sorted, cmp);
             }
         });
@@ -632,9 +632,9 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<Stream<T>> sliding(final int windowSize, final int increment) {
-        return sliding0(windowSize, increment).map(new Function<ObjectList<T>, Stream<T>>() {
+        return sliding0(windowSize, increment).map(new Function<ExList<T>, Stream<T>>() {
             @Override
-            public Stream<T> apply(ObjectList<T> t) {
+            public Stream<T> apply(ExList<T> t) {
                 return new ArrayStream<>((T[]) t.array(), 0, t.size(), null, sorted, cmp);
             }
         });
@@ -1223,7 +1223,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         }
 
         final Iterator<T> iter = this.iterator();
-        final ObjectList<T> list = new ObjectList<>();
+        final ExList<T> list = new ExList<>();
 
         while (list.size() < n && iter.hasNext()) {
             list.add(iter.next());
@@ -1615,6 +1615,16 @@ abstract class AbstractStream<T> extends Stream<T> {
         final BiConsumer<R, R> combiner = collectingCombiner;
 
         return collect(supplier, accumulator, combiner);
+    }
+
+    @Override
+    public Pair<T, Stream<T>> headAndTail() {
+        return Pair.of(head(), tail());
+    }
+
+    @Override
+    public Pair<Stream<T>, T> headAndTail2() {
+        return Pair.of(head2(), tail2());
     }
 
     @Override

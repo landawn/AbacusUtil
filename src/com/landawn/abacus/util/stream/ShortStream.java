@@ -485,6 +485,10 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
      */
     public abstract short tail2();
 
+    public abstract Pair<Short, ShortStream> headAndTail();
+
+    public abstract Pair<ShortStream, Short> headAndTail2();
+
     /**
      * Returns an {@code OptionalShort} describing the minimum element of this
      * stream, or an empty optional if this stream is empty.  This is a special

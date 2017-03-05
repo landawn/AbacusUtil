@@ -995,14 +995,14 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
         return N.filter(elementData, fromIndex, toIndex, filter, max);
     }
 
-    public <T> ObjectList<T> mapToObj(final FloatFunction<? extends T> mapper) {
+    public <T> ExList<T> mapToObj(final FloatFunction<? extends T> mapper) {
         return mapToObj(0, size, mapper);
     }
 
-    public <T> ObjectList<T> mapToObj(final int fromIndex, final int toIndex, final FloatFunction<? extends T> mapper) {
+    public <T> ExList<T> mapToObj(final int fromIndex, final int toIndex, final FloatFunction<? extends T> mapper) {
         checkIndex(fromIndex, toIndex);
 
-        final ObjectList<T> result = new ObjectList<>(toIndex - fromIndex);
+        final ExList<T> result = new ExList<>(toIndex - fromIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(mapper.apply(elementData[i]));
@@ -1213,12 +1213,12 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
     }
 
     @Override
-    public ObjectList<FloatList> split(final int fromIndex, final int toIndex, final int size) {
+    public ExList<FloatList> split(final int fromIndex, final int toIndex, final int size) {
         checkIndex(fromIndex, toIndex);
 
-        final ObjectList<float[]> list = N.split(elementData, fromIndex, toIndex, size);
+        final ExList<float[]> list = N.split(elementData, fromIndex, toIndex, size);
         @SuppressWarnings("rawtypes")
-        final ObjectList<FloatList> result = (ObjectList) list;
+        final ExList<FloatList> result = (ExList) list;
 
         for (int i = 0, len = list.size(); i < len; i++) {
             result.set(i, of(list.get(i)));
@@ -1297,11 +1297,11 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
         return size;
     }
 
-    public ObjectList<Float> boxed() {
+    public ExList<Float> boxed() {
         return boxed(0, size);
     }
 
-    public ObjectList<Float> boxed(int fromIndex, int toIndex) {
+    public ExList<Float> boxed(int fromIndex, int toIndex) {
         checkIndex(fromIndex, toIndex);
 
         final Float[] b = new Float[toIndex - fromIndex];
@@ -1310,7 +1310,7 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
             b[j] = elementData[i];
         }
 
-        return ObjectList.of(b);
+        return ExList.of(b);
     }
 
     public DoubleList toDoubleList() {

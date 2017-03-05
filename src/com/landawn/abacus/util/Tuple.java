@@ -21,7 +21,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.landawn.abacus.util.function.Consumer;
-import com.landawn.abacus.util.stream.Stream;
 
 /**
  * 
@@ -48,18 +47,13 @@ public abstract class Tuple {
         }
 
         @Override
-        public <T> List<T> asList() {
+        public <T> List<T> toList() {
             return Array.asList();
         }
 
         @Override
         public void forEach(Consumer<?> comsumer) {
             // do nothing.
-        }
-
-        @Override
-        public <T> Stream<T> stream() {
-            return Stream.empty();
         }
 
         @Override
@@ -77,13 +71,9 @@ public abstract class Tuple {
 
     public abstract <A> A[] toArray(A[] a);
 
-    public abstract <T> List<T> asList();
+    public abstract <T> List<T> toList();
 
     public abstract void forEach(Consumer<?> comsumer);
-
-    public <T> Stream<T> stream() {
-        return (Stream<T>) Stream.of(toArray());
-    }
 
     public static <T1> Tuple1<T1> of(T1 _1) {
         return new Tuple1<>(_1);
@@ -220,13 +210,6 @@ public abstract class Tuple {
         }
 
         @Override
-        public void forEach(Consumer<?> comsumer) {
-            final Consumer<Object> objComsumer = (Consumer<Object>) comsumer;
-
-            objComsumer.accept(_1);
-        }
-
-        @Override
         public Object[] toArray() {
             return new Object[] { _1 };
         }
@@ -243,8 +226,15 @@ public abstract class Tuple {
         }
 
         @Override
-        public <T> List<T> asList() {
+        public <T> List<T> toList() {
             return (List<T>) Array.asList(_1);
+        }
+
+        @Override
+        public void forEach(Consumer<?> comsumer) {
+            final Consumer<Object> objComsumer = (Consumer<Object>) comsumer;
+
+            objComsumer.accept(_1);
         }
 
         @Override
@@ -316,7 +306,7 @@ public abstract class Tuple {
         }
 
         @Override
-        public <T> List<T> asList() {
+        public <T> List<T> toList() {
             return (List<T>) Array.asList(_1, _2);
         }
 
@@ -399,7 +389,7 @@ public abstract class Tuple {
         }
 
         @Override
-        public <T> List<T> asList() {
+        public <T> List<T> toList() {
             return (List<T>) Array.asList(_1, _2, _3);
         }
 
@@ -485,7 +475,7 @@ public abstract class Tuple {
         }
 
         @Override
-        public <T> List<T> asList() {
+        public <T> List<T> toList() {
             return (List<T>) Array.asList(_1, _2, _3, _4);
         }
 
@@ -574,7 +564,7 @@ public abstract class Tuple {
         }
 
         @Override
-        public <T> List<T> asList() {
+        public <T> List<T> toList() {
             return (List<T>) Array.asList(_1, _2, _3, _4, _5);
         }
 
@@ -667,7 +657,7 @@ public abstract class Tuple {
         }
 
         @Override
-        public <T> List<T> asList() {
+        public <T> List<T> toList() {
             return (List<T>) Array.asList(_1, _2, _3, _4, _5, _6);
         }
 
@@ -764,7 +754,7 @@ public abstract class Tuple {
         }
 
         @Override
-        public <T> List<T> asList() {
+        public <T> List<T> toList() {
             return (List<T>) Array.asList(_1, _2, _3, _4, _5, _6, _7);
         }
 

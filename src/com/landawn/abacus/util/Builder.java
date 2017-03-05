@@ -75,8 +75,8 @@ public class Builder<T> {
         return new DoubleListBuilder(l);
     }
 
-    public static final <T> ObjectListBuilder<T> of(ObjectList<T> l) {
-        return new ObjectListBuilder<>(l);
+    public static final <T> ExListBuilder<T> of(ExList<T> l) {
+        return new ExListBuilder<>(l);
     }
 
     public static final <T, C extends Collection<T>> CollectionBuilder<T, C> of(C c) {
@@ -532,49 +532,43 @@ public class Builder<T> {
         }
     }
 
-    public static final class ObjectListBuilder<T> extends Builder<ObjectList<T>> {
-        ObjectListBuilder(ObjectList<T> l) {
+    public static final class ExListBuilder<T> extends Builder<ExList<T>> {
+        ExListBuilder(ExList<T> l) {
             super(l);
         }
 
-        public ObjectListBuilder<T> set(int index, T e) {
+        public ExListBuilder<T> set(int index, T e) {
             value.set(index, e);
 
             return this;
         }
 
-        public ObjectListBuilder<T> add(T e) {
+        public ExListBuilder<T> add(T e) {
             value.add(e);
 
             return this;
         }
 
-        public ObjectListBuilder<T> addAll(ObjectList<T> c) {
+        public ExListBuilder<T> addAll(ExList<T> c) {
             value.addAll(c);
 
             return this;
         }
 
-        public ObjectListBuilder<T> remove(Object e) {
+        public ExListBuilder<T> remove(Object e) {
             value.remove(e);
 
             return this;
         }
 
-        //        public ObjListBuilder<T> removeAllOccurrences(Object e) {
-        //            value.removeAllOccurrences(e);
-        //
-        //            return this;
-        //        }
-
-        public ObjectListBuilder<T> removeAll(ObjectList<?> c) {
+        public ExListBuilder<T> removeAll(ExList<?> c) {
             value.removeAll(c);
 
             return this;
         }
 
         @Override
-        public ObjectListBuilder<T> __(final Consumer<? super ObjectList<T>> op) {
+        public ExListBuilder<T> __(final Consumer<? super ExList<T>> op) {
             op.accept(value);
 
             return this;

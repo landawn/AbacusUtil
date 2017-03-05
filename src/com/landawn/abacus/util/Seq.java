@@ -24,6 +24,7 @@ import java.util.Comparator;
 import java.util.ConcurrentModificationException;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -708,15 +709,15 @@ public final class Seq<T> implements Collection<T> {
         return N.count(coll, filter);
     }
 
-    public ObjectList<T> filter(Predicate<? super T> filter) {
+    public ExList<T> filter(Predicate<? super T> filter) {
         return N.filter(coll, filter);
     }
 
-    public ObjectList<T> filter(Predicate<? super T> filter, final int max) {
+    public ExList<T> filter(Predicate<? super T> filter, final int max) {
         return N.filter(coll, filter, max);
     }
 
-    public <U> ObjectList<T> filter(final U seed, final BiPredicate<? super T, ? super U> predicate) {
+    public <U> ExList<T> filter(final U seed, final BiPredicate<? super T, ? super U> predicate) {
         return filter(new Predicate<T>() {
             @Override
             public boolean test(T value) {
@@ -725,8 +726,8 @@ public final class Seq<T> implements Collection<T> {
         });
     }
 
-    public ObjectList<T> takeWhile(Predicate<? super T> filter) {
-        final ObjectList<T> result = new ObjectList<>(N.min(9, size()));
+    public ExList<T> takeWhile(Predicate<? super T> filter) {
+        final ExList<T> result = new ExList<>(N.min(9, size()));
 
         for (T e : coll) {
             if (filter.test(e)) {
@@ -739,7 +740,7 @@ public final class Seq<T> implements Collection<T> {
         return result;
     }
 
-    public <U> ObjectList<T> takeWhile(final U seed, final BiPredicate<? super T, ? super U> predicate) {
+    public <U> ExList<T> takeWhile(final U seed, final BiPredicate<? super T, ? super U> predicate) {
         return takeWhile(new Predicate<T>() {
             @Override
             public boolean test(T value) {
@@ -748,8 +749,8 @@ public final class Seq<T> implements Collection<T> {
         });
     }
 
-    public ObjectList<T> dropWhile(Predicate<? super T> filter) {
-        final ObjectList<T> result = new ObjectList<>(N.min(9, size()));
+    public ExList<T> dropWhile(Predicate<? super T> filter) {
+        final ExList<T> result = new ExList<>(N.min(9, size()));
         final Iterator<T> iter = coll.iterator();
         T e = null;
 
@@ -769,7 +770,7 @@ public final class Seq<T> implements Collection<T> {
         return result;
     }
 
-    public <U> ObjectList<T> dropWhile(final U seed, final BiPredicate<? super T, ? super U> predicate) {
+    public <U> ExList<T> dropWhile(final U seed, final BiPredicate<? super T, ? super U> predicate) {
         return dropWhile(new Predicate<T>() {
             @Override
             public boolean test(T value) {
@@ -778,7 +779,7 @@ public final class Seq<T> implements Collection<T> {
         });
     }
 
-    public <R> ObjectList<R> map(final Function<? super T, ? extends R> func) {
+    public <R> ExList<R> map(final Function<? super T, ? extends R> func) {
         return N.map(coll, func);
     }
 
@@ -814,8 +815,8 @@ public final class Seq<T> implements Collection<T> {
         return N.mapToDouble(coll, func);
     }
 
-    public <R> ObjectList<R> flatMap(final Function<? super T, ? extends Collection<R>> func) {
-        final ObjectList<R> result = new ObjectList<>(coll.size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : coll.size() * 2);
+    public <R> ExList<R> flatMap(final Function<? super T, ? extends Collection<R>> func) {
+        final ExList<R> result = new ExList<>(coll.size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : coll.size() * 2);
 
         for (T e : coll) {
             result.addAll(func.apply(e));
@@ -824,8 +825,8 @@ public final class Seq<T> implements Collection<T> {
         return result;
     }
 
-    public <R> ObjectList<R> flatMap2(final Function<? super T, ? extends R[]> func) {
-        final ObjectList<R> result = new ObjectList<>(coll.size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : coll.size() * 2);
+    public <R> ExList<R> flatMap2(final Function<? super T, ? extends R[]> func) {
+        final ExList<R> result = new ExList<>(coll.size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : coll.size() * 2);
 
         for (T e : coll) {
             result.addAll(func.apply(e));
@@ -909,30 +910,30 @@ public final class Seq<T> implements Collection<T> {
         return result;
     }
 
-    public ObjectList<T> merge(final Collection<? extends T> b, final BiFunction<? super T, ? super T, Nth> nextSelector) {
+    public ExList<T> merge(final Collection<? extends T> b, final BiFunction<? super T, ? super T, Nth> nextSelector) {
         return Seq.merge(this, b, nextSelector);
     }
 
-    public <B, R> ObjectList<R> zipWith(final Collection<B> b, final BiFunction<? super T, ? super B, R> zipFunction) {
+    public <B, R> ExList<R> zipWith(final Collection<B> b, final BiFunction<? super T, ? super B, R> zipFunction) {
         return Seq.zip(this, b, zipFunction);
     }
 
-    public <B, R> ObjectList<R> zipWith(final Collection<B> b, final T valueForNoneA, final B valueForNoneB,
+    public <B, R> ExList<R> zipWith(final Collection<B> b, final T valueForNoneA, final B valueForNoneB,
             final BiFunction<? super T, ? super B, R> zipFunction) {
         return Seq.zip(this, b, valueForNoneA, valueForNoneB, zipFunction);
     }
 
-    public <B, C, R> ObjectList<R> zipWith(final Collection<B> b, final Collection<C> c, final TriFunction<? super T, ? super B, ? super C, R> zipFunction) {
+    public <B, C, R> ExList<R> zipWith(final Collection<B> b, final Collection<C> c, final TriFunction<? super T, ? super B, ? super C, R> zipFunction) {
         return Seq.zip(this, b, c, zipFunction);
     }
 
-    public <B, C, R> ObjectList<R> zipWith(final Collection<B> b, final Collection<C> c, final T valueForNoneA, final B valueForNoneB, final C valueForNoneC,
+    public <B, C, R> ExList<R> zipWith(final Collection<B> b, final Collection<C> c, final T valueForNoneA, final B valueForNoneB, final C valueForNoneC,
             final TriFunction<? super T, ? super B, ? super C, R> zipFunction) {
         return Seq.zip(this, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
     }
 
-    public ObjectList<Indexed<T>> indexed() {
-        final ObjectList<Indexed<T>> result = new ObjectList<>(size());
+    public ExList<Indexed<T>> indexed() {
+        final ExList<Indexed<T>> result = new ExList<>(size());
         int idx = 0;
 
         for (T e : coll) {
@@ -1013,10 +1014,10 @@ public final class Seq<T> implements Collection<T> {
      *
      * @return
      */
-    public ObjectList<Seq<T>> split(int size) {
-        final ObjectList<List<T>> list = N.split(coll, size);
+    public ExList<Seq<T>> split(int size) {
+        final ExList<List<T>> list = N.split(coll, size);
         @SuppressWarnings("rawtypes")
-        final ObjectList<Seq<T>> result = (ObjectList) list;
+        final ExList<Seq<T>> result = (ExList) list;
 
         for (int i = 0, len = list.size(); i < len; i++) {
             result.set(i, of(list.get(i)));
@@ -1110,8 +1111,8 @@ public final class Seq<T> implements Collection<T> {
         return result;
     }
 
-    public ObjectList<T> toObjectList() {
-        return ObjectList.of((T[]) toArray());
+    public ExList<T> toExList() {
+        return ExList.of((T[]) toArray());
     }
 
     public <K> Map<K, List<T>> toMap(Function<? super T, ? extends K> classifier) {
@@ -1362,7 +1363,7 @@ public final class Seq<T> implements Collection<T> {
         if (coll instanceof List) {
             return new Seq<>(N.copyOfRange((List) coll, from, to, step));
         } else {
-            final T[] a = (T[]) (coll instanceof ObjectList ? ((ObjectList) coll).array() : coll.toArray());
+            final T[] a = (T[]) (coll instanceof ExList ? ((ExList) coll).array() : coll.toArray());
             final T[] b = N.copyOfRange(a, from, to, step);
 
             return new Seq<>(Object[].class.equals(b.getClass()) ? Array.asList(b) : N.asList(b));
@@ -1392,7 +1393,7 @@ public final class Seq<T> implements Collection<T> {
         N.checkIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from, coll.size());
 
         @SuppressWarnings("rawtypes")
-        final T[] a = (T[]) (coll instanceof ObjectList ? ((ObjectList) coll).array() : coll.toArray());
+        final T[] a = (T[]) (coll instanceof ExList ? ((ExList) coll).array() : coll.toArray());
         return new Seq<>(new HashSet<>(Arrays.asList(N.copyOfRange(a, from, to, step))));
     }
 
@@ -1422,7 +1423,7 @@ public final class Seq<T> implements Collection<T> {
         N.checkIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from, coll.size());
 
         @SuppressWarnings("rawtypes")
-        final T[] a = (T[]) (coll instanceof ObjectList ? ((ObjectList) coll).array() : coll.toArray());
+        final T[] a = (T[]) (coll instanceof ExList ? ((ExList) coll).array() : coll.toArray());
         final T[] b = N.copyOfRange(a, from, to, step);
 
         final Collection<T> c = supplier.apply(b.length);
@@ -1457,11 +1458,11 @@ public final class Seq<T> implements Collection<T> {
         return Stream.of(coll);
     }
 
-    //    public ObjectListBuilder<T> __() {
+    //    public ExListBuilder<T> __() {
     //        return Builder.of(this);
     //    }
     //
-    //    public ObjectListBuilder<T> __(Consumer<? super ObjectList<T>> func) {
+    //    public ExListBuilder<T> __(Consumer<? super ExList<T>> func) {
     //        return Builder.of(this).__(func);
     //    }
 
@@ -1494,13 +1495,13 @@ public final class Seq<T> implements Collection<T> {
         N.println(toString());
     }
 
-    public static <T> ObjectList<T> merge(final T[] a, final T[] b, final BiFunction<? super T, ? super T, Nth> nextSelector) {
+    public static <T> ExList<T> merge(final T[] a, final T[] b, final BiFunction<? super T, ? super T, Nth> nextSelector) {
         return merge(Arrays.asList(a), Arrays.asList(b), nextSelector);
     }
 
-    public static <T> ObjectList<T> merge(final Collection<? extends T> a, final Collection<? extends T> b,
+    public static <T> ExList<T> merge(final Collection<? extends T> a, final Collection<? extends T> b,
             final BiFunction<? super T, ? super T, Nth> nextSelector) {
-        final ObjectList<T> result = new ObjectList<>(a.size() + b.size());
+        final ExList<T> result = new ExList<>(a.size() + b.size());
         final Iterator<? extends T> iterA = a.iterator();
         final Iterator<? extends T> iterB = b.iterator();
 
@@ -1556,12 +1557,12 @@ public final class Seq<T> implements Collection<T> {
         return result;
     }
 
-    public static <A, B, R> ObjectList<R> zip(final A[] a, final B[] b, final BiFunction<? super A, ? super B, R> zipFunction) {
+    public static <A, B, R> ExList<R> zip(final A[] a, final B[] b, final BiFunction<? super A, ? super B, R> zipFunction) {
         return zip(Arrays.asList(a), Arrays.asList(b), zipFunction);
     }
 
-    public static <A, B, R> ObjectList<R> zip(final Collection<A> a, final Collection<B> b, final BiFunction<? super A, ? super B, R> zipFunction) {
-        final ObjectList<R> result = new ObjectList<>(N.min(a.size(), b.size()));
+    public static <A, B, R> ExList<R> zip(final Collection<A> a, final Collection<B> b, final BiFunction<? super A, ? super B, R> zipFunction) {
+        final ExList<R> result = new ExList<>(N.min(a.size(), b.size()));
 
         final Iterator<A> iterA = a.iterator();
         final Iterator<B> iterB = b.iterator();
@@ -1579,13 +1580,13 @@ public final class Seq<T> implements Collection<T> {
         return result;
     }
 
-    public static <A, B, C, R> ObjectList<R> zip(final A[] a, final B[] b, final C[] c, final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
+    public static <A, B, C, R> ExList<R> zip(final A[] a, final B[] b, final C[] c, final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
         return zip(Arrays.asList(a), Arrays.asList(b), Arrays.asList(c), zipFunction);
     }
 
-    public static <A, B, C, R> ObjectList<R> zip(final Collection<A> a, final Collection<B> b, final Collection<C> c,
+    public static <A, B, C, R> ExList<R> zip(final Collection<A> a, final Collection<B> b, final Collection<C> c,
             final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
-        final ObjectList<R> result = new ObjectList<>(N.min(a.size(), b.size(), c.size()));
+        final ExList<R> result = new ExList<>(N.min(a.size(), b.size(), c.size()));
 
         final Iterator<A> iterA = a.iterator();
         final Iterator<B> iterB = b.iterator();
@@ -1598,14 +1599,14 @@ public final class Seq<T> implements Collection<T> {
         return result;
     }
 
-    public static <A, B, R> ObjectList<R> zip(final A[] a, final B[] b, final A valueForNoneA, final B valueForNoneB,
+    public static <A, B, R> ExList<R> zip(final A[] a, final B[] b, final A valueForNoneA, final B valueForNoneB,
             final BiFunction<? super A, ? super B, R> zipFunction) {
         return zip(Arrays.asList(a), Arrays.asList(b), valueForNoneA, valueForNoneB, zipFunction);
     }
 
-    public static <A, B, R> ObjectList<R> zip(final Collection<A> a, final Collection<B> b, final A valueForNoneA, final B valueForNoneB,
+    public static <A, B, R> ExList<R> zip(final Collection<A> a, final Collection<B> b, final A valueForNoneA, final B valueForNoneB,
             final BiFunction<? super A, ? super B, R> zipFunction) {
-        final ObjectList<R> result = new ObjectList<>(N.max(a.size(), b.size()));
+        final ExList<R> result = new ExList<>(N.max(a.size(), b.size()));
 
         final Iterator<A> iterA = a.iterator();
         final Iterator<B> iterB = b.iterator();
@@ -1623,14 +1624,14 @@ public final class Seq<T> implements Collection<T> {
         return result;
     }
 
-    public static <A, B, C, R> ObjectList<R> zip(final A[] a, final B[] b, final C[] c, final A valueForNoneA, final B valueForNoneB, final C valueForNoneC,
+    public static <A, B, C, R> ExList<R> zip(final A[] a, final B[] b, final C[] c, final A valueForNoneA, final B valueForNoneB, final C valueForNoneC,
             final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
         return zip(Arrays.asList(a), Arrays.asList(b), Arrays.asList(c), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
     }
 
-    public static <A, B, C, R> ObjectList<R> zip(final Collection<A> a, final Collection<B> b, final Collection<C> c, final A valueForNoneA,
-            final B valueForNoneB, final C valueForNoneC, final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
-        final ObjectList<R> result = new ObjectList<>(N.max(a.size(), b.size(), c.size()));
+    public static <A, B, C, R> ExList<R> zip(final Collection<A> a, final Collection<B> b, final Collection<C> c, final A valueForNoneA, final B valueForNoneB,
+            final C valueForNoneC, final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
+        final ExList<R> result = new ExList<>(N.max(a.size(), b.size(), c.size()));
 
         final Iterator<A> iterA = a.iterator();
         final Iterator<B> iterB = b.iterator();
@@ -1642,6 +1643,107 @@ public final class Seq<T> implements Collection<T> {
         }
 
         return result;
+    }
+
+    public static <T, L, R> Pair<ExList<L>, ExList<R>> unzip(final Collection<? extends T> c, final BiConsumer<? super T, Pair<L, R>> unzip) {
+        final ExList<L> l = new ExList<L>(c.size());
+        final ExList<R> r = new ExList<R>(c.size());
+
+        final Pair<L, R> pair = new Pair<>();
+
+        for (T e : c) {
+            unzip.accept(e, pair);
+
+            l.add(pair.left);
+            r.add(pair.right);
+        }
+
+        return Pair.of(l, r);
+    }
+
+    public static <T, L, R> Pair<Seq<L>, Seq<R>> unzip(final IntFunction<? extends Collection<?>> supplier, final Collection<? extends T> c,
+            final BiConsumer<? super T, Pair<L, R>> unzip) {
+        final Collection<L> l = (Collection<L>) supplier.apply(c.size());
+        final Collection<R> r = (Collection<R>) supplier.apply(c.size());
+
+        final Pair<L, R> pair = new Pair<>();
+
+        for (T e : c) {
+            unzip.accept(e, pair);
+
+            l.add(pair.left);
+            r.add(pair.right);
+        }
+
+        return Pair.of(l instanceof Seq ? (Seq<L>) l : Seq.of(l), r instanceof Seq ? (Seq<R>) r : Seq.of(r));
+    }
+
+    public static <T, L, M, R> Triple<ExList<L>, ExList<M>, ExList<R>> unzip3(final Collection<? extends T> c,
+            final BiConsumer<? super T, Triple<L, M, R>> unzip) {
+        final ExList<L> l = new ExList<L>(c.size());
+        final ExList<M> m = new ExList<M>(c.size());
+        final ExList<R> r = new ExList<R>(c.size());
+
+        final Triple<L, M, R> triple = new Triple<>();
+
+        for (T e : c) {
+            unzip.accept(e, triple);
+
+            l.add(triple.left);
+            m.add(triple.middle);
+            r.add(triple.right);
+        }
+
+        return Triple.of(l, m, r);
+    }
+
+    public static <T, L, M, R> Triple<Seq<L>, Seq<M>, Seq<R>> unzip3(final IntFunction<? extends Collection<?>> supplier, final Collection<? extends T> c,
+            final BiConsumer<? super T, Triple<L, M, R>> unzip) {
+        final Collection<L> l = (Collection<L>) supplier.apply(c.size());
+        final Collection<M> m = (Collection<M>) supplier.apply(c.size());
+        final Collection<R> r = (Collection<R>) supplier.apply(c.size());
+
+        final Triple<L, M, R> triple = new Triple<>();
+
+        for (T e : c) {
+            unzip.accept(e, triple);
+
+            l.add(triple.left);
+            m.add(triple.middle);
+            r.add(triple.right);
+        }
+
+        return Triple.of(l instanceof Seq ? (Seq<L>) l : Seq.of(l), m instanceof Seq ? (Seq<M>) m : Seq.of(m), r instanceof Seq ? (Seq<R>) r : Seq.of(r));
+    }
+
+    static boolean isList(Collection<?> c) {
+        if (c instanceof List) {
+            return true;
+        } else if (c instanceof Seq) {
+            return isList(((Seq<?>) c).coll);
+        } else {
+            return false;
+        }
+    }
+
+    static boolean isSet(Collection<?> c) {
+        if (c instanceof Set) {
+            return true;
+        } else if (c instanceof Seq) {
+            return isSet(((Seq<?>) c).coll);
+        } else {
+            return false;
+        }
+    }
+
+    static boolean isLinkedHashSet(Collection<?> c) {
+        if (c instanceof LinkedHashSet) {
+            return true;
+        } else if (c instanceof Seq) {
+            return isLinkedHashSet(((Seq<?>) c).coll);
+        } else {
+            return false;
+        }
     }
 
     static <K, V> void replaceAll(Map<K, V> map, BiFunction<? super K, ? super V, ? extends V> function) {

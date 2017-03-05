@@ -477,6 +477,10 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      */
     public abstract byte tail2();
 
+    public abstract Pair<Byte, ByteStream> headAndTail();
+
+    public abstract Pair<ByteStream, Byte> headAndTail2();
+
     /**
      * Returns an {@code OptionalByte} describing the minimum element of this
      * stream, or an empty optional if this stream is empty.  This is a special

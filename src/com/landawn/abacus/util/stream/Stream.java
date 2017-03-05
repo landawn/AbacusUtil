@@ -81,7 +81,7 @@ import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.ObjectList;
+import com.landawn.abacus.util.ExList;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalNullable;
@@ -239,7 +239,7 @@ import com.landawn.abacus.util.stream.ImmutableIterator.QueuedIterator;
  * @see <a href="package-summary.html">java.util.stream</a>
  */
 public abstract class Stream<T>
-        extends StreamBase<T, Object[], Predicate<? super T>, Consumer<? super T>, ObjectList<T>, OptionalNullable<T>, Indexed<T>, Stream<T>> {
+        extends StreamBase<T, Object[], Predicate<? super T>, Consumer<? super T>, ExList<T>, OptionalNullable<T>, Indexed<T>, Stream<T>> {
 
     @SuppressWarnings("rawtypes")
     private static final Stream EMPTY = new ArrayStream(N.EMPTY_OBJECT_ARRAY, null, true, OBJECT_COMPARATOR);
@@ -853,7 +853,7 @@ public abstract class Stream<T>
      */
     public abstract <A> A[] toArray(IntFunction<A[]> generator);
 
-    public abstract ObjectList<T> toObjectList();
+    public abstract ExList<T> toExList();
 
     /**
      * 
@@ -1299,6 +1299,10 @@ public abstract class Stream<T>
      */
     public abstract T tail2();
 
+    public abstract Pair<T, Stream<T>> headAndTail();
+
+    public abstract Pair<Stream<T>, T> headAndTail2();
+
     /**
      * Returns the minimum element of this stream according to the provided
      * {@code Comparator}.  This is a special case of a
@@ -1578,8 +1582,8 @@ public abstract class Stream<T>
             throw new IllegalArgumentException("startIndex(" + startIndex + ") or endIndex(" + endIndex + ") is invalid");
         }
 
-        if (c instanceof ObjectList) {
-            return of((T[]) ((ObjectList<T>) c).array(), startIndex, endIndex);
+        if (c instanceof ExList) {
+            return of((T[]) ((ExList<T>) c).array(), startIndex, endIndex);
         }
 
         // return new CollectionStream<T>(c);
@@ -2529,54 +2533,54 @@ public abstract class Stream<T>
         return interval(startTimeInMillis, unit.toMillis(interval), s);
     }
 
-    /**
-     * Generate the pushable Stream.
-     * 
-     * @param queue
-     * @return
-     */
-    public static <T> Stream<T> pull(final BlockingQueue<T> queue) {
-        return pull(queue, Stream.NONE);
-    }
-
-    /**
-     * Generate the pushable Stream.
-     * 
-     * @param queue
-     * @param endOfQueue value to identify no more elements. Default is <code>Stream.NONE</code>
-     * @return
-     */
-    public static <T> Stream<T> pull(final BlockingQueue<T> queue, final Object endOfQueue) {
-        N.requireNonNull(endOfQueue);
-
-        return of(new ImmutableIterator<T>() {
-            private T next = null;
-
-            @Override
-            public boolean hasNext() {
-                if (next == null) {
-                    try {
-                        next = queue.poll(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
-                    } catch (InterruptedException e) {
-                        throw N.toRuntimeException(e);
-                    }
-                }
-
-                return next != endOfQueue;
-            }
-
-            @Override
-            public T next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                final T result = next;
-                next = null;
-                return result;
-            }
-        });
-    }
+    //    /**
+    //     * Generate the pushable Stream.
+    //     * 
+    //     * @param queue
+    //     * @return
+    //     */
+    //    public static <T> Stream<T> pull(final BlockingQueue<T> queue) {
+    //        return pull(queue, Stream.NONE);
+    //    }
+    //
+    //    /**
+    //     * Generate the pushable Stream.
+    //     * 
+    //     * @param queue
+    //     * @param endOfQueue value to identify no more elements. Default is <code>Stream.NONE</code>
+    //     * @return
+    //     */
+    //    public static <T> Stream<T> pull(final BlockingQueue<T> queue, final Object endOfQueue) {
+    //        N.requireNonNull(endOfQueue);
+    //
+    //        return of(new ImmutableIterator<T>() {
+    //            private T next = null;
+    //
+    //            @Override
+    //            public boolean hasNext() {
+    //                if (next == null) {
+    //                    try {
+    //                        next = queue.poll(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
+    //                    } catch (InterruptedException e) {
+    //                        throw N.toRuntimeException(e);
+    //                    }
+    //                }
+    //
+    //                return next != endOfQueue;
+    //            }
+    //
+    //            @Override
+    //            public T next() {
+    //                if (hasNext() == false) {
+    //                    throw new NoSuchElementException();
+    //                }
+    //
+    //                final T result = next;
+    //                next = null;
+    //                return result;
+    //            }
+    //        });
+    //    }
 
     public static <T> Stream<T> concat(final T[]... a) {
         return N.isNullOrEmpty(a) ? (Stream<T>) empty() : new IteratorStream<>(new ImmutableIterator<T>() {
@@ -5547,7 +5551,7 @@ public abstract class Stream<T>
      * @param zipFunction
      * @return
      */
-    public static <T, R> Stream<R> zip(final Collection<? extends Stream<? extends T>> c, final Function<? super ObjectList<? extends T>, R> zipFunction) {
+    public static <T, R> Stream<R> zip(final Collection<? extends Stream<? extends T>> c, final Function<? super ExList<? extends T>, R> zipFunction) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
@@ -5562,7 +5566,7 @@ public abstract class Stream<T>
         return zip2(iterList, zipFunction).onClose(newCloseHandler(c));
     }
 
-    public static <T, R> Stream<R> zip2(final Collection<? extends Iterator<? extends T>> c, final Function<? super ObjectList<? extends T>, R> zipFunction) {
+    public static <T, R> Stream<R> zip2(final Collection<? extends Iterator<? extends T>> c, final Function<? super ExList<? extends T>, R> zipFunction) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
@@ -5590,7 +5594,7 @@ public abstract class Stream<T>
                     args[idx++] = e.next();
                 }
 
-                return zipFunction.apply(ObjectList.of((T[]) args));
+                return zipFunction.apply(ExList.of((T[]) args));
             }
         });
     }
@@ -5771,7 +5775,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <T, R> Stream<R> zip(final Collection<? extends Stream<? extends T>> c, final Object[] valuesForNone,
-            Function<? super ObjectList<? extends T>, R> zipFunction) {
+            Function<? super ExList<? extends T>, R> zipFunction) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
@@ -5799,7 +5803,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <T, R> Stream<R> zip2(final Collection<? extends Iterator<? extends T>> c, final Object[] valuesForNone,
-            final Function<? super ObjectList<? extends T>, R> zipFunction) {
+            final Function<? super ExList<? extends T>, R> zipFunction) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
@@ -5842,7 +5846,7 @@ public abstract class Stream<T>
                     throw new NoSuchElementException();
                 }
 
-                return zipFunction.apply(ObjectList.of((T[]) args));
+                return zipFunction.apply(ExList.of((T[]) args));
             }
         });
     }
@@ -6282,7 +6286,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <T, R> Stream<R> parallelZip(final Collection<? extends Stream<? extends T>> c,
-            final Function<? super ObjectList<? extends T>, R> zipFunction) {
+            final Function<? super ExList<? extends T>, R> zipFunction) {
         return parallelZip(c, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
     }
 
@@ -6303,7 +6307,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <T, R> Stream<R> parallelZip(final Collection<? extends Stream<? extends T>> c,
-            final Function<? super ObjectList<? extends T>, R> zipFunction, final int queueSize) {
+            final Function<? super ExList<? extends T>, R> zipFunction, final int queueSize) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
@@ -6332,7 +6336,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <T, R> Stream<R> parallelZip2(final Collection<? extends Iterator<? extends T>> c,
-            final Function<? super ObjectList<? extends T>, R> zipFunction) {
+            final Function<? super ExList<? extends T>, R> zipFunction) {
         return parallelZip2(c, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
     }
 
@@ -6353,7 +6357,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <T, R> Stream<R> parallelZip2(final Collection<? extends Iterator<? extends T>> c,
-            final Function<? super ObjectList<? extends T>, R> zipFunction, final int queueSize) {
+            final Function<? super ExList<? extends T>, R> zipFunction, final int queueSize) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
@@ -6421,7 +6425,7 @@ public abstract class Stream<T>
                 boolean isOK = false;
 
                 try {
-                    R result = zipFunction.apply(ObjectList.of((T[]) next));
+                    R result = zipFunction.apply(ExList.of((T[]) next));
                     next = null;
                     isOK = true;
                     return result;
@@ -6969,7 +6973,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <T, R> Stream<R> parallelZip(final Collection<? extends Stream<? extends T>> c, final Object[] valuesForNone,
-            Function<? super ObjectList<? extends T>, R> zipFunction) {
+            Function<? super ExList<? extends T>, R> zipFunction) {
         return parallelZip(c, valuesForNone, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
     }
 
@@ -6989,7 +6993,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <T, R> Stream<R> parallelZip(final Collection<? extends Stream<? extends T>> c, final Object[] valuesForNone,
-            Function<? super ObjectList<? extends T>, R> zipFunction, final int queueSize) {
+            Function<? super ExList<? extends T>, R> zipFunction, final int queueSize) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
@@ -7024,7 +7028,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <T, R> Stream<R> parallelZip2(final Collection<? extends Iterator<? extends T>> c, final Object[] valuesForNone,
-            Function<? super ObjectList<? extends T>, R> zipFunction) {
+            Function<? super ExList<? extends T>, R> zipFunction) {
         return parallelZip2(c, valuesForNone, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
     }
 
@@ -7044,7 +7048,7 @@ public abstract class Stream<T>
      * @return
      */
     public static <T, R> Stream<R> parallelZip2(final Collection<? extends Iterator<? extends T>> c, final Object[] valuesForNone,
-            final Function<? super ObjectList<? extends T>, R> zipFunction, final int queueSize) {
+            final Function<? super ExList<? extends T>, R> zipFunction, final int queueSize) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
@@ -7107,7 +7111,7 @@ public abstract class Stream<T>
 
                 boolean isOK = false;
                 try {
-                    R result = zipFunction.apply(ObjectList.of((T[]) next));
+                    R result = zipFunction.apply(ExList.of((T[]) next));
                     next = null;
                     isOK = true;
                     return result;

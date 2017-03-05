@@ -44,7 +44,7 @@ import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.ObjectList;
+import com.landawn.abacus.util.ExList;
 import com.landawn.abacus.util.OptionalNullable;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.ShortIterator;
@@ -1087,7 +1087,7 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Stream<ObjectList<T>> split0(final int size) {
+    public Stream<ExList<T>> split0(final int size) {
         return new ParallelIteratorStream<>(sequential().split0(size).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
     }
 
@@ -1108,7 +1108,7 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <U> Stream<ObjectList<T>> split0(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate,
+    public <U> Stream<ExList<T>> split0(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
         return new ParallelIteratorStream<>(sequential().split0(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null, maxThreadNum,
                 splitor);
@@ -1184,7 +1184,7 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Stream<ObjectList<T>> sliding0(final int windowSize, final int increment) {
+    public Stream<ExList<T>> sliding0(final int windowSize, final int increment) {
         return new ParallelIteratorStream<>(sequential().sliding0(windowSize, increment).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
     }
 
@@ -1509,8 +1509,8 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public ObjectList<T> toObjectList() {
-        return ObjectList.of((T[]) toArray());
+    public ExList<T> toExList() {
+        return ExList.of((T[]) toArray());
     }
 
     @Override

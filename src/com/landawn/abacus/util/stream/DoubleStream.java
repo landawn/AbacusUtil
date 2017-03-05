@@ -532,6 +532,10 @@ public abstract class DoubleStream
      */
     public abstract double tail2();
 
+    public abstract Pair<Double, DoubleStream> headAndTail();
+
+    public abstract Pair<DoubleStream, Double> headAndTail2();
+
     /**
      * Returns an {@code OptionalDouble} describing the minimum element of this
      * stream, or an empty OptionalDouble if this stream is empty.  The minimum

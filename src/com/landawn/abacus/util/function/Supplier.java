@@ -34,11 +34,11 @@ import com.landawn.abacus.util.BooleanList;
 import com.landawn.abacus.util.ByteList;
 import com.landawn.abacus.util.CharList;
 import com.landawn.abacus.util.DoubleList;
+import com.landawn.abacus.util.ExList;
 import com.landawn.abacus.util.FloatList;
 import com.landawn.abacus.util.IntList;
 import com.landawn.abacus.util.LongList;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.ObjectList;
 import com.landawn.abacus.util.ShortList;
 
 /**
@@ -191,10 +191,10 @@ public interface Supplier<T> extends java.util.function.Supplier<T> {
     };
 
     @SuppressWarnings("rawtypes")
-    public static final Supplier<ObjectList> OBJECT_LIST = new Supplier<ObjectList>() {
+    public static final Supplier<ExList> OBJECT_LIST = new Supplier<ExList>() {
         @Override
-        public ObjectList get() {
-            return new ObjectList();
+        public ExList get() {
+            return new ExList();
         }
     };
 
@@ -312,7 +312,7 @@ public interface Supplier<T> extends java.util.function.Supplier<T> {
     T get();
 
     @SuppressWarnings("rawtypes")
-    static <T> Supplier<ObjectList<T>> ofObjectList() {
+    static <T> Supplier<ExList<T>> ofObjectList() {
         return (Supplier) OBJECT_LIST;
     }
 

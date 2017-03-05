@@ -477,6 +477,10 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
      */
     public abstract char tail2();
 
+    public abstract Pair<Character, CharStream> headAndTail();
+
+    public abstract Pair<CharStream, Character> headAndTail2();
+
     /**
      * Returns an {@code OptionalChar} describing the minimum element of this
      * stream, or an empty optional if this stream is empty.  This is a special

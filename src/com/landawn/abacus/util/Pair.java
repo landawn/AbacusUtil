@@ -21,8 +21,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.landawn.abacus.util.function.BiConsumer;
+import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.Consumer;
-import com.landawn.abacus.util.stream.Stream;
 
 /**
  * 
@@ -142,7 +143,7 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
     }
 
     public Object[] toArray() {
-        return new Object[] { right, left };
+        return new Object[] { left, right };
     }
 
     public <A> A[] toArray(A[] a) {
@@ -150,25 +151,29 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
             a = N.copyOf(a, 2);
         }
 
-        a[0] = (A) right;
-        a[1] = (A) left;
+        a[0] = (A) left;
+        a[1] = (A) right;
 
         return a;
     }
 
-    public <T> List<T> asList() {
-        return (List<T>) Array.asList(right, left);
+    public <T> List<T> toList() {
+        return (List<T>) Array.asList(left, right);
     }
 
     public void forEach(Consumer<?> comsumer) {
         final Consumer<Object> objComsumer = (Consumer<Object>) comsumer;
 
-        objComsumer.accept(right);
         objComsumer.accept(left);
+        objComsumer.accept(right);
     }
 
-    public <T> Stream<T> stream() {
-        return (Stream<T>) Stream.of(toArray());
+    public void accept(final BiConsumer<? super L, ? super R> action) {
+        action.accept(left, right);
+    }
+
+    public <U> U apply(final BiFunction<? super L, ? super R, U> action) {
+        return action.apply(left, right);
     }
 
     public Pair0<L, R> __() {
@@ -282,7 +287,7 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
         }
 
         public Object[] toArray() {
-            return new Object[] { right, left };
+            return new Object[] { left, right };
         }
 
         public <A> A[] toArray(A[] a) {
@@ -290,25 +295,29 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
                 a = N.copyOf(a, 2);
             }
 
-            a[0] = (A) right;
-            a[1] = (A) left;
+            a[0] = (A) left;
+            a[1] = (A) right;
 
             return a;
         }
 
-        public <T> List<T> asList() {
-            return (List<T>) Array.asList(right, left);
+        public <T> List<T> toList() {
+            return (List<T>) Array.asList(left, right);
         }
 
         public void forEach(Consumer<?> comsumer) {
             final Consumer<Object> objComsumer = (Consumer<Object>) comsumer;
 
-            objComsumer.accept(right);
             objComsumer.accept(left);
+            objComsumer.accept(right);
         }
 
-        public <T> Stream<T> stream() {
-            return (Stream<T>) Stream.of(toArray());
+        public void accept(final BiConsumer<? super L, ? super R> action) {
+            action.accept(left, right);
+        }
+
+        public <U> U apply(final BiFunction<? super L, ? super R, U> action) {
+            return action.apply(left, right);
         }
 
         public Pair<L, R> __() {

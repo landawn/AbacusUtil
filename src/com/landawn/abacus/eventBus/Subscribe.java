@@ -41,8 +41,19 @@ public @interface Subscribe {
      */
     boolean strictEventType() default false;
 
+    /**
+     * If true, delivers the most recent sticky event (posted with
+     * {@link EventBus#postSticky(Object)}) to this subscriber (if event available).
+     * 
+     * @return
+     */
     boolean sticky() default false;
 
+    /**
+     * Only subscribe the events which are posted with the specified event id.
+     * 
+     * @return
+     */
     String eventId() default "";
 
     /**
@@ -51,4 +62,11 @@ public @interface Subscribe {
      * @return
      */
     long interval() default 0; // Unit is milliseconds.
+
+    /**
+     * Ignore next event if it's same as previous one.
+     * 
+     * @return
+     */
+    boolean deduplicate() default false;
 }

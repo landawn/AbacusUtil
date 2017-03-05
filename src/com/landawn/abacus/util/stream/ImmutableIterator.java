@@ -21,7 +21,7 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.ObjectList;
+import com.landawn.abacus.util.ExList;
 
 /**
  * 
@@ -130,7 +130,7 @@ public abstract class ImmutableIterator<T> implements java.util.Iterator<T> {
     }
 
     public <A> A[] toArray(A[] a) {
-        final ObjectList<A> list = new ObjectList<>(a);
+        final ExList<A> list = new ExList<>(a);
 
         while (hasNext()) {
             list.add((A) next());

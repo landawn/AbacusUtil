@@ -62,7 +62,7 @@ import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.ObjectList;
+import com.landawn.abacus.util.ExList;
 import com.landawn.abacus.util.Sheet;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.ShortList;
@@ -82,7 +82,7 @@ import com.landawn.abacus.util.function.BinaryOperator;
 abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, C, PL, OT, IT, S>> implements BaseStream<T, A, P, C, PL, OT, IT, S> {
     static final Logger logger = LoggerFactory.getLogger(StreamBase.class);
 
-    public static final Object NONE = new Object();
+    public static final Object NONE = N.NULL_MASK;
 
     static final int CORE_THREAD_POOL_SIZE = 64;
 
@@ -267,7 +267,7 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
         clsNum.put(LongList.class, idx++);
         clsNum.put(FloatList.class, idx++);
         clsNum.put(DoubleList.class, idx++);
-        clsNum.put(ObjectList.class, idx++); // 16
+        clsNum.put(ExList.class, idx++); // 16
     }
 
     @SuppressWarnings("rawtypes")
@@ -304,7 +304,7 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
 
                 if (num == null) {
                     throw new RuntimeException(cls.getCanonicalName()
-                            + " can't be combined by default. Only Map/Collection/StringBuilder/String/Multiset/LongMultiset/Multimap/Sheet/BooleanList ... ObjectList/boolean[] ... Object[] are supported");
+                            + " can't be combined by default. Only Map/Collection/StringBuilder/String/Multiset/LongMultiset/Multimap/Sheet/BooleanList ... ExList/boolean[] ... Object[] are supported");
                 }
 
                 switch (num.intValue()) {
@@ -349,12 +349,12 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
                         ((DoubleList) t).addAll((DoubleList) u);
                         return t;
                     case 16:
-                        ((ObjectList) t).addAll((ObjectList) u);
+                        ((ExList) t).addAll((ExList) u);
                         return t;
 
                     default:
                         throw new RuntimeException(cls.getCanonicalName()
-                                + " can't be combined by default. Only Map/Collection/StringBuilder/String/Multiset/LongMultiset/Multimap/Sheet/BooleanList ... ObjectList/boolean[] ... Object[] are supported");
+                                + " can't be combined by default. Only Map/Collection/StringBuilder/String/Multiset/LongMultiset/Multimap/Sheet/BooleanList ... ExList/boolean[] ... Object[] are supported");
                 }
             }
         }
@@ -384,7 +384,7 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
 
                 if (num == null) {
                     throw new RuntimeException(cls.getCanonicalName()
-                            + " can't be combined by default. Only Map/Collection/StringBuilder/Multiset/LongMultiset/Multimap/Sheet/BooleanList ... ObjectList are supported");
+                            + " can't be combined by default. Only Map/Collection/StringBuilder/Multiset/LongMultiset/Multimap/Sheet/BooleanList ... ExList are supported");
                 }
 
                 switch (num.intValue()) {
@@ -413,12 +413,12 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
                         ((DoubleList) t).addAll((DoubleList) u);
                         break;
                     case 16:
-                        ((ObjectList) t).addAll((ObjectList) u);
+                        ((ExList) t).addAll((ExList) u);
                         break;
 
                     default:
                         throw new RuntimeException(cls.getCanonicalName()
-                                + " can't be combined by default. Only Map/Collection/StringBuilder/Multiset/LongMultiset/Multimap/Sheet/BooleanList ... ObjectList are supported");
+                                + " can't be combined by default. Only Map/Collection/StringBuilder/Multiset/LongMultiset/Multimap/Sheet/BooleanList ... ExList are supported");
                 }
             }
         }
