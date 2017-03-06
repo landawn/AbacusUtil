@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -199,6 +200,80 @@ abstract class AbstractCharStream extends CharStream {
                 }
 
                 return res;
+            }
+        }, false);
+    }
+
+    @Override
+    public CharStream collapse(final char seed, final CharBiPredicate collapsible, final CharBiFunction<Character> mergeFunction) {
+        final ImmutableCharIterator iter = charIterator();
+
+        return this.newStream(new ImmutableCharIterator() {
+            private char pre = 0;
+            private boolean hasNext = false;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public char next() {
+                char res = mergeFunction.apply(seed, hasNext ? pre : (pre = iter.next()));
+
+                while ((hasNext = iter.hasNext())) {
+                    if (collapsible.test(pre, (pre = iter.next()))) {
+                        res = mergeFunction.apply(res, pre);
+                    } else {
+                        break;
+                    }
+                }
+
+                return res;
+            }
+        }, false);
+    }
+
+    @Override
+    public CharStream scan(final CharBiFunction<Character> accumulator) {
+        final ImmutableCharIterator iter = charIterator();
+
+        return this.newStream(new ImmutableCharIterator() {
+            private char res = 0;
+            private boolean isFirst = true;
+
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public char next() {
+                if (isFirst) {
+                    isFirst = false;
+                    return (res = iter.next());
+                } else {
+                    return (res = accumulator.apply(res, iter.next()));
+                }
+            }
+        }, false);
+    }
+
+    @Override
+    public CharStream scan(final char seed, final CharBiFunction<Character> accumulator) {
+        final ImmutableCharIterator iter = charIterator();
+
+        return this.newStream(new ImmutableCharIterator() {
+            private char res = seed;
+
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public char next() {
+                return (res = accumulator.apply(res, iter.next()));
             }
         }, false);
     }
@@ -508,6 +583,15 @@ abstract class AbstractCharStream extends CharStream {
         final char[] a = toArray();
 
         N.shuffle(a);
+
+        return newStream(a, false);
+    }
+
+    @Override
+    public CharStream shuffle(final Random rnd) {
+        final char[] a = toArray();
+
+        N.shuffle(a, rnd);
 
         return newStream(a, false);
     }

@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Random;
 import java.util.RandomAccess;
 import java.util.Set;
 
@@ -1749,6 +1750,13 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     public void shuffle() {
         if (size() > 1) {
             N.shuffle(elementData);
+        }
+    }
+
+    @Override
+    public void shuffle(final Random rnd) {
+        if (size() > 1) {
+            N.shuffle(elementData, rnd);
         }
     }
 

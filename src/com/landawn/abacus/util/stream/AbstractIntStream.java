@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -199,6 +200,80 @@ abstract class AbstractIntStream extends IntStream {
                 }
 
                 return res;
+            }
+        }, false);
+    }
+
+    @Override
+    public IntStream collapse(final int seed, final IntBiPredicate collapsible, final IntBiFunction<Integer> mergeFunction) {
+        final ImmutableIntIterator iter = intIterator();
+
+        return this.newStream(new ImmutableIntIterator() {
+            private int pre = 0;
+            private boolean hasNext = false;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public int next() {
+                int res = mergeFunction.apply(seed, hasNext ? pre : (pre = iter.next()));
+
+                while ((hasNext = iter.hasNext())) {
+                    if (collapsible.test(pre, (pre = iter.next()))) {
+                        res = mergeFunction.apply(res, pre);
+                    } else {
+                        break;
+                    }
+                }
+
+                return res;
+            }
+        }, false);
+    }
+
+    @Override
+    public IntStream scan(final IntBiFunction<Integer> accumulator) {
+        final ImmutableIntIterator iter = intIterator();
+
+        return this.newStream(new ImmutableIntIterator() {
+            private int res = 0;
+            private boolean isFirst = true;
+
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public int next() {
+                if (isFirst) {
+                    isFirst = false;
+                    return (res = iter.next());
+                } else {
+                    return (res = accumulator.apply(res, iter.next()));
+                }
+            }
+        }, false);
+    }
+
+    @Override
+    public IntStream scan(final int seed, final IntBiFunction<Integer> accumulator) {
+        final ImmutableIntIterator iter = intIterator();
+
+        return this.newStream(new ImmutableIntIterator() {
+            private int res = seed;
+
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public int next() {
+                return (res = accumulator.apply(res, iter.next()));
             }
         }, false);
     }
@@ -508,6 +583,15 @@ abstract class AbstractIntStream extends IntStream {
         final int[] a = toArray();
 
         N.shuffle(a);
+
+        return newStream(a, false);
+    }
+
+    @Override
+    public IntStream shuffle(final Random rnd) {
+        final int[] a = toArray();
+
+        N.shuffle(a, rnd);
 
         return newStream(a, false);
     }

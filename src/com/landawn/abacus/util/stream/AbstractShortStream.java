@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -199,6 +200,80 @@ abstract class AbstractShortStream extends ShortStream {
                 }
 
                 return res;
+            }
+        }, false);
+    }
+
+    @Override
+    public ShortStream collapse(final short seed, final ShortBiPredicate collapsible, final ShortBiFunction<Short> mergeFunction) {
+        final ImmutableShortIterator iter = shortIterator();
+
+        return this.newStream(new ImmutableShortIterator() {
+            private short pre = 0;
+            private boolean hasNext = false;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public short next() {
+                short res = mergeFunction.apply(seed, hasNext ? pre : (pre = iter.next()));
+
+                while ((hasNext = iter.hasNext())) {
+                    if (collapsible.test(pre, (pre = iter.next()))) {
+                        res = mergeFunction.apply(res, pre);
+                    } else {
+                        break;
+                    }
+                }
+
+                return res;
+            }
+        }, false);
+    }
+
+    @Override
+    public ShortStream scan(final ShortBiFunction<Short> accumulator) {
+        final ImmutableShortIterator iter = shortIterator();
+
+        return this.newStream(new ImmutableShortIterator() {
+            private short res = 0;
+            private boolean isFirst = true;
+
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public short next() {
+                if (isFirst) {
+                    isFirst = false;
+                    return (res = iter.next());
+                } else {
+                    return (res = accumulator.apply(res, iter.next()));
+                }
+            }
+        }, false);
+    }
+
+    @Override
+    public ShortStream scan(final short seed, final ShortBiFunction<Short> accumulator) {
+        final ImmutableShortIterator iter = shortIterator();
+
+        return this.newStream(new ImmutableShortIterator() {
+            private short res = seed;
+
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public short next() {
+                return (res = accumulator.apply(res, iter.next()));
             }
         }, false);
     }
@@ -507,6 +582,15 @@ abstract class AbstractShortStream extends ShortStream {
         final short[] a = toArray();
 
         N.shuffle(a);
+
+        return newStream(a, false);
+    }
+
+    @Override
+    public ShortStream shuffle(final Random rnd) {
+        final short[] a = toArray();
+
+        N.shuffle(a, rnd);
 
         return newStream(a, false);
     }

@@ -22,6 +22,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Random;
 import java.util.Set;
 
 import com.landawn.abacus.util.function.BiConsumer;
@@ -1161,7 +1162,16 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
 
     @Override
     public void shuffle() {
-        N.shuffle(elementData);
+        if (size() > 1) {
+            N.shuffle(elementData);
+        }
+    }
+
+    @Override
+    public void shuffle(final Random rnd) {
+        if (size() > 1) {
+            N.shuffle(elementData, rnd);
+        }
     }
 
     @Override

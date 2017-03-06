@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -46,6 +47,7 @@ import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.CharSummaryStatistics;
 import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.DoubleSummaryStatistics;
+import com.landawn.abacus.util.ExList;
 import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.FloatSummaryStatistics;
 import com.landawn.abacus.util.IOUtil;
@@ -61,7 +63,6 @@ import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.ObjectFactory;
-import com.landawn.abacus.util.ExList;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalNullable;
@@ -733,6 +734,50 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
+    public Stream<T> scan(final BiFunction<? super T, ? super T, T> accumulator) {
+        final ImmutableIterator<T> iter = iterator();
+
+        return this.newStream(new ImmutableIterator<T>() {
+            private T res = null;
+            private boolean isFirst = true;
+
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public T next() {
+                if (isFirst) {
+                    isFirst = false;
+                    return (res = iter.next());
+                } else {
+                    return (res = accumulator.apply(res, iter.next()));
+                }
+            }
+        }, false, null);
+    }
+
+    @Override
+    public <R> Stream<R> scan(final R seed, final BiFunction<? super R, ? super T, R> accumulator) {
+        final ImmutableIterator<T> iter = iterator();
+
+        return this.newStream(new ImmutableIterator<R>() {
+            private R res = seed;
+
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public R next() {
+                return (res = accumulator.apply(res, iter.next()));
+            }
+        }, false, null);
+    }
+
+    @Override
     public <K> Stream<Entry<K, List<T>>> groupBy(final Function<? super T, ? extends K> classifier) {
         final Map<K, List<T>> map = collect(Collectors.groupingBy(classifier));
 
@@ -1388,6 +1433,15 @@ abstract class AbstractStream<T> extends Stream<T> {
         final T[] a = (T[]) toArray();
 
         N.shuffle(a);
+
+        return newStream(a, false, null);
+    }
+
+    @Override
+    public Stream<T> shuffle(final Random rnd) {
+        final T[] a = (T[]) toArray();
+
+        N.shuffle(a, rnd);
 
         return newStream(a, false, null);
     }

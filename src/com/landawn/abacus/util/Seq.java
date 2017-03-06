@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Random;
 import java.util.RandomAccess;
 import java.util.Set;
 
@@ -985,6 +986,19 @@ public final class Seq<T> implements Collection<T> {
             } else {
                 final Object[] tmp = coll.toArray();
                 N.shuffle(tmp);
+                coll.clear();
+                coll.addAll((List<T>) Arrays.asList(tmp));
+            }
+        }
+    }
+
+    public void shuffle(final Random rnd) {
+        if (size() > 1) {
+            if (coll instanceof List) {
+                N.shuffle((List<T>) coll, rnd);
+            } else {
+                final Object[] tmp = coll.toArray();
+                N.shuffle(tmp, rnd);
                 coll.clear();
                 coll.addAll((List<T>) Arrays.asList(tmp));
             }

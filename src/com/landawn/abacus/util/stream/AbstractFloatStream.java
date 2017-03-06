@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -200,6 +201,80 @@ abstract class AbstractFloatStream extends FloatStream {
                 }
 
                 return res;
+            }
+        }, false);
+    }
+
+    @Override
+    public FloatStream collapse(final float seed, final FloatBiPredicate collapsible, final FloatBiFunction<Float> mergeFunction) {
+        final ImmutableFloatIterator iter = floatIterator();
+
+        return this.newStream(new ImmutableFloatIterator() {
+            private float pre = 0;
+            private boolean hasNext = false;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public float next() {
+                float res = mergeFunction.apply(seed, hasNext ? pre : (pre = iter.next()));
+
+                while ((hasNext = iter.hasNext())) {
+                    if (collapsible.test(pre, (pre = iter.next()))) {
+                        res = mergeFunction.apply(res, pre);
+                    } else {
+                        break;
+                    }
+                }
+
+                return res;
+            }
+        }, false);
+    }
+
+    @Override
+    public FloatStream scan(final FloatBiFunction<Float> accumulator) {
+        final ImmutableFloatIterator iter = floatIterator();
+
+        return this.newStream(new ImmutableFloatIterator() {
+            private float res = 0;
+            private boolean isFirst = true;
+
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public float next() {
+                if (isFirst) {
+                    isFirst = false;
+                    return (res = iter.next());
+                } else {
+                    return (res = accumulator.apply(res, iter.next()));
+                }
+            }
+        }, false);
+    }
+
+    @Override
+    public FloatStream scan(final float seed, final FloatBiFunction<Float> accumulator) {
+        final ImmutableFloatIterator iter = floatIterator();
+
+        return this.newStream(new ImmutableFloatIterator() {
+            private float res = seed;
+
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public float next() {
+                return (res = accumulator.apply(res, iter.next()));
             }
         }, false);
     }
@@ -572,6 +647,15 @@ abstract class AbstractFloatStream extends FloatStream {
         final float[] a = toArray();
 
         N.shuffle(a);
+
+        return newStream(a, false);
+    }
+
+    @Override
+    public FloatStream shuffle(final Random rnd) {
+        final float[] a = toArray();
+
+        N.shuffle(a, rnd);
 
         return newStream(a, false);
     }

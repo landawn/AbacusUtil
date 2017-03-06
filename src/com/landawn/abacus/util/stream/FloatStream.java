@@ -219,6 +219,71 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
     public abstract FloatStream collapse(final FloatBiPredicate collapsible, final FloatBiFunction<Float> mergeFunction);
 
     /**
+     * Merge series of adjacent elements which satisfy the given predicate using
+     * the merger function and return a new stream.
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param seed
+     * @param collapsible
+     * @param mergeFunction
+     * @return
+     */
+    public abstract FloatStream collapse(final float seed, final FloatBiPredicate collapsible, final FloatBiFunction<Float> mergeFunction);
+
+    /**
+     * Returns a {@code Stream} produced by iterative application of a accumulation function
+     * to an initial element {@code identity} and next element of the current stream.
+     * Produces a {@code Stream} consisting of {@code identity}, {@code acc(identity, value1)},
+     * {@code acc(acc(identity, value1), value2)}, etc.
+     *
+     * <p>This is an intermediate operation.
+     *
+     * <p>Example:
+     * <pre>
+     * identity: 0
+     * accumulator: (a, b) -&gt; a + b
+     * stream: [1, 2, 3, 4, 5]
+     * result: [0, 1, 3, 6, 10, 15]
+     * </pre>
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     *
+     * @param accumulator  the accumulation function
+     * @return the new stream which has the extract same size as this stream.
+     */
+    public abstract FloatStream scan(final FloatBiFunction<Float> accumulator);
+
+    /**
+     * Returns a {@code Stream} produced by iterative application of a accumulation function
+     * to an initial element {@code identity} and next element of the current stream.
+     * Produces a {@code Stream} consisting of {@code identity}, {@code acc(identity, value1)},
+     * {@code acc(acc(identity, value1), value2)}, etc.
+     *
+     * <p>This is an intermediate operation.
+     *
+     * <p>Example:
+     * <pre>
+     * seed:10
+     * accumulator: (a, b) -&gt; a + b
+     * stream: [1, 2, 3, 4, 5]
+     * result: [11, 13, 16, 20, 25]
+     * </pre>
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     *
+     * @param seed the initial value. it's only used once by <code>accumulator</code> to calculate the fist element in the returned stream. 
+     * It will be ignored if this stream is empty and won't be the first element of the returned stream.
+     * 
+     * @param accumulator  the accumulation function
+     * @return the new stream which has the extract same size as this stream.
+     */
+    public abstract FloatStream scan(final float seed, final FloatBiFunction<Float> accumulator);
+
+    /**
      * <br />
      * This method only run sequentially, even in parallel stream.
      * 

@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -198,6 +199,80 @@ abstract class AbstractLongStream extends LongStream {
                 }
 
                 return res;
+            }
+        }, false);
+    }
+
+    @Override
+    public LongStream collapse(final long seed, final LongBiPredicate collapsible, final LongBiFunction<Long> mergeFunction) {
+        final ImmutableLongIterator iter = longIterator();
+
+        return this.newStream(new ImmutableLongIterator() {
+            private long pre = 0;
+            private boolean hasNext = false;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public long next() {
+                long res = mergeFunction.apply(seed, hasNext ? pre : (pre = iter.next()));
+
+                while ((hasNext = iter.hasNext())) {
+                    if (collapsible.test(pre, (pre = iter.next()))) {
+                        res = mergeFunction.apply(res, pre);
+                    } else {
+                        break;
+                    }
+                }
+
+                return res;
+            }
+        }, false);
+    }
+
+    @Override
+    public LongStream scan(final LongBiFunction<Long> accumulator) {
+        final ImmutableLongIterator iter = longIterator();
+
+        return this.newStream(new ImmutableLongIterator() {
+            private long res = 0;
+            private boolean isFirst = true;
+
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public long next() {
+                if (isFirst) {
+                    isFirst = false;
+                    return (res = iter.next());
+                } else {
+                    return (res = accumulator.apply(res, iter.next()));
+                }
+            }
+        }, false);
+    }
+
+    @Override
+    public LongStream scan(final long seed, final LongBiFunction<Long> accumulator) {
+        final ImmutableLongIterator iter = longIterator();
+
+        return this.newStream(new ImmutableLongIterator() {
+            private long res = seed;
+
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public long next() {
+                return (res = accumulator.apply(res, iter.next()));
             }
         }, false);
     }
@@ -506,6 +581,15 @@ abstract class AbstractLongStream extends LongStream {
         final long[] a = toArray();
 
         N.shuffle(a);
+
+        return newStream(a, false);
+    }
+
+    @Override
+    public LongStream shuffle(final Random rnd) {
+        final long[] a = toArray();
+
+        N.shuffle(a, rnd);
 
         return newStream(a, false);
     }

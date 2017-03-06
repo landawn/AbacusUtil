@@ -258,6 +258,8 @@ public abstract class AbstractList<C, P, E, A, L extends AbstractList<C, P, E, A
 
     public abstract void shuffle();
 
+    public abstract void shuffle(final Random rnd);
+
     public abstract void swap(int i, int j);
 
     /**

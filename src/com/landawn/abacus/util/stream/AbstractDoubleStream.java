@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -199,6 +200,80 @@ abstract class AbstractDoubleStream extends DoubleStream {
                 }
 
                 return res;
+            }
+        }, false);
+    }
+
+    @Override
+    public DoubleStream collapse(final double seed, final DoubleBiPredicate collapsible, final DoubleBiFunction<Double> mergeFunction) {
+        final ImmutableDoubleIterator iter = doubleIterator();
+
+        return this.newStream(new ImmutableDoubleIterator() {
+            private double pre = 0;
+            private boolean hasNext = false;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext || iter.hasNext();
+            }
+
+            @Override
+            public double next() {
+                double res = mergeFunction.apply(seed, hasNext ? pre : (pre = iter.next()));
+
+                while ((hasNext = iter.hasNext())) {
+                    if (collapsible.test(pre, (pre = iter.next()))) {
+                        res = mergeFunction.apply(res, pre);
+                    } else {
+                        break;
+                    }
+                }
+
+                return res;
+            }
+        }, false);
+    }
+
+    @Override
+    public DoubleStream scan(final DoubleBiFunction<Double> accumulator) {
+        final ImmutableDoubleIterator iter = doubleIterator();
+
+        return this.newStream(new ImmutableDoubleIterator() {
+            private double res = 0;
+            private boolean isFirst = true;
+
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public double next() {
+                if (isFirst) {
+                    isFirst = false;
+                    return (res = iter.next());
+                } else {
+                    return (res = accumulator.apply(res, iter.next()));
+                }
+            }
+        }, false);
+    }
+
+    @Override
+    public DoubleStream scan(final double seed, final DoubleBiFunction<Double> accumulator) {
+        final ImmutableDoubleIterator iter = doubleIterator();
+
+        return this.newStream(new ImmutableDoubleIterator() {
+            private double res = seed;
+
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public double next() {
+                return (res = accumulator.apply(res, iter.next()));
             }
         }, false);
     }
@@ -572,6 +647,15 @@ abstract class AbstractDoubleStream extends DoubleStream {
         final double[] a = toArray();
 
         N.shuffle(a);
+
+        return newStream(a, false);
+    }
+
+    @Override
+    public DoubleStream shuffle(final Random rnd) {
+        final double[] a = toArray();
+
+        N.shuffle(a, rnd);
 
         return newStream(a, false);
     }
