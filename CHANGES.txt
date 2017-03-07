@@ -2,9 +2,11 @@
 
 1, Add shuffle(random) to ExList/IntList/Seq/Stream/IntStream/...
 
-2, Add scan to Stream/IntStream/...
+2, Add scan to Stream/IntStream/... 
 
-3, Improvements and bug fix.
+3, Remove N.powerSet and add powerSet/permutations/cartesianProduct (copied from Google Guava) to Seq.
+
+4, Improvements and bug fix.
 
 
 ========Changes in 0.9.55=========================================================================

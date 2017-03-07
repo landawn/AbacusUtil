@@ -69,6 +69,7 @@ import com.landawn.abacus.util.OptionalNullable;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.PermutationIterator;
+import com.landawn.abacus.util.Seq;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.ShortSummaryStatistics;
 import com.landawn.abacus.util.function.BiConsumer;
@@ -1579,23 +1580,6 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public Stream<List<T>> permutation() {
-        return newStream(PermutationIterator.of(toList()), false, null);
-    }
-
-    @Override
-    public Stream<List<T>> orderedPermutation() {
-        return orderedPermutation(OBJECT_COMPARATOR);
-    }
-
-    @Override
-    public Stream<List<T>> orderedPermutation(Comparator<? super T> comparator) {
-        final Iterator<List<T>> iter = PermutationIterator.ordered(toList(), comparator == null ? OBJECT_COMPARATOR : comparator);
-
-        return newStream(iter, false, null);
-    }
-
-    @Override
     public Stream<Set<T>> powerSet() {
         final Set<T> set = toSet(new Supplier<Set<T>>() {
             @Override
@@ -1603,8 +1587,25 @@ abstract class AbstractStream<T> extends Stream<T> {
                 return new LinkedHashSet<>();
             }
         });
+    
+        return newStream(Seq.powerSet(set).iterator(), false, null);
+    }
 
-        return newStream(N.powerSet(set).iterator(), false, null);
+    @Override
+    public Stream<List<T>> permutations() {
+        return newStream(PermutationIterator.of(toList()), false, null);
+    }
+
+    @Override
+    public Stream<List<T>> orderedPermutations() {
+        return orderedPermutations(OBJECT_COMPARATOR);
+    }
+
+    @Override
+    public Stream<List<T>> orderedPermutations(Comparator<? super T> comparator) {
+        final Iterator<List<T>> iter = PermutationIterator.ordered(toList(), comparator == null ? OBJECT_COMPARATOR : comparator);
+
+        return newStream(iter, false, null);
     }
 
     @Override

@@ -1407,13 +1407,13 @@ public abstract class Stream<T>
 
     public abstract Optional<Map<Percentage, T>> distribution(Comparator<? super T> comparator);
 
-    public abstract Stream<List<T>> permutation();
-
-    public abstract Stream<List<T>> orderedPermutation();
-
-    public abstract Stream<List<T>> orderedPermutation(Comparator<? super T> comparator);
-
     public abstract Stream<Set<T>> powerSet();
+
+    public abstract Stream<List<T>> permutations();
+
+    public abstract Stream<List<T>> orderedPermutations();
+
+    public abstract Stream<List<T>> orderedPermutations(Comparator<? super T> comparator);
 
     public abstract CharSummaryStatistics summarizeChar(ToCharFunction<? super T> mapper);
 

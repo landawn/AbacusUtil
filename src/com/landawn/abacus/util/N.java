@@ -60,7 +60,6 @@ import java.text.DateFormat;
 import java.text.Normalizer;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.AbstractSet;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -179,7 +178,6 @@ import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.function.ToShortFunction;
 import com.landawn.abacus.util.stream.DoubleStream;
 import com.landawn.abacus.util.stream.FloatStream;
-import com.landawn.abacus.util.stream.ImmutableIterator;
 
 /**
  * <p>
@@ -34372,144 +34370,6 @@ public final class N {
     public static <T> void parse(final Collection<? extends Iterator<? extends T>> iterators, final long offset, final long count, final int readThreadNumber,
             final int processThreadNumber, final int queueSize, final Consumer<? super T> elementParser) {
         IOUtil.parse(iterators, offset, count, readThreadNumber, processThreadNumber, queueSize, elementParser);
-    }
-
-    public static <E> Set<Set<E>> powerSet(Set<E> set) {
-        return new PowerSet<>(set);
-    }
-
-    private static final class PowerSet<E> extends AbstractSet<Set<E>> {
-        final ImmutableMap<E, Integer> inputSet;
-
-        PowerSet(Set<E> input) {
-            this.inputSet = indexMap(input);
-            checkArgument(inputSet.size() <= 30, "Too many elements to create power set: %s > 30", inputSet.size());
-        }
-
-        @Override
-        public int size() {
-            return 1 << inputSet.size();
-        }
-
-        @Override
-        public boolean isEmpty() {
-            return false;
-        }
-
-        @Override
-        public Iterator<Set<E>> iterator() {
-            return new ImmutableIterator<Set<E>>() {
-                private final int size = size();
-                private int position;
-
-                @Override
-                public boolean hasNext() {
-                    return position < size;
-                }
-
-                @Override
-                public Set<E> next() {
-                    if (!hasNext()) {
-                        throw new NoSuchElementException();
-                    }
-
-                    return new SubSet<>(inputSet, position++);
-                }
-            };
-        }
-
-        @Override
-        public boolean contains(Object obj) {
-            if (obj instanceof Set) {
-                Set<?> set = (Set<?>) obj;
-                return inputSet.keySet().containsAll(set);
-            }
-            return false;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj instanceof PowerSet) {
-                PowerSet<?> that = (PowerSet<?>) obj;
-                return inputSet.equals(that.inputSet);
-            }
-            return super.equals(obj);
-        }
-
-        @Override
-        public int hashCode() {
-            /*
-             * The sum of the sums of the hash codes in each subset is just the sum of
-             * each input element's hash code times the number of sets that element
-             * appears in. Each element appears in exactly half of the 2^n sets, so:
-             */
-            return inputSet.keySet().hashCode() << (inputSet.size() - 1);
-        }
-
-        @Override
-        public String toString() {
-            return "powerSet(" + inputSet + ")";
-        }
-    }
-
-    private static final class SubSet<E> extends AbstractSet<E> {
-        private final ImmutableMap<E, Integer> inputSet;
-        private final ImmutableList<E> elements;
-        private final int mask;
-
-        SubSet(ImmutableMap<E, Integer> inputSet, int mask) {
-            this.inputSet = inputSet;
-            this.elements = ImmutableList.of((E[]) inputSet.keySet().toArray());
-            this.mask = mask;
-        }
-
-        @Override
-        public Iterator<E> iterator() {
-            return new ImmutableIterator<E>() {
-                int remainingSetBits = mask;
-
-                @Override
-                public boolean hasNext() {
-                    return remainingSetBits != 0;
-                }
-
-                @Override
-                public E next() {
-                    int index = Integer.numberOfTrailingZeros(remainingSetBits);
-                    if (index == 32) {
-                        throw new NoSuchElementException();
-                    }
-                    remainingSetBits &= ~(1 << index);
-                    return elements.get(index);
-                }
-            };
-        }
-
-        @Override
-        public int size() {
-            return Integer.bitCount(mask);
-        }
-
-        @Override
-        public boolean contains(Object o) {
-            Integer index = inputSet.get(o);
-            return index != null && (mask & (1 << index)) != 0;
-        }
-    }
-
-    /**
-     * Returns a map from the ith element of list to i.
-     */
-    static <E> ImmutableMap<E, Integer> indexMap(Collection<E> c) {
-        final Map<E, Integer> map = new LinkedHashMap<>();
-
-        int i = 0;
-
-        for (E e : c) {
-            map.put(e, i++);
-        }
-
-        return ImmutableMap.of(map);
     }
 
     @Beta
