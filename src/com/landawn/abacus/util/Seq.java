@@ -853,6 +853,363 @@ public final class Seq<T> implements Collection<T> {
         return result;
     }
 
+    public BooleanList flatMapToBoolean(final Function<? super T, ? extends Collection<Boolean>> func) {
+        final BooleanList result = new BooleanList(coll.size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : coll.size() * 2);
+
+        for (T e : coll) {
+            for (boolean b : func.apply(e)) {
+                result.add(b);
+            }
+        }
+
+        return result;
+    }
+
+    public BooleanList flatMapToBoolean2(final Function<? super T, boolean[]> func) {
+        final BooleanList result = new BooleanList(coll.size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : coll.size() * 2);
+
+        for (T e : coll) {
+            result.addAll(func.apply(e));
+        }
+
+        return result;
+    }
+
+    public CharList flatMapToChar(final Function<? super T, ? extends Collection<Character>> func) {
+        final CharList result = new CharList(coll.size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : coll.size() * 2);
+
+        for (T e : coll) {
+            for (char b : func.apply(e)) {
+                result.add(b);
+            }
+        }
+
+        return result;
+    }
+
+    public CharList flatMapToChar2(final Function<? super T, char[]> func) {
+        final CharList result = new CharList(coll.size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : coll.size() * 2);
+
+        for (T e : coll) {
+            result.addAll(func.apply(e));
+        }
+
+        return result;
+    }
+
+    public ByteList flatMapToByte(final Function<? super T, ? extends Collection<Byte>> func) {
+        final ByteList result = new ByteList(coll.size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : coll.size() * 2);
+
+        for (T e : coll) {
+            for (byte b : func.apply(e)) {
+                result.add(b);
+            }
+        }
+
+        return result;
+    }
+
+    public ByteList flatMapToByte2(final Function<? super T, byte[]> func) {
+        final ByteList result = new ByteList(coll.size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : coll.size() * 2);
+
+        for (T e : coll) {
+            result.addAll(func.apply(e));
+        }
+
+        return result;
+    }
+
+    public ShortList flatMapToShort(final Function<? super T, ? extends Collection<Short>> func) {
+        final ShortList result = new ShortList(coll.size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : coll.size() * 2);
+
+        for (T e : coll) {
+            for (short b : func.apply(e)) {
+                result.add(b);
+            }
+        }
+
+        return result;
+    }
+
+    public ShortList flatMapToShort2(final Function<? super T, short[]> func) {
+        final ShortList result = new ShortList(coll.size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : coll.size() * 2);
+
+        for (T e : coll) {
+            result.addAll(func.apply(e));
+        }
+
+        return result;
+    }
+
+    public IntList flatMapToInt(final Function<? super T, ? extends Collection<Integer>> func) {
+        final IntList result = new IntList(coll.size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : coll.size() * 2);
+
+        for (T e : coll) {
+            for (int b : func.apply(e)) {
+                result.add(b);
+            }
+        }
+
+        return result;
+    }
+
+    public IntList flatMapToInt2(final Function<? super T, int[]> func) {
+        final IntList result = new IntList(coll.size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : coll.size() * 2);
+
+        for (T e : coll) {
+            result.addAll(func.apply(e));
+        }
+
+        return result;
+    }
+
+    public LongList flatMapToLong(final Function<? super T, ? extends Collection<Long>> func) {
+        final LongList result = new LongList(coll.size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : coll.size() * 2);
+
+        for (T e : coll) {
+            for (long b : func.apply(e)) {
+                result.add(b);
+            }
+        }
+
+        return result;
+    }
+
+    public LongList flatMapToLong2(final Function<? super T, long[]> func) {
+        final LongList result = new LongList(coll.size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : coll.size() * 2);
+
+        for (T e : coll) {
+            result.addAll(func.apply(e));
+        }
+
+        return result;
+    }
+
+    public FloatList flatMapToFloat(final Function<? super T, ? extends Collection<Float>> func) {
+        final FloatList result = new FloatList(coll.size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : coll.size() * 2);
+
+        for (T e : coll) {
+            for (float b : func.apply(e)) {
+                result.add(b);
+            }
+        }
+
+        return result;
+    }
+
+    public FloatList flatMapToFloat2(final Function<? super T, float[]> func) {
+        final FloatList result = new FloatList(coll.size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : coll.size() * 2);
+
+        for (T e : coll) {
+            result.addAll(func.apply(e));
+        }
+
+        return result;
+    }
+
+    public DoubleList flatMapToDouble(final Function<? super T, ? extends Collection<Double>> func) {
+        final DoubleList result = new DoubleList(coll.size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : coll.size() * 2);
+
+        for (T e : coll) {
+            for (double b : func.apply(e)) {
+                result.add(b);
+            }
+        }
+
+        return result;
+    }
+
+    public DoubleList flatMapToDouble2(final Function<? super T, double[]> func) {
+        final DoubleList result = new DoubleList(coll.size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : coll.size() * 2);
+
+        for (T e : coll) {
+            result.addAll(func.apply(e));
+        }
+
+        return result;
+    }
+
+    /**
+     * Merge series of adjacent elements which satisfy the given predicate using
+     * the merger function and return a new stream.
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param collapsible
+     * @param mergeFunction
+     * @return
+     */
+    public ExList<T> collapse(final BiPredicate<? super T, ? super T> collapsible, final BiFunction<? super T, ? super T, T> mergeFunction) {
+        final ExList<T> result = new ExList<>();
+        final Iterator<T> iter = coll.iterator();
+        T next = null;
+        boolean hasNext = false;
+
+        while (hasNext || iter.hasNext()) {
+            T res = hasNext ? next : (next = iter.next());
+
+            while ((hasNext = iter.hasNext())) {
+                if (collapsible.test(next, (next = iter.next()))) {
+                    res = mergeFunction.apply(res, next);
+                } else {
+                    break;
+                }
+            }
+
+            result.add(res);
+        }
+
+        return result;
+    }
+
+    /**
+     * Merge series of adjacent elements which satisfy the given predicate using
+     * the merger function and return a new stream.
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param seed
+     * @param collapsible
+     * @param mergeFunction
+     * @return
+     */
+    public <R> ExList<R> collapse(final R seed, final BiPredicate<? super T, ? super T> collapsible, final BiFunction<? super R, ? super T, R> mergeFunction) {
+        final ExList<R> result = new ExList<>();
+        final Iterator<T> iter = coll.iterator();
+        T next = null;
+        boolean hasNext = false;
+
+        while (hasNext || iter.hasNext()) {
+            R res = mergeFunction.apply(seed, hasNext ? next : (next = iter.next()));
+
+            while ((hasNext = iter.hasNext())) {
+                if (collapsible.test(next, (next = iter.next()))) {
+                    res = mergeFunction.apply(res, next);
+                } else {
+                    break;
+                }
+            }
+
+            result.add(res);
+        }
+
+        return result;
+    }
+
+    /**
+     * Merge series of adjacent elements which satisfy the given predicate using
+     * the merger function and return a new stream.
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param supplier usually it's a creator of collection.
+     * @param collapsible
+     * @param mergeFunction
+     * @return
+     */
+    public <C> ExList<C> collapse(final Supplier<C> supplier, final BiPredicate<? super T, ? super T> collapsible,
+            final BiConsumer<? super C, ? super T> mergeFunction) {
+        final ExList<C> result = new ExList<>();
+        final Iterator<T> iter = coll.iterator();
+        T next = null;
+        boolean hasNext = false;
+
+        while (hasNext || iter.hasNext()) {
+            final C c = supplier.get();
+            mergeFunction.accept(c, hasNext ? next : (next = iter.next()));
+
+            while ((hasNext = iter.hasNext())) {
+                if (collapsible.test(next, (next = iter.next()))) {
+                    mergeFunction.accept(c, next);
+                } else {
+                    break;
+                }
+            }
+
+            result.add(c);
+        }
+
+        return result;
+    }
+
+    /**
+     * Returns a {@code Stream} produced by iterative application of a accumulation function
+     * to an initial element {@code identity} and next element of the current stream.
+     * Produces a {@code Stream} consisting of {@code identity}, {@code acc(identity, value1)},
+     * {@code acc(acc(identity, value1), value2)}, etc.
+     *
+     * <p>This is an intermediate operation.
+     *
+     * <p>Example:
+     * <pre>
+     * identity: 0
+     * accumulator: (a, b) -&gt; a + b
+     * stream: [1, 2, 3, 4, 5]
+     * result: [0, 1, 3, 6, 10, 15]
+     * </pre>
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     *
+     * @param accumulator  the accumulation function
+     * @return the new stream which has the extract same size as this stream.
+     */
+    public ExList<T> scan(final BiFunction<? super T, ? super T, T> accumulator) {
+        final ExList<T> result = new ExList<>();
+        final Iterator<T> iter = coll.iterator();
+        T next = null;
+
+        if (iter.hasNext()) {
+            result.add((next = iter.next()));
+        }
+
+        while (iter.hasNext()) {
+            result.add((next = accumulator.apply(next, iter.next())));
+        }
+
+        return result;
+    }
+
+    /**
+     * Returns a {@code Stream} produced by iterative application of a accumulation function
+     * to an initial element {@code identity} and next element of the current stream.
+     * Produces a {@code Stream} consisting of {@code identity}, {@code acc(identity, value1)},
+     * {@code acc(acc(identity, value1), value2)}, etc.
+     *
+     * <p>This is an intermediate operation.
+     *
+     * <p>Example:
+     * <pre>
+     * seed:10
+     * accumulator: (a, b) -&gt; a + b
+     * stream: [1, 2, 3, 4, 5]
+     * result: [11, 13, 16, 20, 25]
+     * </pre>
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     *
+     * @param seed the initial value. it's only used once by <code>accumulator</code> to calculate the fist element in the returned stream. 
+     * It will be ignored if this stream is empty and won't be the first element of the returned stream.
+     * 
+     * @param accumulator  the accumulation function
+     * @return the new stream which has the extract same size as this stream.
+     */
+    public <R> ExList<R> scan(final R seed, final BiFunction<? super R, ? super T, R> accumulator) {
+        final ExList<R> result = new ExList<>();
+        final Iterator<T> iter = coll.iterator();
+        R next = seed;
+
+        while (iter.hasNext()) {
+            result.add((next = accumulator.apply(next, iter.next())));
+        }
+
+        return result;
+    }
+
     /**
      * This is equivalent to:
      * <pre>
