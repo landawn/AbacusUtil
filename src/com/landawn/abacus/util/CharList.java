@@ -99,7 +99,7 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
             return empty();
         }
 
-        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final char[] elementData = new char[endIndex - startIndex];
 
@@ -556,7 +556,7 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
     }
 
     public void fill(final int fromIndex, final int toIndex, final char val) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         N.fill(elementData, fromIndex, toIndex, val);
     }
@@ -731,7 +731,7 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
     }
 
     public int indexOf(final int fromIndex, char e) {
-        checkIndex(fromIndex, size);
+        checkFromToIndex(fromIndex, size);
 
         for (int i = fromIndex; i < size; i++) {
             if (elementData[i] == e) {
@@ -753,7 +753,7 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
      * @return
      */
     public int lastIndexOf(final int fromIndex, char e) {
-        checkIndex(0, fromIndex);
+        checkFromToIndex(0, fromIndex);
 
         for (int i = fromIndex == size ? size - 1 : fromIndex; i >= 0; i--) {
             if (elementData[i] == e) {
@@ -769,7 +769,7 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
     }
 
     public OptionalChar min(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return fromIndex == toIndex ? OptionalChar.empty() : OptionalChar.of(N.min(elementData, fromIndex, toIndex));
     }
@@ -779,7 +779,7 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
     }
 
     public OptionalChar median(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return fromIndex == toIndex ? OptionalChar.empty() : OptionalChar.of(N.median(elementData, fromIndex, toIndex));
     }
@@ -789,7 +789,7 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
     }
 
     public OptionalChar max(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return fromIndex == toIndex ? OptionalChar.empty() : OptionalChar.of(N.max(elementData, fromIndex, toIndex));
     }
@@ -799,7 +799,7 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
     }
 
     public OptionalChar kthLargest(final int fromIndex, final int toIndex, final int k) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return toIndex - fromIndex < k ? OptionalChar.empty() : OptionalChar.of(N.kthLargest(elementData, fromIndex, toIndex, k));
     }
@@ -809,7 +809,7 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
     }
 
     public Long sum(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return N.sum(elementData, fromIndex, toIndex);
     }
@@ -819,14 +819,14 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
     }
 
     public OptionalDouble average(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(N.average(elementData, fromIndex, toIndex));
     }
 
     @Override
     public void forEach(final int fromIndex, final int toIndex, CharConsumer action) {
-        N.checkIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, size);
+        N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, size);
 
         if (size > 0) {
             if (fromIndex <= toIndex) {
@@ -846,7 +846,7 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
     }
 
     public void forEach(final int fromIndex, final int toIndex, IndexedCharConsumer action) {
-        N.checkIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, size);
+        N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, size);
 
         if (size > 0) {
             if (fromIndex <= toIndex) {
@@ -931,7 +931,7 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
 
     @Override
     public boolean allMatch(final int fromIndex, final int toIndex, CharPredicate filter) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         if (size > 0) {
             for (int i = fromIndex; i < toIndex; i++) {
@@ -946,7 +946,7 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
 
     @Override
     public boolean anyMatch(final int fromIndex, final int toIndex, CharPredicate filter) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         if (size > 0) {
             for (int i = fromIndex; i < toIndex; i++) {
@@ -961,7 +961,7 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
 
     @Override
     public boolean noneMatch(final int fromIndex, final int toIndex, CharPredicate filter) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         if (size > 0) {
             for (int i = fromIndex; i < toIndex; i++) {
@@ -981,21 +981,21 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
 
     @Override
     public int count(final int fromIndex, final int toIndex, CharPredicate filter) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return N.count(elementData, fromIndex, toIndex, filter);
     }
 
     @Override
     public CharList filter(final int fromIndex, final int toIndex, CharPredicate filter) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return N.filter(elementData, fromIndex, toIndex, filter);
     }
 
     @Override
     public CharList filter(final int fromIndex, final int toIndex, CharPredicate filter, final int max) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return N.filter(elementData, fromIndex, toIndex, filter, max);
     }
@@ -1005,7 +1005,7 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
     }
 
     public <T> ExList<T> mapToObj(final int fromIndex, final int toIndex, final CharFunction<? extends T> mapper) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         final ExList<T> result = new ExList<>(toIndex - fromIndex);
 
@@ -1089,7 +1089,7 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
 
     @Override
     public CharList distinct(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         if (toIndex - fromIndex > 1) {
             return of(N.distinct(elementData, fromIndex, toIndex));
@@ -1130,7 +1130,7 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
      * @return
      */
     public int binarySearch(final int fromIndex, final int toIndex, final char key) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return N.binarySearch(elementData, fromIndex, toIndex, key);
     }
@@ -1144,7 +1144,7 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
 
     @Override
     public void reverse(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         if (toIndex - fromIndex > 1) {
             N.reverse(elementData, fromIndex, toIndex);
@@ -1187,7 +1187,7 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
 
     @Override
     public CharList copy(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return new CharList(N.copyOfRange(elementData, fromIndex, toIndex));
     }
@@ -1201,14 +1201,14 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
      */
     @Override
     public CharList copy(final int from, final int to, final int step) {
-        checkIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from);
+        checkFromToIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from);
 
         return new CharList(N.copyOfRange(elementData, from, to, step));
     }
 
     @Override
     public ExList<CharList> split(final int fromIndex, final int toIndex, final int size) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         final ExList<char[]> list = N.split(elementData, fromIndex, toIndex, size);
         @SuppressWarnings("rawtypes")
@@ -1251,14 +1251,14 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
 
     @Override
     public String join(int fromIndex, int toIndex, char delimiter) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return N.join(elementData, fromIndex, toIndex, delimiter);
     }
 
     @Override
     public String join(int fromIndex, int toIndex, String delimiter) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return N.join(elementData, fromIndex, toIndex, delimiter);
     }
@@ -1296,7 +1296,7 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
     }
 
     public ExList<Character> boxed(int fromIndex, int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         final Character[] b = new Character[toIndex - fromIndex];
 
@@ -1313,7 +1313,7 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
 
     @Override
     public List<Character> toList(final int fromIndex, final int toIndex, final IntFunction<List<Character>> supplier) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         final List<Character> list = supplier.apply(toIndex - fromIndex);
 
@@ -1326,7 +1326,7 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
 
     @Override
     public Set<Character> toSet(final int fromIndex, final int toIndex, final IntFunction<Set<Character>> supplier) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         final Set<Character> set = supplier.apply(N.min(16, toIndex - fromIndex));
 
@@ -1339,7 +1339,7 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
 
     @Override
     public Multiset<Character> toMultiset(final int fromIndex, final int toIndex, final IntFunction<Multiset<Character>> supplier) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         final Multiset<Character> multiset = supplier.apply(N.min(16, toIndex - fromIndex));
         ;
@@ -1511,7 +1511,7 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
     }
 
     public CharStream stream0(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return CharStream.of(elementData, fromIndex, toIndex);
     }

@@ -1746,7 +1746,7 @@ public final class Seq<T> implements Collection<T> {
             return copyToList(from, to);
         }
 
-        N.checkIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from, coll.size());
+        N.checkFromToIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from, coll.size());
 
         if (coll instanceof List) {
             return new Seq<>(N.copyOfRange((List) coll, from, to, step));
@@ -1778,7 +1778,7 @@ public final class Seq<T> implements Collection<T> {
             return copyToSet(from, to);
         }
 
-        N.checkIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from, coll.size());
+        N.checkFromToIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from, coll.size());
 
         @SuppressWarnings("rawtypes")
         final T[] a = (T[]) (coll instanceof ExList ? ((ExList) coll).array() : coll.toArray());
@@ -1808,7 +1808,7 @@ public final class Seq<T> implements Collection<T> {
             return copyTo(supplier, from, to);
         }
 
-        N.checkIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from, coll.size());
+        N.checkFromToIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from, coll.size());
 
         @SuppressWarnings("rawtypes")
         final T[] a = (T[]) (coll instanceof ExList ? ((ExList) coll).array() : coll.toArray());
@@ -1828,7 +1828,7 @@ public final class Seq<T> implements Collection<T> {
      * @return
      */
     public Seq<T> subSeq(final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex, size());
+        N.checkFromToIndex(fromIndex, toIndex, size());
 
         if (coll instanceof List) {
             return of(((List<T>) coll).subList(fromIndex, toIndex));

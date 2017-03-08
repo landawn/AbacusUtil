@@ -2285,7 +2285,7 @@ public final class Array {
     }
 
     static void sort(final char[] a, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return;
@@ -2303,7 +2303,7 @@ public final class Array {
     }
 
     static void sort(final byte[] a, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return;
@@ -2321,7 +2321,7 @@ public final class Array {
     }
 
     static void sort(final short[] a, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return;
@@ -2339,7 +2339,7 @@ public final class Array {
     }
 
     static void sort(final int[] a, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return;
@@ -2357,7 +2357,7 @@ public final class Array {
     }
 
     static void sort(final long[] a, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return;
@@ -2375,7 +2375,7 @@ public final class Array {
     }
 
     static void sort(final float[] a, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return;
@@ -2393,7 +2393,7 @@ public final class Array {
     }
 
     static void sort(final double[] a, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return;
@@ -2423,7 +2423,7 @@ public final class Array {
     }
 
     static <T> void sort(final T[] a, final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
-        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return;
@@ -2646,7 +2646,7 @@ public final class Array {
     }
 
     static void parallelSort(final char[] a, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return;
@@ -2767,7 +2767,7 @@ public final class Array {
     }
 
     static void parallelSort(final byte[] a, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return;
@@ -2888,7 +2888,7 @@ public final class Array {
     }
 
     static void parallelSort(final short[] a, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return;
@@ -3009,7 +3009,7 @@ public final class Array {
     }
 
     static void parallelSort(final int[] a, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return;
@@ -3130,7 +3130,7 @@ public final class Array {
     }
 
     static void parallelSort(final long[] a, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return;
@@ -3251,7 +3251,7 @@ public final class Array {
     }
 
     static void parallelSort(final float[] a, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return;
@@ -3391,7 +3391,7 @@ public final class Array {
     }
 
     static void parallelSort(final double[] a, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return;
@@ -3543,7 +3543,7 @@ public final class Array {
     }
 
     static <T> void parallelSort(final T[] a, final int fromIndex, final int toIndex, Comparator<? super T> cmp) {
-        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return;
@@ -3727,7 +3727,7 @@ public final class Array {
     }
 
     static void bucketSort(final int[] a, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return;
@@ -3767,7 +3767,7 @@ public final class Array {
     }
 
     static void bucketSort(final long[] a, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return;
@@ -3807,7 +3807,7 @@ public final class Array {
     }
 
     static void bucketSort(final float[] a, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return;
@@ -3847,7 +3847,7 @@ public final class Array {
     }
 
     static void bucketSort(final double[] a, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return;
@@ -3919,7 +3919,7 @@ public final class Array {
      * @param cmp
      */
     static <T> void bucketSort(final T[] a, final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
-        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return;
@@ -3998,7 +3998,7 @@ public final class Array {
      * @param cmp
      */
     static <T> void bucketSort(final List<? extends T> c, final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
-        N.checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return;
@@ -4507,7 +4507,7 @@ public final class Array {
     }
 
     static char kthLargest(final char[] a, final int fromIndex, final int toIndex, int k) {
-        N.checkIndex(fromIndex, toIndex, a.length);
+        N.checkFromToIndex(fromIndex, toIndex, a.length);
 
         if (N.isNullOrEmpty(a) || toIndex - fromIndex < 1 || k < 1 || k > toIndex - fromIndex) {
             throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1 or bigger than (toIndex - fromIndex). k=" + k);
@@ -4566,7 +4566,7 @@ public final class Array {
     }
 
     static byte kthLargest(final byte[] a, final int fromIndex, final int toIndex, int k) {
-        N.checkIndex(fromIndex, toIndex, a.length);
+        N.checkFromToIndex(fromIndex, toIndex, a.length);
 
         if (N.isNullOrEmpty(a) || toIndex - fromIndex < 1 || k < 1 || k > toIndex - fromIndex) {
             throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1 or bigger than (toIndex - fromIndex). k=" + k);
@@ -4625,7 +4625,7 @@ public final class Array {
     }
 
     static short kthLargest(final short[] a, final int fromIndex, final int toIndex, int k) {
-        N.checkIndex(fromIndex, toIndex, a.length);
+        N.checkFromToIndex(fromIndex, toIndex, a.length);
 
         if (N.isNullOrEmpty(a) || toIndex - fromIndex < 1 || k < 1 || k > toIndex - fromIndex) {
             throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1 or bigger than (toIndex - fromIndex). k=" + k);
@@ -4684,7 +4684,7 @@ public final class Array {
     }
 
     static int kthLargest(final int[] a, final int fromIndex, final int toIndex, int k) {
-        N.checkIndex(fromIndex, toIndex, a.length);
+        N.checkFromToIndex(fromIndex, toIndex, a.length);
 
         if (N.isNullOrEmpty(a) || toIndex - fromIndex < 1 || k < 1 || k > toIndex - fromIndex) {
             throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1 or bigger than (toIndex - fromIndex). k=" + k);
@@ -4743,7 +4743,7 @@ public final class Array {
     }
 
     static long kthLargest(final long[] a, final int fromIndex, final int toIndex, int k) {
-        N.checkIndex(fromIndex, toIndex, a.length);
+        N.checkFromToIndex(fromIndex, toIndex, a.length);
 
         if (N.isNullOrEmpty(a) || toIndex - fromIndex < 1 || k < 1 || k > toIndex - fromIndex) {
             throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1 or bigger than (toIndex - fromIndex). k=" + k);
@@ -4802,7 +4802,7 @@ public final class Array {
     }
 
     static float kthLargest(final float[] a, final int fromIndex, final int toIndex, int k) {
-        N.checkIndex(fromIndex, toIndex, a.length);
+        N.checkFromToIndex(fromIndex, toIndex, a.length);
 
         if (N.isNullOrEmpty(a) || toIndex - fromIndex < 1 || k < 1 || k > toIndex - fromIndex) {
             throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1 or bigger than (toIndex - fromIndex). k=" + k);
@@ -4861,7 +4861,7 @@ public final class Array {
     }
 
     static double kthLargest(final double[] a, final int fromIndex, final int toIndex, int k) {
-        N.checkIndex(fromIndex, toIndex, a.length);
+        N.checkFromToIndex(fromIndex, toIndex, a.length);
 
         if (N.isNullOrEmpty(a) || toIndex - fromIndex < 1 || k < 1 || k > toIndex - fromIndex) {
             throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1 or bigger than (toIndex - fromIndex). k=" + k);
@@ -4928,7 +4928,7 @@ public final class Array {
     }
 
     static <T> T kthLargest(final T[] a, final int fromIndex, final int toIndex, int k, final Comparator<? super T> cmp) {
-        N.checkIndex(fromIndex, toIndex, a.length);
+        N.checkFromToIndex(fromIndex, toIndex, a.length);
 
         if (N.isNullOrEmpty(a) || toIndex - fromIndex < 1 || k < 1 || k > toIndex - fromIndex) {
             throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1 or bigger than (toIndex - fromIndex). k=" + k);
@@ -4996,7 +4996,7 @@ public final class Array {
     }
 
     static <T> T kthLargest(final Collection<? extends T> c, final int fromIndex, final int toIndex, int k, final Comparator<? super T> cmp) {
-        N.checkIndex(fromIndex, toIndex, c.size());
+        N.checkFromToIndex(fromIndex, toIndex, c.size());
 
         if (N.isNullOrEmpty(c) || toIndex - fromIndex < 1 || k < 1 || k > toIndex - fromIndex) {
             throw new IllegalArgumentException("Collection is empty or null, or the input k is less than 1 or bigger than (toIndex - fromIndex). k=" + k);

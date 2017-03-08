@@ -23,6 +23,7 @@ import java.util.List;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.TriConsumer;
 import com.landawn.abacus.util.function.TriFunction;
+import com.landawn.abacus.util.stream.Stream;
 
 /**
  * 
@@ -177,6 +178,10 @@ public final class Triple<L, M, R> {
         return action.apply(left, middle, right);
     }
 
+    public Stream<Triple<L, M, R>> stream() {
+        return Stream.of(this);
+    }
+
     public Triple0<L, M, R> __() {
         return Triple0.of(left, middle, right);
     }
@@ -310,6 +315,10 @@ public final class Triple<L, M, R> {
 
         public <U> U apply(final TriFunction<? super L, ? super M, ? super R, U> action) {
             return action.apply(left, middle, right);
+        }
+
+        public Stream<Triple0<L, M, R>> stream() {
+            return Stream.of(this);
         }
 
         public Triple<L, M, R> __() {

@@ -29,6 +29,7 @@ import java.util.NoSuchElementException;
 import com.landawn.abacus.util.function.DoubleConsumer;
 import com.landawn.abacus.util.function.DoubleSupplier;
 import com.landawn.abacus.util.function.Supplier;
+import com.landawn.abacus.util.stream.DoubleStream;
 
 /**
  * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
@@ -253,6 +254,14 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
         }
 
         return Double.compare(this.get(), optional.get());
+    }
+
+    public DoubleStream stream() {
+        return isPresent() ? DoubleStream.of(value) : DoubleStream.empty();
+    }
+
+    public java.util.OptionalDouble __() {
+        return isPresent() ? java.util.OptionalDouble.empty() : java.util.OptionalDouble.of(value);
     }
 
     /**

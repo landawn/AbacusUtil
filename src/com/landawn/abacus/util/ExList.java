@@ -617,7 +617,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     }
 
     public void fill(final int fromIndex, final int toIndex, final T val) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         N.fill(elementData, fromIndex, toIndex, val);
     }
@@ -793,7 +793,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     }
 
     public int indexOf(final int fromIndex, Object e) {
-        checkIndex(fromIndex, size);
+        checkFromToIndex(fromIndex, size);
 
         for (int i = fromIndex; i < size; i++) {
             if (N.equals(elementData[i], e)) {
@@ -816,7 +816,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
      * @return
      */
     public int lastIndexOf(final int fromIndex, Object e) {
-        checkIndex(0, fromIndex);
+        checkFromToIndex(0, fromIndex);
 
         for (int i = fromIndex == size ? size - 1 : fromIndex; i >= 0; i--) {
             if (N.equals(elementData[i], e)) {
@@ -832,7 +832,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     }
 
     public OptionalNullable<T> min(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return fromIndex == toIndex ? (OptionalNullable<T>) OptionalNullable.empty()
                 : OptionalNullable.of((T) N.min((Comparable[]) elementData, fromIndex, toIndex));
@@ -843,7 +843,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     }
 
     public OptionalNullable<T> min(final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return fromIndex == toIndex ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(N.min(elementData, fromIndex, toIndex, cmp));
     }
@@ -853,7 +853,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     }
 
     public OptionalNullable<T> median(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return fromIndex == toIndex ? (OptionalNullable<T>) OptionalNullable.empty()
                 : OptionalNullable.of((T) N.median((Comparable[]) elementData, fromIndex, toIndex));
@@ -864,7 +864,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     }
 
     public OptionalNullable<T> median(final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return fromIndex == toIndex ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(N.median(elementData, fromIndex, toIndex, cmp));
     }
@@ -874,7 +874,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     }
 
     public OptionalNullable<T> max(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return fromIndex == toIndex ? (OptionalNullable<T>) OptionalNullable.empty()
                 : OptionalNullable.of((T) N.max((Comparable[]) elementData, fromIndex, toIndex));
@@ -885,7 +885,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     }
 
     public OptionalNullable<T> max(final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return fromIndex == toIndex ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(N.max(elementData, fromIndex, toIndex, cmp));
     }
@@ -899,14 +899,14 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     }
 
     public OptionalNullable<T> kthLargest(final int fromIndex, final int toIndex, final int k) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return toIndex - fromIndex < k ? (OptionalNullable<T>) OptionalNullable.empty()
                 : OptionalNullable.of((T) N.kthLargest((Comparable[]) elementData, fromIndex, toIndex, k));
     }
 
     public OptionalNullable<T> kthLargest(final int fromIndex, final int toIndex, final int k, final Comparator<? super T> cmp) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return toIndex - fromIndex < k ? (OptionalNullable<T>) OptionalNullable.empty()
                 : OptionalNullable.of(N.kthLargest(elementData, fromIndex, toIndex, k, cmp));
@@ -917,7 +917,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     }
 
     public Long sumInt(int fromIndex, int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         if (fromIndex == toIndex) {
             return 0L;
@@ -939,7 +939,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     }
 
     public Long sumInt(int fromIndex, int toIndex, ToIntFunction<? super T> mapper) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         if (fromIndex == toIndex) {
             return 0L;
@@ -960,7 +960,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     }
 
     public Long sumLong(int fromIndex, int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         if (fromIndex == toIndex) {
             return 0L;
@@ -982,7 +982,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     }
 
     public Long sumLong(int fromIndex, int toIndex, ToLongFunction<? super T> mapper) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         if (fromIndex == toIndex) {
             return 0L;
@@ -1016,7 +1016,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     }
 
     public Double sumDouble(int fromIndex, int toIndex, ToDoubleFunction<? super T> mapper) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return fromIndex == toIndex ? 0d : N.sumDouble(elementData, fromIndex, toIndex, mapper);
     }
@@ -1026,7 +1026,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     }
 
     public OptionalDouble averageInt(int fromIndex, int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(sumInt(fromIndex, toIndex).doubleValue() / (toIndex - fromIndex));
     }
@@ -1036,7 +1036,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     }
 
     public OptionalDouble averageInt(int fromIndex, int toIndex, ToIntFunction<? super T> mapper) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(sumInt(fromIndex, toIndex, mapper).doubleValue() / (toIndex - fromIndex));
     }
@@ -1046,7 +1046,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     }
 
     public OptionalDouble averageLong(int fromIndex, int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(sumLong(fromIndex, toIndex).doubleValue() / (toIndex - fromIndex));
     }
@@ -1056,7 +1056,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     }
 
     public OptionalDouble averageLong(int fromIndex, int toIndex, ToLongFunction<? super T> mapper) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(sumLong(fromIndex, toIndex, mapper).doubleValue() / (toIndex - fromIndex));
     }
@@ -1079,14 +1079,14 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     }
 
     public OptionalDouble averageDouble(int fromIndex, int toIndex, ToDoubleFunction<? super T> mapper) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return fromIndex == toIndex ? OptionalDouble.empty() : N.averageDouble(elementData, fromIndex, toIndex, mapper);
     }
 
     @Override
     public void forEach(final int fromIndex, final int toIndex, Consumer<? super T> action) {
-        N.checkIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, size);
+        N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, size);
 
         if (size > 0) {
             if (fromIndex <= toIndex) {
@@ -1106,7 +1106,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     }
 
     public void forEach(final int fromIndex, final int toIndex, final IndexedConsumer<? super T, ExList<T>> action) {
-        N.checkIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, size);
+        N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, size);
 
         if (size > 0) {
             if (fromIndex <= toIndex) {
@@ -1137,7 +1137,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
      */
     public <R> R forEach(final int fromIndex, final int toIndex, final R seed, BiFunction<R, ? super T, R> accumulator,
             final BiPredicate<? super T, ? super R> conditionToBreak) {
-        N.checkIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, size);
+        N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, size);
 
         R result = seed;
 
@@ -1180,7 +1180,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
      */
     public <R> R forEach(final int fromIndex, final int toIndex, final R seed, IndexedBiFunction<R, ? super T, ExList<T>, R> accumulator,
             final BiPredicate<? super T, ? super R> conditionToBreak) {
-        N.checkIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, size);
+        N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, size);
 
         R result = seed;
 
@@ -1285,7 +1285,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
 
     @Override
     public boolean allMatch(final int fromIndex, final int toIndex, Predicate<? super T> filter) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         if (size > 0) {
             for (int i = fromIndex; i < toIndex; i++) {
@@ -1300,7 +1300,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
 
     @Override
     public boolean anyMatch(final int fromIndex, final int toIndex, Predicate<? super T> filter) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         if (size > 0) {
             for (int i = fromIndex; i < toIndex; i++) {
@@ -1315,7 +1315,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
 
     @Override
     public boolean noneMatch(final int fromIndex, final int toIndex, Predicate<? super T> filter) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         if (size > 0) {
             for (int i = fromIndex; i < toIndex; i++) {
@@ -1335,21 +1335,21 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
 
     @Override
     public int count(final int fromIndex, final int toIndex, Predicate<? super T> filter) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return N.count(elementData, fromIndex, toIndex, filter);
     }
 
     @Override
     public ExList<T> filter(final int fromIndex, final int toIndex, Predicate<? super T> filter) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return N.filter(elementData, fromIndex, toIndex, filter);
     }
 
     @Override
     public ExList<T> filter(final int fromIndex, final int toIndex, Predicate<? super T> filter, final int max) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return N.filter(elementData, fromIndex, toIndex, filter, max);
     }
@@ -1359,7 +1359,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     }
 
     public <U> ExList<T> filter(final int fromIndex, final int toIndex, final U seed, final BiPredicate<? super T, ? super U> predicate) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return filter(fromIndex, toIndex, new Predicate<T>() {
             @Override
@@ -1374,7 +1374,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     }
 
     public <R> ExList<R> map(final int fromIndex, final int toIndex, final Function<? super T, ? extends R> func) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         final ExList<R> result = new ExList<>(toIndex - fromIndex);
 
@@ -1390,7 +1390,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     }
 
     public BooleanList mapToBoolean(final int fromIndex, final int toIndex, final ToBooleanFunction<? super T> func) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         final boolean[] res = new boolean[size()];
 
@@ -1406,7 +1406,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     }
 
     public CharList mapToChar(final int fromIndex, final int toIndex, final ToCharFunction<? super T> func) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         final char[] res = new char[size()];
 
@@ -1422,7 +1422,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     }
 
     public ByteList mapToByte(final int fromIndex, final int toIndex, final ToByteFunction<? super T> func) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         final byte[] res = new byte[size()];
 
@@ -1438,7 +1438,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     }
 
     public ShortList mapToShort(final int fromIndex, final int toIndex, final ToShortFunction<? super T> func) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         final short[] res = new short[size()];
 
@@ -1454,7 +1454,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     }
 
     public IntList mapToInt(final int fromIndex, final int toIndex, final ToIntFunction<? super T> func) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         final int[] res = new int[size()];
 
@@ -1470,7 +1470,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     }
 
     public LongList mapToLong(final int fromIndex, final int toIndex, final ToLongFunction<? super T> func) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         final long[] res = new long[size()];
 
@@ -1486,7 +1486,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     }
 
     public FloatList mapToFloat(final int fromIndex, final int toIndex, final ToFloatFunction<? super T> func) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         final float[] res = new float[size()];
 
@@ -1502,7 +1502,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     }
 
     public DoubleList mapToDouble(final int fromIndex, final int toIndex, final ToDoubleFunction<? super T> func) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         final double[] res = new double[size()];
 
@@ -1518,7 +1518,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     }
 
     public <R> ExList<R> flatMap(final int fromIndex, final int toIndex, final Function<? super T, ? extends Collection<R>> func) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         final ExList<R> result = new ExList<>(size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : size() * 2);
 
@@ -1534,7 +1534,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     }
 
     public <R> ExList<R> flatMap2(final int fromIndex, final int toIndex, final Function<? super T, ? extends R[]> func) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         final ExList<R> result = new ExList<>(size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : size() * 2);
 
@@ -1618,7 +1618,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
 
     @Override
     public ExList<T> distinct(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return of(N.distinct(elementData, fromIndex, toIndex));
     }
@@ -1641,7 +1641,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
      * @return
      */
     public ExList<T> distinct(final int fromIndex, final int toIndex, final Function<? super T, ?> keyMapper) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return of(N.distinct(elementData, fromIndex, toIndex, keyMapper));
     }
@@ -1659,7 +1659,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
      * @return
      */
     public ExList<T> top(final int fromIndex, final int toIndex, final int n) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return of((T[]) N.top((Comparable[]) elementData, fromIndex, toIndex, n));
     }
@@ -1669,7 +1669,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     }
 
     public ExList<T> top(final int fromIndex, final int toIndex, final int n, final Comparator<? super T> cmp) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return of(N.top(elementData, fromIndex, toIndex, n, cmp));
     }
@@ -1718,7 +1718,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
      * @return
      */
     public int binarySearch(final int fromIndex, final int toIndex, final Object key) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return N.binarySearch(elementData, fromIndex, toIndex, key);
     }
@@ -1732,7 +1732,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
 
     @Override
     public void reverse(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         if (toIndex - fromIndex > 1) {
             N.reverse(elementData, fromIndex, toIndex);
@@ -1775,7 +1775,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
 
     @Override
     public ExList<T> copy(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return new ExList<>(N.copyOfRange(elementData, fromIndex, toIndex));
     }
@@ -1789,14 +1789,14 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
      */
     @Override
     public ExList<T> copy(final int from, final int to, final int step) {
-        checkIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from);
+        checkFromToIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from);
 
         return new ExList<>(N.copyOfRange(elementData, from, to, step));
     }
 
     @Override
     public ExList<ExList<T>> split(final int fromIndex, final int toIndex, final int size) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         final ExList<T[]> list = N.split(elementData, fromIndex, toIndex, size);
         @SuppressWarnings("rawtypes")
@@ -1839,14 +1839,14 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
 
     @Override
     public String join(int fromIndex, int toIndex, char delimiter) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return N.join(elementData, fromIndex, toIndex, delimiter);
     }
 
     @Override
     public String join(int fromIndex, int toIndex, String delimiter) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return N.join(elementData, fromIndex, toIndex, delimiter);
     }
@@ -1913,7 +1913,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
 
     @Override
     public List<T> toList(final int fromIndex, final int toIndex, final IntFunction<List<T>> supplier) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         final List<T> list = supplier.apply(toIndex - fromIndex);
 
@@ -1926,7 +1926,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
 
     @Override
     public Set<T> toSet(final int fromIndex, final int toIndex, final IntFunction<Set<T>> supplier) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         final Set<T> set = supplier.apply(N.min(16, toIndex - fromIndex));
 
@@ -1939,7 +1939,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
 
     @Override
     public Multiset<T> toMultiset(final int fromIndex, final int toIndex, final IntFunction<Multiset<T>> supplier) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         final Multiset<T> multiset = supplier.apply(N.min(16, toIndex - fromIndex));
 
@@ -2185,7 +2185,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
 
     @Override
     public List<T> subList(int fromIndex, int toIndex) {
-        this.checkIndex(fromIndex, toIndex);
+        this.checkFromToIndex(fromIndex, toIndex);
 
         return asList().subList(fromIndex, toIndex);
     }
@@ -2241,7 +2241,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     }
 
     public Stream<T> stream0(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return Stream.of(elementData, fromIndex, toIndex);
     }

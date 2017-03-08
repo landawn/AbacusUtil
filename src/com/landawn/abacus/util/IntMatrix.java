@@ -215,8 +215,8 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntMatrix> {
     }
 
     public void fill(final int fromRowIndex, final int fromColumnIndex, final int[][] b) {
-        N.checkIndex(fromRowIndex, n, n);
-        N.checkIndex(fromColumnIndex, m, m);
+        N.checkFromToIndex(fromRowIndex, n, n);
+        N.checkFromToIndex(fromColumnIndex, m, m);
 
         for (int i = 0, minLen = N.min(n - fromRowIndex, b.length); i < minLen; i++) {
             N.copy(b[i], 0, a[i + fromRowIndex], fromColumnIndex, N.min(b[i].length, m - fromColumnIndex));
@@ -341,7 +341,7 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntMatrix> {
 
     @Override
     public IntMatrix copy(final int fromRowIndex, final int toRowIndex) {
-        N.checkIndex(fromRowIndex, toRowIndex, n);
+        N.checkFromToIndex(fromRowIndex, toRowIndex, n);
 
         final int[][] c = new int[toRowIndex - fromRowIndex][];
 
@@ -354,8 +354,8 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntMatrix> {
 
     @Override
     public IntMatrix copy(final int fromRowIndex, final int toRowIndex, final int fromColumnIndex, final int toColumnIndex) {
-        N.checkIndex(fromRowIndex, toRowIndex, n);
-        N.checkIndex(fromColumnIndex, toColumnIndex, m);
+        N.checkFromToIndex(fromRowIndex, toRowIndex, n);
+        N.checkFromToIndex(fromColumnIndex, toColumnIndex, m);
 
         final int[][] c = new int[toRowIndex - fromRowIndex][];
 
@@ -994,7 +994,7 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntMatrix> {
      * @return a stream based on the order of row.
      */
     public IntStream stream(final int fromRowIndex, final int toRowIndex) {
-        N.checkIndex(fromRowIndex, toRowIndex, n);
+        N.checkFromToIndex(fromRowIndex, toRowIndex, n);
 
         if (isEmpty()) {
             return IntStream.empty();
@@ -1077,7 +1077,7 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntMatrix> {
      */
     @Beta
     public IntStream stream0(final int fromColumnIndex, final int toColumnIndex) {
-        N.checkIndex(fromColumnIndex, toColumnIndex, m);
+        N.checkFromToIndex(fromColumnIndex, toColumnIndex, m);
 
         if (isEmpty()) {
             return IntStream.empty();
@@ -1158,7 +1158,7 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntMatrix> {
      * @return a row stream based on the order of row.
      */
     public Stream<IntStream> stream2(final int fromRowIndex, final int toRowIndex) {
-        N.checkIndex(fromRowIndex, toRowIndex, n);
+        N.checkFromToIndex(fromRowIndex, toRowIndex, n);
 
         if (isEmpty()) {
             return Stream.empty();
@@ -1211,7 +1211,7 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntMatrix> {
      */
     @Beta
     public Stream<IntStream> stream02(final int fromColumnIndex, final int toColumnIndex) {
-        N.checkIndex(fromColumnIndex, toColumnIndex, m);
+        N.checkFromToIndex(fromColumnIndex, toColumnIndex, m);
 
         if (isEmpty()) {
             return Stream.empty();

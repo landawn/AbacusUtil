@@ -29,6 +29,7 @@ import java.util.NoSuchElementException;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.function.IntSupplier;
 import com.landawn.abacus.util.function.Supplier;
+import com.landawn.abacus.util.stream.IntStream;
 
 /**
  * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
@@ -217,6 +218,14 @@ public final class OptionalInt implements Comparable<OptionalInt> {
         }
 
         return Integer.compare(this.get(), optional.get());
+    }
+
+    public IntStream stream() {
+        return isPresent() ? IntStream.of(value) : IntStream.empty();
+    }
+
+    public java.util.OptionalInt __() {
+        return isPresent() ? java.util.OptionalInt.empty() : java.util.OptionalInt.of(value);
     }
 
     /**

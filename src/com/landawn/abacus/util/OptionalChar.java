@@ -29,6 +29,7 @@ import java.util.NoSuchElementException;
 import com.landawn.abacus.util.function.CharConsumer;
 import com.landawn.abacus.util.function.CharSupplier;
 import com.landawn.abacus.util.function.Supplier;
+import com.landawn.abacus.util.stream.CharStream;
 
 /**
  * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
@@ -217,6 +218,10 @@ public final class OptionalChar implements Comparable<OptionalChar> {
         }
 
         return Character.compare(this.get(), optional.get());
+    }
+
+    public CharStream stream() {
+        return isPresent() ? CharStream.of(value) : CharStream.empty();
     }
 
     /**

@@ -29,6 +29,7 @@ import java.util.NoSuchElementException;
 import com.landawn.abacus.util.function.LongConsumer;
 import com.landawn.abacus.util.function.LongSupplier;
 import com.landawn.abacus.util.function.Supplier;
+import com.landawn.abacus.util.stream.LongStream;
 
 /**
  * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
@@ -229,6 +230,14 @@ public final class OptionalLong implements Comparable<OptionalLong> {
         }
 
         return Long.compare(this.get(), optional.get());
+    }
+
+    public LongStream stream() {
+        return isPresent() ? LongStream.of(value) : LongStream.empty();
+    }
+
+    public java.util.OptionalLong __() {
+        return isPresent() ? java.util.OptionalLong.empty() : java.util.OptionalLong.of(value);
     }
 
     /**

@@ -29,6 +29,7 @@ import java.util.NoSuchElementException;
 import com.landawn.abacus.util.function.ShortConsumer;
 import com.landawn.abacus.util.function.ShortSupplier;
 import com.landawn.abacus.util.function.Supplier;
+import com.landawn.abacus.util.stream.ShortStream;
 
 /**
  * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
@@ -217,6 +218,10 @@ public final class OptionalShort implements Comparable<OptionalShort> {
         }
 
         return Short.compare(this.get(), optional.get());
+    }
+
+    public ShortStream stream() {
+        return isPresent() ? ShortStream.of(value) : ShortStream.empty();
     }
 
     /**

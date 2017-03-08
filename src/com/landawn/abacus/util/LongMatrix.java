@@ -184,8 +184,8 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongMatri
     }
 
     public void fill(final int fromRowIndex, final int fromColumnIndex, final long[][] b) {
-        N.checkIndex(fromRowIndex, n, n);
-        N.checkIndex(fromColumnIndex, m, m);
+        N.checkFromToIndex(fromRowIndex, n, n);
+        N.checkFromToIndex(fromColumnIndex, m, m);
 
         for (int i = 0, minLen = N.min(n - fromRowIndex, b.length); i < minLen; i++) {
             N.copy(b[i], 0, a[i + fromRowIndex], fromColumnIndex, N.min(b[i].length, m - fromColumnIndex));
@@ -310,7 +310,7 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongMatri
 
     @Override
     public LongMatrix copy(final int fromRowIndex, final int toRowIndex) {
-        N.checkIndex(fromRowIndex, toRowIndex, n);
+        N.checkFromToIndex(fromRowIndex, toRowIndex, n);
 
         final long[][] c = new long[toRowIndex - fromRowIndex][];
 
@@ -323,8 +323,8 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongMatri
 
     @Override
     public LongMatrix copy(final int fromRowIndex, final int toRowIndex, final int fromColumnIndex, final int toColumnIndex) {
-        N.checkIndex(fromRowIndex, toRowIndex, n);
-        N.checkIndex(fromColumnIndex, toColumnIndex, m);
+        N.checkFromToIndex(fromRowIndex, toRowIndex, n);
+        N.checkFromToIndex(fromColumnIndex, toColumnIndex, m);
 
         final long[][] c = new long[toRowIndex - fromRowIndex][];
 
@@ -951,7 +951,7 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongMatri
      * @return a stream based on the order of row.
      */
     public LongStream stream(final int fromRowIndex, final int toRowIndex) {
-        N.checkIndex(fromRowIndex, toRowIndex, n);
+        N.checkFromToIndex(fromRowIndex, toRowIndex, n);
 
         if (isEmpty()) {
             return LongStream.empty();
@@ -1034,7 +1034,7 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongMatri
      */
     @Beta
     public LongStream stream0(final int fromColumnIndex, final int toColumnIndex) {
-        N.checkIndex(fromColumnIndex, toColumnIndex, m);
+        N.checkFromToIndex(fromColumnIndex, toColumnIndex, m);
 
         if (isEmpty()) {
             return LongStream.empty();
@@ -1115,7 +1115,7 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongMatri
      * @return a row stream based on the order of row.
      */
     public Stream<LongStream> stream2(final int fromRowIndex, final int toRowIndex) {
-        N.checkIndex(fromRowIndex, toRowIndex, n);
+        N.checkFromToIndex(fromRowIndex, toRowIndex, n);
 
         if (isEmpty()) {
             return Stream.empty();
@@ -1168,7 +1168,7 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongMatri
      */
     @Beta
     public Stream<LongStream> stream02(final int fromColumnIndex, final int toColumnIndex) {
-        N.checkIndex(fromColumnIndex, toColumnIndex, m);
+        N.checkFromToIndex(fromColumnIndex, toColumnIndex, m);
 
         if (isEmpty()) {
             return Stream.empty();

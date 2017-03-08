@@ -371,7 +371,7 @@ public abstract class AbstractList<C, P, E, A, L extends AbstractList<C, P, E, A
     }
 
     public List<E> toList(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         final IntFunction<List<E>> supplier = createListSupplier();
 
@@ -389,7 +389,7 @@ public abstract class AbstractList<C, P, E, A, L extends AbstractList<C, P, E, A
     }
 
     public Set<E> toSet(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         final IntFunction<Set<E>> supplier = createSetSupplier();
 
@@ -407,7 +407,7 @@ public abstract class AbstractList<C, P, E, A, L extends AbstractList<C, P, E, A
     }
 
     public Multiset<E> toMultiset(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         final IntFunction<Multiset<E>> supplier = createMultisetSupplier();
 
@@ -424,8 +424,8 @@ public abstract class AbstractList<C, P, E, A, L extends AbstractList<C, P, E, A
         N.println(toString());
     }
 
-    protected void checkIndex(final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex, size());
+    protected void checkFromToIndex(final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, size());
     }
 
     protected <T> IntFunction<List<T>> createListSupplier() {

@@ -42,21 +42,21 @@ import com.landawn.abacus.util.ThreadMode;
  * <pre>
  * <code>
  * final Object strSubscriber_1 = new Subscriber<String>() {
- *     // Override
+ *     &#64;Override
  *     public void on(String event) {
  *     System.out.println("Subscriber: strSubscriber_1, event: " + event);
  *     }
  * };
  * 
  * final Object anySubscriber_2 = new Object() {
- *     // Subscribe(threadMode = ThreadMode.DEFAULT, interval = 1000)
+ *     &#64;Subscribe(threadMode = ThreadMode.DEFAULT, interval = 1000)
  *     public void anyMethod(Object event) {
  *     System.out.println("Subscriber: anySubscriber_2, event: " + event);
  *     }
  * };
  * 
  * final Object anySubscriber_3 = new Object() {
- *     // Subscribe(threadMode = ThreadMode.DEFAULT, sticky = true)
+ *     &#64;Subscribe(threadMode = ThreadMode.DEFAULT, sticky = true)
  *     public void anyMethod(Object event) {
  *     System.out.println("Subscriber: anySubscriber_3, event: " + event);
  *     }

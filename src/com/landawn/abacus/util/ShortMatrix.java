@@ -168,8 +168,8 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortM
     }
 
     public void fill(final int fromRowIndex, final int fromColumnIndex, final short[][] b) {
-        N.checkIndex(fromRowIndex, n, n);
-        N.checkIndex(fromColumnIndex, m, m);
+        N.checkFromToIndex(fromRowIndex, n, n);
+        N.checkFromToIndex(fromColumnIndex, m, m);
 
         for (int i = 0, minLen = N.min(n - fromRowIndex, b.length); i < minLen; i++) {
             N.copy(b[i], 0, a[i + fromRowIndex], fromColumnIndex, N.min(b[i].length, m - fromColumnIndex));
@@ -294,7 +294,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortM
 
     @Override
     public ShortMatrix copy(final int fromRowIndex, final int toRowIndex) {
-        N.checkIndex(fromRowIndex, toRowIndex, n);
+        N.checkFromToIndex(fromRowIndex, toRowIndex, n);
 
         final short[][] c = new short[toRowIndex - fromRowIndex][];
 
@@ -307,8 +307,8 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortM
 
     @Override
     public ShortMatrix copy(final int fromRowIndex, final int toRowIndex, final int fromColumnIndex, final int toColumnIndex) {
-        N.checkIndex(fromRowIndex, toRowIndex, n);
-        N.checkIndex(fromColumnIndex, toColumnIndex, m);
+        N.checkFromToIndex(fromRowIndex, toRowIndex, n);
+        N.checkFromToIndex(fromColumnIndex, toColumnIndex, m);
 
         final short[][] c = new short[toRowIndex - fromRowIndex][];
 
@@ -975,7 +975,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortM
      * @return a stream based on the order of row.
      */
     public ShortStream stream(final int fromRowIndex, final int toRowIndex) {
-        N.checkIndex(fromRowIndex, toRowIndex, n);
+        N.checkFromToIndex(fromRowIndex, toRowIndex, n);
 
         if (isEmpty()) {
             return ShortStream.empty();
@@ -1058,7 +1058,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortM
      */
     @Beta
     public ShortStream stream0(final int fromColumnIndex, final int toColumnIndex) {
-        N.checkIndex(fromColumnIndex, toColumnIndex, m);
+        N.checkFromToIndex(fromColumnIndex, toColumnIndex, m);
 
         if (isEmpty()) {
             return ShortStream.empty();
@@ -1139,7 +1139,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortM
      * @return a row stream based on the order of row.
      */
     public Stream<ShortStream> stream2(final int fromRowIndex, final int toRowIndex) {
-        N.checkIndex(fromRowIndex, toRowIndex, n);
+        N.checkFromToIndex(fromRowIndex, toRowIndex, n);
 
         if (isEmpty()) {
             return Stream.empty();
@@ -1192,7 +1192,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortM
      */
     @Beta
     public Stream<ShortStream> stream02(final int fromColumnIndex, final int toColumnIndex) {
-        N.checkIndex(fromColumnIndex, toColumnIndex, m);
+        N.checkFromToIndex(fromColumnIndex, toColumnIndex, m);
 
         if (isEmpty()) {
             return Stream.empty();

@@ -100,7 +100,7 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
             return empty();
         }
 
-        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final double[] elementData = new double[endIndex - startIndex];
 
@@ -120,7 +120,7 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
             return empty();
         }
 
-        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final double[] elementData = new double[endIndex - startIndex];
 
@@ -140,7 +140,7 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
             return empty();
         }
 
-        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final double[] elementData = new double[endIndex - startIndex];
 
@@ -538,7 +538,7 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
     }
 
     public void fill(final int fromIndex, final int toIndex, final double val) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         N.fill(elementData, fromIndex, toIndex, val);
     }
@@ -713,7 +713,7 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
     }
 
     public int indexOf(final int fromIndex, double e) {
-        checkIndex(fromIndex, size);
+        checkFromToIndex(fromIndex, size);
 
         for (int i = fromIndex; i < size; i++) {
             if (N.equals(elementData[i], e)) {
@@ -735,7 +735,7 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
      * @return
      */
     public int lastIndexOf(final int fromIndex, double e) {
-        checkIndex(0, fromIndex);
+        checkFromToIndex(0, fromIndex);
 
         for (int i = fromIndex == size ? size - 1 : fromIndex; i >= 0; i--) {
             if (N.equals(elementData[i], e)) {
@@ -751,7 +751,7 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
     }
 
     public OptionalDouble min(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(N.min(elementData, fromIndex, toIndex));
     }
@@ -761,7 +761,7 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
     }
 
     public OptionalDouble median(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(N.median(elementData, fromIndex, toIndex));
     }
@@ -771,7 +771,7 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
     }
 
     public OptionalDouble max(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(N.max(elementData, fromIndex, toIndex));
     }
@@ -781,7 +781,7 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
     }
 
     public OptionalDouble kthLargest(final int fromIndex, final int toIndex, final int k) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return toIndex - fromIndex < k ? OptionalDouble.empty() : OptionalDouble.of(N.kthLargest(elementData, fromIndex, toIndex, k));
     }
@@ -791,7 +791,7 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
     }
 
     public Double sum(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return N.sum(elementData, fromIndex, toIndex);
     }
@@ -801,14 +801,14 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
     }
 
     public OptionalDouble average(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(N.average(elementData, fromIndex, toIndex));
     }
 
     @Override
     public void forEach(final int fromIndex, final int toIndex, DoubleConsumer action) {
-        N.checkIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, size);
+        N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, size);
 
         if (size > 0) {
             if (fromIndex <= toIndex) {
@@ -828,7 +828,7 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
     }
 
     public void forEach(final int fromIndex, final int toIndex, IndexedDoubleConsumer action) {
-        N.checkIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, size);
+        N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, size);
 
         if (size > 0) {
             if (fromIndex <= toIndex) {
@@ -913,7 +913,7 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
 
     @Override
     public boolean allMatch(final int fromIndex, final int toIndex, DoublePredicate filter) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         if (size > 0) {
             for (int i = fromIndex; i < toIndex; i++) {
@@ -928,7 +928,7 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
 
     @Override
     public boolean anyMatch(final int fromIndex, final int toIndex, DoublePredicate filter) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         if (size > 0) {
             for (int i = fromIndex; i < toIndex; i++) {
@@ -943,7 +943,7 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
 
     @Override
     public boolean noneMatch(final int fromIndex, final int toIndex, DoublePredicate filter) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         if (size > 0) {
             for (int i = fromIndex; i < toIndex; i++) {
@@ -963,21 +963,21 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
 
     @Override
     public int count(final int fromIndex, final int toIndex, DoublePredicate filter) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return N.count(elementData, fromIndex, toIndex, filter);
     }
 
     @Override
     public DoubleList filter(final int fromIndex, final int toIndex, DoublePredicate filter) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return N.filter(elementData, fromIndex, toIndex, filter);
     }
 
     @Override
     public DoubleList filter(final int fromIndex, final int toIndex, DoublePredicate filter, final int max) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return N.filter(elementData, fromIndex, toIndex, filter, max);
     }
@@ -987,7 +987,7 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
     }
 
     public <T> ExList<T> mapToObj(final int fromIndex, final int toIndex, final DoubleFunction<? extends T> mapper) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         final ExList<T> result = new ExList<>(toIndex - fromIndex);
 
@@ -1071,7 +1071,7 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
 
     @Override
     public DoubleList distinct(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         if (toIndex - fromIndex > 1) {
             return of(N.distinct(elementData, fromIndex, toIndex));
@@ -1085,7 +1085,7 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
     }
 
     public DoubleList top(final int fromIndex, final int toIndex, final int n) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return of(N.top(elementData, fromIndex, toIndex, n));
     }
@@ -1095,7 +1095,7 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
     }
 
     public DoubleList top(final int fromIndex, final int toIndex, final int n, Comparator<? super Double> cmp) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return of(N.top(elementData, fromIndex, toIndex, n, cmp));
     }
@@ -1132,7 +1132,7 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
      * @return
      */
     public int binarySearch(final int fromIndex, final int toIndex, final double key) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return N.binarySearch(elementData, fromIndex, toIndex, key);
     }
@@ -1146,7 +1146,7 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
 
     @Override
     public void reverse(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         if (toIndex - fromIndex > 1) {
             N.reverse(elementData, fromIndex, toIndex);
@@ -1189,7 +1189,7 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
 
     @Override
     public DoubleList copy(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return new DoubleList(N.copyOfRange(elementData, fromIndex, toIndex));
     }
@@ -1203,14 +1203,14 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
      */
     @Override
     public DoubleList copy(final int from, final int to, final int step) {
-        checkIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from);
+        checkFromToIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from);
 
         return new DoubleList(N.copyOfRange(elementData, from, to, step));
     }
 
     @Override
     public ExList<DoubleList> split(final int fromIndex, final int toIndex, final int size) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         final ExList<double[]> list = N.split(elementData, fromIndex, toIndex, size);
         @SuppressWarnings("rawtypes")
@@ -1253,14 +1253,14 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
 
     @Override
     public String join(int fromIndex, int toIndex, char delimiter) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return N.join(elementData, fromIndex, toIndex, delimiter);
     }
 
     @Override
     public String join(int fromIndex, int toIndex, String delimiter) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return N.join(elementData, fromIndex, toIndex, delimiter);
     }
@@ -1298,7 +1298,7 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
     }
 
     public ExList<Double> boxed(int fromIndex, int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         final Double[] b = new Double[toIndex - fromIndex];
 
@@ -1311,7 +1311,7 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
 
     @Override
     public List<Double> toList(final int fromIndex, final int toIndex, final IntFunction<List<Double>> supplier) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         final List<Double> list = supplier.apply(toIndex - fromIndex);
 
@@ -1324,7 +1324,7 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
 
     @Override
     public Set<Double> toSet(final int fromIndex, final int toIndex, final IntFunction<Set<Double>> supplier) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         final Set<Double> set = supplier.apply(N.min(16, toIndex - fromIndex));
 
@@ -1337,7 +1337,7 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
 
     @Override
     public Multiset<Double> toMultiset(final int fromIndex, final int toIndex, final IntFunction<Multiset<Double>> supplier) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         final Multiset<Double> multiset = supplier.apply(N.min(16, toIndex - fromIndex));
 
@@ -1508,7 +1508,7 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
     }
 
     public DoubleStream stream0(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return DoubleStream.of(elementData, fromIndex, toIndex);
     }

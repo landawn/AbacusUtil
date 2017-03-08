@@ -29,6 +29,7 @@ import java.util.NoSuchElementException;
 import com.landawn.abacus.util.function.BooleanConsumer;
 import com.landawn.abacus.util.function.BooleanSupplier;
 import com.landawn.abacus.util.function.Supplier;
+import com.landawn.abacus.util.stream.Stream;
 
 /**
  * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
@@ -217,6 +218,10 @@ public final class OptionalBoolean implements Comparable<OptionalBoolean> {
         }
 
         return Boolean.compare(this.get(), optional.get());
+    }
+
+    public Stream<Boolean> stream() {
+        return isPresent() ? Stream.of(value) : Stream.<Boolean> empty();
     }
 
     /**

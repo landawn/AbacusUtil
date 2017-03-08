@@ -24,6 +24,7 @@ import java.util.Map;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.Consumer;
+import com.landawn.abacus.util.stream.Stream;
 
 /**
  * 
@@ -176,6 +177,10 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
         return action.apply(left, right);
     }
 
+    public Stream<Pair<L, R>> stream() {
+        return Stream.of(this);
+    }
+
     public Pair0<L, R> __() {
         return Pair0.of(left, right);
     }
@@ -318,6 +323,10 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
 
         public <U> U apply(final BiFunction<? super L, ? super R, U> action) {
             return action.apply(left, right);
+        }
+
+        public Stream<Pair0<L, R>> stream() {
+            return Stream.of(this);
         }
 
         public Pair<L, R> __() {

@@ -1126,7 +1126,7 @@ public final class Sheet<R, C, E> {
      * @return a stream of Cells based on the order of row.
      */
     public Stream<Sheet.Cell<R, C, E>> cells(final int fromRowIndex, final int toRowIndex) {
-        N.checkIndex(fromRowIndex, toRowIndex, _rowKeySet.size());
+        N.checkFromToIndex(fromRowIndex, toRowIndex, _rowKeySet.size());
 
         if (_rowKeySet.size() == 0 || _columnKeySet.size() == 0) {
             return Stream.empty();
@@ -1185,7 +1185,7 @@ public final class Sheet<R, C, E> {
      */
 
     public Stream<Sheet.Cell<R, C, E>> cells0(final int fromColumnIndex, final int toColumnIndex) {
-        N.checkIndex(fromColumnIndex, toColumnIndex, _columnKeySet.size());
+        N.checkFromToIndex(fromColumnIndex, toColumnIndex, _columnKeySet.size());
 
         if (_rowKeySet.size() == 0 || _columnKeySet.size() == 0) {
             return Stream.empty();
@@ -1243,7 +1243,7 @@ public final class Sheet<R, C, E> {
      * @return a stream based on the order of row.
      */
     public Stream<E> stream(final int fromRowIndex, final int toRowIndex) {
-        N.checkIndex(fromRowIndex, toRowIndex, _rowKeySet.size());
+        N.checkFromToIndex(fromRowIndex, toRowIndex, _rowKeySet.size());
 
         if (_rowKeySet.size() == 0 || _columnKeySet.size() == 0) {
             return Stream.empty();
@@ -1300,7 +1300,7 @@ public final class Sheet<R, C, E> {
      * @return a stream based on the order of column.
      */
     public Stream<E> stream0(final int fromColumnIndex, final int toColumnIndex) {
-        N.checkIndex(fromColumnIndex, toColumnIndex, _columnKeySet.size());
+        N.checkFromToIndex(fromColumnIndex, toColumnIndex, _columnKeySet.size());
 
         if (_rowKeySet.size() == 0 || _columnKeySet.size() == 0) {
             return Stream.empty();
@@ -1357,7 +1357,7 @@ public final class Sheet<R, C, E> {
      * @return a stream based on the order of row.
      */
     public Stream<Stream<E>> stream2(final int fromRowIndex, final int toRowIndex) {
-        N.checkIndex(fromRowIndex, toRowIndex, _rowKeySet.size());
+        N.checkFromToIndex(fromRowIndex, toRowIndex, _rowKeySet.size());
 
         if (_rowKeySet.size() == 0 || _columnKeySet.size() == 0) {
             return Stream.empty();
@@ -1441,7 +1441,7 @@ public final class Sheet<R, C, E> {
      * @return a stream based on the order of column.
      */
     public Stream<Stream<E>> stream02(final int fromColumnIndex, final int toColumnIndex) {
-        N.checkIndex(fromColumnIndex, toColumnIndex, _columnKeySet.size());
+        N.checkFromToIndex(fromColumnIndex, toColumnIndex, _columnKeySet.size());
 
         if (_rowKeySet.size() == 0 || _columnKeySet.size() == 0) {
             return Stream.empty();

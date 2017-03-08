@@ -168,8 +168,8 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteMatri
     }
 
     public void fill(final int fromRowIndex, final int fromColumnIndex, final byte[][] b) {
-        N.checkIndex(fromRowIndex, n, n);
-        N.checkIndex(fromColumnIndex, m, m);
+        N.checkFromToIndex(fromRowIndex, n, n);
+        N.checkFromToIndex(fromColumnIndex, m, m);
 
         for (int i = 0, minLen = N.min(n - fromRowIndex, b.length); i < minLen; i++) {
             N.copy(b[i], 0, a[i + fromRowIndex], fromColumnIndex, N.min(b[i].length, m - fromColumnIndex));
@@ -294,7 +294,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteMatri
 
     @Override
     public ByteMatrix copy(final int fromRowIndex, final int toRowIndex) {
-        N.checkIndex(fromRowIndex, toRowIndex, n);
+        N.checkFromToIndex(fromRowIndex, toRowIndex, n);
 
         final byte[][] c = new byte[toRowIndex - fromRowIndex][];
 
@@ -307,8 +307,8 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteMatri
 
     @Override
     public ByteMatrix copy(final int fromRowIndex, final int toRowIndex, final int fromColumnIndex, final int toColumnIndex) {
-        N.checkIndex(fromRowIndex, toRowIndex, n);
-        N.checkIndex(fromColumnIndex, toColumnIndex, m);
+        N.checkFromToIndex(fromRowIndex, toRowIndex, n);
+        N.checkFromToIndex(fromColumnIndex, toColumnIndex, m);
 
         final byte[][] c = new byte[toRowIndex - fromRowIndex][];
 
@@ -975,7 +975,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteMatri
      * @return a stream based on the order of row.
      */
     public ByteStream stream(final int fromRowIndex, final int toRowIndex) {
-        N.checkIndex(fromRowIndex, toRowIndex, n);
+        N.checkFromToIndex(fromRowIndex, toRowIndex, n);
 
         if (isEmpty()) {
             return ByteStream.empty();
@@ -1058,7 +1058,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteMatri
      */
     @Beta
     public ByteStream stream0(final int fromColumnIndex, final int toColumnIndex) {
-        N.checkIndex(fromColumnIndex, toColumnIndex, m);
+        N.checkFromToIndex(fromColumnIndex, toColumnIndex, m);
 
         if (isEmpty()) {
             return ByteStream.empty();
@@ -1138,7 +1138,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteMatri
      * @return a row stream based on the order of row.
      */
     public Stream<ByteStream> stream2(final int fromRowIndex, final int toRowIndex) {
-        N.checkIndex(fromRowIndex, toRowIndex, n);
+        N.checkFromToIndex(fromRowIndex, toRowIndex, n);
 
         if (isEmpty()) {
             return Stream.empty();
@@ -1191,7 +1191,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteMatri
      */
     @Beta
     public Stream<ByteStream> stream02(final int fromColumnIndex, final int toColumnIndex) {
-        N.checkIndex(fromColumnIndex, toColumnIndex, m);
+        N.checkFromToIndex(fromColumnIndex, toColumnIndex, m);
 
         if (isEmpty()) {
             return Stream.empty();

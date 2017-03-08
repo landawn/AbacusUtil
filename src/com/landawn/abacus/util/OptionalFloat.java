@@ -29,6 +29,7 @@ import java.util.NoSuchElementException;
 import com.landawn.abacus.util.function.FloatConsumer;
 import com.landawn.abacus.util.function.FloatSupplier;
 import com.landawn.abacus.util.function.Supplier;
+import com.landawn.abacus.util.stream.FloatStream;
 
 /**
  * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
@@ -241,6 +242,10 @@ public final class OptionalFloat implements Comparable<OptionalFloat> {
         }
 
         return Float.compare(this.get(), optional.get());
+    }
+
+    public FloatStream stream() {
+        return isPresent() ? FloatStream.of(value) : FloatStream.empty();
     }
 
     /**

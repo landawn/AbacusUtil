@@ -477,7 +477,7 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
     }
 
     public void fill(final int fromIndex, final int toIndex, final boolean val) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         N.fill(elementData, fromIndex, toIndex, val);
     }
@@ -652,7 +652,7 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
     }
 
     public int indexOf(final int fromIndex, boolean e) {
-        checkIndex(fromIndex, size);
+        checkFromToIndex(fromIndex, size);
 
         for (int i = fromIndex; i < size; i++) {
             if (elementData[i] == e) {
@@ -674,7 +674,7 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
      * @return
      */
     public int lastIndexOf(final int fromIndex, boolean e) {
-        checkIndex(0, fromIndex);
+        checkFromToIndex(0, fromIndex);
 
         for (int i = fromIndex == size ? size - 1 : fromIndex; i >= 0; i--) {
             if (elementData[i] == e) {
@@ -687,7 +687,7 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
 
     @Override
     public void forEach(final int fromIndex, final int toIndex, final BooleanConsumer action) {
-        N.checkIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, size);
+        N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, size);
 
         if (size > 0) {
             if (fromIndex <= toIndex) {
@@ -707,7 +707,7 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
     }
 
     public void forEach(final int fromIndex, final int toIndex, IndexedBooleanConsumer action) {
-        N.checkIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, size);
+        N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, size);
 
         if (size > 0) {
             if (fromIndex <= toIndex) {
@@ -792,7 +792,7 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
 
     @Override
     public boolean allMatch(final int fromIndex, final int toIndex, final BooleanPredicate filter) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         if (size > 0) {
             for (int i = fromIndex; i < toIndex; i++) {
@@ -807,7 +807,7 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
 
     @Override
     public boolean anyMatch(final int fromIndex, final int toIndex, final BooleanPredicate filter) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         if (size > 0) {
             for (int i = fromIndex; i < toIndex; i++) {
@@ -822,7 +822,7 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
 
     @Override
     public boolean noneMatch(final int fromIndex, final int toIndex, final BooleanPredicate filter) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         if (size > 0) {
             for (int i = fromIndex; i < toIndex; i++) {
@@ -848,21 +848,21 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
 
     @Override
     public int count(final int fromIndex, final int toIndex, final BooleanPredicate filter) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return N.count(elementData, fromIndex, toIndex, filter);
     }
 
     @Override
     public BooleanList filter(final int fromIndex, final int toIndex, final BooleanPredicate filter) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return N.filter(elementData, fromIndex, toIndex, filter);
     }
 
     @Override
     public BooleanList filter(final int fromIndex, final int toIndex, final BooleanPredicate filter, int max) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return N.filter(elementData, fromIndex, toIndex, filter, max);
     }
@@ -872,7 +872,7 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
     }
 
     public <T> ExList<T> mapToObj(final int fromIndex, final int toIndex, final BooleanFunction<? extends T> mapper) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         final ExList<T> result = new ExList<>(toIndex - fromIndex);
 
@@ -956,7 +956,7 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
 
     @Override
     public BooleanList distinct(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         if (toIndex - fromIndex > 1) {
             return of(N.distinct(elementData, fromIndex, toIndex));
@@ -995,7 +995,7 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
 
     @Override
     public void reverse(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         if (toIndex - fromIndex > 1) {
             N.reverse(elementData, fromIndex, toIndex);
@@ -1038,7 +1038,7 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
 
     @Override
     public BooleanList copy(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return new BooleanList(N.copyOfRange(elementData, fromIndex, toIndex));
     }
@@ -1052,14 +1052,14 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
      */
     @Override
     public BooleanList copy(final int from, final int to, final int step) {
-        checkIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from);
+        checkFromToIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from);
 
         return new BooleanList(N.copyOfRange(elementData, from, to, step));
     }
 
     @Override
     public ExList<BooleanList> split(final int fromIndex, final int toIndex, final int size) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         final ExList<boolean[]> list = N.split(elementData, fromIndex, toIndex, size);
         @SuppressWarnings("rawtypes")
@@ -1102,14 +1102,14 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
 
     @Override
     public String join(int fromIndex, int toIndex, char delimiter) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return N.join(elementData, fromIndex, toIndex, delimiter);
     }
 
     @Override
     public String join(int fromIndex, int toIndex, String delimiter) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return N.join(elementData, fromIndex, toIndex, delimiter);
     }
@@ -1147,7 +1147,7 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
     }
 
     public ExList<Boolean> boxed(int fromIndex, int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         final Boolean[] b = new Boolean[toIndex - fromIndex];
 
@@ -1160,7 +1160,7 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
 
     @Override
     public List<Boolean> toList(final int fromIndex, final int toIndex, final IntFunction<List<Boolean>> supplier) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         final List<Boolean> list = supplier.apply(toIndex - fromIndex);
 
@@ -1173,7 +1173,7 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
 
     @Override
     public Set<Boolean> toSet(final int fromIndex, final int toIndex, final IntFunction<Set<Boolean>> supplier) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         final Set<Boolean> set = supplier.apply(N.min(16, toIndex - fromIndex));
 
@@ -1186,7 +1186,7 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
 
     @Override
     public Multiset<Boolean> toMultiset(final int fromIndex, final int toIndex, final IntFunction<Multiset<Boolean>> supplier) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         final Multiset<Boolean> multiset = supplier.apply(N.min(16, toIndex - fromIndex));
 
@@ -1366,7 +1366,7 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
     }
 
     public Stream<Boolean> stream0(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return Stream.from(elementData, fromIndex, toIndex);
     }

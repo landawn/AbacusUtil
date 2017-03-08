@@ -274,7 +274,7 @@ public class Joiner {
     }
 
     public Joiner join(final boolean[] a, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return this;
@@ -306,7 +306,7 @@ public class Joiner {
     }
 
     public Joiner join(final char[] a, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return this;
@@ -338,7 +338,7 @@ public class Joiner {
     }
 
     public Joiner join(final byte[] a, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return this;
@@ -370,7 +370,7 @@ public class Joiner {
     }
 
     public Joiner join(final short[] a, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return this;
@@ -402,7 +402,7 @@ public class Joiner {
     }
 
     public Joiner join(final int[] a, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return this;
@@ -434,7 +434,7 @@ public class Joiner {
     }
 
     public Joiner join(final long[] a, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return this;
@@ -466,7 +466,7 @@ public class Joiner {
     }
 
     public Joiner join(final float[] a, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return this;
@@ -498,7 +498,7 @@ public class Joiner {
     }
 
     public Joiner join(final double[] a, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return this;
@@ -530,7 +530,7 @@ public class Joiner {
     }
 
     public Joiner join(final Object[] a, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return this;
@@ -576,7 +576,7 @@ public class Joiner {
     }
 
     public Joiner join(final Collection<?> c, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < c.size())) {
             return this;
@@ -629,7 +629,7 @@ public class Joiner {
     }
 
     public Joiner join(final Map<?, ?> m, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex, m == null ? 0 : m.size());
+        N.checkFromToIndex(fromIndex, toIndex, m == null ? 0 : m.size());
 
         if ((N.isNullOrEmpty(m) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < m.size())) {
             return this;
@@ -694,7 +694,7 @@ public class Joiner {
     }
 
     public Joiner join(final BooleanList c, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return this;
@@ -712,7 +712,7 @@ public class Joiner {
     }
 
     public Joiner join(final CharList c, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return this;
@@ -730,7 +730,7 @@ public class Joiner {
     }
 
     public Joiner join(final ByteList c, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return this;
@@ -748,7 +748,7 @@ public class Joiner {
     }
 
     public Joiner join(final ShortList c, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return this;
@@ -766,7 +766,7 @@ public class Joiner {
     }
 
     public Joiner join(final IntList c, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return this;
@@ -784,7 +784,7 @@ public class Joiner {
     }
 
     public Joiner join(final LongList c, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return this;
@@ -802,7 +802,7 @@ public class Joiner {
     }
 
     public Joiner join(final FloatList c, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return this;
@@ -820,7 +820,7 @@ public class Joiner {
     }
 
     public Joiner join(final DoubleList c, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return this;
@@ -838,7 +838,7 @@ public class Joiner {
     }
 
     public Joiner join(final ExList<?> c, final int fromIndex, final int toIndex) {
-        N.checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
             return this;

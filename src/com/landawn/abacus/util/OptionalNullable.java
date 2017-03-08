@@ -30,6 +30,7 @@ import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
+import com.landawn.abacus.util.stream.Stream;
 
 /**
  * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
@@ -442,8 +443,16 @@ public final class OptionalNullable<T> {
         }
     }
 
+    public Stream<T> stream() {
+        return isPresent() ? Stream.of(value) : Stream.<T> empty();
+    }
+
     public Optional<T> __() {
         return Optional.ofNullable(value);
+    }
+
+    public java.util.Optional<T> _2() {
+        return isPresent() ? java.util.Optional.<T> empty() : java.util.Optional.of(value);
     }
 
     /**

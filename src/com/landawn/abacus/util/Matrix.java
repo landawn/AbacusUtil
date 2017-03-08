@@ -160,8 +160,8 @@ public final class Matrix<T> extends AbstractMatrix<T[], ExList<T>, Matrix<T>> {
     }
 
     public void fill(final int fromRowIndex, final int fromColumnIndex, final T[][] b) {
-        N.checkIndex(fromRowIndex, n, n);
-        N.checkIndex(fromColumnIndex, m, m);
+        N.checkFromToIndex(fromRowIndex, n, n);
+        N.checkFromToIndex(fromColumnIndex, m, m);
 
         for (int i = 0, minLen = N.min(n - fromRowIndex, b.length); i < minLen; i++) {
             N.copy(b[i], 0, a[i + fromRowIndex], fromColumnIndex, N.min(b[i].length, m - fromColumnIndex));
@@ -654,7 +654,7 @@ public final class Matrix<T> extends AbstractMatrix<T[], ExList<T>, Matrix<T>> {
 
     @Override
     public Matrix<T> copy(final int fromRowIndex, final int toRowIndex) {
-        N.checkIndex(fromRowIndex, toRowIndex, n);
+        N.checkFromToIndex(fromRowIndex, toRowIndex, n);
 
         final T[][] c = N.newArray(arrayType, toRowIndex - fromRowIndex);
 
@@ -667,8 +667,8 @@ public final class Matrix<T> extends AbstractMatrix<T[], ExList<T>, Matrix<T>> {
 
     @Override
     public Matrix<T> copy(final int fromRowIndex, final int toRowIndex, final int fromColumnIndex, final int toColumnIndex) {
-        N.checkIndex(fromRowIndex, toRowIndex, n);
-        N.checkIndex(fromColumnIndex, toColumnIndex, m);
+        N.checkFromToIndex(fromRowIndex, toRowIndex, n);
+        N.checkFromToIndex(fromColumnIndex, toColumnIndex, m);
 
         final T[][] c = N.newArray(arrayType, toRowIndex - fromRowIndex);
 
@@ -1056,7 +1056,7 @@ public final class Matrix<T> extends AbstractMatrix<T[], ExList<T>, Matrix<T>> {
      * @return a stream based on the order of row.
      */
     public Stream<T> stream(final int fromRowIndex, final int toRowIndex) {
-        N.checkIndex(fromRowIndex, toRowIndex, n);
+        N.checkFromToIndex(fromRowIndex, toRowIndex, n);
 
         if (isEmpty()) {
             return Stream.empty();
@@ -1142,7 +1142,7 @@ public final class Matrix<T> extends AbstractMatrix<T[], ExList<T>, Matrix<T>> {
      */
     @Beta
     public Stream<T> stream0(final int fromColumnIndex, final int toColumnIndex) {
-        N.checkIndex(fromColumnIndex, toColumnIndex, m);
+        N.checkFromToIndex(fromColumnIndex, toColumnIndex, m);
 
         if (isEmpty()) {
             return Stream.empty();
@@ -1226,7 +1226,7 @@ public final class Matrix<T> extends AbstractMatrix<T[], ExList<T>, Matrix<T>> {
      * @return a row stream based on the order of row.
      */
     public Stream<Stream<T>> stream2(final int fromRowIndex, final int toRowIndex) {
-        N.checkIndex(fromRowIndex, toRowIndex, n);
+        N.checkFromToIndex(fromRowIndex, toRowIndex, n);
 
         if (isEmpty()) {
             return Stream.empty();
@@ -1279,7 +1279,7 @@ public final class Matrix<T> extends AbstractMatrix<T[], ExList<T>, Matrix<T>> {
      */
     @Beta
     public Stream<Stream<T>> stream02(final int fromColumnIndex, final int toColumnIndex) {
-        N.checkIndex(fromColumnIndex, toColumnIndex, m);
+        N.checkFromToIndex(fromColumnIndex, toColumnIndex, m);
 
         if (isEmpty()) {
             return Stream.empty();

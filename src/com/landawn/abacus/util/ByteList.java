@@ -99,7 +99,7 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
             return empty();
         }
 
-        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final byte[] elementData = new byte[endIndex - startIndex];
 
@@ -530,7 +530,7 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
     }
 
     public void fill(final int fromIndex, final int toIndex, final byte val) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         N.fill(elementData, fromIndex, toIndex, val);
     }
@@ -705,7 +705,7 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
     }
 
     public int indexOf(final int fromIndex, byte e) {
-        checkIndex(fromIndex, size);
+        checkFromToIndex(fromIndex, size);
 
         for (int i = fromIndex; i < size; i++) {
             if (elementData[i] == e) {
@@ -727,7 +727,7 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
      * @return
      */
     public int lastIndexOf(final int fromIndex, byte e) {
-        checkIndex(0, fromIndex);
+        checkFromToIndex(0, fromIndex);
 
         for (int i = fromIndex == size ? size - 1 : fromIndex; i >= 0; i--) {
             if (elementData[i] == e) {
@@ -743,7 +743,7 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
     }
 
     public OptionalByte min(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return fromIndex == toIndex ? OptionalByte.empty() : OptionalByte.of(N.min(elementData, fromIndex, toIndex));
     }
@@ -753,7 +753,7 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
     }
 
     public OptionalByte median(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return fromIndex == toIndex ? OptionalByte.empty() : OptionalByte.of(N.median(elementData, fromIndex, toIndex));
     }
@@ -763,7 +763,7 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
     }
 
     public OptionalByte max(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return fromIndex == toIndex ? OptionalByte.empty() : OptionalByte.of(N.max(elementData, fromIndex, toIndex));
     }
@@ -773,7 +773,7 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
     }
 
     public OptionalByte kthLargest(final int fromIndex, final int toIndex, final int k) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return toIndex - fromIndex < k ? OptionalByte.empty() : OptionalByte.of(N.kthLargest(elementData, fromIndex, toIndex, k));
     }
@@ -783,7 +783,7 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
     }
 
     public Long sum(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return N.sum(elementData, fromIndex, toIndex);
     }
@@ -793,14 +793,14 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
     }
 
     public OptionalDouble average(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(N.average(elementData, fromIndex, toIndex));
     }
 
     @Override
     public void forEach(final int fromIndex, final int toIndex, ByteConsumer action) {
-        N.checkIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, size);
+        N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, size);
 
         if (size > 0) {
             if (fromIndex <= toIndex) {
@@ -820,7 +820,7 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
     }
 
     public void forEach(final int fromIndex, final int toIndex, IndexedByteConsumer action) {
-        N.checkIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, size);
+        N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, size);
 
         if (size > 0) {
             if (fromIndex <= toIndex) {
@@ -905,7 +905,7 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
 
     @Override
     public boolean allMatch(final int fromIndex, final int toIndex, BytePredicate filter) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         if (size > 0) {
             for (int i = fromIndex; i < toIndex; i++) {
@@ -920,7 +920,7 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
 
     @Override
     public boolean anyMatch(final int fromIndex, final int toIndex, BytePredicate filter) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         if (size > 0) {
             for (int i = fromIndex; i < toIndex; i++) {
@@ -935,7 +935,7 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
 
     @Override
     public boolean noneMatch(final int fromIndex, final int toIndex, BytePredicate filter) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         if (size > 0) {
             for (int i = fromIndex; i < toIndex; i++) {
@@ -955,21 +955,21 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
 
     @Override
     public int count(final int fromIndex, final int toIndex, BytePredicate filter) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return N.count(elementData, fromIndex, toIndex, filter);
     }
 
     @Override
     public ByteList filter(final int fromIndex, final int toIndex, BytePredicate filter) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return N.filter(elementData, fromIndex, toIndex, filter);
     }
 
     @Override
     public ByteList filter(final int fromIndex, final int toIndex, BytePredicate filter, final int max) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return N.filter(elementData, fromIndex, toIndex, filter, max);
     }
@@ -979,7 +979,7 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
     }
 
     public <T> ExList<T> mapToObj(final int fromIndex, final int toIndex, final ByteFunction<? extends T> mapper) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         final ExList<T> result = new ExList<>(toIndex - fromIndex);
 
@@ -1063,7 +1063,7 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
 
     @Override
     public ByteList distinct(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         if (toIndex - fromIndex > 1) {
             return of(N.distinct(elementData, fromIndex, toIndex));
@@ -1104,7 +1104,7 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
      * @return
      */
     public int binarySearch(final int fromIndex, final int toIndex, final byte key) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return N.binarySearch(elementData, fromIndex, toIndex, key);
     }
@@ -1118,7 +1118,7 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
 
     @Override
     public void reverse(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         if (toIndex - fromIndex > 1) {
             N.reverse(elementData, fromIndex, toIndex);
@@ -1161,7 +1161,7 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
 
     @Override
     public ByteList copy(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return new ByteList(N.copyOfRange(elementData, fromIndex, toIndex));
     }
@@ -1175,14 +1175,14 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
      */
     @Override
     public ByteList copy(final int from, final int to, final int step) {
-        checkIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from);
+        checkFromToIndex(from < to ? from : (to == -1 ? 0 : to), from < to ? to : from);
 
         return new ByteList(N.copyOfRange(elementData, from, to, step));
     }
 
     @Override
     public ExList<ByteList> split(final int fromIndex, final int toIndex, final int size) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         final ExList<byte[]> list = N.split(elementData, fromIndex, toIndex, size);
         @SuppressWarnings("rawtypes")
@@ -1225,14 +1225,14 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
 
     @Override
     public String join(int fromIndex, int toIndex, char delimiter) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return N.join(elementData, fromIndex, toIndex, delimiter);
     }
 
     @Override
     public String join(int fromIndex, int toIndex, String delimiter) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return N.join(elementData, fromIndex, toIndex, delimiter);
     }
@@ -1270,7 +1270,7 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
     }
 
     public ExList<Byte> boxed(int fromIndex, int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         final Byte[] b = new Byte[toIndex - fromIndex];
 
@@ -1287,7 +1287,7 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
 
     @Override
     public List<Byte> toList(final int fromIndex, final int toIndex, final IntFunction<List<Byte>> supplier) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         final List<Byte> list = supplier.apply(toIndex - fromIndex);
 
@@ -1300,7 +1300,7 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
 
     @Override
     public Set<Byte> toSet(final int fromIndex, final int toIndex, final IntFunction<Set<Byte>> supplier) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         final Set<Byte> set = supplier.apply(N.min(16, toIndex - fromIndex));
 
@@ -1313,7 +1313,7 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
 
     @Override
     public Multiset<Byte> toMultiset(final int fromIndex, final int toIndex, final IntFunction<Multiset<Byte>> supplier) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         final Multiset<Byte> multiset = supplier.apply(N.min(16, toIndex - fromIndex));
 
@@ -1484,7 +1484,7 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
     }
 
     public ByteStream stream0(final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex);
+        checkFromToIndex(fromIndex, toIndex);
 
         return ByteStream.of(elementData, fromIndex, toIndex);
     }

@@ -29,6 +29,7 @@ import java.util.NoSuchElementException;
 import com.landawn.abacus.util.function.ByteConsumer;
 import com.landawn.abacus.util.function.ByteSupplier;
 import com.landawn.abacus.util.function.Supplier;
+import com.landawn.abacus.util.stream.ByteStream;
 
 /**
  * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
@@ -217,6 +218,10 @@ public final class OptionalByte implements Comparable<OptionalByte> {
         }
 
         return Byte.compare(this.get(), optional.get());
+    }
+
+    public ByteStream stream() {
+        return isPresent() ? ByteStream.of(value) : ByteStream.empty();
     }
 
     /**

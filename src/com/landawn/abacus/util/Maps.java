@@ -1,22 +1,33 @@
-package com.landawn.abacus.util;
 /*
- * Copyright (c) 2017, Haiyang Li.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Copyright (c) 1997, 2013, Oracle and/or its affiliates. All rights reserved.
+ * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
  */
+
+package com.landawn.abacus.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +58,7 @@ public final class Maps {
         return result;
     }
 
-    public static <K, V> List<V> getAllOrDefault(final Map<K, V> map, final Collection<?> keys, final V defaultValue) {
+    public static <K, V> List<V> getOrDefaultAll(final Map<K, V> map, final Collection<?> keys, final V defaultValue) {
         final List<V> result = new ArrayList<>(keys.size());
 
         for (Object key : keys) {
@@ -693,5 +704,47 @@ public final class Maps {
         }
 
         return newValue;
+    }
+
+    public static final class Entry {
+        public static <K extends Comparable<? super K>, V> Comparator<Map.Entry<K, V>> comparingByKey() {
+            return new Comparator<Map.Entry<K, V>>() {
+                @Override
+                public int compare(Map.Entry<K, V> a, Map.Entry<K, V> b) {
+                    return a.getKey().compareTo(b.getKey());
+                }
+            };
+        }
+
+        public static <K, V extends Comparable<? super V>> Comparator<Map.Entry<K, V>> comparingByValue() {
+            return new Comparator<Map.Entry<K, V>>() {
+                @Override
+                public int compare(Map.Entry<K, V> a, Map.Entry<K, V> b) {
+                    return a.getValue().compareTo(b.getValue());
+                }
+            };
+        }
+
+        public static <K, V> Comparator<Map.Entry<K, V>> comparingByKey(final Comparator<? super K> cmp) {
+            N.requireNonNull(cmp);
+
+            return new Comparator<Map.Entry<K, V>>() {
+                @Override
+                public int compare(Map.Entry<K, V> a, Map.Entry<K, V> b) {
+                    return cmp.compare(a.getKey(), b.getKey());
+                }
+            };
+        }
+
+        public static <K, V> Comparator<Map.Entry<K, V>> comparingByValue(final Comparator<? super V> cmp) {
+            N.requireNonNull(cmp);
+
+            return new Comparator<Map.Entry<K, V>>() {
+                @Override
+                public int compare(Map.Entry<K, V> a, Map.Entry<K, V> b) {
+                    return cmp.compare(a.getValue(), b.getValue());
+                }
+            };
+        }
     }
 }

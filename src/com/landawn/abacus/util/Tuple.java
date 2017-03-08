@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.landawn.abacus.util.function.Consumer;
+import com.landawn.abacus.util.stream.Stream;
 
 /**
  * 
@@ -57,6 +58,11 @@ public abstract class Tuple {
         }
 
         @Override
+        public Stream<? extends Tuple> stream() {
+            return Stream.empty();
+        }
+
+        @Override
         public String toString() {
             return "[]";
         }
@@ -74,6 +80,8 @@ public abstract class Tuple {
     public abstract <T> List<T> toList();
 
     public abstract void forEach(Consumer<?> comsumer);
+
+    protected abstract Stream<? extends Tuple> stream();
 
     public static <T1> Tuple1<T1> of(T1 _1) {
         return new Tuple1<>(_1);
@@ -188,7 +196,7 @@ public abstract class Tuple {
         return (T) result;
     }
 
-    public static class Tuple1<T1> extends Tuple {
+    public final static class Tuple1<T1> extends Tuple {
         public final T1 _1;
 
         // For Kryo
@@ -238,6 +246,11 @@ public abstract class Tuple {
         }
 
         @Override
+        public Stream<Tuple1<T1>> stream() {
+            return Stream.of(this);
+        }
+
+        @Override
         public int hashCode() {
             final int prime = 31;
             int result = 1;
@@ -266,7 +279,8 @@ public abstract class Tuple {
         }
     }
 
-    public static class Tuple2<T1, T2> extends Tuple1<T1> {
+    public final static class Tuple2<T1, T2> extends Tuple {
+        public final T1 _1;
         public final T2 _2;
 
         // For Kryo
@@ -275,7 +289,7 @@ public abstract class Tuple {
         }
 
         public Tuple2(T1 _1, T2 _2) {
-            super(_1);
+            this._1 = _1;
             this._2 = _2;
         }
 
@@ -319,6 +333,11 @@ public abstract class Tuple {
         }
 
         @Override
+        public Stream<Tuple2<T1, T2>> stream() {
+            return Stream.of(this);
+        }
+
+        @Override
         public int hashCode() {
             final int prime = 31;
             int result = 1;
@@ -348,7 +367,9 @@ public abstract class Tuple {
         }
     }
 
-    public static class Tuple3<T1, T2, T3> extends Tuple2<T1, T2> {
+    public final static class Tuple3<T1, T2, T3> extends Tuple {
+        public final T1 _1;
+        public final T2 _2;
         public final T3 _3;
 
         // For Kryo
@@ -357,7 +378,8 @@ public abstract class Tuple {
         }
 
         public Tuple3(T1 _1, T2 _2, T3 _3) {
-            super(_1, _2);
+            this._1 = _1;
+            this._2 = _2;
             this._3 = _3;
         }
 
@@ -403,6 +425,11 @@ public abstract class Tuple {
         }
 
         @Override
+        public Stream<Tuple3<T1, T2, T3>> stream() {
+            return Stream.of(this);
+        }
+
+        @Override
         public int hashCode() {
             final int prime = 31;
             int result = 1;
@@ -433,7 +460,10 @@ public abstract class Tuple {
         }
     }
 
-    public static class Tuple4<T1, T2, T3, T4> extends Tuple3<T1, T2, T3> {
+    public final static class Tuple4<T1, T2, T3, T4> extends Tuple {
+        public final T1 _1;
+        public final T2 _2;
+        public final T3 _3;
         public final T4 _4;
 
         // For Kryo
@@ -442,7 +472,9 @@ public abstract class Tuple {
         }
 
         public Tuple4(T1 _1, T2 _2, T3 _3, T4 _4) {
-            super(_1, _2, _3);
+            this._1 = _1;
+            this._2 = _2;
+            this._3 = _3;
             this._4 = _4;
         }
 
@@ -490,6 +522,11 @@ public abstract class Tuple {
         }
 
         @Override
+        public Stream<Tuple4<T1, T2, T3, T4>> stream() {
+            return Stream.of(this);
+        }
+
+        @Override
         public int hashCode() {
             final int prime = 31;
             int result = 1;
@@ -521,7 +558,11 @@ public abstract class Tuple {
         }
     }
 
-    public static class Tuple5<T1, T2, T3, T4, T5> extends Tuple4<T1, T2, T3, T4> {
+    public final static class Tuple5<T1, T2, T3, T4, T5> extends Tuple {
+        public final T1 _1;
+        public final T2 _2;
+        public final T3 _3;
+        public final T4 _4;
         public final T5 _5;
 
         // For Kryo
@@ -530,7 +571,10 @@ public abstract class Tuple {
         }
 
         public Tuple5(T1 _1, T2 _2, T3 _3, T4 _4, T5 _5) {
-            super(_1, _2, _3, _4);
+            this._1 = _1;
+            this._2 = _2;
+            this._3 = _3;
+            this._4 = _4;
             this._5 = _5;
         }
 
@@ -580,6 +624,11 @@ public abstract class Tuple {
         }
 
         @Override
+        public Stream<Tuple5<T1, T2, T3, T4, T5>> stream() {
+            return Stream.of(this);
+        }
+
+        @Override
         public int hashCode() {
             final int prime = 31;
             int result = 1;
@@ -613,7 +662,12 @@ public abstract class Tuple {
         }
     }
 
-    public static class Tuple6<T1, T2, T3, T4, T5, T6> extends Tuple5<T1, T2, T3, T4, T5> {
+    public static final class Tuple6<T1, T2, T3, T4, T5, T6> extends Tuple {
+        public final T1 _1;
+        public final T2 _2;
+        public final T3 _3;
+        public final T4 _4;
+        public final T5 _5;
         public final T6 _6;
 
         // For Kryo
@@ -622,7 +676,11 @@ public abstract class Tuple {
         }
 
         public Tuple6(T1 _1, T2 _2, T3 _3, T4 _4, T5 _5, T6 _6) {
-            super(_1, _2, _3, _4, _5);
+            this._1 = _1;
+            this._2 = _2;
+            this._3 = _3;
+            this._4 = _4;
+            this._5 = _5;
             this._6 = _6;
         }
 
@@ -674,6 +732,11 @@ public abstract class Tuple {
         }
 
         @Override
+        public Stream<Tuple6<T1, T2, T3, T4, T5, T6>> stream() {
+            return Stream.of(this);
+        }
+
+        @Override
         public int hashCode() {
             final int prime = 31;
             int result = 1;
@@ -709,7 +772,13 @@ public abstract class Tuple {
         }
     }
 
-    public static class Tuple7<T1, T2, T3, T4, T5, T6, T7> extends Tuple6<T1, T2, T3, T4, T5, T6> {
+    public static final class Tuple7<T1, T2, T3, T4, T5, T6, T7> extends Tuple {
+        public final T1 _1;
+        public final T2 _2;
+        public final T3 _3;
+        public final T4 _4;
+        public final T5 _5;
+        public final T6 _6;
         public final T7 _7;
 
         // For Kryo
@@ -718,7 +787,12 @@ public abstract class Tuple {
         }
 
         public Tuple7(T1 _1, T2 _2, T3 _3, T4 _4, T5 _5, T6 _6, T7 _7) {
-            super(_1, _2, _3, _4, _5, _6);
+            this._1 = _1;
+            this._2 = _2;
+            this._3 = _3;
+            this._4 = _4;
+            this._5 = _5;
+            this._6 = _6;
             this._7 = _7;
         }
 
@@ -769,6 +843,11 @@ public abstract class Tuple {
             objComsumer.accept(_5);
             objComsumer.accept(_6);
             objComsumer.accept(_7);
+        }
+
+        @Override
+        public Stream<Tuple7<T1, T2, T3, T4, T5, T6, T7>> stream() {
+            return Stream.of(this);
         }
 
         @Override
