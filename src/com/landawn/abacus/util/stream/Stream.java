@@ -676,7 +676,7 @@ public abstract class Stream<T>
      * @param mergeFunction
      * @return
      */
-    public abstract <C> Stream<C> collapse(final Supplier<C> supplier, final BiPredicate<? super T, ? super T> collapsible,
+    public abstract <C extends Collection<?>> Stream<C> collapse(final Supplier<C> supplier, final BiPredicate<? super T, ? super T> collapsible,
             final BiConsumer<? super C, ? super T> mergeFunction);
 
     /**

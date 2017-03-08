@@ -71,7 +71,7 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
 
     public CharList(char[] a, int size) {
         if (a.length < size) {
-            throw new IllegalArgumentException("The specified size is bigger than the length of the specified array");
+            throw new IndexOutOfBoundsException("The specified size is bigger than the length of the specified array");
         }
 
         this.elementData = a;

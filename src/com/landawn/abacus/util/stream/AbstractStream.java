@@ -703,7 +703,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <C> Stream<C> collapse(final Supplier<C> supplier, final BiPredicate<? super T, ? super T> collapsible,
+    public <C extends Collection<?>> Stream<C> collapse(final Supplier<C> supplier, final BiPredicate<? super T, ? super T> collapsible,
             final BiConsumer<? super C, ? super T> mergeFunction) {
         final ImmutableIterator<T> iter = iterator();
 
@@ -1587,7 +1587,7 @@ abstract class AbstractStream<T> extends Stream<T> {
                 return new LinkedHashSet<>();
             }
         });
-    
+
         return newStream(Seq.powerSet(set).iterator(), false, null);
     }
 

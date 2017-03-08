@@ -72,7 +72,7 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
 
     public DoubleList(double[] a, int size) {
         if (a.length < size) {
-            throw new IllegalArgumentException("The specified size is bigger than the length of the specified array");
+            throw new IndexOutOfBoundsException("The specified size is bigger than the length of the specified array");
         }
 
         this.elementData = a;

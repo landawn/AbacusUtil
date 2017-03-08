@@ -59,7 +59,6 @@ import com.landawn.abacus.util.function.TriFunction;
 import com.landawn.abacus.util.function.UnaryOperator;
 import com.landawn.abacus.util.stream.Collector;
 import com.landawn.abacus.util.stream.Collectors;
-import com.landawn.abacus.util.stream.ImmutableIterator;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -2226,7 +2225,7 @@ public final class Seq<T> implements Collection<T> {
 
         @Override
         public Iterator<Set<E>> iterator() {
-            return new ImmutableIterator<Set<E>>() {
+            return new Iterator<Set<E>>() {
                 private final int size = size();
                 private int position;
 
@@ -2242,6 +2241,11 @@ public final class Seq<T> implements Collection<T> {
                     }
 
                     return new SubSet<>(inputSet, position++);
+                }
+
+                @Override
+                public void remove() {
+                    throw new UnsupportedOperationException();
                 }
             };
         }
@@ -2308,7 +2312,7 @@ public final class Seq<T> implements Collection<T> {
 
         @Override
         public Iterator<E> iterator() {
-            return new ImmutableIterator<E>() {
+            return new Iterator<E>() {
                 int remainingSetBits = mask;
 
                 @Override
@@ -2324,6 +2328,11 @@ public final class Seq<T> implements Collection<T> {
                     }
                     remainingSetBits &= ~(1 << index);
                     return elements.get(index);
+                }
+
+                @Override
+                public void remove() {
+                    throw new UnsupportedOperationException();
                 }
             };
         }

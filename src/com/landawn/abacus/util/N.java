@@ -13555,37 +13555,93 @@ public final class N {
         return msg.length() > 9 && msg.indexOf(D._SPACE) > 0;
     }
 
-    public static void checkFromIndex(final int fromIndex, final int length) {
-        if (fromIndex > length) {
-            throw new IndexOutOfBoundsException("The from index: " + fromIndex + " is bigger than the length: " + length);
+    /**
+     * <br />
+     * Copied from JDK 9 through: StreamSupport at: https://github.com/streamsupport/streamsupport.
+     * <br />
+     * 
+     * Checks if the {@code index} is within the bounds of the range from
+     * {@code 0} (inclusive) to {@code length} (exclusive).
+     *
+     * <p>The {@code index} is defined to be out-of-bounds if any of the
+     * following inequalities is true:
+     * <ul>
+     *  <li>{@code index < 0}</li>
+     *  <li>{@code index >= length}</li>
+     *  <li>{@code length < 0}, which is implied from the former inequalities</li>
+     * </ul>
+     *
+     * @param index the index
+     * @param length the upper-bound (exclusive) of the range
+     * @return {@code index} if it is within bounds of the range
+     * @throws IndexOutOfBoundsException if the {@code index} is out-of-bounds
+     * @since 9
+     */
+    public static void checkIndex(final int index, final int length) {
+        if (index < 0 || index >= length) {
+            throw new IndexOutOfBoundsException(String.format("Index %d out-of-bounds for length %d", index, length));
         }
     }
 
+    /**
+     * <br />
+     * Copied from JDK 9 through: StreamSupport at: https://github.com/streamsupport/streamsupport.
+     * <br />
+     * 
+     * Checks if the sub-range from {@code fromIndex} (inclusive) to
+     * {@code toIndex} (exclusive) is within the bounds of range from {@code 0}
+     * (inclusive) to {@code length} (exclusive).
+     *
+     * <p>The sub-range is defined to be out-of-bounds if any of the following
+     * inequalities is true:
+     * <ul>
+     *  <li>{@code fromIndex < 0}</li>
+     *  <li>{@code fromIndex > toIndex}</li>
+     *  <li>{@code toIndex > length}</li>
+     *  <li>{@code length < 0}, which is implied from the former inequalities</li>
+     * </ul>
+     *
+     * @param fromIndex the lower-bound (inclusive) of the sub-range
+     * @param toIndex the upper-bound (exclusive) of the sub-range
+     * @param length the upper-bound (exclusive) the range
+     * @return {@code fromIndex} if the sub-range is within bounds of the range
+     * @throws IndexOutOfBoundsException if the sub-range is out-of-bounds
+     * @since 9
+     */
     public static void checkFromToIndex(final int fromIndex, final int toIndex, final int length) {
-        if (fromIndex < 0) {
-            throw new IndexOutOfBoundsException("The from index: " + fromIndex + " can't be negative");
-        }
-
-        if (toIndex > length) {
-            throw new IndexOutOfBoundsException("The to index: " + toIndex + " is bigger than the length: " + length);
-        }
-
-        if (fromIndex > toIndex) {
-            throw new IndexOutOfBoundsException("The from index: " + fromIndex + " is bigger than the to index length: " + toIndex);
+        if (fromIndex < 0 || fromIndex > toIndex || toIndex > length) {
+            throw new IndexOutOfBoundsException(String.format("Range [%d, %d) out-of-bounds for length %d", fromIndex, toIndex, length));
         }
     }
 
+    /**
+     * <br />
+     * Copied from JDK 9 through: StreamSupport at: https://github.com/streamsupport/streamsupport.
+     * <br />
+     * 
+     * Checks if the sub-range from {@code fromIndex} (inclusive) to
+     * {@code fromIndex + size} (exclusive) is within the bounds of range from
+     * {@code 0} (inclusive) to {@code length} (exclusive).
+     *
+     * <p>The sub-range is defined to be out-of-bounds if any of the following
+     * inequalities is true:
+     * <ul>
+     *  <li>{@code fromIndex < 0}</li>
+     *  <li>{@code size < 0}</li>
+     *  <li>{@code fromIndex + size > length}, taking into account integer overflow</li>
+     *  <li>{@code length < 0}, which is implied from the former inequalities</li>
+     * </ul>
+     *
+     * @param fromIndex the lower-bound (inclusive) of the sub-interval
+     * @param size the size of the sub-range
+     * @param length the upper-bound (exclusive) of the range
+     * @return {@code fromIndex} if the sub-range is within bounds of the range
+     * @throws IndexOutOfBoundsException if the sub-range is out-of-bounds
+     * @since 9
+     */
     public static void checkFromIndexSize(final int fromIndex, final int size, final int length) {
-        if (fromIndex < 0) {
-            throw new IndexOutOfBoundsException("The from index: " + fromIndex + " can't be negative");
-        }
-
-        if (size < 0) {
-            throw new IndexOutOfBoundsException("The size: " + size + " can't be negative");
-        }
-
-        if (size > length - fromIndex) {
-            throw new IndexOutOfBoundsException("The size: " + size + " is bigger than the length - fromIndex: " + length + " - " + fromIndex);
+        if ((length | fromIndex | size) < 0 || size > length - fromIndex) {
+            throw new IndexOutOfBoundsException(String.format("Range [%d, %<d + %d) out-of-bounds for length %d", fromIndex, size, length));
         }
     }
 
@@ -19405,8 +19461,6 @@ public final class N {
     }
 
     public static int indexOf(final String str, final int fromIndex, final char ch) {
-        checkFromIndex(fromIndex, str == null ? 0 : str.length());
-
         if (N.isNullOrEmpty(str)) {
             return N.INDEX_NOT_FOUND;
         }
@@ -19423,8 +19477,6 @@ public final class N {
     }
 
     public static int indexOf(final String str, final int fromIndex, final String substr) {
-        checkFromIndex(fromIndex, str == null ? 0 : str.length());
-
         if (N.isNullOrEmpty(str) || N.isNullOrEmpty(substr) || substr.length() > str.length() - fromIndex) {
             return N.INDEX_NOT_FOUND;
         }
@@ -19531,8 +19583,6 @@ public final class N {
      * @return
      */
     public static int indexOf(final String str, final int fromIndex, final String substr, final String delimiter) {
-        checkFromIndex(fromIndex, str == null ? 0 : str.length());
-
         if (N.isNullOrEmpty(str) || N.isNullOrEmpty(substr)) {
             return INDEX_NOT_FOUND;
         }
@@ -19563,8 +19613,6 @@ public final class N {
     }
 
     public static int indexOfIgnoreCase(final String str, final int fromIndex, final String substr) {
-        checkFromIndex(fromIndex, str == null ? 0 : str.length());
-
         if (N.isNullOrEmpty(str) || N.isNullOrEmpty(substr) || substr.length() > str.length() - fromIndex) {
             return N.INDEX_NOT_FOUND;
         }
@@ -19984,8 +20032,6 @@ public final class N {
      *         character does not occur before that point.
      */
     public static int lastIndexOf(final String str, final int fromIndex, final char ch) {
-        checkFromIndex(fromIndex, str == null ? 0 : str.length());
-
         if (N.isNullOrEmpty(str)) {
             return N.INDEX_NOT_FOUND;
         }
@@ -20022,8 +20068,6 @@ public final class N {
      * @return
      */
     public static int lastIndexOf(final String str, final int fromIndex, final String substr) {
-        checkFromIndex(fromIndex, str == null ? 0 : str.length());
-
         if (N.isNullOrEmpty(str) || N.isNullOrEmpty(substr) || substr.length() > str.length()) {
             return N.INDEX_NOT_FOUND;
         }
@@ -20091,8 +20135,6 @@ public final class N {
      * @return
      */
     public static int lastIndexOf(final String str, final int fromIndex, final String substr, final String delimiter) {
-        checkFromIndex(fromIndex, str == null ? 0 : str.length());
-
         if (N.isNullOrEmpty(str) || N.isNullOrEmpty(substr)) {
             return INDEX_NOT_FOUND;
         }
@@ -20130,8 +20172,6 @@ public final class N {
     }
 
     public static int lastIndexOfIgnoreCase(final String str, final int fromIndex, final String substr) {
-        checkFromIndex(fromIndex, str == null ? 0 : str.length());
-
         if (N.isNullOrEmpty(str) || N.isNullOrEmpty(substr) || substr.length() > str.length()) {
             return N.INDEX_NOT_FOUND;
         }

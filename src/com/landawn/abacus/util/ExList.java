@@ -91,7 +91,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
      */
     public ExList(T[] a, int size) {
         if (a.length < size) {
-            throw new IllegalArgumentException("The specified size is bigger than the length of the specified array");
+            throw new IndexOutOfBoundsException("The specified size is bigger than the length of the specified array");
         }
 
         this.elementData = a;
