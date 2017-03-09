@@ -14,7 +14,9 @@
 
 package com.landawn.abacus.util.function;
 
+import java.util.Collection;
 import java.util.Comparator;
+import java.util.Map;
 
 import com.landawn.abacus.util.N;
 
@@ -33,6 +35,27 @@ public interface BinaryOperator<T> extends BiFunction<T, T, T>, java.util.functi
             throw new IllegalStateException(String.format("Duplicate key %s", u));
         }
     };
+
+    public static <T, C extends Collection<T>> BinaryOperator<C> ofAddAll() {
+        return (r, u) -> {
+            r.addAll(u);
+            return r;
+        };
+    }
+
+    public static <T, C extends Collection<T>> BinaryOperator<C> ofRemoveAll() {
+        return (r, u) -> {
+            r.removeAll(u);
+            return r;
+        };
+    }
+
+    public static <K, V, M extends Map<K, V>> BinaryOperator<M> ofPutAll() {
+        return (r, u) -> {
+            r.putAll(u);
+            return r;
+        };
+    }
 
     public static <T> BinaryOperator<T> minBy(Comparator<? super T> comparator) {
         N.requireNonNull(comparator);

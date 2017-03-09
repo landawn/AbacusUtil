@@ -8,13 +8,17 @@
 
 4, Remove N.powerSet and add powerSet/permutations/cartesianProduct (copied from Google Guava) to Seq.
 
-5, Add checkFromIndex/checkFromToIndex/checkFromIndexSize to N.
+5, Add checkIndex/checkFromToIndex/checkFromIndexSize to N.
 
 6, Add Comparators exported by Comparator from JDK 8.
 
 7, Add Stream to Holder/Pair/Triple/Tuple/Optional/OptionalNullable/OptionalInt/...
 
-8, Improvements and bug fix.
+8*, Move map2Entity/entity2Map/.../join from N to Maps.
+
+9*, Remove ONE_SECOND/.../ONE_KB/... from N.
+
+10, Improvements and bug fix.
 
 
 ========Changes in 0.9.55=========================================================================

@@ -71,9 +71,7 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
     }
 
     public ShortList(short[] a, int size) {
-        if (a.length < size) {
-            throw new IndexOutOfBoundsException("The specified size is bigger than the length of the specified array");
-        }
+        N.checkFromIndexSize(0, size, a.length);
 
         this.elementData = a;
         this.size = size;

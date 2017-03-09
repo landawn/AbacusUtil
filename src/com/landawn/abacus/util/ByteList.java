@@ -70,9 +70,7 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
     }
 
     public ByteList(byte[] a, int size) {
-        if (a.length < size) {
-            throw new IndexOutOfBoundsException("The specified size is bigger than the length of the specified array");
-        }
+        N.checkFromIndexSize(0, size, a.length);
 
         this.elementData = a;
         this.size = size;

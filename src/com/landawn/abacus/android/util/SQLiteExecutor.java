@@ -711,7 +711,7 @@ public final class SQLiteExecutor {
      * @param entity with getter/setter methods
      * @return
      * 
-     * @see com.landawn.abacus.util.N#entity2Map(Object, boolean, Collection, NamingPolicy)
+     * @see com.landawn.abacus.util.Maps#entity2Map(Object, boolean, Collection, NamingPolicy)
      */
     public long insert(Object entity) {
         if (!N.isEntity(entity.getClass())) {
@@ -731,7 +731,7 @@ public final class SQLiteExecutor {
      * @param conflictAlgorithm
      * @return
      * 
-     * @see com.landawn.abacus.util.N#entity2Map(Object, boolean, Collection, NamingPolicy)
+     * @see com.landawn.abacus.util.Maps#entity2Map(Object, boolean, Collection, NamingPolicy)
      */
     public long insert(Object entity, int conflictAlgorithm) {
         if (!N.isEntity(entity.getClass())) {
@@ -749,7 +749,7 @@ public final class SQLiteExecutor {
      * @param record can be <code>Map</code> or <code>entity</code> with getter/setter methods
      * @return
      * 
-     * @see com.landawn.abacus.util.N#entity2Map(Object, boolean, Collection, NamingPolicy)
+     * @see com.landawn.abacus.util.Maps#entity2Map(Object, boolean, Collection, NamingPolicy)
      */
     public long insert(String table, Object record) {
         table = formatName(table);
@@ -766,7 +766,7 @@ public final class SQLiteExecutor {
      * @param conflictAlgorithm
      * @return
      * 
-     * @see com.landawn.abacus.util.N#entity2Map(Object, boolean, Collection, NamingPolicy)
+     * @see com.landawn.abacus.util.Maps#entity2Map(Object, boolean, Collection, NamingPolicy)
      */
     public long insert(String table, Object record, int conflictAlgorithm) {
         table = formatName(table);
@@ -934,7 +934,7 @@ public final class SQLiteExecutor {
      * @param whereClause Only binary(=, <>, like, IS NULL ...)/between/junction(or, and...) are supported.
      * @return
      * 
-     * @see com.landawn.abacus.util.N#entity2Map(Object, boolean, Collection, NamingPolicy)
+     * @see com.landawn.abacus.util.Maps#entity2Map(Object, boolean, Collection, NamingPolicy)
      */
     public int update(Object entity, Condition whereClause) {
         if (!N.isEntity(entity.getClass())) {
@@ -962,7 +962,7 @@ public final class SQLiteExecutor {
      * @param whereClause Only binary(=, <>, like, IS NULL ...)/between/junction(or, and...) are supported.
      * @return
      * 
-     * @see com.landawn.abacus.util.N#entity2Map(Object, boolean, Collection, NamingPolicy)
+     * @see com.landawn.abacus.util.Maps#entity2Map(Object, boolean, Collection, NamingPolicy)
      */
     public int update(String table, Object record, Condition whereClause) {
         table = formatName(table);

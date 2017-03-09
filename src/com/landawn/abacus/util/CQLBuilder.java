@@ -951,7 +951,7 @@ public abstract class CQLBuilder {
 
                 return set(updateProps);
             } else {
-                return set(N.entity2Map(entity));
+                return set(Maps.entity2Map(entity));
             }
         }
     }
@@ -1652,7 +1652,7 @@ public abstract class CQLBuilder {
                 }
             }
         } else {
-            instance.props = N.isNullOrEmpty(excludedPropNames) ? N.entity2Map(entity) : N.entity2Map(entity, excludedPropNames);
+            instance.props = N.isNullOrEmpty(excludedPropNames) ? Maps.entity2Map(entity) : Maps.entity2Map(entity, excludedPropNames);
         }
     }
 

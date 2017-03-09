@@ -48,7 +48,7 @@ public final class JSONUtil {
     }
 
     public static JSONObject wrap(final Object entity) {
-        return new JSONObject(entity instanceof Map ? (Map<String, Object>) entity : N.entity2Map(entity));
+        return new JSONObject(entity instanceof Map ? (Map<String, Object>) entity : Maps.entity2Map(entity));
     }
 
     public static JSONArray wrap(final boolean[] array) throws JSONException {

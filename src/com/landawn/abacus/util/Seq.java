@@ -1109,7 +1109,7 @@ public final class Seq<T> implements Collection<T> {
      * @param mergeFunction
      * @return
      */
-    public <C> ExList<C> collapse(final Supplier<C> supplier, final BiPredicate<? super T, ? super T> collapsible,
+    public <C extends Collection<?>> ExList<C> collapse(final Supplier<C> supplier, final BiPredicate<? super T, ? super T> collapsible,
             final BiConsumer<? super C, ? super T> mergeFunction) {
         final ExList<C> result = new ExList<>();
         final Iterator<T> iter = coll.iterator();

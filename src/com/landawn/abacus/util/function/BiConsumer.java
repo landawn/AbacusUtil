@@ -14,6 +14,8 @@
 
 package com.landawn.abacus.util.function;
 
+import java.util.Collection;
+
 /**
  * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
  * @since 0.8
@@ -24,4 +26,20 @@ public interface BiConsumer<T, U> extends java.util.function.BiConsumer<T, U> {
 
     @Override
     void accept(T t, U u);
+
+    public static <T, C extends Collection<? super T>> BiConsumer<C, T> ofAdd() {
+        return (c, t) -> c.add(t);
+    }
+
+    public static <T, U extends Collection<? extends T>, C extends Collection<? super T>> BiConsumer<C, U> ofAddAll() {
+        return (c, u) -> c.addAll(u);
+    }
+
+    public static <T, C extends Collection<? super T>> BiConsumer<C, T> ofRemove() {
+        return (c, t) -> c.remove(t);
+    }
+
+    public static <T, U extends Collection<?>, C extends Collection<? super T>> BiConsumer<C, U> ofRemoveAll() {
+        return (c, u) -> c.removeAll(u);
+    }
 }

@@ -91,7 +91,7 @@ public final class IOUtil {
     /**
      * The file copy buffer size (32 MB)
      */
-    private static final long FILE_COPY_BUFFER_SIZE = 32 * N.ONE_MB;
+    private static final long FILE_COPY_BUFFER_SIZE = (1024 * 1024) * 32;
 
     static final Method stringEncodeMethod;
     static final Method stringDecodeMethod;

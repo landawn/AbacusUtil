@@ -16,7 +16,6 @@
 
 package com.landawn.abacus.util;
 
-import java.util.Collections;
 import java.util.Comparator;
 
 import com.landawn.abacus.util.function.Function;
@@ -30,10 +29,10 @@ import com.landawn.abacus.util.function.ToShortFunction;
 
 public final class Comparators {
     @SuppressWarnings("rawtypes")
-    private static final Comparator naturalOrder = N.nullMinOrder();
+    private static final Comparator NATURAL_ORDER = N.OBJECT_COMPARATOR;
 
     @SuppressWarnings("rawtypes")
-    private static final Comparator reversedOrder = Collections.reverseOrder(naturalOrder);
+    private static final Comparator REVERSED_ORDER = N.REVERSED_COMPARATOR;
 
     private Comparators() {
         // Singleton
@@ -41,11 +40,11 @@ public final class Comparators {
 
     @SuppressWarnings("unchecked")
     public static <T extends Comparable<? super T>> Comparator<T> naturalOrder() {
-        return naturalOrder;
+        return NATURAL_ORDER;
     }
 
     public static <T extends Comparable<? super T>> Comparator<T> reverseOrder() {
-        return reversedOrder;
+        return REVERSED_ORDER;
     }
 
     public static <T> Comparator<T> nullsFirst(Comparator<? super T> comparator) {

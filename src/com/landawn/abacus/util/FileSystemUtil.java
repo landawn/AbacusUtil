@@ -223,7 +223,7 @@ final class FileSystemUtil {
         }
         switch (os) {
             case WINDOWS:
-                return kb ? freeSpaceWindows(path, timeout) / N.ONE_KB : freeSpaceWindows(path, timeout);
+                return kb ? freeSpaceWindows(path, timeout) / 1024 : freeSpaceWindows(path, timeout);
             case UNIX:
                 return freeSpaceUnix(path, kb, false, timeout);
             case POSIX_UNIX:

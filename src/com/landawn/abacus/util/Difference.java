@@ -564,7 +564,7 @@ public class Difference<L, R> {
                         entity1.getClass().getCanonicalName() + " or " + entity2.getClass().getCanonicalName() + " is not an entity class");
             }
 
-            return of(N.entity2Map(entity1), N.entity2Map(entity2));
+            return of(Maps.entity2Map(entity1), Maps.entity2Map(entity2));
         }
 
         /**

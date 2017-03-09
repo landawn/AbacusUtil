@@ -59,7 +59,7 @@ import com.landawn.abacus.util.stream.Stream;
  * 
  * @author Haiyang Li
  */
-public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate<? super T>, T, T[], ExList<T>> implements List<T>, ExCollection<T> {
+public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate<? super T>, T, T[], ExList<T>> implements List<T> {
     private static final long serialVersionUID = 5075714034035989332L;
 
     private T[] elementData = (T[]) N.EMPTY_OBJECT_ARRAY;
@@ -90,9 +90,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
      * @throws IllegalArgumentException the specified <code>a</code> is null.
      */
     public ExList(T[] a, int size) {
-        if (a.length < size) {
-            throw new IndexOutOfBoundsException("The specified size is bigger than the length of the specified array");
-        }
+        N.checkFromIndexSize(0, size, a.length);
 
         this.elementData = a;
         this.size = size;
@@ -1681,6 +1679,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
         }
     }
 
+    @Override
     public void sort(final Comparator<? super T> cmp) {
         if (size > 1) {
             N.sort(elementData, 0, size, cmp);
@@ -2408,6 +2407,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
             return indexOf(o) != -1;
         }
 
+        @Override
         public void sort(Comparator<? super E> c) {
             N.sort(a, 0, size, c);
         }

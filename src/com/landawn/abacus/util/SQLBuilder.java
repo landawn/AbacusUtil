@@ -1485,7 +1485,7 @@ public abstract class SQLBuilder {
 
                 return set(updateProps);
             } else {
-                return set(N.entity2Map(entity));
+                return set(Maps.entity2Map(entity));
             }
         }
     }
@@ -2113,7 +2113,7 @@ public abstract class SQLBuilder {
                 }
             }
         } else {
-            instance.props = N.isNullOrEmpty(excludedPropNames) ? N.entity2Map(entity) : N.entity2Map(entity, excludedPropNames);
+            instance.props = N.isNullOrEmpty(excludedPropNames) ? Maps.entity2Map(entity) : Maps.entity2Map(entity, excludedPropNames);
         }
     }
 
@@ -2125,10 +2125,10 @@ public abstract class SQLBuilder {
             return (List<Map<String, Object>>) propsList;
         } else {
             final List<Map<String, Object>> newPropsList = new ArrayList<>(propsList.size());
-            newPropsList.add(N.entity2Map(first));
+            newPropsList.add(Maps.entity2Map(first));
 
             while (it.hasNext()) {
-                newPropsList.add(N.entity2Map(it.next()));
+                newPropsList.add(Maps.entity2Map(it.next()));
             }
 
             return newPropsList;
