@@ -542,7 +542,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param columnName
      * @param func
      */
-    void updateColumn(String columnName, Function<?, ?> func);
+    void convertColumn(String columnName, Function<?, ?> func);
 
     /**
      * convert values of the specified columns by the specified function.
@@ -550,7 +550,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param columnNames
      * @param func
      */
-    void updateColumn(Collection<String> columnNames, Function<?, ?> func);
+    void convertColumn(Collection<String> columnNames, Function<?, ?> func);
 
     //
     //    /**

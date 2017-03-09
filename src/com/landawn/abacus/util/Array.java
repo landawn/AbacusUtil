@@ -1118,7 +1118,7 @@ public final class Array {
         final Class<?> result = PRIMITIVE_2_WRAPPER.get(cls);
 
         if (result == null) {
-            throw new IllegalArgumentException(N.getCanonicalClassName(cls) + " is not a primitive (array) type");
+            throw new IllegalArgumentException(RefUtil.getCanonicalClassName(cls) + " is not a primitive (array) type");
         }
 
         return result;
@@ -1437,7 +1437,7 @@ public final class Array {
         final Integer enumInt = N.CLASS_TYPE_ENUM.get(cls);
 
         if (enumInt == null) {
-            throw new IllegalArgumentException(N.getCanonicalClassName(cls) + " is not a primitive array");
+            throw new IllegalArgumentException(RefUtil.getCanonicalClassName(cls) + " is not a primitive array");
         }
 
         switch (enumInt) {
@@ -1466,7 +1466,7 @@ public final class Array {
                 return (T) box((double[]) a, fromIndex, toIndex);
 
             default:
-                throw new IllegalArgumentException(N.getCanonicalClassName(cls) + " is not a primitive array");
+                throw new IllegalArgumentException(RefUtil.getCanonicalClassName(cls) + " is not a primitive array");
         }
     }
 
@@ -1586,7 +1586,7 @@ public final class Array {
         Class<?> result = PRIMITIVE_2_WRAPPER.getByValue(cls);
 
         if (result == null) {
-            throw new IllegalArgumentException(N.getCanonicalClassName(cls) + " is not a wrapper of primitive (array) type");
+            throw new IllegalArgumentException(RefUtil.getCanonicalClassName(cls) + " is not a wrapper of primitive (array) type");
         }
 
         return result;
@@ -2227,7 +2227,7 @@ public final class Array {
         final Integer enumInt = N.CLASS_TYPE_ENUM.get(cls);
 
         if (enumInt == null) {
-            throw new IllegalArgumentException(N.getCanonicalClassName(a.getClass()) + " is not a wrapper of primitive array");
+            throw new IllegalArgumentException(RefUtil.getCanonicalClassName(a.getClass()) + " is not a wrapper of primitive array");
         }
 
         switch (enumInt) {
@@ -2256,7 +2256,7 @@ public final class Array {
                 return (T) unbox((Double[]) a, fromIndex, toIndex, ((Number) defaultValue).doubleValue());
 
             default:
-                throw new IllegalArgumentException(N.getCanonicalClassName(a.getClass()) + " is not a wrapper of primitive array");
+                throw new IllegalArgumentException(RefUtil.getCanonicalClassName(a.getClass()) + " is not a wrapper of primitive array");
         }
     }
 

@@ -93,7 +93,7 @@ public final class PropertiesUtil {
                     Object propValue = null;
 
                     for (int i = 0; i < columnCount; i++) {
-                        method = N.getPropSetMethod(ConfigEntity.class, columnLabelList.get(i));
+                        method = RefUtil.getPropSetMethod(ConfigEntity.class, columnLabelList.get(i));
                         propValue = rs.getObject(i + 1);
 
                         if (method != null) {
@@ -111,7 +111,7 @@ public final class PropertiesUtil {
                                 }
                             }
 
-                            N.setPropValue(entity, method, propValue);
+                            RefUtil.setPropValue(entity, method, propValue);
                         }
                     }
 
@@ -562,11 +562,11 @@ public final class PropertiesUtil {
                 continue;
             }
 
-            propName = N.formalizePropName(propNode.getNodeName());
+            propName = RefUtil.formalizePropName(propNode.getNodeName());
             newKeySet.add(propName);
 
             typeAttr = XMLUtil.getAttribute(propNode, TYPE);
-            propSetMethod = N.getPropSetMethod(targetClass, propName);
+            propSetMethod = RefUtil.getPropSetMethod(targetClass, propName);
 
             if (XMLUtil.isTextElement(propNode)) {
                 if (N.isNullOrEmpty(typeAttr)) {
@@ -620,7 +620,7 @@ public final class PropertiesUtil {
                         propValue = N.newInstance(parameterType);
                     }
 
-                    N.setPropValue(properties, propSetMethod, propValue);
+                    RefUtil.setPropValue(properties, propSetMethod, propValue);
                 }
             }
         }
@@ -631,12 +631,12 @@ public final class PropertiesUtil {
             Method removeMethod = null;
             for (String key : oldKeySet) {
                 if (!newKeySet.contains(key)) {
-                    removeMethod = N.getDeclaredMethod(properties.getClass(), "remove" + N.capitalize(key));
+                    removeMethod = RefUtil.getDeclaredMethod(properties.getClass(), "remove" + N.capitalize(key));
 
                     if (removeMethod == null) {
                         properties.remove(key);
                     } else {
-                        N.invokeMethod(properties, removeMethod);
+                        RefUtil.invokeMethod(properties, removeMethod);
                     }
                 }
             }
@@ -777,7 +777,7 @@ public final class PropertiesUtil {
                                 bw.write("<" + elementPropName + ">");
                             } else {
                                 if (N.isPrimitiveWapper(type.getTypeClass())) {
-                                    bw.write("<" + elementPropName + " type=\"" + N.getSimpleClassName(Array.unbox(type.getTypeClass())) + "\">");
+                                    bw.write("<" + elementPropName + " type=\"" + RefUtil.getSimpleClassName(Array.unbox(type.getTypeClass())) + "\">");
                                 } else {
                                     bw.write("<" + elementPropName + " type=\"" + type.getDeclaringName() + "\">");
                                 }
@@ -800,7 +800,7 @@ public final class PropertiesUtil {
                         bw.write("<" + propName + ">");
                     } else {
                         if (N.isPrimitiveWapper(type.getTypeClass())) {
-                            bw.write("<" + propName + " type=\"" + N.getSimpleClassName(Array.unbox(type.getTypeClass())) + "\">");
+                            bw.write("<" + propName + " type=\"" + RefUtil.getSimpleClassName(Array.unbox(type.getTypeClass())) + "\">");
                         } else {
                             bw.write("<" + propName + " type=\"" + type.getDeclaringName() + "\">");
                         }
@@ -962,7 +962,7 @@ public final class PropertiesUtil {
                     continue;
                 }
 
-                propName = N.formalizePropName(childNode.getNodeName());
+                propName = RefUtil.formalizePropName(childNode.getNodeName());
 
                 if (propNameSet.contains(propName)) {
                     continue;
@@ -976,7 +976,7 @@ public final class PropertiesUtil {
 
                 if (duplicatedPropNameSet.contains(propName)) {
                     String listPropName = propName + "List";
-                    String elementTypeName = N.typeOf(typeName).isPrimitiveType() ? N.getSimpleClassName(Array.box(N.typeOf(typeName).getTypeClass()))
+                    String elementTypeName = N.typeOf(typeName).isPrimitiveType() ? RefUtil.getSimpleClassName(Array.box(N.typeOf(typeName).getTypeClass()))
                             : typeName;
 
                     writer.write(spaces + "    " + (isPublicField ? "public " : "private ") + "List<" + elementTypeName + "> " + listPropName
@@ -994,7 +994,7 @@ public final class PropertiesUtil {
                     continue;
                 }
 
-                propName = N.formalizePropName(childNode.getNodeName());
+                propName = RefUtil.formalizePropName(childNode.getNodeName());
 
                 if (propNameSet.contains(propName)) {
                     continue;
@@ -1054,7 +1054,7 @@ public final class PropertiesUtil {
                     continue;
                 }
 
-                propName = N.formalizePropName(childNode.getNodeName());
+                propName = RefUtil.formalizePropName(childNode.getNodeName());
 
                 if (propNameSet.contains(propName)) {
                     continue;
@@ -1120,7 +1120,7 @@ public final class PropertiesUtil {
 
     private static void writeMethod(Writer writer, String spaces, String propName, String typeName, Set<String> duplicatedPropNameSet) throws IOException {
         String listPropName = propName + "List";
-        String elementTypeName = N.typeOf(typeName).isPrimitiveType() ? N.getSimpleClassName(Array.box(N.typeOf(typeName).getTypeClass())) : typeName;
+        String elementTypeName = N.typeOf(typeName).isPrimitiveType() ? RefUtil.getSimpleClassName(Array.box(N.typeOf(typeName).getTypeClass())) : typeName;
 
         writer.write(spaces + "public " + typeName + " get" + N.capitalize(propName) + "() {" + N.LINE_SEPARATOR);
         writer.write(spaces + "    " + "return " + propName + ";" + N.LINE_SEPARATOR);
@@ -1206,7 +1206,7 @@ public final class PropertiesUtil {
                 continue;
             }
 
-            propName = N.formalizePropName(childNode.getNodeName());
+            propName = RefUtil.formalizePropName(childNode.getNodeName());
 
             if (propNameSet.contains(propName)) {
                 return true;
@@ -1239,7 +1239,7 @@ public final class PropertiesUtil {
                 continue;
             }
 
-            propName = N.formalizePropName(childNode.getNodeName());
+            propName = RefUtil.formalizePropName(childNode.getNodeName());
 
             if (propNameSet.contains(propName)) {
                 duplicatedPropNameSet.add(propName);

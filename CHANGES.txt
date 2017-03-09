@@ -16,9 +16,13 @@
 
 8*, Move map2Entity/entity2Map/.../join from N to Maps.
 
-9*, Remove ONE_SECOND/.../ONE_KB/... from N.
+9*, Move reflection related methods: forClass/getPropValue/setPropValue/... from N to RefUti.
 
-10, Improvements and bug fix.
+10*, Remove ONE_SECOND/.../ONE_KB/... from N.
+
+11*, Rename updateColumn to convertColumn in DataSet.
+
+12, Improvements and bug fix.
 
 
 ========Changes in 0.9.55=========================================================================

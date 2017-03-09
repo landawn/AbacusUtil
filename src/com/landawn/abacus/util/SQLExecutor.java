@@ -224,7 +224,7 @@ public final class SQLExecutor implements Closeable {
                     //    }
 
                     for (int i = 0; i < columnCount; i++) {
-                        N.setPropValue(entity, columnLabelList.get(i), rs.getObject(i + 1), true);
+                        RefUtil.setPropValue(entity, columnLabelList.get(i), rs.getObject(i + 1), true);
                     }
 
                     if (N.isDirtyMarker(cls)) {
@@ -278,7 +278,7 @@ public final class SQLExecutor implements Closeable {
                         //    }
 
                         for (int i = 0; i < columnCount; i++) {
-                            N.setPropValue(entity, columnLabelList.get(i), rs.getObject(i + 1), true);
+                            RefUtil.setPropValue(entity, columnLabelList.get(i), rs.getObject(i + 1), true);
                         }
 
                         if (isDirtyMarker) {
@@ -582,14 +582,14 @@ public final class SQLExecutor implements Closeable {
                 Object entity = parameter_0;
 
                 try {
-                    Method idGetMethod = N.getPropGetMethod(entity.getClass(), idPropName);
-                    Method idSetMethod = N.getPropSetMethod(entity.getClass(), idPropName);
+                    Method idGetMethod = RefUtil.getPropGetMethod(entity.getClass(), idPropName);
+                    Method idSetMethod = RefUtil.getPropSetMethod(entity.getClass(), idPropName);
 
                     if ((idGetMethod != null) && (idSetMethod != null)) {
-                        Object idPropValue = N.getPropValue(entity, idGetMethod);
+                        Object idPropValue = RefUtil.getPropValue(entity, idGetMethod);
 
                         if ((idPropValue == null) || (idPropValue instanceof Number && (((Number) idPropValue).longValue() == 0))) {
-                            N.setPropValue(entity, idSetMethod, result);
+                            RefUtil.setPropValue(entity, idSetMethod, result);
                         }
                     } else {
                         if (logger.isWarnEnabled()) {
@@ -814,8 +814,8 @@ public final class SQLExecutor implements Closeable {
                         // }
                     } else {
                         try {
-                            Method idGetMethod = N.getPropGetMethod(parameter_0.getClass(), idPropName);
-                            Method idSetMethod = N.getPropSetMethod(parameter_0.getClass(), idPropName);
+                            Method idGetMethod = RefUtil.getPropGetMethod(parameter_0.getClass(), idPropName);
+                            Method idSetMethod = RefUtil.getPropSetMethod(parameter_0.getClass(), idPropName);
 
                             if ((idGetMethod != null) && (idSetMethod != null)) {
                                 Object entity = null;
@@ -823,10 +823,10 @@ public final class SQLExecutor implements Closeable {
 
                                 for (int i = 0; i < len; i++) {
                                     entity = (isTypedParameter ? ((TypedParameters) batchParameters.get(i)).parameters[0] : batchParameters.get(i));
-                                    idPropValue = N.invokeMethod(entity, idGetMethod);
+                                    idPropValue = RefUtil.invokeMethod(entity, idGetMethod);
 
                                     if ((idPropValue == null) || (idPropValue instanceof Number && (((Number) idPropValue).longValue() == 0))) {
-                                        N.setPropValue(entity, idSetMethod, resultIdList.get(i));
+                                        RefUtil.setPropValue(entity, idSetMethod, resultIdList.get(i));
                                     }
                                 }
                             } else {
@@ -1405,7 +1405,7 @@ public final class SQLExecutor implements Closeable {
                                 continue;
                             }
 
-                            if (N.setPropValue(entity, columnLabels[i], a[i], true) == false) {
+                            if (RefUtil.setPropValue(entity, columnLabels[i], a[i], true) == false) {
                                 columnLabels[i] = null;
                             }
                         }
@@ -1494,7 +1494,7 @@ public final class SQLExecutor implements Closeable {
                                 continue;
                             }
 
-                            if (N.setPropValue(entity, columnLabels[i], a[i], true) == false) {
+                            if (RefUtil.setPropValue(entity, columnLabels[i], a[i], true) == false) {
                                 columnLabels[i] = null;
                             }
                         }
@@ -2509,7 +2509,7 @@ public final class SQLExecutor implements Closeable {
                                 continue;
                             }
 
-                            if (N.setPropValue(entity, columnLabels[i], a[i], true) == false) {
+                            if (RefUtil.setPropValue(entity, columnLabels[i], a[i], true) == false) {
                                 columnLabels[i] = null;
                             }
                         }
@@ -2614,7 +2614,7 @@ public final class SQLExecutor implements Closeable {
                                         continue;
                                     }
 
-                                    if (N.setPropValue(entity, columnLabels[i], a[i], true) == false) {
+                                    if (RefUtil.setPropValue(entity, columnLabels[i], a[i], true) == false) {
                                         columnLabels[i] = null;
                                     }
                                 }
@@ -2719,7 +2719,7 @@ public final class SQLExecutor implements Closeable {
                                         continue;
                                     }
 
-                                    if (N.setPropValue(entity, columnLabels[i], a[i], true) == false) {
+                                    if (RefUtil.setPropValue(entity, columnLabels[i], a[i], true) == false) {
                                         columnLabels[i] = null;
                                     }
                                 }
@@ -3423,13 +3423,13 @@ public final class SQLExecutor implements Closeable {
                     Method propGetMethod = null;
 
                     for (int i = 0; i < parameterCount; i++) {
-                        propGetMethod = N.getPropGetMethod(clazz, namedParameters.get(i));
+                        propGetMethod = RefUtil.getPropGetMethod(clazz, namedParameters.get(i));
 
                         if (propGetMethod == null) {
                             throw new IllegalArgumentException("Parameter for property '" + namedParameters.get(i) + "' is missed");
                         }
 
-                        a[i] = N.invokeMethod(entity, propGetMethod);
+                        a[i] = RefUtil.invokeMethod(entity, propGetMethod);
                     }
                 }
             } else {

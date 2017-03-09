@@ -358,7 +358,7 @@ public final class Profiler {
     }
 
     private static Method getMethod(final Object instance, final String methodName) {
-        Method method = N.getDeclaredMethod(instance.getClass(), methodName);
+        Method method = RefUtil.getDeclaredMethod(instance.getClass(), methodName);
 
         if (method == null) {
             throw new IllegalArgumentException("No method found by name: " + methodName);

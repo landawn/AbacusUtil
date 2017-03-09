@@ -87,6 +87,7 @@ import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalNullable;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
+import com.landawn.abacus.util.RefUtil;
 import com.landawn.abacus.util.RowIterator;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.ShortSummaryStatistics;
@@ -1806,7 +1807,7 @@ public abstract class Stream<T>
                                 continue;
                             }
 
-                            if (N.setPropValue(entity, columnLabels[i], a[i], true) == false) {
+                            if (RefUtil.setPropValue(entity, columnLabels[i], a[i], true) == false) {
                                 columnLabels[i] = null;
                             }
                         }

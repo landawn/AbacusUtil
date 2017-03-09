@@ -36,6 +36,7 @@ import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
 import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.RefUtil;
 import com.landawn.abacus.util.ThreadMode;
 
 /**
@@ -232,7 +233,7 @@ public class EventBus {
         final List<SubIdentifier> subList = getClassSubList(cls);
 
         if (N.isNullOrEmpty(subList)) {
-            throw new RuntimeException("No subscriber method found in class: " + N.getCanonicalClassName(cls));
+            throw new RuntimeException("No subscriber method found in class: " + RefUtil.getCanonicalClassName(cls));
         }
 
         final List<SubIdentifier> eventSubList = new ArrayList<>(subList.size());
@@ -317,7 +318,7 @@ public class EventBus {
                 subs = new ArrayList<>();
                 final Set<Method> added = new HashSet<>();
 
-                final Set<Class<?>> allTypes = N.getSuperTypes(cls);
+                final Set<Class<?>> allTypes = RefUtil.getSuperTypes(cls);
                 allTypes.add(cls);
 
                 for (Class<?> supertype : allTypes) {

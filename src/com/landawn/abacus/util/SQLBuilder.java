@@ -196,8 +196,8 @@ public abstract class SQLBuilder {
         entityTablePropColumnNameMap.put(entityTableName, m);
         entityTablePropColumnNameMap.put(entityTableName.toLowerCase(), m);
         entityTablePropColumnNameMap.put(entityTableName.toUpperCase(), m);
-        entityTablePropColumnNameMap.put(N.toLowerCaseWithUnderscore(entityTableName), m);
-        entityTablePropColumnNameMap.put(N.toUpperCaseWithUnderscore(entityTableName), m);
+        entityTablePropColumnNameMap.put(RefUtil.toLowerCaseWithUnderscore(entityTableName), m);
+        entityTablePropColumnNameMap.put(RefUtil.toUpperCaseWithUnderscore(entityTableName), m);
     }
 
     //    /**
@@ -467,7 +467,7 @@ public abstract class SQLBuilder {
     }
 
     public SQLBuilder into(final Class<?> entityClass) {
-        return into(N.getSimpleClassName(entityClass));
+        return into(RefUtil.getSimpleClassName(entityClass));
     }
 
     public SQLBuilder from(String expr) {
@@ -611,7 +611,7 @@ public abstract class SQLBuilder {
     }
 
     public SQLBuilder from(final Class<?> entityClass) {
-        return from(N.getSimpleClassName(entityClass));
+        return from(RefUtil.getSimpleClassName(entityClass));
     }
 
     public SQLBuilder join(final String expr) {
@@ -623,7 +623,7 @@ public abstract class SQLBuilder {
     }
 
     public SQLBuilder join(final Class<?> entityClass) {
-        return join(N.getSimpleClassName(entityClass));
+        return join(RefUtil.getSimpleClassName(entityClass));
     }
 
     public SQLBuilder leftJoin(final String expr) {
@@ -635,7 +635,7 @@ public abstract class SQLBuilder {
     }
 
     public SQLBuilder leftJoin(final Class<?> entityClass) {
-        return leftJoin(N.getSimpleClassName(entityClass));
+        return leftJoin(RefUtil.getSimpleClassName(entityClass));
     }
 
     public SQLBuilder rightJoin(final String expr) {
@@ -647,7 +647,7 @@ public abstract class SQLBuilder {
     }
 
     public SQLBuilder rightJoin(final Class<?> entityClass) {
-        return rightJoin(N.getSimpleClassName(entityClass));
+        return rightJoin(RefUtil.getSimpleClassName(entityClass));
     }
 
     public SQLBuilder fullJoin(final String expr) {
@@ -659,7 +659,7 @@ public abstract class SQLBuilder {
     }
 
     public SQLBuilder fullJoin(final Class<?> entityClass) {
-        return fullJoin(N.getSimpleClassName(entityClass));
+        return fullJoin(RefUtil.getSimpleClassName(entityClass));
     }
 
     public SQLBuilder crossJoin(final String expr) {
@@ -671,7 +671,7 @@ public abstract class SQLBuilder {
     }
 
     public SQLBuilder crossJoin(final Class<?> entityClass) {
-        return crossJoin(N.getSimpleClassName(entityClass));
+        return crossJoin(RefUtil.getSimpleClassName(entityClass));
     }
 
     public SQLBuilder innerJoin(final String expr) {
@@ -683,7 +683,7 @@ public abstract class SQLBuilder {
     }
 
     public SQLBuilder innerJoin(final Class<?> entityClass) {
-        return innerJoin(N.getSimpleClassName(entityClass));
+        return innerJoin(RefUtil.getSimpleClassName(entityClass));
     }
 
     public SQLBuilder naturalJoin(final String expr) {
@@ -695,7 +695,7 @@ public abstract class SQLBuilder {
     }
 
     public SQLBuilder naturalJoin(final Class<?> entityClass) {
-        return naturalJoin(N.getSimpleClassName(entityClass));
+        return naturalJoin(RefUtil.getSimpleClassName(entityClass));
     }
 
     public SQLBuilder on(final String expr) {
@@ -1480,7 +1480,7 @@ public abstract class SQLBuilder {
                 final Map<String, Object> updateProps = new HashMap<>();
 
                 for (String propName : updatedPropNames) {
-                    updateProps.put(propName, N.getPropValue(dirtyMarkerEntity, propName));
+                    updateProps.put(propName, RefUtil.getPropValue(dirtyMarkerEntity, propName));
                 }
 
                 return set(updateProps);
@@ -2023,10 +2023,10 @@ public abstract class SQLBuilder {
     private String formalizeName(final String entityPropName) {
         switch (namingPolicy) {
             case LOWER_CASE_WITH_UNDERSCORE:
-                return N.toLowerCaseWithUnderscore(entityPropName);
+                return RefUtil.toLowerCaseWithUnderscore(entityPropName);
 
             case UPPER_CASE_WITH_UNDERSCORE:
-                return N.toUpperCaseWithUnderscore(entityPropName);
+                return RefUtil.toUpperCaseWithUnderscore(entityPropName);
 
             default:
                 return entityPropName;
@@ -2050,10 +2050,10 @@ public abstract class SQLBuilder {
 
         switch (namingPolicy) {
             case LOWER_CASE_WITH_UNDERSCORE:
-                return N.toLowerCaseWithUnderscore(propName);
+                return RefUtil.toLowerCaseWithUnderscore(propName);
 
             case UPPER_CASE_WITH_UNDERSCORE:
-                return N.toUpperCaseWithUnderscore(propName);
+                return RefUtil.toUpperCaseWithUnderscore(propName);
 
             default:
                 return propName;
@@ -2139,15 +2139,15 @@ public abstract class SQLBuilder {
         if (N.isNullOrEmpty(excludedPropNames)) {
             return propNameList(entityClass);
         } else {
-            final Set<String> entityPropNameSet = new LinkedHashSet<>(N.getPropGetMethodList(entityClass).keySet());
+            final Set<String> entityPropNameSet = new LinkedHashSet<>(RefUtil.getPropGetMethodList(entityClass).keySet());
 
             Method propGetMethod = null;
             for (String propName : excludedPropNames) {
                 if (!entityPropNameSet.remove(propName)) {
-                    propGetMethod = N.getPropGetMethod(entityClass, propName);
+                    propGetMethod = RefUtil.getPropGetMethod(entityClass, propName);
 
                     if (propGetMethod != null) {
-                        entityPropNameSet.remove(N.getPropNameByMethod(propGetMethod));
+                        entityPropNameSet.remove(RefUtil.getPropNameByMethod(propGetMethod));
                     }
                 }
             }
@@ -2170,7 +2170,7 @@ public abstract class SQLBuilder {
                 propNameList = classPropNameListPool.get(entityClass);
 
                 if (propNameList == null) {
-                    propNameList = N.asImmutableList(new ArrayList<>(N.getPropGetMethodList(entityClass).keySet()));
+                    propNameList = N.asImmutableList(new ArrayList<>(RefUtil.getPropGetMethodList(entityClass).keySet()));
                     classPropNameListPool.put(entityClass, propNameList);
                 }
             }
@@ -2372,7 +2372,7 @@ public abstract class SQLBuilder {
             final SQLBuilder instance = createInstance();
 
             instance.op = OperationType.UPDATE;
-            instance.tableName = N.getSimpleClassName(entityClass);
+            instance.tableName = RefUtil.getSimpleClassName(entityClass);
             instance.columnNameList = getPropNamesByClass(entityClass, excludedPropNames);
 
             return instance;
@@ -2388,7 +2388,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder deleteFrom(final Class<?> entityClass) {
-            return deleteFrom(N.getSimpleClassName(entityClass));
+            return deleteFrom(RefUtil.getSimpleClassName(entityClass));
         }
     }
 
@@ -2581,7 +2581,7 @@ public abstract class SQLBuilder {
             final SQLBuilder instance = createInstance();
 
             instance.op = OperationType.UPDATE;
-            instance.tableName = N.getSimpleClassName(entityClass);
+            instance.tableName = RefUtil.getSimpleClassName(entityClass);
             instance.columnNameList = getPropNamesByClass(entityClass, excludedPropNames);
 
             return instance;
@@ -2597,7 +2597,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder deleteFrom(final Class<?> entityClass) {
-            return deleteFrom(N.getSimpleClassName(entityClass));
+            return deleteFrom(RefUtil.getSimpleClassName(entityClass));
         }
     }
 
@@ -2789,7 +2789,7 @@ public abstract class SQLBuilder {
             final SQLBuilder instance = createInstance();
 
             instance.op = OperationType.UPDATE;
-            instance.tableName = N.getSimpleClassName(entityClass);
+            instance.tableName = RefUtil.getSimpleClassName(entityClass);
             instance.columnNameList = getPropNamesByClass(entityClass, excludedPropNames);
 
             return instance;
@@ -2805,7 +2805,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder deleteFrom(final Class<?> entityClass) {
-            return deleteFrom(N.getSimpleClassName(entityClass));
+            return deleteFrom(RefUtil.getSimpleClassName(entityClass));
         }
     }
 
@@ -2998,7 +2998,7 @@ public abstract class SQLBuilder {
             final SQLBuilder instance = createInstance();
 
             instance.op = OperationType.UPDATE;
-            instance.tableName = N.getSimpleClassName(entityClass);
+            instance.tableName = RefUtil.getSimpleClassName(entityClass);
             instance.columnNameList = getPropNamesByClass(entityClass, excludedPropNames);
 
             return instance;
@@ -3014,7 +3014,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder deleteFrom(final Class<?> entityClass) {
-            return deleteFrom(N.getSimpleClassName(entityClass));
+            return deleteFrom(RefUtil.getSimpleClassName(entityClass));
         }
     }
 
@@ -3207,7 +3207,7 @@ public abstract class SQLBuilder {
             final SQLBuilder instance = createInstance();
 
             instance.op = OperationType.UPDATE;
-            instance.tableName = N.getSimpleClassName(entityClass);
+            instance.tableName = RefUtil.getSimpleClassName(entityClass);
             instance.columnNameList = getPropNamesByClass(entityClass, excludedPropNames);
 
             return instance;
@@ -3223,7 +3223,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder deleteFrom(final Class<?> entityClass) {
-            return deleteFrom(N.getSimpleClassName(entityClass));
+            return deleteFrom(RefUtil.getSimpleClassName(entityClass));
         }
     }
 
@@ -3416,7 +3416,7 @@ public abstract class SQLBuilder {
             final SQLBuilder instance = createInstance();
 
             instance.op = OperationType.UPDATE;
-            instance.tableName = N.getSimpleClassName(entityClass);
+            instance.tableName = RefUtil.getSimpleClassName(entityClass);
             instance.columnNameList = getPropNamesByClass(entityClass, excludedPropNames);
 
             return instance;
@@ -3432,7 +3432,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder deleteFrom(final Class<?> entityClass) {
-            return deleteFrom(N.getSimpleClassName(entityClass));
+            return deleteFrom(RefUtil.getSimpleClassName(entityClass));
         }
     }
 
@@ -3625,7 +3625,7 @@ public abstract class SQLBuilder {
             final SQLBuilder instance = createInstance();
 
             instance.op = OperationType.UPDATE;
-            instance.tableName = N.getSimpleClassName(entityClass);
+            instance.tableName = RefUtil.getSimpleClassName(entityClass);
             instance.columnNameList = getPropNamesByClass(entityClass, excludedPropNames);
 
             return instance;
@@ -3641,7 +3641,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder deleteFrom(final Class<?> entityClass) {
-            return deleteFrom(N.getSimpleClassName(entityClass));
+            return deleteFrom(RefUtil.getSimpleClassName(entityClass));
         }
     }
 
@@ -3834,7 +3834,7 @@ public abstract class SQLBuilder {
             final SQLBuilder instance = createInstance();
 
             instance.op = OperationType.UPDATE;
-            instance.tableName = N.getSimpleClassName(entityClass);
+            instance.tableName = RefUtil.getSimpleClassName(entityClass);
             instance.columnNameList = getPropNamesByClass(entityClass, excludedPropNames);
 
             return instance;
@@ -3850,7 +3850,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder deleteFrom(final Class<?> entityClass) {
-            return deleteFrom(N.getSimpleClassName(entityClass));
+            return deleteFrom(RefUtil.getSimpleClassName(entityClass));
         }
     }
 
@@ -4043,7 +4043,7 @@ public abstract class SQLBuilder {
             final SQLBuilder instance = createInstance();
 
             instance.op = OperationType.UPDATE;
-            instance.tableName = N.getSimpleClassName(entityClass);
+            instance.tableName = RefUtil.getSimpleClassName(entityClass);
             instance.columnNameList = getPropNamesByClass(entityClass, excludedPropNames);
 
             return instance;
@@ -4059,7 +4059,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder deleteFrom(final Class<?> entityClass) {
-            return deleteFrom(N.getSimpleClassName(entityClass));
+            return deleteFrom(RefUtil.getSimpleClassName(entityClass));
         }
     }
 
@@ -4252,7 +4252,7 @@ public abstract class SQLBuilder {
             final SQLBuilder instance = createInstance();
 
             instance.op = OperationType.UPDATE;
-            instance.tableName = N.getSimpleClassName(entityClass);
+            instance.tableName = RefUtil.getSimpleClassName(entityClass);
             instance.columnNameList = getPropNamesByClass(entityClass, excludedPropNames);
 
             return instance;
@@ -4268,7 +4268,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder deleteFrom(final Class<?> entityClass) {
-            return deleteFrom(N.getSimpleClassName(entityClass));
+            return deleteFrom(RefUtil.getSimpleClassName(entityClass));
         }
     }
 
@@ -4461,7 +4461,7 @@ public abstract class SQLBuilder {
             final SQLBuilder instance = createInstance();
 
             instance.op = OperationType.UPDATE;
-            instance.tableName = N.getSimpleClassName(entityClass);
+            instance.tableName = RefUtil.getSimpleClassName(entityClass);
             instance.columnNameList = getPropNamesByClass(entityClass, excludedPropNames);
 
             return instance;
@@ -4477,7 +4477,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder deleteFrom(final Class<?> entityClass) {
-            return deleteFrom(N.getSimpleClassName(entityClass));
+            return deleteFrom(RefUtil.getSimpleClassName(entityClass));
         }
     }
 
@@ -4670,7 +4670,7 @@ public abstract class SQLBuilder {
             final SQLBuilder instance = createInstance();
 
             instance.op = OperationType.UPDATE;
-            instance.tableName = N.getSimpleClassName(entityClass);
+            instance.tableName = RefUtil.getSimpleClassName(entityClass);
             instance.columnNameList = getPropNamesByClass(entityClass, excludedPropNames);
 
             return instance;
@@ -4686,7 +4686,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder deleteFrom(final Class<?> entityClass) {
-            return deleteFrom(N.getSimpleClassName(entityClass));
+            return deleteFrom(RefUtil.getSimpleClassName(entityClass));
         }
     }
 
