@@ -106,8 +106,18 @@ public final class RefUtil {
     private static final String IS = "is".intern();
     private static final String HAS = "has".intern();
 
+    // ... it has to be big enough to make it's safety to add element to
+    // ArrayBlockingQueue.
+    static final int POOL_SIZE;
+
+    static {
+        int multi = (int) (Runtime.getRuntime().maxMemory() / ((1024 * 1024) * 256));
+
+        POOL_SIZE = Math.max(1000, Math.min(1000 * multi, 8192));
+    }
+
     // formalized property name list.
-    private static final Map<String, Class<?>> BUILT_IN_TYPE = new ObjectPool<>(N.POOL_SIZE); // new LinkedHashMap<>();
+    private static final Map<String, Class<?>> BUILT_IN_TYPE = new ObjectPool<>(POOL_SIZE); // new LinkedHashMap<>();
 
     static {
         BUILT_IN_TYPE.put(boolean.class.getCanonicalName(), boolean.class);
@@ -260,7 +270,7 @@ public final class RefUtil {
             Class<?> arrayClass = cls;
 
             for (int i = 0; i < 10; i++) {
-                arrayClass = N.newArray(arrayClass, 0).getClass();
+                arrayClass = java.lang.reflect.Array.newInstance(arrayClass, 0).getClass();
 
                 BUILT_IN_TYPE.put(arrayClass.getCanonicalName(), arrayClass);
             }
@@ -296,26 +306,26 @@ public final class RefUtil {
         SYMBOL_OF_PRIMITIVE_ARRAY_CLASS_NAME.put(double.class.getName(), "D");
     }
 
-    private static final Map<String, String> lowerCaseWithUnderscorePropNamePool = new ObjectPool<>(N.POOL_SIZE * 2);
-    private static final Map<String, String> upperCaseWithUnderscorePropNamePool = new ObjectPool<>(N.POOL_SIZE * 2);
+    private static final Map<String, String> lowerCaseWithUnderscorePropNamePool = new ObjectPool<>(POOL_SIZE * 2);
+    private static final Map<String, String> upperCaseWithUnderscorePropNamePool = new ObjectPool<>(POOL_SIZE * 2);
 
-    private static final Map<Class<?>, Boolean> registeredXMLBindingClassList = new ObjectPool<>(N.POOL_SIZE);
-    private static final Map<Class<?>, Set<String>> registeredNonPropGetSetMethodPool = new ObjectPool<>(N.POOL_SIZE);
+    private static final Map<Class<?>, Boolean> registeredXMLBindingClassList = new ObjectPool<>(POOL_SIZE);
+    private static final Map<Class<?>, Set<String>> registeredNonPropGetSetMethodPool = new ObjectPool<>(POOL_SIZE);
 
-    private static final Map<Class<?>, Map<String, Field>> entityPropFieldPool = new ObjectPool<>(N.POOL_SIZE);
-
-    // ...
-    private static final Map<Class<?>, Map<String, Method>> entityDeclaredPropGetMethodList = new ObjectPool<>(N.POOL_SIZE);
-    private static final Map<Class<?>, Map<String, Method>> entityDeclaredPropSetMethodList = new ObjectPool<>(N.POOL_SIZE);
-    private static final Map<Class<?>, Map<String, Method>> entityPropGetMethodPool = new ObjectPool<>(N.POOL_SIZE);
-    private static final Map<Class<?>, Map<String, Method>> entityPropSetMethodPool = new ObjectPool<>(N.POOL_SIZE);
-    private static final Map<Class<?>, Map<String, List<Method>>> entityInlinePropGetMethodPool = new ObjectPool<>(N.POOL_SIZE);
-    private static final Map<Class<?>, Map<String, List<Method>>> entityInlinePropSetMethodPool = new ObjectPool<>(N.POOL_SIZE);
+    private static final Map<Class<?>, Map<String, Field>> entityPropFieldPool = new ObjectPool<>(POOL_SIZE);
 
     // ...
-    private static final Map<String, String> formalizedPropNamePool = new ObjectPool<>(N.POOL_SIZE * 2);
-    private static final Map<Method, String> methodPropNamePool = new ObjectPool<>(N.POOL_SIZE * 2);
-    private static final Map<Method, Class<?>[]> methodTypeArgumentsPool = new ObjectPool<>(N.POOL_SIZE * 2);
+    private static final Map<Class<?>, Map<String, Method>> entityDeclaredPropGetMethodList = new ObjectPool<>(POOL_SIZE);
+    private static final Map<Class<?>, Map<String, Method>> entityDeclaredPropSetMethodList = new ObjectPool<>(POOL_SIZE);
+    private static final Map<Class<?>, Map<String, Method>> entityPropGetMethodPool = new ObjectPool<>(POOL_SIZE);
+    private static final Map<Class<?>, Map<String, Method>> entityPropSetMethodPool = new ObjectPool<>(POOL_SIZE);
+    private static final Map<Class<?>, Map<String, List<Method>>> entityInlinePropGetMethodPool = new ObjectPool<>(POOL_SIZE);
+    private static final Map<Class<?>, Map<String, List<Method>>> entityInlinePropSetMethodPool = new ObjectPool<>(POOL_SIZE);
+
+    // ...
+    private static final Map<String, String> formalizedPropNamePool = new ObjectPool<>(POOL_SIZE * 2);
+    private static final Map<Method, String> methodPropNamePool = new ObjectPool<>(POOL_SIZE * 2);
+    private static final Map<Method, Class<?>[]> methodTypeArgumentsPool = new ObjectPool<>(POOL_SIZE * 2);
 
     // reserved words.
     private static final Map<String, String> keyWordMapper = new HashMap<>(16);
@@ -331,17 +341,17 @@ public final class RefUtil {
         nonGetMethodName.add("hashCode");
     }
 
-    private static final Map<Class<?>, Package> packagePool = new ObjectPool<>(N.POOL_SIZE);
-    private static final Map<Class<?>, String> packageNamePool = new ObjectPool<>(N.POOL_SIZE);
+    private static final Map<Class<?>, Package> packagePool = new ObjectPool<>(POOL_SIZE);
+    private static final Map<Class<?>, String> packageNamePool = new ObjectPool<>(POOL_SIZE);
 
-    private static final Map<String, Class<?>> clsNamePool = new ObjectPool<>(N.POOL_SIZE);
-    private static final Map<Class<?>, String> simpleClassNamePool = new ObjectPool<>(N.POOL_SIZE);
-    private static final Map<Class<?>, String> nameClassPool = new ObjectPool<>(N.POOL_SIZE);
-    private static final Map<Class<?>, String> canonicalClassNamePool = new ObjectPool<>(N.POOL_SIZE);
-    private static final Map<Class<?>, Class<?>> enclosingClassPool = new ObjectPool<>(N.POOL_SIZE);
+    private static final Map<String, Class<?>> clsNamePool = new ObjectPool<>(POOL_SIZE);
+    private static final Map<Class<?>, String> simpleClassNamePool = new ObjectPool<>(POOL_SIZE);
+    private static final Map<Class<?>, String> nameClassPool = new ObjectPool<>(POOL_SIZE);
+    private static final Map<Class<?>, String> canonicalClassNamePool = new ObjectPool<>(POOL_SIZE);
+    private static final Map<Class<?>, Class<?>> enclosingClassPool = new ObjectPool<>(POOL_SIZE);
 
-    private static final Map<Class<?>, Map<Class<?>[], Constructor<?>>> classDeclaredConstructorPool = new ObjectPool<>(N.POOL_SIZE);
-    private static final Map<Class<?>, Map<String, Map<Class<?>[], Method>>> classDeclaredMethodPool = new ObjectPool<>(N.POOL_SIZE);
+    private static final Map<Class<?>, Map<Class<?>[], Constructor<?>>> classDeclaredConstructorPool = new ObjectPool<>(POOL_SIZE);
+    private static final Map<Class<?>, Map<String, Map<Class<?>[], Method>>> classDeclaredMethodPool = new ObjectPool<>(POOL_SIZE);
 
     public static final Class<?> CLASS_MASK = ClassMask.class;
     public static final Method METHOD_MASK = RefUtil.internalGetDeclaredMethod(ClassMask.class, "methodMask");

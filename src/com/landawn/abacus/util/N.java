@@ -266,7 +266,7 @@ public final class N {
 
     // ... it has to be big enough to make it's safety to add element to
     // ArrayBlockingQueue.
-    static final int POOL_SIZE;
+    private static final int POOL_SIZE;
 
     static {
         int multi = (int) (Runtime.getRuntime().maxMemory() / ((1024 * 1024) * 256));
