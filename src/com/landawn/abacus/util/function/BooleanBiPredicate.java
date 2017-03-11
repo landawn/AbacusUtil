@@ -24,42 +24,42 @@ import com.landawn.abacus.util.N;
  */
 public interface BooleanBiPredicate {
 
-    public static final BooleanBiPredicate ALWAYS_TRUE = new BooleanBiPredicate() {
+   static final BooleanBiPredicate ALWAYS_TRUE = new BooleanBiPredicate() {
         @Override
         public boolean test(boolean t, boolean u) {
             return true;
         }
     };
 
-    public static final BooleanBiPredicate ALWAYS_FALSE = new BooleanBiPredicate() {
+   static final BooleanBiPredicate ALWAYS_FALSE = new BooleanBiPredicate() {
         @Override
         public boolean test(boolean t, boolean u) {
             return false;
         }
     };
 
-    public static final BooleanBiPredicate BOTH_TRUE = new BooleanBiPredicate() {
+   static final BooleanBiPredicate BOTH_TRUE = new BooleanBiPredicate() {
         @Override
         public boolean test(boolean t, boolean u) {
             return t && u;
         }
     };
 
-    public static final BooleanBiPredicate BOTH_FALSE = new BooleanBiPredicate() {
+   static final BooleanBiPredicate BOTH_FALSE = new BooleanBiPredicate() {
         @Override
         public boolean test(boolean t, boolean u) {
             return t == false && u == false;
         }
     };
 
-    public static final BooleanBiPredicate IS_EQUAL = new BooleanBiPredicate() {
+   static final BooleanBiPredicate IS_EQUAL = new BooleanBiPredicate() {
         @Override
         public boolean test(boolean t, boolean u) {
             return t == u;
         }
     };
 
-    public static final BooleanBiPredicate NOT_EQUAL = new BooleanBiPredicate() {
+   static final BooleanBiPredicate NOT_EQUAL = new BooleanBiPredicate() {
         @Override
         public boolean test(boolean t, boolean u) {
             return t != u;

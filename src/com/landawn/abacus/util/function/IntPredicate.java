@@ -24,56 +24,56 @@ import com.landawn.abacus.util.N;
  */
 public interface IntPredicate extends java.util.function.IntPredicate {
 
-    public static final IntPredicate ALWAYS_TRUE = new IntPredicate() {
+   static final IntPredicate ALWAYS_TRUE = new IntPredicate() {
         @Override
         public boolean test(int value) {
             return true;
         }
     };
 
-    public static final IntPredicate ALWAYS_FALSE = new IntPredicate() {
+   static final IntPredicate ALWAYS_FALSE = new IntPredicate() {
         @Override
         public boolean test(int value) {
             return false;
         }
     };
 
-    public static final IntPredicate IS_ZERO = new IntPredicate() {
+   static final IntPredicate IS_ZERO = new IntPredicate() {
         @Override
         public boolean test(int value) {
             return value == 0;
         }
     };
 
-    public static final IntPredicate NOT_ZERO = new IntPredicate() {
+   static final IntPredicate NOT_ZERO = new IntPredicate() {
         @Override
         public boolean test(int value) {
             return value != 0;
         }
     };
 
-    public static final IntPredicate IS_POSITIVE = new IntPredicate() {
+   static final IntPredicate IS_POSITIVE = new IntPredicate() {
         @Override
         public boolean test(int value) {
             return value > 0;
         }
     };
 
-    public static final IntPredicate NOT_POSITIVE = new IntPredicate() {
+   static final IntPredicate NOT_POSITIVE = new IntPredicate() {
         @Override
         public boolean test(int value) {
             return value <= 0;
         }
     };
 
-    public static final IntPredicate IS_NEGATIVE = new IntPredicate() {
+   static final IntPredicate IS_NEGATIVE = new IntPredicate() {
         @Override
         public boolean test(int value) {
             return value < 0;
         }
     };
 
-    public static final IntPredicate NOT_NEGATIVE = new IntPredicate() {
+   static final IntPredicate NOT_NEGATIVE = new IntPredicate() {
         @Override
         public boolean test(int value) {
             return value >= 0;

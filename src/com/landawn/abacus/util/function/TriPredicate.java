@@ -24,7 +24,7 @@ import com.landawn.abacus.util.N;
 public interface TriPredicate<A, B, C> {
 
     @SuppressWarnings("rawtypes")
-    public static final TriPredicate ALWAYS_TRUE = new TriPredicate() {
+   static final TriPredicate ALWAYS_TRUE = new TriPredicate() {
         @Override
         public boolean test(Object a, Object b, Object c) {
             return true;
@@ -32,7 +32,7 @@ public interface TriPredicate<A, B, C> {
     };
 
     @SuppressWarnings("rawtypes")
-    public static final TriPredicate ALWAYS_FALSE = new TriPredicate() {
+   static final TriPredicate ALWAYS_FALSE = new TriPredicate() {
         @Override
         public boolean test(Object a, Object b, Object c) {
             return false;

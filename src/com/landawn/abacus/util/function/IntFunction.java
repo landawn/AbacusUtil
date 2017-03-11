@@ -50,133 +50,133 @@ import com.landawn.abacus.util.ShortList;
  * @author Haiyang Li
  */
 public interface IntFunction<R> extends java.util.function.IntFunction<R> {
-    public static final IntFunction<Integer> BOX = new IntFunction<Integer>() {
+   static final IntFunction<Integer> BOX = new IntFunction<Integer>() {
         @Override
         public Integer apply(int value) {
             return value;
         }
     };
 
-    public static final IntFunction<boolean[]> BOOLEAN_ARRAY_FACTORY = new IntFunction<boolean[]>() {
+   static final IntFunction<boolean[]> BOOLEAN_ARRAY_FACTORY = new IntFunction<boolean[]>() {
         @Override
         public boolean[] apply(int value) {
             return new boolean[value];
         }
     };
 
-    public static final IntFunction<char[]> CHAR_ARRAY_FACTORY = new IntFunction<char[]>() {
+   static final IntFunction<char[]> CHAR_ARRAY_FACTORY = new IntFunction<char[]>() {
         @Override
         public char[] apply(int value) {
             return new char[value];
         }
     };
 
-    public static final IntFunction<byte[]> BYTE_ARRAY_FACTORY = new IntFunction<byte[]>() {
+   static final IntFunction<byte[]> BYTE_ARRAY_FACTORY = new IntFunction<byte[]>() {
         @Override
         public byte[] apply(int value) {
             return new byte[value];
         }
     };
 
-    public static final IntFunction<short[]> SHORT_ARRAY_FACTORY = new IntFunction<short[]>() {
+   static final IntFunction<short[]> SHORT_ARRAY_FACTORY = new IntFunction<short[]>() {
         @Override
         public short[] apply(int value) {
             return new short[value];
         }
     };
 
-    public static final IntFunction<int[]> INT_ARRAY_FACTORY = new IntFunction<int[]>() {
+   static final IntFunction<int[]> INT_ARRAY_FACTORY = new IntFunction<int[]>() {
         @Override
         public int[] apply(int value) {
             return new int[value];
         }
     };
 
-    public static final IntFunction<long[]> LONG_ARRAY_FACTORY = new IntFunction<long[]>() {
+   static final IntFunction<long[]> LONG_ARRAY_FACTORY = new IntFunction<long[]>() {
         @Override
         public long[] apply(int value) {
             return new long[value];
         }
     };
 
-    public static final IntFunction<float[]> FLOAT_ARRAY_FACTORY = new IntFunction<float[]>() {
+   static final IntFunction<float[]> FLOAT_ARRAY_FACTORY = new IntFunction<float[]>() {
         @Override
         public float[] apply(int value) {
             return new float[value];
         }
     };
 
-    public static final IntFunction<double[]> DOUBLE_ARRAY_FACTORY = new IntFunction<double[]>() {
+   static final IntFunction<double[]> DOUBLE_ARRAY_FACTORY = new IntFunction<double[]>() {
         @Override
         public double[] apply(int value) {
             return new double[value];
         }
     };
 
-    public static final IntFunction<String[]> STRING_ARRAY_FACTORY = new IntFunction<String[]>() {
+   static final IntFunction<String[]> STRING_ARRAY_FACTORY = new IntFunction<String[]>() {
         @Override
         public String[] apply(int value) {
             return new String[value];
         }
     };
 
-    public static final IntFunction<Object[]> OBJECT_ARRAY_FACTORY = new IntFunction<Object[]>() {
+   static final IntFunction<Object[]> OBJECT_ARRAY_FACTORY = new IntFunction<Object[]>() {
         @Override
         public Object[] apply(int value) {
             return new Object[value];
         }
     };
 
-    public static final IntFunction<BooleanList> BOOLEAN_LIST_FACTORY = new IntFunction<BooleanList>() {
+   static final IntFunction<BooleanList> BOOLEAN_LIST_FACTORY = new IntFunction<BooleanList>() {
         @Override
         public BooleanList apply(int value) {
             return new BooleanList(value);
         }
     };
 
-    public static final IntFunction<CharList> CHAR_LIST_FACTORY = new IntFunction<CharList>() {
+   static final IntFunction<CharList> CHAR_LIST_FACTORY = new IntFunction<CharList>() {
         @Override
         public CharList apply(int value) {
             return new CharList(value);
         }
     };
 
-    public static final IntFunction<ByteList> BYTE_LIST_FACTORY = new IntFunction<ByteList>() {
+   static final IntFunction<ByteList> BYTE_LIST_FACTORY = new IntFunction<ByteList>() {
         @Override
         public ByteList apply(int value) {
             return new ByteList(value);
         }
     };
 
-    public static final IntFunction<ShortList> SHORT_LIST_FACTORY = new IntFunction<ShortList>() {
+   static final IntFunction<ShortList> SHORT_LIST_FACTORY = new IntFunction<ShortList>() {
         @Override
         public ShortList apply(int value) {
             return new ShortList(value);
         }
     };
 
-    public static final IntFunction<IntList> INT_LIST_FACTORY = new IntFunction<IntList>() {
+   static final IntFunction<IntList> INT_LIST_FACTORY = new IntFunction<IntList>() {
         @Override
         public IntList apply(int value) {
             return new IntList(value);
         }
     };
 
-    public static final IntFunction<LongList> LONG_LIST_FACTORY = new IntFunction<LongList>() {
+   static final IntFunction<LongList> LONG_LIST_FACTORY = new IntFunction<LongList>() {
         @Override
         public LongList apply(int value) {
             return new LongList(value);
         }
     };
 
-    public static final IntFunction<FloatList> FLOAT_LIST_FACTORY = new IntFunction<FloatList>() {
+   static final IntFunction<FloatList> FLOAT_LIST_FACTORY = new IntFunction<FloatList>() {
         @Override
         public FloatList apply(int value) {
             return new FloatList(value);
         }
     };
 
-    public static final IntFunction<DoubleList> DOUBLE_LIST_FACTORY = new IntFunction<DoubleList>() {
+   static final IntFunction<DoubleList> DOUBLE_LIST_FACTORY = new IntFunction<DoubleList>() {
         @Override
         public DoubleList apply(int value) {
             return new DoubleList(value);
@@ -184,7 +184,7 @@ public interface IntFunction<R> extends java.util.function.IntFunction<R> {
     };
 
     @SuppressWarnings("rawtypes")
-    public static final IntFunction<ExList> OBJECT_LIST_FACTORY = new IntFunction<ExList>() {
+   static final IntFunction<ExList> OBJECT_LIST_FACTORY = new IntFunction<ExList>() {
         @Override
         public ExList apply(int value) {
             return new ExList(value);
@@ -192,7 +192,7 @@ public interface IntFunction<R> extends java.util.function.IntFunction<R> {
     };
 
     @SuppressWarnings("rawtypes")
-    public static final IntFunction<? super List> LIST_FACTORY = new IntFunction<List>() {
+   static final IntFunction<? super List> LIST_FACTORY = new IntFunction<List>() {
         @Override
         public List apply(int len) {
             return new ArrayList<>(len);
@@ -200,7 +200,7 @@ public interface IntFunction<R> extends java.util.function.IntFunction<R> {
     };
 
     @SuppressWarnings("rawtypes")
-    public static final IntFunction<? super LinkedList> LINKED_LIST_FACTORY = new IntFunction<LinkedList>() {
+   static final IntFunction<? super LinkedList> LINKED_LIST_FACTORY = new IntFunction<LinkedList>() {
         @Override
         public LinkedList apply(int len) {
             return new LinkedList<>();
@@ -208,7 +208,7 @@ public interface IntFunction<R> extends java.util.function.IntFunction<R> {
     };
 
     @SuppressWarnings("rawtypes")
-    public static final IntFunction<? super Set> SET_FACTORY = new IntFunction<Set>() {
+   static final IntFunction<? super Set> SET_FACTORY = new IntFunction<Set>() {
         @Override
         public Set apply(int len) {
             return new HashSet<>(N.initHashCapacity(len));
@@ -216,7 +216,7 @@ public interface IntFunction<R> extends java.util.function.IntFunction<R> {
     };
 
     @SuppressWarnings("rawtypes")
-    public static final IntFunction<? super LinkedHashSet> LINKED_HASH_SET_FACTORY = new IntFunction<LinkedHashSet>() {
+   static final IntFunction<? super LinkedHashSet> LINKED_HASH_SET_FACTORY = new IntFunction<LinkedHashSet>() {
         @Override
         public LinkedHashSet apply(int len) {
             return new LinkedHashSet<>(N.initHashCapacity(len));
@@ -224,7 +224,7 @@ public interface IntFunction<R> extends java.util.function.IntFunction<R> {
     };
 
     @SuppressWarnings("rawtypes")
-    public static final IntFunction<? super Map> MAP_FACTORY = new IntFunction<Map>() {
+   static final IntFunction<? super Map> MAP_FACTORY = new IntFunction<Map>() {
         @Override
         public Map apply(int len) {
             return new HashMap<>(N.initHashCapacity(len));
@@ -232,7 +232,7 @@ public interface IntFunction<R> extends java.util.function.IntFunction<R> {
     };
 
     @SuppressWarnings("rawtypes")
-    public static final IntFunction<? super LinkedHashMap> LINKED_HASH_MAP_FACTORY = new IntFunction<LinkedHashMap>() {
+   static final IntFunction<? super LinkedHashMap> LINKED_HASH_MAP_FACTORY = new IntFunction<LinkedHashMap>() {
         @Override
         public LinkedHashMap apply(int len) {
             return new LinkedHashMap<>(N.initHashCapacity(len));
@@ -240,7 +240,7 @@ public interface IntFunction<R> extends java.util.function.IntFunction<R> {
     };
 
     @SuppressWarnings("rawtypes")
-    public static final IntFunction<? super ConcurrentHashMap> CONCURRENT_HASH_MAP_FACTORY = new IntFunction<ConcurrentHashMap>() {
+   static final IntFunction<? super ConcurrentHashMap> CONCURRENT_HASH_MAP_FACTORY = new IntFunction<ConcurrentHashMap>() {
         @Override
         public ConcurrentHashMap apply(int len) {
             return new ConcurrentHashMap(N.initHashCapacity(len));
@@ -248,7 +248,7 @@ public interface IntFunction<R> extends java.util.function.IntFunction<R> {
     };
 
     @SuppressWarnings("rawtypes")
-    public static final IntFunction<? super Queue> QUEUE_FACTORY = new IntFunction<Queue>() {
+   static final IntFunction<? super Queue> QUEUE_FACTORY = new IntFunction<Queue>() {
         @Override
         public Queue apply(int len) {
             return new LinkedList();
@@ -256,7 +256,7 @@ public interface IntFunction<R> extends java.util.function.IntFunction<R> {
     };
 
     @SuppressWarnings("rawtypes")
-    public static final IntFunction<? super ArrayDeque> ARRAY_DEQUE_FACTORY = new IntFunction<ArrayDeque>() {
+   static final IntFunction<? super ArrayDeque> ARRAY_DEQUE_FACTORY = new IntFunction<ArrayDeque>() {
         @Override
         public ArrayDeque apply(int len) {
             return new ArrayDeque(len);
@@ -264,7 +264,7 @@ public interface IntFunction<R> extends java.util.function.IntFunction<R> {
     };
 
     @SuppressWarnings("rawtypes")
-    public static final IntFunction<? super ArrayBlockingQueue> ARRAY_BLOCKING_QUEUE_FACTORY = new IntFunction<ArrayBlockingQueue>() {
+   static final IntFunction<? super ArrayBlockingQueue> ARRAY_BLOCKING_QUEUE_FACTORY = new IntFunction<ArrayBlockingQueue>() {
         @Override
         public ArrayBlockingQueue apply(int len) {
             return new ArrayBlockingQueue(len);
@@ -272,7 +272,7 @@ public interface IntFunction<R> extends java.util.function.IntFunction<R> {
     };
 
     @SuppressWarnings("rawtypes")
-    public static final IntFunction<? super LinkedBlockingQueue> LINKED_BLOCKING_QUEUE_FACTORY = new IntFunction<LinkedBlockingQueue>() {
+   static final IntFunction<? super LinkedBlockingQueue> LINKED_BLOCKING_QUEUE_FACTORY = new IntFunction<LinkedBlockingQueue>() {
         @Override
         public LinkedBlockingQueue apply(int len) {
             return new LinkedBlockingQueue(len);
@@ -280,7 +280,7 @@ public interface IntFunction<R> extends java.util.function.IntFunction<R> {
     };
 
     @SuppressWarnings("rawtypes")
-    public static final IntFunction<? super ConcurrentLinkedQueue> CONCURRENT_LINKED_QUEUE_FACTORY = new IntFunction<ConcurrentLinkedQueue>() {
+   static final IntFunction<? super ConcurrentLinkedQueue> CONCURRENT_LINKED_QUEUE_FACTORY = new IntFunction<ConcurrentLinkedQueue>() {
         @Override
         public ConcurrentLinkedQueue apply(int len) {
             return new ConcurrentLinkedQueue();
@@ -288,7 +288,7 @@ public interface IntFunction<R> extends java.util.function.IntFunction<R> {
     };
 
     @SuppressWarnings("rawtypes")
-    public static final IntFunction<? super PriorityQueue> PRIORITY_QUEUE_FACTORY = new IntFunction<PriorityQueue>() {
+   static final IntFunction<? super PriorityQueue> PRIORITY_QUEUE_FACTORY = new IntFunction<PriorityQueue>() {
         @Override
         public PriorityQueue apply(int len) {
             return new PriorityQueue(len);

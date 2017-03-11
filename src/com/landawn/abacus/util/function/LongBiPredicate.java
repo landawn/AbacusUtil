@@ -24,56 +24,56 @@ import com.landawn.abacus.util.N;
  */
 public interface LongBiPredicate {
 
-    public static final LongBiPredicate ALWAYS_TRUE = new LongBiPredicate() {
+   static final LongBiPredicate ALWAYS_TRUE = new LongBiPredicate() {
         @Override
         public boolean test(long t, long u) {
             return true;
         }
     };
 
-    public static final LongBiPredicate ALWAYS_FALSE = new LongBiPredicate() {
+   static final LongBiPredicate ALWAYS_FALSE = new LongBiPredicate() {
         @Override
         public boolean test(long t, long u) {
             return false;
         }
     };
 
-    public static final LongBiPredicate IS_EQUAL = new LongBiPredicate() {
+   static final LongBiPredicate IS_EQUAL = new LongBiPredicate() {
         @Override
         public boolean test(long t, long u) {
             return t == u;
         }
     };
 
-    public static final LongBiPredicate NOT_EQUAL = new LongBiPredicate() {
+   static final LongBiPredicate NOT_EQUAL = new LongBiPredicate() {
         @Override
         public boolean test(long t, long u) {
             return t != u;
         }
     };
 
-    public static final LongBiPredicate GREATER_THAN = new LongBiPredicate() {
+   static final LongBiPredicate GREATER_THAN = new LongBiPredicate() {
         @Override
         public boolean test(long t, long u) {
             return t > u;
         }
     };
 
-    public static final LongBiPredicate GREATER_EQUAL = new LongBiPredicate() {
+   static final LongBiPredicate GREATER_EQUAL = new LongBiPredicate() {
         @Override
         public boolean test(long t, long u) {
             return t >= u;
         }
     };
 
-    public static final LongBiPredicate LESS_THAN = new LongBiPredicate() {
+   static final LongBiPredicate LESS_THAN = new LongBiPredicate() {
         @Override
         public boolean test(long t, long u) {
             return t < u;
         }
     };
 
-    public static final LongBiPredicate LESS_EQUAL = new LongBiPredicate() {
+   static final LongBiPredicate LESS_EQUAL = new LongBiPredicate() {
         @Override
         public boolean test(long t, long u) {
             return t <= u;

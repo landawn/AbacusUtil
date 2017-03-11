@@ -25,7 +25,7 @@ import com.landawn.abacus.util.N;
  * @author Haiyang Li
  */
 public interface BooleanFunction<R> {
-    public static final BooleanFunction<Boolean> BOX = new BooleanFunction<Boolean>() {
+   static final BooleanFunction<Boolean> BOX = new BooleanFunction<Boolean>() {
         @Override
         public Boolean apply(boolean value) {
             return value;

@@ -24,56 +24,56 @@ import com.landawn.abacus.util.N;
  */
 public interface DoublePredicate extends java.util.function.DoublePredicate {
 
-    public static final DoublePredicate ALWAYS_TRUE = new DoublePredicate() {
+   static final DoublePredicate ALWAYS_TRUE = new DoublePredicate() {
         @Override
         public boolean test(double value) {
             return true;
         }
     };
 
-    public static final DoublePredicate ALWAYS_FALSE = new DoublePredicate() {
+   static final DoublePredicate ALWAYS_FALSE = new DoublePredicate() {
         @Override
         public boolean test(double value) {
             return false;
         }
     };
 
-    public static final DoublePredicate IS_ZERO = new DoublePredicate() {
+   static final DoublePredicate IS_ZERO = new DoublePredicate() {
         @Override
         public boolean test(double value) {
             return value == 0;
         }
     };
 
-    public static final DoublePredicate NOT_ZERO = new DoublePredicate() {
+   static final DoublePredicate NOT_ZERO = new DoublePredicate() {
         @Override
         public boolean test(double value) {
             return value != 0;
         }
     };
 
-    public static final DoublePredicate IS_POSITIVE = new DoublePredicate() {
+   static final DoublePredicate IS_POSITIVE = new DoublePredicate() {
         @Override
         public boolean test(double value) {
             return value > 0;
         }
     };
 
-    public static final DoublePredicate NOT_POSITIVE = new DoublePredicate() {
+   static final DoublePredicate NOT_POSITIVE = new DoublePredicate() {
         @Override
         public boolean test(double value) {
             return value <= 0;
         }
     };
 
-    public static final DoublePredicate IS_NEGATIVE = new DoublePredicate() {
+   static final DoublePredicate IS_NEGATIVE = new DoublePredicate() {
         @Override
         public boolean test(double value) {
             return value < 0;
         }
     };
 
-    public static final DoublePredicate NOT_NEGATIVE = new DoublePredicate() {
+   static final DoublePredicate NOT_NEGATIVE = new DoublePredicate() {
         @Override
         public boolean test(double value) {
             return value >= 0;

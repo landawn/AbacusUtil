@@ -24,28 +24,28 @@ import com.landawn.abacus.util.N;
  */
 public interface CharPredicate {
 
-    public static final CharPredicate ALWAYS_TRUE = new CharPredicate() {
+   static final CharPredicate ALWAYS_TRUE = new CharPredicate() {
         @Override
         public boolean test(char value) {
             return true;
         }
     };
 
-    public static final CharPredicate ALWAYS_FALSE = new CharPredicate() {
+   static final CharPredicate ALWAYS_FALSE = new CharPredicate() {
         @Override
         public boolean test(char value) {
             return false;
         }
     };
 
-    public static final CharPredicate IS_ZERO = new CharPredicate() {
+   static final CharPredicate IS_ZERO = new CharPredicate() {
         @Override
         public boolean test(char value) {
             return value == 0;
         }
     };
 
-    public static final CharPredicate NOT_ZERO = new CharPredicate() {
+   static final CharPredicate NOT_ZERO = new CharPredicate() {
         @Override
         public boolean test(char value) {
             return value != 0;

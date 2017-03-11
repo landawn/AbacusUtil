@@ -24,56 +24,56 @@ import com.landawn.abacus.util.N;
  */
 public interface CharBiPredicate {
 
-    public static final CharBiPredicate ALWAYS_TRUE = new CharBiPredicate() {
+   static final CharBiPredicate ALWAYS_TRUE = new CharBiPredicate() {
         @Override
         public boolean test(char t, char u) {
             return true;
         }
     };
 
-    public static final CharBiPredicate ALWAYS_FALSE = new CharBiPredicate() {
+   static final CharBiPredicate ALWAYS_FALSE = new CharBiPredicate() {
         @Override
         public boolean test(char t, char u) {
             return false;
         }
     };
 
-    public static final CharBiPredicate IS_EQUAL = new CharBiPredicate() {
+   static final CharBiPredicate IS_EQUAL = new CharBiPredicate() {
         @Override
         public boolean test(char t, char u) {
             return t == u;
         }
     };
 
-    public static final CharBiPredicate NOT_EQUAL = new CharBiPredicate() {
+   static final CharBiPredicate NOT_EQUAL = new CharBiPredicate() {
         @Override
         public boolean test(char t, char u) {
             return t != u;
         }
     };
 
-    public static final CharBiPredicate GREATER_THAN = new CharBiPredicate() {
+   static final CharBiPredicate GREATER_THAN = new CharBiPredicate() {
         @Override
         public boolean test(char t, char u) {
             return t > u;
         }
     };
 
-    public static final CharBiPredicate GREATER_EQUAL = new CharBiPredicate() {
+   static final CharBiPredicate GREATER_EQUAL = new CharBiPredicate() {
         @Override
         public boolean test(char t, char u) {
             return t >= u;
         }
     };
 
-    public static final CharBiPredicate LESS_THAN = new CharBiPredicate() {
+   static final CharBiPredicate LESS_THAN = new CharBiPredicate() {
         @Override
         public boolean test(char t, char u) {
             return t < u;
         }
     };
 
-    public static final CharBiPredicate LESS_EQUAL = new CharBiPredicate() {
+   static final CharBiPredicate LESS_EQUAL = new CharBiPredicate() {
         @Override
         public boolean test(char t, char u) {
             return t <= u;

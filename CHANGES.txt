@@ -1,3 +1,15 @@
+
+========Changes in 0.9.57=========================================================================
+
+1, Add accept/apply to Tuples.
+
+2, Add a few static creation method to interface Function/BiFunction/TriFunction/Consumer/BiConsumer/TriConsumer/BinaryOperator
+
+3*, Replace acceptOnError/applyOnError with the second parameter in Try.run(...)/call(...).
+
+4, Improvements and bug fix.
+
+
 ========Changes in 0.9.56=========================================================================
 
 1, Add shuffle(random) to ExList/IntList/Seq/Stream/IntStream/...

@@ -22,7 +22,7 @@ package com.landawn.abacus.util.function;
  */
 public interface ToIntFunction<T> extends java.util.function.ToIntFunction<T> {
 
-    public static final ToIntFunction<Integer> UNBOX = new ToIntFunction<Integer>() {
+   static final ToIntFunction<Integer> UNBOX = new ToIntFunction<Integer>() {
         @Override
         public int applyAsInt(Integer value) {
             return value == null ? 0 : value.intValue();

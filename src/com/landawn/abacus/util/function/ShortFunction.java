@@ -25,7 +25,7 @@ import com.landawn.abacus.util.N;
  * @author Haiyang Li
  */
 public interface ShortFunction<R> {
-    public static final ShortFunction<Short> BOX = new ShortFunction<Short>() {
+   static final ShortFunction<Short> BOX = new ShortFunction<Short>() {
         @Override
         public Short apply(short value) {
             return value;

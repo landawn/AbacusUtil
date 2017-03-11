@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.landawn.abacus.util.function.Consumer;
+import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -245,6 +246,14 @@ public abstract class Tuple {
             objComsumer.accept(_1);
         }
 
+        public void accept(final Consumer<? super Tuple1<T1>> action) {
+            action.accept(this);
+        }
+
+        public <U> U apply(final Function<? super Tuple1<T1>, U> action) {
+            return action.apply(this);
+        }
+
         @Override
         public Stream<Tuple1<T1>> stream() {
             return Stream.of(this);
@@ -330,6 +339,14 @@ public abstract class Tuple {
 
             objComsumer.accept(_1);
             objComsumer.accept(_2);
+        }
+
+        public void accept(final Consumer<? super Tuple2<T1, T2>> action) {
+            action.accept(this);
+        }
+
+        public <U> U apply(final Function<? super Tuple2<T1, T2>, U> action) {
+            return action.apply(this);
         }
 
         @Override
@@ -422,6 +439,14 @@ public abstract class Tuple {
             objComsumer.accept(_1);
             objComsumer.accept(_2);
             objComsumer.accept(_3);
+        }
+
+        public void accept(final Consumer<? super Tuple3<T1, T2, T3>> action) {
+            action.accept(this);
+        }
+
+        public <U> U apply(final Function<? super Tuple3<T1, T2, T3>, U> action) {
+            return action.apply(this);
         }
 
         @Override
@@ -519,6 +544,14 @@ public abstract class Tuple {
             objComsumer.accept(_2);
             objComsumer.accept(_3);
             objComsumer.accept(_4);
+        }
+
+        public void accept(final Consumer<? super Tuple4<T1, T2, T3, T4>> action) {
+            action.accept(this);
+        }
+
+        public <U> U apply(final Function<? super Tuple4<T1, T2, T3, T4>, U> action) {
+            return action.apply(this);
         }
 
         @Override
@@ -621,6 +654,14 @@ public abstract class Tuple {
             objComsumer.accept(_3);
             objComsumer.accept(_4);
             objComsumer.accept(_5);
+        }
+
+        public void accept(final Consumer<? super Tuple5<T1, T2, T3, T4, T5>> action) {
+            action.accept(this);
+        }
+
+        public <U> U apply(final Function<? super Tuple5<T1, T2, T3, T4, T5>, U> action) {
+            return action.apply(this);
         }
 
         @Override
@@ -729,6 +770,14 @@ public abstract class Tuple {
             objComsumer.accept(_4);
             objComsumer.accept(_5);
             objComsumer.accept(_6);
+        }
+
+        public void accept(final Consumer<? super Tuple6<T1, T2, T3, T4, T5, T6>> action) {
+            action.accept(this);
+        }
+
+        public <U> U apply(final Function<? super Tuple6<T1, T2, T3, T4, T5, T6>, U> action) {
+            return action.apply(this);
         }
 
         @Override
@@ -843,6 +892,14 @@ public abstract class Tuple {
             objComsumer.accept(_5);
             objComsumer.accept(_6);
             objComsumer.accept(_7);
+        }
+
+        public void accept(final Consumer<? super Tuple7<T1, T2, T3, T4, T5, T6, T7>> action) {
+            action.accept(this);
+        }
+
+        public <U> U apply(final Function<? super Tuple7<T1, T2, T3, T4, T5, T6, T7>, U> action) {
+            return action.apply(this);
         }
 
         @Override

@@ -25,41 +25,64 @@ import java.util.Map;
  */
 public interface BiFunction<T, U, R> extends java.util.function.BiFunction<T, U, R> {
 
+    static final BiFunction<Collection<Object>, Object, Collection<Object>> ADD = (r, t) -> {
+        r.add(t);
+        return r;
+    };
+
+    static final BiFunction<Collection<Object>, Collection<Object>, Collection<Object>> ADD_ALL = (r, t) -> {
+        r.addAll(t);
+        return r;
+    };
+
+    static final BiFunction<Collection<Object>, Object, Collection<Object>> REMOVE = (r, t) -> {
+        r.remove(t);
+        return r;
+    };
+
+    static final BiFunction<Collection<Object>, Collection<?>, Collection<Object>> REMOVE_ALL = (r, t) -> {
+        r.removeAll(t);
+        return r;
+    };
+
+    static final BiFunction<Map<Object, Object>, Map<Object, Object>, Map<Object, Object>> PUT_ALL = (r, t) -> {
+        r.putAll(t);
+        return r;
+    };
+
+    @SuppressWarnings("rawtypes")
+    static final BiFunction JUST_RETURN_FIRST = (t, u) -> t;
+    @SuppressWarnings("rawtypes")
+    static final BiFunction JUST_RETURN_SECOND = (t, u) -> u;
+
     @Override
     R apply(T t, U u);
 
-    public static <T, R extends Collection<? super T>> BiFunction<R, T, R> ofAdd() {
-        return (r, t) -> {
-            r.add(t);
-            return r;
-        };
+    static <T, R extends Collection<? super T>> BiFunction<R, T, R> ofAdd() {
+        return (BiFunction<R, T, R>) ADD;
     }
 
-    public static <T, U extends Collection<? extends T>, R extends Collection<? super T>> BiFunction<R, U, R> ofAddAll() {
-        return (r, u) -> {
-            r.addAll(u);
-            return r;
-        };
+    static <T, U extends Collection<? extends T>, R extends Collection<? super T>> BiFunction<R, U, R> ofAddAll() {
+        return (BiFunction<R, U, R>) ADD_ALL;
     }
 
-    public static <T, R extends Collection<? super T>> BiFunction<R, T, R> ofRemove() {
-        return (r, t) -> {
-            r.remove(t);
-            return r;
-        };
+    static <T, R extends Collection<? super T>> BiFunction<R, T, R> ofRemove() {
+        return (BiFunction<R, T, R>) REMOVE;
     }
 
-    public static <T, U extends Collection<?>, R extends Collection<? super T>> BiFunction<R, U, R> ofRemoveAll() {
-        return (r, u) -> {
-            r.removeAll(u);
-            return r;
-        };
+    static <T, U extends Collection<?>, R extends Collection<? super T>> BiFunction<R, U, R> ofRemoveAll() {
+        return (BiFunction<R, U, R>) REMOVE_ALL;
     }
 
-    public static <K, V, U extends Map<? extends K, ? extends V>, R extends Map<? super K, ? super V>> BiFunction<R, U, R> ofPutAll() {
-        return (r, u) -> {
-            r.putAll(u);
-            return r;
-        };
+    static <K, V, U extends Map<? extends K, ? extends V>, R extends Map<? super K, ? super V>> BiFunction<R, U, R> ofPutAll() {
+        return (BiFunction<R, U, R>) PUT_ALL;
+    }
+
+    static <T, U> BiFunction<T, U, T> ofJustReturnFirst() {
+        return JUST_RETURN_FIRST;
+    }
+
+    static <T, U> BiFunction<T, U, U> ofJustReturnSecond() {
+        return JUST_RETURN_SECOND;
     }
 }

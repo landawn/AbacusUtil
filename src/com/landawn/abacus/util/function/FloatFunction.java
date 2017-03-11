@@ -25,7 +25,7 @@ import com.landawn.abacus.util.N;
  * @author Haiyang Li
  */
 public interface FloatFunction<R> {
-    public static final FloatFunction<Float> BOX = new FloatFunction<Float>() {
+   static final FloatFunction<Float> BOX = new FloatFunction<Float>() {
         @Override
         public Float apply(float value) {
             return value;

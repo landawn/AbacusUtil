@@ -24,56 +24,56 @@ import com.landawn.abacus.util.N;
  */
 public interface FloatPredicate {
 
-    public static final FloatPredicate ALWAYS_TRUE = new FloatPredicate() {
+   static final FloatPredicate ALWAYS_TRUE = new FloatPredicate() {
         @Override
         public boolean test(float value) {
             return true;
         }
     };
 
-    public static final FloatPredicate ALWAYS_FALSE = new FloatPredicate() {
+   static final FloatPredicate ALWAYS_FALSE = new FloatPredicate() {
         @Override
         public boolean test(float value) {
             return false;
         }
     };
 
-    public static final FloatPredicate IS_ZERO = new FloatPredicate() {
+   static final FloatPredicate IS_ZERO = new FloatPredicate() {
         @Override
         public boolean test(float value) {
             return value == 0;
         }
     };
 
-    public static final FloatPredicate NOT_ZERO = new FloatPredicate() {
+   static final FloatPredicate NOT_ZERO = new FloatPredicate() {
         @Override
         public boolean test(float value) {
             return value != 0;
         }
     };
 
-    public static final FloatPredicate IS_POSITIVE = new FloatPredicate() {
+   static final FloatPredicate IS_POSITIVE = new FloatPredicate() {
         @Override
         public boolean test(float value) {
             return value > 0;
         }
     };
 
-    public static final FloatPredicate NOT_POSITIVE = new FloatPredicate() {
+   static final FloatPredicate NOT_POSITIVE = new FloatPredicate() {
         @Override
         public boolean test(float value) {
             return value <= 0;
         }
     };
 
-    public static final FloatPredicate IS_NEGATIVE = new FloatPredicate() {
+   static final FloatPredicate IS_NEGATIVE = new FloatPredicate() {
         @Override
         public boolean test(float value) {
             return value < 0;
         }
     };
 
-    public static final FloatPredicate NOT_NEGATIVE = new FloatPredicate() {
+   static final FloatPredicate NOT_NEGATIVE = new FloatPredicate() {
         @Override
         public boolean test(float value) {
             return value >= 0;

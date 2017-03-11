@@ -27,7 +27,7 @@ import com.landawn.abacus.util.N;
 public interface Predicate<T> extends java.util.function.Predicate<T> {
 
     @SuppressWarnings("rawtypes")
-    public static final Predicate ALWAYS_TRUE = new Predicate() {
+   static final Predicate ALWAYS_TRUE = new Predicate() {
         @Override
         public boolean test(Object value) {
             return true;
@@ -35,7 +35,7 @@ public interface Predicate<T> extends java.util.function.Predicate<T> {
     };
 
     @SuppressWarnings("rawtypes")
-    public static final Predicate ALWAYS_FALSE = new Predicate() {
+   static final Predicate ALWAYS_FALSE = new Predicate() {
         @Override
         public boolean test(Object value) {
             return false;
@@ -43,7 +43,7 @@ public interface Predicate<T> extends java.util.function.Predicate<T> {
     };
 
     @SuppressWarnings("rawtypes")
-    public static final Predicate IS_NULL = new Predicate() {
+   static final Predicate IS_NULL = new Predicate() {
         @Override
         public boolean test(Object value) {
             return value == null;
@@ -51,7 +51,7 @@ public interface Predicate<T> extends java.util.function.Predicate<T> {
     };
 
     @SuppressWarnings("rawtypes")
-    public static final Predicate NOT_NULL = new Predicate() {
+   static final Predicate NOT_NULL = new Predicate() {
         @Override
         public boolean test(Object value) {
             return value != null;

@@ -25,7 +25,7 @@ import com.landawn.abacus.util.N;
  * @author Haiyang Li
  */
 public interface CharFunction<R> {
-    public static final CharFunction<Character> BOX = new CharFunction<Character>() {
+   static final CharFunction<Character> BOX = new CharFunction<Character>() {
         @Override
         public Character apply(char value) {
             return value;

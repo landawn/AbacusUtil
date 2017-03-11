@@ -15,6 +15,7 @@
 package com.landawn.abacus.util.function;
 
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
@@ -24,22 +25,40 @@ import java.util.Collection;
  */
 public interface BiConsumer<T, U> extends java.util.function.BiConsumer<T, U> {
 
+    static final BiConsumer<Collection<Object>, Object> ADD = (c, t) -> c.add(t);
+    static final BiConsumer<Collection<Object>, Collection<Object>> ADD_ALL = (c, t) -> c.addAll(t);
+    static final BiConsumer<Collection<Object>, Object> REMOVE = (c, t) -> c.remove(t);
+    static final BiConsumer<Collection<?>, Collection<?>> REMOVE_ALL = (c, t) -> c.removeAll(t);
+    static final BiConsumer<Map<Object, Object>, Map<Object, Object>> PUT_ALL = (m, t) -> m.putAll(t);
+
+    @SuppressWarnings("rawtypes")
+    static final BiConsumer DO_NOTHING = (c, t) -> {
+    };
+
     @Override
     void accept(T t, U u);
 
-    public static <T, C extends Collection<? super T>> BiConsumer<C, T> ofAdd() {
-        return (c, t) -> c.add(t);
+    static <T, C extends Collection<? super T>> BiConsumer<C, T> ofAdd() {
+        return (BiConsumer<C, T>) ADD;
     }
 
-    public static <T, U extends Collection<? extends T>, C extends Collection<? super T>> BiConsumer<C, U> ofAddAll() {
-        return (c, u) -> c.addAll(u);
+    static <T, U extends Collection<? extends T>, C extends Collection<? super T>> BiConsumer<C, U> ofAddAll() {
+        return (BiConsumer<C, U>) ADD_ALL;
     }
 
-    public static <T, C extends Collection<? super T>> BiConsumer<C, T> ofRemove() {
-        return (c, t) -> c.remove(t);
+    static <T, C extends Collection<? super T>> BiConsumer<C, T> ofRemove() {
+        return (BiConsumer<C, T>) REMOVE;
     }
 
-    public static <T, U extends Collection<?>, C extends Collection<? super T>> BiConsumer<C, U> ofRemoveAll() {
-        return (c, u) -> c.removeAll(u);
+    static <T, U extends Collection<?>, C extends Collection<? super T>> BiConsumer<C, U> ofRemoveAll() {
+        return (BiConsumer<C, U>) REMOVE_ALL;
+    }
+
+    static <K, V, U extends Map<? extends K, ? extends V>, M extends Map<? super K, ? super V>> BiConsumer<M, U> ofPutAll() {
+        return (BiConsumer<M, U>) PUT_ALL;
+    }
+
+    static <T, U> BiConsumer<T, U> ofDoNothing() {
+        return DO_NOTHING;
     }
 }

@@ -25,7 +25,7 @@ import com.landawn.abacus.util.N;
  * @author Haiyang Li
  */
 public interface DoubleFunction<R> extends java.util.function.DoubleFunction<R> {
-    public static final DoubleFunction<Double> BOX = new DoubleFunction<Double>() {
+   static final DoubleFunction<Double> BOX = new DoubleFunction<Double>() {
         @Override
         public Double apply(double value) {
             return value;

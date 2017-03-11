@@ -24,28 +24,28 @@ import com.landawn.abacus.util.N;
  */
 public interface BooleanPredicate {
 
-    public static final BooleanPredicate ALWAYS_TRUE = new BooleanPredicate() {
+   static final BooleanPredicate ALWAYS_TRUE = new BooleanPredicate() {
         @Override
         public boolean test(boolean value) {
             return true;
         }
     };
 
-    public static final BooleanPredicate ALWAYS_FALSE = new BooleanPredicate() {
+   static final BooleanPredicate ALWAYS_FALSE = new BooleanPredicate() {
         @Override
         public boolean test(boolean value) {
             return false;
         }
     };
 
-    public static final BooleanPredicate IS_TRUE = new BooleanPredicate() {
+   static final BooleanPredicate IS_TRUE = new BooleanPredicate() {
         @Override
         public boolean test(boolean value) {
             return value == true;
         }
     };
 
-    public static final BooleanPredicate IS_FALSE = new BooleanPredicate() {
+   static final BooleanPredicate IS_FALSE = new BooleanPredicate() {
         @Override
         public boolean test(boolean value) {
             return value == false;

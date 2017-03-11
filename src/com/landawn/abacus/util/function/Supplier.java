@@ -50,140 +50,140 @@ import com.landawn.abacus.util.ShortList;
 public interface Supplier<T> extends java.util.function.Supplier<T> {
 
     @SuppressWarnings("rawtypes")
-    public static final Supplier NULL = new Supplier() {
+   static final Supplier NULL = new Supplier() {
         @Override
         public Object get() {
             return null;
         }
     };
 
-    public static final Supplier<String> EMPTY_STRING = new Supplier<String>() {
+   static final Supplier<String> EMPTY_STRING = new Supplier<String>() {
         @Override
         public String get() {
             return N.EMPTY_STRING;
         }
     };
 
-    public static final Supplier<boolean[]> EMPTY_BOOLEAN_ARRAY = new Supplier<boolean[]>() {
+   static final Supplier<boolean[]> EMPTY_BOOLEAN_ARRAY = new Supplier<boolean[]>() {
         @Override
         public boolean[] get() {
             return N.EMPTY_BOOLEAN_ARRAY;
         }
     };
 
-    public static final Supplier<char[]> EMPTY_CHAR_ARRAY = new Supplier<char[]>() {
+   static final Supplier<char[]> EMPTY_CHAR_ARRAY = new Supplier<char[]>() {
         @Override
         public char[] get() {
             return N.EMPTY_CHAR_ARRAY;
         }
     };
 
-    public static final Supplier<byte[]> EMPTY_BYTE_ARRAY = new Supplier<byte[]>() {
+   static final Supplier<byte[]> EMPTY_BYTE_ARRAY = new Supplier<byte[]>() {
         @Override
         public byte[] get() {
             return N.EMPTY_BYTE_ARRAY;
         }
     };
 
-    public static final Supplier<short[]> EMPTY_SHORT_ARRAY = new Supplier<short[]>() {
+   static final Supplier<short[]> EMPTY_SHORT_ARRAY = new Supplier<short[]>() {
         @Override
         public short[] get() {
             return N.EMPTY_SHORT_ARRAY;
         }
     };
 
-    public static final Supplier<int[]> EMPTY_INT_ARRAY = new Supplier<int[]>() {
+   static final Supplier<int[]> EMPTY_INT_ARRAY = new Supplier<int[]>() {
         @Override
         public int[] get() {
             return N.EMPTY_INT_ARRAY;
         }
     };
 
-    public static final Supplier<long[]> EMPTY_LONG_ARRAY = new Supplier<long[]>() {
+   static final Supplier<long[]> EMPTY_LONG_ARRAY = new Supplier<long[]>() {
         @Override
         public long[] get() {
             return N.EMPTY_LONG_ARRAY;
         }
     };
 
-    public static final Supplier<float[]> EMPTY_FLOAT_ARRAY = new Supplier<float[]>() {
+   static final Supplier<float[]> EMPTY_FLOAT_ARRAY = new Supplier<float[]>() {
         @Override
         public float[] get() {
             return N.EMPTY_FLOAT_ARRAY;
         }
     };
 
-    public static final Supplier<double[]> EMPTY_DOUBLE_ARRAY = new Supplier<double[]>() {
+   static final Supplier<double[]> EMPTY_DOUBLE_ARRAY = new Supplier<double[]>() {
         @Override
         public double[] get() {
             return N.EMPTY_DOUBLE_ARRAY;
         }
     };
 
-    public static final Supplier<String[]> EMPTY_STRING_ARRAY = new Supplier<String[]>() {
+   static final Supplier<String[]> EMPTY_STRING_ARRAY = new Supplier<String[]>() {
         @Override
         public String[] get() {
             return N.EMPTY_STRING_ARRAY;
         }
     };
 
-    public static final Supplier<Object[]> EMPTY_OBJECT_ARRAY = new Supplier<Object[]>() {
+   static final Supplier<Object[]> EMPTY_OBJECT_ARRAY = new Supplier<Object[]>() {
         @Override
         public Object[] get() {
             return N.EMPTY_OBJECT_ARRAY;
         }
     };
 
-    public static final Supplier<BooleanList> BOOLEAN_LIST_FACTORY = new Supplier<BooleanList>() {
+   static final Supplier<BooleanList> BOOLEAN_LIST_FACTORY = new Supplier<BooleanList>() {
         @Override
         public BooleanList get() {
             return new BooleanList();
         }
     };
 
-    public static final Supplier<CharList> CHAR_LIST_FACTORY = new Supplier<CharList>() {
+   static final Supplier<CharList> CHAR_LIST_FACTORY = new Supplier<CharList>() {
         @Override
         public CharList get() {
             return new CharList();
         }
     };
 
-    public static final Supplier<ByteList> BYTE_LIST_FACTORY = new Supplier<ByteList>() {
+   static final Supplier<ByteList> BYTE_LIST_FACTORY = new Supplier<ByteList>() {
         @Override
         public ByteList get() {
             return new ByteList();
         }
     };
 
-    public static final Supplier<ShortList> SHORT_LIST_FACTORY = new Supplier<ShortList>() {
+   static final Supplier<ShortList> SHORT_LIST_FACTORY = new Supplier<ShortList>() {
         @Override
         public ShortList get() {
             return new ShortList();
         }
     };
 
-    public static final Supplier<IntList> INT_LIST_FACTORY = new Supplier<IntList>() {
+   static final Supplier<IntList> INT_LIST_FACTORY = new Supplier<IntList>() {
         @Override
         public IntList get() {
             return new IntList();
         }
     };
 
-    public static final Supplier<LongList> LONG_LIST_FACTORY = new Supplier<LongList>() {
+   static final Supplier<LongList> LONG_LIST_FACTORY = new Supplier<LongList>() {
         @Override
         public LongList get() {
             return new LongList();
         }
     };
 
-    public static final Supplier<FloatList> FLOAT_LIST_FACTORY = new Supplier<FloatList>() {
+   static final Supplier<FloatList> FLOAT_LIST_FACTORY = new Supplier<FloatList>() {
         @Override
         public FloatList get() {
             return new FloatList();
         }
     };
 
-    public static final Supplier<DoubleList> DOUBLE_LIST_FACTORY = new Supplier<DoubleList>() {
+   static final Supplier<DoubleList> DOUBLE_LIST_FACTORY = new Supplier<DoubleList>() {
         @Override
         public DoubleList get() {
             return new DoubleList();
@@ -191,7 +191,7 @@ public interface Supplier<T> extends java.util.function.Supplier<T> {
     };
 
     @SuppressWarnings("rawtypes")
-    public static final Supplier<ExList> OBJECT_LIST = new Supplier<ExList>() {
+   static final Supplier<ExList> OBJECT_LIST = new Supplier<ExList>() {
         @Override
         public ExList get() {
             return new ExList();
@@ -199,7 +199,7 @@ public interface Supplier<T> extends java.util.function.Supplier<T> {
     };
 
     @SuppressWarnings("rawtypes")
-    public static final Supplier<? super List> LIST = new Supplier<List>() {
+   static final Supplier<? super List> LIST = new Supplier<List>() {
         @Override
         public List get() {
             return new ArrayList();
@@ -207,7 +207,7 @@ public interface Supplier<T> extends java.util.function.Supplier<T> {
     };
 
     @SuppressWarnings("rawtypes")
-    public static final Supplier<? super LinkedList> LINKED_LIST = new Supplier<LinkedList>() {
+   static final Supplier<? super LinkedList> LINKED_LIST = new Supplier<LinkedList>() {
         @Override
         public LinkedList get() {
             return new LinkedList();
@@ -215,7 +215,7 @@ public interface Supplier<T> extends java.util.function.Supplier<T> {
     };
 
     @SuppressWarnings("rawtypes")
-    public static final Supplier<? super Set> SET = new Supplier<Set>() {
+   static final Supplier<? super Set> SET = new Supplier<Set>() {
         @Override
         public Set get() {
             return new HashSet();
@@ -223,7 +223,7 @@ public interface Supplier<T> extends java.util.function.Supplier<T> {
     };
 
     @SuppressWarnings("rawtypes")
-    public static final Supplier<? super LinkedHashSet> LINKED_HASH_SET = new Supplier<LinkedHashSet>() {
+   static final Supplier<? super LinkedHashSet> LINKED_HASH_SET = new Supplier<LinkedHashSet>() {
         @Override
         public LinkedHashSet get() {
             return new LinkedHashSet();
@@ -231,7 +231,7 @@ public interface Supplier<T> extends java.util.function.Supplier<T> {
     };
 
     @SuppressWarnings("rawtypes")
-    public static final Supplier<? super Map> MAP = new Supplier<Map>() {
+   static final Supplier<? super Map> MAP = new Supplier<Map>() {
         @Override
         public Map get() {
             return new HashMap();
@@ -239,7 +239,7 @@ public interface Supplier<T> extends java.util.function.Supplier<T> {
     };
 
     @SuppressWarnings("rawtypes")
-    public static final Supplier<? super LinkedHashMap> LINKED_HASH_MAP = new Supplier<LinkedHashMap>() {
+   static final Supplier<? super LinkedHashMap> LINKED_HASH_MAP = new Supplier<LinkedHashMap>() {
         @Override
         public LinkedHashMap get() {
             return new LinkedHashMap();
@@ -247,7 +247,7 @@ public interface Supplier<T> extends java.util.function.Supplier<T> {
     };
 
     @SuppressWarnings("rawtypes")
-    public static final Supplier<? super ConcurrentHashMap> CONCURRENT_HASH_MAP = new Supplier<ConcurrentHashMap>() {
+   static final Supplier<? super ConcurrentHashMap> CONCURRENT_HASH_MAP = new Supplier<ConcurrentHashMap>() {
         @Override
         public ConcurrentHashMap get() {
             return new ConcurrentHashMap();
@@ -255,7 +255,7 @@ public interface Supplier<T> extends java.util.function.Supplier<T> {
     };
 
     @SuppressWarnings("rawtypes")
-    public static final Supplier<? super Queue> QUEUE = new Supplier<Queue>() {
+   static final Supplier<? super Queue> QUEUE = new Supplier<Queue>() {
         @Override
         public Queue get() {
             return new LinkedList();
@@ -263,7 +263,7 @@ public interface Supplier<T> extends java.util.function.Supplier<T> {
     };
 
     @SuppressWarnings("rawtypes")
-    public static final Supplier<? super ArrayDeque> ARRAY_DEQUE = new Supplier<ArrayDeque>() {
+   static final Supplier<? super ArrayDeque> ARRAY_DEQUE = new Supplier<ArrayDeque>() {
         @Override
         public ArrayDeque get() {
             return new ArrayDeque();
@@ -271,7 +271,7 @@ public interface Supplier<T> extends java.util.function.Supplier<T> {
     };
 
     @SuppressWarnings("rawtypes")
-    public static final Supplier<? super LinkedBlockingQueue> LINKED_BLOCKING_QUEUE = new Supplier<LinkedBlockingQueue>() {
+   static final Supplier<? super LinkedBlockingQueue> LINKED_BLOCKING_QUEUE = new Supplier<LinkedBlockingQueue>() {
         @Override
         public LinkedBlockingQueue get() {
             return new LinkedBlockingQueue();
@@ -279,7 +279,7 @@ public interface Supplier<T> extends java.util.function.Supplier<T> {
     };
 
     @SuppressWarnings("rawtypes")
-    public static final Supplier<? super ConcurrentLinkedQueue> CONCURRENT_LINKED_QUEUE = new Supplier<ConcurrentLinkedQueue>() {
+   static final Supplier<? super ConcurrentLinkedQueue> CONCURRENT_LINKED_QUEUE = new Supplier<ConcurrentLinkedQueue>() {
         @Override
         public ConcurrentLinkedQueue get() {
             return new ConcurrentLinkedQueue();
@@ -287,21 +287,21 @@ public interface Supplier<T> extends java.util.function.Supplier<T> {
     };
 
     @SuppressWarnings("rawtypes")
-    public static final Supplier<? super PriorityQueue> PRIORITY_QUEUE = new Supplier<PriorityQueue>() {
+   static final Supplier<? super PriorityQueue> PRIORITY_QUEUE = new Supplier<PriorityQueue>() {
         @Override
         public PriorityQueue get() {
             return new PriorityQueue();
         }
     };
 
-    public static final Supplier<String> UUID = new Supplier<String>() {
+   static final Supplier<String> UUID = new Supplier<String>() {
         @Override
         public String get() {
             return N.uuid();
         }
     };
 
-    public static final Supplier<String> GUID = new Supplier<String>() {
+   static final Supplier<String> GUID = new Supplier<String>() {
         @Override
         public String get() {
             return N.guid();

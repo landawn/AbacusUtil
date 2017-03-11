@@ -7,56 +7,56 @@ import com.landawn.abacus.util.N;
 
 public interface BytePredicate {
 
-    public static final BytePredicate ALWAYS_TRUE = new BytePredicate() {
+   static final BytePredicate ALWAYS_TRUE = new BytePredicate() {
         @Override
         public boolean test(byte value) {
             return true;
         }
     };
 
-    public static final BytePredicate ALWAYS_FALSE = new BytePredicate() {
+   static final BytePredicate ALWAYS_FALSE = new BytePredicate() {
         @Override
         public boolean test(byte value) {
             return false;
         }
     };
 
-    public static final BytePredicate IS_ZERO = new BytePredicate() {
+   static final BytePredicate IS_ZERO = new BytePredicate() {
         @Override
         public boolean test(byte value) {
             return value == 0;
         }
     };
 
-    public static final BytePredicate NOT_ZERO = new BytePredicate() {
+   static final BytePredicate NOT_ZERO = new BytePredicate() {
         @Override
         public boolean test(byte value) {
             return value != 0;
         }
     };
 
-    public static final BytePredicate IS_POSITIVE = new BytePredicate() {
+   static final BytePredicate IS_POSITIVE = new BytePredicate() {
         @Override
         public boolean test(byte value) {
             return value > 0;
         }
     };
 
-    public static final BytePredicate NOT_POSITIVE = new BytePredicate() {
+   static final BytePredicate NOT_POSITIVE = new BytePredicate() {
         @Override
         public boolean test(byte value) {
             return value <= 0;
         }
     };
 
-    public static final BytePredicate IS_NEGATIVE = new BytePredicate() {
+   static final BytePredicate IS_NEGATIVE = new BytePredicate() {
         @Override
         public boolean test(byte value) {
             return value < 0;
         }
     };
 
-    public static final BytePredicate NOT_NEGATIVE = new BytePredicate() {
+   static final BytePredicate NOT_NEGATIVE = new BytePredicate() {
         @Override
         public boolean test(byte value) {
             return value >= 0;

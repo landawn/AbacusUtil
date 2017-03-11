@@ -24,55 +24,55 @@ import com.landawn.abacus.util.N;
  */
 public interface DoubleBiPredicate {
 
-    public static final DoubleBiPredicate ALWAYS_TRUE = new DoubleBiPredicate() {
+   static final DoubleBiPredicate ALWAYS_TRUE = new DoubleBiPredicate() {
         @Override
         public boolean test(double t, double u) {
             return true;
         }
     };
 
-    public static final DoubleBiPredicate ALWAYS_FALSE = new DoubleBiPredicate() {
+   static final DoubleBiPredicate ALWAYS_FALSE = new DoubleBiPredicate() {
         @Override
         public boolean test(double t, double u) {
             return false;
         }
     };
-    public static final DoubleBiPredicate IS_EQUAL = new DoubleBiPredicate() {
+   static final DoubleBiPredicate IS_EQUAL = new DoubleBiPredicate() {
         @Override
         public boolean test(double t, double u) {
             return Double.compare(t, u) == 0;
         }
     };
 
-    public static final DoubleBiPredicate NOT_EQUAL = new DoubleBiPredicate() {
+   static final DoubleBiPredicate NOT_EQUAL = new DoubleBiPredicate() {
         @Override
         public boolean test(double t, double u) {
             return Double.compare(t, u) != 0;
         }
     };
 
-    public static final DoubleBiPredicate GREATER_THAN = new DoubleBiPredicate() {
+   static final DoubleBiPredicate GREATER_THAN = new DoubleBiPredicate() {
         @Override
         public boolean test(double t, double u) {
             return Double.compare(t, u) > 0;
         }
     };
 
-    public static final DoubleBiPredicate GREATER_EQUAL = new DoubleBiPredicate() {
+   static final DoubleBiPredicate GREATER_EQUAL = new DoubleBiPredicate() {
         @Override
         public boolean test(double t, double u) {
             return Double.compare(t, u) >= 0;
         }
     };
 
-    public static final DoubleBiPredicate LESS_THAN = new DoubleBiPredicate() {
+   static final DoubleBiPredicate LESS_THAN = new DoubleBiPredicate() {
         @Override
         public boolean test(double t, double u) {
             return Double.compare(t, u) < 0;
         }
     };
 
-    public static final DoubleBiPredicate LESS_EQUAL = new DoubleBiPredicate() {
+   static final DoubleBiPredicate LESS_EQUAL = new DoubleBiPredicate() {
         @Override
         public boolean test(double t, double u) {
             return Double.compare(t, u) <= 0;

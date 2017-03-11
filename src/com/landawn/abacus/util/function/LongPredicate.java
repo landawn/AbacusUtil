@@ -24,56 +24,56 @@ import com.landawn.abacus.util.N;
  */
 public interface LongPredicate extends java.util.function.LongPredicate {
 
-    public static final LongPredicate ALWAYS_TRUE = new LongPredicate() {
+   static final LongPredicate ALWAYS_TRUE = new LongPredicate() {
         @Override
         public boolean test(long value) {
             return true;
         }
     };
 
-    public static final LongPredicate ALWAYS_FALSE = new LongPredicate() {
+   static final LongPredicate ALWAYS_FALSE = new LongPredicate() {
         @Override
         public boolean test(long value) {
             return false;
         }
     };
 
-    public static final LongPredicate IS_ZERO = new LongPredicate() {
+   static final LongPredicate IS_ZERO = new LongPredicate() {
         @Override
         public boolean test(long value) {
             return value == 0;
         }
     };
 
-    public static final LongPredicate NOT_ZERO = new LongPredicate() {
+   static final LongPredicate NOT_ZERO = new LongPredicate() {
         @Override
         public boolean test(long value) {
             return value != 0;
         }
     };
 
-    public static final LongPredicate IS_POSITIVE = new LongPredicate() {
+   static final LongPredicate IS_POSITIVE = new LongPredicate() {
         @Override
         public boolean test(long value) {
             return value > 0;
         }
     };
 
-    public static final LongPredicate NOT_POSITIVE = new LongPredicate() {
+   static final LongPredicate NOT_POSITIVE = new LongPredicate() {
         @Override
         public boolean test(long value) {
             return value <= 0;
         }
     };
 
-    public static final LongPredicate IS_NEGATIVE = new LongPredicate() {
+   static final LongPredicate IS_NEGATIVE = new LongPredicate() {
         @Override
         public boolean test(long value) {
             return value < 0;
         }
     };
 
-    public static final LongPredicate NOT_NEGATIVE = new LongPredicate() {
+   static final LongPredicate NOT_NEGATIVE = new LongPredicate() {
         @Override
         public boolean test(long value) {
             return value >= 0;

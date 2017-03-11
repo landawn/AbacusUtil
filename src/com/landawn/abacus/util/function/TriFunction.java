@@ -14,6 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
+import java.util.Map;
 import java.util.function.Function;
 
 import com.landawn.abacus.util.N;
@@ -26,11 +27,39 @@ import com.landawn.abacus.util.N;
  */
 public interface TriFunction<A, B, C, R> {
 
+    static final TriFunction<Map<Object, Object>, Object, Object, Map<Object, Object>> PUT = (m, k, v) -> {
+        m.put(k, v);
+        return m;
+    };
+
+    @SuppressWarnings("rawtypes")
+    static final TriFunction JUST_RETURN_FIRST = (a, b, c) -> a;
+    @SuppressWarnings("rawtypes")
+    static final TriFunction JUST_RETURN_SECOND = (a, b, c) -> b;
+    @SuppressWarnings("rawtypes")
+    static final TriFunction JUST_RETURN_THIRD = (a, b, c) -> c;
+
     R apply(A a, B b, C c);
 
     default <V> TriFunction<A, B, C, V> andThen(Function<? super R, ? extends V> after) {
         N.requireNonNull(after);
 
         return (a, b, c) -> after.apply(apply(a, b, c));
+    }
+
+    static <K, V, M extends Map<? super K, ? super V>> TriFunction<M, K, V, M> ofPut() {
+        return (TriFunction<M, K, V, M>) PUT;
+    }
+
+    static <A, B, C> TriFunction<A, B, C, A> ofJustReturnFirst() {
+        return JUST_RETURN_FIRST;
+    }
+
+    static <A, B, C> TriFunction<A, B, C, B> ofJustReturnSecond() {
+        return JUST_RETURN_SECOND;
+    }
+
+    static <A, B, C> TriFunction<A, B, C, C> ofJustReturnThird() {
+        return JUST_RETURN_THIRD;
     }
 }
