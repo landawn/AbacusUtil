@@ -300,6 +300,22 @@ public final class Seq<T> implements Collection<T> {
         return containsAll(Arrays.asList(a));
     }
 
+    public boolean containsAny(Collection<?> c) {
+        if (N.isNullOrEmpty(coll) || N.isNullOrEmpty(c)) {
+            return false;
+        }
+
+        return !disjoint(c);
+    }
+
+    public boolean containsAny(Object[] a) {
+        if (N.isNullOrEmpty(coll) || N.isNullOrEmpty(a)) {
+            return false;
+        }
+
+        return !disjoint(a);
+    }
+
     public boolean disjoint(final Collection<?> c) {
         return Collections.disjoint(this.coll, c);
     }

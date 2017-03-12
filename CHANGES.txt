@@ -7,7 +7,11 @@
 
 3*, Replace acceptOnError/applyOnError with the second parameter in Try.run(...)/call(...).
 
-4, Improvements and bug fix.
+4*, Rename Maps.getOrDefaultAll/getAll to Maps.getOrDefault/getOrIgnore() and change the implementation: no value will be added to the returned list if the key doesn't exist in specified Map, instead of adding null.
+
+5, Add containsAny to Seq.
+
+6, Improvements and bug fix.
 
 
 ========Changes in 0.9.56=========================================================================

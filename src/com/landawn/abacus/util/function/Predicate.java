@@ -27,7 +27,7 @@ import com.landawn.abacus.util.N;
 public interface Predicate<T> extends java.util.function.Predicate<T> {
 
     @SuppressWarnings("rawtypes")
-   static final Predicate ALWAYS_TRUE = new Predicate() {
+    static final Predicate ALWAYS_TRUE = new Predicate() {
         @Override
         public boolean test(Object value) {
             return true;
@@ -35,7 +35,7 @@ public interface Predicate<T> extends java.util.function.Predicate<T> {
     };
 
     @SuppressWarnings("rawtypes")
-   static final Predicate ALWAYS_FALSE = new Predicate() {
+    static final Predicate ALWAYS_FALSE = new Predicate() {
         @Override
         public boolean test(Object value) {
             return false;
@@ -43,7 +43,7 @@ public interface Predicate<T> extends java.util.function.Predicate<T> {
     };
 
     @SuppressWarnings("rawtypes")
-   static final Predicate IS_NULL = new Predicate() {
+    static final Predicate IS_NULL = new Predicate() {
         @Override
         public boolean test(Object value) {
             return value == null;
@@ -51,7 +51,7 @@ public interface Predicate<T> extends java.util.function.Predicate<T> {
     };
 
     @SuppressWarnings("rawtypes")
-   static final Predicate NOT_NULL = new Predicate() {
+    static final Predicate NOT_NULL = new Predicate() {
         @Override
         public boolean test(Object value) {
             return value != null;
@@ -60,6 +60,22 @@ public interface Predicate<T> extends java.util.function.Predicate<T> {
 
     @Override
     boolean test(T value);
+
+    static <T> Predicate<T> alwaysTrue() {
+        return ALWAYS_TRUE;
+    }
+
+    static <T> Predicate<T> alwaysFalse() {
+        return ALWAYS_FALSE;
+    }
+
+    static <T> Predicate<T> isNull() {
+        return IS_NULL;
+    }
+
+    static <T> Predicate<T> notNull() {
+        return NOT_NULL;
+    }
 
     static <T> Predicate<T> isEqual(Object targetRef) {
         return (null == targetRef) ? Objects::isNull : object -> targetRef.equals(object);

@@ -54,32 +54,6 @@ public final class Maps {
         // singleton.
     }
 
-    public static <K, V> List<V> getAll(final Map<K, V> map, final Collection<?> keys) {
-        final List<V> result = new ArrayList<>(keys.size());
-
-        for (Object key : keys) {
-            result.add(map.get(key));
-        }
-
-        return result;
-    }
-
-    public static <K, V> List<V> getOrDefaultAll(final Map<K, V> map, final Collection<?> keys, final V defaultValue) {
-        final List<V> result = new ArrayList<>(keys.size());
-
-        for (Object key : keys) {
-            result.add(getOrDefault(map, key, defaultValue));
-        }
-
-        return result;
-    }
-
-    public static <K, V> void removeAll(final Map<K, V> map, final Collection<?> keys) {
-        for (Object key : keys) {
-            map.remove(key);
-        }
-    }
-
     /**
      * Returns the value to which the specified key is mapped, or
      * {@code defaultValue} if this map contains no mapping for the key.
@@ -105,6 +79,39 @@ public final class Maps {
     public static <K, V> V getOrDefault(final Map<K, V> map, final Object key, final V defaultValue) {
         V v = null;
         return (((v = map.get(key)) != null) || map.containsKey(key)) ? v : defaultValue;
+    }
+
+    public static <K, V> List<V> getOrDefault(final Map<K, V> map, final Collection<?> keys, final V defaultValue) {
+        final List<V> result = new ArrayList<>(keys.size());
+
+        for (Object key : keys) {
+            result.add(getOrDefault(map, key, defaultValue));
+        }
+
+        return result;
+    }
+
+    /**
+     * Returns a list of values of the keys which exist in the specified <code>Map</code>.
+     * If the key dosn't exist in the <code>Map</code>, No value will be added into the returned list. 
+     * 
+     * @param map
+     * @param keys
+     * @return
+     */
+    public static <K, V> List<V> getOrIgnore(final Map<K, V> map, final Collection<?> keys) {
+        final List<V> result = new ArrayList<>(keys.size());
+        V val = null;
+
+        for (Object key : keys) {
+            val = map.get(key);
+
+            if (val != null || (val == null && map.containsKey(key))) {
+                result.add(val);
+            }
+        }
+
+        return result;
     }
 
     /**
@@ -203,6 +210,12 @@ public final class Maps {
 
         map.remove(key);
         return true;
+    }
+
+    public static <K, V> void removeAll(final Map<K, V> map, final Collection<?> keys) {
+        for (Object key : keys) {
+            map.remove(key);
+        }
     }
 
     /**
@@ -744,7 +757,8 @@ public final class Maps {
                 paramClass = propSetMethod.getParameterTypes()[0];
 
                 if (propValue != null && N.typeOf(propValue.getClass()).isMap() && N.isEntity(paramClass)) {
-                    RefUtil.setPropValue(entity, propSetMethod, map2Entity(paramClass, (Map<String, Object>) propValue, ignoreNullProperty, ignoreUnknownProperty));
+                    RefUtil.setPropValue(entity, propSetMethod,
+                            map2Entity(paramClass, (Map<String, Object>) propValue, ignoreNullProperty, ignoreUnknownProperty));
                 } else {
                     RefUtil.setPropValue(entity, propSetMethod, propValue);
                 }

@@ -25,7 +25,7 @@ import com.landawn.abacus.util.N;
 public interface BiPredicate<T, U> extends java.util.function.BiPredicate<T, U> {
 
     @SuppressWarnings("rawtypes")
-   static final BiPredicate ALWAYS_TRUE = new BiPredicate() {
+    static final BiPredicate ALWAYS_TRUE = new BiPredicate() {
         @Override
         public boolean test(Object t, Object u) {
             return true;
@@ -33,7 +33,7 @@ public interface BiPredicate<T, U> extends java.util.function.BiPredicate<T, U> 
     };
 
     @SuppressWarnings("rawtypes")
-   static final BiPredicate ALWAYS_FALSE = new BiPredicate() {
+    static final BiPredicate ALWAYS_FALSE = new BiPredicate() {
         @Override
         public boolean test(Object t, Object u) {
             return false;
@@ -41,7 +41,7 @@ public interface BiPredicate<T, U> extends java.util.function.BiPredicate<T, U> 
     };
 
     @SuppressWarnings("rawtypes")
-   static final BiPredicate IS_EQUAL = new BiPredicate() {
+    static final BiPredicate IS_EQUAL = new BiPredicate() {
         @Override
         public boolean test(Object t, Object u) {
             return N.equals(t, u);
@@ -49,7 +49,7 @@ public interface BiPredicate<T, U> extends java.util.function.BiPredicate<T, U> 
     };
 
     @SuppressWarnings("rawtypes")
-   static final BiPredicate NOT_EQUAL = new BiPredicate() {
+    static final BiPredicate NOT_EQUAL = new BiPredicate() {
         @Override
         public boolean test(Object t, Object u) {
             return !N.equals(t, u);
@@ -57,7 +57,7 @@ public interface BiPredicate<T, U> extends java.util.function.BiPredicate<T, U> 
     };
 
     @SuppressWarnings("rawtypes")
-   static final BiPredicate<? extends Comparable, ? extends Comparable> GREATER_THAN = new BiPredicate<Comparable, Comparable>() {
+    static final BiPredicate<? extends Comparable, ? extends Comparable> GREATER_THAN = new BiPredicate<Comparable, Comparable>() {
         @Override
         public boolean test(Comparable t, Comparable u) {
             return N.compare(t, u) > 0;
@@ -65,7 +65,7 @@ public interface BiPredicate<T, U> extends java.util.function.BiPredicate<T, U> 
     };
 
     @SuppressWarnings("rawtypes")
-   static final BiPredicate<? extends Comparable, ? extends Comparable> GREATER_EQUAL = new BiPredicate<Comparable, Comparable>() {
+    static final BiPredicate<? extends Comparable, ? extends Comparable> GREATER_EQUAL = new BiPredicate<Comparable, Comparable>() {
         @Override
         public boolean test(Comparable t, Comparable u) {
             return N.compare(t, u) >= 0;
@@ -73,7 +73,7 @@ public interface BiPredicate<T, U> extends java.util.function.BiPredicate<T, U> 
     };
 
     @SuppressWarnings("rawtypes")
-   static final BiPredicate<? extends Comparable, ? extends Comparable> LESS_THAN = new BiPredicate<Comparable, Comparable>() {
+    static final BiPredicate<? extends Comparable, ? extends Comparable> LESS_THAN = new BiPredicate<Comparable, Comparable>() {
         @Override
         public boolean test(Comparable t, Comparable u) {
             return N.compare(t, u) < 0;
@@ -81,7 +81,7 @@ public interface BiPredicate<T, U> extends java.util.function.BiPredicate<T, U> 
     };
 
     @SuppressWarnings("rawtypes")
-   static final BiPredicate<? extends Comparable, ? extends Comparable> LESS_EQUAL = new BiPredicate<Comparable, Comparable>() {
+    static final BiPredicate<? extends Comparable, ? extends Comparable> LESS_EQUAL = new BiPredicate<Comparable, Comparable>() {
         @Override
         public boolean test(Comparable t, Comparable u) {
             return N.compare(t, u) <= 0;
@@ -90,6 +90,14 @@ public interface BiPredicate<T, U> extends java.util.function.BiPredicate<T, U> 
 
     @Override
     boolean test(T t, U u);
+
+    static <T, U> BiPredicate<T, U> alwaysTrue() {
+        return ALWAYS_TRUE;
+    }
+
+    static <T, U> BiPredicate<T, U> alwaysFalse() {
+        return ALWAYS_FALSE;
+    }
 
     static <T> BiPredicate<T, T> isEqual(T t, T u) {
         return IS_EQUAL;
