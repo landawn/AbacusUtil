@@ -5,13 +5,17 @@
 
 2, Add a few static creation method to interface Function/BiFunction/TriFunction/Consumer/BiConsumer/TriConsumer/BinaryOperator
 
-3*, Replace acceptOnError/applyOnError with the second parameter in Try.run(...)/call(...).
+3, Add containsAny to Seq.
 
-4*, Rename Maps.getOrDefaultAll/getAll to Maps.getOrDefault/getOrIgnore() and change the implementation: no value will be added to the returned list if the key doesn't exist in specified Map, instead of adding null.
+4*, Replace acceptOnError/applyOnError with the second parameter in Try.run(...)/call(...).
 
-5, Add containsAny to Seq.
+5*, Rename Maps.getOrDefaultAll/getAll to Maps.getOrDefault/getIfPresent() and change the implementation: no value will be added to the returned list if the key doesn't exist in specified Map, instead of adding null.
 
-6, Improvements and bug fix.
+6*, Move Maps.Entry.comparing* to Comparators.
+
+7*, Replace N.nullMinOrder/nullMaxOrder/... with nullsFirst/nullsLast in Comparators.
+
+8, Improvements and bug fix.
 
 
 ========Changes in 0.9.56=========================================================================

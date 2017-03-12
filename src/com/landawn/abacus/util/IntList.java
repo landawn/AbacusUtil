@@ -574,10 +574,22 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
     }
 
     public boolean retainAll(IntList c) {
+        if (N.isNullOrEmpty(c)) {
+            boolean result = size() > 0;
+            clear();
+            return result;
+        }
+
         return batchRemove(c, true) > 0;
     }
 
     public boolean retainAll(int[] a) {
+        if (N.isNullOrEmpty(a)) {
+            boolean result = size() > 0;
+            clear();
+            return result;
+        }
+
         return retainAll(IntList.of(a));
     }
 
@@ -686,6 +698,10 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
     }
 
     public boolean containsAll(IntList c) {
+        if (N.isNullOrEmpty(c)) {
+            return true;
+        }
+
         final int[] srcElementData = c.array();
 
         if (c.size() > 3 && size() > 9) {
@@ -717,6 +733,10 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
     }
 
     public boolean disjoint(final IntList c) {
+        if (N.isNullOrEmpty(c)) {
+            return true;
+        }
+
         final IntList container = size() >= c.size() ? this : c;
         final int[] iterElements = size() >= c.size() ? c.array() : this.array();
 
@@ -765,6 +785,10 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
      * @return
      */
     public IntList intersection(final IntList b) {
+        if (N.isNullOrEmpty(b)) {
+            return empty();
+        }
+
         final Multiset<Integer> bOccurrences = b.toMultiset();
 
         final IntList c = new IntList(N.min(9, size(), b.size()));
@@ -803,6 +827,10 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
      * @return
      */
     public IntList difference(final IntList b) {
+        if (N.isNullOrEmpty(b)) {
+            return of(N.copyOfRange(elementData, 0, size()));
+        }
+
         final Multiset<Integer> bOccurrences = b.toMultiset();
 
         final IntList c = new IntList(N.min(size(), N.max(9, size() - b.size())));
@@ -836,8 +864,13 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
      * @see IntList#difference(IntList)
      */
     public IntList symmetricDifference(final IntList b) {
-        final Multiset<Integer> bOccurrences = b.toMultiset();
+        if (N.isNullOrEmpty(b)) {
+            return this.copy();
+        } else if (this.isEmpty()) {
+            return b.copy();
+        }
 
+        final Multiset<Integer> bOccurrences = b.toMultiset();
         final IntList c = new IntList(N.max(9, Math.abs(size() - b.size())));
 
         for (int i = 0, len = size(); i < len; i++) {
@@ -862,6 +895,8 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
     public IntList symmetricDifference(final int[] a) {
         if (N.isNullOrEmpty(a)) {
             return of(N.copyOfRange(elementData, 0, size()));
+        } else if (this.isEmpty()) {
+            return of(N.copyOfRange(a, 0, a.length));
         }
 
         return symmetricDifference(of(a));

@@ -22,7 +22,6 @@ import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.ConcurrentModificationException;
 import java.util.HashSet;
@@ -204,10 +203,22 @@ public final class Seq<T> implements Collection<T> {
      */
     @Override
     public boolean retainAll(Collection<?> c) {
+        if (N.isNullOrEmpty(c)) {
+            boolean result = coll.size() > 0;
+            coll.clear();
+            return result;
+        }
+
         return coll.retainAll(c);
     }
 
     public boolean retainAll(Object[] a) {
+        if (N.isNullOrEmpty(a)) {
+            boolean result = coll.size() > 0;
+            coll.clear();
+            return result;
+        }
+
         return retainAll(Arrays.asList(a));
     }
 
@@ -293,10 +304,18 @@ public final class Seq<T> implements Collection<T> {
 
     @Override
     public boolean containsAll(Collection<?> c) {
+        if (N.isNullOrEmpty(c)) {
+            return true;
+        }
+
         return coll.containsAll(c);
     }
 
     public boolean containsAll(Object[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return true;
+        }
+
         return containsAll(Arrays.asList(a));
     }
 
@@ -317,10 +336,14 @@ public final class Seq<T> implements Collection<T> {
     }
 
     public boolean disjoint(final Collection<?> c) {
-        return Collections.disjoint(this.coll, c);
+        return N.disjoint(this.coll, c);
     }
 
     public boolean disjoint(final Object[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return true;
+        }
+
         return disjoint(Arrays.asList(a));
     }
 
@@ -331,6 +354,10 @@ public final class Seq<T> implements Collection<T> {
      * @see IntList#intersection(IntList)
      */
     public Seq<T> intersection(Collection<?> b) {
+        if (N.isNullOrEmpty(coll) || N.isNullOrEmpty(b)) {
+            return new Seq<>();
+        }
+
         final Multiset<?> bOccurrences = Multiset.from(b);
         final Seq<T> result = new Seq<>(N.min(9, size(), b.size()));
 
@@ -344,7 +371,7 @@ public final class Seq<T> implements Collection<T> {
     }
 
     public Seq<T> intersection(final Object[] a) {
-        if (N.isNullOrEmpty(a)) {
+        if (N.isNullOrEmpty(coll) || N.isNullOrEmpty(a)) {
             return new Seq<>();
         }
 
@@ -358,6 +385,10 @@ public final class Seq<T> implements Collection<T> {
      * @see IntList#difference(IntList)
      */
     public Seq<T> difference(Collection<?> b) {
+        if (N.isNullOrEmpty(b)) {
+            return new Seq<>(new ArrayList<>(coll));
+        }
+
         final Multiset<?> bOccurrences = Multiset.from(b);
         final Seq<T> result = new Seq<>(N.min(size(), N.max(9, size() - b.size())));
 
@@ -385,6 +416,12 @@ public final class Seq<T> implements Collection<T> {
      * @see IntList#symmetricDifference(IntList)
      */
     public Seq<T> symmetricDifference(Collection<T> b) {
+        if (N.isNullOrEmpty(b)) {
+            return new Seq<>(new ArrayList<>(coll));
+        } else if (N.isNullOrEmpty(coll)) {
+            return new Seq<>(new ArrayList<>(b));
+        }
+
         final Multiset<?> bOccurrences = Multiset.from(b);
         final Seq<T> result = new Seq<>(N.max(9, Math.abs(size() - b.size())));
 
@@ -410,6 +447,8 @@ public final class Seq<T> implements Collection<T> {
     public Seq<T> symmetricDifference(final T[] a) {
         if (N.isNullOrEmpty(a)) {
             return new Seq<>(new ArrayList<>(coll));
+        } else if (N.isNullOrEmpty(coll)) {
+            return new Seq<>(N.asList(a));
         }
 
         return symmetricDifference(Arrays.asList(a));
@@ -2460,7 +2499,7 @@ public final class Seq<T> implements Collection<T> {
      * @since 12.0
      */
     public static <E extends Comparable<? super E>> Collection<List<E>> orderedPermutations(Collection<E> elements) {
-        return orderedPermutations(elements, N.nullMinOrder());
+        return orderedPermutations(elements, Comparators.OBJ_COMPARATOR);
     }
 
     /**

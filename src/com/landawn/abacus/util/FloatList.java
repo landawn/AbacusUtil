@@ -448,10 +448,22 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
     }
 
     public boolean retainAll(FloatList c) {
+        if (N.isNullOrEmpty(c)) {
+            boolean result = size() > 0;
+            clear();
+            return result;
+        }
+
         return batchRemove(c, true) > 0;
     }
 
     public boolean retainAll(float[] a) {
+        if (N.isNullOrEmpty(a)) {
+            boolean result = size() > 0;
+            clear();
+            return result;
+        }
+
         return retainAll(FloatList.of(a));
     }
 
@@ -560,6 +572,10 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
     }
 
     public boolean containsAll(FloatList c) {
+        if (N.isNullOrEmpty(c)) {
+            return true;
+        }
+
         final float[] srcElementData = c.array();
 
         if (c.size() > 3 && size() > 9) {
@@ -591,6 +607,10 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
     }
 
     public boolean disjoint(final FloatList c) {
+        if (N.isNullOrEmpty(c)) {
+            return true;
+        }
+
         final FloatList container = size() >= c.size() ? this : c;
         final float[] iterElements = size() >= c.size() ? c.array() : this.array();
 
@@ -629,6 +649,10 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
      * @see IntList#intersection(IntList)
      */
     public FloatList intersection(final FloatList b) {
+        if (N.isNullOrEmpty(b)) {
+            return empty();
+        }
+
         final Multiset<Float> bOccurrences = b.toMultiset();
 
         final FloatList c = new FloatList(N.min(9, size(), b.size()));
@@ -657,6 +681,10 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
      * @see IntList#difference(IntList)
      */
     public FloatList difference(FloatList b) {
+        if (N.isNullOrEmpty(b)) {
+            return of(N.copyOfRange(elementData, 0, size()));
+        }
+
         final Multiset<Float> bOccurrences = b.toMultiset();
 
         final FloatList c = new FloatList(N.min(size(), N.max(9, size() - b.size())));
@@ -685,8 +713,13 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
      * @see IntList#symmetricDifference(IntList)
      */
     public FloatList symmetricDifference(FloatList b) {
-        final Multiset<Float> bOccurrences = b.toMultiset();
+        if (N.isNullOrEmpty(b)) {
+            return this.copy();
+        } else if (this.isEmpty()) {
+            return b.copy();
+        }
 
+        final Multiset<Float> bOccurrences = b.toMultiset();
         final FloatList c = new FloatList(N.max(9, Math.abs(size() - b.size())));
 
         for (int i = 0, len = size(); i < len; i++) {
@@ -711,6 +744,8 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
     public FloatList symmetricDifference(final float[] a) {
         if (N.isNullOrEmpty(a)) {
             return of(N.copyOfRange(elementData, 0, size()));
+        } else if (this.isEmpty()) {
+            return of(N.copyOfRange(a, 0, a.length));
         }
 
         return symmetricDifference(of(a));

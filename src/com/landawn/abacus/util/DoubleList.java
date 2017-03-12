@@ -434,10 +434,22 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
     }
 
     public boolean retainAll(DoubleList c) {
+        if (N.isNullOrEmpty(c)) {
+            boolean result = size() > 0;
+            clear();
+            return result;
+        }
+
         return batchRemove(c, true) > 0;
     }
 
     public boolean retainAll(double[] a) {
+        if (N.isNullOrEmpty(a)) {
+            boolean result = size() > 0;
+            clear();
+            return result;
+        }
+
         return retainAll(DoubleList.of(a));
     }
 
@@ -546,6 +558,10 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
     }
 
     public boolean containsAll(DoubleList c) {
+        if (N.isNullOrEmpty(c)) {
+            return true;
+        }
+
         final double[] srcElementData = c.array();
 
         if (c.size() > 3 && size() > 9) {
@@ -577,6 +593,10 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
     }
 
     public boolean disjoint(final DoubleList c) {
+        if (N.isNullOrEmpty(c)) {
+            return true;
+        }
+
         final DoubleList container = size() >= c.size() ? this : c;
         final double[] iterElements = size() >= c.size() ? c.array() : this.array();
 
@@ -615,6 +635,10 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
      * @see IntList#intersection(IntList)
      */
     public DoubleList intersection(final DoubleList b) {
+        if (N.isNullOrEmpty(b)) {
+            return empty();
+        }
+
         final Multiset<Double> bOccurrences = b.toMultiset();
 
         final DoubleList c = new DoubleList(N.min(9, size(), b.size()));
@@ -643,6 +667,10 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
      * @see IntList#difference(IntList)
      */
     public DoubleList difference(DoubleList b) {
+        if (N.isNullOrEmpty(b)) {
+            return of(N.copyOfRange(elementData, 0, size()));
+        }
+
         final Multiset<Double> bOccurrences = b.toMultiset();
 
         final DoubleList c = new DoubleList(N.min(size(), N.max(9, size() - b.size())));
@@ -671,8 +699,13 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
      * @see IntList#symmetricDifference(IntList)
      */
     public DoubleList symmetricDifference(DoubleList b) {
-        final Multiset<Double> bOccurrences = b.toMultiset();
+        if (N.isNullOrEmpty(b)) {
+            return this.copy();
+        } else if (this.isEmpty()) {
+            return b.copy();
+        }
 
+        final Multiset<Double> bOccurrences = b.toMultiset();
         final DoubleList c = new DoubleList(N.max(9, Math.abs(size() - b.size())));
 
         for (int i = 0, len = size(); i < len; i++) {
@@ -697,6 +730,8 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
     public DoubleList symmetricDifference(final double[] a) {
         if (N.isNullOrEmpty(a)) {
             return of(N.copyOfRange(elementData, 0, size()));
+        } else if (this.isEmpty()) {
+            return of(N.copyOfRange(a, 0, a.length));
         }
 
         return symmetricDifference(of(a));

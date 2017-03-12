@@ -424,10 +424,22 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
     }
 
     public boolean retainAll(ShortList c) {
+        if (N.isNullOrEmpty(c)) {
+            boolean result = size() > 0;
+            clear();
+            return result;
+        }
+
         return batchRemove(c, true) > 0;
     }
 
     public boolean retainAll(short[] a) {
+        if (N.isNullOrEmpty(a)) {
+            boolean result = size() > 0;
+            clear();
+            return result;
+        }
+
         return retainAll(ShortList.of(a));
     }
 
@@ -536,6 +548,10 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
     }
 
     public boolean containsAll(ShortList c) {
+        if (N.isNullOrEmpty(c)) {
+            return true;
+        }
+
         final short[] srcElementData = c.array();
 
         if (c.size() > 3 && size() > 9) {
@@ -567,6 +583,10 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
     }
 
     public boolean disjoint(final ShortList c) {
+        if (N.isNullOrEmpty(c)) {
+            return true;
+        }
+
         final ShortList container = size() >= c.size() ? this : c;
         final short[] iterElements = size() >= c.size() ? c.array() : this.array();
 
@@ -605,6 +625,10 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
      * @see IntList#intersection(IntList)
      */
     public ShortList intersection(final ShortList b) {
+        if (N.isNullOrEmpty(b)) {
+            return empty();
+        }
+
         final Multiset<Short> bOccurrences = b.toMultiset();
 
         final ShortList c = new ShortList(N.min(9, size(), b.size()));
@@ -633,6 +657,10 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
      * @see IntList#difference(IntList)
      */
     public ShortList difference(final ShortList b) {
+        if (N.isNullOrEmpty(b)) {
+            return of(N.copyOfRange(elementData, 0, size()));
+        }
+
         final Multiset<Short> bOccurrences = b.toMultiset();
 
         final ShortList c = new ShortList(N.min(size(), N.max(9, size() - b.size())));
@@ -661,8 +689,13 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
      * @see IntList#symmetricDifference(IntList)
      */
     public ShortList symmetricDifference(final ShortList b) {
-        final Multiset<Short> bOccurrences = b.toMultiset();
+        if (N.isNullOrEmpty(b)) {
+            return this.copy();
+        } else if (this.isEmpty()) {
+            return b.copy();
+        }
 
+        final Multiset<Short> bOccurrences = b.toMultiset();
         final ShortList c = new ShortList(N.max(9, Math.abs(size() - b.size())));
 
         for (int i = 0, len = size(); i < len; i++) {
@@ -687,6 +720,8 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
     public ShortList symmetricDifference(final short[] a) {
         if (N.isNullOrEmpty(a)) {
             return of(N.copyOfRange(elementData, 0, size()));
+        } else if (this.isEmpty()) {
+            return of(N.copyOfRange(a, 0, a.length));
         }
 
         return symmetricDifference(of(a));

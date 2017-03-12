@@ -468,10 +468,22 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
     }
 
     public boolean retainAll(LongList c) {
+        if (N.isNullOrEmpty(c)) {
+            boolean result = size() > 0;
+            clear();
+            return result;
+        }
+
         return batchRemove(c, true) > 0;
     }
 
     public boolean retainAll(long[] a) {
+        if (N.isNullOrEmpty(a)) {
+            boolean result = size() > 0;
+            clear();
+            return result;
+        }
+
         return retainAll(LongList.of(a));
     }
 
@@ -580,6 +592,10 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
     }
 
     public boolean containsAll(LongList c) {
+        if (N.isNullOrEmpty(c)) {
+            return true;
+        }
+
         final long[] srcElementData = c.array();
 
         if (c.size() > 3 && size() > 9) {
@@ -611,6 +627,10 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
     }
 
     public boolean disjoint(final LongList c) {
+        if (N.isNullOrEmpty(c)) {
+            return true;
+        }
+
         final LongList container = size() >= c.size() ? this : c;
         final long[] iterElements = size() >= c.size() ? c.array() : this.array();
 
@@ -649,6 +669,10 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
      * @see IntList#intersection(IntList)
      */
     public LongList intersection(final LongList b) {
+        if (N.isNullOrEmpty(b)) {
+            return empty();
+        }
+
         final Multiset<Long> bOccurrences = b.toMultiset();
 
         final LongList c = new LongList(N.min(9, size(), b.size()));
@@ -677,6 +701,10 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
      * @see IntList#difference(IntList)
      */
     public LongList difference(LongList b) {
+        if (N.isNullOrEmpty(b)) {
+            return of(N.copyOfRange(elementData, 0, size()));
+        }
+
         final Multiset<Long> bOccurrences = b.toMultiset();
 
         final LongList c = new LongList(N.min(size(), N.max(9, size() - b.size())));
@@ -705,8 +733,13 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
      * @see IntList#symmetricDifference(IntList)
      */
     public LongList symmetricDifference(LongList b) {
-        final Multiset<Long> bOccurrences = b.toMultiset();
+        if (N.isNullOrEmpty(b)) {
+            return this.copy();
+        } else if (this.isEmpty()) {
+            return b.copy();
+        }
 
+        final Multiset<Long> bOccurrences = b.toMultiset();
         final LongList c = new LongList(N.max(9, Math.abs(size() - b.size())));
 
         for (int i = 0, len = size(); i < len; i++) {
@@ -731,6 +764,8 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
     public LongList symmetricDifference(final long[] a) {
         if (N.isNullOrEmpty(a)) {
             return of(N.copyOfRange(elementData, 0, size()));
+        } else if (this.isEmpty()) {
+            return of(N.copyOfRange(a, 0, a.length));
         }
 
         return symmetricDifference(of(a));

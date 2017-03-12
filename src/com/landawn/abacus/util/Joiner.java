@@ -276,7 +276,7 @@ public class Joiner {
     public Joiner join(final boolean[] a, final int fromIndex, final int toIndex) {
         N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return this;
         }
 
@@ -308,7 +308,7 @@ public class Joiner {
     public Joiner join(final char[] a, final int fromIndex, final int toIndex) {
         N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return this;
         }
 
@@ -340,7 +340,7 @@ public class Joiner {
     public Joiner join(final byte[] a, final int fromIndex, final int toIndex) {
         N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return this;
         }
 
@@ -372,7 +372,7 @@ public class Joiner {
     public Joiner join(final short[] a, final int fromIndex, final int toIndex) {
         N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return this;
         }
 
@@ -404,7 +404,7 @@ public class Joiner {
     public Joiner join(final int[] a, final int fromIndex, final int toIndex) {
         N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return this;
         }
 
@@ -436,7 +436,7 @@ public class Joiner {
     public Joiner join(final long[] a, final int fromIndex, final int toIndex) {
         N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return this;
         }
 
@@ -468,7 +468,7 @@ public class Joiner {
     public Joiner join(final float[] a, final int fromIndex, final int toIndex) {
         N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return this;
         }
 
@@ -500,7 +500,7 @@ public class Joiner {
     public Joiner join(final double[] a, final int fromIndex, final int toIndex) {
         N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return this;
         }
 
@@ -532,7 +532,7 @@ public class Joiner {
     public Joiner join(final Object[] a, final int fromIndex, final int toIndex) {
         N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return this;
         }
 
@@ -578,7 +578,7 @@ public class Joiner {
     public Joiner join(final Collection<?> c, final int fromIndex, final int toIndex) {
         N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
-        if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < c.size())) {
+        if (N.isNullOrEmpty(c) || (fromIndex == toIndex && fromIndex < c.size())) {
             return this;
         }
 
@@ -696,7 +696,7 @@ public class Joiner {
     public Joiner join(final BooleanList c, final int fromIndex, final int toIndex) {
         N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
-        if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(c) || fromIndex == toIndex) {
             return this;
         }
 
@@ -714,7 +714,7 @@ public class Joiner {
     public Joiner join(final CharList c, final int fromIndex, final int toIndex) {
         N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
-        if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(c) || fromIndex == toIndex) {
             return this;
         }
 
@@ -732,7 +732,7 @@ public class Joiner {
     public Joiner join(final ByteList c, final int fromIndex, final int toIndex) {
         N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
-        if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(c) || fromIndex == toIndex) {
             return this;
         }
 
@@ -750,7 +750,7 @@ public class Joiner {
     public Joiner join(final ShortList c, final int fromIndex, final int toIndex) {
         N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
-        if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(c) || fromIndex == toIndex) {
             return this;
         }
 
@@ -768,7 +768,7 @@ public class Joiner {
     public Joiner join(final IntList c, final int fromIndex, final int toIndex) {
         N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
-        if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(c) || fromIndex == toIndex) {
             return this;
         }
 
@@ -786,7 +786,7 @@ public class Joiner {
     public Joiner join(final LongList c, final int fromIndex, final int toIndex) {
         N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
-        if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(c) || fromIndex == toIndex) {
             return this;
         }
 
@@ -804,7 +804,7 @@ public class Joiner {
     public Joiner join(final FloatList c, final int fromIndex, final int toIndex) {
         N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
-        if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(c) || fromIndex == toIndex) {
             return this;
         }
 
@@ -822,7 +822,7 @@ public class Joiner {
     public Joiner join(final DoubleList c, final int fromIndex, final int toIndex) {
         N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
-        if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(c) || fromIndex == toIndex) {
             return this;
         }
 
@@ -840,7 +840,7 @@ public class Joiner {
     public Joiner join(final ExList<?> c, final int fromIndex, final int toIndex) {
         N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
-        if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(c) || fromIndex == toIndex) {
             return this;
         }
 
@@ -931,932 +931,4 @@ public class Joiner {
             }
         }
     }
-
-    //    public static final class Joiner0 {
-    //        private Joiner0() {
-    //            // singleton
-    //        }
-    //
-    //        public static String join(final boolean[] a) {
-    //            return join(a, N.ELEMENT_SEPARATOR);
-    //        }
-    //
-    //        public static String join(final boolean[] a, final char delimiter) {
-    //            if (N.isNullOrEmpty(a)) {
-    //                return N.EMPTY_STRING;
-    //            }
-    //
-    //            return join(a, 0, a.length, delimiter);
-    //        }
-    //
-    //        public static String join(final boolean[] a, final String delimiter) {
-    //            if (N.isNullOrEmpty(a)) {
-    //                return N.EMPTY_STRING;
-    //            }
-    //
-    //            return join(a, 0, a.length, delimiter);
-    //        }
-    //
-    //        public static String join(final boolean[] a, final int fromIndex, final int toIndex, final char delimiter) {
-    //            N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-    //
-    //            if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
-    //                return N.EMPTY_STRING;
-    //            }
-    //
-    //            final StringBuilder sb = ObjectFactory.createStringBuilder();
-    //
-    //            try {
-    //                for (int i = fromIndex; i < toIndex; i++) {
-    //                    if (i > fromIndex) {
-    //                        sb.append(delimiter);
-    //                    }
-    //
-    //                    sb.append(a[i]);
-    //                }
-    //
-    //                return sb.toString();
-    //            } finally {
-    //                ObjectFactory.recycle(sb);
-    //            }
-    //        }
-    //
-    //        public static String join(final boolean[] a, final int fromIndex, final int toIndex, final String delimiter) {
-    //            N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-    //
-    //            if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
-    //                return N.EMPTY_STRING;
-    //            }
-    //
-    //            final StringBuilder sb = ObjectFactory.createStringBuilder();
-    //
-    //            try {
-    //                if (N.isNullOrEmpty(delimiter)) {
-    //                    for (int i = fromIndex; i < toIndex; i++) {
-    //                        sb.append(a[i]);
-    //                    }
-    //                } else {
-    //                    for (int i = fromIndex; i < toIndex; i++) {
-    //                        if (i > fromIndex) {
-    //                            sb.append(delimiter);
-    //                        }
-    //
-    //                        sb.append(a[i]);
-    //                    }
-    //                }
-    //
-    //                return sb.toString();
-    //            } finally {
-    //                ObjectFactory.recycle(sb);
-    //            }
-    //        }
-    //
-    //        public static String join(final char[] a) {
-    //            return join(a, N.ELEMENT_SEPARATOR);
-    //        }
-    //
-    //        public static String join(final char[] a, final char delimiter) {
-    //            if (N.isNullOrEmpty(a)) {
-    //                return N.EMPTY_STRING;
-    //            }
-    //
-    //            return join(a, 0, a.length, delimiter);
-    //        }
-    //
-    //        public static String join(final char[] a, final String delimiter) {
-    //            if (N.isNullOrEmpty(a)) {
-    //                return N.EMPTY_STRING;
-    //            }
-    //
-    //            return join(a, 0, a.length, delimiter);
-    //        }
-    //
-    //        public static String join(final char[] a, final int fromIndex, final int toIndex, final char delimiter) {
-    //            N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-    //
-    //            if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
-    //                return N.EMPTY_STRING;
-    //            }
-    //
-    //            final StringBuilder sb = ObjectFactory.createStringBuilder();
-    //
-    //            try {
-    //                for (int i = fromIndex; i < toIndex; i++) {
-    //                    if (i > fromIndex) {
-    //                        sb.append(delimiter);
-    //                    }
-    //
-    //                    sb.append(a[i]);
-    //                }
-    //
-    //                return sb.toString();
-    //            } finally {
-    //                ObjectFactory.recycle(sb);
-    //            }
-    //        }
-    //
-    //        public static String join(final char[] a, final int fromIndex, final int toIndex, final String delimiter) {
-    //            N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-    //
-    //            if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
-    //                return N.EMPTY_STRING;
-    //            }
-    //
-    //            final StringBuilder sb = ObjectFactory.createStringBuilder();
-    //
-    //            try {
-    //                if (N.isNullOrEmpty(delimiter)) {
-    //                    for (int i = fromIndex; i < toIndex; i++) {
-    //                        sb.append(a[i]);
-    //                    }
-    //                } else {
-    //                    for (int i = fromIndex; i < toIndex; i++) {
-    //                        if (i > fromIndex) {
-    //                            sb.append(delimiter);
-    //                        }
-    //
-    //                        sb.append(a[i]);
-    //                    }
-    //                }
-    //
-    //                return sb.toString();
-    //            } finally {
-    //                ObjectFactory.recycle(sb);
-    //            }
-    //        }
-    //
-    //        public static String join(final byte[] a) {
-    //            return join(a, N.ELEMENT_SEPARATOR);
-    //        }
-    //
-    //        public static String join(final byte[] a, final char delimiter) {
-    //            if (N.isNullOrEmpty(a)) {
-    //                return N.EMPTY_STRING;
-    //            }
-    //
-    //            return join(a, 0, a.length, delimiter);
-    //        }
-    //
-    //        public static String join(final byte[] a, final String delimiter) {
-    //            if (N.isNullOrEmpty(a)) {
-    //                return N.EMPTY_STRING;
-    //            }
-    //
-    //            return join(a, 0, a.length, delimiter);
-    //        }
-    //
-    //        public static String join(final byte[] a, final int fromIndex, final int toIndex, final char delimiter) {
-    //            N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-    //
-    //            if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
-    //                return N.EMPTY_STRING;
-    //            }
-    //
-    //            final StringBuilder sb = ObjectFactory.createStringBuilder();
-    //
-    //            try {
-    //                for (int i = fromIndex; i < toIndex; i++) {
-    //                    if (i > fromIndex) {
-    //                        sb.append(delimiter);
-    //                    }
-    //
-    //                    sb.append(a[i]);
-    //                }
-    //
-    //                return sb.toString();
-    //            } finally {
-    //                ObjectFactory.recycle(sb);
-    //            }
-    //        }
-    //
-    //        public static String join(final byte[] a, final int fromIndex, final int toIndex, final String delimiter) {
-    //            N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-    //
-    //            if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
-    //                return N.EMPTY_STRING;
-    //            }
-    //
-    //            final StringBuilder sb = ObjectFactory.createStringBuilder();
-    //
-    //            try {
-    //                if (N.isNullOrEmpty(delimiter)) {
-    //                    for (int i = fromIndex; i < toIndex; i++) {
-    //                        sb.append(a[i]);
-    //                    }
-    //                } else {
-    //                    for (int i = fromIndex; i < toIndex; i++) {
-    //                        if (i > fromIndex) {
-    //                            sb.append(delimiter);
-    //                        }
-    //
-    //                        sb.append(a[i]);
-    //                    }
-    //                }
-    //
-    //                return sb.toString();
-    //            } finally {
-    //                ObjectFactory.recycle(sb);
-    //            }
-    //        }
-    //
-    //        public static String join(final short[] a) {
-    //            return join(a, N.ELEMENT_SEPARATOR);
-    //        }
-    //
-    //        public static String join(final short[] a, final char delimiter) {
-    //            if (N.isNullOrEmpty(a)) {
-    //                return N.EMPTY_STRING;
-    //            }
-    //
-    //            return join(a, 0, a.length, delimiter);
-    //        }
-    //
-    //        public static String join(final short[] a, final String delimiter) {
-    //            if (N.isNullOrEmpty(a)) {
-    //                return N.EMPTY_STRING;
-    //            }
-    //
-    //            return join(a, 0, a.length, delimiter);
-    //        }
-    //
-    //        public static String join(final short[] a, final int fromIndex, final int toIndex, final char delimiter) {
-    //            N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-    //
-    //            if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
-    //                return N.EMPTY_STRING;
-    //            }
-    //
-    //            final StringBuilder sb = ObjectFactory.createStringBuilder();
-    //
-    //            try {
-    //                for (int i = fromIndex; i < toIndex; i++) {
-    //                    if (i > fromIndex) {
-    //                        sb.append(delimiter);
-    //                    }
-    //
-    //                    sb.append(a[i]);
-    //                }
-    //
-    //                return sb.toString();
-    //            } finally {
-    //                ObjectFactory.recycle(sb);
-    //            }
-    //        }
-    //
-    //        public static String join(final short[] a, final int fromIndex, final int toIndex, final String delimiter) {
-    //            N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-    //
-    //            if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
-    //                return N.EMPTY_STRING;
-    //            }
-    //
-    //            final StringBuilder sb = ObjectFactory.createStringBuilder();
-    //
-    //            try {
-    //                if (N.isNullOrEmpty(delimiter)) {
-    //                    for (int i = fromIndex; i < toIndex; i++) {
-    //                        sb.append(a[i]);
-    //                    }
-    //                } else {
-    //                    for (int i = fromIndex; i < toIndex; i++) {
-    //                        if (i > fromIndex) {
-    //                            sb.append(delimiter);
-    //                        }
-    //
-    //                        sb.append(a[i]);
-    //                    }
-    //                }
-    //
-    //                return sb.toString();
-    //            } finally {
-    //                ObjectFactory.recycle(sb);
-    //            }
-    //        }
-    //
-    //        public static String join(final int[] a) {
-    //            return join(a, N.ELEMENT_SEPARATOR);
-    //        }
-    //
-    //        public static String join(final int[] a, final char delimiter) {
-    //            if (N.isNullOrEmpty(a)) {
-    //                return N.EMPTY_STRING;
-    //            }
-    //
-    //            return join(a, 0, a.length, delimiter);
-    //        }
-    //
-    //        public static String join(final int[] a, final String delimiter) {
-    //            if (N.isNullOrEmpty(a)) {
-    //                return N.EMPTY_STRING;
-    //            }
-    //
-    //            return join(a, 0, a.length, delimiter);
-    //        }
-    //
-    //        public static String join(final int[] a, final int fromIndex, final int toIndex, final char delimiter) {
-    //            N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-    //
-    //            if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
-    //                return N.EMPTY_STRING;
-    //            }
-    //
-    //            final StringBuilder sb = ObjectFactory.createStringBuilder();
-    //
-    //            try {
-    //                for (int i = fromIndex; i < toIndex; i++) {
-    //                    if (i > fromIndex) {
-    //                        sb.append(delimiter);
-    //                    }
-    //
-    //                    sb.append(a[i]);
-    //                }
-    //
-    //                return sb.toString();
-    //            } finally {
-    //                ObjectFactory.recycle(sb);
-    //            }
-    //        }
-    //
-    //        public static String join(final int[] a, final int fromIndex, final int toIndex, final String delimiter) {
-    //            N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-    //
-    //            if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
-    //                return N.EMPTY_STRING;
-    //            }
-    //
-    //            final StringBuilder sb = ObjectFactory.createStringBuilder();
-    //
-    //            try {
-    //                if (N.isNullOrEmpty(delimiter)) {
-    //                    for (int i = fromIndex; i < toIndex; i++) {
-    //                        sb.append(a[i]);
-    //                    }
-    //                } else {
-    //                    for (int i = fromIndex; i < toIndex; i++) {
-    //                        if (i > fromIndex) {
-    //                            sb.append(delimiter);
-    //                        }
-    //
-    //                        sb.append(a[i]);
-    //                    }
-    //                }
-    //
-    //                return sb.toString();
-    //            } finally {
-    //                ObjectFactory.recycle(sb);
-    //            }
-    //        }
-    //
-    //        public static String join(final long[] a) {
-    //            return join(a, N.ELEMENT_SEPARATOR);
-    //        }
-    //
-    //        public static String join(final long[] a, final char delimiter) {
-    //            if (N.isNullOrEmpty(a)) {
-    //                return N.EMPTY_STRING;
-    //            }
-    //
-    //            return join(a, 0, a.length, delimiter);
-    //        }
-    //
-    //        public static String join(final long[] a, final String delimiter) {
-    //            if (N.isNullOrEmpty(a)) {
-    //                return N.EMPTY_STRING;
-    //            }
-    //
-    //            return join(a, 0, a.length, delimiter);
-    //        }
-    //
-    //        public static String join(final long[] a, final int fromIndex, final int toIndex, final char delimiter) {
-    //            N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-    //
-    //            if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
-    //                return N.EMPTY_STRING;
-    //            }
-    //
-    //            final StringBuilder sb = ObjectFactory.createStringBuilder();
-    //
-    //            try {
-    //                for (int i = fromIndex; i < toIndex; i++) {
-    //                    if (i > fromIndex) {
-    //                        sb.append(delimiter);
-    //                    }
-    //
-    //                    sb.append(a[i]);
-    //                }
-    //
-    //                return sb.toString();
-    //            } finally {
-    //                ObjectFactory.recycle(sb);
-    //            }
-    //        }
-    //
-    //        public static String join(final long[] a, final int fromIndex, final int toIndex, final String delimiter) {
-    //            N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-    //
-    //            if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
-    //                return N.EMPTY_STRING;
-    //            }
-    //
-    //            final StringBuilder sb = ObjectFactory.createStringBuilder();
-    //
-    //            try {
-    //                if (N.isNullOrEmpty(delimiter)) {
-    //                    for (int i = fromIndex; i < toIndex; i++) {
-    //                        sb.append(a[i]);
-    //                    }
-    //                } else {
-    //                    for (int i = fromIndex; i < toIndex; i++) {
-    //                        if (i > fromIndex) {
-    //                            sb.append(delimiter);
-    //                        }
-    //
-    //                        sb.append(a[i]);
-    //                    }
-    //                }
-    //
-    //                return sb.toString();
-    //            } finally {
-    //                ObjectFactory.recycle(sb);
-    //            }
-    //        }
-    //
-    //        public static String join(final float[] a) {
-    //            return join(a, N.ELEMENT_SEPARATOR);
-    //        }
-    //
-    //        public static String join(final float[] a, final char delimiter) {
-    //            if (N.isNullOrEmpty(a)) {
-    //                return N.EMPTY_STRING;
-    //            }
-    //
-    //            return join(a, 0, a.length, delimiter);
-    //        }
-    //
-    //        public static String join(final float[] a, final String delimiter) {
-    //            if (N.isNullOrEmpty(a)) {
-    //                return N.EMPTY_STRING;
-    //            }
-    //
-    //            return join(a, 0, a.length, delimiter);
-    //        }
-    //
-    //        public static String join(final float[] a, final int fromIndex, final int toIndex, final char delimiter) {
-    //            N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-    //
-    //            if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
-    //                return N.EMPTY_STRING;
-    //            }
-    //
-    //            final StringBuilder sb = ObjectFactory.createStringBuilder();
-    //
-    //            try {
-    //                for (int i = fromIndex; i < toIndex; i++) {
-    //                    if (i > fromIndex) {
-    //                        sb.append(delimiter);
-    //                    }
-    //
-    //                    sb.append(a[i]);
-    //                }
-    //
-    //                return sb.toString();
-    //            } finally {
-    //                ObjectFactory.recycle(sb);
-    //            }
-    //        }
-    //
-    //        public static String join(final float[] a, final int fromIndex, final int toIndex, final String delimiter) {
-    //            N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-    //
-    //            if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
-    //                return N.EMPTY_STRING;
-    //            }
-    //
-    //            final StringBuilder sb = ObjectFactory.createStringBuilder();
-    //
-    //            try {
-    //                if (N.isNullOrEmpty(delimiter)) {
-    //                    for (int i = fromIndex; i < toIndex; i++) {
-    //                        sb.append(a[i]);
-    //                    }
-    //                } else {
-    //                    for (int i = fromIndex; i < toIndex; i++) {
-    //                        if (i > fromIndex) {
-    //                            sb.append(delimiter);
-    //                        }
-    //
-    //                        sb.append(a[i]);
-    //                    }
-    //                }
-    //
-    //                return sb.toString();
-    //            } finally {
-    //                ObjectFactory.recycle(sb);
-    //            }
-    //        }
-    //
-    //        public static String join(final double[] a) {
-    //            return join(a, N.ELEMENT_SEPARATOR);
-    //        }
-    //
-    //        public static String join(final double[] a, final char delimiter) {
-    //            if (N.isNullOrEmpty(a)) {
-    //                return N.EMPTY_STRING;
-    //            }
-    //
-    //            return join(a, 0, a.length, delimiter);
-    //        }
-    //
-    //        public static String join(final double[] a, final String delimiter) {
-    //            if (N.isNullOrEmpty(a)) {
-    //                return N.EMPTY_STRING;
-    //            }
-    //
-    //            return join(a, 0, a.length, delimiter);
-    //        }
-    //
-    //        public static String join(final double[] a, final int fromIndex, final int toIndex, final char delimiter) {
-    //            N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-    //
-    //            if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
-    //                return N.EMPTY_STRING;
-    //            }
-    //
-    //            final StringBuilder sb = ObjectFactory.createStringBuilder();
-    //
-    //            try {
-    //                for (int i = fromIndex; i < toIndex; i++) {
-    //                    if (i > fromIndex) {
-    //                        sb.append(delimiter);
-    //                    }
-    //
-    //                    sb.append(a[i]);
-    //                }
-    //
-    //                return sb.toString();
-    //            } finally {
-    //                ObjectFactory.recycle(sb);
-    //            }
-    //        }
-    //
-    //        public static String join(final double[] a, final int fromIndex, final int toIndex, final String delimiter) {
-    //            N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-    //
-    //            if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
-    //                return N.EMPTY_STRING;
-    //            }
-    //
-    //            final StringBuilder sb = ObjectFactory.createStringBuilder();
-    //
-    //            try {
-    //                if (N.isNullOrEmpty(delimiter)) {
-    //                    for (int i = fromIndex; i < toIndex; i++) {
-    //                        sb.append(a[i]);
-    //                    }
-    //                } else {
-    //                    for (int i = fromIndex; i < toIndex; i++) {
-    //                        if (i > fromIndex) {
-    //                            sb.append(delimiter);
-    //                        }
-    //
-    //                        sb.append(a[i]);
-    //                    }
-    //                }
-    //
-    //                return sb.toString();
-    //            } finally {
-    //                ObjectFactory.recycle(sb);
-    //            }
-    //        }
-    //
-    //        public static String join(final Object[] a) {
-    //            return join(a, N.ELEMENT_SEPARATOR);
-    //        }
-    //
-    //        public static String join(final Object[] a, final char delimiter) {
-    //            if (N.isNullOrEmpty(a)) {
-    //                return N.EMPTY_STRING;
-    //            }
-    //
-    //            return join(a, 0, a.length, delimiter);
-    //        }
-    //
-    //        public static String join(final Object[] a, final String delimiter) {
-    //            if (N.isNullOrEmpty(a)) {
-    //                return N.EMPTY_STRING;
-    //            }
-    //
-    //            return join(a, 0, a.length, delimiter);
-    //        }
-    //
-    //        public static String join(final Object[] a, final int fromIndex, final int toIndex, final char delimiter) {
-    //            return N.join(a, fromIndex, toIndex, delimiter, false);
-    //        }
-    //
-    //        public static String join(final Object[] a, final int fromIndex, final int toIndex, final char delimiter, final boolean trim) {
-    //            N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-    //
-    //            if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
-    //                return N.EMPTY_STRING;
-    //            }
-    //
-    //            final StringBuilder sb = ObjectFactory.createStringBuilder();
-    //
-    //            try {
-    //                for (int i = fromIndex; i < toIndex; i++) {
-    //                    if (i > fromIndex) {
-    //                        sb.append(delimiter);
-    //                    }
-    //
-    //                    sb.append(trim ? N.toString(a[i]).trim() : N.toString(a[i]));
-    //                }
-    //
-    //                return sb.toString();
-    //            } finally {
-    //                ObjectFactory.recycle(sb);
-    //            }
-    //        }
-    //
-    //        public static String join(final Object[] a, final int fromIndex, final int toIndex, final String delimiter) {
-    //            return N.join(a, fromIndex, toIndex, delimiter, false);
-    //        }
-    //
-    //        public static String join(final Object[] a, final int fromIndex, final int toIndex, final String delimiter, final boolean trim) {
-    //            N.checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-    //
-    //            if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
-    //                return N.EMPTY_STRING;
-    //            }
-    //
-    //            final StringBuilder sb = ObjectFactory.createStringBuilder();
-    //
-    //            try {
-    //                if (N.isNullOrEmpty(delimiter)) {
-    //                    for (int i = fromIndex; i < toIndex; i++) {
-    //                        sb.append(trim ? N.toString(a[i]).trim() : N.toString(a[i]));
-    //                    }
-    //                } else {
-    //                    for (int i = fromIndex; i < toIndex; i++) {
-    //                        if (i > fromIndex) {
-    //                            sb.append(delimiter);
-    //                        }
-    //
-    //                        sb.append(trim ? N.toString(a[i]).trim() : N.toString(a[i]));
-    //                    }
-    //                }
-    //
-    //                return sb.toString();
-    //            } finally {
-    //                ObjectFactory.recycle(sb);
-    //            }
-    //        }
-    //
-    //        public static String join(final Collection<?> c) {
-    //            return join(c, N.ELEMENT_SEPARATOR);
-    //        }
-    //
-    //        public static String join(final Collection<?> c, final char delimiter) {
-    //            if (N.isNullOrEmpty(c)) {
-    //                return N.EMPTY_STRING;
-    //            }
-    //
-    //            return join(c, 0, c.size(), delimiter);
-    //        }
-    //
-    //        public static String join(final Collection<?> c, final String delimiter) {
-    //            if (N.isNullOrEmpty(c)) {
-    //                return N.EMPTY_STRING;
-    //            }
-    //
-    //            return join(c, 0, c.size(), delimiter);
-    //        }
-    //
-    //        public static String join(final Collection<?> c, final int fromIndex, final int toIndex, final char delimiter) {
-    //            return N.join(c, fromIndex, toIndex, delimiter, false);
-    //        }
-    //
-    //        public static String join(final Collection<?> c, final int fromIndex, final int toIndex, final char delimiter, final boolean trim) {
-    //            N.checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
-    //
-    //            if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < c.size())) {
-    //                return N.EMPTY_STRING;
-    //            }
-    //
-    //            final StringBuilder sb = ObjectFactory.createStringBuilder();
-    //
-    //            try {
-    //                int i = 0;
-    //                for (Object e : c) {
-    //                    if (i++ > fromIndex) {
-    //                        sb.append(delimiter);
-    //                    }
-    //
-    //                    if (i > fromIndex) {
-    //                        sb.append(trim ? N.toString(e).trim() : N.toString(e));
-    //                    }
-    //
-    //                    if (i >= toIndex) {
-    //                        break;
-    //                    }
-    //                }
-    //
-    //                return sb.toString();
-    //            } finally {
-    //                ObjectFactory.recycle(sb);
-    //            }
-    //        }
-    //
-    //        public static String join(final Collection<?> c, final int fromIndex, final int toIndex, final String delimiter) {
-    //            return N.join(c, fromIndex, toIndex, delimiter, false);
-    //        }
-    //
-    //        public static String join(final Collection<?> c, final int fromIndex, final int toIndex, final String delimiter, final boolean trim) {
-    //            N.checkIndex(fromIndex, toIndex, c == null ? 0 : c.size());
-    //
-    //            if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < c.size())) {
-    //                return N.EMPTY_STRING;
-    //            }
-    //
-    //            final StringBuilder sb = ObjectFactory.createStringBuilder();
-    //
-    //            try {
-    //                if (c instanceof List && c instanceof RandomAccess) {
-    //                    final List<?> list = (List<?>) c;
-    //
-    //                    if (N.isNullOrEmpty(delimiter)) {
-    //                        for (int i = fromIndex; i < toIndex; i++) {
-    //                            sb.append(trim ? N.toString(list.get(i)).trim() : N.toString(list.get(i)));
-    //                        }
-    //                    } else {
-    //                        for (int i = fromIndex; i < toIndex; i++) {
-    //                            if (i > fromIndex) {
-    //                                sb.append(delimiter);
-    //                            }
-    //
-    //                            sb.append(trim ? N.toString(list.get(i)).trim() : N.toString(list.get(i)));
-    //                        }
-    //                    }
-    //                } else {
-    //                    int i = 0;
-    //                    if (N.isNullOrEmpty(delimiter)) {
-    //                        for (Object e : c) {
-    //                            if (i++ >= fromIndex) {
-    //                                sb.append(trim ? N.toString(e).trim() : N.toString(e));
-    //                            }
-    //
-    //                            if (i >= toIndex) {
-    //                                break;
-    //                            }
-    //                        }
-    //                    } else {
-    //                        for (Object e : c) {
-    //                            if (i++ > fromIndex) {
-    //                                sb.append(delimiter);
-    //                            }
-    //
-    //                            if (i > fromIndex) {
-    //                                sb.append(trim ? N.toString(e).trim() : N.toString(e));
-    //                            }
-    //
-    //                            if (i >= toIndex) {
-    //                                break;
-    //                            }
-    //                        }
-    //                    }
-    //                }
-    //
-    //                return sb.toString();
-    //            } finally {
-    //                ObjectFactory.recycle(sb);
-    //            }
-    //        }
-    //
-    //        public static String join(final Map<?, ?> m) {
-    //            return join(m, N.ELEMENT_SEPARATOR);
-    //        }
-    //
-    //        public static String join(final Map<?, ?> m, final char entryDelimiter) {
-    //            if (N.isNullOrEmpty(m)) {
-    //                return N.EMPTY_STRING;
-    //            }
-    //
-    //            return join(m, 0, m.size(), entryDelimiter);
-    //        }
-    //
-    //        public static String join(final Map<?, ?> m, final String entryDelimiter) {
-    //            if (N.isNullOrEmpty(m)) {
-    //                return N.EMPTY_STRING;
-    //            }
-    //
-    //            return join(m, 0, m.size(), entryDelimiter);
-    //        }
-    //
-    //        public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final char entryDelimiter) {
-    //            return N.join(m, fromIndex, toIndex, entryDelimiter, false);
-    //        }
-    //
-    //        public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final char entryDelimiter, final boolean trim) {
-    //            return N.join(m, fromIndex, toIndex, entryDelimiter, D._EQUAL, trim);
-    //        }
-    //
-    //        public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final String entryDelimiter) {
-    //            return N.join(m, fromIndex, toIndex, entryDelimiter, false);
-    //        }
-    //
-    //        public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final String entryDelimiter, final boolean trim) {
-    //            return N.join(m, fromIndex, toIndex, entryDelimiter, D.EQUAL, trim);
-    //        }
-    //
-    //        public static String join(final Map<?, ?> m, final char entryDelimiter, final char keyValueDelimiter) {
-    //            if (N.isNullOrEmpty(m)) {
-    //                return N.EMPTY_STRING;
-    //            }
-    //
-    //            return join(m, 0, m.size(), entryDelimiter, keyValueDelimiter);
-    //        }
-    //
-    //        public static String join(final Map<?, ?> m, final String entryDelimiter, final String keyValueDelimiter) {
-    //            if (N.isNullOrEmpty(m)) {
-    //                return N.EMPTY_STRING;
-    //            }
-    //
-    //            return join(m, 0, m.size(), entryDelimiter, keyValueDelimiter);
-    //        }
-    //
-    //        public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final char entryDelimiter, final char keyValueDelimiter) {
-    //            return N.join(m, fromIndex, toIndex, entryDelimiter, keyValueDelimiter, false);
-    //        }
-    //
-    //        public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final char entryDelimiter, final char keyValueDelimiter,
-    //                final boolean trim) {
-    //            N.checkIndex(fromIndex, toIndex, m == null ? 0 : m.size());
-    //
-    //            if ((N.isNullOrEmpty(m) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < m.size())) {
-    //                return N.EMPTY_STRING;
-    //            }
-    //
-    //            final StringBuilder sb = ObjectFactory.createStringBuilder();
-    //
-    //            try {
-    //                int i = 0;
-    //                for (Map.Entry<?, ?> entry : m.entrySet()) {
-    //                    if (i++ > fromIndex) {
-    //                        sb.append(entryDelimiter);
-    //                    }
-    //
-    //                    if (i > fromIndex) {
-    //                        sb.append(trim ? N.toString(entry.getKey()).trim() : N.toString(entry.getKey()));
-    //                        sb.append(keyValueDelimiter);
-    //                        sb.append(trim ? N.toString(entry.getValue()).trim() : N.toString(entry.getValue()));
-    //                    }
-    //
-    //                    if (i >= toIndex) {
-    //                        break;
-    //                    }
-    //                }
-    //
-    //                return sb.toString();
-    //            } finally {
-    //                ObjectFactory.recycle(sb);
-    //            }
-    //        }
-    //
-    //        public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final String entryDelimiter, final String keyValueDelimiter) {
-    //            return N.join(m, fromIndex, toIndex, entryDelimiter, keyValueDelimiter, false);
-    //        }
-    //
-    //        public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final String entryDelimiter, final String keyValueDelimiter,
-    //                final boolean trim) {
-    //            N.checkIndex(fromIndex, toIndex, m == null ? 0 : m.size());
-    //
-    //            if ((N.isNullOrEmpty(m) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < m.size())) {
-    //                return N.EMPTY_STRING;
-    //            }
-    //
-    //            final StringBuilder sb = ObjectFactory.createStringBuilder();
-    //
-    //            try {
-    //                int i = 0;
-    //                for (Map.Entry<?, ?> entry : m.entrySet()) {
-    //                    if (i++ > fromIndex) {
-    //                        sb.append(entryDelimiter);
-    //                    }
-    //
-    //                    if (i > fromIndex) {
-    //                        sb.append(trim ? N.toString(entry.getKey()).trim() : N.toString(entry.getKey()));
-    //                        sb.append(keyValueDelimiter);
-    //                        sb.append(trim ? N.toString(entry.getValue()).trim() : N.toString(entry.getValue()));
-    //                    }
-    //
-    //                    if (i >= toIndex) {
-    //                        break;
-    //                    }
-    //                }
-    //
-    //                return sb.toString();
-    //            } finally {
-    //                ObjectFactory.recycle(sb);
-    //            }
-    //        }
-    //    }
 }

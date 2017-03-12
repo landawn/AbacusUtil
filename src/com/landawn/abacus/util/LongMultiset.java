@@ -976,6 +976,12 @@ public final class LongMultiset<E> implements Iterable<E> {
      * @see Collection#retainAll(Collection)
      */
     public boolean retainAll(final Collection<?> c) {
+        if (N.isNullOrEmpty(c)) {
+            boolean result = size() > 0;
+            clear();
+            return result;
+        }
+
         Set<E> others = null;
 
         for (E e : valueMap.keySet()) {

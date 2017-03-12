@@ -373,10 +373,22 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
     }
 
     public boolean retainAll(BooleanList c) {
+        if (N.isNullOrEmpty(c)) {
+            boolean result = size() > 0;
+            clear();
+            return result;
+        }
+
         return batchRemove(c, true) > 0;
     }
 
     public boolean retainAll(boolean[] a) {
+        if (N.isNullOrEmpty(a)) {
+            boolean result = size() > 0;
+            clear();
+            return result;
+        }
+
         return retainAll(BooleanList.of(a));
     }
 
@@ -485,6 +497,10 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
     }
 
     public boolean containsAll(BooleanList c) {
+        if (N.isNullOrEmpty(c)) {
+            return true;
+        }
+
         final boolean[] srcElementData = c.array();
 
         if (c.size() > 3 && size() > 9) {
@@ -516,6 +532,10 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
     }
 
     public boolean disjoint(final BooleanList c) {
+        if (N.isNullOrEmpty(c)) {
+            return true;
+        }
+
         final BooleanList container = size() >= c.size() ? this : c;
         final boolean[] iterElements = size() >= c.size() ? c.array() : this.array();
 
@@ -554,6 +574,10 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
      * @see IntList#intersection(IntList)
      */
     public BooleanList intersection(final BooleanList b) {
+        if (N.isNullOrEmpty(b)) {
+            return empty();
+        }
+
         final Multiset<Boolean> bOccurrences = b.toMultiset();
 
         final BooleanList c = new BooleanList(N.min(9, size(), b.size()));
@@ -582,6 +606,10 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
      * @see IntList#difference(IntList)
      */
     public BooleanList difference(final BooleanList b) {
+        if (N.isNullOrEmpty(b)) {
+            return of(N.copyOfRange(elementData, 0, size()));
+        }
+
         final Multiset<Boolean> bOccurrences = b.toMultiset();
 
         final BooleanList c = new BooleanList(N.min(size(), N.max(9, size() - b.size())));
@@ -610,8 +638,13 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
      * @see IntList#symmetricDifference(IntList)
      */
     public BooleanList symmetricDifference(final BooleanList b) {
-        final Multiset<Boolean> bOccurrences = b.toMultiset();
+        if (N.isNullOrEmpty(b)) {
+            return this.copy();
+        } else if (this.isEmpty()) {
+            return b.copy();
+        }
 
+        final Multiset<Boolean> bOccurrences = b.toMultiset();
         final BooleanList c = new BooleanList(N.max(9, Math.abs(size() - b.size())));
 
         for (int i = 0, len = size(); i < len; i++) {
@@ -636,6 +669,8 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
     public BooleanList symmetricDifference(final boolean[] a) {
         if (N.isNullOrEmpty(a)) {
             return of(N.copyOfRange(elementData, 0, size()));
+        } else if (this.isEmpty()) {
+            return of(N.copyOfRange(a, 0, a.length));
         }
 
         return symmetricDifference(of(a));

@@ -16,7 +16,9 @@
 
 package com.landawn.abacus.util;
 
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.Map;
 
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.ToBooleanFunction;
@@ -29,30 +31,85 @@ import com.landawn.abacus.util.function.ToShortFunction;
 
 public final class Comparators {
     @SuppressWarnings("rawtypes")
-    private static final Comparator NATURAL_ORDER = N.OBJECT_COMPARATOR;
+    private static final Comparator NULL_FIRST_COMPARATOR = new Comparator<Comparable>() {
+        @Override
+        public int compare(final Comparable a, final Comparable b) {
+            return a == null ? (b == null ? 0 : -1) : (b == null ? 1 : a.compareTo(b));
+        }
+    };
 
     @SuppressWarnings("rawtypes")
-    private static final Comparator REVERSED_ORDER = N.REVERSED_COMPARATOR;
+    private static final Comparator NULL_LAST_COMPARATOR = new Comparator<Comparable>() {
+        @Override
+        public int compare(final Comparable a, final Comparable b) {
+            return a == null ? (b == null ? 0 : 1) : (b == null ? -1 : a.compareTo(b));
+        }
+    };
+
+    @SuppressWarnings("rawtypes")
+    private static final Comparator NATURAL_ORDER = NULL_FIRST_COMPARATOR;
+
+    @SuppressWarnings("rawtypes")
+    private static final Comparator REVERSED_ORDER = Collections.reverseOrder(NATURAL_ORDER);
+
+    @SuppressWarnings("rawtypes")
+    static final Comparator OBJ_COMPARATOR = NATURAL_ORDER;
 
     private Comparators() {
         // Singleton
     }
 
     @SuppressWarnings("unchecked")
-    public static <T extends Comparable<? super T>> Comparator<T> naturalOrder() {
+    public static <T> Comparator<T> naturalOrder() {
         return NATURAL_ORDER;
     }
 
-    public static <T extends Comparable<? super T>> Comparator<T> reverseOrder() {
+    public static <T> Comparator<T> reverseOrder() {
         return REVERSED_ORDER;
     }
 
-    public static <T> Comparator<T> nullsFirst(Comparator<? super T> comparator) {
-        return (Comparator<T>) N.nullMinOrder();
+    public static <T> Comparator<T> reverseOrder(final Comparator<T> cmp) {
+        if (cmp == null || cmp == NATURAL_ORDER) {
+            return REVERSED_ORDER;
+        } else if (cmp == REVERSED_ORDER) {
+            return NATURAL_ORDER;
+        }
+
+        return Collections.reverseOrder(cmp);
     }
 
-    public static <T> Comparator<T> nullsLast(Comparator<? super T> comparator) {
-        return (Comparator<T>) N.nullMaxOrder();
+    public static <T> Comparator<T> nullsFirst() {
+        return NULL_FIRST_COMPARATOR;
+    }
+
+    public static <T> Comparator<T> nullsFirst(final Comparator<T> cmp) {
+        if (cmp == null || cmp == NULL_FIRST_COMPARATOR) {
+            return NULL_FIRST_COMPARATOR;
+        }
+
+        return new Comparator<T>() {
+            @Override
+            public int compare(T a, T b) {
+                return a == null ? (b == null ? 0 : -1) : (b == null ? 1 : cmp.compare(a, b));
+            }
+        };
+    }
+
+    public static <T> Comparator<T> nullsLast() {
+        return NULL_LAST_COMPARATOR;
+    }
+
+    public static <T> Comparator<T> nullsLast(final Comparator<T> cmp) {
+        if (cmp == null || cmp == NULL_LAST_COMPARATOR) {
+            return NULL_LAST_COMPARATOR;
+        }
+
+        return new Comparator<T>() {
+            @Override
+            public int compare(T a, T b) {
+                return a == null ? (b == null ? 0 : 1) : (b == null ? -1 : cmp.compare(a, b));
+            }
+        };
     }
 
     public static <T, U extends Comparable<? super U>> Comparator<T> comparing(final Function<? super T, ? extends U> keyExtractor) {
@@ -151,6 +208,46 @@ public final class Comparators {
             @Override
             public int compare(T a, T b) {
                 return Double.compare(keyExtractor.applyAsDouble(a), keyExtractor.applyAsDouble(b));
+            }
+        };
+    }
+
+    public static <K extends Comparable<? super K>, V> Comparator<Map.Entry<K, V>> comparingByKey() {
+        return new Comparator<Map.Entry<K, V>>() {
+            @Override
+            public int compare(Map.Entry<K, V> a, Map.Entry<K, V> b) {
+                return a.getKey().compareTo(b.getKey());
+            }
+        };
+    }
+
+    public static <K, V extends Comparable<? super V>> Comparator<Map.Entry<K, V>> comparingByValue() {
+        return new Comparator<Map.Entry<K, V>>() {
+            @Override
+            public int compare(Map.Entry<K, V> a, Map.Entry<K, V> b) {
+                return a.getValue().compareTo(b.getValue());
+            }
+        };
+    }
+
+    public static <K, V> Comparator<Map.Entry<K, V>> comparingByKey(final Comparator<? super K> cmp) {
+        N.requireNonNull(cmp);
+
+        return new Comparator<Map.Entry<K, V>>() {
+            @Override
+            public int compare(Map.Entry<K, V> a, Map.Entry<K, V> b) {
+                return cmp.compare(a.getKey(), b.getKey());
+            }
+        };
+    }
+
+    public static <K, V> Comparator<Map.Entry<K, V>> comparingByValue(final Comparator<? super V> cmp) {
+        N.requireNonNull(cmp);
+
+        return new Comparator<Map.Entry<K, V>>() {
+            @Override
+            public int compare(Map.Entry<K, V> a, Map.Entry<K, V> b) {
+                return cmp.compare(a.getValue(), b.getValue());
             }
         };
     }

@@ -632,25 +632,11 @@ public final class N {
     static final Random RAND = new SecureRandom();
 
     @SuppressWarnings("rawtypes")
-    static final Comparator NULL_MIN_COMPARATOR = new Comparator<Comparable>() {
-        @Override
-        public int compare(final Comparable a, final Comparable b) {
-            return a == null ? (b == null ? 0 : -1) : (b == null ? 1 : a.compareTo(b));
-        }
-    };
-
+    private static final Comparator NULL_MIN_COMPARATOR = Comparators.nullsFirst();
     @SuppressWarnings("rawtypes")
-    static final Comparator NULL_MAX_COMPARATOR = new Comparator<Comparable>() {
-        @Override
-        public int compare(final Comparable a, final Comparable b) {
-            return a == null ? (b == null ? 0 : 1) : (b == null ? -1 : a.compareTo(b));
-        }
-    };
-
+    private static final Comparator NULL_MAX_COMPARATOR = Comparators.nullsLast();
     @SuppressWarnings("rawtypes")
-    static final Comparator OBJECT_COMPARATOR = NULL_MIN_COMPARATOR;
-    @SuppressWarnings("rawtypes")
-    static final Comparator REVERSED_COMPARATOR = Collections.reverseOrder(OBJECT_COMPARATOR);
+    private static final Comparator OBJ_COMPARATOR = Comparators.OBJ_COMPARATOR;
 
     // ...
     static final Map<Class<?>, Object> CLASS_EMPTY_ARRAY = new ConcurrentHashMap<>();
@@ -4751,52 +4737,6 @@ public final class N {
         }
     }
 
-    public static <T extends Comparable<?>> Comparator<T> nullMinOrder() {
-        return NULL_MIN_COMPARATOR;
-    }
-
-    public static <T> Comparator<T> nullMinOrder(final Comparator<T> cmp) {
-        if (cmp == null) {
-            return NULL_MIN_COMPARATOR;
-        }
-
-        return new Comparator<T>() {
-            @Override
-            public int compare(T a, T b) {
-                return a == null ? (b == null ? 0 : -1) : (b == null ? 1 : cmp.compare(a, b));
-            }
-        };
-    }
-
-    public static <T extends Comparable<?>> Comparator<T> nullMaxOrder() {
-        return NULL_MAX_COMPARATOR;
-    }
-
-    public static <T> Comparator<T> nullMaxOrder(final Comparator<T> cmp) {
-        if (cmp == null) {
-            return NULL_MAX_COMPARATOR;
-        }
-
-        return new Comparator<T>() {
-            @Override
-            public int compare(T a, T b) {
-                return a == null ? (b == null ? 0 : 1) : (b == null ? -1 : cmp.compare(a, b));
-            }
-        };
-    }
-
-    public static <T extends Comparable<?>> Comparator<T> reversedOrder() {
-        return REVERSED_COMPARATOR;
-    }
-
-    public static <T> Comparator<T> reversedOrder(Comparator<T> cmp) {
-        if (cmp == null) {
-            return REVERSED_COMPARATOR;
-        }
-
-        return Collections.reverseOrder(cmp);
-    }
-
     public static int compare(final boolean a, final boolean b) {
         return (a == b) ? 0 : (a ? 1 : -1);
     }
@@ -4854,7 +4794,7 @@ public final class N {
      * @see Comparator
      */
     public static <T> int compare(final T a, final T b, final Comparator<? super T> cmp) {
-        return a == null ? (b == null ? 0 : -1) : (b == null ? 1 : (cmp == null ? OBJECT_COMPARATOR : cmp).compare(a, b));
+        return a == null ? (b == null ? 0 : -1) : (b == null ? 1 : (cmp == null ? OBJ_COMPARATOR : cmp).compare(a, b));
     }
 
     public static int compare(final boolean[] a, final boolean[] b) {
@@ -8298,7 +8238,7 @@ public final class N {
     public static String join(final boolean[] a, final int fromIndex, final int toIndex, final char delimiter) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
         }
 
@@ -8322,7 +8262,7 @@ public final class N {
     public static String join(final boolean[] a, final int fromIndex, final int toIndex, final String delimiter) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
         }
 
@@ -8372,7 +8312,7 @@ public final class N {
     public static String join(final char[] a, final int fromIndex, final int toIndex, final char delimiter) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
         }
 
@@ -8396,7 +8336,7 @@ public final class N {
     public static String join(final char[] a, final int fromIndex, final int toIndex, final String delimiter) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
         }
 
@@ -8446,7 +8386,7 @@ public final class N {
     public static String join(final byte[] a, final int fromIndex, final int toIndex, final char delimiter) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
         }
 
@@ -8470,7 +8410,7 @@ public final class N {
     public static String join(final byte[] a, final int fromIndex, final int toIndex, final String delimiter) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
         }
 
@@ -8520,7 +8460,7 @@ public final class N {
     public static String join(final short[] a, final int fromIndex, final int toIndex, final char delimiter) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
         }
 
@@ -8544,7 +8484,7 @@ public final class N {
     public static String join(final short[] a, final int fromIndex, final int toIndex, final String delimiter) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
         }
 
@@ -8594,7 +8534,7 @@ public final class N {
     public static String join(final int[] a, final int fromIndex, final int toIndex, final char delimiter) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
         }
 
@@ -8618,7 +8558,7 @@ public final class N {
     public static String join(final int[] a, final int fromIndex, final int toIndex, final String delimiter) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
         }
 
@@ -8668,7 +8608,7 @@ public final class N {
     public static String join(final long[] a, final int fromIndex, final int toIndex, final char delimiter) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
         }
 
@@ -8692,7 +8632,7 @@ public final class N {
     public static String join(final long[] a, final int fromIndex, final int toIndex, final String delimiter) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
         }
 
@@ -8742,7 +8682,7 @@ public final class N {
     public static String join(final float[] a, final int fromIndex, final int toIndex, final char delimiter) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
         }
 
@@ -8766,7 +8706,7 @@ public final class N {
     public static String join(final float[] a, final int fromIndex, final int toIndex, final String delimiter) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
         }
 
@@ -8816,7 +8756,7 @@ public final class N {
     public static String join(final double[] a, final int fromIndex, final int toIndex, final char delimiter) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
         }
 
@@ -8840,7 +8780,7 @@ public final class N {
     public static String join(final double[] a, final int fromIndex, final int toIndex, final String delimiter) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
         }
 
@@ -8894,7 +8834,7 @@ public final class N {
     public static String join(final Object[] a, final int fromIndex, final int toIndex, final char delimiter, final boolean trim) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
         }
 
@@ -8922,7 +8862,7 @@ public final class N {
     public static String join(final Object[] a, final int fromIndex, final int toIndex, final String delimiter, final boolean trim) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return N.EMPTY_STRING;
         }
 
@@ -10540,8 +10480,8 @@ public final class N {
             throw new IllegalArgumentException("'len' can't be negative");
         }
 
-        N.checkFromToIndex(fromIndexA, fromIndexA + len, a == null ? 0 : a.length);
-        N.checkFromToIndex(fromIndexB, fromIndexB + len, b == null ? 0 : b.length);
+        N.checkFromIndexSize(fromIndexA, len, a == null ? 0 : a.length);
+        N.checkFromIndexSize(fromIndexB, len, b == null ? 0 : b.length);
 
         if ((fromIndexA == fromIndexB && a == b) || len == 0) {
             return true;
@@ -10581,8 +10521,8 @@ public final class N {
             throw new IllegalArgumentException("'len' can't be negative");
         }
 
-        N.checkFromToIndex(fromIndexA, fromIndexA + len, a == null ? 0 : a.length);
-        N.checkFromToIndex(fromIndexB, fromIndexB + len, b == null ? 0 : b.length);
+        N.checkFromIndexSize(fromIndexA, len, a == null ? 0 : a.length);
+        N.checkFromIndexSize(fromIndexB, len, b == null ? 0 : b.length);
 
         if ((fromIndexA == fromIndexB && a == b) || len == 0) {
             return true;
@@ -10622,8 +10562,8 @@ public final class N {
             throw new IllegalArgumentException("'len' can't be negative");
         }
 
-        N.checkFromToIndex(fromIndexA, fromIndexA + len, a == null ? 0 : a.length);
-        N.checkFromToIndex(fromIndexB, fromIndexB + len, b == null ? 0 : b.length);
+        N.checkFromIndexSize(fromIndexA, len, a == null ? 0 : a.length);
+        N.checkFromIndexSize(fromIndexB, len, b == null ? 0 : b.length);
 
         if ((fromIndexA == fromIndexB && a == b) || len == 0) {
             return true;
@@ -10663,8 +10603,8 @@ public final class N {
             throw new IllegalArgumentException("'len' can't be negative");
         }
 
-        N.checkFromToIndex(fromIndexA, fromIndexA + len, a == null ? 0 : a.length);
-        N.checkFromToIndex(fromIndexB, fromIndexB + len, b == null ? 0 : b.length);
+        N.checkFromIndexSize(fromIndexA, len, a == null ? 0 : a.length);
+        N.checkFromIndexSize(fromIndexB, len, b == null ? 0 : b.length);
 
         if ((fromIndexA == fromIndexB && a == b) || len == 0) {
             return true;
@@ -10704,8 +10644,8 @@ public final class N {
             throw new IllegalArgumentException("'len' can't be negative");
         }
 
-        N.checkFromToIndex(fromIndexA, fromIndexA + len, a == null ? 0 : a.length);
-        N.checkFromToIndex(fromIndexB, fromIndexB + len, b == null ? 0 : b.length);
+        N.checkFromIndexSize(fromIndexA, len, a == null ? 0 : a.length);
+        N.checkFromIndexSize(fromIndexB, len, b == null ? 0 : b.length);
 
         if ((fromIndexA == fromIndexB && a == b) || len == 0) {
             return true;
@@ -10745,8 +10685,8 @@ public final class N {
             throw new IllegalArgumentException("'len' can't be negative");
         }
 
-        N.checkFromToIndex(fromIndexA, fromIndexA + len, a == null ? 0 : a.length);
-        N.checkFromToIndex(fromIndexB, fromIndexB + len, b == null ? 0 : b.length);
+        N.checkFromIndexSize(fromIndexA, len, a == null ? 0 : a.length);
+        N.checkFromIndexSize(fromIndexB, len, b == null ? 0 : b.length);
 
         if ((fromIndexA == fromIndexB && a == b) || len == 0) {
             return true;
@@ -10786,8 +10726,8 @@ public final class N {
             throw new IllegalArgumentException("'len' can't be negative");
         }
 
-        N.checkFromToIndex(fromIndexA, fromIndexA + len, a == null ? 0 : a.length);
-        N.checkFromToIndex(fromIndexB, fromIndexB + len, b == null ? 0 : b.length);
+        N.checkFromIndexSize(fromIndexA, len, a == null ? 0 : a.length);
+        N.checkFromIndexSize(fromIndexB, len, b == null ? 0 : b.length);
 
         if ((fromIndexA == fromIndexB && a == b) || len == 0) {
             return true;
@@ -10827,8 +10767,8 @@ public final class N {
             throw new IllegalArgumentException("'len' can't be negative");
         }
 
-        N.checkFromToIndex(fromIndexA, fromIndexA + len, a == null ? 0 : a.length);
-        N.checkFromToIndex(fromIndexB, fromIndexB + len, b == null ? 0 : b.length);
+        N.checkFromIndexSize(fromIndexA, len, a == null ? 0 : a.length);
+        N.checkFromIndexSize(fromIndexB, len, b == null ? 0 : b.length);
 
         if ((fromIndexA == fromIndexB && a == b) || len == 0) {
             return true;
@@ -10868,8 +10808,8 @@ public final class N {
             throw new IllegalArgumentException("'len' can't be negative");
         }
 
-        N.checkFromToIndex(fromIndexA, fromIndexA + len, a == null ? 0 : a.length);
-        N.checkFromToIndex(fromIndexB, fromIndexB + len, b == null ? 0 : b.length);
+        N.checkFromIndexSize(fromIndexA, len, a == null ? 0 : a.length);
+        N.checkFromIndexSize(fromIndexB, len, b == null ? 0 : b.length);
 
         if ((fromIndexA == fromIndexB && a == b) || len == 0) {
             return true;
@@ -10901,8 +10841,8 @@ public final class N {
             throw new IllegalArgumentException("'len' can't be negative");
         }
 
-        N.checkFromToIndex(fromIndexA, fromIndexA + len, a == null ? 0 : a.length);
-        N.checkFromToIndex(fromIndexB, fromIndexB + len, b == null ? 0 : b.length);
+        N.checkFromIndexSize(fromIndexA, len, a == null ? 0 : a.length);
+        N.checkFromIndexSize(fromIndexB, len, b == null ? 0 : b.length);
 
         if ((fromIndexA == fromIndexB && a == b) || len == 0) {
             return true;
@@ -10937,8 +10877,8 @@ public final class N {
             throw new IllegalArgumentException("'len' can't be negative");
         }
 
-        N.checkFromToIndex(fromIndexA, fromIndexA + len, a == null ? 0 : a.length);
-        N.checkFromToIndex(fromIndexB, fromIndexB + len, b == null ? 0 : b.length);
+        N.checkFromIndexSize(fromIndexA, len, a == null ? 0 : a.length);
+        N.checkFromIndexSize(fromIndexB, len, b == null ? 0 : b.length);
 
         if ((fromIndexA == fromIndexB && a == b) || len == 0) {
             return true;
@@ -12053,7 +11993,7 @@ public final class N {
     public static void reverse(final boolean[] a, int fromIndex, int toIndex) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+        if (N.isNullOrEmpty(a) || a.length == 1) {
             return;
         }
 
@@ -12093,7 +12033,7 @@ public final class N {
     public static void reverse(final char[] a, int fromIndex, int toIndex) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+        if (N.isNullOrEmpty(a) || a.length == 1) {
             return;
         }
 
@@ -12133,7 +12073,7 @@ public final class N {
     public static void reverse(final byte[] a, int fromIndex, int toIndex) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+        if (N.isNullOrEmpty(a) || a.length == 1) {
             return;
         }
 
@@ -12173,7 +12113,7 @@ public final class N {
     public static void reverse(final short[] a, int fromIndex, int toIndex) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+        if (N.isNullOrEmpty(a) || a.length == 1) {
             return;
         }
 
@@ -12213,7 +12153,7 @@ public final class N {
     public static void reverse(final int[] a, int fromIndex, int toIndex) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+        if (N.isNullOrEmpty(a) || a.length == 1) {
             return;
         }
 
@@ -12253,7 +12193,7 @@ public final class N {
     public static void reverse(final long[] a, int fromIndex, int toIndex) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+        if (N.isNullOrEmpty(a) || a.length == 1) {
             return;
         }
 
@@ -12293,7 +12233,7 @@ public final class N {
     public static void reverse(final float[] a, int fromIndex, int toIndex) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+        if (N.isNullOrEmpty(a) || a.length == 1) {
             return;
         }
 
@@ -12333,7 +12273,7 @@ public final class N {
     public static void reverse(final double[] a, int fromIndex, int toIndex) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+        if (N.isNullOrEmpty(a) || a.length == 1) {
             return;
         }
 
@@ -12379,7 +12319,7 @@ public final class N {
     public static void reverse(final Object[] a, int fromIndex, int toIndex) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+        if (N.isNullOrEmpty(a) || a.length == 1) {
             return;
         }
 
@@ -12403,7 +12343,7 @@ public final class N {
     public static void reverse(final List<?> list, int fromIndex, int toIndex) {
         checkFromToIndex(fromIndex, toIndex, list == null ? 0 : list.size());
 
-        if (N.isNullOrEmpty(list) && fromIndex == 0 && toIndex == 0) {
+        if (N.isNullOrEmpty(list) || list.size() == 1) {
             return;
         }
 
@@ -12734,6 +12674,148 @@ public final class N {
         Collections.rotate(list, distance);
     }
 
+    public static void shuffle(final boolean[] a) {
+        shuffle(a, RAND);
+    }
+
+    public static void shuffle(final boolean[] a, final Random rnd) {
+        if (N.isNullOrEmpty(a) || a.length == 1) {
+            return;
+        }
+
+        for (int i = a.length; i > 1; i--) {
+            swap(a, i - 1, rnd.nextInt(i));
+        }
+    }
+
+    public static void shuffle(final char[] a) {
+        shuffle(a, RAND);
+    }
+
+    public static void shuffle(final char[] a, final Random rnd) {
+        if (N.isNullOrEmpty(a) || a.length == 1) {
+            return;
+        }
+
+        for (int i = a.length; i > 1; i--) {
+            swap(a, i - 1, rnd.nextInt(i));
+        }
+    }
+
+    public static void shuffle(final byte[] a) {
+        shuffle(a, RAND);
+    }
+
+    public static void shuffle(final byte[] a, final Random rnd) {
+        if (N.isNullOrEmpty(a) || a.length == 1) {
+            return;
+        }
+
+        for (int i = a.length; i > 1; i--) {
+            swap(a, i - 1, rnd.nextInt(i));
+        }
+    }
+
+    public static void shuffle(final short[] a) {
+        shuffle(a, RAND);
+    }
+
+    public static void shuffle(final short[] a, final Random rnd) {
+        if (N.isNullOrEmpty(a) || a.length == 1) {
+            return;
+        }
+
+        for (int i = a.length; i > 1; i--) {
+            swap(a, i - 1, rnd.nextInt(i));
+        }
+    }
+
+    public static void shuffle(final int[] a) {
+        shuffle(a, RAND);
+    }
+
+    public static void shuffle(final int[] a, final Random rnd) {
+        if (N.isNullOrEmpty(a) || a.length == 1) {
+            return;
+        }
+
+        for (int i = a.length; i > 1; i--) {
+            swap(a, i - 1, rnd.nextInt(i));
+        }
+    }
+
+    public static void shuffle(final long[] a) {
+        shuffle(a, RAND);
+    }
+
+    public static void shuffle(final long[] a, final Random rnd) {
+        if (N.isNullOrEmpty(a) || a.length == 1) {
+            return;
+        }
+
+        for (int i = a.length; i > 1; i--) {
+            swap(a, i - 1, rnd.nextInt(i));
+        }
+    }
+
+    public static void shuffle(final float[] a) {
+        shuffle(a, RAND);
+    }
+
+    public static void shuffle(final float[] a, final Random rnd) {
+        if (N.isNullOrEmpty(a) || a.length == 1) {
+            return;
+        }
+
+        for (int i = a.length; i > 1; i--) {
+            swap(a, i - 1, rnd.nextInt(i));
+        }
+    }
+
+    public static void shuffle(final double[] a) {
+        shuffle(a, RAND);
+    }
+
+    public static void shuffle(final double[] a, final Random rnd) {
+        if (N.isNullOrEmpty(a) || a.length == 1) {
+            return;
+        }
+
+        for (int i = a.length; i > 1; i--) {
+            swap(a, i - 1, rnd.nextInt(i));
+        }
+    }
+
+    public static <T> void shuffle(final T[] a) {
+        shuffle(a, RAND);
+    }
+
+    public static <T> void shuffle(final T[] a, final Random rnd) {
+        if (N.isNullOrEmpty(a) || a.length == 1) {
+            return;
+        }
+
+        for (int i = a.length; i > 1; i--) {
+            swap(a, i - 1, rnd.nextInt(i));
+        }
+    }
+
+    public static void shuffle(final List<?> list) {
+        shuffle(list, RAND);
+    }
+
+    /**
+     *
+     * @see java.util.Collections#shuffle(List, Random)
+     */
+    public static void shuffle(final List<?> list, final Random rnd) {
+        if (N.isNullOrEmpty(list) || list.size() == 1) {
+            return;
+        }
+
+        Collections.shuffle(list, rnd);
+    }
+
     public static void swap(final boolean[] a, final int i, final int j) {
         final boolean tmp = a[i];
         a[i] = a[j];
@@ -12790,148 +12872,6 @@ public final class N {
 
     public static void swap(final List<?> list, final int i, final int j) {
         Collections.swap(list, i, j);
-    }
-
-    public static void shuffle(final boolean[] a) {
-        shuffle(a, RAND);
-    }
-
-    public static void shuffle(final boolean[] a, final Random rnd) {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        for (int i = a.length; i > 1; i--) {
-            swap(a, i - 1, rnd.nextInt(i));
-        }
-    }
-
-    public static void shuffle(final char[] a) {
-        shuffle(a, RAND);
-    }
-
-    public static void shuffle(final char[] a, final Random rnd) {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        for (int i = a.length; i > 1; i--) {
-            swap(a, i - 1, rnd.nextInt(i));
-        }
-    }
-
-    public static void shuffle(final byte[] a) {
-        shuffle(a, RAND);
-    }
-
-    public static void shuffle(final byte[] a, final Random rnd) {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        for (int i = a.length; i > 1; i--) {
-            swap(a, i - 1, rnd.nextInt(i));
-        }
-    }
-
-    public static void shuffle(final short[] a) {
-        shuffle(a, RAND);
-    }
-
-    public static void shuffle(final short[] a, final Random rnd) {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        for (int i = a.length; i > 1; i--) {
-            swap(a, i - 1, rnd.nextInt(i));
-        }
-    }
-
-    public static void shuffle(final int[] a) {
-        shuffle(a, RAND);
-    }
-
-    public static void shuffle(final int[] a, final Random rnd) {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        for (int i = a.length; i > 1; i--) {
-            swap(a, i - 1, rnd.nextInt(i));
-        }
-    }
-
-    public static void shuffle(final long[] a) {
-        shuffle(a, RAND);
-    }
-
-    public static void shuffle(final long[] a, final Random rnd) {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        for (int i = a.length; i > 1; i--) {
-            swap(a, i - 1, rnd.nextInt(i));
-        }
-    }
-
-    public static void shuffle(final float[] a) {
-        shuffle(a, RAND);
-    }
-
-    public static void shuffle(final float[] a, final Random rnd) {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        for (int i = a.length; i > 1; i--) {
-            swap(a, i - 1, rnd.nextInt(i));
-        }
-    }
-
-    public static void shuffle(final double[] a) {
-        shuffle(a, RAND);
-    }
-
-    public static void shuffle(final double[] a, final Random rnd) {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        for (int i = a.length; i > 1; i--) {
-            swap(a, i - 1, rnd.nextInt(i));
-        }
-    }
-
-    public static <T> void shuffle(final T[] a) {
-        shuffle(a, RAND);
-    }
-
-    public static <T> void shuffle(final T[] a, final Random rnd) {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        for (int i = a.length; i > 1; i--) {
-            swap(a, i - 1, rnd.nextInt(i));
-        }
-    }
-
-    public static void shuffle(final List<?> list) {
-        shuffle(list, RAND);
-    }
-
-    /**
-     *
-     * @see java.util.Collections#shuffle(List, Random)
-     */
-    public static void shuffle(final List<?> list, final Random rnd) {
-        if (N.isNullOrEmpty(list)) {
-            return;
-        }
-
-        Collections.shuffle(list, rnd);
     }
 
     public static void fill(final boolean[] a, final boolean val) {
@@ -17196,7 +17136,9 @@ public final class N {
     }
 
     public static <T> void forEach(final T[] a, final int fromIndex, final int toIndex, final Consumer<? super T> action) {
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a)) {
             return;
         }
 
@@ -17215,7 +17157,7 @@ public final class N {
         N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex,
                 a == null ? 0 : a.length);
 
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+        if (N.isNullOrEmpty(a)) {
             return;
         }
 
@@ -17254,7 +17196,7 @@ public final class N {
         N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex,
                 a == null ? 0 : a.length);
 
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+        if (N.isNullOrEmpty(a)) {
             return seed;
         }
 
@@ -17305,7 +17247,7 @@ public final class N {
         N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex,
                 a == null ? 0 : a.length);
 
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+        if (N.isNullOrEmpty(a)) {
             return seed;
         }
 
@@ -17746,7 +17688,7 @@ public final class N {
     public static BooleanList filter(final boolean[] a, final int fromIndex, final int toIndex, final BooleanPredicate filter, final int max) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+        if (N.isNullOrEmpty(a)) {
             return BooleanList.empty();
         }
 
@@ -17797,7 +17739,7 @@ public final class N {
     public static CharList filter(final char[] a, final int fromIndex, final int toIndex, final CharPredicate filter, final int max) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+        if (N.isNullOrEmpty(a)) {
             return CharList.empty();
         }
 
@@ -17848,7 +17790,7 @@ public final class N {
     public static ByteList filter(final byte[] a, final int fromIndex, final int toIndex, final BytePredicate filter, final int max) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+        if (N.isNullOrEmpty(a)) {
             return ByteList.empty();
         }
 
@@ -17899,7 +17841,7 @@ public final class N {
     public static ShortList filter(final short[] a, final int fromIndex, final int toIndex, final ShortPredicate filter, final int max) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+        if (N.isNullOrEmpty(a)) {
             return ShortList.empty();
         }
 
@@ -17950,7 +17892,7 @@ public final class N {
     public static IntList filter(final int[] a, final int fromIndex, final int toIndex, final IntPredicate filter, final int max) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+        if (N.isNullOrEmpty(a)) {
             return IntList.empty();
         }
 
@@ -18001,7 +17943,7 @@ public final class N {
     public static LongList filter(final long[] a, final int fromIndex, final int toIndex, final LongPredicate filter, final int max) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+        if (N.isNullOrEmpty(a)) {
             return LongList.empty();
         }
 
@@ -18052,7 +17994,7 @@ public final class N {
     public static FloatList filter(final float[] a, final int fromIndex, final int toIndex, final FloatPredicate filter, final int max) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+        if (N.isNullOrEmpty(a)) {
             return FloatList.empty();
         }
 
@@ -18103,7 +18045,7 @@ public final class N {
     public static DoubleList filter(final double[] a, final int fromIndex, final int toIndex, final DoublePredicate filter, final int max) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+        if (N.isNullOrEmpty(a)) {
             return DoubleList.empty();
         }
 
@@ -18153,7 +18095,7 @@ public final class N {
     public static <T> ExList<T> filter(final T[] a, final int fromIndex, final int toIndex, final Predicate<? super T> filter, final int max) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+        if (N.isNullOrEmpty(a)) {
             return ExList.empty();
         }
 
@@ -18274,7 +18216,7 @@ public final class N {
             final IntFunction<R> supplier) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+        if (N.isNullOrEmpty(a)) {
             return supplier.apply(0);
         }
 
@@ -18385,7 +18327,7 @@ public final class N {
     public static <T> BooleanList mapToBoolean(final T[] a, final int fromIndex, final int toIndex, final ToBooleanFunction<? super T> func) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+        if (N.isNullOrEmpty(a)) {
             return BooleanList.empty();
         }
 
@@ -18472,7 +18414,7 @@ public final class N {
     public static <T> CharList mapToChar(final T[] a, final int fromIndex, final int toIndex, final ToCharFunction<? super T> func) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+        if (N.isNullOrEmpty(a)) {
             return CharList.empty();
         }
 
@@ -18558,7 +18500,7 @@ public final class N {
     public static <T> ByteList mapToByte(final T[] a, final int fromIndex, final int toIndex, final ToByteFunction<? super T> func) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+        if (N.isNullOrEmpty(a)) {
             return ByteList.empty();
         }
 
@@ -18644,7 +18586,7 @@ public final class N {
     public static <T> ShortList mapToShort(final T[] a, final int fromIndex, final int toIndex, final ToShortFunction<? super T> func) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+        if (N.isNullOrEmpty(a)) {
             return ShortList.empty();
         }
 
@@ -18730,7 +18672,7 @@ public final class N {
     public static <T> IntList mapToInt(final T[] a, final int fromIndex, final int toIndex, final ToIntFunction<? super T> func) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+        if (N.isNullOrEmpty(a)) {
             return IntList.empty();
         }
 
@@ -18816,7 +18758,7 @@ public final class N {
     public static <T> LongList mapToLong(final T[] a, final int fromIndex, final int toIndex, final ToLongFunction<? super T> func) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+        if (N.isNullOrEmpty(a)) {
             return LongList.empty();
         }
 
@@ -18902,7 +18844,7 @@ public final class N {
     public static <T> FloatList mapToFloat(final T[] a, final int fromIndex, final int toIndex, final ToFloatFunction<? super T> func) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+        if (N.isNullOrEmpty(a)) {
             return FloatList.empty();
         }
 
@@ -18988,7 +18930,7 @@ public final class N {
     public static <T> DoubleList mapToDouble(final T[] a, final int fromIndex, final int toIndex, final ToDoubleFunction<? super T> func) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+        if (N.isNullOrEmpty(a)) {
             return DoubleList.empty();
         }
 
@@ -19074,7 +19016,7 @@ public final class N {
     public static <T, R> ExList<R> map(final T[] a, final int fromIndex, final int toIndex, final Function<? super T, ? extends R> func) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+        if (N.isNullOrEmpty(a)) {
             return ExList.empty();
         }
 
@@ -19163,7 +19105,7 @@ public final class N {
             final IntFunction<C> supplier) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+        if (N.isNullOrEmpty(a)) {
             return supplier.apply(0);
         }
 
@@ -19589,7 +19531,7 @@ public final class N {
     public static int count(final boolean[] a, final int fromIndex, final int toIndex, final BooleanPredicate filter) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+        if (N.isNullOrEmpty(a)) {
             return 0;
         }
 
@@ -19635,7 +19577,7 @@ public final class N {
     public static int count(final char[] a, final int fromIndex, final int toIndex, final CharPredicate filter) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+        if (N.isNullOrEmpty(a)) {
             return 0;
         }
 
@@ -19681,7 +19623,7 @@ public final class N {
     public static int count(final byte[] a, final int fromIndex, final int toIndex, final BytePredicate filter) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+        if (N.isNullOrEmpty(a)) {
             return 0;
         }
 
@@ -19727,7 +19669,7 @@ public final class N {
     public static int count(final short[] a, final int fromIndex, final int toIndex, final ShortPredicate filter) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+        if (N.isNullOrEmpty(a)) {
             return 0;
         }
 
@@ -19773,7 +19715,7 @@ public final class N {
     public static int count(final int[] a, final int fromIndex, final int toIndex, final IntPredicate filter) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+        if (N.isNullOrEmpty(a)) {
             return 0;
         }
 
@@ -19819,7 +19761,7 @@ public final class N {
     public static int count(final long[] a, final int fromIndex, final int toIndex, final LongPredicate filter) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+        if (N.isNullOrEmpty(a)) {
             return 0;
         }
 
@@ -19865,7 +19807,7 @@ public final class N {
     public static int count(final float[] a, final int fromIndex, final int toIndex, final FloatPredicate filter) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+        if (N.isNullOrEmpty(a)) {
             return 0;
         }
 
@@ -19911,7 +19853,7 @@ public final class N {
     public static int count(final double[] a, final int fromIndex, final int toIndex, final DoublePredicate filter) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+        if (N.isNullOrEmpty(a)) {
             return 0;
         }
 
@@ -19957,7 +19899,7 @@ public final class N {
     public static <T> int count(final T[] a, final int fromIndex, final int toIndex, final Predicate<? super T> filter) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+        if (N.isNullOrEmpty(a)) {
             return 0;
         }
 
@@ -20374,7 +20316,7 @@ public final class N {
     }
 
     public static <T extends Comparable<T>> T[] top(final T[] a, final int n) {
-        return (T[]) top(a, n, N.OBJECT_COMPARATOR);
+        return (T[]) top(a, n, N.OBJ_COMPARATOR);
     }
 
     public static <T> T[] top(final T[] a, final int n, final Comparator<? super T> cmp) {
@@ -20382,7 +20324,7 @@ public final class N {
     }
 
     public static <T extends Comparable<T>> T[] top(final T[] a, final int fromIndex, final int toIndex, final int n) {
-        return (T[]) top(a, fromIndex, toIndex, n, N.OBJECT_COMPARATOR);
+        return (T[]) top(a, fromIndex, toIndex, n, N.OBJ_COMPARATOR);
     }
 
     @SuppressWarnings("rawtypes")
@@ -20772,7 +20714,7 @@ public final class N {
     public static <T> T[] distinct(final T[] a, final int fromIndex, final int toIndex) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+        if (N.isNullOrEmpty(a)) {
             return a;
         }
 
@@ -20885,7 +20827,7 @@ public final class N {
     public static <T> T[] distinct(final T[] a, final int fromIndex, final int toIndex, final Function<? super T, ?> keyMapper) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if (N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) {
+        if (N.isNullOrEmpty(a)) {
             return a;
         }
 
@@ -28812,7 +28754,7 @@ public final class N {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
 
-        return (T) median(a, from, to, OBJECT_COMPARATOR);
+        return (T) median(a, from, to, OBJ_COMPARATOR);
     }
 
     public static <T> T median(final T[] a, Comparator<? super T> cmp) {
@@ -28837,7 +28779,7 @@ public final class N {
 
         checkFromToIndex(from, to, a.length);
 
-        cmp = cmp == null ? OBJECT_COMPARATOR : cmp;
+        cmp = cmp == null ? OBJ_COMPARATOR : cmp;
 
         final int len = to - from;
 
@@ -28859,7 +28801,7 @@ public final class N {
     }
 
     public static <T extends Comparable<? super T>> T median(final Collection<? extends T> c, final int from, final int to) {
-        return (T) median(c, from, to, OBJECT_COMPARATOR);
+        return (T) median(c, from, to, OBJ_COMPARATOR);
     }
 
     public static <T> T median(final Collection<? extends T> c, Comparator<? super T> cmp) {
@@ -28884,7 +28826,7 @@ public final class N {
 
         checkFromToIndex(from, to, c.size());
 
-        cmp = cmp == null ? OBJECT_COMPARATOR : cmp;
+        cmp = cmp == null ? OBJ_COMPARATOR : cmp;
 
         final int len = to - from;
 

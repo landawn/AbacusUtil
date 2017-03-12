@@ -426,10 +426,22 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
     }
 
     public boolean retainAll(ByteList c) {
+        if (N.isNullOrEmpty(c)) {
+            boolean result = size() > 0;
+            clear();
+            return result;
+        }
+
         return batchRemove(c, true) > 0;
     }
 
     public boolean retainAll(byte[] a) {
+        if (N.isNullOrEmpty(a)) {
+            boolean result = size() > 0;
+            clear();
+            return result;
+        }
+
         return retainAll(ByteList.of(a));
     }
 
@@ -538,6 +550,10 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
     }
 
     public boolean containsAll(ByteList c) {
+        if (N.isNullOrEmpty(c)) {
+            return true;
+        }
+
         final byte[] srcElementData = c.array();
 
         if (c.size() > 3 && size() > 9) {
@@ -569,6 +585,10 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
     }
 
     public boolean disjoint(final ByteList c) {
+        if (N.isNullOrEmpty(c)) {
+            return true;
+        }
+
         final ByteList container = size() >= c.size() ? this : c;
         final byte[] iterElements = size() >= c.size() ? c.array() : this.array();
 
@@ -607,6 +627,10 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
      * @see IntList#intersection(IntList)
      */
     public ByteList intersection(final ByteList b) {
+        if (N.isNullOrEmpty(b)) {
+            return empty();
+        }
+
         final Multiset<Byte> bOccurrences = b.toMultiset();
 
         final ByteList c = new ByteList(N.min(9, size(), b.size()));
@@ -635,6 +659,10 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
      * @see IntList#difference(IntList)
      */
     public ByteList difference(ByteList b) {
+        if (N.isNullOrEmpty(b)) {
+            return of(N.copyOfRange(elementData, 0, size()));
+        }
+
         final Multiset<Byte> bOccurrences = b.toMultiset();
 
         final ByteList c = new ByteList(N.min(size(), N.max(9, size() - b.size())));
@@ -663,8 +691,13 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
      * @see IntList#symmetricDifference(IntList)
      */
     public ByteList symmetricDifference(ByteList b) {
-        final Multiset<Byte> bOccurrences = b.toMultiset();
+        if (N.isNullOrEmpty(b)) {
+            return this.copy();
+        } else if (this.isEmpty()) {
+            return b.copy();
+        }
 
+        final Multiset<Byte> bOccurrences = b.toMultiset();
         final ByteList c = new ByteList(N.max(9, Math.abs(size() - b.size())));
 
         for (int i = 0, len = size(); i < len; i++) {
@@ -689,6 +722,8 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
     public ByteList symmetricDifference(final byte[] a) {
         if (N.isNullOrEmpty(a)) {
             return of(N.copyOfRange(elementData, 0, size()));
+        } else if (this.isEmpty()) {
+            return of(N.copyOfRange(a, 0, a.length));
         }
 
         return symmetricDifference(of(a));

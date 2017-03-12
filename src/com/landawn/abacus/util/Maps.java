@@ -28,7 +28,6 @@ package com.landawn.abacus.util;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.ConcurrentModificationException;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -54,6 +53,43 @@ public final class Maps {
         // singleton.
     }
 
+    public static <K, V> OptionalNullable<V> get(final Map<K, V> map, final Object key) {
+        final V val = map.get(key);
+
+        if (val != null || map.containsKey(key)) {
+            return OptionalNullable.of(val);
+        } else {
+            return OptionalNullable.empty();
+        }
+    }
+
+    /**
+     * Returns a list of values of the keys which exist in the specified <code>Map</code>.
+     * If the key dosn't exist in the <code>Map</code>, No value will be added into the returned list. 
+     * 
+     * @param map
+     * @param keys
+     * @return
+     */
+    public static <K, V> List<V> getIfPresent(final Map<K, V> map, final Collection<?> keys) {
+        if (N.isNullOrEmpty(keys)) {
+            return new ArrayList<>(0);
+        }
+
+        final List<V> result = new ArrayList<>(keys.size());
+        V val = null;
+
+        for (Object key : keys) {
+            val = map.get(key);
+
+            if (val != null || map.containsKey(key)) {
+                result.add(val);
+            }
+        }
+
+        return result;
+    }
+
     /**
      * Returns the value to which the specified key is mapped, or
      * {@code defaultValue} if this map contains no mapping for the key.
@@ -77,37 +113,30 @@ public final class Maps {
      * @since 1.8
      */
     public static <K, V> V getOrDefault(final Map<K, V> map, final Object key, final V defaultValue) {
-        V v = null;
-        return (((v = map.get(key)) != null) || map.containsKey(key)) ? v : defaultValue;
+        final V val = map.get(key);
+
+        if (val != null || map.containsKey(key)) {
+            return val;
+        } else {
+            return defaultValue;
+        }
     }
 
     public static <K, V> List<V> getOrDefault(final Map<K, V> map, final Collection<?> keys, final V defaultValue) {
-        final List<V> result = new ArrayList<>(keys.size());
-
-        for (Object key : keys) {
-            result.add(getOrDefault(map, key, defaultValue));
+        if (N.isNullOrEmpty(keys)) {
+            return new ArrayList<>(0);
         }
 
-        return result;
-    }
-
-    /**
-     * Returns a list of values of the keys which exist in the specified <code>Map</code>.
-     * If the key dosn't exist in the <code>Map</code>, No value will be added into the returned list. 
-     * 
-     * @param map
-     * @param keys
-     * @return
-     */
-    public static <K, V> List<V> getOrIgnore(final Map<K, V> map, final Collection<?> keys) {
         final List<V> result = new ArrayList<>(keys.size());
         V val = null;
 
         for (Object key : keys) {
             val = map.get(key);
 
-            if (val != null || (val == null && map.containsKey(key))) {
+            if (val != null || map.containsKey(key)) {
                 result.add(val);
+            } else {
+                result.add(defaultValue);
             }
         }
 
@@ -213,6 +242,10 @@ public final class Maps {
     }
 
     public static <K, V> void removeAll(final Map<K, V> map, final Collection<?> keys) {
+        if (N.isNullOrEmpty(keys)) {
+            return;
+        }
+
         for (Object key : keys) {
             map.remove(key);
         }
@@ -1758,48 +1791,6 @@ public final class Maps {
             return sb.toString();
         } finally {
             ObjectFactory.recycle(sb);
-        }
-    }
-
-    public static final class Entry {
-        public static <K extends Comparable<? super K>, V> Comparator<Map.Entry<K, V>> comparingByKey() {
-            return new Comparator<Map.Entry<K, V>>() {
-                @Override
-                public int compare(Map.Entry<K, V> a, Map.Entry<K, V> b) {
-                    return a.getKey().compareTo(b.getKey());
-                }
-            };
-        }
-
-        public static <K, V extends Comparable<? super V>> Comparator<Map.Entry<K, V>> comparingByValue() {
-            return new Comparator<Map.Entry<K, V>>() {
-                @Override
-                public int compare(Map.Entry<K, V> a, Map.Entry<K, V> b) {
-                    return a.getValue().compareTo(b.getValue());
-                }
-            };
-        }
-
-        public static <K, V> Comparator<Map.Entry<K, V>> comparingByKey(final Comparator<? super K> cmp) {
-            N.requireNonNull(cmp);
-
-            return new Comparator<Map.Entry<K, V>>() {
-                @Override
-                public int compare(Map.Entry<K, V> a, Map.Entry<K, V> b) {
-                    return cmp.compare(a.getKey(), b.getKey());
-                }
-            };
-        }
-
-        public static <K, V> Comparator<Map.Entry<K, V>> comparingByValue(final Comparator<? super V> cmp) {
-            N.requireNonNull(cmp);
-
-            return new Comparator<Map.Entry<K, V>>() {
-                @Override
-                public int compare(Map.Entry<K, V> a, Map.Entry<K, V> b) {
-                    return cmp.compare(a.getValue(), b.getValue());
-                }
-            };
         }
     }
 }

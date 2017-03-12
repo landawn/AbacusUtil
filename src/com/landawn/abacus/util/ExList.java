@@ -498,11 +498,23 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
      */
     @Override
     public boolean retainAll(Collection<?> c) {
+        if (N.isNullOrEmpty(c)) {
+            boolean result = size() > 0;
+            clear();
+            return result;
+        }
+
         return batchRemove(c, true) > 0;
     }
 
     public boolean retainAll(Object[] a) {
-        return retainAll(a == null ? empty() : ExList.of(a));
+        if (N.isNullOrEmpty(a)) {
+            boolean result = size() > 0;
+            clear();
+            return result;
+        }
+
+        return retainAll(ExList.of(a));
     }
 
     private int batchRemove(Collection<?> c, boolean complement) {
@@ -627,6 +639,10 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
 
     @Override
     public boolean containsAll(Collection<?> c) {
+        if (N.isNullOrEmpty(c)) {
+            return true;
+        }
+
         if (c.size() > 3 && size() > 9) {
             final Set<?> set = c instanceof Set ? (Set<?>) c : new HashSet<>(c);
 
@@ -656,6 +672,10 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     }
 
     public boolean disjoint(final Collection<?> c) {
+        if (N.isNullOrEmpty(c)) {
+            return true;
+        }
+
         final Collection<?> container = c instanceof Set || c.size() >= size() ? c : this;
         final Collection<?> iterElements = container == c ? this : c;
 
@@ -694,6 +714,10 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
      * @see IntList#intersection(IntList)
      */
     public ExList<T> intersection(final Collection<?> b) {
+        if (N.isNullOrEmpty(b)) {
+            return new ExList<>((T[]) N.newArray(getComponentType(), 0));
+        }
+
         final Multiset<?> bOccurrences = Multiset.from(b);
 
         final ExList<T> result = new ExList<>((T[]) N.newArray(getComponentType(), N.min(9, size(), b.size())));
@@ -709,7 +733,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
 
     public ExList<T> intersection(final Object[] a) {
         if (N.isNullOrEmpty(a)) {
-            return empty();
+            return new ExList<>((T[]) N.newArray(getComponentType(), 0));
         }
 
         return intersection(of(a));
@@ -722,6 +746,10 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
      * @see IntList#difference(IntList)
      */
     public ExList<T> difference(final Collection<?> b) {
+        if (N.isNullOrEmpty(b)) {
+            return of(N.copyOfRange(elementData, 0, size()));
+        }
+
         final Multiset<?> bOccurrences = Multiset.from(b);
 
         final ExList<T> result = new ExList<>((T[]) N.newArray(getComponentType(), N.min(size(), N.max(9, size() - b.size()))));
@@ -750,6 +778,12 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
      * @see IntList#symmetricDifference(IntList)
      */
     public ExList<T> symmetricDifference(final Collection<T> b) {
+        if (N.isNullOrEmpty(b)) {
+            return of(N.copyOfRange(elementData, 0, size()));
+        } else if (this.isEmpty()) {
+            return of(b.toArray((T[]) N.newArray(getComponentType(), b.size())));
+        }
+
         final Multiset<T> bOccurrences = Multiset.from(b);
 
         final ExList<T> result = new ExList<>((T[]) N.newArray(getComponentType(), N.max(9, Math.abs(size() - b.size()))));
@@ -776,6 +810,8 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     public ExList<T> symmetricDifference(final T[] a) {
         if (N.isNullOrEmpty(a)) {
             return of(N.copyOfRange(elementData, 0, size()));
+        } else if (this.isEmpty()) {
+            return of(N.copyOf(a, a.length, (Class<T[]>) elementData.getClass()));
         }
 
         return symmetricDifference(of(a));

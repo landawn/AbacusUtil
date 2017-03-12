@@ -2287,7 +2287,7 @@ public final class Array {
     static void sort(final char[] a, final int fromIndex, final int toIndex) {
         N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return;
         }
 
@@ -2305,7 +2305,7 @@ public final class Array {
     static void sort(final byte[] a, final int fromIndex, final int toIndex) {
         N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return;
         }
 
@@ -2323,7 +2323,7 @@ public final class Array {
     static void sort(final short[] a, final int fromIndex, final int toIndex) {
         N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return;
         }
 
@@ -2341,7 +2341,7 @@ public final class Array {
     static void sort(final int[] a, final int fromIndex, final int toIndex) {
         N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return;
         }
 
@@ -2359,7 +2359,7 @@ public final class Array {
     static void sort(final long[] a, final int fromIndex, final int toIndex) {
         N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return;
         }
 
@@ -2377,7 +2377,7 @@ public final class Array {
     static void sort(final float[] a, final int fromIndex, final int toIndex) {
         N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return;
         }
 
@@ -2395,7 +2395,7 @@ public final class Array {
     static void sort(final double[] a, final int fromIndex, final int toIndex) {
         N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return;
         }
 
@@ -2411,7 +2411,7 @@ public final class Array {
     }
 
     static void sort(final Object[] a, final int fromIndex, final int toIndex) {
-        sort(a, fromIndex, toIndex, N.OBJECT_COMPARATOR);
+        sort(a, fromIndex, toIndex, Comparators.OBJ_COMPARATOR);
     }
 
     static <T> void sort(final T[] a, final Comparator<? super T> cmp) {
@@ -2425,7 +2425,7 @@ public final class Array {
     static <T> void sort(final T[] a, final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
         N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return;
         }
 
@@ -2441,7 +2441,7 @@ public final class Array {
     }
 
     static <T extends Comparable<? super T>> void sort(final List<? extends T> c, final int fromIndex, final int toIndex) {
-        sort(c, fromIndex, toIndex, N.OBJECT_COMPARATOR);
+        sort(c, fromIndex, toIndex, Comparators.OBJ_COMPARATOR);
     }
 
     static <T> void sort(final List<? extends T> list, final Comparator<? super T> cmp) {
@@ -3531,7 +3531,7 @@ public final class Array {
     }
 
     static void parallelSort(final Object[] a, final int fromIndex, final int toIndex) {
-        parallelSort(a, fromIndex, toIndex, N.OBJECT_COMPARATOR);
+        parallelSort(a, fromIndex, toIndex, Comparators.OBJ_COMPARATOR);
     }
 
     static <T> void parallelSort(final T[] a, final Comparator<? super T> cmp) {
@@ -3549,7 +3549,7 @@ public final class Array {
             return;
         }
 
-        final Comparator<? super T> comparator = cmp == null ? N.OBJECT_COMPARATOR : cmp;
+        final Comparator<? super T> comparator = cmp == null ? Comparators.OBJ_COMPARATOR : cmp;
         final int len = toIndex - fromIndex;
 
         if (len < MIN_ARRAY_SORT_GRAN || CPU_CORES == 1) {
@@ -3666,7 +3666,7 @@ public final class Array {
     }
 
     static <T extends Comparable<? super T>> void parallelSort(final List<? extends T> c, final int fromIndex, final int toIndex) {
-        parallelSort(c, fromIndex, toIndex, N.OBJECT_COMPARATOR);
+        parallelSort(c, fromIndex, toIndex, Comparators.OBJ_COMPARATOR);
     }
 
     static <T> void parallelSort(final List<? extends T> list, final Comparator<? super T> cmp) {
@@ -3729,7 +3729,7 @@ public final class Array {
     static void bucketSort(final int[] a, final int fromIndex, final int toIndex) {
         N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return;
         }
 
@@ -3769,7 +3769,7 @@ public final class Array {
     static void bucketSort(final long[] a, final int fromIndex, final int toIndex) {
         N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return;
         }
 
@@ -3809,7 +3809,7 @@ public final class Array {
     static void bucketSort(final float[] a, final int fromIndex, final int toIndex) {
         N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return;
         }
 
@@ -3849,7 +3849,7 @@ public final class Array {
     static void bucketSort(final double[] a, final int fromIndex, final int toIndex) {
         N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return;
         }
 
@@ -3921,7 +3921,7 @@ public final class Array {
     static <T> void bucketSort(final T[] a, final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
         N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
-        if ((N.isNullOrEmpty(a) && fromIndex == 0 && toIndex == 0) || fromIndex == toIndex) {
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
             return;
         }
 
@@ -3930,7 +3930,7 @@ public final class Array {
             return;
         }
 
-        final Comparator<? super T> comparator = cmp == null ? N.OBJECT_COMPARATOR : cmp;
+        final Comparator<? super T> comparator = cmp == null ? Comparators.OBJ_COMPARATOR : cmp;
         final Multiset<T> multiset = new Multiset<>();
 
         for (int i = fromIndex; i < toIndex; i++) {
@@ -4009,7 +4009,7 @@ public final class Array {
             return;
         }
 
-        final Comparator<? super T> comparator = cmp == null ? N.OBJECT_COMPARATOR : cmp;
+        final Comparator<? super T> comparator = cmp == null ? Comparators.OBJ_COMPARATOR : cmp;
         final Multiset<T> multiset = new Multiset<>();
         ListIterator<T> itr = (ListIterator<T>) c.listIterator(fromIndex);
         int i = fromIndex;
@@ -4340,7 +4340,7 @@ public final class Array {
             return N.INDEX_NOT_FOUND;
         }
 
-        return Arrays.binarySearch(a, key, cmp == null ? N.OBJECT_COMPARATOR : cmp);
+        return Arrays.binarySearch(a, key, cmp == null ? Comparators.OBJ_COMPARATOR : cmp);
     }
 
     /**
@@ -4358,7 +4358,7 @@ public final class Array {
             return N.INDEX_NOT_FOUND;
         }
 
-        return Arrays.binarySearch(a, key, cmp == null ? N.OBJECT_COMPARATOR : cmp);
+        return Arrays.binarySearch(a, key, cmp == null ? Comparators.OBJ_COMPARATOR : cmp);
     }
 
     /**
@@ -4381,7 +4381,7 @@ public final class Array {
             return N.INDEX_NOT_FOUND;
         }
 
-        return binarySearch(list, fromIndex, toIndex, key, N.OBJECT_COMPARATOR);
+        return binarySearch(list, fromIndex, toIndex, key, Comparators.OBJ_COMPARATOR);
     }
 
     static <T> int binarySearch(final List<? extends T> list, final T key, final Comparator<? super T> cmp) {
@@ -4408,7 +4408,7 @@ public final class Array {
         }
 
         if (list instanceof ExList) {
-            return binarySearch((T[]) ((ExList<T>) list).array(), fromIndex, toIndex, key, cmp == null ? N.OBJECT_COMPARATOR : cmp);
+            return binarySearch((T[]) ((ExList<T>) list).array(), fromIndex, toIndex, key, cmp == null ? Comparators.OBJ_COMPARATOR : cmp);
         }
 
         if (N.isListElementDataFieldGettable && N.listElementDataField != null && list instanceof ArrayList) {
@@ -4422,14 +4422,14 @@ public final class Array {
             }
 
             if (array != null) {
-                return binarySearch(array, fromIndex, toIndex, key, cmp == null ? N.OBJECT_COMPARATOR : cmp);
+                return binarySearch(array, fromIndex, toIndex, key, cmp == null ? Comparators.OBJ_COMPARATOR : cmp);
             }
         }
 
         if (list instanceof RandomAccess || list.size() < BINARYSEARCH_THRESHOLD) {
-            return indexedBinarySearch(list, fromIndex, toIndex, key, cmp == null ? N.OBJECT_COMPARATOR : cmp);
+            return indexedBinarySearch(list, fromIndex, toIndex, key, cmp == null ? Comparators.OBJ_COMPARATOR : cmp);
         } else {
-            return iteratorBinarySearch(list, fromIndex, toIndex, key, cmp == null ? N.OBJECT_COMPARATOR : cmp);
+            return iteratorBinarySearch(list, fromIndex, toIndex, key, cmp == null ? Comparators.OBJ_COMPARATOR : cmp);
         }
     }
 
@@ -4507,11 +4507,8 @@ public final class Array {
     }
 
     static char kthLargest(final char[] a, final int fromIndex, final int toIndex, int k) {
-        N.checkFromToIndex(fromIndex, toIndex, a.length);
-
-        if (N.isNullOrEmpty(a) || toIndex - fromIndex < 1 || k < 1 || k > toIndex - fromIndex) {
-            throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1 or bigger than (toIndex - fromIndex). k=" + k);
-        }
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkArgument(k > 0 && k <= toIndex - fromIndex, "'k' (%s) is out of range %s", k, toIndex - fromIndex);
 
         final int len = toIndex - fromIndex;
 
@@ -4566,11 +4563,8 @@ public final class Array {
     }
 
     static byte kthLargest(final byte[] a, final int fromIndex, final int toIndex, int k) {
-        N.checkFromToIndex(fromIndex, toIndex, a.length);
-
-        if (N.isNullOrEmpty(a) || toIndex - fromIndex < 1 || k < 1 || k > toIndex - fromIndex) {
-            throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1 or bigger than (toIndex - fromIndex). k=" + k);
-        }
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkArgument(k > 0 && k <= toIndex - fromIndex, "'k' (%s) is out of range %s", k, toIndex - fromIndex);
 
         final int len = toIndex - fromIndex;
 
@@ -4625,11 +4619,8 @@ public final class Array {
     }
 
     static short kthLargest(final short[] a, final int fromIndex, final int toIndex, int k) {
-        N.checkFromToIndex(fromIndex, toIndex, a.length);
-
-        if (N.isNullOrEmpty(a) || toIndex - fromIndex < 1 || k < 1 || k > toIndex - fromIndex) {
-            throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1 or bigger than (toIndex - fromIndex). k=" + k);
-        }
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkArgument(k > 0 && k <= toIndex - fromIndex, "'k' (%s) is out of range %s", k, toIndex - fromIndex);
 
         final int len = toIndex - fromIndex;
 
@@ -4684,11 +4675,8 @@ public final class Array {
     }
 
     static int kthLargest(final int[] a, final int fromIndex, final int toIndex, int k) {
-        N.checkFromToIndex(fromIndex, toIndex, a.length);
-
-        if (N.isNullOrEmpty(a) || toIndex - fromIndex < 1 || k < 1 || k > toIndex - fromIndex) {
-            throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1 or bigger than (toIndex - fromIndex). k=" + k);
-        }
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkArgument(k > 0 && k <= toIndex - fromIndex, "'k' (%s) is out of range %s", k, toIndex - fromIndex);
 
         final int len = toIndex - fromIndex;
 
@@ -4743,11 +4731,8 @@ public final class Array {
     }
 
     static long kthLargest(final long[] a, final int fromIndex, final int toIndex, int k) {
-        N.checkFromToIndex(fromIndex, toIndex, a.length);
-
-        if (N.isNullOrEmpty(a) || toIndex - fromIndex < 1 || k < 1 || k > toIndex - fromIndex) {
-            throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1 or bigger than (toIndex - fromIndex). k=" + k);
-        }
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkArgument(k > 0 && k <= toIndex - fromIndex, "'k' (%s) is out of range %s", k, toIndex - fromIndex);
 
         final int len = toIndex - fromIndex;
 
@@ -4802,11 +4787,8 @@ public final class Array {
     }
 
     static float kthLargest(final float[] a, final int fromIndex, final int toIndex, int k) {
-        N.checkFromToIndex(fromIndex, toIndex, a.length);
-
-        if (N.isNullOrEmpty(a) || toIndex - fromIndex < 1 || k < 1 || k > toIndex - fromIndex) {
-            throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1 or bigger than (toIndex - fromIndex). k=" + k);
-        }
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkArgument(k > 0 && k <= toIndex - fromIndex, "'k' (%s) is out of range %s", k, toIndex - fromIndex);
 
         final int len = toIndex - fromIndex;
 
@@ -4861,11 +4843,8 @@ public final class Array {
     }
 
     static double kthLargest(final double[] a, final int fromIndex, final int toIndex, int k) {
-        N.checkFromToIndex(fromIndex, toIndex, a.length);
-
-        if (N.isNullOrEmpty(a) || toIndex - fromIndex < 1 || k < 1 || k > toIndex - fromIndex) {
-            throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1 or bigger than (toIndex - fromIndex). k=" + k);
-        }
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkArgument(k > 0 && k <= toIndex - fromIndex, "'k' (%s) is out of range %s", k, toIndex - fromIndex);
 
         final int len = toIndex - fromIndex;
 
@@ -4920,7 +4899,7 @@ public final class Array {
     }
 
     static <T extends Comparable<T>> T kthLargest(final T[] a, final int fromIndex, final int toIndex, int k) {
-        return (T) kthLargest(a, fromIndex, toIndex, k, N.OBJECT_COMPARATOR);
+        return (T) kthLargest(a, fromIndex, toIndex, k, Comparators.OBJ_COMPARATOR);
     }
 
     static <T> T kthLargest(final T[] a, int k, final Comparator<? super T> cmp) {
@@ -4928,13 +4907,10 @@ public final class Array {
     }
 
     static <T> T kthLargest(final T[] a, final int fromIndex, final int toIndex, int k, final Comparator<? super T> cmp) {
-        N.checkFromToIndex(fromIndex, toIndex, a.length);
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkArgument(k > 0 && k <= toIndex - fromIndex, "'k' (%s) is out of range %s", k, toIndex - fromIndex);
 
-        if (N.isNullOrEmpty(a) || toIndex - fromIndex < 1 || k < 1 || k > toIndex - fromIndex) {
-            throw new IllegalArgumentException("Array is empty or null, or the input k is less than 1 or bigger than (toIndex - fromIndex). k=" + k);
-        }
-
-        final Comparator<? super T> comparator = cmp == null ? N.OBJECT_COMPARATOR : cmp;
+        final Comparator<? super T> comparator = cmp == null ? Comparators.OBJ_COMPARATOR : cmp;
         final int len = toIndex - fromIndex;
 
         if (k == 1) {
@@ -4988,7 +4964,7 @@ public final class Array {
     }
 
     static <T extends Comparable<T>> T kthLargest(final Collection<? extends T> c, final int fromIndex, final int toIndex, int k) {
-        return (T) kthLargest(c, fromIndex, toIndex, k, N.OBJECT_COMPARATOR);
+        return (T) kthLargest(c, fromIndex, toIndex, k, Comparators.OBJ_COMPARATOR);
     }
 
     static <T> T kthLargest(final Collection<? extends T> c, int k, final Comparator<? super T> cmp) {
@@ -4996,13 +4972,10 @@ public final class Array {
     }
 
     static <T> T kthLargest(final Collection<? extends T> c, final int fromIndex, final int toIndex, int k, final Comparator<? super T> cmp) {
-        N.checkFromToIndex(fromIndex, toIndex, c.size());
+        N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        N.checkArgument(k > 0 && k <= toIndex - fromIndex, "'k' (%s) is out of range %s", k, toIndex - fromIndex);
 
-        if (N.isNullOrEmpty(c) || toIndex - fromIndex < 1 || k < 1 || k > toIndex - fromIndex) {
-            throw new IllegalArgumentException("Collection is empty or null, or the input k is less than 1 or bigger than (toIndex - fromIndex). k=" + k);
-        }
-
-        final Comparator<? super T> comparator = cmp == null ? N.OBJECT_COMPARATOR : cmp;
+        final Comparator<? super T> comparator = cmp == null ? Comparators.OBJ_COMPARATOR : cmp;
         final int len = toIndex - fromIndex;
 
         if (k == 1) {
@@ -5097,23 +5070,23 @@ public final class Array {
         if (a.length == 0) {
             return new ArrayList<>();
         }
-    
+
         if (N.isListElementDataFieldSettable && N.listElementDataField != null && N.listSizeField != null) {
             final List<T> list = new ArrayList<>();
-    
+
             try {
                 N.listElementDataField.set(list, a);
                 N.listSizeField.set(list, a.length);
-    
+
                 return list;
             } catch (Throwable e) {
                 // ignore;
                 N.isListElementDataFieldSettable = false;
             }
         }
-    
+
         final List<T> list = new ArrayList<>(a.length);
-    
+
         if (a.length < 9) {
             for (T e : a) {
                 list.add(e);
@@ -5121,7 +5094,7 @@ public final class Array {
         } else {
             list.addAll(Arrays.asList(a));
         }
-    
+
         return list;
     }
 

@@ -452,10 +452,22 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
     }
 
     public boolean retainAll(CharList c) {
+        if (N.isNullOrEmpty(c)) {
+            boolean result = size() > 0;
+            clear();
+            return result;
+        }
+
         return batchRemove(c, true) > 0;
     }
 
     public boolean retainAll(char[] a) {
+        if (N.isNullOrEmpty(a)) {
+            boolean result = size() > 0;
+            clear();
+            return result;
+        }
+
         return retainAll(CharList.of(a));
     }
 
@@ -564,6 +576,10 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
     }
 
     public boolean containsAll(CharList c) {
+        if (N.isNullOrEmpty(c)) {
+            return true;
+        }
+
         final char[] srcElementData = c.array();
 
         if (c.size() > 3 && size() > 9) {
@@ -595,6 +611,10 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
     }
 
     public boolean disjoint(final CharList c) {
+        if (N.isNullOrEmpty(c)) {
+            return true;
+        }
+
         final CharList container = size() >= c.size() ? this : c;
         final char[] iterElements = size() >= c.size() ? c.array() : this.array();
 
@@ -633,6 +653,10 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
      * @see IntList#intersection(IntList)
      */
     public CharList intersection(final CharList b) {
+        if (N.isNullOrEmpty(b)) {
+            return empty();
+        }
+
         final Multiset<Character> bOccurrences = b.toMultiset();
 
         final CharList c = new CharList(N.min(9, size(), b.size()));
@@ -661,6 +685,10 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
      * @see IntList#difference(IntList)
      */
     public CharList difference(CharList b) {
+        if (N.isNullOrEmpty(b)) {
+            return of(N.copyOfRange(elementData, 0, size()));
+        }
+
         final Multiset<Character> bOccurrences = b.toMultiset();
 
         final CharList c = new CharList(N.min(size(), N.max(9, size() - b.size())));
@@ -689,8 +717,13 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
      * @see IntList#symmetricDifference(IntList)
      */
     public CharList symmetricDifference(CharList b) {
-        final Multiset<Character> bOccurrences = b.toMultiset();
+        if (N.isNullOrEmpty(b)) {
+            return this.copy();
+        } else if (this.isEmpty()) {
+            return b.copy();
+        }
 
+        final Multiset<Character> bOccurrences = b.toMultiset();
         final CharList c = new CharList(N.max(9, Math.abs(size() - b.size())));
 
         for (int i = 0, len = size(); i < len; i++) {
@@ -715,6 +748,8 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
     public CharList symmetricDifference(final char[] a) {
         if (N.isNullOrEmpty(a)) {
             return of(N.copyOfRange(elementData, 0, size()));
+        } else if (this.isEmpty()) {
+            return of(N.copyOfRange(a, 0, a.length));
         }
 
         return symmetricDifference(of(a));

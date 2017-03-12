@@ -945,6 +945,12 @@ public final class Multiset<E> implements Iterable<E> {
      * @return <tt>true</tt> if this set changed as a result of the call
      */
     public boolean retainAll(final Collection<?> c) {
+        if (N.isNullOrEmpty(c)) {
+            boolean result = size() > 0;
+            clear();
+            return result;
+        }
+
         Set<E> others = null;
 
         for (E e : valueMap.keySet()) {
