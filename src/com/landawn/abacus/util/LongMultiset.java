@@ -1121,7 +1121,7 @@ public final class LongMultiset<E> implements Iterable<E> {
     /**
      * Execute <code>accumulator</code> on each element till <code>true</code> is returned by <code>conditionToBreak</code>
      * 
-     * @param seed
+     * @param seed The seed element is both the initial value of the reduction and the default result if there are no elements.
      * @param accumulator
      * @param conditionToBreak break if <code>true</code> is return.
      * @return

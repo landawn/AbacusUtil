@@ -592,6 +592,23 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
         return containsAll(of(a));
     }
 
+    public boolean containsAny(DoubleList c) {
+        if (this.isEmpty() || N.isNullOrEmpty(c)) {
+            return false;
+        }
+
+        return !disjoint(c);
+    }
+
+    @Override
+    public boolean containsAny(double[] a) {
+        if (this.isEmpty() || N.isNullOrEmpty(a)) {
+            return false;
+        }
+
+        return !disjoint(a);
+    }
+
     public boolean disjoint(final DoubleList c) {
         if (N.isNullOrEmpty(c)) {
             return true;

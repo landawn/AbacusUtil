@@ -5,7 +5,7 @@
 
 2, Add a few static creation method to interface Function/BiFunction/TriFunction/Consumer/BiConsumer/TriConsumer/BinaryOperator
 
-3, Add containsAny to Seq.
+3, Add containsAny to Seq/ExList/IntList/...
 
 4*, Replace acceptOnError/applyOnError with the second parameter in Try.run(...)/call(...).
 

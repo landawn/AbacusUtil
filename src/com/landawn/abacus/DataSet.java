@@ -28,9 +28,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.landawn.abacus.util.ExList;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
-import com.landawn.abacus.util.ExList;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalNullable;
@@ -861,7 +861,7 @@ public interface DataSet extends Iterable<Object[]> {
      * Execute <code>accumulator</code> on each element till <code>true</code> is returned by <code>conditionToBreak</code>
      * 
      * @param columnNames
-     * @param seed
+     * @param seed The seed element is both the initial value of the reduction and the default result if there are no elements.
      * @param accumulator
      * @param conditionToBreak break if <code>true</code> is return.
      * @param shareRowArray
@@ -885,7 +885,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param columnNames
      * @param fromRowIndex
      * @param toRowIndex
-     * @param seed
+     * @param seed The seed element is both the initial value of the reduction and the default result if there are no elements.
      * @param accumulator
      * @param conditionToBreak break if <code>true</code> is return.
      * @param shareRowArray

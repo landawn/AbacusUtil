@@ -575,6 +575,23 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
         return true;
     }
 
+    public boolean containsAny(ByteList c) {
+        if (this.isEmpty() || N.isNullOrEmpty(c)) {
+            return false;
+        }
+
+        return !disjoint(c);
+    }
+
+    @Override
+    public boolean containsAny(byte[] a) {
+        if (this.isEmpty() || N.isNullOrEmpty(a)) {
+            return false;
+        }
+
+        return !disjoint(a);
+    }
+
     @Override
     public boolean containsAll(byte[] a) {
         if (N.isNullOrEmpty(a)) {

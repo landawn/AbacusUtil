@@ -609,6 +609,23 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
         return true;
     }
 
+    public boolean containsAny(ShortList c) {
+        if (this.isEmpty() || N.isNullOrEmpty(c)) {
+            return false;
+        }
+
+        return !disjoint(c);
+    }
+
+    @Override
+    public boolean containsAny(short[] a) {
+        if (this.isEmpty() || N.isNullOrEmpty(a)) {
+            return false;
+        }
+
+        return !disjoint(a);
+    }
+
     @Override
     public boolean disjoint(final short[] b) {
         if (N.isNullOrEmpty(b)) {

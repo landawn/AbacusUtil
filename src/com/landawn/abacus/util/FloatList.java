@@ -606,6 +606,23 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
         return containsAll(of(a));
     }
 
+    public boolean containsAny(FloatList c) {
+        if (this.isEmpty() || N.isNullOrEmpty(c)) {
+            return false;
+        }
+
+        return !disjoint(c);
+    }
+
+    @Override
+    public boolean containsAny(float[] a) {
+        if (this.isEmpty() || N.isNullOrEmpty(a)) {
+            return false;
+        }
+
+        return !disjoint(a);
+    }
+
     public boolean disjoint(final FloatList c) {
         if (N.isNullOrEmpty(c)) {
             return true;

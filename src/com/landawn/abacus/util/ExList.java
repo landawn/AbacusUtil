@@ -671,6 +671,23 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
         return containsAll(of(a));
     }
 
+    public boolean containsAny(Collection<?> c) {
+        if (this.isEmpty() || N.isNullOrEmpty(c)) {
+            return false;
+        }
+
+        return !disjoint(c);
+    }
+
+    @Override
+    public boolean containsAny(Object[] a) {
+        if (this.isEmpty() || N.isNullOrEmpty(a)) {
+            return false;
+        }
+
+        return !disjoint(a);
+    }
+
     public boolean disjoint(final Collection<?> c) {
         if (N.isNullOrEmpty(c)) {
             return true;
@@ -1164,7 +1181,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
      * 
      * @param fromIndex
      * @param toIndex
-     * @param seed
+     * @param seed The seed element is both the initial value of the reduction and the default result if there are no elements.
      * @param accumulator
      * @param conditionToBreak break if <code>true</code> is return.
      * @return
@@ -1207,7 +1224,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
      * 
      * @param fromIndex
      * @param toIndex
-     * @param seed
+     * @param seed The seed element is both the initial value of the reduction and the default result if there are no elements.
      * @param accumulator
      * @param conditionToBreak break if <code>true</code> is return.
      * @return

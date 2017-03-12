@@ -626,6 +626,23 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
         return containsAll(of(a));
     }
 
+    public boolean containsAny(LongList c) {
+        if (this.isEmpty() || N.isNullOrEmpty(c)) {
+            return false;
+        }
+
+        return !disjoint(c);
+    }
+
+    @Override
+    public boolean containsAny(long[] a) {
+        if (this.isEmpty() || N.isNullOrEmpty(a)) {
+            return false;
+        }
+
+        return !disjoint(a);
+    }
+
     public boolean disjoint(final LongList c) {
         if (N.isNullOrEmpty(c)) {
             return true;

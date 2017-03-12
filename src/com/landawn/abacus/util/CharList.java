@@ -610,6 +610,23 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
         return containsAll(of(a));
     }
 
+    public boolean containsAny(CharList c) {
+        if (this.isEmpty() || N.isNullOrEmpty(c)) {
+            return false;
+        }
+
+        return !disjoint(c);
+    }
+
+    @Override
+    public boolean containsAny(char[] a) {
+        if (this.isEmpty() || N.isNullOrEmpty(a)) {
+            return false;
+        }
+
+        return !disjoint(a);
+    }
+
     public boolean disjoint(final CharList c) {
         if (N.isNullOrEmpty(c)) {
             return true;

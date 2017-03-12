@@ -732,6 +732,23 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
         return containsAll(of(a));
     }
 
+    public boolean containsAny(IntList c) {
+        if (this.isEmpty() || N.isNullOrEmpty(c)) {
+            return false;
+        }
+
+        return !disjoint(c);
+    }
+
+    @Override
+    public boolean containsAny(int[] a) {
+        if (this.isEmpty() || N.isNullOrEmpty(a)) {
+            return false;
+        }
+
+        return !disjoint(a);
+    }
+
     public boolean disjoint(final IntList c) {
         if (N.isNullOrEmpty(c)) {
             return true;
