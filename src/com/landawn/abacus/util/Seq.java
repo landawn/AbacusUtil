@@ -743,6 +743,24 @@ public final class Seq<T> implements Collection<T> {
         }
     }
 
+    public <U> OptionalNullable<T> findFirstOrLast(final Predicate<? super T> predicateForFirst, final Predicate<? super T> predicateForLast) {
+        final Iterator<T> iter = iterator();
+        T last = (T) N.NULL_MASK;
+        T next = null;
+
+        while (iter.hasNext()) {
+            next = iter.next();
+
+            if (predicateForFirst.test(next)) {
+                return OptionalNullable.of(next);
+            } else if (predicateForLast.test(next)) {
+                last = next;
+            }
+        }
+
+        return last == N.NULL_MASK ? OptionalNullable.<T> empty() : OptionalNullable.of(last);
+    }
+
     public boolean allMatch(Predicate<? super T> filter) {
         for (T e : coll) {
             if (filter.test(e) == false) {

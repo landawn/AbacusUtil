@@ -15,7 +15,9 @@
 
 7*, Replace N.nullMinOrder/nullMaxOrder/... with nullsFirst/nullsLast in Comparators.
 
-8, Improvements and bug fix.
+8, Add findFirstOrLast to Seq.
+
+9, Improvements and bug fix.
 
 
 ========Changes in 0.9.56=========================================================================
