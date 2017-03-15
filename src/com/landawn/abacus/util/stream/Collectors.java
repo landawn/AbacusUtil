@@ -71,8 +71,8 @@ import com.landawn.abacus.util.LongSummaryStatistics;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.NullabLe;
 import com.landawn.abacus.util.OptionalDouble;
-import com.landawn.abacus.util.OptionalNullable;
 import com.landawn.abacus.util.ShortList;
 import com.landawn.abacus.util.ShortSummaryStatistics;
 import com.landawn.abacus.util.function.BiConsumer;
@@ -1349,7 +1349,7 @@ public final class Collectors {
 
     /**
      * Returns a {@code Collector} that produces the minimal element according
-     * to a given {@code Comparator}, described as an {@code OptionalNullable<T>}.
+     * to a given {@code Comparator}, described as an {@code NullabLe<T>}.
      *
      * @implSpec
      * This produces a result equivalent to:
@@ -1361,7 +1361,7 @@ public final class Collectors {
      * @param comparator a {@code Comparator} for comparing elements
      * @return a {@code Collector} that produces the minimal value
      */
-    public static <T> Collector<T, ?, OptionalNullable<T>> minBy(final Comparator<? super T> comparator) {
+    public static <T> Collector<T, ?, NullabLe<T>> minBy(final Comparator<? super T> comparator) {
         Objects.requireNonNull(comparator);
 
         final BinaryOperator<T> op = new BinaryOperator<T>() {
@@ -1403,7 +1403,7 @@ public final class Collectors {
 
     /**
      * Returns a {@code Collector} that produces the maximal element according
-     * to a given {@code Comparator}, described as an {@code OptionalNullable<T>}.
+     * to a given {@code Comparator}, described as an {@code NullabLe<T>}.
      *
      * @implSpec
      * This produces a result equivalent to:
@@ -1415,7 +1415,7 @@ public final class Collectors {
      * @param comparator a {@code Comparator} for comparing elements
      * @return a {@code Collector} that produces the maximal value
      */
-    public static <T> Collector<T, ?, OptionalNullable<T>> maxBy(final Comparator<? super T> comparator) {
+    public static <T> Collector<T, ?, NullabLe<T>> maxBy(final Comparator<? super T> comparator) {
         Objects.requireNonNull(comparator);
 
         final BinaryOperator<T> op = new BinaryOperator<T>() {
@@ -2229,7 +2229,7 @@ public final class Collectors {
     /**
      * Returns a {@code Collector} which performs a reduction of its
      * input elements under a specified {@code BinaryOperator}.  The result
-     * is described as an {@code OptionalNullable<T>}.
+     * is described as an {@code NullabLe<T>}.
      *
      * @apiNote
      * The {@code reducing()} collectors are most useful when used in a
@@ -2252,7 +2252,7 @@ public final class Collectors {
      * @see #reducing(Object, BinaryOperator)
      * @see #reducing(Object, Function, BinaryOperator)
      */
-    public static <T> Collector<T, ?, OptionalNullable<T>> reducing(final BinaryOperator<T> op) {
+    public static <T> Collector<T, ?, NullabLe<T>> reducing(final BinaryOperator<T> op) {
         final Supplier<OptionalBox<T>> supplier = new Supplier<OptionalBox<T>>() {
             @Override
             public OptionalBox<T> get() {
@@ -2278,10 +2278,10 @@ public final class Collectors {
             }
         };
 
-        final Function<OptionalBox<T>, OptionalNullable<T>> finisher = new Function<OptionalBox<T>, OptionalNullable<T>>() {
+        final Function<OptionalBox<T>, NullabLe<T>> finisher = new Function<OptionalBox<T>, NullabLe<T>>() {
             @Override
-            public OptionalNullable<T> apply(OptionalBox<T> a) {
-                return a.present ? OptionalNullable.of(a.value) : (OptionalNullable<T>) OptionalNullable.empty();
+            public NullabLe<T> apply(OptionalBox<T> a) {
+                return a.present ? NullabLe.of(a.value) : (NullabLe<T>) NullabLe.empty();
             }
         };
 
@@ -2309,7 +2309,7 @@ public final class Collectors {
     }
 
     public static <T> Collector<T, ?, T> reducingOrGet(final BinaryOperator<T> op, final Supplier<? extends T> other) {
-        final Collector<T, OptionalBox<T>, OptionalNullable<T>> collector = (Collector<T, OptionalBox<T>, OptionalNullable<T>>) reducing(op);
+        final Collector<T, OptionalBox<T>, NullabLe<T>> collector = (Collector<T, OptionalBox<T>, NullabLe<T>>) reducing(op);
 
         final Function<OptionalBox<T>, T> finisher = new Function<OptionalBox<T>, T>() {
             @Override
@@ -2323,7 +2323,7 @@ public final class Collectors {
 
     public static <T, X extends RuntimeException> Collector<T, ?, T> reducingOrThrow(final BinaryOperator<T> op,
             final Supplier<? extends X> exceptionSupplier) {
-        final Collector<T, OptionalBox<T>, OptionalNullable<T>> collector = (Collector<T, OptionalBox<T>, OptionalNullable<T>>) reducing(op);
+        final Collector<T, OptionalBox<T>, NullabLe<T>> collector = (Collector<T, OptionalBox<T>, NullabLe<T>>) reducing(op);
 
         final Function<OptionalBox<T>, T> finisher = new Function<OptionalBox<T>, T>() {
             @Override
@@ -2396,7 +2396,7 @@ public final class Collectors {
         return new CollectorImpl<>(boxSupplier(identity), accumulator, combiner, finisher, CH_NOID);
     }
 
-    public static <T, U> Collector<T, ?, OptionalNullable<U>> reducing(final Function<? super T, ? extends U> mapper, final BinaryOperator<U> op) {
+    public static <T, U> Collector<T, ?, NullabLe<U>> reducing(final Function<? super T, ? extends U> mapper, final BinaryOperator<U> op) {
         final Supplier<OptionalBox2<T, U>> supplier = new Supplier<OptionalBox2<T, U>>() {
             @Override
             public OptionalBox2<T, U> get() {
@@ -2423,10 +2423,10 @@ public final class Collectors {
             }
         };
 
-        final Function<OptionalBox2<T, U>, OptionalNullable<U>> finisher = new Function<OptionalBox2<T, U>, OptionalNullable<U>>() {
+        final Function<OptionalBox2<T, U>, NullabLe<U>> finisher = new Function<OptionalBox2<T, U>, NullabLe<U>>() {
             @Override
-            public OptionalNullable<U> apply(OptionalBox2<T, U> a) {
-                return a.present ? OptionalNullable.of(a.value) : (OptionalNullable<U>) OptionalNullable.empty();
+            public NullabLe<U> apply(OptionalBox2<T, U> a) {
+                return a.present ? NullabLe.of(a.value) : (NullabLe<U>) NullabLe.empty();
             }
         };
 
@@ -2457,7 +2457,7 @@ public final class Collectors {
 
     public static <T, U> Collector<T, ?, U> reducingOrGet(final Function<? super T, ? extends U> mapper, final BinaryOperator<U> op,
             final Supplier<? extends U> other) {
-        final Collector<T, OptionalBox2<T, U>, OptionalNullable<U>> collector = (Collector<T, OptionalBox2<T, U>, OptionalNullable<U>>) reducing(mapper, op);
+        final Collector<T, OptionalBox2<T, U>, NullabLe<U>> collector = (Collector<T, OptionalBox2<T, U>, NullabLe<U>>) reducing(mapper, op);
 
         final Function<OptionalBox2<T, U>, U> finisher = new Function<OptionalBox2<T, U>, U>() {
             @Override
@@ -2471,7 +2471,7 @@ public final class Collectors {
 
     public static <T, U, X extends RuntimeException> Collector<T, ?, U> reducingOrThrow(final Function<? super T, ? extends U> mapper,
             final BinaryOperator<U> op, final Supplier<? extends X> exceptionSupplier) {
-        final Collector<T, OptionalBox2<T, U>, OptionalNullable<U>> collector = (Collector<T, OptionalBox2<T, U>, OptionalNullable<U>>) reducing(mapper, op);
+        final Collector<T, OptionalBox2<T, U>, NullabLe<U>> collector = (Collector<T, OptionalBox2<T, U>, NullabLe<U>>) reducing(mapper, op);
 
         final Function<OptionalBox2<T, U>, U> finisher = new Function<OptionalBox2<T, U>, U>() {
             @Override

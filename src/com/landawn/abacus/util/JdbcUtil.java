@@ -2251,7 +2251,7 @@ public final class JdbcUtil {
                 final Iterator<Object[]> iteratorII = stream.limit(count).iterator();
                 final ExecutorService executorService = Executors.newFixedThreadPool(processThreadNumber);
                 final AtomicInteger activeThreadNum = new AtomicInteger();
-                final Holder<Throwable> errorHolder = new Holder<>();
+                final Output<Throwable> errorHolder = new Output<>();
 
                 for (int i = 0; i < processThreadNumber; i++) {
                     activeThreadNum.incrementAndGet();
@@ -2262,7 +2262,7 @@ public final class JdbcUtil {
                             Object[] row = null;
 
                             try {
-                                while (errorHolder.getValue() == null) {
+                                while (errorHolder.value() == null) {
                                     synchronized (iteratorII) {
                                         if (iteratorII.hasNext()) {
                                             row = iteratorII.next();

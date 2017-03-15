@@ -534,7 +534,7 @@ public final class IOUtil {
     }
 
     public static byte[] readBytes(final File file, final long offset, final int maxLen) {
-        final Holder<ZipFile> outputZipFile = new Holder<>();
+        final Output<ZipFile> outputZipFile = new Output<>();
         InputStream is = null;
 
         try {
@@ -545,7 +545,7 @@ public final class IOUtil {
             throw new AbacusIOException(e);
         } finally {
             close(is);
-            close(outputZipFile.getValue());
+            close(outputZipFile.value());
         }
     }
 
@@ -605,7 +605,7 @@ public final class IOUtil {
     }
 
     public static char[] readChars(final File file, final long offset, final int maxLen, final Charset encoding) {
-        final Holder<ZipFile> outputZipFile = new Holder<>();
+        final Output<ZipFile> outputZipFile = new Output<>();
         InputStream is = null;
 
         try {
@@ -616,7 +616,7 @@ public final class IOUtil {
             throw new AbacusIOException(e);
         } finally {
             close(is);
-            close(outputZipFile.getValue());
+            close(outputZipFile.value());
         }
     }
 
@@ -743,7 +743,7 @@ public final class IOUtil {
     }
 
     public static String readLine(final File file, final int lineIndex, final Charset encoding) {
-        final Holder<ZipFile> outputZipFile = new Holder<>();
+        final Output<ZipFile> outputZipFile = new Output<>();
         InputStream is = null;
 
         try {
@@ -754,7 +754,7 @@ public final class IOUtil {
             throw new AbacusIOException(e);
         } finally {
             close(is);
-            close(outputZipFile.getValue());
+            close(outputZipFile.value());
         }
     }
 
@@ -804,7 +804,7 @@ public final class IOUtil {
     }
 
     public static List<String> readLines(final File file, final int offset, final int count, final Charset encoding) {
-        final Holder<ZipFile> outputZipFile = new Holder<>();
+        final Output<ZipFile> outputZipFile = new Output<>();
         InputStream is = null;
 
         try {
@@ -815,7 +815,7 @@ public final class IOUtil {
             throw new AbacusIOException(e);
         } finally {
             close(is);
-            close(outputZipFile.getValue());
+            close(outputZipFile.value());
         }
     }
 
@@ -3181,7 +3181,7 @@ public final class IOUtil {
         String prefix = file.getName().substring(0, index);
         String postfix = (index > 0) ? file.getName().substring(index) : "";
 
-        final Holder<ZipFile> outputZipFile = new Holder<>();
+        final Output<ZipFile> outputZipFile = new Output<>();
         InputStream is = null;
 
         BufferedReader br = null;
@@ -3229,7 +3229,7 @@ public final class IOUtil {
             }
 
             closeQuietly(is);
-            close(outputZipFile.getValue());
+            close(outputZipFile.value());
 
             ObjectFactory.recycle(br);
         }
@@ -3243,7 +3243,7 @@ public final class IOUtil {
      * @return
      */
     private static long estimateLineCount(final File file, final int byReadingLineNum) {
-        final Holder<ZipFile> outputZipFile = new Holder<>();
+        final Output<ZipFile> outputZipFile = new Output<>();
         InputStream is = null;
         BufferedReader br = null;
 
@@ -3266,7 +3266,7 @@ public final class IOUtil {
             throw new AbacusIOException(e);
         } finally {
             closeQuietly(is);
-            closeQuietly(outputZipFile.getValue());
+            closeQuietly(outputZipFile.value());
 
             ObjectFactory.recycle(br);
         }
@@ -4316,7 +4316,7 @@ public final class IOUtil {
             } else {
                 final AtomicInteger activeThreadNum = new AtomicInteger();
                 final ExecutorService executorService = Executors.newFixedThreadPool(processThreadNumber);
-                final Holder<Throwable> errorHolder = new Holder<>();
+                final Output<Throwable> errorHolder = new Output<>();
 
                 for (int i = 0; i < processThreadNumber; i++) {
                     activeThreadNum.incrementAndGet();
@@ -4326,7 +4326,7 @@ public final class IOUtil {
                         public void run() {
                             T element = null;
                             try {
-                                while (errorHolder.getValue() == null) {
+                                while (errorHolder.value() == null) {
                                     synchronized (iteratorII) {
                                         if (iteratorII.hasNext()) {
                                             element = iteratorII.next();
@@ -4375,7 +4375,7 @@ public final class IOUtil {
         }
     }
 
-    private static InputStream openFile(final Holder<ZipFile> outputZipFile, final File file) throws IOException {
+    private static InputStream openFile(final Output<ZipFile> outputZipFile, final File file) throws IOException {
         InputStream is = null;
 
         if (file.getName().endsWith(GZ)) {

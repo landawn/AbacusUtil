@@ -27,7 +27,6 @@ import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.ByteList;
 import com.landawn.abacus.util.ByteSummaryStatistics;
 import com.landawn.abacus.util.CompletableFuture;
-import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedByte;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
@@ -38,7 +37,8 @@ import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.OptionalByte;
 import com.landawn.abacus.util.OptionalDouble;
-import com.landawn.abacus.util.OptionalNullable;
+import com.landawn.abacus.util.Output;
+import com.landawn.abacus.util.NullabLe;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
@@ -279,7 +279,7 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
 
         final List<IndexedByte> testedElements = new ArrayList<>();
 
-        final OptionalNullable<IndexedByte> first = indexed().findFirst(new Predicate<IndexedByte>() {
+        final NullabLe<IndexedByte> first = indexed().findFirst(new Predicate<IndexedByte>() {
             @Override
             public boolean test(IndexedByte indexed) {
                 synchronized (testedElements) {
@@ -522,7 +522,7 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
         }
 
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
 
         for (int i = 0; i < maxThreadNum; i++) {
             futureList.add(asyncExecutor.execute(new Runnable() {
@@ -722,7 +722,7 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
         }
 
         final List<CompletableFuture<Byte>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
 
         for (int i = 0; i < maxThreadNum; i++) {
             futureList.add(asyncExecutor.execute(new Callable<Byte>() {
@@ -780,7 +780,7 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
         }
 
         final List<CompletableFuture<Byte>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
 
         for (int i = 0; i < maxThreadNum; i++) {
             futureList.add(asyncExecutor.execute(new Callable<Byte>() {
@@ -851,7 +851,7 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
         }
 
         final List<CompletableFuture<R>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
 
         for (int i = 0; i < maxThreadNum; i++) {
             futureList.add(asyncExecutor.execute(new Callable<R>() {
@@ -1018,7 +1018,7 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
             return OptionalByte.empty();
         }
 
-        final OptionalNullable<Byte> optional = boxed().kthLargest(k, BYTE_COMPARATOR);
+        final NullabLe<Byte> optional = boxed().kthLargest(k, BYTE_COMPARATOR);
 
         return optional.isPresent() ? OptionalByte.of(optional.get()) : OptionalByte.empty();
     }
@@ -1066,7 +1066,7 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
         }
 
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
         final MutableBoolean result = MutableBoolean.of(false);
 
         for (int i = 0; i < maxThreadNum; i++) {
@@ -1109,7 +1109,7 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
         }
 
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
         final MutableBoolean result = MutableBoolean.of(true);
 
         for (int i = 0; i < maxThreadNum; i++) {
@@ -1152,7 +1152,7 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
         }
 
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
         final MutableBoolean result = MutableBoolean.of(true);
 
         for (int i = 0; i < maxThreadNum; i++) {
@@ -1195,8 +1195,8 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
         }
 
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
-        final Holder<Pair<Long, Byte>> resultHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
+        final Output<Pair<Long, Byte>> resultHolder = new Output<>();
         final MutableLong index = MutableLong.of(0);
 
         for (int i = 0; i < maxThreadNum; i++) {
@@ -1245,8 +1245,8 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
         }
 
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
-        final Holder<Pair<Long, Byte>> resultHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
+        final Output<Pair<Long, Byte>> resultHolder = new Output<>();
         final MutableLong index = MutableLong.of(0);
 
         for (int i = 0; i < maxThreadNum; i++) {
@@ -1293,8 +1293,8 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
         }
 
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
-        final Holder<Object> resultHolder = Holder.of(NONE);
+        final Output<Throwable> eHolder = new Output<>();
+        final Output<Object> resultHolder = Output.of(NONE);
 
         for (int i = 0; i < maxThreadNum; i++) {
             futureList.add(asyncExecutor.execute(new Runnable() {

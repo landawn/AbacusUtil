@@ -38,7 +38,7 @@ public interface ShortBiPredicate {
         }
     };
 
-   static final ShortBiPredicate IS_EQUAL = new ShortBiPredicate() {
+   static final ShortBiPredicate EQUAL = new ShortBiPredicate() {
         @Override
         public boolean test(short t, short u) {
             return t == u;

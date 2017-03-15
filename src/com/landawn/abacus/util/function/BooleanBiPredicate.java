@@ -52,7 +52,7 @@ public interface BooleanBiPredicate {
         }
     };
 
-    static final BooleanBiPredicate IS_EQUAL = new BooleanBiPredicate() {
+    static final BooleanBiPredicate EQUAL = new BooleanBiPredicate() {
         @Override
         public boolean test(boolean t, boolean u) {
             return t == u;

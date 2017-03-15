@@ -67,7 +67,6 @@ import com.landawn.abacus.util.DoubleSummaryStatistics;
 import com.landawn.abacus.util.ExList;
 import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.FloatSummaryStatistics;
-import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.Indexed;
 import com.landawn.abacus.util.IntIterator;
@@ -82,9 +81,10 @@ import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
+import com.landawn.abacus.util.NullabLe;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
-import com.landawn.abacus.util.OptionalNullable;
+import com.landawn.abacus.util.Output;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.RefUtil;
@@ -239,8 +239,7 @@ import com.landawn.abacus.util.stream.ImmutableIterator.QueuedIterator;
  * @see DoubleStream
  * @see <a href="package-summary.html">java.util.stream</a>
  */
-public abstract class Stream<T>
-        extends StreamBase<T, Object[], Predicate<? super T>, Consumer<? super T>, ExList<T>, OptionalNullable<T>, Indexed<T>, Stream<T>> {
+public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? super T>, Consumer<? super T>, ExList<T>, NullabLe<T>, Indexed<T>, Stream<T>> {
 
     @SuppressWarnings("rawtypes")
     private static final Stream EMPTY = new ArrayStream(N.EMPTY_OBJECT_ARRAY, null, true, OBJECT_COMPARATOR);
@@ -800,7 +799,7 @@ public abstract class Stream<T>
      * @param predicate
      * @return
      */
-    public abstract <U> OptionalNullable<T> findFirst(final U seed, final BiPredicate<? super T, ? super U> predicate);
+    public abstract <U> NullabLe<T> findFirst(final U seed, final BiPredicate<? super T, ? super U> predicate);
 
     /**
      * <br />
@@ -810,7 +809,7 @@ public abstract class Stream<T>
      * @param predicate
      * @return
      */
-    public abstract <U> OptionalNullable<T> findLast(final U seed, final BiPredicate<? super T, ? super U> predicate);
+    public abstract <U> NullabLe<T> findLast(final U seed, final BiPredicate<? super T, ? super U> predicate);
 
     /**
      * <br />
@@ -820,7 +819,7 @@ public abstract class Stream<T>
      * @param predicate
      * @return
      */
-    public abstract <U> OptionalNullable<T> findAny(final U seed, final BiPredicate<? super T, ? super U> predicate);
+    public abstract <U> NullabLe<T> findAny(final U seed, final BiPredicate<? super T, ? super U> predicate);
 
     /**
      * <br />
@@ -831,7 +830,7 @@ public abstract class Stream<T>
      * @param predicateForLast
      * @return
      */
-    public abstract <U> OptionalNullable<T> findFirstOrLast(final U seed, final BiPredicate<? super T, ? super U> predicateForFirst,
+    public abstract <U> NullabLe<T> findFirstOrLast(final U seed, final BiPredicate<? super T, ? super U> predicateForFirst,
             final BiPredicate<? super T, ? super U> predicateForLast);
 
     /**
@@ -843,7 +842,7 @@ public abstract class Stream<T>
      * @param predicateForLast
      * @return
      */
-    public abstract <U> OptionalNullable<T> findFirstOrLast(final Function<? super T, U> preFunc, final BiPredicate<? super T, ? super U> predicateForFirst,
+    public abstract <U> NullabLe<T> findFirstOrLast(final Function<? super T, U> preFunc, final BiPredicate<? super T, ? super U> predicateForFirst,
             final BiPredicate<? super T, ? super U> predicateForLast);
 
     /**
@@ -855,7 +854,7 @@ public abstract class Stream<T>
      * @param predicateForLast
      * @return
      */
-    public abstract <U> Pair<OptionalNullable<T>, OptionalNullable<T>> findFirstAndLast(final U seed, final BiPredicate<? super T, ? super U> predicateForFirst,
+    public abstract <U> Pair<NullabLe<T>, NullabLe<T>> findFirstAndLast(final U seed, final BiPredicate<? super T, ? super U> predicateForFirst,
             final BiPredicate<? super T, ? super U> predicateForLast);
 
     /**
@@ -867,7 +866,7 @@ public abstract class Stream<T>
      * @param predicateForLast
      * @return
      */
-    public abstract <U> Pair<OptionalNullable<T>, OptionalNullable<T>> findFirstAndLast(final Function<? super T, U> preFunc,
+    public abstract <U> Pair<NullabLe<T>, NullabLe<T>> findFirstAndLast(final Function<? super T, U> preFunc,
             final BiPredicate<? super T, ? super U> predicateForFirst, final BiPredicate<? super T, ? super U> predicateForLast);
 
     public abstract <U> boolean anyMatch(final U seed, final BiPredicate<? super T, ? super U> predicate);
@@ -1121,7 +1120,7 @@ public abstract class Stream<T>
      *         else
      *             result = accumulator.apply(result, element);
      *     }
-     *     return foundAny ? OptionalNullable.of(result) : OptionalNullable.empty();
+     *     return foundAny ? NullabLe.of(result) : NullabLe.empty();
      * }</pre>
      *
      * but is not constrained to execute sequentially.
@@ -1141,7 +1140,7 @@ public abstract class Stream<T>
      * @see #min(Comparator)
      * @see #max(Comparator)
      */
-    public abstract OptionalNullable<T> reduce(BinaryOperator<T> accumulator);
+    public abstract NullabLe<T> reduce(BinaryOperator<T> accumulator);
 
     /**
      * Performs a <a href="package-summary.html#Reduction">reduction</a> on the
@@ -1368,7 +1367,7 @@ public abstract class Stream<T>
      * @return an {@code Optional} describing the minimum element of this stream,
      * or an empty {@code Optional} if the stream is empty
      */
-    public abstract OptionalNullable<T> min(Comparator<? super T> comparator);
+    public abstract NullabLe<T> min(Comparator<? super T> comparator);
 
     /**
      * Returns the maximum element of this stream according to the provided
@@ -1384,15 +1383,15 @@ public abstract class Stream<T>
      * @return an {@code Optional} describing the maximum element of this stream,
      * or an empty {@code Optional} if the stream is empty
      */
-    public abstract OptionalNullable<T> max(Comparator<? super T> comparator);
+    public abstract NullabLe<T> max(Comparator<? super T> comparator);
 
     /**
      * 
      * @param k
      * @param comparator
-     * @return OptionalNullable.empty() if there is no element or count less than k, otherwise the kth largest element.
+     * @return NullabLe.empty() if there is no element or count less than k, otherwise the kth largest element.
      */
-    public abstract OptionalNullable<T> kthLargest(int k, Comparator<? super T> comparator);
+    public abstract NullabLe<T> kthLargest(int k, Comparator<? super T> comparator);
 
     public abstract Long sumInt(ToIntFunction<? super T> mapper);
 
@@ -3063,7 +3062,7 @@ public abstract class Stream<T>
 
         final AtomicInteger threadCounter = new AtomicInteger(c.size());
         final ArrayBlockingQueue<T> queue = new ArrayBlockingQueue<>(queueSize);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
         final MutableBoolean onGoing = MutableBoolean.of(true);
 
         for (Iterator<? extends T> e : c) {
@@ -6086,7 +6085,7 @@ public abstract class Stream<T>
         final AtomicInteger threadCounterB = new AtomicInteger(1);
         final BlockingQueue<A> queueA = new ArrayBlockingQueue<>(queueSize);
         final BlockingQueue<B> queueB = new ArrayBlockingQueue<>(queueSize);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
         final MutableBoolean onGoing = MutableBoolean.of(true);
 
         readToQueue(a, b, asyncExecutor, threadCounterA, threadCounterB, queueA, queueB, eHolder, onGoing);
@@ -6189,7 +6188,7 @@ public abstract class Stream<T>
         final BlockingQueue<A> queueA = new ArrayBlockingQueue<>(queueSize);
         final BlockingQueue<B> queueB = new ArrayBlockingQueue<>(queueSize);
         final BlockingQueue<C> queueC = new ArrayBlockingQueue<>(queueSize);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
         final MutableBoolean onGoing = MutableBoolean.of(true);
 
         readToQueue(a, b, c, asyncExecutor, threadCounterA, threadCounterB, threadCounterC, queueA, queueB, queueC, eHolder, onGoing);
@@ -6431,7 +6430,7 @@ public abstract class Stream<T>
         final AsyncExecutor asyncExecutor = new AsyncExecutor(len, 300L, TimeUnit.SECONDS);
         final AtomicInteger[] counters = new AtomicInteger[len];
         final BlockingQueue<Object>[] queues = new ArrayBlockingQueue[len];
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
         final MutableBoolean onGoing = MutableBoolean.of(true);
 
         readToQueue(c, queueSize, asyncExecutor, counters, queues, eHolder, onGoing);
@@ -6736,7 +6735,7 @@ public abstract class Stream<T>
         final AtomicInteger threadCounterB = new AtomicInteger(1);
         final BlockingQueue<A> queueA = new ArrayBlockingQueue<>(queueSize);
         final BlockingQueue<B> queueB = new ArrayBlockingQueue<>(queueSize);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
         final MutableBoolean onGoing = MutableBoolean.of(true);
 
         readToQueue(a, b, asyncExecutor, threadCounterA, threadCounterB, queueA, queueB, eHolder, onGoing);
@@ -6856,7 +6855,7 @@ public abstract class Stream<T>
         final BlockingQueue<A> queueA = new ArrayBlockingQueue<>(queueSize);
         final BlockingQueue<B> queueB = new ArrayBlockingQueue<>(queueSize);
         final BlockingQueue<C> queueC = new ArrayBlockingQueue<>(queueSize);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
         final MutableBoolean onGoing = MutableBoolean.of(true);
 
         readToQueue(a, b, c, asyncExecutor, threadCounterA, threadCounterB, threadCounterC, queueA, queueB, queueC, eHolder, onGoing);
@@ -7124,7 +7123,7 @@ public abstract class Stream<T>
 
         final int len = c.size();
         final AsyncExecutor asyncExecutor = new AsyncExecutor(len, 300L, TimeUnit.SECONDS);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
         final MutableBoolean onGoing = MutableBoolean.of(true);
         final AtomicInteger[] counters = new AtomicInteger[len];
         final BlockingQueue<Object>[] queues = new ArrayBlockingQueue[len];
@@ -7513,7 +7512,7 @@ public abstract class Stream<T>
         }
 
         final Queue<Iterator<? extends T>> queue = N.newLinkedList(c);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
         final MutableInt cnt = MutableInt.of(c.size());
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(c.size() - 1);
 
@@ -7568,7 +7567,7 @@ public abstract class Stream<T>
 
     private static <B, A> void readToQueue(final Iterator<? extends A> a, final Iterator<? extends B> b, final AsyncExecutor asyncExecutor,
             final AtomicInteger threadCounterA, final AtomicInteger threadCounterB, final BlockingQueue<A> queueA, final BlockingQueue<B> queueB,
-            final Holder<Throwable> eHolder, final MutableBoolean onGoing) {
+            final Output<Throwable> eHolder, final MutableBoolean onGoing) {
         asyncExecutor.execute(new Runnable() {
             @Override
             public void run() {
@@ -7622,7 +7621,7 @@ public abstract class Stream<T>
 
     private static <B, C, A> void readToQueue(final Iterator<? extends A> a, final Iterator<? extends B> b, final Iterator<? extends C> c,
             final AsyncExecutor asyncExecutor, final AtomicInteger threadCounterA, final AtomicInteger threadCounterB, final AtomicInteger threadCounterC,
-            final BlockingQueue<A> queueA, final BlockingQueue<B> queueB, final BlockingQueue<C> queueC, final Holder<Throwable> eHolder,
+            final BlockingQueue<A> queueA, final BlockingQueue<B> queueB, final BlockingQueue<C> queueC, final Output<Throwable> eHolder,
             final MutableBoolean onGoing) {
         asyncExecutor.execute(new Runnable() {
             @Override
@@ -7701,7 +7700,7 @@ public abstract class Stream<T>
     }
 
     private static void readToQueue(final Collection<? extends Iterator<?>> c, final int queueSize, final AsyncExecutor asyncExecutor,
-            final AtomicInteger[] counters, final BlockingQueue<Object>[] queues, final Holder<Throwable> eHolder, final MutableBoolean onGoing) {
+            final AtomicInteger[] counters, final BlockingQueue<Object>[] queues, final Output<Throwable> eHolder, final MutableBoolean onGoing) {
         int idx = 0;
 
         for (Iterator<?> e : c) {

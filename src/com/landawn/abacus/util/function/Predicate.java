@@ -77,7 +77,7 @@ public interface Predicate<T> extends java.util.function.Predicate<T> {
         return NOT_NULL;
     }
 
-    static <T> Predicate<T> isEqual(Object targetRef) {
+    static <T> Predicate<T> equal(Object targetRef) {
         return (null == targetRef) ? Objects::isNull : object -> targetRef.equals(object);
     }
 

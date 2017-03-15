@@ -81,7 +81,7 @@ public interface BytePredicate {
         return (t) -> test(t) || other.test(t);
     }
 
-    static BytePredicate isEqual(byte targetByte) {
+    static BytePredicate equal(byte targetByte) {
         return value -> value == targetByte;
     }
 

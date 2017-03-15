@@ -38,7 +38,7 @@ public interface CharBiPredicate {
         }
     };
 
-   static final CharBiPredicate IS_EQUAL = new CharBiPredicate() {
+   static final CharBiPredicate EQUAL = new CharBiPredicate() {
         @Override
         public boolean test(char t, char u) {
             return t == u;

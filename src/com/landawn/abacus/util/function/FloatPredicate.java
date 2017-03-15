@@ -98,7 +98,7 @@ public interface FloatPredicate {
         return (t) -> test(t) || other.test(t);
     }
 
-    static FloatPredicate isEqual(float targetFloat) {
+    static FloatPredicate equal(float targetFloat) {
         return value -> value == targetFloat;
     }
 

@@ -26,7 +26,6 @@ import java.util.concurrent.Callable;
 import com.landawn.abacus.util.ByteList;
 import com.landawn.abacus.util.ByteSummaryStatistics;
 import com.landawn.abacus.util.CompletableFuture;
-import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedByte;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
@@ -35,9 +34,10 @@ import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
+import com.landawn.abacus.util.NullabLe;
 import com.landawn.abacus.util.OptionalByte;
 import com.landawn.abacus.util.OptionalDouble;
-import com.landawn.abacus.util.OptionalNullable;
+import com.landawn.abacus.util.Output;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
@@ -269,7 +269,7 @@ final class ParallelArrayByteStream extends AbstractByteStream {
     public Stream<ByteStream> splitBy(final BytePredicate where) {
         N.requireNonNull(where);
 
-        final OptionalNullable<IndexedByte> first = indexed().findFirst(new Predicate<IndexedByte>() {
+        final NullabLe<IndexedByte> first = indexed().findFirst(new Predicate<IndexedByte>() {
             @Override
             public boolean test(IndexedByte indexed) {
                 return !where.test(indexed.value());
@@ -351,7 +351,7 @@ final class ParallelArrayByteStream extends AbstractByteStream {
         }
 
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
 
         if (splitor == Splitor.ARRAY) {
             final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
@@ -587,7 +587,7 @@ final class ParallelArrayByteStream extends AbstractByteStream {
         }
 
         final List<CompletableFuture<Byte>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
 
         if (splitor == Splitor.ARRAY) {
             final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
@@ -675,7 +675,7 @@ final class ParallelArrayByteStream extends AbstractByteStream {
         }
 
         final List<CompletableFuture<Byte>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
 
         if (splitor == Splitor.ARRAY) {
             final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
@@ -816,7 +816,7 @@ final class ParallelArrayByteStream extends AbstractByteStream {
         }
 
         final List<CompletableFuture<R>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
 
         if (splitor == Splitor.ARRAY) {
             final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
@@ -1122,7 +1122,7 @@ final class ParallelArrayByteStream extends AbstractByteStream {
         }
 
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
         final MutableBoolean result = MutableBoolean.of(false);
 
         if (splitor == Splitor.ARRAY) {
@@ -1194,7 +1194,7 @@ final class ParallelArrayByteStream extends AbstractByteStream {
         }
 
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
         final MutableBoolean result = MutableBoolean.of(true);
 
         if (splitor == Splitor.ARRAY) {
@@ -1266,7 +1266,7 @@ final class ParallelArrayByteStream extends AbstractByteStream {
         }
 
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
         final MutableBoolean result = MutableBoolean.of(true);
 
         if (splitor == Splitor.ARRAY) {
@@ -1338,8 +1338,8 @@ final class ParallelArrayByteStream extends AbstractByteStream {
         }
 
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
-        final Holder<Pair<Integer, Byte>> resultHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
+        final Output<Pair<Integer, Byte>> resultHolder = new Output<>();
 
         if (splitor == Splitor.ARRAY) {
             final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
@@ -1355,7 +1355,7 @@ final class ParallelArrayByteStream extends AbstractByteStream {
                         final Pair<Integer, Byte> pair = new Pair<>();
 
                         try {
-                            while (cursor < to && (resultHolder.value() == null || cursor < resultHolder.value.left) && eHolder.value() == null) {
+                            while (cursor < to && (resultHolder.value() == null || cursor < resultHolder.value().left) && eHolder.value() == null) {
                                 pair.left = cursor;
                                 pair.right = elements[cursor++];
 
@@ -1425,8 +1425,8 @@ final class ParallelArrayByteStream extends AbstractByteStream {
         }
 
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
-        final Holder<Pair<Integer, Byte>> resultHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
+        final Output<Pair<Integer, Byte>> resultHolder = new Output<>();
 
         if (splitor == Splitor.ARRAY) {
             final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
@@ -1512,8 +1512,8 @@ final class ParallelArrayByteStream extends AbstractByteStream {
         }
 
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
-        final Holder<Object> resultHolder = Holder.of(NONE);
+        final Output<Throwable> eHolder = new Output<>();
+        final Output<Object> resultHolder = Output.of(NONE);
 
         if (splitor == Splitor.ARRAY) {
             final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);

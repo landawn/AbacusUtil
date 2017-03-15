@@ -39,7 +39,6 @@ import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.DoubleList;
 import com.landawn.abacus.util.DoubleMatrix;
 import com.landawn.abacus.util.DoubleSummaryStatistics;
-import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedDouble;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.MutableInt;
@@ -47,6 +46,7 @@ import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
+import com.landawn.abacus.util.Output;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.function.BiConsumer;
@@ -1567,7 +1567,7 @@ public abstract class DoubleStream
             queue.add(e.doubleIterator());
         }
 
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
         final MutableInt cnt = MutableInt.of(c.size());
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(c.size() - 1);
 

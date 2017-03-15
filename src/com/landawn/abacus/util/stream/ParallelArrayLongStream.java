@@ -25,7 +25,6 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 
 import com.landawn.abacus.util.CompletableFuture;
-import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedLong;
 import com.landawn.abacus.util.LongList;
 import com.landawn.abacus.util.LongMultiset;
@@ -36,9 +35,10 @@ import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
+import com.landawn.abacus.util.NullabLe;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalLong;
-import com.landawn.abacus.util.OptionalNullable;
+import com.landawn.abacus.util.Output;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
@@ -338,7 +338,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
     public Stream<LongStream> splitBy(final LongPredicate where) {
         N.requireNonNull(where);
 
-        final OptionalNullable<IndexedLong> first = indexed().findFirst(new Predicate<IndexedLong>() {
+        final NullabLe<IndexedLong> first = indexed().findFirst(new Predicate<IndexedLong>() {
             @Override
             public boolean test(IndexedLong indexed) {
                 return !where.test(indexed.value());
@@ -440,7 +440,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
         }
 
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
 
         if (splitor == Splitor.ARRAY) {
             final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
@@ -676,7 +676,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
         }
 
         final List<CompletableFuture<Long>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
 
         if (splitor == Splitor.ARRAY) {
             final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
@@ -764,7 +764,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
         }
 
         final List<CompletableFuture<Long>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
 
         if (splitor == Splitor.ARRAY) {
             final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
@@ -869,7 +869,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
         }
 
         final List<CompletableFuture<R>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
 
         if (splitor == Splitor.ARRAY) {
             final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
@@ -1211,7 +1211,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
         }
 
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
         final MutableBoolean result = MutableBoolean.of(false);
 
         if (splitor == Splitor.ARRAY) {
@@ -1283,7 +1283,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
         }
 
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
         final MutableBoolean result = MutableBoolean.of(true);
 
         if (splitor == Splitor.ARRAY) {
@@ -1355,7 +1355,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
         }
 
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
         final MutableBoolean result = MutableBoolean.of(true);
 
         if (splitor == Splitor.ARRAY) {
@@ -1427,8 +1427,8 @@ final class ParallelArrayLongStream extends AbstractLongStream {
         }
 
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
-        final Holder<Pair<Integer, Long>> resultHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
+        final Output<Pair<Integer, Long>> resultHolder = new Output<>();
 
         if (splitor == Splitor.ARRAY) {
             final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
@@ -1444,7 +1444,7 @@ final class ParallelArrayLongStream extends AbstractLongStream {
                         final Pair<Integer, Long> pair = new Pair<>();
 
                         try {
-                            while (cursor < to && (resultHolder.value() == null || cursor < resultHolder.value.left) && eHolder.value() == null) {
+                            while (cursor < to && (resultHolder.value() == null || cursor < resultHolder.value().left) && eHolder.value() == null) {
                                 pair.left = cursor;
                                 pair.right = elements[cursor++];
 
@@ -1514,8 +1514,8 @@ final class ParallelArrayLongStream extends AbstractLongStream {
         }
 
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
-        final Holder<Pair<Integer, Long>> resultHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
+        final Output<Pair<Integer, Long>> resultHolder = new Output<>();
 
         if (splitor == Splitor.ARRAY) {
             final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
@@ -1601,8 +1601,8 @@ final class ParallelArrayLongStream extends AbstractLongStream {
         }
 
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
-        final Holder<Object> resultHolder = Holder.of(NONE);
+        final Output<Throwable> eHolder = new Output<>();
+        final Output<Object> resultHolder = Output.of(NONE);
 
         if (splitor == Splitor.ARRAY) {
             final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);

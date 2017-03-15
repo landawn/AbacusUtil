@@ -38,7 +38,7 @@ public interface FloatBiPredicate {
         }
     };
 
-   static final FloatBiPredicate IS_EQUAL = new FloatBiPredicate() {
+   static final FloatBiPredicate EQUAL = new FloatBiPredicate() {
         @Override
         public boolean test(float t, float u) {
             return Float.compare(t, u) == 0;

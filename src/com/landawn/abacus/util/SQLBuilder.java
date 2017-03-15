@@ -1616,13 +1616,13 @@ public abstract class SQLBuilder {
     //     * @return 
     //     */
     //    @Beta
-    //    public <R> OptionalNullable<R> execute(final Class<R> targetClass, final SQLExecutor sqlExecutor) {
+    //    public <R> NullabLe<R> execute(final Class<R> targetClass, final SQLExecutor sqlExecutor) {
     //        if (op != OperationType.QUERY) {
     //            throw new IllegalArgumentException("Only SELECT statement is supported");
     //        }
     //
     //        if (N.isEntity(targetClass) || Map.class.isAssignableFrom(targetClass)) {
-    //            return OptionalNullable.from(sqlExecutor.queryForEntity(targetClass, sql(), this.parameters));
+    //            return NullabLe.from(sqlExecutor.queryForEntity(targetClass, sql(), this.parameters));
     //        } else {
     //            return sqlExecutor.queryForSingleResult(targetClass, sql(), this.parameters);
     //        }
@@ -1637,20 +1637,20 @@ public abstract class SQLBuilder {
     //     * @return
     //     */
     //    @Beta
-    //    public <R> OptionalNullable<R> execute(final Class<R> targetClass, final SQLExecutor sqlExecutor, final Object... parameters) {
+    //    public <R> NullabLe<R> execute(final Class<R> targetClass, final SQLExecutor sqlExecutor, final Object... parameters) {
     //        if (op != OperationType.QUERY) {
     //            throw new IllegalArgumentException("Only SELECT statement is supported");
     //        }
     //
     //        if (N.isNullOrEmpty(parameters)) {
     //            if (N.isEntity(targetClass) || Map.class.isAssignableFrom(targetClass)) {
-    //                return OptionalNullable.from(sqlExecutor.queryForEntity(targetClass, sql(), this.parameters));
+    //                return NullabLe.from(sqlExecutor.queryForEntity(targetClass, sql(), this.parameters));
     //            } else {
     //                return sqlExecutor.queryForSingleResult(targetClass, sql(), this.parameters);
     //            }
     //        } else {
     //            if (N.isEntity(targetClass) || Map.class.isAssignableFrom(targetClass)) {
-    //                return OptionalNullable.from(sqlExecutor.queryForEntity(targetClass, sql(), parameters));
+    //                return NullabLe.from(sqlExecutor.queryForEntity(targetClass, sql(), parameters));
     //            } else {
     //                return sqlExecutor.queryForSingleResult(targetClass, sql(), parameters);
     //            }
@@ -1690,28 +1690,28 @@ public abstract class SQLBuilder {
     //    }
     //
     //    @Beta
-    //    public <R> CompletableFuture<OptionalNullable<R>> asyncExecute(final Class<R> targetClass, final SQLExecutor sqlExecutor) {
+    //    public <R> CompletableFuture<NullabLe<R>> asyncExecute(final Class<R> targetClass, final SQLExecutor sqlExecutor) {
     //        if (op != OperationType.QUERY) {
     //            throw new IllegalArgumentException("Only SELECT statement is supported");
     //        }
     //
-    //        return sqlExecutor.asyncExecutor().asyncExecutor().execute(new Callable<OptionalNullable<R>>() {
+    //        return sqlExecutor.asyncExecutor().asyncExecutor().execute(new Callable<NullabLe<R>>() {
     //            @Override
-    //            public OptionalNullable<R> call() throws Exception {
+    //            public NullabLe<R> call() throws Exception {
     //                return execute(targetClass, sqlExecutor);
     //            }
     //        });
     //    }
     //
     //    @Beta
-    //    public <R> CompletableFuture<OptionalNullable<R>> asyncExecute(final Class<R> targetClass, final SQLExecutor sqlExecutor, final Object... parameters) {
+    //    public <R> CompletableFuture<NullabLe<R>> asyncExecute(final Class<R> targetClass, final SQLExecutor sqlExecutor, final Object... parameters) {
     //        if (op != OperationType.QUERY) {
     //            throw new IllegalArgumentException("Only SELECT statement is supported");
     //        }
     //
-    //        return sqlExecutor.asyncExecutor().asyncExecutor().execute(new Callable<OptionalNullable<R>>() {
+    //        return sqlExecutor.asyncExecutor().asyncExecutor().execute(new Callable<NullabLe<R>>() {
     //            @Override
-    //            public OptionalNullable<R> call() throws Exception {
+    //            public NullabLe<R> call() throws Exception {
     //                return execute(targetClass, sqlExecutor, parameters);
     //            }
     //        });

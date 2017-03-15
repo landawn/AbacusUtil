@@ -33,7 +33,6 @@ import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.FloatIterator;
-import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.Indexed;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.LongIterator;
@@ -45,7 +44,8 @@ import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.ExList;
-import com.landawn.abacus.util.OptionalNullable;
+import com.landawn.abacus.util.NullabLe;
+import com.landawn.abacus.util.Output;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.function.BiConsumer;
@@ -1132,7 +1132,7 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
 
         final List<Indexed<T>> testedElements = new ArrayList<>();
 
-        final OptionalNullable<Indexed<T>> first = indexed().findFirst(new Predicate<Indexed<T>>() {
+        final NullabLe<Indexed<T>> first = indexed().findFirst(new Predicate<Indexed<T>>() {
             @Override
             public boolean test(Indexed<T> indexed) {
                 synchronized (testedElements) {
@@ -1455,7 +1455,7 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
         }
 
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
 
         for (int i = 0; i < maxThreadNum; i++) {
             futureList.add(asyncExecutor.execute(new Runnable() {
@@ -1626,7 +1626,7 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
         }
 
         final List<CompletableFuture<T>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
 
         for (int i = 0; i < maxThreadNum; i++) {
             futureList.add(asyncExecutor.execute(new Callable<T>() {
@@ -1678,13 +1678,13 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public OptionalNullable<T> reduce(final BinaryOperator<T> accumulator) {
+    public NullabLe<T> reduce(final BinaryOperator<T> accumulator) {
         if (maxThreadNum <= 1) {
             return sequential().reduce(accumulator);
         }
 
         final List<CompletableFuture<T>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
 
         for (int i = 0; i < maxThreadNum; i++) {
             futureList.add(asyncExecutor.execute(new Callable<T>() {
@@ -1736,7 +1736,7 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
             throw N.toRuntimeException(e);
         }
 
-        return result == NONE ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(result);
+        return result == NONE ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(result);
     }
 
     @Override
@@ -1746,7 +1746,7 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
         }
 
         final List<CompletableFuture<U>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
 
         for (int i = 0; i < maxThreadNum; i++) {
             futureList.add(asyncExecutor.execute(new Callable<U>() {
@@ -1806,7 +1806,7 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
         }
 
         final List<CompletableFuture<R>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
 
         for (int i = 0; i < maxThreadNum; i++) {
             futureList.add(asyncExecutor.execute(new Callable<R>() {
@@ -1869,7 +1869,7 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
         final Function<A, R> finisher = collector.finisher();
 
         final List<CompletableFuture<A>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
 
         for (int i = 0; i < maxThreadNum; i++) {
             futureList.add(asyncExecutor.execute(new Callable<A>() {
@@ -1979,11 +1979,11 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public OptionalNullable<T> min(Comparator<? super T> comparator) {
+    public NullabLe<T> min(Comparator<? super T> comparator) {
         if (elements.hasNext() == false) {
-            return OptionalNullable.empty();
+            return NullabLe.empty();
         } else if (sorted && isSameComparator(comparator, cmp)) {
-            return OptionalNullable.of(elements.next());
+            return NullabLe.of(elements.next());
         }
 
         comparator = comparator == null ? OBJECT_COMPARATOR : comparator;
@@ -1992,9 +1992,9 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public OptionalNullable<T> max(Comparator<? super T> comparator) {
+    public NullabLe<T> max(Comparator<? super T> comparator) {
         if (elements.hasNext() == false) {
-            return OptionalNullable.empty();
+            return NullabLe.empty();
         } else if (sorted && isSameComparator(comparator, cmp)) {
             T next = null;
 
@@ -2002,7 +2002,7 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
                 next = elements.next();
             }
 
-            return OptionalNullable.of(next);
+            return NullabLe.of(next);
         }
 
         comparator = comparator == null ? OBJECT_COMPARATOR : comparator;
@@ -2011,7 +2011,7 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public OptionalNullable<T> kthLargest(int k, Comparator<? super T> comparator) {
+    public NullabLe<T> kthLargest(int k, Comparator<? super T> comparator) {
         return sequential().kthLargest(k, comparator);
     }
 
@@ -2027,7 +2027,7 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
         }
 
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
         final MutableBoolean result = MutableBoolean.of(false);
 
         for (int i = 0; i < maxThreadNum; i++) {
@@ -2070,7 +2070,7 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
         }
 
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
         final MutableBoolean result = MutableBoolean.of(true);
 
         for (int i = 0; i < maxThreadNum; i++) {
@@ -2113,7 +2113,7 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
         }
 
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
         final MutableBoolean result = MutableBoolean.of(true);
 
         for (int i = 0; i < maxThreadNum; i++) {
@@ -2150,14 +2150,14 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public OptionalNullable<T> findFirst(final Predicate<? super T> predicate) {
+    public NullabLe<T> findFirst(final Predicate<? super T> predicate) {
         if (maxThreadNum <= 1) {
             return sequential().findFirst(predicate);
         }
 
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
-        final Holder<Pair<Long, T>> resultHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
+        final Output<Pair<Long, T>> resultHolder = new Output<>();
         final MutableLong index = MutableLong.of(0);
 
         for (int i = 0; i < maxThreadNum; i++) {
@@ -2196,18 +2196,18 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
 
         complete(futureList, eHolder);
 
-        return resultHolder.value() == null ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(resultHolder.value().right);
+        return resultHolder.value() == null ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(resultHolder.value().right);
     }
 
     @Override
-    public OptionalNullable<T> findLast(final Predicate<? super T> predicate) {
+    public NullabLe<T> findLast(final Predicate<? super T> predicate) {
         if (maxThreadNum <= 1) {
             return sequential().findLast(predicate);
         }
 
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
-        final Holder<Pair<Long, T>> resultHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
+        final Output<Pair<Long, T>> resultHolder = new Output<>();
         final MutableLong index = MutableLong.of(0);
 
         for (int i = 0; i < maxThreadNum; i++) {
@@ -2244,18 +2244,18 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
 
         complete(futureList, eHolder);
 
-        return resultHolder.value() == null ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(resultHolder.value().right);
+        return resultHolder.value() == null ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(resultHolder.value().right);
     }
 
     @Override
-    public OptionalNullable<T> findAny(final Predicate<? super T> predicate) {
+    public NullabLe<T> findAny(final Predicate<? super T> predicate) {
         if (maxThreadNum <= 1) {
             return sequential().findAny(predicate);
         }
 
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
-        final Holder<T> resultHolder = Holder.of((T) NONE);
+        final Output<Throwable> eHolder = new Output<>();
+        final Output<T> resultHolder = Output.of((T) NONE);
 
         for (int i = 0; i < maxThreadNum; i++) {
             futureList.add(asyncExecutor.execute(new Runnable() {
@@ -2292,7 +2292,7 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
 
         complete(futureList, eHolder);
 
-        return resultHolder.value() == NONE ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(resultHolder.value());
+        return resultHolder.value() == NONE ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(resultHolder.value());
     }
 
     @Override
@@ -2392,7 +2392,7 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
         }
 
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
         final AtomicLong result = new AtomicLong();
 
         for (int i = 0; i < maxThreadNum; i++) {

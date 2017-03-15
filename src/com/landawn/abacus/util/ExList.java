@@ -878,89 +878,89 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
         return -1;
     }
 
-    public OptionalNullable<T> min() {
-        return size() == 0 ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of((T) N.min((Comparable[]) elementData, 0, size));
+    public NullabLe<T> min() {
+        return size() == 0 ? (NullabLe<T>) NullabLe.empty() : NullabLe.of((T) N.min((Comparable[]) elementData, 0, size));
     }
 
-    public OptionalNullable<T> min(final int fromIndex, final int toIndex) {
+    public NullabLe<T> min(final int fromIndex, final int toIndex) {
         checkFromToIndex(fromIndex, toIndex);
 
-        return fromIndex == toIndex ? (OptionalNullable<T>) OptionalNullable.empty()
-                : OptionalNullable.of((T) N.min((Comparable[]) elementData, fromIndex, toIndex));
+        return fromIndex == toIndex ? (NullabLe<T>) NullabLe.empty()
+                : NullabLe.of((T) N.min((Comparable[]) elementData, fromIndex, toIndex));
     }
 
-    public OptionalNullable<T> min(Comparator<? super T> cmp) {
-        return size() == 0 ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(N.min(elementData, 0, size, cmp));
+    public NullabLe<T> min(Comparator<? super T> cmp) {
+        return size() == 0 ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(N.min(elementData, 0, size, cmp));
     }
 
-    public OptionalNullable<T> min(final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
+    public NullabLe<T> min(final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
         checkFromToIndex(fromIndex, toIndex);
 
-        return fromIndex == toIndex ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(N.min(elementData, fromIndex, toIndex, cmp));
+        return fromIndex == toIndex ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(N.min(elementData, fromIndex, toIndex, cmp));
     }
 
-    public OptionalNullable<T> median() {
-        return size() == 0 ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of((T) N.median((Comparable[]) elementData, 0, size));
+    public NullabLe<T> median() {
+        return size() == 0 ? (NullabLe<T>) NullabLe.empty() : NullabLe.of((T) N.median((Comparable[]) elementData, 0, size));
     }
 
-    public OptionalNullable<T> median(final int fromIndex, final int toIndex) {
+    public NullabLe<T> median(final int fromIndex, final int toIndex) {
         checkFromToIndex(fromIndex, toIndex);
 
-        return fromIndex == toIndex ? (OptionalNullable<T>) OptionalNullable.empty()
-                : OptionalNullable.of((T) N.median((Comparable[]) elementData, fromIndex, toIndex));
+        return fromIndex == toIndex ? (NullabLe<T>) NullabLe.empty()
+                : NullabLe.of((T) N.median((Comparable[]) elementData, fromIndex, toIndex));
     }
 
-    public OptionalNullable<T> median(Comparator<? super T> cmp) {
-        return size() == 0 ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(N.median(elementData, 0, size, cmp));
+    public NullabLe<T> median(Comparator<? super T> cmp) {
+        return size() == 0 ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(N.median(elementData, 0, size, cmp));
     }
 
-    public OptionalNullable<T> median(final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
+    public NullabLe<T> median(final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
         checkFromToIndex(fromIndex, toIndex);
 
-        return fromIndex == toIndex ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(N.median(elementData, fromIndex, toIndex, cmp));
+        return fromIndex == toIndex ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(N.median(elementData, fromIndex, toIndex, cmp));
     }
 
-    public OptionalNullable<T> max() {
-        return size() == 0 ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of((T) N.max((Comparable[]) elementData, 0, size));
+    public NullabLe<T> max() {
+        return size() == 0 ? (NullabLe<T>) NullabLe.empty() : NullabLe.of((T) N.max((Comparable[]) elementData, 0, size));
     }
 
-    public OptionalNullable<T> max(final int fromIndex, final int toIndex) {
+    public NullabLe<T> max(final int fromIndex, final int toIndex) {
         checkFromToIndex(fromIndex, toIndex);
 
-        return fromIndex == toIndex ? (OptionalNullable<T>) OptionalNullable.empty()
-                : OptionalNullable.of((T) N.max((Comparable[]) elementData, fromIndex, toIndex));
+        return fromIndex == toIndex ? (NullabLe<T>) NullabLe.empty()
+                : NullabLe.of((T) N.max((Comparable[]) elementData, fromIndex, toIndex));
     }
 
-    public OptionalNullable<T> max(Comparator<? super T> cmp) {
-        return size() == 0 ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(N.max(elementData, 0, size, cmp));
+    public NullabLe<T> max(Comparator<? super T> cmp) {
+        return size() == 0 ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(N.max(elementData, 0, size, cmp));
     }
 
-    public OptionalNullable<T> max(final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
+    public NullabLe<T> max(final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
         checkFromToIndex(fromIndex, toIndex);
 
-        return fromIndex == toIndex ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(N.max(elementData, fromIndex, toIndex, cmp));
+        return fromIndex == toIndex ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(N.max(elementData, fromIndex, toIndex, cmp));
     }
 
-    public OptionalNullable<T> kthLargest(final int k) {
+    public NullabLe<T> kthLargest(final int k) {
         return kthLargest(0, size(), k);
     }
 
-    public OptionalNullable<T> kthLargest(final int k, Comparator<? super T> cmp) {
+    public NullabLe<T> kthLargest(final int k, Comparator<? super T> cmp) {
         return kthLargest(0, size(), k, cmp);
     }
 
-    public OptionalNullable<T> kthLargest(final int fromIndex, final int toIndex, final int k) {
+    public NullabLe<T> kthLargest(final int fromIndex, final int toIndex, final int k) {
         checkFromToIndex(fromIndex, toIndex);
 
-        return toIndex - fromIndex < k ? (OptionalNullable<T>) OptionalNullable.empty()
-                : OptionalNullable.of((T) N.kthLargest((Comparable[]) elementData, fromIndex, toIndex, k));
+        return toIndex - fromIndex < k ? (NullabLe<T>) NullabLe.empty()
+                : NullabLe.of((T) N.kthLargest((Comparable[]) elementData, fromIndex, toIndex, k));
     }
 
-    public OptionalNullable<T> kthLargest(final int fromIndex, final int toIndex, final int k, final Comparator<? super T> cmp) {
+    public NullabLe<T> kthLargest(final int fromIndex, final int toIndex, final int k, final Comparator<? super T> cmp) {
         checkFromToIndex(fromIndex, toIndex);
 
-        return toIndex - fromIndex < k ? (OptionalNullable<T>) OptionalNullable.empty()
-                : OptionalNullable.of(N.kthLargest(elementData, fromIndex, toIndex, k, cmp));
+        return toIndex - fromIndex < k ? (NullabLe<T>) NullabLe.empty()
+                : NullabLe.of(N.kthLargest(elementData, fromIndex, toIndex, k, cmp));
     }
 
     public Long sumInt() {
@@ -1258,30 +1258,30 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
         return result;
     }
 
-    public OptionalNullable<T> first() {
+    public NullabLe<T> first() {
         if (size() == 0) {
-            return OptionalNullable.empty();
+            return NullabLe.empty();
         }
 
-        return OptionalNullable.of(elementData[0]);
+        return NullabLe.of(elementData[0]);
     }
 
-    public OptionalNullable<T> last() {
+    public NullabLe<T> last() {
         if (size() == 0) {
-            return OptionalNullable.empty();
+            return NullabLe.empty();
         }
 
-        return OptionalNullable.of(elementData[size() - 1]);
+        return NullabLe.of(elementData[size() - 1]);
     }
 
-    public OptionalNullable<T> findFirst(Predicate<? super T> predicate) {
+    public NullabLe<T> findFirst(Predicate<? super T> predicate) {
         for (int i = 0; i < size; i++) {
             if (predicate.test(elementData[i])) {
-                return OptionalNullable.of(elementData[i]);
+                return NullabLe.of(elementData[i]);
             }
         }
 
-        return OptionalNullable.empty();
+        return NullabLe.empty();
     }
 
     //    public Optional<Indexed<T>> findFirst2(Predicate<? super T> predicate) {
@@ -1294,14 +1294,14 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     //        return Optional.empty();
     //    }
 
-    public OptionalNullable<T> findLast(Predicate<? super T> predicate) {
+    public NullabLe<T> findLast(Predicate<? super T> predicate) {
         for (int i = size - 1; i >= 0; i--) {
             if (predicate.test(elementData[i])) {
-                return OptionalNullable.of(elementData[i]);
+                return NullabLe.of(elementData[i]);
             }
         }
 
-        return OptionalNullable.empty();
+        return NullabLe.empty();
     }
 
     //    public Optional<Indexed<T>> findLast2(Predicate<? super T> predicate) {
@@ -1601,7 +1601,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
      * <pre>
      * <code>
      *    if (isEmpty()) {
-     *        return OptionalNullable.empty();
+     *        return NullabLe.empty();
      *    }
      *
      *    T result = elementData[0];
@@ -1610,16 +1610,16 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
      *        result = accumulator.apply(result, elementData[i]);
      *    }
      *
-     *    return OptionalNullable.of(result);
+     *    return NullabLe.of(result);
      * </code>
      * </pre>
      * 
      * @param accumulator
      * @return
      */
-    public OptionalNullable<T> reduce(final BinaryOperator<T> accumulator) {
+    public NullabLe<T> reduce(final BinaryOperator<T> accumulator) {
         if (isEmpty()) {
-            return OptionalNullable.empty();
+            return NullabLe.empty();
         }
 
         T result = elementData[0];
@@ -1628,7 +1628,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
             result = accumulator.apply(result, elementData[i]);
         }
 
-        return OptionalNullable.of(result);
+        return NullabLe.of(result);
     }
 
     /**

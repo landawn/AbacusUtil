@@ -1171,13 +1171,13 @@ public abstract class CQLBuilder {
     //     * @return 
     //     */
     //    @Beta
-    //    public <R> OptionalNullable<R> execute(final Class<R> targetClass, final CassandraExecutor cassandraExecutor) {
+    //    public <R> NullabLe<R> execute(final Class<R> targetClass, final CassandraExecutor cassandraExecutor) {
     //        if (op != OperationType.QUERY) {
     //            throw new IllegalArgumentException("Only SELECT statement is supported");
     //        }
     //
     //        if (N.isEntity(targetClass) || Map.class.isAssignableFrom(targetClass)) {
-    //            return OptionalNullable.from(cassandraExecutor.queryForEntity(targetClass, cql(), this.parameters));
+    //            return NullabLe.from(cassandraExecutor.queryForEntity(targetClass, cql(), this.parameters));
     //        } else {
     //            return cassandraExecutor.queryForSingleResult(targetClass, cql(), this.parameters);
     //        }
@@ -1192,20 +1192,20 @@ public abstract class CQLBuilder {
     //     * @return
     //     */
     //    @Beta
-    //    public <R> OptionalNullable<R> execute(final Class<R> targetClass, final CassandraExecutor cassandraExecutor, final Object... parameters) {
+    //    public <R> NullabLe<R> execute(final Class<R> targetClass, final CassandraExecutor cassandraExecutor, final Object... parameters) {
     //        if (op != OperationType.QUERY) {
     //            throw new IllegalArgumentException("Only SELECT statement is supported");
     //        }
     //
     //        if (N.isNullOrEmpty(parameters)) {
     //            if (N.isEntity(targetClass) || Map.class.isAssignableFrom(targetClass)) {
-    //                return OptionalNullable.from(cassandraExecutor.queryForEntity(targetClass, cql(), this.parameters));
+    //                return NullabLe.from(cassandraExecutor.queryForEntity(targetClass, cql(), this.parameters));
     //            } else {
     //                return cassandraExecutor.queryForSingleResult(targetClass, cql(), this.parameters);
     //            }
     //        } else {
     //            if (N.isEntity(targetClass) || Map.class.isAssignableFrom(targetClass)) {
-    //                return OptionalNullable.from(cassandraExecutor.queryForEntity(targetClass, cql(), parameters));
+    //                return NullabLe.from(cassandraExecutor.queryForEntity(targetClass, cql(), parameters));
     //            } else {
     //                return cassandraExecutor.queryForSingleResult(targetClass, cql(), parameters);
     //            }
@@ -1239,29 +1239,29 @@ public abstract class CQLBuilder {
     //    }
     //
     //    @Beta
-    //    public <R> CompletableFuture<OptionalNullable<R>> asyncExecute(final Class<R> targetClass, final CassandraExecutor cassandraExecutor) {
+    //    public <R> CompletableFuture<NullabLe<R>> asyncExecute(final Class<R> targetClass, final CassandraExecutor cassandraExecutor) {
     //        if (op != OperationType.QUERY) {
     //            throw new IllegalArgumentException("Only SELECT statement is supported");
     //        }
     //
-    //        return cassandraExecutor.asyncExecutor().execute(new Callable<OptionalNullable<R>>() {
+    //        return cassandraExecutor.asyncExecutor().execute(new Callable<NullabLe<R>>() {
     //            @Override
-    //            public OptionalNullable<R> call() throws Exception {
+    //            public NullabLe<R> call() throws Exception {
     //                return execute(targetClass, cassandraExecutor);
     //            }
     //        });
     //    }
     //
     //    @Beta
-    //    public <R> CompletableFuture<OptionalNullable<R>> asyncExecute(final Class<R> targetClass, final CassandraExecutor cassandraExecutor,
+    //    public <R> CompletableFuture<NullabLe<R>> asyncExecute(final Class<R> targetClass, final CassandraExecutor cassandraExecutor,
     //            final Object... parameters) {
     //        if (op != OperationType.QUERY) {
     //            throw new IllegalArgumentException("Only SELECT statement is supported");
     //        }
     //
-    //        return cassandraExecutor.asyncExecutor().execute(new Callable<OptionalNullable<R>>() {
+    //        return cassandraExecutor.asyncExecutor().execute(new Callable<NullabLe<R>>() {
     //            @Override
-    //            public OptionalNullable<R> call() throws Exception {
+    //            public NullabLe<R> call() throws Exception {
     //                return execute(targetClass, cassandraExecutor, parameters);
     //            }
     //        });

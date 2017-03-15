@@ -53,13 +53,13 @@ public final class Maps {
         // singleton.
     }
 
-    public static <K, V> OptionalNullable<V> get(final Map<K, V> map, final Object key) {
+    public static <K, V> NullabLe<V> get(final Map<K, V> map, final Object key) {
         final V val = map.get(key);
 
         if (val != null || map.containsKey(key)) {
-            return OptionalNullable.of(val);
+            return NullabLe.of(val);
         } else {
-            return OptionalNullable.empty();
+            return NullabLe.empty();
         }
     }
 

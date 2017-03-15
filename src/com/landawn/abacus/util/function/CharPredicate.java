@@ -70,7 +70,7 @@ public interface CharPredicate {
         return (t) -> test(t) || other.test(t);
     }
 
-    static CharPredicate isEqual(char targetChar) {
+    static CharPredicate equal(char targetChar) {
         return value -> value == targetChar;
     }
 

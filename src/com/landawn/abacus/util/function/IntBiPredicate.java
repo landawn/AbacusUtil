@@ -38,7 +38,7 @@ public interface IntBiPredicate {
         }
     };
 
-   static final IntBiPredicate IS_EQUAL = new IntBiPredicate() {
+   static final IntBiPredicate EQUAL = new IntBiPredicate() {
         @Override
         public boolean test(int t, int u) {
             return t == u;

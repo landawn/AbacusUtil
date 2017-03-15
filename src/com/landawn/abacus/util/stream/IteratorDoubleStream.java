@@ -35,7 +35,7 @@ import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.OptionalDouble;
-import com.landawn.abacus.util.OptionalNullable;
+import com.landawn.abacus.util.NullabLe;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
@@ -1110,7 +1110,7 @@ final class IteratorDoubleStream extends AbstractDoubleStream {
             return OptionalDouble.empty();
         }
 
-        final OptionalNullable<Double> optional = boxed().kthLargest(k, DOUBLE_COMPARATOR);
+        final NullabLe<Double> optional = boxed().kthLargest(k, DOUBLE_COMPARATOR);
 
         return optional.isPresent() ? OptionalDouble.of(optional.get()) : OptionalDouble.empty();
     }

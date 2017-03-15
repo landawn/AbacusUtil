@@ -65,7 +65,7 @@ import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.ObjectFactory;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
-import com.landawn.abacus.util.OptionalNullable;
+import com.landawn.abacus.util.NullabLe;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.PermutationIterator;
@@ -1020,7 +1020,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <U> OptionalNullable<T> findFirst(final U seed, final BiPredicate<? super T, ? super U> predicate) {
+    public <U> NullabLe<T> findFirst(final U seed, final BiPredicate<? super T, ? super U> predicate) {
         return findFirst(new Predicate<T>() {
             @Override
             public boolean test(T t) {
@@ -1030,7 +1030,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <U> OptionalNullable<T> findLast(final U seed, final BiPredicate<? super T, ? super U> predicate) {
+    public <U> NullabLe<T> findLast(final U seed, final BiPredicate<? super T, ? super U> predicate) {
         return findLast(new Predicate<T>() {
             @Override
             public boolean test(T t) {
@@ -1040,7 +1040,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <U> OptionalNullable<T> findAny(final U seed, final BiPredicate<? super T, ? super U> predicate) {
+    public <U> NullabLe<T> findAny(final U seed, final BiPredicate<? super T, ? super U> predicate) {
         return findAny(new Predicate<T>() {
             @Override
             public boolean test(T t) {
@@ -1050,7 +1050,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public OptionalNullable<T> findFirstOrLast(final Predicate<? super T> predicateForFirst, final Predicate<? super T> predicateForLast) {
+    public NullabLe<T> findFirstOrLast(final Predicate<? super T> predicateForFirst, final Predicate<? super T> predicateForLast) {
         final ImmutableIterator<T> iter = iterator();
         T last = (T) NONE;
         T next = null;
@@ -1059,17 +1059,17 @@ abstract class AbstractStream<T> extends Stream<T> {
             next = iter.next();
 
             if (predicateForFirst.test(next)) {
-                return OptionalNullable.of(next);
+                return NullabLe.of(next);
             } else if (predicateForLast.test(next)) {
                 last = next;
             }
         }
 
-        return last == NONE ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(last);
+        return last == NONE ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(last);
     }
 
     @Override
-    public <U> OptionalNullable<T> findFirstOrLast(final U seed, final BiPredicate<? super T, ? super U> predicateForFirst,
+    public <U> NullabLe<T> findFirstOrLast(final U seed, final BiPredicate<? super T, ? super U> predicateForFirst,
             final BiPredicate<? super T, ? super U> predicateForLast) {
         final ImmutableIterator<T> iter = iterator();
         T last = (T) NONE;
@@ -1079,17 +1079,17 @@ abstract class AbstractStream<T> extends Stream<T> {
             next = iter.next();
 
             if (predicateForFirst.test(next, seed)) {
-                return OptionalNullable.of(next);
+                return NullabLe.of(next);
             } else if (predicateForLast.test(next, seed)) {
                 last = next;
             }
         }
 
-        return last == NONE ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(last);
+        return last == NONE ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(last);
     }
 
     @Override
-    public <U> OptionalNullable<T> findFirstOrLast(final Function<? super T, U> preFunc, final BiPredicate<? super T, ? super U> predicateForFirst,
+    public <U> NullabLe<T> findFirstOrLast(final Function<? super T, U> preFunc, final BiPredicate<? super T, ? super U> predicateForFirst,
             final BiPredicate<? super T, ? super U> predicateForLast) {
         final ImmutableIterator<T> iter = iterator();
         U seed = null;
@@ -1101,19 +1101,19 @@ abstract class AbstractStream<T> extends Stream<T> {
             seed = preFunc.apply(next);
 
             if (predicateForFirst.test(next, seed)) {
-                return OptionalNullable.of(next);
+                return NullabLe.of(next);
             } else if (predicateForLast.test(next, seed)) {
                 last = next;
             }
         }
 
-        return last == NONE ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(last);
+        return last == NONE ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(last);
     }
 
     @Override
-    public Pair<OptionalNullable<T>, OptionalNullable<T>> findFirstAndLast(final Predicate<? super T> predicateForFirst,
+    public Pair<NullabLe<T>, NullabLe<T>> findFirstAndLast(final Predicate<? super T> predicateForFirst,
             final Predicate<? super T> predicateForLast) {
-        final Pair<OptionalNullable<T>, OptionalNullable<T>> result = new Pair<>();
+        final Pair<NullabLe<T>, NullabLe<T>> result = new Pair<>();
         final ImmutableIterator<T> iter = iterator();
         T last = (T) NONE;
         T next = null;
@@ -1122,7 +1122,7 @@ abstract class AbstractStream<T> extends Stream<T> {
             next = iter.next();
 
             if (result.left == null && predicateForFirst.test(next)) {
-                result.left = OptionalNullable.of(next);
+                result.left = NullabLe.of(next);
             }
 
             if (predicateForLast.test(next)) {
@@ -1131,18 +1131,18 @@ abstract class AbstractStream<T> extends Stream<T> {
         }
 
         if (result.left == null) {
-            result.left = OptionalNullable.empty();
+            result.left = NullabLe.empty();
         }
 
-        result.right = last == NONE ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(last);
+        result.right = last == NONE ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(last);
 
         return result;
     }
 
     @Override
-    public <U> Pair<OptionalNullable<T>, OptionalNullable<T>> findFirstAndLast(final U seed, final BiPredicate<? super T, ? super U> predicateForFirst,
+    public <U> Pair<NullabLe<T>, NullabLe<T>> findFirstAndLast(final U seed, final BiPredicate<? super T, ? super U> predicateForFirst,
             final BiPredicate<? super T, ? super U> predicateForLast) {
-        final Pair<OptionalNullable<T>, OptionalNullable<T>> result = new Pair<>();
+        final Pair<NullabLe<T>, NullabLe<T>> result = new Pair<>();
         final ImmutableIterator<T> iter = iterator();
         T last = (T) NONE;
         T next = null;
@@ -1151,7 +1151,7 @@ abstract class AbstractStream<T> extends Stream<T> {
             next = iter.next();
 
             if (result.left == null && predicateForFirst.test(next, seed)) {
-                result.left = OptionalNullable.of(next);
+                result.left = NullabLe.of(next);
             }
 
             if (predicateForLast.test(next, seed)) {
@@ -1160,18 +1160,18 @@ abstract class AbstractStream<T> extends Stream<T> {
         }
 
         if (result.left == null) {
-            result.left = OptionalNullable.empty();
+            result.left = NullabLe.empty();
         }
 
-        result.right = last == NONE ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(last);
+        result.right = last == NONE ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(last);
 
         return result;
     }
 
     @Override
-    public <U> Pair<OptionalNullable<T>, OptionalNullable<T>> findFirstAndLast(final Function<? super T, U> preFunc,
+    public <U> Pair<NullabLe<T>, NullabLe<T>> findFirstAndLast(final Function<? super T, U> preFunc,
             final BiPredicate<? super T, ? super U> predicateForFirst, final BiPredicate<? super T, ? super U> predicateForLast) {
-        final Pair<OptionalNullable<T>, OptionalNullable<T>> result = new Pair<>();
+        final Pair<NullabLe<T>, NullabLe<T>> result = new Pair<>();
         final ImmutableIterator<T> iter = iterator();
         U seed = null;
         T last = (T) NONE;
@@ -1182,7 +1182,7 @@ abstract class AbstractStream<T> extends Stream<T> {
             seed = preFunc.apply(next);
 
             if (result.left == null && predicateForFirst.test(next, seed)) {
-                result.left = OptionalNullable.of(next);
+                result.left = NullabLe.of(next);
             }
 
             if (predicateForLast.test(next, seed)) {
@@ -1191,10 +1191,10 @@ abstract class AbstractStream<T> extends Stream<T> {
         }
 
         if (result.left == null) {
-            result.left = OptionalNullable.empty();
+            result.left = NullabLe.empty();
         }
 
-        result.right = last == NONE ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(last);
+        result.right = last == NONE ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(last);
 
         return result;
     }
@@ -1230,22 +1230,22 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public OptionalNullable<T> first() {
+    public NullabLe<T> first() {
         final Iterator<T> iter = this.iterator();
 
         if (iter.hasNext() == false) {
-            return OptionalNullable.empty();
+            return NullabLe.empty();
         }
 
-        return OptionalNullable.of(iter.next());
+        return NullabLe.of(iter.next());
     }
 
     @Override
-    public OptionalNullable<T> last() {
+    public NullabLe<T> last() {
         final Iterator<T> iter = this.iterator();
 
         if (iter.hasNext() == false) {
-            return OptionalNullable.empty();
+            return NullabLe.empty();
         }
 
         T next = iter.next();
@@ -1254,7 +1254,7 @@ abstract class AbstractStream<T> extends Stream<T> {
             next = iter.next();
         }
 
-        return OptionalNullable.of(next);
+        return NullabLe.of(next);
     }
 
     @Override

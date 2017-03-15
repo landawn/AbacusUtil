@@ -83,7 +83,7 @@ public interface DoublePredicate extends java.util.function.DoublePredicate {
     @Override
     boolean test(double value);
 
-    static DoublePredicate isEqual(double targetDouble) {
+    static DoublePredicate equal(double targetDouble) {
         return value -> value == targetDouble;
     }
 

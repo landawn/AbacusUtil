@@ -37,7 +37,7 @@ public interface DoubleBiPredicate {
             return false;
         }
     };
-   static final DoubleBiPredicate IS_EQUAL = new DoubleBiPredicate() {
+   static final DoubleBiPredicate EQUAL = new DoubleBiPredicate() {
         @Override
         public boolean test(double t, double u) {
             return Double.compare(t, u) == 0;

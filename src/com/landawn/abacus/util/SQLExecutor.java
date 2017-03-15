@@ -175,20 +175,19 @@ public final class SQLExecutor implements Closeable {
         }
     };
 
-    static final ResultSetExtractor<OptionalNullable<?>> SINGLE_RESULT_SET_EXTRACTOR = new AbstractResultSetExtractor<OptionalNullable<?>>() {
+    static final ResultSetExtractor<NullabLe<?>> SINGLE_RESULT_SET_EXTRACTOR = new AbstractResultSetExtractor<NullabLe<?>>() {
         @Override
-        public OptionalNullable<?> extractData(final Class<?> cls, final NamedSQL namedSQL, final ResultSet rs, final JdbcSettings jdbcSettings)
-                throws SQLException {
+        public NullabLe<?> extractData(final Class<?> cls, final NamedSQL namedSQL, final ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException {
             long offset = jdbcSettings.getOffset();
 
             while ((offset-- > 0) && rs.next()) {
             }
 
             if (offset <= 0 && rs.next()) {
-                return OptionalNullable.of(rs.getObject(1));
+                return NullabLe.of(rs.getObject(1));
             }
 
-            return OptionalNullable.empty();
+            return NullabLe.empty();
         }
     };
 
@@ -1522,7 +1521,7 @@ public final class SQLExecutor implements Closeable {
      * @see SQLExecutor#queryForSingleResult(Class, Connection, String, Object...).
      */
     public OptionalBoolean queryForBoolean(final String sql, final Object... parameters) {
-        final OptionalNullable<Boolean> result = queryForSingleResult(boolean.class, null, sql, parameters);
+        final NullabLe<Boolean> result = queryForSingleResult(boolean.class, null, sql, parameters);
 
         return result.isPresent() ? OptionalBoolean.of(result.get()) : OptionalBoolean.empty();
     }
@@ -1532,7 +1531,7 @@ public final class SQLExecutor implements Closeable {
      * @see SQLExecutor#queryForSingleResult(Class, Connection, String, Object...).
      */
     public OptionalChar queryForChar(final String sql, final Object... parameters) {
-        final OptionalNullable<Character> result = queryForSingleResult(char.class, null, sql, parameters);
+        final NullabLe<Character> result = queryForSingleResult(char.class, null, sql, parameters);
 
         return result.isPresent() ? OptionalChar.of(result.get()) : OptionalChar.empty();
     }
@@ -1541,7 +1540,7 @@ public final class SQLExecutor implements Closeable {
      * @see SQLExecutor#queryForSingleResult(Class, Connection, String, Object...).
      */
     public OptionalByte queryForByte(final String sql, final Object... parameters) {
-        final OptionalNullable<Byte> result = queryForSingleResult(byte.class, null, sql, parameters);
+        final NullabLe<Byte> result = queryForSingleResult(byte.class, null, sql, parameters);
 
         return result.isPresent() ? OptionalByte.of(result.get()) : OptionalByte.empty();
     }
@@ -1550,7 +1549,7 @@ public final class SQLExecutor implements Closeable {
      * @see SQLExecutor#queryForSingleResult(Class, Connection, String, Object...).
      */
     public OptionalShort queryForShort(final String sql, final Object... parameters) {
-        final OptionalNullable<Short> result = queryForSingleResult(short.class, null, sql, parameters);
+        final NullabLe<Short> result = queryForSingleResult(short.class, null, sql, parameters);
 
         return result.isPresent() ? OptionalShort.of(result.get()) : OptionalShort.empty();
     }
@@ -1559,7 +1558,7 @@ public final class SQLExecutor implements Closeable {
      * @see SQLExecutor#queryForSingleResult(Class, Connection, String, Object...).
      */
     public OptionalInt queryForInt(final String sql, final Object... parameters) {
-        final OptionalNullable<Integer> result = queryForSingleResult(int.class, null, sql, parameters);
+        final NullabLe<Integer> result = queryForSingleResult(int.class, null, sql, parameters);
 
         return result.isPresent() ? OptionalInt.of(result.get()) : OptionalInt.empty();
     }
@@ -1568,7 +1567,7 @@ public final class SQLExecutor implements Closeable {
      * @see SQLExecutor#queryForSingleResult(Class, Connection, String, Object...).
      */
     public OptionalLong queryForLong(final String sql, final Object... parameters) {
-        final OptionalNullable<Long> result = queryForSingleResult(long.class, null, sql, parameters);
+        final NullabLe<Long> result = queryForSingleResult(long.class, null, sql, parameters);
 
         return result.isPresent() ? OptionalLong.of(result.get()) : OptionalLong.empty();
     }
@@ -1577,7 +1576,7 @@ public final class SQLExecutor implements Closeable {
      * @see SQLExecutor#queryForSingleResult(Class, Connection, String, Object...).
      */
     public OptionalFloat queryForFloat(final String sql, final Object... parameters) {
-        final OptionalNullable<Float> result = queryForSingleResult(float.class, null, sql, parameters);
+        final NullabLe<Float> result = queryForSingleResult(float.class, null, sql, parameters);
 
         return result.isPresent() ? OptionalFloat.of(result.get()) : OptionalFloat.empty();
     }
@@ -1586,7 +1585,7 @@ public final class SQLExecutor implements Closeable {
      * @see SQLExecutor#queryForSingleResult(Class, Connection, String, Object...).
      */
     public OptionalDouble queryForDouble(final String sql, final Object... parameters) {
-        final OptionalNullable<Double> result = queryForSingleResult(double.class, null, sql, parameters);
+        final NullabLe<Double> result = queryForSingleResult(double.class, null, sql, parameters);
 
         return result.isPresent() ? OptionalDouble.of(result.get()) : OptionalDouble.empty();
     }
@@ -1594,20 +1593,20 @@ public final class SQLExecutor implements Closeable {
     /**
      * @see SQLExecutor#queryForSingleResult(Class, Connection, String, Object...).
      */
-    public OptionalNullable<String> queryForString(final String sql, final Object... parameters) {
+    public NullabLe<String> queryForString(final String sql, final Object... parameters) {
         return queryForSingleResult(String.class, null, sql, parameters);
     }
 
-    public <T> OptionalNullable<T> queryForSingleResult(final Class<T> targetClass, final String sql, final Object... parameters) {
+    public <T> NullabLe<T> queryForSingleResult(final Class<T> targetClass, final String sql, final Object... parameters) {
         return queryForSingleResult(targetClass, sql, null, null, parameters);
     }
 
-    public <T> OptionalNullable<T> queryForSingleResult(final Class<T> targetClass, final String sql, final StatementSetter statementSetter,
+    public <T> NullabLe<T> queryForSingleResult(final Class<T> targetClass, final String sql, final StatementSetter statementSetter,
             final JdbcSettings jdbcSettings, final Object... parameters) {
         return queryForSingleResult(targetClass, null, sql, statementSetter, jdbcSettings, parameters);
     }
 
-    public <T> OptionalNullable<T> queryForSingleResult(final Class<T> targetClass, final Connection conn, final String sql, final Object... parameters) {
+    public <T> NullabLe<T> queryForSingleResult(final Class<T> targetClass, final Connection conn, final String sql, final Object... parameters) {
         return queryForSingleResult(targetClass, conn, sql, null, null, parameters);
     }
 
@@ -1633,11 +1632,11 @@ public final class SQLExecutor implements Closeable {
      * @throws ClassCastException
      */
     @SuppressWarnings("unchecked")
-    public <T> OptionalNullable<T> queryForSingleResult(final Class<T> targetClass, final Connection conn, final String sql,
-            final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object... parameters) {
-        final OptionalNullable<?> result = query(conn, sql, statementSetter, SINGLE_RESULT_SET_EXTRACTOR, jdbcSettings, parameters);
+    public <T> NullabLe<T> queryForSingleResult(final Class<T> targetClass, final Connection conn, final String sql, final StatementSetter statementSetter,
+            final JdbcSettings jdbcSettings, final Object... parameters) {
+        final NullabLe<?> result = query(conn, sql, statementSetter, SINGLE_RESULT_SET_EXTRACTOR, jdbcSettings, parameters);
 
-        return result.isPresent() ? OptionalNullable.of(N.as(targetClass, result.get())) : (OptionalNullable<T>) OptionalNullable.empty();
+        return result.isPresent() ? NullabLe.of(N.as(targetClass, result.get())) : (NullabLe<T>) NullabLe.empty();
     }
 
     //
@@ -2092,7 +2091,7 @@ public final class SQLExecutor implements Closeable {
             return N.asList(iterate(conn, sql, statementSetter, jdbcSettings, parameters));
         } else {
             final List<RowIterator> iterators = new ArrayList<>();
-            final Holder<Throwable> errorHolder = new Holder<>();
+            final Output<Throwable> errorHolder = new Output<>();
             final AtomicInteger activeThreadNum = new AtomicInteger(0);
 
             for (String dataSource : jdbcSettings.getQueryWithDataSources()) {
@@ -2198,7 +2197,7 @@ public final class SQLExecutor implements Closeable {
         }
 
         final List<RowIterator> iterators = new ArrayList<>();
-        final Holder<Throwable> errorHolder = new Holder<>();
+        final Output<Throwable> errorHolder = new Output<>();
         final AtomicInteger activeThreadNum = new AtomicInteger(0);
 
         for (String e : sqls) {
@@ -2751,7 +2750,7 @@ public final class SQLExecutor implements Closeable {
         }
     }
 
-    private void setException(final Holder<Throwable> errorHolder, Throwable e) {
+    private void setException(final Output<Throwable> errorHolder, Throwable e) {
         synchronized (errorHolder) {
             if (errorHolder.value() == null) {
                 errorHolder.setValue(e);

@@ -52,6 +52,7 @@ public final class Wrapper<T> {
     }
 
     public static <T> Wrapper<T> of(T array) {
+        // return new Wrapper<T>(checkArray(array), arrayHashFunction, arrayEqualsFunction);
         return new Wrapper<T>(array, arrayHashFunction, arrayEqualsFunction);
     }
 
@@ -62,6 +63,14 @@ public final class Wrapper<T> {
     public T value() {
         return value;
     }
+
+    //    static <T> T checkArray(T a) {
+    //        if (a != null && a.getClass().isArray() == false) {
+    //            throw new IllegalArgumentException(a.getClass().getCanonicalName() + " is not array type");
+    //        }
+    //
+    //        return a;
+    //    }
 
     @Override
     public int hashCode() {

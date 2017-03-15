@@ -35,7 +35,6 @@ import java.util.Queue;
 
 import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.util.CompletableFuture;
-import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedInt;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.IntList;
@@ -48,6 +47,7 @@ import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalInt;
+import com.landawn.abacus.util.Output;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.function.BiConsumer;
@@ -1904,7 +1904,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
             queue.add(e.intIterator());
         }
 
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
         final MutableInt cnt = MutableInt.of(c.size());
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(c.size() - 1);
 

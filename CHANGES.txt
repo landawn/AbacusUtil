@@ -5,7 +5,7 @@
 
 2, Add a few static creation method to interface Function/BiFunction/TriFunction/Consumer/BiConsumer/TriConsumer/BinaryOperator
 
-3, Add containsAny to Seq/ExList/IntList/...
+3, Add containsAny/findFirstOrLast to Seq/ExList/IntList/...
 
 4*, Replace acceptOnError/applyOnError with the second parameter in Try.run(...)/call(...).
 
@@ -15,9 +15,11 @@
 
 7*, Replace N.nullMinOrder/nullMaxOrder/... with nullsFirst/nullsLast in Comparators.
 
-8, Add findFirstOrLast to Seq.
+8*, Rename OptionalNullable to NullabLe and improve it.
 
-9, Improvements and bug fix.
+9*, Rename Holder to Output and improve it.
+
+10, Improvements and bug fix.
 
 
 ========Changes in 0.9.56=========================================================================

@@ -98,7 +98,7 @@ public interface ShortPredicate {
         return (t) -> test(t) || other.test(t);
     }
 
-    static ShortPredicate isEqual(short targetShort) {
+    static ShortPredicate equal(short targetShort) {
         return value -> value == targetShort;
     }
 

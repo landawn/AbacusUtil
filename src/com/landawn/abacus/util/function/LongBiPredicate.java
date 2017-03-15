@@ -38,7 +38,7 @@ public interface LongBiPredicate {
         }
     };
 
-   static final LongBiPredicate IS_EQUAL = new LongBiPredicate() {
+   static final LongBiPredicate EQUAL = new LongBiPredicate() {
         @Override
         public boolean test(long t, long u) {
             return t == u;

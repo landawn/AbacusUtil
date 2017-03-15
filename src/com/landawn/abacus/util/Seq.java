@@ -459,39 +459,39 @@ public final class Seq<T> implements Collection<T> {
     }
 
     @SuppressWarnings("rawtypes")
-    public OptionalNullable<T> min() {
-        return size() == 0 ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of((T) N.min((Collection) coll));
+    public NullabLe<T> min() {
+        return size() == 0 ? (NullabLe<T>) NullabLe.empty() : NullabLe.of((T) N.min((Collection) coll));
     }
 
-    public OptionalNullable<T> min(Comparator<? super T> cmp) {
-        return size() == 0 ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(N.min(coll, cmp));
-    }
-
-    @SuppressWarnings("rawtypes")
-    public OptionalNullable<T> median() {
-        return size() == 0 ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of((T) N.median((Collection) coll));
-    }
-
-    public OptionalNullable<T> median(Comparator<? super T> cmp) {
-        return size() == 0 ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(N.median(coll, cmp));
+    public NullabLe<T> min(Comparator<? super T> cmp) {
+        return size() == 0 ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(N.min(coll, cmp));
     }
 
     @SuppressWarnings("rawtypes")
-    public OptionalNullable<T> max() {
-        return size() == 0 ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of((T) N.max((Collection) coll));
+    public NullabLe<T> median() {
+        return size() == 0 ? (NullabLe<T>) NullabLe.empty() : NullabLe.of((T) N.median((Collection) coll));
     }
 
-    public OptionalNullable<T> max(Comparator<? super T> cmp) {
-        return size() == 0 ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(N.max(coll, cmp));
+    public NullabLe<T> median(Comparator<? super T> cmp) {
+        return size() == 0 ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(N.median(coll, cmp));
     }
 
     @SuppressWarnings("rawtypes")
-    public OptionalNullable<T> kthLargest(final int k) {
-        return size() < k ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of((T) N.kthLargest((Collection) coll, k));
+    public NullabLe<T> max() {
+        return size() == 0 ? (NullabLe<T>) NullabLe.empty() : NullabLe.of((T) N.max((Collection) coll));
     }
 
-    public OptionalNullable<T> kthLargest(final int k, Comparator<? super T> cmp) {
-        return size() < k ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(N.kthLargest(coll, k, cmp));
+    public NullabLe<T> max(Comparator<? super T> cmp) {
+        return size() == 0 ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(N.max(coll, cmp));
+    }
+
+    @SuppressWarnings("rawtypes")
+    public NullabLe<T> kthLargest(final int k) {
+        return size() < k ? (NullabLe<T>) NullabLe.empty() : NullabLe.of((T) N.kthLargest((Collection) coll, k));
+    }
+
+    public NullabLe<T> kthLargest(final int k, Comparator<? super T> cmp) {
+        return size() < k ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(N.kthLargest(coll, k, cmp));
     }
 
     public Long sumInt() {
@@ -625,25 +625,25 @@ public final class Seq<T> implements Collection<T> {
         return N.forEach(coll, fromIndex, toIndex, seed, accumulator, conditionToBreak);
     }
 
-    public OptionalNullable<T> first() {
+    public NullabLe<T> first() {
         if (size() == 0) {
-            return OptionalNullable.empty();
+            return NullabLe.empty();
         }
 
         if (coll instanceof List && coll instanceof RandomAccess) {
-            return OptionalNullable.of(((List<T>) coll).get(0));
+            return NullabLe.of(((List<T>) coll).get(0));
         } else {
-            return OptionalNullable.of(coll.iterator().next());
+            return NullabLe.of(coll.iterator().next());
         }
     }
 
-    public OptionalNullable<T> last() {
+    public NullabLe<T> last() {
         if (size() == 0) {
-            return OptionalNullable.empty();
+            return NullabLe.empty();
         }
 
         if (coll instanceof List && coll instanceof RandomAccess) {
-            return OptionalNullable.of(((List<T>) coll).get(size() - 1));
+            return NullabLe.of(((List<T>) coll).get(size() - 1));
         } else {
             final Iterator<T> iter = coll.iterator();
             T e = null;
@@ -652,27 +652,27 @@ public final class Seq<T> implements Collection<T> {
                 e = iter.next();
             }
 
-            return OptionalNullable.of(e);
+            return NullabLe.of(e);
         }
     }
 
-    public OptionalNullable<T> findFirst(Predicate<? super T> predicate) {
+    public NullabLe<T> findFirst(Predicate<? super T> predicate) {
         if (size() == 0) {
-            return OptionalNullable.empty();
+            return NullabLe.empty();
         }
 
         for (T e : coll) {
             if (predicate.test(e)) {
-                return OptionalNullable.of(e);
+                return NullabLe.of(e);
             }
         }
 
-        return OptionalNullable.empty();
+        return NullabLe.empty();
     }
 
-    public OptionalNullable<T> findLast(Predicate<? super T> predicate) {
+    public NullabLe<T> findLast(Predicate<? super T> predicate) {
         if (size() == 0) {
-            return OptionalNullable.empty();
+            return NullabLe.empty();
         }
 
         if (coll instanceof List && coll instanceof RandomAccess) {
@@ -680,11 +680,11 @@ public final class Seq<T> implements Collection<T> {
 
             for (int i = size() - 1; i >= 0; i--) {
                 if (predicate.test(list.get(i))) {
-                    return OptionalNullable.of(list.get(i));
+                    return NullabLe.of(list.get(i));
                 }
             }
 
-            return OptionalNullable.empty();
+            return NullabLe.empty();
         } else {
             T result = (T) N.NULL_MASK;
 
@@ -694,7 +694,7 @@ public final class Seq<T> implements Collection<T> {
                 }
             }
 
-            return result == N.NULL_MASK ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(result);
+            return result == N.NULL_MASK ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(result);
         }
     }
 
@@ -743,7 +743,7 @@ public final class Seq<T> implements Collection<T> {
         }
     }
 
-    public <U> OptionalNullable<T> findFirstOrLast(final Predicate<? super T> predicateForFirst, final Predicate<? super T> predicateForLast) {
+    public <U> NullabLe<T> findFirstOrLast(final Predicate<? super T> predicateForFirst, final Predicate<? super T> predicateForLast) {
         final Iterator<T> iter = iterator();
         T last = (T) N.NULL_MASK;
         T next = null;
@@ -752,13 +752,13 @@ public final class Seq<T> implements Collection<T> {
             next = iter.next();
 
             if (predicateForFirst.test(next)) {
-                return OptionalNullable.of(next);
+                return NullabLe.of(next);
             } else if (predicateForLast.test(next)) {
                 last = next;
             }
         }
 
-        return last == N.NULL_MASK ? OptionalNullable.<T> empty() : OptionalNullable.of(last);
+        return last == N.NULL_MASK ? NullabLe.<T> empty() : NullabLe.of(last);
     }
 
     public boolean allMatch(Predicate<? super T> filter) {
@@ -1287,7 +1287,7 @@ public final class Seq<T> implements Collection<T> {
      * <pre>
      * <code>
      *    if (isEmpty()) {
-     *        return OptionalNullable.empty();
+     *        return NullabLe.empty();
      *    }
      *
      *    final Iterator<T> iter = iterator();
@@ -1297,16 +1297,16 @@ public final class Seq<T> implements Collection<T> {
      *        result = accumulator.apply(result, iter.next());
      *    }
      *
-     *    return OptionalNullable.of(result);
+     *    return NullabLe.of(result);
      * </code>
      * </pre>
      * 
      * @param accumulator
      * @return
      */
-    public OptionalNullable<T> reduce(BinaryOperator<T> accumulator) {
+    public NullabLe<T> reduce(BinaryOperator<T> accumulator) {
         if (isEmpty()) {
-            return OptionalNullable.empty();
+            return NullabLe.empty();
         }
 
         final Iterator<T> iter = iterator();
@@ -1316,7 +1316,7 @@ public final class Seq<T> implements Collection<T> {
             result = accumulator.apply(result, iter.next());
         }
 
-        return OptionalNullable.of(result);
+        return NullabLe.of(result);
     }
 
     /**

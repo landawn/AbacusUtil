@@ -83,7 +83,7 @@ public interface IntPredicate extends java.util.function.IntPredicate {
     @Override
     boolean test(int value);
 
-    static IntPredicate isEqual(int targetInt) {
+    static IntPredicate equal(int targetInt) {
         return value -> value == targetInt;
     }
 

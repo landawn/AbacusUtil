@@ -35,7 +35,6 @@ import java.util.Queue;
 
 import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.util.CompletableFuture;
-import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedShort;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.MutableInt;
@@ -44,6 +43,7 @@ import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalShort;
+import com.landawn.abacus.util.Output;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.ShortIterator;
@@ -1623,7 +1623,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
             queue.add(e.shortIterator());
         }
 
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
         final MutableInt cnt = MutableInt.of(c.size());
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(c.size() - 1);
 

@@ -38,7 +38,7 @@ public interface ByteBiPredicate {
         }
     };
 
-   static final ByteBiPredicate IS_EQUAL = new ByteBiPredicate() {
+   static final ByteBiPredicate EQUAL = new ByteBiPredicate() {
         @Override
         public boolean test(byte t, byte u) {
             return t == u;

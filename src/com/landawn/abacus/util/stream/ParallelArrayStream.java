@@ -31,8 +31,8 @@ import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.DoubleIterator;
+import com.landawn.abacus.util.ExList;
 import com.landawn.abacus.util.FloatIterator;
-import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.Indexed;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.LongIterator;
@@ -43,8 +43,8 @@ import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.ExList;
-import com.landawn.abacus.util.OptionalNullable;
+import com.landawn.abacus.util.NullabLe;
+import com.landawn.abacus.util.Output;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.function.BiConsumer;
@@ -1670,8 +1670,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <U> Stream<ExList<T>> split0(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate,
-            final Consumer<? super U> identityUpdate) {
+    public <U> Stream<ExList<T>> split0(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
         return new ParallelIteratorStream<>(sequential().split0(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null, maxThreadNum,
                 splitor);
     }
@@ -1706,7 +1705,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     public Stream<Stream<T>> splitBy(final Predicate<? super T> where) {
         N.requireNonNull(where);
 
-        final OptionalNullable<Indexed<T>> first = indexed().findFirst(new Predicate<Indexed<T>>() {
+        final NullabLe<Indexed<T>> first = indexed().findFirst(new Predicate<Indexed<T>>() {
             @Override
             public boolean test(Indexed<T> indexed) {
                 return !where.test(indexed.value());
@@ -1888,7 +1887,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         }
 
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
 
         if (splitor == Splitor.ARRAY) {
             final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
@@ -2085,21 +2084,21 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public OptionalNullable<T> first() {
+    public NullabLe<T> first() {
         if (fromIndex == toIndex) {
-            return OptionalNullable.empty();
+            return NullabLe.empty();
         }
 
-        return OptionalNullable.of(elements[fromIndex]);
+        return NullabLe.of(elements[fromIndex]);
     }
 
     @Override
-    public OptionalNullable<T> last() {
+    public NullabLe<T> last() {
         if (fromIndex == toIndex) {
-            return OptionalNullable.empty();
+            return NullabLe.empty();
         }
 
-        return OptionalNullable.of(elements[toIndex - 1]);
+        return NullabLe.of(elements[toIndex - 1]);
     }
 
     @Override
@@ -2109,7 +2108,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         }
 
         final List<CompletableFuture<T>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
 
         if (splitor == Splitor.ARRAY) {
             final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
@@ -2191,13 +2190,13 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public OptionalNullable<T> reduce(final BinaryOperator<T> accumulator) {
+    public NullabLe<T> reduce(final BinaryOperator<T> accumulator) {
         if (maxThreadNum <= 1) {
             return sequential().reduce(accumulator);
         }
 
         final List<CompletableFuture<T>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
 
         if (splitor == Splitor.ARRAY) {
             final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
@@ -2292,7 +2291,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
             throw N.toRuntimeException(e);
         }
 
-        return result == NONE ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(result);
+        return result == NONE ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(result);
     }
 
     @Override
@@ -2302,7 +2301,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         }
 
         final List<CompletableFuture<U>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
 
         if (splitor == Splitor.ARRAY) {
             final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
@@ -2392,7 +2391,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         }
 
         final List<CompletableFuture<R>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
 
         if (splitor == Splitor.ARRAY) {
             final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
@@ -2485,7 +2484,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         final Function<A, R> finisher = collector.finisher();
 
         final List<CompletableFuture<A>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
 
         if (splitor == Splitor.ARRAY) {
             final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
@@ -2603,11 +2602,11 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public OptionalNullable<T> min(Comparator<? super T> comparator) {
+    public NullabLe<T> min(Comparator<? super T> comparator) {
         if (fromIndex == toIndex) {
-            return OptionalNullable.empty();
+            return NullabLe.empty();
         } else if (sorted && isSameComparator(cmp, comparator)) {
-            return OptionalNullable.of(elements[fromIndex]);
+            return NullabLe.of(elements[fromIndex]);
         }
 
         comparator = comparator == null ? OBJECT_COMPARATOR : comparator;
@@ -2616,11 +2615,11 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public OptionalNullable<T> max(Comparator<? super T> comparator) {
+    public NullabLe<T> max(Comparator<? super T> comparator) {
         if (fromIndex == toIndex) {
-            return OptionalNullable.empty();
+            return NullabLe.empty();
         } else if (sorted && isSameComparator(cmp, comparator)) {
-            return OptionalNullable.of(elements[toIndex - 1]);
+            return NullabLe.of(elements[toIndex - 1]);
         }
 
         comparator = comparator == null ? OBJECT_COMPARATOR : comparator;
@@ -2629,7 +2628,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public OptionalNullable<T> kthLargest(int k, Comparator<? super T> comparator) {
+    public NullabLe<T> kthLargest(int k, Comparator<? super T> comparator) {
         return sequential().kthLargest(k, comparator);
     }
 
@@ -2650,7 +2649,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         }
 
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
         final MutableBoolean result = MutableBoolean.of(false);
 
         if (splitor == Splitor.ARRAY) {
@@ -2722,7 +2721,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         }
 
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
         final MutableBoolean result = MutableBoolean.of(true);
 
         if (splitor == Splitor.ARRAY) {
@@ -2794,7 +2793,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         }
 
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
         final MutableBoolean result = MutableBoolean.of(true);
 
         if (splitor == Splitor.ARRAY) {
@@ -2860,14 +2859,14 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public OptionalNullable<T> findFirst(final Predicate<? super T> predicate) {
+    public NullabLe<T> findFirst(final Predicate<? super T> predicate) {
         if (maxThreadNum <= 1) {
             return sequential().findFirst(predicate);
         }
 
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
-        final Holder<Pair<Integer, T>> resultHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
+        final Output<Pair<Integer, T>> resultHolder = new Output<>();
 
         if (splitor == Splitor.ARRAY) {
             final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
@@ -2883,7 +2882,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
                         final Pair<Integer, T> pair = new Pair<>();
 
                         try {
-                            while (cursor < to && (resultHolder.value() == null || cursor < resultHolder.value.left) && eHolder.value() == null) {
+                            while (cursor < to && (resultHolder.value() == null || cursor < resultHolder.value().left) && eHolder.value() == null) {
                                 pair.left = cursor;
                                 pair.right = elements[cursor++];
 
@@ -2943,18 +2942,18 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
         complete(futureList, eHolder);
 
-        return resultHolder.value() == null ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(resultHolder.value().right);
+        return resultHolder.value() == null ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(resultHolder.value().right);
     }
 
     @Override
-    public OptionalNullable<T> findLast(final Predicate<? super T> predicate) {
+    public NullabLe<T> findLast(final Predicate<? super T> predicate) {
         if (maxThreadNum <= 1) {
             return sequential().findLast(predicate);
         }
 
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
-        final Holder<Pair<Integer, T>> resultHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
+        final Output<Pair<Integer, T>> resultHolder = new Output<>();
 
         if (splitor == Splitor.ARRAY) {
             final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
@@ -3030,18 +3029,18 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
         complete(futureList, eHolder);
 
-        return resultHolder.value() == null ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(resultHolder.value().right);
+        return resultHolder.value() == null ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(resultHolder.value().right);
     }
 
     @Override
-    public OptionalNullable<T> findAny(final Predicate<? super T> predicate) {
+    public NullabLe<T> findAny(final Predicate<? super T> predicate) {
         if (maxThreadNum <= 1) {
             return sequential().findAny(predicate);
         }
 
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
-        final Holder<T> resultHolder = Holder.of((T) NONE);
+        final Output<Throwable> eHolder = new Output<>();
+        final Output<T> resultHolder = Output.of((T) NONE);
 
         if (splitor == Splitor.ARRAY) {
             final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
@@ -3115,7 +3114,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
 
         complete(futureList, eHolder);
 
-        return resultHolder.value() == NONE ? (OptionalNullable<T>) OptionalNullable.empty() : OptionalNullable.of(resultHolder.value());
+        return resultHolder.value() == NONE ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(resultHolder.value());
     }
 
     @Override
@@ -3213,7 +3212,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         }
 
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
-        final Holder<Throwable> eHolder = new Holder<>();
+        final Output<Throwable> eHolder = new Output<>();
         final AtomicLong result = new AtomicLong();
 
         if (splitor == Splitor.ARRAY) {

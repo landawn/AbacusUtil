@@ -83,7 +83,7 @@ public interface LongPredicate extends java.util.function.LongPredicate {
     @Override
     boolean test(long value);
 
-    static LongPredicate isEqual(long targetLong) {
+    static LongPredicate equal(long targetLong) {
         return value -> value == targetLong;
     }
 

@@ -207,9 +207,9 @@ public final class Matrix<T> extends AbstractMatrix<T[], ExList<T>, Matrix<T>> {
     }
 
     // Replaced by stream and stream2.
-    //    public OptionalNullable<T> min(final Comparator<? super T> cmp) {
+    //    public NullabLe<T> min(final Comparator<? super T> cmp) {
     //        if (isEmpty()) {
-    //            return OptionalNullable.empty();
+    //            return NullabLe.empty();
     //        }
     //
     //        final Comparator<? super T> comparator = cmp == null ? N.NULL_MIN_COMPARATOR : cmp;
@@ -223,12 +223,12 @@ public final class Matrix<T> extends AbstractMatrix<T[], ExList<T>, Matrix<T>> {
     //            }
     //        }
     //
-    //        return OptionalNullable.of(candicate);
+    //        return NullabLe.of(candicate);
     //    }
     //
-    //    public OptionalNullable<T> max(final Comparator<? super T> cmp) {
+    //    public NullabLe<T> max(final Comparator<? super T> cmp) {
     //        if (isEmpty()) {
-    //            return OptionalNullable.empty();
+    //            return NullabLe.empty();
     //        }
     //
     //        final Comparator<? super T> comparator = cmp == null ? N.NULL_MIN_COMPARATOR : cmp;
@@ -242,7 +242,7 @@ public final class Matrix<T> extends AbstractMatrix<T[], ExList<T>, Matrix<T>> {
     //            }
     //        }
     //
-    //        return OptionalNullable.of(candicate);
+    //        return NullabLe.of(candicate);
     //    }
     //
     //    @Override

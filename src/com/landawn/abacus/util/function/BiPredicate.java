@@ -41,7 +41,7 @@ public interface BiPredicate<T, U> extends java.util.function.BiPredicate<T, U> 
     };
 
     @SuppressWarnings("rawtypes")
-    static final BiPredicate IS_EQUAL = new BiPredicate() {
+    static final BiPredicate EQUAL = new BiPredicate() {
         @Override
         public boolean test(Object t, Object u) {
             return N.equals(t, u);
@@ -99,27 +99,27 @@ public interface BiPredicate<T, U> extends java.util.function.BiPredicate<T, U> 
         return ALWAYS_FALSE;
     }
 
-    static <T> BiPredicate<T, T> isEqual(T t, T u) {
-        return IS_EQUAL;
+    static <T> BiPredicate<T, T> equal() {
+        return EQUAL;
     }
 
-    static <T> BiPredicate<T, T> notEqual(T t, T u) {
+    static <T> BiPredicate<T, T> notEqual() {
         return NOT_EQUAL;
     }
 
-    static <T extends Comparable<? super T>> BiPredicate<T, T> greaterThan(T t, T u) {
+    static <T extends Comparable<? super T>> BiPredicate<T, T> greaterThan() {
         return (BiPredicate<T, T>) GREATER_THAN;
     }
 
-    static <T extends Comparable<? super T>> BiPredicate<T, T> greaterEqual(T t, T u) {
+    static <T extends Comparable<? super T>> BiPredicate<T, T> greaterEqual() {
         return (BiPredicate<T, T>) GREATER_EQUAL;
     }
 
-    static <T extends Comparable<? super T>> BiPredicate<T, T> lessThan(T t, T u) {
+    static <T extends Comparable<? super T>> BiPredicate<T, T> lessThan() {
         return (BiPredicate<T, T>) LESS_THAN;
     }
 
-    static <T extends Comparable<? super T>> BiPredicate<T, T> lessEqual(T t, T u) {
+    static <T extends Comparable<? super T>> BiPredicate<T, T> lessEqual() {
         return (BiPredicate<T, T>) LESS_EQUAL;
     }
 }
