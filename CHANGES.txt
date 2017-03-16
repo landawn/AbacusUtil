@@ -3,7 +3,13 @@
 
 1, Add skipNull(iterator) to Seq.
 
-3, Improvements and bug fix.
+2, Rename update(filter)/delete(filter) to updateAll/deleteAll in MongoDBExecutor.
+
+3*, Remove save/delete operations, which are replaced by cassandraExecutor.mapper(targetClass).save/delete.
+
+4, Supports get/insert/update/delete by id for CassandraExecutor.
+
+5, Improvements and bug fix.
 
 
 ========Changes in 0.9.57=========================================================================

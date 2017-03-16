@@ -16,6 +16,7 @@ package com.landawn.abacus.util;
 
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
+import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -107,6 +108,49 @@ public final class Output<T> {
         return isNotNull() ? Stream.of(value) : Stream.<T> empty();
     }
 
+    /**
+     * Return the value is not null, otherwise return {@code other}.
+     *
+     * @param other the value to be returned if not present or null, may be null
+     * @return the value, if not present or null, otherwise {@code other}
+     */
+    public T orIfNull(T other) {
+        return isNotNull() ? value : other;
+    }
+
+    /**
+     * Return the value is not null, otherwise invoke {@code other} and return the result of that invocation.
+     *
+     * @param other a {@code Supplier} whose result is returned if not present or null
+     * @return the value if not present or null otherwise the result of {@code other.get()}
+     * @throws NullPointerException if value is not present and {@code other} is null
+     */
+    public T orGetIfNull(Supplier<? extends T> other) {
+        return isNotNull() ? value : other.get();
+    }
+
+    /**
+     * Return the value is not null, otherwise throw an exception to be created by the provided supplier.
+     *
+     * @apiNote A method reference to the exception constructor with an empty
+     * argument list can be used as the supplier. For example,
+     * {@code IllegalStateException::new}
+     *
+     * @param <X> Type of the exception to be thrown
+     * @param exceptionSupplier The supplier which will return the exception to be thrown
+     * @return the present value
+     * @throws X if not present or null
+     * @throws NullPointerException if not present or null and
+     * {@code exceptionSupplier} is null
+     */
+    public <X extends Throwable> T orThrowIfNull(Supplier<? extends X> exceptionSupplier) throws X {
+        if (isNotNull()) {
+            return value;
+        } else {
+            throw exceptionSupplier.get();
+        }
+    }
+
     public Output0<T> __() {
         return Output0.of(value);
     }
@@ -183,6 +227,49 @@ public final class Output<T> {
          */
         public Stream<T> streamIfNotNull() {
             return isNotNull() ? Stream.of(value) : Stream.<T> empty();
+        }
+
+        /**
+         * Return the value is not null, otherwise return {@code other}.
+         *
+         * @param other the value to be returned if not present or null, may be null
+         * @return the value, if not present or null, otherwise {@code other}
+         */
+        public T orIfNull(T other) {
+            return isNotNull() ? value : other;
+        }
+
+        /**
+         * Return the value is not null, otherwise invoke {@code other} and return the result of that invocation.
+         *
+         * @param other a {@code Supplier} whose result is returned if not present or null
+         * @return the value if not present or null otherwise the result of {@code other.get()}
+         * @throws NullPointerException if value is not present and {@code other} is null
+         */
+        public T orGetIfNull(Supplier<? extends T> other) {
+            return isNotNull() ? value : other.get();
+        }
+
+        /**
+         * Return the value is not null, otherwise throw an exception to be created by the provided supplier.
+         *
+         * @apiNote A method reference to the exception constructor with an empty
+         * argument list can be used as the supplier. For example,
+         * {@code IllegalStateException::new}
+         *
+         * @param <X> Type of the exception to be thrown
+         * @param exceptionSupplier The supplier which will return the exception to be thrown
+         * @return the present value
+         * @throws X if not present or null
+         * @throws NullPointerException if not present or null and
+         * {@code exceptionSupplier} is null
+         */
+        public <X extends Throwable> T orThrowIfNull(Supplier<? extends X> exceptionSupplier) throws X {
+            if (isNotNull()) {
+                return value;
+            } else {
+                throw exceptionSupplier.get();
+            }
         }
 
         public Output<T> __() {
