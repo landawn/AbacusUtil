@@ -32,6 +32,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.PrimitiveIterator;
 import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 
@@ -755,6 +756,50 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
 
     public static LongStream of(final LongIterator iterator) {
         return iterator == null ? empty() : new IteratorLongStream(iterator);
+    }
+
+    public static LongStream of(final java.util.stream.LongStream stream) {
+        return of(new ImmutableLongIterator() {
+            private PrimitiveIterator.OfLong iter = null;
+
+            @Override
+            public boolean hasNext() {
+                if (iter == null) {
+                    iter = stream.iterator();
+                }
+
+                return iter.hasNext();
+            }
+
+            @Override
+            public long next() {
+                if (iter == null) {
+                    iter = stream.iterator();
+                }
+
+                return iter.nextLong();
+            }
+
+            @Override
+            public long count() {
+                final long result = stream.count();
+                iter = null;
+                return result;
+            }
+
+            @Override
+            public void skip(long n) {
+                stream.skip(n);
+                iter = null;
+            }
+
+            @Override
+            public long[] toArray() {
+                final long[] result = stream.toArray();
+                iter = null;
+                return result;
+            }
+        });
     }
 
     public static LongStream range(final long startInclusive, final long endExclusive) {

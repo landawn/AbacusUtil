@@ -1501,7 +1501,9 @@ public abstract class CQLBuilder {
             sb.append(cell.getOperator().toString());
             sb.append(D._SPACE);
 
+            sb.append(_PARENTHESES_L);
             appendCondition(cell.getCondition());
+            sb.append(_PARENTHESES_R);
         } else if (cond instanceof Junction) {
             final Junction junction = (Junction) cond;
             final List<Condition> conditionList = junction.getConditions();
@@ -1513,7 +1515,9 @@ public abstract class CQLBuilder {
             if (conditionList.size() == 1) {
                 appendCondition(conditionList.get(0));
             } else {
-                sb.append(_PARENTHESES_L);
+                // TODO ((id = :id) AND (gui = :gui)) is not support.
+                // only (id = :id) AND (gui = :gui) works.
+                // sb.append(_PARENTHESES_L);
 
                 for (int i = 0, size = conditionList.size(); i < size; i++) {
                     if (i > 0) {
@@ -1529,7 +1533,7 @@ public abstract class CQLBuilder {
                     sb.append(_PARENTHESES_R);
                 }
 
-                sb.append(_PARENTHESES_R);
+                // sb.append(_PARENTHESES_R);
             }
         } else if (cond instanceof SubQuery) {
             final SubQuery subQuery = (SubQuery) cond;

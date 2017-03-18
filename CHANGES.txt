@@ -3,13 +3,17 @@
 
 1, Add skipNull(iterator) to Seq.
 
-2, Rename update(filter)/delete(filter) to updateAll/deleteAll in MongoDBExecutor.
+2*, Rename update(...filter...)/delete(...filter...) to updateAll/deleteAll in MongoDBExecutor/MongoCollectionExecutor.
 
-3*, Remove save/delete operations, which are replaced by cassandraExecutor.mapper(targetClass).save/delete.
+3*, Remove save/delete operations from CassandraExecutor, which are replaced by CassandraExecutor.mapper(targetClass).save/delete.
 
-4, Supports get/insert/update/delete by id/entity for CassandraExecutor.
+4, Support get/insert/update/delete by id/entity for CassandraExecutor.
 
-5, Improvements and bug fix.
+5, Support ORM mapper: ExMapper with SQLExecutor.mapper(targetEntityClass).
+
+6, IntStream.of(java.util.stream.IntStream)/LongStream.of(java.util.stream.LongStream)/DoubleStream.of(java.util.stream.DoubleStream)/Stream.of(java.util.stream.Stream) for Java 8 edition.
+
+7, Improvements and bug fix.
 
 
 ========Changes in 0.9.57=========================================================================

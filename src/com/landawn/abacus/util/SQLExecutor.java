@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -37,10 +38,10 @@ import com.landawn.abacus.DataSource;
 import com.landawn.abacus.DataSourceManager;
 import com.landawn.abacus.DataSourceSelector;
 import com.landawn.abacus.DirtyMarker;
-import com.landawn.abacus.EntityId;
 import com.landawn.abacus.IsolationLevel;
 import com.landawn.abacus.condition.Condition;
-import com.landawn.abacus.core.EntityManagerUtil;
+import com.landawn.abacus.condition.ConditionFactory.L;
+import com.landawn.abacus.condition.Equal;
 import com.landawn.abacus.core.RowDataSet;
 import com.landawn.abacus.core.sql.dataSource.SQLDataSource;
 import com.landawn.abacus.dataChannel.StatementDataChannel;
@@ -151,6 +152,8 @@ import com.landawn.abacus.util.stream.Stream;
  */
 public final class SQLExecutor implements Closeable {
     private static final Logger logger = LoggerFactory.getLogger(SQLExecutor.class);
+
+    static final String ID = "id";
 
     static final StatementSetter DEFAULT_STATEMENT_SETTER = new DefaultStatementSetter();
 
@@ -298,21 +301,21 @@ public final class SQLExecutor implements Closeable {
     private static final Map<String, List<String>> _sqlColumnLabelPool = new ConcurrentHashMap<>();
     private final Map<String, List<String>> _tableColumnNamePool = new ConcurrentHashMap<>();
 
-    private final AsyncExecutor _asyncExecutor = new AsyncExecutor(64, 300L, TimeUnit.SECONDS);
-
     private final DataSource _ds;
     private final DataSourceManager _dsm;
     private final DataSourceSelector _dss;
     private final JdbcSettings _jdbcSettings;
     private final SQLMapper _sqlMapper;
+    private final NamingPolicy _namingPolicy;
+    private final AsyncExecutor _asyncExecutor;
+    private final boolean _isReadOnly;
     private final String _dbProudctName;
     private final String _dbProudctVersion;
     private final DBVersion _dbVersion;
     private final IsolationLevel _defaultIsolationLevel;
+    private final AsyncSQLExecutor _asyncSQLExecutor;
 
-    private final boolean _isReadOnly;
-
-    private final AsyncSQLExecutor asyncSQLExecutor;
+    private final Map<Class<?>, ExMapper<?>> mapperPool = new ConcurrentHashMap<>();
 
     /**
      * 
@@ -352,13 +355,26 @@ public final class SQLExecutor implements Closeable {
      * @param dataSource
      * @param jdbcSettings
      * @param sqlMapper
-     * @param asyncSQLExecutor
+     * @param namingPolicy
+     * @see JdbcUtil#createDataSourceManager(String)
+     * @see JdbcUtil#createDataSourceManager(java.io.InputStream)
+     */
+    public SQLExecutor(final javax.sql.DataSource dataSource, final JdbcSettings jdbcSettings, final SQLMapper sqlMapper, final NamingPolicy namingPolicy) {
+        this(dataSource, jdbcSettings, sqlMapper, namingPolicy, null);
+    }
+
+    /**
+     * 
+     * @param dataSource
+     * @param jdbcSettings
+     * @param sqlMapper
+     * @param asyncExecutor
      * @see JdbcUtil#createDataSource(String)
      * @see JdbcUtil#createDataSource(java.io.InputStream)
      */
-    public SQLExecutor(final javax.sql.DataSource dataSource, final JdbcSettings jdbcSettings, final SQLMapper sqlMapper,
-            final AsyncExecutor asyncSQLExecutor) {
-        this(null, JdbcUtil.wrap(dataSource), jdbcSettings, sqlMapper, false, asyncSQLExecutor);
+    public SQLExecutor(final javax.sql.DataSource dataSource, final JdbcSettings jdbcSettings, final SQLMapper sqlMapper, final NamingPolicy namingPolicy,
+            final AsyncExecutor asyncExecutor) {
+        this(null, JdbcUtil.wrap(dataSource), jdbcSettings, sqlMapper, namingPolicy, asyncExecutor, false);
     }
 
     /**
@@ -399,17 +415,31 @@ public final class SQLExecutor implements Closeable {
      * @param dataSourceManager
      * @param jdbcSettings
      * @param sqlMapper
-     * @param asyncSQLExecutor
+     * @param namingPolicy
      * @see JdbcUtil#createDataSourceManager(String)
      * @see JdbcUtil#createDataSourceManager(java.io.InputStream)
      */
-    public SQLExecutor(final DataSourceManager dataSourceManager, final JdbcSettings jdbcSettings, final SQLMapper sqlMapper,
-            final AsyncExecutor asyncSQLExecutor) {
-        this(dataSourceManager, null, jdbcSettings, sqlMapper, false, asyncSQLExecutor);
+    public SQLExecutor(final DataSourceManager dataSourceManager, final JdbcSettings jdbcSettings, final SQLMapper sqlMapper, final NamingPolicy namingPolicy) {
+        this(dataSourceManager, jdbcSettings, sqlMapper, namingPolicy, null);
+    }
+
+    /**
+     * 
+     * @param dataSourceManager
+     * @param jdbcSettings
+     * @param sqlMapper
+     * @param asyncExecutor
+     * @see JdbcUtil#createDataSourceManager(String)
+     * @see JdbcUtil#createDataSourceManager(java.io.InputStream)
+     */
+    public SQLExecutor(final DataSourceManager dataSourceManager, final JdbcSettings jdbcSettings, final SQLMapper sqlMapper, final NamingPolicy namingPolicy,
+            final AsyncExecutor asyncExecutor) {
+        this(dataSourceManager, null, jdbcSettings, sqlMapper, namingPolicy, asyncExecutor, false);
     }
 
     protected SQLExecutor(final DataSourceManager dataSourceManager, final DataSource dataSource, final JdbcSettings jdbcSettings, final SQLMapper sqlMapper,
-            final boolean isReadOnly, final AsyncExecutor asyncSQLExecutor) {
+            final NamingPolicy namingPolicy, final AsyncExecutor asyncExecutor, final boolean isReadOnly) {
+
         if (dataSourceManager == null) {
             this._ds = dataSource;
             this._dsm = null;
@@ -426,13 +456,12 @@ public final class SQLExecutor implements Closeable {
             _jdbcSettings.setBatchSize(JdbcSettings.DEFAULT_BATCH_SIZE);
         }
 
-        if (_jdbcSettings.getNamingPolicy() == null) {
-            _jdbcSettings.setNamingPolicy(NamingPolicy.LOWER_CASE_WITH_UNDERSCORE);
-        }
-
         _jdbcSettings.freeze();
 
         this._sqlMapper = sqlMapper;
+        this._namingPolicy = namingPolicy == null ? NamingPolicy.LOWER_CASE_WITH_UNDERSCORE : namingPolicy;
+        this._asyncExecutor = asyncExecutor == null ? new AsyncExecutor(64, 300, TimeUnit.SECONDS) : asyncExecutor;
+        this._isReadOnly = isReadOnly;
 
         Connection conn = getConnection();
 
@@ -447,9 +476,7 @@ public final class SQLExecutor implements Closeable {
         }
 
         _defaultIsolationLevel = this._ds instanceof SQLDataSource ? ((SQLDataSource) this._ds).getDefaultIsolationLevel() : IsolationLevel.DEFAULT;
-
-        this._isReadOnly = isReadOnly;
-        this.asyncSQLExecutor = new AsyncSQLExecutor(this, asyncSQLExecutor == null ? new AsyncExecutor(64, 300, TimeUnit.SECONDS) : asyncSQLExecutor);
+        this._asyncSQLExecutor = new AsyncSQLExecutor(this, _asyncExecutor);
     }
 
     //    public static SQLExecutor create(final String dataSourceFile) {
@@ -485,8 +512,26 @@ public final class SQLExecutor implements Closeable {
     //        return new SQLExecutor(JdbcUtil.wrap(sqlDataSource));
     //    }
 
+    //
+    //    public SQLMapper sqlMapper() {
+    //        return _sqlMapper;
+    //    }
+
+    public <T> ExMapper<T> mapper(Class<T> targetClass) {
+        ExMapper<T> mapper = (ExMapper<T>) mapperPool.get(targetClass);
+
+        if (mapper == null) {
+            N.checkArgument(N.isEntity(targetClass), RefUtil.getCanonicalClassName(targetClass) + " is not an entity class with getter/setter methods");
+
+            mapper = new ExMapper<T>(targetClass, this, this._namingPolicy);
+            mapperPool.put(targetClass, mapper);
+        }
+
+        return mapper;
+    }
+
     public AsyncSQLExecutor asyncExecutor() {
-        return asyncSQLExecutor;
+        return _asyncSQLExecutor;
     }
 
     public DataSource dataSource() {
@@ -495,10 +540,6 @@ public final class SQLExecutor implements Closeable {
 
     public JdbcSettings jdbcSettings() {
         return _jdbcSettings;
-    }
-
-    public SQLMapper sqlMapper() {
-        return _sqlMapper;
     }
 
     public String dbProudctName() {
@@ -536,7 +577,7 @@ public final class SQLExecutor implements Closeable {
     /**
      * @see #batchInsert(Connection, String, StatementSetter, JdbcSettings, String, Object[])
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "deprecation" })
     public <T> T insert(final Connection conn, final String sql, StatementSetter statementSetter, JdbcSettings jdbcSettings, final Object... parameters) {
         final NamedSQL namedSQL = getNamedSQL(sql);
         statementSetter = checkStatementSetter(namedSQL, statementSetter);
@@ -578,7 +619,7 @@ public final class SQLExecutor implements Closeable {
                 // m.put(generatedIdPropName, result);
                 // }
             } else {
-                Object entity = parameter_0;
+                final Object entity = parameter_0;
 
                 try {
                     Method idGetMethod = RefUtil.getPropGetMethod(entity.getClass(), idPropName);
@@ -597,6 +638,10 @@ public final class SQLExecutor implements Closeable {
                     }
                 } catch (Exception e) {
                     logger.error("Failed to set the returned id property to entity", e);
+                }
+
+                if (entity instanceof DirtyMarker) {
+                    ((DirtyMarker) entity).dirtyPropNames().clear();
                 }
             }
         }
@@ -691,6 +736,7 @@ public final class SQLExecutor implements Closeable {
      *
      * @see #batchInsert(Connection, String, StatementSetter, JdbcSettings, Object[])
      */
+    @SuppressWarnings("deprecation")
     public <T> List<T> batchInsert(final Connection conn, final String sql, StatementSetter statementSetter, JdbcSettings jdbcSettings,
             final List<?> batchParameters) {
         final NamedSQL namedSQL = getNamedSQL(sql);
@@ -826,6 +872,10 @@ public final class SQLExecutor implements Closeable {
 
                                     if ((idPropValue == null) || (idPropValue instanceof Number && (((Number) idPropValue).longValue() == 0))) {
                                         RefUtil.setPropValue(entity, idSetMethod, resultIdList.get(i));
+                                    }
+
+                                    if (entity instanceof DirtyMarker) {
+                                        ((DirtyMarker) entity).dirtyPropNames().clear();
                                     }
                                 }
                             } else {
@@ -1107,93 +1157,93 @@ public final class SQLExecutor implements Closeable {
         return sum;
     }
 
-    // mess up. To uncomment this method, also need to modify getNamingPolicy/setNamingPolicy in JdbcSettings.
-    int update(final EntityId entityId, final Map<String, Object> props) {
-        return update(null, entityId, props);
-    }
-
-    // mess up. To uncomment this method, also need to modify getNamingPolicy/setNamingPolicy in JdbcSettings.
-    int update(final Connection conn, final EntityId entityId, final Map<String, Object> props) {
-        final Pair2 pair = generateUpdateSQL(entityId, props);
-
-        return update(conn, pair.sql, pair.parameters);
-    }
-
-    private Pair2 generateUpdateSQL(final EntityId entityId, final Map<String, Object> props) {
-        final Condition cond = EntityManagerUtil.entityId2Condition(entityId);
-        final NamingPolicy namingPolicy = _jdbcSettings.getNamingPolicy();
-
-        if (namingPolicy == null) {
-            return NE.update(entityId.entityName()).set(props).where(cond).pair();
-        }
-
-        switch (namingPolicy) {
-            case LOWER_CASE_WITH_UNDERSCORE: {
-                return NE.update(entityId.entityName()).set(props).where(cond).pair();
-            }
-
-            case UPPER_CASE_WITH_UNDERSCORE: {
-                return NE2.update(entityId.entityName()).set(props).where(cond).pair();
-            }
-
-            case CAMEL_CASE: {
-                return NE3.update(entityId.entityName()).set(props).where(cond).pair();
-            }
-
-            default:
-                throw new AbacusException("Unsupported naming policy");
-        }
-    }
-
-    // mess up. To uncomment this method, also need to modify getNamingPolicy/setNamingPolicy in JdbcSettings.
-    int delete(final EntityId entityId) {
-        return delete(null, entityId);
-    }
-
-    // mess up. To uncomment this method, also need to modify getNamingPolicy/setNamingPolicy in JdbcSettings.
-    int delete(final Connection conn, final EntityId entityId) {
-        final Pair2 pair = generateDeleteSQL(entityId);
-
-        return update(conn, pair.sql, pair.parameters);
-    }
-
-    private Pair2 generateDeleteSQL(final EntityId entityId) {
-        final Condition cond = EntityManagerUtil.entityId2Condition(entityId);
-        final NamingPolicy namingPolicy = _jdbcSettings.getNamingPolicy();
-
-        if (namingPolicy == null) {
-            return NE.deleteFrom(entityId.entityName()).where(cond).pair();
-        }
-
-        switch (namingPolicy) {
-            case LOWER_CASE_WITH_UNDERSCORE: {
-                return NE.deleteFrom(entityId.entityName()).where(cond).pair();
-            }
-
-            case UPPER_CASE_WITH_UNDERSCORE: {
-                return NE2.deleteFrom(entityId.entityName()).where(cond).pair();
-            }
-
-            case CAMEL_CASE: {
-                return NE3.deleteFrom(entityId.entityName()).where(cond).pair();
-            }
-
-            default:
-                throw new AbacusException("Unsupported naming policy");
-        }
-    }
-
-    // mess up. To uncomment this method, also need to modify getNamingPolicy/setNamingPolicy in JdbcSettings.
-    boolean exists(final EntityId entityId) {
-        return exists(null, entityId);
-    }
-
-    // mess up. To uncomment this method, also need to modify getNamingPolicy/setNamingPolicy in JdbcSettings.
-    boolean exists(final Connection conn, final EntityId entityId) {
-        final Pair2 pair = generateQuerySQL(entityId, NE._1_list);
-
-        return query(conn, pair.sql, null, EXISTS_RESULT_SET_EXTRACTOR, null, pair.parameters);
-    }
+    //    // mess up. To uncomment this method, also need to modify getNamingPolicy/setNamingPolicy in JdbcSettings.
+    //    int update(final EntityId entityId, final Map<String, Object> props) {
+    //        return update(null, entityId, props);
+    //    }
+    //
+    //    // mess up. To uncomment this method, also need to modify getNamingPolicy/setNamingPolicy in JdbcSettings.
+    //    int update(final Connection conn, final EntityId entityId, final Map<String, Object> props) {
+    //        final Pair2 pair = generateUpdateSQL(entityId, props);
+    //
+    //        return update(conn, pair.sql, pair.parameters);
+    //    }
+    //
+    //    private Pair2 generateUpdateSQL(final EntityId entityId, final Map<String, Object> props) {
+    //        final Condition cond = EntityManagerUtil.entityId2Condition(entityId);
+    //        final NamingPolicy namingPolicy = _jdbcSettings.getNamingPolicy();
+    //
+    //        if (namingPolicy == null) {
+    //            return NE.update(entityId.entityName()).set(props).where(cond).pair();
+    //        }
+    //
+    //        switch (namingPolicy) {
+    //            case LOWER_CASE_WITH_UNDERSCORE: {
+    //                return NE.update(entityId.entityName()).set(props).where(cond).pair();
+    //            }
+    //
+    //            case UPPER_CASE_WITH_UNDERSCORE: {
+    //                return NE2.update(entityId.entityName()).set(props).where(cond).pair();
+    //            }
+    //
+    //            case CAMEL_CASE: {
+    //                return NE3.update(entityId.entityName()).set(props).where(cond).pair();
+    //            }
+    //
+    //            default:
+    //                throw new AbacusException("Unsupported naming policy");
+    //        }
+    //    }
+    //
+    //    // mess up. To uncomment this method, also need to modify getNamingPolicy/setNamingPolicy in JdbcSettings.
+    //    int delete(final EntityId entityId) {
+    //        return delete(null, entityId);
+    //    }
+    //
+    //    // mess up. To uncomment this method, also need to modify getNamingPolicy/setNamingPolicy in JdbcSettings.
+    //    int delete(final Connection conn, final EntityId entityId) {
+    //        final Pair2 pair = generateDeleteSQL(entityId);
+    //
+    //        return update(conn, pair.sql, pair.parameters);
+    //    }
+    //
+    //    private Pair2 generateDeleteSQL(final EntityId entityId) {
+    //        final Condition cond = EntityManagerUtil.entityId2Condition(entityId);
+    //        final NamingPolicy namingPolicy = _jdbcSettings.getNamingPolicy();
+    //
+    //        if (namingPolicy == null) {
+    //            return NE.deleteFrom(entityId.entityName()).where(cond).pair();
+    //        }
+    //
+    //        switch (namingPolicy) {
+    //            case LOWER_CASE_WITH_UNDERSCORE: {
+    //                return NE.deleteFrom(entityId.entityName()).where(cond).pair();
+    //            }
+    //
+    //            case UPPER_CASE_WITH_UNDERSCORE: {
+    //                return NE2.deleteFrom(entityId.entityName()).where(cond).pair();
+    //            }
+    //
+    //            case CAMEL_CASE: {
+    //                return NE3.deleteFrom(entityId.entityName()).where(cond).pair();
+    //            }
+    //
+    //            default:
+    //                throw new AbacusException("Unsupported naming policy");
+    //        }
+    //    }
+    //
+    //    // mess up. To uncomment this method, also need to modify getNamingPolicy/setNamingPolicy in JdbcSettings.
+    //    boolean exists(final EntityId entityId) {
+    //        return exists(null, entityId);
+    //    }
+    //
+    //    // mess up. To uncomment this method, also need to modify getNamingPolicy/setNamingPolicy in JdbcSettings.
+    //    boolean exists(final Connection conn, final EntityId entityId) {
+    //        final Pair2 pair = generateQuerySQL(entityId, NE._1_list);
+    //
+    //        return query(conn, pair.sql, null, EXISTS_RESULT_SET_EXTRACTOR, null, pair.parameters);
+    //    }
 
     public boolean exists(final String sql, final Object... parameters) {
         return exists(null, sql, parameters);
@@ -1211,66 +1261,66 @@ public final class SQLExecutor implements Closeable {
         return queryForSingleResult(int.class, conn, sql, parameters).or(0);
     }
 
-    // mess up. To uncomment this method, also need to modify getNamingPolicy/setNamingPolicy in JdbcSettings.
-    <T> T get(final Class<T> targetClass, final EntityId entityId, final String... selectPropNames) {
-        return get(targetClass, entityId, N.asList(selectPropNames));
-    }
-
-    // mess up. To uncomment this method, also need to modify getNamingPolicy/setNamingPolicy in JdbcSettings.
-    <T> T get(final Class<T> targetClass, final EntityId entityId, final Collection<String> selectPropNames) {
-        return get(targetClass, null, entityId, selectPropNames);
-    }
-
-    // mess up. To uncomment this method, also need to modify getNamingPolicy/setNamingPolicy in JdbcSettings.
-    <T> T get(final Class<T> targetClass, final Connection conn, final EntityId entityId, final String... selectPropNames) {
-        return get(targetClass, conn, entityId, N.asList(selectPropNames));
-    }
-
-    /**
-     * 
-     * @param targetClass
-     * @param conn
-     * @param entityId
-     * @param selectPropNames
-     * @return NonUniqueResultException if more than one records are found.
-     */
-    // mess up. To uncomment this method, also need to modify getNamingPolicy/setNamingPolicy in JdbcSettings.
-    <T> T get(final Class<T> targetClass, final Connection conn, final EntityId entityId, final Collection<String> selectPropNames) {
-        final Pair2 pair = generateQuerySQL(entityId, selectPropNames);
-        final List<T> entities = find(targetClass, conn, pair.sql, pair.parameters);
-
-        if (entities.size() > 1) {
-            throw new NonUniqueResultException("More than one records found by EntityId: " + entityId.toString());
-        }
-
-        return (entities.size() > 0) ? entities.get(0) : null;
-    }
-
-    private Pair2 generateQuerySQL(final EntityId entityId, final Collection<String> selectPropNames) {
-        final Condition cond = EntityManagerUtil.entityId2Condition(entityId);
-        final NamingPolicy namingPolicy = _jdbcSettings.getNamingPolicy();
-
-        if (namingPolicy == null) {
-            return NE.select(selectPropNames).from(entityId.entityName()).where(cond).limit(2).pair();
-        }
-
-        switch (namingPolicy) {
-            case LOWER_CASE_WITH_UNDERSCORE: {
-                return NE.select(selectPropNames).from(entityId.entityName()).where(cond).limit(2).pair();
-            }
-
-            case UPPER_CASE_WITH_UNDERSCORE: {
-                return NE2.select(selectPropNames).from(entityId.entityName()).where(cond).limit(2).pair();
-            }
-
-            case CAMEL_CASE: {
-                return NE3.select(selectPropNames).from(entityId.entityName()).where(cond).limit(2).pair();
-            }
-
-            default:
-                throw new AbacusException("Unsupported naming policy");
-        }
-    }
+    //    // mess up. To uncomment this method, also need to modify getNamingPolicy/setNamingPolicy in JdbcSettings.
+    //    <T> T get(final Class<T> targetClass, final EntityId entityId, final String... selectPropNames) {
+    //        return get(targetClass, entityId, N.asList(selectPropNames));
+    //    }
+    //
+    //    // mess up. To uncomment this method, also need to modify getNamingPolicy/setNamingPolicy in JdbcSettings.
+    //    <T> T get(final Class<T> targetClass, final EntityId entityId, final Collection<String> selectPropNames) {
+    //        return get(targetClass, null, entityId, selectPropNames);
+    //    }
+    //
+    //    // mess up. To uncomment this method, also need to modify getNamingPolicy/setNamingPolicy in JdbcSettings.
+    //    <T> T get(final Class<T> targetClass, final Connection conn, final EntityId entityId, final String... selectPropNames) {
+    //        return get(targetClass, conn, entityId, N.asList(selectPropNames));
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * @param targetClass
+    //     * @param conn
+    //     * @param entityId
+    //     * @param selectPropNames
+    //     * @return NonUniqueResultException if more than one records are found.
+    //     */
+    //    // mess up. To uncomment this method, also need to modify getNamingPolicy/setNamingPolicy in JdbcSettings.
+    //    <T> T get(final Class<T> targetClass, final Connection conn, final EntityId entityId, final Collection<String> selectPropNames) {
+    //        final Pair2 pair = generateQuerySQL(entityId, selectPropNames);
+    //        final List<T> entities = find(targetClass, conn, pair.sql, pair.parameters);
+    //
+    //        if (entities.size() > 1) {
+    //            throw new NonUniqueResultException("More than one records found by EntityId: " + entityId.toString());
+    //        }
+    //
+    //        return (entities.size() > 0) ? entities.get(0) : null;
+    //    }
+    //
+    //    private Pair2 generateQuerySQL(final EntityId entityId, final Collection<String> selectPropNames) {
+    //        final Condition cond = EntityManagerUtil.entityId2Condition(entityId);
+    //        final NamingPolicy namingPolicy = _jdbcSettings.getNamingPolicy();
+    //
+    //        if (namingPolicy == null) {
+    //            return NE.select(selectPropNames).from(entityId.entityName()).where(cond).limit(2).pair();
+    //        }
+    //
+    //        switch (namingPolicy) {
+    //            case LOWER_CASE_WITH_UNDERSCORE: {
+    //                return NE.select(selectPropNames).from(entityId.entityName()).where(cond).limit(2).pair();
+    //            }
+    //
+    //            case UPPER_CASE_WITH_UNDERSCORE: {
+    //                return NE2.select(selectPropNames).from(entityId.entityName()).where(cond).limit(2).pair();
+    //            }
+    //
+    //            case CAMEL_CASE: {
+    //                return NE3.select(selectPropNames).from(entityId.entityName()).where(cond).limit(2).pair();
+    //            }
+    //
+    //            default:
+    //                throw new AbacusException("Unsupported naming policy");
+    //        }
+    //    }
 
     public <T> T get(final Class<T> targetClass, final String sql, final Object... parameters) {
         return get(targetClass, sql, null, null, parameters);
@@ -3357,6 +3407,1067 @@ public final class SQLExecutor implements Closeable {
     }
 
     /**
+     * 
+     * @author haiyang li
+     *
+     * @param <T>
+     */
+    public static final class ExMapper<T> {
+        static final List<String> EXISTS_SELECT_PROP_NAMES = ImmutableList.of(NE._1);
+        static final List<String> COUNT_SELECT_PROP_NAMES = ImmutableList.of(NE.COUNT_ALL);
+        static final Map<Class<?>, String> entityIdMap = new ConcurrentHashMap<>();
+
+        private final Class<T> targetClass;
+        private final SQLExecutor sqlExecutor;
+        private final NamingPolicy namingPolicy;
+        private final AsyncExecutor asyncExecutor;
+        private final String idName;
+        private final String sql_get_by_id;
+        private final String sql_delete_by_id;
+        // TODO cache more sqls to improve performance.
+
+        ExMapper(final Class<T> targetClass, final SQLExecutor sqlExecutor, final NamingPolicy namingPolicy) {
+            this.targetClass = targetClass;
+            this.sqlExecutor = sqlExecutor;
+            this.namingPolicy = namingPolicy;
+            this.asyncExecutor = sqlExecutor._asyncExecutor;
+            this.idName = Maps.getOrDefault(entityIdMap, targetClass, ID);
+            this.sql_get_by_id = this.prepareQuery(null, L.eq(idName)).sql;
+            this.sql_delete_by_id = this.prepareDelete(L.eq(idName)).sql;
+        }
+
+        public static void registerEntityId(Class<?> targetClass, String idName) {
+            N.checkArgument(N.isEntity(targetClass), RefUtil.getCanonicalClassName(targetClass) + " is not an entity class with getter/setter methods");
+
+            entityIdMap.put(targetClass, RefUtil.getPropNameByMethod(RefUtil.getPropGetMethod(targetClass, idName)));
+        }
+
+        public boolean exists(final Object id) {
+            return exists(L.eq(idName, id));
+        }
+
+        public boolean exists(final Condition whereCause) {
+            final Pair2 pair = prepareQuery(EXISTS_SELECT_PROP_NAMES, whereCause);
+
+            return sqlExecutor.exists(pair.sql, pair.parameters.toArray());
+        }
+
+        public int count(final Condition whereCause) {
+            final Pair2 pair = prepareQuery(COUNT_SELECT_PROP_NAMES, whereCause);
+
+            return sqlExecutor.count(pair.sql, pair.parameters.toArray());
+        }
+
+        public T get(final Object id) {
+            return get(null, L.eq(idName, id));
+        }
+
+        public T get(final Object id, final String... selectPropNames) {
+            return get(Arrays.asList(selectPropNames), L.eq(idName, id));
+        }
+
+        public T get(final Object id, final Collection<String> selectPropNames) {
+            return get(selectPropNames, L.eq(idName, id));
+        }
+
+        T get(final Condition whereCause) {
+            return get(null, whereCause);
+        }
+
+        T get(final Collection<String> selectPropNames, final Condition whereCause) {
+            List<T> list = null;
+
+            if (N.isNullOrEmpty(selectPropNames) && (whereCause instanceof Equal && ((Equal) whereCause).getPropName().equals(idName))) {
+                list = sqlExecutor.find(targetClass, sql_get_by_id, null, JdbcSettings.create().setCount(2), ((Equal) whereCause).getPropValue());
+            } else {
+                final Pair2 pair = prepareQuery(selectPropNames, whereCause);
+                list = sqlExecutor.find(targetClass, pair.sql, null, JdbcSettings.create().setCount(2), pair.parameters.toArray());
+            }
+
+            if (list.size() == 0) {
+                return null;
+            } else if (list.size() == 1) {
+                return list.get(0);
+            } else {
+                throw new NonUniqueResultException("More than one records found by condition: " + whereCause);
+            }
+        }
+
+        public List<T> find(final Condition whereCause) {
+            return find(null, whereCause);
+        }
+
+        public List<T> find(final Collection<String> selectPropNames, final Condition whereCause) {
+            return find(selectPropNames, whereCause, null);
+        }
+
+        public List<T> find(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
+            final Pair2 pair = prepareQuery(selectPropNames, whereCause);
+
+            return sqlExecutor.find(targetClass, pair.sql, null, jdbcSettings, pair.parameters.toArray());
+        }
+
+        public DataSet query(final Condition whereCause) {
+            return query(null, whereCause);
+        }
+
+        public DataSet query(final Collection<String> selectPropNames, final Condition whereCause) {
+            return query(selectPropNames, whereCause, null);
+        }
+
+        public DataSet query(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
+            final Pair2 pair = prepareQuery(selectPropNames, whereCause);
+
+            return sqlExecutor.query(pair.sql, null, null, jdbcSettings, pair.parameters.toArray());
+        }
+
+        public OptionalBoolean queryForBoolean(final String propName, final Condition whereCause) {
+            final NullabLe<Boolean> res = queryForSingleResult(Boolean.class, propName, whereCause);
+
+            return res.isPresent() ? OptionalBoolean.of(res.orIfNull(false)) : OptionalBoolean.empty();
+        }
+
+        public OptionalChar queryForChar(final String propName, final Condition whereCause) {
+            final NullabLe<Character> res = queryForSingleResult(Character.class, propName, whereCause);
+
+            return res.isPresent() ? OptionalChar.of(res.orIfNull((char) 0)) : OptionalChar.empty();
+        }
+
+        public OptionalByte queryForByte(final String propName, final Condition whereCause) {
+            final NullabLe<Byte> res = queryForSingleResult(Byte.class, propName, whereCause);
+
+            return res.isPresent() ? OptionalByte.of(res.orIfNull((byte) 0)) : OptionalByte.empty();
+        }
+
+        public OptionalShort queryForShort(final String propName, final Condition whereCause) {
+            final NullabLe<Short> res = queryForSingleResult(Short.class, propName, whereCause);
+
+            return res.isPresent() ? OptionalShort.of(res.orIfNull((short) 0)) : OptionalShort.empty();
+        }
+
+        public OptionalInt queryForInt(final String propName, final Condition whereCause) {
+            final NullabLe<Integer> res = queryForSingleResult(Integer.class, propName, whereCause);
+
+            return res.isPresent() ? OptionalInt.of(res.orIfNull(0)) : OptionalInt.empty();
+        }
+
+        public OptionalLong queryForLong(final String propName, final Condition whereCause) {
+            final NullabLe<Long> res = queryForSingleResult(Long.class, propName, whereCause);
+
+            return res.isPresent() ? OptionalLong.of(res.orIfNull(0L)) : OptionalLong.empty();
+        }
+
+        public OptionalFloat queryForFloat(final String propName, final Condition whereCause) {
+            final NullabLe<Float> res = queryForSingleResult(Float.class, propName, whereCause);
+
+            return res.isPresent() ? OptionalFloat.of(res.orIfNull(0F)) : OptionalFloat.empty();
+        }
+
+        public OptionalDouble queryForDouble(final String propName, final Condition whereCause) {
+            final NullabLe<Double> res = queryForSingleResult(Double.class, propName, whereCause);
+
+            return res.isPresent() ? OptionalDouble.of(res.orIfNull(0D)) : OptionalDouble.empty();
+        }
+
+        public <E> NullabLe<E> queryForSingleResult(final Class<E> targetValueClass, final String propName, final Object id) {
+            return queryForSingleResult(targetValueClass, propName, L.eq(idName, id));
+        }
+
+        public <E> NullabLe<E> queryForSingleResult(final Class<E> targetValueClass, final String propName, final Condition whereCause) {
+            return queryForSingleResult(targetValueClass, propName, whereCause, null);
+        }
+
+        public <E> NullabLe<E> queryForSingleResult(final Class<E> targetValueClass, final String propName, final Condition whereCause,
+                final JdbcSettings jdbcSettings) {
+            final Pair2 pair = prepareQuery(Arrays.asList(propName), whereCause);
+
+            return sqlExecutor.queryForSingleResult(targetValueClass, pair.sql, null, jdbcSettings, pair.parameters.toArray());
+        }
+
+        public Optional<T> queryForEntity(final Condition whereCause) {
+            return queryForEntity(null, whereCause);
+        }
+
+        public Optional<T> queryForEntity(final Collection<String> selectPropNames, final Condition whereCause) {
+            return queryForEntity(selectPropNames, whereCause, null);
+        }
+
+        public Optional<T> queryForEntity(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
+            final Pair2 pair = prepareQuery(selectPropNames, whereCause);
+
+            return sqlExecutor.queryForEntity(targetClass, pair.sql, null, jdbcSettings, pair.parameters.toArray());
+        }
+
+        public Try<Stream<T>> stream(final Condition whereCause) {
+            return stream(null, whereCause);
+        }
+
+        public Try<Stream<T>> stream(final Collection<String> selectPropNames, final Condition whereCause) {
+            return stream(selectPropNames, whereCause, null);
+        }
+
+        public Try<Stream<T>> stream(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
+            final Pair2 pair = prepareQuery(selectPropNames, whereCause);
+
+            return sqlExecutor.stream(targetClass, pair.sql, null, jdbcSettings, pair.parameters.toArray());
+        }
+
+        private Pair2 prepareQuery(final Collection<String> selectPropNames, final Condition whereCause) {
+            Pair2 pair = null;
+
+            switch (namingPolicy) {
+                case LOWER_CASE_WITH_UNDERSCORE:
+                    if (N.isNullOrEmpty(selectPropNames)) {
+                        pair = NE.selectFrom(targetClass).where(whereCause).pair();
+                    } else {
+                        pair = NE.select(selectPropNames).from(targetClass).where(whereCause).pair();
+                    }
+
+                    break;
+
+                case UPPER_CASE_WITH_UNDERSCORE:
+                    if (N.isNullOrEmpty(selectPropNames)) {
+                        pair = NE2.selectFrom(targetClass).where(whereCause).pair();
+                    } else {
+                        pair = NE2.select(selectPropNames).from(targetClass).where(whereCause).pair();
+                    }
+
+                    break;
+
+                case CAMEL_CASE:
+                    if (N.isNullOrEmpty(selectPropNames)) {
+                        pair = NE3.selectFrom(targetClass).where(whereCause).pair();
+                    } else {
+                        pair = NE3.select(selectPropNames).from(targetClass).where(whereCause).pair();
+                    }
+
+                    break;
+
+                default:
+                    throw new RuntimeException("Unsupported naming policy: " + namingPolicy);
+            }
+            return pair;
+        }
+
+        /**
+         * Insert the specified entity into data store, and set back the auto-generated id to the specified entity if there is the auto-generated id.
+         * 
+         * @param entity
+         * @return the auto-generated id or null if there is no auto-generated id.
+         */
+        public <E> E add(final Object entity) {
+            final Pair2 pair = prepareAdd(entity);
+
+            final E id = sqlExecutor.insert(pair.sql, pair.parameters.toArray());
+
+            postAdd(entity, id);
+
+            return id;
+        }
+
+        /**
+         * 
+         * @param props
+         * @return the auto-generated id or null if there is no auto-generated id.
+         */
+        public <E> E add(final Map<String, Object> props) {
+            final Pair2 pair = prepareAdd(props);
+
+            return sqlExecutor.insert(pair.sql, pair.parameters.toArray());
+        }
+
+        /**
+         * Insert All the records one by one in transaction. And set back auto-generated ids to the specified entities if there are the auto-generated ids.
+         * 
+         * @param entities
+         * @return a list with the auto-generated id or null element if there is no auto-generated id.
+         */
+        public <E> List<E> addAll(final Collection<?> entities) {
+            return addAll(entities, IsolationLevel.DEFAULT);
+        }
+
+        /**
+         * Insert All the records one by one in transaction.
+         * 
+         * @param entities
+         * @param isolationLevel
+         * @return a list with the auto-generated id or null element if there is no auto-generated id.
+         */
+        public <E> List<E> addAll(final Collection<?> entities, final IsolationLevel isolationLevel) {
+            final SQLTransaction tran = sqlExecutor.beginTransaction(isolationLevel);
+            final List<E> result = new ArrayList<>(entities.size());
+            boolean isOk = false;
+
+            try {
+                for (Object entity : entities) {
+                    result.add((E) add(entity));
+                }
+
+                isOk = true;
+            } finally {
+                if (isOk) {
+                    tran.commit();
+                } else {
+                    tran.rollback();
+                }
+            }
+
+            return result;
+        }
+
+        /**
+         * Insert All the records by batch operation. And set back auto-generated ids to the specified entities if there are the auto-generated ids.
+         * 
+         * @param entities which must have the same updated properties set.
+         * @return the auto-generated id list or an empty list if there is no auto-generated id.
+         */
+        public <E> List<E> batchAdd(final Collection<?> entities) {
+            return batchAdd(entities, JdbcSettings.DEFAULT_BATCH_SIZE);
+        }
+
+        /**
+         * Insert All the records by batch operation. And set back auto-generated ids to the specified entities if there are the auto-generated ids.
+         * 
+         * @param entities which must have the same updated properties set.
+         * @param batchSize Default value is 200.
+         * @return the auto-generated id list or an empty list if there is no auto-generated id.
+         */
+        public <E> List<E> batchAdd(final Collection<?> entities, int batchSize) {
+            N.checkArgument(batchSize > 0, "Invalid batch size: %s", batchSize);
+
+            final Pair2 pair = prepareAdd(entities.iterator().next());
+            final JdbcSettings jdbcSettings = batchSize == JdbcSettings.DEFAULT_BATCH_SIZE ? null : JdbcSettings.create().setBatchSize(batchSize);
+            final List<?> batchParameters = entities instanceof List ? (List<?>) entities : new ArrayList<>(entities);
+
+            final List<E> ids = sqlExecutor.batchInsert(pair.sql, null, jdbcSettings, batchParameters);
+
+            if (N.notNullOrEmpty(ids) && ids.size() == batchSize) {
+                int idx = 0;
+
+                for (Object entity : entities) {
+                    postAdd(entity, ids.get(idx++));
+                }
+            }
+
+            return ids;
+        }
+
+        private Pair2 prepareAdd(final Object entity) {
+            checkEntity(entity);
+
+            final Map<String, Object> props = entity instanceof Map ? (Map<String, Object>) entity : Maps.entity2Map(entity);
+
+            if (N.isEntity(entity.getClass())) {
+                final Object idPropVal = props.get(idName);
+
+                if (idPropVal == null || idPropVal.equals(N.defaultValueOf(idPropVal.getClass()))) {
+                    props.remove(idName);
+                }
+            }
+
+            return prepareAdd(props);
+        }
+
+        private Pair2 prepareAdd(final Map<String, Object> props) {
+            Pair2 pair = null;
+
+            switch (namingPolicy) {
+                case LOWER_CASE_WITH_UNDERSCORE:
+                    pair = NE.insert(props).into(targetClass).pair();
+
+                    break;
+
+                case UPPER_CASE_WITH_UNDERSCORE:
+                    pair = NE2.insert(props).into(targetClass).pair();
+
+                    break;
+
+                case CAMEL_CASE:
+                    pair = NE3.insert(props).into(targetClass).pair();
+
+                    break;
+
+                default:
+                    throw new RuntimeException("Unsupported naming policy: " + namingPolicy);
+            }
+
+            return pair;
+        }
+
+        @SuppressWarnings("deprecation")
+        private <E> void postAdd(final Object entity, final E idVal) {
+            if (idVal != null && N.isEntity(entity.getClass())) {
+                RefUtil.setPropValue(entity, idName, idVal);
+            }
+
+            if (entity instanceof DirtyMarker) {
+                ((DirtyMarker) entity).dirtyPropNames().clear();
+            }
+        }
+
+        public int update(final Object entity) {
+            final Pair2 pair = prepareUpdate(entity);
+
+            final int updateCount = sqlExecutor.update(pair.sql, pair.parameters.toArray());
+
+            if (updateCount > 0) {
+                postUpdate(entity);
+            }
+
+            return updateCount;
+        }
+
+        public int update(final Object id, final Map<String, Object> props) {
+            return update(L.eq(idName, id), props);
+        }
+
+        public int update(final Condition whereCause, final Map<String, Object> props) {
+            final Pair2 pair = prepareUpdate(whereCause, props);
+
+            return sqlExecutor.update(pair.sql, pair.parameters.toArray());
+        }
+
+        /**
+         * Update All the records one by one in transaction.
+         * 
+         * @param entities
+         * @return
+         */
+
+        public int updateAll(final Collection<?> entities) {
+            return updateAll(entities, IsolationLevel.DEFAULT);
+        }
+
+        /**
+         * Update All the records one by one in transaction.
+         * 
+         * @param entities
+         * @param isolationLevel
+         * @return
+         */
+        public int updateAll(final Collection<?> entities, final IsolationLevel isolationLevel) {
+            final SQLTransaction tran = sqlExecutor.beginTransaction(isolationLevel);
+            int result = 0;
+            boolean isOk = false;
+
+            try {
+                for (Object entity : entities) {
+                    result += update(entity);
+                }
+
+                isOk = true;
+            } finally {
+                if (isOk) {
+                    tran.commit();
+                } else {
+                    tran.rollback();
+                }
+            }
+
+            return result;
+        }
+
+        /**
+         * Update All the records by batch operation.
+         * 
+         * @param entities which must have the same updated properties set.
+         * @return
+         */
+        public int batchUpdate(final Collection<?> entities) {
+            return batchUpdate(entities, JdbcSettings.DEFAULT_BATCH_SIZE);
+        }
+
+        /**
+         * Update All the records by batch operation.
+         * 
+         * @param entities which must have the same updated properties set.
+         * @param batchSize Default value is 200.
+         * @return
+         */
+        public int batchUpdate(final Collection<?> entities, int batchSize) {
+            N.checkArgument(batchSize > 0, "Invalid batch size: %s", batchSize);
+
+            final Pair2 pair = prepareUpdate(entities.iterator().next());
+            final JdbcSettings jdbcSettings = batchSize == JdbcSettings.DEFAULT_BATCH_SIZE ? null : JdbcSettings.create().setBatchSize(batchSize);
+            final List<?> batchParameters = entities instanceof List ? (List<?>) entities : new ArrayList<>(entities);
+
+            final int updateCount = sqlExecutor.batchUpdate(pair.sql, null, jdbcSettings, batchParameters);
+
+            if (updateCount > 0) {
+                for (Object entity : entities) {
+                    postUpdate(entity);
+                }
+            }
+
+            return updateCount;
+        }
+
+        private Pair2 prepareUpdate(final Object entity) {
+            checkEntity(entity);
+
+            final Map<String, Object> props = Maps.entity2Map(entity);
+            final Object idVal = props.remove(idName);
+
+            if (idVal == null && props.containsKey(idName) == false) {
+                throw new IllegalArgumentException("No id property found in Class: " + RefUtil.getCanonicalClassName(entity.getClass()) + " with name: "
+                        + idName + ". Please register the id property first by calling 'registerEntityId'");
+            }
+
+            return prepareUpdate(L.eq(idName, idVal), props);
+        }
+
+        private Pair2 prepareUpdate(final Condition whereCause, final Map<String, Object> props) {
+            Pair2 pair = null;
+
+            switch (namingPolicy) {
+                case LOWER_CASE_WITH_UNDERSCORE:
+                    pair = NE.update(targetClass).set(props).where(whereCause).pair();
+
+                    break;
+
+                case UPPER_CASE_WITH_UNDERSCORE:
+                    pair = NE2.update(targetClass).set(props).where(whereCause).pair();
+
+                    break;
+
+                case CAMEL_CASE:
+                    pair = NE3.update(targetClass).set(props).where(whereCause).pair();
+
+                    break;
+
+                default:
+                    throw new RuntimeException("Unsupported naming policy: " + namingPolicy);
+            }
+
+            return pair;
+        }
+
+        @SuppressWarnings("deprecation")
+        private void postUpdate(final Object entity) {
+            if (entity instanceof DirtyMarker) {
+                ((DirtyMarker) entity).dirtyPropNames().clear();
+            }
+        }
+
+        public int delete(final Object idOrEntity) {
+            checkEntity(idOrEntity);
+
+            final Class<?> cls = idOrEntity.getClass();
+            final Object idVal = N.isEntity(cls) ? getId(idOrEntity) : idOrEntity;
+
+            return delete(L.eq(idName, idVal));
+        }
+
+        public int delete(final Condition whereCause) {
+            if (whereCause instanceof Equal && ((Equal) whereCause).getPropName().equals(idName)) {
+                return sqlExecutor.update(sql_delete_by_id, ((Equal) whereCause).getPropValue());
+            }
+
+            final Pair2 pair = prepareDelete(whereCause);
+
+            return sqlExecutor.update(pair.sql, pair.parameters.toArray());
+        }
+
+        /**
+         * Delete All records by ids or entities in one transaction.
+         * 
+         * @param idsOrEntities
+         * @return
+         */
+        public int deleteAll(final Collection<?> idsOrEntities) {
+            return deleteAll(idsOrEntities, IsolationLevel.DEFAULT);
+        }
+
+        /**
+         * Delete All records by ids or entities in one transaction.
+         * 
+         * @param idsOrEntities
+         * @param isolationLevel
+         * @return
+         */
+        public int deleteAll(final Collection<?> idsOrEntities, final IsolationLevel isolationLevel) {
+            final SQLTransaction tran = sqlExecutor.beginTransaction(isolationLevel);
+            int result = 0;
+            boolean isOk = false;
+
+            try {
+                for (Object idOrEntity : idsOrEntities) {
+                    result += delete(idOrEntity);
+                }
+
+                isOk = true;
+            } finally {
+                if (isOk) {
+                    tran.commit();
+                } else {
+                    tran.rollback();
+                }
+            }
+
+            return result;
+        }
+
+        private Pair2 prepareDelete(final Condition whereCause) {
+            Pair2 pair = null;
+
+            switch (namingPolicy) {
+                case LOWER_CASE_WITH_UNDERSCORE:
+                    pair = NE.deleteFrom(targetClass).where(whereCause).pair();
+
+                    break;
+
+                case UPPER_CASE_WITH_UNDERSCORE:
+                    pair = NE2.deleteFrom(targetClass).where(whereCause).pair();
+
+                    break;
+
+                case CAMEL_CASE:
+                    pair = NE3.deleteFrom(targetClass).where(whereCause).pair();
+
+                    break;
+
+                default:
+                    throw new RuntimeException("Unsupported naming policy: " + namingPolicy);
+            }
+
+            return pair;
+        }
+
+        private void checkEntity(final Object entity) {
+            final Class<?> cls = entity.getClass();
+
+            if (N.isEntity(cls)) {
+                N.checkArgument(targetClass.isAssignableFrom(cls), "Dlete wrong type: " + RefUtil.getCanonicalClassName(cls) + " in " + toString());
+            }
+        }
+
+        private Object getId(final Object entity) {
+            final Class<?> cls = entity.getClass();
+            final Method getMethod = RefUtil.getPropGetMethod(cls, idName);
+
+            if (getMethod == null) {
+                throw new IllegalArgumentException("No id property found in Class: " + RefUtil.getCanonicalClassName(cls) + " with name: " + idName
+                        + ". Please register the id property first by calling 'registerEntityId'");
+            }
+
+            return RefUtil.getPropValue(entity, getMethod);
+        }
+
+        public CompletableFuture<Boolean> asyncExists(final Object id) {
+            return asyncExecutor.execute(new Callable<Boolean>() {
+                @Override
+                public Boolean call() throws Exception {
+                    return exists(id);
+                }
+            });
+        }
+
+        public CompletableFuture<Boolean> asyncExists(final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<Boolean>() {
+                @Override
+                public Boolean call() throws Exception {
+                    return exists(whereCause);
+                }
+            });
+        }
+
+        public CompletableFuture<Integer> asyncCount(final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<Integer>() {
+                @Override
+                public Integer call() throws Exception {
+                    return count(whereCause);
+                }
+            });
+        }
+
+        public CompletableFuture<T> asyncGet(final Object id) {
+            return asyncExecutor.execute(new Callable<T>() {
+                @Override
+                public T call() throws Exception {
+                    return get(id);
+                }
+            });
+        }
+
+        public CompletableFuture<T> asyncGet(final Object id, final String... selectPropNames) {
+            return asyncExecutor.execute(new Callable<T>() {
+                @Override
+                public T call() throws Exception {
+                    return get(id, selectPropNames);
+                }
+            });
+        }
+
+        public CompletableFuture<T> asyncGet(final Object id, final Collection<String> selectPropNames) {
+            return asyncExecutor.execute(new Callable<T>() {
+                @Override
+                public T call() throws Exception {
+                    return get(id, selectPropNames);
+                }
+            });
+        }
+
+        public CompletableFuture<List<T>> asyncFind(final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<List<T>>() {
+                @Override
+                public List<T> call() throws Exception {
+                    return find(whereCause);
+                }
+            });
+        }
+
+        public CompletableFuture<List<T>> asyncFind(final Collection<String> selectPropNames, final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<List<T>>() {
+                @Override
+                public List<T> call() throws Exception {
+                    return find(selectPropNames, whereCause);
+                }
+            });
+        }
+
+        public CompletableFuture<List<T>> asyncFind(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<List<T>>() {
+                @Override
+                public List<T> call() throws Exception {
+                    return find(selectPropNames, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public CompletableFuture<DataSet> asyncQuery(final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<DataSet>() {
+                @Override
+                public DataSet call() throws Exception {
+                    return query(whereCause);
+                }
+            });
+        }
+
+        public CompletableFuture<DataSet> asyncQuery(final Collection<String> selectPropNames, final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<DataSet>() {
+                @Override
+                public DataSet call() throws Exception {
+                    return query(selectPropNames, whereCause);
+                }
+            });
+        }
+
+        public CompletableFuture<DataSet> asyncQuery(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<DataSet>() {
+                @Override
+                public DataSet call() throws Exception {
+                    return query(selectPropNames, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public CompletableFuture<OptionalBoolean> asyncQueryForBoolean(final String propName, final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<OptionalBoolean>() {
+                @Override
+                public OptionalBoolean call() throws Exception {
+                    return queryForBoolean(propName, whereCause);
+                }
+            });
+        }
+
+        public CompletableFuture<OptionalByte> asyncQueryForByte(final String propName, final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<OptionalByte>() {
+                @Override
+                public OptionalByte call() throws Exception {
+                    return queryForByte(propName, whereCause);
+                }
+            });
+        }
+
+        public CompletableFuture<OptionalShort> asyncQueryForShort(final String propName, final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<OptionalShort>() {
+                @Override
+                public OptionalShort call() throws Exception {
+                    return queryForShort(propName, whereCause);
+                }
+            });
+        }
+
+        public CompletableFuture<OptionalInt> asyncQueryForInt(final String propName, final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<OptionalInt>() {
+                @Override
+                public OptionalInt call() throws Exception {
+                    return queryForInt(propName, whereCause);
+                }
+            });
+        }
+
+        public CompletableFuture<OptionalLong> asyncQueryForLong(final String propName, final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<OptionalLong>() {
+                @Override
+                public OptionalLong call() throws Exception {
+                    return queryForLong(propName, whereCause);
+                }
+            });
+        }
+
+        public CompletableFuture<OptionalFloat> asyncQueryForFloat(final String propName, final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<OptionalFloat>() {
+                @Override
+                public OptionalFloat call() throws Exception {
+                    return queryForFloat(propName, whereCause);
+                }
+            });
+        }
+
+        public CompletableFuture<OptionalDouble> asyncQueryForDouble(final String propName, final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<OptionalDouble>() {
+                @Override
+                public OptionalDouble call() throws Exception {
+                    return queryForDouble(propName, whereCause);
+                }
+            });
+        }
+
+        public <E> CompletableFuture<NullabLe<E>> asyncQueryForSingleResult(final Class<E> targetValueClass, final String propName, final Object id) {
+            return asyncExecutor.execute(new Callable<NullabLe<E>>() {
+                @Override
+                public NullabLe<E> call() throws Exception {
+                    return queryForSingleResult(targetValueClass, propName, id);
+                }
+            });
+        }
+
+        public <E> CompletableFuture<NullabLe<E>> asyncQueryForSingleResult(final Class<E> targetValueClass, final String propName,
+                final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<NullabLe<E>>() {
+                @Override
+                public NullabLe<E> call() throws Exception {
+                    return queryForSingleResult(targetValueClass, propName, whereCause);
+                }
+            });
+        }
+
+        public <E> CompletableFuture<NullabLe<E>> asyncQueryForSingleResult(final Class<E> targetValueClass, final String propName, final Condition whereCause,
+                final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<NullabLe<E>>() {
+                @Override
+                public NullabLe<E> call() throws Exception {
+                    return queryForSingleResult(targetValueClass, propName, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public CompletableFuture<Optional<T>> asyncQueryForEntity(final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<Optional<T>>() {
+                @Override
+                public Optional<T> call() throws Exception {
+                    return queryForEntity(whereCause);
+                }
+            });
+        }
+
+        public CompletableFuture<Optional<T>> asyncQueryForEntity(final Collection<String> selectPropNames, final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<Optional<T>>() {
+                @Override
+                public Optional<T> call() throws Exception {
+                    return queryForEntity(selectPropNames, whereCause);
+                }
+            });
+        }
+
+        public CompletableFuture<Optional<T>> asyncQueryForEntity(final Collection<String> selectPropNames, final Condition whereCause,
+                final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<Optional<T>>() {
+                @Override
+                public Optional<T> call() throws Exception {
+                    return queryForEntity(selectPropNames, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public CompletableFuture<Try<Stream<T>>> asyncStream(final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<Try<Stream<T>>>() {
+                @Override
+                public Try<Stream<T>> call() throws Exception {
+                    return stream(whereCause);
+                }
+            });
+        }
+
+        public CompletableFuture<Try<Stream<T>>> asyncStream(final Collection<String> selectPropNames, final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<Try<Stream<T>>>() {
+                @Override
+                public Try<Stream<T>> call() throws Exception {
+                    return stream(selectPropNames, whereCause);
+                }
+            });
+        }
+
+        public CompletableFuture<Try<Stream<T>>> asyncStream(final Collection<String> selectPropNames, final Condition whereCause,
+                final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<Try<Stream<T>>>() {
+                @Override
+                public Try<Stream<T>> call() throws Exception {
+                    return stream(selectPropNames, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public <E> CompletableFuture<E> asyncAdd(final Object entity) {
+            return asyncExecutor.execute(new Callable<E>() {
+                @Override
+                public E call() throws Exception {
+                    return add(entity);
+                }
+            });
+        }
+
+        public <E> CompletableFuture<E> asyncAdd(final Map<String, Object> props) {
+            return asyncExecutor.execute(new Callable<E>() {
+                @Override
+                public E call() throws Exception {
+                    return add(props);
+                }
+            });
+        }
+
+        public <E> CompletableFuture<List<E>> asyncAddAll(final Collection<?> entities) {
+            return asyncExecutor.execute(new Callable<List<E>>() {
+                @Override
+                public List<E> call() throws Exception {
+                    return addAll(entities);
+                }
+            });
+        }
+
+        public <E> CompletableFuture<List<E>> asyncAddAll(final Collection<?> entities, final IsolationLevel isolationLevel) {
+            return asyncExecutor.execute(new Callable<List<E>>() {
+                @Override
+                public List<E> call() throws Exception {
+                    return addAll(entities, isolationLevel);
+                }
+            });
+        }
+
+        public <E> CompletableFuture<List<E>> asyncBatchAdd(final Collection<?> entities) {
+            return asyncExecutor.execute(new Callable<List<E>>() {
+                @Override
+                public List<E> call() throws Exception {
+                    return batchAdd(entities);
+                }
+            });
+        }
+
+        public <E> CompletableFuture<List<E>> asyncBatchAdd(final Collection<?> entities, final int batchSize) {
+            return asyncExecutor.execute(new Callable<List<E>>() {
+                @Override
+                public List<E> call() throws Exception {
+                    return batchAdd(entities, batchSize);
+                }
+            });
+        }
+
+        public CompletableFuture<Integer> asyncUpdate(final Object entity) {
+            return asyncExecutor.execute(new Callable<Integer>() {
+                @Override
+                public Integer call() throws Exception {
+                    return update(entity);
+                }
+            });
+        }
+
+        public CompletableFuture<Integer> asyncUpdate(final Object id, final Map<String, Object> props) {
+            return asyncExecutor.execute(new Callable<Integer>() {
+                @Override
+                public Integer call() throws Exception {
+                    return update(id, props);
+                }
+            });
+        }
+
+        public CompletableFuture<Integer> asyncUpdate(final Condition whereCause, final Map<String, Object> props) {
+            return asyncExecutor.execute(new Callable<Integer>() {
+                @Override
+                public Integer call() throws Exception {
+                    return update(whereCause, props);
+                }
+            });
+        }
+
+        public CompletableFuture<Integer> asyncUpdateAll(final Collection<?> entities) {
+            return asyncExecutor.execute(new Callable<Integer>() {
+                @Override
+                public Integer call() throws Exception {
+                    return updateAll(entities);
+                }
+            });
+        }
+
+        public CompletableFuture<Integer> asyncUpdateAll(final Collection<?> entities, final IsolationLevel isolationLevel) {
+            return asyncExecutor.execute(new Callable<Integer>() {
+                @Override
+                public Integer call() throws Exception {
+                    return updateAll(entities, isolationLevel);
+                }
+            });
+        }
+
+        public CompletableFuture<Integer> asyncBatchUpdate(final Collection<?> entities) {
+            return asyncExecutor.execute(new Callable<Integer>() {
+                @Override
+                public Integer call() throws Exception {
+                    return batchUpdate(entities);
+                }
+            });
+        }
+
+        public CompletableFuture<Integer> asyncBatchUpdate(final Collection<?> entities, final int batchSize) {
+            return asyncExecutor.execute(new Callable<Integer>() {
+                @Override
+                public Integer call() throws Exception {
+                    return batchUpdate(entities, batchSize);
+                }
+            });
+        }
+
+        public CompletableFuture<Integer> asyncDelete(final Object idOrEntity) {
+            return asyncExecutor.execute(new Callable<Integer>() {
+                @Override
+                public Integer call() throws Exception {
+                    return delete(idOrEntity);
+                }
+            });
+        }
+
+        public CompletableFuture<Integer> asyncDelete(final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<Integer>() {
+                @Override
+                public Integer call() throws Exception {
+                    return delete(whereCause);
+                }
+            });
+        }
+
+        public CompletableFuture<Integer> asyncDeleteAll(final Collection<?> idsOrEntities) {
+            return asyncExecutor.execute(new Callable<Integer>() {
+                @Override
+                public Integer call() throws Exception {
+                    return deleteAll(idsOrEntities);
+                }
+            });
+        }
+
+        public CompletableFuture<Integer> asyncDeleteAll(final Collection<?> idsOrEntities, final IsolationLevel isolationLevel) {
+            return asyncExecutor.execute(new Callable<Integer>() {
+                @Override
+                public Integer call() throws Exception {
+                    return deleteAll(idsOrEntities, isolationLevel);
+                }
+            });
+        }
+
+        public String toStirng() {
+            return "Mapper: " + RefUtil.getCanonicalClassName(targetClass);
+        }
+    }
+
+    /**
      * Refer to http://landawn.com/introduction-to-jdbc.html about how to set parameters in <code>java.sql.PreparedStatement</code>
      * 
      * @author Haiyang Li
@@ -3552,7 +4663,6 @@ public final class SQLExecutor implements Closeable {
         private String queryWithDataSource;
         private Collection<String> queryWithDataSources;
         private boolean queryInParallel = true;
-        private NamingPolicy namingPolicy;
 
         private boolean fozen = false;
 
@@ -3584,7 +4694,6 @@ public final class SQLExecutor implements Closeable {
             copy.queryWithDataSource = this.queryWithDataSource;
             copy.queryWithDataSources = this.queryWithDataSources == null ? null : new ArrayList<>(this.queryWithDataSources);
             copy.queryInParallel = this.queryInParallel;
-            copy.namingPolicy = namingPolicy;
 
             return copy;
         }
@@ -3825,18 +4934,6 @@ public final class SQLExecutor implements Closeable {
             return this;
         }
 
-        NamingPolicy getNamingPolicy() {
-            return namingPolicy;
-        }
-
-        JdbcSettings setNamingPolicy(final NamingPolicy namingPolicy) {
-            assertNotFrozen();
-
-            this.namingPolicy = namingPolicy;
-
-            return this;
-        }
-
         void freeze() {
             fozen = true;
         }
@@ -3870,7 +4967,6 @@ public final class SQLExecutor implements Closeable {
             result = (prime * result) + ((queryWithDataSource == null) ? 0 : queryWithDataSource.hashCode());
             result = (prime * result) + ((queryWithDataSources == null) ? 0 : queryWithDataSources.hashCode());
             result = (prime * result) + (queryInParallel ? 1231 : 1237);
-            result = (prime * result) + ((namingPolicy == null) ? 0 : namingPolicy.hashCode());
 
             return result;
         }
@@ -3891,8 +4987,7 @@ public final class SQLExecutor implements Closeable {
                         && N.equals(resultSetType, other.resultSetType) && N.equals(resultSetConcurrency, other.resultSetConcurrency)
                         && N.equals(resultSetHoldability, other.resultSetHoldability) && N.equals(offset, other.offset) && N.equals(count, other.count)
                         && N.equals(generatedIdPropName, other.generatedIdPropName) && N.equals(queryWithDataSource, other.queryWithDataSource)
-                        && N.equals(queryWithDataSources, other.queryWithDataSources) && N.equals(queryInParallel, other.queryInParallel)
-                        && N.equals(namingPolicy, other.namingPolicy);
+                        && N.equals(queryWithDataSources, other.queryWithDataSources) && N.equals(queryInParallel, other.queryInParallel);
             }
 
             return false;
@@ -3905,7 +5000,7 @@ public final class SQLExecutor implements Closeable {
                     + maxFieldSize + ", fetchSize=" + fetchSize + ", fetchDirection=" + fetchDirection + ", resultSetType=" + resultSetType
                     + ", resultSetConcurrency=" + resultSetConcurrency + ", resultSetHoldability=" + resultSetHoldability + ", offset=" + offset + ", count="
                     + count + ", generatedIdPropName=" + generatedIdPropName + ", queryWithDataSource=" + queryWithDataSource + ", queryWithDataSources="
-                    + queryWithDataSources + ", queryInParallel=" + queryInParallel + ", namingPolicy=" + namingPolicy + "}";
+                    + queryWithDataSources + ", queryInParallel=" + queryInParallel + "}";
         }
     }
 

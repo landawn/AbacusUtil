@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.PrimitiveIterator;
 import java.util.Queue;
 
 import com.landawn.abacus.exception.AbacusException;
@@ -789,6 +790,50 @@ public abstract class DoubleStream
 
     public static DoubleStream of(final DoubleIterator iterator) {
         return iterator == null ? empty() : new IteratorDoubleStream(iterator);
+    }
+
+    public static DoubleStream of(final java.util.stream.DoubleStream stream) {
+        return of(new ImmutableDoubleIterator() {
+            private PrimitiveIterator.OfDouble iter = null;
+
+            @Override
+            public boolean hasNext() {
+                if (iter == null) {
+                    iter = stream.iterator();
+                }
+
+                return iter.hasNext();
+            }
+
+            @Override
+            public double next() {
+                if (iter == null) {
+                    iter = stream.iterator();
+                }
+
+                return iter.nextDouble();
+            }
+
+            @Override
+            public long count() {
+                final long result = stream.count();
+                iter = null;
+                return result;
+            }
+
+            @Override
+            public void skip(long n) {
+                stream.skip(n);
+                iter = null;
+            }
+
+            @Override
+            public double[] toArray() {
+                final double[] result = stream.toArray();
+                iter = null;
+                return result;
+            }
+        });
     }
 
     public static DoubleStream from(final float... a) {

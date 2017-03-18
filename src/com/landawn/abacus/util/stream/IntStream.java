@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.PrimitiveIterator;
 import java.util.Queue;
 
 import com.landawn.abacus.exception.AbacusException;
@@ -791,6 +792,50 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
 
     public static IntStream of(final IntIterator iterator) {
         return iterator == null ? empty() : new IteratorIntStream(iterator);
+    }
+
+    public static IntStream of(final java.util.stream.IntStream stream) {
+        return of(new ImmutableIntIterator() {
+            private PrimitiveIterator.OfInt iter = null;
+
+            @Override
+            public boolean hasNext() {
+                if (iter == null) {
+                    iter = stream.iterator();
+                }
+
+                return iter.hasNext();
+            }
+
+            @Override
+            public int next() {
+                if (iter == null) {
+                    iter = stream.iterator();
+                }
+
+                return iter.nextInt();
+            }
+
+            @Override
+            public long count() {
+                final long result = stream.count();
+                iter = null;
+                return result;
+            }
+
+            @Override
+            public void skip(long n) {
+                stream.skip(n);
+                iter = null;
+            }
+
+            @Override
+            public int[] toArray() {
+                final int[] result = stream.toArray();
+                iter = null;
+                return result;
+            }
+        });
     }
 
     public static IntStream from(final char... a) {

@@ -1729,6 +1729,57 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         return stream.skip(startIndex).limit(endIndex - startIndex);
     }
 
+    public static <T> Stream<T> of(final java.util.stream.Stream<T> stream) {
+        return of(new ImmutableIterator<T>() {
+            private Iterator<T> iter = null;
+
+            @Override
+            public boolean hasNext() {
+                if (iter == null) {
+                    iter = stream.iterator();
+                }
+
+                return iter.hasNext();
+            }
+
+            @Override
+            public T next() {
+                if (iter == null) {
+                    iter = stream.iterator();
+                }
+
+                return iter.next();
+            }
+
+            @Override
+            public long count() {
+                final long result = stream.count();
+                iter = null;
+                return result;
+            }
+
+            @Override
+            public void skip(long n) {
+                stream.skip(n);
+                iter = null;
+            }
+
+            @Override
+            public <A> A[] toArray(final A[] a) {
+                final A[] result = stream.toArray(new IntFunction<A[]>() {
+                    @Override
+                    public A[] apply(int value) {
+                        return a;
+                    }
+                });
+
+                iter = null;
+
+                return result;
+            }
+        });
+    }
+
     /**
      * It's user's responsibility to close the input <code>reader</code> after the stream is finished.
      * 
