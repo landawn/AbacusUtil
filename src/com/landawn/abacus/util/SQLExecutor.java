@@ -26,8 +26,11 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -3416,6 +3419,8 @@ public final class SQLExecutor implements Closeable {
         static final List<String> EXISTS_SELECT_PROP_NAMES = ImmutableList.of(NE._1);
         static final List<String> COUNT_SELECT_PROP_NAMES = ImmutableList.of(NE.COUNT_ALL);
         static final Map<Class<?>, String> entityIdMap = new ConcurrentHashMap<>();
+        static final Map<Class<?>, Set<String>> writeOnlyPropNamesMap = new ConcurrentHashMap<>();
+        static final Map<Class<?>, Set<String>> readOnlyPropNamesMap = new ConcurrentHashMap<>();
 
         private final Class<T> targetClass;
         private final SQLExecutor sqlExecutor;
@@ -3440,6 +3445,44 @@ public final class SQLExecutor implements Closeable {
             N.checkArgument(N.isEntity(targetClass), RefUtil.getCanonicalClassName(targetClass) + " is not an entity class with getter/setter methods");
 
             entityIdMap.put(targetClass, RefUtil.getPropNameByMethod(RefUtil.getPropGetMethod(targetClass, idName)));
+        }
+
+        /**
+         * The properties will be ignored by add/addAll/batchAdd operations.
+         * 
+         * @param targetClass
+         * @param readOnlyPropNames
+         */
+        public static void registerReadOnlyProps(Class<?> targetClass, Collection<String> readOnlyPropNames) {
+            N.checkArgument(N.isEntity(targetClass), RefUtil.getCanonicalClassName(targetClass) + " is not an entity class with getter/setter methods");
+            N.checkNullOrEmpty(readOnlyPropNames, "'readOnlyPropNames'");
+
+            final Set<String> set = new HashSet<String>();
+
+            for (String propName : readOnlyPropNames) {
+                set.add(RefUtil.getPropNameByMethod(RefUtil.getPropGetMethod(targetClass, propName)));
+            }
+
+            readOnlyPropNamesMap.put(targetClass, ImmutableSet.of(set));
+        }
+
+        /**
+         * The properties will be ignored by update/updateAll/batchUpdate operations.
+         * 
+         * @param targetClass
+         * @param writeOnlyPropNames
+         */
+        public static void registerWriteOnlyProps(Class<?> targetClass, Collection<String> writeOnlyPropNames) {
+            N.checkArgument(N.isEntity(targetClass), RefUtil.getCanonicalClassName(targetClass) + " is not an entity class with getter/setter methods");
+            N.checkNullOrEmpty(writeOnlyPropNames, "'writeOnlyPropNames'");
+
+            final Set<String> set = new HashSet<String>();
+
+            for (String propName : writeOnlyPropNames) {
+                set.add(RefUtil.getPropNameByMethod(RefUtil.getPropGetMethod(targetClass, propName)));
+            }
+
+            writeOnlyPropNamesMap.put(targetClass, ImmutableSet.of(set));
         }
 
         public boolean exists(final Object id) {
@@ -3755,9 +3798,13 @@ public final class SQLExecutor implements Closeable {
         private Pair2 prepareAdd(final Object entity) {
             checkEntity(entity);
 
-            final Map<String, Object> props = entity instanceof Map ? (Map<String, Object>) entity : Maps.entity2Map(entity);
+            final Class<?> cls = entity.getClass();
+            final boolean isEntity = N.isEntity(cls);
+            final Set<String> readOnlyPropNames = isEntity ? readOnlyPropNamesMap.get(cls) : null;
+            final Map<String, Object> props = entity instanceof Map ? (Map<String, Object>) entity
+                    : (readOnlyPropNames == null ? Maps.entity2Map(entity) : Maps.entity2Map(entity, readOnlyPropNames));
 
-            if (N.isEntity(entity.getClass())) {
+            if (isEntity && props.containsKey(idName)) {
                 final Object idPropVal = props.get(idName);
 
                 if (idPropVal == null || idPropVal.equals(N.defaultValueOf(idPropVal.getClass()))) {
@@ -3902,13 +3949,34 @@ public final class SQLExecutor implements Closeable {
             return updateCount;
         }
 
+        @SuppressWarnings("deprecation")
         private Pair2 prepareUpdate(final Object entity) {
             checkEntity(entity);
 
-            final Map<String, Object> props = Maps.entity2Map(entity);
-            final Object idVal = props.remove(idName);
+            final Class<?> cls = entity.getClass();
+            final boolean isDirtyMarker = N.isDirtyMarker(cls);
+            final Set<String> writeOnlyPropNames = writeOnlyPropNamesMap.get(cls);
+            Map<String, Object> props = null;
 
-            if (idVal == null && props.containsKey(idName) == false) {
+            if (isDirtyMarker) {
+                final Map<String, Object> tmp = new HashMap<>();
+
+                for (String propName : ((DirtyMarker) entity).dirtyPropNames()) {
+                    tmp.put(propName, RefUtil.getPropValue(entity, propName));
+                }
+
+                props = tmp;
+
+                if (N.notNullOrEmpty(writeOnlyPropNames)) {
+                    Maps.removeAll(props, writeOnlyPropNames);
+                }
+            } else {
+                props = writeOnlyPropNames == null ? Maps.entity2Map(entity) : Maps.entity2Map(entity, writeOnlyPropNames);
+            }
+
+            final Object idVal = props.containsKey(idName) ? props.remove(idName) : getId(entity);
+
+            if (idVal == null) {
                 throw new IllegalArgumentException("No id property found in Class: " + RefUtil.getCanonicalClassName(entity.getClass()) + " with name: "
                         + idName + ". Please register the id property first by calling 'registerEntityId'");
             }

@@ -1475,15 +1475,13 @@ public abstract class SQLBuilder {
             return set((Map<String, Object>) entity);
         } else {
             if (N.isDirtyMarker(entity.getClass())) {
-                final DirtyMarker dirtyMarkerEntity = ((DirtyMarker) entity);
-                final Set<String> updatedPropNames = dirtyMarkerEntity.dirtyPropNames();
-                final Map<String, Object> updateProps = new HashMap<>();
+                final Map<String, Object> props = new HashMap<>();
 
-                for (String propName : updatedPropNames) {
-                    updateProps.put(propName, RefUtil.getPropValue(dirtyMarkerEntity, propName));
+                for (String propName : ((DirtyMarker) entity).dirtyPropNames()) {
+                    props.put(propName, RefUtil.getPropValue(entity, propName));
                 }
 
-                return set(updateProps);
+                return set(props);
             } else {
                 return set(Maps.entity2Map(entity));
             }
