@@ -5,13 +5,13 @@
 
 2*, Rename update(...filter...)/delete(...filter...) to updateAll/deleteAll in MongoDBExecutor/MongoCollectionExecutor.
 
-3*, Remove save/delete operations from CassandraExecutor, which are replaced by CassandraExecutor.mapper(targetClass).save/delete.
+3*, Replace CassandraExecutor.save(...)/delete(...) with CassandraExecutor.mapper(targetClass).save(...)/delete(...).
 
 4, Support get/insert/update/delete by id/entity for CassandraExecutor.
 
-5, Support ORM mapper: ExMapper with SQLExecutor.mapper(targetEntityClass).
+5, Support ORM with the fantastic mapper: ExMapper in SQLExecutor.mapper(targetEntityClass).
 
-6, IntStream.of(java.util.stream.IntStream)/LongStream.of(java.util.stream.LongStream)/DoubleStream.of(java.util.stream.DoubleStream)/Stream.of(java.util.stream.Stream) for Java 8 edition.
+6, Add IntStream.of(java.util.stream.IntStream)/LongStream.of(java.util.stream.LongStream)/DoubleStream.of(java.util.stream.DoubleStream)/Stream.of(java.util.stream.Stream) for Java 8 edition.
 
 7, Improvements and bug fix.
 
