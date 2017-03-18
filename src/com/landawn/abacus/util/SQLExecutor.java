@@ -3448,7 +3448,7 @@ public final class SQLExecutor implements Closeable {
         }
 
         /**
-         * The properties will be ignored by add/addAll/batchAdd operations.
+         * The properties will be ignored by add/addAll/batchAdd operations if the input is an entity.
          * 
          * @param targetClass
          * @param readOnlyPropNames
@@ -3467,7 +3467,7 @@ public final class SQLExecutor implements Closeable {
         }
 
         /**
-         * The properties will be ignored by update/updateAll/batchUpdate operations.
+         * The properties will be ignored by update/updateAll/batchUpdate operations if the input is an entity.
          * 
          * @param targetClass
          * @param writeOnlyPropNames
@@ -3959,13 +3959,11 @@ public final class SQLExecutor implements Closeable {
             Map<String, Object> props = null;
 
             if (isDirtyMarker) {
-                final Map<String, Object> tmp = new HashMap<>();
+                props = new HashMap<>();
 
                 for (String propName : ((DirtyMarker) entity).dirtyPropNames()) {
-                    tmp.put(propName, RefUtil.getPropValue(entity, propName));
+                    props.put(propName, RefUtil.getPropValue(entity, propName));
                 }
-
-                props = tmp;
 
                 if (N.notNullOrEmpty(writeOnlyPropNames)) {
                     Maps.removeAll(props, writeOnlyPropNames);

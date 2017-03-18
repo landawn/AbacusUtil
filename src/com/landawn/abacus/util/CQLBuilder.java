@@ -956,6 +956,42 @@ public abstract class CQLBuilder {
         }
     }
 
+    /**
+     * Only the dirty properties will be set into the result SQL if the specified entity is a dirty marker entity.
+     * 
+     * @param entity
+     * @param excludedPropNames
+     * @return
+     */
+    @SuppressWarnings("deprecation")
+    public CQLBuilder set(final Object entity, final Set<String> excludedPropNames) {
+        if (entity instanceof String) {
+            return set(Array.of((String) entity));
+        } else if (entity instanceof Map) {
+            if (N.isNullOrEmpty(excludedPropNames)) {
+                return set((Map<String, Object>) entity);
+            } else {
+                final Map<String, Object> props = new LinkedHashMap<>((Map<String, Object>) entity);
+                Maps.removeAll(props, excludedPropNames);
+                return set(props);
+            }
+        } else {
+            if (N.isDirtyMarker(entity.getClass())) {
+                final Map<String, Object> props = new HashMap<>();
+
+                for (String propName : ((DirtyMarker) entity).dirtyPropNames()) {
+                    props.put(propName, RefUtil.getPropValue(entity, propName));
+                }
+
+                Maps.removeAll(props, excludedPropNames);
+
+                return set(props);
+            } else {
+                return set(N.isNullOrEmpty(excludedPropNames) ? Maps.entity2Map(entity) : Maps.entity2Map(entity, excludedPropNames));
+            }
+        }
+    }
+
     public CQLBuilder set(Class<?> entityClass) {
         return set(entityClass, null);
     }
