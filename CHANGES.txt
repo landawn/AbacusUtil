@@ -2,6 +2,10 @@
 
 ========Changes in 0.9.59=========================================================================
 
+1, Add more convenient methods to CassandraExecutor.
+
+2, Remove LongMultiset/IEEE754rUtil from Android jar to reduce the API size.
+
 3, Improvements and bug fix.
 
 

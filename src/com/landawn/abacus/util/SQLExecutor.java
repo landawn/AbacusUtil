@@ -3490,7 +3490,7 @@ public final class SQLExecutor implements Closeable {
         }
 
         public boolean exists(final Condition whereCause) {
-            final Pair2 pair = prepareQuery(EXISTS_SELECT_PROP_NAMES, whereCause);
+            final Pair2 pair = prepareQuery(EXISTS_SELECT_PROP_NAMES, whereCause, 1);
 
             return sqlExecutor.exists(pair.sql, pair.parameters.toArray());
         }
@@ -3523,7 +3523,7 @@ public final class SQLExecutor implements Closeable {
             if (N.isNullOrEmpty(selectPropNames) && (whereCause instanceof Equal && ((Equal) whereCause).getPropName().equals(idName))) {
                 list = sqlExecutor.find(targetClass, sql_get_by_id, null, JdbcSettings.create().setCount(2), ((Equal) whereCause).getPropValue());
             } else {
-                final Pair2 pair = prepareQuery(selectPropNames, whereCause);
+                final Pair2 pair = prepareQuery(selectPropNames, whereCause, 2);
                 list = sqlExecutor.find(targetClass, pair.sql, null, JdbcSettings.create().setCount(2), pair.parameters.toArray());
             }
 
@@ -3622,7 +3622,7 @@ public final class SQLExecutor implements Closeable {
 
         public <E> NullabLe<E> queryForSingleResult(final Class<E> targetValueClass, final String propName, final Condition whereCause,
                 final JdbcSettings jdbcSettings) {
-            final Pair2 pair = prepareQuery(Arrays.asList(propName), whereCause);
+            final Pair2 pair = prepareQuery(Arrays.asList(propName), whereCause, 1);
 
             return sqlExecutor.queryForSingleResult(targetValueClass, pair.sql, null, jdbcSettings, pair.parameters.toArray());
         }
@@ -3636,7 +3636,7 @@ public final class SQLExecutor implements Closeable {
         }
 
         public Optional<T> queryForEntity(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
-            final Pair2 pair = prepareQuery(selectPropNames, whereCause);
+            final Pair2 pair = prepareQuery(selectPropNames, whereCause, 1);
 
             return sqlExecutor.queryForEntity(targetClass, pair.sql, null, jdbcSettings, pair.parameters.toArray());
         }
@@ -3656,31 +3656,58 @@ public final class SQLExecutor implements Closeable {
         }
 
         private Pair2 prepareQuery(final Collection<String> selectPropNames, final Condition whereCause) {
+            return prepareQuery(selectPropNames, whereCause, 0);
+        }
+
+        private Pair2 prepareQuery(final Collection<String> selectPropNames, final Condition whereCause, final int count) {
+            SQLBuilder sqlBuilder = null;
+
             switch (namingPolicy) {
                 case LOWER_CASE_WITH_UNDERSCORE:
                     if (N.isNullOrEmpty(selectPropNames)) {
-                        return NE.selectFrom(targetClass).where(whereCause).pair();
+                        sqlBuilder = NE.selectFrom(targetClass).where(whereCause);
                     } else {
-                        return NE.select(selectPropNames).from(targetClass).where(whereCause).pair();
+                        sqlBuilder = NE.select(selectPropNames).from(targetClass).where(whereCause);
                     }
+
+                    break;
 
                 case UPPER_CASE_WITH_UNDERSCORE:
                     if (N.isNullOrEmpty(selectPropNames)) {
-                        return NE2.selectFrom(targetClass).where(whereCause).pair();
+                        sqlBuilder = NE2.selectFrom(targetClass).where(whereCause);
                     } else {
-                        return NE2.select(selectPropNames).from(targetClass).where(whereCause).pair();
+                        sqlBuilder = NE2.select(selectPropNames).from(targetClass).where(whereCause);
                     }
+
+                    break;
 
                 case CAMEL_CASE:
                     if (N.isNullOrEmpty(selectPropNames)) {
-                        return NE3.selectFrom(targetClass).where(whereCause).pair();
+                        sqlBuilder = NE3.selectFrom(targetClass).where(whereCause);
                     } else {
-                        return NE3.select(selectPropNames).from(targetClass).where(whereCause).pair();
+                        sqlBuilder = NE3.select(selectPropNames).from(targetClass).where(whereCause);
                     }
+
+                    break;
 
                 default:
                     throw new RuntimeException("Unsupported naming policy: " + namingPolicy);
             }
+
+            if (count > 0) {
+                switch (sqlExecutor._dbVersion) {
+                    case ORACLE:
+                    case SQL_SERVER:
+                        // Do nothing because limit is not supported.
+
+                        break;
+
+                    default:
+                        sqlBuilder.limit(count);
+                }
+            }
+
+            return sqlBuilder.pair();
         }
 
         /**
