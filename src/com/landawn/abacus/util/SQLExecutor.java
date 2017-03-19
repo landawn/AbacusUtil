@@ -3656,40 +3656,31 @@ public final class SQLExecutor implements Closeable {
         }
 
         private Pair2 prepareQuery(final Collection<String> selectPropNames, final Condition whereCause) {
-            Pair2 pair = null;
-
             switch (namingPolicy) {
                 case LOWER_CASE_WITH_UNDERSCORE:
                     if (N.isNullOrEmpty(selectPropNames)) {
-                        pair = NE.selectFrom(targetClass).where(whereCause).pair();
+                        return NE.selectFrom(targetClass).where(whereCause).pair();
                     } else {
-                        pair = NE.select(selectPropNames).from(targetClass).where(whereCause).pair();
+                        return NE.select(selectPropNames).from(targetClass).where(whereCause).pair();
                     }
-
-                    break;
 
                 case UPPER_CASE_WITH_UNDERSCORE:
                     if (N.isNullOrEmpty(selectPropNames)) {
-                        pair = NE2.selectFrom(targetClass).where(whereCause).pair();
+                        return NE2.selectFrom(targetClass).where(whereCause).pair();
                     } else {
-                        pair = NE2.select(selectPropNames).from(targetClass).where(whereCause).pair();
+                        return NE2.select(selectPropNames).from(targetClass).where(whereCause).pair();
                     }
-
-                    break;
 
                 case CAMEL_CASE:
                     if (N.isNullOrEmpty(selectPropNames)) {
-                        pair = NE3.selectFrom(targetClass).where(whereCause).pair();
+                        return NE3.selectFrom(targetClass).where(whereCause).pair();
                     } else {
-                        pair = NE3.select(selectPropNames).from(targetClass).where(whereCause).pair();
+                        return NE3.select(selectPropNames).from(targetClass).where(whereCause).pair();
                     }
-
-                    break;
 
                 default:
                     throw new RuntimeException("Unsupported naming policy: " + namingPolicy);
             }
-            return pair;
         }
 
         /**
@@ -3816,29 +3807,19 @@ public final class SQLExecutor implements Closeable {
         }
 
         private Pair2 prepareAdd(final Map<String, Object> props) {
-            Pair2 pair = null;
-
             switch (namingPolicy) {
                 case LOWER_CASE_WITH_UNDERSCORE:
-                    pair = NE.insert(props).into(targetClass).pair();
-
-                    break;
+                    return NE.insert(props).into(targetClass).pair();
 
                 case UPPER_CASE_WITH_UNDERSCORE:
-                    pair = NE2.insert(props).into(targetClass).pair();
-
-                    break;
+                    return NE2.insert(props).into(targetClass).pair();
 
                 case CAMEL_CASE:
-                    pair = NE3.insert(props).into(targetClass).pair();
-
-                    break;
+                    return NE3.insert(props).into(targetClass).pair();
 
                 default:
                     throw new RuntimeException("Unsupported naming policy: " + namingPolicy);
             }
-
-            return pair;
         }
 
         @SuppressWarnings("deprecation")
@@ -3983,29 +3964,19 @@ public final class SQLExecutor implements Closeable {
         }
 
         private Pair2 prepareUpdate(final Condition whereCause, final Map<String, Object> props) {
-            Pair2 pair = null;
-
             switch (namingPolicy) {
                 case LOWER_CASE_WITH_UNDERSCORE:
-                    pair = NE.update(targetClass).set(props).where(whereCause).pair();
-
-                    break;
+                    return NE.update(targetClass).set(props).where(whereCause).pair();
 
                 case UPPER_CASE_WITH_UNDERSCORE:
-                    pair = NE2.update(targetClass).set(props).where(whereCause).pair();
-
-                    break;
+                    return NE2.update(targetClass).set(props).where(whereCause).pair();
 
                 case CAMEL_CASE:
-                    pair = NE3.update(targetClass).set(props).where(whereCause).pair();
-
-                    break;
+                    return NE3.update(targetClass).set(props).where(whereCause).pair();
 
                 default:
                     throw new RuntimeException("Unsupported naming policy: " + namingPolicy);
             }
-
-            return pair;
         }
 
         @SuppressWarnings("deprecation")
