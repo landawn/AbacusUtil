@@ -1357,6 +1357,14 @@ public final class Seq<T> implements Collection<T> {
         return result;
     }
 
+    public ExList<T> append(final Collection<? extends T> c) {
+        return Seq.concat(this, c);
+    }
+
+    public ExList<T> prepend(final Collection<? extends T> c) {
+        return Seq.concat(c, this);
+    }
+
     public ExList<T> merge(final Collection<? extends T> b, final BiFunction<? super T, ? super T, Nth> nextSelector) {
         return Seq.merge(this, b, nextSelector);
     }
@@ -1953,6 +1961,52 @@ public final class Seq<T> implements Collection<T> {
 
     public void println() {
         N.println(toString());
+    }
+
+    public static <T> ExList<T> concat(final T[] a, final T[] b) {
+        return ExList.of(N.concat(a, b));
+    }
+
+    public static <T> ExList<T> concat(final Collection<? extends T> a, final Collection<? extends T> b) {
+        return N.concat(a, b);
+    }
+
+    public static <T> Iterator<T> concat(final Iterator<? extends T> a, final Iterator<? extends T> b) {
+        return concat(Arrays.asList(a, b));
+    }
+
+    public static <T> Iterator<T> concat(final Iterator<? extends T>... a) {
+        return concat(Arrays.asList(a));
+    }
+
+    public static <T> Iterator<T> concat(final Collection<? extends Iterator<? extends T>> c) {
+        return new Iterator<T>() {
+            private final Iterator<? extends Iterator<? extends T>> iter = c.iterator();
+            private Iterator<? extends T> cur;
+
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
+                    cur = iter.next();
+                }
+
+                return cur != null && cur.hasNext();
+            }
+
+            @Override
+            public T next() {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return cur.next();
+            }
+
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        };
     }
 
     public static <T> ExList<T> merge(final T[] a, final T[] b, final BiFunction<? super T, ? super T, Nth> nextSelector) {

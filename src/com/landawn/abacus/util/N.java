@@ -66,7 +66,6 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Random;
@@ -22646,42 +22645,19 @@ public final class N {
         return c;
     }
 
-    public static <T> Iterator<T> concat(final Iterator<? extends T> a, final Iterator<? extends T> b) {
-        return concat(Arrays.asList(a, b));
-    }
+    public static <T> ExList<T> concat(final Collection<? extends T> a, final Collection<? extends T> b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? new ExList<T>(0) : ExList.from(b);
+        } else if (N.isNullOrEmpty(b)) {
+            return ExList.from(a);
+        }
 
-    public static <T> Iterator<T> concat(final Iterator<? extends T>... a) {
-        return concat(Arrays.asList(a));
-    }
+        final ExList<T> result = new ExList<>(a.size() + b.size());
 
-    public static <T> Iterator<T> concat(final Collection<? extends Iterator<? extends T>> c) {
-        return new Iterator<T>() {
-            private final Iterator<? extends Iterator<? extends T>> iter = c.iterator();
-            private Iterator<? extends T> cur;
+        result.addAll(a);
+        result.addAll(b);
 
-            @Override
-            public boolean hasNext() {
-                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
-                    cur = iter.next();
-                }
-
-                return cur != null && cur.hasNext();
-            }
-
-            @Override
-            public T next() {
-                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                return cur.next();
-            }
-
-            @Override
-            public void remove() {
-                throw new UnsupportedOperationException();
-            }
-        };
+        return result;
     }
 
     public static int replaceAll(final boolean[] a, final boolean oldVal, final boolean newVal) {

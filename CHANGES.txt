@@ -6,7 +6,11 @@
 
 2, Remove LongMultiset/IEEE754rUtil from Android jar to reduce the API size.
 
-3, Improvements and bug fix.
+3*, Move N.concat(iterator...) to Seq.
+
+4, Add concat(Collection...) to N/Seq
+
+5, Improvements and bug fix.
 
 
 ========Changes in 0.9.58=========================================================================
