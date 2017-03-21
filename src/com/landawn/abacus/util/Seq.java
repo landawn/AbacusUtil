@@ -2010,7 +2010,29 @@ public final class Seq<T> implements Collection<T> {
     }
 
     public static <T> ExList<T> merge(final T[] a, final T[] b, final BiFunction<? super T, ? super T, Nth> nextSelector) {
-        return merge(Arrays.asList(a), Arrays.asList(b), nextSelector);
+        final ExList<T> result = new ExList<>(a.length + b.length);
+        final int lenA = a.length;
+        final int lenB = b.length;
+        int cursorA = 0;
+        int cursorB = 0;
+
+        while (cursorA < lenA || cursorB < lenB) {
+            if (cursorA < lenA) {
+                if (cursorB < lenB) {
+                    if (nextSelector.apply(a[cursorA], b[cursorB]) == Nth.FIRST) {
+                        result.add(a[cursorA++]);
+                    } else {
+                        result.add(b[cursorB++]);
+                    }
+                } else {
+                    result.add(a[cursorA++]);
+                }
+            } else {
+                result.add(b[cursorB++]);
+            }
+        }
+
+        return result;
     }
 
     public static <T> ExList<T> merge(final Collection<? extends T> a, final Collection<? extends T> b,
@@ -2024,7 +2046,7 @@ public final class Seq<T> implements Collection<T> {
         boolean hasNextA = false;
         boolean hasNextB = false;
 
-        while (iterA.hasNext() || iterB.hasNext()) {
+        while (hasNextA || hasNextB || iterA.hasNext() || iterB.hasNext()) {
             if (hasNextA) {
                 if (iterB.hasNext()) {
                     if (nextSelector.apply(nextA, (nextB = iterB.next())) == Nth.FIRST) {

@@ -22114,6 +22114,17 @@ public final class N {
     }
 
     /**
+     * Returns <code>a + b</code>
+     * 
+     * @param a
+     * @param b
+     * @return <code>a + b</code>
+     */
+    public static String concat(final String a, final String b) {
+        return a + b;
+    }
+
+    /**
      *
      * @param a
      * @param b

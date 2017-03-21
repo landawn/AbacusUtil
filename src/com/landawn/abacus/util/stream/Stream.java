@@ -7350,7 +7350,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
 
             @Override
             public boolean hasNext() {
-                return a.hasNext() || b.hasNext() || hasNextA || hasNextB;
+                return hasNextA || hasNextB || a.hasNext() || b.hasNext();
             }
 
             @Override
