@@ -9065,10 +9065,6 @@ public final class N {
         return map == null ? EMPTY_MAP : map;
     }
 
-    public static boolean isNull(final Object obj) {
-        return obj == null;
-    }
-
     public static boolean isNullOrEmpty(final CharSequence s) {
         return (s == null) || (s.length() == 0);
     }
@@ -9158,10 +9154,6 @@ public final class N {
         }
 
         return true;
-    }
-
-    public static boolean notNull(final Object obj) {
-        return obj != null;
     }
 
     public static boolean notNullOrEmpty(final CharSequence s) {
@@ -10100,42 +10092,6 @@ public final class N {
      * <p>See {@link #checkState(boolean, String, Object...)} for details.
      */
     public static void checkState(boolean b, String errorMessageTemplate, int p1, int p2, int p3) {
-        if (!b) {
-            throw new IllegalStateException(format(errorMessageTemplate, p1, p2, p3));
-        }
-    }
-
-    /**
-     * Ensures the truth of an expression involving the state of the calling instance, but not
-     * involving any parameters to the calling method.
-     *
-     * <p>See {@link #checkState(boolean, String, Object...)} for details.
-     */
-    public static void checkState(boolean b, String errorMessageTemplate, long p) {
-        if (!b) {
-            throw new IllegalStateException(format(errorMessageTemplate, p));
-        }
-    }
-
-    /**
-     * Ensures the truth of an expression involving the state of the calling instance, but not
-     * involving any parameters to the calling method.
-     *
-     * <p>See {@link #checkState(boolean, String, Object...)} for details.
-     */
-    public static void checkState(boolean b, String errorMessageTemplate, long p1, long p2) {
-        if (!b) {
-            throw new IllegalStateException(format(errorMessageTemplate, p1, p2));
-        }
-    }
-
-    /**
-     * Ensures the truth of an expression involving the state of the calling instance, but not
-     * involving any parameters to the calling method.
-     *
-     * <p>See {@link #checkState(boolean, String, Object...)} for details.
-     */
-    public static void checkState(boolean b, String errorMessageTemplate, long p1, long p2, long p3) {
         if (!b) {
             throw new IllegalStateException(format(errorMessageTemplate, p1, p2, p3));
         }
