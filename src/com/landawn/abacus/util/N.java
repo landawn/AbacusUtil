@@ -93,9 +93,6 @@ import java.util.regex.Pattern;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.NodeList;
-
 import com.landawn.abacus.DataSet;
 import com.landawn.abacus.DirtyMarker;
 import com.landawn.abacus.EntityId;
@@ -9068,6 +9065,10 @@ public final class N {
         return map == null ? EMPTY_MAP : map;
     }
 
+    public static boolean isNull(final Object obj) {
+        return obj == null;
+    }
+
     public static boolean isNullOrEmpty(final CharSequence s) {
         return (s == null) || (s.length() == 0);
     }
@@ -9145,14 +9146,6 @@ public final class N {
         return (entityId == null) || (entityId.isEmpty());
     }
 
-    public static boolean isNullOrEmpty(final NodeList nodeList) {
-        return (nodeList == null) || (nodeList.getLength() == 0);
-    }
-
-    public static boolean isNullOrEmpty(final NamedNodeMap namedNodeMap) {
-        return (namedNodeMap == null) || (namedNodeMap.getLength() == 0);
-    }
-
     public static boolean isNullOrEmptyOrBlank(final CharSequence s) {
         if (N.isNullOrEmpty(s)) {
             return true;
@@ -9165,6 +9158,10 @@ public final class N {
         }
 
         return true;
+    }
+
+    public static boolean notNull(final Object obj) {
+        return obj != null;
     }
 
     public static boolean notNullOrEmpty(final CharSequence s) {
@@ -9242,14 +9239,6 @@ public final class N {
 
     public static boolean notNullOrEmpty(final EntityId entityId) {
         return (entityId != null) && (!entityId.isEmpty());
-    }
-
-    public static boolean notNullOrEmpty(final NodeList nodeList) {
-        return (nodeList != null) && (nodeList.getLength() > 0);
-    }
-
-    public static boolean notNullOrEmpty(final NamedNodeMap namedNodeMap) {
-        return (namedNodeMap != null) && (namedNodeMap.getLength() > 0);
     }
 
     public static boolean notNullOrEmptyOrBlank(final CharSequence s) {
@@ -9644,46 +9633,6 @@ public final class N {
      */
     public static <T extends EntityId> T checkNullOrEmpty(final T parameter, final String msg) {
         if (parameter == null || parameter.isEmpty()) {
-            if (isErrorMsg(msg)) {
-                throw new IllegalArgumentException(msg);
-            } else {
-                throw new IllegalArgumentException(msg + " can not be null or empty");
-            }
-        }
-
-        return parameter;
-    }
-
-    /**
-     * Check if the specified parameter is null or empty
-     *
-     * @param parameter
-     * @param msg name of parameter or error message
-     * @return the input parameter
-     * @throws IllegalArgumentException if the specified parameter is null or empty.
-     */
-    public static <T extends NodeList> T checkNullOrEmpty(final T parameter, final String msg) {
-        if (parameter == null || parameter.getLength() == 0) {
-            if (isErrorMsg(msg)) {
-                throw new IllegalArgumentException(msg);
-            } else {
-                throw new IllegalArgumentException(msg + " can not be null or empty");
-            }
-        }
-
-        return parameter;
-    }
-
-    /**
-     * Check if the specified parameter is null or empty
-     *
-     * @param parameter
-     * @param msg name of parameter or error message
-     * @return the input parameter
-     * @throws IllegalArgumentException if the specified parameter is null or empty.
-     */
-    public static <T extends NamedNodeMap> T checkNullOrEmpty(final T parameter, final String msg) {
-        if (parameter == null || parameter.getLength() == 0) {
             if (isErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
             } else {
@@ -10151,6 +10100,42 @@ public final class N {
      * <p>See {@link #checkState(boolean, String, Object...)} for details.
      */
     public static void checkState(boolean b, String errorMessageTemplate, int p1, int p2, int p3) {
+        if (!b) {
+            throw new IllegalStateException(format(errorMessageTemplate, p1, p2, p3));
+        }
+    }
+
+    /**
+     * Ensures the truth of an expression involving the state of the calling instance, but not
+     * involving any parameters to the calling method.
+     *
+     * <p>See {@link #checkState(boolean, String, Object...)} for details.
+     */
+    public static void checkState(boolean b, String errorMessageTemplate, long p) {
+        if (!b) {
+            throw new IllegalStateException(format(errorMessageTemplate, p));
+        }
+    }
+
+    /**
+     * Ensures the truth of an expression involving the state of the calling instance, but not
+     * involving any parameters to the calling method.
+     *
+     * <p>See {@link #checkState(boolean, String, Object...)} for details.
+     */
+    public static void checkState(boolean b, String errorMessageTemplate, long p1, long p2) {
+        if (!b) {
+            throw new IllegalStateException(format(errorMessageTemplate, p1, p2));
+        }
+    }
+
+    /**
+     * Ensures the truth of an expression involving the state of the calling instance, but not
+     * involving any parameters to the calling method.
+     *
+     * <p>See {@link #checkState(boolean, String, Object...)} for details.
+     */
+    public static void checkState(boolean b, String errorMessageTemplate, long p1, long p2, long p3) {
         if (!b) {
             throw new IllegalStateException(format(errorMessageTemplate, p1, p2, p3));
         }
