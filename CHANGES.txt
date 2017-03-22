@@ -4,13 +4,17 @@
 
 1, Add more convenient methods to CassandraExecutor.
 
-2, Remove LongMultiset/IEEE754rUtil from Android jar to reduce the API size.
+2*, Remove LongMultiset/IEEE754rUtil from Android jar to reduce the API size.
 
-3*, Move N.concat(iterator...) to Seq.
+3*, Move concat(iterator...)/disjoint from N to Seq.
 
 4, Add concat(Collection...) to N/Seq
 
-5, Improvements and bug fix.
+5, Add concat(String, String) concat(String ... a) to N.
+
+6, Support LocalTime/LocalDate/LocalDateTime for Java 8
+
+7, Improvements and bug fix.
 
 
 ========Changes in 0.9.58=========================================================================

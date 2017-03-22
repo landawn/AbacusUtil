@@ -22,6 +22,7 @@ import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.ConcurrentModificationException;
 import java.util.HashSet;
@@ -336,7 +337,7 @@ public final class Seq<T> implements Collection<T> {
     }
 
     public boolean disjoint(final Collection<?> c) {
-        return N.disjoint(this.coll, c);
+        return Seq.disjoint(this.coll, c);
     }
 
     public boolean disjoint(final Object[] a) {
@@ -1961,6 +1962,44 @@ public final class Seq<T> implements Collection<T> {
 
     public void println() {
         N.println(toString());
+    }
+
+    public static boolean disjoint(final Object[] a, final Object[] b) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+            return true;
+        }
+    
+        return ExList.of(a).disjoint(b);
+    }
+
+    /**
+     * Returns {@code true} if the two specified arrays have no elements in common.
+     * 
+     * @param a
+     * @param b
+     * @return {@code true} if the two specified arrays have no elements in common.
+     * @see Collections#disjoint(Collection, Collection)
+     */
+    public static boolean disjoint(final Collection<?> c1, final Collection<?> c2) {
+        if (N.isNullOrEmpty(c1) || N.isNullOrEmpty(c2)) {
+            return true;
+        }
+    
+        if (c1 instanceof Set || (c2 instanceof Set == false && c1.size() > c2.size())) {
+            for (Object e : c2) {
+                if (c1.contains(e)) {
+                    return false;
+                }
+            }
+        } else {
+            for (Object e : c1) {
+                if (c2.contains(e)) {
+                    return false;
+                }
+            }
+        }
+    
+        return true;
     }
 
     public static <T> ExList<T> concat(final T[] a, final T[] b) {
