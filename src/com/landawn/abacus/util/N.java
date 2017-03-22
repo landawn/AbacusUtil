@@ -22059,10 +22059,33 @@ public final class N {
      * 
      * @param a
      * @param b
-     * @return <code>a + b</code>
+     * @return
      */
     public static String concat(final String a, final String b) {
         return a + b;
+    }
+
+    public static String concat(final String a, final String b, final String c) {
+        final StringBuilder sb = ObjectFactory.createStringBuilder();
+
+        try {
+            return sb.append(a).append(b).append(b).toString();
+        } finally {
+            ObjectFactory.recycle(sb);
+        }
+    }
+
+    public static String concat(final String... a) {
+        final StringBuilder sb = ObjectFactory.createStringBuilder();
+
+        try {
+            for (String e : a) {
+                sb.append(e);
+            }
+            return sb.toString();
+        } finally {
+            ObjectFactory.recycle(sb);
+        }
     }
 
     /**
