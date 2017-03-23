@@ -12,9 +12,11 @@
 
 5, Add concat(String, String) concat(String ... a) to N.
 
-6, Support LocalTime/LocalDate/LocalDateTime for Java 8
+6, Add intersection/difference/symmetricDifference to Maps
 
-7, Improvements and bug fix.
+7, Support LocalTime/LocalDate/LocalDateTime for Java 8
+
+8, Improvements and bug fix.
 
 
 ========Changes in 0.9.58=========================================================================

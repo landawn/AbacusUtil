@@ -241,7 +241,7 @@ public final class Maps {
         return true;
     }
 
-    public static <K, V> void removeAll(final Map<K, V> map, final Collection<?> keys) {
+    public static void removeAll(final Map<?, ?> map, final Collection<?> keys) {
         if (N.isNullOrEmpty(keys)) {
             return;
         }
@@ -249,6 +249,90 @@ public final class Maps {
         for (Object key : keys) {
             map.remove(key);
         }
+    }
+
+    /**
+     * The the entries from the specified <code>Map</code>
+     * 
+     * @param map
+     * @param entriesToRemove
+     */
+    public static void removeAll(final Map<?, ?> map, final Map<?, ?> entriesToRemove) {
+        if (N.isNullOrEmpty(entriesToRemove)) {
+            return;
+        }
+
+        for (Map.Entry<?, ?> entry : entriesToRemove.entrySet()) {
+            if (N.equals(map.get(entry.getKey()), entry.getValue())) {
+                map.remove(entry.getKey());
+            }
+        }
+    }
+
+    /**
+     * Check if the specified <code>Map</code> contains the specified <code>Entry</code>
+     * 
+     * @param map
+     * @param entry
+     * @return
+     */
+    public static boolean contains(final Map<?, ?> map, Map.Entry<?, ?> entry) {
+        final Object val = map.get(entry.getKey());
+
+        return (val != null && N.equals(val, entry.getValue())) || (entry.getValue() == null && map.containsKey(entry.getKey()));
+    }
+
+    public static <K, V> Map<K, V> intersection(final Map<K, V> map, final Map<? extends K, ? extends V> map2) {
+        final Map<K, V> result = new LinkedHashMap<>();
+
+        Object val = null;
+        for (Map.Entry<K, V> entry : map.entrySet()) {
+            val = map2.get(entry.getKey());
+
+            if ((val != null && N.equals(val, entry.getValue())) || (entry.getValue() == null && map.containsKey(entry.getKey()))) {
+                result.put(entry.getKey(), entry.getValue());
+            }
+        }
+
+        return result;
+    }
+
+    public static <K, V> Map<K, V> difference(final Map<K, V> map, final Map<? extends K, ? extends V> map2) {
+        final Map<K, V> result = new LinkedHashMap<>();
+
+        Object val = null;
+        for (Map.Entry<K, V> entry : map.entrySet()) {
+            val = map2.get(entry.getKey());
+
+            if ((val == null && map2.containsKey(entry.getKey()) == false) || N.equals(val, entry.getValue()) == false) {
+                result.put(entry.getKey(), entry.getValue());
+            }
+        }
+
+        return result;
+    }
+
+    public static <K, V> Map<K, Pair<NullabLe<V>, NullabLe<V>>> symmetricDifference(final Map<K, V> map, final Map<K, V> map2) {
+        final Map<K, Pair<NullabLe<V>, NullabLe<V>>> result = new LinkedHashMap<>();
+
+        V val = null;
+        for (Map.Entry<K, V> entry : map.entrySet()) {
+            val = map2.get(entry.getKey());
+
+            if (val == null && map2.containsKey(entry.getKey()) == false) {
+                result.put(entry.getKey(), Pair.of(NullabLe.of(entry.getValue()), NullabLe.<V> empty()));
+            } else if (N.equals(val, entry.getValue()) == false) {
+                result.put(entry.getKey(), Pair.of(NullabLe.of(entry.getValue()), NullabLe.of(val)));
+            }
+        }
+
+        for (Map.Entry<K, V> entry : map2.entrySet()) {
+            if (map.containsKey(entry.getKey()) == false) {
+                result.put(entry.getKey(), Pair.of(NullabLe.<V> empty(), NullabLe.of(entry.getValue())));
+            }
+        }
+
+        return result;
     }
 
     /**
