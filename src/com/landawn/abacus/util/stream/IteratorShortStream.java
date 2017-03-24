@@ -29,8 +29,8 @@ import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.NullabLe;
+import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalShort;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.ShortList;
@@ -56,14 +56,14 @@ import com.landawn.abacus.util.function.ToShortFunction;
  * 
  * @author Haiyang Li
  */
-final class IteratorShortStream extends AbstractShortStream {
-    private final ImmutableShortIterator elements;
+class IteratorShortStream extends AbstractShortStream {
+    final ImmutableShortIterator elements;
 
-    private short head;
-    private ShortStream tail;
+    short head;
+    ShortStream tail;
 
-    private ShortStream head2;
-    private short tail2;
+    ShortStream head2;
+    short tail2;
 
     IteratorShortStream(final ShortIterator values) {
         this(values, null);

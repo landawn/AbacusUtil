@@ -31,6 +31,7 @@ import java.util.Set;
 import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.DoubleIterator;
+import com.landawn.abacus.util.ExList;
 import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.LongIterator;
@@ -38,7 +39,6 @@ import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.ExList;
 import com.landawn.abacus.util.NullabLe;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.ShortIterator;
@@ -69,14 +69,14 @@ import com.landawn.abacus.util.stream.ImmutableIterator.QueuedIterator;
  * 
  * @author Haiyang Li
  */
-final class IteratorStream<T> extends AbstractStream<T> {
-    private final ImmutableIterator<T> elements;
+class IteratorStream<T> extends AbstractStream<T> {
+    final ImmutableIterator<T> elements;
 
-    private T head;
-    private Stream<T> tail;
+    T head;
+    Stream<T> tail;
 
-    private Stream<T> head2;
-    private T tail2;
+    Stream<T> head2;
+    T tail2;
 
     IteratorStream(final Iterator<? extends T> values) {
         this(values, null);
@@ -786,8 +786,7 @@ final class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <U> Stream<ExList<T>> split0(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate,
-            final Consumer<? super U> identityUpdate) {
+    public <U> Stream<ExList<T>> split0(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
         return new IteratorStream<>(new ImmutableIterator<ExList<T>>() {
             private T next = (T) NONE;
             private boolean preCondition = false;

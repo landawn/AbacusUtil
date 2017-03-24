@@ -31,9 +31,9 @@ import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.NullabLe;
 import com.landawn.abacus.util.OptionalChar;
 import com.landawn.abacus.util.OptionalDouble;
-import com.landawn.abacus.util.NullabLe;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
@@ -54,14 +54,14 @@ import com.landawn.abacus.util.function.Supplier;
  * 
  * @author Haiyang Li
  */
-final class IteratorCharStream extends AbstractCharStream {
-    private final ImmutableCharIterator elements;
+class IteratorCharStream extends AbstractCharStream {
+    final ImmutableCharIterator elements;
 
-    private char head;
-    private CharStream tail;
+    char head;
+    CharStream tail;
 
-    private CharStream head2;
-    private char tail2;
+    CharStream head2;
+    char tail2;
 
     IteratorCharStream(final CharIterator values) {
         this(values, null);

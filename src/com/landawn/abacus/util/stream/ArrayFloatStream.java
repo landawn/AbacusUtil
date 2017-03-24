@@ -57,10 +57,10 @@ import com.landawn.abacus.util.function.Supplier;
  * 
  * @author Haiyang Li
  */
-final class ArrayFloatStream extends AbstractFloatStream {
-    private final float[] elements;
-    private final int fromIndex;
-    private final int toIndex;
+class ArrayFloatStream extends AbstractFloatStream {
+    final float[] elements;
+    final int fromIndex;
+    final int toIndex;
 
     ArrayFloatStream(final float[] values) {
         this(values, 0, values.length);

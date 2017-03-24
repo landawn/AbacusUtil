@@ -36,10 +36,10 @@ import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
+import com.landawn.abacus.util.NullabLe;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalLong;
 import com.landawn.abacus.util.Output;
-import com.landawn.abacus.util.NullabLe;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
@@ -71,34 +71,15 @@ import com.landawn.abacus.util.function.ToLongFunction;
  * 
  * @author Haiyang Li
  */
-final class ParallelIteratorLongStream extends AbstractLongStream {
-    private final ImmutableLongIterator elements;
+final class ParallelIteratorLongStream extends IteratorLongStream {
     private final int maxThreadNum;
     private final Splitor splitor;
     private volatile IteratorLongStream sequential;
     private volatile Stream<Long> boxed;
 
-    private long head;
-    private LongStream tail;
-
-    private LongStream head2;
-    private long tail2;
-
     ParallelIteratorLongStream(final LongIterator values, final Collection<Runnable> closeHandlers, final boolean sorted, final int maxThreadNum,
             final Splitor splitor) {
-        super(closeHandlers, sorted);
-
-        this.elements = values instanceof ImmutableLongIterator ? (ImmutableLongIterator) values : new ImmutableLongIterator() {
-            @Override
-            public boolean hasNext() {
-                return values.hasNext();
-            }
-
-            @Override
-            public long next() {
-                return values.next();
-            }
-        };
+        super(values, closeHandlers, sorted);
 
         this.maxThreadNum = N.min(maxThreadNum, MAX_THREAD_NUM_PER_OPERATION);
         this.splitor = splitor == null ? DEFAULT_SPLITOR : splitor;
@@ -331,15 +312,15 @@ final class ParallelIteratorLongStream extends AbstractLongStream {
     @Override
     public <U> Stream<LongStream> split(final U identity, final BiFunction<? super Long, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
-        return new ParallelIteratorStream<>(sequential().split(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null,
-                maxThreadNum, splitor);
+        return new ParallelIteratorStream<>(sequential().split(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null, maxThreadNum,
+                splitor);
     }
 
     @Override
     public <U> Stream<LongList> split0(final U identity, final BiFunction<? super Long, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
-        return new ParallelIteratorStream<>(sequential().split0(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null,
-                maxThreadNum, splitor);
+        return new ParallelIteratorStream<>(sequential().split0(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null, maxThreadNum,
+                splitor);
     }
 
     @Override
@@ -391,8 +372,7 @@ final class ParallelIteratorLongStream extends AbstractLongStream {
 
     @Override
     public Stream<LongStream> sliding(final int windowSize, final int increment) {
-        return new ParallelIteratorStream<>(sequential().sliding(windowSize, increment).iterator(), closeHandlers, false, null, maxThreadNum,
-                splitor);
+        return new ParallelIteratorStream<>(sequential().sliding(windowSize, increment).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
     }
 
     @Override

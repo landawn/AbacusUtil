@@ -36,10 +36,10 @@ import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
+import com.landawn.abacus.util.NullabLe;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalFloat;
 import com.landawn.abacus.util.Output;
-import com.landawn.abacus.util.NullabLe;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
@@ -71,34 +71,15 @@ import com.landawn.abacus.util.function.ToLongFunction;
  * 
  * @author Haiyang Li
  */
-final class ParallelIteratorFloatStream extends AbstractFloatStream {
-    private final ImmutableFloatIterator elements;
+final class ParallelIteratorFloatStream extends IteratorFloatStream {
     private final int maxThreadNum;
     private final Splitor splitor;
     private volatile IteratorFloatStream sequential;
     private volatile Stream<Float> boxed;
 
-    private float head;
-    private FloatStream tail;
-
-    private FloatStream head2;
-    private float tail2;
-
     ParallelIteratorFloatStream(final FloatIterator values, final Collection<Runnable> closeHandlers, final boolean sorted, final int maxThreadNum,
             final Splitor splitor) {
-        super(closeHandlers, sorted);
-
-        this.elements = values instanceof ImmutableFloatIterator ? (ImmutableFloatIterator) values : new ImmutableFloatIterator() {
-            @Override
-            public boolean hasNext() {
-                return values.hasNext();
-            }
-
-            @Override
-            public float next() {
-                return values.next();
-            }
-        };
+        super(values, closeHandlers, sorted);
 
         this.maxThreadNum = N.min(maxThreadNum, MAX_THREAD_NUM_PER_OPERATION);
         this.splitor = splitor == null ? DEFAULT_SPLITOR : splitor;
@@ -331,15 +312,15 @@ final class ParallelIteratorFloatStream extends AbstractFloatStream {
     @Override
     public <U> Stream<FloatStream> split(final U identity, final BiFunction<? super Float, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
-        return new ParallelIteratorStream<>(sequential().split(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null,
-                maxThreadNum, splitor);
+        return new ParallelIteratorStream<>(sequential().split(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null, maxThreadNum,
+                splitor);
     }
 
     @Override
     public <U> Stream<FloatList> split0(final U identity, final BiFunction<? super Float, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
-        return new ParallelIteratorStream<>(sequential().split0(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null,
-                maxThreadNum, splitor);
+        return new ParallelIteratorStream<>(sequential().split0(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null, maxThreadNum,
+                splitor);
     }
 
     @Override
@@ -391,14 +372,12 @@ final class ParallelIteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public Stream<FloatStream> sliding(final int windowSize, final int increment) {
-        return new ParallelIteratorStream<>(sequential().sliding(windowSize, increment).iterator(), closeHandlers, false, null, maxThreadNum,
-                splitor);
+        return new ParallelIteratorStream<>(sequential().sliding(windowSize, increment).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
     }
 
     @Override
     public Stream<FloatList> sliding0(final int windowSize, final int increment) {
-        return new ParallelIteratorStream<>(sequential().sliding0(windowSize, increment).iterator(), closeHandlers, false, null, maxThreadNum,
-                splitor);
+        return new ParallelIteratorStream<>(sequential().sliding0(windowSize, increment).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
     }
 
     @Override

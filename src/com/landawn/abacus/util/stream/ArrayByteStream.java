@@ -53,10 +53,10 @@ import com.landawn.abacus.util.function.Supplier;
  * 
  * @author Haiyang Li
  */
-final class ArrayByteStream extends AbstractByteStream {
-    private final byte[] elements;
-    private final int fromIndex;
-    private final int toIndex;
+class ArrayByteStream extends AbstractByteStream {
+    final byte[] elements;
+    final int fromIndex;
+    final int toIndex;
 
     ArrayByteStream(final byte[] values) {
         this(values, 0, values.length);

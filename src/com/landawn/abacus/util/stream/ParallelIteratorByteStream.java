@@ -35,10 +35,10 @@ import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
+import com.landawn.abacus.util.NullabLe;
 import com.landawn.abacus.util.OptionalByte;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.Output;
-import com.landawn.abacus.util.NullabLe;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
@@ -66,34 +66,15 @@ import com.landawn.abacus.util.function.ToIntFunction;
  * 
  * @author Haiyang Li
  */
-final class ParallelIteratorByteStream extends AbstractByteStream {
-    private final ImmutableByteIterator elements;
+final class ParallelIteratorByteStream extends IteratorByteStream {
     private final int maxThreadNum;
     private final Splitor splitor;
     private volatile IteratorByteStream sequential;
     private volatile Stream<Byte> boxed;
 
-    private byte head;
-    private ByteStream tail;
-
-    private ByteStream head2;
-    private byte tail2;
-
     ParallelIteratorByteStream(final ByteIterator values, final Collection<Runnable> closeHandlers, final boolean sorted, final int maxThreadNum,
             final Splitor splitor) {
-        super(closeHandlers, sorted);
-
-        this.elements = values instanceof ImmutableByteIterator ? (ImmutableByteIterator) values : new ImmutableByteIterator() {
-            @Override
-            public boolean hasNext() {
-                return values.hasNext();
-            }
-
-            @Override
-            public byte next() {
-                return values.next();
-            }
-        };
+        super(values, closeHandlers, sorted);
 
         this.maxThreadNum = N.min(maxThreadNum, MAX_THREAD_NUM_PER_OPERATION);
         this.splitor = splitor == null ? DEFAULT_SPLITOR : splitor;
@@ -262,15 +243,15 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
     @Override
     public <U> Stream<ByteStream> split(final U identity, final BiFunction<? super Byte, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
-        return new ParallelIteratorStream<>(sequential().split(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null,
-                maxThreadNum, splitor);
+        return new ParallelIteratorStream<>(sequential().split(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null, maxThreadNum,
+                splitor);
     }
 
     @Override
     public <U> Stream<ByteList> split0(final U identity, final BiFunction<? super Byte, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
-        return new ParallelIteratorStream<>(sequential().split0(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null,
-                maxThreadNum, splitor);
+        return new ParallelIteratorStream<>(sequential().split0(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null, maxThreadNum,
+                splitor);
     }
 
     @Override
@@ -322,8 +303,7 @@ final class ParallelIteratorByteStream extends AbstractByteStream {
 
     @Override
     public Stream<ByteStream> sliding(final int windowSize, final int increment) {
-        return new ParallelIteratorStream<>(sequential().sliding(windowSize, increment).iterator(), closeHandlers, false, null, maxThreadNum,
-                splitor);
+        return new ParallelIteratorStream<>(sequential().sliding(windowSize, increment).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
     }
 
     @Override

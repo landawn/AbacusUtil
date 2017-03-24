@@ -57,10 +57,10 @@ import com.landawn.abacus.util.function.Supplier;
  * 
  * @author Haiyang Li
  */
-final class ArrayDoubleStream extends AbstractDoubleStream {
-    private final double[] elements;
-    private final int fromIndex;
-    private final int toIndex;
+class ArrayDoubleStream extends AbstractDoubleStream {
+    final double[] elements;
+    final int fromIndex;
+    final int toIndex;
 
     ArrayDoubleStream(final double[] values) {
         this(values, 0, values.length);

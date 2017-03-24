@@ -36,9 +36,9 @@ import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.NullabLe;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalInt;
-import com.landawn.abacus.util.NullabLe;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
@@ -66,14 +66,14 @@ import com.landawn.abacus.util.function.ToIntFunction;
  * 
  * @author Haiyang Li
  */
-final class IteratorIntStream extends AbstractIntStream {
-    private final ImmutableIntIterator elements;
+class IteratorIntStream extends AbstractIntStream {
+    final ImmutableIntIterator elements;
 
-    private int head;
-    private IntStream tail;
+    int head;
+    IntStream tail;
 
-    private IntStream head2;
-    private int tail2;
+    IntStream head2;
+    int tail2;
 
     IteratorIntStream(final IntIterator values) {
         this(values, null);

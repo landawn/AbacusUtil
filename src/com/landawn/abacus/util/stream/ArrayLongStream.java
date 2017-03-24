@@ -58,10 +58,10 @@ import com.landawn.abacus.util.function.Supplier;
  * 
  * @author Haiyang Li
  */
-final class ArrayLongStream extends AbstractLongStream {
-    private final long[] elements;
-    private final int fromIndex;
-    private final int toIndex;
+class ArrayLongStream extends AbstractLongStream {
+    final long[] elements;
+    final int fromIndex;
+    final int toIndex;
 
     ArrayLongStream(final long[] values) {
         this(values, 0, values.length);

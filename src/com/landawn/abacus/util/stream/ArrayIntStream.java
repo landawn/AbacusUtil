@@ -64,10 +64,10 @@ import com.landawn.abacus.util.function.Supplier;
  * 
  * @author Haiyang Li
  */
-final class ArrayIntStream extends AbstractIntStream {
-    private final int[] elements;
-    private final int fromIndex;
-    private final int toIndex;
+class ArrayIntStream extends AbstractIntStream {
+    final int[] elements;
+    final int fromIndex;
+    final int toIndex;
 
     ArrayIntStream(final int[] values) {
         this(values, 0, values.length);

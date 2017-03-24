@@ -69,10 +69,7 @@ import com.landawn.abacus.util.function.ToLongFunction;
  * 
  * @author Haiyang Li
  */
-final class ParallelArrayDoubleStream extends AbstractDoubleStream {
-    private final double[] elements;
-    private final int fromIndex;
-    private final int toIndex;
+final class ParallelArrayDoubleStream extends ArrayDoubleStream {
     private final int maxThreadNum;
     private final Splitor splitor;
     private volatile ArrayDoubleStream sequential;
@@ -80,13 +77,8 @@ final class ParallelArrayDoubleStream extends AbstractDoubleStream {
 
     ParallelArrayDoubleStream(final double[] values, final int fromIndex, final int toIndex, final Collection<Runnable> closeHandlers, final boolean sorted,
             int maxThreadNum, Splitor splitor) {
-        super(closeHandlers, sorted);
+        super(values, fromIndex, toIndex, closeHandlers, sorted);
 
-        checkIndex(fromIndex, toIndex, values.length);
-
-        this.elements = values;
-        this.fromIndex = fromIndex;
-        this.toIndex = toIndex;
         this.maxThreadNum = fromIndex >= toIndex ? 1 : N.min(maxThreadNum, MAX_THREAD_NUM_PER_OPERATION, toIndex - fromIndex);
         this.splitor = splitor == null ? DEFAULT_SPLITOR : splitor;
     }

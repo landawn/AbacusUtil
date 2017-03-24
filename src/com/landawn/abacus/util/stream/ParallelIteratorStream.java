@@ -32,6 +32,7 @@ import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.DoubleIterator;
+import com.landawn.abacus.util.ExList;
 import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.Indexed;
 import com.landawn.abacus.util.IntIterator;
@@ -43,7 +44,6 @@ import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.ExList;
 import com.landawn.abacus.util.NullabLe;
 import com.landawn.abacus.util.Output;
 import com.landawn.abacus.util.Pair;
@@ -75,35 +75,15 @@ import com.landawn.abacus.util.stream.ImmutableIterator.QueuedIterator;
  * 
  * @author Haiyang Li
  */
-final class ParallelIteratorStream<T> extends AbstractStream<T> {
-    private final ImmutableIterator<T> elements;
+final class ParallelIteratorStream<T> extends IteratorStream<T> {
     private final int maxThreadNum;
     private final Splitor splitor;
+
     private volatile IteratorStream<T> sequential;
-
-    private T head;
-    private Stream<T> tail;
-
-    private Stream<T> head2;
-    private T tail2;
 
     ParallelIteratorStream(final Iterator<? extends T> values, final Collection<Runnable> closeHandlers, final boolean sorted,
             final Comparator<? super T> comparator, final int maxThreadNum, final Splitor splitor) {
-        super(closeHandlers, sorted, comparator);
-
-        N.requireNonNull(values);
-
-        this.elements = values instanceof ImmutableIterator ? (ImmutableIterator<T>) values : new ImmutableIterator<T>() {
-            @Override
-            public boolean hasNext() {
-                return values.hasNext();
-            }
-
-            @Override
-            public T next() {
-                return values.next();
-            }
-        };
+        super(values, closeHandlers, sorted, comparator);
 
         this.maxThreadNum = N.min(maxThreadNum, MAX_THREAD_NUM_PER_OPERATION);
         this.splitor = splitor == null ? DEFAULT_SPLITOR : splitor;
@@ -1108,8 +1088,7 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <U> Stream<ExList<T>> split0(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate,
-            final Consumer<? super U> identityUpdate) {
+    public <U> Stream<ExList<T>> split0(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
         return new ParallelIteratorStream<>(sequential().split0(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null, maxThreadNum,
                 splitor);
     }
@@ -1499,6 +1478,7 @@ final class ParallelIteratorStream<T> extends AbstractStream<T> {
         return toArray(N.EMPTY_OBJECT_ARRAY);
     }
 
+    @Override
     <A> A[] toArray(A[] a) {
         return elements.toArray(a);
     }

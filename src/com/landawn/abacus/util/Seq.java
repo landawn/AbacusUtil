@@ -1968,7 +1968,7 @@ public final class Seq<T> implements Collection<T> {
         if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
             return true;
         }
-    
+
         return ExList.of(a).disjoint(b);
     }
 
@@ -1984,7 +1984,7 @@ public final class Seq<T> implements Collection<T> {
         if (N.isNullOrEmpty(c1) || N.isNullOrEmpty(c2)) {
             return true;
         }
-    
+
         if (c1 instanceof Set || (c2 instanceof Set == false && c1.size() > c2.size())) {
             for (Object e : c2) {
                 if (c1.contains(e)) {
@@ -1998,7 +1998,7 @@ public final class Seq<T> implements Collection<T> {
                 }
             }
         }
-    
+
         return true;
     }
 
@@ -2601,11 +2601,11 @@ public final class Seq<T> implements Collection<T> {
      *     null elements.
      * @since 12.0
      */
-    public static <E> Collection<List<E>> permutations(Collection<E> elements) {
+    public static <E> Collection<ExList<E>> permutations(Collection<E> elements) {
         return new PermutationCollection<E>(elements);
     }
 
-    private static final class PermutationCollection<E> extends AbstractCollection<List<E>> {
+    private static final class PermutationCollection<E> extends AbstractCollection<ExList<E>> {
         final List<E> inputList;
 
         PermutationCollection(Collection<E> input) {
@@ -2623,7 +2623,7 @@ public final class Seq<T> implements Collection<T> {
         }
 
         @Override
-        public Iterator<List<E>> iterator() {
+        public Iterator<ExList<E>> iterator() {
             return PermutationIterator.of(inputList);
         }
 
@@ -2672,7 +2672,7 @@ public final class Seq<T> implements Collection<T> {
      *     null elements.
      * @since 12.0
      */
-    public static <E extends Comparable<? super E>> Collection<List<E>> orderedPermutations(Collection<E> elements) {
+    public static <E extends Comparable<? super E>> Collection<ExList<E>> orderedPermutations(Collection<E> elements) {
         return orderedPermutations(elements, Comparators.OBJ_COMPARATOR);
     }
 
@@ -2726,11 +2726,11 @@ public final class Seq<T> implements Collection<T> {
      *     null elements, or if the specified comparator is null.
      * @since 12.0
      */
-    public static <E> Collection<List<E>> orderedPermutations(Collection<E> elements, Comparator<? super E> comparator) {
+    public static <E> Collection<ExList<E>> orderedPermutations(Collection<E> elements, Comparator<? super E> comparator) {
         return new OrderedPermutationCollection<E>(elements, comparator);
     }
 
-    private static final class OrderedPermutationCollection<E> extends AbstractCollection<List<E>> {
+    private static final class OrderedPermutationCollection<E> extends AbstractCollection<ExList<E>> {
         final List<E> inputList;
         final Comparator<? super E> comparator;
         final int size;
@@ -2753,7 +2753,7 @@ public final class Seq<T> implements Collection<T> {
         }
 
         @Override
-        public Iterator<List<E>> iterator() {
+        public Iterator<ExList<E>> iterator() {
             return PermutationIterator.ordered(inputList, comparator);
         }
 
@@ -2885,7 +2885,7 @@ public final class Seq<T> implements Collection<T> {
      * @since 19.0
      */
     @SafeVarargs
-    public static <E> List<List<E>> cartesianProduct(final Collection<? extends E>... cs) {
+    public static <E> List<ExList<E>> cartesianProduct(final Collection<? extends E>... cs) {
         return cartesianProduct(Arrays.asList(cs));
     }
 
@@ -2949,11 +2949,11 @@ public final class Seq<T> implements Collection<T> {
      *     or any element of a provided list is null
      * @since 19.0
      */
-    public static <E> List<List<E>> cartesianProduct(final Collection<? extends Collection<? extends E>> cs) {
+    public static <E> List<ExList<E>> cartesianProduct(final Collection<? extends Collection<? extends E>> cs) {
         return new CartesianList<>(cs);
     }
 
-    private static final class CartesianList<E> extends AbstractList<List<E>> implements RandomAccess {
+    private static final class CartesianList<E> extends AbstractList<ExList<E>> implements RandomAccess {
         private final transient Object[][] axes;
         private final transient int[] axesSizeProduct;
 
@@ -2978,7 +2978,7 @@ public final class Seq<T> implements Collection<T> {
         }
 
         @Override
-        public List<E> get(final int index) {
+        public ExList<E> get(final int index) {
             N.checkArgument(index < size(), "Invalid index %s. It must be less than the size %s", index, size());
 
             final ExList<E> result = new ExList<>(axes.length);

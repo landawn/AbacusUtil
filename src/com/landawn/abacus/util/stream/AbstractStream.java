@@ -28,7 +28,6 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -40,6 +39,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import com.landawn.abacus.DataSet;
 import com.landawn.abacus.exception.AbacusIOException;
 import com.landawn.abacus.exception.AbacusSQLException;
+import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.BufferedWriter;
 import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.ByteSummaryStatistics;
@@ -62,14 +62,13 @@ import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
+import com.landawn.abacus.util.NullabLe;
 import com.landawn.abacus.util.ObjectFactory;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
-import com.landawn.abacus.util.NullabLe;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.PermutationIterator;
-import com.landawn.abacus.util.Seq;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.ShortSummaryStatistics;
 import com.landawn.abacus.util.function.BiConsumer;
@@ -1111,8 +1110,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public Pair<NullabLe<T>, NullabLe<T>> findFirstAndLast(final Predicate<? super T> predicateForFirst,
-            final Predicate<? super T> predicateForLast) {
+    public Pair<NullabLe<T>, NullabLe<T>> findFirstAndLast(final Predicate<? super T> predicateForFirst, final Predicate<? super T> predicateForLast) {
         final Pair<NullabLe<T>, NullabLe<T>> result = new Pair<>();
         final ImmutableIterator<T> iter = iterator();
         T last = (T) NONE;
@@ -1169,8 +1167,8 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <U> Pair<NullabLe<T>, NullabLe<T>> findFirstAndLast(final Function<? super T, U> preFunc,
-            final BiPredicate<? super T, ? super U> predicateForFirst, final BiPredicate<? super T, ? super U> predicateForLast) {
+    public <U> Pair<NullabLe<T>, NullabLe<T>> findFirstAndLast(final Function<? super T, U> preFunc, final BiPredicate<? super T, ? super U> predicateForFirst,
+            final BiPredicate<? super T, ? super U> predicateForLast) {
         final Pair<NullabLe<T>, NullabLe<T>> result = new Pair<>();
         final ImmutableIterator<T> iter = iterator();
         U seed = null;
@@ -1579,31 +1577,103 @@ abstract class AbstractStream<T> extends Stream<T> {
         }
     }
 
-    @Override
-    public Stream<Set<T>> powerSet() {
-        final Set<T> set = toSet(new Supplier<Set<T>>() {
-            @Override
-            public Set<T> get() {
-                return new LinkedHashSet<>();
-            }
-        });
+    //    @Override
+    //    public Stream<Set<T>> powerSet() {
+    //        final Set<T> set = toSet(new Supplier<Set<T>>() {
+    //            @Override
+    //            public Set<T> get() {
+    //                return new LinkedHashSet<>();
+    //            }
+    //        });
+    //
+    //        return newStream(Seq.powerSet(set).iterator(), false, null);
+    //    }
 
-        return newStream(Seq.powerSet(set).iterator(), false, null);
+    @Override
+    public Stream<ExList<T>> combinations() {
+        if (this instanceof ArrayStream) {
+            return newStream(IntStream.rangeClosed(0, (int) count()).flatMapToObj(new IntFunction<Stream<ExList<T>>>() {
+                @Override
+                public Stream<ExList<T>> apply(int value) {
+                    return combinations(value);
+                }
+            }).iterator(), false, null);
+        } else {
+            return newStream((T[]) toArray(), false, null).combinations();
+        }
     }
 
     @Override
-    public Stream<List<T>> permutations() {
+    public Stream<ExList<T>> combinations(final int len) {
+        if (this instanceof ArrayStream) {
+            N.checkFromIndexSize(0, len, (int) count());
+
+            if (len == 0) {
+                return newStream(N.asArray(ExList.<T> empty()), false, null);
+            } else if (len == 1) {
+                return map(new Function<T, ExList<T>>() {
+                    @Override
+                    public ExList<T> apply(T t) {
+                        return ExList.of(t);
+                    }
+                });
+            } else if (len == count()) {
+                return newStream(N.asArray(toExList()), false, null);
+            } else {
+                final T[] a = ((ArrayStream<T>) this).elements;
+                final int fromIndex = ((ArrayStream<T>) this).fromIndex;
+                final int toIndex = ((ArrayStream<T>) this).toIndex;
+
+                return newStream(new ImmutableIterator<ExList<T>>() {
+                    private final int[] indices = Array.range(fromIndex, fromIndex + len);
+
+                    @Override
+                    public boolean hasNext() {
+                        return indices[0] <= toIndex - len;
+                    }
+
+                    @Override
+                    public ExList<T> next() {
+                        final ExList<T> result = new ExList<>(len);
+
+                        for (int idx : indices) {
+                            result.add(a[idx]);
+                        }
+
+                        if (++indices[len - 1] == toIndex) {
+                            for (int i = len - 1; i > 0; i--) {
+                                if (indices[i] > toIndex - (len - i)) {
+                                    indices[i - 1]++;
+
+                                    for (int j = i; j < len; j++) {
+                                        indices[j] = indices[j - 1] + 1;
+                                    }
+                                }
+                            }
+                        }
+
+                        return result;
+                    }
+                }, false, null);
+            }
+        } else {
+            return newStream((T[]) toArray(), false, null).combinations(len);
+        }
+    }
+
+    @Override
+    public Stream<ExList<T>> permutations() {
         return newStream(PermutationIterator.of(toList()), false, null);
     }
 
     @Override
-    public Stream<List<T>> orderedPermutations() {
+    public Stream<ExList<T>> orderedPermutations() {
         return orderedPermutations(OBJECT_COMPARATOR);
     }
 
     @Override
-    public Stream<List<T>> orderedPermutations(Comparator<? super T> comparator) {
-        final Iterator<List<T>> iter = PermutationIterator.ordered(toList(), comparator == null ? OBJECT_COMPARATOR : comparator);
+    public Stream<ExList<T>> orderedPermutations(Comparator<? super T> comparator) {
+        final Iterator<ExList<T>> iter = PermutationIterator.ordered(toList(), comparator == null ? OBJECT_COMPARATOR : comparator);
 
         return newStream(iter, false, null);
     }

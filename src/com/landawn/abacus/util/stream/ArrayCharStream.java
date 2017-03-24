@@ -53,10 +53,10 @@ import com.landawn.abacus.util.function.Supplier;
  * 
  * @author Haiyang Li
  */
-final class ArrayCharStream extends AbstractCharStream {
-    private final char[] elements;
-    private final int fromIndex;
-    private final int toIndex;
+class ArrayCharStream extends AbstractCharStream {
+    final char[] elements;
+    final int fromIndex;
+    final int toIndex;
 
     ArrayCharStream(final char[] values) {
         this(values, 0, values.length);

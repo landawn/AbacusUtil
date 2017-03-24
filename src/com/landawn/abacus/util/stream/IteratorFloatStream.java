@@ -34,8 +34,8 @@ import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.OptionalFloat;
 import com.landawn.abacus.util.NullabLe;
+import com.landawn.abacus.util.OptionalFloat;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
@@ -59,14 +59,14 @@ import com.landawn.abacus.util.function.ToFloatFunction;
  * 
  * @author Haiyang Li
  */
-final class IteratorFloatStream extends AbstractFloatStream {
-    private final ImmutableFloatIterator elements;
+class IteratorFloatStream extends AbstractFloatStream {
+    final ImmutableFloatIterator elements;
 
-    private float head;
-    private FloatStream tail;
+    float head;
+    FloatStream tail;
 
-    private FloatStream head2;
-    private float tail2;
+    FloatStream head2;
+    float tail2;
 
     IteratorFloatStream(final FloatIterator values) {
         this(values, null);

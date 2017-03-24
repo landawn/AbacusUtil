@@ -73,23 +73,15 @@ import com.landawn.abacus.util.function.TriFunction;
  * 
  * @author Haiyang Li
  */
-final class ParallelArrayStream<T> extends AbstractStream<T> {
-    private final T[] elements;
-    private final int fromIndex;
-    private final int toIndex;
+final class ParallelArrayStream<T> extends ArrayStream<T> {
     private final int maxThreadNum;
     private final Splitor splitor;
     private volatile ArrayStream<T> sequential;
 
     ParallelArrayStream(final T[] values, final int fromIndex, final int toIndex, final Collection<Runnable> closeHandlers, final boolean sorted,
             Comparator<? super T> comparator, int maxThreadNum, Splitor splitor) {
-        super(closeHandlers, sorted, comparator);
+        super(values, fromIndex, toIndex, closeHandlers, sorted, comparator);
 
-        checkIndex(fromIndex, toIndex, values.length);
-
-        this.elements = values;
-        this.fromIndex = fromIndex;
-        this.toIndex = toIndex;
         this.maxThreadNum = fromIndex >= toIndex ? 1 : N.min(maxThreadNum, MAX_THREAD_NUM_PER_OPERATION, toIndex - fromIndex);
         this.splitor = splitor == null ? DEFAULT_SPLITOR : splitor;
     }
@@ -1957,6 +1949,7 @@ final class ParallelArrayStream<T> extends AbstractStream<T> {
         return N.copyOfRange(elements, fromIndex, toIndex);
     }
 
+    @Override
     <A> A[] toArray(A[] a) {
         if (a.length < (toIndex - fromIndex)) {
             a = N.newArray(a.getClass().getComponentType(), toIndex - fromIndex);

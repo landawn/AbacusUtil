@@ -54,10 +54,10 @@ import com.landawn.abacus.util.function.Supplier;
  * 
  * @author Haiyang Li
  */
-final class ArrayShortStream extends AbstractShortStream {
-    private final short[] elements;
-    private final int fromIndex;
-    private final int toIndex;
+class ArrayShortStream extends AbstractShortStream {
+    final short[] elements;
+    final int fromIndex;
+    final int toIndex;
 
     ArrayShortStream(short[] values) {
         this(values, 0, values.length);

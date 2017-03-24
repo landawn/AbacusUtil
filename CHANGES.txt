@@ -8,15 +8,17 @@
 
 3*, Move concat(iterator...)/disjoint from N to Seq.
 
-4, Add concat(Collection...) to N/Seq
+4*, Replace Stream.powerSet with Stream.combinations
 
-5, Add concat(String, String) concat(String ... a) to N.
+5, Add concat(Collection...) to N/Seq
 
-6, Add intersection/difference/symmetricDifference to Maps
+6, Add concat(String, String) concat(String ... a) to N.
 
-7, Support LocalTime/LocalDate/LocalDateTime for Java 8
+7, Add intersection/difference/symmetricDifference to Maps
 
-8, Improvements and bug fix.
+8, Support LocalTime/LocalDate/LocalDateTime for Java 8
+
+9, Improvements and bug fix.
 
 
 ========Changes in 0.9.58=========================================================================

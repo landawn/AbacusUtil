@@ -34,9 +34,9 @@ import com.landawn.abacus.util.LongSummaryStatistics;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.NullabLe;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalLong;
-import com.landawn.abacus.util.NullabLe;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
@@ -60,14 +60,14 @@ import com.landawn.abacus.util.function.ToLongFunction;
  * 
  * @author Haiyang Li
  */
-final class IteratorLongStream extends AbstractLongStream {
-    private final ImmutableLongIterator elements;
+class IteratorLongStream extends AbstractLongStream {
+    final ImmutableLongIterator elements;
 
-    private long head;
-    private LongStream tail;
+    long head;
+    LongStream tail;
 
-    private LongStream head2;
-    private long tail2;
+    LongStream head2;
+    long tail2;
 
     IteratorLongStream(final LongIterator values) {
         this(values, null);

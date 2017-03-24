@@ -76,10 +76,7 @@ import com.landawn.abacus.util.function.ToShortFunction;
  * 
  * @author Haiyang Li
  */
-final class ParallelArrayIntStream extends AbstractIntStream {
-    private final int[] elements;
-    private final int fromIndex;
-    private final int toIndex;
+final class ParallelArrayIntStream extends ArrayIntStream {
     private final int maxThreadNum;
     private final Splitor splitor;
     private volatile ArrayIntStream sequential;
@@ -87,13 +84,8 @@ final class ParallelArrayIntStream extends AbstractIntStream {
 
     ParallelArrayIntStream(final int[] values, final int fromIndex, final int toIndex, final Collection<Runnable> closeHandlers, final boolean sorted,
             int maxThreadNum, Splitor splitor) {
-        super(closeHandlers, sorted);
+        super(values, fromIndex, toIndex, closeHandlers, sorted);
 
-        checkIndex(fromIndex, toIndex, values.length);
-
-        this.elements = values;
-        this.fromIndex = fromIndex;
-        this.toIndex = toIndex;
         this.maxThreadNum = fromIndex >= toIndex ? 1 : N.min(maxThreadNum, MAX_THREAD_NUM_PER_OPERATION, toIndex - fromIndex);
         this.splitor = splitor == null ? DEFAULT_SPLITOR : splitor;
     }
