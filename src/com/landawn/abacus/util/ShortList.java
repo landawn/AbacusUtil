@@ -1517,7 +1517,6 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
     //        return Seq.of(c);
     //    }
 
-    @Override
     public ShortIterator iterator() {
         if (isEmpty()) {
             return ShortIterator.EMPTY;

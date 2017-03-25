@@ -1541,7 +1541,6 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
     //        return Seq.of(c);
     //    }
 
-    @Override
     public FloatIterator iterator() {
         if (isEmpty()) {
             return FloatIterator.EMPTY;

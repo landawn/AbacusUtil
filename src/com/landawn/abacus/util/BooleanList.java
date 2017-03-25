@@ -1381,7 +1381,6 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
     //        return Builder.of(this).__(func);
     //    }
 
-    @Override
     public BooleanIterator iterator() {
         if (isEmpty()) {
             return BooleanIterator.EMPTY;

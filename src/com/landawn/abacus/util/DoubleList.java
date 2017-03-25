@@ -1523,7 +1523,6 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
     //        return Seq.of(c);
     //    }
 
-    @Override
     public DoubleIterator iterator() {
         if (isEmpty()) {
             return DoubleIterator.EMPTY;

@@ -34,7 +34,7 @@ import com.landawn.abacus.util.function.IntFunction;
  *
  * @author Haiyang Li
  */
-public abstract class AbstractList<C, P, E, A, L extends AbstractList<C, P, E, A, L>> implements Iterable<E>, RandomAccess, java.io.Serializable {
+public abstract class AbstractList<C, P, E, A, L extends AbstractList<C, P, E, A, L>> implements RandomAccess, java.io.Serializable {
     private static final long serialVersionUID = 1504784980113045443L;
 
     /**
@@ -423,9 +423,6 @@ public abstract class AbstractList<C, P, E, A, L extends AbstractList<C, P, E, A
     }
 
     public abstract Multiset<E> toMultiset(final int fromIndex, final int toIndex, final IntFunction<Multiset<E>> supplier);
-
-    @Override
-    public abstract ImmutableIterator<E> iterator();
 
     public void println() {
         N.println(toString());
