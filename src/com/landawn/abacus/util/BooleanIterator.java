@@ -23,7 +23,17 @@ import java.util.NoSuchElementException;
  * @author Haiyang Li
  */
 public abstract class BooleanIterator extends ImmutableIterator<Boolean> {
-    public static final BooleanIterator EMPTY = of(N.EMPTY_BOOLEAN_ARRAY);
+    public static final BooleanIterator EMPTY = new BooleanIterator() {
+        @Override
+        public boolean hasNext() {
+            return false;
+        }
+
+        @Override
+        public boolean nextBoolean() {
+            throw new NoSuchElementException();
+        }
+    };
 
     public static BooleanIterator of(final boolean[] a) {
         return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);

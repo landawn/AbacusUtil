@@ -30,7 +30,32 @@ import com.landawn.abacus.util.N;
  * @author Haiyang Li
  */
 public abstract class ExDoubleIterator extends DoubleIterator {
-    public static final ExDoubleIterator EMPTY = of(N.EMPTY_DOUBLE_ARRAY);
+    public static final ExDoubleIterator EMPTY = new ExDoubleIterator() {
+        @Override
+        public boolean hasNext() {
+            return false;
+        }
+
+        @Override
+        public double nextDouble() {
+            throw new NoSuchElementException();
+        }
+
+        @Override
+        public long count() {
+            return 0;
+        }
+
+        @Override
+        public void skip(long n) {
+            // Do nothing.
+        }
+
+        @Override
+        public double[] toArray() {
+            return N.EMPTY_DOUBLE_ARRAY;
+        }
+    };
 
     public static ExDoubleIterator of(final double[] a) {
         return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);

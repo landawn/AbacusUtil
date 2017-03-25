@@ -23,7 +23,17 @@ import java.util.NoSuchElementException;
  * @author Haiyang Li
  */
 public abstract class ByteIterator extends ImmutableIterator<Byte> {
-    public static final ByteIterator EMPTY = of(N.EMPTY_BYTE_ARRAY);
+    public static final ByteIterator EMPTY = new ByteIterator() {
+        @Override
+        public boolean hasNext() {
+            return false;
+        }
+
+        @Override
+        public byte nextByte() {
+            throw new NoSuchElementException();
+        }
+    };
 
     public static ByteIterator of(final byte[] a) {
         return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);

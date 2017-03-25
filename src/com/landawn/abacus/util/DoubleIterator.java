@@ -23,7 +23,17 @@ import java.util.NoSuchElementException;
  * @author Haiyang Li
  */
 public abstract class DoubleIterator extends ImmutableIterator<Double> {
-    public static final DoubleIterator EMPTY = of(N.EMPTY_DOUBLE_ARRAY);
+    public static final DoubleIterator EMPTY = new DoubleIterator() {
+        @Override
+        public boolean hasNext() {
+            return false;
+        }
+
+        @Override
+        public double nextDouble() {
+            throw new NoSuchElementException();
+        }
+    };
 
     public static DoubleIterator of(final double[] a) {
         return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);

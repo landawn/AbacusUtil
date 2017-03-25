@@ -23,7 +23,17 @@ import java.util.NoSuchElementException;
  * @author Haiyang Li
  */
 public abstract class FloatIterator extends ImmutableIterator<Float> {
-    public static final FloatIterator EMPTY = of(N.EMPTY_FLOAT_ARRAY);
+    public static final FloatIterator EMPTY = new FloatIterator() {
+        @Override
+        public boolean hasNext() {
+            return false;
+        }
+
+        @Override
+        public float nextFloat() {
+            throw new NoSuchElementException();
+        }
+    };
 
     public static FloatIterator of(final float[] a) {
         return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);

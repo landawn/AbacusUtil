@@ -23,7 +23,17 @@ import java.util.NoSuchElementException;
  * @author Haiyang Li
  */
 public abstract class IntIterator extends ImmutableIterator<Integer> {
-    public static final IntIterator EMPTY = of(N.EMPTY_INT_ARRAY);
+    public static final IntIterator EMPTY = new IntIterator() {
+        @Override
+        public boolean hasNext() {
+            return false;
+        }
+
+        @Override
+        public int nextInt() {
+            throw new NoSuchElementException();
+        }
+    };
 
     public static IntIterator of(final int[] a) {
         return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);

@@ -30,7 +30,32 @@ import com.landawn.abacus.util.N;
  * @author Haiyang Li
  */
 public abstract class ExLongIterator extends LongIterator {
-    public static final ExLongIterator EMPTY = of(N.EMPTY_LONG_ARRAY);
+    public static final ExLongIterator EMPTY = new ExLongIterator() {
+        @Override
+        public boolean hasNext() {
+            return false;
+        }
+
+        @Override
+        public long nextLong() {
+            throw new NoSuchElementException();
+        }
+
+        @Override
+        public long count() {
+            return 0;
+        }
+
+        @Override
+        public void skip(long n) {
+            // Do nothing.
+        }
+
+        @Override
+        public long[] toArray() {
+            return N.EMPTY_LONG_ARRAY;
+        }
+    };
 
     public static ExLongIterator of(final long[] a) {
         return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);

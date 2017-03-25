@@ -30,7 +30,32 @@ import com.landawn.abacus.util.N;
  * @author Haiyang Li
  */
 public abstract class ExIntIterator extends IntIterator {
-    public static final ExIntIterator EMPTY = of(N.EMPTY_INT_ARRAY);
+    public static final ExIntIterator EMPTY = new ExIntIterator() {
+        @Override
+        public boolean hasNext() {
+            return false;
+        }
+
+        @Override
+        public int nextInt() {
+            throw new NoSuchElementException();
+        }
+
+        @Override
+        public long count() {
+            return 0;
+        }
+
+        @Override
+        public void skip(long n) {
+            // Do nothing.
+        }
+
+        @Override
+        public int[] toArray() {
+            return N.EMPTY_INT_ARRAY;
+        }
+    };
 
     public static ExIntIterator of(final int[] a) {
         return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);

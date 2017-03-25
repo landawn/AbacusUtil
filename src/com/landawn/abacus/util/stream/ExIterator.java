@@ -30,9 +30,28 @@ import com.landawn.abacus.util.N;
  * @author Haiyang Li
  */
 public abstract class ExIterator<T> extends com.landawn.abacus.util.ImmutableIterator<T> {
-
     @SuppressWarnings("rawtypes")
-    public static final ExIterator EMPTY = of(N.EMPTY_OBJECT_ARRAY);
+    public static final ExIterator EMPTY = new QueuedIterator(0) {
+        @Override
+        public boolean hasNext() {
+            return false;
+        }
+
+        @Override
+        public Object next() {
+            throw new NoSuchElementException();
+        }
+
+        @Override
+        public long count() {
+            return 0;
+        }
+
+        @Override
+        public void skip(long n) {
+            // Do nothing.
+        }
+    };
 
     public static <T> ExIterator<T> of(final T[] a) {
         return a == null ? EMPTY : of(a, 0, a.length);
@@ -45,7 +64,7 @@ public abstract class ExIterator<T> extends com.landawn.abacus.util.ImmutableIte
             return EMPTY;
         }
 
-        return new QueuedIterator<T>(Integer.MAX_VALUE) {
+        return new QueuedIterator<T>(toIndex - fromIndex) {
             int cursor = fromIndex;
 
             @Override
@@ -104,7 +123,7 @@ public abstract class ExIterator<T> extends com.landawn.abacus.util.ImmutableIte
     public static <T> ExIterator<T> of(final Collection<? extends T> c) {
         final Iterator<? extends T> iter = c.iterator();
 
-        return new QueuedIterator<T>(Integer.MAX_VALUE) {
+        return new QueuedIterator<T>(c.size()) {
             @Override
             public boolean hasNext() {
                 return iter.hasNext();

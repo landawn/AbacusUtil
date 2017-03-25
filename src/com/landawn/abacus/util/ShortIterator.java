@@ -23,7 +23,17 @@ import java.util.NoSuchElementException;
  * @author Haiyang Li
  */
 public abstract class ShortIterator extends ImmutableIterator<Short> {
-    public static final ShortIterator EMPTY = of(N.EMPTY_SHORT_ARRAY);
+    public static final ShortIterator EMPTY = new ShortIterator() {
+        @Override
+        public boolean hasNext() {
+            return false;
+        }
+
+        @Override
+        public short nextShort() {
+            throw new NoSuchElementException();
+        }
+    };
 
     public static ShortIterator of(final short[] a) {
         return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);

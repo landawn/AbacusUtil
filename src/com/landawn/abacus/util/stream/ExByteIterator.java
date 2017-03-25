@@ -30,7 +30,32 @@ import com.landawn.abacus.util.N;
  * @author Haiyang Li
  */
 public abstract class ExByteIterator extends ByteIterator {
-    public static final ExByteIterator EMPTY = of(N.EMPTY_BYTE_ARRAY);
+    public static final ExByteIterator EMPTY = new ExByteIterator() {
+        @Override
+        public boolean hasNext() {
+            return false;
+        }
+
+        @Override
+        public byte nextByte() {
+            throw new NoSuchElementException();
+        }
+
+        @Override
+        public long count() {
+            return 0;
+        }
+
+        @Override
+        public void skip(long n) {
+            // Do nothing.
+        }
+
+        @Override
+        public byte[] toArray() {
+            return N.EMPTY_BYTE_ARRAY;
+        }
+    };
 
     public static ExByteIterator of(final byte[] a) {
         return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);

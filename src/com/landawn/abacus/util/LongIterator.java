@@ -23,7 +23,17 @@ import java.util.NoSuchElementException;
  * @author Haiyang Li
  */
 public abstract class LongIterator extends ImmutableIterator<Long> {
-    public static final LongIterator EMPTY = of(N.EMPTY_LONG_ARRAY);
+    public static final LongIterator EMPTY = new LongIterator() {
+        @Override
+        public boolean hasNext() {
+            return false;
+        }
+
+        @Override
+        public long nextLong() {
+            throw new NoSuchElementException();
+        }
+    };
 
     public static LongIterator of(final long[] a) {
         return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);

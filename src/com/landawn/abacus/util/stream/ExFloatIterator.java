@@ -30,7 +30,32 @@ import com.landawn.abacus.util.N;
  * @author Haiyang Li
  */
 public abstract class ExFloatIterator extends FloatIterator {
-    public static final ExFloatIterator EMPTY = of(N.EMPTY_FLOAT_ARRAY);
+    public static final ExFloatIterator EMPTY = new ExFloatIterator() {
+        @Override
+        public boolean hasNext() {
+            return false;
+        }
+
+        @Override
+        public float nextFloat() {
+            throw new NoSuchElementException();
+        }
+
+        @Override
+        public long count() {
+            return 0;
+        }
+
+        @Override
+        public void skip(long n) {
+            // Do nothing.
+        }
+
+        @Override
+        public float[] toArray() {
+            return N.EMPTY_FLOAT_ARRAY;
+        }
+    };
 
     public static ExFloatIterator of(final float[] a) {
         return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);

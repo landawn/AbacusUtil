@@ -30,7 +30,32 @@ import com.landawn.abacus.util.ShortList;
  * @author Haiyang Li
  */
 public abstract class ExShortIterator extends ShortIterator {
-    public static final ExShortIterator EMPTY = of(N.EMPTY_SHORT_ARRAY);
+    public static final ExShortIterator EMPTY = new ExShortIterator() {
+        @Override
+        public boolean hasNext() {
+            return false;
+        }
+
+        @Override
+        public short nextShort() {
+            throw new NoSuchElementException();
+        }
+
+        @Override
+        public long count() {
+            return 0;
+        }
+
+        @Override
+        public void skip(long n) {
+            // Do nothing.
+        }
+
+        @Override
+        public short[] toArray() {
+            return N.EMPTY_SHORT_ARRAY;
+        }
+    };
 
     public static ExShortIterator of(final short[] a) {
         return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);

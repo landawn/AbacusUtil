@@ -23,7 +23,17 @@ import java.util.NoSuchElementException;
  * @author Haiyang Li
  */
 public abstract class CharIterator extends ImmutableIterator<Character> {
-    public static final CharIterator EMPTY = of(N.EMPTY_CHAR_ARRAY);
+    public static final CharIterator EMPTY = new CharIterator() {
+        @Override
+        public boolean hasNext() {
+            return false;
+        }
+
+        @Override
+        public char nextChar() {
+            throw new NoSuchElementException();
+        }
+    };
 
     public static CharIterator of(final char[] a) {
         return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);

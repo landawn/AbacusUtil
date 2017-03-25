@@ -30,7 +30,32 @@ import com.landawn.abacus.util.N;
  * @author Haiyang Li
  */
 public abstract class ExCharIterator extends CharIterator {
-    public static final ExCharIterator EMPTY = of(N.EMPTY_CHAR_ARRAY);
+    public static final ExCharIterator EMPTY = new ExCharIterator() {
+        @Override
+        public boolean hasNext() {
+            return false;
+        }
+
+        @Override
+        public char nextChar() {
+            throw new NoSuchElementException();
+        }
+
+        @Override
+        public long count() {
+            return 0;
+        }
+
+        @Override
+        public void skip(long n) {
+            // Do nothing.
+        }
+
+        @Override
+        public char[] toArray() {
+            return N.EMPTY_CHAR_ARRAY;
+        }
+    };
 
     public static ExCharIterator of(final char[] a) {
         return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);
