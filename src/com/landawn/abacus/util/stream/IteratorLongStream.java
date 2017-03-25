@@ -1284,7 +1284,7 @@ class IteratorLongStream extends AbstractLongStream {
     }
 
     @Override
-    public ExLongIterator exIterator() {
+    ExLongIterator exIterator() {
         return elements;
     }
 

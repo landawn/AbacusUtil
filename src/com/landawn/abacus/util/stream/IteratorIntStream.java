@@ -1465,7 +1465,7 @@ class IteratorIntStream extends AbstractIntStream {
     }
 
     @Override
-    public ExIntIterator exIterator() {
+    ExIntIterator exIterator() {
         return elements;
     }
 

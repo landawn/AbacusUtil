@@ -16,6 +16,7 @@ package com.landawn.abacus.util.stream;
 
 import static com.landawn.abacus.util.stream.StreamBase.checkFromToIndex;
 
+import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import com.landawn.abacus.util.FloatIterator;
@@ -74,6 +75,64 @@ public abstract class ExFloatIterator extends FloatIterator {
                 return N.copyOfRange(a, cursor, toIndex);
             }
         };
+    }
+
+    public static ExFloatIterator of(final FloatIterator iter) {
+        if (iter instanceof ExFloatIterator) {
+            return ((ExFloatIterator) iter);
+        }
+
+        return new ExFloatIterator() {
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public float nextFloat() {
+                return iter.nextFloat();
+            }
+        };
+    }
+
+    public static ExFloatIterator of(final Iterator<Float> iter) {
+        if (iter instanceof ExIterator) {
+            final ExIterator<Float> exIterator = ((ExIterator<Float>) iter);
+
+            return new ExFloatIterator() {
+                @Override
+                public boolean hasNext() {
+                    return exIterator.hasNext();
+                }
+
+                @Override
+                public float nextFloat() {
+                    return exIterator.next();
+                }
+
+                @Override
+                public long count() {
+                    return exIterator.count();
+                }
+
+                @Override
+                public void skip(long n) {
+                    exIterator.skip(n);
+                }
+            };
+        } else {
+            return new ExFloatIterator() {
+                @Override
+                public boolean hasNext() {
+                    return iter.hasNext();
+                }
+
+                @Override
+                public float nextFloat() {
+                    return iter.next();
+                }
+            };
+        }
     }
 
     public long count() {

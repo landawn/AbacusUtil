@@ -16,6 +16,7 @@ package com.landawn.abacus.util.stream;
 
 import static com.landawn.abacus.util.stream.StreamBase.checkFromToIndex;
 
+import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import com.landawn.abacus.util.ByteIterator;
@@ -74,6 +75,64 @@ public abstract class ExByteIterator extends ByteIterator {
                 return N.copyOfRange(a, cursor, toIndex);
             }
         };
+    }
+
+    public static ExByteIterator of(final ByteIterator iter) {
+        if (iter instanceof ExByteIterator) {
+            return ((ExByteIterator) iter);
+        }
+
+        return new ExByteIterator() {
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public byte nextByte() {
+                return iter.nextByte();
+            }
+        };
+    }
+
+    public static ExByteIterator of(final Iterator<Byte> iter) {
+        if (iter instanceof ExIterator) {
+            final ExIterator<Byte> exIterator = ((ExIterator<Byte>) iter);
+
+            return new ExByteIterator() {
+                @Override
+                public boolean hasNext() {
+                    return exIterator.hasNext();
+                }
+
+                @Override
+                public byte nextByte() {
+                    return exIterator.next();
+                }
+
+                @Override
+                public long count() {
+                    return exIterator.count();
+                }
+
+                @Override
+                public void skip(long n) {
+                    exIterator.skip(n);
+                }
+            };
+        } else {
+            return new ExByteIterator() {
+                @Override
+                public boolean hasNext() {
+                    return iter.hasNext();
+                }
+
+                @Override
+                public byte nextByte() {
+                    return iter.next();
+                }
+            };
+        }
     }
 
     public long count() {

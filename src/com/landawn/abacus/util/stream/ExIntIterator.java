@@ -16,6 +16,7 @@ package com.landawn.abacus.util.stream;
 
 import static com.landawn.abacus.util.stream.StreamBase.checkFromToIndex;
 
+import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import com.landawn.abacus.util.IntIterator;
@@ -74,6 +75,64 @@ public abstract class ExIntIterator extends IntIterator {
                 return N.copyOfRange(a, cursor, toIndex);
             }
         };
+    }
+
+    public static ExIntIterator of(final IntIterator iter) {
+        if (iter instanceof ExIntIterator) {
+            return ((ExIntIterator) iter);
+        }
+
+        return new ExIntIterator() {
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public int nextInt() {
+                return iter.nextInt();
+            }
+        };
+    }
+
+    public static ExIntIterator of(final Iterator<Integer> iter) {
+        if (iter instanceof ExIterator) {
+            final ExIterator<Integer> exIterator = ((ExIterator<Integer>) iter);
+
+            return new ExIntIterator() {
+                @Override
+                public boolean hasNext() {
+                    return exIterator.hasNext();
+                }
+
+                @Override
+                public int nextInt() {
+                    return exIterator.next();
+                }
+
+                @Override
+                public long count() {
+                    return exIterator.count();
+                }
+
+                @Override
+                public void skip(long n) {
+                    exIterator.skip(n);
+                }
+            };
+        } else {
+            return new ExIntIterator() {
+                @Override
+                public boolean hasNext() {
+                    return iter.hasNext();
+                }
+
+                @Override
+                public int nextInt() {
+                    return iter.next();
+                }
+            };
+        }
     }
 
     public long count() {

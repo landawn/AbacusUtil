@@ -1156,7 +1156,7 @@ class IteratorShortStream extends AbstractShortStream {
     }
 
     @Override
-    public ExShortIterator exIterator() {
+    ExShortIterator exIterator() {
         return elements;
     }
 

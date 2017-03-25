@@ -1293,7 +1293,7 @@ class ArrayFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public ExFloatIterator exIterator() {
+    ExFloatIterator exIterator() {
         return ExFloatIterator.of(elements, fromIndex, toIndex);
     }
 

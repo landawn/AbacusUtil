@@ -1230,7 +1230,7 @@ class IteratorFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public ExFloatIterator exIterator() {
+    ExFloatIterator exIterator() {
         return elements;
     }
 

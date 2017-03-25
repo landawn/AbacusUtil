@@ -1350,7 +1350,7 @@ class ArrayLongStream extends AbstractLongStream {
     }
 
     @Override
-    public ExLongIterator exIterator() {
+    ExLongIterator exIterator() {
         return ExLongIterator.of(elements, fromIndex, toIndex);
     }
 

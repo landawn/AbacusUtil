@@ -1205,7 +1205,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public ExDoubleIterator exIterator() {
+    ExDoubleIterator exIterator() {
         return elements;
     }
 

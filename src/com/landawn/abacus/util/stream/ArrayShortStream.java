@@ -1168,7 +1168,7 @@ class ArrayShortStream extends AbstractShortStream {
     }
 
     @Override
-    public ExShortIterator exIterator() {
+    ExShortIterator exIterator() {
         return ExShortIterator.of(elements, fromIndex, toIndex);
     }
 

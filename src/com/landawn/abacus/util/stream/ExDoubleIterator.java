@@ -16,6 +16,7 @@ package com.landawn.abacus.util.stream;
 
 import static com.landawn.abacus.util.stream.StreamBase.checkFromToIndex;
 
+import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import com.landawn.abacus.util.DoubleIterator;
@@ -74,6 +75,64 @@ public abstract class ExDoubleIterator extends DoubleIterator {
                 return N.copyOfRange(a, cursor, toIndex);
             }
         };
+    }
+
+    public static ExDoubleIterator of(final DoubleIterator iter) {
+        if (iter instanceof ExDoubleIterator) {
+            return ((ExDoubleIterator) iter);
+        }
+
+        return new ExDoubleIterator() {
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public double nextDouble() {
+                return iter.nextDouble();
+            }
+        };
+    }
+
+    public static ExDoubleIterator of(final Iterator<Double> iter) {
+        if (iter instanceof ExIterator) {
+            final ExIterator<Double> exIterator = ((ExIterator<Double>) iter);
+
+            return new ExDoubleIterator() {
+                @Override
+                public boolean hasNext() {
+                    return exIterator.hasNext();
+                }
+
+                @Override
+                public double nextDouble() {
+                    return exIterator.next();
+                }
+
+                @Override
+                public long count() {
+                    return exIterator.count();
+                }
+
+                @Override
+                public void skip(long n) {
+                    exIterator.skip(n);
+                }
+            };
+        } else {
+            return new ExDoubleIterator() {
+                @Override
+                public boolean hasNext() {
+                    return iter.hasNext();
+                }
+
+                @Override
+                public double nextDouble() {
+                    return iter.next();
+                }
+            };
+        }
     }
 
     public long count() {

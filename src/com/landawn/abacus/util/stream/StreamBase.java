@@ -779,185 +779,31 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
     }
 
     static ExCharIterator charIterator(final ExIterator<Character> iter) {
-        final ExCharIterator charIter = new ExCharIterator() {
-            @Override
-            public boolean hasNext() {
-                return iter.hasNext();
-            }
-
-            @Override
-            public char nextChar() {
-                return iter.next();
-            }
-
-            @Override
-            public long count() {
-                return iter.count();
-            }
-
-            @Override
-            public void skip(long n) {
-                iter.skip(n);
-            }
-        };
-
-        return charIter;
+        return ExCharIterator.of(iter);
     }
 
-    static ExByteIterator skippableIterator(final ExIterator<Byte> iter) {
-        final ExByteIterator byteIter = new ExByteIterator() {
-            @Override
-            public boolean hasNext() {
-                return iter.hasNext();
-            }
-
-            @Override
-            public byte nextByte() {
-                return iter.next();
-            }
-
-            @Override
-            public long count() {
-                return iter.count();
-            }
-
-            @Override
-            public void skip(long n) {
-                iter.skip(n);
-            }
-        };
-
-        return byteIter;
+    static ExByteIterator byteIterator(final ExIterator<Byte> iter) {
+        return ExByteIterator.of(iter);
     }
 
     static ExShortIterator shortIterator(final ExIterator<Short> iter) {
-        final ExShortIterator shortIter = new ExShortIterator() {
-            @Override
-            public boolean hasNext() {
-                return iter.hasNext();
-            }
-
-            @Override
-            public short nextShort() {
-                return iter.next();
-            }
-
-            @Override
-            public long count() {
-                return iter.count();
-            }
-
-            @Override
-            public void skip(long n) {
-                iter.skip(n);
-            }
-        };
-
-        return shortIter;
+        return ExShortIterator.of(iter);
     }
 
     static ExIntIterator intIterator(final ExIterator<Integer> iter) {
-        final ExIntIterator intIter = new ExIntIterator() {
-            @Override
-            public boolean hasNext() {
-                return iter.hasNext();
-            }
-
-            @Override
-            public int nextInt() {
-                return iter.next();
-            }
-
-            @Override
-            public long count() {
-                return iter.count();
-            }
-
-            @Override
-            public void skip(long n) {
-                iter.skip(n);
-            }
-        };
-
-        return intIter;
+        return ExIntIterator.of(iter);
     }
 
     static ExLongIterator longIterator(final ExIterator<Long> iter) {
-        final ExLongIterator longIter = new ExLongIterator() {
-            @Override
-            public boolean hasNext() {
-                return iter.hasNext();
-            }
-
-            @Override
-            public long nextLong() {
-                return iter.next();
-            }
-
-            @Override
-            public long count() {
-                return iter.count();
-            }
-
-            @Override
-            public void skip(long n) {
-                iter.skip(n);
-            }
-        };
-
-        return longIter;
+        return ExLongIterator.of(iter);
     }
 
     static ExFloatIterator floatIterator(final ExIterator<Float> iter) {
-        final ExFloatIterator floatIter = new ExFloatIterator() {
-            @Override
-            public boolean hasNext() {
-                return iter.hasNext();
-            }
-
-            @Override
-            public float nextFloat() {
-                return iter.next();
-            }
-
-            @Override
-            public long count() {
-                return iter.count();
-            }
-
-            @Override
-            public void skip(long n) {
-                iter.skip(n);
-            }
-        };
-
-        return floatIter;
+        return ExFloatIterator.of(iter);
     }
 
     static ExDoubleIterator doubleIterator(final ExIterator<Double> iter) {
-        final ExDoubleIterator doubleIter = new ExDoubleIterator() {
-            @Override
-            public boolean hasNext() {
-                return iter.hasNext();
-            }
-
-            @Override
-            public double nextDouble() {
-                return iter.next();
-            }
-
-            @Override
-            public long count() {
-                return iter.count();
-            }
-
-            @Override
-            public void skip(long n) {
-                iter.skip(n);
-            }
-        };
-
-        return doubleIter;
+        return ExDoubleIterator.of(iter);
     }
 
     static Runnable newCloseHandler(final Collection<? extends StreamBase<?, ?, ?, ?, ?, ?, ?, ?>> c) {

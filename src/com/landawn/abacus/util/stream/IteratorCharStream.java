@@ -1144,7 +1144,7 @@ class IteratorCharStream extends AbstractCharStream {
     }
 
     @Override
-    public ExCharIterator exIterator() {
+    ExCharIterator exIterator() {
         return elements;
     }
 

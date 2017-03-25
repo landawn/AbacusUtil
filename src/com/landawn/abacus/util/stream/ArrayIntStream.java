@@ -1601,7 +1601,7 @@ class ArrayIntStream extends AbstractIntStream {
     }
 
     @Override
-    public ExIntIterator exIterator() {
+    ExIntIterator exIterator() {
         return ExIntIterator.of(elements, fromIndex, toIndex);
     }
 

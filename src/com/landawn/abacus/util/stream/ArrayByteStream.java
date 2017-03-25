@@ -1149,7 +1149,7 @@ class ArrayByteStream extends AbstractByteStream {
     }
 
     @Override
-    public ExByteIterator exIterator() {
+    ExByteIterator exIterator() {
         return ExByteIterator.of(elements, fromIndex, toIndex);
     }
 

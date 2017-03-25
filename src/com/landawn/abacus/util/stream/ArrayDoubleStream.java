@@ -1253,7 +1253,7 @@ class ArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public ExDoubleIterator exIterator() {
+    ExDoubleIterator exIterator() {
         return ExDoubleIterator.of(elements, fromIndex, toIndex);
     }
 

@@ -1145,7 +1145,7 @@ class IteratorByteStream extends AbstractByteStream {
     }
 
     @Override
-    public ExByteIterator exIterator() {
+    ExByteIterator exIterator() {
         return elements;
     }
 

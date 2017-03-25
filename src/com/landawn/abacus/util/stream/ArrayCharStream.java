@@ -1149,7 +1149,7 @@ class ArrayCharStream extends AbstractCharStream {
     }
 
     @Override
-    public ExCharIterator exIterator() {
+    ExCharIterator exIterator() {
         return ExCharIterator.of(elements, fromIndex, toIndex);
     }
 
