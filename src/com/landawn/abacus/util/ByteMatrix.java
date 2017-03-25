@@ -22,8 +22,8 @@ import com.landawn.abacus.util.function.ByteTriFunction;
 import com.landawn.abacus.util.function.ByteUnaryOperator;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.stream.ByteStream;
-import com.landawn.abacus.util.stream.ImmutableByteIterator;
-import com.landawn.abacus.util.stream.ImmutableIterator;
+import com.landawn.abacus.util.stream.ExByteIterator;
+import com.landawn.abacus.util.stream.ExIterator;
 import com.landawn.abacus.util.stream.IntStream;
 import com.landawn.abacus.util.stream.Stream;
 
@@ -798,7 +798,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteMatri
             return ByteStream.empty();
         }
 
-        return ByteStream.of(new ImmutableByteIterator() {
+        return ByteStream.of(new ExByteIterator() {
             private final int toIndex = n;
             private int cursor = 0;
 
@@ -808,7 +808,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteMatri
             }
 
             @Override
-            public byte next() {
+            public byte nextByte() {
                 if (cursor >= toIndex) {
                     throw new NoSuchElementException();
                 }
@@ -839,7 +839,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteMatri
             return ByteStream.empty();
         }
 
-        return ByteStream.of(new ImmutableByteIterator() {
+        return ByteStream.of(new ExByteIterator() {
             private final int toIndex = n;
             private int cursor = 0;
 
@@ -849,7 +849,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteMatri
             }
 
             @Override
-            public byte next() {
+            public byte nextByte() {
                 if (cursor >= toIndex) {
                     throw new NoSuchElementException();
                 }
@@ -981,7 +981,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteMatri
             return ByteStream.empty();
         }
 
-        return ByteStream.of(new ImmutableByteIterator() {
+        return ByteStream.of(new ExByteIterator() {
             private int i = fromRowIndex;
             private int j = 0;
 
@@ -991,7 +991,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteMatri
             }
 
             @Override
-            public byte next() {
+            public byte nextByte() {
                 if (i >= toRowIndex) {
                     throw new NoSuchElementException();
                 }
@@ -1064,7 +1064,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteMatri
             return ByteStream.empty();
         }
 
-        return ByteStream.of(new ImmutableByteIterator() {
+        return ByteStream.of(new ExByteIterator() {
             private int i = 0;
             private int j = fromColumnIndex;
 
@@ -1074,7 +1074,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteMatri
             }
 
             @Override
-            public byte next() {
+            public byte nextByte() {
                 if (j >= toColumnIndex) {
                     throw new NoSuchElementException();
                 }
@@ -1144,7 +1144,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteMatri
             return Stream.empty();
         }
 
-        return Stream.of(new ImmutableIterator<ByteStream>() {
+        return Stream.of(new ExIterator<ByteStream>() {
             private final int toIndex = toRowIndex;
             private int cursor = fromRowIndex;
 
@@ -1197,7 +1197,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteMatri
             return Stream.empty();
         }
 
-        return Stream.of(new ImmutableIterator<ByteStream>() {
+        return Stream.of(new ExIterator<ByteStream>() {
             private final int toIndex = toColumnIndex;
             private volatile int cursor = fromColumnIndex;
 
@@ -1212,7 +1212,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteMatri
                     throw new NoSuchElementException();
                 }
 
-                return ByteStream.of(new ImmutableByteIterator() {
+                return ByteStream.of(new ExByteIterator() {
                     private final int columnIndex = cursor++;
                     private final int toIndex2 = n;
                     private int cursor2 = 0;
@@ -1223,7 +1223,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteMatri
                     }
 
                     @Override
-                    public byte next() {
+                    public byte nextByte() {
                         if (cursor2 >= toIndex2) {
                             throw new NoSuchElementException();
                         }

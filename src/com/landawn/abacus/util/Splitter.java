@@ -186,8 +186,8 @@ public final class Splitter {
         return Splitter.split(source, delimiter, delimiterRegex, max, trim);
     }
 
-    public <T> T splitToArray(Class<T> arrayClass, CharSequence source) {
-        final Class<?> eleCls = arrayClass.getComponentType();
+    public <T> T splitToArray(Class<T> arrayType, CharSequence source) {
+        final Class<?> eleCls = arrayType.getComponentType();
 
         if (N.isNullOrEmpty(source)) {
             return N.newArray(eleCls, 0);
@@ -298,8 +298,8 @@ public final class Splitter {
             return Splitter.defauLt().splitToArray(source);
         }
 
-        public static <T> T splitToArray(Class<T> arrayClass, CharSequence source) {
-            return Splitter.defauLt().splitToArray(arrayClass, source);
+        public static <T> T splitToArray(Class<T> arrayType, CharSequence source) {
+            return Splitter.defauLt().splitToArray(arrayType, source);
         }
     }
 

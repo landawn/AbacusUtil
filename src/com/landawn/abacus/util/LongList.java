@@ -21,7 +21,6 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.Set;
 
@@ -1566,33 +1565,12 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
     //        return Seq.of(c);
     //    }
 
-    public LongIterator longIterator() {
+    public LongIterator iterator() {
         if (isEmpty()) {
             return LongIterator.EMPTY;
         }
 
-        return new LongIterator() {
-            private int cursor = 0;
-
-            @Override
-            public boolean hasNext() {
-                return cursor < size;
-            }
-
-            @Override
-            public long next() {
-                if (cursor >= size) {
-                    throw new NoSuchElementException();
-                }
-
-                return elementData[cursor++];
-            }
-
-            @Override
-            public void remove() {
-                throw new UnsupportedOperationException();
-            }
-        };
+        return LongIterator.of(elementData, 0, size);
     }
 
     public LongStream stream0() {

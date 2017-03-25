@@ -754,9 +754,11 @@ public abstract class DoubleStream
     public abstract Stream<Double> boxed();
 
     @Override
-    public abstract ImmutableIterator<Double> iterator();
+    public DoubleIterator iterator() {
+        return exIterator();
+    }
 
-    public abstract ImmutableDoubleIterator doubleIterator();
+    abstract ExDoubleIterator exIterator();
 
     public static DoubleStream empty() {
         return EMPTY;
@@ -793,7 +795,7 @@ public abstract class DoubleStream
     }
 
     public static DoubleStream of(final java.util.stream.DoubleStream stream) {
-        return of(new ImmutableDoubleIterator() {
+        return of(new ExDoubleIterator() {
             private PrimitiveIterator.OfDouble iter = null;
 
             @Override
@@ -806,7 +808,7 @@ public abstract class DoubleStream
             }
 
             @Override
-            public double next() {
+            public double nextDouble() {
                 if (iter == null) {
                     iter = stream.iterator();
                 }
@@ -841,13 +843,13 @@ public abstract class DoubleStream
     }
 
     public static DoubleStream from(final float[] a, final int fromIndex, final int toIndex) {
-        checkIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (fromIndex == toIndex) {
             return empty();
         }
 
-        return new IteratorDoubleStream(new ImmutableDoubleIterator() {
+        return new IteratorDoubleStream(new ExDoubleIterator() {
             private int cursor = fromIndex;
 
             @Override
@@ -856,7 +858,7 @@ public abstract class DoubleStream
             }
 
             @Override
-            public double next() {
+            public double nextDouble() {
                 if (cursor >= toIndex) {
                     throw new NoSuchElementException();
                 }
@@ -894,7 +896,7 @@ public abstract class DoubleStream
             return empty();
         }
 
-        return new IteratorDoubleStream(new ImmutableDoubleIterator() {
+        return new IteratorDoubleStream(new ExDoubleIterator() {
             private long cnt = n;
 
             @Override
@@ -903,7 +905,7 @@ public abstract class DoubleStream
             }
 
             @Override
-            public double next() {
+            public double nextDouble() {
                 if (cnt-- <= 0) {
                     throw new NoSuchElementException();
                 }
@@ -949,7 +951,7 @@ public abstract class DoubleStream
         N.requireNonNull(hasNext);
         N.requireNonNull(next);
 
-        return new IteratorDoubleStream(new ImmutableDoubleIterator() {
+        return new IteratorDoubleStream(new ExDoubleIterator() {
             private boolean hasNextVal = false;
 
             @Override
@@ -962,7 +964,7 @@ public abstract class DoubleStream
             }
 
             @Override
-            public double next() {
+            public double nextDouble() {
                 if (hasNextVal == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
@@ -977,7 +979,7 @@ public abstract class DoubleStream
         N.requireNonNull(hasNext);
         N.requireNonNull(f);
 
-        return new IteratorDoubleStream(new ImmutableDoubleIterator() {
+        return new IteratorDoubleStream(new ExDoubleIterator() {
             private double t = 0;
             private boolean isFirst = true;
             private boolean hasNextVal = false;
@@ -992,7 +994,7 @@ public abstract class DoubleStream
             }
 
             @Override
-            public double next() {
+            public double nextDouble() {
                 if (hasNextVal == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
@@ -1022,7 +1024,7 @@ public abstract class DoubleStream
         N.requireNonNull(hasNext);
         N.requireNonNull(f);
 
-        return new IteratorDoubleStream(new ImmutableDoubleIterator() {
+        return new IteratorDoubleStream(new ExDoubleIterator() {
             private double t = 0;
             private double cur = 0;
             private boolean isFirst = true;
@@ -1048,7 +1050,7 @@ public abstract class DoubleStream
             }
 
             @Override
-            public double next() {
+            public double nextDouble() {
                 if (hasNextVal == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
@@ -1063,7 +1065,7 @@ public abstract class DoubleStream
     public static DoubleStream generate(final double seed, final DoubleUnaryOperator f) {
         N.requireNonNull(f);
 
-        return new IteratorDoubleStream(new ImmutableDoubleIterator() {
+        return new IteratorDoubleStream(new ExDoubleIterator() {
             private double t = 0;
             private boolean isFirst = true;
 
@@ -1073,7 +1075,7 @@ public abstract class DoubleStream
             }
 
             @Override
-            public double next() {
+            public double nextDouble() {
                 if (isFirst) {
                     isFirst = false;
                     t = seed;
@@ -1089,46 +1091,46 @@ public abstract class DoubleStream
     public static DoubleStream generate(final DoubleSupplier s) {
         N.requireNonNull(s);
 
-        return new IteratorDoubleStream(new ImmutableDoubleIterator() {
+        return new IteratorDoubleStream(new ExDoubleIterator() {
             @Override
             public boolean hasNext() {
                 return true;
             }
 
             @Override
-            public double next() {
+            public double nextDouble() {
                 return s.getAsDouble();
             }
         });
     }
 
     public static DoubleStream concat(final double[]... a) {
-        return N.isNullOrEmpty(a) ? empty() : new IteratorDoubleStream(new ImmutableDoubleIterator() {
+        return N.isNullOrEmpty(a) ? empty() : new IteratorDoubleStream(new ExDoubleIterator() {
             private final Iterator<double[]> iter = N.asList(a).iterator();
             private DoubleIterator cur;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
-                    cur = ImmutableDoubleIterator.of(iter.next());
+                    cur = ExDoubleIterator.of(iter.next());
                 }
 
                 return cur != null && cur.hasNext();
             }
 
             @Override
-            public double next() {
+            public double nextDouble() {
                 if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
-                return cur.next();
+                return cur.nextDouble();
             }
         });
     }
 
     public static DoubleStream concat(final DoubleIterator... a) {
-        return N.isNullOrEmpty(a) ? empty() : new IteratorDoubleStream(new ImmutableDoubleIterator() {
+        return N.isNullOrEmpty(a) ? empty() : new IteratorDoubleStream(new ExDoubleIterator() {
             private final Iterator<? extends DoubleIterator> iter = N.asList(a).iterator();
             private DoubleIterator cur;
 
@@ -1142,12 +1144,12 @@ public abstract class DoubleStream
             }
 
             @Override
-            public double next() {
+            public double nextDouble() {
                 if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
-                return cur.next();
+                return cur.nextDouble();
             }
         });
     }
@@ -1157,26 +1159,26 @@ public abstract class DoubleStream
     }
 
     public static DoubleStream concat(final Collection<? extends DoubleStream> c) {
-        return N.isNullOrEmpty(c) ? empty() : new IteratorDoubleStream(new ImmutableDoubleIterator() {
+        return N.isNullOrEmpty(c) ? empty() : new IteratorDoubleStream(new ExDoubleIterator() {
             private final Iterator<? extends DoubleStream> iter = c.iterator();
             private DoubleIterator cur;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
-                    cur = iter.next().doubleIterator();
+                    cur = iter.next().exIterator();
                 }
 
                 return cur != null && cur.hasNext();
             }
 
             @Override
-            public double next() {
+            public double nextDouble() {
                 if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
-                return cur.next();
+                return cur.nextDouble();
             }
         }).onClose(newCloseHandler(c));
     }
@@ -1394,7 +1396,7 @@ public abstract class DoubleStream
             return of(a);
         }
 
-        return new IteratorDoubleStream(new ImmutableDoubleIterator() {
+        return new IteratorDoubleStream(new ExDoubleIterator() {
             private final int lenA = a.length;
             private final int lenB = b.length;
             private int cursorA = 0;
@@ -1406,7 +1408,7 @@ public abstract class DoubleStream
             }
 
             @Override
-            public double next() {
+            public double nextDouble() {
                 if (cursorA < lenA) {
                     if (cursorB < lenB) {
                         if (nextSelector.apply(a[cursorA], b[cursorB]) == Nth.FIRST) {
@@ -1435,7 +1437,7 @@ public abstract class DoubleStream
      * @return
      */
     public static DoubleStream merge(final double[] a, final double[] b, final double[] c, final DoubleBiFunction<Nth> nextSelector) {
-        return merge(merge(a, b, nextSelector).doubleIterator(), DoubleStream.of(c).doubleIterator(), nextSelector);
+        return merge(merge(a, b, nextSelector).exIterator(), DoubleStream.of(c).exIterator(), nextSelector);
     }
 
     /**
@@ -1452,7 +1454,7 @@ public abstract class DoubleStream
             return of(a);
         }
 
-        return new IteratorDoubleStream(new ImmutableDoubleIterator() {
+        return new IteratorDoubleStream(new ExDoubleIterator() {
             private double nextA = 0;
             private double nextB = 0;
             private boolean hasNextA = false;
@@ -1464,10 +1466,10 @@ public abstract class DoubleStream
             }
 
             @Override
-            public double next() {
+            public double nextDouble() {
                 if (hasNextA) {
                     if (b.hasNext()) {
-                        if (nextSelector.apply(nextA, (nextB = b.next())) == Nth.FIRST) {
+                        if (nextSelector.apply(nextA, (nextB = b.nextDouble())) == Nth.FIRST) {
                             hasNextA = false;
                             hasNextB = true;
                             return nextA;
@@ -1480,7 +1482,7 @@ public abstract class DoubleStream
                     }
                 } else if (hasNextB) {
                     if (a.hasNext()) {
-                        if (nextSelector.apply((nextA = a.next()), nextB) == Nth.FIRST) {
+                        if (nextSelector.apply((nextA = a.nextDouble()), nextB) == Nth.FIRST) {
                             return nextA;
                         } else {
                             hasNextA = true;
@@ -1493,7 +1495,7 @@ public abstract class DoubleStream
                     }
                 } else if (a.hasNext()) {
                     if (b.hasNext()) {
-                        if (nextSelector.apply((nextA = a.next()), (nextB = b.next())) == Nth.FIRST) {
+                        if (nextSelector.apply((nextA = a.nextDouble()), (nextB = b.nextDouble())) == Nth.FIRST) {
                             hasNextB = true;
                             return nextA;
                         } else {
@@ -1501,10 +1503,10 @@ public abstract class DoubleStream
                             return nextB;
                         }
                     } else {
-                        return a.next();
+                        return a.nextDouble();
                     }
                 } else if (b.hasNext()) {
-                    return b.next();
+                    return b.nextDouble();
                 } else {
                     throw new NoSuchElementException();
                 }
@@ -1521,7 +1523,7 @@ public abstract class DoubleStream
      * @return
      */
     public static DoubleStream merge(final DoubleIterator a, final DoubleIterator b, final DoubleIterator c, final DoubleBiFunction<Nth> nextSelector) {
-        return merge(merge(a, b, nextSelector).doubleIterator(), c, nextSelector);
+        return merge(merge(a, b, nextSelector).exIterator(), c, nextSelector);
     }
 
     /**
@@ -1532,7 +1534,7 @@ public abstract class DoubleStream
      * @return
      */
     public static DoubleStream merge(final DoubleStream a, final DoubleStream b, final DoubleBiFunction<Nth> nextSelector) {
-        return merge(a.doubleIterator(), b.doubleIterator(), nextSelector).onClose(newCloseHandler(N.asList(a, b)));
+        return merge(a.exIterator(), b.exIterator(), nextSelector).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -1564,10 +1566,10 @@ public abstract class DoubleStream
         }
 
         final Iterator<? extends DoubleStream> iter = c.iterator();
-        DoubleStream result = merge(iter.next().doubleIterator(), iter.next().doubleIterator(), nextSelector);
+        DoubleStream result = merge(iter.next().exIterator(), iter.next().exIterator(), nextSelector);
 
         while (iter.hasNext()) {
-            result = merge(result.doubleIterator(), iter.next().doubleIterator(), nextSelector);
+            result = merge(result.exIterator(), iter.next().exIterator(), nextSelector);
         }
 
         return result.onClose(newCloseHandler(c));
@@ -1609,7 +1611,7 @@ public abstract class DoubleStream
         final Queue<DoubleIterator> queue = N.newLinkedList();
 
         for (DoubleStream e : c) {
-            queue.add(e.doubleIterator());
+            queue.add(e.exIterator());
         }
 
         final Output<Throwable> eHolder = new Output<>();
@@ -1637,7 +1639,7 @@ public abstract class DoubleStream
                                 }
                             }
 
-                            c = ImmutableDoubleIterator.of(merge(a, b, nextSelector).toArray());
+                            c = ExDoubleIterator.of(merge(a, b, nextSelector).toArray());
 
                             synchronized (queue) {
                                 queue.offer(c);

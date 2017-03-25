@@ -22,27 +22,48 @@ import java.util.NoSuchElementException;
  * 
  * @author Haiyang Li
  */
-public interface LongIterator {
-    public static final LongIterator EMPTY = new LongIterator() {
-        @Override
-        public boolean hasNext() {
-            return false;
+public abstract class LongIterator extends ImmutableIterator<Long> {
+    public static final LongIterator EMPTY = of(N.EMPTY_LONG_ARRAY);
+
+    public static LongIterator of(final long[] a) {
+        return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);
+    }
+
+    public static LongIterator of(final long[] a, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (fromIndex == toIndex) {
+            return EMPTY;
         }
 
-        @Override
-        public long next() {
-            throw new NoSuchElementException();
-        }
+        return new LongIterator() {
+            private int cursor = fromIndex;
 
-        @Override
-        public void remove() {
-            throw new IllegalStateException();
-        }
-    };
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
 
-    boolean hasNext();
+            @Override
+            public long nextLong() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
 
-    long next();
+                return a[cursor++];
+            }
+        };
+    }
 
-    void remove();
+    /**
+     * 
+     * @Deprecated use <code>nextLong()</code> instead.
+     */
+    @Deprecated
+    @Override
+    public Long next() {
+        return nextLong();
+    }
+
+    public abstract long nextLong();
 }

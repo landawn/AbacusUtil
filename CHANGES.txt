@@ -18,7 +18,13 @@
 
 8, Support LocalTime/LocalDate/LocalDateTime for Java 8
 
-9, Improvements and bug fix.
+9*, Refactoring: Change N.nullToEmpty(Class<T> componentType...) to N.nullToEmpty(Class<T[] arrayType...)
+
+10*, Refactoring iterator...
+
+11, Add cartesianProduct to stream.
+
+12, Improvements and bug fix.
 
 
 ========Changes in 0.9.58=========================================================================

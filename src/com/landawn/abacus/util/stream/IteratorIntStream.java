@@ -67,7 +67,7 @@ import com.landawn.abacus.util.function.ToIntFunction;
  * @author Haiyang Li
  */
 class IteratorIntStream extends AbstractIntStream {
-    final ImmutableIntIterator elements;
+    final ExIntIterator elements;
 
     int head;
     IntStream tail;
@@ -86,22 +86,22 @@ class IteratorIntStream extends AbstractIntStream {
     IteratorIntStream(final IntIterator values, final Collection<Runnable> closeHandlers, final boolean sorted) {
         super(closeHandlers, sorted);
 
-        this.elements = values instanceof ImmutableIntIterator ? (ImmutableIntIterator) values : new ImmutableIntIterator() {
+        this.elements = values instanceof ExIntIterator ? (ExIntIterator) values : new ExIntIterator() {
             @Override
             public boolean hasNext() {
                 return values.hasNext();
             }
 
             @Override
-            public int next() {
-                return values.next();
+            public int nextInt() {
+                return values.nextInt();
             }
         };
     }
 
     @Override
     public IntStream filter(final IntPredicate predicate) {
-        return new IteratorIntStream(new ImmutableIntIterator() {
+        return new IteratorIntStream(new ExIntIterator() {
             private boolean hasNext = false;
             private int next = 0;
 
@@ -109,7 +109,7 @@ class IteratorIntStream extends AbstractIntStream {
             public boolean hasNext() {
                 if (hasNext == false) {
                     while (elements.hasNext()) {
-                        next = elements.next();
+                        next = elements.nextInt();
 
                         if (predicate.test(next)) {
                             hasNext = true;
@@ -122,7 +122,7 @@ class IteratorIntStream extends AbstractIntStream {
             }
 
             @Override
-            public int next() {
+            public int nextInt() {
                 if (hasNext == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
@@ -136,7 +136,7 @@ class IteratorIntStream extends AbstractIntStream {
 
     @Override
     public IntStream takeWhile(final IntPredicate predicate) {
-        return new IteratorIntStream(new ImmutableIntIterator() {
+        return new IteratorIntStream(new ExIntIterator() {
             private boolean hasMore = true;
             private boolean hasNext = false;
             private int next = 0;
@@ -144,7 +144,7 @@ class IteratorIntStream extends AbstractIntStream {
             @Override
             public boolean hasNext() {
                 if (hasNext == false && hasMore && elements.hasNext()) {
-                    next = elements.next();
+                    next = elements.nextInt();
 
                     if (predicate.test(next)) {
                         hasNext = true;
@@ -157,7 +157,7 @@ class IteratorIntStream extends AbstractIntStream {
             }
 
             @Override
-            public int next() {
+            public int nextInt() {
                 if (hasNext == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
@@ -172,7 +172,7 @@ class IteratorIntStream extends AbstractIntStream {
 
     @Override
     public IntStream dropWhile(final IntPredicate predicate) {
-        return new IteratorIntStream(new ImmutableIntIterator() {
+        return new IteratorIntStream(new ExIntIterator() {
             private boolean hasNext = false;
             private int next = 0;
             private boolean dropped = false;
@@ -182,7 +182,7 @@ class IteratorIntStream extends AbstractIntStream {
                 if (hasNext == false) {
                     if (dropped == false) {
                         while (elements.hasNext()) {
-                            next = elements.next();
+                            next = elements.nextInt();
 
                             if (predicate.test(next) == false) {
                                 hasNext = true;
@@ -192,7 +192,7 @@ class IteratorIntStream extends AbstractIntStream {
 
                         dropped = true;
                     } else if (elements.hasNext()) {
-                        next = elements.next();
+                        next = elements.nextInt();
                         hasNext = true;
                     }
                 }
@@ -201,7 +201,7 @@ class IteratorIntStream extends AbstractIntStream {
             }
 
             @Override
-            public int next() {
+            public int nextInt() {
                 if (hasNext == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
@@ -216,15 +216,15 @@ class IteratorIntStream extends AbstractIntStream {
 
     @Override
     public IntStream map(final IntUnaryOperator mapper) {
-        return new IteratorIntStream(new ImmutableIntIterator() {
+        return new IteratorIntStream(new ExIntIterator() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
             }
 
             @Override
-            public int next() {
-                return mapper.applyAsInt(elements.next());
+            public int nextInt() {
+                return mapper.applyAsInt(elements.nextInt());
             }
 
             @Override
@@ -241,15 +241,15 @@ class IteratorIntStream extends AbstractIntStream {
 
     @Override
     public CharStream mapToChar(final IntToCharFunction mapper) {
-        return new IteratorCharStream(new ImmutableCharIterator() {
+        return new IteratorCharStream(new ExCharIterator() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
             }
 
             @Override
-            public char next() {
-                return mapper.applyAsChar(elements.next());
+            public char nextChar() {
+                return mapper.applyAsChar(elements.nextInt());
             }
 
             @Override
@@ -266,15 +266,15 @@ class IteratorIntStream extends AbstractIntStream {
 
     @Override
     public ByteStream mapToByte(final IntToByteFunction mapper) {
-        return new IteratorByteStream(new ImmutableByteIterator() {
+        return new IteratorByteStream(new ExByteIterator() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
             }
 
             @Override
-            public byte next() {
-                return mapper.applyAsByte(elements.next());
+            public byte nextByte() {
+                return mapper.applyAsByte(elements.nextInt());
             }
 
             @Override
@@ -291,15 +291,15 @@ class IteratorIntStream extends AbstractIntStream {
 
     @Override
     public ShortStream mapToShort(final IntToShortFunction mapper) {
-        return new IteratorShortStream(new ImmutableShortIterator() {
+        return new IteratorShortStream(new ExShortIterator() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
             }
 
             @Override
-            public short next() {
-                return mapper.applyAsShort(elements.next());
+            public short nextShort() {
+                return mapper.applyAsShort(elements.nextInt());
             }
 
             @Override
@@ -316,15 +316,15 @@ class IteratorIntStream extends AbstractIntStream {
 
     @Override
     public LongStream mapToLong(final IntToLongFunction mapper) {
-        return new IteratorLongStream(new ImmutableLongIterator() {
+        return new IteratorLongStream(new ExLongIterator() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
             }
 
             @Override
-            public long next() {
-                return mapper.applyAsLong(elements.next());
+            public long nextLong() {
+                return mapper.applyAsLong(elements.nextInt());
             }
 
             @Override
@@ -341,15 +341,15 @@ class IteratorIntStream extends AbstractIntStream {
 
     @Override
     public FloatStream mapToFloat(final IntToFloatFunction mapper) {
-        return new IteratorFloatStream(new ImmutableFloatIterator() {
+        return new IteratorFloatStream(new ExFloatIterator() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
             }
 
             @Override
-            public float next() {
-                return mapper.applyAsFloat(elements.next());
+            public float nextFloat() {
+                return mapper.applyAsFloat(elements.nextInt());
             }
 
             @Override
@@ -366,15 +366,15 @@ class IteratorIntStream extends AbstractIntStream {
 
     @Override
     public DoubleStream mapToDouble(final IntToDoubleFunction mapper) {
-        return new IteratorDoubleStream(new ImmutableDoubleIterator() {
+        return new IteratorDoubleStream(new ExDoubleIterator() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
             }
 
             @Override
-            public double next() {
-                return mapper.applyAsDouble(elements.next());
+            public double nextDouble() {
+                return mapper.applyAsDouble(elements.nextInt());
             }
 
             @Override
@@ -391,7 +391,7 @@ class IteratorIntStream extends AbstractIntStream {
 
     @Override
     public <U> Stream<U> mapToObj(final IntFunction<? extends U> mapper) {
-        return new IteratorStream<U>(new ImmutableIterator<U>() {
+        return new IteratorStream<U>(new ExIterator<U>() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -399,7 +399,7 @@ class IteratorIntStream extends AbstractIntStream {
 
             @Override
             public U next() {
-                return mapper.apply(elements.next());
+                return mapper.apply(elements.nextInt());
             }
 
             @Override
@@ -416,188 +416,188 @@ class IteratorIntStream extends AbstractIntStream {
 
     @Override
     public IntStream flatMap(final IntFunction<? extends IntStream> mapper) {
-        return new IteratorIntStream(new ImmutableIntIterator() {
+        return new IteratorIntStream(new ExIntIterator() {
             private IntIterator cur = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && elements.hasNext()) {
-                    cur = mapper.apply(elements.next()).intIterator();
+                    cur = mapper.apply(elements.nextInt()).exIterator();
                 }
 
                 return cur != null && cur.hasNext();
             }
 
             @Override
-            public int next() {
+            public int nextInt() {
                 if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
-                return cur.next();
+                return cur.nextInt();
             }
         }, closeHandlers);
     }
 
     @Override
     public CharStream flatMapToChar(final IntFunction<? extends CharStream> mapper) {
-        return new IteratorCharStream(new ImmutableCharIterator() {
+        return new IteratorCharStream(new ExCharIterator() {
             private CharIterator cur = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && elements.hasNext()) {
-                    cur = mapper.apply(elements.next()).charIterator();
+                    cur = mapper.apply(elements.nextInt()).exIterator();
                 }
 
                 return cur != null && cur.hasNext();
             }
 
             @Override
-            public char next() {
+            public char nextChar() {
                 if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
-                return cur.next();
+                return cur.nextChar();
             }
         }, closeHandlers);
     }
 
     @Override
     public ByteStream flatMapToByte(final IntFunction<? extends ByteStream> mapper) {
-        return new IteratorByteStream(new ImmutableByteIterator() {
+        return new IteratorByteStream(new ExByteIterator() {
             private ByteIterator cur = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && elements.hasNext()) {
-                    cur = mapper.apply(elements.next()).byteIterator();
+                    cur = mapper.apply(elements.nextInt()).exIterator();
                 }
 
                 return cur != null && cur.hasNext();
             }
 
             @Override
-            public byte next() {
+            public byte nextByte() {
                 if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
-                return cur.next();
+                return cur.nextByte();
             }
         }, closeHandlers);
     }
 
     @Override
     public ShortStream flatMapToShort(final IntFunction<? extends ShortStream> mapper) {
-        return new IteratorShortStream(new ImmutableShortIterator() {
+        return new IteratorShortStream(new ExShortIterator() {
             private ShortIterator cur = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && elements.hasNext()) {
-                    cur = mapper.apply(elements.next()).shortIterator();
+                    cur = mapper.apply(elements.nextInt()).exIterator();
                 }
 
                 return cur != null && cur.hasNext();
             }
 
             @Override
-            public short next() {
+            public short nextShort() {
                 if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
-                return cur.next();
+                return cur.nextShort();
             }
         }, closeHandlers);
     }
 
     @Override
     public LongStream flatMapToLong(final IntFunction<? extends LongStream> mapper) {
-        return new IteratorLongStream(new ImmutableLongIterator() {
+        return new IteratorLongStream(new ExLongIterator() {
             private LongIterator cur = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && elements.hasNext()) {
-                    cur = mapper.apply(elements.next()).longIterator();
+                    cur = mapper.apply(elements.nextInt()).exIterator();
                 }
 
                 return cur != null && cur.hasNext();
             }
 
             @Override
-            public long next() {
+            public long nextLong() {
                 if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
-                return cur.next();
+                return cur.nextLong();
             }
         }, closeHandlers);
     }
 
     @Override
     public FloatStream flatMapToFloat(final IntFunction<? extends FloatStream> mapper) {
-        return new IteratorFloatStream(new ImmutableFloatIterator() {
+        return new IteratorFloatStream(new ExFloatIterator() {
             private FloatIterator cur = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && elements.hasNext()) {
-                    cur = mapper.apply(elements.next()).floatIterator();
+                    cur = mapper.apply(elements.nextInt()).exIterator();
                 }
 
                 return cur != null && cur.hasNext();
             }
 
             @Override
-            public float next() {
+            public float nextFloat() {
                 if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
-                return cur.next();
+                return cur.nextFloat();
             }
         }, closeHandlers);
     }
 
     @Override
     public DoubleStream flatMapToDouble(final IntFunction<? extends DoubleStream> mapper) {
-        return new IteratorDoubleStream(new ImmutableDoubleIterator() {
+        return new IteratorDoubleStream(new ExDoubleIterator() {
             private DoubleIterator cur = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && elements.hasNext()) {
-                    cur = mapper.apply(elements.next()).doubleIterator();
+                    cur = mapper.apply(elements.nextInt()).exIterator();
                 }
 
                 return cur != null && cur.hasNext();
             }
 
             @Override
-            public double next() {
+            public double nextDouble() {
                 if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
-                return cur.next();
+                return cur.nextDouble();
             }
         }, closeHandlers);
     }
 
     @Override
     public <T> Stream<T> flatMapToObj(final IntFunction<? extends Stream<T>> mapper) {
-        return new IteratorStream<T>(new ImmutableIterator<T>() {
+        return new IteratorStream<T>(new ExIterator<T>() {
             private Iterator<? extends T> cur = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && elements.hasNext()) {
-                    cur = mapper.apply(elements.next()).iterator();
+                    cur = mapper.apply(elements.nextInt()).iterator();
                 }
 
                 return cur != null && cur.hasNext();
@@ -618,7 +618,7 @@ class IteratorIntStream extends AbstractIntStream {
     public Stream<IntList> split0(final int size) {
         N.checkArgument(size > 0, "'size' must be bigger than 0");
 
-        return new IteratorStream<IntList>(new ImmutableIterator<IntList>() {
+        return new IteratorStream<IntList>(new ExIterator<IntList>() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -633,7 +633,7 @@ class IteratorIntStream extends AbstractIntStream {
                 final IntList result = new IntList(size);
 
                 while (result.size() < size && elements.hasNext()) {
-                    result.add(elements.next());
+                    result.add(elements.nextInt());
                 }
 
                 return result;
@@ -645,7 +645,7 @@ class IteratorIntStream extends AbstractIntStream {
     @Override
     public <U> Stream<IntList> split0(final U identity, final BiFunction<? super Integer, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
-        return new IteratorStream<IntList>(new ImmutableIterator<IntList>() {
+        return new IteratorStream<IntList>(new ExIterator<IntList>() {
             private int next;
             private boolean hasNext = false;
             private boolean preCondition = false;
@@ -664,7 +664,7 @@ class IteratorIntStream extends AbstractIntStream {
                 final IntList result = new IntList();
 
                 if (hasNext == false) {
-                    next = elements.next();
+                    next = elements.nextInt();
                     hasNext = true;
                 }
 
@@ -672,10 +672,10 @@ class IteratorIntStream extends AbstractIntStream {
                     if (result.size() == 0) {
                         result.add(next);
                         preCondition = predicate.apply(next, identity);
-                        next = (hasNext = elements.hasNext()) ? elements.next() : 0;
+                        next = (hasNext = elements.hasNext()) ? elements.nextInt() : 0;
                     } else if (predicate.apply(next, identity) == preCondition) {
                         result.add(next);
-                        next = (hasNext = elements.hasNext()) ? elements.next() : 0;
+                        next = (hasNext = elements.hasNext()) ? elements.nextInt() : 0;
                     } else {
                         if (identityUpdate != null) {
                             identityUpdate.accept(identity);
@@ -697,7 +697,7 @@ class IteratorIntStream extends AbstractIntStream {
             throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
         }
 
-        return new IteratorStream<IntList>(new ImmutableIterator<IntList>() {
+        return new IteratorStream<IntList>(new ExIterator<IntList>() {
             private IntList prev = null;
 
             @Override
@@ -706,7 +706,7 @@ class IteratorIntStream extends AbstractIntStream {
                     int skipNum = increment - windowSize;
 
                     while (skipNum-- > 0 && elements.hasNext()) {
-                        elements.next();
+                        elements.nextInt();
                     }
 
                     prev = null;
@@ -743,7 +743,7 @@ class IteratorIntStream extends AbstractIntStream {
                 }
 
                 while (cnt++ < windowSize && elements.hasNext()) {
-                    result.add(elements.next());
+                    result.add(elements.nextInt());
                 }
 
                 return prev = result;
@@ -767,7 +767,7 @@ class IteratorIntStream extends AbstractIntStream {
             return this;
         }
 
-        return new IteratorIntStream(new ImmutableIntIterator() {
+        return new IteratorIntStream(new ExIntIterator() {
             int[] a = null;
             int toIndex = 0;
             int cursor = 0;
@@ -782,7 +782,7 @@ class IteratorIntStream extends AbstractIntStream {
             }
 
             @Override
-            public int next() {
+            public int nextInt() {
                 if (a == null) {
                     sort();
                 }
@@ -836,15 +836,15 @@ class IteratorIntStream extends AbstractIntStream {
 
     @Override
     public IntStream peek(final IntConsumer action) {
-        return new IteratorIntStream(new ImmutableIntIterator() {
+        return new IteratorIntStream(new ExIntIterator() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
             }
 
             @Override
-            public int next() {
-                final int next = elements.next();
+            public int nextInt() {
+                final int next = elements.nextInt();
                 action.accept(next);
                 return next;
             }
@@ -857,7 +857,7 @@ class IteratorIntStream extends AbstractIntStream {
             throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
         }
 
-        return new IteratorIntStream(new ImmutableIntIterator() {
+        return new IteratorIntStream(new ExIntIterator() {
             private long cnt = 0;
 
             @Override
@@ -866,13 +866,13 @@ class IteratorIntStream extends AbstractIntStream {
             }
 
             @Override
-            public int next() {
+            public int nextInt() {
                 if (cnt >= maxSize) {
                     throw new NoSuchElementException();
                 }
 
                 cnt++;
-                return elements.next();
+                return elements.nextInt();
             }
 
             @Override
@@ -890,7 +890,7 @@ class IteratorIntStream extends AbstractIntStream {
             return this;
         }
 
-        return new IteratorIntStream(new ImmutableIntIterator() {
+        return new IteratorIntStream(new ExIntIterator() {
             private boolean skipped = false;
 
             @Override
@@ -904,13 +904,13 @@ class IteratorIntStream extends AbstractIntStream {
             }
 
             @Override
-            public int next() {
+            public int nextInt() {
                 if (skipped == false) {
                     elements.skip(n);
                     skipped = true;
                 }
 
-                return elements.next();
+                return elements.nextInt();
             }
 
             @Override
@@ -948,7 +948,7 @@ class IteratorIntStream extends AbstractIntStream {
     @Override
     public void forEach(IntConsumer action) {
         while (elements.hasNext()) {
-            action.accept(elements.next());
+            action.accept(elements.nextInt());
         }
     }
 
@@ -967,7 +967,7 @@ class IteratorIntStream extends AbstractIntStream {
         final List<Integer> result = new ArrayList<>();
 
         while (elements.hasNext()) {
-            result.add(elements.next());
+            result.add(elements.nextInt());
         }
 
         return result;
@@ -978,7 +978,7 @@ class IteratorIntStream extends AbstractIntStream {
         final List<Integer> result = supplier.get();
 
         while (elements.hasNext()) {
-            result.add(elements.next());
+            result.add(elements.nextInt());
         }
 
         return result;
@@ -989,7 +989,7 @@ class IteratorIntStream extends AbstractIntStream {
         final Set<Integer> result = new HashSet<>();
 
         while (elements.hasNext()) {
-            result.add(elements.next());
+            result.add(elements.nextInt());
         }
 
         return result;
@@ -1000,7 +1000,7 @@ class IteratorIntStream extends AbstractIntStream {
         final Set<Integer> result = supplier.get();
 
         while (elements.hasNext()) {
-            result.add(elements.next());
+            result.add(elements.nextInt());
         }
 
         return result;
@@ -1011,7 +1011,7 @@ class IteratorIntStream extends AbstractIntStream {
         final Multiset<Integer> result = new Multiset<>();
 
         while (elements.hasNext()) {
-            result.add(elements.next());
+            result.add(elements.nextInt());
         }
 
         return result;
@@ -1022,7 +1022,7 @@ class IteratorIntStream extends AbstractIntStream {
         final Multiset<Integer> result = supplier.get();
 
         while (elements.hasNext()) {
-            result.add(elements.next());
+            result.add(elements.nextInt());
         }
 
         return result;
@@ -1033,7 +1033,7 @@ class IteratorIntStream extends AbstractIntStream {
         final LongMultiset<Integer> result = new LongMultiset<>();
 
         while (elements.hasNext()) {
-            result.add(elements.next());
+            result.add(elements.nextInt());
         }
 
         return result;
@@ -1044,7 +1044,7 @@ class IteratorIntStream extends AbstractIntStream {
         final LongMultiset<Integer> result = supplier.get();
 
         while (elements.hasNext()) {
-            result.add(elements.next());
+            result.add(elements.nextInt());
         }
 
         return result;
@@ -1062,7 +1062,7 @@ class IteratorIntStream extends AbstractIntStream {
         int element = 0;
 
         while (elements.hasNext()) {
-            element = elements.next();
+            element = elements.nextInt();
             key = N.requireNonNull(classifier.apply(element), "element cannot be mapped to a null key");
 
             if ((v = intermediate.get(key)) == null) {
@@ -1093,7 +1093,7 @@ class IteratorIntStream extends AbstractIntStream {
         int element = 0;
 
         while (elements.hasNext()) {
-            element = elements.next();
+            element = elements.nextInt();
             Collectors.merge(result, keyMapper.apply(element), valueMapper.apply(element), mergeFunction);
         }
 
@@ -1107,7 +1107,7 @@ class IteratorIntStream extends AbstractIntStream {
         int element = 0;
 
         while (elements.hasNext()) {
-            element = elements.next();
+            element = elements.nextInt();
             result.put(keyMapper.apply(element), valueMapper.apply(element));
         }
 
@@ -1119,7 +1119,7 @@ class IteratorIntStream extends AbstractIntStream {
         int result = identity;
 
         while (elements.hasNext()) {
-            result = op.applyAsInt(result, elements.next());
+            result = op.applyAsInt(result, elements.nextInt());
         }
 
         return result;
@@ -1131,10 +1131,10 @@ class IteratorIntStream extends AbstractIntStream {
             return OptionalInt.empty();
         }
 
-        int result = elements.next();
+        int result = elements.nextInt();
 
         while (elements.hasNext()) {
-            result = op.applyAsInt(result, elements.next());
+            result = op.applyAsInt(result, elements.nextInt());
         }
 
         return OptionalInt.of(result);
@@ -1145,7 +1145,7 @@ class IteratorIntStream extends AbstractIntStream {
         final R result = supplier.get();
 
         while (elements.hasNext()) {
-            accumulator.accept(result, elements.next());
+            accumulator.accept(result, elements.nextInt());
         }
 
         return result;
@@ -1158,7 +1158,7 @@ class IteratorIntStream extends AbstractIntStream {
                 throw new NoSuchElementException();
             }
 
-            head = elements.next();
+            head = elements.nextInt();
             tail = new IteratorIntStream(elements, closeHandlers, sorted);
         }
 
@@ -1172,7 +1172,7 @@ class IteratorIntStream extends AbstractIntStream {
                 throw new IllegalStateException();
             }
 
-            head = elements.next();
+            head = elements.nextInt();
             tail = new IteratorIntStream(elements, closeHandlers, sorted);
         }
 
@@ -1214,14 +1214,14 @@ class IteratorIntStream extends AbstractIntStream {
         if (elements.hasNext() == false) {
             return OptionalInt.empty();
         } else if (sorted) {
-            return OptionalInt.of(elements.next());
+            return OptionalInt.of(elements.nextInt());
         }
 
-        int candidate = elements.next();
+        int candidate = elements.nextInt();
         int next = 0;
 
         while (elements.hasNext()) {
-            next = elements.next();
+            next = elements.nextInt();
 
             if (N.compare(next, candidate) < 0) {
                 candidate = next;
@@ -1239,17 +1239,17 @@ class IteratorIntStream extends AbstractIntStream {
             int next = 0;
 
             while (elements.hasNext()) {
-                next = elements.next();
+                next = elements.nextInt();
             }
 
             return OptionalInt.of(next);
         }
 
-        int candidate = elements.next();
+        int candidate = elements.nextInt();
         int next = 0;
 
         while (elements.hasNext()) {
-            next = elements.next();
+            next = elements.nextInt();
 
             if (N.compare(next, candidate) > 0) {
                 candidate = next;
@@ -1277,7 +1277,7 @@ class IteratorIntStream extends AbstractIntStream {
         long result = 0;
 
         while (elements.hasNext()) {
-            result += elements.next();
+            result += elements.nextInt();
         }
 
         return result;
@@ -1293,7 +1293,7 @@ class IteratorIntStream extends AbstractIntStream {
         long count = 0;
 
         while (elements.hasNext()) {
-            sum += elements.next();
+            sum += elements.nextInt();
             count++;
         }
 
@@ -1310,7 +1310,7 @@ class IteratorIntStream extends AbstractIntStream {
         final IntSummaryStatistics result = new IntSummaryStatistics();
 
         while (elements.hasNext()) {
-            result.accept(elements.next());
+            result.accept(elements.nextInt());
         }
 
         return result;
@@ -1319,7 +1319,7 @@ class IteratorIntStream extends AbstractIntStream {
     @Override
     public boolean anyMatch(IntPredicate predicate) {
         while (elements.hasNext()) {
-            if (predicate.test(elements.next())) {
+            if (predicate.test(elements.nextInt())) {
                 return true;
             }
         }
@@ -1330,7 +1330,7 @@ class IteratorIntStream extends AbstractIntStream {
     @Override
     public boolean allMatch(IntPredicate predicate) {
         while (elements.hasNext()) {
-            if (predicate.test(elements.next()) == false) {
+            if (predicate.test(elements.nextInt()) == false) {
                 return false;
             }
         }
@@ -1341,7 +1341,7 @@ class IteratorIntStream extends AbstractIntStream {
     @Override
     public boolean noneMatch(IntPredicate predicate) {
         while (elements.hasNext()) {
-            if (predicate.test(elements.next())) {
+            if (predicate.test(elements.nextInt())) {
                 return false;
             }
         }
@@ -1352,7 +1352,7 @@ class IteratorIntStream extends AbstractIntStream {
     @Override
     public OptionalInt findFirst(IntPredicate predicate) {
         while (elements.hasNext()) {
-            int e = elements.next();
+            int e = elements.nextInt();
 
             if (predicate.test(e)) {
                 return OptionalInt.of(e);
@@ -1373,7 +1373,7 @@ class IteratorIntStream extends AbstractIntStream {
         int result = 0;
 
         while (elements.hasNext()) {
-            e = elements.next();
+            e = elements.nextInt();
 
             if (predicate.test(e)) {
                 result = e;
@@ -1386,15 +1386,15 @@ class IteratorIntStream extends AbstractIntStream {
 
     @Override
     public LongStream asLongStream() {
-        return new IteratorLongStream(new ImmutableLongIterator() {
+        return new IteratorLongStream(new ExLongIterator() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
             }
 
             @Override
-            public long next() {
-                return elements.next();
+            public long nextLong() {
+                return elements.nextInt();
             }
 
             @Override
@@ -1411,15 +1411,15 @@ class IteratorIntStream extends AbstractIntStream {
 
     @Override
     public FloatStream asFloatStream() {
-        return new IteratorFloatStream(new ImmutableFloatIterator() {
+        return new IteratorFloatStream(new ExFloatIterator() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
             }
 
             @Override
-            public float next() {
-                return elements.next();
+            public float nextFloat() {
+                return elements.nextInt();
             }
 
             @Override
@@ -1436,15 +1436,15 @@ class IteratorIntStream extends AbstractIntStream {
 
     @Override
     public DoubleStream asDoubleStream() {
-        return new IteratorDoubleStream(new ImmutableDoubleIterator() {
+        return new IteratorDoubleStream(new ExDoubleIterator() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
             }
 
             @Override
-            public double next() {
-                return elements.next();
+            public double nextDouble() {
+                return elements.nextInt();
             }
 
             @Override
@@ -1465,32 +1465,7 @@ class IteratorIntStream extends AbstractIntStream {
     }
 
     @Override
-    public ImmutableIterator<Integer> iterator() {
-        return new ImmutableIterator<Integer>() {
-            @Override
-            public boolean hasNext() {
-                return elements.hasNext();
-            }
-
-            @Override
-            public Integer next() {
-                return elements.next();
-            }
-
-            @Override
-            public long count() {
-                return elements.count();
-            }
-
-            @Override
-            public void skip(long n) {
-                elements.skip(n);
-            }
-        };
-    }
-
-    @Override
-    public ImmutableIntIterator intIterator() {
+    public ExIntIterator exIterator() {
         return elements;
     }
 

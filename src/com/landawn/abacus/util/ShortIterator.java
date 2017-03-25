@@ -22,27 +22,48 @@ import java.util.NoSuchElementException;
  * 
  * @author Haiyang Li
  */
-public interface ShortIterator {
-    public static final ShortIterator EMPTY = new ShortIterator() {
-        @Override
-        public boolean hasNext() {
-            return false;
+public abstract class ShortIterator extends ImmutableIterator<Short> {
+    public static final ShortIterator EMPTY = of(N.EMPTY_SHORT_ARRAY);
+
+    public static ShortIterator of(final short[] a) {
+        return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);
+    }
+
+    public static ShortIterator of(final short[] a, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (fromIndex == toIndex) {
+            return EMPTY;
         }
 
-        @Override
-        public short next() {
-            throw new NoSuchElementException();
-        }
+        return new ShortIterator() {
+            private int cursor = fromIndex;
 
-        @Override
-        public void remove() {
-            throw new IllegalStateException();
-        }
-    };
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
 
-    boolean hasNext();
+            @Override
+            public short nextShort() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
 
-    short next();
+                return a[cursor++];
+            }
+        };
+    }
 
-    void remove();
+    /**
+     * 
+     * @Deprecated use <code>nextShort()</code> instead.
+     */
+    @Deprecated
+    @Override
+    public Short next() {
+        return nextShort();
+    }
+
+    public abstract short nextShort();
 }

@@ -82,18 +82,18 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
 
     ParallelIteratorByteStream(final ByteStream stream, final Set<Runnable> closeHandlers, final boolean sorted, final int maxThreadNum,
             final Splitor splitor) {
-        this(stream.byteIterator(), mergeCloseHandlers(stream, closeHandlers), sorted, maxThreadNum, splitor);
+        this(stream.exIterator(), mergeCloseHandlers(stream, closeHandlers), sorted, maxThreadNum, splitor);
     }
 
     ParallelIteratorByteStream(final Stream<Byte> stream, final Set<Runnable> closeHandlers, final boolean sorted, final int maxThreadNum,
             final Splitor splitor) {
-        this(byteIterator(stream.iterator()), mergeCloseHandlers(stream, closeHandlers), sorted, maxThreadNum, splitor);
+        this(skippableIterator(stream.exIterator()), mergeCloseHandlers(stream, closeHandlers), sorted, maxThreadNum, splitor);
     }
 
     @Override
     public ByteStream filter(final BytePredicate predicate) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorByteStream(sequential().filter(predicate).byteIterator(), closeHandlers, sorted, maxThreadNum, splitor);
+            return new ParallelIteratorByteStream(sequential().filter(predicate).exIterator(), closeHandlers, sorted, maxThreadNum, splitor);
         }
 
         final Stream<Byte> stream = boxed().filter(new Predicate<Byte>() {
@@ -109,7 +109,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
     @Override
     public ByteStream takeWhile(final BytePredicate predicate) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorByteStream(sequential().takeWhile(predicate).byteIterator(), closeHandlers, sorted, maxThreadNum, splitor);
+            return new ParallelIteratorByteStream(sequential().takeWhile(predicate).exIterator(), closeHandlers, sorted, maxThreadNum, splitor);
         }
 
         final Stream<Byte> stream = boxed().takeWhile(new Predicate<Byte>() {
@@ -125,7 +125,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
     @Override
     public ByteStream dropWhile(final BytePredicate predicate) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorByteStream(sequential().dropWhile(predicate).byteIterator(), closeHandlers, sorted, maxThreadNum, splitor);
+            return new ParallelIteratorByteStream(sequential().dropWhile(predicate).exIterator(), closeHandlers, sorted, maxThreadNum, splitor);
         }
 
         final Stream<Byte> stream = boxed().dropWhile(new Predicate<Byte>() {
@@ -141,7 +141,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
     @Override
     public ByteStream map(final ByteUnaryOperator mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorByteStream(sequential().map(mapper).byteIterator(), closeHandlers, false, maxThreadNum, splitor);
+            return new ParallelIteratorByteStream(sequential().map(mapper).exIterator(), closeHandlers, false, maxThreadNum, splitor);
         }
 
         final ByteStream stream = boxed().mapToByte(new ToByteFunction<Byte>() {
@@ -157,7 +157,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
     @Override
     public IntStream mapToInt(final ByteToIntFunction mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorIntStream(sequential().mapToInt(mapper).intIterator(), closeHandlers, false, maxThreadNum, splitor);
+            return new ParallelIteratorIntStream(sequential().mapToInt(mapper).exIterator(), closeHandlers, false, maxThreadNum, splitor);
         }
 
         final IntStream stream = boxed().mapToInt(new ToIntFunction<Byte>() {
@@ -187,7 +187,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
     @Override
     public ByteStream flatMap(final ByteFunction<? extends ByteStream> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorByteStream(sequential().flatMap(mapper).byteIterator(), closeHandlers, false, maxThreadNum, splitor);
+            return new ParallelIteratorByteStream(sequential().flatMap(mapper).exIterator(), closeHandlers, false, maxThreadNum, splitor);
         }
 
         final ByteStream stream = boxed().flatMapToByte(new Function<Byte, ByteStream>() {
@@ -203,7 +203,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
     @Override
     public IntStream flatMapToInt(final ByteFunction<? extends IntStream> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorIntStream(sequential().flatMapToInt(mapper).intIterator(), closeHandlers, false, maxThreadNum, splitor);
+            return new ParallelIteratorIntStream(sequential().flatMapToInt(mapper).exIterator(), closeHandlers, false, maxThreadNum, splitor);
         }
 
         final IntStream stream = boxed().flatMapToInt(new Function<Byte, IntStream>() {
@@ -292,7 +292,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
 
         if (N.notNullOrEmpty(list2)) {
             if (sorted) {
-                a[1] = new IteratorByteStream(a[1].prepend(list2.stream0()).byteIterator(), null, sorted);
+                a[1] = new IteratorByteStream(a[1].prepend(list2.stream0()).exIterator(), null, sorted);
             } else {
                 a[1] = a[1].prepend(list2.stream0());
             }
@@ -317,7 +317,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
             return this;
         }
 
-        return new ParallelIteratorByteStream(new ImmutableByteIterator() {
+        return new ParallelIteratorByteStream(new ExByteIterator() {
             byte[] a = null;
             int toIndex = 0;
             int cursor = 0;
@@ -332,7 +332,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
             }
 
             @Override
-            public byte next() {
+            public byte nextByte() {
                 if (a == null) {
                     sort();
                 }
@@ -387,7 +387,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
     @Override
     public ByteStream peek(final ByteConsumer action) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorByteStream(sequential().peek(action).byteIterator(), closeHandlers, false, maxThreadNum, splitor);
+            return new ParallelIteratorByteStream(sequential().peek(action).exIterator(), closeHandlers, false, maxThreadNum, splitor);
         }
 
         final ByteStream stream = boxed().peek(new Consumer<Byte>() {
@@ -406,7 +406,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
             throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
         }
 
-        return new ParallelIteratorByteStream(new ImmutableByteIterator() {
+        return new ParallelIteratorByteStream(new ExByteIterator() {
             private long cnt = 0;
 
             @Override
@@ -415,13 +415,13 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
             }
 
             @Override
-            public byte next() {
+            public byte nextByte() {
                 if (cnt >= maxSize) {
                     throw new NoSuchElementException();
                 }
 
                 cnt++;
-                return elements.next();
+                return elements.nextByte();
             }
 
             @Override
@@ -439,7 +439,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
             return this;
         }
 
-        return new ParallelIteratorByteStream(new ImmutableByteIterator() {
+        return new ParallelIteratorByteStream(new ExByteIterator() {
             private boolean skipped = false;
 
             @Override
@@ -453,13 +453,13 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
             }
 
             @Override
-            public byte next() {
+            public byte nextByte() {
                 if (skipped == false) {
                     elements.skip(n);
                     skipped = true;
                 }
 
-                return elements.next();
+                return elements.nextByte();
             }
 
             @Override
@@ -514,7 +514,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
                         while (eHolder.value() == null) {
                             synchronized (elements) {
                                 if (elements.hasNext()) {
-                                    next = elements.next();
+                                    next = elements.nextByte();
                                 } else {
                                     break;
                                 }
@@ -547,7 +547,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
         final List<Byte> result = new ArrayList<>();
 
         while (elements.hasNext()) {
-            result.add(elements.next());
+            result.add(elements.nextByte());
         }
 
         return result;
@@ -558,7 +558,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
         final List<Byte> result = supplier.get();
 
         while (elements.hasNext()) {
-            result.add(elements.next());
+            result.add(elements.nextByte());
         }
 
         return result;
@@ -569,7 +569,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
         final Set<Byte> result = new HashSet<>();
 
         while (elements.hasNext()) {
-            result.add(elements.next());
+            result.add(elements.nextByte());
         }
 
         return result;
@@ -580,7 +580,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
         final Set<Byte> result = supplier.get();
 
         while (elements.hasNext()) {
-            result.add(elements.next());
+            result.add(elements.nextByte());
         }
 
         return result;
@@ -591,7 +591,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
         final Multiset<Byte> result = new Multiset<>();
 
         while (elements.hasNext()) {
-            result.add(elements.next());
+            result.add(elements.nextByte());
         }
 
         return result;
@@ -602,7 +602,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
         final Multiset<Byte> result = supplier.get();
 
         while (elements.hasNext()) {
-            result.add(elements.next());
+            result.add(elements.nextByte());
         }
 
         return result;
@@ -613,7 +613,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
         final LongMultiset<Byte> result = new LongMultiset<>();
 
         while (elements.hasNext()) {
-            result.add(elements.next());
+            result.add(elements.nextByte());
         }
 
         return result;
@@ -624,7 +624,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
         final LongMultiset<Byte> result = supplier.get();
 
         while (elements.hasNext()) {
-            result.add(elements.next());
+            result.add(elements.nextByte());
         }
 
         return result;
@@ -715,7 +715,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
                         while (eHolder.value() == null) {
                             synchronized (elements) {
                                 if (elements.hasNext()) {
-                                    next = elements.next();
+                                    next = elements.nextByte();
                                 } else {
                                     break;
                                 }
@@ -770,7 +770,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
 
                     synchronized (elements) {
                         if (elements.hasNext()) {
-                            result = elements.next();
+                            result = elements.nextByte();
                         } else {
                             return null;
                         }
@@ -782,7 +782,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
                         while (eHolder.value() == null) {
                             synchronized (elements) {
                                 if (elements.hasNext()) {
-                                    next = elements.next();
+                                    next = elements.nextByte();
                                 } else {
                                     break;
                                 }
@@ -844,7 +844,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
                         while (eHolder.value() == null) {
                             synchronized (elements) {
                                 if (elements.hasNext()) {
-                                    next = elements.next();
+                                    next = elements.nextByte();
                                 } else {
                                     break;
                                 }
@@ -889,7 +889,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
                 throw new NoSuchElementException();
             }
 
-            head = elements.next();
+            head = elements.nextByte();
             tail = new ParallelIteratorByteStream(elements, closeHandlers, sorted, maxThreadNum, splitor);
         }
 
@@ -903,7 +903,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
                 throw new IllegalStateException();
             }
 
-            head = elements.next();
+            head = elements.nextByte();
             tail = new ParallelIteratorByteStream(elements, closeHandlers, sorted, maxThreadNum, splitor);
         }
 
@@ -945,14 +945,14 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
         if (elements.hasNext() == false) {
             return OptionalByte.empty();
         } else if (sorted) {
-            return OptionalByte.of(elements.next());
+            return OptionalByte.of(elements.nextByte());
         }
 
-        byte candidate = elements.next();
+        byte candidate = elements.nextByte();
         byte next = 0;
 
         while (elements.hasNext()) {
-            next = elements.next();
+            next = elements.nextByte();
 
             if (N.compare(next, candidate) < 0) {
                 candidate = next;
@@ -970,17 +970,17 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
             byte next = 0;
 
             while (elements.hasNext()) {
-                next = elements.next();
+                next = elements.nextByte();
             }
 
             return OptionalByte.of(next);
         }
 
-        byte candidate = elements.next();
+        byte candidate = elements.nextByte();
         byte next = 0;
 
         while (elements.hasNext()) {
-            next = elements.next();
+            next = elements.nextByte();
 
             if (N.compare(next, candidate) > 0) {
                 candidate = next;
@@ -1008,7 +1008,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
         long result = 0;
 
         while (elements.hasNext()) {
-            result += elements.next();
+            result += elements.nextByte();
         }
 
         return result;
@@ -1033,7 +1033,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
         final ByteSummaryStatistics result = new ByteSummaryStatistics();
 
         while (elements.hasNext()) {
-            result.accept(elements.next());
+            result.accept(elements.nextByte());
         }
 
         return result;
@@ -1059,7 +1059,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
                         while (result.isFalse() && eHolder.value() == null) {
                             synchronized (elements) {
                                 if (elements.hasNext()) {
-                                    next = elements.next();
+                                    next = elements.nextByte();
                                 } else {
                                     break;
                                 }
@@ -1102,7 +1102,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
                         while (result.isTrue() && eHolder.value() == null) {
                             synchronized (elements) {
                                 if (elements.hasNext()) {
-                                    next = elements.next();
+                                    next = elements.nextByte();
                                 } else {
                                     break;
                                 }
@@ -1145,7 +1145,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
                         while (result.isTrue() && eHolder.value() == null) {
                             synchronized (elements) {
                                 if (elements.hasNext()) {
-                                    next = elements.next();
+                                    next = elements.nextByte();
                                 } else {
                                     break;
                                 }
@@ -1190,7 +1190,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
                             synchronized (elements) {
                                 if (elements.hasNext()) {
                                     pair.left = index.getAndIncrement();
-                                    pair.right = elements.next();
+                                    pair.right = elements.nextByte();
                                 } else {
                                     break;
                                 }
@@ -1240,7 +1240,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
                             synchronized (elements) {
                                 if (elements.hasNext()) {
                                     pair.left = index.getAndIncrement();
-                                    pair.right = elements.next();
+                                    pair.right = elements.nextByte();
                                 } else {
                                     break;
                                 }
@@ -1286,7 +1286,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
                         while (resultHolder.value() == NONE && eHolder.value() == null) {
                             synchronized (elements) {
                                 if (elements.hasNext()) {
-                                    next = elements.next();
+                                    next = elements.nextByte();
                                 } else {
                                     break;
                                 }
@@ -1316,15 +1316,15 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
 
     @Override
     public IntStream asIntStream() {
-        return new ParallelIteratorIntStream(new ImmutableIntIterator() {
+        return new ParallelIteratorIntStream(new ExIntIterator() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
             }
 
             @Override
-            public int next() {
-                return elements.next();
+            public int nextInt() {
+                return elements.nextByte();
             }
 
             @Override
@@ -1385,16 +1385,6 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
     public ByteStream zipWith(ByteStream b, ByteStream c, byte valueForNoneA, byte valueForNoneB, byte valueForNoneC, ByteTriFunction<Byte> zipFunction) {
         return new ParallelIteratorByteStream(ByteStream.zip(this, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction), closeHandlers, false,
                 maxThreadNum, splitor);
-    }
-
-    @Override
-    public ImmutableIterator<Byte> iterator() {
-        return this.sequential().iterator();
-    }
-
-    @Override
-    public ImmutableByteIterator byteIterator() {
-        return elements;
     }
 
     @Override

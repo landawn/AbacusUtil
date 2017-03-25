@@ -22,8 +22,8 @@ import com.landawn.abacus.util.function.FloatTriFunction;
 import com.landawn.abacus.util.function.FloatUnaryOperator;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.stream.FloatStream;
-import com.landawn.abacus.util.stream.ImmutableFloatIterator;
-import com.landawn.abacus.util.stream.ImmutableIterator;
+import com.landawn.abacus.util.stream.ExFloatIterator;
+import com.landawn.abacus.util.stream.ExIterator;
 import com.landawn.abacus.util.stream.IntStream;
 import com.landawn.abacus.util.stream.Stream;
 
@@ -738,7 +738,7 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatM
             return FloatStream.empty();
         }
 
-        return FloatStream.of(new ImmutableFloatIterator() {
+        return FloatStream.of(new ExFloatIterator() {
             private final int toIndex = n;
             private int cursor = 0;
 
@@ -748,7 +748,7 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatM
             }
 
             @Override
-            public float next() {
+            public float nextFloat() {
                 if (cursor >= toIndex) {
                     throw new NoSuchElementException();
                 }
@@ -779,7 +779,7 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatM
             return FloatStream.empty();
         }
 
-        return FloatStream.of(new ImmutableFloatIterator() {
+        return FloatStream.of(new ExFloatIterator() {
             private final int toIndex = n;
             private int cursor = 0;
 
@@ -789,7 +789,7 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatM
             }
 
             @Override
-            public float next() {
+            public float nextFloat() {
                 if (cursor >= toIndex) {
                     throw new NoSuchElementException();
                 }
@@ -921,7 +921,7 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatM
             return FloatStream.empty();
         }
 
-        return FloatStream.of(new ImmutableFloatIterator() {
+        return FloatStream.of(new ExFloatIterator() {
             private int i = fromRowIndex;
             private int j = 0;
 
@@ -931,7 +931,7 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatM
             }
 
             @Override
-            public float next() {
+            public float nextFloat() {
                 if (i >= toRowIndex) {
                     throw new NoSuchElementException();
                 }
@@ -1004,7 +1004,7 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatM
             return FloatStream.empty();
         }
 
-        return FloatStream.of(new ImmutableFloatIterator() {
+        return FloatStream.of(new ExFloatIterator() {
             private int i = 0;
             private int j = fromColumnIndex;
 
@@ -1014,7 +1014,7 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatM
             }
 
             @Override
-            public float next() {
+            public float nextFloat() {
                 if (j >= toColumnIndex) {
                     throw new NoSuchElementException();
                 }
@@ -1085,7 +1085,7 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatM
             return Stream.empty();
         }
 
-        return Stream.of(new ImmutableIterator<FloatStream>() {
+        return Stream.of(new ExIterator<FloatStream>() {
             private final int toIndex = toRowIndex;
             private int cursor = fromRowIndex;
 
@@ -1138,7 +1138,7 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatM
             return Stream.empty();
         }
 
-        return Stream.of(new ImmutableIterator<FloatStream>() {
+        return Stream.of(new ExIterator<FloatStream>() {
             private final int toIndex = toColumnIndex;
             private volatile int cursor = fromColumnIndex;
 
@@ -1153,7 +1153,7 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatM
                     throw new NoSuchElementException();
                 }
 
-                return FloatStream.of(new ImmutableFloatIterator() {
+                return FloatStream.of(new ExFloatIterator() {
                     private final int columnIndex = cursor++;
                     private final int toIndex2 = n;
                     private int cursor2 = 0;
@@ -1164,7 +1164,7 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatM
                     }
 
                     @Override
-                    public float next() {
+                    public float nextFloat() {
                         if (cursor2 >= toIndex2) {
                             throw new NoSuchElementException();
                         }

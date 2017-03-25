@@ -65,7 +65,7 @@ import com.landawn.abacus.util.function.ToIntFunction;
 import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.function.ToShortFunction;
 import com.landawn.abacus.util.function.TriFunction;
-import com.landawn.abacus.util.stream.ImmutableIterator.QueuedIterator;
+import com.landawn.abacus.util.stream.ExIterator.QueuedIterator;
 
 /**
  * This class is a sequential, stateful and immutable stream implementation.
@@ -78,7 +78,6 @@ import com.landawn.abacus.util.stream.ImmutableIterator.QueuedIterator;
 final class ParallelIteratorStream<T> extends IteratorStream<T> {
     private final int maxThreadNum;
     private final Splitor splitor;
-
     private volatile IteratorStream<T> sequential;
 
     ParallelIteratorStream(final Iterator<? extends T> values, final Collection<Runnable> closeHandlers, final boolean sorted,
@@ -103,7 +102,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
         final List<Iterator<T>> iters = new ArrayList<>(maxThreadNum);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            iters.add(new ImmutableIterator<T>() {
+            iters.add(new ExIterator<T>() {
                 private T next = null;
                 private boolean hasNext = false;
 
@@ -154,7 +153,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
         final MutableBoolean hasMore = MutableBoolean.of(true);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            iters.add(new ImmutableIterator<T>() {
+            iters.add(new ExIterator<T>() {
                 private T next = null;
                 private boolean hasNext = false;
 
@@ -204,7 +203,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
         final MutableBoolean dropped = MutableBoolean.of(false);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            iters.add(new ImmutableIterator<T>() {
+            iters.add(new ExIterator<T>() {
                 private T next = null;
                 private boolean hasNext = false;
 
@@ -274,7 +273,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
         final List<Iterator<R>> iters = new ArrayList<>(maxThreadNum);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            iters.add(new ImmutableIterator<R>() {
+            iters.add(new ExIterator<R>() {
                 private Object next = NONE;
 
                 @Override
@@ -315,7 +314,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
         final List<Iterator<R>> iters = new ArrayList<>(maxThreadNum);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            iters.add(new ImmutableIterator<R>() {
+            iters.add(new ExIterator<R>() {
                 private Object pre = NONE;
                 private Object next = NONE;
 
@@ -362,7 +361,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
         final List<Iterator<R>> iters = new ArrayList<>(maxThreadNum);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            iters.add(new ImmutableIterator<R>() {
+            iters.add(new ExIterator<R>() {
                 private Object prepre = NONE;
                 private Object pre = NONE;
                 private Object next = NONE;
@@ -409,13 +408,13 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     @Override
     public CharStream mapToChar(final ToCharFunction<? super T> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorCharStream(sequential().mapToChar(mapper).charIterator(), closeHandlers, false, maxThreadNum, splitor);
+            return new ParallelIteratorCharStream(sequential().mapToChar(mapper).exIterator(), closeHandlers, false, maxThreadNum, splitor);
         }
 
         final List<Iterator<Character>> iters = new ArrayList<>(maxThreadNum);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            iters.add(new ImmutableIterator<Character>() {
+            iters.add(new ExIterator<Character>() {
                 private Object next = NONE;
 
                 @Override
@@ -450,13 +449,13 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     @Override
     public ByteStream mapToByte(final ToByteFunction<? super T> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorByteStream(sequential().mapToByte(mapper).byteIterator(), closeHandlers, false, maxThreadNum, splitor);
+            return new ParallelIteratorByteStream(sequential().mapToByte(mapper).exIterator(), closeHandlers, false, maxThreadNum, splitor);
         }
 
         final List<Iterator<Byte>> iters = new ArrayList<>(maxThreadNum);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            iters.add(new ImmutableIterator<Byte>() {
+            iters.add(new ExIterator<Byte>() {
                 private Object next = NONE;
 
                 @Override
@@ -491,13 +490,13 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     @Override
     public ShortStream mapToShort(final ToShortFunction<? super T> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorShortStream(sequential().mapToShort(mapper).shortIterator(), closeHandlers, false, maxThreadNum, splitor);
+            return new ParallelIteratorShortStream(sequential().mapToShort(mapper).exIterator(), closeHandlers, false, maxThreadNum, splitor);
         }
 
         final List<Iterator<Short>> iters = new ArrayList<>(maxThreadNum);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            iters.add(new ImmutableIterator<Short>() {
+            iters.add(new ExIterator<Short>() {
                 private Object next = NONE;
 
                 @Override
@@ -532,13 +531,13 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     @Override
     public IntStream mapToInt(final ToIntFunction<? super T> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorIntStream(sequential().mapToInt(mapper).intIterator(), closeHandlers, false, maxThreadNum, splitor);
+            return new ParallelIteratorIntStream(sequential().mapToInt(mapper).exIterator(), closeHandlers, false, maxThreadNum, splitor);
         }
 
         final List<Iterator<Integer>> iters = new ArrayList<>(maxThreadNum);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            iters.add(new ImmutableIterator<Integer>() {
+            iters.add(new ExIterator<Integer>() {
                 private Object next = NONE;
 
                 @Override
@@ -573,13 +572,13 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     @Override
     public LongStream mapToLong(final ToLongFunction<? super T> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorLongStream(sequential().mapToLong(mapper).longIterator(), closeHandlers, false, maxThreadNum, splitor);
+            return new ParallelIteratorLongStream(sequential().mapToLong(mapper).exIterator(), closeHandlers, false, maxThreadNum, splitor);
         }
 
         final List<Iterator<Long>> iters = new ArrayList<>(maxThreadNum);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            iters.add(new ImmutableIterator<Long>() {
+            iters.add(new ExIterator<Long>() {
                 private Object next = NONE;
 
                 @Override
@@ -614,13 +613,13 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     @Override
     public FloatStream mapToFloat(final ToFloatFunction<? super T> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorFloatStream(sequential().mapToFloat(mapper).floatIterator(), closeHandlers, false, maxThreadNum, splitor);
+            return new ParallelIteratorFloatStream(sequential().mapToFloat(mapper).exIterator(), closeHandlers, false, maxThreadNum, splitor);
         }
 
         final List<Iterator<Float>> iters = new ArrayList<>(maxThreadNum);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            iters.add(new ImmutableIterator<Float>() {
+            iters.add(new ExIterator<Float>() {
                 private Object next = NONE;
 
                 @Override
@@ -655,13 +654,13 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     @Override
     public DoubleStream mapToDouble(final ToDoubleFunction<? super T> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorDoubleStream(sequential().mapToDouble(mapper).doubleIterator(), closeHandlers, false, maxThreadNum, splitor);
+            return new ParallelIteratorDoubleStream(sequential().mapToDouble(mapper).exIterator(), closeHandlers, false, maxThreadNum, splitor);
         }
 
         final List<Iterator<Double>> iters = new ArrayList<>(maxThreadNum);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            iters.add(new ImmutableIterator<Double>() {
+            iters.add(new ExIterator<Double>() {
                 private Object next = NONE;
 
                 @Override
@@ -703,7 +702,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
         final List<Iterator<R>> iters = new ArrayList<>(maxThreadNum);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            iters.add(new ImmutableIterator<R>() {
+            iters.add(new ExIterator<R>() {
                 private T next = null;
                 private Iterator<? extends R> cur = null;
 
@@ -742,14 +741,14 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     @Override
     CharStream flatMapToChar0(final Function<? super T, CharIterator> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorCharStream(((IteratorStream<T>) sequential()).flatMapToChar0(mapper).charIterator(), closeHandlers, false, maxThreadNum,
+            return new ParallelIteratorCharStream(((IteratorStream<T>) sequential()).flatMapToChar0(mapper).exIterator(), closeHandlers, false, maxThreadNum,
                     splitor);
         }
 
         final List<Iterator<Character>> iters = new ArrayList<>(maxThreadNum);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            iters.add(new ImmutableIterator<Character>() {
+            iters.add(new ExIterator<Character>() {
                 private T next = null;
                 private CharIterator cur = null;
 
@@ -777,7 +776,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                         throw new NoSuchElementException();
                     }
 
-                    return cur.next();
+                    return cur.nextChar();
                 }
             });
         }
@@ -788,14 +787,14 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     @Override
     ByteStream flatMapToByte0(final Function<? super T, ByteIterator> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorByteStream(((IteratorStream<T>) sequential()).flatMapToByte0(mapper).byteIterator(), closeHandlers, false, maxThreadNum,
+            return new ParallelIteratorByteStream(((IteratorStream<T>) sequential()).flatMapToByte0(mapper).exIterator(), closeHandlers, false, maxThreadNum,
                     splitor);
         }
 
         final List<Iterator<Byte>> iters = new ArrayList<>(maxThreadNum);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            iters.add(new ImmutableIterator<Byte>() {
+            iters.add(new ExIterator<Byte>() {
                 private T next = null;
                 private ByteIterator cur = null;
 
@@ -823,7 +822,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                         throw new NoSuchElementException();
                     }
 
-                    return cur.next();
+                    return cur.nextByte();
                 }
             });
         }
@@ -834,14 +833,14 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     @Override
     ShortStream flatMapToShort0(final Function<? super T, ShortIterator> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorShortStream(((IteratorStream<T>) sequential()).flatMapToShort0(mapper).shortIterator(), closeHandlers, false,
-                    maxThreadNum, splitor);
+            return new ParallelIteratorShortStream(((IteratorStream<T>) sequential()).flatMapToShort0(mapper).exIterator(), closeHandlers, false, maxThreadNum,
+                    splitor);
         }
 
         final List<Iterator<Short>> iters = new ArrayList<>(maxThreadNum);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            iters.add(new ImmutableIterator<Short>() {
+            iters.add(new ExIterator<Short>() {
                 private T next = null;
                 private ShortIterator cur = null;
 
@@ -869,7 +868,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                         throw new NoSuchElementException();
                     }
 
-                    return cur.next();
+                    return cur.nextShort();
                 }
             });
         }
@@ -880,14 +879,14 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     @Override
     IntStream flatMapToInt0(final Function<? super T, IntIterator> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorIntStream(((IteratorStream<T>) sequential()).flatMapToInt0(mapper).intIterator(), closeHandlers, false, maxThreadNum,
+            return new ParallelIteratorIntStream(((IteratorStream<T>) sequential()).flatMapToInt0(mapper).exIterator(), closeHandlers, false, maxThreadNum,
                     splitor);
         }
 
         final List<Iterator<Integer>> iters = new ArrayList<>(maxThreadNum);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            iters.add(new ImmutableIterator<Integer>() {
+            iters.add(new ExIterator<Integer>() {
                 private T next = null;
                 private IntIterator cur = null;
 
@@ -915,7 +914,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                         throw new NoSuchElementException();
                     }
 
-                    return cur.next();
+                    return cur.nextInt();
                 }
             });
         }
@@ -926,14 +925,14 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     @Override
     LongStream flatMapToLong0(final Function<? super T, LongIterator> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorLongStream(((IteratorStream<T>) sequential()).flatMapToLong0(mapper).longIterator(), closeHandlers, false, maxThreadNum,
+            return new ParallelIteratorLongStream(((IteratorStream<T>) sequential()).flatMapToLong0(mapper).exIterator(), closeHandlers, false, maxThreadNum,
                     splitor);
         }
 
         final List<Iterator<Long>> iters = new ArrayList<>(maxThreadNum);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            iters.add(new ImmutableIterator<Long>() {
+            iters.add(new ExIterator<Long>() {
                 private T next = null;
                 private LongIterator cur = null;
 
@@ -961,7 +960,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                         throw new NoSuchElementException();
                     }
 
-                    return cur.next();
+                    return cur.nextLong();
                 }
             });
         }
@@ -972,14 +971,14 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     @Override
     FloatStream flatMapToFloat0(final Function<? super T, FloatIterator> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorFloatStream(((IteratorStream<T>) sequential()).flatMapToFloat0(mapper).floatIterator(), closeHandlers, false,
-                    maxThreadNum, splitor);
+            return new ParallelIteratorFloatStream(((IteratorStream<T>) sequential()).flatMapToFloat0(mapper).exIterator(), closeHandlers, false, maxThreadNum,
+                    splitor);
         }
 
         final List<Iterator<Float>> iters = new ArrayList<>(maxThreadNum);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            iters.add(new ImmutableIterator<Float>() {
+            iters.add(new ExIterator<Float>() {
                 private T next = null;
                 private FloatIterator cur = null;
 
@@ -1007,7 +1006,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                         throw new NoSuchElementException();
                     }
 
-                    return cur.next();
+                    return cur.nextFloat();
                 }
             });
         }
@@ -1018,14 +1017,14 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     @Override
     DoubleStream flatMapToDouble0(final Function<? super T, DoubleIterator> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorDoubleStream(((IteratorStream<T>) sequential()).flatMapToDouble0(mapper).doubleIterator(), closeHandlers, false,
+            return new ParallelIteratorDoubleStream(((IteratorStream<T>) sequential()).flatMapToDouble0(mapper).exIterator(), closeHandlers, false,
                     maxThreadNum, splitor);
         }
 
         final List<Iterator<Double>> iters = new ArrayList<>(maxThreadNum);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            iters.add(new ImmutableIterator<Double>() {
+            iters.add(new ExIterator<Double>() {
                 private T next = null;
                 private DoubleIterator cur = null;
 
@@ -1053,7 +1052,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                         throw new NoSuchElementException();
                     }
 
-                    return cur.next();
+                    return cur.nextDouble();
                 }
             });
         }
@@ -1209,7 +1208,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
             return this;
         }
 
-        return new ParallelIteratorStream<>(new ImmutableIterator<T>() {
+        return new ParallelIteratorStream<>(new ExIterator<T>() {
             T[] a = null;
             int toIndex = 0;
             int cursor = 0;
@@ -1299,7 +1298,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
         final List<Iterator<T>> iters = new ArrayList<>(maxThreadNum);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            iters.add(new ImmutableIterator<T>() {
+            iters.add(new ExIterator<T>() {
                 private Object next = NONE;
 
                 @Override
@@ -1338,7 +1337,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
             throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
         }
 
-        return new ParallelIteratorStream<>(new ImmutableIterator<T>() {
+        return new ParallelIteratorStream<>(new ExIterator<T>() {
             private long cnt = 0;
 
             @Override
@@ -1371,7 +1370,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
             return this;
         }
 
-        return new ParallelIteratorStream<>(new ImmutableIterator<T>() {
+        return new ParallelIteratorStream<>(new ExIterator<T>() {
             private boolean skipped = false;
 
             @Override
@@ -2421,11 +2420,6 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
         complete(futureList, eHolder);
 
         return result.longValue();
-    }
-
-    @Override
-    public ImmutableIterator<T> iterator() {
-        return elements;
     }
 
     @Override

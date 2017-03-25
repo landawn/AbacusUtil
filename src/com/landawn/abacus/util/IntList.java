@@ -21,7 +21,6 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.Set;
 
@@ -1719,33 +1718,12 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
     //        return Seq.of(c);
     //    }
 
-    public IntIterator intIterator() {
+    public IntIterator iterator() {
         if (isEmpty()) {
             return IntIterator.EMPTY;
         }
 
-        return new IntIterator() {
-            private int cursor = 0;
-
-            @Override
-            public boolean hasNext() {
-                return cursor < size;
-            }
-
-            @Override
-            public int next() {
-                if (cursor >= size) {
-                    throw new NoSuchElementException();
-                }
-
-                return elementData[cursor++];
-            }
-
-            @Override
-            public void remove() {
-                throw new UnsupportedOperationException();
-            }
-        };
+        return IntIterator.of(elementData, 0, size);
     }
 
     public IntStream stream0() {

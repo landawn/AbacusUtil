@@ -22,27 +22,48 @@ import java.util.NoSuchElementException;
  * 
  * @author Haiyang Li
  */
-public interface CharIterator {
-    public static final CharIterator EMPTY = new CharIterator() {
-        @Override
-        public boolean hasNext() {
-            return false;
+public abstract class CharIterator extends ImmutableIterator<Character> {
+    public static final CharIterator EMPTY = of(N.EMPTY_CHAR_ARRAY);
+
+    public static CharIterator of(final char[] a) {
+        return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);
+    }
+
+    public static CharIterator of(final char[] a, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (fromIndex == toIndex) {
+            return EMPTY;
         }
 
-        @Override
-        public char next() {
-            throw new NoSuchElementException();
-        }
+        return new CharIterator() {
+            private int cursor = fromIndex;
 
-        @Override
-        public void remove() {
-            throw new IllegalStateException();
-        }
-    };
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
 
-    boolean hasNext();
+            @Override
+            public char nextChar() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
 
-    char next();
+                return a[cursor++];
+            }
+        };
+    }
 
-    void remove();
+    /**
+     * 
+     * @Deprecated use <code>nextChar()</code> instead.
+     */
+    @Deprecated
+    @Override
+    public Character next() {
+        return nextChar();
+    }
+
+    public abstract char nextChar();
 }

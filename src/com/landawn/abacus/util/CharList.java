@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.Set;
 
@@ -1527,33 +1526,12 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
     //        return Seq.of(c);
     //    }
 
-    public CharIterator charIterator() {
+    public CharIterator iterator() {
         if (isEmpty()) {
             return CharIterator.EMPTY;
         }
 
-        return new CharIterator() {
-            private int cursor = 0;
-
-            @Override
-            public boolean hasNext() {
-                return cursor < size;
-            }
-
-            @Override
-            public char next() {
-                if (cursor >= size) {
-                    throw new NoSuchElementException();
-                }
-
-                return elementData[cursor++];
-            }
-
-            @Override
-            public void remove() {
-                throw new UnsupportedOperationException();
-            }
-        };
+        return CharIterator.of(elementData, 0, size);
     }
 
     public CharStream stream0() {

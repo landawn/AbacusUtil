@@ -640,9 +640,11 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
     public abstract Stream<Byte> boxed();
 
     @Override
-    public abstract ImmutableIterator<Byte> iterator();
+    public ByteIterator iterator() {
+        return exIterator();
+    }
 
-    public abstract ImmutableByteIterator byteIterator();
+    abstract ExByteIterator exIterator();
 
     public static ByteStream empty() {
         return EMPTY;
@@ -691,7 +693,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
             return empty();
         }
 
-        return new IteratorByteStream(new ImmutableByteIterator() {
+        return new IteratorByteStream(new ExByteIterator() {
             private byte next = startInclusive;
             private int cnt = endExclusive * 1 - startInclusive;
 
@@ -701,7 +703,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
             }
 
             @Override
-            public byte next() {
+            public byte nextByte() {
                 if (cnt-- <= 0) {
                     throw new NoSuchElementException();
                 }
@@ -743,7 +745,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
             return empty();
         }
 
-        return new IteratorByteStream(new ImmutableByteIterator() {
+        return new IteratorByteStream(new ExByteIterator() {
             private byte next = startInclusive;
             private int cnt = (endExclusive * 1 - startInclusive) / by + ((endExclusive * 1 - startInclusive) % by == 0 ? 0 : 1);
 
@@ -753,7 +755,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
             }
 
             @Override
-            public byte next() {
+            public byte nextByte() {
                 if (cnt-- <= 0) {
                     throw new NoSuchElementException();
                 }
@@ -795,7 +797,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
             return of(startInclusive);
         }
 
-        return new IteratorByteStream(new ImmutableByteIterator() {
+        return new IteratorByteStream(new ExByteIterator() {
             private byte next = startInclusive;
             private int cnt = endInclusive * 1 - startInclusive + 1;
 
@@ -805,7 +807,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
             }
 
             @Override
-            public byte next() {
+            public byte nextByte() {
                 if (cnt-- <= 0) {
                     throw new NoSuchElementException();
                 }
@@ -849,7 +851,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
             return empty();
         }
 
-        return new IteratorByteStream(new ImmutableByteIterator() {
+        return new IteratorByteStream(new ExByteIterator() {
             private byte next = startInclusive;
             private int cnt = (endInclusive * 1 - startInclusive) / by + 1;
 
@@ -859,7 +861,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
             }
 
             @Override
-            public byte next() {
+            public byte nextByte() {
                 if (cnt-- <= 0) {
                     throw new NoSuchElementException();
                 }
@@ -901,7 +903,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
             return empty();
         }
 
-        return new IteratorByteStream(new ImmutableByteIterator() {
+        return new IteratorByteStream(new ExByteIterator() {
             private long cnt = n;
 
             @Override
@@ -910,7 +912,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
             }
 
             @Override
-            public byte next() {
+            public byte nextByte() {
                 if (cnt-- <= 0) {
                     throw new NoSuchElementException();
                 }
@@ -956,7 +958,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
         N.requireNonNull(hasNext);
         N.requireNonNull(next);
 
-        return new IteratorByteStream(new ImmutableByteIterator() {
+        return new IteratorByteStream(new ExByteIterator() {
             private boolean hasNextVal = false;
 
             @Override
@@ -969,7 +971,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
             }
 
             @Override
-            public byte next() {
+            public byte nextByte() {
                 if (hasNextVal == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
@@ -984,7 +986,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
         N.requireNonNull(hasNext);
         N.requireNonNull(f);
 
-        return new IteratorByteStream(new ImmutableByteIterator() {
+        return new IteratorByteStream(new ExByteIterator() {
             private byte t = 0;
             private boolean isFirst = true;
             private boolean hasNextVal = false;
@@ -999,7 +1001,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
             }
 
             @Override
-            public byte next() {
+            public byte nextByte() {
                 if (hasNextVal == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
@@ -1029,7 +1031,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
         N.requireNonNull(hasNext);
         N.requireNonNull(f);
 
-        return new IteratorByteStream(new ImmutableByteIterator() {
+        return new IteratorByteStream(new ExByteIterator() {
             private byte t = 0;
             private byte cur = 0;
             private boolean isFirst = true;
@@ -1055,7 +1057,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
             }
 
             @Override
-            public byte next() {
+            public byte nextByte() {
                 if (hasNextVal == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
@@ -1070,7 +1072,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
     public static ByteStream generate(final byte seed, final ByteUnaryOperator f) {
         N.requireNonNull(f);
 
-        return new IteratorByteStream(new ImmutableByteIterator() {
+        return new IteratorByteStream(new ExByteIterator() {
             private byte t = 0;
             private boolean isFirst = true;
 
@@ -1080,7 +1082,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
             }
 
             @Override
-            public byte next() {
+            public byte nextByte() {
                 if (isFirst) {
                     isFirst = false;
                     t = seed;
@@ -1096,46 +1098,46 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
     public static ByteStream generate(final ByteSupplier s) {
         N.requireNonNull(s);
 
-        return new IteratorByteStream(new ImmutableByteIterator() {
+        return new IteratorByteStream(new ExByteIterator() {
             @Override
             public boolean hasNext() {
                 return true;
             }
 
             @Override
-            public byte next() {
+            public byte nextByte() {
                 return s.getAsByte();
             }
         });
     }
 
     public static ByteStream concat(final byte[]... a) {
-        return N.isNullOrEmpty(a) ? empty() : new IteratorByteStream(new ImmutableByteIterator() {
+        return N.isNullOrEmpty(a) ? empty() : new IteratorByteStream(new ExByteIterator() {
             private final Iterator<byte[]> iter = N.asList(a).iterator();
             private ByteIterator cur;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
-                    cur = ImmutableByteIterator.of(iter.next());
+                    cur = ExByteIterator.of(iter.next());
                 }
 
                 return cur != null && cur.hasNext();
             }
 
             @Override
-            public byte next() {
+            public byte nextByte() {
                 if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
-                return cur.next();
+                return cur.nextByte();
             }
         });
     }
 
     public static ByteStream concat(final ByteIterator... a) {
-        return N.isNullOrEmpty(a) ? empty() : new IteratorByteStream(new ImmutableByteIterator() {
+        return N.isNullOrEmpty(a) ? empty() : new IteratorByteStream(new ExByteIterator() {
             private final Iterator<? extends ByteIterator> iter = N.asList(a).iterator();
             private ByteIterator cur;
 
@@ -1149,12 +1151,12 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
             }
 
             @Override
-            public byte next() {
+            public byte nextByte() {
                 if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
-                return cur.next();
+                return cur.nextByte();
             }
         });
     }
@@ -1164,26 +1166,26 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
     }
 
     public static ByteStream concat(final Collection<? extends ByteStream> c) {
-        return N.isNullOrEmpty(c) ? empty() : new IteratorByteStream(new ImmutableByteIterator() {
+        return N.isNullOrEmpty(c) ? empty() : new IteratorByteStream(new ExByteIterator() {
             private final Iterator<? extends ByteStream> iter = c.iterator();
             private ByteIterator cur;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
-                    cur = iter.next().byteIterator();
+                    cur = iter.next().exIterator();
                 }
 
                 return cur != null && cur.hasNext();
             }
 
             @Override
-            public byte next() {
+            public byte nextByte() {
                 if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
-                return cur.next();
+                return cur.nextByte();
             }
         }).onClose(newCloseHandler(c));
     }
@@ -1400,7 +1402,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
             return of(a);
         }
 
-        return new IteratorByteStream(new ImmutableByteIterator() {
+        return new IteratorByteStream(new ExByteIterator() {
             private final int lenA = a.length;
             private final int lenB = b.length;
             private int cursorA = 0;
@@ -1412,7 +1414,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
             }
 
             @Override
-            public byte next() {
+            public byte nextByte() {
                 if (cursorA < lenA) {
                     if (cursorB < lenB) {
                         if (nextSelector.apply(a[cursorA], b[cursorB]) == Nth.FIRST) {
@@ -1441,7 +1443,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * @return
      */
     public static ByteStream merge(final byte[] a, final byte[] b, final byte[] c, final ByteBiFunction<Nth> nextSelector) {
-        return merge(merge(a, b, nextSelector).byteIterator(), ByteStream.of(c).byteIterator(), nextSelector);
+        return merge(merge(a, b, nextSelector).exIterator(), ByteStream.of(c).exIterator(), nextSelector);
     }
 
     /**
@@ -1458,7 +1460,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
             return of(a);
         }
 
-        return new IteratorByteStream(new ImmutableByteIterator() {
+        return new IteratorByteStream(new ExByteIterator() {
             private byte nextA = 0;
             private byte nextB = 0;
             private boolean hasNextA = false;
@@ -1470,10 +1472,10 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
             }
 
             @Override
-            public byte next() {
+            public byte nextByte() {
                 if (hasNextA) {
                     if (b.hasNext()) {
-                        if (nextSelector.apply(nextA, (nextB = b.next())) == Nth.FIRST) {
+                        if (nextSelector.apply(nextA, (nextB = b.nextByte())) == Nth.FIRST) {
                             hasNextA = false;
                             hasNextB = true;
                             return nextA;
@@ -1486,7 +1488,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
                     }
                 } else if (hasNextB) {
                     if (a.hasNext()) {
-                        if (nextSelector.apply((nextA = a.next()), nextB) == Nth.FIRST) {
+                        if (nextSelector.apply((nextA = a.nextByte()), nextB) == Nth.FIRST) {
                             return nextA;
                         } else {
                             hasNextA = true;
@@ -1499,7 +1501,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
                     }
                 } else if (a.hasNext()) {
                     if (b.hasNext()) {
-                        if (nextSelector.apply((nextA = a.next()), (nextB = b.next())) == Nth.FIRST) {
+                        if (nextSelector.apply((nextA = a.nextByte()), (nextB = b.nextByte())) == Nth.FIRST) {
                             hasNextB = true;
                             return nextA;
                         } else {
@@ -1507,10 +1509,10 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
                             return nextB;
                         }
                     } else {
-                        return a.next();
+                        return a.nextByte();
                     }
                 } else if (b.hasNext()) {
-                    return b.next();
+                    return b.nextByte();
                 } else {
                     throw new NoSuchElementException();
                 }
@@ -1527,7 +1529,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * @return
      */
     public static ByteStream merge(final ByteIterator a, final ByteIterator b, final ByteIterator c, final ByteBiFunction<Nth> nextSelector) {
-        return merge(merge(a, b, nextSelector).byteIterator(), c, nextSelector);
+        return merge(merge(a, b, nextSelector).exIterator(), c, nextSelector);
     }
 
     /**
@@ -1538,7 +1540,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * @return
      */
     public static ByteStream merge(final ByteStream a, final ByteStream b, final ByteBiFunction<Nth> nextSelector) {
-        return merge(a.byteIterator(), b.byteIterator(), nextSelector).onClose(newCloseHandler(N.asList(a, b)));
+        return merge(a.exIterator(), b.exIterator(), nextSelector).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -1570,10 +1572,10 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
         }
 
         final Iterator<? extends ByteStream> iter = c.iterator();
-        ByteStream result = merge(iter.next().byteIterator(), iter.next().byteIterator(), nextSelector);
+        ByteStream result = merge(iter.next().exIterator(), iter.next().exIterator(), nextSelector);
 
         while (iter.hasNext()) {
-            result = merge(result.byteIterator(), iter.next().byteIterator(), nextSelector);
+            result = merge(result.exIterator(), iter.next().exIterator(), nextSelector);
         }
 
         return result.onClose(newCloseHandler(c));
@@ -1615,7 +1617,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
         final Queue<ByteIterator> queue = N.newLinkedList();
 
         for (ByteStream e : c) {
-            queue.add(e.byteIterator());
+            queue.add(e.exIterator());
         }
 
         final Output<Throwable> eHolder = new Output<>();
@@ -1643,7 +1645,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
                                 }
                             }
 
-                            c = ImmutableByteIterator.of(merge(a, b, nextSelector).toArray());
+                            c = ExByteIterator.of(merge(a, b, nextSelector).toArray());
 
                             synchronized (queue) {
                                 queue.offer(c);

@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.Set;
 
@@ -1500,33 +1499,12 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
     //        return Seq.of(c);
     //    }
 
-    public ByteIterator byteIterator() {
+    public ByteIterator iterator() {
         if (isEmpty()) {
             return ByteIterator.EMPTY;
         }
 
-        return new ByteIterator() {
-            private int cursor = 0;
-
-            @Override
-            public boolean hasNext() {
-                return cursor < size;
-            }
-
-            @Override
-            public byte next() {
-                if (cursor >= size) {
-                    throw new NoSuchElementException();
-                }
-
-                return elementData[cursor++];
-            }
-
-            @Override
-            public void remove() {
-                throw new UnsupportedOperationException();
-            }
-        };
+        return ByteIterator.of(elementData, 0, size);
     }
 
     public ByteStream stream0() {

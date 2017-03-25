@@ -30,7 +30,7 @@ import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.function.ToShortFunction;
 import com.landawn.abacus.util.function.TriFunction;
 import com.landawn.abacus.util.function.UnaryOperator;
-import com.landawn.abacus.util.stream.ImmutableIterator;
+import com.landawn.abacus.util.stream.ExIterator;
 import com.landawn.abacus.util.stream.IntStream;
 import com.landawn.abacus.util.stream.Stream;
 
@@ -860,7 +860,7 @@ public final class Matrix<T> extends AbstractMatrix<T[], ExList<T>, Matrix<T>> {
             return Stream.empty();
         }
 
-        return Stream.of(new ImmutableIterator<T>() {
+        return Stream.of(new ExIterator<T>() {
             private final int toIndex = n;
             private int cursor = 0;
 
@@ -901,7 +901,7 @@ public final class Matrix<T> extends AbstractMatrix<T[], ExList<T>, Matrix<T>> {
             return Stream.empty();
         }
 
-        return Stream.of(new ImmutableIterator<T>() {
+        return Stream.of(new ExIterator<T>() {
             private final int toIndex = n;
             private int cursor = 0;
 
@@ -1062,7 +1062,7 @@ public final class Matrix<T> extends AbstractMatrix<T[], ExList<T>, Matrix<T>> {
             return Stream.empty();
         }
 
-        return Stream.of(new ImmutableIterator<T>() {
+        return Stream.of(new ExIterator<T>() {
             private int i = fromRowIndex;
             private int j = 0;
 
@@ -1148,7 +1148,7 @@ public final class Matrix<T> extends AbstractMatrix<T[], ExList<T>, Matrix<T>> {
             return Stream.empty();
         }
 
-        return Stream.of(new ImmutableIterator<T>() {
+        return Stream.of(new ExIterator<T>() {
             private int i = 0;
             private int j = fromColumnIndex;
 
@@ -1232,7 +1232,7 @@ public final class Matrix<T> extends AbstractMatrix<T[], ExList<T>, Matrix<T>> {
             return Stream.empty();
         }
 
-        return Stream.of(new ImmutableIterator<Stream<T>>() {
+        return Stream.of(new ExIterator<Stream<T>>() {
             private final int toIndex = toRowIndex;
             private int cursor = fromRowIndex;
 
@@ -1285,7 +1285,7 @@ public final class Matrix<T> extends AbstractMatrix<T[], ExList<T>, Matrix<T>> {
             return Stream.empty();
         }
 
-        return Stream.of(new ImmutableIterator<Stream<T>>() {
+        return Stream.of(new ExIterator<Stream<T>>() {
             private final int toIndex = toColumnIndex;
             private volatile int cursor = fromColumnIndex;
 
@@ -1300,7 +1300,7 @@ public final class Matrix<T> extends AbstractMatrix<T[], ExList<T>, Matrix<T>> {
                     throw new NoSuchElementException();
                 }
 
-                return Stream.of(new ImmutableIterator<T>() {
+                return Stream.of(new ExIterator<T>() {
                     private final int columnIndex = cursor++;
                     private final int toIndex2 = n;
                     private int cursor2 = 0;

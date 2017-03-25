@@ -21,7 +21,6 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.Set;
 
@@ -1518,33 +1517,13 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
     //        return Seq.of(c);
     //    }
 
-    public ShortIterator shortIterator() {
+    @Override
+    public ShortIterator iterator() {
         if (isEmpty()) {
             return ShortIterator.EMPTY;
         }
 
-        return new ShortIterator() {
-            private int cursor = 0;
-
-            @Override
-            public boolean hasNext() {
-                return cursor < size;
-            }
-
-            @Override
-            public short next() {
-                if (cursor >= size) {
-                    throw new NoSuchElementException();
-                }
-
-                return elementData[cursor++];
-            }
-
-            @Override
-            public void remove() {
-                throw new UnsupportedOperationException();
-            }
-        };
+        return ShortIterator.of(elementData, 0, size);
     }
 
     public ShortStream stream0() {

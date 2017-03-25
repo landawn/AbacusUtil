@@ -22,27 +22,48 @@ import java.util.NoSuchElementException;
  * 
  * @author Haiyang Li
  */
-public interface IntIterator {
-    public static final IntIterator EMPTY = new IntIterator() {
-        @Override
-        public boolean hasNext() {
-            return false;
+public abstract class IntIterator extends ImmutableIterator<Integer> {
+    public static final IntIterator EMPTY = of(N.EMPTY_INT_ARRAY);
+
+    public static IntIterator of(final int[] a) {
+        return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);
+    }
+
+    public static IntIterator of(final int[] a, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (fromIndex == toIndex) {
+            return EMPTY;
         }
 
-        @Override
-        public int next() {
-            throw new NoSuchElementException();
-        }
+        return new IntIterator() {
+            private int cursor = fromIndex;
 
-        @Override
-        public void remove() {
-            throw new IllegalStateException();
-        }
-    };
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
 
-    boolean hasNext();
+            @Override
+            public int nextInt() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
 
-    int next();
+                return a[cursor++];
+            }
+        };
+    }
 
-    void remove();
+    /**
+     * 
+     * @Deprecated use <code>nextInt()</code> instead.
+     */
+    @Deprecated
+    @Override
+    public Integer next() {
+        return nextInt();
+    }
+
+    public abstract int nextInt();
 }

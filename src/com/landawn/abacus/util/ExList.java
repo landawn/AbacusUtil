@@ -20,11 +20,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.RandomAccess;
 import java.util.Set;
@@ -230,6 +228,10 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
      */
     public Object[] array() {
         return elementData;
+    }
+
+    public Seq<T> seq() {
+        return Seq.of(this);
     }
 
     @Override
@@ -885,8 +887,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     public NullabLe<T> min(final int fromIndex, final int toIndex) {
         checkFromToIndex(fromIndex, toIndex);
 
-        return fromIndex == toIndex ? (NullabLe<T>) NullabLe.empty()
-                : NullabLe.of((T) N.min((Comparable[]) elementData, fromIndex, toIndex));
+        return fromIndex == toIndex ? (NullabLe<T>) NullabLe.empty() : NullabLe.of((T) N.min((Comparable[]) elementData, fromIndex, toIndex));
     }
 
     public NullabLe<T> min(Comparator<? super T> cmp) {
@@ -906,8 +907,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     public NullabLe<T> median(final int fromIndex, final int toIndex) {
         checkFromToIndex(fromIndex, toIndex);
 
-        return fromIndex == toIndex ? (NullabLe<T>) NullabLe.empty()
-                : NullabLe.of((T) N.median((Comparable[]) elementData, fromIndex, toIndex));
+        return fromIndex == toIndex ? (NullabLe<T>) NullabLe.empty() : NullabLe.of((T) N.median((Comparable[]) elementData, fromIndex, toIndex));
     }
 
     public NullabLe<T> median(Comparator<? super T> cmp) {
@@ -927,8 +927,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     public NullabLe<T> max(final int fromIndex, final int toIndex) {
         checkFromToIndex(fromIndex, toIndex);
 
-        return fromIndex == toIndex ? (NullabLe<T>) NullabLe.empty()
-                : NullabLe.of((T) N.max((Comparable[]) elementData, fromIndex, toIndex));
+        return fromIndex == toIndex ? (NullabLe<T>) NullabLe.empty() : NullabLe.of((T) N.max((Comparable[]) elementData, fromIndex, toIndex));
     }
 
     public NullabLe<T> max(Comparator<? super T> cmp) {
@@ -952,15 +951,13 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     public NullabLe<T> kthLargest(final int fromIndex, final int toIndex, final int k) {
         checkFromToIndex(fromIndex, toIndex);
 
-        return toIndex - fromIndex < k ? (NullabLe<T>) NullabLe.empty()
-                : NullabLe.of((T) N.kthLargest((Comparable[]) elementData, fromIndex, toIndex, k));
+        return toIndex - fromIndex < k ? (NullabLe<T>) NullabLe.empty() : NullabLe.of((T) N.kthLargest((Comparable[]) elementData, fromIndex, toIndex, k));
     }
 
     public NullabLe<T> kthLargest(final int fromIndex, final int toIndex, final int k, final Comparator<? super T> cmp) {
         checkFromToIndex(fromIndex, toIndex);
 
-        return toIndex - fromIndex < k ? (NullabLe<T>) NullabLe.empty()
-                : NullabLe.of(N.kthLargest(elementData, fromIndex, toIndex, k, cmp));
+        return toIndex - fromIndex < k ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(N.kthLargest(elementData, fromIndex, toIndex, k, cmp));
     }
 
     public Long sumInt() {
@@ -2243,33 +2240,12 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     }
 
     @Override
-    public Iterator<T> iterator() {
+    public ImmutableIterator<T> iterator() {
         if (isEmpty()) {
-            return com.landawn.abacus.util.Iterator.EMPTY;
+            return ImmutableIterator.EMPTY;
         }
 
-        return new com.landawn.abacus.util.Iterator<T>() {
-            private int cursor = 0;
-
-            @Override
-            public boolean hasNext() {
-                return cursor < size;
-            }
-
-            @Override
-            public T next() {
-                if (cursor >= size) {
-                    throw new NoSuchElementException();
-                }
-
-                return elementData[cursor++];
-            }
-
-            @Override
-            public void remove() {
-                throw new UnsupportedOperationException();
-            }
-        };
+        return ImmutableIterator.of(elementData, 0, size);
     }
 
     @Override

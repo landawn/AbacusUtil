@@ -21,7 +21,6 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.Set;
 
@@ -1542,33 +1541,13 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
     //        return Seq.of(c);
     //    }
 
-    public FloatIterator floatIterator() {
+    @Override
+    public FloatIterator iterator() {
         if (isEmpty()) {
             return FloatIterator.EMPTY;
         }
 
-        return new FloatIterator() {
-            private int cursor = 0;
-
-            @Override
-            public boolean hasNext() {
-                return cursor < size;
-            }
-
-            @Override
-            public float next() {
-                if (cursor >= size) {
-                    throw new NoSuchElementException();
-                }
-
-                return elementData[cursor++];
-            }
-
-            @Override
-            public void remove() {
-                throw new UnsupportedOperationException();
-            }
-        };
+        return FloatIterator.of(elementData, 0, size);
     }
 
     public FloatStream stream0() {

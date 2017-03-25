@@ -21,8 +21,8 @@ import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.function.ShortBiFunction;
 import com.landawn.abacus.util.function.ShortTriFunction;
 import com.landawn.abacus.util.function.ShortUnaryOperator;
-import com.landawn.abacus.util.stream.ImmutableIterator;
-import com.landawn.abacus.util.stream.ImmutableShortIterator;
+import com.landawn.abacus.util.stream.ExIterator;
+import com.landawn.abacus.util.stream.ExShortIterator;
 import com.landawn.abacus.util.stream.IntStream;
 import com.landawn.abacus.util.stream.ShortStream;
 import com.landawn.abacus.util.stream.Stream;
@@ -798,7 +798,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortM
             return ShortStream.empty();
         }
 
-        return ShortStream.of(new ImmutableShortIterator() {
+        return ShortStream.of(new ExShortIterator() {
             private final int toIndex = n;
             private int cursor = 0;
 
@@ -808,7 +808,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortM
             }
 
             @Override
-            public short next() {
+            public short nextShort() {
                 if (cursor >= toIndex) {
                     throw new NoSuchElementException();
                 }
@@ -839,7 +839,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortM
             return ShortStream.empty();
         }
 
-        return ShortStream.of(new ImmutableShortIterator() {
+        return ShortStream.of(new ExShortIterator() {
             private final int toIndex = n;
             private int cursor = 0;
 
@@ -849,7 +849,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortM
             }
 
             @Override
-            public short next() {
+            public short nextShort() {
                 if (cursor >= toIndex) {
                     throw new NoSuchElementException();
                 }
@@ -981,7 +981,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortM
             return ShortStream.empty();
         }
 
-        return ShortStream.of(new ImmutableShortIterator() {
+        return ShortStream.of(new ExShortIterator() {
             private int i = fromRowIndex;
             private int j = 0;
 
@@ -991,7 +991,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortM
             }
 
             @Override
-            public short next() {
+            public short nextShort() {
                 if (i >= toRowIndex) {
                     throw new NoSuchElementException();
                 }
@@ -1064,7 +1064,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortM
             return ShortStream.empty();
         }
 
-        return ShortStream.of(new ImmutableShortIterator() {
+        return ShortStream.of(new ExShortIterator() {
             private int i = 0;
             private int j = fromColumnIndex;
 
@@ -1074,7 +1074,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortM
             }
 
             @Override
-            public short next() {
+            public short nextShort() {
                 if (j >= toColumnIndex) {
                     throw new NoSuchElementException();
                 }
@@ -1145,7 +1145,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortM
             return Stream.empty();
         }
 
-        return Stream.of(new ImmutableIterator<ShortStream>() {
+        return Stream.of(new ExIterator<ShortStream>() {
             private final int toIndex = toRowIndex;
             private int cursor = fromRowIndex;
 
@@ -1198,7 +1198,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortM
             return Stream.empty();
         }
 
-        return Stream.of(new ImmutableIterator<ShortStream>() {
+        return Stream.of(new ExIterator<ShortStream>() {
             private final int toIndex = toColumnIndex;
             private volatile int cursor = fromColumnIndex;
 
@@ -1213,7 +1213,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortM
                     throw new NoSuchElementException();
                 }
 
-                return ShortStream.of(new ImmutableShortIterator() {
+                return ShortStream.of(new ExShortIterator() {
                     private final int columnIndex = cursor++;
                     private final int toIndex2 = n;
                     private int cursor2 = 0;
@@ -1224,7 +1224,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortM
                     }
 
                     @Override
-                    public short next() {
+                    public short nextShort() {
                         if (cursor2 >= toIndex2) {
                             throw new NoSuchElementException();
                         }

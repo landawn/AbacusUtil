@@ -81,7 +81,7 @@ class ArrayByteStream extends AbstractByteStream {
     ArrayByteStream(final byte[] values, final int fromIndex, final int toIndex, final Collection<Runnable> closeHandlers, final boolean sorted) {
         super(closeHandlers, sorted);
 
-        checkIndex(fromIndex, toIndex, values.length);
+        checkFromToIndex(fromIndex, toIndex, values.length);
 
         this.elements = values;
         this.fromIndex = fromIndex;
@@ -90,7 +90,7 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public ByteStream filter(final BytePredicate predicate) {
-        return new IteratorByteStream(new ImmutableByteIterator() {
+        return new IteratorByteStream(new ExByteIterator() {
             private boolean hasNext = false;
             private int cursor = fromIndex;
 
@@ -109,7 +109,7 @@ class ArrayByteStream extends AbstractByteStream {
             }
 
             @Override
-            public byte next() {
+            public byte nextByte() {
                 if (hasNext == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
@@ -123,7 +123,7 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public ByteStream takeWhile(final BytePredicate predicate) {
-        return new IteratorByteStream(new ImmutableByteIterator() {
+        return new IteratorByteStream(new ExByteIterator() {
             private boolean hasMore = true;
             private boolean hasNext = false;
             private int cursor = fromIndex;
@@ -142,7 +142,7 @@ class ArrayByteStream extends AbstractByteStream {
             }
 
             @Override
-            public byte next() {
+            public byte nextByte() {
                 if (hasNext == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
@@ -156,7 +156,7 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public ByteStream dropWhile(final BytePredicate predicate) {
-        return new IteratorByteStream(new ImmutableByteIterator() {
+        return new IteratorByteStream(new ExByteIterator() {
             private boolean hasNext = false;
             private int cursor = fromIndex;
             private boolean dropped = false;
@@ -182,7 +182,7 @@ class ArrayByteStream extends AbstractByteStream {
             }
 
             @Override
-            public byte next() {
+            public byte nextByte() {
                 if (hasNext == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
@@ -196,7 +196,7 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public ByteStream map(final ByteUnaryOperator mapper) {
-        return new IteratorByteStream(new ImmutableByteIterator() {
+        return new IteratorByteStream(new ExByteIterator() {
             int cursor = fromIndex;
 
             @Override
@@ -205,7 +205,7 @@ class ArrayByteStream extends AbstractByteStream {
             }
 
             @Override
-            public byte next() {
+            public byte nextByte() {
                 if (cursor >= toIndex) {
                     throw new NoSuchElementException();
                 }
@@ -238,7 +238,7 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public IntStream mapToInt(final ByteToIntFunction mapper) {
-        return new IteratorIntStream(new ImmutableIntIterator() {
+        return new IteratorIntStream(new ExIntIterator() {
             int cursor = fromIndex;
 
             @Override
@@ -247,7 +247,7 @@ class ArrayByteStream extends AbstractByteStream {
             }
 
             @Override
-            public int next() {
+            public int nextInt() {
                 if (cursor >= toIndex) {
                     throw new NoSuchElementException();
                 }
@@ -280,7 +280,7 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public <U> Stream<U> mapToObj(final ByteFunction<? extends U> mapper) {
-        return new IteratorStream<U>(new ImmutableIterator<U>() {
+        return new IteratorStream<U>(new ExIterator<U>() {
             int cursor = fromIndex;
 
             @Override
@@ -322,59 +322,59 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public ByteStream flatMap(final ByteFunction<? extends ByteStream> mapper) {
-        return new IteratorByteStream(new ImmutableByteIterator() {
+        return new IteratorByteStream(new ExByteIterator() {
             private int cursor = fromIndex;
             private ByteIterator cur = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && cursor < toIndex) {
-                    cur = mapper.apply(elements[cursor++]).byteIterator();
+                    cur = mapper.apply(elements[cursor++]).exIterator();
                 }
 
                 return cur != null && cur.hasNext();
             }
 
             @Override
-            public byte next() {
+            public byte nextByte() {
                 if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
-                return cur.next();
+                return cur.nextByte();
             }
         }, closeHandlers);
     }
 
     @Override
     public IntStream flatMapToInt(final ByteFunction<? extends IntStream> mapper) {
-        return new IteratorIntStream(new ImmutableIntIterator() {
+        return new IteratorIntStream(new ExIntIterator() {
             private int cursor = fromIndex;
             private IntIterator cur = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && cursor < toIndex) {
-                    cur = mapper.apply(elements[cursor++]).intIterator();
+                    cur = mapper.apply(elements[cursor++]).exIterator();
                 }
 
                 return cur != null && cur.hasNext();
             }
 
             @Override
-            public int next() {
+            public int nextInt() {
                 if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
-                return cur.next();
+                return cur.nextInt();
             }
         }, closeHandlers);
     }
 
     @Override
     public <T> Stream<T> flatMapToObj(final ByteFunction<? extends Stream<T>> mapper) {
-        return new IteratorStream<T>(new ImmutableIterator<T>() {
+        return new IteratorStream<T>(new ExIterator<T>() {
             private int cursor = fromIndex;
             private Iterator<? extends T> cur = null;
 
@@ -402,7 +402,7 @@ class ArrayByteStream extends AbstractByteStream {
     public Stream<ByteStream> split(final int size) {
         N.checkArgument(size > 0, "'size' must be bigger than 0");
 
-        return new IteratorStream<ByteStream>(new ImmutableIterator<ByteStream>() {
+        return new IteratorStream<ByteStream>(new ExIterator<ByteStream>() {
             private int cursor = fromIndex;
 
             @Override
@@ -425,7 +425,7 @@ class ArrayByteStream extends AbstractByteStream {
     public Stream<ByteList> split0(final int size) {
         N.checkArgument(size > 0, "'size' must be bigger than 0");
 
-        return new IteratorStream<ByteList>(new ImmutableIterator<ByteList>() {
+        return new IteratorStream<ByteList>(new ExIterator<ByteList>() {
             private int cursor = fromIndex;
 
             @Override
@@ -447,7 +447,7 @@ class ArrayByteStream extends AbstractByteStream {
     @Override
     public <U> Stream<ByteStream> split(final U identity, final BiFunction<? super Byte, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
-        return new IteratorStream<ByteStream>(new ImmutableIterator<ByteStream>() {
+        return new IteratorStream<ByteStream>(new ExIterator<ByteStream>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
 
@@ -487,7 +487,7 @@ class ArrayByteStream extends AbstractByteStream {
     @Override
     public <U> Stream<ByteList> split0(final U identity, final BiFunction<? super Byte, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
-        return new IteratorStream<ByteList>(new ImmutableIterator<ByteList>() {
+        return new IteratorStream<ByteList>(new ExIterator<ByteList>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
 
@@ -561,7 +561,7 @@ class ArrayByteStream extends AbstractByteStream {
             throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
         }
 
-        return new IteratorStream<ByteStream>(new ImmutableIterator<ByteStream>() {
+        return new IteratorStream<ByteStream>(new ExIterator<ByteStream>() {
             private int cursor = fromIndex;
 
             @Override
@@ -592,7 +592,7 @@ class ArrayByteStream extends AbstractByteStream {
             throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
         }
 
-        return new IteratorStream<ByteList>(new ImmutableIterator<ByteList>() {
+        return new IteratorStream<ByteList>(new ExIterator<ByteList>() {
             private int cursor = fromIndex;
 
             @Override
@@ -629,7 +629,7 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public ByteStream peek(final ByteConsumer action) {
-        return new IteratorByteStream(new ImmutableByteIterator() {
+        return new IteratorByteStream(new ExByteIterator() {
             int cursor = fromIndex;
 
             @Override
@@ -638,7 +638,7 @@ class ArrayByteStream extends AbstractByteStream {
             }
 
             @Override
-            public byte next() {
+            public byte nextByte() {
                 if (cursor >= toIndex) {
                     throw new NoSuchElementException();
                 }
@@ -991,7 +991,7 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public ByteStream reverse() {
-        return new IteratorByteStream(new ImmutableByteIterator() {
+        return new IteratorByteStream(new ExByteIterator() {
             private int cursor = toIndex;
 
             @Override
@@ -1000,7 +1000,7 @@ class ArrayByteStream extends AbstractByteStream {
             }
 
             @Override
-            public byte next() {
+            public byte nextByte() {
                 if (cursor <= fromIndex) {
                     throw new NoSuchElementException();
                 }
@@ -1098,7 +1098,7 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public IntStream asIntStream() {
-        return new IteratorIntStream(new ImmutableIntIterator() {
+        return new IteratorIntStream(new ExIntIterator() {
             private int cursor = fromIndex;
 
             @Override
@@ -1107,7 +1107,7 @@ class ArrayByteStream extends AbstractByteStream {
             }
 
             @Override
-            public int next() {
+            public int nextInt() {
                 if (cursor >= toIndex) {
                     throw new NoSuchElementException();
                 }
@@ -1149,81 +1149,8 @@ class ArrayByteStream extends AbstractByteStream {
     }
 
     @Override
-    public ImmutableIterator<Byte> iterator() {
-        return new ImmutableIterator<Byte>() {
-            private int cursor = fromIndex;
-
-            @Override
-            public boolean hasNext() {
-                return cursor < toIndex;
-            }
-
-            @Override
-            public Byte next() {
-                if (cursor >= toIndex) {
-                    throw new NoSuchElementException();
-                }
-
-                return elements[cursor++];
-            }
-
-            @Override
-            public long count() {
-                return toIndex - cursor;
-            }
-
-            @Override
-            public void skip(long n) {
-                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-            }
-
-            @Override
-            public <A> A[] toArray(A[] a) {
-                a = a.length >= toIndex - cursor ? a : (A[]) N.newArray(a.getClass().getComponentType(), toIndex - cursor);
-
-                for (int i = 0, len = toIndex - cursor; i < len; i++) {
-                    a[i] = (A) Byte.valueOf(elements[cursor++]);
-                }
-
-                return a;
-            }
-        };
-    }
-
-    @Override
-    public ImmutableByteIterator byteIterator() {
-        return new ImmutableByteIterator() {
-            private int cursor = fromIndex;
-
-            @Override
-            public boolean hasNext() {
-                return cursor < toIndex;
-            }
-
-            @Override
-            public byte next() {
-                if (cursor >= toIndex) {
-                    throw new NoSuchElementException();
-                }
-
-                return elements[cursor++];
-            }
-
-            @Override
-            public long count() {
-                return toIndex - cursor;
-            }
-
-            @Override
-            public void skip(long n) {
-                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-            }
-
-            @Override
-            public byte[] toArray() {
-                return N.copyOfRange(elements, cursor, toIndex);
-            }
-        };
+    public ExByteIterator exIterator() {
+        return ExByteIterator.of(elements, fromIndex, toIndex);
     }
 
     @Override

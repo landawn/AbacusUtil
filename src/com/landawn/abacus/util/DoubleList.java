@@ -21,7 +21,6 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.Set;
 
@@ -1524,33 +1523,13 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
     //        return Seq.of(c);
     //    }
 
-    public DoubleIterator doubleIterator() {
+    @Override
+    public DoubleIterator iterator() {
         if (isEmpty()) {
             return DoubleIterator.EMPTY;
         }
 
-        return new DoubleIterator() {
-            private int cursor = 0;
-
-            @Override
-            public boolean hasNext() {
-                return cursor < size;
-            }
-
-            @Override
-            public double next() {
-                if (cursor >= size) {
-                    throw new NoSuchElementException();
-                }
-
-                return elementData[cursor++];
-            }
-
-            @Override
-            public void remove() {
-                throw new UnsupportedOperationException();
-            }
-        };
+        return DoubleIterator.of(elementData, 0, size);
     }
 
     public DoubleStream stream0() {

@@ -24,6 +24,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -69,6 +70,7 @@ import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.PermutationIterator;
+import com.landawn.abacus.util.Seq;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.ShortSummaryStatistics;
 import com.landawn.abacus.util.function.BiConsumer;
@@ -202,9 +204,9 @@ abstract class AbstractStream<T> extends Stream<T> {
         }
 
         final long skip = step - 1;
-        final ImmutableIterator<T> iter = this.iterator();
+        final ExIterator<T> iter = exIterator();
 
-        final Iterator<T> iterator = new ImmutableIterator<T>() {
+        final Iterator<T> iterator = new ExIterator<T>() {
             @Override
             public boolean hasNext() {
                 return iter.hasNext();
@@ -288,7 +290,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         return flatMap0(new Function<T, Iterator<? extends R>>() {
             @Override
             public Iterator<? extends R> apply(T t) {
-                return ImmutableIterator.of(mapper.apply(t));
+                return ExIterator.of(mapper.apply(t));
             }
         });
     }
@@ -308,7 +310,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         return flatMapToChar0(new Function<T, CharIterator>() {
             @Override
             public CharIterator apply(T t) {
-                return mapper.apply(t).charIterator();
+                return mapper.apply(t).exIterator();
             }
         });
     }
@@ -322,14 +324,14 @@ abstract class AbstractStream<T> extends Stream<T> {
             public CharIterator apply(T t) {
                 final Iterator<Character> iter = mapper.apply(t).iterator();
 
-                return new ImmutableCharIterator() {
+                return new ExCharIterator() {
                     @Override
                     public boolean hasNext() {
                         return iter.hasNext();
                     }
 
                     @Override
-                    public char next() {
+                    public char nextChar() {
                         return iter.next();
                     }
                 };
@@ -342,7 +344,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         return flatMapToChar0(new Function<T, CharIterator>() {
             @Override
             public CharIterator apply(T t) {
-                return ImmutableCharIterator.of(mapper.apply(t));
+                return ExCharIterator.of(mapper.apply(t));
             }
         });
     }
@@ -352,7 +354,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         return flatMapToByte0(new Function<T, ByteIterator>() {
             @Override
             public ByteIterator apply(T t) {
-                return mapper.apply(t).byteIterator();
+                return mapper.apply(t).exIterator();
             }
         });
     }
@@ -366,14 +368,14 @@ abstract class AbstractStream<T> extends Stream<T> {
             public ByteIterator apply(T t) {
                 final Iterator<Byte> iter = mapper.apply(t).iterator();
 
-                return new ImmutableByteIterator() {
+                return new ExByteIterator() {
                     @Override
                     public boolean hasNext() {
                         return iter.hasNext();
                     }
 
                     @Override
-                    public byte next() {
+                    public byte nextByte() {
                         return iter.next();
                     }
                 };
@@ -386,7 +388,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         return flatMapToByte0(new Function<T, ByteIterator>() {
             @Override
             public ByteIterator apply(T t) {
-                return ImmutableByteIterator.of(mapper.apply(t));
+                return ExByteIterator.of(mapper.apply(t));
             }
         });
     }
@@ -396,7 +398,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         return flatMapToShort0(new Function<T, ShortIterator>() {
             @Override
             public ShortIterator apply(T t) {
-                return mapper.apply(t).shortIterator();
+                return mapper.apply(t).exIterator();
             }
         });
     }
@@ -410,14 +412,14 @@ abstract class AbstractStream<T> extends Stream<T> {
             public ShortIterator apply(T t) {
                 final Iterator<Short> iter = mapper.apply(t).iterator();
 
-                return new ImmutableShortIterator() {
+                return new ExShortIterator() {
                     @Override
                     public boolean hasNext() {
                         return iter.hasNext();
                     }
 
                     @Override
-                    public short next() {
+                    public short nextShort() {
                         return iter.next();
                     }
                 };
@@ -430,7 +432,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         return flatMapToShort0(new Function<T, ShortIterator>() {
             @Override
             public ShortIterator apply(T t) {
-                return ImmutableShortIterator.of(mapper.apply(t));
+                return ExShortIterator.of(mapper.apply(t));
             }
         });
     }
@@ -440,7 +442,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         return flatMapToInt0(new Function<T, IntIterator>() {
             @Override
             public IntIterator apply(T t) {
-                return mapper.apply(t).intIterator();
+                return mapper.apply(t).exIterator();
             }
         });
     }
@@ -454,14 +456,14 @@ abstract class AbstractStream<T> extends Stream<T> {
             public IntIterator apply(T t) {
                 final Iterator<Integer> iter = mapper.apply(t).iterator();
 
-                return new ImmutableIntIterator() {
+                return new ExIntIterator() {
                     @Override
                     public boolean hasNext() {
                         return iter.hasNext();
                     }
 
                     @Override
-                    public int next() {
+                    public int nextInt() {
                         return iter.next();
                     }
                 };
@@ -474,7 +476,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         return flatMapToInt0(new Function<T, IntIterator>() {
             @Override
             public IntIterator apply(T t) {
-                return ImmutableIntIterator.of(mapper.apply(t));
+                return ExIntIterator.of(mapper.apply(t));
             }
         });
     }
@@ -484,7 +486,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         return flatMapToLong0(new Function<T, LongIterator>() {
             @Override
             public LongIterator apply(T t) {
-                return mapper.apply(t).longIterator();
+                return mapper.apply(t).exIterator();
             }
         });
     }
@@ -498,14 +500,14 @@ abstract class AbstractStream<T> extends Stream<T> {
             public LongIterator apply(T t) {
                 final Iterator<Long> iter = mapper.apply(t).iterator();
 
-                return new ImmutableLongIterator() {
+                return new ExLongIterator() {
                     @Override
                     public boolean hasNext() {
                         return iter.hasNext();
                     }
 
                     @Override
-                    public long next() {
+                    public long nextLong() {
                         return iter.next();
                     }
                 };
@@ -518,7 +520,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         return flatMapToLong0(new Function<T, LongIterator>() {
             @Override
             public LongIterator apply(T t) {
-                return ImmutableLongIterator.of(mapper.apply(t));
+                return ExLongIterator.of(mapper.apply(t));
             }
         });
     }
@@ -528,7 +530,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         return flatMapToFloat0(new Function<T, FloatIterator>() {
             @Override
             public FloatIterator apply(T t) {
-                return mapper.apply(t).floatIterator();
+                return mapper.apply(t).exIterator();
             }
         });
     }
@@ -542,14 +544,14 @@ abstract class AbstractStream<T> extends Stream<T> {
             public FloatIterator apply(T t) {
                 final Iterator<Float> iter = mapper.apply(t).iterator();
 
-                return new ImmutableFloatIterator() {
+                return new ExFloatIterator() {
                     @Override
                     public boolean hasNext() {
                         return iter.hasNext();
                     }
 
                     @Override
-                    public float next() {
+                    public float nextFloat() {
                         return iter.next();
                     }
                 };
@@ -562,7 +564,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         return flatMapToFloat0(new Function<T, FloatIterator>() {
             @Override
             public FloatIterator apply(T t) {
-                return ImmutableFloatIterator.of(mapper.apply(t));
+                return ExFloatIterator.of(mapper.apply(t));
             }
         });
     }
@@ -572,7 +574,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         return flatMapToDouble0(new Function<T, DoubleIterator>() {
             @Override
             public DoubleIterator apply(T t) {
-                return mapper.apply(t).doubleIterator();
+                return mapper.apply(t).exIterator();
             }
         });
     }
@@ -586,14 +588,14 @@ abstract class AbstractStream<T> extends Stream<T> {
             public DoubleIterator apply(T t) {
                 final Iterator<Double> iter = mapper.apply(t).iterator();
 
-                return new ImmutableDoubleIterator() {
+                return new ExDoubleIterator() {
                     @Override
                     public boolean hasNext() {
                         return iter.hasNext();
                     }
 
                     @Override
-                    public double next() {
+                    public double nextDouble() {
                         return iter.next();
                     }
                 };
@@ -606,7 +608,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         return flatMapToDouble0(new Function<T, DoubleIterator>() {
             @Override
             public DoubleIterator apply(T t) {
-                return ImmutableDoubleIterator.of(mapper.apply(t));
+                return ExDoubleIterator.of(mapper.apply(t));
             }
         });
     }
@@ -643,9 +645,9 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<T> collapse(final BiPredicate<? super T, ? super T> collapsible, final BiFunction<? super T, ? super T, T> mergeFunction) {
-        final ImmutableIterator<T> iter = iterator();
+        final ExIterator<T> iter = exIterator();
 
-        return this.newStream(new ImmutableIterator<T>() {
+        return this.newStream(new ExIterator<T>() {
             private T pre = null;
             private boolean hasNext = false;
 
@@ -673,9 +675,9 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public <R> Stream<R> collapse(final R seed, final BiPredicate<? super T, ? super T> collapsible, final BiFunction<? super R, ? super T, R> mergeFunction) {
-        final ImmutableIterator<T> iter = iterator();
+        final ExIterator<T> iter = exIterator();
 
-        return this.newStream(new ImmutableIterator<R>() {
+        return this.newStream(new ExIterator<R>() {
             private T pre = null;
             private boolean hasNext = false;
 
@@ -704,9 +706,9 @@ abstract class AbstractStream<T> extends Stream<T> {
     @Override
     public <C extends Collection<?>> Stream<C> collapse(final Supplier<C> supplier, final BiPredicate<? super T, ? super T> collapsible,
             final BiConsumer<? super C, ? super T> mergeFunction) {
-        final ImmutableIterator<T> iter = iterator();
+        final ExIterator<T> iter = exIterator();
 
-        return this.newStream(new ImmutableIterator<C>() {
+        return this.newStream(new ExIterator<C>() {
             private T pre = null;
             private boolean hasNext = false;
 
@@ -735,9 +737,9 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<T> scan(final BiFunction<? super T, ? super T, T> accumulator) {
-        final ImmutableIterator<T> iter = iterator();
+        final ExIterator<T> iter = exIterator();
 
-        return this.newStream(new ImmutableIterator<T>() {
+        return this.newStream(new ExIterator<T>() {
             private T res = null;
             private boolean isFirst = true;
 
@@ -760,9 +762,9 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public <R> Stream<R> scan(final R seed, final BiFunction<? super R, ? super T, R> accumulator) {
-        final ImmutableIterator<T> iter = iterator();
+        final ExIterator<T> iter = exIterator();
 
-        return this.newStream(new ImmutableIterator<R>() {
+        return this.newStream(new ExIterator<R>() {
             private R res = seed;
 
             @Override
@@ -1050,7 +1052,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public NullabLe<T> findFirstOrLast(final Predicate<? super T> predicateForFirst, final Predicate<? super T> predicateForLast) {
-        final ImmutableIterator<T> iter = iterator();
+        final ExIterator<T> iter = exIterator();
         T last = (T) NONE;
         T next = null;
 
@@ -1070,7 +1072,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     @Override
     public <U> NullabLe<T> findFirstOrLast(final U seed, final BiPredicate<? super T, ? super U> predicateForFirst,
             final BiPredicate<? super T, ? super U> predicateForLast) {
-        final ImmutableIterator<T> iter = iterator();
+        final ExIterator<T> iter = exIterator();
         T last = (T) NONE;
         T next = null;
 
@@ -1090,7 +1092,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     @Override
     public <U> NullabLe<T> findFirstOrLast(final Function<? super T, U> preFunc, final BiPredicate<? super T, ? super U> predicateForFirst,
             final BiPredicate<? super T, ? super U> predicateForLast) {
-        final ImmutableIterator<T> iter = iterator();
+        final ExIterator<T> iter = exIterator();
         U seed = null;
         T last = (T) NONE;
         T next = null;
@@ -1112,7 +1114,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     @Override
     public Pair<NullabLe<T>, NullabLe<T>> findFirstAndLast(final Predicate<? super T> predicateForFirst, final Predicate<? super T> predicateForLast) {
         final Pair<NullabLe<T>, NullabLe<T>> result = new Pair<>();
-        final ImmutableIterator<T> iter = iterator();
+        final ExIterator<T> iter = exIterator();
         T last = (T) NONE;
         T next = null;
 
@@ -1141,7 +1143,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     public <U> Pair<NullabLe<T>, NullabLe<T>> findFirstAndLast(final U seed, final BiPredicate<? super T, ? super U> predicateForFirst,
             final BiPredicate<? super T, ? super U> predicateForLast) {
         final Pair<NullabLe<T>, NullabLe<T>> result = new Pair<>();
-        final ImmutableIterator<T> iter = iterator();
+        final ExIterator<T> iter = exIterator();
         T last = (T) NONE;
         T next = null;
 
@@ -1170,7 +1172,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     public <U> Pair<NullabLe<T>, NullabLe<T>> findFirstAndLast(final Function<? super T, U> preFunc, final BiPredicate<? super T, ? super U> predicateForFirst,
             final BiPredicate<? super T, ? super U> predicateForLast) {
         final Pair<NullabLe<T>, NullabLe<T>> result = new Pair<>();
-        final ImmutableIterator<T> iter = iterator();
+        final ExIterator<T> iter = exIterator();
         U seed = null;
         T last = (T) NONE;
         T next = null;
@@ -1387,7 +1389,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     public Stream<T> reverse() {
         final T[] tmp = (T[]) toArray();
 
-        return newStream(new ImmutableIterator<T>() {
+        return newStream(new ExIterator<T>() {
             private int cursor = tmp.length;
 
             @Override
@@ -1624,7 +1626,7 @@ abstract class AbstractStream<T> extends Stream<T> {
                 final int fromIndex = ((ArrayStream<T>) this).fromIndex;
                 final int toIndex = ((ArrayStream<T>) this).toIndex;
 
-                return newStream(new ImmutableIterator<ExList<T>>() {
+                return newStream(new ExIterator<ExList<T>>() {
                     private final int[] indices = Array.range(fromIndex, fromIndex + len);
 
                     @Override
@@ -1676,6 +1678,20 @@ abstract class AbstractStream<T> extends Stream<T> {
         final Iterator<ExList<T>> iter = PermutationIterator.ordered(toList(), comparator == null ? OBJECT_COMPARATOR : comparator);
 
         return newStream(iter, false, null);
+    }
+
+    @Override
+    public Stream<ExList<T>> cartesianProduct(final Collection<? extends T>... cs) {
+        return cartesianProduct(Arrays.asList(cs));
+    }
+
+    @Override
+    public Stream<ExList<T>> cartesianProduct(final Collection<? extends Collection<? extends T>> cs) {
+        final List<Collection<? extends T>> cList = new ArrayList<>(cs.size() + 1);
+        cList.add(this.toList());
+        cList.addAll(cs);
+
+        return newStream(Seq.cartesianProduct(cList).iterator(), false, null);
     }
 
     @Override

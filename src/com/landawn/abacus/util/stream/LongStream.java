@@ -720,9 +720,11 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
     public abstract Stream<Long> boxed();
 
     @Override
-    public abstract ImmutableIterator<Long> iterator();
+    public LongIterator iterator() {
+        return exIterator();
+    }
 
-    public abstract ImmutableLongIterator longIterator();
+    abstract ExLongIterator exIterator();
 
     public static LongStream empty() {
         return EMPTY;
@@ -759,7 +761,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
     }
 
     public static LongStream of(final java.util.stream.LongStream stream) {
-        return of(new ImmutableLongIterator() {
+        return of(new ExLongIterator() {
             private PrimitiveIterator.OfLong iter = null;
 
             @Override
@@ -772,7 +774,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
             }
 
             @Override
-            public long next() {
+            public long nextLong() {
                 if (iter == null) {
                     iter = stream.iterator();
                 }
@@ -811,7 +813,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
                     range((startInclusive + m) + m, endExclusive));
         }
 
-        return new IteratorLongStream(new ImmutableLongIterator() {
+        return new IteratorLongStream(new ExLongIterator() {
             private long next = startInclusive;
             private long cnt = endExclusive - startInclusive;
 
@@ -821,7 +823,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
             }
 
             @Override
-            public long next() {
+            public long nextLong() {
                 if (cnt-- <= 0) {
                     throw new NoSuchElementException();
                 }
@@ -875,7 +877,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
             }
         }
 
-        return new IteratorLongStream(new ImmutableLongIterator() {
+        return new IteratorLongStream(new ExLongIterator() {
             private long next = startInclusive;
             private long cnt = (endExclusive - startInclusive) / by + ((endExclusive - startInclusive) % by == 0 ? 0 : 1);
 
@@ -885,7 +887,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
             }
 
             @Override
-            public long next() {
+            public long nextLong() {
                 if (cnt-- <= 0) {
                     throw new NoSuchElementException();
                 }
@@ -931,7 +933,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
                     rangeClosed((startInclusive + m) + m, endInclusive));
         }
 
-        return new IteratorLongStream(new ImmutableLongIterator() {
+        return new IteratorLongStream(new ExLongIterator() {
             private long next = startInclusive;
             private long cnt = endInclusive - startInclusive + 1;
 
@@ -941,7 +943,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
             }
 
             @Override
-            public long next() {
+            public long nextLong() {
                 if (cnt-- <= 0) {
                     throw new NoSuchElementException();
                 }
@@ -997,7 +999,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
             }
         }
 
-        return new IteratorLongStream(new ImmutableLongIterator() {
+        return new IteratorLongStream(new ExLongIterator() {
             private long next = startInclusive;
             private long cnt = (endInclusive - startInclusive) / by + 1;
 
@@ -1007,7 +1009,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
             }
 
             @Override
-            public long next() {
+            public long nextLong() {
                 if (cnt-- <= 0) {
                     throw new NoSuchElementException();
                 }
@@ -1049,7 +1051,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
             return empty();
         }
 
-        return new IteratorLongStream(new ImmutableLongIterator() {
+        return new IteratorLongStream(new ExLongIterator() {
             private long cnt = n;
 
             @Override
@@ -1058,7 +1060,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
             }
 
             @Override
-            public long next() {
+            public long nextLong() {
                 if (cnt-- <= 0) {
                     throw new NoSuchElementException();
                 }
@@ -1104,7 +1106,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
         N.requireNonNull(hasNext);
         N.requireNonNull(next);
 
-        return new IteratorLongStream(new ImmutableLongIterator() {
+        return new IteratorLongStream(new ExLongIterator() {
             private boolean hasNextVal = false;
 
             @Override
@@ -1117,7 +1119,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
             }
 
             @Override
-            public long next() {
+            public long nextLong() {
                 if (hasNextVal == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
@@ -1132,7 +1134,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
         N.requireNonNull(hasNext);
         N.requireNonNull(f);
 
-        return new IteratorLongStream(new ImmutableLongIterator() {
+        return new IteratorLongStream(new ExLongIterator() {
             private long t = 0;
             private boolean isFirst = true;
             private boolean hasNextVal = false;
@@ -1147,7 +1149,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
             }
 
             @Override
-            public long next() {
+            public long nextLong() {
                 if (hasNextVal == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
@@ -1177,7 +1179,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
         N.requireNonNull(hasNext);
         N.requireNonNull(f);
 
-        return new IteratorLongStream(new ImmutableLongIterator() {
+        return new IteratorLongStream(new ExLongIterator() {
             private long t = 0;
             private long cur = 0;
             private boolean isFirst = true;
@@ -1203,7 +1205,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
             }
 
             @Override
-            public long next() {
+            public long nextLong() {
                 if (hasNextVal == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
@@ -1218,7 +1220,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
     public static LongStream generate(final long seed, final LongUnaryOperator f) {
         N.requireNonNull(f);
 
-        return new IteratorLongStream(new ImmutableLongIterator() {
+        return new IteratorLongStream(new ExLongIterator() {
             private long t = 0;
             private boolean isFirst = true;
 
@@ -1228,7 +1230,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
             }
 
             @Override
-            public long next() {
+            public long nextLong() {
                 if (isFirst) {
                     isFirst = false;
                     t = seed;
@@ -1244,14 +1246,14 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
     public static LongStream generate(final LongSupplier s) {
         N.requireNonNull(s);
 
-        return new IteratorLongStream(new ImmutableLongIterator() {
+        return new IteratorLongStream(new ExLongIterator() {
             @Override
             public boolean hasNext() {
                 return true;
             }
 
             @Override
-            public long next() {
+            public long nextLong() {
                 return s.getAsLong();
             }
         });
@@ -1270,7 +1272,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      * @see java.util.concurrent.TimeUnit
      */
     public static LongStream interval(final long startTimeInMillis, final long intervalInMillis) {
-        return of(new ImmutableLongIterator() {
+        return of(new ExLongIterator() {
             private long next = startTimeInMillis;
 
             @Override
@@ -1279,7 +1281,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
             }
 
             @Override
-            public long next() {
+            public long nextLong() {
                 long now = N.currentMillis();
 
                 if (now < next) {
@@ -1308,32 +1310,32 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
     }
 
     public static LongStream concat(final long[]... a) {
-        return N.isNullOrEmpty(a) ? empty() : new IteratorLongStream(new ImmutableLongIterator() {
+        return N.isNullOrEmpty(a) ? empty() : new IteratorLongStream(new ExLongIterator() {
             private final Iterator<long[]> iter = N.asList(a).iterator();
             private LongIterator cur;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
-                    cur = ImmutableLongIterator.of(iter.next());
+                    cur = ExLongIterator.of(iter.next());
                 }
 
                 return cur != null && cur.hasNext();
             }
 
             @Override
-            public long next() {
+            public long nextLong() {
                 if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
-                return cur.next();
+                return cur.nextLong();
             }
         });
     }
 
     public static LongStream concat(final LongIterator... a) {
-        return N.isNullOrEmpty(a) ? empty() : new IteratorLongStream(new ImmutableLongIterator() {
+        return N.isNullOrEmpty(a) ? empty() : new IteratorLongStream(new ExLongIterator() {
             private final Iterator<? extends LongIterator> iter = N.asList(a).iterator();
             private LongIterator cur;
 
@@ -1347,12 +1349,12 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
             }
 
             @Override
-            public long next() {
+            public long nextLong() {
                 if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
-                return cur.next();
+                return cur.nextLong();
             }
         });
     }
@@ -1362,26 +1364,26 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
     }
 
     public static LongStream concat(final Collection<? extends LongStream> c) {
-        return N.isNullOrEmpty(c) ? empty() : new IteratorLongStream(new ImmutableLongIterator() {
+        return N.isNullOrEmpty(c) ? empty() : new IteratorLongStream(new ExLongIterator() {
             private final Iterator<? extends LongStream> iter = c.iterator();
             private LongIterator cur;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
-                    cur = iter.next().longIterator();
+                    cur = iter.next().exIterator();
                 }
 
                 return cur != null && cur.hasNext();
             }
 
             @Override
-            public long next() {
+            public long nextLong() {
                 if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
-                return cur.next();
+                return cur.nextLong();
             }
         }).onClose(newCloseHandler(c));
     }
@@ -1598,7 +1600,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
             return of(a);
         }
 
-        return new IteratorLongStream(new ImmutableLongIterator() {
+        return new IteratorLongStream(new ExLongIterator() {
             private final int lenA = a.length;
             private final int lenB = b.length;
             private int cursorA = 0;
@@ -1610,7 +1612,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
             }
 
             @Override
-            public long next() {
+            public long nextLong() {
                 if (cursorA < lenA) {
                     if (cursorB < lenB) {
                         if (nextSelector.apply(a[cursorA], b[cursorB]) == Nth.FIRST) {
@@ -1639,7 +1641,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      * @return
      */
     public static LongStream merge(final long[] a, final long[] b, final long[] c, final LongBiFunction<Nth> nextSelector) {
-        return merge(merge(a, b, nextSelector).longIterator(), LongStream.of(c).longIterator(), nextSelector);
+        return merge(merge(a, b, nextSelector).exIterator(), LongStream.of(c).exIterator(), nextSelector);
     }
 
     /**
@@ -1656,7 +1658,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
             return of(a);
         }
 
-        return new IteratorLongStream(new ImmutableLongIterator() {
+        return new IteratorLongStream(new ExLongIterator() {
             private long nextA = 0;
             private long nextB = 0;
             private boolean hasNextA = false;
@@ -1668,10 +1670,10 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
             }
 
             @Override
-            public long next() {
+            public long nextLong() {
                 if (hasNextA) {
                     if (b.hasNext()) {
-                        if (nextSelector.apply(nextA, (nextB = b.next())) == Nth.FIRST) {
+                        if (nextSelector.apply(nextA, (nextB = b.nextLong())) == Nth.FIRST) {
                             hasNextA = false;
                             hasNextB = true;
                             return nextA;
@@ -1684,7 +1686,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
                     }
                 } else if (hasNextB) {
                     if (a.hasNext()) {
-                        if (nextSelector.apply((nextA = a.next()), nextB) == Nth.FIRST) {
+                        if (nextSelector.apply((nextA = a.nextLong()), nextB) == Nth.FIRST) {
                             return nextA;
                         } else {
                             hasNextA = true;
@@ -1697,7 +1699,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
                     }
                 } else if (a.hasNext()) {
                     if (b.hasNext()) {
-                        if (nextSelector.apply((nextA = a.next()), (nextB = b.next())) == Nth.FIRST) {
+                        if (nextSelector.apply((nextA = a.nextLong()), (nextB = b.nextLong())) == Nth.FIRST) {
                             hasNextB = true;
                             return nextA;
                         } else {
@@ -1705,10 +1707,10 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
                             return nextB;
                         }
                     } else {
-                        return a.next();
+                        return a.nextLong();
                     }
                 } else if (b.hasNext()) {
-                    return b.next();
+                    return b.nextLong();
                 } else {
                     throw new NoSuchElementException();
                 }
@@ -1725,7 +1727,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      * @return
      */
     public static LongStream merge(final LongIterator a, final LongIterator b, final LongIterator c, final LongBiFunction<Nth> nextSelector) {
-        return merge(merge(a, b, nextSelector).longIterator(), c, nextSelector);
+        return merge(merge(a, b, nextSelector).exIterator(), c, nextSelector);
     }
 
     /**
@@ -1736,7 +1738,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      * @return
      */
     public static LongStream merge(final LongStream a, final LongStream b, final LongBiFunction<Nth> nextSelector) {
-        return merge(a.longIterator(), b.longIterator(), nextSelector).onClose(newCloseHandler(N.asList(a, b)));
+        return merge(a.exIterator(), b.exIterator(), nextSelector).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -1768,10 +1770,10 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
         }
 
         final Iterator<? extends LongStream> iter = c.iterator();
-        LongStream result = merge(iter.next().longIterator(), iter.next().longIterator(), nextSelector);
+        LongStream result = merge(iter.next().exIterator(), iter.next().exIterator(), nextSelector);
 
         while (iter.hasNext()) {
-            result = merge(result.longIterator(), iter.next().longIterator(), nextSelector);
+            result = merge(result.exIterator(), iter.next().exIterator(), nextSelector);
         }
 
         return result.onClose(newCloseHandler(c));
@@ -1813,7 +1815,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
         final Queue<LongIterator> queue = N.newLinkedList();
 
         for (LongStream e : c) {
-            queue.add(e.longIterator());
+            queue.add(e.exIterator());
         }
 
         final Output<Throwable> eHolder = new Output<>();
@@ -1841,7 +1843,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
                                 }
                             }
 
-                            c = ImmutableLongIterator.of(merge(a, b, nextSelector).toArray());
+                            c = ExLongIterator.of(merge(a, b, nextSelector).toArray());
 
                             synchronized (queue) {
                                 queue.offer(c);

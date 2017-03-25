@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.Set;
 
@@ -1382,33 +1381,13 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
     //        return Builder.of(this).__(func);
     //    }
 
-    public BooleanIterator booleanIterator() {
+    @Override
+    public BooleanIterator iterator() {
         if (isEmpty()) {
             return BooleanIterator.EMPTY;
         }
 
-        return new BooleanIterator() {
-            private int cursor = 0;
-
-            @Override
-            public boolean hasNext() {
-                return cursor < size;
-            }
-
-            @Override
-            public boolean next() {
-                if (cursor >= size) {
-                    throw new NoSuchElementException();
-                }
-
-                return elementData[cursor++];
-            }
-
-            @Override
-            public void remove() {
-                throw new UnsupportedOperationException();
-            }
-        };
+        return BooleanIterator.of(elementData, 0, size);
     }
 
     public Stream<Boolean> stream0() {

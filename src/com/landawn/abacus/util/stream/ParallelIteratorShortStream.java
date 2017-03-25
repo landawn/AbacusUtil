@@ -83,18 +83,18 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
 
     ParallelIteratorShortStream(final ShortStream stream, final Set<Runnable> closeHandlers, final boolean sorted, final int maxThreadNum,
             final Splitor splitor) {
-        this(stream.shortIterator(), mergeCloseHandlers(stream, closeHandlers), sorted, maxThreadNum, splitor);
+        this(stream.exIterator(), mergeCloseHandlers(stream, closeHandlers), sorted, maxThreadNum, splitor);
     }
 
     ParallelIteratorShortStream(final Stream<Short> stream, final Set<Runnable> closeHandlers, final boolean sorted, final int maxThreadNum,
             final Splitor splitor) {
-        this(shortIterator(stream.iterator()), mergeCloseHandlers(stream, closeHandlers), sorted, maxThreadNum, splitor);
+        this(shortIterator(stream.exIterator()), mergeCloseHandlers(stream, closeHandlers), sorted, maxThreadNum, splitor);
     }
 
     @Override
     public ShortStream filter(final ShortPredicate predicate) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorShortStream(sequential().filter(predicate).shortIterator(), closeHandlers, sorted, maxThreadNum, splitor);
+            return new ParallelIteratorShortStream(sequential().filter(predicate).exIterator(), closeHandlers, sorted, maxThreadNum, splitor);
         }
 
         final Stream<Short> stream = boxed().filter(new Predicate<Short>() {
@@ -110,7 +110,7 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
     @Override
     public ShortStream takeWhile(final ShortPredicate predicate) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorShortStream(sequential().takeWhile(predicate).shortIterator(), closeHandlers, sorted, maxThreadNum, splitor);
+            return new ParallelIteratorShortStream(sequential().takeWhile(predicate).exIterator(), closeHandlers, sorted, maxThreadNum, splitor);
         }
 
         final Stream<Short> stream = boxed().takeWhile(new Predicate<Short>() {
@@ -126,7 +126,7 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
     @Override
     public ShortStream dropWhile(final ShortPredicate predicate) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorShortStream(sequential().dropWhile(predicate).shortIterator(), closeHandlers, sorted, maxThreadNum, splitor);
+            return new ParallelIteratorShortStream(sequential().dropWhile(predicate).exIterator(), closeHandlers, sorted, maxThreadNum, splitor);
         }
 
         final Stream<Short> stream = boxed().dropWhile(new Predicate<Short>() {
@@ -142,7 +142,7 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
     @Override
     public ShortStream map(final ShortUnaryOperator mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorShortStream(sequential().map(mapper).shortIterator(), closeHandlers, false, maxThreadNum, splitor);
+            return new ParallelIteratorShortStream(sequential().map(mapper).exIterator(), closeHandlers, false, maxThreadNum, splitor);
         }
 
         final ShortStream stream = boxed().mapToShort(new ToShortFunction<Short>() {
@@ -158,7 +158,7 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
     @Override
     public IntStream mapToInt(final ShortToIntFunction mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorIntStream(sequential().mapToInt(mapper).intIterator(), closeHandlers, false, maxThreadNum, splitor);
+            return new ParallelIteratorIntStream(sequential().mapToInt(mapper).exIterator(), closeHandlers, false, maxThreadNum, splitor);
         }
 
         final IntStream stream = boxed().mapToInt(new ToIntFunction<Short>() {
@@ -188,7 +188,7 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
     @Override
     public ShortStream flatMap(final ShortFunction<? extends ShortStream> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorShortStream(sequential().flatMap(mapper).shortIterator(), closeHandlers, false, maxThreadNum, splitor);
+            return new ParallelIteratorShortStream(sequential().flatMap(mapper).exIterator(), closeHandlers, false, maxThreadNum, splitor);
         }
 
         final ShortStream stream = boxed().flatMapToShort(new Function<Short, ShortStream>() {
@@ -204,7 +204,7 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
     @Override
     public IntStream flatMapToInt(final ShortFunction<? extends IntStream> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorIntStream(sequential().flatMapToInt(mapper).intIterator(), closeHandlers, false, maxThreadNum, splitor);
+            return new ParallelIteratorIntStream(sequential().flatMapToInt(mapper).exIterator(), closeHandlers, false, maxThreadNum, splitor);
         }
 
         final IntStream stream = boxed().flatMapToInt(new Function<Short, IntStream>() {
@@ -293,7 +293,7 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
 
         if (N.notNullOrEmpty(list2)) {
             if (sorted) {
-                a[1] = new IteratorShortStream(a[1].prepend(list2.stream0()).shortIterator(), null, sorted);
+                a[1] = new IteratorShortStream(a[1].prepend(list2.stream0()).exIterator(), null, sorted);
             } else {
                 a[1] = a[1].prepend(list2.stream0());
             }
@@ -319,7 +319,7 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
 
     @Override
     public ShortStream top(int n, Comparator<? super Short> comparator) {
-        return new ParallelIteratorShortStream(this.sequential().top(n, comparator).shortIterator(), closeHandlers, sorted, maxThreadNum, splitor);
+        return new ParallelIteratorShortStream(this.sequential().top(n, comparator).exIterator(), closeHandlers, sorted, maxThreadNum, splitor);
     }
 
     @Override
@@ -328,7 +328,7 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
             return this;
         }
 
-        return new ParallelIteratorShortStream(new ImmutableShortIterator() {
+        return new ParallelIteratorShortStream(new ExShortIterator() {
             short[] a = null;
             int toIndex = 0;
             int cursor = 0;
@@ -343,7 +343,7 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
             }
 
             @Override
-            public short next() {
+            public short nextShort() {
                 if (a == null) {
                     sort();
                 }
@@ -398,7 +398,7 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
     @Override
     public ShortStream peek(final ShortConsumer action) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorShortStream(sequential().peek(action).shortIterator(), closeHandlers, false, maxThreadNum, splitor);
+            return new ParallelIteratorShortStream(sequential().peek(action).exIterator(), closeHandlers, false, maxThreadNum, splitor);
         }
 
         final ShortStream stream = boxed().peek(new Consumer<Short>() {
@@ -417,7 +417,7 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
             throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
         }
 
-        return new ParallelIteratorShortStream(new ImmutableShortIterator() {
+        return new ParallelIteratorShortStream(new ExShortIterator() {
             private long cnt = 0;
 
             @Override
@@ -426,13 +426,13 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
             }
 
             @Override
-            public short next() {
+            public short nextShort() {
                 if (cnt >= maxSize) {
                     throw new NoSuchElementException();
                 }
 
                 cnt++;
-                return elements.next();
+                return elements.nextShort();
             }
 
             @Override
@@ -450,7 +450,7 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
             return this;
         }
 
-        return new ParallelIteratorShortStream(new ImmutableShortIterator() {
+        return new ParallelIteratorShortStream(new ExShortIterator() {
             private boolean skipped = false;
 
             @Override
@@ -464,13 +464,13 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
             }
 
             @Override
-            public short next() {
+            public short nextShort() {
                 if (skipped == false) {
                     elements.skip(n);
                     skipped = true;
                 }
 
-                return elements.next();
+                return elements.nextShort();
             }
 
             @Override
@@ -525,7 +525,7 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
                         while (eHolder.value() == null) {
                             synchronized (elements) {
                                 if (elements.hasNext()) {
-                                    next = elements.next();
+                                    next = elements.nextShort();
                                 } else {
                                     break;
                                 }
@@ -558,7 +558,7 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
         final List<Short> result = new ArrayList<>();
 
         while (elements.hasNext()) {
-            result.add(elements.next());
+            result.add(elements.nextShort());
         }
 
         return result;
@@ -569,7 +569,7 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
         final List<Short> result = supplier.get();
 
         while (elements.hasNext()) {
-            result.add(elements.next());
+            result.add(elements.nextShort());
         }
 
         return result;
@@ -580,7 +580,7 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
         final Set<Short> result = new HashSet<>();
 
         while (elements.hasNext()) {
-            result.add(elements.next());
+            result.add(elements.nextShort());
         }
 
         return result;
@@ -591,7 +591,7 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
         final Set<Short> result = supplier.get();
 
         while (elements.hasNext()) {
-            result.add(elements.next());
+            result.add(elements.nextShort());
         }
 
         return result;
@@ -602,7 +602,7 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
         final Multiset<Short> result = new Multiset<>();
 
         while (elements.hasNext()) {
-            result.add(elements.next());
+            result.add(elements.nextShort());
         }
 
         return result;
@@ -613,7 +613,7 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
         final Multiset<Short> result = supplier.get();
 
         while (elements.hasNext()) {
-            result.add(elements.next());
+            result.add(elements.nextShort());
         }
 
         return result;
@@ -624,7 +624,7 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
         final LongMultiset<Short> result = new LongMultiset<>();
 
         while (elements.hasNext()) {
-            result.add(elements.next());
+            result.add(elements.nextShort());
         }
 
         return result;
@@ -635,7 +635,7 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
         final LongMultiset<Short> result = supplier.get();
 
         while (elements.hasNext()) {
-            result.add(elements.next());
+            result.add(elements.nextShort());
         }
 
         return result;
@@ -726,7 +726,7 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
                         while (eHolder.value() == null) {
                             synchronized (elements) {
                                 if (elements.hasNext()) {
-                                    next = elements.next();
+                                    next = elements.nextShort();
                                 } else {
                                     break;
                                 }
@@ -781,7 +781,7 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
 
                     synchronized (elements) {
                         if (elements.hasNext()) {
-                            result = elements.next();
+                            result = elements.nextShort();
                         } else {
                             return null;
                         }
@@ -793,7 +793,7 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
                         while (eHolder.value() == null) {
                             synchronized (elements) {
                                 if (elements.hasNext()) {
-                                    next = elements.next();
+                                    next = elements.nextShort();
                                 } else {
                                     break;
                                 }
@@ -855,7 +855,7 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
                         while (eHolder.value() == null) {
                             synchronized (elements) {
                                 if (elements.hasNext()) {
-                                    next = elements.next();
+                                    next = elements.nextShort();
                                 } else {
                                     break;
                                 }
@@ -900,7 +900,7 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
                 throw new NoSuchElementException();
             }
 
-            head = elements.next();
+            head = elements.nextShort();
             tail = new ParallelIteratorShortStream(elements, closeHandlers, sorted, maxThreadNum, splitor);
         }
 
@@ -914,7 +914,7 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
                 throw new IllegalStateException();
             }
 
-            head = elements.next();
+            head = elements.nextShort();
             tail = new ParallelIteratorShortStream(elements, closeHandlers, sorted, maxThreadNum, splitor);
         }
 
@@ -956,14 +956,14 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
         if (elements.hasNext() == false) {
             return OptionalShort.empty();
         } else if (sorted) {
-            return OptionalShort.of(elements.next());
+            return OptionalShort.of(elements.nextShort());
         }
 
-        short candidate = elements.next();
+        short candidate = elements.nextShort();
         short next = 0;
 
         while (elements.hasNext()) {
-            next = elements.next();
+            next = elements.nextShort();
 
             if (N.compare(next, candidate) < 0) {
                 candidate = next;
@@ -981,17 +981,17 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
             short next = 0;
 
             while (elements.hasNext()) {
-                next = elements.next();
+                next = elements.nextShort();
             }
 
             return OptionalShort.of(next);
         }
 
-        short candidate = elements.next();
+        short candidate = elements.nextShort();
         short next = 0;
 
         while (elements.hasNext()) {
-            next = elements.next();
+            next = elements.nextShort();
 
             if (N.compare(next, candidate) > 0) {
                 candidate = next;
@@ -1019,7 +1019,7 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
         long result = 0;
 
         while (elements.hasNext()) {
-            result += elements.next();
+            result += elements.nextShort();
         }
 
         return result;
@@ -1044,7 +1044,7 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
         final ShortSummaryStatistics result = new ShortSummaryStatistics();
 
         while (elements.hasNext()) {
-            result.accept(elements.next());
+            result.accept(elements.nextShort());
         }
 
         return result;
@@ -1070,7 +1070,7 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
                         while (result.isFalse() && eHolder.value() == null) {
                             synchronized (elements) {
                                 if (elements.hasNext()) {
-                                    next = elements.next();
+                                    next = elements.nextShort();
                                 } else {
                                     break;
                                 }
@@ -1113,7 +1113,7 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
                         while (result.isTrue() && eHolder.value() == null) {
                             synchronized (elements) {
                                 if (elements.hasNext()) {
-                                    next = elements.next();
+                                    next = elements.nextShort();
                                 } else {
                                     break;
                                 }
@@ -1156,7 +1156,7 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
                         while (result.isTrue() && eHolder.value() == null) {
                             synchronized (elements) {
                                 if (elements.hasNext()) {
-                                    next = elements.next();
+                                    next = elements.nextShort();
                                 } else {
                                     break;
                                 }
@@ -1201,7 +1201,7 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
                             synchronized (elements) {
                                 if (elements.hasNext()) {
                                     pair.left = index.getAndIncrement();
-                                    pair.right = elements.next();
+                                    pair.right = elements.nextShort();
                                 } else {
                                     break;
                                 }
@@ -1251,7 +1251,7 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
                             synchronized (elements) {
                                 if (elements.hasNext()) {
                                     pair.left = index.getAndIncrement();
-                                    pair.right = elements.next();
+                                    pair.right = elements.nextShort();
                                 } else {
                                     break;
                                 }
@@ -1297,7 +1297,7 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
                         while (resultHolder.value() == NONE && eHolder.value() == null) {
                             synchronized (elements) {
                                 if (elements.hasNext()) {
-                                    next = elements.next();
+                                    next = elements.nextShort();
                                 } else {
                                     break;
                                 }
@@ -1327,15 +1327,15 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
 
     @Override
     public IntStream asIntStream() {
-        return new ParallelIteratorIntStream(new ImmutableIntIterator() {
+        return new ParallelIteratorIntStream(new ExIntIterator() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
             }
 
             @Override
-            public int next() {
-                return elements.next();
+            public int nextInt() {
+                return elements.nextShort();
             }
 
             @Override
@@ -1398,16 +1398,6 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
             ShortTriFunction<Short> zipFunction) {
         return new ParallelIteratorShortStream(ShortStream.zip(this, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction), closeHandlers, false,
                 maxThreadNum, splitor);
-    }
-
-    @Override
-    public ImmutableIterator<Short> iterator() {
-        return this.sequential().iterator();
-    }
-
-    @Override
-    public ImmutableShortIterator shortIterator() {
-        return elements;
     }
 
     @Override

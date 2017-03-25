@@ -22,27 +22,48 @@ import java.util.NoSuchElementException;
  * 
  * @author Haiyang Li
  */
-public interface FloatIterator {
-    public static final FloatIterator EMPTY = new FloatIterator() {
-        @Override
-        public boolean hasNext() {
-            return false;
+public abstract class FloatIterator extends ImmutableIterator<Float> {
+    public static final FloatIterator EMPTY = of(N.EMPTY_FLOAT_ARRAY);
+
+    public static FloatIterator of(final float[] a) {
+        return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);
+    }
+
+    public static FloatIterator of(final float[] a, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (fromIndex == toIndex) {
+            return EMPTY;
         }
 
-        @Override
-        public float next() {
-            throw new NoSuchElementException();
-        }
+        return new FloatIterator() {
+            private int cursor = fromIndex;
 
-        @Override
-        public void remove() {
-            throw new IllegalStateException();
-        }
-    };
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
 
-    boolean hasNext();
+            @Override
+            public float nextFloat() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
 
-    float next();
+                return a[cursor++];
+            }
+        };
+    }
 
-    void remove();
+    /**
+     * 
+     * @Deprecated use <code>nextFloat()</code> instead.
+     */
+    @Deprecated
+    @Override
+    public Float next() {
+        return nextFloat();
+    }
+
+    public abstract float nextFloat();
 }

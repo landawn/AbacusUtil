@@ -42,6 +42,7 @@ import com.landawn.abacus.util.CharList;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.DoubleList;
+import com.landawn.abacus.util.ExList;
 import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.FloatList;
 import com.landawn.abacus.util.Indexed;
@@ -62,7 +63,6 @@ import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Output;
-import com.landawn.abacus.util.ExList;
 import com.landawn.abacus.util.Sheet;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.ShortList;
@@ -770,25 +770,23 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
         }
     }
 
-    static void checkIndex(int fromIndex, final int toIndex, int length) {
-        if (fromIndex < 0 || toIndex < fromIndex || toIndex > length) {
-            throw new IllegalArgumentException("Invalid fromIndex(" + fromIndex + ") or toIndex(" + toIndex + ")");
-        }
+    static void checkFromToIndex(int fromIndex, final int toIndex, int length) {
+        N.checkFromToIndex(fromIndex, toIndex, length);
     }
 
     static int toInt(long max) {
         return max > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) max;
     }
 
-    static ImmutableCharIterator charIterator(final ImmutableIterator<Character> iter) {
-        final ImmutableCharIterator charIter = new ImmutableCharIterator() {
+    static ExCharIterator charIterator(final ExIterator<Character> iter) {
+        final ExCharIterator charIter = new ExCharIterator() {
             @Override
             public boolean hasNext() {
                 return iter.hasNext();
             }
 
             @Override
-            public char next() {
+            public char nextChar() {
                 return iter.next();
             }
 
@@ -806,15 +804,15 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
         return charIter;
     }
 
-    static ImmutableByteIterator byteIterator(final ImmutableIterator<Byte> iter) {
-        final ImmutableByteIterator byteIter = new ImmutableByteIterator() {
+    static ExByteIterator skippableIterator(final ExIterator<Byte> iter) {
+        final ExByteIterator byteIter = new ExByteIterator() {
             @Override
             public boolean hasNext() {
                 return iter.hasNext();
             }
 
             @Override
-            public byte next() {
+            public byte nextByte() {
                 return iter.next();
             }
 
@@ -832,15 +830,15 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
         return byteIter;
     }
 
-    static ImmutableShortIterator shortIterator(final ImmutableIterator<Short> iter) {
-        final ImmutableShortIterator shortIter = new ImmutableShortIterator() {
+    static ExShortIterator shortIterator(final ExIterator<Short> iter) {
+        final ExShortIterator shortIter = new ExShortIterator() {
             @Override
             public boolean hasNext() {
                 return iter.hasNext();
             }
 
             @Override
-            public short next() {
+            public short nextShort() {
                 return iter.next();
             }
 
@@ -858,15 +856,15 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
         return shortIter;
     }
 
-    static ImmutableIntIterator intIterator(final ImmutableIterator<Integer> iter) {
-        final ImmutableIntIterator intIter = new ImmutableIntIterator() {
+    static ExIntIterator intIterator(final ExIterator<Integer> iter) {
+        final ExIntIterator intIter = new ExIntIterator() {
             @Override
             public boolean hasNext() {
                 return iter.hasNext();
             }
 
             @Override
-            public int next() {
+            public int nextInt() {
                 return iter.next();
             }
 
@@ -884,15 +882,15 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
         return intIter;
     }
 
-    static ImmutableLongIterator longIterator(final ImmutableIterator<Long> iter) {
-        final ImmutableLongIterator longIter = new ImmutableLongIterator() {
+    static ExLongIterator longIterator(final ExIterator<Long> iter) {
+        final ExLongIterator longIter = new ExLongIterator() {
             @Override
             public boolean hasNext() {
                 return iter.hasNext();
             }
 
             @Override
-            public long next() {
+            public long nextLong() {
                 return iter.next();
             }
 
@@ -910,15 +908,15 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
         return longIter;
     }
 
-    static ImmutableFloatIterator floatIterator(final ImmutableIterator<Float> iter) {
-        final ImmutableFloatIterator floatIter = new ImmutableFloatIterator() {
+    static ExFloatIterator floatIterator(final ExIterator<Float> iter) {
+        final ExFloatIterator floatIter = new ExFloatIterator() {
             @Override
             public boolean hasNext() {
                 return iter.hasNext();
             }
 
             @Override
-            public float next() {
+            public float nextFloat() {
                 return iter.next();
             }
 
@@ -936,15 +934,15 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
         return floatIter;
     }
 
-    static ImmutableDoubleIterator doubleIterator(final ImmutableIterator<Double> iter) {
-        final ImmutableDoubleIterator doubleIter = new ImmutableDoubleIterator() {
+    static ExDoubleIterator doubleIterator(final ExIterator<Double> iter) {
+        final ExDoubleIterator doubleIter = new ExDoubleIterator() {
             @Override
             public boolean hasNext() {
                 return iter.hasNext();
             }
 
             @Override
-            public double next() {
+            public double nextDouble() {
                 return iter.next();
             }
 

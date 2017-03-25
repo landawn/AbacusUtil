@@ -21,8 +21,8 @@ import com.landawn.abacus.util.function.IntBiFunction;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.function.IntTriFunction;
 import com.landawn.abacus.util.function.IntUnaryOperator;
-import com.landawn.abacus.util.stream.ImmutableIntIterator;
-import com.landawn.abacus.util.stream.ImmutableIterator;
+import com.landawn.abacus.util.stream.ExIntIterator;
+import com.landawn.abacus.util.stream.ExIterator;
 import com.landawn.abacus.util.stream.IntStream;
 import com.landawn.abacus.util.stream.Stream;
 
@@ -817,7 +817,7 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntMatrix> {
             return IntStream.empty();
         }
 
-        return IntStream.of(new ImmutableIntIterator() {
+        return IntStream.of(new ExIntIterator() {
             private final int toIndex = n;
             private int cursor = 0;
 
@@ -827,7 +827,7 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntMatrix> {
             }
 
             @Override
-            public int next() {
+            public int nextInt() {
                 if (cursor >= toIndex) {
                     throw new NoSuchElementException();
                 }
@@ -858,7 +858,7 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntMatrix> {
             return IntStream.empty();
         }
 
-        return IntStream.of(new ImmutableIntIterator() {
+        return IntStream.of(new ExIntIterator() {
             private final int toIndex = n;
             private int cursor = 0;
 
@@ -868,7 +868,7 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntMatrix> {
             }
 
             @Override
-            public int next() {
+            public int nextInt() {
                 if (cursor >= toIndex) {
                     throw new NoSuchElementException();
                 }
@@ -1000,7 +1000,7 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntMatrix> {
             return IntStream.empty();
         }
 
-        return IntStream.of(new ImmutableIntIterator() {
+        return IntStream.of(new ExIntIterator() {
             private int i = fromRowIndex;
             private int j = 0;
 
@@ -1010,7 +1010,7 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntMatrix> {
             }
 
             @Override
-            public int next() {
+            public int nextInt() {
                 if (i >= toRowIndex) {
                     throw new NoSuchElementException();
                 }
@@ -1083,7 +1083,7 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntMatrix> {
             return IntStream.empty();
         }
 
-        return IntStream.of(new ImmutableIntIterator() {
+        return IntStream.of(new ExIntIterator() {
             private int i = 0;
             private int j = fromColumnIndex;
 
@@ -1093,7 +1093,7 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntMatrix> {
             }
 
             @Override
-            public int next() {
+            public int nextInt() {
                 if (j >= toColumnIndex) {
                     throw new NoSuchElementException();
                 }
@@ -1164,7 +1164,7 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntMatrix> {
             return Stream.empty();
         }
 
-        return Stream.of(new ImmutableIterator<IntStream>() {
+        return Stream.of(new ExIterator<IntStream>() {
             private final int toIndex = toRowIndex;
             private int cursor = fromRowIndex;
 
@@ -1217,7 +1217,7 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntMatrix> {
             return Stream.empty();
         }
 
-        return Stream.of(new ImmutableIterator<IntStream>() {
+        return Stream.of(new ExIterator<IntStream>() {
             private final int toIndex = toColumnIndex;
             private volatile int cursor = fromColumnIndex;
 
@@ -1232,7 +1232,7 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntMatrix> {
                     throw new NoSuchElementException();
                 }
 
-                return IntStream.of(new ImmutableIntIterator() {
+                return IntStream.of(new ExIntIterator() {
                     private final int columnIndex = cursor++;
                     private final int toIndex2 = n;
                     private int cursor2 = 0;
@@ -1243,7 +1243,7 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntMatrix> {
                     }
 
                     @Override
-                    public int next() {
+                    public int nextInt() {
                         if (cursor2 >= toIndex2) {
                             throw new NoSuchElementException();
                         }

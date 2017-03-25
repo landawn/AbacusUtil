@@ -22,27 +22,48 @@ import java.util.NoSuchElementException;
  * 
  * @author Haiyang Li
  */
-public interface BooleanIterator {
-    static final BooleanIterator EMPTY = new BooleanIterator() {
-        @Override
-        public boolean hasNext() {
-            return false;
+public abstract class BooleanIterator extends ImmutableIterator<Boolean> {
+    public static final BooleanIterator EMPTY = of(N.EMPTY_BOOLEAN_ARRAY);
+
+    public static BooleanIterator of(final boolean[] a) {
+        return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);
+    }
+
+    public static BooleanIterator of(final boolean[] a, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (fromIndex == toIndex) {
+            return EMPTY;
         }
 
-        @Override
-        public boolean next() {
-            throw new NoSuchElementException();
-        }
+        return new BooleanIterator() {
+            private int cursor = fromIndex;
 
-        @Override
-        public void remove() {
-            throw new IllegalStateException();
-        }
-    };
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
 
-    boolean hasNext();
+            @Override
+            public boolean nextBoolean() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
 
-    boolean next();
+                return a[cursor++];
+            }
+        };
+    }
 
-    void remove();
+    /**
+     * 
+     * @Deprecated use <code>nextBoolean()</code> instead.
+     */
+    @Deprecated
+    @Override
+    public Boolean next() {
+        return nextBoolean();
+    }
+
+    public abstract boolean nextBoolean();
 }

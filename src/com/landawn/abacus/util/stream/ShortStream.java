@@ -644,9 +644,11 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
     public abstract Stream<Short> boxed();
 
     @Override
-    public abstract ImmutableIterator<Short> iterator();
+    public ShortIterator iterator() {
+        return exIterator();
+    }
 
-    public abstract ImmutableShortIterator shortIterator();
+    abstract ExShortIterator exIterator();
 
     public static ShortStream empty() {
         return EMPTY;
@@ -695,7 +697,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
             return empty();
         }
 
-        return new IteratorShortStream(new ImmutableShortIterator() {
+        return new IteratorShortStream(new ExShortIterator() {
             private short next = startInclusive;
             private int cnt = endExclusive * 1 - startInclusive;
 
@@ -705,7 +707,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
             }
 
             @Override
-            public short next() {
+            public short nextShort() {
                 if (cnt-- <= 0) {
                     throw new NoSuchElementException();
                 }
@@ -747,7 +749,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
             return empty();
         }
 
-        return new IteratorShortStream(new ImmutableShortIterator() {
+        return new IteratorShortStream(new ExShortIterator() {
             private short next = startInclusive;
             private int cnt = (endExclusive * 1 - startInclusive) / by + ((endExclusive * 1 - startInclusive) % by == 0 ? 0 : 1);
 
@@ -757,7 +759,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
             }
 
             @Override
-            public short next() {
+            public short nextShort() {
                 if (cnt-- <= 0) {
                     throw new NoSuchElementException();
                 }
@@ -799,7 +801,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
             return of(startInclusive);
         }
 
-        return new IteratorShortStream(new ImmutableShortIterator() {
+        return new IteratorShortStream(new ExShortIterator() {
             private short next = startInclusive;
             private int cnt = endInclusive * 1 - startInclusive + 1;
 
@@ -809,7 +811,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
             }
 
             @Override
-            public short next() {
+            public short nextShort() {
                 if (cnt-- <= 0) {
                     throw new NoSuchElementException();
                 }
@@ -853,7 +855,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
             return empty();
         }
 
-        return new IteratorShortStream(new ImmutableShortIterator() {
+        return new IteratorShortStream(new ExShortIterator() {
             private short next = startInclusive;
             private int cnt = (endInclusive * 1 - startInclusive) / by + 1;
 
@@ -863,7 +865,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
             }
 
             @Override
-            public short next() {
+            public short nextShort() {
                 if (cnt-- <= 0) {
                     throw new NoSuchElementException();
                 }
@@ -905,7 +907,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
             return empty();
         }
 
-        return new IteratorShortStream(new ImmutableShortIterator() {
+        return new IteratorShortStream(new ExShortIterator() {
             private long cnt = n;
 
             @Override
@@ -914,7 +916,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
             }
 
             @Override
-            public short next() {
+            public short nextShort() {
                 if (cnt-- <= 0) {
                     throw new NoSuchElementException();
                 }
@@ -960,7 +962,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
         N.requireNonNull(hasNext);
         N.requireNonNull(next);
 
-        return new IteratorShortStream(new ImmutableShortIterator() {
+        return new IteratorShortStream(new ExShortIterator() {
             private boolean hasNextVal = false;
 
             @Override
@@ -973,7 +975,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
             }
 
             @Override
-            public short next() {
+            public short nextShort() {
                 if (hasNextVal == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
@@ -988,7 +990,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
         N.requireNonNull(hasNext);
         N.requireNonNull(f);
 
-        return new IteratorShortStream(new ImmutableShortIterator() {
+        return new IteratorShortStream(new ExShortIterator() {
             private short t = 0;
             private boolean isFirst = true;
             private boolean hasNextVal = false;
@@ -1003,7 +1005,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
             }
 
             @Override
-            public short next() {
+            public short nextShort() {
                 if (hasNextVal == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
@@ -1033,7 +1035,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
         N.requireNonNull(hasNext);
         N.requireNonNull(f);
 
-        return new IteratorShortStream(new ImmutableShortIterator() {
+        return new IteratorShortStream(new ExShortIterator() {
             private short t = 0;
             private short cur = 0;
             private boolean isFirst = true;
@@ -1059,7 +1061,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
             }
 
             @Override
-            public short next() {
+            public short nextShort() {
                 if (hasNextVal == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
@@ -1074,7 +1076,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
     public static ShortStream generate(final short seed, final ShortUnaryOperator f) {
         N.requireNonNull(f);
 
-        return new IteratorShortStream(new ImmutableShortIterator() {
+        return new IteratorShortStream(new ExShortIterator() {
             private short t = 0;
             private boolean isFirst = true;
 
@@ -1084,7 +1086,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
             }
 
             @Override
-            public short next() {
+            public short nextShort() {
                 if (isFirst) {
                     isFirst = false;
                     t = seed;
@@ -1100,46 +1102,46 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
     public static ShortStream generate(final ShortSupplier s) {
         N.requireNonNull(s);
 
-        return new IteratorShortStream(new ImmutableShortIterator() {
+        return new IteratorShortStream(new ExShortIterator() {
             @Override
             public boolean hasNext() {
                 return true;
             }
 
             @Override
-            public short next() {
+            public short nextShort() {
                 return s.getAsShort();
             }
         });
     }
 
     public static ShortStream concat(final short[]... a) {
-        return N.isNullOrEmpty(a) ? empty() : new IteratorShortStream(new ImmutableShortIterator() {
+        return N.isNullOrEmpty(a) ? empty() : new IteratorShortStream(new ExShortIterator() {
             private final Iterator<short[]> iter = N.asList(a).iterator();
             private ShortIterator cur;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
-                    cur = ImmutableShortIterator.of(iter.next());
+                    cur = ExShortIterator.of(iter.next());
                 }
 
                 return cur != null && cur.hasNext();
             }
 
             @Override
-            public short next() {
+            public short nextShort() {
                 if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
-                return cur.next();
+                return cur.nextShort();
             }
         });
     }
 
     public static ShortStream concat(final ShortIterator... a) {
-        return N.isNullOrEmpty(a) ? empty() : new IteratorShortStream(new ImmutableShortIterator() {
+        return N.isNullOrEmpty(a) ? empty() : new IteratorShortStream(new ExShortIterator() {
             private final Iterator<? extends ShortIterator> iter = N.asList(a).iterator();
             private ShortIterator cur;
 
@@ -1153,12 +1155,12 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
             }
 
             @Override
-            public short next() {
+            public short nextShort() {
                 if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
-                return cur.next();
+                return cur.nextShort();
             }
         });
     }
@@ -1168,26 +1170,26 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
     }
 
     public static ShortStream concat(final Collection<? extends ShortStream> c) {
-        return N.isNullOrEmpty(c) ? empty() : new IteratorShortStream(new ImmutableShortIterator() {
+        return N.isNullOrEmpty(c) ? empty() : new IteratorShortStream(new ExShortIterator() {
             private final Iterator<? extends ShortStream> iter = c.iterator();
             private ShortIterator cur;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
-                    cur = iter.next().shortIterator();
+                    cur = iter.next().exIterator();
                 }
 
                 return cur != null && cur.hasNext();
             }
 
             @Override
-            public short next() {
+            public short nextShort() {
                 if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
-                return cur.next();
+                return cur.nextShort();
             }
         }).onClose(newCloseHandler(c));
     }
@@ -1405,7 +1407,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
             return of(a);
         }
 
-        return new IteratorShortStream(new ImmutableShortIterator() {
+        return new IteratorShortStream(new ExShortIterator() {
             private final int lenA = a.length;
             private final int lenB = b.length;
             private int cursorA = 0;
@@ -1417,7 +1419,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
             }
 
             @Override
-            public short next() {
+            public short nextShort() {
                 if (cursorA < lenA) {
                     if (cursorB < lenB) {
                         if (nextSelector.apply(a[cursorA], b[cursorB]) == Nth.FIRST) {
@@ -1446,7 +1448,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
      * @return
      */
     public static ShortStream merge(final short[] a, final short[] b, final short[] c, final ShortBiFunction<Nth> nextSelector) {
-        return merge(merge(a, b, nextSelector).shortIterator(), ShortStream.of(c).shortIterator(), nextSelector);
+        return merge(merge(a, b, nextSelector).exIterator(), ShortStream.of(c).exIterator(), nextSelector);
     }
 
     /**
@@ -1463,7 +1465,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
             return of(a);
         }
 
-        return new IteratorShortStream(new ImmutableShortIterator() {
+        return new IteratorShortStream(new ExShortIterator() {
             private short nextA = 0;
             private short nextB = 0;
             private boolean hasNextA = false;
@@ -1475,10 +1477,10 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
             }
 
             @Override
-            public short next() {
+            public short nextShort() {
                 if (hasNextA) {
                     if (b.hasNext()) {
-                        if (nextSelector.apply(nextA, (nextB = b.next())) == Nth.FIRST) {
+                        if (nextSelector.apply(nextA, (nextB = b.nextShort())) == Nth.FIRST) {
                             hasNextA = false;
                             hasNextB = true;
                             return nextA;
@@ -1491,7 +1493,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
                     }
                 } else if (hasNextB) {
                     if (a.hasNext()) {
-                        if (nextSelector.apply((nextA = a.next()), nextB) == Nth.FIRST) {
+                        if (nextSelector.apply((nextA = a.nextShort()), nextB) == Nth.FIRST) {
                             return nextA;
                         } else {
                             hasNextA = true;
@@ -1504,7 +1506,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
                     }
                 } else if (a.hasNext()) {
                     if (b.hasNext()) {
-                        if (nextSelector.apply((nextA = a.next()), (nextB = b.next())) == Nth.FIRST) {
+                        if (nextSelector.apply((nextA = a.nextShort()), (nextB = b.nextShort())) == Nth.FIRST) {
                             hasNextB = true;
                             return nextA;
                         } else {
@@ -1512,10 +1514,10 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
                             return nextB;
                         }
                     } else {
-                        return a.next();
+                        return a.nextShort();
                     }
                 } else if (b.hasNext()) {
-                    return b.next();
+                    return b.nextShort();
                 } else {
                     throw new NoSuchElementException();
                 }
@@ -1532,7 +1534,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
      * @return
      */
     public static ShortStream merge(final ShortIterator a, final ShortIterator b, final ShortIterator c, final ShortBiFunction<Nth> nextSelector) {
-        return merge(merge(a, b, nextSelector).shortIterator(), c, nextSelector);
+        return merge(merge(a, b, nextSelector).exIterator(), c, nextSelector);
     }
 
     /**
@@ -1543,7 +1545,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
      * @return
      */
     public static ShortStream merge(final ShortStream a, final ShortStream b, final ShortBiFunction<Nth> nextSelector) {
-        return merge(a.shortIterator(), b.shortIterator(), nextSelector).onClose(newCloseHandler(N.asList(a, b)));
+        return merge(a.exIterator(), b.exIterator(), nextSelector).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -1575,10 +1577,10 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
         }
 
         final Iterator<? extends ShortStream> iter = c.iterator();
-        ShortStream result = merge(iter.next().shortIterator(), iter.next().shortIterator(), nextSelector);
+        ShortStream result = merge(iter.next().exIterator(), iter.next().exIterator(), nextSelector);
 
         while (iter.hasNext()) {
-            result = merge(result.shortIterator(), iter.next().shortIterator(), nextSelector);
+            result = merge(result.exIterator(), iter.next().exIterator(), nextSelector);
         }
 
         return result.onClose(newCloseHandler(c));
@@ -1620,7 +1622,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
         final Queue<ShortIterator> queue = N.newLinkedList();
 
         for (ShortStream e : c) {
-            queue.add(e.shortIterator());
+            queue.add(e.exIterator());
         }
 
         final Output<Throwable> eHolder = new Output<>();
@@ -1648,7 +1650,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
                                 }
                             }
 
-                            c = ImmutableShortIterator.of(merge(a, b, nextSelector).toArray());
+                            c = ExShortIterator.of(merge(a, b, nextSelector).toArray());
 
                             synchronized (queue) {
                                 queue.offer(c);

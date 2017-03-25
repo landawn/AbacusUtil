@@ -82,7 +82,7 @@ final class ParallelArrayCharStream extends ArrayCharStream {
     @Override
     public CharStream filter(final CharPredicate predicate) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorCharStream(sequential().filter(predicate).charIterator(), closeHandlers, sorted, maxThreadNum, splitor);
+            return new ParallelIteratorCharStream(sequential().filter(predicate).exIterator(), closeHandlers, sorted, maxThreadNum, splitor);
         }
 
         final Stream<Character> stream = boxed().filter(new Predicate<Character>() {
@@ -98,7 +98,7 @@ final class ParallelArrayCharStream extends ArrayCharStream {
     @Override
     public CharStream takeWhile(final CharPredicate predicate) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorCharStream(sequential().takeWhile(predicate).charIterator(), closeHandlers, sorted, maxThreadNum, splitor);
+            return new ParallelIteratorCharStream(sequential().takeWhile(predicate).exIterator(), closeHandlers, sorted, maxThreadNum, splitor);
         }
 
         final Stream<Character> stream = boxed().takeWhile(new Predicate<Character>() {
@@ -114,7 +114,7 @@ final class ParallelArrayCharStream extends ArrayCharStream {
     @Override
     public CharStream dropWhile(final CharPredicate predicate) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorCharStream(sequential().dropWhile(predicate).charIterator(), closeHandlers, sorted, maxThreadNum, splitor);
+            return new ParallelIteratorCharStream(sequential().dropWhile(predicate).exIterator(), closeHandlers, sorted, maxThreadNum, splitor);
         }
 
         final Stream<Character> stream = boxed().dropWhile(new Predicate<Character>() {
@@ -130,7 +130,7 @@ final class ParallelArrayCharStream extends ArrayCharStream {
     @Override
     public CharStream map(final CharUnaryOperator mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorCharStream(sequential().map(mapper).charIterator(), closeHandlers, false, maxThreadNum, splitor);
+            return new ParallelIteratorCharStream(sequential().map(mapper).exIterator(), closeHandlers, false, maxThreadNum, splitor);
         }
 
         final CharStream stream = boxed().mapToChar(new ToCharFunction<Character>() {
@@ -146,7 +146,7 @@ final class ParallelArrayCharStream extends ArrayCharStream {
     @Override
     public IntStream mapToInt(final CharToIntFunction mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorIntStream(sequential().mapToInt(mapper).intIterator(), closeHandlers, false, maxThreadNum, splitor);
+            return new ParallelIteratorIntStream(sequential().mapToInt(mapper).exIterator(), closeHandlers, false, maxThreadNum, splitor);
         }
 
         final IntStream stream = boxed().mapToInt(new ToIntFunction<Character>() {
@@ -176,7 +176,7 @@ final class ParallelArrayCharStream extends ArrayCharStream {
     @Override
     public CharStream flatMap(final CharFunction<? extends CharStream> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorCharStream(sequential().flatMap(mapper).charIterator(), closeHandlers, false, maxThreadNum, splitor);
+            return new ParallelIteratorCharStream(sequential().flatMap(mapper).exIterator(), closeHandlers, false, maxThreadNum, splitor);
         }
 
         final CharStream stream = boxed().flatMapToChar(new Function<Character, CharStream>() {
@@ -192,7 +192,7 @@ final class ParallelArrayCharStream extends ArrayCharStream {
     @Override
     public IntStream flatMapToInt(final CharFunction<? extends IntStream> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorIntStream(sequential().flatMapToInt(mapper).intIterator(), closeHandlers, false, maxThreadNum, splitor);
+            return new ParallelIteratorIntStream(sequential().flatMapToInt(mapper).exIterator(), closeHandlers, false, maxThreadNum, splitor);
         }
 
         final IntStream stream = boxed().flatMapToInt(new Function<Character, IntStream>() {
@@ -296,7 +296,7 @@ final class ParallelArrayCharStream extends ArrayCharStream {
     @Override
     public CharStream peek(final CharConsumer action) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorCharStream(sequential().peek(action).charIterator(), closeHandlers, false, maxThreadNum, splitor);
+            return new ParallelIteratorCharStream(sequential().peek(action).exIterator(), closeHandlers, false, maxThreadNum, splitor);
         }
 
         final CharStream stream = boxed().peek(new Consumer<Character>() {
@@ -1053,7 +1053,7 @@ final class ParallelArrayCharStream extends ArrayCharStream {
 
     @Override
     public CharStream reverse() {
-        return new ParallelIteratorCharStream(sequential().reverse().charIterator(), closeHandlers, false, maxThreadNum, splitor);
+        return new ParallelIteratorCharStream(sequential().reverse().exIterator(), closeHandlers, false, maxThreadNum, splitor);
     }
 
     @Override
@@ -1584,7 +1584,7 @@ final class ParallelArrayCharStream extends ArrayCharStream {
 
     @Override
     public IntStream asIntStream() {
-        return new ParallelIteratorIntStream(new ImmutableIntIterator() {
+        return new ParallelIteratorIntStream(new ExIntIterator() {
             private int cursor = fromIndex;
 
             @Override
@@ -1593,7 +1593,7 @@ final class ParallelArrayCharStream extends ArrayCharStream {
             }
 
             @Override
-            public int next() {
+            public int nextInt() {
                 if (cursor >= toIndex) {
                     throw new NoSuchElementException();
                 }
@@ -1675,16 +1675,6 @@ final class ParallelArrayCharStream extends ArrayCharStream {
     public CharStream zipWith(CharStream b, CharStream c, char valueForNoneA, char valueForNoneB, char valueForNoneC, CharTriFunction<Character> zipFunction) {
         return new ParallelIteratorCharStream(CharStream.zip(this, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction), closeHandlers, false,
                 maxThreadNum, splitor);
-    }
-
-    @Override
-    public ImmutableIterator<Character> iterator() {
-        return this.sequential().iterator();
-    }
-
-    @Override
-    public ImmutableCharIterator charIterator() {
-        return this.sequential().charIterator();
     }
 
     @Override

@@ -60,7 +60,7 @@ import com.landawn.abacus.util.function.ToDoubleFunction;
  * @author Haiyang Li
  */
 class IteratorDoubleStream extends AbstractDoubleStream {
-    final ImmutableDoubleIterator elements;
+    final ExDoubleIterator elements;
 
     double head;
     DoubleStream tail;
@@ -79,22 +79,22 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     IteratorDoubleStream(final DoubleIterator values, final Collection<Runnable> closeHandlers, final boolean sorted) {
         super(closeHandlers, sorted);
 
-        this.elements = values instanceof ImmutableDoubleIterator ? (ImmutableDoubleIterator) values : new ImmutableDoubleIterator() {
+        this.elements = values instanceof ExDoubleIterator ? (ExDoubleIterator) values : new ExDoubleIterator() {
             @Override
             public boolean hasNext() {
                 return values.hasNext();
             }
 
             @Override
-            public double next() {
-                return values.next();
+            public double nextDouble() {
+                return values.nextDouble();
             }
         };
     }
 
     @Override
     public DoubleStream filter(final DoublePredicate predicate) {
-        return new IteratorDoubleStream(new ImmutableDoubleIterator() {
+        return new IteratorDoubleStream(new ExDoubleIterator() {
             private boolean hasNext = false;
             private double next = 0;
 
@@ -102,7 +102,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
             public boolean hasNext() {
                 if (hasNext == false) {
                     while (elements.hasNext()) {
-                        next = elements.next();
+                        next = elements.nextDouble();
 
                         if (predicate.test(next)) {
                             hasNext = true;
@@ -115,7 +115,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
             }
 
             @Override
-            public double next() {
+            public double nextDouble() {
                 if (hasNext == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
@@ -129,7 +129,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public DoubleStream takeWhile(final DoublePredicate predicate) {
-        return new IteratorDoubleStream(new ImmutableDoubleIterator() {
+        return new IteratorDoubleStream(new ExDoubleIterator() {
             private boolean hasMore = true;
             private boolean hasNext = false;
             private double next = 0;
@@ -137,7 +137,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
             @Override
             public boolean hasNext() {
                 if (hasNext == false && hasMore && elements.hasNext()) {
-                    next = elements.next();
+                    next = elements.nextDouble();
 
                     if (predicate.test(next)) {
                         hasNext = true;
@@ -150,7 +150,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
             }
 
             @Override
-            public double next() {
+            public double nextDouble() {
                 if (hasNext == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
@@ -165,7 +165,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public DoubleStream dropWhile(final DoublePredicate predicate) {
-        return new IteratorDoubleStream(new ImmutableDoubleIterator() {
+        return new IteratorDoubleStream(new ExDoubleIterator() {
             private boolean hasNext = false;
             private double next = 0;
             private boolean dropped = false;
@@ -175,7 +175,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
                 if (hasNext == false) {
                     if (dropped == false) {
                         while (elements.hasNext()) {
-                            next = elements.next();
+                            next = elements.nextDouble();
 
                             if (predicate.test(next) == false) {
                                 hasNext = true;
@@ -185,7 +185,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
                         dropped = true;
                     } else if (elements.hasNext()) {
-                        next = elements.next();
+                        next = elements.nextDouble();
                         hasNext = true;
                     }
                 }
@@ -194,7 +194,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
             }
 
             @Override
-            public double next() {
+            public double nextDouble() {
                 if (hasNext == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
@@ -209,15 +209,15 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public DoubleStream map(final DoubleUnaryOperator mapper) {
-        return new IteratorDoubleStream(new ImmutableDoubleIterator() {
+        return new IteratorDoubleStream(new ExDoubleIterator() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
             }
 
             @Override
-            public double next() {
-                return mapper.applyAsDouble(elements.next());
+            public double nextDouble() {
+                return mapper.applyAsDouble(elements.nextDouble());
             }
 
             @Override
@@ -234,15 +234,15 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public IntStream mapToInt(final DoubleToIntFunction mapper) {
-        return new IteratorIntStream(new ImmutableIntIterator() {
+        return new IteratorIntStream(new ExIntIterator() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
             }
 
             @Override
-            public int next() {
-                return mapper.applyAsInt(elements.next());
+            public int nextInt() {
+                return mapper.applyAsInt(elements.nextDouble());
             }
 
             @Override
@@ -259,15 +259,15 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public LongStream mapToLong(final DoubleToLongFunction mapper) {
-        return new IteratorLongStream(new ImmutableLongIterator() {
+        return new IteratorLongStream(new ExLongIterator() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
             }
 
             @Override
-            public long next() {
-                return mapper.applyAsLong(elements.next());
+            public long nextLong() {
+                return mapper.applyAsLong(elements.nextDouble());
             }
 
             @Override
@@ -284,15 +284,15 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public FloatStream mapToFloat(final DoubleToFloatFunction mapper) {
-        return new IteratorFloatStream(new ImmutableFloatIterator() {
+        return new IteratorFloatStream(new ExFloatIterator() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
             }
 
             @Override
-            public float next() {
-                return mapper.applyAsFloat(elements.next());
+            public float nextFloat() {
+                return mapper.applyAsFloat(elements.nextDouble());
             }
 
             @Override
@@ -309,7 +309,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public <U> Stream<U> mapToObj(final DoubleFunction<? extends U> mapper) {
-        return new IteratorStream<U>(new ImmutableIterator<U>() {
+        return new IteratorStream<U>(new ExIterator<U>() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -317,7 +317,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
             @Override
             public U next() {
-                return mapper.apply(elements.next());
+                return mapper.apply(elements.nextDouble());
             }
 
             @Override
@@ -334,113 +334,113 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public DoubleStream flatMap(final DoubleFunction<? extends DoubleStream> mapper) {
-        return new IteratorDoubleStream(new ImmutableDoubleIterator() {
+        return new IteratorDoubleStream(new ExDoubleIterator() {
             private DoubleIterator cur = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && elements.hasNext()) {
-                    cur = mapper.apply(elements.next()).doubleIterator();
+                    cur = mapper.apply(elements.nextDouble()).exIterator();
                 }
 
                 return cur != null && cur.hasNext();
             }
 
             @Override
-            public double next() {
+            public double nextDouble() {
                 if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
-                return cur.next();
+                return cur.nextDouble();
             }
         }, closeHandlers);
     }
 
     @Override
     public IntStream flatMapToInt(final DoubleFunction<? extends IntStream> mapper) {
-        return new IteratorIntStream(new ImmutableIntIterator() {
+        return new IteratorIntStream(new ExIntIterator() {
             private IntIterator cur = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && elements.hasNext()) {
-                    cur = mapper.apply(elements.next()).intIterator();
+                    cur = mapper.apply(elements.nextDouble()).exIterator();
                 }
 
                 return cur != null && cur.hasNext();
             }
 
             @Override
-            public int next() {
+            public int nextInt() {
                 if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
-                return cur.next();
+                return cur.nextInt();
             }
         }, closeHandlers);
     }
 
     @Override
     public LongStream flatMapToLong(final DoubleFunction<? extends LongStream> mapper) {
-        return new IteratorLongStream(new ImmutableLongIterator() {
+        return new IteratorLongStream(new ExLongIterator() {
             private LongIterator cur = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && elements.hasNext()) {
-                    cur = mapper.apply(elements.next()).longIterator();
+                    cur = mapper.apply(elements.nextDouble()).exIterator();
                 }
 
                 return cur != null && cur.hasNext();
             }
 
             @Override
-            public long next() {
+            public long nextLong() {
                 if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
-                return cur.next();
+                return cur.nextLong();
             }
         }, closeHandlers);
     }
 
     @Override
     public FloatStream flatMapToFloat(final DoubleFunction<? extends FloatStream> mapper) {
-        return new IteratorFloatStream(new ImmutableFloatIterator() {
+        return new IteratorFloatStream(new ExFloatIterator() {
             private FloatIterator cur = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && elements.hasNext()) {
-                    cur = mapper.apply(elements.next()).floatIterator();
+                    cur = mapper.apply(elements.nextDouble()).exIterator();
                 }
 
                 return cur != null && cur.hasNext();
             }
 
             @Override
-            public float next() {
+            public float nextFloat() {
                 if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
-                return cur.next();
+                return cur.nextFloat();
             }
         }, closeHandlers);
     }
 
     @Override
     public <T> Stream<T> flatMapToObj(final DoubleFunction<? extends Stream<T>> mapper) {
-        return new IteratorStream<T>(new ImmutableIterator<T>() {
+        return new IteratorStream<T>(new ExIterator<T>() {
             private Iterator<? extends T> cur = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && elements.hasNext()) {
-                    cur = mapper.apply(elements.next()).iterator();
+                    cur = mapper.apply(elements.nextDouble()).iterator();
                 }
 
                 return cur != null && cur.hasNext();
@@ -461,7 +461,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     public Stream<DoubleList> split0(final int size) {
         N.checkArgument(size > 0, "'size' must be bigger than 0");
 
-        return new IteratorStream<DoubleList>(new ImmutableIterator<DoubleList>() {
+        return new IteratorStream<DoubleList>(new ExIterator<DoubleList>() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -476,7 +476,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
                 final DoubleList result = new DoubleList(size);
 
                 while (result.size() < size && elements.hasNext()) {
-                    result.add(elements.next());
+                    result.add(elements.nextDouble());
                 }
 
                 return result;
@@ -488,7 +488,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     @Override
     public <U> Stream<DoubleList> split0(final U identity, final BiFunction<? super Double, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
-        return new IteratorStream<DoubleList>(new ImmutableIterator<DoubleList>() {
+        return new IteratorStream<DoubleList>(new ExIterator<DoubleList>() {
             private double next;
             private boolean hasNext = false;
             private boolean preCondition = false;
@@ -507,7 +507,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
                 final DoubleList result = new DoubleList();
 
                 if (hasNext == false) {
-                    next = elements.next();
+                    next = elements.nextDouble();
                     hasNext = true;
                 }
 
@@ -515,10 +515,10 @@ class IteratorDoubleStream extends AbstractDoubleStream {
                     if (result.size() == 0) {
                         result.add(next);
                         preCondition = predicate.apply(next, identity);
-                        next = (hasNext = elements.hasNext()) ? elements.next() : 0;
+                        next = (hasNext = elements.hasNext()) ? elements.nextDouble() : 0;
                     } else if (predicate.apply(next, identity) == preCondition) {
                         result.add(next);
-                        next = (hasNext = elements.hasNext()) ? elements.next() : 0;
+                        next = (hasNext = elements.hasNext()) ? elements.nextDouble() : 0;
                     } else {
                         if (identityUpdate != null) {
                             identityUpdate.accept(identity);
@@ -540,7 +540,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
             throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
         }
 
-        return new IteratorStream<DoubleList>(new ImmutableIterator<DoubleList>() {
+        return new IteratorStream<DoubleList>(new ExIterator<DoubleList>() {
             private DoubleList prev = null;
 
             @Override
@@ -549,7 +549,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
                     int skipNum = increment - windowSize;
 
                     while (skipNum-- > 0 && elements.hasNext()) {
-                        elements.next();
+                        elements.nextDouble();
                     }
 
                     prev = null;
@@ -586,7 +586,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
                 }
 
                 while (cnt++ < windowSize && elements.hasNext()) {
-                    result.add(elements.next());
+                    result.add(elements.nextDouble());
                 }
 
                 return prev = result;
@@ -610,7 +610,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
             return this;
         }
 
-        return new IteratorDoubleStream(new ImmutableDoubleIterator() {
+        return new IteratorDoubleStream(new ExDoubleIterator() {
             double[] a = null;
             int toIndex = 0;
             int cursor = 0;
@@ -625,7 +625,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
             }
 
             @Override
-            public double next() {
+            public double nextDouble() {
                 if (a == null) {
                     sort();
                 }
@@ -679,15 +679,15 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public DoubleStream peek(final DoubleConsumer action) {
-        return new IteratorDoubleStream(new ImmutableDoubleIterator() {
+        return new IteratorDoubleStream(new ExDoubleIterator() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
             }
 
             @Override
-            public double next() {
-                final double next = elements.next();
+            public double nextDouble() {
+                final double next = elements.nextDouble();
                 action.accept(next);
                 return next;
             }
@@ -700,7 +700,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
             throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
         }
 
-        return new IteratorDoubleStream(new ImmutableDoubleIterator() {
+        return new IteratorDoubleStream(new ExDoubleIterator() {
             private long cnt = 0;
 
             @Override
@@ -709,13 +709,13 @@ class IteratorDoubleStream extends AbstractDoubleStream {
             }
 
             @Override
-            public double next() {
+            public double nextDouble() {
                 if (cnt >= maxSize) {
                     throw new NoSuchElementException();
                 }
 
                 cnt++;
-                return elements.next();
+                return elements.nextDouble();
             }
 
             @Override
@@ -733,7 +733,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
             return this;
         }
 
-        return new IteratorDoubleStream(new ImmutableDoubleIterator() {
+        return new IteratorDoubleStream(new ExDoubleIterator() {
             private boolean skipped = false;
 
             @Override
@@ -747,13 +747,13 @@ class IteratorDoubleStream extends AbstractDoubleStream {
             }
 
             @Override
-            public double next() {
+            public double nextDouble() {
                 if (skipped == false) {
                     elements.skip(n);
                     skipped = true;
                 }
 
-                return elements.next();
+                return elements.nextDouble();
             }
 
             @Override
@@ -791,7 +791,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     @Override
     public void forEach(DoubleConsumer action) {
         while (elements.hasNext()) {
-            action.accept(elements.next());
+            action.accept(elements.nextDouble());
         }
     }
 
@@ -810,7 +810,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
         final List<Double> result = new ArrayList<>();
 
         while (elements.hasNext()) {
-            result.add(elements.next());
+            result.add(elements.nextDouble());
         }
 
         return result;
@@ -821,7 +821,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
         final List<Double> result = supplier.get();
 
         while (elements.hasNext()) {
-            result.add(elements.next());
+            result.add(elements.nextDouble());
         }
 
         return result;
@@ -832,7 +832,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
         final Set<Double> result = new HashSet<>();
 
         while (elements.hasNext()) {
-            result.add(elements.next());
+            result.add(elements.nextDouble());
         }
 
         return result;
@@ -843,7 +843,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
         final Set<Double> result = supplier.get();
 
         while (elements.hasNext()) {
-            result.add(elements.next());
+            result.add(elements.nextDouble());
         }
 
         return result;
@@ -854,7 +854,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
         final Multiset<Double> result = new Multiset<>();
 
         while (elements.hasNext()) {
-            result.add(elements.next());
+            result.add(elements.nextDouble());
         }
 
         return result;
@@ -865,7 +865,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
         final Multiset<Double> result = supplier.get();
 
         while (elements.hasNext()) {
-            result.add(elements.next());
+            result.add(elements.nextDouble());
         }
 
         return result;
@@ -876,7 +876,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
         final LongMultiset<Double> result = new LongMultiset<>();
 
         while (elements.hasNext()) {
-            result.add(elements.next());
+            result.add(elements.nextDouble());
         }
 
         return result;
@@ -887,7 +887,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
         final LongMultiset<Double> result = supplier.get();
 
         while (elements.hasNext()) {
-            result.add(elements.next());
+            result.add(elements.nextDouble());
         }
 
         return result;
@@ -905,7 +905,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
         double element = 0;
 
         while (elements.hasNext()) {
-            element = elements.next();
+            element = elements.nextDouble();
             key = N.requireNonNull(classifier.apply(element), "element cannot be mapped to a null key");
 
             if ((v = intermediate.get(key)) == null) {
@@ -936,7 +936,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
         double element = 0;
 
         while (elements.hasNext()) {
-            element = elements.next();
+            element = elements.nextDouble();
             Collectors.merge(result, keyMapper.apply(element), valueMapper.apply(element), mergeFunction);
         }
 
@@ -950,7 +950,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
         double element = 0;
 
         while (elements.hasNext()) {
-            element = elements.next();
+            element = elements.nextDouble();
             result.put(keyMapper.apply(element), valueMapper.apply(element));
         }
 
@@ -962,7 +962,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
         double result = identity;
 
         while (elements.hasNext()) {
-            result = op.applyAsDouble(result, elements.next());
+            result = op.applyAsDouble(result, elements.nextDouble());
         }
 
         return result;
@@ -974,10 +974,10 @@ class IteratorDoubleStream extends AbstractDoubleStream {
             return OptionalDouble.empty();
         }
 
-        double result = elements.next();
+        double result = elements.nextDouble();
 
         while (elements.hasNext()) {
-            result = op.applyAsDouble(result, elements.next());
+            result = op.applyAsDouble(result, elements.nextDouble());
         }
 
         return OptionalDouble.of(result);
@@ -988,7 +988,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
         final R result = supplier.get();
 
         while (elements.hasNext()) {
-            accumulator.accept(result, elements.next());
+            accumulator.accept(result, elements.nextDouble());
         }
 
         return result;
@@ -1001,7 +1001,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
                 throw new NoSuchElementException();
             }
 
-            head = elements.next();
+            head = elements.nextDouble();
             tail = new IteratorDoubleStream(elements, closeHandlers, sorted);
         }
 
@@ -1015,7 +1015,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
                 throw new IllegalStateException();
             }
 
-            head = elements.next();
+            head = elements.nextDouble();
             tail = new IteratorDoubleStream(elements, closeHandlers, sorted);
         }
 
@@ -1057,14 +1057,14 @@ class IteratorDoubleStream extends AbstractDoubleStream {
         if (elements.hasNext() == false) {
             return OptionalDouble.empty();
         } else if (sorted) {
-            return OptionalDouble.of(elements.next());
+            return OptionalDouble.of(elements.nextDouble());
         }
 
-        double candidate = elements.next();
+        double candidate = elements.nextDouble();
         double next = 0;
 
         while (elements.hasNext()) {
-            next = elements.next();
+            next = elements.nextDouble();
 
             if (N.compare(next, candidate) < 0) {
                 candidate = next;
@@ -1082,17 +1082,17 @@ class IteratorDoubleStream extends AbstractDoubleStream {
             double next = 0;
 
             while (elements.hasNext()) {
-                next = elements.next();
+                next = elements.nextDouble();
             }
 
             return OptionalDouble.of(next);
         }
 
-        double candidate = elements.next();
+        double candidate = elements.nextDouble();
         double next = 0;
 
         while (elements.hasNext()) {
-            next = elements.next();
+            next = elements.nextDouble();
 
             if (N.compare(next, candidate) > 0) {
                 candidate = next;
@@ -1125,7 +1125,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
         final DoubleSummaryStatistics result = new DoubleSummaryStatistics();
 
         while (elements.hasNext()) {
-            result.accept(elements.next());
+            result.accept(elements.nextDouble());
         }
 
         return result;
@@ -1134,7 +1134,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     @Override
     public boolean anyMatch(DoublePredicate predicate) {
         while (elements.hasNext()) {
-            if (predicate.test(elements.next())) {
+            if (predicate.test(elements.nextDouble())) {
                 return true;
             }
         }
@@ -1145,7 +1145,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     @Override
     public boolean allMatch(DoublePredicate predicate) {
         while (elements.hasNext()) {
-            if (predicate.test(elements.next()) == false) {
+            if (predicate.test(elements.nextDouble()) == false) {
                 return false;
             }
         }
@@ -1156,7 +1156,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     @Override
     public boolean noneMatch(DoublePredicate predicate) {
         while (elements.hasNext()) {
-            if (predicate.test(elements.next())) {
+            if (predicate.test(elements.nextDouble())) {
                 return false;
             }
         }
@@ -1167,7 +1167,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     @Override
     public OptionalDouble findFirst(DoublePredicate predicate) {
         while (elements.hasNext()) {
-            double e = elements.next();
+            double e = elements.nextDouble();
 
             if (predicate.test(e)) {
                 return OptionalDouble.of(e);
@@ -1188,7 +1188,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
         double result = 0;
 
         while (elements.hasNext()) {
-            e = elements.next();
+            e = elements.nextDouble();
 
             if (predicate.test(e)) {
                 result = e;
@@ -1205,32 +1205,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public ImmutableIterator<Double> iterator() {
-        return new ImmutableIterator<Double>() {
-            @Override
-            public boolean hasNext() {
-                return elements.hasNext();
-            }
-
-            @Override
-            public Double next() {
-                return elements.next();
-            }
-
-            @Override
-            public long count() {
-                return elements.count();
-            }
-
-            @Override
-            public void skip(long n) {
-                elements.skip(n);
-            }
-        };
-    }
-
-    @Override
-    public ImmutableDoubleIterator doubleIterator() {
+    public ExDoubleIterator exIterator() {
         return elements;
     }
 

@@ -22,8 +22,8 @@ import com.landawn.abacus.util.function.CharTriFunction;
 import com.landawn.abacus.util.function.CharUnaryOperator;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.stream.CharStream;
-import com.landawn.abacus.util.stream.ImmutableCharIterator;
-import com.landawn.abacus.util.stream.ImmutableIterator;
+import com.landawn.abacus.util.stream.ExCharIterator;
+import com.landawn.abacus.util.stream.ExIterator;
 import com.landawn.abacus.util.stream.IntStream;
 import com.landawn.abacus.util.stream.Stream;
 
@@ -798,7 +798,7 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharMatri
             return CharStream.empty();
         }
 
-        return CharStream.of(new ImmutableCharIterator() {
+        return CharStream.of(new ExCharIterator() {
             private final int toIndex = n;
             private int cursor = 0;
 
@@ -808,7 +808,7 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharMatri
             }
 
             @Override
-            public char next() {
+            public char nextChar() {
                 if (cursor >= toIndex) {
                     throw new NoSuchElementException();
                 }
@@ -839,7 +839,7 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharMatri
             return CharStream.empty();
         }
 
-        return CharStream.of(new ImmutableCharIterator() {
+        return CharStream.of(new ExCharIterator() {
             private final int toIndex = n;
             private int cursor = 0;
 
@@ -849,7 +849,7 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharMatri
             }
 
             @Override
-            public char next() {
+            public char nextChar() {
                 if (cursor >= toIndex) {
                     throw new NoSuchElementException();
                 }
@@ -981,7 +981,7 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharMatri
             return CharStream.empty();
         }
 
-        return CharStream.of(new ImmutableCharIterator() {
+        return CharStream.of(new ExCharIterator() {
             private int i = fromRowIndex;
             private int j = 0;
 
@@ -991,7 +991,7 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharMatri
             }
 
             @Override
-            public char next() {
+            public char nextChar() {
                 if (i >= toRowIndex) {
                     throw new NoSuchElementException();
                 }
@@ -1064,7 +1064,7 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharMatri
             return CharStream.empty();
         }
 
-        return CharStream.of(new ImmutableCharIterator() {
+        return CharStream.of(new ExCharIterator() {
             private int i = 0;
             private int j = fromColumnIndex;
 
@@ -1074,7 +1074,7 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharMatri
             }
 
             @Override
-            public char next() {
+            public char nextChar() {
                 if (j >= toColumnIndex) {
                     throw new NoSuchElementException();
                 }
@@ -1145,7 +1145,7 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharMatri
             return Stream.empty();
         }
 
-        return Stream.of(new ImmutableIterator<CharStream>() {
+        return Stream.of(new ExIterator<CharStream>() {
             private final int toIndex = toRowIndex;
             private int cursor = fromRowIndex;
 
@@ -1198,7 +1198,7 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharMatri
             return Stream.empty();
         }
 
-        return Stream.of(new ImmutableIterator<CharStream>() {
+        return Stream.of(new ExIterator<CharStream>() {
             private final int toIndex = toColumnIndex;
             private volatile int cursor = fromColumnIndex;
 
@@ -1213,7 +1213,7 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharMatri
                     throw new NoSuchElementException();
                 }
 
-                return CharStream.of(new ImmutableCharIterator() {
+                return CharStream.of(new ExCharIterator() {
                     private final int columnIndex = cursor++;
                     private final int toIndex2 = n;
                     private int cursor2 = 0;
@@ -1224,7 +1224,7 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharMatri
                     }
 
                     @Override
-                    public char next() {
+                    public char nextChar() {
                         if (cursor2 >= toIndex2) {
                             throw new NoSuchElementException();
                         }

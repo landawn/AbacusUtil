@@ -9049,8 +9049,8 @@ public final class N {
         return a == null ? EMPTY_OBJECT_ARRAY : a;
     }
 
-    public static <T> T[] nullToEmpty(final Class<T> componentType, final T[] a) {
-        return a == null ? (T[]) N.newArray(componentType, 0) : a;
+    public static <T> T[] nullToEmpty(final Class<T[]> arrayType, final T[] a) {
+        return a == null ? (T[]) N.newArray(arrayType.getComponentType(), 0) : a;
     }
 
     public static <T> List<T> nullToEmpty(final List<T> list) {

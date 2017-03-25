@@ -22,27 +22,48 @@ import java.util.NoSuchElementException;
  * 
  * @author Haiyang Li
  */
-public interface ByteIterator {
-    public static final ByteIterator EMPTY = new ByteIterator() {
-        @Override
-        public boolean hasNext() {
-            return false;
+public abstract class ByteIterator extends ImmutableIterator<Byte> {
+    public static final ByteIterator EMPTY = of(N.EMPTY_BYTE_ARRAY);
+
+    public static ByteIterator of(final byte[] a) {
+        return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);
+    }
+
+    public static ByteIterator of(final byte[] a, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (fromIndex == toIndex) {
+            return EMPTY;
         }
 
-        @Override
-        public byte next() {
-            throw new NoSuchElementException();
-        }
+        return new ByteIterator() {
+            private int cursor = fromIndex;
 
-        @Override
-        public void remove() {
-            throw new IllegalStateException();
-        }
-    };
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
 
-    boolean hasNext();
+            @Override
+            public byte nextByte() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
 
-    byte next();
+                return a[cursor++];
+            }
+        };
+    }
 
-    void remove();
+    /**
+     * 
+     * @Deprecated use <code>nextByte()</code> instead.
+     */
+    @Deprecated
+    @Override
+    public Byte next() {
+        return nextByte();
+    }
+
+    public abstract byte nextByte();
 }

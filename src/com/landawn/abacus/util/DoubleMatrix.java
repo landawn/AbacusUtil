@@ -22,8 +22,8 @@ import com.landawn.abacus.util.function.DoubleTriFunction;
 import com.landawn.abacus.util.function.DoubleUnaryOperator;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.stream.DoubleStream;
-import com.landawn.abacus.util.stream.ImmutableDoubleIterator;
-import com.landawn.abacus.util.stream.ImmutableIterator;
+import com.landawn.abacus.util.stream.ExDoubleIterator;
+import com.landawn.abacus.util.stream.ExIterator;
 import com.landawn.abacus.util.stream.IntStream;
 import com.landawn.abacus.util.stream.Stream;
 
@@ -766,7 +766,7 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
             return DoubleStream.empty();
         }
 
-        return DoubleStream.of(new ImmutableDoubleIterator() {
+        return DoubleStream.of(new ExDoubleIterator() {
             private final int toIndex = n;
             private int cursor = 0;
 
@@ -776,7 +776,7 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
             }
 
             @Override
-            public double next() {
+            public double nextDouble() {
                 if (cursor >= toIndex) {
                     throw new NoSuchElementException();
                 }
@@ -807,7 +807,7 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
             return DoubleStream.empty();
         }
 
-        return DoubleStream.of(new ImmutableDoubleIterator() {
+        return DoubleStream.of(new ExDoubleIterator() {
             private final int toIndex = n;
             private int cursor = 0;
 
@@ -817,7 +817,7 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
             }
 
             @Override
-            public double next() {
+            public double nextDouble() {
                 if (cursor >= toIndex) {
                     throw new NoSuchElementException();
                 }
@@ -949,7 +949,7 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
             return DoubleStream.empty();
         }
 
-        return DoubleStream.of(new ImmutableDoubleIterator() {
+        return DoubleStream.of(new ExDoubleIterator() {
             private int i = fromRowIndex;
             private int j = 0;
 
@@ -959,7 +959,7 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
             }
 
             @Override
-            public double next() {
+            public double nextDouble() {
                 if (i >= toRowIndex) {
                     throw new NoSuchElementException();
                 }
@@ -1032,7 +1032,7 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
             return DoubleStream.empty();
         }
 
-        return DoubleStream.of(new ImmutableDoubleIterator() {
+        return DoubleStream.of(new ExDoubleIterator() {
             private int i = 0;
             private int j = fromColumnIndex;
 
@@ -1042,7 +1042,7 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
             }
 
             @Override
-            public double next() {
+            public double nextDouble() {
                 if (j >= toColumnIndex) {
                     throw new NoSuchElementException();
                 }
@@ -1113,7 +1113,7 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
             return Stream.empty();
         }
 
-        return Stream.of(new ImmutableIterator<DoubleStream>() {
+        return Stream.of(new ExIterator<DoubleStream>() {
             private final int toIndex = toRowIndex;
             private int cursor = fromRowIndex;
 
@@ -1166,7 +1166,7 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
             return Stream.empty();
         }
 
-        return Stream.of(new ImmutableIterator<DoubleStream>() {
+        return Stream.of(new ExIterator<DoubleStream>() {
             private final int toIndex = toColumnIndex;
             private volatile int cursor = fromColumnIndex;
 
@@ -1181,7 +1181,7 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
                     throw new NoSuchElementException();
                 }
 
-                return DoubleStream.of(new ImmutableDoubleIterator() {
+                return DoubleStream.of(new ExDoubleIterator() {
                     private final int columnIndex = cursor++;
                     private final int toIndex2 = n;
                     private int cursor2 = 0;
@@ -1192,7 +1192,7 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
                     }
 
                     @Override
-                    public double next() {
+                    public double nextDouble() {
                         if (cursor2 >= toIndex2) {
                             throw new NoSuchElementException();
                         }

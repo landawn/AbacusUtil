@@ -25,7 +25,6 @@
 package com.landawn.abacus.util.stream;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -684,7 +683,8 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      *
      * @return the element iterator for this stream
      */
-    Iterator<T> iterator();
+
+    com.landawn.abacus.util.ImmutableIterator<T> iterator();
 
     void println();
 

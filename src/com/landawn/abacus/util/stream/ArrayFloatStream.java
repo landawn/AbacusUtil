@@ -85,7 +85,7 @@ class ArrayFloatStream extends AbstractFloatStream {
     ArrayFloatStream(final float[] values, final int fromIndex, final int toIndex, final Collection<Runnable> closeHandlers, final boolean sorted) {
         super(closeHandlers, sorted);
 
-        checkIndex(fromIndex, toIndex, values.length);
+        checkFromToIndex(fromIndex, toIndex, values.length);
 
         this.elements = values;
         this.fromIndex = fromIndex;
@@ -94,7 +94,7 @@ class ArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public FloatStream filter(final FloatPredicate predicate) {
-        return new IteratorFloatStream(new ImmutableFloatIterator() {
+        return new IteratorFloatStream(new ExFloatIterator() {
             private boolean hasNext = false;
             private int cursor = fromIndex;
 
@@ -113,7 +113,7 @@ class ArrayFloatStream extends AbstractFloatStream {
             }
 
             @Override
-            public float next() {
+            public float nextFloat() {
                 if (hasNext == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
@@ -127,7 +127,7 @@ class ArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public FloatStream takeWhile(final FloatPredicate predicate) {
-        return new IteratorFloatStream(new ImmutableFloatIterator() {
+        return new IteratorFloatStream(new ExFloatIterator() {
             private boolean hasMore = true;
             private boolean hasNext = false;
             private int cursor = fromIndex;
@@ -146,7 +146,7 @@ class ArrayFloatStream extends AbstractFloatStream {
             }
 
             @Override
-            public float next() {
+            public float nextFloat() {
                 if (hasNext == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
@@ -160,7 +160,7 @@ class ArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public FloatStream dropWhile(final FloatPredicate predicate) {
-        return new IteratorFloatStream(new ImmutableFloatIterator() {
+        return new IteratorFloatStream(new ExFloatIterator() {
             private boolean hasNext = false;
             private int cursor = fromIndex;
             private boolean dropped = false;
@@ -186,7 +186,7 @@ class ArrayFloatStream extends AbstractFloatStream {
             }
 
             @Override
-            public float next() {
+            public float nextFloat() {
                 if (hasNext == false && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
@@ -200,7 +200,7 @@ class ArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public FloatStream map(final FloatUnaryOperator mapper) {
-        return new IteratorFloatStream(new ImmutableFloatIterator() {
+        return new IteratorFloatStream(new ExFloatIterator() {
             int cursor = fromIndex;
 
             @Override
@@ -209,7 +209,7 @@ class ArrayFloatStream extends AbstractFloatStream {
             }
 
             @Override
-            public float next() {
+            public float nextFloat() {
                 if (cursor >= toIndex) {
                     throw new NoSuchElementException();
                 }
@@ -242,7 +242,7 @@ class ArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public IntStream mapToInt(final FloatToIntFunction mapper) {
-        return new IteratorIntStream(new ImmutableIntIterator() {
+        return new IteratorIntStream(new ExIntIterator() {
             int cursor = fromIndex;
 
             @Override
@@ -251,7 +251,7 @@ class ArrayFloatStream extends AbstractFloatStream {
             }
 
             @Override
-            public int next() {
+            public int nextInt() {
                 if (cursor >= toIndex) {
                     throw new NoSuchElementException();
                 }
@@ -284,7 +284,7 @@ class ArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public LongStream mapToLong(final FloatToLongFunction mapper) {
-        return new IteratorLongStream(new ImmutableLongIterator() {
+        return new IteratorLongStream(new ExLongIterator() {
             int cursor = fromIndex;
 
             @Override
@@ -293,7 +293,7 @@ class ArrayFloatStream extends AbstractFloatStream {
             }
 
             @Override
-            public long next() {
+            public long nextLong() {
                 if (cursor >= toIndex) {
                     throw new NoSuchElementException();
                 }
@@ -326,7 +326,7 @@ class ArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public DoubleStream mapToDouble(final FloatToDoubleFunction mapper) {
-        return new IteratorDoubleStream(new ImmutableDoubleIterator() {
+        return new IteratorDoubleStream(new ExDoubleIterator() {
             int cursor = fromIndex;
 
             @Override
@@ -335,7 +335,7 @@ class ArrayFloatStream extends AbstractFloatStream {
             }
 
             @Override
-            public double next() {
+            public double nextDouble() {
                 if (cursor >= toIndex) {
                     throw new NoSuchElementException();
                 }
@@ -368,7 +368,7 @@ class ArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public <U> Stream<U> mapToObj(final FloatFunction<? extends U> mapper) {
-        return new IteratorStream<U>(new ImmutableIterator<U>() {
+        return new IteratorStream<U>(new ExIterator<U>() {
             int cursor = fromIndex;
 
             @Override
@@ -410,111 +410,111 @@ class ArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public FloatStream flatMap(final FloatFunction<? extends FloatStream> mapper) {
-        return new IteratorFloatStream(new ImmutableFloatIterator() {
+        return new IteratorFloatStream(new ExFloatIterator() {
             private int cursor = fromIndex;
             private FloatIterator cur = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && cursor < toIndex) {
-                    cur = mapper.apply(elements[cursor++]).floatIterator();
+                    cur = mapper.apply(elements[cursor++]).exIterator();
                 }
 
                 return cur != null && cur.hasNext();
             }
 
             @Override
-            public float next() {
+            public float nextFloat() {
                 if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
-                return cur.next();
+                return cur.nextFloat();
             }
         }, closeHandlers);
     }
 
     @Override
     public IntStream flatMapToInt(final FloatFunction<? extends IntStream> mapper) {
-        return new IteratorIntStream(new ImmutableIntIterator() {
+        return new IteratorIntStream(new ExIntIterator() {
             private int cursor = fromIndex;
             private IntIterator cur = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && cursor < toIndex) {
-                    cur = mapper.apply(elements[cursor++]).intIterator();
+                    cur = mapper.apply(elements[cursor++]).exIterator();
                 }
 
                 return cur != null && cur.hasNext();
             }
 
             @Override
-            public int next() {
+            public int nextInt() {
                 if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
-                return cur.next();
+                return cur.nextInt();
             }
         }, closeHandlers);
     }
 
     @Override
     public LongStream flatMapToLong(final FloatFunction<? extends LongStream> mapper) {
-        return new IteratorLongStream(new ImmutableLongIterator() {
+        return new IteratorLongStream(new ExLongIterator() {
             private int cursor = fromIndex;
             private LongIterator cur = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && cursor < toIndex) {
-                    cur = mapper.apply(elements[cursor++]).longIterator();
+                    cur = mapper.apply(elements[cursor++]).exIterator();
                 }
 
                 return cur != null && cur.hasNext();
             }
 
             @Override
-            public long next() {
+            public long nextLong() {
                 if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
-                return cur.next();
+                return cur.nextLong();
             }
         }, closeHandlers);
     }
 
     @Override
     public DoubleStream flatMapToDouble(final FloatFunction<? extends DoubleStream> mapper) {
-        return new IteratorDoubleStream(new ImmutableDoubleIterator() {
+        return new IteratorDoubleStream(new ExDoubleIterator() {
             private int cursor = fromIndex;
             private DoubleIterator cur = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && cursor < toIndex) {
-                    cur = mapper.apply(elements[cursor++]).doubleIterator();
+                    cur = mapper.apply(elements[cursor++]).exIterator();
                 }
 
                 return cur != null && cur.hasNext();
             }
 
             @Override
-            public double next() {
+            public double nextDouble() {
                 if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
                     throw new NoSuchElementException();
                 }
 
-                return cur.next();
+                return cur.nextDouble();
             }
         }, closeHandlers);
     }
 
     @Override
     public <T> Stream<T> flatMapToObj(final FloatFunction<? extends Stream<T>> mapper) {
-        return new IteratorStream<T>(new ImmutableIterator<T>() {
+        return new IteratorStream<T>(new ExIterator<T>() {
             private int cursor = fromIndex;
             private Iterator<? extends T> cur = null;
 
@@ -542,7 +542,7 @@ class ArrayFloatStream extends AbstractFloatStream {
     public Stream<FloatStream> split(final int size) {
         N.checkArgument(size > 0, "'size' must be bigger than 0");
 
-        return new IteratorStream<FloatStream>(new ImmutableIterator<FloatStream>() {
+        return new IteratorStream<FloatStream>(new ExIterator<FloatStream>() {
             private int cursor = fromIndex;
 
             @Override
@@ -565,7 +565,7 @@ class ArrayFloatStream extends AbstractFloatStream {
     public Stream<FloatList> split0(final int size) {
         N.checkArgument(size > 0, "'size' must be bigger than 0");
 
-        return new IteratorStream<FloatList>(new ImmutableIterator<FloatList>() {
+        return new IteratorStream<FloatList>(new ExIterator<FloatList>() {
             private int cursor = fromIndex;
 
             @Override
@@ -587,7 +587,7 @@ class ArrayFloatStream extends AbstractFloatStream {
     @Override
     public <U> Stream<FloatStream> split(final U identity, final BiFunction<? super Float, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
-        return new IteratorStream<FloatStream>(new ImmutableIterator<FloatStream>() {
+        return new IteratorStream<FloatStream>(new ExIterator<FloatStream>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
 
@@ -627,7 +627,7 @@ class ArrayFloatStream extends AbstractFloatStream {
     @Override
     public <U> Stream<FloatList> split0(final U identity, final BiFunction<? super Float, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
-        return new IteratorStream<FloatList>(new ImmutableIterator<FloatList>() {
+        return new IteratorStream<FloatList>(new ExIterator<FloatList>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
 
@@ -701,7 +701,7 @@ class ArrayFloatStream extends AbstractFloatStream {
             throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
         }
 
-        return new IteratorStream<FloatStream>(new ImmutableIterator<FloatStream>() {
+        return new IteratorStream<FloatStream>(new ExIterator<FloatStream>() {
             private int cursor = fromIndex;
 
             @Override
@@ -732,7 +732,7 @@ class ArrayFloatStream extends AbstractFloatStream {
             throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
         }
 
-        return new IteratorStream<FloatList>(new ImmutableIterator<FloatList>() {
+        return new IteratorStream<FloatList>(new ExIterator<FloatList>() {
             private int cursor = fromIndex;
 
             @Override
@@ -787,7 +787,7 @@ class ArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public FloatStream peek(final FloatConsumer action) {
-        return new IteratorFloatStream(new ImmutableFloatIterator() {
+        return new IteratorFloatStream(new ExFloatIterator() {
             int cursor = fromIndex;
 
             @Override
@@ -796,7 +796,7 @@ class ArrayFloatStream extends AbstractFloatStream {
             }
 
             @Override
-            public float next() {
+            public float nextFloat() {
                 if (cursor >= toIndex) {
                     throw new NoSuchElementException();
                 }
@@ -1135,7 +1135,7 @@ class ArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public FloatStream reverse() {
-        return new IteratorFloatStream(new ImmutableFloatIterator() {
+        return new IteratorFloatStream(new ExFloatIterator() {
             private int cursor = toIndex;
 
             @Override
@@ -1144,7 +1144,7 @@ class ArrayFloatStream extends AbstractFloatStream {
             }
 
             @Override
-            public float next() {
+            public float nextFloat() {
                 if (cursor <= fromIndex) {
                     throw new NoSuchElementException();
                 }
@@ -1242,7 +1242,7 @@ class ArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public DoubleStream asDoubleStream() {
-        return new IteratorDoubleStream(new ImmutableDoubleIterator() {
+        return new IteratorDoubleStream(new ExDoubleIterator() {
             private int cursor = fromIndex;
 
             @Override
@@ -1251,7 +1251,7 @@ class ArrayFloatStream extends AbstractFloatStream {
             }
 
             @Override
-            public double next() {
+            public double nextDouble() {
                 if (cursor >= toIndex) {
                     throw new NoSuchElementException();
                 }
@@ -1293,81 +1293,8 @@ class ArrayFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public ImmutableIterator<Float> iterator() {
-        return new ImmutableIterator<Float>() {
-            private int cursor = fromIndex;
-
-            @Override
-            public boolean hasNext() {
-                return cursor < toIndex;
-            }
-
-            @Override
-            public Float next() {
-                if (cursor >= toIndex) {
-                    throw new NoSuchElementException();
-                }
-
-                return elements[cursor++];
-            }
-
-            @Override
-            public long count() {
-                return toIndex - cursor;
-            }
-
-            @Override
-            public void skip(long n) {
-                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-            }
-
-            @Override
-            public <A> A[] toArray(A[] a) {
-                a = a.length >= toIndex - cursor ? a : (A[]) N.newArray(a.getClass().getComponentType(), toIndex - cursor);
-
-                for (int i = 0, len = toIndex - cursor; i < len; i++) {
-                    a[i] = (A) Float.valueOf(elements[cursor++]);
-                }
-
-                return a;
-            }
-        };
-    }
-
-    @Override
-    public ImmutableFloatIterator floatIterator() {
-        return new ImmutableFloatIterator() {
-            private int cursor = fromIndex;
-
-            @Override
-            public boolean hasNext() {
-                return cursor < toIndex;
-            }
-
-            @Override
-            public float next() {
-                if (cursor >= toIndex) {
-                    throw new NoSuchElementException();
-                }
-
-                return elements[cursor++];
-            }
-
-            @Override
-            public long count() {
-                return toIndex - cursor;
-            }
-
-            @Override
-            public void skip(long n) {
-                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-            }
-
-            @Override
-            public float[] toArray() {
-                return N.copyOfRange(elements, cursor, toIndex);
-            }
-        };
+    public ExFloatIterator exIterator() {
+        return ExFloatIterator.of(elements, fromIndex, toIndex);
     }
 
     @Override

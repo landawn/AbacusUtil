@@ -33,7 +33,7 @@ import com.landawn.abacus.parser.KryoParser;
 import com.landawn.abacus.parser.ParserFactory;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.Function;
-import com.landawn.abacus.util.stream.ImmutableIterator;
+import com.landawn.abacus.util.stream.ExIterator;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -1134,7 +1134,7 @@ public final class Sheet<R, C, E> {
 
         initIndexMap();
 
-        return Stream.of(new ImmutableIterator<Sheet.Cell<R, C, E>>() {
+        return Stream.of(new ExIterator<Sheet.Cell<R, C, E>>() {
             private final int columnLength = columnLength();
             private final long toIndex = toRowIndex * columnLength * 1L;
             private long cursor = fromRowIndex * columnLength * 1L;
@@ -1193,7 +1193,7 @@ public final class Sheet<R, C, E> {
 
         initIndexMap();
 
-        return Stream.of(new ImmutableIterator<Sheet.Cell<R, C, E>>() {
+        return Stream.of(new ExIterator<Sheet.Cell<R, C, E>>() {
             private final int rowLength = rowLength();
             private final long toIndex = toColumnIndex * rowLength * 1L;
             private long cursor = fromColumnIndex * rowLength * 1L;
@@ -1249,7 +1249,7 @@ public final class Sheet<R, C, E> {
             return Stream.empty();
         }
 
-        return Stream.of(new ImmutableIterator<E>() {
+        return Stream.of(new ExIterator<E>() {
             private final int columnLength = columnLength();
             private final long toIndex = toRowIndex * columnLength * 1L;
             private long cursor = fromRowIndex * columnLength * 1L;
@@ -1306,7 +1306,7 @@ public final class Sheet<R, C, E> {
             return Stream.empty();
         }
 
-        return Stream.of(new ImmutableIterator<E>() {
+        return Stream.of(new ExIterator<E>() {
             private final int rowLength = rowLength();
             private final long toIndex = toColumnIndex * rowLength * 1L;
             private long cursor = fromColumnIndex * rowLength * 1L;
@@ -1363,7 +1363,7 @@ public final class Sheet<R, C, E> {
             return Stream.empty();
         }
 
-        return Stream.of(new ImmutableIterator<Stream<E>>() {
+        return Stream.of(new ExIterator<Stream<E>>() {
             private final int toIndex = toRowIndex;
             private volatile int cursor = fromRowIndex;
 
@@ -1378,7 +1378,7 @@ public final class Sheet<R, C, E> {
                     throw new NoSuchElementException();
                 }
 
-                return Stream.of(new ImmutableIterator<E>() {
+                return Stream.of(new ExIterator<E>() {
                     private final int rowIndex = cursor++;
                     private final int toIndex2 = _columnKeySet.size();
                     private int cursor2 = 0;
@@ -1447,7 +1447,7 @@ public final class Sheet<R, C, E> {
             return Stream.empty();
         }
 
-        return Stream.of(new ImmutableIterator<Stream<E>>() {
+        return Stream.of(new ExIterator<Stream<E>>() {
             private final int toIndex = toColumnIndex;
             private int cursor = fromColumnIndex;
 
