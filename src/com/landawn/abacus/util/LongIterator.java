@@ -35,6 +35,10 @@ public abstract class LongIterator extends ImmutableIterator<Long> {
         }
     };
 
+    public static LongIterator empty() {
+        return EMPTY;
+    }
+
     public static LongIterator of(final long[] a) {
         return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);
     }

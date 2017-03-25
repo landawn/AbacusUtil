@@ -57,6 +57,10 @@ public abstract class ExDoubleIterator extends DoubleIterator {
         }
     };
 
+    public static ExDoubleIterator empty() {
+        return EMPTY;
+    }
+
     public static ExDoubleIterator of(final double[] a) {
         return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);
     }

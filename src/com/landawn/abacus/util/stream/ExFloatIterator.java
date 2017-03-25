@@ -57,6 +57,10 @@ public abstract class ExFloatIterator extends FloatIterator {
         }
     };
 
+    public static ExFloatIterator empty() {
+        return EMPTY;
+    }
+
     public static ExFloatIterator of(final float[] a) {
         return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);
     }

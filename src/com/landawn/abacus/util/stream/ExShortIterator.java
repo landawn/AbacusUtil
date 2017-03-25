@@ -57,6 +57,10 @@ public abstract class ExShortIterator extends ShortIterator {
         }
     };
 
+    public static ExShortIterator empty() {
+        return EMPTY;
+    }
+
     public static ExShortIterator of(final short[] a) {
         return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);
     }

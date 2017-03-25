@@ -35,6 +35,10 @@ public abstract class BooleanIterator extends ImmutableIterator<Boolean> {
         }
     };
 
+    public static BooleanIterator empty() {
+        return EMPTY;
+    }
+
     public static BooleanIterator of(final boolean[] a) {
         return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);
     }

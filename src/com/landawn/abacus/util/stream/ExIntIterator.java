@@ -57,6 +57,10 @@ public abstract class ExIntIterator extends IntIterator {
         }
     };
 
+    public static ExIntIterator empty() {
+        return EMPTY;
+    }
+
     public static ExIntIterator of(final int[] a) {
         return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);
     }

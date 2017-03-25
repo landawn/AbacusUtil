@@ -57,6 +57,10 @@ public abstract class ExLongIterator extends LongIterator {
         }
     };
 
+    public static ExLongIterator empty() {
+        return EMPTY;
+    }
+
     public static ExLongIterator of(final long[] a) {
         return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);
     }

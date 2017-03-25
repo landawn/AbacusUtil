@@ -57,6 +57,10 @@ public abstract class ExByteIterator extends ByteIterator {
         }
     };
 
+    public static ExByteIterator empty() {
+        return EMPTY;
+    }
+
     public static ExByteIterator of(final byte[] a) {
         return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);
     }

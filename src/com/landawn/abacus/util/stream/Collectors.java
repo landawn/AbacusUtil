@@ -433,22 +433,14 @@ public final class Collectors {
     }
 
     public static <T> Collector<T, ?, Object[]> toArray() {
-        return toArray(N.EMPTY_OBJECT_ARRAY, 0);
+        return toArray(Supplier.EMPTY_OBJECT_ARRAY);
     }
 
-    public static <T, A> Collector<T, ?, A[]> toArray(final Supplier<A[]> supplier) {
-        return toArray(supplier.get(), 0);
-    }
-
-    static <T, A> Collector<T, ?, A[]> toArray(final A[] array, final int fromIndex) {
-        if (fromIndex < 0 || fromIndex > array.length) {
-            throw new IllegalArgumentException("'fromIndex' can't be negative or bigger than array's length");
-        }
-
+    public static <T, A> Collector<T, ?, A[]> toArray(final Supplier<A[]> arraySupplier) {
         final Supplier<ExList<A>> supplier = new Supplier<ExList<A>>() {
             @Override
             public ExList<A> get() {
-                return new ExList<>(array, fromIndex);
+                return new ExList<A>(arraySupplier.get(), 0);
             }
         };
 
@@ -470,7 +462,7 @@ public final class Collectors {
         final Function<ExList<A>, A[]> finisher = new Function<ExList<A>, A[]>() {
             @Override
             public A[] apply(ExList<A> t) {
-                return t.array() == array ? array : (A[]) t.trimToSize().array();
+                return (A[]) t.trimToSize().array();
             }
         };
 

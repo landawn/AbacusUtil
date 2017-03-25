@@ -102,6 +102,10 @@ public abstract class ExCharIterator extends CharIterator {
         };
     }
 
+    public static ExCharIterator empty() {
+        return EMPTY;
+    }
+
     public static ExCharIterator of(final CharIterator iter) {
         if (iter instanceof ExCharIterator) {
             return ((ExCharIterator) iter);

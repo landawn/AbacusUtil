@@ -26,7 +26,21 @@ import java.util.NoSuchElementException;
  */
 public abstract class ImmutableIterator<E> implements java.util.Iterator<E> {
     @SuppressWarnings("rawtypes")
-    public static final ImmutableIterator EMPTY = of(N.EMPTY_OBJECT_ARRAY);
+    public static final ImmutableIterator EMPTY = new ImmutableIterator() {
+        @Override
+        public boolean hasNext() {
+            return false;
+        }
+
+        @Override
+        public Object next() {
+            throw new NoSuchElementException();
+        }
+    };
+
+    public static <T> ImmutableIterator<T> empty() {
+        return EMPTY;
+    }
 
     public static <T> ImmutableIterator<T> of(final T[] a) {
         return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);

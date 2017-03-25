@@ -53,6 +53,10 @@ public abstract class ExIterator<T> extends com.landawn.abacus.util.ImmutableIte
         }
     };
 
+    public static <T> ExIterator<T> empty() {
+        return EMPTY;
+    }
+
     public static <T> ExIterator<T> of(final T[] a) {
         return a == null ? EMPTY : of(a, 0, a.length);
     }
@@ -165,7 +169,7 @@ public abstract class ExIterator<T> extends com.landawn.abacus.util.ImmutableIte
     }
 
     public <A> A[] toArray(A[] a) {
-        final ExList<A> list = new ExList<>(a);
+        final ExList<A> list = new ExList<>(a, 0);
 
         while (hasNext()) {
             list.add((A) next());

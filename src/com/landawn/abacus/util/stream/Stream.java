@@ -1192,10 +1192,15 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     public abstract <U> U reduce(U identity, BiFunction<U, ? super T, U> accumulator, BinaryOperator<U> combiner);
 
     /**
+     * The result will be merged by: <code>a.addAll(b)</code> if result container is <code>Collection/Multiset/LongMultiset/IntList/CharList/...</code>, 
+     * or <code>a.putAll(b)</code> if result container is <code>Map/Multimap/Sheet</code>, 
+     * or <code>a.append(b)</code> if result container is <code>StringBuilder</code>, 
+     * or <code>N.concat(a, b)</code> if result container is array: <code>boolean[]/char[]/int[]/.../Object[]</code> when it's necessary in Parallel Stream.
      * 
      * @param identity
      * @param accumulator
      * @return
+     * @throws RuntimeException if the result container can't be merged by default when it's necessary in Parallel Stream.
      */
     public abstract <U> U reduce(U identity, BiFunction<U, ? super T, U> accumulator);
 
@@ -1253,10 +1258,14 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     public abstract <R> R collect(Supplier<R> supplier, BiConsumer<R, ? super T> accumulator, BiConsumer<R, R> combiner);
 
     /**
+     * The result will be merged by: <code>a.addAll(b)</code> if result container is <code>Collection/Multiset/LongMultiset/IntList/CharList/...</code>, 
+     * or <code>a.putAll(b)</code> if result container is <code>Map/Multimap/Sheet</code>, 
+     * or <code>a.append(b)</code> if result container is <code>StringBuilder</code> when it's necessary in Parallel Stream.
      * 
      * @param supplier
      * @param accumulator
      * @return
+     * @throws RuntimeException if the result container can't be merged by default when it's necessary in Parallel Stream.
      */
     public abstract <R> R collect(Supplier<R> supplier, BiConsumer<R, ? super T> accumulator);
 

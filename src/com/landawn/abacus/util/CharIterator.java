@@ -35,6 +35,10 @@ public abstract class CharIterator extends ImmutableIterator<Character> {
         }
     };
 
+    public static CharIterator empty() {
+        return EMPTY;
+    }
+
     public static CharIterator of(final char[] a) {
         return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);
     }

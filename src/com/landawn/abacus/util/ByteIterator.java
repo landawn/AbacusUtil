@@ -35,6 +35,10 @@ public abstract class ByteIterator extends ImmutableIterator<Byte> {
         }
     };
 
+    public static ByteIterator empty() {
+        return EMPTY;
+    }
+
     public static ByteIterator of(final byte[] a) {
         return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);
     }
