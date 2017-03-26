@@ -69,7 +69,7 @@ abstract class AbstractIntStream extends IntStream {
     }
 
     @Override
-    public IntStream drop(final long n, final IntConsumer action) {
+    public IntStream accept(final long n, final IntConsumer action) {
         if (n < 0) {
             throw new IllegalArgumentException("'n' can't be less than 0");
         } else if (n == 0) {
@@ -79,7 +79,7 @@ abstract class AbstractIntStream extends IntStream {
         if (this.isParallel()) {
             final AtomicLong cnt = new AtomicLong(n);
 
-            return dropWhile(new IntPredicate() {
+            return acceptWhile(new IntPredicate() {
                 @Override
                 public boolean test(int value) {
                     return cnt.getAndDecrement() > 0;
@@ -88,7 +88,7 @@ abstract class AbstractIntStream extends IntStream {
         } else {
             final MutableLong cnt = MutableLong.of(n);
 
-            return dropWhile(new IntPredicate() {
+            return acceptWhile(new IntPredicate() {
                 @Override
                 public boolean test(int value) {
                     return cnt.getAndDecrement() > 0;
@@ -98,7 +98,7 @@ abstract class AbstractIntStream extends IntStream {
     }
 
     @Override
-    public IntStream dropWhile(final IntPredicate predicate, final IntConsumer action) {
+    public IntStream acceptWhile(final IntPredicate predicate, final IntConsumer action) {
         N.requireNonNull(predicate);
         N.requireNonNull(action);
 

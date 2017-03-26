@@ -69,7 +69,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
     }
 
     @Override
-    public DoubleStream drop(final long n, final DoubleConsumer action) {
+    public DoubleStream accept(final long n, final DoubleConsumer action) {
         if (n < 0) {
             throw new IllegalArgumentException("'n' can't be less than 0");
         } else if (n == 0) {
@@ -79,7 +79,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
         if (this.isParallel()) {
             final AtomicLong cnt = new AtomicLong(n);
 
-            return dropWhile(new DoublePredicate() {
+            return acceptWhile(new DoublePredicate() {
                 @Override
                 public boolean test(double value) {
                     return cnt.getAndDecrement() > 0;
@@ -88,7 +88,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
         } else {
             final MutableLong cnt = MutableLong.of(n);
 
-            return dropWhile(new DoublePredicate() {
+            return acceptWhile(new DoublePredicate() {
                 @Override
                 public boolean test(double value) {
                     return cnt.getAndDecrement() > 0;
@@ -98,7 +98,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
     }
 
     @Override
-    public DoubleStream dropWhile(final DoublePredicate predicate, final DoubleConsumer action) {
+    public DoubleStream acceptWhile(final DoublePredicate predicate, final DoubleConsumer action) {
         N.requireNonNull(predicate);
         N.requireNonNull(action);
 

@@ -22,9 +22,11 @@
 
 10*, Refactoring iterator...
 
-11, Add cartesianProduct to stream.
+11*, Rename drop*(...consumer) to accept*(...consumer)
 
-12, Improvements and bug fix.
+12, Add cartesianProduct to stream.
+
+13, Improvements and bug fix.
 
 
 ========Changes in 0.9.58=========================================================================

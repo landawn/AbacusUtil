@@ -69,7 +69,7 @@ abstract class AbstractByteStream extends ByteStream {
     }
 
     @Override
-    public ByteStream drop(final long n, final ByteConsumer action) {
+    public ByteStream accept(final long n, final ByteConsumer action) {
         if (n < 0) {
             throw new IllegalArgumentException("'n' can't be less than 0");
         } else if (n == 0) {
@@ -79,7 +79,7 @@ abstract class AbstractByteStream extends ByteStream {
         if (this.isParallel()) {
             final AtomicLong cnt = new AtomicLong(n);
 
-            return dropWhile(new BytePredicate() {
+            return acceptWhile(new BytePredicate() {
                 @Override
                 public boolean test(byte value) {
                     return cnt.getAndDecrement() > 0;
@@ -88,7 +88,7 @@ abstract class AbstractByteStream extends ByteStream {
         } else {
             final MutableLong cnt = MutableLong.of(n);
 
-            return dropWhile(new BytePredicate() {
+            return acceptWhile(new BytePredicate() {
                 @Override
                 public boolean test(byte value) {
                     return cnt.getAndDecrement() > 0;
@@ -98,7 +98,7 @@ abstract class AbstractByteStream extends ByteStream {
     }
 
     @Override
-    public ByteStream dropWhile(final BytePredicate predicate, final ByteConsumer action) {
+    public ByteStream acceptWhile(final BytePredicate predicate, final ByteConsumer action) {
         N.requireNonNull(predicate);
         N.requireNonNull(action);
 

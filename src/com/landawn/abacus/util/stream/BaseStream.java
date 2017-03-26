@@ -119,24 +119,22 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
     S dropWhile(P predicate);
 
     /**
-     * Take away and consume elements while <code>predicate</code> returns true.
-     * 
-     * @param predicate
-     * @param action
-     * @return
-     * @see  #dropWhile(C)
-     */
-    S dropWhile(P predicate, C action);
-
-    /**
      * Take away and consume the specified <code>n</code> elements.
      * 
      * @param n
-     * @param action
+     * @param consumer
      * @return
-     * @see #dropWhile(C)
      */
-    S drop(long n, C action);
+    S accept(long n, C consumer);
+
+    /**
+     * Take away and consume elements while <code>predicate</code> returns true.
+     * 
+     * @param predicate
+     * @param consumer
+     * @return 
+     */
+    S acceptWhile(P predicate, C consumer);
 
     /**
      * Returns Stream of ByteStream with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).

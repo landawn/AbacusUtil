@@ -136,7 +136,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public Stream<T> drop(final long n, final Consumer<? super T> action) {
+    public Stream<T> accept(final long n, final Consumer<? super T> action) {
         if (n < 0) {
             throw new IllegalArgumentException("'n' can't be less than 0");
         } else if (n == 0) {
@@ -146,7 +146,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         if (this.isParallel()) {
             final AtomicLong cnt = new AtomicLong(n);
 
-            return dropWhile(new Predicate<T>() {
+            return acceptWhile(new Predicate<T>() {
                 @Override
                 public boolean test(T value) {
                     return cnt.getAndDecrement() > 0;
@@ -155,7 +155,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         } else {
             final MutableLong cnt = MutableLong.of(n);
 
-            return dropWhile(new Predicate<T>() {
+            return acceptWhile(new Predicate<T>() {
                 @Override
                 public boolean test(T value) {
                     return cnt.getAndDecrement() > 0;
@@ -165,7 +165,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public Stream<T> dropWhile(final Predicate<? super T> predicate, final Consumer<? super T> action) {
+    public Stream<T> acceptWhile(final Predicate<? super T> predicate, final Consumer<? super T> action) {
         N.requireNonNull(predicate);
         N.requireNonNull(action);
 
@@ -183,11 +183,11 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <U> Stream<T> dropWhile(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super T> action) {
+    public <U> Stream<T> acceptWhile(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super T> action) {
         N.requireNonNull(predicate);
         N.requireNonNull(action);
 
-        return dropWhile(new Predicate<T>() {
+        return acceptWhile(new Predicate<T>() {
             @Override
             public boolean test(T value) {
                 return predicate.test(value, seed);

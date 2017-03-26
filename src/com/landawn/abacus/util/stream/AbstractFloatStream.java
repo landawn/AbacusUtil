@@ -70,7 +70,7 @@ abstract class AbstractFloatStream extends FloatStream {
     }
 
     @Override
-    public FloatStream drop(final long n, final FloatConsumer action) {
+    public FloatStream accept(final long n, final FloatConsumer action) {
         if (n < 0) {
             throw new IllegalArgumentException("'n' can't be less than 0");
         } else if (n == 0) {
@@ -80,7 +80,7 @@ abstract class AbstractFloatStream extends FloatStream {
         if (this.isParallel()) {
             final AtomicLong cnt = new AtomicLong(n);
 
-            return dropWhile(new FloatPredicate() {
+            return acceptWhile(new FloatPredicate() {
                 @Override
                 public boolean test(float value) {
                     return cnt.getAndDecrement() > 0;
@@ -89,7 +89,7 @@ abstract class AbstractFloatStream extends FloatStream {
         } else {
             final MutableLong cnt = MutableLong.of(n);
 
-            return dropWhile(new FloatPredicate() {
+            return acceptWhile(new FloatPredicate() {
                 @Override
                 public boolean test(float value) {
                     return cnt.getAndDecrement() > 0;
@@ -99,7 +99,7 @@ abstract class AbstractFloatStream extends FloatStream {
     }
 
     @Override
-    public FloatStream dropWhile(final FloatPredicate predicate, final FloatConsumer action) {
+    public FloatStream acceptWhile(final FloatPredicate predicate, final FloatConsumer action) {
         N.requireNonNull(predicate);
         N.requireNonNull(action);
 

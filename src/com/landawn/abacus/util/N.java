@@ -9054,15 +9054,15 @@ public final class N {
     }
 
     public static <T> List<T> nullToEmpty(final List<T> list) {
-        return list == null ? N.EMPTY_LIST : list;
+        return list == null ? new ArrayList<T>() : list;
     }
 
     public static <T> Set<T> nullToEmpty(final Set<T> set) {
-        return set == null ? EMPTY_SET : set;
+        return set == null ? new HashSet<T>() : set;
     }
 
     public static <K, V> Map<K, V> nullToEmpty(final Map<K, V> map) {
-        return map == null ? EMPTY_MAP : map;
+        return map == null ? new HashMap<K, V>() : map;
     }
 
     public static boolean isNullOrEmpty(final CharSequence s) {

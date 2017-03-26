@@ -69,7 +69,7 @@ abstract class AbstractShortStream extends ShortStream {
     }
 
     @Override
-    public ShortStream drop(final long n, final ShortConsumer action) {
+    public ShortStream accept(final long n, final ShortConsumer action) {
         if (n < 0) {
             throw new IllegalArgumentException("'n' can't be less than 0");
         } else if (n == 0) {
@@ -79,7 +79,7 @@ abstract class AbstractShortStream extends ShortStream {
         if (this.isParallel()) {
             final AtomicLong cnt = new AtomicLong(n);
 
-            return dropWhile(new ShortPredicate() {
+            return acceptWhile(new ShortPredicate() {
                 @Override
                 public boolean test(short value) {
                     return cnt.getAndDecrement() > 0;
@@ -88,7 +88,7 @@ abstract class AbstractShortStream extends ShortStream {
         } else {
             final MutableLong cnt = MutableLong.of(n);
 
-            return dropWhile(new ShortPredicate() {
+            return acceptWhile(new ShortPredicate() {
                 @Override
                 public boolean test(short value) {
                     return cnt.getAndDecrement() > 0;
@@ -98,7 +98,7 @@ abstract class AbstractShortStream extends ShortStream {
     }
 
     @Override
-    public ShortStream dropWhile(final ShortPredicate predicate, final ShortConsumer action) {
+    public ShortStream acceptWhile(final ShortPredicate predicate, final ShortConsumer action) {
         N.requireNonNull(predicate);
         N.requireNonNull(action);
 

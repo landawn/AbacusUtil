@@ -27,9 +27,11 @@ package com.landawn.abacus.util;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,6 +56,10 @@ public final class Maps {
     }
 
     public static <K, V> NullabLe<V> get(final Map<K, V> map, final Object key) {
+        if (N.isNullOrEmpty(map)) {
+            return NullabLe.empty();
+        }
+
         final V val = map.get(key);
 
         if (val != null || map.containsKey(key)) {
@@ -72,7 +78,7 @@ public final class Maps {
      * @return
      */
     public static <K, V> List<V> getIfPresent(final Map<K, V> map, final Collection<?> keys) {
-        if (N.isNullOrEmpty(keys)) {
+        if (N.isNullOrEmpty(map) || N.isNullOrEmpty(keys)) {
             return new ArrayList<>(0);
         }
 
@@ -113,6 +119,10 @@ public final class Maps {
      * @since 1.8
      */
     public static <K, V> V getOrDefault(final Map<K, V> map, final Object key, final V defaultValue) {
+        if (N.isNullOrEmpty(map)) {
+            return defaultValue;
+        }
+
         final V val = map.get(key);
 
         if (val != null || map.containsKey(key)) {
@@ -125,6 +135,8 @@ public final class Maps {
     public static <K, V> List<V> getOrDefault(final Map<K, V> map, final Collection<?> keys, final V defaultValue) {
         if (N.isNullOrEmpty(keys)) {
             return new ArrayList<>(0);
+        } else if (N.isNullOrEmpty(map)) {
+            return new ArrayList<>(Arrays.asList(Array.repeat(defaultValue, keys.size())));
         }
 
         final List<V> result = new ArrayList<>(keys.size());
@@ -137,6 +149,108 @@ public final class Maps {
                 result.add(val);
             } else {
                 result.add(defaultValue);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Check if the specified <code>Map</code> contains the specified <code>Entry</code>
+     * 
+     * @param map
+     * @param entry
+     * @return
+     */
+    public static boolean contains(final Map<?, ?> map, Map.Entry<?, ?> entry) {
+        if (N.isNullOrEmpty(map) || entry == null) {
+            return false;
+        }
+
+        final Object val = map.get(entry.getKey());
+
+        return (val != null && N.equals(val, entry.getValue())) || (entry.getValue() == null && map.containsKey(entry.getKey()));
+    }
+
+    public static <K, V> Map<K, V> intersection(final Map<K, V> map, final Map<? extends K, ? extends V> map2) {
+        if (N.isNullOrEmpty(map) || N.isNullOrEmpty(map2)) {
+            return new LinkedHashMap<>();
+        }
+
+        final Map<K, V> result = map instanceof IdentityHashMap ? new IdentityHashMap<K, V>() : new LinkedHashMap<K, V>();
+        Object val = null;
+
+        for (Map.Entry<K, V> entry : map.entrySet()) {
+            val = map2.get(entry.getKey());
+
+            if ((val != null && N.equals(val, entry.getValue())) || (entry.getValue() == null && map.containsKey(entry.getKey()))) {
+                result.put(entry.getKey(), entry.getValue());
+            }
+        }
+
+        return result;
+    }
+
+    public static <K, V> Map<K, V> difference(final Map<K, V> map, final Map<? extends K, ? extends V> map2) {
+        if (N.isNullOrEmpty(map)) {
+            return new LinkedHashMap<>();
+        } else if (N.isNullOrEmpty(map2)) {
+            return new LinkedHashMap<>(map);
+        }
+
+        final Map<K, V> result = map instanceof IdentityHashMap ? new IdentityHashMap<K, V>() : new LinkedHashMap<K, V>();
+        Object val = null;
+
+        for (Map.Entry<K, V> entry : map.entrySet()) {
+            val = map2.get(entry.getKey());
+
+            if ((val == null && map2.containsKey(entry.getKey()) == false) || N.equals(val, entry.getValue()) == false) {
+                result.put(entry.getKey(), entry.getValue());
+            }
+        }
+
+        return result;
+    }
+
+    public static <K, V> Map<K, Pair<NullabLe<V>, NullabLe<V>>> difference2(final Map<K, V> map, final Map<K, V> map2) {
+        return difference2(map, map2, N.notNullOrEmpty(map) && map instanceof IdentityHashMap);
+    }
+
+    public static <K, V> Map<K, Pair<NullabLe<V>, NullabLe<V>>> symmetricDifference(final Map<K, V> map, final Map<K, V> map2) {
+        final Map<K, Pair<NullabLe<V>, NullabLe<V>>> result = difference2(map, map2,
+                (N.notNullOrEmpty(map) && map instanceof IdentityHashMap) || (N.notNullOrEmpty(map2) && map2 instanceof IdentityHashMap));
+
+        if (N.notNullOrEmpty(map2)) {
+            for (Map.Entry<K, V> entry : map2.entrySet()) {
+                if (map.containsKey(entry.getKey()) == false) {
+                    result.put(entry.getKey(), Pair.of(NullabLe.<V> empty(), NullabLe.of(entry.getValue())));
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private static <K, V> Map<K, Pair<NullabLe<V>, NullabLe<V>>> difference2(final Map<K, V> map, final Map<K, V> map2, boolean identityHashMap) {
+        final Map<K, Pair<NullabLe<V>, NullabLe<V>>> result = identityHashMap ? new IdentityHashMap<K, Pair<NullabLe<V>, NullabLe<V>>>()
+                : new LinkedHashMap<K, Pair<NullabLe<V>, NullabLe<V>>>();
+
+        if (N.isNullOrEmpty(map)) {
+            // Do nothing.
+        } else if (N.isNullOrEmpty(map2)) {
+            for (Map.Entry<K, V> entry : map.entrySet()) {
+                result.put(entry.getKey(), Pair.of(NullabLe.of(entry.getValue()), NullabLe.<V> empty()));
+            }
+        } else {
+            V val = null;
+            for (Map.Entry<K, V> entry : map.entrySet()) {
+                val = map2.get(entry.getKey());
+
+                if (val == null && map2.containsKey(entry.getKey()) == false) {
+                    result.put(entry.getKey(), Pair.of(NullabLe.of(entry.getValue()), NullabLe.<V> empty()));
+                } else if (N.equals(val, entry.getValue()) == false) {
+                    result.put(entry.getKey(), Pair.of(NullabLe.of(entry.getValue()), NullabLe.of(val)));
+                }
             }
         }
 
@@ -231,6 +345,10 @@ public final class Maps {
      * @since 1.8
      */
     public static <K, V> boolean remove(final Map<K, V> map, final Object key, final Object value) {
+        if (N.isNullOrEmpty(map)) {
+            return false;
+        }
+
         final Object curValue = map.get(key);
 
         if (!N.equals(curValue, value) || (curValue == null && !map.containsKey(key))) {
@@ -248,7 +366,7 @@ public final class Maps {
      * @return <code>true</code> if any key/value was removed, otherwise <code>false</code>.
      */
     public static boolean removeAll(final Map<?, ?> map, final Collection<?> keys) {
-        if (N.isNullOrEmpty(keys)) {
+        if (N.isNullOrEmpty(map) || N.isNullOrEmpty(keys)) {
             return false;
         }
 
@@ -269,7 +387,7 @@ public final class Maps {
      * @return <code>true</code> if any key/value was removed, otherwise <code>false</code>.
      */
     public static boolean removeAll(final Map<?, ?> map, final Map<?, ?> entriesToRemove) {
-        if (N.isNullOrEmpty(entriesToRemove)) {
+        if (N.isNullOrEmpty(map) || N.isNullOrEmpty(entriesToRemove)) {
             return false;
         }
 
@@ -282,78 +400,6 @@ public final class Maps {
         }
 
         return map.size() < originalSize;
-    }
-
-    /**
-     * Check if the specified <code>Map</code> contains the specified <code>Entry</code>
-     * 
-     * @param map
-     * @param entry
-     * @return
-     */
-    public static boolean contains(final Map<?, ?> map, Map.Entry<?, ?> entry) {
-        final Object val = map.get(entry.getKey());
-
-        return (val != null && N.equals(val, entry.getValue())) || (entry.getValue() == null && map.containsKey(entry.getKey()));
-    }
-
-    public static <K, V> Map<K, V> intersection(final Map<K, V> map, final Map<? extends K, ? extends V> map2) {
-        final Map<K, V> result = new LinkedHashMap<>();
-        Object val = null;
-
-        for (Map.Entry<K, V> entry : map.entrySet()) {
-            val = map2.get(entry.getKey());
-
-            if ((val != null && N.equals(val, entry.getValue())) || (entry.getValue() == null && map.containsKey(entry.getKey()))) {
-                result.put(entry.getKey(), entry.getValue());
-            }
-        }
-
-        return result;
-    }
-
-    public static <K, V> Map<K, V> difference(final Map<K, V> map, final Map<? extends K, ? extends V> map2) {
-        final Map<K, V> result = new LinkedHashMap<>();
-        Object val = null;
-
-        for (Map.Entry<K, V> entry : map.entrySet()) {
-            val = map2.get(entry.getKey());
-
-            if ((val == null && map2.containsKey(entry.getKey()) == false) || N.equals(val, entry.getValue()) == false) {
-                result.put(entry.getKey(), entry.getValue());
-            }
-        }
-
-        return result;
-    }
-
-    public static <K, V> Map<K, Pair<NullabLe<V>, NullabLe<V>>> difference2(final Map<K, V> map, final Map<K, V> map2) {
-        final Map<K, Pair<NullabLe<V>, NullabLe<V>>> result = new LinkedHashMap<>();
-
-        V val = null;
-        for (Map.Entry<K, V> entry : map.entrySet()) {
-            val = map2.get(entry.getKey());
-
-            if (val == null && map2.containsKey(entry.getKey()) == false) {
-                result.put(entry.getKey(), Pair.of(NullabLe.of(entry.getValue()), NullabLe.<V> empty()));
-            } else if (N.equals(val, entry.getValue()) == false) {
-                result.put(entry.getKey(), Pair.of(NullabLe.of(entry.getValue()), NullabLe.of(val)));
-            }
-        }
-
-        return result;
-    }
-
-    public static <K, V> Map<K, Pair<NullabLe<V>, NullabLe<V>>> symmetricDifference(final Map<K, V> map, final Map<K, V> map2) {
-        final Map<K, Pair<NullabLe<V>, NullabLe<V>>> result = difference2(map, map2);
-
-        for (Map.Entry<K, V> entry : map2.entrySet()) {
-            if (map.containsKey(entry.getKey()) == false) {
-                result.put(entry.getKey(), Pair.of(NullabLe.<V> empty(), NullabLe.of(entry.getValue())));
-            }
-        }
-
-        return result;
     }
 
     /**
@@ -399,6 +445,10 @@ public final class Maps {
      * @since 1.8
      */
     public static <K, V> boolean replace(final Map<K, V> map, final K key, final V oldValue, final V newValue) {
+        if (N.isNullOrEmpty(map)) {
+            return false;
+        }
+
         final Object curValue = map.get(key);
 
         if (!N.equals(curValue, oldValue) || (curValue == null && !map.containsKey(key))) {
@@ -448,6 +498,10 @@ public final class Maps {
      * @since 1.8
      */
     public static <K, V> V replace(final Map<K, V> map, final K key, final V value) {
+        if (N.isNullOrEmpty(map)) {
+            return null;
+        }
+
         V curValue = null;
 
         if (((curValue = map.get(key)) != null) || map.containsKey(key)) {
@@ -499,6 +553,10 @@ public final class Maps {
     public static <K, V> void replaceAll(final Map<K, V> map, final BiFunction<? super K, ? super V, ? extends V> function) {
         N.requireNonNull(function);
 
+        if (N.isNullOrEmpty(map)) {
+            return;
+        }
+
         K k = null;
         V v = null;
 
@@ -520,50 +578,6 @@ public final class Maps {
                 // this usually means the entry is no longer in the map.
                 throw new ConcurrentModificationException(ise);
             }
-        }
-    }
-
-    /**
-     * Performs the given action for each entry in this map until all entries
-     * have been processed or the action throws an exception.   Unless
-     * otherwise specified by the implementing class, actions are performed in
-     * the order of entry set iteration (if an iteration order is specified.)
-     * Exceptions thrown by the action are relayed to the caller.
-     *
-     * @implSpec
-     * The default implementation is equivalent to, for this {@code map}:
-     * <pre> {@code
-     * for (Map.Entry<K, V> entry : map.entrySet())
-     *     action.accept(entry.getKey(), entry.getValue());
-     * }</pre>
-     *
-     * The default implementation makes no guarantees about synchronization
-     * or atomicity properties of this method. Any implementation providing
-     * atomicity guarantees must override this method and document its
-     * concurrency properties.
-     *
-     * @param action The action to be performed for each entry
-     * @throws NullPointerException if the specified action is null
-     * @throws ConcurrentModificationException if an entry is found to be
-     * removed during iteration
-     * @since 1.8
-     */
-    public static <K, V> void forEach(final Map<K, V> map, final BiConsumer<? super K, ? super V> action) {
-        N.requireNonNull(action);
-
-        K k = null;
-        V v = null;
-
-        for (Map.Entry<K, V> entry : map.entrySet()) {
-            try {
-                k = entry.getKey();
-                v = entry.getValue();
-            } catch (IllegalStateException ise) {
-                // this usually means the entry is no longer in the map.
-                throw new ConcurrentModificationException(ise);
-            }
-
-            action.accept(k, v);
         }
     }
 
@@ -861,6 +875,54 @@ public final class Maps {
         }
 
         return newValue;
+    }
+
+    /**
+     * Performs the given action for each entry in this map until all entries
+     * have been processed or the action throws an exception.   Unless
+     * otherwise specified by the implementing class, actions are performed in
+     * the order of entry set iteration (if an iteration order is specified.)
+     * Exceptions thrown by the action are relayed to the caller.
+     *
+     * @implSpec
+     * The default implementation is equivalent to, for this {@code map}:
+     * <pre> {@code
+     * for (Map.Entry<K, V> entry : map.entrySet())
+     *     action.accept(entry.getKey(), entry.getValue());
+     * }</pre>
+     *
+     * The default implementation makes no guarantees about synchronization
+     * or atomicity properties of this method. Any implementation providing
+     * atomicity guarantees must override this method and document its
+     * concurrency properties.
+     *
+     * @param action The action to be performed for each entry
+     * @throws NullPointerException if the specified action is null
+     * @throws ConcurrentModificationException if an entry is found to be
+     * removed during iteration
+     * @since 1.8
+     */
+    public static <K, V> void forEach(final Map<K, V> map, final BiConsumer<? super K, ? super V> action) {
+        N.requireNonNull(action);
+
+        if (N.isNullOrEmpty(map)) {
+            return;
+        }
+
+        K k = null;
+        V v = null;
+
+        for (Map.Entry<K, V> entry : map.entrySet()) {
+            try {
+                k = entry.getKey();
+                v = entry.getValue();
+            } catch (IllegalStateException ise) {
+                // this usually means the entry is no longer in the map.
+                throw new ConcurrentModificationException(ise);
+            }
+
+            action.accept(k, v);
+        }
     }
 
     public static <T> T map2Entity(final Class<T> targetClass, final Map<String, Object> m) {
@@ -1792,19 +1854,19 @@ public final class Maps {
     }
 
     public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final char entryDelimiter) {
-        return Maps.join(m, fromIndex, toIndex, entryDelimiter, false);
+        return join(m, fromIndex, toIndex, entryDelimiter, false);
     }
 
     public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final char entryDelimiter, final boolean trim) {
-        return Maps.join(m, fromIndex, toIndex, entryDelimiter, D._EQUAL, trim);
+        return join(m, fromIndex, toIndex, entryDelimiter, D._EQUAL, trim);
     }
 
     public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final String entryDelimiter) {
-        return Maps.join(m, fromIndex, toIndex, entryDelimiter, false);
+        return join(m, fromIndex, toIndex, entryDelimiter, false);
     }
 
     public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final String entryDelimiter, final boolean trim) {
-        return Maps.join(m, fromIndex, toIndex, entryDelimiter, D.EQUAL, trim);
+        return join(m, fromIndex, toIndex, entryDelimiter, D.EQUAL, trim);
     }
 
     public static String join(final Map<?, ?> m, final char entryDelimiter, final char keyValueDelimiter) {
@@ -1824,7 +1886,7 @@ public final class Maps {
     }
 
     public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final char entryDelimiter, final char keyValueDelimiter) {
-        return Maps.join(m, fromIndex, toIndex, entryDelimiter, keyValueDelimiter, false);
+        return join(m, fromIndex, toIndex, entryDelimiter, keyValueDelimiter, false);
     }
 
     public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final char entryDelimiter, final char keyValueDelimiter,
@@ -1862,7 +1924,7 @@ public final class Maps {
     }
 
     public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final String entryDelimiter, final String keyValueDelimiter) {
-        return Maps.join(m, fromIndex, toIndex, entryDelimiter, keyValueDelimiter, false);
+        return join(m, fromIndex, toIndex, entryDelimiter, keyValueDelimiter, false);
     }
 
     public static String join(final Map<?, ?> m, final int fromIndex, final int toIndex, final String entryDelimiter, final String keyValueDelimiter,
