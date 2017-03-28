@@ -158,14 +158,6 @@ public final class Triple<L, M, R> {
         return a;
     }
 
-    public <T> ExList<T> toList() {
-        return (ExList<T>) ExList.of(left, middle, right);
-    }
-
-    public <T> Seq<T> toSeq() {
-        return Seq.of((ExList<T>) toList());
-    }
-
     public void forEach(Consumer<?> comsumer) {
         final Consumer<Object> objComsumer = (Consumer<Object>) comsumer;
 
@@ -307,14 +299,6 @@ public final class Triple<L, M, R> {
             a[2] = (A) right;
 
             return a;
-        }
-
-        public <T> ExList<T> toList() {
-            return (ExList<T>) ExList.of(left, middle, right);
-        }
-
-        public <T> Seq<T> toSeq() {
-            return Seq.of((ExList<T>) toList());
         }
 
         public void forEach(Consumer<?> comsumer) {

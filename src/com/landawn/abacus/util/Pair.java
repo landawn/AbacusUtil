@@ -158,14 +158,6 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
         return a;
     }
 
-    public <T> ExList<T> toList() {
-        return (ExList<T>) ExList.of(left, right);
-    }
-
-    public <T> Seq<T> toSeq() {
-        return Seq.of((ExList<T>) toList());
-    }
-
     public void forEach(Consumer<?> comsumer) {
         final Consumer<Object> objComsumer = (Consumer<Object>) comsumer;
 
@@ -316,14 +308,6 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
             a[1] = (A) right;
 
             return a;
-        }
-
-        public <T> ExList<T> toList() {
-            return (ExList<T>) ExList.of(left, right);
-        }
-
-        public <T> Seq<T> toSeq() {
-            return Seq.of((ExList<T>) toList());
         }
 
         public void forEach(Consumer<?> comsumer) {

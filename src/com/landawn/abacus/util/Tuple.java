@@ -48,11 +48,6 @@ public abstract class Tuple {
         }
 
         @Override
-        public <T> ExList<T> toList() {
-            return ExList.<T> empty();
-        }
-
-        @Override
         public void forEach(Consumer<?> comsumer) {
             // do nothing.
         }
@@ -76,12 +71,6 @@ public abstract class Tuple {
     public abstract Object[] toArray();
 
     public abstract <A> A[] toArray(A[] a);
-
-    public abstract <T> ExList<T> toList();
-
-    public <T> Seq<T> toSeq() {
-        return Seq.of((ExList<T>) toList());
-    }
 
     public abstract void forEach(Consumer<?> comsumer);
 
@@ -238,11 +227,6 @@ public abstract class Tuple {
         }
 
         @Override
-        public <T> ExList<T> toList() {
-            return (ExList<T>) ExList.of(_1);
-        }
-
-        @Override
         public void forEach(Consumer<?> comsumer) {
             final Consumer<Object> objComsumer = (Consumer<Object>) comsumer;
 
@@ -329,11 +313,6 @@ public abstract class Tuple {
             a[1] = (A) _2;
 
             return a;
-        }
-
-        @Override
-        public <T> ExList<T> toList() {
-            return (ExList<T>) ExList.of(_1, _2);
         }
 
         @Override
@@ -428,11 +407,6 @@ public abstract class Tuple {
             a[2] = (A) _3;
 
             return a;
-        }
-
-        @Override
-        public <T> ExList<T> toList() {
-            return (ExList<T>) ExList.of(_1, _2, _3);
         }
 
         @Override
@@ -532,11 +506,6 @@ public abstract class Tuple {
             a[3] = (A) _4;
 
             return a;
-        }
-
-        @Override
-        public <T> ExList<T> toList() {
-            return (ExList<T>) ExList.of(_1, _2, _3, _4);
         }
 
         @Override
@@ -641,11 +610,6 @@ public abstract class Tuple {
             a[4] = (A) _5;
 
             return a;
-        }
-
-        @Override
-        public <T> ExList<T> toList() {
-            return (ExList<T>) ExList.of(_1, _2, _3, _4, _5);
         }
 
         @Override
@@ -756,11 +720,6 @@ public abstract class Tuple {
             a[5] = (A) _6;
 
             return a;
-        }
-
-        @Override
-        public <T> ExList<T> toList() {
-            return (ExList<T>) ExList.of(_1, _2, _3, _4, _5, _6);
         }
 
         @Override
@@ -877,11 +836,6 @@ public abstract class Tuple {
             a[6] = (A) _7;
 
             return a;
-        }
-
-        @Override
-        public <T> ExList<T> toList() {
-            return (ExList<T>) ExList.of(_1, _2, _3, _4, _5, _6, _7);
         }
 
         @Override
