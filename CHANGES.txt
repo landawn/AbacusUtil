@@ -8,7 +8,9 @@
 
 3*, Change the implementation of head/tail and head2/tail2 in Stream. 
 
-4, Improvements and bug fix.
+4*, Remove toList from Pair/Triple/Tuple.
+
+5, Improvements and bug fix.
 
 
 ========Changes in 0.9.59=========================================================================
