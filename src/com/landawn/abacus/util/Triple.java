@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.landawn.abacus.util.function.Consumer;
+import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.TriConsumer;
 import com.landawn.abacus.util.function.TriFunction;
 import com.landawn.abacus.util.stream.Stream;
@@ -174,8 +175,16 @@ public final class Triple<L, M, R> {
         action.accept(left, middle, right);
     }
 
+    public void accept(final Consumer<Triple<L, M, R>> action) {
+        action.accept(this);
+    }
+
     public <U> U apply(final TriFunction<? super L, ? super M, ? super R, U> action) {
         return action.apply(left, middle, right);
+    }
+
+    public <U> U apply(final Function<Triple<L, M, R>, U> action) {
+        return action.apply(this);
     }
 
     public Stream<Triple<L, M, R>> stream() {
@@ -313,8 +322,16 @@ public final class Triple<L, M, R> {
             action.accept(left, middle, right);
         }
 
+        public void accept(final Consumer<Triple0<L, M, R>> action) {
+            action.accept(this);
+        }
+
         public <U> U apply(final TriFunction<? super L, ? super M, ? super R, U> action) {
             return action.apply(left, middle, right);
+        }
+
+        public <U> U apply(final Function<Triple0<L, M, R>, U> action) {
+            return action.apply(this);
         }
 
         public Stream<Triple0<L, M, R>> stream() {

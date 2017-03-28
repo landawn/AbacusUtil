@@ -292,7 +292,7 @@ public final class Maps {
      * @throws ClassCastException if the key or value is of an inappropriate
      *         type for this map
      *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
-     * @throws NullPointerException if the specified key or value is null,
+     * @throws NullPointerException if the specified map is null, or if the specified key or value is null,
      *         and this map does not permit null keys or values
      *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
      * @throws IllegalArgumentException if some property of the specified key
@@ -357,6 +357,48 @@ public final class Maps {
 
         map.remove(key);
         return true;
+    }
+
+    /**
+     * 
+     * @param map
+     * @param key1
+     * @param key2
+     * @return <code>true</code> if any key/value was removed, otherwise <code>false</code>.
+     */
+    public static boolean removeAll(final Map<?, ?> map, final Object key1, final Object key2) {
+        if (N.isNullOrEmpty(map)) {
+            return false;
+        }
+
+        final int originalSize = map.size();
+
+        map.remove(key1);
+        map.remove(key2);
+
+        return map.size() < originalSize;
+    }
+
+    /**
+     * 
+     * @param map
+     * @param key1
+     * @param key2
+     * @param key3
+     * @return <code>true</code> if any key/value was removed, otherwise <code>false</code>.
+     */
+    public static boolean removeAll(final Map<?, ?> map, final Object key1, final Object key2, final Object key3) {
+        if (N.isNullOrEmpty(map)) {
+            return false;
+        }
+
+        final int originalSize = map.size();
+
+        map.remove(key1);
+        map.remove(key2);
+        map.remove(key3);
+
+        return map.size() < originalSize;
     }
 
     /**
@@ -629,7 +671,7 @@ public final class Maps {
      * @param mappingFunction the function to compute a value
      * @return the current (existing or computed) value associated with
      *         the specified key, or null if the computed value is null
-     * @throws NullPointerException if the specified key is null and
+     * @throws NullPointerException if the specified map is null, or the specified key is null and
      *         this map does not support null keys, or the mappingFunction
      *         is null
      * @throws UnsupportedOperationException if the {@code put} operation
@@ -691,7 +733,7 @@ public final class Maps {
      * @param key key with which the specified value is to be associated
      * @param remappingFunction the function to compute a value
      * @return the new value associated with the specified key, or null if none
-     * @throws NullPointerException if the specified key is null and
+     * @throws NullPointerException if the specified map is null, or the specified key is null and
      *         this map does not support null keys, or the
      *         remappingFunction is null
      * @throws UnsupportedOperationException if the {@code put} operation
@@ -769,7 +811,7 @@ public final class Maps {
      * @param key key with which the specified value is to be associated
      * @param remappingFunction the function to compute a value
      * @return the new value associated with the specified key, or null if none
-     * @throws NullPointerException if the specified key is null and
+     * @throws NullPointerException if the specified map is null, or the specified key is null and
      *         this map does not support null keys, or the
      *         remappingFunction is null
      * @throws UnsupportedOperationException if the {@code put} operation
@@ -856,7 +898,7 @@ public final class Maps {
      * @throws ClassCastException if the class of the specified key or value
      *         prevents it from being stored in this map
      *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
-     * @throws NullPointerException if the specified key is null and this map
+     * @throws NullPointerException if the specified map is null, or the specified key is null and this map
      *         does not support null keys or the value or remappingFunction is
      *         null
      * @since 1.8

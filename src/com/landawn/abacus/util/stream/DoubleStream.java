@@ -1661,4 +1661,11 @@ public abstract class DoubleStream
 
         return merge(queue.poll(), queue.poll(), nextSelector).onClose(newCloseHandler(c));
     }
+
+    public static abstract class ExDoubleStream extends DoubleStream {
+        private ExDoubleStream(Collection<Runnable> closeHandlers, boolean sorted) {
+            super(closeHandlers, sorted);
+            // Factory class.
+        }
+    }
 }

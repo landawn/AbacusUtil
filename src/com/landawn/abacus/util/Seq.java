@@ -97,11 +97,18 @@ public final class Seq<T> implements Collection<T> {
      * 
      * @param c
      * @return
+     * @throws NullPointerException if the specified <code>Collection</code> is null.
      */
     public static <T> Seq<T> of(Collection<T> c) {
         return new Seq<>(c);
     }
 
+    /**
+     * 
+     * @param map
+     * @return
+     * @throws NullPointerException if the specified <code>Map</code> is null.
+     */
     public static <K, V> Seq<Map.Entry<K, V>> of(Map<K, V> map) {
         return of(map.entrySet());
     }
@@ -1386,6 +1393,26 @@ public final class Seq<T> implements Collection<T> {
     public <B, C, R> ExList<R> zipWith(final Collection<B> b, final Collection<C> c, final T valueForNoneA, final B valueForNoneB, final C valueForNoneC,
             final TriFunction<? super T, ? super B, ? super C, R> zipFunction) {
         return Seq.zip(this, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
+    }
+
+    public ExList<T> intersperse(T value) {
+        if (isEmpty()) {
+            return new ExList<>();
+        }
+
+        final int size = size();
+        final ExList<T> result = new ExList<>(size * 2 - 1);
+        int idx = 0;
+
+        for (T e : coll) {
+            result.add(e);
+
+            if (++idx < size) {
+                result.add(value);
+            }
+        }
+
+        return result;
     }
 
     public ExList<Indexed<T>> indexed() {

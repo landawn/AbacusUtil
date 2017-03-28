@@ -1,5 +1,14 @@
 
 
+========Changes in 0.9.60=========================================================================
+
+1, Add two more accept/apply to Pair/Triple.
+
+2, Add intersperse to Seq.
+
+3, Improvements and bug fix.
+
+
 ========Changes in 0.9.59=========================================================================
 
 1, Add more convenient methods to CassandraExecutor.

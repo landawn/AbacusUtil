@@ -119,7 +119,10 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
     S dropWhile(P predicate);
 
     /**
-     * Take away and consume the specified <code>n</code> elements.
+     * Returns a stream consisting of the remaining elements of this stream
+     * after removing and consuming the first {@code n} elements of the stream.
+     * If this stream contains fewer than {@code n} elements then an
+     * empty stream will be returned.
      * 
      * @param n
      * @param consumer
@@ -128,7 +131,9 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
     S accept(long n, C consumer);
 
     /**
-     * Take away and consume elements while <code>predicate</code> returns true.
+     * Returns a stream consisting of the remaining elements of this stream
+     * after removing and consuming until the specified <code>predicate</code> return false.
+     * If there is no more elements then an empty stream will be returned.
      * 
      * @param predicate
      * @param consumer

@@ -1998,4 +1998,11 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
 
         return merge(queue.poll(), queue.poll(), nextSelector).onClose(newCloseHandler(c));
     }
+
+    public static abstract class ExIntStream extends IntStream {
+        private ExIntStream(Collection<Runnable> closeHandlers, boolean sorted) {
+            super(closeHandlers, sorted);
+            // Factory class.
+        }
+    }
 }

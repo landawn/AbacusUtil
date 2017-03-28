@@ -1865,4 +1865,11 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
 
         return merge(queue.poll(), queue.poll(), nextSelector).onClose(newCloseHandler(c));
     }
+
+    public static abstract class ExLongStream extends LongStream {
+        private ExLongStream(Collection<Runnable> closeHandlers, boolean sorted) {
+            super(closeHandlers, sorted);
+            // Factory class.
+        }
+    }
 }

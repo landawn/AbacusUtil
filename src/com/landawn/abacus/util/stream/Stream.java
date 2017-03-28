@@ -273,7 +273,9 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     public abstract <U> Stream<T> dropWhile(final U seed, final BiPredicate<? super T, ? super U> predicate);
 
     /**
-     * Take away and consume elements while <code>predicate</code> returns true.
+     * Returns a stream consisting of the remaining elements of this stream
+     * after removing and consuming until the specified <code>predicate</code> return false.
+     * If there is no more elements then an empty stream will be returned.
      * 
      * @param seed
      * @param predicate
@@ -7800,6 +7802,13 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
             });
 
             idx++;
+        }
+    }
+
+    public static abstract class ExStream<T> extends Stream<T> {
+        private ExStream(Collection<Runnable> closeHandlers, boolean sorted, Comparator<? super T> cmp) {
+            super(closeHandlers, sorted, cmp);
+            // Factory class.
         }
     }
 }

@@ -5085,17 +5085,7 @@ public final class Array {
             }
         }
 
-        final List<T> list = new ArrayList<>(a.length);
-
-        if (a.length < 9) {
-            for (T e : a) {
-                list.add(e);
-            }
-        } else {
-            list.addAll(Arrays.asList(a));
-        }
-
-        return list;
+        return N.asList(a);
     }
 
     //    static double medianOfTwoSortedArrays(final int[] a, final int[] b) {
