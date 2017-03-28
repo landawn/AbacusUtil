@@ -2559,18 +2559,14 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     }
 
     @Override
-    public T head() {
-        if (fromIndex == toIndex) {
-            throw new NoSuchElementException();
-        }
-
-        return elements[fromIndex];
+    public NullabLe<T> head() {
+        return fromIndex == toIndex ? NullabLe.<T> empty() : NullabLe.of(elements[fromIndex]);
     }
 
     @Override
     public Stream<T> tail() {
         if (fromIndex == toIndex) {
-            throw new IllegalStateException();
+            return this;
         }
 
         return new ParallelArrayStream<>(elements, fromIndex + 1, toIndex, closeHandlers, sorted, cmp, maxThreadNum, splitor);
@@ -2579,19 +2575,15 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     public Stream<T> head2() {
         if (fromIndex == toIndex) {
-            throw new IllegalStateException();
+            return this;
         }
 
         return new ParallelArrayStream<>(elements, fromIndex, toIndex - 1, closeHandlers, sorted, cmp, maxThreadNum, splitor);
     }
 
     @Override
-    public T tail2() {
-        if (fromIndex == toIndex) {
-            throw new NoSuchElementException();
-        }
-
-        return elements[toIndex - 1];
+    public NullabLe<T> tail2() {
+        return fromIndex == toIndex ? NullabLe.<T> empty() : NullabLe.of(elements[toIndex - 1]);
     }
 
     @Override

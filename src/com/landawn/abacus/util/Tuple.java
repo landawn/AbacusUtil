@@ -18,7 +18,6 @@ package com.landawn.abacus.util;
 
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
@@ -49,8 +48,8 @@ public abstract class Tuple {
         }
 
         @Override
-        public <T> List<T> toList() {
-            return Array.asList();
+        public <T> ExList<T> toList() {
+            return ExList.<T> empty();
         }
 
         @Override
@@ -78,7 +77,11 @@ public abstract class Tuple {
 
     public abstract <A> A[] toArray(A[] a);
 
-    public abstract <T> List<T> toList();
+    public abstract <T> ExList<T> toList();
+
+    public <T> Seq<T> toSeq() {
+        return Seq.of((ExList<T>) toList());
+    }
 
     public abstract void forEach(Consumer<?> comsumer);
 
@@ -235,8 +238,8 @@ public abstract class Tuple {
         }
 
         @Override
-        public <T> List<T> toList() {
-            return (List<T>) Array.asList(_1);
+        public <T> ExList<T> toList() {
+            return (ExList<T>) ExList.of(_1);
         }
 
         @Override
@@ -329,8 +332,8 @@ public abstract class Tuple {
         }
 
         @Override
-        public <T> List<T> toList() {
-            return (List<T>) Array.asList(_1, _2);
+        public <T> ExList<T> toList() {
+            return (ExList<T>) ExList.of(_1, _2);
         }
 
         @Override
@@ -428,8 +431,8 @@ public abstract class Tuple {
         }
 
         @Override
-        public <T> List<T> toList() {
-            return (List<T>) Array.asList(_1, _2, _3);
+        public <T> ExList<T> toList() {
+            return (ExList<T>) ExList.of(_1, _2, _3);
         }
 
         @Override
@@ -532,8 +535,8 @@ public abstract class Tuple {
         }
 
         @Override
-        public <T> List<T> toList() {
-            return (List<T>) Array.asList(_1, _2, _3, _4);
+        public <T> ExList<T> toList() {
+            return (ExList<T>) ExList.of(_1, _2, _3, _4);
         }
 
         @Override
@@ -641,8 +644,8 @@ public abstract class Tuple {
         }
 
         @Override
-        public <T> List<T> toList() {
-            return (List<T>) Array.asList(_1, _2, _3, _4, _5);
+        public <T> ExList<T> toList() {
+            return (ExList<T>) ExList.of(_1, _2, _3, _4, _5);
         }
 
         @Override
@@ -756,8 +759,8 @@ public abstract class Tuple {
         }
 
         @Override
-        public <T> List<T> toList() {
-            return (List<T>) Array.asList(_1, _2, _3, _4, _5, _6);
+        public <T> ExList<T> toList() {
+            return (ExList<T>) ExList.of(_1, _2, _3, _4, _5, _6);
         }
 
         @Override
@@ -877,8 +880,8 @@ public abstract class Tuple {
         }
 
         @Override
-        public <T> List<T> toList() {
-            return (List<T>) Array.asList(_1, _2, _3, _4, _5, _6, _7);
+        public <T> ExList<T> toList() {
+            return (ExList<T>) ExList.of(_1, _2, _3, _4, _5, _6, _7);
         }
 
         @Override

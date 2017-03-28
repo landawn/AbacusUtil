@@ -780,6 +780,42 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
+    public Stream<T> intersperse(final T value) {
+        return newStream(new ExIterator<T>() {
+            private final ExIterator<T> iter = exIterator();
+            private T next = (T) Stream.NONE;
+            private boolean toInsert = false;
+
+            @Override
+            public boolean hasNext() {
+                if (next == Stream.NONE && iter.hasNext()) {
+                    next = iter.next();
+                }
+
+                return next != Stream.NONE;
+            }
+
+            @Override
+            public T next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                if (toInsert) {
+                    toInsert = false;
+                    return value;
+                } else {
+                    final T res = next;
+                    next = (T) Stream.NONE;
+                    toInsert = true;
+                    return res;
+                }
+            }
+
+        }, false, null);
+    }
+
+    @Override
     public <K> Stream<Entry<K, List<T>>> groupBy(final Function<? super T, ? extends K> classifier) {
         final Map<K, List<T>> map = collect(Collectors.groupingBy(classifier));
 
@@ -1759,12 +1795,12 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public Pair<T, Stream<T>> headAndTail() {
+    public Pair<NullabLe<T>, Stream<T>> headAndTail() {
         return Pair.of(head(), tail());
     }
 
     @Override
-    public Pair<Stream<T>, T> headAndTail2() {
+    public Pair<Stream<T>, NullabLe<T>> headAndTail2() {
         return Pair.of(head2(), tail2());
     }
 

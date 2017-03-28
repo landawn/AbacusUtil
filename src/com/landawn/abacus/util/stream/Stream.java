@@ -733,6 +733,18 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     public abstract <R> Stream<R> scan(final R seed, final BiFunction<? super R, ? super T, R> accumulator);
 
     /**
+     * <code>Stream.of(1).intersperse(9) --> [1]</code>
+     * <code>Stream.of(1, 2, 3).intersperse(9) --> [1, 9, 2, 9, 3]</code>
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param value
+     * @return
+     */
+    public abstract Stream<T> intersperse(T value);
+
+    /**
      * Distinct by the value mapped from <code>keyMapper</code>
      * 
      * <br />
@@ -1327,43 +1339,39 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
 
     /**
      * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
-     * Don't call any other methods with this stream after head() and tail() are called. 
+     * Don't call any other methods with this stream after head() or tail() is called. 
      * 
      * @return
-     * @throws NoSuchElementException if this stream is empty.
      */
-    public abstract T head();
+    public abstract NullabLe<T> head();
 
     /**
      * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
-     * Don't call any other methods with this stream after head() and tail() are called. 
+     * Don't call any other methods with this stream after head() or tail() is called. 
      * 
      * @return
-     * @throws IllegalStateException if this stream is empty.
      */
     public abstract Stream<T> tail();
 
     /**
      * Head2 and tail2 should be used by pair. 
-     * Don't call any other methods with this stream after head2() and tail2() are called.
+     * Don't call any other methods with this stream after head2() or tail2() is called.
      * 
      * @return
-     * @throws IllegalStateException if this stream is empty.
      */
     public abstract Stream<T> head2();
 
     /**
      * Head2 and tail2 should be used by pair. 
-     * Don't call any other methods with this stream after head2() and tail2() are called. 
+     * Don't call any other methods with this stream after head2() or tail2() is called. 
      * 
      * @return
-     * @throws NoSuchElementException if this stream is empty.
      */
-    public abstract T tail2();
+    public abstract NullabLe<T> tail2();
 
-    public abstract Pair<T, Stream<T>> headAndTail();
+    public abstract Pair<NullabLe<T>, Stream<T>> headAndTail();
 
-    public abstract Pair<Stream<T>, T> headAndTail2();
+    public abstract Pair<Stream<T>, NullabLe<T>> headAndTail2();
 
     /**
      * Returns the minimum element of this stream according to the provided

@@ -1900,13 +1900,9 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     }
 
     @Override
-    public T head() {
+    public NullabLe<T> head() {
         if (tail == null) {
-            if (elements.hasNext() == false) {
-                throw new NoSuchElementException();
-            }
-
-            head = elements.next();
+            head = elements.hasNext() ? NullabLe.of(elements.next()) : NullabLe.<T> empty();
             tail = new ParallelIteratorStream<>(elements, closeHandlers, sorted, cmp, maxThreadNum, splitor);
         }
 
@@ -1916,11 +1912,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     @Override
     public Stream<T> tail() {
         if (tail == null) {
-            if (elements.hasNext() == false) {
-                throw new IllegalStateException();
-            }
-
-            head = elements.next();
+            head = elements.hasNext() ? NullabLe.of(elements.next()) : NullabLe.<T> empty();
             tail = new ParallelIteratorStream<>(elements, closeHandlers, sorted, cmp, maxThreadNum, splitor);
         }
 
@@ -1930,28 +1922,20 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     @Override
     public Stream<T> head2() {
         if (head2 == null) {
-            if (elements.hasNext() == false) {
-                throw new IllegalStateException();
-            }
-
             final Object[] a = this.toArray();
-            head2 = new ParallelArrayStream<>((T[]) a, 0, a.length - 1, closeHandlers, sorted, cmp, maxThreadNum, splitor);
-            tail2 = (T) a[a.length - 1];
+            head2 = new ParallelArrayStream<>((T[]) a, 0, a.length == 0 ? 0 : a.length - 1, closeHandlers, sorted, cmp, maxThreadNum, splitor);
+            tail2 = a.length == 0 ? NullabLe.<T> empty() : NullabLe.of((T) a[a.length - 1]);
         }
 
         return head2;
     }
 
     @Override
-    public T tail2() {
+    public NullabLe<T> tail2() {
         if (head2 == null) {
-            if (elements.hasNext() == false) {
-                throw new NoSuchElementException();
-            }
-
             final Object[] a = this.toArray();
-            head2 = new ArrayStream<>((T[]) a, 0, a.length - 1, closeHandlers, sorted, cmp);
-            tail2 = (T) a[a.length - 1];
+            head2 = new ParallelArrayStream<>((T[]) a, 0, a.length == 0 ? 0 : a.length - 1, closeHandlers, sorted, cmp, maxThreadNum, splitor);
+            tail2 = a.length == 0 ? NullabLe.<T> empty() : NullabLe.of((T) a[a.length - 1]);
         }
 
         return tail2;

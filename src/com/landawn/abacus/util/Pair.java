@@ -18,7 +18,6 @@ package com.landawn.abacus.util;
 
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import com.landawn.abacus.util.function.BiConsumer;
@@ -159,8 +158,12 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
         return a;
     }
 
-    public <T> List<T> toList() {
-        return (List<T>) Array.asList(left, right);
+    public <T> ExList<T> toList() {
+        return (ExList<T>) ExList.of(left, right);
+    }
+
+    public <T> Seq<T> toSeq() {
+        return Seq.of((ExList<T>) toList());
     }
 
     public void forEach(Consumer<?> comsumer) {
@@ -315,8 +318,12 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
             return a;
         }
 
-        public <T> List<T> toList() {
-            return (List<T>) Array.asList(left, right);
+        public <T> ExList<T> toList() {
+            return (ExList<T>) ExList.of(left, right);
+        }
+
+        public <T> Seq<T> toSeq() {
+            return Seq.of((ExList<T>) toList());
         }
 
         public void forEach(Consumer<?> comsumer) {
