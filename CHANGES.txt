@@ -10,7 +10,11 @@
 
 4*, Remove toList from Pair/Triple/Tuple.
 
-5, Improvements and bug fix.
+5*, Rename subSeq to slice in Seq
+
+6*, Refactoring Builder.
+
+7, Improvements and bug fix.
 
 
 ========Changes in 0.9.59=========================================================================

@@ -1837,7 +1837,7 @@ public final class Seq<T> implements Collection<T> {
         if (coll instanceof List) {
             return new Seq<>(N.copyOfRange((List) coll, fromIndex, toIndex));
         } else {
-            return subSeq(fromIndex, toIndex).copyToList();
+            return slice(fromIndex, toIndex).copyToList();
         }
     }
 
@@ -1871,7 +1871,7 @@ public final class Seq<T> implements Collection<T> {
     }
 
     public Seq<T> copyToSet(final int fromIndex, final int toIndex) {
-        return subSeq(fromIndex, toIndex).copyToSet();
+        return slice(fromIndex, toIndex).copyToSet();
     }
 
     /**
@@ -1901,7 +1901,7 @@ public final class Seq<T> implements Collection<T> {
     }
 
     public Seq<T> copyTo(final IntFunction<? extends Collection<T>> supplier, final int fromIndex, final int toIndex) {
-        return subSeq(fromIndex, toIndex).copyTo(supplier);
+        return slice(fromIndex, toIndex).copyTo(supplier);
     }
 
     /**
@@ -1935,7 +1935,7 @@ public final class Seq<T> implements Collection<T> {
      * @param toIndex
      * @return
      */
-    public Seq<T> subSeq(final int fromIndex, final int toIndex) {
+    public Seq<T> slice(final int fromIndex, final int toIndex) {
         N.checkFromToIndex(fromIndex, toIndex, size());
 
         if (coll instanceof List) {

@@ -19,7 +19,6 @@ import java.util.Map;
 
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
-import com.landawn.abacus.util.function.IndexedConsumer2;
 import com.landawn.abacus.util.function.Predicate;
 
 /**
@@ -103,17 +102,13 @@ public class Builder<T> {
         return new Builder<>(t);
     }
 
-    public static final <T> IndexedBuilder<T> of(T t, int startIndex) {
-        return new IndexedBuilder<>(t, startIndex);
-    }
-
-    public Builder<T> __(final Consumer<? super T> op) {
+    public Builder<T> accept(final Consumer<? super T> op) {
         op.accept(value);
 
         return this;
     }
 
-    public <R> Builder<R> map(final Function<? super T, R> mapper) {
+    public <R> Builder<R> apply(final Function<? super T, R> mapper) {
         return of(mapper.apply(value));
     }
 
@@ -180,13 +175,6 @@ public class Builder<T> {
 
             return this;
         }
-
-        @Override
-        public BooleanListBuilder __(final Consumer<? super BooleanList> op) {
-            op.accept(value);
-
-            return this;
-        }
     }
 
     public static final class CharListBuilder extends Builder<CharList> {
@@ -226,13 +214,6 @@ public class Builder<T> {
 
         public CharListBuilder removeAll(CharList c) {
             value.removeAll(c);
-
-            return this;
-        }
-
-        @Override
-        public CharListBuilder __(final Consumer<? super CharList> op) {
-            op.accept(value);
 
             return this;
         }
@@ -278,13 +259,6 @@ public class Builder<T> {
 
             return this;
         }
-
-        @Override
-        public ByteListBuilder __(final Consumer<? super ByteList> op) {
-            op.accept(value);
-
-            return this;
-        }
     }
 
     public static final class ShortListBuilder extends Builder<ShortList> {
@@ -324,13 +298,6 @@ public class Builder<T> {
 
         public ShortListBuilder removeAll(ShortList c) {
             value.removeAll(c);
-
-            return this;
-        }
-
-        @Override
-        public ShortListBuilder __(final Consumer<? super ShortList> op) {
-            op.accept(value);
 
             return this;
         }
@@ -376,13 +343,6 @@ public class Builder<T> {
 
             return this;
         }
-
-        @Override
-        public IntListBuilder __(final Consumer<? super IntList> op) {
-            op.accept(value);
-
-            return this;
-        }
     }
 
     public static final class LongListBuilder extends Builder<LongList> {
@@ -422,13 +382,6 @@ public class Builder<T> {
 
         public LongListBuilder removeAll(LongList c) {
             value.removeAll(c);
-
-            return this;
-        }
-
-        @Override
-        public LongListBuilder __(final Consumer<? super LongList> op) {
-            op.accept(value);
 
             return this;
         }
@@ -474,13 +427,6 @@ public class Builder<T> {
 
             return this;
         }
-
-        @Override
-        public FloatListBuilder __(final Consumer<? super FloatList> op) {
-            op.accept(value);
-
-            return this;
-        }
     }
 
     public static final class DoubleListBuilder extends Builder<DoubleList> {
@@ -523,13 +469,6 @@ public class Builder<T> {
 
             return this;
         }
-
-        @Override
-        public DoubleListBuilder __(final Consumer<? super DoubleList> op) {
-            op.accept(value);
-
-            return this;
-        }
     }
 
     public static final class ExListBuilder<T> extends Builder<ExList<T>> {
@@ -563,13 +502,6 @@ public class Builder<T> {
 
         public ExListBuilder<T> removeAll(ExList<?> c) {
             value.removeAll(c);
-
-            return this;
-        }
-
-        @Override
-        public ExListBuilder<T> __(final Consumer<? super ExList<T>> op) {
-            op.accept(value);
 
             return this;
         }
@@ -816,18 +748,9 @@ public class Builder<T> {
         }
     }
 
-    public static final class IndexedBuilder<T> extends Builder<T> {
-        private int startIndex;
-
-        IndexedBuilder(T value, int startIndex) {
+    public static final class X<T> extends Builder<T> {
+        X(T value) {
             super(value);
-            this.startIndex = startIndex;
-        }
-
-        public IndexedBuilder<T> __(final IndexedConsumer2<? super T> op) {
-            op.accept(startIndex++, value);
-
-            return this;
         }
     }
 }
