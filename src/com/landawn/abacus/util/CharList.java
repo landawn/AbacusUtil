@@ -92,11 +92,11 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
     }
 
     public static CharList from(int[] a, int startIndex, int endIndex) {
+        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
+
         if (a == null && (startIndex == 0 && endIndex == 0)) {
             return empty();
         }
-
-        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final char[] elementData = new char[endIndex - startIndex];
 

@@ -93,11 +93,11 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
     }
 
     public static LongList from(int[] a, int startIndex, int endIndex) {
+        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
+
         if (a == null && (startIndex == 0 && endIndex == 0)) {
             return empty();
         }
-
-        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final long[] elementData = new long[endIndex - startIndex];
 
@@ -113,11 +113,11 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
     }
 
     public static LongList from(float[] a, int startIndex, int endIndex) {
+        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
+
         if (a == null && (startIndex == 0 && endIndex == 0)) {
             return empty();
         }
-
-        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final long[] elementData = new long[endIndex - startIndex];
 
@@ -137,11 +137,11 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
     }
 
     public static LongList from(double[] a, int startIndex, int endIndex) {
+        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
+
         if (a == null && (startIndex == 0 && endIndex == 0)) {
             return empty();
         }
-
-        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final long[] elementData = new long[endIndex - startIndex];
 

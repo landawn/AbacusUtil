@@ -92,11 +92,11 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
     }
 
     public static ByteList from(int[] a, final int startIndex, final int endIndex) {
+        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
+
         if (a == null && (startIndex == 0 && endIndex == 0)) {
             return empty();
         }
-
-        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final byte[] elementData = new byte[endIndex - startIndex];
 

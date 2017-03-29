@@ -93,11 +93,11 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
     }
 
     public static FloatList from(int[] a, int startIndex, int endIndex) {
+        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
+
         if (a == null && (startIndex == 0 && endIndex == 0)) {
             return empty();
         }
-
-        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final float[] elementData = new float[endIndex - startIndex];
 
@@ -113,11 +113,11 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
     }
 
     public static FloatList from(long[] a, int startIndex, int endIndex) {
+        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
+
         if (a == null && (startIndex == 0 && endIndex == 0)) {
             return empty();
         }
-
-        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final float[] elementData = new float[endIndex - startIndex];
 
@@ -133,11 +133,11 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
     }
 
     public static FloatList from(double[] a, int startIndex, int endIndex) {
+        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
+
         if (a == null && (startIndex == 0 && endIndex == 0)) {
             return empty();
         }
-
-        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final float[] elementData = new float[endIndex - startIndex];
 

@@ -93,11 +93,11 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
     }
 
     public static DoubleList from(int[] a, int startIndex, int endIndex) {
+        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
+
         if (a == null && (startIndex == 0 && endIndex == 0)) {
             return empty();
         }
-
-        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final double[] elementData = new double[endIndex - startIndex];
 
@@ -113,11 +113,11 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
     }
 
     public static DoubleList from(long[] a, int startIndex, int endIndex) {
+        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
+
         if (a == null && (startIndex == 0 && endIndex == 0)) {
             return empty();
         }
-
-        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final double[] elementData = new double[endIndex - startIndex];
 
@@ -133,11 +133,11 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
     }
 
     public static DoubleList from(float[] a, int startIndex, int endIndex) {
+        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
+
         if (a == null && (startIndex == 0 && endIndex == 0)) {
             return empty();
         }
-
-        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final double[] elementData = new double[endIndex - startIndex];
 

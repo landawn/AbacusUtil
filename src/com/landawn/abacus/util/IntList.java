@@ -92,11 +92,11 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
     }
 
     public static IntList from(char[] a, int startIndex, int endIndex) {
+        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
+
         if (a == null && (startIndex == 0 && endIndex == 0)) {
             return empty();
         }
-
-        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final int[] elementData = new int[endIndex - startIndex];
 
@@ -112,11 +112,11 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
     }
 
     public static IntList from(byte[] a, int startIndex, int endIndex) {
+        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
+
         if (a == null && (startIndex == 0 && endIndex == 0)) {
             return empty();
         }
-
-        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final int[] elementData = new int[endIndex - startIndex];
 
@@ -132,11 +132,11 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
     }
 
     public static IntList from(short[] a, int startIndex, int endIndex) {
+        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
+
         if (a == null && (startIndex == 0 && endIndex == 0)) {
             return empty();
         }
-
-        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final int[] elementData = new int[endIndex - startIndex];
 
@@ -152,11 +152,11 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
     }
 
     public static IntList from(long[] a, int startIndex, int endIndex) {
+        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
+
         if (a == null && (startIndex == 0 && endIndex == 0)) {
             return empty();
         }
-
-        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final int[] elementData = new int[endIndex - startIndex];
 
@@ -176,11 +176,11 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
     }
 
     public static IntList from(float[] a, int startIndex, int endIndex) {
+        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
+
         if (a == null && (startIndex == 0 && endIndex == 0)) {
             return empty();
         }
-
-        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final int[] elementData = new int[endIndex - startIndex];
 
@@ -200,11 +200,11 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
     }
 
     public static IntList from(double[] a, int startIndex, int endIndex) {
+        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
+
         if (a == null && (startIndex == 0 && endIndex == 0)) {
             return empty();
         }
-
-        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
         final int[] elementData = new int[endIndex - startIndex];
 
