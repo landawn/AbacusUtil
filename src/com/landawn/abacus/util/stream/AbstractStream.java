@@ -27,7 +27,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -60,6 +62,7 @@ import com.landawn.abacus.util.LongSummaryStatistics;
 import com.landawn.abacus.util.Matrix;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
+import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
@@ -156,10 +159,12 @@ abstract class AbstractStream<T> extends Stream<T> {
             final MutableLong cnt = MutableLong.of(n);
 
             return acceptWhile(new Predicate<T>() {
+
                 @Override
                 public boolean test(T value) {
                     return cnt.getAndDecrement() > 0;
                 }
+
             }, action);
         }
     }
@@ -1022,6 +1027,306 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
+    public <U> Stream<Pair<T, U>> innerJoin(final Collection<U> b, final Function<? super T, ?> leftKeyMapper, final Function<? super U, ?> rightKeyMapper) {
+        final Multimap<Object, U, List<U>> rightKeyMap = Multimap.from(b, rightKeyMapper);
+        final Map<Object, Stream<U>> rightKeyStreamMap = new HashMap<>(N.initHashCapacity(rightKeyMap.size()));
+
+        for (Map.Entry<Object, List<U>> entry : rightKeyMap.entrySet()) {
+            rightKeyStreamMap.put(entry.getKey(), Stream.of(entry.getValue()).cached());
+        }
+
+        return flatMap(new Function<T, Stream<Pair<T, U>>>() {
+            @Override
+            public Stream<Pair<T, U>> apply(final T t) {
+                final Stream<U> s = rightKeyStreamMap.get(leftKeyMapper.apply(t));
+
+                return s == null ? Stream.<Pair<T, U>> empty() : s.map(new Function<U, Pair<T, U>>() {
+                    @Override
+                    public Pair<T, U> apply(U u) {
+                        return Pair.of(t, u);
+                    }
+                });
+            }
+        });
+    }
+
+    @Override
+    public <U> Stream<Pair<T, U>> innerJoin(final Collection<U> b, final BiPredicate<? super T, ? super U> predicate) {
+        final Stream<U> s = Stream.of(b).cached();
+
+        return flatMap(new Function<T, Stream<Pair<T, U>>>() {
+            @Override
+            public Stream<Pair<T, U>> apply(final T t) {
+                return s.filter(new Predicate<U>() {
+                    @Override
+                    public boolean test(final U u) {
+                        return predicate.test(t, u);
+                    }
+                }).map(new Function<U, Pair<T, U>>() {
+                    @Override
+                    public Pair<T, U> apply(U u) {
+                        return Pair.of(t, u);
+                    }
+                });
+            }
+        });
+    }
+
+    @Override
+    public <U> Stream<Pair<T, U>> fullJoin(final Collection<U> b, final Function<? super T, ?> leftKeyMapper, final Function<? super U, ?> rightKeyMapper) {
+        final Multimap<Object, U, List<U>> rightKeyMap = Multimap.from(b, rightKeyMapper);
+        final Map<Object, Stream<U>> rightKeyStreamMap = new HashMap<>(N.initHashCapacity(rightKeyMap.size()));
+        final Map<U, U> joinedRights = new IdentityHashMap<>();
+        final boolean isParallelStream = this.isParallel();
+
+        for (Map.Entry<Object, List<U>> entry : rightKeyMap.entrySet()) {
+            rightKeyStreamMap.put(entry.getKey(), Stream.of(entry.getValue()).cached());
+        }
+
+        return flatMap(new Function<T, Stream<Pair<T, U>>>() {
+            @Override
+            public Stream<Pair<T, U>> apply(final T t) {
+                final Stream<U> s = rightKeyStreamMap.get(leftKeyMapper.apply(t));
+
+                return s == null ? Stream.of(Pair.of(t, (U) null)) : s.map(new Function<U, Pair<T, U>>() {
+                    @Override
+                    public Pair<T, U> apply(U u) {
+                        if (isParallelStream) {
+                            synchronized (joinedRights) {
+                                joinedRights.put(u, u);
+                            }
+                        } else {
+                            joinedRights.put(u, u);
+                        }
+
+                        return Pair.of(t, u);
+                    }
+                });
+            }
+        }).append(Stream.of(b).filter(new Predicate<U>() {
+            @Override
+            public boolean test(U u) {
+                return joinedRights.containsKey(u) == false;
+            }
+        }).map(new Function<U, Pair<T, U>>() {
+            @Override
+            public Pair<T, U> apply(U u) {
+                return Pair.of((T) null, u);
+            }
+        }));
+    }
+
+    @Override
+    public <U> Stream<Pair<T, U>> fullJoin(final Collection<U> b, final BiPredicate<? super T, ? super U> predicate) {
+        final Stream<U> s = Stream.of(b).cached();
+        final Map<U, U> joinedRights = new IdentityHashMap<>();
+        final boolean isParallelStream = this.isParallel();
+
+        return flatMap(new Function<T, Stream<Pair<T, U>>>() {
+            private final MutableBoolean joined = MutableBoolean.of(false);
+
+            @Override
+            public Stream<Pair<T, U>> apply(final T t) {
+                return s.filter(new Predicate<U>() {
+                    @Override
+                    public boolean test(final U u) {
+                        return predicate.test(t, u);
+                    }
+                }).map(new Function<U, Pair<T, U>>() {
+                    @Override
+                    public Pair<T, U> apply(U u) {
+                        joined.setTrue();
+
+                        if (isParallelStream) {
+                            synchronized (joinedRights) {
+                                joinedRights.put(u, u);
+                            }
+                        } else {
+                            joinedRights.put(u, u);
+                        }
+
+                        return Pair.of(t, u);
+                    }
+                }).append(Stream.iterate(new Supplier<Boolean>() {
+                    @Override
+                    public Boolean get() {
+                        return joined.isFalse();
+                    }
+                }, new Supplier<Pair<T, U>>() {
+                    @Override
+                    public Pair<T, U> get() {
+                        joined.setTrue();
+                        return Pair.of(t, (U) null);
+                    }
+                }));
+            }
+        }).append(Stream.of(b).filter(new Predicate<U>() {
+            @Override
+            public boolean test(U u) {
+                return joinedRights.containsKey(u) == false;
+            }
+        }).map(new Function<U, Pair<T, U>>() {
+            @Override
+            public Pair<T, U> apply(U u) {
+                return Pair.of((T) null, u);
+            }
+        }));
+    }
+
+    @Override
+    public <U> Stream<Pair<T, U>> leftJoin(final Collection<U> b, final Function<? super T, ?> leftKeyMapper, final Function<? super U, ?> rightKeyMapper) {
+        final Multimap<Object, U, List<U>> rightKeyMap = Multimap.from(b, rightKeyMapper);
+        final Map<Object, Stream<U>> rightKeyStreamMap = new HashMap<>(N.initHashCapacity(rightKeyMap.size()));
+
+        for (Map.Entry<Object, List<U>> entry : rightKeyMap.entrySet()) {
+            rightKeyStreamMap.put(entry.getKey(), Stream.of(entry.getValue()).cached());
+        }
+
+        return flatMap(new Function<T, Stream<Pair<T, U>>>() {
+            @Override
+            public Stream<Pair<T, U>> apply(final T t) {
+                final Stream<U> s = rightKeyStreamMap.get(leftKeyMapper.apply(t));
+
+                return s == null ? Stream.of(Pair.of(t, (U) null)) : s.map(new Function<U, Pair<T, U>>() {
+                    @Override
+                    public Pair<T, U> apply(U u) {
+                        return Pair.of(t, u);
+                    }
+                });
+            }
+        });
+    }
+
+    @Override
+    public <U> Stream<Pair<T, U>> leftJoin(final Collection<U> b, final BiPredicate<? super T, ? super U> predicate) {
+        final Stream<U> s = Stream.of(b).cached();
+
+        return flatMap(new Function<T, Stream<Pair<T, U>>>() {
+            private final MutableBoolean joined = MutableBoolean.of(false);
+
+            @Override
+            public Stream<Pair<T, U>> apply(final T t) {
+                return s.filter(new Predicate<U>() {
+                    @Override
+                    public boolean test(final U u) {
+                        return predicate.test(t, u);
+                    }
+                }).map(new Function<U, Pair<T, U>>() {
+                    @Override
+                    public Pair<T, U> apply(U u) {
+                        joined.setTrue();
+
+                        return Pair.of(t, u);
+                    }
+                }).append(Stream.iterate(new Supplier<Boolean>() {
+                    @Override
+                    public Boolean get() {
+                        return joined.isFalse();
+                    }
+                }, new Supplier<Pair<T, U>>() {
+                    @Override
+                    public Pair<T, U> get() {
+                        joined.setTrue();
+                        return Pair.of(t, (U) null);
+                    }
+                }));
+            }
+        });
+    }
+
+    @Override
+    public <U> Stream<Pair<T, U>> rightJoin(final Collection<U> b, final Function<? super T, ?> leftKeyMapper, final Function<? super U, ?> rightKeyMapper) {
+        final Multimap<Object, U, List<U>> rightKeyMap = Multimap.from(b, rightKeyMapper);
+        final Map<Object, Stream<U>> rightKeyStreamMap = new HashMap<>(N.initHashCapacity(rightKeyMap.size()));
+        final Map<U, U> joinedRights = new IdentityHashMap<>();
+        final boolean isParallelStream = this.isParallel();
+
+        for (Map.Entry<Object, List<U>> entry : rightKeyMap.entrySet()) {
+            rightKeyStreamMap.put(entry.getKey(), Stream.of(entry.getValue()).cached());
+        }
+
+        return flatMap(new Function<T, Stream<Pair<T, U>>>() {
+            @Override
+            public Stream<Pair<T, U>> apply(final T t) {
+                final Stream<U> s = rightKeyStreamMap.get(leftKeyMapper.apply(t));
+
+                if (s != null) {
+                    return s.map(new Function<U, Pair<T, U>>() {
+                        @Override
+                        public Pair<T, U> apply(U u) {
+                            if (isParallelStream) {
+                                synchronized (joinedRights) {
+                                    joinedRights.put(u, u);
+                                }
+                            } else {
+                                joinedRights.put(u, u);
+                            }
+
+                            return Pair.of(t, u);
+                        }
+                    });
+                } else {
+                    return Stream.empty();
+                }
+            }
+        }).append(Stream.of(b).filter(new Predicate<U>() {
+            @Override
+            public boolean test(U u) {
+                return joinedRights.containsKey(u) == false;
+            }
+        }).map(new Function<U, Pair<T, U>>() {
+            @Override
+            public Pair<T, U> apply(U u) {
+                return Pair.of((T) null, u);
+            }
+        }));
+    }
+
+    @Override
+    public <U> Stream<Pair<T, U>> rightJoin(final Collection<U> b, final BiPredicate<? super T, ? super U> predicate) {
+        final Stream<U> s = Stream.of(b).cached();
+        final Map<U, U> joinedRights = new IdentityHashMap<>();
+        final boolean isParallelStream = this.isParallel();
+
+        return flatMap(new Function<T, Stream<Pair<T, U>>>() {
+
+            @Override
+            public Stream<Pair<T, U>> apply(final T t) {
+                return s.filter(new Predicate<U>() {
+                    @Override
+                    public boolean test(final U u) {
+                        return predicate.test(t, u);
+                    }
+                }).map(new Function<U, Pair<T, U>>() {
+                    @Override
+                    public Pair<T, U> apply(U u) {
+
+                        if (isParallelStream) {
+                            synchronized (joinedRights) {
+                                joinedRights.put(u, u);
+                            }
+                        } else {
+                            joinedRights.put(u, u);
+                        }
+
+                        return Pair.of(t, u);
+                    }
+                });
+            }
+        }).append(Stream.of(b).filter(new Predicate<U>() {
+            @Override
+            public boolean test(U u) {
+                return joinedRights.containsKey(u) == false;
+            }
+        }).map(new Function<U, Pair<T, U>>() {
+            @Override
+            public Pair<T, U> apply(U u) {
+                return Pair.of((T) null, u);
+            }
+        }));
+    }
+
+    @Override
     public CharSummaryStatistics summarizeChar(ToCharFunction<? super T> mapper) {
         return collect(Collectors.summarizingChar(mapper));
     }
@@ -1663,6 +1968,7 @@ abstract class AbstractStream<T> extends Stream<T> {
                 final int toIndex = ((ArrayStream<T>) this).toIndex;
 
                 return newStream(new ExIterator<ExList<T>>() {
+
                     private final int[] indices = Array.range(fromIndex, fromIndex + len);
 
                     @Override
@@ -1692,6 +1998,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
                         return result;
                     }
+
                 }, false, null);
             }
         } else {

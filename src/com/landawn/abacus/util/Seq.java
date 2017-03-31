@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.ConcurrentModificationException;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -1943,6 +1944,246 @@ public final class Seq<T> implements Collection<T> {
         }
 
         return of(new SubCollection<>(coll, fromIndex, toIndex));
+    }
+
+    /**
+     * 
+     * The time complexity is <i>O(n + m)</i> : <i>n</i> is the size of this <code>Seq</code> and <i>m</i> is the size of specified collection <code>b</code>.
+     * 
+     * @param b
+     * @param leftKeyMapper
+     * @param rightKeyMapper
+     * @return
+     * @see <a href="http://stackoverflow.com/questions/5706437/whats-the-difference-between-inner-join-left-join-right-join-and-full-join">sql join</a>
+     */
+    public <U> ExList<Pair<T, U>> innerJoin(final Collection<U> b, final Function<? super T, ?> leftKeyMapper, final Function<? super U, ?> rightKeyMapper) {
+        final ExList<Pair<T, U>> result = new ExList<>(N.min(9, size(), b.size()));
+        final Multimap<Object, U, List<U>> rightKeyMap = Multimap.from(b, rightKeyMapper);
+
+        for (T left : coll) {
+            final List<U> rights = rightKeyMap.get(leftKeyMapper.apply(left));
+
+            if (N.notNullOrEmpty(rights)) {
+                for (U right : rights) {
+                    result.add(Pair.of(left, right));
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * 
+     * The time complexity is <i>O(n * m)</i> : <i>n</i> is the size of this <code>Seq</code> and <i>m</i> is the size of specified collection <code>b</code>.
+     * 
+     * @param b
+     * @param predicate
+     * @return
+     * @see <a href="http://stackoverflow.com/questions/5706437/whats-the-difference-between-inner-join-left-join-right-join-and-ful
+     */
+    public <U> ExList<Pair<T, U>> innerJoin(final Collection<U> b, final BiPredicate<? super T, ? super U> predicate) {
+        final ExList<Pair<T, U>> result = new ExList<>(N.min(9, size(), b.size()));
+
+        for (T left : coll) {
+            for (U right : b) {
+                if (predicate.test(left, right)) {
+                    result.add(Pair.of(left, right));
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * 
+     * The time complexity is <i>O(n + m)</i> : <i>n</i> is the size of this <code>Seq</code> and <i>m</i> is the size of specified collection <code>b</code>.
+     * 
+     * @param b
+     * @param leftKeyMapper
+     * @param rightKeyMapper
+     * @return
+     * @see <a href="http://stackoverflow.com/questions/5706437/whats-the-difference-between-inner-join-left-join-right-join-and-ful
+     */
+    public <U> ExList<Pair<T, U>> fullJoin(final Collection<U> b, final Function<? super T, ?> leftKeyMapper, final Function<? super U, ?> rightKeyMapper) {
+        final ExList<Pair<T, U>> result = new ExList<>(N.max(9, size(), b.size()));
+        final Multimap<Object, U, List<U>> rightKeyMap = Multimap.from(b, rightKeyMapper);
+        final Map<U, U> joinedRights = new IdentityHashMap<>();
+
+        for (T left : coll) {
+            final List<U> rights = rightKeyMap.get(leftKeyMapper.apply(left));
+
+            if (N.notNullOrEmpty(rights)) {
+                for (U right : rights) {
+                    result.add(Pair.of(left, right));
+                    joinedRights.put(right, right);
+                }
+            } else {
+                result.add(Pair.of(left, (U) null));
+            }
+        }
+
+        for (U right : b) {
+            if (joinedRights.containsKey(right) == false) {
+                result.add(Pair.of((T) null, right));
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * The time complexity is <i>O(n * m)</i> : <i>n</i> is the size of this <code>Seq</code> and <i>m</i> is the size of specified collection <code>b</code>.
+     * 
+     * @param b
+     * @param predicate
+     * @return
+     * @see <a href="http://stackoverflow.com/questions/5706437/whats-the-difference-between-inner-join-left-join-right-join-and-ful
+     */
+    public <U> ExList<Pair<T, U>> fullJoin(final Collection<U> b, final BiPredicate<? super T, ? super U> predicate) {
+        final ExList<Pair<T, U>> result = new ExList<>(N.max(9, size(), b.size()));
+        final Map<U, U> joinedRights = new IdentityHashMap<>();
+
+        for (T left : coll) {
+            boolean joined = false;
+
+            for (U right : b) {
+                if (predicate.test(left, right)) {
+                    result.add(Pair.of(left, right));
+                    joinedRights.put(right, right);
+                    joined = true;
+                }
+            }
+
+            if (joined == false) {
+                result.add(Pair.of(left, (U) null));
+            }
+        }
+
+        for (U right : b) {
+            if (joinedRights.containsKey(right) == false) {
+                result.add(Pair.of((T) null, right));
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * 
+     * The time complexity is <i>O(n + m)</i> : <i>n</i> is the size of this <code>Seq</code> and <i>m</i> is the size of specified collection <code>b</code>.
+     * 
+     * @param b
+     * @param leftKeyMapper
+     * @param rightKeyMapper
+     * @return
+     * @see <a href="http://stackoverflow.com/questions/5706437/whats-the-difference-between-inner-join-left-join-right-join-and-ful
+     */
+    public <U> ExList<Pair<T, U>> leftJoin(final Collection<U> b, final Function<? super T, ?> leftKeyMapper, final Function<? super U, ?> rightKeyMapper) {
+        final ExList<Pair<T, U>> result = new ExList<>(size());
+        final Multimap<Object, U, List<U>> rightKeyMap = Multimap.from(b, rightKeyMapper);
+
+        for (T left : coll) {
+            final List<U> rights = rightKeyMap.get(leftKeyMapper.apply(left));
+
+            if (N.notNullOrEmpty(rights)) {
+                for (U right : rights) {
+                    result.add(Pair.of(left, right));
+                }
+            } else {
+                result.add(Pair.of(left, (U) null));
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * The time complexity is <i>O(n * m)</i> : <i>n</i> is the size of this <code>Seq</code> and <i>m</i> is the size of specified collection <code>b</code>.
+     * 
+     * @param b
+     * @param predicate
+     * @return
+     * @see <a href="http://stackoverflow.com/questions/5706437/whats-the-difference-between-inner-join-left-join-right-join-and-ful
+     */
+    public <U> ExList<Pair<T, U>> leftJoin(final Collection<U> b, final BiPredicate<? super T, ? super U> predicate) {
+        final ExList<Pair<T, U>> result = new ExList<>(size());
+
+        for (T left : coll) {
+            boolean joined = false;
+
+            for (U right : b) {
+                if (predicate.test(left, right)) {
+                    result.add(Pair.of(left, right));
+                    joined = true;
+                }
+            }
+
+            if (joined == false) {
+                result.add(Pair.of(left, (U) null));
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * 
+     * The time complexity is <i>O(n + m)</i> : <i>n</i> is the size of this <code>Seq</code> and <i>m</i> is the size of specified collection <code>b</code>.
+     * 
+     * @param b
+     * @param leftKeyMapper
+     * @param rightKeyMapper
+     * @return
+     * @see <a href="http://stackoverflow.com/questions/5706437/whats-the-difference-between-inner-join-left-join-right-join-and-ful
+     */
+    public <U> ExList<Pair<T, U>> rightJoin(final Collection<U> b, final Function<? super T, ?> leftKeyMapper, final Function<? super U, ?> rightKeyMapper) {
+        final ExList<Pair<T, U>> result = new ExList<>(b.size());
+        final Multimap<Object, T, List<T>> leftKeyMap = Multimap.from(coll, leftKeyMapper);
+
+        for (U right : b) {
+            final List<T> lefts = leftKeyMap.get(rightKeyMapper.apply(right));
+
+            if (N.notNullOrEmpty(lefts)) {
+                for (T left : lefts) {
+                    result.add(Pair.of(left, right));
+                }
+            } else {
+                result.add(Pair.of((T) null, right));
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * The time complexity is <i>O(n * m)</i> : <i>n</i> is the size of this <code>Seq</code> and <i>m</i> is the size of specified collection <code>b</code>.
+     * 
+     * @param b
+     * @param predicate
+     * @return
+     * @see <a href="http://stackoverflow.com/questions/5706437/whats-the-difference-between-inner-join-left-join-right-join-and-ful
+     */
+    public <U> ExList<Pair<T, U>> rightJoin(final Collection<U> b, final BiPredicate<? super T, ? super U> predicate) {
+        final ExList<Pair<T, U>> result = new ExList<>(b.size());
+
+        for (U right : b) {
+            boolean joined = false;
+
+            for (T left : coll) {
+                if (predicate.test(left, right)) {
+                    result.add(Pair.of(left, right));
+                    joined = true;
+                }
+            }
+
+            if (joined == false) {
+                result.add(Pair.of((T) null, right));
+            }
+        }
+
+        return result;
     }
 
     @Override

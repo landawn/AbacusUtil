@@ -1357,6 +1357,9 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * Head2 and tail2 should be used by pair. 
      * Don't call any other methods with this stream after head2() or tail2() is called.
      * 
+     * <br />
+     * All elements will be loaded to memory.
+     * 
      * @return
      */
     public abstract Stream<T> head2();
@@ -1365,12 +1368,22 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * Head2 and tail2 should be used by pair. 
      * Don't call any other methods with this stream after head2() or tail2() is called. 
      * 
+     * <br />
+     * All elements will be loaded to memory.
+     * 
      * @return
      */
     public abstract NullabLe<T> tail2();
 
     public abstract Pair<NullabLe<T>, Stream<T>> headAndTail();
 
+    /**
+     * 
+     * <br />
+     * All elements will be loaded to memory.
+     * 
+     * @return
+     */
     public abstract Pair<Stream<T>, NullabLe<T>> headAndTail2();
 
     /**
@@ -1439,6 +1452,95 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     public abstract Stream<ExList<T>> cartesianProduct(Collection<? extends T>... cs);
 
     public abstract Stream<ExList<T>> cartesianProduct(Collection<? extends Collection<? extends T>> cs);
+
+    /**
+     * 
+     * The time complexity is <i>O(n + m)</i> : <i>n</i> is the size of this <code>Stream</code> and <i>m</i> is the size of specified collection <code>b</code>.
+     * 
+     * @param b
+     * @param leftKeyMapper
+     * @param rightKeyMapper
+     * @return
+     * @see <a href="http://stackoverflow.com/questions/5706437/whats-the-difference-between-inner-join-left-join-right-join-and-ful
+     */
+    public abstract <U> Stream<Pair<T, U>> innerJoin(Collection<U> b, Function<? super T, ?> leftKeyMapper, Function<? super U, ?> rightKeyMapper);
+
+    /**
+     * 
+     * The time complexity is <i>O(n * m)</i> : <i>n</i> is the size of this <code>Stream</code> and <i>m</i> is the size of specified collection <code>b</code>.
+     * 
+     * @param b
+     * @param predicate
+     * @return
+     * @see <a href="http://stackoverflow.com/questions/5706437/whats-the-difference-between-inner-join-left-join-right-join-and-ful
+     */
+    public abstract <U> Stream<Pair<T, U>> innerJoin(Collection<U> b, BiPredicate<? super T, ? super U> predicate);
+
+    /**
+     * 
+     * The time complexity is <i>O(n + m)</i> : <i>n</i> is the size of this <code>Stream</code> and <i>m</i> is the size of specified collection <code>b</code>.
+     * 
+     * @param b
+     * @param leftKeyMapper
+     * @param rightKeyMapper
+     * @return
+     * @see <a href="http://stackoverflow.com/questions/5706437/whats-the-difference-between-inner-join-left-join-right-join-and-ful
+     */
+    public abstract <U> Stream<Pair<T, U>> fullJoin(Collection<U> b, Function<? super T, ?> leftKeyMapper, Function<? super U, ?> rightKeyMapper);
+
+    /**
+     * The time complexity is <i>O(n * m)</i> : <i>n</i> is the size of this <code>Stream</code> and <i>m</i> is the size of specified collection <code>b</code>.
+     * 
+     * @param b
+     * @param predicate
+     * @return
+     * @see <a href="http://stackoverflow.com/questions/5706437/whats-the-difference-between-inner-join-left-join-right-join-and-ful
+     */
+    public abstract <U> Stream<Pair<T, U>> fullJoin(Collection<U> b, BiPredicate<? super T, ? super U> predicate);
+
+    /**
+     * 
+     * The time complexity is <i>O(n + m)</i> : <i>n</i> is the size of this <code>Stream</code> and <i>m</i> is the size of specified collection <code>b</code>.
+     * 
+     * @param b
+     * @param leftKeyMapper
+     * @param rightKeyMapper
+     * @return
+     * @see <a href="http://stackoverflow.com/questions/5706437/whats-the-difference-between-inner-join-left-join-right-join-and-ful
+     */
+    public abstract <U> Stream<Pair<T, U>> leftJoin(Collection<U> b, Function<? super T, ?> leftKeyMapper, Function<? super U, ?> rightKeyMapper);
+
+    /**
+     * The time complexity is <i>O(n * m)</i> : <i>n</i> is the size of this <code>Stream</code> and <i>m</i> is the size of specified collection <code>b</code>.
+     * 
+     * @param b
+     * @param predicate
+     * @return
+     * @see <a href="http://stackoverflow.com/questions/5706437/whats-the-difference-between-inner-join-left-join-right-join-and-ful
+     */
+    public abstract <U> Stream<Pair<T, U>> leftJoin(Collection<U> b, BiPredicate<? super T, ? super U> predicate);
+
+    /**
+     * 
+     * The time complexity is <i>O(n + m)</i> : <i>n</i> is the size of this <code>Stream</code> and <i>m</i> is the size of specified collection <code>b</code>.
+     * 
+     * @param b
+     * @param leftKeyMapper
+     * @param rightKeyMapper
+     * @return
+     * @see <a href="http://stackoverflow.com/questions/5706437/whats-the-difference-between-inner-join-left-join-right-join-and-ful
+     */
+    public abstract <U> Stream<Pair<T, U>> rightJoin(Collection<U> b, Function<? super T, ?> leftKeyMapper, Function<? super U, ?> rightKeyMapper);
+
+    /**
+     * The time complexity is <i>O(n * m)</i> : <i>n</i> is the size of this <code>Stream</code> and <i>m</i> is the size of specified collection <code>b</code>.
+     * 
+     * @param b
+     * @param predicate
+     * @return
+     * @see <a href="http://stackoverflow.com/questions/5706437/whats-the-difference-between-inner-join-left-join-right-join-and-ful
+     */
+    public abstract <U> Stream<Pair<T, U>> rightJoin(Collection<U> b, BiPredicate<? super T, ? super U> predicate);
 
     public abstract CharSummaryStatistics summarizeChar(ToCharFunction<? super T> mapper);
 

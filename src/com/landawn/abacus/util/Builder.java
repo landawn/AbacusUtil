@@ -69,42 +69,42 @@ public class Builder<T> {
         return new DoubleListBuilder(val);
     }
 
-    public static final <T> ExListBuilder<T> of(ExList<T> l) {
-        return new ExListBuilder<>(l);
+    public static final <T> ExListBuilder<T> of(ExList<T> val) {
+        return new ExListBuilder<>(val);
     }
 
-    public static final <T, C extends Collection<T>> CollectionBuilder<T, C> of(C c) {
-        return new CollectionBuilder<>(c);
+    public static final <T, C extends Collection<T>> CollectionBuilder<T, C> of(C val) {
+        return new CollectionBuilder<>(val);
     }
 
-    public static final <K, V, M extends Map<K, V>> MapBuilder<K, V, M> of(M m) {
-        return new MapBuilder<>(m);
+    public static final <K, V, M extends Map<K, V>> MapBuilder<K, V, M> of(M val) {
+        return new MapBuilder<>(val);
     }
 
-    public static final <T> MultisetBuilder<T> of(Multiset<T> m) {
-        return new MultisetBuilder<>(m);
+    public static final <T> MultisetBuilder<T> of(Multiset<T> val) {
+        return new MultisetBuilder<>(val);
     }
 
-    public static final <T> LongMultisetBuilder<T> of(LongMultiset<T> m) {
-        return new LongMultisetBuilder<>(m);
+    public static final <T> LongMultisetBuilder<T> of(LongMultiset<T> val) {
+        return new LongMultisetBuilder<>(val);
     }
 
-    public static final <K, E, V extends Collection<E>> MultimapBuilder<K, E, V> of(Multimap<K, E, V> m) {
-        return new MultimapBuilder<>(m);
+    public static final <K, E, V extends Collection<E>> MultimapBuilder<K, E, V> of(Multimap<K, E, V> val) {
+        return new MultimapBuilder<>(val);
     }
 
-    public static final <T> Builder<T> of(T t) {
-        return new Builder<>(t);
+    public static final <T> Builder<T> of(T val) {
+        return new Builder<>(val);
     }
 
-    public Builder<T> accept(final Consumer<? super T> op) {
-        op.accept(val);
+    public Builder<T> accept(final Consumer<? super T> consumer) {
+        consumer.accept(val);
 
         return this;
     }
 
-    public <R> Builder<R> apply(final Function<? super T, R> mapper) {
-        return of(mapper.apply(val));
+    public <R> Builder<R> apply(final Function<? super T, R> func) {
+        return of(func.apply(val));
     }
 
     /**

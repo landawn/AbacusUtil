@@ -6,15 +6,17 @@
 
 2, Add intersperse to Seq/Stream.
 
-3*, Change the implementation of head/tail and head2/tail2 in Stream. 
+3, Add innerJoin/fullJoin/leftJoin/rightJoin to Seq/Stream.
 
-4*, Remove toList from Pair/Triple/Tuple.
+4*, Change the implementation of head/tail and head2/tail2 in Stream. 
 
-5*, Rename subSeq to slice in Seq
+5*, Remove toList from Pair/Triple/Tuple.
 
-6*, Refactoring Builder.
+6*, Rename subSeq to slice in Seq
 
-7, Improvements and bug fix.
+7*, Refactoring Builder.
+
+8, Improvements and bug fix.
 
 
 ========Changes in 0.9.59=========================================================================

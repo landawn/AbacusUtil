@@ -170,6 +170,17 @@ public final class Multimap<K, E, V extends Collection<E>> {
     //        return multimap;
     //    }
 
+    public static <K, E> Multimap<K, E, List<E>> from(final Collection<? extends E> c, final Function<? super E, ? extends K> keyMapper) {
+        final Multimap<K, E, List<E>> multimap = new Multimap<>(N.initHashCapacity(c.size()));
+
+        for (E e : c) {
+            multimap.put(keyMapper.apply(e), e);
+        }
+
+        return multimap;
+
+    }
+
     public static <K, E> Multimap<K, E, List<E>> from(final Map<? extends K, ? extends E> map) {
         final Multimap<K, E, List<E>> multimap = new Multimap<>(N.initHashCapacity(map.size()));
 
@@ -398,6 +409,20 @@ public final class Multimap<K, E, V extends Collection<E>> {
         return val.addAll(c);
     }
 
+    public boolean putAll(final Collection<? extends E> c, final Function<? super E, K> keyMapper) {
+        if (N.isNullOrEmpty(c)) {
+            return false;
+        }
+
+        boolean result = false;
+
+        for (E e : c) {
+            result |= put(keyMapper.apply(e), e);
+        }
+
+        return result;
+    }
+
     public boolean putAll(final Map<? extends K, ? extends E> m) {
         if (N.isNullOrEmpty(m)) {
             return false;
@@ -416,11 +441,7 @@ public final class Multimap<K, E, V extends Collection<E>> {
                 valueMap.put(key, val);
             }
 
-            if (result == false) {
-                result = val.add(e.getValue());
-            } else {
-                val.add(e.getValue());
-            }
+            result |= val.add(e.getValue());
         }
 
         return result;
@@ -448,11 +469,7 @@ public final class Multimap<K, E, V extends Collection<E>> {
                 valueMap.put(key, val);
             }
 
-            if (result == false) {
-                result = val.addAll(e.getValue());
-            } else {
-                val.addAll(e.getValue());
-            }
+            result |= val.addAll(e.getValue());
         }
 
         return result;
