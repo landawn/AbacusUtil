@@ -170,17 +170,6 @@ public final class Multimap<K, E, V extends Collection<E>> {
     //        return multimap;
     //    }
 
-    public static <K, E> Multimap<K, E, List<E>> from(final Collection<? extends E> c, final Function<? super E, ? extends K> keyMapper) {
-        final Multimap<K, E, List<E>> multimap = new Multimap<>(N.initHashCapacity(c.size()));
-
-        for (E e : c) {
-            multimap.put(keyMapper.apply(e), e);
-        }
-
-        return multimap;
-
-    }
-
     public static <K, E> Multimap<K, E, List<E>> from(final Map<? extends K, ? extends E> map) {
         final Multimap<K, E, List<E>> multimap = new Multimap<>(N.initHashCapacity(map.size()));
 
@@ -238,6 +227,45 @@ public final class Multimap<K, E, V extends Collection<E>> {
     //
     //        return multimap;
     //    }
+
+    //    static <K, E, V extends Collection<E>> Multimap<K, E, V> of(final Class<V> collectionType, final Object... a) {
+    //        final Multimap<K, E, V> multimap = new Multimap<>(collectionType);
+    //
+    //        N.newMultimap(multimap, a);
+    //
+    //        return multimap;
+    //    }
+    //
+    //    @SuppressWarnings("rawtypes")
+    //    static <K, E, V extends Collection<E>> Multimap<K, E, V> of(final Class<? extends Map> valueMapType, final Class<? extends Collection> collectionType,
+    //            final Object... a) {
+    //        final Multimap<K, E, V> multimap = new Multimap<>(valueMapType, collectionType);
+    //
+    //        N.newMultimap(multimap, a);
+    //
+    //        return multimap;
+    //    }
+
+    public static <K, E> Multimap<K, E, List<E>> from(final Collection<? extends E> c, final Function<? super E, ? extends K> keyMapper) {
+        final Multimap<K, E, List<E>> multimap = N.newListMultimap(N.initHashCapacity(N.min(9, c.size())));
+
+        for (E e : c) {
+            multimap.put(keyMapper.apply(e), e);
+        }
+
+        return multimap;
+
+    }
+
+    public static <K, E> Multimap<K, E, Set<E>> from2(final Collection<? extends E> c, final Function<? super E, ? extends K> keyMapper) {
+        final Multimap<K, E, Set<E>> multimap = N.newSetMultimap(N.initHashCapacity(N.min(9, c.size())));
+
+        for (E e : c) {
+            multimap.put(keyMapper.apply(e), e);
+        }
+
+        return multimap;
+    }
 
     public V get(final Object key) {
         return valueMap.get(key);

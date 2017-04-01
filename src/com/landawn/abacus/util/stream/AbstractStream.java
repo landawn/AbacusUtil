@@ -1250,24 +1250,20 @@ abstract class AbstractStream<T> extends Stream<T> {
             public Stream<Pair<T, U>> apply(final T t) {
                 final Stream<U> s = rightKeyStreamMap.get(leftKeyMapper.apply(t));
 
-                if (s != null) {
-                    return s.map(new Function<U, Pair<T, U>>() {
-                        @Override
-                        public Pair<T, U> apply(U u) {
-                            if (isParallelStream) {
-                                synchronized (joinedRights) {
-                                    joinedRights.put(u, u);
-                                }
-                            } else {
+                return s == null ? Stream.<Pair<T, U>> empty() : s.map(new Function<U, Pair<T, U>>() {
+                    @Override
+                    public Pair<T, U> apply(U u) {
+                        if (isParallelStream) {
+                            synchronized (joinedRights) {
                                 joinedRights.put(u, u);
                             }
-
-                            return Pair.of(t, u);
+                        } else {
+                            joinedRights.put(u, u);
                         }
-                    });
-                } else {
-                    return Stream.empty();
-                }
+
+                        return Pair.of(t, u);
+                    }
+                });
             }
         }).append(Stream.of(b).filter(new Predicate<U>() {
             @Override

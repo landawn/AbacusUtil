@@ -1246,6 +1246,22 @@ public final class N {
         return new HashMap<>(m);
     }
 
+    public static <K, V> HashMap<K, V> newHashMap(final Collection<? extends V> c, final Function<? super V, ? extends K> keyExtractor) {
+        N.requireNonNull(keyExtractor);
+
+        if (isNullOrEmpty(c)) {
+            return new HashMap<>();
+        }
+
+        final HashMap<K, V> result = new HashMap<>(N.initHashCapacity(c.size()));
+
+        for (V v : c) {
+            result.put(keyExtractor.apply(v), v);
+        }
+
+        return result;
+    }
+
     public static <K, V> LinkedHashMap<K, V> newLinkedHashMap() {
         return new LinkedHashMap<>();
     }
@@ -1261,6 +1277,22 @@ public final class N {
 
     public static <K, V> LinkedHashMap<K, V> newLinkedHashMap(Map<? extends K, ? extends V> m) {
         return new LinkedHashMap<>(m);
+    }
+
+    public static <K, V> LinkedHashMap<K, V> newLinkedHashMap(final Collection<? extends V> c, final Function<? super V, ? extends K> keyExtractor) {
+        N.requireNonNull(keyExtractor);
+
+        if (isNullOrEmpty(c)) {
+            return new LinkedHashMap<>();
+        }
+
+        final LinkedHashMap<K, V> result = new LinkedHashMap<>(N.initHashCapacity(c.size()));
+
+        for (V v : c) {
+            result.put(keyExtractor.apply(v), v);
+        }
+
+        return result;
     }
 
     public static <K, V> ConcurrentHashMap<K, V> newConcurrentHashMap() {
