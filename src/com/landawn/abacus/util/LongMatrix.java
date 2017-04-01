@@ -33,7 +33,7 @@ import com.landawn.abacus.util.stream.Stream;
  * 
  * @author Haiyang Li
  */
-public final class LongMatrix extends AbstractMatrix<long[], LongList, LongMatrix> {
+public final class LongMatrix extends AbstractMatrix<long[], LongList, LongStream, Stream<LongStream>, LongMatrix> {
     static final LongMatrix EMPTY_LONG_MATRIX = new LongMatrix(new long[0][0]);
 
     public LongMatrix(final long[][] a) {
@@ -940,8 +940,9 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongMatri
      * 
      * @return a stream based on the order of row.
      */
-    public LongStream stream() {
-        return stream(0, n);
+    @Override
+    public LongStream streamH() {
+        return streamH(0, n);
     }
 
     /**
@@ -950,7 +951,8 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongMatri
      * @param toRowIndex
      * @return a stream based on the order of row.
      */
-    public LongStream stream(final int fromRowIndex, final int toRowIndex) {
+    @Override
+    public LongStream streamH(final int fromRowIndex, final int toRowIndex) {
         N.checkFromToIndex(fromRowIndex, toRowIndex, n);
 
         if (isEmpty()) {
@@ -1021,9 +1023,10 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongMatri
      * 
      * @return a stream based on the order of column.
      */
+    @Override
     @Beta
-    public LongStream stream0() {
-        return stream0(0, m);
+    public LongStream streamV() {
+        return streamV(0, m);
     }
 
     /**
@@ -1032,8 +1035,9 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongMatri
      * @param toColumnIndex
      * @return a stream based on the order of column.
      */
+    @Override
     @Beta
-    public LongStream stream0(final int fromColumnIndex, final int toColumnIndex) {
+    public LongStream streamV(final int fromColumnIndex, final int toColumnIndex) {
         N.checkFromToIndex(fromColumnIndex, toColumnIndex, m);
 
         if (isEmpty()) {
@@ -1104,8 +1108,9 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongMatri
      * 
      * @return a row stream based on the order of row.
      */
-    public Stream<LongStream> stream2() {
-        return stream2(0, n);
+    @Override
+    public Stream<LongStream> streamR() {
+        return streamR(0, n);
     }
 
     /**
@@ -1114,7 +1119,8 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongMatri
      * @param toRowIndex
      * @return a row stream based on the order of row.
      */
-    public Stream<LongStream> stream2(final int fromRowIndex, final int toRowIndex) {
+    @Override
+    public Stream<LongStream> streamR(final int fromRowIndex, final int toRowIndex) {
         N.checkFromToIndex(fromRowIndex, toRowIndex, n);
 
         if (isEmpty()) {
@@ -1155,9 +1161,10 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongMatri
      * 
      * @return a column stream based on the order of column.
      */
+    @Override
     @Beta
-    public Stream<LongStream> stream02() {
-        return stream02(0, m);
+    public Stream<LongStream> streamC() {
+        return streamC(0, m);
     }
 
     /**
@@ -1166,8 +1173,9 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongMatri
      * @param toColumnIndex
      * @return a column stream based on the order of column.
      */
+    @Override
     @Beta
-    public Stream<LongStream> stream02(final int fromColumnIndex, final int toColumnIndex) {
+    public Stream<LongStream> streamC(final int fromColumnIndex, final int toColumnIndex) {
         N.checkFromToIndex(fromColumnIndex, toColumnIndex, m);
 
         if (isEmpty()) {

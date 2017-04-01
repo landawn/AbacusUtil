@@ -21,9 +21,9 @@ import com.landawn.abacus.util.function.FloatBiFunction;
 import com.landawn.abacus.util.function.FloatTriFunction;
 import com.landawn.abacus.util.function.FloatUnaryOperator;
 import com.landawn.abacus.util.function.IntConsumer;
-import com.landawn.abacus.util.stream.FloatStream;
 import com.landawn.abacus.util.stream.ExFloatIterator;
 import com.landawn.abacus.util.stream.ExIterator;
+import com.landawn.abacus.util.stream.FloatStream;
 import com.landawn.abacus.util.stream.IntStream;
 import com.landawn.abacus.util.stream.Stream;
 
@@ -33,7 +33,7 @@ import com.landawn.abacus.util.stream.Stream;
  * 
  * @author Haiyang Li
  */
-public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatMatrix> {
+public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatStream, Stream<FloatStream>, FloatMatrix> {
     static final FloatMatrix EMPTY_FLOAT_MATRIX = new FloatMatrix(new float[0][0]);
 
     public FloatMatrix(final float[][] a) {
@@ -904,8 +904,9 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatM
      * 
      * @return a stream based on the order of row.
      */
-    public FloatStream stream() {
-        return stream(0, n);
+    @Override
+    public FloatStream streamH() {
+        return streamH(0, n);
     }
 
     /**
@@ -914,7 +915,8 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatM
      * @param toRowIndex
      * @return a stream based on the order of row.
      */
-    public FloatStream stream(final int fromRowIndex, final int toRowIndex) {
+    @Override
+    public FloatStream streamH(final int fromRowIndex, final int toRowIndex) {
         N.checkFromToIndex(fromRowIndex, toRowIndex, n);
 
         if (isEmpty()) {
@@ -985,9 +987,10 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatM
      * 
      * @return a stream based on the order of column.
      */
+    @Override
     @Beta
-    public FloatStream stream0() {
-        return stream0(0, m);
+    public FloatStream streamV() {
+        return streamV(0, m);
     }
 
     /**
@@ -996,8 +999,9 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatM
      * @param toColumnIndex
      * @return a stream based on the order of column.
      */
+    @Override
     @Beta
-    public FloatStream stream0(final int fromColumnIndex, final int toColumnIndex) {
+    public FloatStream streamV(final int fromColumnIndex, final int toColumnIndex) {
         N.checkFromToIndex(fromColumnIndex, toColumnIndex, m);
 
         if (isEmpty()) {
@@ -1068,8 +1072,9 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatM
      * 
      * @return a row stream based on the order of row.
      */
-    public Stream<FloatStream> stream2() {
-        return stream2(0, n);
+    @Override
+    public Stream<FloatStream> streamR() {
+        return streamR(0, n);
     }
 
     /**
@@ -1078,7 +1083,8 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatM
      * @param toRowIndex
      * @return a row stream based on the order of row.
      */
-    public Stream<FloatStream> stream2(final int fromRowIndex, final int toRowIndex) {
+    @Override
+    public Stream<FloatStream> streamR(final int fromRowIndex, final int toRowIndex) {
         N.checkFromToIndex(fromRowIndex, toRowIndex, n);
 
         if (isEmpty()) {
@@ -1119,9 +1125,10 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatM
      * 
      * @return a column stream based on the order of column.
      */
+    @Override
     @Beta
-    public Stream<FloatStream> stream02() {
-        return stream02(0, m);
+    public Stream<FloatStream> streamC() {
+        return streamC(0, m);
     }
 
     /**
@@ -1130,8 +1137,9 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatM
      * @param toColumnIndex
      * @return a column stream based on the order of column.
      */
+    @Override
     @Beta
-    public Stream<FloatStream> stream02(final int fromColumnIndex, final int toColumnIndex) {
+    public Stream<FloatStream> streamC(final int fromColumnIndex, final int toColumnIndex) {
         N.checkFromToIndex(fromColumnIndex, toColumnIndex, m);
 
         if (isEmpty()) {

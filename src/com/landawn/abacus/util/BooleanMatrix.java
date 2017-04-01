@@ -31,7 +31,7 @@ import com.landawn.abacus.util.stream.Stream;
  * 
  * @author Haiyang Li
  */
-public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, BooleanMatrix> {
+public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, Stream<Boolean>, Stream<Stream<Boolean>>, BooleanMatrix> {
     static final BooleanMatrix EMPTY_BOOLEAN_MATRIX = new BooleanMatrix(new boolean[0][0]);
 
     public BooleanMatrix(final boolean[][] a) {
@@ -662,8 +662,9 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
      * 
      * @return a stream based on the order of row.
      */
-    public Stream<Boolean> stream() {
-        return stream(0, n);
+    @Override
+    public Stream<Boolean> streamH() {
+        return streamH(0, n);
     }
 
     /**
@@ -672,7 +673,8 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
      * @param toRowIndex
      * @return a stream based on the order of row.
      */
-    public Stream<Boolean> stream(final int fromRowIndex, final int toRowIndex) {
+    @Override
+    public Stream<Boolean> streamH(final int fromRowIndex, final int toRowIndex) {
         N.checkFromToIndex(fromRowIndex, toRowIndex, n);
 
         if (isEmpty()) {
@@ -746,9 +748,10 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
      * 
      * @return a stream based on the order of column.
      */
+    @Override
     @Beta
-    public Stream<Boolean> stream0() {
-        return stream0(0, m);
+    public Stream<Boolean> streamV() {
+        return streamV(0, m);
     }
 
     /**
@@ -757,8 +760,9 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
      * @param toColumnIndex
      * @return a stream based on the order of column.
      */
+    @Override
     @Beta
-    public Stream<Boolean> stream0(final int fromColumnIndex, final int toColumnIndex) {
+    public Stream<Boolean> streamV(final int fromColumnIndex, final int toColumnIndex) {
         N.checkFromToIndex(fromColumnIndex, toColumnIndex, m);
 
         if (isEmpty()) {
@@ -832,8 +836,9 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
      * 
      * @return a row stream based on the order of row.
      */
-    public Stream<Stream<Boolean>> stream2() {
-        return stream2(0, n);
+    @Override
+    public Stream<Stream<Boolean>> streamR() {
+        return streamR(0, n);
     }
 
     /**
@@ -842,7 +847,8 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
      * @param toRowIndex
      * @return a row stream based on the order of row.
      */
-    public Stream<Stream<Boolean>> stream2(final int fromRowIndex, final int toRowIndex) {
+    @Override
+    public Stream<Stream<Boolean>> streamR(final int fromRowIndex, final int toRowIndex) {
         N.checkFromToIndex(fromRowIndex, toRowIndex, n);
 
         if (isEmpty()) {
@@ -883,9 +889,10 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
      * 
      * @return a column stream based on the order of column.
      */
+    @Override
     @Beta
-    public Stream<Stream<Boolean>> stream02() {
-        return stream02(0, m);
+    public Stream<Stream<Boolean>> streamC() {
+        return streamC(0, m);
     }
 
     /**
@@ -894,8 +901,9 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
      * @param toColumnIndex
      * @return a column stream based on the order of column.
      */
+    @Override
     @Beta
-    public Stream<Stream<Boolean>> stream02(final int fromColumnIndex, final int toColumnIndex) {
+    public Stream<Stream<Boolean>> streamC(final int fromColumnIndex, final int toColumnIndex) {
         N.checkFromToIndex(fromColumnIndex, toColumnIndex, m);
 
         if (isEmpty()) {

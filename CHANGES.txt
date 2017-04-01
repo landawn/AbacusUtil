@@ -16,7 +16,9 @@
 
 7*, Refactoring Builder.
 
-8, Improvements and bug fix.
+8*, Rename stream/stream0/stream2/stream02 to streamH/streamV/streamR/streamC in Sheet/Matrix/IntMatrix...
+
+9, Improvements and bug fix.
 
 
 ========Changes in 0.9.59=========================================================================

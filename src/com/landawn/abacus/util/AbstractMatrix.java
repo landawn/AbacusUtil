@@ -23,7 +23,7 @@ import java.util.Random;
  * 
  * @author Haiyang Li
  */
-public abstract class AbstractMatrix<A, PL, X extends AbstractMatrix<A, PL, X>> {
+public abstract class AbstractMatrix<A, PL, HS, RS, X extends AbstractMatrix<A, PL, HS, RS, X>> {
     static final Random RAND = new SecureRandom();
 
     static final boolean isParallelStreamSupported;
@@ -149,73 +149,21 @@ public abstract class AbstractMatrix<A, PL, X extends AbstractMatrix<A, PL, X>> 
 
     public abstract PL flatten();
 
-    //    /**
-    //     * 
-    //     * @return the stream with each element based on row.
-    //     */
-    //    public Stream<A> stream() {
-    //        return stream(0, n);
-    //    }
-    //
-    //    /**
-    //     * 
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @return the stream with each element based on row.
-    //     */
-    //    public Stream<A> stream(final int fromRowIndex, final int toRowIndex) {
-    //        N.checkIndex(fromRowIndex, toRowIndex, n);
-    //
-    //        return Stream.of(a, fromRowIndex, toRowIndex);
-    //    }
-    //
-    //    /**
-    //     * 
-    //     * @return the stream with each element based on column.
-    //     */
-    //    public Stream<A> stream2() {
-    //        return stream2(0, m);
-    //    }
-    //
-    //    /**
-    //     * 
-    //     * @param fromColumnIndex
-    //     * @param toColumnIndex
-    //     * @return the stream with each element based on column.
-    //     */
-    //    public Stream<A> stream2(final int fromColumnIndex, final int toColumnIndex) {
-    //        N.checkIndex(fromColumnIndex, toColumnIndex, m);
-    //
-    //        return Stream.of(new ImmutableIterator<A>() {
-    //            private int cursor = fromColumnIndex;
-    //
-    //            @Override
-    //            public boolean hasNext() {
-    //                return cursor < toColumnIndex;
-    //            }
-    //
-    //            @Override
-    //            public A next() {
-    //                if (cursor >= toColumnIndex) {
-    //                    throw new NoSuchElementException();
-    //                }
-    //
-    //                return column2(cursor++);
-    //            }
-    //
-    //            @Override
-    //            public long count() {
-    //                return toColumnIndex - cursor;
-    //            }
-    //
-    //            @Override
-    //            public void skip(long n) {
-    //                cursor = n < toColumnIndex - cursor ? cursor + (int) n : toColumnIndex;
-    //            }
-    //        });
-    //    }
-    //
-    //    abstract A column2(final int j);
+    public abstract HS streamH();
+
+    public abstract HS streamH(final int fromRowIndex, final int toRowIndex);
+
+    public abstract HS streamV();
+
+    public abstract HS streamV(final int fromColumnIndex, final int toColumnIndex);
+
+    public abstract RS streamR();
+
+    public abstract RS streamR(final int fromRowIndex, final int toRowIndex);
+
+    public abstract RS streamC();
+
+    public abstract RS streamC(final int fromColumnIndex, final int toColumnIndex);
 
     protected abstract int length(A a);
 

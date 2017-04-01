@@ -33,7 +33,7 @@ import com.landawn.abacus.util.stream.Stream;
  * 
  * @author Haiyang Li
  */
-public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, DoubleMatrix> {
+public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, DoubleStream, Stream<DoubleStream>, DoubleMatrix> {
     static final DoubleMatrix EMPTY_DOUBLE_MATRIX = new DoubleMatrix(new double[0][0]);
 
     public DoubleMatrix(final double[][] a) {
@@ -932,8 +932,9 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
      * 
      * @return a stream based on the order of row.
      */
-    public DoubleStream stream() {
-        return stream(0, n);
+    @Override
+    public DoubleStream streamH() {
+        return streamH(0, n);
     }
 
     /**
@@ -942,7 +943,8 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
      * @param toRowIndex
      * @return a stream based on the order of row.
      */
-    public DoubleStream stream(final int fromRowIndex, final int toRowIndex) {
+    @Override
+    public DoubleStream streamH(final int fromRowIndex, final int toRowIndex) {
         N.checkFromToIndex(fromRowIndex, toRowIndex, n);
 
         if (isEmpty()) {
@@ -1013,9 +1015,10 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
      * 
      * @return a stream based on the order of column.
      */
+    @Override
     @Beta
-    public DoubleStream stream0() {
-        return stream0(0, m);
+    public DoubleStream streamV() {
+        return streamV(0, m);
     }
 
     /**
@@ -1024,8 +1027,9 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
      * @param toColumnIndex
      * @return a stream based on the order of column.
      */
+    @Override
     @Beta
-    public DoubleStream stream0(final int fromColumnIndex, final int toColumnIndex) {
+    public DoubleStream streamV(final int fromColumnIndex, final int toColumnIndex) {
         N.checkFromToIndex(fromColumnIndex, toColumnIndex, m);
 
         if (isEmpty()) {
@@ -1096,8 +1100,9 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
      * 
      * @return a row stream based on the order of row.
      */
-    public Stream<DoubleStream> stream2() {
-        return stream2(0, n);
+    @Override
+    public Stream<DoubleStream> streamR() {
+        return streamR(0, n);
     }
 
     /**
@@ -1106,7 +1111,8 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
      * @param toRowIndex
      * @return a row stream based on the order of row.
      */
-    public Stream<DoubleStream> stream2(final int fromRowIndex, final int toRowIndex) {
+    @Override
+    public Stream<DoubleStream> streamR(final int fromRowIndex, final int toRowIndex) {
         N.checkFromToIndex(fromRowIndex, toRowIndex, n);
 
         if (isEmpty()) {
@@ -1147,9 +1153,10 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
      * 
      * @return a column stream based on the order of column.
      */
+    @Override
     @Beta
-    public Stream<DoubleStream> stream02() {
-        return stream02(0, m);
+    public Stream<DoubleStream> streamC() {
+        return streamC(0, m);
     }
 
     /**
@@ -1158,8 +1165,9 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
      * @param toColumnIndex
      * @return a column stream based on the order of column.
      */
+    @Override
     @Beta
-    public Stream<DoubleStream> stream02(final int fromColumnIndex, final int toColumnIndex) {
+    public Stream<DoubleStream> streamC(final int fromColumnIndex, final int toColumnIndex) {
         N.checkFromToIndex(fromColumnIndex, toColumnIndex, m);
 
         if (isEmpty()) {

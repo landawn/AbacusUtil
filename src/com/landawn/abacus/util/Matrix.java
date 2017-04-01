@@ -40,7 +40,7 @@ import com.landawn.abacus.util.stream.Stream;
  * 
  * @author Haiyang Li
  */
-public final class Matrix<T> extends AbstractMatrix<T[], ExList<T>, Matrix<T>> {
+public final class Matrix<T> extends AbstractMatrix<T[], ExList<T>, Stream<T>, Stream<Stream<T>>, Matrix<T>> {
     private final Class<T[]> arrayType;
     private final Class<T> componentType;
 
@@ -1045,8 +1045,9 @@ public final class Matrix<T> extends AbstractMatrix<T[], ExList<T>, Matrix<T>> {
      * 
      * @return a stream based on the order of row.
      */
-    public Stream<T> stream() {
-        return stream(0, n);
+    @Override
+    public Stream<T> streamH() {
+        return streamH(0, n);
     }
 
     /**
@@ -1055,7 +1056,8 @@ public final class Matrix<T> extends AbstractMatrix<T[], ExList<T>, Matrix<T>> {
      * @param toRowIndex
      * @return a stream based on the order of row.
      */
-    public Stream<T> stream(final int fromRowIndex, final int toRowIndex) {
+    @Override
+    public Stream<T> streamH(final int fromRowIndex, final int toRowIndex) {
         N.checkFromToIndex(fromRowIndex, toRowIndex, n);
 
         if (isEmpty()) {
@@ -1129,9 +1131,10 @@ public final class Matrix<T> extends AbstractMatrix<T[], ExList<T>, Matrix<T>> {
      * 
      * @return a stream based on the order of column.
      */
+    @Override
     @Beta
-    public Stream<T> stream0() {
-        return stream0(0, m);
+    public Stream<T> streamV() {
+        return streamV(0, m);
     }
 
     /**
@@ -1141,7 +1144,8 @@ public final class Matrix<T> extends AbstractMatrix<T[], ExList<T>, Matrix<T>> {
      * @return a stream based on the order of column.
      */
     @Beta
-    public Stream<T> stream0(final int fromColumnIndex, final int toColumnIndex) {
+    @Override
+    public Stream<T> streamV(final int fromColumnIndex, final int toColumnIndex) {
         N.checkFromToIndex(fromColumnIndex, toColumnIndex, m);
 
         if (isEmpty()) {
@@ -1215,8 +1219,9 @@ public final class Matrix<T> extends AbstractMatrix<T[], ExList<T>, Matrix<T>> {
      * 
      * @return a row stream based on the order of row.
      */
-    public Stream<Stream<T>> stream2() {
-        return stream2(0, n);
+    @Override
+    public Stream<Stream<T>> streamR() {
+        return streamR(0, n);
     }
 
     /**
@@ -1225,7 +1230,8 @@ public final class Matrix<T> extends AbstractMatrix<T[], ExList<T>, Matrix<T>> {
      * @param toRowIndex
      * @return a row stream based on the order of row.
      */
-    public Stream<Stream<T>> stream2(final int fromRowIndex, final int toRowIndex) {
+    @Override
+    public Stream<Stream<T>> streamR(final int fromRowIndex, final int toRowIndex) {
         N.checkFromToIndex(fromRowIndex, toRowIndex, n);
 
         if (isEmpty()) {
@@ -1266,9 +1272,10 @@ public final class Matrix<T> extends AbstractMatrix<T[], ExList<T>, Matrix<T>> {
      * 
      * @return a column stream based on the order of column.
      */
+    @Override
     @Beta
-    public Stream<Stream<T>> stream02() {
-        return stream02(0, m);
+    public Stream<Stream<T>> streamC() {
+        return streamC(0, m);
     }
 
     /**
@@ -1277,8 +1284,9 @@ public final class Matrix<T> extends AbstractMatrix<T[], ExList<T>, Matrix<T>> {
      * @param toColumnIndex
      * @return a column stream based on the order of column.
      */
+    @Override
     @Beta
-    public Stream<Stream<T>> stream02(final int fromColumnIndex, final int toColumnIndex) {
+    public Stream<Stream<T>> streamC(final int fromColumnIndex, final int toColumnIndex) {
         N.checkFromToIndex(fromColumnIndex, toColumnIndex, m);
 
         if (isEmpty()) {

@@ -33,7 +33,7 @@ import com.landawn.abacus.util.stream.Stream;
  * 
  * @author Haiyang Li
  */
-public final class CharMatrix extends AbstractMatrix<char[], CharList, CharMatrix> {
+public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStream, Stream<CharStream>, CharMatrix> {
     static final CharMatrix EMPTY_CHAR_MATRIX = new CharMatrix(new char[0][0]);
 
     public CharMatrix(final char[][] a) {
@@ -964,8 +964,9 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharMatri
      * 
      * @return a stream based on the order of row.
      */
-    public CharStream stream() {
-        return stream(0, n);
+    @Override
+    public CharStream streamH() {
+        return streamH(0, n);
     }
 
     /**
@@ -974,7 +975,8 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharMatri
      * @param toRowIndex
      * @return a stream based on the order of row.
      */
-    public CharStream stream(final int fromRowIndex, final int toRowIndex) {
+    @Override
+    public CharStream streamH(final int fromRowIndex, final int toRowIndex) {
         N.checkFromToIndex(fromRowIndex, toRowIndex, n);
 
         if (isEmpty()) {
@@ -1045,9 +1047,10 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharMatri
      * 
      * @return a stream based on the order of column.
      */
+    @Override
     @Beta
-    public CharStream stream0() {
-        return stream0(0, m);
+    public CharStream streamV() {
+        return streamV(0, m);
     }
 
     /**
@@ -1056,8 +1059,9 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharMatri
      * @param toColumnIndex
      * @return a stream based on the order of column.
      */
+    @Override
     @Beta
-    public CharStream stream0(final int fromColumnIndex, final int toColumnIndex) {
+    public CharStream streamV(final int fromColumnIndex, final int toColumnIndex) {
         N.checkFromToIndex(fromColumnIndex, toColumnIndex, m);
 
         if (isEmpty()) {
@@ -1128,8 +1132,9 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharMatri
      * 
      * @return a row stream based on the order of row.
      */
-    public Stream<CharStream> stream2() {
-        return stream2(0, n);
+    @Override
+    public Stream<CharStream> streamR() {
+        return streamR(0, n);
     }
 
     /**
@@ -1138,7 +1143,8 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharMatri
      * @param toRowIndex
      * @return a row stream based on the order of row.
      */
-    public Stream<CharStream> stream2(final int fromRowIndex, final int toRowIndex) {
+    @Override
+    public Stream<CharStream> streamR(final int fromRowIndex, final int toRowIndex) {
         N.checkFromToIndex(fromRowIndex, toRowIndex, n);
 
         if (isEmpty()) {
@@ -1179,9 +1185,10 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharMatri
      * 
      * @return a column stream based on the order of column.
      */
+    @Override
     @Beta
-    public Stream<CharStream> stream02() {
-        return stream02(0, m);
+    public Stream<CharStream> streamC() {
+        return streamC(0, m);
     }
 
     /**
@@ -1190,8 +1197,9 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharMatri
      * @param toColumnIndex
      * @return a column stream based on the order of column.
      */
+    @Override
     @Beta
-    public Stream<CharStream> stream02(final int fromColumnIndex, final int toColumnIndex) {
+    public Stream<CharStream> streamC(final int fromColumnIndex, final int toColumnIndex) {
         N.checkFromToIndex(fromColumnIndex, toColumnIndex, m);
 
         if (isEmpty()) {

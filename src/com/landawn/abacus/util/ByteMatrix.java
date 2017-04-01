@@ -33,7 +33,7 @@ import com.landawn.abacus.util.stream.Stream;
  * 
  * @author Haiyang Li
  */
-public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteMatrix> {
+public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStream, Stream<ByteStream>, ByteMatrix> {
     static final ByteMatrix EMPTY_BYTE_MATRIX = new ByteMatrix(new byte[0][0]);
 
     public ByteMatrix(final byte[][] a) {
@@ -964,8 +964,9 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteMatri
      * 
      * @return a stream based on the order of row.
      */
-    public ByteStream stream() {
-        return stream(0, n);
+    @Override
+    public ByteStream streamH() {
+        return streamH(0, n);
     }
 
     /**
@@ -974,7 +975,8 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteMatri
      * @param toRowIndex
      * @return a stream based on the order of row.
      */
-    public ByteStream stream(final int fromRowIndex, final int toRowIndex) {
+    @Override
+    public ByteStream streamH(final int fromRowIndex, final int toRowIndex) {
         N.checkFromToIndex(fromRowIndex, toRowIndex, n);
 
         if (isEmpty()) {
@@ -1045,9 +1047,10 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteMatri
      * 
      * @return a stream based on the order of column.
      */
+    @Override
     @Beta
-    public ByteStream stream0() {
-        return stream0(0, m);
+    public ByteStream streamV() {
+        return streamV(0, m);
     }
 
     /**
@@ -1056,8 +1059,9 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteMatri
      * @param toColumnIndex
      * @return a stream based on the order of column.
      */
+    @Override
     @Beta
-    public ByteStream stream0(final int fromColumnIndex, final int toColumnIndex) {
+    public ByteStream streamV(final int fromColumnIndex, final int toColumnIndex) {
         N.checkFromToIndex(fromColumnIndex, toColumnIndex, m);
 
         if (isEmpty()) {
@@ -1127,8 +1131,9 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteMatri
      * 
      * @return a row stream based on the order of row.
      */
-    public Stream<ByteStream> stream2() {
-        return stream2(0, n);
+    @Override
+    public Stream<ByteStream> streamR() {
+        return streamR(0, n);
     }
 
     /**
@@ -1137,7 +1142,8 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteMatri
      * @param toRowIndex
      * @return a row stream based on the order of row.
      */
-    public Stream<ByteStream> stream2(final int fromRowIndex, final int toRowIndex) {
+    @Override
+    public Stream<ByteStream> streamR(final int fromRowIndex, final int toRowIndex) {
         N.checkFromToIndex(fromRowIndex, toRowIndex, n);
 
         if (isEmpty()) {
@@ -1178,9 +1184,10 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteMatri
      * 
      * @return a column stream based on the order of column.
      */
+    @Override
     @Beta
-    public Stream<ByteStream> stream02() {
-        return stream02(0, m);
+    public Stream<ByteStream> streamC() {
+        return streamC(0, m);
     }
 
     /**
@@ -1189,8 +1196,9 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteMatri
      * @param toColumnIndex
      * @return a column stream based on the order of column.
      */
+    @Override
     @Beta
-    public Stream<ByteStream> stream02(final int fromColumnIndex, final int toColumnIndex) {
+    public Stream<ByteStream> streamC(final int fromColumnIndex, final int toColumnIndex) {
         N.checkFromToIndex(fromColumnIndex, toColumnIndex, m);
 
         if (isEmpty()) {
