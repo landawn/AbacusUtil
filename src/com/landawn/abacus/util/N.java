@@ -23038,7 +23038,32 @@ public final class N {
      * @param element
      * @return A new array containing the existing elements plus the new element
      */
+    public static String[] add(final String[] a, final String element) {
+        if (N.isNullOrEmpty(a)) {
+            return Array.of(element);
+        }
+
+        final String[] newArray = new String[a.length + 1];
+
+        copy(a, 0, newArray, 0, a.length);
+        newArray[a.length] = element;
+
+        return newArray;
+    }
+
+    /**
+     * <p>
+     * Copies the given array and adds the given element at the end of the new
+     * array.
+     *
+     * @param a
+     * @param element
+     * @return A new array containing the existing elements plus the new element
+     * @throws NullPointerException if the specified <code>a</code> is <code>null</code>.
+     */
     public static <T> T[] add(final T[] a, final T element) {
+        N.requireNonNull(a, "a");
+
         if (N.isNullOrEmpty(a)) {
             return N.asArray(element);
         }
@@ -23254,7 +23279,34 @@ public final class N {
      *            the second array whose elements are added to the new array.
      * @return A new array containing the elements from a and b
      */
+    public static String[] addAll(final String[] a, final String... b) {
+        if (N.isNullOrEmpty(a)) {
+            return N.isNullOrEmpty(b) ? N.EMPTY_STRING_ARRAY : b.clone();
+        }
+
+        final String[] newArray = new String[a.length + b.length];
+
+        copy(a, 0, newArray, 0, a.length);
+        copy(b, 0, newArray, a.length, b.length);
+
+        return newArray;
+    }
+
+    /**
+     * <p>
+     * Adds all the elements of the given arrays into a new array.
+     * </p>
+     *
+     * @param a
+     *            the first array whose elements are added to the new array.
+     * @param b
+     *            the second array whose elements are added to the new array.
+     * @return A new array containing the elements from a and b
+     * @throws NullPointerException if the specified <code>a</code> is <code>null</code>.
+     */
     public static <T> T[] addAll(final T[] a, final T... b) {
+        N.requireNonNull(a, "a");
+
         if (N.isNullOrEmpty(a)) {
             return N.isNullOrEmpty(b) ? b : b.clone();
         }
@@ -23288,6 +23340,10 @@ public final class N {
      * @return A new array containing the existing elements and the new element
      */
     public static boolean[] insert(final boolean[] a, final int index, final boolean element) {
+        if (N.isNullOrEmpty(a) && index == 0) {
+            return Array.of(element);
+        }
+
         final boolean[] newArray = new boolean[a.length + 1];
 
         if (index > 0) {
@@ -23324,6 +23380,10 @@ public final class N {
      * @return A new array containing the existing elements and the new element
      */
     public static char[] insert(final char[] a, final int index, final char element) {
+        if (N.isNullOrEmpty(a) && index == 0) {
+            return Array.of(element);
+        }
+
         final char[] newArray = new char[a.length + 1];
 
         if (index > 0) {
@@ -23360,6 +23420,10 @@ public final class N {
      * @return A new array containing the existing elements and the new element
      */
     public static byte[] insert(final byte[] a, final int index, final byte element) {
+        if (N.isNullOrEmpty(a) && index == 0) {
+            return Array.of(element);
+        }
+
         final byte[] newArray = new byte[a.length + 1];
 
         if (index > 0) {
@@ -23396,6 +23460,10 @@ public final class N {
      * @return A new array containing the existing elements and the new element
      */
     public static short[] insert(final short[] a, final int index, final short element) {
+        if (N.isNullOrEmpty(a) && index == 0) {
+            return Array.of(element);
+        }
+
         final short[] newArray = new short[a.length + 1];
 
         if (index > 0) {
@@ -23432,6 +23500,10 @@ public final class N {
      * @return A new array containing the existing elements and the new element
      */
     public static int[] insert(final int[] a, final int index, final int element) {
+        if (N.isNullOrEmpty(a) && index == 0) {
+            return Array.of(element);
+        }
+
         final int[] newArray = new int[a.length + 1];
 
         if (index > 0) {
@@ -23468,6 +23540,10 @@ public final class N {
      * @return A new array containing the existing elements and the new element
      */
     public static long[] insert(final long[] a, final int index, final long element) {
+        if (N.isNullOrEmpty(a) && index == 0) {
+            return Array.of(element);
+        }
+
         final long[] newArray = new long[a.length + 1];
 
         if (index > 0) {
@@ -23504,6 +23580,10 @@ public final class N {
      * @return A new array containing the existing elements and the new element
      */
     public static float[] insert(final float[] a, final int index, final float element) {
+        if (N.isNullOrEmpty(a) && index == 0) {
+            return Array.of(element);
+        }
+
         final float[] newArray = new float[a.length + 1];
 
         if (index > 0) {
@@ -23540,7 +23620,31 @@ public final class N {
      * @return A new array containing the existing elements and the new element
      */
     public static double[] insert(final double[] a, final int index, final double element) {
+        if (N.isNullOrEmpty(a) && index == 0) {
+            return Array.of(element);
+        }
+
         final double[] newArray = new double[a.length + 1];
+
+        if (index > 0) {
+            copy(a, 0, newArray, 0, index);
+        }
+
+        newArray[index] = element;
+
+        if (index < a.length) {
+            copy(a, index, newArray, index + 1, a.length - index);
+        }
+
+        return newArray;
+    }
+
+    public static String[] insert(final String[] a, final int index, final String element) {
+        if (N.isNullOrEmpty(a) && index == 0) {
+            return Array.of(element);
+        }
+
+        final String[] newArray = new String[a.length + 1];
 
         if (index > 0) {
             copy(a, 0, newArray, 0, index);
@@ -23574,8 +23678,11 @@ public final class N {
      * @param element
      *            the object to add
      * @return A new array containing the existing elements and the new element
+     * @throws NullPointerException if the specified <code>a</code> is <code>null</code>.
      */
     public static <T> T[] insert(final T[] a, final int index, final T element) {
+        N.requireNonNull(a, "a");
+
         final T[] newArray = N.newArray(a.getClass().getComponentType(), a.length + 1);
 
         if (index > 0) {
@@ -23607,6 +23714,10 @@ public final class N {
      * @return A new array containing the elements from a and b
      */
     public static boolean[] insertAll(final boolean[] a, final int index, final boolean... b) {
+        if (N.isNullOrEmpty(a) && index == 0) {
+            return b.clone();
+        }
+
         final boolean[] newArray = new boolean[a.length + b.length];
 
         if (index > 0) {
@@ -23638,6 +23749,10 @@ public final class N {
      * @return A new array containing the elements from a and b
      */
     public static char[] insertAll(final char[] a, final int index, final char... b) {
+        if (N.isNullOrEmpty(a) && index == 0) {
+            return b.clone();
+        }
+
         final char[] newArray = new char[a.length + b.length];
 
         if (index > 0) {
@@ -23669,6 +23784,10 @@ public final class N {
      * @return A new array containing the elements from a and b
      */
     public static byte[] insertAll(final byte[] a, final int index, final byte... b) {
+        if (N.isNullOrEmpty(a) && index == 0) {
+            return b.clone();
+        }
+
         final byte[] newArray = new byte[a.length + b.length];
 
         if (index > 0) {
@@ -23700,6 +23819,10 @@ public final class N {
      * @return A new array containing the elements from a and b
      */
     public static short[] insertAll(final short[] a, final int index, final short... b) {
+        if (N.isNullOrEmpty(a) && index == 0) {
+            return b.clone();
+        }
+
         final short[] newArray = new short[a.length + b.length];
 
         if (index > 0) {
@@ -23731,6 +23854,10 @@ public final class N {
      * @return A new array containing the elements from a and b
      */
     public static int[] insertAll(final int[] a, final int index, final int... b) {
+        if (N.isNullOrEmpty(a) && index == 0) {
+            return b.clone();
+        }
+
         final int[] newArray = new int[a.length + b.length];
 
         if (index > 0) {
@@ -23762,6 +23889,10 @@ public final class N {
      * @return A new array containing the elements from a and b
      */
     public static long[] insertAll(final long[] a, final int index, final long... b) {
+        if (N.isNullOrEmpty(a) && index == 0) {
+            return b.clone();
+        }
+
         final long[] newArray = new long[a.length + b.length];
 
         if (index > 0) {
@@ -23793,6 +23924,10 @@ public final class N {
      * @return A new array containing the elements from a and b
      */
     public static float[] insertAll(final float[] a, final int index, final float... b) {
+        if (N.isNullOrEmpty(a) && index == 0) {
+            return b.clone();
+        }
+
         final float[] newArray = new float[a.length + b.length];
 
         if (index > 0) {
@@ -23824,7 +23959,31 @@ public final class N {
      * @return A new array containing the elements from a and b
      */
     public static double[] insertAll(final double[] a, final int index, final double... b) {
+        if (N.isNullOrEmpty(a) && index == 0) {
+            return b.clone();
+        }
+
         final double[] newArray = new double[a.length + b.length];
+
+        if (index > 0) {
+            copy(a, 0, newArray, 0, index);
+        }
+
+        copy(b, 0, newArray, index, b.length);
+
+        if (index < a.length) {
+            copy(a, index, newArray, index + b.length, a.length - index);
+        }
+
+        return newArray;
+    }
+
+    public static String[] insertAll(final String[] a, final int index, final String... b) {
+        if (N.isNullOrEmpty(a) && index == 0) {
+            return b.clone();
+        }
+
+        final String[] newArray = new String[a.length + b.length];
 
         if (index > 0) {
             copy(a, 0, newArray, 0, index);
@@ -23853,8 +24012,11 @@ public final class N {
      * @param b
      *            the second array whose elements are added to the new array.
      * @return A new array containing the elements from a and b
+     * @throws NullPointerException if the specified <code>a</code> is <code>null</code>.
      */
     public static <T> T[] insertAll(final T[] a, final int index, final T... b) {
+        N.requireNonNull(a, "a");
+
         final T[] newArray = (T[]) Array.newInstance(a.getClass().getComponentType(), a.length + b.length);
 
         if (index > 0) {
