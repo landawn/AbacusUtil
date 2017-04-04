@@ -881,17 +881,15 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     }
 
     public NullabLe<T> min() {
-        return size() == 0 ? (NullabLe<T>) NullabLe.empty() : NullabLe.of((T) N.min((Comparable[]) elementData, 0, size));
+        return min(0, size());
     }
 
     public NullabLe<T> min(final int fromIndex, final int toIndex) {
-        checkFromToIndex(fromIndex, toIndex);
-
-        return fromIndex == toIndex ? (NullabLe<T>) NullabLe.empty() : NullabLe.of((T) N.min((Comparable[]) elementData, fromIndex, toIndex));
+        return min(fromIndex, toIndex, Comparators.nullsLast());
     }
 
     public NullabLe<T> min(Comparator<? super T> cmp) {
-        return size() == 0 ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(N.min(elementData, 0, size, cmp));
+        return min(0, size(), cmp);
     }
 
     public NullabLe<T> min(final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
@@ -901,17 +899,15 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     }
 
     public NullabLe<T> median() {
-        return size() == 0 ? (NullabLe<T>) NullabLe.empty() : NullabLe.of((T) N.median((Comparable[]) elementData, 0, size));
+        return median(0, size());
     }
 
     public NullabLe<T> median(final int fromIndex, final int toIndex) {
-        checkFromToIndex(fromIndex, toIndex);
-
-        return fromIndex == toIndex ? (NullabLe<T>) NullabLe.empty() : NullabLe.of((T) N.median((Comparable[]) elementData, fromIndex, toIndex));
+        return median(fromIndex, toIndex, Comparators.naturalOrder());
     }
 
     public NullabLe<T> median(Comparator<? super T> cmp) {
-        return size() == 0 ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(N.median(elementData, 0, size, cmp));
+        return median(0, size(), cmp);
     }
 
     public NullabLe<T> median(final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
@@ -921,17 +917,15 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     }
 
     public NullabLe<T> max() {
-        return size() == 0 ? (NullabLe<T>) NullabLe.empty() : NullabLe.of((T) N.max((Comparable[]) elementData, 0, size));
+        return max(0, size());
     }
 
     public NullabLe<T> max(final int fromIndex, final int toIndex) {
-        checkFromToIndex(fromIndex, toIndex);
-
-        return fromIndex == toIndex ? (NullabLe<T>) NullabLe.empty() : NullabLe.of((T) N.max((Comparable[]) elementData, fromIndex, toIndex));
+        return max(fromIndex, toIndex, Comparators.nullsFirst());
     }
 
     public NullabLe<T> max(Comparator<? super T> cmp) {
-        return size() == 0 ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(N.max(elementData, 0, size, cmp));
+        return max(0, size(), cmp);
     }
 
     public NullabLe<T> max(final int fromIndex, final int toIndex, final Comparator<? super T> cmp) {
@@ -949,9 +943,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     }
 
     public NullabLe<T> kthLargest(final int fromIndex, final int toIndex, final int k) {
-        checkFromToIndex(fromIndex, toIndex);
-
-        return toIndex - fromIndex < k ? (NullabLe<T>) NullabLe.empty() : NullabLe.of((T) N.kthLargest((Comparable[]) elementData, fromIndex, toIndex, k));
+        return kthLargest(fromIndex, toIndex, k, Comparators.naturalOrder());
     }
 
     public NullabLe<T> kthLargest(final int fromIndex, final int toIndex, final int k, final Comparator<? super T> cmp) {

@@ -93,6 +93,34 @@ public final class Seq<T> implements Collection<T> {
     }
 
     /**
+     * 
+     * @param t1
+     * @return an immutable <code>Seq</code>
+     */
+    public static <T> Seq<T> just(T t1) {
+        return of(ImmutableList.of(t1));
+    }
+
+    /**
+     * 
+     * @param t1
+     * @param t2
+     * @return an immutable <code>Seq</code>
+     */
+    public static <T> Seq<T> just(T t1, T t2) {
+        return of(ImmutableList.of(t1, t2));
+    }
+
+    /**
+     * 
+     * @param a
+     * @return an immutable <code>Seq</code>
+     */
+    public static <T> Seq<T> just(T... a) {
+        return of(ImmutableList.of(a));
+    }
+
+    /**
      * The returned <code>Seq</code> and the specified <code>Collection</code> are backed by the same data.
      * Any changes to one will appear in the other.
      * 
@@ -874,6 +902,24 @@ public final class Seq<T> implements Collection<T> {
             @Override
             public boolean test(T value) {
                 return predicate.test(value, seed);
+            }
+        });
+    }
+
+    public ExList<T> skipUntil(final Predicate<? super T> filter) {
+        return dropWhile(new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return !filter.test(value);
+            }
+        });
+    }
+
+    public <U> ExList<T> skipUntil(final U seed, final BiPredicate<? super T, ? super U> predicate) {
+        return dropWhile(new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return !predicate.test(value, seed);
             }
         });
     }
