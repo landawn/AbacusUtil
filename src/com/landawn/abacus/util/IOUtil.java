@@ -3040,11 +3040,77 @@ public final class IOUtil {
 
         try {
             zos = new ZipOutputStream(new FileOutputStream(targetFile));
-            zipDir(sourceFile, zos, targetFile);
+            zipFile(sourceFile, zos, targetFile);
         } catch (IOException e) {
             throw new AbacusIOException(e);
         } finally {
             close(zos);
+        }
+    }
+
+    public static void zip(final Collection<File> sourceFiles, final File targetFile) {
+        ZipOutputStream zos = null;
+
+        try {
+            zos = new ZipOutputStream(new FileOutputStream(targetFile));
+
+            for (File sourceFile : sourceFiles) {
+                zipFile(sourceFile, zos, targetFile);
+            }
+        } catch (IOException e) {
+            throw new AbacusIOException(e);
+        } finally {
+            close(zos);
+        }
+    }
+
+    private static void zipFile(final File sourceFile, final ZipOutputStream zos, final File targetFile) throws IOException, FileNotFoundException {
+        if (sourceFile.isFile()) {
+            zipFile(sourceFile, null, zos, targetFile);
+        } else {
+            List<File> subFileList = listFiles(sourceFile, true, true);
+
+            // subFileList.add(sourceFile);
+            for (File subFile : subFileList) {
+                zipFile(subFile, sourceFile, zos, targetFile);
+            }
+        }
+    }
+
+    private static void zipFile(final File file, final File sourceDir, final ZipOutputStream zos, final File targetFile)
+            throws IOException, FileNotFoundException {
+        if (file.equals(targetFile)) {
+            return;
+        }
+
+        ZipEntry ze = null;
+        String relativeFileName = null;
+
+        if (sourceDir == null) {
+            relativeFileName = file.getName();
+        } else {
+            relativeFileName = getRelativePath(sourceDir, file);
+        }
+
+        ze = new ZipEntry(relativeFileName);
+        ze.setSize(file.length());
+        ze.setTime(file.lastModified());
+        zos.putNextEntry(ze);
+
+        InputStream is = new FileInputStream(file);
+
+        final byte[] buf = ObjectFactory.createByteArrayBuffer();
+
+        try {
+            int count = 0;
+
+            while (EOF != (count = read(is, buf, 0, buf.length))) {
+                zos.write(buf, 0, count);
+            }
+        } finally {
+            ObjectFactory.recycle(buf);
+
+            closeQuietly(is);
         }
     }
 
@@ -3318,56 +3384,6 @@ public final class IOUtil {
         }
 
         return totalCount;
-    }
-
-    private static void zipDir(final File sourceFile, final ZipOutputStream zos, final File zipFile) throws IOException, FileNotFoundException {
-        if (sourceFile.isFile()) {
-            zipFile(sourceFile, null, zos, zipFile);
-        } else {
-            List<File> subFileList = listFiles(sourceFile, true, true);
-
-            // subFileList.add(sourceFile);
-            for (File subFile : subFileList) {
-                zipFile(subFile, sourceFile, zos, zipFile);
-            }
-        }
-    }
-
-    private static void zipFile(final File file, final File sourceDir, final ZipOutputStream zos, final File zipFile)
-            throws IOException, FileNotFoundException {
-        if (file.equals(zipFile)) {
-            return;
-        }
-
-        ZipEntry ze = null;
-        String relativeFileName = null;
-
-        if (sourceDir == null) {
-            relativeFileName = file.getName();
-        } else {
-            relativeFileName = getRelativePath(sourceDir, file);
-        }
-
-        ze = new ZipEntry(relativeFileName);
-        ze.setSize(file.length());
-        ze.setTime(file.lastModified());
-        zos.putNextEntry(ze);
-
-        InputStream is = new FileInputStream(file);
-
-        final byte[] buf = ObjectFactory.createByteArrayBuffer();
-
-        try {
-            int count = 0;
-
-            while (EOF != (count = read(is, buf, 0, buf.length))) {
-                zos.write(buf, 0, count);
-            }
-        } finally {
-            ObjectFactory.recycle(buf);
-
-            closeQuietly(is);
-        }
     }
 
     private static String getAbsolutePath(final File parentDir, String relativeFilePath) throws IOException {

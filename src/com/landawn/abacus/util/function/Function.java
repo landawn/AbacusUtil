@@ -25,9 +25,6 @@ public interface Function<T, R> extends java.util.function.Function<T, R> {
     @SuppressWarnings("rawtypes")
     static final Function IDENTITY = t -> t;
 
-    @Override
-    R apply(T t);
-
     static <T> Function<T, T> identity() {
         return IDENTITY;
     }

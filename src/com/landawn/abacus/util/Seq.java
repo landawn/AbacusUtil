@@ -120,6 +120,10 @@ public final class Seq<T> implements Collection<T> {
         return of(ImmutableList.of(a));
     }
 
+    public static <T> Seq<T> of(T... a) {
+        return of(Array.asList(a));
+    }
+
     /**
      * The returned <code>Seq</code> and the specified <code>Collection</code> are backed by the same data.
      * Any changes to one will appear in the other.
@@ -1761,119 +1765,36 @@ public final class Seq<T> implements Collection<T> {
         return toMap(keyMapper, (Collector<T, ?, List<U>>) (Collector) Collectors.mapping(valueMapper, Collectors.toList()), mapFactory);
     }
 
-    //    /**
-    //     * 
-    //     * @param classifier
-    //     * @return
-    //     * @see Collectors#groupingBy(Function)
-    //     */
-    //    public <K> Map<K, List<T>> toMap(Function<? super T, ? extends K> classifier) {
-    //        return stream0().toMap(classifier);
-    //    }
-    //
-    //    /**
-    //     * 
-    //     * @param classifier
-    //     * @param mapFactory
-    //     * @return
-    //     * @see Collectors#groupingBy(Function, Supplier)
-    //     */
-    //    public <K, M extends Map<K, List<T>>> M toMap(final Function<? super T, ? extends K> classifier, final Supplier<M> mapFactory) {
-    //        return stream0().toMap(classifier, mapFactory);
-    //    }
-    //
-    //    /**
-    //     * 
-    //     * @param classifier
-    //     * @param downstream
-    //     * @return
-    //     * @see Collectors#groupingBy(Function, Collector)
-    //     */
-    //    @SuppressWarnings("hiding")
-    //    public <K, A, D> Map<K, D> toMap(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream) {
-    //        return stream0().toMap(classifier, downstream);
-    //    }
-    //
-    //    /**
-    //     * 
-    //     * @param classifier
-    //     * @param downstream
-    //     * @param mapFactory
-    //     * @return
-    //     * @see Collectors#groupingBy(Function, Collector, Supplier)
-    //     */
-    //    @SuppressWarnings("hiding")
-    //    public <K, A, D, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream,
-    //            final Supplier<M> mapFactory) {
-    //        return stream0().toMap(classifier, downstream, mapFactory);
-    //    }
-    //
-    //    /**
-    //     * 
-    //     * @param keyMapper
-    //     * @param valueMapper
-    //     * @return
-    //     * @see Collectors#toMap(Function, Function)
-    //     */
-    //    public <K, U> Map<K, U> toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper) {
-    //        return stream0().toMap(keyMapper, valueMapper);
-    //    }
-    //
-    //    /**
-    //     * 
-    //     * @param keyMapper
-    //     * @param valueMapper
-    //     * @param mapFactory
-    //     * @return
-    //     * @see Collectors#toMap(Function, Function, Supplier)
-    //     */
-    //    public <K, U, M extends Map<K, U>> M toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,
-    //            Supplier<M> mapFactory) {
-    //        return stream0().toMap(keyMapper, valueMapper, mapFactory);
-    //    }
-    //
-    //    /**
-    //     * 
-    //     * @param keyMapper
-    //     * @param valueMapper
-    //     * @param mergeFunction
-    //     * @return
-    //     * @see Collectors#toMap(Function, Function, BinaryOperator)
-    //     */
-    //    public <K, U> Map<K, U> toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
-    //        return stream0().toMap(keyMapper, valueMapper, mergeFunction);
-    //    }
-    //
-    //    /**
-    //     * 
-    //     * @param keyMapper
-    //     * @param valueMapper
-    //     * @param mergeFunction
-    //     * @param mapFactory
-    //     * @return
-    //     * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
-    //     */
-    //    public <K, U, M extends Map<K, U>> M toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,
-    //            BinaryOperator<U> mergeFunction, Supplier<M> mapFactory) {
-    //        return stream0().toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
-    //    }
-    //
-    //    public <K, U> Map<K, List<U>> toMap2(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper) {
-    //        return stream0().toMap2(keyMapper, valueMapper);
-    //    }
-    //
-    //    /**
-    //     * 
-    //     * @param keyMapper
-    //     * @param valueMapper
-    //     * @param mapFactory
-    //     * @return
-    //     * @see Collectors#toMultimap(Function, Function, Supplier)
-    //     */
-    //    public <K, U, M extends Map<K, List<U>>> M toMap2(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,
-    //            Supplier<M> mapFactory) {
-    //        return stream0().toMap2(keyMapper, valueMapper, mapFactory);
-    //    }
+    /**
+     * 
+     * @param keyMapper
+     * @return
+     */
+    public <K> Multimap<K, T, List<T>> toMultimap(Function<? super T, ? extends K> keyMapper) {
+        final Multimap<K, T, List<T>> m = N.newListMultimap();
+
+        for (T e : coll) {
+            m.put(keyMapper.apply(e), e);
+        }
+
+        return m;
+    }
+
+    /**
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @return
+     */
+    public <K, U> Multimap<K, U, List<U>> toMultimap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper) {
+        final Multimap<K, U, List<U>> m = N.newListMultimap();
+
+        for (T e : coll) {
+            m.put(keyMapper.apply(e), valueMapper.apply(e));
+        }
+
+        return m;
+    }
 
     public Seq<T> copyToList() {
         return new Seq<>(new ArrayList<>(coll));
