@@ -41,7 +41,9 @@ import com.landawn.abacus.DirtyMarker;
 import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
+import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.Function;
+import com.landawn.abacus.util.function.Predicate;
 
 /**
  * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
@@ -965,6 +967,53 @@ public final class Maps {
 
             action.accept(k, v);
         }
+    }
+
+    public static <K, V> Map<K, V> filter(final Map<K, V> map, final BiPredicate<? super K, ? super V> predicate) {
+        if (N.isNullOrEmpty(map)) {
+            return new LinkedHashMap<>();
+        }
+
+        final Map<K, V> result = map instanceof IdentityHashMap ? new IdentityHashMap<K, V>() : new LinkedHashMap<K, V>();
+
+        for (Map.Entry<K, V> entry : map.entrySet()) {
+            if (predicate.test(entry.getKey(), entry.getValue())) {
+                result.put(entry.getKey(), entry.getValue());
+            }
+        }
+
+        return result;
+    }
+
+    public static <K, V> Map<K, V> filterByKey(final Map<K, V> map, final Predicate<? super K> predicate) {
+        if (N.isNullOrEmpty(map)) {
+            return new LinkedHashMap<>();
+        }
+
+        final Map<K, V> result = map instanceof IdentityHashMap ? new IdentityHashMap<K, V>() : new LinkedHashMap<K, V>();
+        for (Map.Entry<K, V> entry : map.entrySet()) {
+            if (predicate.test(entry.getKey())) {
+                result.put(entry.getKey(), entry.getValue());
+            }
+        }
+
+        return result;
+    }
+
+    public static <K, V> Map<K, V> filterByValue(final Map<K, V> map, final Predicate<? super V> predicate) {
+        if (N.isNullOrEmpty(map)) {
+            return new LinkedHashMap<>();
+        }
+
+        final Map<K, V> result = map instanceof IdentityHashMap ? new IdentityHashMap<K, V>() : new LinkedHashMap<K, V>();
+
+        for (Map.Entry<K, V> entry : map.entrySet()) {
+            if (predicate.test(entry.getValue())) {
+                result.put(entry.getKey(), entry.getValue());
+            }
+        }
+
+        return result;
     }
 
     public static <T> T map2Entity(final Class<T> targetClass, final Map<String, Object> m) {
