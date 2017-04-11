@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -993,8 +994,20 @@ public final class Multimap<K, E, V extends Collection<E>> {
         return val == null ? false : (N.isNullOrEmpty(c) ? true : val.containsAll(c));
     }
 
+    public Multimap<K, E, List<E>> filter(Predicate<? super K> filter) {
+        final Multimap<K, E, List<E>> result = new Multimap<>(valueMap instanceof IdentityHashMap ? IdentityHashMap.class : LinkedHashMap.class, List.class);
+
+        for (Map.Entry<K, V> entry : valueMap.entrySet()) {
+            if (filter.test(entry.getKey())) {
+                result.putAll(entry.getKey(), entry.getValue());
+            }
+        }
+
+        return result;
+    }
+
     public Multimap<K, E, List<E>> filter(BiPredicate<? super K, ? super V> filter) {
-        final Multimap<K, E, List<E>> result = new Multimap<>(valueMap instanceof LinkedHashMap ? LinkedHashMap.class : HashMap.class, List.class);
+        final Multimap<K, E, List<E>> result = new Multimap<>(valueMap instanceof IdentityHashMap ? IdentityHashMap.class : LinkedHashMap.class, List.class);
 
         for (Map.Entry<K, V> entry : valueMap.entrySet()) {
             if (filter.test(entry.getKey(), entry.getValue())) {

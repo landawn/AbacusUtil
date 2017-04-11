@@ -27,6 +27,24 @@ import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.stream.Collector;
 import com.landawn.abacus.util.stream.Collectors;
 
+/**
+ * It's designed for Stream<Entry<K, V>>
+ * <pre>
+ * <code>
+ * 
+ * Map<String, Integer> map = N.asMap("a", 1, "b", 2, "c", 3);
+ * // Instead of
+ * Stream.of(map).filter(e -> e.getKey().equals("a") || e.getKey().equals("b")).toMap(e -> e.getKey(), e -> e.getValue());
+ * // Using Fn
+ * Stream.of(map).filter(Fn.testByKey(k -> k.equals("a") || k.equals("b"))).collect(Fn.toMap());
+ * 
+ * </code>
+ * </pre>
+ * 
+ * 
+ * @author haiyang li
+ *
+ */
 public final class Fn {
     @SuppressWarnings("rawtypes")
     public static final Function IDENTITY = Function.IDENTITY;

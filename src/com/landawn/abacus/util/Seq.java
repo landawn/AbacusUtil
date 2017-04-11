@@ -1276,10 +1276,9 @@ public final class Seq<T> implements Collection<T> {
      *
      * <p>Example:
      * <pre>
-     * identity: 0
      * accumulator: (a, b) -&gt; a + b
      * stream: [1, 2, 3, 4, 5]
-     * result: [0, 1, 3, 6, 10, 15]
+     * result: [1, 3, 6, 10, 15]
      * </pre>
      * 
      * <br />
@@ -1786,8 +1785,8 @@ public final class Seq<T> implements Collection<T> {
      * @param valueMapper
      * @return
      */
-    public <K, U> Multimap<K, U, List<U>> toMultimap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper) {
-        final Multimap<K, U, List<U>> m = N.newListMultimap();
+    public <K, V> Multimap<K, V, List<V>> toMultimap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends V> valueMapper) {
+        final Multimap<K, V, List<V>> m = N.newListMultimap();
 
         for (T e : coll) {
             m.put(keyMapper.apply(e), valueMapper.apply(e));
@@ -2245,6 +2244,33 @@ public final class Seq<T> implements Collection<T> {
         return N.concat(a, b);
     }
 
+    public static <T> ExList<T> concat(final Collection<? extends T>... a) {
+        return concat(Arrays.asList(a));
+    }
+
+    public static <T> ExList<T> concat(final List<? extends Collection<? extends T>> c) {
+        if (N.isNullOrEmpty(c)) {
+            return new ExList<>();
+        }
+
+        int count = 0;
+        for (Collection<? extends T> e : c) {
+            if (N.notNullOrEmpty(e)) {
+                count += e.size();
+            }
+        }
+
+        final ExList<T> result = new ExList<>(count);
+
+        for (Collection<? extends T> e : c) {
+            if (N.notNullOrEmpty(e)) {
+                result.addAll(e);
+            }
+        }
+
+        return result;
+    }
+
     public static <T> Iterator<T> concat(final Iterator<? extends T> a, final Iterator<? extends T> b) {
         return concat(Arrays.asList(a, b));
     }
@@ -2365,6 +2391,68 @@ public final class Seq<T> implements Collection<T> {
         }
 
         return result;
+    }
+
+    public static <T> Iterator<T> merge(final Iterator<? extends T> a, final Iterator<? extends T> b,
+            final BiFunction<? super T, ? super T, Nth> nextSelector) {
+        return new ImmutableIterator<T>() {
+            private final Iterator<? extends T> iterA = a;
+            private final Iterator<? extends T> iterB = b;
+            private T nextA = null;
+            private T nextB = null;
+            private boolean hasNextA = false;
+            private boolean hasNextB = false;
+
+            @Override
+            public boolean hasNext() {
+                return hasNextA || hasNextB || iterA.hasNext() || iterB.hasNext();
+            }
+
+            @Override
+            public T next() {
+                if (hasNextA) {
+                    if (iterB.hasNext()) {
+                        if (nextSelector.apply(nextA, (nextB = iterB.next())) == Nth.FIRST) {
+                            hasNextA = false;
+                            hasNextB = true;
+                            return nextA;
+                        } else {
+                            return nextB;
+                        }
+                    } else {
+                        hasNextA = false;
+                        return nextA;
+                    }
+                } else if (hasNextB) {
+                    if (iterA.hasNext()) {
+                        if (nextSelector.apply((nextA = iterA.next()), nextB) == Nth.FIRST) {
+                            return nextA;
+                        } else {
+                            hasNextA = true;
+                            hasNextB = false;
+                            return nextB;
+                        }
+                    } else {
+                        hasNextB = false;
+                        return nextB;
+                    }
+                } else if (iterA.hasNext()) {
+                    if (iterB.hasNext()) {
+                        if (nextSelector.apply((nextA = iterA.next()), (nextB = iterB.next())) == Nth.FIRST) {
+                            hasNextB = true;
+                            return nextA;
+                        } else {
+                            hasNextA = true;
+                            return nextB;
+                        }
+                    } else {
+                        return iterA.next();
+                    }
+                } else {
+                    return iterB.next();
+                }
+            }
+        };
     }
 
     public static <A, B, R> ExList<R> zip(final A[] a, final B[] b, final BiFunction<? super A, ? super B, R> zipFunction) {

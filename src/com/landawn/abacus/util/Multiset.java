@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -370,11 +371,16 @@ public final class Multiset<E> implements Iterable<E> {
         return Optional.of(Pair.of(maxCountElement, maxCount));
     }
 
+    /**
+     * 
+     * @return
+     * @throws ArithmeticException if total occurrences overflows the maximum value of long.
+     */
     public Long sumOfOccurrences() {
         long sum = 0;
 
         for (MutableInt count : valueMap.values()) {
-            sum += count.value();
+            sum = Math2.addExact(sum, count.value());
         }
 
         return sum;
@@ -1079,6 +1085,30 @@ public final class Multiset<E> implements Iterable<E> {
         }
 
         return ExList.of((E[]) a);
+    }
+
+    public Multiset<E> filter(Predicate<? super E> filter) {
+        final Multiset<E> result = new Multiset<>(valueMap instanceof IdentityHashMap ? IdentityHashMap.class : LinkedHashMap.class);
+
+        for (Map.Entry<E, MutableInt> entry : valueMap.entrySet()) {
+            if (filter.test(entry.getKey())) {
+                result.add(entry.getKey(), entry.getValue().intValue());
+            }
+        }
+
+        return result;
+    }
+
+    public Multiset<E> filter(BiPredicate<? super E, Integer> filter) {
+        final Multiset<E> result = new Multiset<>(valueMap instanceof IdentityHashMap ? IdentityHashMap.class : LinkedHashMap.class);
+
+        for (Map.Entry<E, MutableInt> entry : valueMap.entrySet()) {
+            if (filter.test(entry.getKey(), entry.getValue().intValue())) {
+                result.add(entry.getKey(), entry.getValue().intValue());
+            }
+        }
+
+        return result;
     }
 
     public void forEach(BiConsumer<? super E, Integer> action) {

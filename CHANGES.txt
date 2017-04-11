@@ -5,7 +5,13 @@
 
 2, Add Fn for Stream<Map.Entry<K, V>>
 
-3, Improvements and bug fix.
+3, Add filter/filterByKey/filterByValue to Maps
+
+4, Add filter to Multiset/LongMultiset/Multimap.
+
+5, Add more concat/merge to Seq.
+
+6, Improvements and bug fix.
 
 
 ========Changes in 0.9.60=========================================================================
