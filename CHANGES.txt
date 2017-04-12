@@ -9,7 +9,7 @@
 
 4, Add filter to Multiset/LongMultiset/Multimap.
 
-5, Add more concat/merge to Seq.
+5, Add more iterate/concat/merge to Seq.
 
 6, Improvements and bug fix.
 

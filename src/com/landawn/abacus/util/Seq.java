@@ -2280,7 +2280,7 @@ public final class Seq<T> implements Collection<T> {
     }
 
     public static <T> Iterator<T> concat(final Collection<? extends Iterator<? extends T>> c) {
-        return new Iterator<T>() {
+        return new ImmutableIterator<T>() {
             private final Iterator<? extends Iterator<? extends T>> iter = c.iterator();
             private Iterator<? extends T> cur;
 
@@ -2301,12 +2301,47 @@ public final class Seq<T> implements Collection<T> {
 
                 return cur.next();
             }
-
-            @Override
-            public void remove() {
-                throw new UnsupportedOperationException();
-            }
         };
+    }
+
+    public static <T> Iterator<T> iterate(T[]... a) {
+        if (N.isNullOrEmpty(a)) {
+            return ImmutableIterator.EMPTY;
+        }
+
+        final List<Iterator<T>> list = new ArrayList<>(a.length);
+
+        for (T[] e : a) {
+            if (N.notNullOrEmpty(e)) {
+                list.add(ImmutableIterator.of(e));
+            }
+        }
+
+        return concat(list);
+    }
+
+    public static <T> Iterator<T> iterate(Collection<? extends T>... a) {
+        if (N.isNullOrEmpty(a)) {
+            return ImmutableIterator.EMPTY;
+        }
+
+        return iterate(Arrays.asList(a));
+    }
+
+    public static <T> Iterator<T> iterate(Collection<? extends Collection<? extends T>> c) {
+        if (N.isNullOrEmpty(c)) {
+            return ImmutableIterator.EMPTY;
+        }
+
+        final List<Iterator<? extends T>> list = new ArrayList<>(c.size());
+
+        for (Collection<? extends T> e : c) {
+            if (N.notNullOrEmpty(e)) {
+                list.add(e.iterator());
+            }
+        }
+
+        return concat(list);
     }
 
     public static <T> ExList<T> merge(final T[] a, final T[] b, final BiFunction<? super T, ? super T, Nth> nextSelector) {
