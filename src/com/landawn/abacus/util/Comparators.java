@@ -118,7 +118,7 @@ public final class Comparators {
         return new Comparator<T>() {
             @Override
             public int compare(T a, T b) {
-                return keyExtractor.apply(a).compareTo(keyExtractor.apply(b));
+                return N.compare(keyExtractor.apply(a), keyExtractor.apply(b));
             }
         };
     }
@@ -216,16 +216,16 @@ public final class Comparators {
         return new Comparator<Map.Entry<K, V>>() {
             @Override
             public int compare(Map.Entry<K, V> a, Map.Entry<K, V> b) {
-                return a.getKey().compareTo(b.getKey());
+                return N.compare(a.getKey(), b.getKey());
             }
         };
     }
 
-    public static <K extends Comparable<? super K>, V> Comparator<Map.Entry<K, V>> comparingByKeyReversed() {
+    public static <K extends Comparable<? super K>, V> Comparator<Map.Entry<K, V>> reverseComparingByKey() {
         return new Comparator<Map.Entry<K, V>>() {
             @Override
             public int compare(Map.Entry<K, V> a, Map.Entry<K, V> b) {
-                return b.getKey().compareTo(a.getKey());
+                return N.compare(b.getKey(), a.getKey());
             }
         };
     }
@@ -234,16 +234,16 @@ public final class Comparators {
         return new Comparator<Map.Entry<K, V>>() {
             @Override
             public int compare(Map.Entry<K, V> a, Map.Entry<K, V> b) {
-                return a.getValue().compareTo(b.getValue());
+                return N.compare(a.getValue(), b.getValue());
             }
         };
     }
 
-    public static <K, V extends Comparable<? super V>> Comparator<Map.Entry<K, V>> comparingByValueReversed() {
+    public static <K, V extends Comparable<? super V>> Comparator<Map.Entry<K, V>> reverseComparingByValue() {
         return new Comparator<Map.Entry<K, V>>() {
             @Override
             public int compare(Map.Entry<K, V> a, Map.Entry<K, V> b) {
-                return b.getValue().compareTo(a.getValue());
+                return N.compare(b.getValue(), a.getValue());
             }
         };
     }
