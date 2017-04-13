@@ -86,36 +86,63 @@ public class Slice<T> implements Collection<T> {
         return coll instanceof Slice ? ((Slice<T>) coll).interior() : coll;
     }
 
+    /**
+     * @deprecated Unsupported operation.
+     */
     @Deprecated
     @Override
     public boolean add(T e) {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * @deprecated Unsupported operation.
+     */
     @Deprecated
     @Override
     public boolean remove(Object o) {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * @deprecated Unsupported operation.
+     */
+    @Deprecated
+    @Override
+    public boolean removeIf(java.util.function.Predicate<? super T> filter) {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * @deprecated Unsupported operation.
+     */
     @Deprecated
     @Override
     public boolean addAll(Collection<? extends T> c) {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * @deprecated Unsupported operation.
+     */
     @Deprecated
     @Override
     public boolean removeAll(Collection<?> c) {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * @deprecated Unsupported operation.
+     */
     @Deprecated
     @Override
     public boolean retainAll(Collection<?> c) {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * @deprecated Unsupported operation.
+     */
     @Deprecated
     @Override
     public void clear() {

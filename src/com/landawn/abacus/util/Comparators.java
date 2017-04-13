@@ -221,11 +221,29 @@ public final class Comparators {
         };
     }
 
+    public static <K extends Comparable<? super K>, V> Comparator<Map.Entry<K, V>> comparingByKeyReversed() {
+        return new Comparator<Map.Entry<K, V>>() {
+            @Override
+            public int compare(Map.Entry<K, V> a, Map.Entry<K, V> b) {
+                return b.getKey().compareTo(a.getKey());
+            }
+        };
+    }
+
     public static <K, V extends Comparable<? super V>> Comparator<Map.Entry<K, V>> comparingByValue() {
         return new Comparator<Map.Entry<K, V>>() {
             @Override
             public int compare(Map.Entry<K, V> a, Map.Entry<K, V> b) {
                 return a.getValue().compareTo(b.getValue());
+            }
+        };
+    }
+
+    public static <K, V extends Comparable<? super V>> Comparator<Map.Entry<K, V>> comparingByValueReversed() {
+        return new Comparator<Map.Entry<K, V>>() {
+            @Override
+            public int compare(Map.Entry<K, V> a, Map.Entry<K, V> b) {
+                return b.getValue().compareTo(a.getValue());
             }
         };
     }

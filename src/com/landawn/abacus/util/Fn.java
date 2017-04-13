@@ -47,9 +47,6 @@ import com.landawn.abacus.util.stream.Collectors;
  */
 public final class Fn {
     @SuppressWarnings("rawtypes")
-    public static final Function IDENTITY = Function.IDENTITY;
-
-    @SuppressWarnings("rawtypes")
     private static final BinaryOperator<Collection> ADD_ALL = new BinaryOperator<Collection>() {
         @Override
         public Collection apply(Collection t, Collection u) {
@@ -62,6 +59,18 @@ public final class Fn {
         // Singleton.
     }
 
+    public static <T> Function<T, T> identity() {
+        return Function.IDENTITY;
+    }
+
+    public static <T> Predicate<T> alwaysTrue() {
+        return Predicate.ALWAYS_TRUE;
+    }
+
+    public static <T> Predicate<T> alwaysFalse() {
+        return Predicate.ALWAYS_FALSE;
+    }
+
     public static <K, V> Predicate<Map.Entry<K, V>> testByKey(final Predicate<? super K> predicate) {
         return new Predicate<Map.Entry<K, V>>() {
             @Override
@@ -71,7 +80,7 @@ public final class Fn {
         };
     }
 
-    public static <K, V> Predicate<Map.Entry<K, V>> testByVal(final Predicate<? super V> predicate) {
+    public static <K, V> Predicate<Map.Entry<K, V>> testByValue(final Predicate<? super V> predicate) {
         return new Predicate<Map.Entry<K, V>>() {
             @Override
             public boolean test(Entry<K, V> entry) {
@@ -89,7 +98,7 @@ public final class Fn {
         };
     }
 
-    public static <K, V> Consumer<Map.Entry<K, V>> acceptByVal(final Consumer<? super V> consumer) {
+    public static <K, V> Consumer<Map.Entry<K, V>> acceptByValue(final Consumer<? super V> consumer) {
         return new Consumer<Map.Entry<K, V>>() {
             @Override
             public void accept(Entry<K, V> entry) {
@@ -107,7 +116,7 @@ public final class Fn {
         };
     }
 
-    public static <K, V, R> Function<Map.Entry<K, V>, R> applyByVal(final Function<? super V, R> func) {
+    public static <K, V, R> Function<Map.Entry<K, V>, R> applyByValue(final Function<? super V, R> func) {
         return new Function<Map.Entry<K, V>, R>() {
             @Override
             public R apply(Entry<K, V> entry) {
