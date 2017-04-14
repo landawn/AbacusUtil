@@ -69,7 +69,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
     }
 
     @Override
-    public DoubleStream accept(final long n, final DoubleConsumer action) {
+    public DoubleStream remove(final long n, final DoubleConsumer action) {
         if (n < 0) {
             throw new IllegalArgumentException("'n' can't be less than 0");
         } else if (n == 0) {
@@ -79,7 +79,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
         if (this.isParallel()) {
             final AtomicLong cnt = new AtomicLong(n);
 
-            return acceptWhile(new DoublePredicate() {
+            return removeWhile(new DoublePredicate() {
                 @Override
                 public boolean test(double value) {
                     return cnt.getAndDecrement() > 0;
@@ -88,7 +88,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
         } else {
             final MutableLong cnt = MutableLong.of(n);
 
-            return acceptWhile(new DoublePredicate() {
+            return removeWhile(new DoublePredicate() {
                 @Override
                 public boolean test(double value) {
                     return cnt.getAndDecrement() > 0;
@@ -98,7 +98,37 @@ abstract class AbstractDoubleStream extends DoubleStream {
     }
 
     @Override
-    public DoubleStream acceptWhile(final DoublePredicate predicate, final DoubleConsumer action) {
+    public DoubleStream removeIf(final DoublePredicate predicate) {
+        N.requireNonNull(predicate);
+
+        return filter(new DoublePredicate() {
+            @Override
+            public boolean test(double value) {
+                return predicate.test(value) == false;
+            }
+        });
+    }
+
+    @Override
+    public DoubleStream removeIf(final DoublePredicate predicate, final DoubleConsumer action) {
+        N.requireNonNull(predicate);
+        N.requireNonNull(predicate);
+
+        return filter(new DoublePredicate() {
+            @Override
+            public boolean test(double value) {
+                if (predicate.test(value)) {
+                    action.accept(value);
+                    return false;
+                }
+
+                return true;
+            }
+        });
+    }
+
+    @Override
+    public DoubleStream removeWhile(final DoublePredicate predicate, final DoubleConsumer action) {
         N.requireNonNull(predicate);
         N.requireNonNull(action);
 

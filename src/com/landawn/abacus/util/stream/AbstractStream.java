@@ -139,7 +139,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public Stream<T> accept(final long n, final Consumer<? super T> action) {
+    public Stream<T> remove(final long n, final Consumer<? super T> action) {
         if (n < 0) {
             throw new IllegalArgumentException("'n' can't be less than 0");
         } else if (n == 0) {
@@ -149,7 +149,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         if (this.isParallel()) {
             final AtomicLong cnt = new AtomicLong(n);
 
-            return acceptWhile(new Predicate<T>() {
+            return removeWhile(new Predicate<T>() {
                 @Override
                 public boolean test(T value) {
                     return cnt.getAndDecrement() > 0;
@@ -158,7 +158,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         } else {
             final MutableLong cnt = MutableLong.of(n);
 
-            return acceptWhile(new Predicate<T>() {
+            return removeWhile(new Predicate<T>() {
 
                 @Override
                 public boolean test(T value) {
@@ -170,7 +170,67 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public Stream<T> acceptWhile(final Predicate<? super T> predicate, final Consumer<? super T> action) {
+    public Stream<T> removeIf(final Predicate<? super T> predicate) {
+        N.requireNonNull(predicate);
+
+        return filter(new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return predicate.test(value) == false;
+            }
+        });
+    }
+
+    @Override
+    public <U> Stream<T> removeIf(final U seed, final BiPredicate<? super T, ? super U> predicate) {
+        N.requireNonNull(predicate);
+
+        return filter(new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return predicate.test(value, seed) == false;
+            }
+        });
+    }
+
+    @Override
+    public Stream<T> removeIf(final Predicate<? super T> predicate, final Consumer<? super T> action) {
+        N.requireNonNull(predicate);
+        N.requireNonNull(action);
+
+        return filter(new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                if (predicate.test(value)) {
+                    action.accept(value);
+                    return false;
+                }
+
+                return true;
+            }
+        });
+    }
+
+    @Override
+    public <U> Stream<T> removeIf(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super T> action) {
+        N.requireNonNull(predicate);
+        N.requireNonNull(action);
+
+        return filter(new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                if (predicate.test(value, seed)) {
+                    action.accept(value);
+                    return false;
+                }
+
+                return true;
+            }
+        });
+    }
+
+    @Override
+    public Stream<T> removeWhile(final Predicate<? super T> predicate, final Consumer<? super T> action) {
         N.requireNonNull(predicate);
         N.requireNonNull(action);
 
@@ -188,16 +248,21 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <U> Stream<T> acceptWhile(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super T> action) {
+    public <U> Stream<T> removeWhile(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super T> action) {
         N.requireNonNull(predicate);
         N.requireNonNull(action);
 
-        return acceptWhile(new Predicate<T>() {
+        return dropWhile(new Predicate<T>() {
             @Override
             public boolean test(T value) {
-                return predicate.test(value, seed);
+                if (predicate.test(value, seed)) {
+                    action.accept(value);
+                    return true;
+                }
+
+                return false;
             }
-        }, action);
+        });
     }
 
     @Override

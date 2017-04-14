@@ -69,7 +69,7 @@ abstract class AbstractIntStream extends IntStream {
     }
 
     @Override
-    public IntStream accept(final long n, final IntConsumer action) {
+    public IntStream remove(final long n, final IntConsumer action) {
         if (n < 0) {
             throw new IllegalArgumentException("'n' can't be less than 0");
         } else if (n == 0) {
@@ -79,7 +79,7 @@ abstract class AbstractIntStream extends IntStream {
         if (this.isParallel()) {
             final AtomicLong cnt = new AtomicLong(n);
 
-            return acceptWhile(new IntPredicate() {
+            return removeWhile(new IntPredicate() {
                 @Override
                 public boolean test(int value) {
                     return cnt.getAndDecrement() > 0;
@@ -88,7 +88,7 @@ abstract class AbstractIntStream extends IntStream {
         } else {
             final MutableLong cnt = MutableLong.of(n);
 
-            return acceptWhile(new IntPredicate() {
+            return removeWhile(new IntPredicate() {
                 @Override
                 public boolean test(int value) {
                     return cnt.getAndDecrement() > 0;
@@ -98,7 +98,37 @@ abstract class AbstractIntStream extends IntStream {
     }
 
     @Override
-    public IntStream acceptWhile(final IntPredicate predicate, final IntConsumer action) {
+    public IntStream removeIf(final IntPredicate predicate) {
+        N.requireNonNull(predicate);
+
+        return filter(new IntPredicate() {
+            @Override
+            public boolean test(int value) {
+                return predicate.test(value) == false;
+            }
+        });
+    }
+
+    @Override
+    public IntStream removeIf(final IntPredicate predicate, final IntConsumer action) {
+        N.requireNonNull(predicate);
+        N.requireNonNull(predicate);
+
+        return filter(new IntPredicate() {
+            @Override
+            public boolean test(int value) {
+                if (predicate.test(value)) {
+                    action.accept(value);
+                    return false;
+                }
+
+                return true;
+            }
+        });
+    }
+
+    @Override
+    public IntStream removeWhile(final IntPredicate predicate, final IntConsumer action) {
         N.requireNonNull(predicate);
         N.requireNonNull(action);
 

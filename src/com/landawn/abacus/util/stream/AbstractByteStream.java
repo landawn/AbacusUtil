@@ -69,7 +69,7 @@ abstract class AbstractByteStream extends ByteStream {
     }
 
     @Override
-    public ByteStream accept(final long n, final ByteConsumer action) {
+    public ByteStream remove(final long n, final ByteConsumer action) {
         if (n < 0) {
             throw new IllegalArgumentException("'n' can't be less than 0");
         } else if (n == 0) {
@@ -79,7 +79,7 @@ abstract class AbstractByteStream extends ByteStream {
         if (this.isParallel()) {
             final AtomicLong cnt = new AtomicLong(n);
 
-            return acceptWhile(new BytePredicate() {
+            return removeWhile(new BytePredicate() {
                 @Override
                 public boolean test(byte value) {
                     return cnt.getAndDecrement() > 0;
@@ -88,17 +88,49 @@ abstract class AbstractByteStream extends ByteStream {
         } else {
             final MutableLong cnt = MutableLong.of(n);
 
-            return acceptWhile(new BytePredicate() {
+            return removeWhile(new BytePredicate() {
+
                 @Override
                 public boolean test(byte value) {
                     return cnt.getAndDecrement() > 0;
                 }
+
             }, action);
         }
     }
 
     @Override
-    public ByteStream acceptWhile(final BytePredicate predicate, final ByteConsumer action) {
+    public ByteStream removeIf(final BytePredicate predicate) {
+        N.requireNonNull(predicate);
+
+        return filter(new BytePredicate() {
+            @Override
+            public boolean test(byte value) {
+                return predicate.test(value) == false;
+            }
+        });
+    }
+
+    @Override
+    public ByteStream removeIf(final BytePredicate predicate, final ByteConsumer action) {
+        N.requireNonNull(predicate);
+        N.requireNonNull(predicate);
+
+        return filter(new BytePredicate() {
+            @Override
+            public boolean test(byte value) {
+                if (predicate.test(value)) {
+                    action.accept(value);
+                    return false;
+                }
+
+                return true;
+            }
+        });
+    }
+
+    @Override
+    public ByteStream removeWhile(final BytePredicate predicate, final ByteConsumer action) {
         N.requireNonNull(predicate);
         N.requireNonNull(action);
 

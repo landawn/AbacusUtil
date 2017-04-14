@@ -128,7 +128,11 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * @param consumer
      * @return
      */
-    S accept(long n, C consumer);
+    S remove(long n, C consumer);
+
+    S removeIf(P predicate);
+
+    S removeIf(P predicate, C consumer);
 
     /**
      * Returns a stream consisting of the remaining elements of this stream
@@ -139,7 +143,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * @param consumer
      * @return 
      */
-    S acceptWhile(P predicate, C consumer);
+    S removeWhile(P predicate, C consumer);
 
     /**
      * Returns Stream of ByteStream with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).

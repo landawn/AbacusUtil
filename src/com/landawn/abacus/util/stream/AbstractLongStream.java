@@ -68,7 +68,7 @@ abstract class AbstractLongStream extends LongStream {
     }
 
     @Override
-    public LongStream accept(final long n, final LongConsumer action) {
+    public LongStream remove(final long n, final LongConsumer action) {
         if (n < 0) {
             throw new IllegalArgumentException("'n' can't be less than 0");
         } else if (n == 0) {
@@ -78,7 +78,7 @@ abstract class AbstractLongStream extends LongStream {
         if (this.isParallel()) {
             final AtomicLong cnt = new AtomicLong(n);
 
-            return acceptWhile(new LongPredicate() {
+            return removeWhile(new LongPredicate() {
                 @Override
                 public boolean test(long value) {
                     return cnt.getAndDecrement() > 0;
@@ -87,7 +87,7 @@ abstract class AbstractLongStream extends LongStream {
         } else {
             final MutableLong cnt = MutableLong.of(n);
 
-            return acceptWhile(new LongPredicate() {
+            return removeWhile(new LongPredicate() {
                 @Override
                 public boolean test(long value) {
                     return cnt.getAndDecrement() > 0;
@@ -97,7 +97,37 @@ abstract class AbstractLongStream extends LongStream {
     }
 
     @Override
-    public LongStream acceptWhile(final LongPredicate predicate, final LongConsumer action) {
+    public LongStream removeIf(final LongPredicate predicate) {
+        N.requireNonNull(predicate);
+
+        return filter(new LongPredicate() {
+            @Override
+            public boolean test(long value) {
+                return predicate.test(value) == false;
+            }
+        });
+    }
+
+    @Override
+    public LongStream removeIf(final LongPredicate predicate, final LongConsumer action) {
+        N.requireNonNull(predicate);
+        N.requireNonNull(predicate);
+
+        return filter(new LongPredicate() {
+            @Override
+            public boolean test(long value) {
+                if (predicate.test(value)) {
+                    action.accept(value);
+                    return false;
+                }
+
+                return true;
+            }
+        });
+    }
+
+    @Override
+    public LongStream removeWhile(final LongPredicate predicate, final LongConsumer action) {
         N.requireNonNull(predicate);
         N.requireNonNull(action);
 

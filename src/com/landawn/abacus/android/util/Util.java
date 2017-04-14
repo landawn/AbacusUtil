@@ -68,7 +68,7 @@ public abstract class Util {
     protected static volatile Context context;
     private static volatile int MAX_APP_MEMORY;
 
-    protected Util() {
+    Util() {
     }
 
     public static synchronized void init(Context context) {
@@ -848,6 +848,12 @@ public abstract class Util {
     private static class BitmapHoneycombMR1 {
         static int getByteCount(Bitmap bitmap) {
             return bitmap.getByteCount();
+        }
+    }
+
+    public static final class Z extends Util {
+        private Z() {
+            // singleton.
         }
     }
 

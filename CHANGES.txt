@@ -11,7 +11,9 @@
 
 5, Add more iterate/concat/merge to Seq.
 
-6, Improvements and bug fix.
+6*, Rename accept/acceptWhile to remove/removeWhile and add removeIf to Stream.
+
+7, Improvements and bug fix.
 
 
 ========Changes in 0.9.60=========================================================================

@@ -272,6 +272,10 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public abstract <U> Stream<T> dropWhile(final U seed, final BiPredicate<? super T, ? super U> predicate);
 
+    public abstract <U> Stream<T> removeIf(final U seed, final BiPredicate<? super T, ? super U> predicate);
+
+    public abstract <U> Stream<T> removeIf(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super T> consumer);
+
     /**
      * Returns a stream consisting of the remaining elements of this stream
      * after removing and consuming until the specified <code>predicate</code> return false.
@@ -282,7 +286,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param consumer
      * @return {@link #dropWhile(Object, BiPredicate)}
      */
-    public abstract <U> Stream<T> acceptWhile(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super T> consumer);
+    public abstract <U> Stream<T> removeWhile(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super T> consumer);
 
     /**
      * Returns a stream consisting of the results of applying the given

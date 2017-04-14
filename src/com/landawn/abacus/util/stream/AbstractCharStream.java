@@ -69,7 +69,7 @@ abstract class AbstractCharStream extends CharStream {
     }
 
     @Override
-    public CharStream accept(final long n, final CharConsumer action) {
+    public CharStream remove(final long n, final CharConsumer action) {
         if (n < 0) {
             throw new IllegalArgumentException("'n' can't be less than 0");
         } else if (n == 0) {
@@ -79,7 +79,7 @@ abstract class AbstractCharStream extends CharStream {
         if (this.isParallel()) {
             final AtomicLong cnt = new AtomicLong(n);
 
-            return acceptWhile(new CharPredicate() {
+            return removeWhile(new CharPredicate() {
                 @Override
                 public boolean test(char value) {
                     return cnt.getAndDecrement() > 0;
@@ -88,7 +88,7 @@ abstract class AbstractCharStream extends CharStream {
         } else {
             final MutableLong cnt = MutableLong.of(n);
 
-            return acceptWhile(new CharPredicate() {
+            return removeWhile(new CharPredicate() {
                 @Override
                 public boolean test(char value) {
                     return cnt.getAndDecrement() > 0;
@@ -98,7 +98,37 @@ abstract class AbstractCharStream extends CharStream {
     }
 
     @Override
-    public CharStream acceptWhile(final CharPredicate predicate, final CharConsumer action) {
+    public CharStream removeIf(final CharPredicate predicate) {
+        N.requireNonNull(predicate);
+
+        return filter(new CharPredicate() {
+            @Override
+            public boolean test(char value) {
+                return predicate.test(value) == false;
+            }
+        });
+    }
+
+    @Override
+    public CharStream removeIf(final CharPredicate predicate, final CharConsumer action) {
+        N.requireNonNull(predicate);
+        N.requireNonNull(predicate);
+
+        return filter(new CharPredicate() {
+            @Override
+            public boolean test(char value) {
+                if (predicate.test(value)) {
+                    action.accept(value);
+                    return false;
+                }
+
+                return true;
+            }
+        });
+    }
+
+    @Override
+    public CharStream removeWhile(final CharPredicate predicate, final CharConsumer action) {
         N.requireNonNull(predicate);
         N.requireNonNull(action);
 

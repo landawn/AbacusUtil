@@ -70,7 +70,7 @@ abstract class AbstractFloatStream extends FloatStream {
     }
 
     @Override
-    public FloatStream accept(final long n, final FloatConsumer action) {
+    public FloatStream remove(final long n, final FloatConsumer action) {
         if (n < 0) {
             throw new IllegalArgumentException("'n' can't be less than 0");
         } else if (n == 0) {
@@ -80,7 +80,7 @@ abstract class AbstractFloatStream extends FloatStream {
         if (this.isParallel()) {
             final AtomicLong cnt = new AtomicLong(n);
 
-            return acceptWhile(new FloatPredicate() {
+            return removeWhile(new FloatPredicate() {
                 @Override
                 public boolean test(float value) {
                     return cnt.getAndDecrement() > 0;
@@ -89,7 +89,7 @@ abstract class AbstractFloatStream extends FloatStream {
         } else {
             final MutableLong cnt = MutableLong.of(n);
 
-            return acceptWhile(new FloatPredicate() {
+            return removeWhile(new FloatPredicate() {
                 @Override
                 public boolean test(float value) {
                     return cnt.getAndDecrement() > 0;
@@ -99,7 +99,37 @@ abstract class AbstractFloatStream extends FloatStream {
     }
 
     @Override
-    public FloatStream acceptWhile(final FloatPredicate predicate, final FloatConsumer action) {
+    public FloatStream removeIf(final FloatPredicate predicate) {
+        N.requireNonNull(predicate);
+
+        return filter(new FloatPredicate() {
+            @Override
+            public boolean test(float value) {
+                return predicate.test(value) == false;
+            }
+        });
+    }
+
+    @Override
+    public FloatStream removeIf(final FloatPredicate predicate, final FloatConsumer action) {
+        N.requireNonNull(predicate);
+        N.requireNonNull(predicate);
+
+        return filter(new FloatPredicate() {
+            @Override
+            public boolean test(float value) {
+                if (predicate.test(value)) {
+                    action.accept(value);
+                    return false;
+                }
+
+                return true;
+            }
+        });
+    }
+
+    @Override
+    public FloatStream removeWhile(final FloatPredicate predicate, final FloatConsumer action) {
         N.requireNonNull(predicate);
         N.requireNonNull(action);
 
