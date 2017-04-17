@@ -994,11 +994,23 @@ public final class Multimap<K, E, V extends Collection<E>> {
         return val == null ? false : (N.isNullOrEmpty(c) ? true : val.containsAll(c));
     }
 
-    public Multimap<K, E, List<E>> filter(Predicate<? super K> filter) {
+    public Multimap<K, E, List<E>> filterByKey(Predicate<? super K> filter) {
         final Multimap<K, E, List<E>> result = new Multimap<>(valueMap instanceof IdentityHashMap ? IdentityHashMap.class : LinkedHashMap.class, List.class);
 
         for (Map.Entry<K, V> entry : valueMap.entrySet()) {
             if (filter.test(entry.getKey())) {
+                result.putAll(entry.getKey(), entry.getValue());
+            }
+        }
+
+        return result;
+    }
+
+    public Multimap<K, E, List<E>> filterByValue(Predicate<? super V> filter) {
+        final Multimap<K, E, List<E>> result = new Multimap<>(valueMap instanceof IdentityHashMap ? IdentityHashMap.class : LinkedHashMap.class, List.class);
+
+        for (Map.Entry<K, V> entry : valueMap.entrySet()) {
+            if (filter.test(entry.getValue())) {
                 result.putAll(entry.getKey(), entry.getValue());
             }
         }

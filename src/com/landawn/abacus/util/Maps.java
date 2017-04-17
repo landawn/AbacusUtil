@@ -969,22 +969,6 @@ public final class Maps {
         }
     }
 
-    public static <K, V> Map<K, V> filter(final Map<K, V> map, final BiPredicate<? super K, ? super V> predicate) {
-        if (N.isNullOrEmpty(map)) {
-            return new LinkedHashMap<>();
-        }
-
-        final Map<K, V> result = map instanceof IdentityHashMap ? new IdentityHashMap<K, V>() : new LinkedHashMap<K, V>();
-
-        for (Map.Entry<K, V> entry : map.entrySet()) {
-            if (predicate.test(entry.getKey(), entry.getValue())) {
-                result.put(entry.getKey(), entry.getValue());
-            }
-        }
-
-        return result;
-    }
-
     public static <K, V> Map<K, V> filterByKey(final Map<K, V> map, final Predicate<? super K> predicate) {
         if (N.isNullOrEmpty(map)) {
             return new LinkedHashMap<>();
@@ -1013,6 +997,22 @@ public final class Maps {
             }
         }
 
+        return result;
+    }
+
+    public static <K, V> Map<K, V> filter(final Map<K, V> map, final BiPredicate<? super K, ? super V> predicate) {
+        if (N.isNullOrEmpty(map)) {
+            return new LinkedHashMap<>();
+        }
+    
+        final Map<K, V> result = map instanceof IdentityHashMap ? new IdentityHashMap<K, V>() : new LinkedHashMap<K, V>();
+    
+        for (Map.Entry<K, V> entry : map.entrySet()) {
+            if (predicate.test(entry.getKey(), entry.getValue())) {
+                result.put(entry.getKey(), entry.getValue());
+            }
+        }
+    
         return result;
     }
 

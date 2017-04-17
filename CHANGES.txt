@@ -5,9 +5,9 @@
 
 2, Add Fn for Stream<Map.Entry<K, V>>
 
-3, Add filter/filterByKey/filterByValue to Maps
+3, Add filter/filterByKey/filterByValue to Maps/Multimap
 
-4, Add filter to Multiset/LongMultiset/Multimap.
+4, Add filter to Multiset/LongMultiset.
 
 5, Add more iterate/concat/merge to Seq.
 
