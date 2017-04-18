@@ -298,6 +298,10 @@ public abstract class Tuple {
             return 2;
         }
 
+        public Tuple2<T2, T1> swap() {
+            return of(_2, _1);
+        }
+
         @Override
         public Object[] toArray() {
             return new Object[] { _1, _2 };

@@ -691,6 +691,29 @@ public class Slice<T> implements Collection<T> {
         });
     }
 
+    public ExList<T> takeWhileInclusive(Predicate<? super T> filter) {
+        final ExList<T> result = new ExList<>(N.min(9, size()));
+
+        for (T e : coll) {
+            result.add(e);
+
+            if (filter.test(e) == false) {
+                break;
+            }
+        }
+
+        return result;
+    }
+
+    public <U> ExList<T> takeWhileInclusive(final U seed, final BiPredicate<? super T, ? super U> predicate) {
+        return takeWhileInclusive(new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return predicate.test(value, seed);
+            }
+        });
+    }
+
     public ExList<T> dropWhile(Predicate<? super T> filter) {
         final ExList<T> result = new ExList<>(N.min(9, size()));
         final Iterator<T> iter = coll.iterator();
