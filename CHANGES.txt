@@ -15,9 +15,25 @@
 
 7, Add takeWhileInclusive to Seq
 
-8*, Rename accept/acceptWhile to remove/removeWhile and add removeIf to Stream.
+8, Add asMap/asLinkedHashMap(Collection<? extends T> c, final Function<? super T, ? extends K> keyExtractor) to Maps
 
-9, Improvements and bug fix.
+9, Add stream(...) to Splitter/MapSplitter.
+
+10, Add skipNull/useForNull to Joiner.
+
+11, Add swapCase(char) to N.
+
+12, Let Tuple2 implements Map.Entry.
+
+13*, Move static methods: combine/allOf/anyOf/... from CompletableFuture to Futures
+
+14*, Rename accept/acceptWhile to remove/removeWhile and add removeIf to Stream.
+
+15*, Rename Pair2 to SP and Pair3 to CP.
+
+16*, Replace Pair0 with Tuple2 and Triple0 with Tuple3.
+
+17, Improvements and bug fix.
 
 
 ========Changes in 0.9.60=========================================================================

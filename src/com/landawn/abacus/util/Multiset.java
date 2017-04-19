@@ -31,7 +31,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import com.landawn.abacus.annotation.Internal;
-import com.landawn.abacus.util.Pair.Pair0;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
@@ -1313,7 +1312,7 @@ public final class Multiset<E> implements Iterable<E> {
         return Stream.of(valueMap.entrySet()).map(new Function<Map.Entry<E, MutableInt>, Map.Entry<E, Integer>>() {
             @Override
             public Entry<E, Integer> apply(Entry<E, MutableInt> t) {
-                return Pair0.of(t.getKey(), t.getValue().value());
+                return Pair.of(t.getKey(), t.getValue().value());
             }
         });
     }

@@ -57,7 +57,7 @@ import com.landawn.abacus.util.Options.Query;
 import com.landawn.abacus.util.SQLBuilder.NE;
 import com.landawn.abacus.util.SQLBuilder.NE2;
 import com.landawn.abacus.util.SQLBuilder.NE3;
-import com.landawn.abacus.util.SQLBuilder.Pair2;
+import com.landawn.abacus.util.SQLBuilder.SP;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.stream.Stream;
@@ -3490,13 +3490,13 @@ public final class SQLExecutor implements Closeable {
         }
 
         public boolean exists(final Condition whereCause) {
-            final Pair2 pair = prepareQuery(EXISTS_SELECT_PROP_NAMES, whereCause, 1);
+            final SP pair = prepareQuery(EXISTS_SELECT_PROP_NAMES, whereCause, 1);
 
             return sqlExecutor.exists(pair.sql, pair.parameters.toArray());
         }
 
         public int count(final Condition whereCause) {
-            final Pair2 pair = prepareQuery(COUNT_SELECT_PROP_NAMES, whereCause);
+            final SP pair = prepareQuery(COUNT_SELECT_PROP_NAMES, whereCause);
 
             return sqlExecutor.count(pair.sql, pair.parameters.toArray());
         }
@@ -3523,7 +3523,7 @@ public final class SQLExecutor implements Closeable {
             if (N.isNullOrEmpty(selectPropNames) && (whereCause instanceof Equal && ((Equal) whereCause).getPropName().equals(idName))) {
                 list = sqlExecutor.find(targetClass, sql_get_by_id, null, JdbcSettings.create().setCount(2), ((Equal) whereCause).getPropValue());
             } else {
-                final Pair2 pair = prepareQuery(selectPropNames, whereCause, 2);
+                final SP pair = prepareQuery(selectPropNames, whereCause, 2);
                 list = sqlExecutor.find(targetClass, pair.sql, null, JdbcSettings.create().setCount(2), pair.parameters.toArray());
             }
 
@@ -3545,7 +3545,7 @@ public final class SQLExecutor implements Closeable {
         }
 
         public List<T> find(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
-            final Pair2 pair = prepareQuery(selectPropNames, whereCause);
+            final SP pair = prepareQuery(selectPropNames, whereCause);
 
             return sqlExecutor.find(targetClass, pair.sql, null, jdbcSettings, pair.parameters.toArray());
         }
@@ -3559,7 +3559,7 @@ public final class SQLExecutor implements Closeable {
         }
 
         public DataSet query(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
-            final Pair2 pair = prepareQuery(selectPropNames, whereCause);
+            final SP pair = prepareQuery(selectPropNames, whereCause);
 
             return sqlExecutor.query(pair.sql, null, null, jdbcSettings, pair.parameters.toArray());
         }
@@ -3622,7 +3622,7 @@ public final class SQLExecutor implements Closeable {
 
         public <E> NullabLe<E> queryForSingleResult(final Class<E> targetValueClass, final String propName, final Condition whereCause,
                 final JdbcSettings jdbcSettings) {
-            final Pair2 pair = prepareQuery(Arrays.asList(propName), whereCause, 1);
+            final SP pair = prepareQuery(Arrays.asList(propName), whereCause, 1);
 
             return sqlExecutor.queryForSingleResult(targetValueClass, pair.sql, null, jdbcSettings, pair.parameters.toArray());
         }
@@ -3636,7 +3636,7 @@ public final class SQLExecutor implements Closeable {
         }
 
         public Optional<T> queryForEntity(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
-            final Pair2 pair = prepareQuery(selectPropNames, whereCause, 1);
+            final SP pair = prepareQuery(selectPropNames, whereCause, 1);
 
             return sqlExecutor.queryForEntity(targetClass, pair.sql, null, jdbcSettings, pair.parameters.toArray());
         }
@@ -3650,16 +3650,16 @@ public final class SQLExecutor implements Closeable {
         }
 
         public Try<Stream<T>> stream(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
-            final Pair2 pair = prepareQuery(selectPropNames, whereCause);
+            final SP pair = prepareQuery(selectPropNames, whereCause);
 
             return sqlExecutor.stream(targetClass, pair.sql, null, jdbcSettings, pair.parameters.toArray());
         }
 
-        private Pair2 prepareQuery(final Collection<String> selectPropNames, final Condition whereCause) {
+        private SP prepareQuery(final Collection<String> selectPropNames, final Condition whereCause) {
             return prepareQuery(selectPropNames, whereCause, 0);
         }
 
-        private Pair2 prepareQuery(final Collection<String> selectPropNames, final Condition whereCause, final int count) {
+        private SP prepareQuery(final Collection<String> selectPropNames, final Condition whereCause, final int count) {
             SQLBuilder sqlBuilder = null;
 
             switch (namingPolicy) {
@@ -3717,7 +3717,7 @@ public final class SQLExecutor implements Closeable {
          * @return the auto-generated id or null if there is no auto-generated id.
          */
         public <E> E add(final Object entity) {
-            final Pair2 pair = prepareAdd(entity);
+            final SP pair = prepareAdd(entity);
 
             final E id = sqlExecutor.insert(pair.sql, pair.parameters.toArray());
 
@@ -3732,7 +3732,7 @@ public final class SQLExecutor implements Closeable {
          * @return the auto-generated id or null if there is no auto-generated id.
          */
         public <E> E add(final Map<String, Object> props) {
-            final Pair2 pair = prepareAdd(props);
+            final SP pair = prepareAdd(props);
 
             return sqlExecutor.insert(pair.sql, pair.parameters.toArray());
         }
@@ -3796,7 +3796,7 @@ public final class SQLExecutor implements Closeable {
         public <E> List<E> batchAdd(final Collection<?> entities, int batchSize) {
             N.checkArgument(batchSize > 0, "Invalid batch size: %s", batchSize);
 
-            final Pair2 pair = prepareAdd(entities.iterator().next());
+            final SP pair = prepareAdd(entities.iterator().next());
             final JdbcSettings jdbcSettings = batchSize == JdbcSettings.DEFAULT_BATCH_SIZE ? null : JdbcSettings.create().setBatchSize(batchSize);
             final List<?> batchParameters = entities instanceof List ? (List<?>) entities : new ArrayList<>(entities);
 
@@ -3813,7 +3813,7 @@ public final class SQLExecutor implements Closeable {
             return ids;
         }
 
-        private Pair2 prepareAdd(final Object entity) {
+        private SP prepareAdd(final Object entity) {
             checkEntity(entity);
 
             final Class<?> cls = entity.getClass();
@@ -3833,7 +3833,7 @@ public final class SQLExecutor implements Closeable {
             return prepareAdd(props);
         }
 
-        private Pair2 prepareAdd(final Map<String, Object> props) {
+        private SP prepareAdd(final Map<String, Object> props) {
             switch (namingPolicy) {
                 case LOWER_CASE_WITH_UNDERSCORE:
                     return NE.insert(props).into(targetClass).pair();
@@ -3861,7 +3861,7 @@ public final class SQLExecutor implements Closeable {
         }
 
         public int update(final Object entity) {
-            final Pair2 pair = prepareUpdate(entity);
+            final SP pair = prepareUpdate(entity);
 
             final int updateCount = sqlExecutor.update(pair.sql, pair.parameters.toArray());
 
@@ -3877,7 +3877,7 @@ public final class SQLExecutor implements Closeable {
         }
 
         public int update(final Condition whereCause, final Map<String, Object> props) {
-            final Pair2 pair = prepareUpdate(whereCause, props);
+            final SP pair = prepareUpdate(whereCause, props);
 
             return sqlExecutor.update(pair.sql, pair.parameters.toArray());
         }
@@ -3942,7 +3942,7 @@ public final class SQLExecutor implements Closeable {
         public int batchUpdate(final Collection<?> entities, int batchSize) {
             N.checkArgument(batchSize > 0, "Invalid batch size: %s", batchSize);
 
-            final Pair2 pair = prepareUpdate(entities.iterator().next());
+            final SP pair = prepareUpdate(entities.iterator().next());
             final JdbcSettings jdbcSettings = batchSize == JdbcSettings.DEFAULT_BATCH_SIZE ? null : JdbcSettings.create().setBatchSize(batchSize);
             final List<?> batchParameters = entities instanceof List ? (List<?>) entities : new ArrayList<>(entities);
 
@@ -3958,7 +3958,7 @@ public final class SQLExecutor implements Closeable {
         }
 
         @SuppressWarnings("deprecation")
-        private Pair2 prepareUpdate(final Object entity) {
+        private SP prepareUpdate(final Object entity) {
             checkEntity(entity);
 
             final Class<?> cls = entity.getClass();
@@ -3990,7 +3990,7 @@ public final class SQLExecutor implements Closeable {
             return prepareUpdate(L.eq(idName, idVal), props);
         }
 
-        private Pair2 prepareUpdate(final Condition whereCause, final Map<String, Object> props) {
+        private SP prepareUpdate(final Condition whereCause, final Map<String, Object> props) {
             switch (namingPolicy) {
                 case LOWER_CASE_WITH_UNDERSCORE:
                     return NE.update(targetClass).set(props).where(whereCause).pair();
@@ -4027,7 +4027,7 @@ public final class SQLExecutor implements Closeable {
                 return sqlExecutor.update(sql_delete_by_id, ((Equal) whereCause).getPropValue());
             }
 
-            final Pair2 pair = prepareDelete(whereCause);
+            final SP pair = prepareDelete(whereCause);
 
             return sqlExecutor.update(pair.sql, pair.parameters.toArray());
         }
@@ -4071,8 +4071,8 @@ public final class SQLExecutor implements Closeable {
             return result;
         }
 
-        private Pair2 prepareDelete(final Condition whereCause) {
-            Pair2 pair = null;
+        private SP prepareDelete(final Condition whereCause) {
+            SP pair = null;
 
             switch (namingPolicy) {
                 case LOWER_CASE_WITH_UNDERSCORE:

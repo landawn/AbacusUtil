@@ -149,6 +149,23 @@ public final class Collectors {
             .unmodifiableSet(EnumSet.of(Collector.Characteristics.UNORDERED, Collector.Characteristics.IDENTITY_FINISH));
     static final Set<Collector.Characteristics> CH_NOID = Collections.emptySet();
 
+    @SuppressWarnings("rawtypes")
+    private static final BinaryOperator<Collection> ADD_ALL_MERGER = new BinaryOperator<Collection>() {
+        @Override
+        public Collection apply(Collection t, Collection u) {
+            t.addAll(u);
+            return t;
+        }
+    };
+
+    @SuppressWarnings("rawtypes")
+    private static final BinaryOperator THROWING_MERGER = new BinaryOperator<Object>() {
+        @Override
+        public Object apply(Object t, Object u) {
+            throw new IllegalStateException(String.format("Duplicate key %s", u));
+        }
+    };
+
     private Collectors() {
     }
 
@@ -163,9 +180,7 @@ public final class Collectors {
      * @return a merge function which always throw {@code IllegalStateException}
      */
     static <T> BinaryOperator<T> throwingMerger() {
-        return (u, v) -> {
-            throw new IllegalStateException(String.format("Duplicate key %s", u));
-        };
+        return THROWING_MERGER;
     }
 
     @SuppressWarnings("unchecked")
@@ -3033,6 +3048,20 @@ public final class Collectors {
         return toMap(keyMapper, valueMapper);
     }
 
+    public static <K, V, A> Collector<Map.Entry<K, V>, A, Map<K, V>> toMap(final BinaryOperator<V> mergeFunction) {
+        return (Collector<Map.Entry<K, V>, A, Map<K, V>>) Collectors.toMap(new Function<Map.Entry<K, V>, K>() {
+            @Override
+            public K apply(Entry<K, V> entry) {
+                return entry.getKey();
+            }
+        }, new Function<Map.Entry<K, V>, V>() {
+            @Override
+            public V apply(Entry<K, V> entry) {
+                return entry.getValue();
+            }
+        }, mergeFunction);
+    }
+
     public static <K, V, M extends Map<K, V>> Collector<Map.Entry<? extends K, ? extends V>, ?, M> toMap(final Supplier<M> mapFactory) {
         final Function<Map.Entry<? extends K, ? extends V>, ? extends K> keyMapper = new Function<Map.Entry<? extends K, ? extends V>, K>() {
             @Override
@@ -3231,6 +3260,76 @@ public final class Collectors {
         final BinaryOperator<M> combiner = (BinaryOperator<M>) mapMerger(mergeFunction);
 
         return new CollectorImpl<>(mapFactory, accumulator, combiner, CH_ID);
+    }
+
+    public static <K, V> Collector<Map.Entry<K, V>, ?, Map<K, List<V>>> toMap2() {
+        @SuppressWarnings("rawtypes")
+        final BinaryOperator<List<V>> mergeFunction = (BinaryOperator) ADD_ALL_MERGER;
+
+        return Collectors.toMap(new Function<Map.Entry<K, V>, K>() {
+            @Override
+            public K apply(Entry<K, V> entry) {
+                return entry.getKey();
+            }
+        }, new Function<Map.Entry<K, V>, List<V>>() {
+            @Override
+            public List<V> apply(Entry<K, V> entry) {
+                return N.asList(entry.getValue());
+            }
+        }, mergeFunction);
+    }
+
+    public static <K, V, M extends Map<K, List<V>>> Collector<Map.Entry<K, V>, ?, M> toMap2(final Supplier<M> mapFactory) {
+        @SuppressWarnings("rawtypes")
+        final BinaryOperator<List<V>> mergeFunction = (BinaryOperator) ADD_ALL_MERGER;
+
+        return Collectors.toMap(new Function<Map.Entry<K, V>, K>() {
+            @Override
+            public K apply(Entry<K, V> entry) {
+                return entry.getKey();
+            }
+        }, new Function<Map.Entry<K, V>, List<V>>() {
+            @Override
+            public List<V> apply(Entry<K, V> entry) {
+                return N.asList(entry.getValue());
+            }
+        }, mergeFunction, mapFactory);
+    }
+
+    public static <T, K, V> Collector<T, ?, Map<K, List<V>>> toMap2(final Function<? super T, ? extends K> keyMapper,
+            final Function<? super T, ? extends V> valueMapper) {
+        @SuppressWarnings("rawtypes")
+        final BinaryOperator<List<V>> mergeFunction = (BinaryOperator) ADD_ALL_MERGER;
+
+        return Collectors.toMap(new Function<T, K>() {
+            @Override
+            public K apply(T t) {
+                return keyMapper.apply(t);
+            }
+        }, new Function<T, List<V>>() {
+            @Override
+            public List<V> apply(T t) {
+                return N.asList(valueMapper.apply(t));
+            }
+        }, mergeFunction);
+    }
+
+    public static <T, K, V, M extends Map<K, List<V>>> Collector<T, ?, M> toMap2(final Function<? super T, ? extends K> keyMapper,
+            final Function<? super T, ? extends V> valueMapper, final Supplier<M> mapFactory) {
+        @SuppressWarnings("rawtypes")
+        final BinaryOperator<List<V>> mergeFunction = (BinaryOperator) ADD_ALL_MERGER;
+
+        return Collectors.toMap(new Function<T, K>() {
+            @Override
+            public K apply(T t) {
+                return keyMapper.apply(t);
+            }
+        }, new Function<T, List<V>>() {
+            @Override
+            public List<V> apply(T t) {
+                return N.asList(valueMapper.apply(t));
+            }
+        }, mergeFunction, mapFactory);
     }
 
     /**

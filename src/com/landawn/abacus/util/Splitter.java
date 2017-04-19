@@ -23,6 +23,7 @@ import java.util.Map;
 
 import com.landawn.abacus.type.Type;
 import com.landawn.abacus.util.function.Function;
+import com.landawn.abacus.util.stream.Stream;
 
 /**
  * 
@@ -234,6 +235,21 @@ public final class Splitter {
         }
 
         return strs;
+    }
+
+    public Stream<String> stream(CharSequence source) {
+        return Stream.of(splitToArray(source));
+    }
+
+    public <T> Stream<T> stream(Class<T> cls, CharSequence source) {
+        final Type<T> type = N.typeOf(cls);
+
+        return stream(source).map(new Function<String, T>() {
+            @Override
+            public T apply(String t) {
+                return type.valueOf(t);
+            }
+        });
     }
 
     public static final class Splitter0 {
@@ -563,6 +579,22 @@ public final class Splitter {
 
         public <T> T split(CharSequence source, Function<? super Map<String, String>, T> converter) {
             return converter.apply(this.split(source));
+        }
+
+        public Stream<Map.Entry<String, String>> stream(CharSequence source) {
+            return Stream.of(split(source));
+        }
+
+        public <K, V> Stream<Map.Entry<K, V>> stream(Class<K> keyClass, Class<V> valueClass, CharSequence source) {
+            final Type<K> keyType = N.typeOf(keyClass);
+            final Type<V> valueType = N.typeOf(valueClass);
+
+            return stream(source).map(new Function<Map.Entry<String, String>, Map.Entry<K, V>>() {
+                @Override
+                public Map.Entry<K, V> apply(Map.Entry<String, String> t) {
+                    return Tuple.of(keyType.valueOf(t.getKey()), valueType.valueOf(t.getValue()));
+                }
+            });
         }
 
         public static final class MapSplitter0 {

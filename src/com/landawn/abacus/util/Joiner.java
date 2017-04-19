@@ -79,6 +79,8 @@ public class Joiner {
     private final boolean isEmptyDelimiter;
     private final boolean isEmptyKeyValueDelimiter;
     private boolean trim = false;
+    private boolean skipNull = false;
+    private String nullText = N.NULL_STRING;
 
     /*
      * StringBuilder value -- at any time, the characters constructed from the
@@ -202,66 +204,87 @@ public class Joiner {
         return this;
     }
 
-    public Joiner add(String newElement) {
-        prepareBuilder().append(newElement);
+    public Joiner skipNull(boolean skipNull) {
+        this.skipNull = skipNull;
+
+        return this;
+    }
+
+    public Joiner useForNull(String nullText) {
+        this.nullText = nullText;
+
+        return this;
+    }
+
+    public Joiner add(boolean element) {
+        prepareBuilder().append(element);
+        return this;
+    }
+
+    public Joiner add(char element) {
+        prepareBuilder().append(element);
+        return this;
+    }
+
+    public Joiner add(byte element) {
+        prepareBuilder().append(element);
+        return this;
+    }
+
+    public Joiner add(short element) {
+        prepareBuilder().append(element);
+        return this;
+    }
+
+    public Joiner add(int element) {
+        prepareBuilder().append(element);
+        return this;
+    }
+
+    public Joiner add(long element) {
+        prepareBuilder().append(element);
+        return this;
+    }
+
+    public Joiner add(float element) {
+        prepareBuilder().append(element);
+        return this;
+    }
+
+    public Joiner add(double element) {
+        prepareBuilder().append(element);
+        return this;
+    }
+
+    public Joiner add(String element) {
+        if (element != null || skipNull == false) {
+            prepareBuilder().append(element == null ? nullText : element);
+        }
+
         return this;
     }
 
     /**
      * Adds a copy of the given {@code CharSequence} value as the next
-     * element of the {@code StringJoiner} value. If {@code newElement} is
+     * element of the {@code StringJoiner} value. If {@code element} is
      * {@code null}, then {@code "null"} is added.
      *
-     * @param  newElement The element to add
+     * @param  element The element to add
      * @return a reference to this {@code StringJoiner}
      */
-    public Joiner add(CharSequence newElement) {
-        prepareBuilder().append(newElement);
+    public Joiner add(CharSequence element) {
+        if (element != null || skipNull == false) {
+            prepareBuilder().append(element == null ? nullText : element);
+        }
+
         return this;
     }
 
-    public Joiner add(boolean newElement) {
-        prepareBuilder().append(newElement);
-        return this;
-    }
+    public Joiner add(Object element) {
+        if (element != null || skipNull == false) {
+            prepareBuilder().append(toString(element));
+        }
 
-    public Joiner add(char newElement) {
-        prepareBuilder().append(newElement);
-        return this;
-    }
-
-    public Joiner add(byte newElement) {
-        prepareBuilder().append(newElement);
-        return this;
-    }
-
-    public Joiner add(short newElement) {
-        prepareBuilder().append(newElement);
-        return this;
-    }
-
-    public Joiner add(int newElement) {
-        prepareBuilder().append(newElement);
-        return this;
-    }
-
-    public Joiner add(long newElement) {
-        prepareBuilder().append(newElement);
-        return this;
-    }
-
-    public Joiner add(float newElement) {
-        prepareBuilder().append(newElement);
-        return this;
-    }
-
-    public Joiner add(double newElement) {
-        prepareBuilder().append(newElement);
-        return this;
-    }
-
-    public Joiner add(Object newElement) {
-        prepareBuilder().append(N.toString(newElement));
         return this;
     }
 
@@ -540,25 +563,29 @@ public class Joiner {
 
         if (trim) {
             for (int i = fromIndex; i < toIndex; i++) {
-                if (sb == null) {
-                    sb = prepareBuilder().append(N.toString(a[i]).trim());
-                } else {
-                    if (isEmptyDelimiter) {
-                        sb.append(N.toString(a[i]).trim());
+                if (a[i] != null || skipNull == false) {
+                    if (sb == null) {
+                        sb = prepareBuilder().append(toString(a[i]).trim());
                     } else {
-                        sb.append(delimiter).append(N.toString(a[i]).trim());
+                        if (isEmptyDelimiter) {
+                            sb.append(toString(a[i]).trim());
+                        } else {
+                            sb.append(delimiter).append(toString(a[i]).trim());
+                        }
                     }
                 }
             }
         } else {
             for (int i = fromIndex; i < toIndex; i++) {
-                if (sb == null) {
-                    sb = prepareBuilder().append(N.toString(a[i]));
-                } else {
-                    if (isEmptyDelimiter) {
-                        sb.append(N.toString(a[i]));
+                if (a[i] != null || skipNull == false) {
+                    if (sb == null) {
+                        sb = prepareBuilder().append(toString(a[i]));
                     } else {
-                        sb.append(delimiter).append(N.toString(a[i]));
+                        if (isEmptyDelimiter) {
+                            sb.append(toString(a[i]));
+                        } else {
+                            sb.append(delimiter).append(toString(a[i]));
+                        }
                     }
                 }
             }
@@ -591,23 +618,27 @@ public class Joiner {
             }
 
             if (trim) {
-                if (sb == null) {
-                    sb = prepareBuilder().append(N.toString(e).trim());
-                } else {
-                    if (isEmptyDelimiter) {
-                        sb.append(N.toString(e).trim());
+                if (e != null || skipNull == false) {
+                    if (sb == null) {
+                        sb = prepareBuilder().append(toString(e).trim());
                     } else {
-                        sb.append(delimiter).append(N.toString(e).trim());
+                        if (isEmptyDelimiter) {
+                            sb.append(toString(e).trim());
+                        } else {
+                            sb.append(delimiter).append(toString(e).trim());
+                        }
                     }
                 }
             } else {
-                if (sb == null) {
-                    sb = prepareBuilder().append(N.toString(e));
-                } else {
-                    if (isEmptyDelimiter) {
-                        sb.append(N.toString(e));
+                if (e != null || skipNull == false) {
+                    if (sb == null) {
+                        sb = prepareBuilder().append(toString(e));
                     } else {
-                        sb.append(delimiter).append(N.toString(e));
+                        if (isEmptyDelimiter) {
+                            sb.append(toString(e));
+                        } else {
+                            sb.append(delimiter).append(toString(e));
+                        }
                     }
                 }
             }
@@ -645,34 +676,34 @@ public class Joiner {
 
             if (trim) {
                 if (sb == null) {
-                    sb = prepareBuilder().append(N.toString(entry.getKey()).trim()).append(keyValueDelimiter).append(N.toString(entry.getValue()).trim());
+                    sb = prepareBuilder().append(toString(entry.getKey()).trim()).append(keyValueDelimiter).append(toString(entry.getValue()).trim());
                 } else {
                     if (isEmptyDelimiter) {
-                        sb.append(N.toString(entry.getKey()).trim());
+                        sb.append(toString(entry.getKey()).trim());
                     } else {
-                        sb.append(delimiter).append(N.toString(entry.getKey()).trim());
+                        sb.append(delimiter).append(toString(entry.getKey()).trim());
                     }
 
                     if (isEmptyKeyValueDelimiter) {
-                        sb.append(N.toString(entry.getValue()).trim());
+                        sb.append(toString(entry.getValue()).trim());
                     } else {
-                        sb.append(keyValueDelimiter).append(N.toString(entry.getValue()).trim());
+                        sb.append(keyValueDelimiter).append(toString(entry.getValue()).trim());
                     }
                 }
             } else {
                 if (sb == null) {
-                    sb = prepareBuilder().append(N.toString(entry.getKey())).append(keyValueDelimiter).append(N.toString(entry.getValue()));
+                    sb = prepareBuilder().append(toString(entry.getKey())).append(keyValueDelimiter).append(toString(entry.getValue()));
                 } else {
                     if (isEmptyDelimiter) {
-                        sb.append(N.toString(entry.getKey()));
+                        sb.append(toString(entry.getKey()));
                     } else {
-                        sb.append(delimiter).append(N.toString(entry.getKey()));
+                        sb.append(delimiter).append(toString(entry.getKey()));
                     }
 
                     if (isEmptyKeyValueDelimiter) {
-                        sb.append(N.toString(entry.getValue()));
+                        sb.append(toString(entry.getValue()));
                     } else {
-                        sb.append(keyValueDelimiter).append(N.toString(entry.getValue()));
+                        sb.append(keyValueDelimiter).append(toString(entry.getValue()));
                     }
                 }
             }
@@ -888,6 +919,10 @@ public class Joiner {
             value = new StringBuilder().append(prefix);
         }
         return value;
+    }
+
+    private String toString(Object element) {
+        return element == null ? nullText : N.deepToString(element);
     }
 
     /**

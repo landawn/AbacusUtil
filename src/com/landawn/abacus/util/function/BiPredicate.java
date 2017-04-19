@@ -99,11 +99,11 @@ public interface BiPredicate<T, U> extends java.util.function.BiPredicate<T, U> 
         return ALWAYS_FALSE;
     }
 
-    static <T> BiPredicate<T, T> equal() {
+    static <T, U> BiPredicate<T, U> equal() {
         return EQUAL;
     }
 
-    static <T> BiPredicate<T, T> notEqual() {
+    static <T, U> BiPredicate<T, U> notEqual() {
         return NOT_EQUAL;
     }
 

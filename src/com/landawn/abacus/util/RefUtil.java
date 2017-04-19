@@ -76,8 +76,6 @@ import com.landawn.abacus.logging.LoggerFactory;
 import com.landawn.abacus.parser.ParserUtil;
 import com.landawn.abacus.type.Type;
 import com.landawn.abacus.type.TypeFactory;
-import com.landawn.abacus.util.Pair.Pair0;
-import com.landawn.abacus.util.Triple.Triple0;
 import com.landawn.abacus.util.Tuple.Tuple1;
 import com.landawn.abacus.util.Tuple.Tuple2;
 import com.landawn.abacus.util.Tuple.Tuple3;
@@ -239,9 +237,7 @@ public final class RefUtil {
         BUILT_IN_TYPE.put(Range.class.getCanonicalName(), Range.class);
         BUILT_IN_TYPE.put(Duration.class.getCanonicalName(), Duration.class);
         BUILT_IN_TYPE.put(Pair.class.getCanonicalName(), Pair.class);
-        BUILT_IN_TYPE.put(Pair0.class.getCanonicalName(), Pair0.class);
         BUILT_IN_TYPE.put(Triple.class.getCanonicalName(), Triple.class);
-        BUILT_IN_TYPE.put(Triple0.class.getCanonicalName(), Triple0.class);
         BUILT_IN_TYPE.put(Tuple.class.getCanonicalName(), Tuple.class);
         BUILT_IN_TYPE.put(Tuple1.class.getCanonicalName(), Tuple1.class);
         BUILT_IN_TYPE.put(Tuple2.class.getCanonicalName(), Tuple2.class);

@@ -1563,8 +1563,8 @@ public abstract class SQLBuilder {
      *  
      * @return the pair of sql and parameters.
      */
-    public Pair2 pair() {
-        return Pair2.of(sql(), parameters);
+    public SP pair() {
+        return new SP(sql(), parameters);
     }
 
     //    /**
@@ -4725,17 +4725,13 @@ public abstract class SQLBuilder {
         }
     }
 
-    public static final class Pair2 {
+    public static final class SP {
         public final String sql;
         public final List<Object> parameters;
 
-        Pair2(final String sql, final List<Object> parameters) {
+        SP(final String sql, final List<Object> parameters) {
             this.sql = sql;
             this.parameters = parameters;
-        }
-
-        public static Pair2 of(final String sql, final List<Object> parameters) {
-            return new Pair2(sql, parameters);
         }
 
         public Pair<String, List<Object>> __() {
@@ -4753,8 +4749,8 @@ public abstract class SQLBuilder {
                 return true;
             }
 
-            if (obj instanceof Pair2) {
-                Pair2 other = (Pair2) obj;
+            if (obj instanceof SP) {
+                SP other = (SP) obj;
 
                 return N.equals(other.sql, sql) && N.equals(other.parameters, parameters);
             }

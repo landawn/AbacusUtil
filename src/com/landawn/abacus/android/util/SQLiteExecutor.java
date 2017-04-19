@@ -66,7 +66,7 @@ import com.landawn.abacus.util.NullabLe;
 import com.landawn.abacus.util.OptionalShort;
 import com.landawn.abacus.util.RefUtil;
 import com.landawn.abacus.util.SQLBuilder;
-import com.landawn.abacus.util.SQLBuilder.Pair2;
+import com.landawn.abacus.util.SQLBuilder.SP;
 import com.landawn.abacus.util.SQLBuilder.RE;
 import com.landawn.abacus.util.SQLBuilder.RE2;
 import com.landawn.abacus.util.SQLBuilder.RE3;
@@ -1122,7 +1122,7 @@ public final class SQLiteExecutor {
     }
 
     public boolean exists(String tableName, Condition whereClause) {
-        final Pair2 pair = select(tableName, SQLBuilder._1, whereClause);
+        final SP pair = select(tableName, SQLBuilder._1, whereClause);
         final Object[] parameters = N.isNullOrEmpty(pair.parameters) ? N.EMPTY_OBJECT_ARRAY : pair.parameters.toArray(new Object[pair.parameters.size()]);
 
         return exists(pair.sql, parameters);
@@ -1150,7 +1150,7 @@ public final class SQLiteExecutor {
     }
 
     public int count(String tableName, Condition whereClause) {
-        final Pair2 pair = select(tableName, SQLBuilder.COUNT_ALL, whereClause);
+        final SP pair = select(tableName, SQLBuilder.COUNT_ALL, whereClause);
         final Object[] parameters = N.isNullOrEmpty(pair.parameters) ? N.EMPTY_OBJECT_ARRAY : pair.parameters.toArray(new Object[pair.parameters.size()]);
 
         return count(pair.sql, parameters);
@@ -1160,7 +1160,7 @@ public final class SQLiteExecutor {
         return queryForSingleResult(int.class, sql, parameters).or(0);
     }
 
-    private Pair2 select(String tableName, String selectColumnName, Condition whereClause) {
+    private SP select(String tableName, String selectColumnName, Condition whereClause) {
         switch (columnNamingPolicy) {
             case LOWER_CASE_WITH_UNDERSCORE:
                 return RE.select(selectColumnName).from(tableName).where(whereClause).pair();

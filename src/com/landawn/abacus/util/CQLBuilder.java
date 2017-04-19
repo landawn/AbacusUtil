@@ -1126,8 +1126,8 @@ public abstract class CQLBuilder {
      *  
      * @return the pair of cql and parameters.
      */
-    public Pair3 pair() {
-        return Pair3.of(cql(), parameters);
+    public CP pair() {
+        return new CP(cql(), parameters);
     }
 
     //    /**
@@ -4425,17 +4425,13 @@ public abstract class CQLBuilder {
         }
     }
 
-    public static final class Pair3 {
+    public static final class CP {
         public final String cql;
         public final List<Object> parameters;
 
-        Pair3(final String cql, final List<Object> parameters) {
+        CP(final String cql, final List<Object> parameters) {
             this.cql = cql;
             this.parameters = parameters;
-        }
-
-        public static Pair3 of(final String cql, final List<Object> parameters) {
-            return new Pair3(cql, parameters);
         }
 
         public Pair<String, List<Object>> __() {
@@ -4453,8 +4449,8 @@ public abstract class CQLBuilder {
                 return true;
             }
 
-            if (obj instanceof Pair3) {
-                Pair3 other = (Pair3) obj;
+            if (obj instanceof CP) {
+                CP other = (CP) obj;
 
                 return N.equals(other.cql, cql) && N.equals(other.parameters, parameters);
             }

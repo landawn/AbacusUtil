@@ -18,6 +18,7 @@ package com.landawn.abacus.util;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map;
 
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
@@ -275,7 +276,7 @@ public abstract class Tuple {
         }
     }
 
-    public final static class Tuple2<T1, T2> extends Tuple {
+    public final static class Tuple2<T1, T2> extends Tuple implements Map.Entry<T1, T2> {
         public final T1 _1;
         public final T2 _2;
 
@@ -338,6 +339,26 @@ public abstract class Tuple {
         @Override
         public Stream<Tuple2<T1, T2>> stream() {
             return Stream.of(this);
+        }
+
+        @Override
+        public T1 getKey() {
+            return _1;
+        }
+
+        @Override
+        public T2 getValue() {
+            return _2;
+        }
+
+        /**
+         * @param R
+         * @deprecated UnsupportedOperationException
+         */
+        @Override
+        @Deprecated
+        public T2 setValue(T2 value) {
+            throw new UnsupportedOperationException();
         }
 
         @Override

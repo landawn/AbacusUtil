@@ -25,15 +25,14 @@ import java.util.Map;
  */
 public interface BiConsumer<T, U> extends java.util.function.BiConsumer<T, U> {
 
+    @SuppressWarnings("rawtypes")
+    static final BiConsumer DO_NOTHING = (c, t) -> {
+    };
     static final BiConsumer<Collection<Object>, Object> ADD = (c, t) -> c.add(t);
     static final BiConsumer<Collection<Object>, Collection<Object>> ADD_ALL = (c, t) -> c.addAll(t);
     static final BiConsumer<Collection<Object>, Object> REMOVE = (c, t) -> c.remove(t);
     static final BiConsumer<Collection<?>, Collection<?>> REMOVE_ALL = (c, t) -> c.removeAll(t);
     static final BiConsumer<Map<Object, Object>, Map<Object, Object>> PUT_ALL = (m, t) -> m.putAll(t);
-
-    @SuppressWarnings("rawtypes")
-    static final BiConsumer DO_NOTHING = (c, t) -> {
-    };
 
     @Override
     void accept(T t, U u);

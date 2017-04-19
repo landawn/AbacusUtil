@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
@@ -55,6 +56,38 @@ import com.landawn.abacus.util.function.Predicate;
 public final class Maps {
     private Maps() {
         // singleton.
+    }
+
+    public static <K, T> Map<K, T> asMap(Collection<? extends T> c, final Function<? super T, ? extends K> keyExtractor) {
+        N.requireNonNull(keyExtractor);
+
+        if (N.isNullOrEmpty(c)) {
+            return new HashMap<K, T>();
+        }
+
+        final Map<K, T> result = new HashMap<>(N.initHashCapacity(c.size()));
+
+        for (T e : c) {
+            result.put(keyExtractor.apply(e), e);
+        }
+
+        return result;
+    }
+
+    public static <K, T> Map<K, T> asLinkedHashMap(Collection<? extends T> c, final Function<? super T, ? extends K> keyExtractor) {
+        N.requireNonNull(keyExtractor);
+
+        if (N.isNullOrEmpty(c)) {
+            return new LinkedHashMap<K, T>();
+        }
+
+        final Map<K, T> result = new LinkedHashMap<>(N.initHashCapacity(c.size()));
+
+        for (T e : c) {
+            result.put(keyExtractor.apply(e), e);
+        }
+
+        return result;
     }
 
     public static <K, V> NullabLe<V> get(final Map<K, V> map, final Object key) {
@@ -1004,15 +1037,15 @@ public final class Maps {
         if (N.isNullOrEmpty(map)) {
             return new LinkedHashMap<>();
         }
-    
+
         final Map<K, V> result = map instanceof IdentityHashMap ? new IdentityHashMap<K, V>() : new LinkedHashMap<K, V>();
-    
+
         for (Map.Entry<K, V> entry : map.entrySet()) {
             if (predicate.test(entry.getKey(), entry.getValue())) {
                 result.put(entry.getKey(), entry.getValue());
             }
         }
-    
+
         return result;
     }
 

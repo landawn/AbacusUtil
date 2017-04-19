@@ -22,8 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.landawn.abacus.util.Pair.Pair0;
-
 @SuppressWarnings("hiding")
 /**
  * 
@@ -503,12 +501,12 @@ public class Difference<L, R> {
          * @param map2
          * @return
          */
-        public static <K1, V1, K2, V2, L extends Map<? super K1, ? super V1>, R extends Map<? super K2, ? super V2>, D extends Map<?, Pair0<V1, V2>>> MapDifference<L, R, D> of(
+        public static <K1, V1, K2, V2, L extends Map<? super K1, ? super V1>, R extends Map<? super K2, ? super V2>, D extends Map<?, Pair<V1, V2>>> MapDifference<L, R, D> of(
                 Map<K1, V1> map1, Map<K2, V2> map2) {
             final L common = (L) new LinkedHashMap<>();
             final L leftOnly = (L) new LinkedHashMap<>();
             final R rightOnly = (R) new LinkedHashMap<>();
-            final Map<Object, Pair0<V1, V2>> diff = new LinkedHashMap<>();
+            final Map<Object, Pair<V1, V2>> diff = new LinkedHashMap<>();
 
             if (N.isNullOrEmpty(map1)) {
                 if (N.isNullOrEmpty(map2)) {
@@ -528,7 +526,7 @@ public class Difference<L, R> {
                             if (entry1.getValue() == null) {
                                 common.put(entry1.getKey(), entry1.getValue());
                             } else {
-                                diff.put(entry1.getKey(), Pair0.of(entry1.getValue(), val2));
+                                diff.put(entry1.getKey(), Pair.of(entry1.getValue(), val2));
                             }
                         } else {
                             leftOnly.put(entry1.getKey(), entry1.getValue());
@@ -536,7 +534,7 @@ public class Difference<L, R> {
                     } else if (N.equals(entry1.getValue(), val2)) {
                         common.put(entry1.getKey(), entry1.getValue());
                     } else {
-                        diff.put(entry1.getKey(), Pair0.of(entry1.getValue(), val2));
+                        diff.put(entry1.getKey(), Pair.of(entry1.getValue(), val2));
                     }
                 }
 
@@ -558,7 +556,7 @@ public class Difference<L, R> {
          * @param entity2
          * @return
          */
-        public static MapDifference<Map<String, Object>, Map<String, Object>, Map<String, Pair0<Object, Object>>> of(Object entity1, Object entity2) {
+        public static MapDifference<Map<String, Object>, Map<String, Object>, Map<String, Pair<Object, Object>>> of(Object entity1, Object entity2) {
             if (N.isEntity(entity1.getClass()) == false || N.isEntity(entity2.getClass()) == false) {
                 throw new IllegalArgumentException(
                         entity1.getClass().getCanonicalName() + " or " + entity2.getClass().getCanonicalName() + " is not an entity class");

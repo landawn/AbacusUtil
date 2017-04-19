@@ -16,16 +16,14 @@
 package com.landawn.abacus.util;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Pattern;
 
-import com.landawn.abacus.util.function.BinaryOperator;
+import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.Predicate;
-import com.landawn.abacus.util.stream.Collector;
-import com.landawn.abacus.util.stream.Collectors;
 
 /**
  * It's designed for Stream<Entry<K, V>>
@@ -46,21 +44,26 @@ import com.landawn.abacus.util.stream.Collectors;
  *
  */
 public final class Fn {
-    @SuppressWarnings("rawtypes")
-    private static final BinaryOperator<Collection> ADD_ALL = new BinaryOperator<Collection>() {
-        @Override
-        public Collection apply(Collection t, Collection u) {
-            t.addAll(u);
-            return t;
-        }
-    };
 
     private Fn() {
         // Singleton.
     }
 
+    public static <T> Consumer<T> doNothing() {
+        return Consumer.DO_NOTHING;
+    }
+
     public static <T> Function<T, T> identity() {
         return Function.IDENTITY;
+    }
+
+    public static <T, U> Function<T, U> cast(final Class<U> clazz) {
+        return new Function<T, U>() {
+            @Override
+            public U apply(T t) {
+                return (U) t;
+            }
+        };
     }
 
     public static <T> Predicate<T> alwaysTrue() {
@@ -69,6 +72,138 @@ public final class Fn {
 
     public static <T> Predicate<T> alwaysFalse() {
         return Predicate.ALWAYS_FALSE;
+    }
+
+    public static <T> Predicate<T> isNull() {
+        return Predicate.IS_NULL;
+    }
+
+    public static <T> Predicate<T> notNull() {
+        return Predicate.NOT_NULL;
+    }
+
+    public static <T> Predicate<T> equal(final Object target) {
+        return new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return N.equals(value, target);
+            }
+        };
+    }
+
+    public static <T> Predicate<T> notEqual(final Object target) {
+        return new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return !N.equals(value, target);
+            }
+        };
+    }
+
+    public static <T extends Comparable<? super T>> Predicate<T> greaterThan(final T target) {
+        return new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return N.compare(value, target) > 0;
+            }
+        };
+    }
+
+    public static <T extends Comparable<? super T>> Predicate<T> greaterEqual(final T target) {
+        return new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return N.compare(value, target) >= 0;
+            }
+        };
+    }
+
+    public static <T extends Comparable<? super T>> Predicate<T> lessThan(final T target) {
+        return new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return N.compare(value, target) < 0;
+            }
+        };
+    }
+
+    public static <T extends Comparable<? super T>> Predicate<T> lessEqual(final T target) {
+        return new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return N.compare(value, target) <= 0;
+            }
+        };
+    }
+
+    public static <T> Predicate<T> in(final Collection<?> c) {
+        return new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return c.contains(value);
+            }
+        };
+    }
+
+    public static <T> Predicate<T> notIn(final Collection<?> c) {
+        return new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return !c.contains(value);
+            }
+        };
+    }
+
+    public static <T> Predicate<T> instanceOf(final Class<?> clazz) {
+        return new Predicate<T>() {
+            @Override
+            public boolean test(T value) {
+                return clazz.isInstance(value);
+            }
+        };
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static Predicate<Class> subtypeOf(final Class<?> clazz) {
+        return new Predicate<Class>() {
+            @Override
+            public boolean test(Class value) {
+                return clazz.isAssignableFrom(value);
+            }
+        };
+    }
+
+    public static Predicate<CharSequence> matches(final Pattern pattern) {
+        return new Predicate<CharSequence>() {
+            @Override
+            public boolean test(CharSequence value) {
+                return pattern.matcher(value).find();
+            }
+        };
+    }
+
+    public static <T, U> BiPredicate<T, U> equal() {
+        return BiPredicate.EQUAL;
+    }
+
+    public static <T, U> BiPredicate<T, U> notEqual() {
+        return BiPredicate.NOT_EQUAL;
+    }
+
+    public static <T extends Comparable<? super T>> BiPredicate<T, T> greaterThan() {
+        return (BiPredicate<T, T>) BiPredicate.GREATER_THAN;
+    }
+
+    public static <T extends Comparable<? super T>> BiPredicate<T, T> greaterEqual() {
+        return (BiPredicate<T, T>) BiPredicate.GREATER_EQUAL;
+    }
+
+    public static <T extends Comparable<? super T>> BiPredicate<T, T> lessThan() {
+        return (BiPredicate<T, T>) BiPredicate.LESS_THAN;
+    }
+
+    public static <T extends Comparable<? super T>> BiPredicate<T, T> lessEqual() {
+        return (BiPredicate<T, T>) BiPredicate.LESS_EQUAL;
     }
 
     public static <K, V> Predicate<Map.Entry<K, V>> testByKey(final Predicate<? super K> predicate) {
@@ -123,69 +258,5 @@ public final class Fn {
                 return func.apply(entry.getValue());
             }
         };
-    }
-
-    /**
-     * 
-     * @return
-     * @throws IllegalStateException if there are duplicated keys.
-     */
-    public static <K, V, A> Collector<Map.Entry<K, V>, A, Map<K, V>> toMap() {
-        return (Collector<Map.Entry<K, V>, A, Map<K, V>>) Collectors.toMap(new Function<Map.Entry<K, V>, K>() {
-            @Override
-            public K apply(Entry<K, V> entry) {
-                return entry.getKey();
-            }
-        }, new Function<Map.Entry<K, V>, V>() {
-            @Override
-            public V apply(Entry<K, V> entry) {
-                return entry.getValue();
-            }
-        });
-    }
-
-    public static <K, V, A> Collector<Map.Entry<K, V>, A, Map<K, V>> toMap(final BinaryOperator<V> mergeFunction) {
-        return (Collector<Map.Entry<K, V>, A, Map<K, V>>) Collectors.toMap(new Function<Map.Entry<K, V>, K>() {
-            @Override
-            public K apply(Entry<K, V> entry) {
-                return entry.getKey();
-            }
-        }, new Function<Map.Entry<K, V>, V>() {
-            @Override
-            public V apply(Entry<K, V> entry) {
-                return entry.getValue();
-            }
-        }, mergeFunction);
-    }
-
-    public static <K, V, A> Collector<Map.Entry<K, V>, A, Map<K, List<V>>> toMap2() {
-        @SuppressWarnings("rawtypes")
-        final BinaryOperator<List<V>> mergeFunction = (BinaryOperator) ADD_ALL;
-
-        return (Collector<Map.Entry<K, V>, A, Map<K, List<V>>>) Collectors.toMap(new Function<Map.Entry<K, V>, K>() {
-            @Override
-            public K apply(Entry<K, V> entry) {
-                return entry.getKey();
-            }
-        }, new Function<Map.Entry<K, V>, List<V>>() {
-            @Override
-            public List<V> apply(Entry<K, V> entry) {
-                return N.asList(entry.getValue());
-            }
-        }, mergeFunction);
-    }
-
-    public static <K, V, A> Collector<Map.Entry<K, V>, A, Multimap<K, V, List<V>>> toMultimap() {
-        return (Collector<Map.Entry<K, V>, A, Multimap<K, V, List<V>>>) Collectors.toMultimap(new Function<Map.Entry<K, V>, K>() {
-            @Override
-            public K apply(Entry<K, V> entry) {
-                return entry.getKey();
-            }
-        }, new Function<Map.Entry<K, V>, V>() {
-            @Override
-            public V apply(Entry<K, V> entry) {
-                return entry.getValue();
-            }
-        });
     }
 }

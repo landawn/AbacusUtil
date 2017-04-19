@@ -118,7 +118,6 @@ import com.landawn.abacus.parser.XMLSerializationConfig.XSC;
 import com.landawn.abacus.type.EntityType;
 import com.landawn.abacus.type.Type;
 import com.landawn.abacus.type.TypeFactory;
-import com.landawn.abacus.util.Pair.Pair0;
 import com.landawn.abacus.util.Retry.Retry0;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
@@ -5556,6 +5555,10 @@ public final class N {
         }
 
         return String.valueOf(charList.array(), 0, charList.size());
+    }
+
+    public static char swapCase(final char ch) {
+        return Character.isLowerCase(ch) ? Character.toUpperCase(ch) : Character.toLowerCase(ch);
     }
 
     /**
@@ -16915,7 +16918,7 @@ public final class N {
             p++;
         }
 
-        if (validSurrogatePair0At(a, p - 1) || validSurrogatePair0At(b, p - 1)) {
+        if (validSurrogatePairAt(a, p - 1) || validSurrogatePairAt(b, p - 1)) {
             p--;
         }
 
@@ -16977,7 +16980,7 @@ public final class N {
             s++;
         }
 
-        if (validSurrogatePair0At(a, aLength - s - 1) || validSurrogatePair0At(b, bLength - s - 1)) {
+        if (validSurrogatePairAt(a, aLength - s - 1) || validSurrogatePairAt(b, bLength - s - 1)) {
             s--;
         }
 
@@ -17024,7 +17027,7 @@ public final class N {
      * True when a valid surrogate pair starts at the given {@code index} in the
      * given {@code string}. Out-of-range indexes return false.
      */
-    static boolean validSurrogatePair0At(final String str, final int index) {
+    static boolean validSurrogatePairAt(final String str, final int index) {
         return index >= 0 && index <= (str.length() - 2) && Character.isHighSurrogate(str.charAt(index)) && Character.isLowSurrogate(str.charAt(index + 1));
     }
 
@@ -19935,23 +19938,23 @@ public final class N {
             return N.copyOfRange(a, fromIndex, toIndex);
         }
 
-        final Comparator<Pair0<Short, Integer>> pairCmp = cmp == null ? new Comparator<Pair0<Short, Integer>>() {
+        final Comparator<Pair<Short, Integer>> pairCmp = cmp == null ? new Comparator<Pair<Short, Integer>>() {
             @Override
-            public int compare(final Pair0<Short, Integer> o1, final Pair0<Short, Integer> o2) {
+            public int compare(final Pair<Short, Integer> o1, final Pair<Short, Integer> o2) {
                 return Short.compare(o1.left.shortValue(), o2.left.shortValue());
             }
-        } : new Comparator<Pair0<Short, Integer>>() {
+        } : new Comparator<Pair<Short, Integer>>() {
             @Override
-            public int compare(final Pair0<Short, Integer> o1, final Pair0<Short, Integer> o2) {
+            public int compare(final Pair<Short, Integer> o1, final Pair<Short, Integer> o2) {
                 return N.compare(o1.left, o2.left, cmp);
             }
         };
 
-        final Queue<Pair0<Short, Integer>> heap = new PriorityQueue<>(n, pairCmp);
-        Pair0<Short, Integer> pair = null;
+        final Queue<Pair<Short, Integer>> heap = new PriorityQueue<>(n, pairCmp);
+        Pair<Short, Integer> pair = null;
 
         for (int i = fromIndex; i < toIndex; i++) {
-            pair = Pair0.of(a[i], i);
+            pair = Pair.of(a[i], i);
 
             if (heap.size() >= n) {
                 if (pairCmp.compare(heap.peek(), pair) < 0) {
@@ -19963,19 +19966,19 @@ public final class N {
             }
         }
 
-        final Pair0<Short, Integer>[] arrayOfPair0 = heap.toArray(new Pair0[heap.size()]);
+        final Pair<Short, Integer>[] arrayOfPair = heap.toArray(new Pair[heap.size()]);
 
-        N.sort(arrayOfPair0, new Comparator<Pair0<Short, Integer>>() {
+        N.sort(arrayOfPair, new Comparator<Pair<Short, Integer>>() {
             @Override
-            public int compare(final Pair0<Short, Integer> o1, final Pair0<Short, Integer> o2) {
+            public int compare(final Pair<Short, Integer> o1, final Pair<Short, Integer> o2) {
                 return o1.right.intValue() - o2.right.intValue();
             }
         });
 
-        final short[] res = new short[arrayOfPair0.length];
+        final short[] res = new short[arrayOfPair.length];
 
-        for (int i = 0, len = arrayOfPair0.length; i < len; i++) {
-            res[i] = arrayOfPair0[i].left;
+        for (int i = 0, len = arrayOfPair.length; i < len; i++) {
+            res[i] = arrayOfPair[i].left;
         }
 
         return res;
@@ -20002,23 +20005,23 @@ public final class N {
             return N.copyOfRange(a, fromIndex, toIndex);
         }
 
-        final Comparator<Pair0<Integer, Integer>> pairCmp = cmp == null ? new Comparator<Pair0<Integer, Integer>>() {
+        final Comparator<Pair<Integer, Integer>> pairCmp = cmp == null ? new Comparator<Pair<Integer, Integer>>() {
             @Override
-            public int compare(final Pair0<Integer, Integer> o1, final Pair0<Integer, Integer> o2) {
+            public int compare(final Pair<Integer, Integer> o1, final Pair<Integer, Integer> o2) {
                 return Integer.compare(o1.left.intValue(), o2.left.intValue());
             }
-        } : new Comparator<Pair0<Integer, Integer>>() {
+        } : new Comparator<Pair<Integer, Integer>>() {
             @Override
-            public int compare(final Pair0<Integer, Integer> o1, final Pair0<Integer, Integer> o2) {
+            public int compare(final Pair<Integer, Integer> o1, final Pair<Integer, Integer> o2) {
                 return N.compare(o1.left, o2.left, cmp);
             }
         };
 
-        final Queue<Pair0<Integer, Integer>> heap = new PriorityQueue<>(n, pairCmp);
-        Pair0<Integer, Integer> pair = null;
+        final Queue<Pair<Integer, Integer>> heap = new PriorityQueue<>(n, pairCmp);
+        Pair<Integer, Integer> pair = null;
 
         for (int i = fromIndex; i < toIndex; i++) {
-            pair = Pair0.of(a[i], i);
+            pair = Pair.of(a[i], i);
 
             if (heap.size() >= n) {
                 if (pairCmp.compare(heap.peek(), pair) < 0) {
@@ -20030,19 +20033,19 @@ public final class N {
             }
         }
 
-        final Pair0<Integer, Integer>[] arrayOfPair0 = heap.toArray(new Pair0[heap.size()]);
+        final Pair<Integer, Integer>[] arrayOfPair = heap.toArray(new Pair[heap.size()]);
 
-        N.sort(arrayOfPair0, new Comparator<Pair0<Integer, Integer>>() {
+        N.sort(arrayOfPair, new Comparator<Pair<Integer, Integer>>() {
             @Override
-            public int compare(final Pair0<Integer, Integer> o1, final Pair0<Integer, Integer> o2) {
+            public int compare(final Pair<Integer, Integer> o1, final Pair<Integer, Integer> o2) {
                 return o1.right.intValue() - o2.right.intValue();
             }
         });
 
-        final int[] res = new int[arrayOfPair0.length];
+        final int[] res = new int[arrayOfPair.length];
 
-        for (int i = 0, len = arrayOfPair0.length; i < len; i++) {
-            res[i] = arrayOfPair0[i].left;
+        for (int i = 0, len = arrayOfPair.length; i < len; i++) {
+            res[i] = arrayOfPair[i].left;
         }
 
         return res;
@@ -20069,23 +20072,23 @@ public final class N {
             return N.copyOfRange(a, fromIndex, toIndex);
         }
 
-        final Comparator<Pair0<Long, Integer>> pairCmp = cmp == null ? new Comparator<Pair0<Long, Integer>>() {
+        final Comparator<Pair<Long, Integer>> pairCmp = cmp == null ? new Comparator<Pair<Long, Integer>>() {
             @Override
-            public int compare(final Pair0<Long, Integer> o1, final Pair0<Long, Integer> o2) {
+            public int compare(final Pair<Long, Integer> o1, final Pair<Long, Integer> o2) {
                 return Long.compare(o1.left.longValue(), o2.left.longValue());
             }
-        } : new Comparator<Pair0<Long, Integer>>() {
+        } : new Comparator<Pair<Long, Integer>>() {
             @Override
-            public int compare(final Pair0<Long, Integer> o1, final Pair0<Long, Integer> o2) {
+            public int compare(final Pair<Long, Integer> o1, final Pair<Long, Integer> o2) {
                 return N.compare(o1.left, o2.left, cmp);
             }
         };
 
-        final Queue<Pair0<Long, Integer>> heap = new PriorityQueue<>(n, pairCmp);
-        Pair0<Long, Integer> pair = null;
+        final Queue<Pair<Long, Integer>> heap = new PriorityQueue<>(n, pairCmp);
+        Pair<Long, Integer> pair = null;
 
         for (int i = fromIndex; i < toIndex; i++) {
-            pair = Pair0.of(a[i], i);
+            pair = Pair.of(a[i], i);
 
             if (heap.size() >= n) {
                 if (pairCmp.compare(heap.peek(), pair) < 0) {
@@ -20097,19 +20100,19 @@ public final class N {
             }
         }
 
-        final Pair0<Long, Integer>[] arrayOfPair0 = heap.toArray(new Pair0[heap.size()]);
+        final Pair<Long, Integer>[] arrayOfPair = heap.toArray(new Pair[heap.size()]);
 
-        N.sort(arrayOfPair0, new Comparator<Pair0<Long, Integer>>() {
+        N.sort(arrayOfPair, new Comparator<Pair<Long, Integer>>() {
             @Override
-            public int compare(final Pair0<Long, Integer> o1, final Pair0<Long, Integer> o2) {
+            public int compare(final Pair<Long, Integer> o1, final Pair<Long, Integer> o2) {
                 return o1.right.intValue() - o2.right.intValue();
             }
         });
 
-        final long[] res = new long[arrayOfPair0.length];
+        final long[] res = new long[arrayOfPair.length];
 
-        for (int i = 0, len = arrayOfPair0.length; i < len; i++) {
-            res[i] = arrayOfPair0[i].left;
+        for (int i = 0, len = arrayOfPair.length; i < len; i++) {
+            res[i] = arrayOfPair[i].left;
         }
 
         return res;
@@ -20136,23 +20139,23 @@ public final class N {
             return N.copyOfRange(a, fromIndex, toIndex);
         }
 
-        final Comparator<Pair0<Float, Integer>> pairCmp = cmp == null ? new Comparator<Pair0<Float, Integer>>() {
+        final Comparator<Pair<Float, Integer>> pairCmp = cmp == null ? new Comparator<Pair<Float, Integer>>() {
             @Override
-            public int compare(final Pair0<Float, Integer> o1, final Pair0<Float, Integer> o2) {
+            public int compare(final Pair<Float, Integer> o1, final Pair<Float, Integer> o2) {
                 return Float.compare(o1.left.floatValue(), o2.left.floatValue());
             }
-        } : new Comparator<Pair0<Float, Integer>>() {
+        } : new Comparator<Pair<Float, Integer>>() {
             @Override
-            public int compare(final Pair0<Float, Integer> o1, final Pair0<Float, Integer> o2) {
+            public int compare(final Pair<Float, Integer> o1, final Pair<Float, Integer> o2) {
                 return N.compare(o1.left, o2.left, cmp);
             }
         };
 
-        final Queue<Pair0<Float, Integer>> heap = new PriorityQueue<>(n, pairCmp);
-        Pair0<Float, Integer> pair = null;
+        final Queue<Pair<Float, Integer>> heap = new PriorityQueue<>(n, pairCmp);
+        Pair<Float, Integer> pair = null;
 
         for (int i = fromIndex; i < toIndex; i++) {
-            pair = Pair0.of(a[i], i);
+            pair = Pair.of(a[i], i);
 
             if (heap.size() >= n) {
                 if (pairCmp.compare(heap.peek(), pair) < 0) {
@@ -20164,19 +20167,19 @@ public final class N {
             }
         }
 
-        final Pair0<Float, Integer>[] arrayOfPair0 = heap.toArray(new Pair0[heap.size()]);
+        final Pair<Float, Integer>[] arrayOfPair = heap.toArray(new Pair[heap.size()]);
 
-        N.sort(arrayOfPair0, new Comparator<Pair0<Float, Integer>>() {
+        N.sort(arrayOfPair, new Comparator<Pair<Float, Integer>>() {
             @Override
-            public int compare(final Pair0<Float, Integer> o1, final Pair0<Float, Integer> o2) {
+            public int compare(final Pair<Float, Integer> o1, final Pair<Float, Integer> o2) {
                 return o1.right.intValue() - o2.right.intValue();
             }
         });
 
-        final float[] res = new float[arrayOfPair0.length];
+        final float[] res = new float[arrayOfPair.length];
 
-        for (int i = 0, len = arrayOfPair0.length; i < len; i++) {
-            res[i] = arrayOfPair0[i].left;
+        for (int i = 0, len = arrayOfPair.length; i < len; i++) {
+            res[i] = arrayOfPair[i].left;
         }
 
         return res;
@@ -20203,23 +20206,23 @@ public final class N {
             return N.copyOfRange(a, fromIndex, toIndex);
         }
 
-        final Comparator<Pair0<Double, Integer>> pairCmp = cmp == null ? new Comparator<Pair0<Double, Integer>>() {
+        final Comparator<Pair<Double, Integer>> pairCmp = cmp == null ? new Comparator<Pair<Double, Integer>>() {
             @Override
-            public int compare(final Pair0<Double, Integer> o1, final Pair0<Double, Integer> o2) {
+            public int compare(final Pair<Double, Integer> o1, final Pair<Double, Integer> o2) {
                 return Double.compare(o1.left.doubleValue(), o2.left.doubleValue());
             }
-        } : new Comparator<Pair0<Double, Integer>>() {
+        } : new Comparator<Pair<Double, Integer>>() {
             @Override
-            public int compare(final Pair0<Double, Integer> o1, final Pair0<Double, Integer> o2) {
+            public int compare(final Pair<Double, Integer> o1, final Pair<Double, Integer> o2) {
                 return N.compare(o1.left, o2.left, cmp);
             }
         };
 
-        final Queue<Pair0<Double, Integer>> heap = new PriorityQueue<>(n, pairCmp);
-        Pair0<Double, Integer> pair = null;
+        final Queue<Pair<Double, Integer>> heap = new PriorityQueue<>(n, pairCmp);
+        Pair<Double, Integer> pair = null;
 
         for (int i = fromIndex; i < toIndex; i++) {
-            pair = Pair0.of(a[i], i);
+            pair = Pair.of(a[i], i);
 
             if (heap.size() >= n) {
                 if (pairCmp.compare(heap.peek(), pair) < 0) {
@@ -20231,19 +20234,19 @@ public final class N {
             }
         }
 
-        final Pair0<Double, Integer>[] arrayOfPair0 = heap.toArray(new Pair0[heap.size()]);
+        final Pair<Double, Integer>[] arrayOfPair = heap.toArray(new Pair[heap.size()]);
 
-        N.sort(arrayOfPair0, new Comparator<Pair0<Double, Integer>>() {
+        N.sort(arrayOfPair, new Comparator<Pair<Double, Integer>>() {
             @Override
-            public int compare(final Pair0<Double, Integer> o1, final Pair0<Double, Integer> o2) {
+            public int compare(final Pair<Double, Integer> o1, final Pair<Double, Integer> o2) {
                 return o1.right.intValue() - o2.right.intValue();
             }
         });
 
-        final double[] res = new double[arrayOfPair0.length];
+        final double[] res = new double[arrayOfPair.length];
 
-        for (int i = 0, len = arrayOfPair0.length; i < len; i++) {
-            res[i] = arrayOfPair0[i].left;
+        for (int i = 0, len = arrayOfPair.length; i < len; i++) {
+            res[i] = arrayOfPair[i].left;
         }
 
         return res;
@@ -20271,23 +20274,23 @@ public final class N {
             return N.copyOfRange(a, fromIndex, toIndex);
         }
 
-        final Comparator<Pair0<T, Integer>> pairCmp = cmp == null ? (Comparator) new Comparator<Pair0<Comparable, Integer>>() {
+        final Comparator<Pair<T, Integer>> pairCmp = cmp == null ? (Comparator) new Comparator<Pair<Comparable, Integer>>() {
             @Override
-            public int compare(final Pair0<Comparable, Integer> o1, final Pair0<Comparable, Integer> o2) {
+            public int compare(final Pair<Comparable, Integer> o1, final Pair<Comparable, Integer> o2) {
                 return N.compare(o1.left, o2.left);
             }
-        } : new Comparator<Pair0<T, Integer>>() {
+        } : new Comparator<Pair<T, Integer>>() {
             @Override
-            public int compare(final Pair0<T, Integer> o1, final Pair0<T, Integer> o2) {
+            public int compare(final Pair<T, Integer> o1, final Pair<T, Integer> o2) {
                 return N.compare(o1.left, o2.left, cmp);
             }
         };
 
-        final Queue<Pair0<T, Integer>> heap = new PriorityQueue<>(n, pairCmp);
-        Pair0<T, Integer> pair = null;
+        final Queue<Pair<T, Integer>> heap = new PriorityQueue<>(n, pairCmp);
+        Pair<T, Integer> pair = null;
 
         for (int i = fromIndex; i < toIndex; i++) {
-            pair = Pair0.of(a[i], i);
+            pair = Pair.of(a[i], i);
 
             if (heap.size() >= n) {
                 if (pairCmp.compare(heap.peek(), pair) < 0) {
@@ -20299,19 +20302,19 @@ public final class N {
             }
         }
 
-        final Pair0<T, Integer>[] arrayOfPair0 = heap.toArray(new Pair0[heap.size()]);
+        final Pair<T, Integer>[] arrayOfPair = heap.toArray(new Pair[heap.size()]);
 
-        N.sort(arrayOfPair0, new Comparator<Pair0<T, Integer>>() {
+        N.sort(arrayOfPair, new Comparator<Pair<T, Integer>>() {
             @Override
-            public int compare(final Pair0<T, Integer> o1, final Pair0<T, Integer> o2) {
+            public int compare(final Pair<T, Integer> o1, final Pair<T, Integer> o2) {
                 return o1.right.intValue() - o2.right.intValue();
             }
         });
 
-        final T[] res = N.newArray(a.getClass().getComponentType(), arrayOfPair0.length);
+        final T[] res = N.newArray(a.getClass().getComponentType(), arrayOfPair.length);
 
-        for (int i = 0, len = arrayOfPair0.length; i < len; i++) {
-            res[i] = arrayOfPair0[i].left;
+        for (int i = 0, len = arrayOfPair.length; i < len; i++) {
+            res[i] = arrayOfPair[i].left;
         }
 
         return res;
@@ -20353,29 +20356,29 @@ public final class N {
             return res;
         }
 
-        final Comparator<Pair0<T, Integer>> pairCmp = cmp == null ? (Comparator) new Comparator<Pair0<Comparable, Integer>>() {
+        final Comparator<Pair<T, Integer>> pairCmp = cmp == null ? (Comparator) new Comparator<Pair<Comparable, Integer>>() {
             @Override
-            public int compare(final Pair0<Comparable, Integer> o1, final Pair0<Comparable, Integer> o2) {
+            public int compare(final Pair<Comparable, Integer> o1, final Pair<Comparable, Integer> o2) {
                 return N.compare(o1.left, o2.left);
             }
-        } : new Comparator<Pair0<T, Integer>>() {
+        } : new Comparator<Pair<T, Integer>>() {
             @Override
-            public int compare(final Pair0<T, Integer> o1, final Pair0<T, Integer> o2) {
+            public int compare(final Pair<T, Integer> o1, final Pair<T, Integer> o2) {
                 return N.compare(o1.left, o2.left, cmp);
             }
         };
 
-        final Queue<Pair0<T, Integer>> heap = new PriorityQueue<>(n, pairCmp);
+        final Queue<Pair<T, Integer>> heap = new PriorityQueue<>(n, pairCmp);
 
         if (c instanceof List && c instanceof RandomAccess) {
             final List<T> list = (List<T>) c;
-            Pair0<T, Integer> pair = null;
+            Pair<T, Integer> pair = null;
             T e = null;
 
             for (int i = fromIndex; i < toIndex; i++) {
                 e = list.get(i);
 
-                pair = Pair0.of(e, i);
+                pair = Pair.of(e, i);
 
                 if (heap.size() >= n) {
                     if (pairCmp.compare(heap.peek(), pair) < 0) {
@@ -20388,7 +20391,7 @@ public final class N {
             }
         } else {
             final Iterator<? extends T> iter = c.iterator();
-            Pair0<T, Integer> pair = null;
+            Pair<T, Integer> pair = null;
             T e = null;
 
             for (int i = 0; i < toIndex && iter.hasNext(); i++) {
@@ -20398,7 +20401,7 @@ public final class N {
                     continue;
                 }
 
-                pair = Pair0.of(e, i);
+                pair = Pair.of(e, i);
 
                 if (heap.size() >= n) {
                     if (pairCmp.compare(heap.peek(), pair) < 0) {
@@ -20411,19 +20414,19 @@ public final class N {
             }
         }
 
-        final Pair0<T, Integer>[] arrayOfPair0 = heap.toArray(new Pair0[heap.size()]);
+        final Pair<T, Integer>[] arrayOfPair = heap.toArray(new Pair[heap.size()]);
 
-        N.sort(arrayOfPair0, new Comparator<Pair0<T, Integer>>() {
+        N.sort(arrayOfPair, new Comparator<Pair<T, Integer>>() {
             @Override
-            public int compare(final Pair0<T, Integer> o1, final Pair0<T, Integer> o2) {
+            public int compare(final Pair<T, Integer> o1, final Pair<T, Integer> o2) {
                 return o1.right.intValue() - o2.right.intValue();
             }
         });
 
-        final List<T> res = new ArrayList<>(arrayOfPair0.length);
+        final List<T> res = new ArrayList<>(arrayOfPair.length);
 
-        for (int i = 0, len = arrayOfPair0.length; i < len; i++) {
-            res.add(arrayOfPair0[i].left);
+        for (int i = 0, len = arrayOfPair.length; i < len; i++) {
+            res.add(arrayOfPair[i].left);
         }
 
         return res;
