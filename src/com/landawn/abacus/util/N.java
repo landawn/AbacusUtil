@@ -135,7 +135,6 @@ import com.landawn.abacus.util.function.IntPredicate;
 import com.landawn.abacus.util.function.LongPredicate;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.ShortPredicate;
-import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.function.ToBooleanFunction;
 import com.landawn.abacus.util.function.ToByteFunction;
 import com.landawn.abacus.util.function.ToCharFunction;
@@ -548,31 +547,6 @@ public final class N {
     public static final Iterator EMPTY_ITERATOR = EMPTY_LIST.iterator();
     // ...
     public static final String EMPTY_STRING = "".intern();
-    @SuppressWarnings("rawtypes")
-    public static final IntFunction<List<Object>> LIST_FACTORY = (IntFunction) IntFunction.LIST_FACTORY;
-    @SuppressWarnings("rawtypes")
-    public static final IntFunction<LinkedList<Object>> LINKED_LIST_FACTORY = (IntFunction) IntFunction.LINKED_LIST_FACTORY;
-    @SuppressWarnings("rawtypes")
-    public static final IntFunction<Set<Object>> SET_FACTORY = (IntFunction) IntFunction.SET_FACTORY;
-    @SuppressWarnings("rawtypes")
-    public static final IntFunction<LinkedHashSet<Object>> LINKED_HASH_SET_FACTORY = (IntFunction) IntFunction.LINKED_HASH_SET_FACTORY;
-    @SuppressWarnings("rawtypes")
-    public static final IntFunction<Map<String, Object>> MAP_FACTORY = (IntFunction) IntFunction.MAP_FACTORY;
-    @SuppressWarnings("rawtypes")
-    public static final IntFunction<LinkedHashMap<String, Object>> LINKED_HASH_MAP_FACTORY = (IntFunction) IntFunction.LINKED_HASH_MAP_FACTORY;
-
-    @SuppressWarnings("rawtypes")
-    public static final Supplier<List<Object>> LIST_SUPPLIER = (Supplier) Supplier.LIST;
-    @SuppressWarnings("rawtypes")
-    public static final Supplier<LinkedList<Object>> LINKED_LIST_SUPPLIER = (Supplier) Supplier.LINKED_LIST;
-    @SuppressWarnings("rawtypes")
-    public static final Supplier<Set<Object>> SET_SUPPLIER = (Supplier) Supplier.SET;
-    @SuppressWarnings("rawtypes")
-    public static final Supplier<LinkedHashSet<Object>> LINKED_HASH_SET_SUPPLIER = (Supplier) Supplier.LINKED_HASH_SET;
-    @SuppressWarnings("rawtypes")
-    public static final Supplier<Map<String, Object>> MAP_SUPPLIER = (Supplier) Supplier.MAP;
-    @SuppressWarnings("rawtypes")
-    public static final Supplier<LinkedHashMap<String, Object>> LINKED_HASH_MAP_SUPPLIER = (Supplier) Supplier.LINKED_HASH_MAP;
 
     // ...
     public static final Object NULL_MASK = new NullMask();

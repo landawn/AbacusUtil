@@ -735,7 +735,7 @@ public class Builder<T> {
     }
 
     public static final class X<T> extends Builder<T> {
-        X(T val) {
+        private X(T val) {
             super(val);
         }
     }

@@ -21,14 +21,9 @@ import java.io.OutputStream;
 import java.io.Writer;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import com.landawn.abacus.util.ExList;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.Optional;
@@ -57,26 +52,7 @@ import com.landawn.abacus.util.stream.Stream;
  */
 public interface DataSet extends Iterable<Object[]> {
 
-    @SuppressWarnings("rawtypes")
-    public static final IntFunction<ExList<Object>> OBJECT_LIST_FACTORY = (IntFunction) IntFunction.OBJECT_LIST_FACTORY;
-
-    @SuppressWarnings("rawtypes")
-    public static final IntFunction<List<Object>> LIST_FACTORY = (IntFunction) IntFunction.LIST_FACTORY;
-
-    @SuppressWarnings("rawtypes")
-    public static final IntFunction<LinkedList<Object>> LINKED_LIST_FACTORY = (IntFunction) IntFunction.LINKED_LIST_FACTORY;
-
-    @SuppressWarnings("rawtypes")
-    public static final IntFunction<Set<Object>> SET_FACTORY = (IntFunction) IntFunction.SET_FACTORY;
-
-    @SuppressWarnings("rawtypes")
-    public static final IntFunction<LinkedHashSet<Object>> LINKED_HASH_SET_FACTORY = (IntFunction) IntFunction.LINKED_HASH_SET_FACTORY;
-
-    @SuppressWarnings("rawtypes")
-    public static final IntFunction<Map<String, Object>> MAP_FACTORY = (IntFunction) IntFunction.MAP_FACTORY;
-
-    @SuppressWarnings("rawtypes")
-    public static final IntFunction<LinkedHashMap<String, Object>> LINKED_HASH_MAP_FACTORY = (IntFunction) IntFunction.LINKED_HASH_MAP_FACTORY;
+    
 
     //    /**
     //     * Returns the entity name associated with the query.

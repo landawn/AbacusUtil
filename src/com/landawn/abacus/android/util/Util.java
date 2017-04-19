@@ -60,15 +60,15 @@ import android.widget.Toast;
  * 
  * @author Haiyang Li
  */
-public abstract class Util {
-    protected static final Logger logger = LoggerFactory.getLogger(Util.class);
-
+public final class Util {
+    static final Logger logger = LoggerFactory.getLogger(Util.class);
     private static final int CPU_COUNT = Runtime.getRuntime().availableProcessors();
 
     protected static volatile Context context;
     private static volatile int MAX_APP_MEMORY;
 
-    Util() {
+    private Util() {
+        // singleton.
     }
 
     public static synchronized void init(Context context) {
@@ -848,12 +848,6 @@ public abstract class Util {
     private static class BitmapHoneycombMR1 {
         static int getByteCount(Bitmap bitmap) {
             return bitmap.getByteCount();
-        }
-    }
-
-    public static final class Z extends Util {
-        private Z() {
-            // singleton.
         }
     }
 

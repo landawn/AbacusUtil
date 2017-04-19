@@ -15,14 +15,27 @@
  */
 package com.landawn.abacus.util;
 
+import java.util.ArrayDeque;
 import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.PriorityQueue;
+import java.util.Queue;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.regex.Pattern;
 
 import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
+import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Predicate;
 
 /**
@@ -259,4 +272,185 @@ public final class Fn {
             }
         };
     }
+
+    public static final class Supplier {
+        private Supplier() {
+            // singleton.
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <T> com.landawn.abacus.util.function.Supplier<ExList<T>> ofExList() {
+            return (com.landawn.abacus.util.function.Supplier) com.landawn.abacus.util.function.Supplier.EX_LIST;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <T> com.landawn.abacus.util.function.Supplier<List<T>> ofList() {
+            return (com.landawn.abacus.util.function.Supplier) com.landawn.abacus.util.function.Supplier.LIST;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <T> com.landawn.abacus.util.function.Supplier<LinkedList<T>> ofLinkedList() {
+            return (com.landawn.abacus.util.function.Supplier) com.landawn.abacus.util.function.Supplier.LINKED_LIST;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <T> com.landawn.abacus.util.function.Supplier<Set<T>> ofSet() {
+            return (com.landawn.abacus.util.function.Supplier) com.landawn.abacus.util.function.Supplier.SET;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <T> com.landawn.abacus.util.function.Supplier<LinkedHashSet<T>> ofLinkedHashSet() {
+            return (com.landawn.abacus.util.function.Supplier) com.landawn.abacus.util.function.Supplier.LINKED_HASH_SET;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <T> com.landawn.abacus.util.function.Supplier<TreeSet<T>> ofTreeSet() {
+            return (com.landawn.abacus.util.function.Supplier) com.landawn.abacus.util.function.Supplier.TREE_SET;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <K, V> com.landawn.abacus.util.function.Supplier<Map<K, V>> ofMap() {
+            return (com.landawn.abacus.util.function.Supplier) com.landawn.abacus.util.function.Supplier.MAP;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static com.landawn.abacus.util.function.Supplier<Map<String, Object>> ofMap2() {
+            return (com.landawn.abacus.util.function.Supplier) com.landawn.abacus.util.function.Supplier.MAP;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <K, V> com.landawn.abacus.util.function.Supplier<LinkedHashMap<K, V>> ofLinkedHashMap() {
+            return (com.landawn.abacus.util.function.Supplier) com.landawn.abacus.util.function.Supplier.LINKED_HASH_MAP;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static com.landawn.abacus.util.function.Supplier<LinkedHashMap<String, Object>> ofLinkedHashMap2() {
+            return (com.landawn.abacus.util.function.Supplier) com.landawn.abacus.util.function.Supplier.LINKED_HASH_MAP;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <K, V> com.landawn.abacus.util.function.Supplier<TreeMap<K, V>> ofTreeMap() {
+            return (com.landawn.abacus.util.function.Supplier) com.landawn.abacus.util.function.Supplier.TREE_MAP;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <T> com.landawn.abacus.util.function.Supplier<Queue<T>> ofQueue() {
+            return (com.landawn.abacus.util.function.Supplier) com.landawn.abacus.util.function.Supplier.QUEUE;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <T> com.landawn.abacus.util.function.Supplier<ArrayDeque<T>> ofArrayDeque() {
+            return (com.landawn.abacus.util.function.Supplier) com.landawn.abacus.util.function.Supplier.ARRAY_DEQUE;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <T> com.landawn.abacus.util.function.Supplier<LinkedBlockingQueue<T>> ofLinkedBlockingQueue() {
+            return (com.landawn.abacus.util.function.Supplier) com.landawn.abacus.util.function.Supplier.LINKED_BLOCKING_QUEUE;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <T> com.landawn.abacus.util.function.Supplier<ConcurrentLinkedQueue<T>> ofConcurrentLinkedQueue() {
+            return (com.landawn.abacus.util.function.Supplier) com.landawn.abacus.util.function.Supplier.CONCURRENT_LINKED_QUEUE;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <T> com.landawn.abacus.util.function.Supplier<PriorityQueue<T>> ofPriorityQueue() {
+            return (com.landawn.abacus.util.function.Supplier) com.landawn.abacus.util.function.Supplier.PRIORITY_QUEUE;
+        }
+
+        public static com.landawn.abacus.util.function.Supplier<String> ofUUID() {
+            return com.landawn.abacus.util.function.Supplier.UUID;
+        }
+
+        public static com.landawn.abacus.util.function.Supplier<String> ofGUID() {
+            return com.landawn.abacus.util.function.Supplier.GUID;
+        }
+    }
+
+    public static final class Factory {
+        private Factory() {
+            // singleton.
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <T> IntFunction<ExList<T>> ofExList() {
+            return (IntFunction) IntFunction.EX_LIST_FACTORY;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <T> IntFunction<List<T>> ofList() {
+            return (IntFunction) IntFunction.LIST_FACTORY;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <T> IntFunction<LinkedList<T>> ofLinkedList() {
+            return (IntFunction) IntFunction.LINKED_LIST_FACTORY;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <T> IntFunction<Set<T>> ofSet() {
+            return (IntFunction) IntFunction.SET_FACTORY;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <T> IntFunction<LinkedHashSet<T>> ofLinkedHashSet() {
+            return (IntFunction) IntFunction.LINKED_HASH_SET_FACTORY;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <T> IntFunction<TreeSet<T>> ofTreeSet() {
+            return (IntFunction) IntFunction.TREE_SET_FACTORY;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <K, V> IntFunction<Map<K, V>> ofMap() {
+            return (IntFunction) IntFunction.MAP_FACTORY;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static IntFunction<Map<String, Object>> ofMap2() {
+            return (IntFunction) IntFunction.MAP_FACTORY;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <K, V> IntFunction<LinkedHashMap<K, V>> ofLinkedHashMap() {
+            return (IntFunction) IntFunction.LINKED_HASH_MAP_FACTORY;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static IntFunction<LinkedHashMap<String, Object>> ofLinkedHashMap2() {
+            return (IntFunction) IntFunction.LINKED_HASH_MAP_FACTORY;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <K, V> IntFunction<TreeMap<K, V>> ofTreeMap() {
+            return (IntFunction) IntFunction.TREE_MAP_FACTORY;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <T> IntFunction<Queue<T>> ofQueue() {
+            return (IntFunction) IntFunction.QUEUE_FACTORY;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <T> IntFunction<ArrayDeque<T>> ofArrayDeque() {
+            return (IntFunction) IntFunction.ARRAY_DEQUE_FACTORY;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <T> IntFunction<LinkedBlockingQueue<T>> ofLinkedBlockingQueue() {
+            return (IntFunction) IntFunction.LINKED_BLOCKING_QUEUE_FACTORY;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <T> IntFunction<ConcurrentLinkedQueue<T>> ofConcurrentLinkedQueue() {
+            return (IntFunction) IntFunction.CONCURRENT_LINKED_QUEUE_FACTORY;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <T> IntFunction<PriorityQueue<T>> ofPriorityQueue() {
+            return (IntFunction) IntFunction.PRIORITY_QUEUE_FACTORY;
+        }
+    }
+
 }
