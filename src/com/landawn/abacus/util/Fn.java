@@ -58,6 +58,15 @@ import com.landawn.abacus.util.function.Predicate;
  */
 public final class Fn {
 
+    @SuppressWarnings("rawtypes")
+    public static final com.landawn.abacus.util.function.Supplier<Map<String, Object>> SUPPLIER_OF_MAP = (com.landawn.abacus.util.function.Supplier) com.landawn.abacus.util.function.Supplier.MAP;
+    @SuppressWarnings("rawtypes")
+    public static final com.landawn.abacus.util.function.Supplier<LinkedHashMap<String, Object>> SUPPLIER_OF_LINKED_HASH_MAP = (com.landawn.abacus.util.function.Supplier) com.landawn.abacus.util.function.Supplier.LINKED_HASH_MAP;
+    @SuppressWarnings("rawtypes")
+    public static final IntFunction<Map<String, Object>> FACTORY_OF_MAP = (IntFunction) IntFunction.MAP_FACTORY;
+    @SuppressWarnings("rawtypes")
+    public static final IntFunction<LinkedHashMap<String, Object>> FACTORY_OF_LINKED_HASH_MAP = (IntFunction) IntFunction.LINKED_HASH_MAP_FACTORY;
+
     private Fn() {
         // Singleton.
     }
@@ -314,17 +323,7 @@ public final class Fn {
         }
 
         @SuppressWarnings("rawtypes")
-        public static com.landawn.abacus.util.function.Supplier<Map<String, Object>> ofMap2() {
-            return (com.landawn.abacus.util.function.Supplier) com.landawn.abacus.util.function.Supplier.MAP;
-        }
-
-        @SuppressWarnings("rawtypes")
         public static <K, V> com.landawn.abacus.util.function.Supplier<LinkedHashMap<K, V>> ofLinkedHashMap() {
-            return (com.landawn.abacus.util.function.Supplier) com.landawn.abacus.util.function.Supplier.LINKED_HASH_MAP;
-        }
-
-        @SuppressWarnings("rawtypes")
-        public static com.landawn.abacus.util.function.Supplier<LinkedHashMap<String, Object>> ofLinkedHashMap2() {
             return (com.landawn.abacus.util.function.Supplier) com.landawn.abacus.util.function.Supplier.LINKED_HASH_MAP;
         }
 
@@ -408,17 +407,7 @@ public final class Fn {
         }
 
         @SuppressWarnings("rawtypes")
-        public static IntFunction<Map<String, Object>> ofMap2() {
-            return (IntFunction) IntFunction.MAP_FACTORY;
-        }
-
-        @SuppressWarnings("rawtypes")
         public static <K, V> IntFunction<LinkedHashMap<K, V>> ofLinkedHashMap() {
-            return (IntFunction) IntFunction.LINKED_HASH_MAP_FACTORY;
-        }
-
-        @SuppressWarnings("rawtypes")
-        public static IntFunction<LinkedHashMap<String, Object>> ofLinkedHashMap2() {
             return (IntFunction) IntFunction.LINKED_HASH_MAP_FACTORY;
         }
 
