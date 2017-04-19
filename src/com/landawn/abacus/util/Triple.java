@@ -138,6 +138,14 @@ public final class Triple<L, M, R> {
     //        this.right = (R) tmp;
     //    }
 
+    /**
+     * 
+     * @return a new instance of Triple&lt;R, M, L&gt;.
+     */
+    public Triple<R, M, L> reverse() {
+        return new Triple<>(this.right, this.middle, this.left);
+    }
+
     public Triple<L, M, R> copy() {
         return new Triple<>(this.left, this.middle, this.right);
     }

@@ -299,7 +299,7 @@ public abstract class Tuple {
             return 2;
         }
 
-        public Tuple2<T2, T1> swap() {
+        public Tuple2<T2, T1> reverse() {
             return of(_2, _1);
         }
 
@@ -416,6 +416,10 @@ public abstract class Tuple {
             return 3;
         }
 
+        public Tuple3<T3, T2, T1> reverse() {
+            return new Tuple3<>(_3, _2, _1);
+        }
+
         @Override
         public Object[] toArray() {
             return new Object[] { _1, _2, _3 };
@@ -512,6 +516,10 @@ public abstract class Tuple {
         @Override
         public int arity() {
             return 4;
+        }
+
+        public Tuple4<T4, T3, T2, T1> reverse() {
+            return new Tuple4<>(_4, _3, _2, _1);
         }
 
         @Override
@@ -615,6 +623,10 @@ public abstract class Tuple {
         @Override
         public int arity() {
             return 5;
+        }
+
+        public Tuple5<T5, T4, T3, T2, T1> reverse() {
+            return new Tuple5<>(_5, _4, _3, _2, _1);
         }
 
         @Override
@@ -724,6 +736,10 @@ public abstract class Tuple {
         @Override
         public int arity() {
             return 6;
+        }
+
+        public Tuple6<T6, T5, T4, T3, T2, T1> reverse() {
+            return new Tuple6<>(_6, _5, _4, _3, _2, _1);
         }
 
         @Override
@@ -839,6 +855,10 @@ public abstract class Tuple {
         @Override
         public int arity() {
             return 7;
+        }
+
+        public Tuple7<T7, T6, T5, T4, T3, T2, T1> reverse() {
+            return new Tuple7<>(_7, _6, _5, _4, _3, _2, _1);
         }
 
         @Override

@@ -135,7 +135,11 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
         return oldValue;
     }
 
-    public Pair<R, L> swap() {
+    /**
+     * 
+     * @return a new instance of Pair&lt;R, L&gt;.
+     */
+    public Pair<R, L> reverse() {
         return new Pair<>(this.right, this.left);
     }
 
