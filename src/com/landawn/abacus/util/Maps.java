@@ -312,7 +312,7 @@ public final class Maps {
                 }
             } else {
                 for (Map.Entry<K, V> entry : map2.entrySet()) {
-                    if (result.containsKey(entry.getKey()) == false) {
+                    if (map.containsKey(entry.getKey()) == false) {
                         result.put(entry.getKey(), Pair.of(NullabLe.<V> empty(), NullabLe.of(entry.getValue())));
                     }
                 }
