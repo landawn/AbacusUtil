@@ -258,16 +258,6 @@ public final class Multimap<K, E, V extends Collection<E>> {
 
     }
 
-    public static <K, E> Multimap<K, E, Set<E>> from2(final Collection<? extends E> c, final Function<? super E, ? extends K> keyMapper) {
-        final Multimap<K, E, Set<E>> multimap = N.newSetMultimap(N.initHashCapacity(N.min(9, c.size())));
-
-        for (E e : c) {
-            multimap.put(keyMapper.apply(e), e);
-        }
-
-        return multimap;
-    }
-
     public V get(final Object key) {
         return valueMap.get(key);
     }

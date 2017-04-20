@@ -11,7 +11,7 @@
 
 5, Add more iterate/concat/merge to Seq.
 
-6, Add swap to Tuple2
+6, Add reverse to Pair/Triple/Tuple
 
 7, Add takeWhileInclusive to Seq
 

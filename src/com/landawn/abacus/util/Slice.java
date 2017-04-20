@@ -1556,6 +1556,16 @@ public class Slice<T> implements Collection<T> {
         return m;
     }
 
+    public <K, V extends Collection<T>> Multimap<K, T, V> toMultimap(Function<? super T, ? extends K> keyMapper, Supplier<Multimap<K, T, V>> mapFactory) {
+        final Multimap<K, T, V> m = mapFactory.get();
+
+        for (T e : coll) {
+            m.put(keyMapper.apply(e), e);
+        }
+
+        return m;
+    }
+
     /**
      * 
      * @param keyMapper
@@ -1564,6 +1574,17 @@ public class Slice<T> implements Collection<T> {
      */
     public <K, V> Multimap<K, V, List<V>> toMultimap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends V> valueMapper) {
         final Multimap<K, V, List<V>> m = N.newListMultimap();
+
+        for (T e : coll) {
+            m.put(keyMapper.apply(e), valueMapper.apply(e));
+        }
+
+        return m;
+    }
+
+    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(Function<? super T, ? extends K> keyMapper,
+            Function<? super T, ? extends U> valueMapper, Supplier<Multimap<K, U, V>> mapFactory) {
+        final Multimap<K, U, V> m = mapFactory.get();
 
         for (T e : coll) {
             m.put(keyMapper.apply(e), valueMapper.apply(e));
