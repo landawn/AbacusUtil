@@ -32,6 +32,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.regex.Pattern;
 
+import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
@@ -39,7 +40,7 @@ import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Predicate;
 
 /**
- * It's designed for Stream<Entry<K, V>>
+ * Utility class for function creation and Stream&lt;Entry&lt;K, V&gt;&gt;
  * <pre>
  * <code>
  * 
@@ -47,7 +48,7 @@ import com.landawn.abacus.util.function.Predicate;
  * // Instead of
  * Stream.of(map).filter(e -> e.getKey().equals("a") || e.getKey().equals("b")).toMap(e -> e.getKey(), e -> e.getValue());
  * // Using Fn
- * Stream.of(map).filter(Fn.testByKey(k -> k.equals("a") || k.equals("b"))).collect(Fn.toMap());
+ * Stream.of(map).filter(Fn.testByKey(k -> k.equals("a") || k.equals("b"))).collect(Collectors.toMap());
  * 
  * </code>
  * </pre>
@@ -67,12 +68,33 @@ public final class Fn {
     @SuppressWarnings("rawtypes")
     public static final IntFunction<LinkedHashMap<String, Object>> FACTORY_OF_LINKED_HASH_MAP = (IntFunction) IntFunction.LINKED_HASH_MAP_FACTORY;
 
+    @SuppressWarnings("rawtypes")
+    private static final Consumer PRINTLN = new Consumer() {
+        @Override
+        public void accept(Object value) {
+            N.println(value);
+        }
+    };
+
     private Fn() {
         // Singleton.
     }
 
     public static <T> Consumer<T> doNothing() {
         return Consumer.DO_NOTHING;
+    }
+
+    public static <T> Consumer<T> println() {
+        return PRINTLN;
+    }
+
+    public static <T, U> BiConsumer<T, U> println(final String separator) {
+        return new BiConsumer<T, U>() {
+            @Override
+            public void accept(T t, U u) {
+                N.println(t + separator + u);
+            }
+        };
     }
 
     public static <T> Function<T, T> identity() {
