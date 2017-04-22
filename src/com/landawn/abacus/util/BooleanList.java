@@ -1208,10 +1208,10 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
     }
 
     @Override
-    public List<Boolean> toList(final int fromIndex, final int toIndex, final IntFunction<List<Boolean>> supplier) {
+    public <R extends List<Boolean>> R toList(final int fromIndex, final int toIndex, final IntFunction<R> supplier) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final List<Boolean> list = supplier.apply(toIndex - fromIndex);
+        final R list = supplier.apply(toIndex - fromIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
             list.add(elementData[i]);
@@ -1221,10 +1221,10 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
     }
 
     @Override
-    public Set<Boolean> toSet(final int fromIndex, final int toIndex, final IntFunction<Set<Boolean>> supplier) {
+    public <R extends Set<Boolean>> R toSet(final int fromIndex, final int toIndex, final IntFunction<R> supplier) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final Set<Boolean> set = supplier.apply(N.min(16, toIndex - fromIndex));
+        final R set = supplier.apply(N.min(16, toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             set.add(elementData[i]);

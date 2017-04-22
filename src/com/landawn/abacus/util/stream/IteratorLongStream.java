@@ -818,8 +818,8 @@ class IteratorLongStream extends AbstractLongStream {
     }
 
     @Override
-    public List<Long> toList(Supplier<? extends List<Long>> supplier) {
-        final List<Long> result = supplier.get();
+    public <R extends List<Long>> R toList(Supplier<R> supplier) {
+        final R result = supplier.get();
 
         while (elements.hasNext()) {
             result.add(elements.nextLong());
@@ -840,8 +840,8 @@ class IteratorLongStream extends AbstractLongStream {
     }
 
     @Override
-    public Set<Long> toSet(Supplier<? extends Set<Long>> supplier) {
-        final Set<Long> result = supplier.get();
+    public <R extends Set<Long>> R toSet(Supplier<R> supplier) {
+        final R result = supplier.get();
 
         while (elements.hasNext()) {
             result.add(elements.nextLong());

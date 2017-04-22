@@ -633,8 +633,8 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
     }
 
     @Override
-    public List<Float> toList(Supplier<? extends List<Float>> supplier) {
-        final List<Float> result = supplier.get();
+    public <R extends List<Float>> R toList(Supplier<R> supplier) {
+        final R result = supplier.get();
 
         while (elements.hasNext()) {
             result.add(elements.nextFloat());
@@ -655,8 +655,8 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
     }
 
     @Override
-    public Set<Float> toSet(Supplier<? extends Set<Float>> supplier) {
-        final Set<Float> result = supplier.get();
+    public <R extends Set<Float>> R toSet(Supplier<R> supplier) {
+        final R result = supplier.get();
 
         while (elements.hasNext()) {
             result.add(elements.nextFloat());

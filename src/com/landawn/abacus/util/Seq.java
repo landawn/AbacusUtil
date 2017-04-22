@@ -41,7 +41,7 @@ import com.landawn.abacus.util.function.TriFunction;
 import com.landawn.abacus.util.function.UnaryOperator;
 
 /**
- * It'a wrapper for <code>Collection</code> to support more daily used/functional methods.
+ * It's a wrapper for <code>Collection</code> to support more daily used/functional methods.
  * 
  * @since 0.8
  * 

@@ -718,8 +718,8 @@ class ArrayCharStream extends AbstractCharStream {
     }
 
     @Override
-    public List<Character> toList(Supplier<? extends List<Character>> supplier) {
-        final List<Character> result = supplier.get();
+    public <R extends List<Character>> R toList(Supplier<R> supplier) {
+        final R result = supplier.get();
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -740,8 +740,8 @@ class ArrayCharStream extends AbstractCharStream {
     }
 
     @Override
-    public Set<Character> toSet(Supplier<? extends Set<Character>> supplier) {
-        final Set<Character> result = supplier.get();
+    public <R extends Set<Character>> R toSet(Supplier<R> supplier) {
+        final R result = supplier.get();
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);

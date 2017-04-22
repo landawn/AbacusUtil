@@ -1353,10 +1353,10 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
     }
 
     @Override
-    public List<Short> toList(final int fromIndex, final int toIndex, final IntFunction<List<Short>> supplier) {
+    public <R extends List<Short>> R toList(final int fromIndex, final int toIndex, final IntFunction<R> supplier) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final List<Short> list = supplier.apply(toIndex - fromIndex);
+        final R list = supplier.apply(toIndex - fromIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
             list.add(elementData[i]);
@@ -1366,10 +1366,10 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
     }
 
     @Override
-    public Set<Short> toSet(final int fromIndex, final int toIndex, final IntFunction<Set<Short>> supplier) {
+    public <R extends Set<Short>> R toSet(final int fromIndex, final int toIndex, final IntFunction<R> supplier) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final Set<Short> set = supplier.apply(N.min(16, toIndex - fromIndex));
+        final R set = supplier.apply(N.min(16, toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             set.add(elementData[i]);

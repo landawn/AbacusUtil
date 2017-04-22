@@ -718,8 +718,8 @@ class ArrayByteStream extends AbstractByteStream {
     }
 
     @Override
-    public List<Byte> toList(Supplier<? extends List<Byte>> supplier) {
-        final List<Byte> result = supplier.get();
+    public <R extends List<Byte>> R toList(Supplier<R> supplier) {
+        final R result = supplier.get();
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -740,8 +740,8 @@ class ArrayByteStream extends AbstractByteStream {
     }
 
     @Override
-    public Set<Byte> toSet(Supplier<? extends Set<Byte>> supplier) {
-        final Set<Byte> result = supplier.get();
+    public <R extends Set<Byte>> R toSet(Supplier<R> supplier) {
+        final R result = supplier.get();
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);

@@ -510,8 +510,8 @@ final class ParallelArrayLongStream extends ArrayLongStream {
     }
 
     @Override
-    public List<Long> toList(Supplier<? extends List<Long>> supplier) {
-        final List<Long> result = supplier.get();
+    public <R extends List<Long>> R toList(Supplier<R> supplier) {
+        final R result = supplier.get();
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -532,8 +532,8 @@ final class ParallelArrayLongStream extends ArrayLongStream {
     }
 
     @Override
-    public Set<Long> toSet(Supplier<? extends Set<Long>> supplier) {
-        final Set<Long> result = supplier.get();
+    public <R extends Set<Long>> R toSet(Supplier<R> supplier) {
+        final R result = supplier.get();
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);

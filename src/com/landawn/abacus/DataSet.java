@@ -24,11 +24,12 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
+import com.landawn.abacus.util.ExList;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
+import com.landawn.abacus.util.NullabLe;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
-import com.landawn.abacus.util.NullabLe;
 import com.landawn.abacus.util.Properties;
 import com.landawn.abacus.util.Sheet;
 import com.landawn.abacus.util.function.BiFunction;
@@ -51,8 +52,6 @@ import com.landawn.abacus.util.stream.Stream;
  * @author Haiyang Li
  */
 public interface DataSet extends Iterable<Object[]> {
-
-    
 
     //    /**
     //     * Returns the entity name associated with the query.
@@ -3310,7 +3309,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param size
      * @return
      */
-    List<DataSet> split(int size);
+    ExList<DataSet> split(int size);
 
     /**
      * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
@@ -3319,7 +3318,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param columnNames
      * @return
      */
-    List<DataSet> split(Collection<String> columnNames, int size);
+    ExList<DataSet> split(Collection<String> columnNames, int size);
 
     /**
      * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
@@ -3329,7 +3328,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param size
      * @return
      */
-    List<DataSet> split(int fromRowIndex, int toRowIndex, int size);
+    ExList<DataSet> split(int fromRowIndex, int toRowIndex, int size);
 
     /**
      * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
@@ -3340,7 +3339,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param size
      * @return
      */
-    List<DataSet> split(Collection<String> columnNames, int fromRowIndex, int toRowIndex, int size);
+    ExList<DataSet> split(Collection<String> columnNames, int fromRowIndex, int toRowIndex, int size);
 
     /**
      * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
@@ -3349,49 +3348,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param size
      * @return
      */
-    <T> List<List<T>> split(Class<? extends T> rowClass, int size);
-
-    /**
-     * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
-     * 
-     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
-     * @param size
-     * @param columnNames
-     * @return
-     */
-    <T> List<List<T>> split(Class<? extends T> rowClass, Collection<String> columnNames, int size);
-
-    /**
-     * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
-     * 
-     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param size
-     * @return
-     */
-    <T> List<List<T>> split(Class<? extends T> rowClass, int fromRowIndex, int toRowIndex, int size);
-
-    /**
-     * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
-     * 
-     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
-     * @param columnNames
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param size
-     * @return
-     */
-    <T> List<List<T>> split(Class<? extends T> rowClass, Collection<String> columnNames, int fromRowIndex, int toRowIndex, int size);
-
-    /**
-     * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
-     * 
-     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
-     * @param size
-     * @return
-     */
-    <T> List<List<T>> split(IntFunction<? extends T> rowSupplier, int size);
+    <T> ExList<ExList<T>> split(Class<? extends T> rowClass, int size);
 
     /**
      * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
@@ -3401,7 +3358,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param columnNames
      * @return
      */
-    <T> List<List<T>> split(IntFunction<? extends T> rowSupplier, Collection<String> columnNames, int size);
+    <T> ExList<ExList<T>> split(Class<? extends T> rowClass, Collection<String> columnNames, int size);
 
     /**
      * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
@@ -3412,7 +3369,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param size
      * @return
      */
-    <T> List<List<T>> split(IntFunction<? extends T> rowSupplier, int fromRowIndex, int toRowIndex, int size);
+    <T> ExList<ExList<T>> split(Class<? extends T> rowClass, int fromRowIndex, int toRowIndex, int size);
 
     /**
      * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
@@ -3424,7 +3381,49 @@ public interface DataSet extends Iterable<Object[]> {
      * @param size
      * @return
      */
-    <T> List<List<T>> split(IntFunction<? extends T> rowSupplier, Collection<String> columnNames, int fromRowIndex, int toRowIndex, int size);
+    <T> ExList<ExList<T>> split(Class<? extends T> rowClass, Collection<String> columnNames, int fromRowIndex, int toRowIndex, int size);
+
+    /**
+     * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
+     * 
+     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
+     * @param size
+     * @return
+     */
+    <T> ExList<ExList<T>> split(IntFunction<? extends T> rowSupplier, int size);
+
+    /**
+     * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
+     * 
+     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
+     * @param size
+     * @param columnNames
+     * @return
+     */
+    <T> ExList<ExList<T>> split(IntFunction<? extends T> rowSupplier, Collection<String> columnNames, int size);
+
+    /**
+     * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
+     * 
+     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
+     * @param fromRowIndex
+     * @param toRowIndex
+     * @param size
+     * @return
+     */
+    <T> ExList<ExList<T>> split(IntFunction<? extends T> rowSupplier, int fromRowIndex, int toRowIndex, int size);
+
+    /**
+     * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
+     * 
+     * @param rowClass it can be Object[]/ExList/List/Set/Map/Entity
+     * @param columnNames
+     * @param fromRowIndex
+     * @param toRowIndex
+     * @param size
+     * @return
+     */
+    <T> ExList<ExList<T>> split(IntFunction<? extends T> rowSupplier, Collection<String> columnNames, int fromRowIndex, int toRowIndex, int size);
 
     /**
      * Method paginate.
@@ -4021,8 +4020,7 @@ public interface DataSet extends Iterable<Object[]> {
          * @param k
          * @return
          */
-        <E extends Comparable<? super E>> NullabLe<E> kthLargest(Class<? extends E> columnType, String columnName, int fromRowIndex, int toRowIndex,
-                int k);
+        <E extends Comparable<? super E>> NullabLe<E> kthLargest(Class<? extends E> columnType, String columnName, int fromRowIndex, int toRowIndex, int k);
 
         /**
          * 
@@ -4034,8 +4032,7 @@ public interface DataSet extends Iterable<Object[]> {
          * @param comparator
          * @return
          */
-        <E> NullabLe<E> kthLargest(Class<? extends E> columnType, String columnName, int fromRowIndex, int toRowIndex, int k,
-                Comparator<? super E> comparator);
+        <E> NullabLe<E> kthLargest(Class<? extends E> columnType, String columnName, int fromRowIndex, int toRowIndex, int k, Comparator<? super E> comparator);
 
         /**
          * @param columnType it's only used to identify the type.

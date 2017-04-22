@@ -1377,10 +1377,10 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
     }
 
     @Override
-    public List<Float> toList(final int fromIndex, final int toIndex, final IntFunction<List<Float>> supplier) {
+    public <R extends List<Float>> R toList(final int fromIndex, final int toIndex, final IntFunction<R> supplier) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final List<Float> list = supplier.apply(toIndex - fromIndex);
+        final R list = supplier.apply(toIndex - fromIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
             list.add(elementData[i]);
@@ -1390,10 +1390,10 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
     }
 
     @Override
-    public Set<Float> toSet(final int fromIndex, final int toIndex, final IntFunction<Set<Float>> supplier) {
+    public <R extends Set<Float>> R toSet(final int fromIndex, final int toIndex, final IntFunction<R> supplier) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final Set<Float> set = supplier.apply(N.min(16, toIndex - fromIndex));
+        final R set = supplier.apply(N.min(16, toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             set.add(elementData[i]);

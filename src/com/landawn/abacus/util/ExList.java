@@ -1953,10 +1953,10 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     //    }
 
     @Override
-    public List<T> toList(final int fromIndex, final int toIndex, final IntFunction<List<T>> supplier) {
+    public <R extends List<T>> R toList(final int fromIndex, final int toIndex, final IntFunction<R> supplier) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final List<T> list = supplier.apply(toIndex - fromIndex);
+        final R list = supplier.apply(toIndex - fromIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
             list.add(elementData[i]);
@@ -1966,10 +1966,10 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     }
 
     @Override
-    public Set<T> toSet(final int fromIndex, final int toIndex, final IntFunction<Set<T>> supplier) {
+    public <R extends Set<T>> R toSet(final int fromIndex, final int toIndex, final IntFunction<R> supplier) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final Set<T> set = supplier.apply(N.min(16, toIndex - fromIndex));
+        final R set = supplier.apply(N.min(16, toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             set.add(elementData[i]);

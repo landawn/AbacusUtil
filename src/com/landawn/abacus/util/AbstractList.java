@@ -382,11 +382,11 @@ public abstract class AbstractList<C, P, E, A, L extends AbstractList<C, P, E, A
         return toList(fromIndex, toIndex, supplier);
     }
 
-    public List<E> toList(final IntFunction<List<E>> supplier) {
+    public <R extends List<E>> R toList(final IntFunction<R> supplier) {
         return toList(0, size(), supplier);
     }
 
-    public abstract List<E> toList(final int fromIndex, final int toIndex, final IntFunction<List<E>> supplier);
+    public abstract <R extends List<E>> R toList(final int fromIndex, final int toIndex, final IntFunction<R> supplier);
 
     public Set<E> toSet() {
         return toSet(0, size());
@@ -400,11 +400,11 @@ public abstract class AbstractList<C, P, E, A, L extends AbstractList<C, P, E, A
         return toSet(fromIndex, toIndex, supplier);
     }
 
-    public Set<E> toSet(final IntFunction<Set<E>> supplier) {
+    public <R extends Set<E>> R toSet(final IntFunction<R> supplier) {
         return toSet(0, size(), supplier);
     }
 
-    public abstract Set<E> toSet(final int fromIndex, final int toIndex, final IntFunction<Set<E>> supplier);
+    public abstract <R extends Set<E>> R toSet(final int fromIndex, final int toIndex, final IntFunction<R> supplier);
 
     public Multiset<E> toMultiset() {
         return toMultiset(0, size());

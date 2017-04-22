@@ -1359,10 +1359,10 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
     }
 
     @Override
-    public List<Double> toList(final int fromIndex, final int toIndex, final IntFunction<List<Double>> supplier) {
+    public <R extends List<Double>> R toList(final int fromIndex, final int toIndex, final IntFunction<R> supplier) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final List<Double> list = supplier.apply(toIndex - fromIndex);
+        final R list = supplier.apply(toIndex - fromIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
             list.add(elementData[i]);
@@ -1372,10 +1372,10 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
     }
 
     @Override
-    public Set<Double> toSet(final int fromIndex, final int toIndex, final IntFunction<Set<Double>> supplier) {
+    public <R extends Set<Double>> R toSet(final int fromIndex, final int toIndex, final IntFunction<R> supplier) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final Set<Double> set = supplier.apply(N.min(16, toIndex - fromIndex));
+        final R set = supplier.apply(N.min(16, toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             set.add(elementData[i]);

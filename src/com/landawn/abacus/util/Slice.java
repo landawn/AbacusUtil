@@ -56,7 +56,7 @@ import com.landawn.abacus.util.stream.Collectors;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
- * It'a read-only wrapper for <code>Collection</code> to support more daily used/functional methods.
+ * It's an immutable wrapper for <code>Collection</code> to support more daily used/functional methods.
  * 
  * @since 0.8
  * 
@@ -205,13 +205,13 @@ public class Slice<T> implements Collection<T> {
      * @return
      * @see IntList#intersection(IntList)
      */
-    public Seq<T> intersection(Collection<?> b) {
+    public ExList<T> intersection(Collection<?> b) {
         if (N.isNullOrEmpty(coll) || N.isNullOrEmpty(b)) {
-            return new Seq<>();
+            return new ExList<>();
         }
 
         final Multiset<?> bOccurrences = Multiset.from(b);
-        final Seq<T> result = new Seq<>(N.min(9, size(), b.size()));
+        final ExList<T> result = new ExList<>(N.min(9, size(), b.size()));
 
         for (T e : coll) {
             if (bOccurrences.getAndRemove(e) > 0) {
@@ -222,9 +222,9 @@ public class Slice<T> implements Collection<T> {
         return result;
     }
 
-    public Seq<T> intersection(final Object[] a) {
+    public ExList<T> intersection(final Object[] a) {
         if (N.isNullOrEmpty(coll) || N.isNullOrEmpty(a)) {
-            return new Seq<>();
+            return new ExList<>();
         }
 
         return intersection(Arrays.asList(a));
@@ -236,13 +236,13 @@ public class Slice<T> implements Collection<T> {
      * @return
      * @see IntList#difference(IntList)
      */
-    public Seq<T> difference(Collection<?> b) {
+    public ExList<T> difference(Collection<?> b) {
         if (N.isNullOrEmpty(b)) {
-            return new Seq<>(new ArrayList<>(coll));
+            return N.isNullOrEmpty(coll) ? new ExList<T>() : new ExList<>((T[]) coll.toArray());
         }
 
         final Multiset<?> bOccurrences = Multiset.from(b);
-        final Seq<T> result = new Seq<>(N.min(size(), N.max(9, size() - b.size())));
+        final ExList<T> result = new ExList<>(N.min(size(), N.max(9, size() - b.size())));
 
         for (T e : coll) {
             if (bOccurrences.getAndRemove(e) < 1) {
@@ -253,9 +253,9 @@ public class Slice<T> implements Collection<T> {
         return result;
     }
 
-    public Seq<T> difference(final Object[] a) {
+    public ExList<T> difference(final Object[] a) {
         if (N.isNullOrEmpty(a)) {
-            return new Seq<>(new ArrayList<>(coll));
+            return N.isNullOrEmpty(coll) ? new ExList<T>() : new ExList<>((T[]) coll.toArray());
         }
 
         return difference(Arrays.asList(a));
@@ -267,15 +267,15 @@ public class Slice<T> implements Collection<T> {
      * @return this.difference(b).addAll(b.difference(this))
      * @see IntList#symmetricDifference(IntList)
      */
-    public Seq<T> symmetricDifference(Collection<T> b) {
+    public ExList<T> symmetricDifference(Collection<T> b) {
         if (N.isNullOrEmpty(b)) {
-            return new Seq<>(new ArrayList<>(coll));
+            return N.isNullOrEmpty(coll) ? new ExList<T>() : new ExList<>((T[]) coll.toArray());
         } else if (N.isNullOrEmpty(coll)) {
-            return new Seq<>(new ArrayList<>(b));
+            return new ExList<>((T[]) b.toArray());
         }
 
         final Multiset<?> bOccurrences = Multiset.from(b);
-        final Seq<T> result = new Seq<>(N.max(9, Math.abs(size() - b.size())));
+        final ExList<T> result = new ExList<>(N.max(9, Math.abs(size() - b.size())));
 
         for (T e : coll) {
             if (bOccurrences.getAndRemove(e) < 1) {
@@ -296,11 +296,11 @@ public class Slice<T> implements Collection<T> {
         return result;
     }
 
-    public Seq<T> symmetricDifference(final T[] a) {
+    public ExList<T> symmetricDifference(final T[] a) {
         if (N.isNullOrEmpty(a)) {
-            return new Seq<>(new ArrayList<>(coll));
+            return N.isNullOrEmpty(coll) ? new ExList<T>() : new ExList<>((T[]) coll.toArray());
         } else if (N.isNullOrEmpty(coll)) {
-            return new Seq<>(N.asList(a));
+            return new ExList<>(a.clone());
         }
 
         return symmetricDifference(Arrays.asList(a));
@@ -1314,8 +1314,8 @@ public class Slice<T> implements Collection<T> {
      *
      * @return a new List with distinct elements
      */
-    public Seq<T> distinct() {
-        return new Seq<T>(N.distinct(coll));
+    public ExList<T> distinct() {
+        return N.distinct(coll);
     }
 
     /**
@@ -1323,17 +1323,17 @@ public class Slice<T> implements Collection<T> {
      * @param keyMapper don't change value of the input parameter.
      * @return
      */
-    public Seq<T> distinct(final Function<? super T, ?> keyMapper) {
-        return new Seq<>(N.distinct(coll, keyMapper));
+    public ExList<T> distinct(final Function<? super T, ?> keyMapper) {
+        return N.distinct(coll, keyMapper);
     }
 
     @SuppressWarnings("rawtypes")
-    public Seq<T> top(final int n) {
-        return new Seq<>(N.top((Collection) coll, n));
+    public ExList<T> top(final int n) {
+        return N.top((Collection) coll, n);
     }
 
-    public Seq<T> top(final int n, final Comparator<? super T> cmp) {
-        return new Seq<>(N.top(coll, n, cmp));
+    public ExList<T> top(final int n, final Comparator<? super T> cmp) {
+        return N.top(coll, n, cmp);
     }
 
     /**
@@ -1342,16 +1342,8 @@ public class Slice<T> implements Collection<T> {
      *
      * @return
      */
-    public ExList<Seq<T>> split(int size) {
-        final ExList<List<T>> list = N.split(coll, size);
-        @SuppressWarnings("rawtypes")
-        final ExList<Seq<T>> result = (ExList) list;
-
-        for (int i = 0, len = list.size(); i < len; i++) {
-            result.set(i, new Seq<>(list.get(i)));
-        }
-
-        return result;
+    public ExList<ExList<T>> split(int size) {
+        return N.split(coll, size);
     }
 
     public String join() {
@@ -1394,8 +1386,8 @@ public class Slice<T> implements Collection<T> {
         return result;
     }
 
-    public List<T> toList(final IntFunction<List<T>> supplier) {
-        final List<T> result = supplier.apply(size());
+    public <R extends List<T>> R toList(final IntFunction<R> supplier) {
+        final R result = supplier.apply(size());
 
         result.addAll(coll);
 
@@ -1410,8 +1402,8 @@ public class Slice<T> implements Collection<T> {
         return result;
     }
 
-    public Set<T> toSet(final IntFunction<Set<T>> supplier) {
-        final Set<T> result = supplier.apply(N.initHashCapacity(size()));
+    public <R extends Set<T>> R toSet(final IntFunction<R> supplier) {
+        final R result = supplier.apply(size());
 
         result.addAll(coll);
 

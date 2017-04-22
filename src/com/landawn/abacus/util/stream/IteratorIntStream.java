@@ -974,8 +974,8 @@ class IteratorIntStream extends AbstractIntStream {
     }
 
     @Override
-    public List<Integer> toList(Supplier<? extends List<Integer>> supplier) {
-        final List<Integer> result = supplier.get();
+    public <R extends List<Integer>> R toList(Supplier<R> supplier) {
+        final R result = supplier.get();
 
         while (elements.hasNext()) {
             result.add(elements.nextInt());
@@ -996,8 +996,8 @@ class IteratorIntStream extends AbstractIntStream {
     }
 
     @Override
-    public Set<Integer> toSet(Supplier<? extends Set<Integer>> supplier) {
-        final Set<Integer> result = supplier.get();
+    public <R extends Set<Integer>> R toSet(Supplier<R> supplier) {
+        final R result = supplier.get();
 
         while (elements.hasNext()) {
             result.add(elements.nextInt());

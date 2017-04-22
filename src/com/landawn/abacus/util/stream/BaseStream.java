@@ -671,11 +671,11 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
 
     List<T> toList();
 
-    List<T> toList(Supplier<? extends List<T>> supplier);
+    <R extends List<T>> R toList(Supplier<R> supplier);
 
     Set<T> toSet();
 
-    Set<T> toSet(Supplier<? extends Set<T>> supplier);
+    <R extends Set<T>> R toSet(Supplier<R> supplier);
 
     Multiset<T> toMultiset();
 

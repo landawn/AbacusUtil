@@ -878,8 +878,8 @@ class ArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public List<Double> toList(Supplier<? extends List<Double>> supplier) {
-        final List<Double> result = supplier.get();
+    public <R extends List<Double>> R toList(Supplier<R> supplier) {
+        final R result = supplier.get();
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);
@@ -900,8 +900,8 @@ class ArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public Set<Double> toSet(Supplier<? extends Set<Double>> supplier) {
-        final Set<Double> result = supplier.get();
+    public <R extends Set<Double>> R toSet(Supplier<R> supplier) {
+        final R result = supplier.get();
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(elements[i]);

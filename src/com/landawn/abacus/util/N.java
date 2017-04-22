@@ -20294,26 +20294,26 @@ public final class N {
         return res;
     }
 
-    public static <T extends Comparable<T>> List<T> top(final Collection<? extends T> c, final int n) {
+    public static <T extends Comparable<T>> ExList<T> top(final Collection<? extends T> c, final int n) {
         return top(c, n, null);
     }
 
-    public static <T> List<T> top(final Collection<? extends T> c, final int n, final Comparator<? super T> cmp) {
+    public static <T> ExList<T> top(final Collection<? extends T> c, final int n, final Comparator<? super T> cmp) {
         return top(c, 0, c.size(), n, cmp);
     }
 
-    public static <T extends Comparable<T>> List<T> top(final Collection<? extends T> c, final int fromIndex, final int toIndex, final int n) {
+    public static <T extends Comparable<T>> ExList<T> top(final Collection<? extends T> c, final int fromIndex, final int toIndex, final int n) {
         return top(c, fromIndex, toIndex, n, null);
     }
 
     @SuppressWarnings("rawtypes")
-    public static <T> List<T> top(final Collection<? extends T> c, final int fromIndex, final int toIndex, final int n, final Comparator<? super T> cmp) {
+    public static <T> ExList<T> top(final Collection<? extends T> c, final int fromIndex, final int toIndex, final int n, final Comparator<? super T> cmp) {
         if (n < 1) {
             throw new IllegalArgumentException("'n' can not be less than 1");
         }
 
         if (n >= toIndex - fromIndex) {
-            final List<T> res = new ArrayList<>(toIndex - fromIndex);
+            final ExList<T> res = new ExList<>(toIndex - fromIndex);
             final Iterator<? extends T> iter = c.iterator();
             T e = null;
 
@@ -20397,7 +20397,7 @@ public final class N {
             }
         });
 
-        final List<T> res = new ArrayList<>(arrayOfPair.length);
+        final ExList<T> res = new ExList<>(arrayOfPair.length);
 
         for (int i = 0, len = arrayOfPair.length; i < len; i++) {
             res.add(arrayOfPair[i].left);
@@ -20642,70 +20642,6 @@ public final class N {
     }
 
     /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param c
-     * @return
-     */
-    public static <T> List<T> distinct(final Collection<? extends T> c) {
-        if (N.isNullOrEmpty(c)) {
-            return new ArrayList<>();
-        }
-
-        return distinct(c, 0, c.size());
-    }
-
-    /**
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param c
-     * @param fromIndex
-     * @param toIndex
-     * @return
-     */
-    public static <T> List<T> distinct(final Collection<? extends T> c, final int fromIndex, final int toIndex) {
-        checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
-
-        if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
-            return new ArrayList<>();
-        }
-
-        final List<T> result = new ArrayList<>();
-        final Set<Object> set = new HashSet<>();
-        T e = null;
-
-        if (c instanceof List && c instanceof RandomAccess) {
-            final List<T> list = (List<T>) c;
-
-            for (int i = fromIndex; i < toIndex; i++) {
-                e = list.get(i);
-
-                if (set.add(hashKey(e))) {
-                    result.add(e);
-                }
-            }
-        } else {
-            final Iterator<? extends T> it = c.iterator();
-
-            for (int i = 0; i < toIndex && it.hasNext(); i++) {
-                e = it.next();
-
-                if (i < fromIndex) {
-                    continue;
-                }
-
-                if (set.add(hashKey(e))) {
-                    result.add(e);
-                }
-            }
-        }
-
-        return result;
-    }
-
-    /**
      * Distinct by the value mapped from <code>keyMapper</code>.
      * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
@@ -20755,6 +20691,70 @@ public final class N {
     }
 
     /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param c
+     * @return
+     */
+    public static <T> ExList<T> distinct(final Collection<? extends T> c) {
+        if (N.isNullOrEmpty(c)) {
+            return new ExList<>();
+        }
+
+        return distinct(c, 0, c.size());
+    }
+
+    /**
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param c
+     * @param fromIndex
+     * @param toIndex
+     * @return
+     */
+    public static <T> ExList<T> distinct(final Collection<? extends T> c, final int fromIndex, final int toIndex) {
+        checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
+            return new ExList<>();
+        }
+
+        final ExList<T> result = new ExList<>();
+        final Set<Object> set = new HashSet<>();
+        T e = null;
+
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<T> list = (List<T>) c;
+
+            for (int i = fromIndex; i < toIndex; i++) {
+                e = list.get(i);
+
+                if (set.add(hashKey(e))) {
+                    result.add(e);
+                }
+            }
+        } else {
+            final Iterator<? extends T> it = c.iterator();
+
+            for (int i = 0; i < toIndex && it.hasNext(); i++) {
+                e = it.next();
+
+                if (i < fromIndex) {
+                    continue;
+                }
+
+                if (set.add(hashKey(e))) {
+                    result.add(e);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /**
      * Distinct by the value mapped from <code>keyMapper</code>.
      * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
@@ -20764,9 +20764,9 @@ public final class N {
      * @param keyMapper don't change value of the input parameter.
      * @return
      */
-    public static <T> List<T> distinct(final Collection<? extends T> c, final Function<? super T, ?> keyMapper) {
+    public static <T> ExList<T> distinct(final Collection<? extends T> c, final Function<? super T, ?> keyMapper) {
         if (N.isNullOrEmpty(c)) {
-            return new ArrayList<>();
+            return new ExList<>();
         }
 
         return distinct(c, 0, c.size(), keyMapper);
@@ -20784,14 +20784,14 @@ public final class N {
      * @param keyMapper don't change value of the input parameter.
      * @return
      */
-    public static <T> List<T> distinct(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Function<? super T, ?> keyMapper) {
+    public static <T> ExList<T> distinct(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Function<? super T, ?> keyMapper) {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
-            return new ArrayList<>();
+            return new ExList<>();
         }
 
-        final List<T> result = new ArrayList<>();
+        final ExList<T> result = new ExList<>();
         final Set<Object> set = new HashSet<>();
         T e = null;
 
@@ -21358,7 +21358,7 @@ public final class N {
      * @param size
      * @return
      */
-    public static <T> ExList<List<T>> split(final Collection<? extends T> c, final int size) {
+    public static <T> ExList<ExList<T>> split(final Collection<? extends T> c, final int size) {
         if (size < 1) {
             throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
         }
@@ -21380,7 +21380,7 @@ public final class N {
      * @param size
      * @return
      */
-    public static <T> ExList<List<T>> split(final Collection<? extends T> c, final int fromIndex, final int toIndex, final int size) {
+    public static <T> ExList<ExList<T>> split(final Collection<? extends T> c, final int fromIndex, final int toIndex, final int size) {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if (size < 1) {
@@ -21392,13 +21392,13 @@ public final class N {
         }
 
         final int len = toIndex - fromIndex;
-        final ExList<List<T>> res = new ExList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final ExList<ExList<T>> res = new ExList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         if (c instanceof List) {
             final List<T> list = (List<T>) c;
 
             for (int i = fromIndex; i < toIndex; i += size) {
-                res.add(list.subList(i, i <= toIndex - size ? i + size : toIndex));
+                res.add(new ExList<>((T[]) list.subList(i, i <= toIndex - size ? i + size : toIndex).toArray()));
             }
         } else {
             final Iterator<? extends T> iter = c.iterator();
@@ -21410,7 +21410,7 @@ public final class N {
                     continue;
                 }
 
-                final List<T> subList = new ArrayList<>(N.min(size, toIndex - i));
+                final ExList<T> subList = new ExList<>(N.min(size, toIndex - i));
 
                 for (int j = i, to = i <= toIndex - size ? i + size : toIndex; j < to; j++) {
                     subList.add(iter.next());
@@ -21431,19 +21431,19 @@ public final class N {
      * @param size
      * @return
      */
-    public static List<String> split(final CharSequence str, final int size) {
+    public static ExList<String> split(final CharSequence str, final int size) {
         if (size < 1) {
             throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
         }
 
         if (N.isNullOrEmpty(str)) {
-            return new ArrayList<>();
+            return new ExList<>();
         }
 
         return split(str, 0, str.length(), size);
     }
 
-    public static List<String> split(final CharSequence str, final int fromIndex, final int toIndex, final int size) {
+    public static ExList<String> split(final CharSequence str, final int fromIndex, final int toIndex, final int size) {
         N.checkFromToIndex(fromIndex, toIndex, str == null ? 0 : str.length());
 
         if (size < 1) {
@@ -21451,11 +21451,11 @@ public final class N {
         }
 
         if (N.isNullOrEmpty(str)) {
-            return new ArrayList<>();
+            return new ExList<>();
         }
 
         final int len = toIndex - fromIndex;
-        final List<String> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final ExList<String> res = new ExList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = fromIndex; from < toIndex; from += size) {
             res.add(str.subSequence(from, from <= toIndex - size ? from + size : toIndex).toString());
@@ -21617,14 +21617,14 @@ public final class N {
      * @return
      * @see IntList#intersection(IntList)
      */
-    public static <T> List<T> intersection(final Collection<? extends T> a, final Collection<?> b) {
+    public static <T> ExList<T> intersection(final Collection<? extends T> a, final Collection<?> b) {
         if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
-            return new ArrayList<>();
+            return new ExList<>();
         }
 
         final Multiset<Object> bOccurrences = Multiset.from(b);
 
-        final List<T> result = new ArrayList<>(N.min(a.size(), N.max(9, a.size() - b.size())));
+        final ExList<T> result = new ExList<>(N.min(a.size(), N.max(9, a.size() - b.size())));
 
         for (T e : a) {
             if (bOccurrences.getAndRemove(e) > 0) {
@@ -21806,14 +21806,14 @@ public final class N {
      * @return
      * @see IntList#difference(IntList)
      */
-    public static <T> List<T> difference(final Collection<? extends T> a, final Collection<?> b) {
+    public static <T> ExList<T> difference(final Collection<? extends T> a, final Collection<?> b) {
         if (N.isNullOrEmpty(a)) {
-            return new ArrayList<>();
+            return new ExList<>();
         }
 
         final Multiset<Object> bOccurrences = Multiset.from(b);
 
-        final List<T> result = new ArrayList<>(N.min(a.size(), N.max(9, a.size() - b.size())));
+        final ExList<T> result = new ExList<>(N.min(a.size(), N.max(9, a.size() - b.size())));
 
         for (T e : a) {
             if (bOccurrences.getAndRemove(e) < 1) {
@@ -21990,11 +21990,11 @@ public final class N {
      * @return
      * @see IntList#symmetricDifference(IntList)
      */
-    public static <T> List<T> symmetricDifference(final Collection<? extends T> a, final Collection<? extends T> b) {
+    public static <T> ExList<T> symmetricDifference(final Collection<? extends T> a, final Collection<? extends T> b) {
         if (N.isNullOrEmpty(a)) {
-            return N.isNullOrEmpty(b) ? new ArrayList<T>() : new ArrayList<>(b);
+            return N.isNullOrEmpty(b) ? new ExList<T>() : new ExList<>((T[]) b.toArray());
         } else if (N.isNullOrEmpty(b)) {
-            return N.isNullOrEmpty(a) ? new ArrayList<T>() : new ArrayList<>(a);
+            return N.isNullOrEmpty(a) ? new ExList<T>() : new ExList<>((T[]) a.toArray());
         }
 
         //        final List<T> result = difference(a, b);
@@ -22004,7 +22004,7 @@ public final class N {
         //        return result;
 
         final Multiset<T> bOccurrences = Multiset.from(b);
-        final List<T> result = new ArrayList<>(N.max(9, Math.abs(a.size() - b.size())));
+        final ExList<T> result = new ExList<>(N.max(9, Math.abs(a.size() - b.size())));
 
         for (T e : a) {
             if (bOccurrences.getAndRemove(e) < 1) {

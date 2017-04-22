@@ -565,8 +565,8 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
     }
 
     @Override
-    public List<Short> toList(Supplier<? extends List<Short>> supplier) {
-        final List<Short> result = supplier.get();
+    public <R extends List<Short>> R toList(Supplier<R> supplier) {
+        final R result = supplier.get();
 
         while (elements.hasNext()) {
             result.add(elements.nextShort());
@@ -587,8 +587,8 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
     }
 
     @Override
-    public Set<Short> toSet(Supplier<? extends Set<Short>> supplier) {
-        final Set<Short> result = supplier.get();
+    public <R extends Set<Short>> R toSet(Supplier<R> supplier) {
+        final R result = supplier.get();
 
         while (elements.hasNext()) {
             result.add(elements.nextShort());

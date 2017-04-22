@@ -1335,10 +1335,10 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
     }
 
     @Override
-    public List<Byte> toList(final int fromIndex, final int toIndex, final IntFunction<List<Byte>> supplier) {
+    public <R extends List<Byte>> R toList(final int fromIndex, final int toIndex, final IntFunction<R> supplier) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final List<Byte> list = supplier.apply(toIndex - fromIndex);
+        final R list = supplier.apply(toIndex - fromIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
             list.add(elementData[i]);
@@ -1348,10 +1348,10 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
     }
 
     @Override
-    public Set<Byte> toSet(final int fromIndex, final int toIndex, final IntFunction<Set<Byte>> supplier) {
+    public <R extends Set<Byte>> R toSet(final int fromIndex, final int toIndex, final IntFunction<R> supplier) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final Set<Byte> set = supplier.apply(N.min(16, toIndex - fromIndex));
+        final R set = supplier.apply(N.min(16, toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             set.add(elementData[i]);

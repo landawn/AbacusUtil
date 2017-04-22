@@ -1361,10 +1361,10 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
     }
 
     @Override
-    public List<Character> toList(final int fromIndex, final int toIndex, final IntFunction<List<Character>> supplier) {
+    public <R extends List<Character>> R toList(final int fromIndex, final int toIndex, final IntFunction<R> supplier) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final List<Character> list = supplier.apply(toIndex - fromIndex);
+        final R list = supplier.apply(toIndex - fromIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
             list.add(elementData[i]);
@@ -1374,10 +1374,10 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
     }
 
     @Override
-    public Set<Character> toSet(final int fromIndex, final int toIndex, final IntFunction<Set<Character>> supplier) {
+    public <R extends Set<Character>> R toSet(final int fromIndex, final int toIndex, final IntFunction<R> supplier) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final Set<Character> set = supplier.apply(N.min(16, toIndex - fromIndex));
+        final R set = supplier.apply(N.min(16, toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             set.add(elementData[i]);

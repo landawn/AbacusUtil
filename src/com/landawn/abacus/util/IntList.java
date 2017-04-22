@@ -1554,10 +1554,10 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
     }
 
     @Override
-    public List<Integer> toList(final int fromIndex, final int toIndex, final IntFunction<List<Integer>> supplier) {
+    public <R extends List<Integer>> R toList(final int fromIndex, final int toIndex, final IntFunction<R> supplier) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final List<Integer> list = supplier.apply(toIndex - fromIndex);
+        final R list = supplier.apply(toIndex - fromIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
             list.add(elementData[i]);
@@ -1567,10 +1567,10 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
     }
 
     @Override
-    public Set<Integer> toSet(final int fromIndex, final int toIndex, final IntFunction<Set<Integer>> supplier) {
+    public <R extends Set<Integer>> R toSet(final int fromIndex, final int toIndex, final IntFunction<R> supplier) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final Set<Integer> set = supplier.apply(N.min(16, toIndex - fromIndex));
+        final R set = supplier.apply(N.min(16, toIndex - fromIndex));
 
         for (int i = fromIndex; i < toIndex; i++) {
             set.add(elementData[i]);
