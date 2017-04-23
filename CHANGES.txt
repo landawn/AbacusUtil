@@ -3,7 +3,9 @@
 
 1*, Change the return type of distinct/top/split/intersection/difference/symmetricDifference in N/Seq/slice to ExList.
 
-2, Improvements and bug fix.
+2*, Refactoring: Change Seq from a mutable Collection/Wrapper to an immutable Collection/Wrapper.
+
+3, Improvements and bug fix.
 
  
 ========Changes in 0.9.61=========================================================================
