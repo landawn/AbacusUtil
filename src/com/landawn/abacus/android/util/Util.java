@@ -850,5 +850,4 @@ public final class Util {
             return bitmap.getByteCount();
         }
     }
-
 }

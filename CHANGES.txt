@@ -1,4 +1,11 @@
 
+========Changes in 0.9.63=========================================================================
+
+1, Add SQLExecutor.mapper(targetClass, connection) to support ExMapper in Transaction.
+
+2, Improvements and bug fix.
+
+
 ========Changes in 0.9.62=========================================================================
 
 1*, Change the return type of distinct/top/split/intersection/difference/symmetricDifference in N/Seq/slice to ExList.

@@ -520,7 +520,7 @@ public final class SQLExecutor implements Closeable {
     //        return _sqlMapper;
     //    }
 
-    public <T> ExMapper<T> mapper(Class<T> targetClass) {
+    public <T> ExMapper<T> mapper(final Class<T> targetClass) {
         ExMapper<T> mapper = (ExMapper<T>) mapperPool.get(targetClass);
 
         if (mapper == null) {
@@ -531,6 +531,39 @@ public final class SQLExecutor implements Closeable {
         }
 
         return mapper;
+    }
+
+    /**
+     * Create a <code>Mapper</code> which has the same life cycle as the specified <code>Connection</code>.
+     * To start transaction for a <code>Mapper</code>:
+     * <pre>
+     * <code>
+     * final Transaction tran = sqlExecutor.beginTransaction(isolationLevel);
+     * final ExMapper mapper = sqlExecutor.mapper(targetClass, tran.connection());
+     * boolean isOk = false;
+     * try {
+     *     // Do something with sqlExecutor and mapper
+     *     isOk = true;
+     * } finally {
+     *     if (isOk) {
+     *         tran.commit();
+     *     } else {
+     *          tran.rollback();
+     *     }  
+     * }
+     * 
+     * </code>
+     * </pre>
+     * @param targetClass
+     * @param conn
+     * @return
+     */
+    public <T> ExMapper<T> mapper(final Class<T> targetClass, final Connection conn) {
+        if (conn == null) {
+            return mapper(targetClass);
+        }
+
+        return new ExMapper<T>(conn, targetClass, this, this._namingPolicy);
     }
 
     public AsyncSQLExecutor asyncExecutor() {
@@ -3422,6 +3455,7 @@ public final class SQLExecutor implements Closeable {
         static final Map<Class<?>, Set<String>> writeOnlyPropNamesMap = new ConcurrentHashMap<>();
         static final Map<Class<?>, Set<String>> readOnlyPropNamesMap = new ConcurrentHashMap<>();
 
+        private final Connection conn;
         private final Class<T> targetClass;
         private final SQLExecutor sqlExecutor;
         private final NamingPolicy namingPolicy;
@@ -3432,6 +3466,11 @@ public final class SQLExecutor implements Closeable {
         // TODO cache more sqls to improve performance.
 
         ExMapper(final Class<T> targetClass, final SQLExecutor sqlExecutor, final NamingPolicy namingPolicy) {
+            this(null, targetClass, sqlExecutor, namingPolicy);
+        }
+
+        ExMapper(final Connection conn, final Class<T> targetClass, final SQLExecutor sqlExecutor, final NamingPolicy namingPolicy) {
+            this.conn = conn;
             this.targetClass = targetClass;
             this.sqlExecutor = sqlExecutor;
             this.namingPolicy = namingPolicy;
@@ -3492,13 +3531,13 @@ public final class SQLExecutor implements Closeable {
         public boolean exists(final Condition whereCause) {
             final SP pair = prepareQuery(EXISTS_SELECT_PROP_NAMES, whereCause, 1);
 
-            return sqlExecutor.exists(pair.sql, pair.parameters.toArray());
+            return sqlExecutor.exists(conn, pair.sql, pair.parameters.toArray());
         }
 
         public int count(final Condition whereCause) {
             final SP pair = prepareQuery(COUNT_SELECT_PROP_NAMES, whereCause);
 
-            return sqlExecutor.count(pair.sql, pair.parameters.toArray());
+            return sqlExecutor.count(conn, pair.sql, pair.parameters.toArray());
         }
 
         public T get(final Object id) {
@@ -3521,10 +3560,10 @@ public final class SQLExecutor implements Closeable {
             List<T> list = null;
 
             if (N.isNullOrEmpty(selectPropNames) && (whereCause instanceof Equal && ((Equal) whereCause).getPropName().equals(idName))) {
-                list = sqlExecutor.find(targetClass, sql_get_by_id, null, JdbcSettings.create().setCount(2), ((Equal) whereCause).getPropValue());
+                list = sqlExecutor.find(targetClass, conn, sql_get_by_id, null, JdbcSettings.create().setCount(2), ((Equal) whereCause).getPropValue());
             } else {
                 final SP pair = prepareQuery(selectPropNames, whereCause, 2);
-                list = sqlExecutor.find(targetClass, pair.sql, null, JdbcSettings.create().setCount(2), pair.parameters.toArray());
+                list = sqlExecutor.find(targetClass, conn, pair.sql, null, JdbcSettings.create().setCount(2), pair.parameters.toArray());
             }
 
             if (list.size() == 0) {
@@ -3547,7 +3586,7 @@ public final class SQLExecutor implements Closeable {
         public List<T> find(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
             final SP pair = prepareQuery(selectPropNames, whereCause);
 
-            return sqlExecutor.find(targetClass, pair.sql, null, jdbcSettings, pair.parameters.toArray());
+            return sqlExecutor.find(targetClass, conn, pair.sql, null, jdbcSettings, pair.parameters.toArray());
         }
 
         public DataSet query(final Condition whereCause) {
@@ -3561,7 +3600,7 @@ public final class SQLExecutor implements Closeable {
         public DataSet query(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
             final SP pair = prepareQuery(selectPropNames, whereCause);
 
-            return sqlExecutor.query(pair.sql, null, null, jdbcSettings, pair.parameters.toArray());
+            return sqlExecutor.query(conn, pair.sql, null, null, jdbcSettings, pair.parameters.toArray());
         }
 
         public OptionalBoolean queryForBoolean(final String propName, final Condition whereCause) {
@@ -3624,7 +3663,7 @@ public final class SQLExecutor implements Closeable {
                 final JdbcSettings jdbcSettings) {
             final SP pair = prepareQuery(Arrays.asList(propName), whereCause, 1);
 
-            return sqlExecutor.queryForSingleResult(targetValueClass, pair.sql, null, jdbcSettings, pair.parameters.toArray());
+            return sqlExecutor.queryForSingleResult(targetValueClass, conn, pair.sql, null, jdbcSettings, pair.parameters.toArray());
         }
 
         public Optional<T> queryForEntity(final Condition whereCause) {
@@ -3638,7 +3677,7 @@ public final class SQLExecutor implements Closeable {
         public Optional<T> queryForEntity(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
             final SP pair = prepareQuery(selectPropNames, whereCause, 1);
 
-            return sqlExecutor.queryForEntity(targetClass, pair.sql, null, jdbcSettings, pair.parameters.toArray());
+            return sqlExecutor.queryForEntity(targetClass, conn, pair.sql, null, jdbcSettings, pair.parameters.toArray());
         }
 
         public Try<Stream<T>> stream(final Condition whereCause) {
@@ -3652,7 +3691,7 @@ public final class SQLExecutor implements Closeable {
         public Try<Stream<T>> stream(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
             final SP pair = prepareQuery(selectPropNames, whereCause);
 
-            return sqlExecutor.stream(targetClass, pair.sql, null, jdbcSettings, pair.parameters.toArray());
+            return sqlExecutor.stream(targetClass, conn, pair.sql, null, jdbcSettings, pair.parameters.toArray());
         }
 
         private SP prepareQuery(final Collection<String> selectPropNames, final Condition whereCause) {
@@ -3717,9 +3756,13 @@ public final class SQLExecutor implements Closeable {
          * @return the auto-generated id or null if there is no auto-generated id.
          */
         public <E> E add(final Object entity) {
+            return add(conn, entity);
+        }
+
+        private <E> E add(final Connection conn, final Object entity) {
             final SP pair = prepareAdd(entity);
 
-            final E id = sqlExecutor.insert(pair.sql, pair.parameters.toArray());
+            final E id = sqlExecutor.insert(conn, pair.sql, pair.parameters.toArray());
 
             postAdd(entity, id);
 
@@ -3734,7 +3777,7 @@ public final class SQLExecutor implements Closeable {
         public <E> E add(final Map<String, Object> props) {
             final SP pair = prepareAdd(props);
 
-            return sqlExecutor.insert(pair.sql, pair.parameters.toArray());
+            return sqlExecutor.insert(conn, pair.sql, pair.parameters.toArray());
         }
 
         /**
@@ -3755,21 +3798,24 @@ public final class SQLExecutor implements Closeable {
          * @return a list with the auto-generated id or null element if there is no auto-generated id.
          */
         public <E> List<E> addAll(final Collection<?> entities, final IsolationLevel isolationLevel) {
-            final SQLTransaction tran = sqlExecutor.beginTransaction(isolationLevel);
+            final SQLTransaction tran = this.conn == null ? sqlExecutor.beginTransaction(isolationLevel) : null;
+            final Connection conn = this.conn == null ? tran.connection() : this.conn;
             final List<E> result = new ArrayList<>(entities.size());
             boolean isOk = false;
 
             try {
                 for (Object entity : entities) {
-                    result.add((E) add(entity));
+                    result.add((E) add(conn, entity));
                 }
 
                 isOk = true;
             } finally {
-                if (isOk) {
-                    tran.commit();
-                } else {
-                    tran.rollback();
+                if (tran != null) {
+                    if (isOk) {
+                        tran.commit();
+                    } else {
+                        tran.rollback();
+                    }
                 }
             }
 
@@ -3800,7 +3846,7 @@ public final class SQLExecutor implements Closeable {
             final JdbcSettings jdbcSettings = batchSize == JdbcSettings.DEFAULT_BATCH_SIZE ? null : JdbcSettings.create().setBatchSize(batchSize);
             final List<?> batchParameters = entities instanceof List ? (List<?>) entities : new ArrayList<>(entities);
 
-            final List<E> ids = sqlExecutor.batchInsert(pair.sql, null, jdbcSettings, batchParameters);
+            final List<E> ids = sqlExecutor.batchInsert(conn, pair.sql, null, jdbcSettings, batchParameters);
 
             if (N.notNullOrEmpty(ids) && ids.size() == batchSize) {
                 int idx = 0;
@@ -3861,9 +3907,13 @@ public final class SQLExecutor implements Closeable {
         }
 
         public int update(final Object entity) {
+            return update(conn, entity);
+        }
+
+        private int update(final Connection conn, final Object entity) {
             final SP pair = prepareUpdate(entity);
 
-            final int updateCount = sqlExecutor.update(pair.sql, pair.parameters.toArray());
+            final int updateCount = sqlExecutor.update(conn, pair.sql, pair.parameters.toArray());
 
             if (updateCount > 0) {
                 postUpdate(entity);
@@ -3879,7 +3929,7 @@ public final class SQLExecutor implements Closeable {
         public int update(final Condition whereCause, final Map<String, Object> props) {
             final SP pair = prepareUpdate(whereCause, props);
 
-            return sqlExecutor.update(pair.sql, pair.parameters.toArray());
+            return sqlExecutor.update(conn, pair.sql, pair.parameters.toArray());
         }
 
         /**
@@ -3901,21 +3951,24 @@ public final class SQLExecutor implements Closeable {
          * @return
          */
         public int updateAll(final Collection<?> entities, final IsolationLevel isolationLevel) {
-            final SQLTransaction tran = sqlExecutor.beginTransaction(isolationLevel);
+            final SQLTransaction tran = this.conn == null ? sqlExecutor.beginTransaction(isolationLevel) : null;
+            final Connection conn = this.conn == null ? tran.connection() : this.conn;
             int result = 0;
             boolean isOk = false;
 
             try {
                 for (Object entity : entities) {
-                    result += update(entity);
+                    result += update(conn, entity);
                 }
 
                 isOk = true;
             } finally {
-                if (isOk) {
-                    tran.commit();
-                } else {
-                    tran.rollback();
+                if (tran != null) {
+                    if (isOk) {
+                        tran.commit();
+                    } else {
+                        tran.rollback();
+                    }
                 }
             }
 
@@ -3946,7 +3999,7 @@ public final class SQLExecutor implements Closeable {
             final JdbcSettings jdbcSettings = batchSize == JdbcSettings.DEFAULT_BATCH_SIZE ? null : JdbcSettings.create().setBatchSize(batchSize);
             final List<?> batchParameters = entities instanceof List ? (List<?>) entities : new ArrayList<>(entities);
 
-            final int updateCount = sqlExecutor.batchUpdate(pair.sql, null, jdbcSettings, batchParameters);
+            final int updateCount = sqlExecutor.batchUpdate(conn, pair.sql, null, jdbcSettings, batchParameters);
 
             if (updateCount > 0) {
                 for (Object entity : entities) {
@@ -4014,22 +4067,30 @@ public final class SQLExecutor implements Closeable {
         }
 
         public int delete(final Object idOrEntity) {
+            return delete(conn, idOrEntity);
+        }
+
+        private int delete(final Connection conn, final Object idOrEntity) {
             checkEntity(idOrEntity);
 
             final Class<?> cls = idOrEntity.getClass();
             final Object idVal = N.isEntity(cls) ? getId(idOrEntity) : idOrEntity;
 
-            return delete(L.eq(idName, idVal));
+            return delete(conn, L.eq(idName, idVal));
         }
 
         public int delete(final Condition whereCause) {
+            return delete(conn, whereCause);
+        }
+
+        private int delete(final Connection conn, final Condition whereCause) {
             if (whereCause instanceof Equal && ((Equal) whereCause).getPropName().equals(idName)) {
-                return sqlExecutor.update(sql_delete_by_id, ((Equal) whereCause).getPropValue());
+                return sqlExecutor.update(conn, sql_delete_by_id, ((Equal) whereCause).getPropValue());
             }
 
             final SP pair = prepareDelete(whereCause);
 
-            return sqlExecutor.update(pair.sql, pair.parameters.toArray());
+            return sqlExecutor.update(conn, pair.sql, pair.parameters.toArray());
         }
 
         /**
@@ -4050,21 +4111,24 @@ public final class SQLExecutor implements Closeable {
          * @return
          */
         public int deleteAll(final Collection<?> idsOrEntities, final IsolationLevel isolationLevel) {
-            final SQLTransaction tran = sqlExecutor.beginTransaction(isolationLevel);
+            final SQLTransaction tran = this.conn == null ? sqlExecutor.beginTransaction(isolationLevel) : null;
+            final Connection conn = this.conn == null ? tran.connection() : this.conn;
             int result = 0;
             boolean isOk = false;
 
             try {
                 for (Object idOrEntity : idsOrEntities) {
-                    result += delete(idOrEntity);
+                    result += delete(conn, idOrEntity);
                 }
 
                 isOk = true;
             } finally {
-                if (isOk) {
-                    tran.commit();
-                } else {
-                    tran.rollback();
+                if (tran != null) {
+                    if (isOk) {
+                        tran.commit();
+                    } else {
+                        tran.rollback();
+                    }
                 }
             }
 
