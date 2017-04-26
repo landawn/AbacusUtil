@@ -1,9 +1,11 @@
 
 ========Changes in 0.9.63=========================================================================
 
-1, Add SQLExecutor.mapper(targetClass, connection) to support ExMapper in Transaction.
+1, Support SQLExecutor.ExMapper in Transaction by adding Connection parameter.
 
-2, Improvements and bug fix.
+2*, Remove Output0
+
+3, Improvements and bug fix.
 
 
 ========Changes in 0.9.62=========================================================================
