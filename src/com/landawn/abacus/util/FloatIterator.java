@@ -16,6 +16,8 @@ package com.landawn.abacus.util;
 
 import java.util.NoSuchElementException;
 
+import com.landawn.abacus.util.function.FloatConsumer;
+
 /**
  * 
  * @since 0.8
@@ -80,4 +82,12 @@ public abstract class FloatIterator extends ImmutableIterator<Float> {
     }
 
     public abstract float nextFloat();
+
+    public void forEachRemaining(FloatConsumer action) {
+        N.requireNonNull(action);
+
+        while (hasNext()) {
+            action.accept(nextFloat());
+        }
+    }
 }

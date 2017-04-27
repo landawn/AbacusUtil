@@ -31,11 +31,11 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import com.landawn.abacus.annotation.Internal;
-import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
+import com.landawn.abacus.util.function.ObjIntConsumer;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.TriFunction;
 import com.landawn.abacus.util.function.TriPredicate;
@@ -603,7 +603,8 @@ public final class Multiset<E> implements Iterable<E> {
     }
 
     /**
-     * The element will be removed from this set if the occurrences equals to or less than 0 after the operation.
+     * Remove one occurrences from the specified element. 
+     * The elements will be removed from this set if the occurrences equals to or less than 0 after the operation.
      *
      * @param e
      * @param occurrences
@@ -614,12 +615,13 @@ public final class Multiset<E> implements Iterable<E> {
     }
 
     /**
-     * The element will be removed from this set if the occurrences equals to or less than 0 after the operation.
+     * Remove the specified occurrences from the specified element. 
+     * The elements will be removed from this set if the occurrences equals to or less than 0 after the operation.
+     *
      *
      * @param e
      * @param occurrences
      * @return
-     * @throws IllegalArgumentException if the occurrences of element after this operation is bigger than Integer.MAX_VALUE.
      */
     public boolean remove(final Object e, final int occurrences) throws IllegalArgumentException {
         checkOccurrences(occurrences);
@@ -805,13 +807,13 @@ public final class Multiset<E> implements Iterable<E> {
     }
 
     /**
+     * Remove the specified occurrences from the specified elements. 
      * The elements will be removed from this set if the occurrences equals to or less than 0 after the operation.
      *
      * @param c
      * @param occurrences
      *            the occurrences to remove if the element is in the specified collection <code>c</code>.
      * @return <tt>true</tt> if this set changed as a result of the call
-     * @throws IllegalArgumentException if the occurrences of element after this operation is bigger than Integer.MAX_VALUE.
      */
     public boolean removeAll(final Collection<?> c, final int occurrences) throws IllegalArgumentException {
         checkOccurrences(occurrences);
@@ -837,7 +839,6 @@ public final class Multiset<E> implements Iterable<E> {
      * 
      * @param m
      * @return
-     * @throws IllegalArgumentException if the occurrences of element after this operation is bigger than Integer.MAX_VALUE.
      */
     public boolean removeAll(final Map<?, Integer> m) throws IllegalArgumentException {
         if (N.isNullOrEmpty(m)) {
@@ -864,7 +865,6 @@ public final class Multiset<E> implements Iterable<E> {
     /**
      * 
      * @param m
-     * @throws IllegalArgumentException if the occurrences of element is less than 0.
      */
     public boolean removeAll(final Multiset<?> multiset) throws IllegalArgumentException {
         if (N.isNullOrEmpty(multiset)) {
@@ -971,6 +971,10 @@ public final class Multiset<E> implements Iterable<E> {
         return N.isNullOrEmpty(others) ? false : removeAll(others, Integer.MAX_VALUE);
     }
 
+    public Set<E> elements() {
+        return valueMap.keySet();
+    }
+
     public int size() {
         return valueMap.size();
     }
@@ -1001,7 +1005,8 @@ public final class Multiset<E> implements Iterable<E> {
     }
 
     public Map<E, Integer> toMap() {
-        final Map<E, Integer> result = new HashMap<>(N.initHashCapacity(size()));
+        final Map<E, Integer> result = valueMap instanceof IdentityHashMap ? new IdentityHashMap<E, Integer>(N.initHashCapacity(size()))
+                : new HashMap<E, Integer>(N.initHashCapacity(size()));
 
         for (Map.Entry<E, MutableInt> entry : valueMap.entrySet()) {
             result.put(entry.getKey(), entry.getValue().value());
@@ -1010,8 +1015,8 @@ public final class Multiset<E> implements Iterable<E> {
         return result;
     }
 
-    public Map<E, Integer> toMap(final IntFunction<Map<E, Integer>> supplier) {
-        final Map<E, Integer> result = supplier.apply(size());
+    public <M extends Map<E, Integer>> M toMap(final IntFunction<M> supplier) {
+        final M result = supplier.apply(size());
 
         for (Map.Entry<E, MutableInt> entry : valueMap.entrySet()) {
             result.put(entry.getKey(), entry.getValue().value());
@@ -1110,7 +1115,9 @@ public final class Multiset<E> implements Iterable<E> {
         return result;
     }
 
-    public void forEach(BiConsumer<? super E, Integer> action) {
+    public void forEach(final ObjIntConsumer<? super E> action) {
+        N.requireNonNull(action);
+
         for (Map.Entry<E, MutableInt> entry : valueMap.entrySet()) {
             action.accept(entry.getKey(), entry.getValue().value());
         }
@@ -1125,6 +1132,9 @@ public final class Multiset<E> implements Iterable<E> {
      * @return
      */
     public <R> R forEach(final R seed, TriFunction<R, ? super E, Integer, R> accumulator, final TriPredicate<? super E, Integer, ? super R> conditionToBreak) {
+        N.requireNonNull(accumulator);
+        N.requireNonNull(conditionToBreak);
+
         R result = seed;
 
         for (Map.Entry<E, MutableInt> entry : valueMap.entrySet()) {

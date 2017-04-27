@@ -16,6 +16,8 @@ package com.landawn.abacus.util;
 
 import java.util.NoSuchElementException;
 
+import com.landawn.abacus.util.function.IntConsumer;
+
 /**
  * 
  * @since 0.8
@@ -80,4 +82,12 @@ public abstract class IntIterator extends ImmutableIterator<Integer> {
     }
 
     public abstract int nextInt();
+
+    public void forEachRemaining(IntConsumer action) {
+        N.requireNonNull(action);
+
+        while (hasNext()) {
+            action.accept(nextInt());
+        }
+    }
 }

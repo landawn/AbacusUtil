@@ -31,11 +31,11 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import com.landawn.abacus.annotation.Internal;
-import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
+import com.landawn.abacus.util.function.ObjLongConsumer;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.TriFunction;
 import com.landawn.abacus.util.function.TriPredicate;
@@ -633,25 +633,26 @@ public final class LongMultiset<E> implements Iterable<E> {
     }
 
     /**
-     * The element will be removed from this set if the occurrences equals to or less than 0 after the operation.
+     * Remove one occurrence from the specified elements. 
+     * The element will be removed from this <code>Multiset</code> if the occurrences equals to or less than 0 after the operation.
      *
      * @param e
      * @param occurrences
      * @return
      */
-    public boolean remove(final Object e) throws IllegalArgumentException {
+    public boolean remove(final Object e) {
         return remove(e, 1);
     }
 
     /**
-     * The element will be removed from this set if the occurrences equals to or less than 0 after the operation.
+     * Remove the specified occurrences from the specified element. 
+     * The element will be removed from this <code>Multiset</code> if the occurrences equals to or less than 0 after the operation.
      *
      * @param e
      * @param occurrences
      * @return
-     * @throws IllegalArgumentException if the occurrences of element after this operation is bigger than Long.MAX_VALUE.
      */
-    public boolean remove(final Object e, final long occurrences) throws IllegalArgumentException {
+    public boolean remove(final Object e, final long occurrences) {
         checkOccurrences(occurrences);
 
         final MutableLong count = valueMap.get(e);
@@ -835,15 +836,15 @@ public final class LongMultiset<E> implements Iterable<E> {
     }
 
     /**
+     * Remove the specified occurrences from the specified elements. 
      * The elements will be removed from this set if the occurrences equals to or less than 0 after the operation.
      *
      * @param c
      * @param occurrences
      *            the occurrences to remove if the element is in the specified collection <code>c</code>.
      * @return <tt>true</tt> if this set changed as a result of the call
-     * @throws IllegalArgumentException if the occurrences of element after this operation is bigger than Long.MAX_VALUE.
      */
-    public boolean removeAll(final Collection<?> c, final long occurrences) throws IllegalArgumentException {
+    public boolean removeAll(final Collection<?> c, final long occurrences) {
         checkOccurrences(occurrences);
 
         if (N.isNullOrEmpty(c) || occurrences == 0) {
@@ -867,9 +868,8 @@ public final class LongMultiset<E> implements Iterable<E> {
      * 
      * @param m
      * @return
-     * @throws IllegalArgumentException if the occurrences of element after this operation is bigger than Long.MAX_VALUE.
      */
-    public boolean removeAll(final Map<?, Long> m) throws IllegalArgumentException {
+    public boolean removeAll(final Map<?, Long> m) {
         if (N.isNullOrEmpty(m)) {
             return false;
         }
@@ -894,7 +894,6 @@ public final class LongMultiset<E> implements Iterable<E> {
     /**
      * 
      * @param m
-     * @throws IllegalArgumentException if the occurrences of element is less than 0.
      */
     public boolean removeAll(final LongMultiset<?> multiset) throws IllegalArgumentException {
         if (N.isNullOrEmpty(multiset)) {
@@ -1002,6 +1001,10 @@ public final class LongMultiset<E> implements Iterable<E> {
         return N.isNullOrEmpty(others) ? false : removeAll(others, Long.MAX_VALUE);
     }
 
+    public Set<E> elements() {
+        return valueMap.keySet();
+    }
+
     public int size() {
         return valueMap.size();
     }
@@ -1032,7 +1035,8 @@ public final class LongMultiset<E> implements Iterable<E> {
     }
 
     public Map<E, Long> toMap() {
-        final Map<E, Long> result = new HashMap<>(N.initHashCapacity(size()));
+        final Map<E, Long> result = valueMap instanceof IdentityHashMap ? new IdentityHashMap<E, Long>(N.initHashCapacity(size()))
+                : new HashMap<E, Long>(N.initHashCapacity(size()));
 
         for (Map.Entry<E, MutableLong> entry : valueMap.entrySet()) {
             result.put(entry.getKey(), entry.getValue().value());
@@ -1041,8 +1045,8 @@ public final class LongMultiset<E> implements Iterable<E> {
         return result;
     }
 
-    public Map<E, Long> toMap(final IntFunction<Map<E, Long>> supplier) {
-        final Map<E, Long> result = supplier.apply(size());
+    public <M extends Map<E, Long>> M toMap(final IntFunction<M> supplier) {
+        final M result = supplier.apply(size());
 
         for (Map.Entry<E, MutableLong> entry : valueMap.entrySet()) {
             result.put(entry.getKey(), entry.getValue().value());
@@ -1141,7 +1145,9 @@ public final class LongMultiset<E> implements Iterable<E> {
         return result;
     }
 
-    public void forEach(BiConsumer<? super E, Long> action) {
+    public void forEach(final ObjLongConsumer<? super E> action) {
+        N.requireNonNull(action);
+
         for (Map.Entry<E, MutableLong> entry : valueMap.entrySet()) {
             action.accept(entry.getKey(), entry.getValue().value());
         }
@@ -1156,6 +1162,9 @@ public final class LongMultiset<E> implements Iterable<E> {
      * @return
      */
     public <R> R forEach(final R seed, TriFunction<R, ? super E, Long, R> accumulator, final TriPredicate<? super E, Long, ? super R> conditionToBreak) {
+        N.requireNonNull(accumulator);
+        N.requireNonNull(conditionToBreak);
+
         R result = seed;
 
         for (Map.Entry<E, MutableLong> entry : valueMap.entrySet()) {

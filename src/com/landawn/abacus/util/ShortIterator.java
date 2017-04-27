@@ -16,6 +16,8 @@ package com.landawn.abacus.util;
 
 import java.util.NoSuchElementException;
 
+import com.landawn.abacus.util.function.ShortConsumer;
+
 /**
  * 
  * @since 0.8
@@ -80,4 +82,12 @@ public abstract class ShortIterator extends ImmutableIterator<Short> {
     }
 
     public abstract short nextShort();
+
+    public void forEachRemaining(ShortConsumer action) {
+        N.requireNonNull(action);
+
+        while (hasNext()) {
+            action.accept(nextShort());
+        }
+    }
 }

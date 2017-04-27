@@ -16,6 +16,8 @@ package com.landawn.abacus.util;
 
 import java.util.NoSuchElementException;
 
+import com.landawn.abacus.util.function.CharConsumer;
+
 /**
  * 
  * @since 0.8
@@ -80,4 +82,12 @@ public abstract class CharIterator extends ImmutableIterator<Character> {
     }
 
     public abstract char nextChar();
+
+    public void forEachRemaining(CharConsumer action) {
+        N.requireNonNull(action);
+
+        while (hasNext()) {
+            action.accept(nextChar());
+        }
+    }
 }

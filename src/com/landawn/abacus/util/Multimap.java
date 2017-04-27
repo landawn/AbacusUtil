@@ -1021,6 +1021,8 @@ public final class Multimap<K, E, V extends Collection<E>> {
     }
 
     public void forEach(BiConsumer<? super K, ? super V> action) {
+        N.requireNonNull(action);
+
         for (Map.Entry<K, V> entry : valueMap.entrySet()) {
             action.accept(entry.getKey(), entry.getValue());
         }
@@ -1036,6 +1038,9 @@ public final class Multimap<K, E, V extends Collection<E>> {
      */
     public <R> R forEach(final R seed, TriFunction<R, ? super K, ? super V, R> accumulator,
             final TriPredicate<? super K, ? super V, ? super R> conditionToBreak) {
+        N.requireNonNull(accumulator);
+        N.requireNonNull(conditionToBreak);
+
         R result = seed;
 
         for (Map.Entry<K, V> entry : valueMap.entrySet()) {
@@ -1281,11 +1286,15 @@ public final class Multimap<K, E, V extends Collection<E>> {
     }
 
     public Map<K, V> toMap() {
-        return new HashMap<>(valueMap);
+        if (valueMap instanceof IdentityHashMap) {
+            return new IdentityHashMap<>(valueMap);
+        } else {
+            return new HashMap<>(valueMap);
+        }
     }
 
-    public Map<K, V> toMap(final IntFunction<Map<K, V>> supplier) {
-        final Map<K, V> map = supplier.apply(size());
+    public <M extends Map<K, V>> M toMap(final IntFunction<M> supplier) {
+        final M map = supplier.apply(size());
         map.putAll(valueMap);
         return map;
     }

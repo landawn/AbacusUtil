@@ -16,6 +16,8 @@ package com.landawn.abacus.util;
 
 import java.util.NoSuchElementException;
 
+import com.landawn.abacus.util.function.LongConsumer;
+
 /**
  * 
  * @since 0.8
@@ -80,4 +82,12 @@ public abstract class LongIterator extends ImmutableIterator<Long> {
     }
 
     public abstract long nextLong();
+
+    public void forEachRemaining(LongConsumer action) {
+        N.requireNonNull(action);
+
+        while (hasNext()) {
+            action.accept(nextLong());
+        }
+    }
 }
