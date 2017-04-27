@@ -803,7 +803,17 @@ public final class Multiset<E> implements Iterable<E> {
             return false;
         }
 
-        return removeAll(c, Integer.MAX_VALUE);
+        boolean result = false;
+
+        for (Object e : c) {
+            if (result == false) {
+                result = valueMap.remove(e) != null;
+            } else {
+                valueMap.remove(e);
+            }
+        }
+
+        return result;
     }
 
     /**
@@ -971,7 +981,7 @@ public final class Multiset<E> implements Iterable<E> {
         return N.isNullOrEmpty(others) ? false : removeAll(others, Integer.MAX_VALUE);
     }
 
-    public Set<E> elements() {
+    public Set<E> keySet() {
         return valueMap.keySet();
     }
 

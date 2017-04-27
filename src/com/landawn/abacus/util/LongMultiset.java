@@ -832,7 +832,17 @@ public final class LongMultiset<E> implements Iterable<E> {
             return false;
         }
 
-        return removeAll(c, Long.MAX_VALUE);
+        boolean result = false;
+
+        for (Object e : c) {
+            if (result == false) {
+                result = valueMap.remove(e) != null;
+            } else {
+                valueMap.remove(e);
+            }
+        }
+
+        return result;
     }
 
     /**
@@ -1001,7 +1011,7 @@ public final class LongMultiset<E> implements Iterable<E> {
         return N.isNullOrEmpty(others) ? false : removeAll(others, Long.MAX_VALUE);
     }
 
-    public Set<E> elements() {
+    public Set<E> keySet() {
         return valueMap.keySet();
     }
 

@@ -197,14 +197,18 @@ public final class Maps {
      * @param entry
      * @return
      */
-    public static boolean contains(final Map<?, ?> map, Map.Entry<?, ?> entry) {
-        if (N.isNullOrEmpty(map) || entry == null) {
+    public static boolean contains(final Map<?, ?> map, final Map.Entry<?, ?> entry) {
+        return contains(map, entry.getKey(), entry.getValue());
+    }
+
+    public static boolean contains(final Map<?, ?> map, final Object key, final Object value) {
+        if (N.isNullOrEmpty(map)) {
             return false;
         }
 
-        final Object val = map.get(entry.getKey());
+        final Object val = map.get(key);
 
-        return (val != null && N.equals(val, entry.getValue())) || (entry.getValue() == null && map.containsKey(entry.getKey()));
+        return val == null ? value == null && map.containsKey(key) : N.equals(val, value);
     }
 
     public static <K, V> Map<K, V> intersection(final Map<K, V> map, final Map<? extends K, ? extends V> map2) {
@@ -375,6 +379,10 @@ public final class Maps {
         return v;
     }
 
+    public static <K, V> boolean remove(final Map<K, V> map, Map.Entry<?, ?> entry) {
+        return remove(map, entry.getKey(), entry.getValue());
+    }
+
     /**
      * Removes the entry for the specified key only if it is currently
      * mapped to the specified value.
@@ -422,48 +430,6 @@ public final class Maps {
 
         map.remove(key);
         return true;
-    }
-
-    /**
-     * 
-     * @param map
-     * @param key1
-     * @param key2
-     * @return <code>true</code> if any key/value was removed, otherwise <code>false</code>.
-     */
-    public static boolean removeAll(final Map<?, ?> map, final Object key1, final Object key2) {
-        if (N.isNullOrEmpty(map)) {
-            return false;
-        }
-
-        final int originalSize = map.size();
-
-        map.remove(key1);
-        map.remove(key2);
-
-        return map.size() < originalSize;
-    }
-
-    /**
-     * 
-     * @param map
-     * @param key1
-     * @param key2
-     * @param key3
-     * @return <code>true</code> if any key/value was removed, otherwise <code>false</code>.
-     */
-    public static boolean removeAll(final Map<?, ?> map, final Object key1, final Object key2, final Object key3) {
-        if (N.isNullOrEmpty(map)) {
-            return false;
-        }
-
-        final int originalSize = map.size();
-
-        map.remove(key1);
-        map.remove(key2);
-        map.remove(key3);
-
-        return map.size() < originalSize;
     }
 
     /**
