@@ -99,7 +99,7 @@ public class EventBus {
     private List<List<SubIdentifier>> listOfSubEventSubs = null;
     private Map<Object, String> mapOfStickyEvent = null;
 
-    private static final EventBus INSTANCE = new EventBus();
+    private static final EventBus INSTANCE = new EventBus("default");
 
     static {
         Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -117,7 +117,7 @@ public class EventBus {
     }
 
     public EventBus() {
-        this("default");
+        this(N.guid());
     }
 
     public EventBus(final String identifier) {

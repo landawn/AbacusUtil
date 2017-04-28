@@ -981,7 +981,7 @@ public final class Multiset<E> implements Iterable<E> {
         return N.isNullOrEmpty(others) ? false : removeAll(others, Integer.MAX_VALUE);
     }
 
-    public Set<E> keySet() {
+    public Set<E> elements() {
         return valueMap.keySet();
     }
 

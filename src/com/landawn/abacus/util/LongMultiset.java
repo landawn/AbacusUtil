@@ -1011,7 +1011,7 @@ public final class LongMultiset<E> implements Iterable<E> {
         return N.isNullOrEmpty(others) ? false : removeAll(others, Long.MAX_VALUE);
     }
 
-    public Set<E> keySet() {
+    public Set<E> elements() {
         return valueMap.keySet();
     }
 
