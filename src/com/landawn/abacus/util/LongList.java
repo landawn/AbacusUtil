@@ -108,10 +108,22 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
         return of(elementData);
     }
 
+    /**
+     * 
+     * @param a
+     * @return
+     * @throws ArithmeticException if any elements in the specified array is bigger than Long.MAX_VALUE or less than Long.MIN_VALUE
+     */
     public static LongList from(float... a) {
         return a == null ? empty() : from(a, 0, a.length);
     }
 
+    /**
+     * 
+     * @param a
+     * @return
+     * @throws ArithmeticException if any elements in the specified array is bigger than Long.MAX_VALUE or less than Long.MIN_VALUE
+     */
     public static LongList from(float[] a, int startIndex, int endIndex) {
         N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
@@ -132,10 +144,22 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
         return of(elementData);
     }
 
+    /**
+     * 
+     * @param a
+     * @return
+     * @throws ArithmeticException if any elements in the specified array is bigger than Long.MAX_VALUE or less than Long.MIN_VALUE
+     */
     public static LongList from(double... a) {
         return a == null ? empty() : from(a, 0, a.length);
     }
 
+    /**
+     * 
+     * @param a
+     * @return
+     * @throws ArithmeticException if any elements in the specified array is bigger than Long.MAX_VALUE or less than Long.MIN_VALUE
+     */
     public static LongList from(double[] a, int startIndex, int endIndex) {
         N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
 

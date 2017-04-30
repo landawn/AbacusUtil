@@ -1614,23 +1614,6 @@ public final class Seq<T> implements Collection<T> {
     }
 
     /**
-     * Returns a read-only <code>Seq</code>.
-     * 
-     * @param fromIndex
-     * @param toIndex
-     * @return
-     */
-    public Seq<T> slice(final int fromIndex, final int toIndex) {
-        N.checkFromToIndex(fromIndex, toIndex, size());
-
-        if (coll instanceof List) {
-            return new Seq<T>(((List<T>) coll).subList(fromIndex, toIndex));
-        }
-
-        return new Seq<T>(new SubCollection<>(coll, fromIndex, toIndex));
-    }
-
-    /**
      * 
      * The time complexity is <i>O(n + m)</i> : <i>n</i> is the size of this <code>Seq</code> and <i>m</i> is the size of specified collection <code>b</code>.
      * 
@@ -1868,6 +1851,23 @@ public final class Seq<T> implements Collection<T> {
         }
 
         return result;
+    }
+
+    /**
+     * Returns a read-only <code>Seq</code>.
+     * 
+     * @param fromIndex
+     * @param toIndex
+     * @return
+     */
+    public Seq<T> slice(final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, size());
+    
+        if (coll instanceof List) {
+            return new Seq<T>(((List<T>) coll).subList(fromIndex, toIndex));
+        }
+    
+        return new Seq<T>(new SubCollection<>(coll, fromIndex, toIndex));
     }
 
     @Override

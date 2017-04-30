@@ -128,10 +128,22 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
         return of(elementData);
     }
 
+    /**
+     * 
+     * @param a
+     * @return
+     * @throws ArithmeticException if any elements in the specified array is bigger than Float.MAX_VALUE or less than Float.MIN_VALUE
+     */
     public static FloatList from(double... a) {
         return a == null ? empty() : from(a, 0, a.length);
     }
 
+    /**
+     * 
+     * @param a
+     * @return
+     * @throws ArithmeticException if any elements in the specified array is bigger than Float.MAX_VALUE or less than Float.MIN_VALUE
+     */
     public static FloatList from(double[] a, int startIndex, int endIndex) {
         N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
 

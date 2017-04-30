@@ -127,24 +127,51 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
         }
     }
 
+    /**
+     * 
+     * @return
+     * @throws NoSuchElementException if the value is not present, or ArithmeticException if the value is present but bigger than Integer.MAX_VALUE or less than Integer.MIN_VALUE
+     */
     public int getAsInt() {
         if (isPresent()) {
+            if (value < Integer.MIN_VALUE || value > Integer.MAX_VALUE) {
+                throw new ArithmeticException("overflow");
+            }
+
             return (int) value;
         } else {
             throw new NoSuchElementException("No value present");
         }
     }
 
+    /**
+     * 
+     * @return
+     * @throws NoSuchElementException if the value is not present, or ArithmeticException if the value is present but bigger than Long.MAX_VALUE or less than Long.MIN_VALUE
+     */
     public long getAsLong() {
         if (isPresent()) {
+            if (value < Long.MIN_VALUE || value > Long.MAX_VALUE) {
+                throw new ArithmeticException("overflow");
+            }
+
             return (long) value;
         } else {
             throw new NoSuchElementException("No value present");
         }
     }
 
+    /**
+     * 
+     * @return
+     * @throws NoSuchElementException if the value is not present, or ArithmeticException if the value is present but bigger than Float.MAX_VALUE or less than Float.MIN_VALUE
+     */
     public float getAsFloat() {
         if (isPresent()) {
+            if (value < Float.MIN_VALUE || value > Float.MAX_VALUE) {
+                throw new ArithmeticException("overflow");
+            }
+
             return (float) value;
         } else {
             throw new NoSuchElementException("No value present");
@@ -184,16 +211,31 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
         return isPresent() ? value : other;
     }
 
+    /**
+     * 
+     * @return
+     * @throws ArithmeticException if the value is present but bigger than Integer.MAX_VALUE or less than Integer.MIN_VALUE
+     */
     public int orInt(int other) {
-        return isPresent() ? (int) value : other;
+        return isPresent() ? getAsInt() : other;
     }
 
+    /**
+     * 
+     * @return
+     * @throws ArithmeticException if the value is present but bigger than Long.MAX_VALUE or less than Long.MIN_VALUE
+     */
     public long orLong(long other) {
-        return isPresent() ? (long) value : other;
+        return isPresent() ? getAsLong() : other;
     }
 
+    /**
+     * 
+     * @return
+     * @throws ArithmeticException if the value is present but bigger than Float.MAX_VALUE or less than Float.MIN_VALUE
+     */
     public float orFloat(float other) {
-        return isPresent() ? (float) value : other;
+        return isPresent() ? getAsFloat() : other;
     }
 
     /**

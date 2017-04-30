@@ -87,10 +87,22 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
         return a == null && size == 0 ? empty() : new CharList(a, size);
     }
 
+    /**
+     * 
+     * @param a
+     * @return
+     * @throws ArithmeticException if any elements in the specified array is bigger than Character.MAX_VALUE or less than Character.MIN_VALUE
+     */
     public static CharList from(int... a) {
         return a == null ? empty() : from(a, 0, a.length);
     }
 
+    /**
+     * 
+     * @param a
+     * @return
+     * @throws ArithmeticException if any elements in the specified array is bigger than Character.MAX_VALUE or less than Character.MIN_VALUE
+     */
     public static CharList from(int[] a, int startIndex, int endIndex) {
         N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
 

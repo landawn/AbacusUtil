@@ -147,10 +147,24 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
         return of(elementData);
     }
 
+    /**
+     * 
+     * @param a
+     * @return
+     * @throws ArithmeticException if any elements in the specified array is bigger than Integer.MAX_VALUE or less than Integer.MIN_VALUE
+     */
     public static IntList from(long... a) {
         return a == null ? empty() : from(a, 0, a.length);
     }
 
+    /**
+     * 
+     * @param a
+     * @param startIndex
+     * @param endIndex
+     * @return
+     * @throws ArithmeticException if any elements in the specified array is bigger than Integer.MAX_VALUE or less than Integer.MIN_VALUE
+     */
     public static IntList from(long[] a, int startIndex, int endIndex) {
         N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
@@ -171,10 +185,24 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
         return of(elementData);
     }
 
+    /**
+     * 
+     * @param a
+     * @return
+     * @throws ArithmeticException if any elements in the specified array is bigger than Integer.MAX_VALUE or less than Integer.MIN_VALUE
+     */
     public static IntList from(float... a) {
         return a == null ? empty() : from(a, 0, a.length);
     }
 
+    /**
+     * 
+     * @param a
+     * @param startIndex
+     * @param endIndex
+     * @return
+     * @throws ArithmeticException if any elements in the specified array is bigger than Integer.MAX_VALUE or less than Integer.MIN_VALUE
+     */
     public static IntList from(float[] a, int startIndex, int endIndex) {
         N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
@@ -195,10 +223,24 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
         return of(elementData);
     }
 
+    /**
+     * 
+     * @param a
+     * @return
+     * @throws ArithmeticException if any elements in the specified array is bigger than Integer.MAX_VALUE or less than Integer.MIN_VALUE
+     */
     public static IntList from(double... a) {
         return a == null ? empty() : from(a, 0, a.length);
     }
 
+    /**
+     * 
+     * @param a
+     * @param startIndex
+     * @param endIndex
+     * @return
+     * @throws ArithmeticException if any elements in the specified array is bigger than Integer.MAX_VALUE or less than Integer.MIN_VALUE
+     */
     public static IntList from(double[] a, int startIndex, int endIndex) {
         N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
 

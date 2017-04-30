@@ -87,10 +87,22 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
         return a == null && size == 0 ? empty() : new ByteList(a, size);
     }
 
+    /**
+     * 
+     * @param a
+     * @return
+     * @throws ArithmeticException if any elements in the specified array is bigger than Byte.MAX_VALUE or less than Byte.MIN_VALUE
+     */
     public static ByteList from(int... a) {
         return a == null ? empty() : from(a, 0, a.length);
     }
 
+    /**
+     * 
+     * @param a
+     * @return
+     * @throws ArithmeticException if any elements in the specified array is bigger than Byte.MAX_VALUE or less than Byte.MIN_VALUE
+     */
     public static ByteList from(int[] a, final int startIndex, final int endIndex) {
         N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
 

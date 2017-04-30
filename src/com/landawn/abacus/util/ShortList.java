@@ -88,10 +88,22 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
         return a == null && size == 0 ? empty() : new ShortList(a, size);
     }
 
+    /**
+     * 
+     * @param a
+     * @return
+     * @throws ArithmeticException if any elements in the specified array is bigger than Short.MAX_VALUE or less than Short.MIN_VALUE
+     */
     public static ShortList from(int... a) {
         return a == null ? empty() : from(a, 0, a.length);
     }
 
+    /**
+     * 
+     * @param a
+     * @return
+     * @throws ArithmeticException if any elements in the specified array is bigger than Short.MAX_VALUE or less than Short.MIN_VALUE
+     */
     public static ShortList from(int[] a, int startIndex, int endIndex) {
         N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
 
