@@ -111,7 +111,25 @@ public final class Seq<T> implements Collection<T> {
      * @return
      */
     public Collection<T> interior() {
-        return coll instanceof Seq ? ((Seq<T>) coll).interior() : coll;
+        Collection<T> tmp = coll;
+
+        if (tmp instanceof Seq) {
+            while (tmp instanceof Seq) {
+                tmp = ((Seq<T>) tmp).coll;
+            }
+        }
+
+        if (tmp instanceof SubCollection) {
+            while (tmp instanceof SubCollection) {
+                tmp = ((SubCollection<T>) tmp).c;
+            }
+        }
+
+        if (tmp instanceof Seq) {
+            return ((Seq<T>) tmp).interior();
+        } else {
+            return tmp;
+        }
     }
 
     /**
@@ -1862,11 +1880,11 @@ public final class Seq<T> implements Collection<T> {
      */
     public Seq<T> slice(final int fromIndex, final int toIndex) {
         N.checkFromToIndex(fromIndex, toIndex, size());
-    
+
         if (coll instanceof List) {
             return new Seq<T>(((List<T>) coll).subList(fromIndex, toIndex));
         }
-    
+
         return new Seq<T>(new SubCollection<>(coll, fromIndex, toIndex));
     }
 
