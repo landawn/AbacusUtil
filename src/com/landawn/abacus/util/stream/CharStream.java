@@ -1151,7 +1151,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
         });
     }
 
-    public static CharStream generate(final char seed, final CharUnaryOperator f) {
+    public static CharStream iterate(final char seed, final CharUnaryOperator f) {
         N.requireNonNull(f);
 
         return new IteratorCharStream(new ExCharIterator() {

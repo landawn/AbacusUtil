@@ -1069,7 +1069,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
         });
     }
 
-    public static ByteStream generate(final byte seed, final ByteUnaryOperator f) {
+    public static ByteStream iterate(final byte seed, final ByteUnaryOperator f) {
         N.requireNonNull(f);
 
         return new IteratorByteStream(new ExByteIterator() {

@@ -140,13 +140,27 @@ public final class OptionalChar implements Comparable<OptionalChar> {
      * Have the specified consumer accept the value if a value is present,
      * otherwise do nothing.
      *
-     * @param consumer block to be executed if a value is present
+     * @param action block to be executed if a value is present
      * @throws NullPocharerException if value is present and {@code consumer} is
      * null
      */
-    public void ifPresent(CharConsumer consumer) {
+    public void ifPresent(CharConsumer action) {
         if (isPresent()) {
-            consumer.accept(value);
+            action.accept(value);
+        }
+    }
+
+    /**
+     * If a value is present, performs the given action with the value, otherwise performs the given empty-based action.
+     * 
+     * @param action
+     * @param emptyAction
+     */
+    public void ifPresentOrElse​(CharConsumer action, Runnable emptyAction) {
+        if (isPresent()) {
+            action.accept(value);
+        } else {
+            emptyAction.run();
         }
     }
 

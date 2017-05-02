@@ -1062,7 +1062,7 @@ public abstract class DoubleStream
         });
     }
 
-    public static DoubleStream generate(final double seed, final DoubleUnaryOperator f) {
+    public static DoubleStream iterate(final double seed, final DoubleUnaryOperator f) {
         N.requireNonNull(f);
 
         return new IteratorDoubleStream(new ExDoubleIterator() {

@@ -1217,7 +1217,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
         });
     }
 
-    public static LongStream generate(final long seed, final LongUnaryOperator f) {
+    public static LongStream iterate(final long seed, final LongUnaryOperator f) {
         N.requireNonNull(f);
 
         return new IteratorLongStream(new ExLongIterator() {

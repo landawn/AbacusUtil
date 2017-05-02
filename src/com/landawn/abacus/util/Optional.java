@@ -157,13 +157,27 @@ public final class Optional<T> {
      * If a value is present, invoke the specified consumer with the value,
      * otherwise do nothing.
      *
-     * @param consumer block to be executed if a value is present
+     * @param action block to be executed if a value is present
      * @throws NullPointerException if value is present and {@code consumer} is
      * null
      */
-    public void ifPresent(Consumer<? super T> consumer) {
+    public void ifPresent(Consumer<? super T> action) {
         if (isPresent()) {
-            consumer.accept(value);
+            action.accept(value);
+        }
+    }
+
+    /**
+     * If a value is present, performs the given action with the value, otherwise performs the given empty-based action.
+     * 
+     * @param action
+     * @param emptyAction
+     */
+    public void ifPresentOrElse​(Consumer<? super T> action, Runnable emptyAction) {
+        if (isPresent()) {
+            action.accept(value);
+        } else {
+            emptyAction.run();
         }
     }
 

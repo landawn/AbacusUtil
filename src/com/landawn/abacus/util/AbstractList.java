@@ -18,8 +18,6 @@ package com.landawn.abacus.util;
 
 import java.security.SecureRandom;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -36,6 +34,20 @@ import com.landawn.abacus.util.function.IntFunction;
  */
 public abstract class AbstractList<C, P, E, A, L extends AbstractList<C, P, E, A, L>> implements RandomAccess, java.io.Serializable {
     private static final long serialVersionUID = 1504784980113045443L;
+
+    static final IntFunction<Multiset<Object>> MULTISET_FACTORY = new IntFunction<Multiset<Object>>() {
+        @Override
+        public Multiset<Object> apply(int len) {
+            return new Multiset<>(N.initHashCapacity(len));
+        }
+    };
+
+    static final IntFunction<Multimap<Object, Object, List<Object>>> MULTIMAP_FACTORY = new IntFunction<Multimap<Object, Object, List<Object>>>() {
+        @Override
+        public Multimap<Object, Object, List<Object>> apply(int len) {
+            return new Multimap<Object, Object, List<Object>>(N.initHashCapacity(len));
+        }
+    };
 
     /**
      * Default initial capacity.
@@ -433,47 +445,24 @@ public abstract class AbstractList<C, P, E, A, L extends AbstractList<C, P, E, A
     }
 
     protected <T> IntFunction<List<T>> createListSupplier() {
-        return new IntFunction<List<T>>() {
-            @Override
-            public List<T> apply(int len) {
-                return new java.util.ArrayList<>(len);
-            }
-        };
+        return Fn.Factory.ofList();
     }
 
     protected <T> IntFunction<Set<T>> createSetSupplier() {
-        return new IntFunction<Set<T>>() {
-            @Override
-            public Set<T> apply(int len) {
-                return new HashSet<>(N.initHashCapacity(len));
-            }
-        };
-    }
-
-    protected <T> IntFunction<Multiset<T>> createMultisetSupplier() {
-        return new IntFunction<Multiset<T>>() {
-            @Override
-            public Multiset<T> apply(int len) {
-                return new Multiset<>(N.initHashCapacity(len));
-            }
-        };
+        return Fn.Factory.ofSet();
     }
 
     protected <K, V> IntFunction<Map<K, V>> createMapSupplier() {
-        return new IntFunction<Map<K, V>>() {
-            @Override
-            public Map<K, V> apply(int len) {
-                return new HashMap<>(N.initHashCapacity(len));
-            }
-        };
+        return Fn.Factory.ofMap();
     }
 
+    @SuppressWarnings("rawtypes")
+    protected <T> IntFunction<Multiset<T>> createMultisetSupplier() {
+        return (IntFunction) MULTISET_FACTORY;
+    }
+
+    @SuppressWarnings("rawtypes")
     protected <K, U, V extends Collection<U>> IntFunction<Multimap<K, U, V>> createMultimapFactory() {
-        return new IntFunction<Multimap<K, U, V>>() {
-            @Override
-            public Multimap<K, U, V> apply(int len) {
-                return new Multimap<>(N.initHashCapacity(len));
-            }
-        };
+        return (IntFunction) MULTIMAP_FACTORY;
     }
 }

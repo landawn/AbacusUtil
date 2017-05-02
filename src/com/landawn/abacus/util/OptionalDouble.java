@@ -202,6 +202,20 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
     }
 
     /**
+     * If a value is present, performs the given action with the value, otherwise performs the given empty-based action.
+     * 
+     * @param action
+     * @param emptyAction
+     */
+    public void ifPresentOrElse​(DoubleConsumer action, Runnable emptyAction) {
+        if (isPresent()) {
+            action.accept(value);
+        } else {
+            emptyAction.run();
+        }
+    }
+
+    /**
      * Return the value if present, otherwise return {@code other}.
      *
      * @param other the value to be returned if there is no value present

@@ -2053,6 +2053,10 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         }).tried();
     }
 
+    public static <T> Stream<T> ofNullable(T t) {
+        return t == null ? Stream.<T> empty() : of(t);
+    }
+
     public static Stream<Boolean> from(final boolean... a) {
         if (N.isNullOrEmpty(a)) {
             return empty();
@@ -2658,7 +2662,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         });
     }
 
-    public static <T> Stream<T> generate(final T seed, final UnaryOperator<T> f) {
+    public static <T> Stream<T> iterate(final T seed, final UnaryOperator<T> f) {
         N.requireNonNull(f);
 
         return of(new ExIterator<T>() {

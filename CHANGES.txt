@@ -5,7 +5,11 @@
 
 2*, Remove Output0
 
-3, Improvements and bug fix.
+3, Rename generate(T seed,UnaryOperator<T> f) to iterate(T seed,UnaryOperator<T> f) in Stream/IntStream/...
+
+4, Add Stream.ofNullable and ifPresentOrElse​, learned from JDK 9.
+
+5, Improvements and bug fix.
 
 
 ========Changes in 0.9.62=========================================================================

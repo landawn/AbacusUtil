@@ -1073,7 +1073,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
         });
     }
 
-    public static ShortStream generate(final short seed, final ShortUnaryOperator f) {
+    public static ShortStream iterate(final short seed, final ShortUnaryOperator f) {
         N.requireNonNull(f);
 
         return new IteratorShortStream(new ExShortIterator() {

@@ -979,7 +979,7 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
         });
     }
 
-    public static FloatStream generate(final float seed, final FloatUnaryOperator f) {
+    public static FloatStream iterate(final float seed, final FloatUnaryOperator f) {
         N.requireNonNull(f);
 
         return new IteratorFloatStream(new ExFloatIterator() {

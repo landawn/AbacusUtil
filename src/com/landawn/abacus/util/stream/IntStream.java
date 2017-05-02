@@ -1400,7 +1400,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
         });
     }
 
-    public static IntStream generate(final int seed, final IntUnaryOperator f) {
+    public static IntStream iterate(final int seed, final IntUnaryOperator f) {
         N.requireNonNull(f);
 
         return new IteratorIntStream(new ExIntIterator() {
