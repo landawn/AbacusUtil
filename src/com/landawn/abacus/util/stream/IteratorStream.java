@@ -1497,6 +1497,20 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
+    public <K, U, M extends Map<K, U>> M toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,
+            BinaryOperator<U> mergeFunction, Supplier<M> mapFactory) {
+        final M result = mapFactory.get();
+        T element = null;
+    
+        while (elements.hasNext()) {
+            element = elements.next();
+            Collectors.merge(result, keyMapper.apply(element), valueMapper.apply(element), mergeFunction);
+        }
+    
+        return result;
+    }
+
+    @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream,
             final Supplier<M> mapFactory) {
         final M result = mapFactory.get();
@@ -1528,20 +1542,6 @@ class IteratorStream<T> extends AbstractStream<T> {
         };
 
         Collectors.replaceAll(intermediate, function);
-
-        return result;
-    }
-
-    @Override
-    public <K, U, M extends Map<K, U>> M toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,
-            BinaryOperator<U> mergeFunction, Supplier<M> mapFactory) {
-        final M result = mapFactory.get();
-        T element = null;
-
-        while (elements.hasNext()) {
-            element = elements.next();
-            Collectors.merge(result, keyMapper.apply(element), valueMapper.apply(element), mergeFunction);
-        }
 
         return result;
     }

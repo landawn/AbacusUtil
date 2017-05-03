@@ -31,12 +31,10 @@ import com.landawn.abacus.util.function.BooleanConsumer;
 import com.landawn.abacus.util.function.BooleanFunction;
 import com.landawn.abacus.util.function.BooleanPredicate;
 import com.landawn.abacus.util.function.BooleanUnaryOperator;
-import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IndexedBooleanConsumer;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.Collector;
-import com.landawn.abacus.util.stream.Collectors;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -1246,17 +1244,35 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
         return multiset;
     }
 
-    public <K> Map<K, List<Boolean>> toMap(BooleanFunction<? extends K> classifier) {
+    public <K, U> Map<K, U> toMap(BooleanFunction<? extends K> keyMapper, BooleanFunction<? extends U> valueMapper) {
         @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, List<Boolean>>> mapFactory = (Supplier) Supplier.MAP;
+        final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
 
-        return toMap(classifier, mapFactory);
+        return toMap(keyMapper, valueMapper, mapFactory);
     }
 
-    public <K, M extends Map<K, List<Boolean>>> M toMap(BooleanFunction<? extends K> classifier, Supplier<M> mapFactory) {
-        final Collector<Boolean, ?, List<Boolean>> downstream = Collectors.toList();
+    public <K, U, M extends Map<K, U>> M toMap(BooleanFunction<? extends K> keyMapper, BooleanFunction<? extends U> valueMapper, Supplier<M> mapFactory) {
+        final BinaryOperator<U> mergeFunction = BinaryOperator.THROWING_MERGER;
 
-        return toMap(classifier, downstream, mapFactory);
+        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
+    }
+
+    public <K, U> Map<K, U> toMap(BooleanFunction<? extends K> keyMapper, BooleanFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
+        @SuppressWarnings("rawtypes")
+        final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
+
+        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
+    }
+
+    public <K, U, M extends Map<K, U>> M toMap(BooleanFunction<? extends K> keyMapper, BooleanFunction<? extends U> valueMapper,
+            BinaryOperator<U> mergeFunction, Supplier<M> mapFactory) {
+        final M result = mapFactory.get();
+
+        for (int i = 0; i < size; i++) {
+            Seq.merge(result, keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]), mergeFunction);
+        }
+
+        return result;
     }
 
     @SuppressWarnings("hiding")
@@ -1300,86 +1316,6 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
 
         return result;
     }
-
-    public <K, U> Map<K, U> toMap(BooleanFunction<? extends K> keyMapper, BooleanFunction<? extends U> valueMapper) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
-
-        return toMap(keyMapper, valueMapper, mapFactory);
-    }
-
-    public <K, U, M extends Map<K, U>> M toMap(BooleanFunction<? extends K> keyMapper, BooleanFunction<? extends U> valueMapper, Supplier<M> mapFactory) {
-        final BinaryOperator<U> mergeFunction = BinaryOperator.THROWING_MERGER;
-
-        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
-    }
-
-    public <K, U> Map<K, U> toMap(BooleanFunction<? extends K> keyMapper, BooleanFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
-
-        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
-    }
-
-    public <K, U, M extends Map<K, U>> M toMap(BooleanFunction<? extends K> keyMapper, BooleanFunction<? extends U> valueMapper,
-            BinaryOperator<U> mergeFunction, Supplier<M> mapFactory) {
-        final M result = mapFactory.get();
-
-        for (int i = 0; i < size; i++) {
-            Seq.merge(result, keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]), mergeFunction);
-        }
-
-        return result;
-    }
-
-    public <K, U> Map<K, List<U>> toMap2(BooleanFunction<? extends K> keyMapper, BooleanFunction<? extends U> valueMapper) {
-        return toMap(keyMapper, (Collector<Boolean, ?, List<U>>) (Collector<?, ?, ?>) mapping(valueMapper, Collectors.toList()));
-    }
-
-    @SuppressWarnings("rawtypes")
-    public <K, U, M extends Map<K, List<U>>> M toMap2(BooleanFunction<? extends K> keyMapper, BooleanFunction<? extends U> valueMapper,
-            Supplier<M> mapFactory) {
-        return toMap(keyMapper, (Collector<Boolean, ?, List<U>>) (Collector) mapping(valueMapper, Collectors.toList()), mapFactory);
-    }
-
-    private <U, A, R> Collector<Boolean, ?, R> mapping(final BooleanFunction<? extends U> mapper, final Collector<? super U, A, R> downstream) {
-        return Collectors.mapping(new Function<Boolean, U>() {
-            @Override
-            public U apply(Boolean t) {
-                return mapper.apply(t);
-            }
-        }, downstream);
-    }
-
-    //    public Seq<Boolean> toSeq() {
-    //        return toSeq(0, size());
-    //    }
-    //
-    //    public Seq<Boolean> toSeq(final int fromIndex, final int toIndex) {
-    //        return Seq.of(toList(fromIndex, toIndex));
-    //    }
-    //
-    //    public Seq<Boolean> toSeq(final IntFunction<Collection<Boolean>> supplier) {
-    //        return toSeq(0, size(), supplier);
-    //    }
-    //
-    //    public Seq<Boolean> toSeq(final int fromIndex, final int toIndex, final IntFunction<Collection<Boolean>> supplier) {
-    //        final Collection<Boolean> c = supplier.apply(toIndex - fromIndex);
-    //
-    //        for (int i = fromIndex; i < toIndex; i++) {
-    //            c.add(elementData[i]);
-    //        }
-    //
-    //        return Seq.of(c);
-    //    }
-
-    //    public BooleanListBuilder __() {
-    //        return Builder.of(this);
-    //    }
-    //
-    //    public BooleanListBuilder __(Consumer<? super BooleanList> func) {
-    //        return Builder.of(this).__(func);
-    //    }
 
     public BooleanIterator iterator() {
         if (isEmpty()) {

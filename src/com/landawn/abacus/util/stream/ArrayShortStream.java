@@ -814,6 +814,18 @@ class ArrayShortStream extends AbstractShortStream {
     }
 
     @Override
+    public <K, U, M extends Map<K, U>> M toMap(ShortFunction<? extends K> keyMapper, ShortFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
+            Supplier<M> mapFactory) {
+        final M result = mapFactory.get();
+    
+        for (int i = fromIndex; i < toIndex; i++) {
+            Collectors.merge(result, keyMapper.apply(elements[i]), valueMapper.apply(elements[i]), mergeFunction);
+        }
+    
+        return result;
+    }
+
+    @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final ShortFunction<? extends K> classifier, final Collector<Short, A, D> downstream,
             final Supplier<M> mapFactory) {
         final M result = mapFactory.get();
@@ -843,18 +855,6 @@ class ArrayShortStream extends AbstractShortStream {
         };
 
         Collectors.replaceAll(intermediate, function);
-
-        return result;
-    }
-
-    @Override
-    public <K, U, M extends Map<K, U>> M toMap(ShortFunction<? extends K> keyMapper, ShortFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
-            Supplier<M> mapFactory) {
-        final M result = mapFactory.get();
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            Collectors.merge(result, keyMapper.apply(elements[i]), valueMapper.apply(elements[i]), mergeFunction);
-        }
 
         return result;
     }
@@ -1009,7 +1009,7 @@ class ArrayShortStream extends AbstractShortStream {
     }
 
     @Override
-    public ShortStream reverse() {
+    public ShortStream reversed() {
         return new IteratorShortStream(new ExShortIterator() {
             private int cursor = toIndex;
 

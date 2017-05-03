@@ -32,12 +32,10 @@ import com.landawn.abacus.util.function.FloatConsumer;
 import com.landawn.abacus.util.function.FloatFunction;
 import com.landawn.abacus.util.function.FloatPredicate;
 import com.landawn.abacus.util.function.FloatUnaryOperator;
-import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IndexedFloatConsumer;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.Collector;
-import com.landawn.abacus.util.stream.Collectors;
 import com.landawn.abacus.util.stream.FloatStream;
 
 /**
@@ -1427,17 +1425,35 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
         return multiset;
     }
 
-    public <K> Map<K, List<Float>> toMap(FloatFunction<? extends K> classifier) {
+    public <K, U> Map<K, U> toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper) {
         @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, List<Float>>> mapFactory = (Supplier) Supplier.MAP;
+        final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
 
-        return toMap(classifier, mapFactory);
+        return toMap(keyMapper, valueMapper, mapFactory);
     }
 
-    public <K, M extends Map<K, List<Float>>> M toMap(FloatFunction<? extends K> classifier, Supplier<M> mapFactory) {
-        final Collector<Float, ?, List<Float>> downstream = Collectors.toList();
+    public <K, U, M extends Map<K, U>> M toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper, Supplier<M> mapFactory) {
+        final BinaryOperator<U> mergeFunction = BinaryOperator.THROWING_MERGER;
 
-        return toMap(classifier, downstream, mapFactory);
+        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
+    }
+
+    public <K, U> Map<K, U> toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
+        @SuppressWarnings("rawtypes")
+        final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
+
+        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
+    }
+
+    public <K, U, M extends Map<K, U>> M toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
+            Supplier<M> mapFactory) {
+        final M result = mapFactory.get();
+
+        for (int i = 0; i < size; i++) {
+            Seq.merge(result, keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]), mergeFunction);
+        }
+
+        return result;
     }
 
     @SuppressWarnings("hiding")
@@ -1482,77 +1498,6 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
         return result;
     }
 
-    public <K, U> Map<K, U> toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
-
-        return toMap(keyMapper, valueMapper, mapFactory);
-    }
-
-    public <K, U, M extends Map<K, U>> M toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper, Supplier<M> mapFactory) {
-        final BinaryOperator<U> mergeFunction = BinaryOperator.THROWING_MERGER;
-
-        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
-    }
-
-    public <K, U> Map<K, U> toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
-
-        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
-    }
-
-    public <K, U, M extends Map<K, U>> M toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
-            Supplier<M> mapFactory) {
-        final M result = mapFactory.get();
-
-        for (int i = 0; i < size; i++) {
-            Seq.merge(result, keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]), mergeFunction);
-        }
-
-        return result;
-    }
-
-    public <K, U> Map<K, List<U>> toMap2(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper) {
-        return toMap(keyMapper, (Collector<Float, ?, List<U>>) (Collector<?, ?, ?>) mapping(valueMapper, Collectors.toList()));
-    }
-
-    @SuppressWarnings("rawtypes")
-    public <K, U, M extends Map<K, List<U>>> M toMap2(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper, Supplier<M> mapFactory) {
-        return toMap(keyMapper, (Collector<Float, ?, List<U>>) (Collector) mapping(valueMapper, Collectors.toList()), mapFactory);
-    }
-
-    private <U, A, R> Collector<Float, ?, R> mapping(final FloatFunction<? extends U> mapper, final Collector<? super U, A, R> downstream) {
-        return Collectors.mapping(new Function<Float, U>() {
-            @Override
-            public U apply(Float t) {
-                return mapper.apply(t);
-            }
-        }, downstream);
-    }
-
-    //    public Seq<Float> toSeq() {
-    //        return toSeq(0, size());
-    //    }
-    //
-    //    public Seq<Float> toSeq(final int fromIndex, final int toIndex) {
-    //        return Seq.of(toList(fromIndex, toIndex));
-    //    }
-    //
-    //    public Seq<Float> toSeq(final IntFunction<Collection<Float>> supplier) {
-    //        return toSeq(0, size(), supplier);
-    //    }
-    //
-    //    public Seq<Float> toSeq(final int fromIndex, final int toIndex, final IntFunction<Collection<Float>> supplier) {
-    //        final Collection<Float> c = supplier.apply(toIndex - fromIndex);
-    //
-    //        for (int i = fromIndex; i < toIndex; i++) {
-    //            c.add(elementData[i]);
-    //        }
-    //
-    //        return Seq.of(c);
-    //    }
-
     public FloatIterator iterator() {
         if (isEmpty()) {
             return FloatIterator.EMPTY;
@@ -1570,14 +1515,6 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
 
         return FloatStream.of(elementData, fromIndex, toIndex);
     }
-
-    //    public FloatListBuilder __() {
-    //        return Builder.of(this);
-    //    }
-    //
-    //    public FloatListBuilder __(Consumer<? super FloatList> func) {
-    //        return Builder.of(this).__(func);
-    //    }
 
     @Override
     public int hashCode() {

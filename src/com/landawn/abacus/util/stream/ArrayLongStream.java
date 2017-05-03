@@ -954,6 +954,18 @@ class ArrayLongStream extends AbstractLongStream {
     }
 
     @Override
+    public <K, U, M extends Map<K, U>> M toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
+            Supplier<M> mapFactory) {
+        final M result = mapFactory.get();
+    
+        for (int i = fromIndex; i < toIndex; i++) {
+            Collectors.merge(result, keyMapper.apply(elements[i]), valueMapper.apply(elements[i]), mergeFunction);
+        }
+    
+        return result;
+    }
+
+    @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final LongFunction<? extends K> classifier, final Collector<Long, A, D> downstream,
             final Supplier<M> mapFactory) {
         final M result = mapFactory.get();
@@ -983,18 +995,6 @@ class ArrayLongStream extends AbstractLongStream {
         };
 
         Collectors.replaceAll(intermediate, function);
-
-        return result;
-    }
-
-    @Override
-    public <K, U, M extends Map<K, U>> M toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
-            Supplier<M> mapFactory) {
-        final M result = mapFactory.get();
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            Collectors.merge(result, keyMapper.apply(elements[i]), valueMapper.apply(elements[i]), mergeFunction);
-        }
 
         return result;
     }
@@ -1149,7 +1149,7 @@ class ArrayLongStream extends AbstractLongStream {
     }
 
     @Override
-    public LongStream reverse() {
+    public LongStream reversed() {
         return new IteratorLongStream(new ExLongIterator() {
             private int cursor = toIndex;
 

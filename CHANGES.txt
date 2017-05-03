@@ -9,7 +9,15 @@
 
 4, Add Stream.ofNullable and ifPresentOrElse​, learned from JDK 9.
 
-5, Improvements and bug fix.
+5*, Rename reverse/shuffle/rotate to reversed/shuffled/rotated in Pair/Triple/Tuple/Stream/IntStream...
+   a) Keep consistent with sorted(...) in Stream.
+   b) Instead of update the order of the elements, reversed/shuffled/rotated return a new Object.
+
+6*, Rename toMap/groupBy/toMap2/groupBy2 to toMap2/groupBy2/toMap/groupBy to keep consistent with Collectors.
+
+7*, Remove toMap2 from IntList/ByteList/.../IntStream/ByteStream/...
+
+8, Improvements and bug fix.
 
 
 ========Changes in 0.9.62=========================================================================

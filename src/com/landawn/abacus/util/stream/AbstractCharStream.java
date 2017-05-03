@@ -309,29 +309,6 @@ abstract class AbstractCharStream extends CharStream {
     }
 
     @Override
-    public <K> Map<K, List<Character>> toMap(CharFunction<? extends K> classifier) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, List<Character>>> mapFactory = (Supplier) Supplier.MAP;
-
-        return toMap(classifier, mapFactory);
-    }
-
-    @Override
-    public <K, M extends Map<K, List<Character>>> M toMap(CharFunction<? extends K> classifier, Supplier<M> mapFactory) {
-        final Collector<Character, ?, List<Character>> downstream = Collectors.toList();
-
-        return toMap(classifier, downstream, mapFactory);
-    }
-
-    @Override
-    public <K, A, D> Map<K, D> toMap(CharFunction<? extends K> classifier, Collector<Character, A, D> downstream) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, D>> mapFactory = (Supplier) Supplier.MAP;
-
-        return toMap(classifier, downstream, mapFactory);
-    }
-
-    @Override
     public <K, U> Map<K, U> toMap(CharFunction<? extends K> keyMapper, CharFunction<? extends U> valueMapper) {
         @SuppressWarnings("rawtypes")
         final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
@@ -352,6 +329,14 @@ abstract class AbstractCharStream extends CharStream {
         final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
 
         return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
+    }
+
+    @Override
+    public <K, A, D> Map<K, D> toMap(CharFunction<? extends K> classifier, Collector<Character, A, D> downstream) {
+        @SuppressWarnings("rawtypes")
+        final Supplier<Map<K, D>> mapFactory = (Supplier) Supplier.MAP;
+    
+        return toMap(classifier, downstream, mapFactory);
     }
 
     @Override
@@ -565,7 +550,7 @@ abstract class AbstractCharStream extends CharStream {
     }
 
     @Override
-    public CharStream reverse() {
+    public CharStream reversed() {
         final char[] tmp = toArray();
 
         return newStream(new ExCharIterator() {
@@ -609,7 +594,7 @@ abstract class AbstractCharStream extends CharStream {
     }
 
     @Override
-    public CharStream shuffle() {
+    public CharStream shuffled() {
         final char[] a = toArray();
 
         N.shuffle(a);
@@ -618,7 +603,7 @@ abstract class AbstractCharStream extends CharStream {
     }
 
     @Override
-    public CharStream shuffle(final Random rnd) {
+    public CharStream shuffled(final Random rnd) {
         final char[] a = toArray();
 
         N.shuffle(a, rnd);
@@ -627,7 +612,7 @@ abstract class AbstractCharStream extends CharStream {
     }
 
     @Override
-    public CharStream rotate(int distance) {
+    public CharStream rotated(int distance) {
         final char[] a = toArray();
 
         N.rotate(a, distance);

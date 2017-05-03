@@ -781,6 +781,20 @@ class IteratorByteStream extends AbstractByteStream {
     }
 
     @Override
+    public <K, U, M extends Map<K, U>> M toMap(ByteFunction<? extends K> keyMapper, ByteFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
+            Supplier<M> mapFactory) {
+        final M result = mapFactory.get();
+        byte element = 0;
+    
+        while (elements.hasNext()) {
+            element = elements.nextByte();
+            Collectors.merge(result, keyMapper.apply(element), valueMapper.apply(element), mergeFunction);
+        }
+    
+        return result;
+    }
+
+    @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final ByteFunction<? extends K> classifier, final Collector<Byte, A, D> downstream,
             final Supplier<M> mapFactory) {
         final M result = mapFactory.get();
@@ -812,20 +826,6 @@ class IteratorByteStream extends AbstractByteStream {
         };
 
         Collectors.replaceAll(intermediate, function);
-
-        return result;
-    }
-
-    @Override
-    public <K, U, M extends Map<K, U>> M toMap(ByteFunction<? extends K> keyMapper, ByteFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
-            Supplier<M> mapFactory) {
-        final M result = mapFactory.get();
-        byte element = 0;
-
-        while (elements.hasNext()) {
-            element = elements.nextByte();
-            Collectors.merge(result, keyMapper.apply(element), valueMapper.apply(element), mergeFunction);
-        }
 
         return result;
     }

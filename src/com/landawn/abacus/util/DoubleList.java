@@ -32,12 +32,10 @@ import com.landawn.abacus.util.function.DoubleConsumer;
 import com.landawn.abacus.util.function.DoubleFunction;
 import com.landawn.abacus.util.function.DoublePredicate;
 import com.landawn.abacus.util.function.DoubleUnaryOperator;
-import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IndexedDoubleConsumer;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.Collector;
-import com.landawn.abacus.util.stream.Collectors;
 import com.landawn.abacus.util.stream.DoubleStream;
 
 /**
@@ -1397,17 +1395,35 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
         return multiset;
     }
 
-    public <K> Map<K, List<Double>> toMap(DoubleFunction<? extends K> classifier) {
+    public <K, U> Map<K, U> toMap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends U> valueMapper) {
         @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, List<Double>>> mapFactory = (Supplier) Supplier.MAP;
+        final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
 
-        return toMap(classifier, mapFactory);
+        return toMap(keyMapper, valueMapper, mapFactory);
     }
 
-    public <K, M extends Map<K, List<Double>>> M toMap(DoubleFunction<? extends K> classifier, Supplier<M> mapFactory) {
-        final Collector<Double, ?, List<Double>> downstream = Collectors.toList();
+    public <K, U, M extends Map<K, U>> M toMap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends U> valueMapper, Supplier<M> mapFactory) {
+        final BinaryOperator<U> mergeFunction = BinaryOperator.THROWING_MERGER;
 
-        return toMap(classifier, downstream, mapFactory);
+        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
+    }
+
+    public <K, U> Map<K, U> toMap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
+        @SuppressWarnings("rawtypes")
+        final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
+
+        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
+    }
+
+    public <K, U, M extends Map<K, U>> M toMap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
+            Supplier<M> mapFactory) {
+        final M result = mapFactory.get();
+
+        for (int i = 0; i < size; i++) {
+            Seq.merge(result, keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]), mergeFunction);
+        }
+
+        return result;
     }
 
     @SuppressWarnings("hiding")
@@ -1452,77 +1468,6 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
         return result;
     }
 
-    public <K, U> Map<K, U> toMap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends U> valueMapper) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
-
-        return toMap(keyMapper, valueMapper, mapFactory);
-    }
-
-    public <K, U, M extends Map<K, U>> M toMap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends U> valueMapper, Supplier<M> mapFactory) {
-        final BinaryOperator<U> mergeFunction = BinaryOperator.THROWING_MERGER;
-
-        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
-    }
-
-    public <K, U> Map<K, U> toMap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
-
-        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
-    }
-
-    public <K, U, M extends Map<K, U>> M toMap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
-            Supplier<M> mapFactory) {
-        final M result = mapFactory.get();
-
-        for (int i = 0; i < size; i++) {
-            Seq.merge(result, keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]), mergeFunction);
-        }
-
-        return result;
-    }
-
-    public <K, U> Map<K, List<U>> toMap2(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends U> valueMapper) {
-        return toMap(keyMapper, (Collector<Double, ?, List<U>>) (Collector<?, ?, ?>) mapping(valueMapper, Collectors.toList()));
-    }
-
-    @SuppressWarnings("rawtypes")
-    public <K, U, M extends Map<K, List<U>>> M toMap2(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends U> valueMapper, Supplier<M> mapFactory) {
-        return toMap(keyMapper, (Collector<Double, ?, List<U>>) (Collector) mapping(valueMapper, Collectors.toList()), mapFactory);
-    }
-
-    private <U, A, R> Collector<Double, ?, R> mapping(final DoubleFunction<? extends U> mapper, final Collector<? super U, A, R> downstream) {
-        return Collectors.mapping(new Function<Double, U>() {
-            @Override
-            public U apply(Double t) {
-                return mapper.apply(t);
-            }
-        }, downstream);
-    }
-
-    //    public Seq<Double> toSeq() {
-    //        return toSeq(0, size());
-    //    }
-    //
-    //    public Seq<Double> toSeq(final int fromIndex, final int toIndex) {
-    //        return Seq.of(toList(fromIndex, toIndex));
-    //    }
-    //
-    //    public Seq<Double> toSeq(final IntFunction<Collection<Double>> supplier) {
-    //        return toSeq(0, size(), supplier);
-    //    }
-    //
-    //    public Seq<Double> toSeq(final int fromIndex, final int toIndex, final IntFunction<Collection<Double>> supplier) {
-    //        final Collection<Double> c = supplier.apply(toIndex - fromIndex);
-    //
-    //        for (int i = fromIndex; i < toIndex; i++) {
-    //            c.add(elementData[i]);
-    //        }
-    //
-    //        return Seq.of(c);
-    //    }
-
     public DoubleIterator iterator() {
         if (isEmpty()) {
             return DoubleIterator.EMPTY;
@@ -1540,14 +1485,6 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
 
         return DoubleStream.of(elementData, fromIndex, toIndex);
     }
-
-    //    public DoubleListBuilder __() {
-    //        return Builder.of(this);
-    //    }
-    //
-    //    public DoubleListBuilder __(Consumer<? super DoubleList> func) {
-    //        return Builder.of(this).__(func);
-    //    }
 
     @Override
     public int hashCode() {

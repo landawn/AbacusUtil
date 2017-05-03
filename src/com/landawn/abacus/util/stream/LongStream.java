@@ -299,43 +299,6 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
 
     /**
      * 
-     * @param classifier
-     * @return
-     * @see Collectors#groupingBy(Function)
-     */
-    public abstract <K> Map<K, List<Long>> toMap(LongFunction<? extends K> classifier);
-
-    /**
-     * 
-     * @param classifier
-     * @param mapFactory
-     * @return
-     * @see Collectors#groupingBy(Function, Supplier)
-     */
-    public abstract <K, M extends Map<K, List<Long>>> M toMap(final LongFunction<? extends K> classifier, final Supplier<M> mapFactory);
-
-    /**
-     * 
-     * @param classifier
-     * @param downstream
-     * @return
-     * @see Collectors#groupingBy(Function, Collector)
-     */
-    public abstract <K, A, D> Map<K, D> toMap(final LongFunction<? extends K> classifier, final Collector<Long, A, D> downstream);
-
-    /**
-     * 
-     * @param classifier
-     * @param downstream
-     * @param mapFactory
-     * @return
-     * @see Collectors#groupingBy(Function, Collector, Supplier)
-     */
-    public abstract <K, A, D, M extends Map<K, D>> M toMap(final LongFunction<? extends K> classifier, final Collector<Long, A, D> downstream,
-            final Supplier<M> mapFactory);
-
-    /**
-     * 
      * @param keyMapper
      * @param valueMapper
      * @return
@@ -374,6 +337,26 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      */
     public abstract <K, U, M extends Map<K, U>> M toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper,
             BinaryOperator<U> mergeFunction, Supplier<M> mapFactory);
+
+    /**
+     * 
+     * @param classifier
+     * @param downstream
+     * @return
+     * @see Collectors#groupingBy(Function, Collector)
+     */
+    public abstract <K, A, D> Map<K, D> toMap(final LongFunction<? extends K> classifier, final Collector<Long, A, D> downstream);
+
+    /**
+     * 
+     * @param classifier
+     * @param downstream
+     * @param mapFactory
+     * @return
+     * @see Collectors#groupingBy(Function, Collector, Supplier)
+     */
+    public abstract <K, A, D, M extends Map<K, D>> M toMap(final LongFunction<? extends K> classifier, final Collector<Long, A, D> downstream,
+            final Supplier<M> mapFactory);
 
     /**
      * 

@@ -310,29 +310,6 @@ abstract class AbstractFloatStream extends FloatStream {
     }
 
     @Override
-    public <K> Map<K, List<Float>> toMap(FloatFunction<? extends K> classifier) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, List<Float>>> mapFactory = (Supplier) Supplier.MAP;
-
-        return toMap(classifier, mapFactory);
-    }
-
-    @Override
-    public <K, M extends Map<K, List<Float>>> M toMap(FloatFunction<? extends K> classifier, Supplier<M> mapFactory) {
-        final Collector<Float, ?, List<Float>> downstream = Collectors.toList();
-
-        return toMap(classifier, downstream, mapFactory);
-    }
-
-    @Override
-    public <K, A, D> Map<K, D> toMap(FloatFunction<? extends K> classifier, Collector<Float, A, D> downstream) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, D>> mapFactory = (Supplier) Supplier.MAP;
-
-        return toMap(classifier, downstream, mapFactory);
-    }
-
-    @Override
     public <K, U> Map<K, U> toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper) {
         @SuppressWarnings("rawtypes")
         final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
@@ -353,6 +330,14 @@ abstract class AbstractFloatStream extends FloatStream {
         final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
 
         return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
+    }
+
+    @Override
+    public <K, A, D> Map<K, D> toMap(FloatFunction<? extends K> classifier, Collector<Float, A, D> downstream) {
+        @SuppressWarnings("rawtypes")
+        final Supplier<Map<K, D>> mapFactory = (Supplier) Supplier.MAP;
+    
+        return toMap(classifier, downstream, mapFactory);
     }
 
     @Override
@@ -629,7 +614,7 @@ abstract class AbstractFloatStream extends FloatStream {
     }
 
     @Override
-    public FloatStream reverse() {
+    public FloatStream reversed() {
         final float[] tmp = toArray();
 
         return newStream(new ExFloatIterator() {
@@ -673,7 +658,7 @@ abstract class AbstractFloatStream extends FloatStream {
     }
 
     @Override
-    public FloatStream shuffle() {
+    public FloatStream shuffled() {
         final float[] a = toArray();
 
         N.shuffle(a);
@@ -682,7 +667,7 @@ abstract class AbstractFloatStream extends FloatStream {
     }
 
     @Override
-    public FloatStream shuffle(final Random rnd) {
+    public FloatStream shuffled(final Random rnd) {
         final float[] a = toArray();
 
         N.shuffle(a, rnd);
@@ -691,7 +676,7 @@ abstract class AbstractFloatStream extends FloatStream {
     }
 
     @Override
-    public FloatStream rotate(int distance) {
+    public FloatStream rotated(int distance) {
         final float[] a = toArray();
 
         N.rotate(a, distance);

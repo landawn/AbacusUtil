@@ -27,7 +27,6 @@ import java.util.Set;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
-import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IndexedLongConsumer;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.LongBinaryOperator;
@@ -37,7 +36,6 @@ import com.landawn.abacus.util.function.LongPredicate;
 import com.landawn.abacus.util.function.LongUnaryOperator;
 import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.Collector;
-import com.landawn.abacus.util.stream.Collectors;
 import com.landawn.abacus.util.stream.LongStream;
 
 /**
@@ -1463,17 +1461,35 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
         return multiset;
     }
 
-    public <K> Map<K, List<Long>> toMap(LongFunction<? extends K> classifier) {
+    public <K, U> Map<K, U> toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper) {
         @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, List<Long>>> mapFactory = (Supplier) Supplier.MAP;
+        final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
 
-        return toMap(classifier, mapFactory);
+        return toMap(keyMapper, valueMapper, mapFactory);
     }
 
-    public <K, M extends Map<K, List<Long>>> M toMap(LongFunction<? extends K> classifier, Supplier<M> mapFactory) {
-        final Collector<Long, ?, List<Long>> downstream = Collectors.toList();
+    public <K, U, M extends Map<K, U>> M toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper, Supplier<M> mapFactory) {
+        final BinaryOperator<U> mergeFunction = BinaryOperator.THROWING_MERGER;
 
-        return toMap(classifier, downstream, mapFactory);
+        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
+    }
+
+    public <K, U> Map<K, U> toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
+        @SuppressWarnings("rawtypes")
+        final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
+
+        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
+    }
+
+    public <K, U, M extends Map<K, U>> M toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
+            Supplier<M> mapFactory) {
+        final M result = mapFactory.get();
+
+        for (int i = 0; i < size; i++) {
+            Seq.merge(result, keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]), mergeFunction);
+        }
+
+        return result;
     }
 
     @SuppressWarnings("hiding")
@@ -1518,77 +1534,6 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
         return result;
     }
 
-    public <K, U> Map<K, U> toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
-
-        return toMap(keyMapper, valueMapper, mapFactory);
-    }
-
-    public <K, U, M extends Map<K, U>> M toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper, Supplier<M> mapFactory) {
-        final BinaryOperator<U> mergeFunction = BinaryOperator.THROWING_MERGER;
-
-        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
-    }
-
-    public <K, U> Map<K, U> toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
-
-        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
-    }
-
-    public <K, U, M extends Map<K, U>> M toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
-            Supplier<M> mapFactory) {
-        final M result = mapFactory.get();
-
-        for (int i = 0; i < size; i++) {
-            Seq.merge(result, keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]), mergeFunction);
-        }
-
-        return result;
-    }
-
-    public <K, U> Map<K, List<U>> toMap2(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper) {
-        return toMap(keyMapper, (Collector<Long, ?, List<U>>) (Collector<?, ?, ?>) mapping(valueMapper, Collectors.toList()));
-    }
-
-    @SuppressWarnings("rawtypes")
-    public <K, U, M extends Map<K, List<U>>> M toMap2(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper, Supplier<M> mapFactory) {
-        return toMap(keyMapper, (Collector<Long, ?, List<U>>) (Collector) mapping(valueMapper, Collectors.toList()), mapFactory);
-    }
-
-    private <U, A, R> Collector<Long, ?, R> mapping(final LongFunction<? extends U> mapper, final Collector<? super U, A, R> downstream) {
-        return Collectors.mapping(new Function<Long, U>() {
-            @Override
-            public U apply(Long t) {
-                return mapper.apply(t);
-            }
-        }, downstream);
-    }
-
-    //    public Seq<Long> toSeq() {
-    //        return toSeq(0, size());
-    //    }
-    //
-    //    public Seq<Long> toSeq(final int fromIndex, final int toIndex) {
-    //        return Seq.of(toList(fromIndex, toIndex));
-    //    }
-    //
-    //    public Seq<Long> toSeq(final IntFunction<Collection<Long>> supplier) {
-    //        return toSeq(0, size(), supplier);
-    //    }
-    //
-    //    public Seq<Long> toSeq(final int fromIndex, final int toIndex, final IntFunction<Collection<Long>> supplier) {
-    //        final Collection<Long> c = supplier.apply(toIndex - fromIndex);
-    //
-    //        for (int i = fromIndex; i < toIndex; i++) {
-    //            c.add(elementData[i]);
-    //        }
-    //
-    //        return Seq.of(c);
-    //    }
-
     public LongIterator iterator() {
         if (isEmpty()) {
             return LongIterator.EMPTY;
@@ -1606,14 +1551,6 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
 
         return LongStream.of(elementData, fromIndex, toIndex);
     }
-
-    //    public LongListBuilder __() {
-    //        return Builder.of(this);
-    //    }
-    //
-    //    public LongListBuilder __(Consumer<? super LongList> func) {
-    //        return Builder.of(this).__(func);
-    //    }
 
     @Override
     public int hashCode() {

@@ -894,6 +894,20 @@ class IteratorFloatStream extends AbstractFloatStream {
     }
 
     @Override
+    public <K, U, M extends Map<K, U>> M toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
+            Supplier<M> mapFactory) {
+        final M result = mapFactory.get();
+        float element = 0;
+    
+        while (elements.hasNext()) {
+            element = elements.nextFloat();
+            Collectors.merge(result, keyMapper.apply(element), valueMapper.apply(element), mergeFunction);
+        }
+    
+        return result;
+    }
+
+    @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final FloatFunction<? extends K> classifier, final Collector<Float, A, D> downstream,
             final Supplier<M> mapFactory) {
         final M result = mapFactory.get();
@@ -925,20 +939,6 @@ class IteratorFloatStream extends AbstractFloatStream {
         };
 
         Collectors.replaceAll(intermediate, function);
-
-        return result;
-    }
-
-    @Override
-    public <K, U, M extends Map<K, U>> M toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
-            Supplier<M> mapFactory) {
-        final M result = mapFactory.get();
-        float element = 0;
-
-        while (elements.hasNext()) {
-            element = elements.nextFloat();
-            Collectors.merge(result, keyMapper.apply(element), valueMapper.apply(element), mergeFunction);
-        }
 
         return result;
     }

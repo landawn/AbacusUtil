@@ -309,29 +309,6 @@ abstract class AbstractDoubleStream extends DoubleStream {
     }
 
     @Override
-    public <K> Map<K, List<Double>> toMap(DoubleFunction<? extends K> classifier) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, List<Double>>> mapFactory = (Supplier) Supplier.MAP;
-
-        return toMap(classifier, mapFactory);
-    }
-
-    @Override
-    public <K, M extends Map<K, List<Double>>> M toMap(DoubleFunction<? extends K> classifier, Supplier<M> mapFactory) {
-        final Collector<Double, ?, List<Double>> downstream = Collectors.toList();
-
-        return toMap(classifier, downstream, mapFactory);
-    }
-
-    @Override
-    public <K, A, D> Map<K, D> toMap(DoubleFunction<? extends K> classifier, Collector<Double, A, D> downstream) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, D>> mapFactory = (Supplier) Supplier.MAP;
-
-        return toMap(classifier, downstream, mapFactory);
-    }
-
-    @Override
     public <K, U> Map<K, U> toMap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends U> valueMapper) {
         @SuppressWarnings("rawtypes")
         final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
@@ -352,6 +329,14 @@ abstract class AbstractDoubleStream extends DoubleStream {
         final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
 
         return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
+    }
+
+    @Override
+    public <K, A, D> Map<K, D> toMap(DoubleFunction<? extends K> classifier, Collector<Double, A, D> downstream) {
+        @SuppressWarnings("rawtypes")
+        final Supplier<Map<K, D>> mapFactory = (Supplier) Supplier.MAP;
+    
+        return toMap(classifier, downstream, mapFactory);
     }
 
     @Override
@@ -629,7 +614,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
     }
 
     @Override
-    public DoubleStream reverse() {
+    public DoubleStream reversed() {
         final double[] tmp = toArray();
 
         return newStream(new ExDoubleIterator() {
@@ -673,7 +658,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
     }
 
     @Override
-    public DoubleStream shuffle() {
+    public DoubleStream shuffled() {
         final double[] a = toArray();
 
         N.shuffle(a);
@@ -682,7 +667,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
     }
 
     @Override
-    public DoubleStream shuffle(final Random rnd) {
+    public DoubleStream shuffled(final Random rnd) {
         final double[] a = toArray();
 
         N.shuffle(a, rnd);
@@ -691,7 +676,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
     }
 
     @Override
-    public DoubleStream rotate(int distance) {
+    public DoubleStream rotated(int distance) {
         final double[] a = toArray();
 
         N.rotate(a, distance);

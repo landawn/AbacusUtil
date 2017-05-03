@@ -324,43 +324,6 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
 
     /**
      * 
-     * @param classifier
-     * @return
-     * @see Collectors#groupingBy(Function)
-     */
-    public abstract <K> Map<K, List<Integer>> toMap(IntFunction<? extends K> classifier);
-
-    /**
-     * 
-     * @param classifier
-     * @param mapFactory
-     * @return
-     * @see Collectors#groupingBy(Function, Supplier)
-     */
-    public abstract <K, M extends Map<K, List<Integer>>> M toMap(final IntFunction<? extends K> classifier, final Supplier<M> mapFactory);
-
-    /**
-     * 
-     * @param classifier
-     * @param downstream
-     * @return
-     * @see Collectors#groupingBy(Function, Collector)
-     */
-    public abstract <K, A, D> Map<K, D> toMap(final IntFunction<? extends K> classifier, final Collector<Integer, A, D> downstream);
-
-    /**
-     * 
-     * @param classifier
-     * @param downstream
-     * @param mapFactory
-     * @return
-     * @see Collectors#groupingBy(Function, Collector, Supplier)
-     */
-    public abstract <K, A, D, M extends Map<K, D>> M toMap(final IntFunction<? extends K> classifier, final Collector<Integer, A, D> downstream,
-            final Supplier<M> mapFactory);
-
-    /**
-     * 
      * @param keyMapper
      * @param valueMapper
      * @return
@@ -399,6 +362,26 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      */
     public abstract <K, U, M extends Map<K, U>> M toMap(IntFunction<? extends K> keyMapper, IntFunction<? extends U> valueMapper,
             BinaryOperator<U> mergeFunction, Supplier<M> mapFactory);
+
+    /**
+     * 
+     * @param classifier
+     * @param downstream
+     * @return
+     * @see Collectors#groupingBy(Function, Collector)
+     */
+    public abstract <K, A, D> Map<K, D> toMap(final IntFunction<? extends K> classifier, final Collector<Integer, A, D> downstream);
+
+    /**
+     * 
+     * @param classifier
+     * @param downstream
+     * @param mapFactory
+     * @return
+     * @see Collectors#groupingBy(Function, Collector, Supplier)
+     */
+    public abstract <K, A, D, M extends Map<K, D>> M toMap(final IntFunction<? extends K> classifier, final Collector<Integer, A, D> downstream,
+            final Supplier<M> mapFactory);
 
     /**
      * 

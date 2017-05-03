@@ -498,6 +498,30 @@ final class ParallelArrayCharStream extends ArrayCharStream {
     }
 
     @Override
+    public <K, U, M extends Map<K, U>> M toMap(final CharFunction<? extends K> keyMapper, final CharFunction<? extends U> valueMapper,
+            final BinaryOperator<U> mergeFunction, final Supplier<M> mapFactory) {
+        if (maxThreadNum <= 1) {
+            return sequential().toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
+        }
+    
+        final Function<? super Character, ? extends K> keyMapper2 = new Function<Character, K>() {
+            @Override
+            public K apply(Character value) {
+                return keyMapper.apply(value);
+            }
+        };
+    
+        final Function<? super Character, ? extends U> valueMapper2 = new Function<Character, U>() {
+            @Override
+            public U apply(Character value) {
+                return valueMapper.apply(value);
+            }
+        };
+    
+        return boxed().toMap(keyMapper2, valueMapper2, mergeFunction, mapFactory);
+    }
+
+    @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final CharFunction<? extends K> classifier, final Collector<Character, A, D> downstream,
             final Supplier<M> mapFactory) {
         if (maxThreadNum <= 1) {
@@ -512,30 +536,6 @@ final class ParallelArrayCharStream extends ArrayCharStream {
         };
 
         return boxed().toMap(classifier2, downstream, mapFactory);
-    }
-
-    @Override
-    public <K, U, M extends Map<K, U>> M toMap(final CharFunction<? extends K> keyMapper, final CharFunction<? extends U> valueMapper,
-            final BinaryOperator<U> mergeFunction, final Supplier<M> mapFactory) {
-        if (maxThreadNum <= 1) {
-            return sequential().toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
-        }
-
-        final Function<? super Character, ? extends K> keyMapper2 = new Function<Character, K>() {
-            @Override
-            public K apply(Character value) {
-                return keyMapper.apply(value);
-            }
-        };
-
-        final Function<? super Character, ? extends U> valueMapper2 = new Function<Character, U>() {
-            @Override
-            public U apply(Character value) {
-                return valueMapper.apply(value);
-            }
-        };
-
-        return boxed().toMap(keyMapper2, valueMapper2, mergeFunction, mapFactory);
     }
 
     @Override
@@ -1052,8 +1052,8 @@ final class ParallelArrayCharStream extends ArrayCharStream {
     }
 
     @Override
-    public CharStream reverse() {
-        return new ParallelIteratorCharStream(sequential().reverse().exIterator(), closeHandlers, false, maxThreadNum, splitor);
+    public CharStream reversed() {
+        return new ParallelIteratorCharStream(sequential().reversed().exIterator(), closeHandlers, false, maxThreadNum, splitor);
     }
 
     @Override

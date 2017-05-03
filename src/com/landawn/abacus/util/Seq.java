@@ -1476,64 +1476,6 @@ public final class Seq<T> implements Collection<T> {
         return ExList.of((T[]) toArray());
     }
 
-    public <K> Map<K, List<T>> toMap(Function<? super T, ? extends K> classifier) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, List<T>>> mapFactory = (Supplier) Supplier.MAP;
-
-        return toMap(classifier, mapFactory);
-    }
-
-    public <K, M extends Map<K, List<T>>> M toMap(Function<? super T, ? extends K> classifier, Supplier<M> mapFactory) {
-        final Collector<? super T, ?, List<T>> downstream = Collectors.toList();
-
-        return toMap(classifier, downstream, mapFactory);
-    }
-
-    @SuppressWarnings("hiding")
-    public <K, A, D> Map<K, D> toMap(Function<? super T, ? extends K> classifier, Collector<? super T, A, D> downstream) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, D>> mapFactory = (Supplier) Supplier.MAP;
-
-        return toMap(classifier, downstream, mapFactory);
-    }
-
-    @SuppressWarnings("hiding")
-    public <K, A, D, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream,
-            final Supplier<M> mapFactory) {
-        final M result = mapFactory.get();
-        final Supplier<A> downstreamSupplier = downstream.supplier();
-        final BiConsumer<A, ? super T> downstreamAccumulator = downstream.accumulator();
-        final Map<K, A> intermediate = (Map<K, A>) result;
-        final Iterator<T> iter = iterator();
-        K key = null;
-        A v = null;
-        T element = null;
-
-        while (iter.hasNext()) {
-            element = iter.next();
-            key = N.requireNonNull(classifier.apply(element), "element cannot be mapped to a null key");
-
-            if ((v = intermediate.get(key)) == null) {
-                if ((v = downstreamSupplier.get()) != null) {
-                    intermediate.put(key, v);
-                }
-            }
-
-            downstreamAccumulator.accept(v, element);
-        }
-
-        final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
-            @Override
-            public A apply(K k, A v) {
-                return (A) downstream.finisher().apply(v);
-            }
-        };
-
-        replaceAll(intermediate, function);
-
-        return result;
-    }
-
     public <K, U> Map<K, U> toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper) {
         @SuppressWarnings("rawtypes")
         final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
@@ -1567,6 +1509,64 @@ public final class Seq<T> implements Collection<T> {
         }
 
         return result;
+    }
+
+    @SuppressWarnings("hiding")
+    public <K, A, D> Map<K, D> toMap(Function<? super T, ? extends K> classifier, Collector<? super T, A, D> downstream) {
+        @SuppressWarnings("rawtypes")
+        final Supplier<Map<K, D>> mapFactory = (Supplier) Supplier.MAP;
+    
+        return toMap(classifier, downstream, mapFactory);
+    }
+
+    @SuppressWarnings("hiding")
+    public <K, A, D, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream,
+            final Supplier<M> mapFactory) {
+        final M result = mapFactory.get();
+        final Supplier<A> downstreamSupplier = downstream.supplier();
+        final BiConsumer<A, ? super T> downstreamAccumulator = downstream.accumulator();
+        final Map<K, A> intermediate = (Map<K, A>) result;
+        final Iterator<T> iter = iterator();
+        K key = null;
+        A v = null;
+        T element = null;
+    
+        while (iter.hasNext()) {
+            element = iter.next();
+            key = N.requireNonNull(classifier.apply(element), "element cannot be mapped to a null key");
+    
+            if ((v = intermediate.get(key)) == null) {
+                if ((v = downstreamSupplier.get()) != null) {
+                    intermediate.put(key, v);
+                }
+            }
+    
+            downstreamAccumulator.accept(v, element);
+        }
+    
+        final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
+            @Override
+            public A apply(K k, A v) {
+                return (A) downstream.finisher().apply(v);
+            }
+        };
+    
+        replaceAll(intermediate, function);
+    
+        return result;
+    }
+
+    public <K> Map<K, List<T>> toMap2(Function<? super T, ? extends K> classifier) {
+        @SuppressWarnings("rawtypes")
+        final Supplier<Map<K, List<T>>> mapFactory = (Supplier) Supplier.MAP;
+    
+        return toMap2(classifier, mapFactory);
+    }
+
+    public <K, M extends Map<K, List<T>>> M toMap2(Function<? super T, ? extends K> classifier, Supplier<M> mapFactory) {
+        final Collector<? super T, ?, List<T>> downstream = Collectors.toList();
+    
+        return toMap(classifier, downstream, mapFactory);
     }
 
     public <K, U> Map<K, List<U>> toMap2(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper) {

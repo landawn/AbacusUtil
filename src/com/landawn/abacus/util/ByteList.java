@@ -31,13 +31,11 @@ import com.landawn.abacus.util.function.ByteConsumer;
 import com.landawn.abacus.util.function.ByteFunction;
 import com.landawn.abacus.util.function.BytePredicate;
 import com.landawn.abacus.util.function.ByteUnaryOperator;
-import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IndexedByteConsumer;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.ByteStream;
 import com.landawn.abacus.util.stream.Collector;
-import com.landawn.abacus.util.stream.Collectors;
 
 /**
  * 
@@ -1385,17 +1383,35 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
         return multiset;
     }
 
-    public <K> Map<K, List<Byte>> toMap(ByteFunction<? extends K> classifier) {
+    public <K, U> Map<K, U> toMap(ByteFunction<? extends K> keyMapper, ByteFunction<? extends U> valueMapper) {
         @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, List<Byte>>> mapFactory = (Supplier) Supplier.MAP;
+        final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
 
-        return toMap(classifier, mapFactory);
+        return toMap(keyMapper, valueMapper, mapFactory);
     }
 
-    public <K, M extends Map<K, List<Byte>>> M toMap(ByteFunction<? extends K> classifier, Supplier<M> mapFactory) {
-        final Collector<Byte, ?, List<Byte>> downstream = Collectors.toList();
+    public <K, U, M extends Map<K, U>> M toMap(ByteFunction<? extends K> keyMapper, ByteFunction<? extends U> valueMapper, Supplier<M> mapFactory) {
+        final BinaryOperator<U> mergeFunction = BinaryOperator.THROWING_MERGER;
 
-        return toMap(classifier, downstream, mapFactory);
+        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
+    }
+
+    public <K, U> Map<K, U> toMap(ByteFunction<? extends K> keyMapper, ByteFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
+        @SuppressWarnings("rawtypes")
+        final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
+
+        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
+    }
+
+    public <K, U, M extends Map<K, U>> M toMap(ByteFunction<? extends K> keyMapper, ByteFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
+            Supplier<M> mapFactory) {
+        final M result = mapFactory.get();
+
+        for (int i = 0; i < size; i++) {
+            Seq.merge(result, keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]), mergeFunction);
+        }
+
+        return result;
     }
 
     @SuppressWarnings("hiding")
@@ -1440,77 +1456,6 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
         return result;
     }
 
-    public <K, U> Map<K, U> toMap(ByteFunction<? extends K> keyMapper, ByteFunction<? extends U> valueMapper) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
-
-        return toMap(keyMapper, valueMapper, mapFactory);
-    }
-
-    public <K, U, M extends Map<K, U>> M toMap(ByteFunction<? extends K> keyMapper, ByteFunction<? extends U> valueMapper, Supplier<M> mapFactory) {
-        final BinaryOperator<U> mergeFunction = BinaryOperator.THROWING_MERGER;
-
-        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
-    }
-
-    public <K, U> Map<K, U> toMap(ByteFunction<? extends K> keyMapper, ByteFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
-
-        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
-    }
-
-    public <K, U, M extends Map<K, U>> M toMap(ByteFunction<? extends K> keyMapper, ByteFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
-            Supplier<M> mapFactory) {
-        final M result = mapFactory.get();
-
-        for (int i = 0; i < size; i++) {
-            Seq.merge(result, keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]), mergeFunction);
-        }
-
-        return result;
-    }
-
-    public <K, U> Map<K, List<U>> toMap2(ByteFunction<? extends K> keyMapper, ByteFunction<? extends U> valueMapper) {
-        return toMap(keyMapper, (Collector<Byte, ?, List<U>>) (Collector<?, ?, ?>) mapping(valueMapper, Collectors.toList()));
-    }
-
-    @SuppressWarnings("rawtypes")
-    public <K, U, M extends Map<K, List<U>>> M toMap2(ByteFunction<? extends K> keyMapper, ByteFunction<? extends U> valueMapper, Supplier<M> mapFactory) {
-        return toMap(keyMapper, (Collector<Byte, ?, List<U>>) (Collector) mapping(valueMapper, Collectors.toList()), mapFactory);
-    }
-
-    private <U, A, R> Collector<Byte, ?, R> mapping(final ByteFunction<? extends U> mapper, final Collector<? super U, A, R> downstream) {
-        return Collectors.mapping(new Function<Byte, U>() {
-            @Override
-            public U apply(Byte t) {
-                return mapper.apply(t);
-            }
-        }, downstream);
-    }
-
-    //    public Seq<Byte> toSeq() {
-    //        return toSeq(0, size());
-    //    }
-    //
-    //    public Seq<Byte> toSeq(final int fromIndex, final int toIndex) {
-    //        return Seq.of(toList(fromIndex, toIndex));
-    //    }
-    //
-    //    public Seq<Byte> toSeq(final IntFunction<Collection<Byte>> supplier) {
-    //        return toSeq(0, size(), supplier);
-    //    }
-    //
-    //    public Seq<Byte> toSeq(final int fromIndex, final int toIndex, final IntFunction<Collection<Byte>> supplier) {
-    //        final Collection<Byte> c = supplier.apply(toIndex - fromIndex);
-    //
-    //        for (int i = fromIndex; i < toIndex; i++) {
-    //            c.add(elementData[i]);
-    //        }
-    //
-    //        return Seq.of(c);
-    //    }
-
     public ByteIterator iterator() {
         if (isEmpty()) {
             return ByteIterator.EMPTY;
@@ -1528,14 +1473,6 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
 
         return ByteStream.of(elementData, fromIndex, toIndex);
     }
-
-    //    public ByteListBuilder __() {
-    //        return Builder.of(this);
-    //    }
-    //
-    //    public ByteListBuilder __(Consumer<? super ByteList> func) {
-    //        return Builder.of(this).__(func);
-    //    }
 
     @Override
     public int hashCode() {

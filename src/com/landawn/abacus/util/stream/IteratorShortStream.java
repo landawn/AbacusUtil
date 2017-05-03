@@ -792,6 +792,20 @@ class IteratorShortStream extends AbstractShortStream {
     }
 
     @Override
+    public <K, U, M extends Map<K, U>> M toMap(ShortFunction<? extends K> keyMapper, ShortFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
+            Supplier<M> mapFactory) {
+        final M result = mapFactory.get();
+        short element = 0;
+    
+        while (elements.hasNext()) {
+            element = elements.nextShort();
+            Collectors.merge(result, keyMapper.apply(element), valueMapper.apply(element), mergeFunction);
+        }
+    
+        return result;
+    }
+
+    @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final ShortFunction<? extends K> classifier, final Collector<Short, A, D> downstream,
             final Supplier<M> mapFactory) {
         final M result = mapFactory.get();
@@ -823,20 +837,6 @@ class IteratorShortStream extends AbstractShortStream {
         };
 
         Collectors.replaceAll(intermediate, function);
-
-        return result;
-    }
-
-    @Override
-    public <K, U, M extends Map<K, U>> M toMap(ShortFunction<? extends K> keyMapper, ShortFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
-            Supplier<M> mapFactory) {
-        final M result = mapFactory.get();
-        short element = 0;
-
-        while (elements.hasNext()) {
-            element = elements.nextShort();
-            Collectors.merge(result, keyMapper.apply(element), valueMapper.apply(element), mergeFunction);
-        }
 
         return result;
     }

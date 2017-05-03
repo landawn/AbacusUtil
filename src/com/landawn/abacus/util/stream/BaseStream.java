@@ -324,7 +324,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * 
      * @return
      */
-    S reverse();
+    S reversed();
 
     /**
      * 
@@ -333,7 +333,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * 
      * @return
      */
-    S shuffle();
+    S shuffled();
 
     /**
      * 
@@ -342,7 +342,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * 
      * @return
      */
-    S shuffle(Random rnd);
+    S shuffled(Random rnd);
 
     /**
      * 
@@ -351,7 +351,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * 
      * @return
      */
-    S rotate(int distance);
+    S rotated(int distance);
 
     /**
      * Returns a stream consisting of the distinct elements of this stream.

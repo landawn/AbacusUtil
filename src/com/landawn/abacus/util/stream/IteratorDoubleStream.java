@@ -894,6 +894,20 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
+    public <K, U, M extends Map<K, U>> M toMap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
+            Supplier<M> mapFactory) {
+        final M result = mapFactory.get();
+        double element = 0;
+    
+        while (elements.hasNext()) {
+            element = elements.nextDouble();
+            Collectors.merge(result, keyMapper.apply(element), valueMapper.apply(element), mergeFunction);
+        }
+    
+        return result;
+    }
+
+    @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final DoubleFunction<? extends K> classifier, final Collector<Double, A, D> downstream,
             final Supplier<M> mapFactory) {
         final M result = mapFactory.get();
@@ -925,20 +939,6 @@ class IteratorDoubleStream extends AbstractDoubleStream {
         };
 
         Collectors.replaceAll(intermediate, function);
-
-        return result;
-    }
-
-    @Override
-    public <K, U, M extends Map<K, U>> M toMap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
-            Supplier<M> mapFactory) {
-        final M result = mapFactory.get();
-        double element = 0;
-
-        while (elements.hasNext()) {
-            element = elements.nextDouble();
-            Collectors.merge(result, keyMapper.apply(element), valueMapper.apply(element), mergeFunction);
-        }
 
         return result;
     }

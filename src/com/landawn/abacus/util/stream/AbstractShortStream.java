@@ -309,29 +309,6 @@ abstract class AbstractShortStream extends ShortStream {
     }
 
     @Override
-    public <K> Map<K, List<Short>> toMap(ShortFunction<? extends K> classifier) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, List<Short>>> mapFactory = (Supplier) Supplier.MAP;
-
-        return toMap(classifier, mapFactory);
-    }
-
-    @Override
-    public <K, M extends Map<K, List<Short>>> M toMap(ShortFunction<? extends K> classifier, Supplier<M> mapFactory) {
-        final Collector<Short, ?, List<Short>> downstream = Collectors.toList();
-
-        return toMap(classifier, downstream, mapFactory);
-    }
-
-    @Override
-    public <K, A, D> Map<K, D> toMap(ShortFunction<? extends K> classifier, Collector<Short, A, D> downstream) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, D>> mapFactory = (Supplier) Supplier.MAP;
-
-        return toMap(classifier, downstream, mapFactory);
-    }
-
-    @Override
     public <K, U> Map<K, U> toMap(ShortFunction<? extends K> keyMapper, ShortFunction<? extends U> valueMapper) {
         @SuppressWarnings("rawtypes")
         final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
@@ -352,6 +329,14 @@ abstract class AbstractShortStream extends ShortStream {
         final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
 
         return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
+    }
+
+    @Override
+    public <K, A, D> Map<K, D> toMap(ShortFunction<? extends K> classifier, Collector<Short, A, D> downstream) {
+        @SuppressWarnings("rawtypes")
+        final Supplier<Map<K, D>> mapFactory = (Supplier) Supplier.MAP;
+    
+        return toMap(classifier, downstream, mapFactory);
     }
 
     @Override
@@ -564,7 +549,7 @@ abstract class AbstractShortStream extends ShortStream {
     }
 
     @Override
-    public ShortStream reverse() {
+    public ShortStream reversed() {
         final short[] tmp = toArray();
 
         return newStream(new ExShortIterator() {
@@ -608,7 +593,7 @@ abstract class AbstractShortStream extends ShortStream {
     }
 
     @Override
-    public ShortStream shuffle() {
+    public ShortStream shuffled() {
         final short[] a = toArray();
 
         N.shuffle(a);
@@ -617,7 +602,7 @@ abstract class AbstractShortStream extends ShortStream {
     }
 
     @Override
-    public ShortStream shuffle(final Random rnd) {
+    public ShortStream shuffled(final Random rnd) {
         final short[] a = toArray();
 
         N.shuffle(a, rnd);
@@ -626,7 +611,7 @@ abstract class AbstractShortStream extends ShortStream {
     }
 
     @Override
-    public ShortStream rotate(int distance) {
+    public ShortStream rotated(int distance) {
         final short[] a = toArray();
 
         N.rotate(a, distance);

@@ -1460,6 +1460,18 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
+    public <K, U, M extends Map<K, U>> M toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,
+            BinaryOperator<U> mergeFunction, Supplier<M> mapFactory) {
+        final M result = mapFactory.get();
+    
+        for (int i = fromIndex; i < toIndex; i++) {
+            Collectors.merge(result, keyMapper.apply(elements[i]), valueMapper.apply(elements[i]), mergeFunction);
+        }
+    
+        return result;
+    }
+
+    @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream,
             final Supplier<M> mapFactory) {
         final M result = mapFactory.get();
@@ -1489,18 +1501,6 @@ class ArrayStream<T> extends AbstractStream<T> {
         };
 
         Collectors.replaceAll(intermediate, function);
-
-        return result;
-    }
-
-    @Override
-    public <K, U, M extends Map<K, U>> M toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,
-            BinaryOperator<U> mergeFunction, Supplier<M> mapFactory) {
-        final M result = mapFactory.get();
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            Collectors.merge(result, keyMapper.apply(elements[i]), valueMapper.apply(elements[i]), mergeFunction);
-        }
 
         return result;
     }
@@ -1664,7 +1664,7 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Stream<T> reverse() {
+    public Stream<T> reversed() {
         return new IteratorStream<>(new ExIterator<T>() {
             private int cursor = toIndex;
 

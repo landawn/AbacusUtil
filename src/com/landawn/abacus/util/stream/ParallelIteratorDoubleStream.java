@@ -709,6 +709,30 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
     }
 
     @Override
+    public <K, U, M extends Map<K, U>> M toMap(final DoubleFunction<? extends K> keyMapper, final DoubleFunction<? extends U> valueMapper,
+            final BinaryOperator<U> mergeFunction, final Supplier<M> mapFactory) {
+        if (maxThreadNum <= 1) {
+            return sequential().toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
+        }
+    
+        final Function<? super Double, ? extends K> keyMapper2 = new Function<Double, K>() {
+            @Override
+            public K apply(Double value) {
+                return keyMapper.apply(value);
+            }
+        };
+    
+        final Function<? super Double, ? extends U> valueMapper2 = new Function<Double, U>() {
+            @Override
+            public U apply(Double value) {
+                return valueMapper.apply(value);
+            }
+        };
+    
+        return boxed().toMap(keyMapper2, valueMapper2, mergeFunction, mapFactory);
+    }
+
+    @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final DoubleFunction<? extends K> classifier, final Collector<Double, A, D> downstream,
             final Supplier<M> mapFactory) {
         if (maxThreadNum <= 1) {
@@ -723,30 +747,6 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
         };
 
         return boxed().toMap(classifier2, downstream, mapFactory);
-    }
-
-    @Override
-    public <K, U, M extends Map<K, U>> M toMap(final DoubleFunction<? extends K> keyMapper, final DoubleFunction<? extends U> valueMapper,
-            final BinaryOperator<U> mergeFunction, final Supplier<M> mapFactory) {
-        if (maxThreadNum <= 1) {
-            return sequential().toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
-        }
-
-        final Function<? super Double, ? extends K> keyMapper2 = new Function<Double, K>() {
-            @Override
-            public K apply(Double value) {
-                return keyMapper.apply(value);
-            }
-        };
-
-        final Function<? super Double, ? extends U> valueMapper2 = new Function<Double, U>() {
-            @Override
-            public U apply(Double value) {
-                return valueMapper.apply(value);
-            }
-        };
-
-        return boxed().toMap(keyMapper2, valueMapper2, mergeFunction, mapFactory);
     }
 
     @Override

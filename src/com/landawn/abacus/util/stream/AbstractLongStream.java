@@ -308,29 +308,6 @@ abstract class AbstractLongStream extends LongStream {
     }
 
     @Override
-    public <K> Map<K, List<Long>> toMap(LongFunction<? extends K> classifier) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, List<Long>>> mapFactory = (Supplier) Supplier.MAP;
-
-        return toMap(classifier, mapFactory);
-    }
-
-    @Override
-    public <K, M extends Map<K, List<Long>>> M toMap(LongFunction<? extends K> classifier, Supplier<M> mapFactory) {
-        final Collector<Long, ?, List<Long>> downstream = Collectors.toList();
-
-        return toMap(classifier, downstream, mapFactory);
-    }
-
-    @Override
-    public <K, A, D> Map<K, D> toMap(LongFunction<? extends K> classifier, Collector<Long, A, D> downstream) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, D>> mapFactory = (Supplier) Supplier.MAP;
-
-        return toMap(classifier, downstream, mapFactory);
-    }
-
-    @Override
     public <K, U> Map<K, U> toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper) {
         @SuppressWarnings("rawtypes")
         final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
@@ -351,6 +328,14 @@ abstract class AbstractLongStream extends LongStream {
         final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
 
         return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
+    }
+
+    @Override
+    public <K, A, D> Map<K, D> toMap(LongFunction<? extends K> classifier, Collector<Long, A, D> downstream) {
+        @SuppressWarnings("rawtypes")
+        final Supplier<Map<K, D>> mapFactory = (Supplier) Supplier.MAP;
+    
+        return toMap(classifier, downstream, mapFactory);
     }
 
     @Override
@@ -563,7 +548,7 @@ abstract class AbstractLongStream extends LongStream {
     }
 
     @Override
-    public LongStream reverse() {
+    public LongStream reversed() {
         final long[] tmp = toArray();
 
         return newStream(new ExLongIterator() {
@@ -607,7 +592,7 @@ abstract class AbstractLongStream extends LongStream {
     }
 
     @Override
-    public LongStream shuffle() {
+    public LongStream shuffled() {
         final long[] a = toArray();
 
         N.shuffle(a);
@@ -616,7 +601,7 @@ abstract class AbstractLongStream extends LongStream {
     }
 
     @Override
-    public LongStream shuffle(final Random rnd) {
+    public LongStream shuffled(final Random rnd) {
         final long[] a = toArray();
 
         N.shuffle(a, rnd);
@@ -625,7 +610,7 @@ abstract class AbstractLongStream extends LongStream {
     }
 
     @Override
-    public LongStream rotate(int distance) {
+    public LongStream rotated(int distance) {
         final long[] a = toArray();
 
         N.rotate(a, distance);

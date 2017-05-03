@@ -587,6 +587,30 @@ final class ParallelArrayLongStream extends ArrayLongStream {
     }
 
     @Override
+    public <K, U, M extends Map<K, U>> M toMap(final LongFunction<? extends K> keyMapper, final LongFunction<? extends U> valueMapper,
+            final BinaryOperator<U> mergeFunction, final Supplier<M> mapFactory) {
+        if (maxThreadNum <= 1) {
+            return sequential().toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
+        }
+    
+        final Function<? super Long, ? extends K> keyMapper2 = new Function<Long, K>() {
+            @Override
+            public K apply(Long value) {
+                return keyMapper.apply(value);
+            }
+        };
+    
+        final Function<? super Long, ? extends U> valueMapper2 = new Function<Long, U>() {
+            @Override
+            public U apply(Long value) {
+                return valueMapper.apply(value);
+            }
+        };
+    
+        return boxed().toMap(keyMapper2, valueMapper2, mergeFunction, mapFactory);
+    }
+
+    @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final LongFunction<? extends K> classifier, final Collector<Long, A, D> downstream,
             final Supplier<M> mapFactory) {
         if (maxThreadNum <= 1) {
@@ -601,30 +625,6 @@ final class ParallelArrayLongStream extends ArrayLongStream {
         };
 
         return boxed().toMap(classifier2, downstream, mapFactory);
-    }
-
-    @Override
-    public <K, U, M extends Map<K, U>> M toMap(final LongFunction<? extends K> keyMapper, final LongFunction<? extends U> valueMapper,
-            final BinaryOperator<U> mergeFunction, final Supplier<M> mapFactory) {
-        if (maxThreadNum <= 1) {
-            return sequential().toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
-        }
-
-        final Function<? super Long, ? extends K> keyMapper2 = new Function<Long, K>() {
-            @Override
-            public K apply(Long value) {
-                return keyMapper.apply(value);
-            }
-        };
-
-        final Function<? super Long, ? extends U> valueMapper2 = new Function<Long, U>() {
-            @Override
-            public U apply(Long value) {
-                return valueMapper.apply(value);
-            }
-        };
-
-        return boxed().toMap(keyMapper2, valueMapper2, mergeFunction, mapFactory);
     }
 
     @Override
@@ -1141,8 +1141,8 @@ final class ParallelArrayLongStream extends ArrayLongStream {
     }
 
     @Override
-    public LongStream reverse() {
-        return new ParallelIteratorLongStream(sequential().reverse().exIterator(), closeHandlers, false, maxThreadNum, splitor);
+    public LongStream reversed() {
+        return new ParallelIteratorLongStream(sequential().reversed().exIterator(), closeHandlers, false, maxThreadNum, splitor);
     }
 
     @Override

@@ -307,43 +307,6 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
 
     /**
      * 
-     * @param classifier
-     * @return
-     * @see Collectors#groupingBy(Function)
-     */
-    public abstract <K> Map<K, List<Float>> toMap(FloatFunction<? extends K> classifier);
-
-    /**
-     * 
-     * @param classifier
-     * @param mapFactory
-     * @return
-     * @see Collectors#groupingBy(Function, Supplier)
-     */
-    public abstract <K, M extends Map<K, List<Float>>> M toMap(final FloatFunction<? extends K> classifier, final Supplier<M> mapFactory);
-
-    /**
-     * 
-     * @param classifier
-     * @param downstream
-     * @return
-     * @see Collectors#groupingBy(Function, Collector)
-     */
-    public abstract <K, A, D> Map<K, D> toMap(final FloatFunction<? extends K> classifier, final Collector<Float, A, D> downstream);
-
-    /**
-     * 
-     * @param classifier
-     * @param downstream
-     * @param mapFactory
-     * @return
-     * @see Collectors#groupingBy(Function, Collector, Supplier)
-     */
-    public abstract <K, A, D, M extends Map<K, D>> M toMap(final FloatFunction<? extends K> classifier, final Collector<Float, A, D> downstream,
-            final Supplier<M> mapFactory);
-
-    /**
-     * 
      * @param keyMapper
      * @param valueMapper
      * @return
@@ -382,6 +345,26 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
      */
     public abstract <K, U, M extends Map<K, U>> M toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper,
             BinaryOperator<U> mergeFunction, Supplier<M> mapFactory);
+
+    /**
+     * 
+     * @param classifier
+     * @param downstream
+     * @return
+     * @see Collectors#groupingBy(Function, Collector)
+     */
+    public abstract <K, A, D> Map<K, D> toMap(final FloatFunction<? extends K> classifier, final Collector<Float, A, D> downstream);
+
+    /**
+     * 
+     * @param classifier
+     * @param downstream
+     * @param mapFactory
+     * @return
+     * @see Collectors#groupingBy(Function, Collector, Supplier)
+     */
+    public abstract <K, A, D, M extends Map<K, D>> M toMap(final FloatFunction<? extends K> classifier, final Collector<Float, A, D> downstream,
+            final Supplier<M> mapFactory);
 
     /**
      * 

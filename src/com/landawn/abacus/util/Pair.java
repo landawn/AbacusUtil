@@ -107,16 +107,6 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
         return this;
     }
 
-    //    /**
-    //     * Swap the left and right value. they must be same type.
-    //     * 
-    //     */
-    //    public void reverse() {
-    //        Object tmp = left;
-    //        this.left = (L) right;
-    //        this.right = (R) tmp;
-    //    }
-
     @Override
     public L getKey() {
         return left;
@@ -139,7 +129,7 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
      * 
      * @return a new instance of Pair&lt;R, L&gt;.
      */
-    public Pair<R, L> reverse() {
+    public Pair<R, L> reversed() {
         return new Pair<>(this.right, this.left);
     }
 

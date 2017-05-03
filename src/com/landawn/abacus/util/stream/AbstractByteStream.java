@@ -311,29 +311,6 @@ abstract class AbstractByteStream extends ByteStream {
     }
 
     @Override
-    public <K> Map<K, List<Byte>> toMap(ByteFunction<? extends K> classifier) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, List<Byte>>> mapFactory = (Supplier) Supplier.MAP;
-
-        return toMap(classifier, mapFactory);
-    }
-
-    @Override
-    public <K, M extends Map<K, List<Byte>>> M toMap(ByteFunction<? extends K> classifier, Supplier<M> mapFactory) {
-        final Collector<Byte, ?, List<Byte>> downstream = Collectors.toList();
-
-        return toMap(classifier, downstream, mapFactory);
-    }
-
-    @Override
-    public <K, A, D> Map<K, D> toMap(ByteFunction<? extends K> classifier, Collector<Byte, A, D> downstream) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, D>> mapFactory = (Supplier) Supplier.MAP;
-
-        return toMap(classifier, downstream, mapFactory);
-    }
-
-    @Override
     public <K, U> Map<K, U> toMap(ByteFunction<? extends K> keyMapper, ByteFunction<? extends U> valueMapper) {
         @SuppressWarnings("rawtypes")
         final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
@@ -354,6 +331,14 @@ abstract class AbstractByteStream extends ByteStream {
         final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
 
         return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
+    }
+
+    @Override
+    public <K, A, D> Map<K, D> toMap(ByteFunction<? extends K> classifier, Collector<Byte, A, D> downstream) {
+        @SuppressWarnings("rawtypes")
+        final Supplier<Map<K, D>> mapFactory = (Supplier) Supplier.MAP;
+
+        return toMap(classifier, downstream, mapFactory);
     }
 
     @Override
@@ -566,7 +551,7 @@ abstract class AbstractByteStream extends ByteStream {
     }
 
     @Override
-    public ByteStream reverse() {
+    public ByteStream reversed() {
         final byte[] tmp = toArray();
 
         return newStream(new ExByteIterator() {
@@ -610,7 +595,7 @@ abstract class AbstractByteStream extends ByteStream {
     }
 
     @Override
-    public ByteStream shuffle() {
+    public ByteStream shuffled() {
         final byte[] a = toArray();
 
         N.shuffle(a);
@@ -619,7 +604,7 @@ abstract class AbstractByteStream extends ByteStream {
     }
 
     @Override
-    public ByteStream shuffle(final Random rnd) {
+    public ByteStream shuffled(final Random rnd) {
         final byte[] a = toArray();
 
         N.shuffle(a, rnd);
@@ -628,7 +613,7 @@ abstract class AbstractByteStream extends ByteStream {
     }
 
     @Override
-    public ByteStream rotate(int distance) {
+    public ByteStream rotated(int distance) {
         final byte[] a = toArray();
 
         N.rotate(a, distance);

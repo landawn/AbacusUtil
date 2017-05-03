@@ -309,29 +309,6 @@ abstract class AbstractIntStream extends IntStream {
     }
 
     @Override
-    public <K> Map<K, List<Integer>> toMap(IntFunction<? extends K> classifier) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, List<Integer>>> mapFactory = (Supplier) Supplier.MAP;
-
-        return toMap(classifier, mapFactory);
-    }
-
-    @Override
-    public <K, M extends Map<K, List<Integer>>> M toMap(IntFunction<? extends K> classifier, Supplier<M> mapFactory) {
-        final Collector<Integer, ?, List<Integer>> downstream = Collectors.toList();
-
-        return toMap(classifier, downstream, mapFactory);
-    }
-
-    @Override
-    public <K, A, D> Map<K, D> toMap(IntFunction<? extends K> classifier, Collector<Integer, A, D> downstream) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, D>> mapFactory = (Supplier) Supplier.MAP;
-
-        return toMap(classifier, downstream, mapFactory);
-    }
-
-    @Override
     public <K, U> Map<K, U> toMap(IntFunction<? extends K> keyMapper, IntFunction<? extends U> valueMapper) {
         @SuppressWarnings("rawtypes")
         final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
@@ -352,6 +329,14 @@ abstract class AbstractIntStream extends IntStream {
         final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
 
         return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
+    }
+
+    @Override
+    public <K, A, D> Map<K, D> toMap(IntFunction<? extends K> classifier, Collector<Integer, A, D> downstream) {
+        @SuppressWarnings("rawtypes")
+        final Supplier<Map<K, D>> mapFactory = (Supplier) Supplier.MAP;
+    
+        return toMap(classifier, downstream, mapFactory);
     }
 
     @Override
@@ -565,7 +550,7 @@ abstract class AbstractIntStream extends IntStream {
     }
 
     @Override
-    public IntStream reverse() {
+    public IntStream reversed() {
         final int[] tmp = toArray();
 
         return newStream(new ExIntIterator() {
@@ -609,7 +594,7 @@ abstract class AbstractIntStream extends IntStream {
     }
 
     @Override
-    public IntStream shuffle() {
+    public IntStream shuffled() {
         final int[] a = toArray();
 
         N.shuffle(a);
@@ -618,7 +603,7 @@ abstract class AbstractIntStream extends IntStream {
     }
 
     @Override
-    public IntStream shuffle(final Random rnd) {
+    public IntStream shuffled(final Random rnd) {
         final int[] a = toArray();
 
         N.shuffle(a, rnd);
@@ -627,7 +612,7 @@ abstract class AbstractIntStream extends IntStream {
     }
 
     @Override
-    public IntStream rotate(int distance) {
+    public IntStream rotated(int distance) {
         final int[] a = toArray();
 
         N.rotate(a, distance);

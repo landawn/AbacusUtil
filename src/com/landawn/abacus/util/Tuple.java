@@ -299,7 +299,7 @@ public abstract class Tuple {
             return 2;
         }
 
-        public Tuple2<T2, T1> reverse() {
+        public Tuple2<T2, T1> reversed() {
             return of(_2, _1);
         }
 
@@ -416,7 +416,7 @@ public abstract class Tuple {
             return 3;
         }
 
-        public Tuple3<T3, T2, T1> reverse() {
+        public Tuple3<T3, T2, T1> reversed() {
             return new Tuple3<>(_3, _2, _1);
         }
 
@@ -518,7 +518,7 @@ public abstract class Tuple {
             return 4;
         }
 
-        public Tuple4<T4, T3, T2, T1> reverse() {
+        public Tuple4<T4, T3, T2, T1> reversed() {
             return new Tuple4<>(_4, _3, _2, _1);
         }
 
@@ -625,7 +625,7 @@ public abstract class Tuple {
             return 5;
         }
 
-        public Tuple5<T5, T4, T3, T2, T1> reverse() {
+        public Tuple5<T5, T4, T3, T2, T1> reversed() {
             return new Tuple5<>(_5, _4, _3, _2, _1);
         }
 
@@ -738,7 +738,7 @@ public abstract class Tuple {
             return 6;
         }
 
-        public Tuple6<T6, T5, T4, T3, T2, T1> reverse() {
+        public Tuple6<T6, T5, T4, T3, T2, T1> reversed() {
             return new Tuple6<>(_6, _5, _4, _3, _2, _1);
         }
 
@@ -857,7 +857,7 @@ public abstract class Tuple {
             return 7;
         }
 
-        public Tuple7<T7, T6, T5, T4, T3, T2, T1> reverse() {
+        public Tuple7<T7, T6, T5, T4, T3, T2, T1> reversed() {
             return new Tuple7<>(_7, _6, _5, _4, _3, _2, _1);
         }
 

@@ -1581,15 +1581,15 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     }
 
     @Override
-    public <K, A, D, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream,
-            final Supplier<M> mapFactory) {
-        return collect(Collectors.groupingBy(classifier, downstream, mapFactory));
-    }
-
-    @Override
     public <K, U, M extends Map<K, U>> M toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,
             BinaryOperator<U> mergeFunction, Supplier<M> mapFactory) {
         return collect(Collectors.toMap(keyMapper, valueMapper, mergeFunction, mapFactory));
+    }
+
+    @Override
+    public <K, A, D, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream,
+            final Supplier<M> mapFactory) {
+        return collect(Collectors.groupingBy(classifier, downstream, mapFactory));
     }
 
     @Override
