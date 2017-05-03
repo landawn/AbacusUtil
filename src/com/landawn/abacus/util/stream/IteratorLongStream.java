@@ -63,11 +63,11 @@ import com.landawn.abacus.util.function.ToLongFunction;
 class IteratorLongStream extends AbstractLongStream {
     final ExLongIterator elements;
 
-    long head;
+    OptionalLong head;
     LongStream tail;
 
     LongStream head2;
-    long tail2;
+    OptionalLong tail2;
 
     IteratorLongStream(final LongIterator values) {
         this(values, null);
@@ -899,12 +899,12 @@ class IteratorLongStream extends AbstractLongStream {
             Supplier<M> mapFactory) {
         final M result = mapFactory.get();
         long element = 0;
-    
+
         while (elements.hasNext()) {
             element = elements.nextLong();
             Collectors.merge(result, keyMapper.apply(element), valueMapper.apply(element), mergeFunction);
         }
-    
+
         return result;
     }
 
@@ -996,13 +996,9 @@ class IteratorLongStream extends AbstractLongStream {
     }
 
     @Override
-    public long head() {
-        if (tail == null) {
-            if (elements.hasNext() == false) {
-                throw new NoSuchElementException();
-            }
-
-            head = elements.nextLong();
+    public OptionalLong head() {
+        if (head == null) {
+            head = elements.hasNext() ? OptionalLong.of(elements.nextLong()) : OptionalLong.empty();
             tail = new IteratorLongStream(elements, closeHandlers, sorted);
         }
 
@@ -1012,11 +1008,7 @@ class IteratorLongStream extends AbstractLongStream {
     @Override
     public LongStream tail() {
         if (tail == null) {
-            if (elements.hasNext() == false) {
-                throw new IllegalStateException();
-            }
-
-            head = elements.nextLong();
+            head = elements.hasNext() ? OptionalLong.of(elements.nextLong()) : OptionalLong.empty();
             tail = new IteratorLongStream(elements, closeHandlers, sorted);
         }
 
@@ -1026,28 +1018,20 @@ class IteratorLongStream extends AbstractLongStream {
     @Override
     public LongStream head2() {
         if (head2 == null) {
-            if (elements.hasNext() == false) {
-                throw new IllegalStateException();
-            }
-
             final long[] a = elements.toArray();
-            head2 = new ArrayLongStream(a, 0, a.length - 1, closeHandlers, sorted);
-            tail2 = a[a.length - 1];
+            head2 = new ArrayLongStream(a, 0, a.length == 0 ? 0 : a.length - 1, closeHandlers, sorted);
+            tail2 = a.length == 0 ? OptionalLong.empty() : OptionalLong.of(a[a.length - 1]);
         }
 
         return head2;
     }
 
     @Override
-    public long tail2() {
-        if (head2 == null) {
-            if (elements.hasNext() == false) {
-                throw new NoSuchElementException();
-            }
-
+    public OptionalLong tail2() {
+        if (tail2 == null) {
             final long[] a = elements.toArray();
-            head2 = new ArrayLongStream(a, 0, a.length - 1, closeHandlers, sorted);
-            tail2 = a[a.length - 1];
+            head2 = new ArrayLongStream(a, 0, a.length == 0 ? 0 : a.length - 1, closeHandlers, sorted);
+            tail2 = a.length == 0 ? OptionalLong.empty() : OptionalLong.of(a[a.length - 1]);
         }
 
         return tail2;

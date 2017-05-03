@@ -336,7 +336,7 @@ abstract class AbstractFloatStream extends FloatStream {
     public <K, A, D> Map<K, D> toMap(FloatFunction<? extends K> classifier, Collector<Float, A, D> downstream) {
         @SuppressWarnings("rawtypes")
         final Supplier<Map<K, D>> mapFactory = (Supplier) Supplier.MAP;
-    
+
         return toMap(classifier, downstream, mapFactory);
     }
 
@@ -747,12 +747,12 @@ abstract class AbstractFloatStream extends FloatStream {
     }
 
     @Override
-    public Pair<Float, FloatStream> headAndTail() {
+    public Pair<OptionalFloat, FloatStream> headAndTail() {
         return Pair.of(head(), tail());
     }
 
     @Override
-    public Pair<FloatStream, Float> headAndTail2() {
+    public Pair<FloatStream, OptionalFloat> headAndTail2() {
         return Pair.of(head2(), tail2());
     }
 

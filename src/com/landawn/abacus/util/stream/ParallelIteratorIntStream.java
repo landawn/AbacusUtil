@@ -816,21 +816,21 @@ final class ParallelIteratorIntStream extends IteratorIntStream {
         if (maxThreadNum <= 1) {
             return sequential().toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
         }
-    
+
         final Function<? super Integer, ? extends K> keyMapper2 = new Function<Integer, K>() {
             @Override
             public K apply(Integer value) {
                 return keyMapper.apply(value);
             }
         };
-    
+
         final Function<? super Integer, ? extends U> valueMapper2 = new Function<Integer, U>() {
             @Override
             public U apply(Integer value) {
                 return valueMapper.apply(value);
             }
         };
-    
+
         return boxed().toMap(keyMapper2, valueMapper2, mergeFunction, mapFactory);
     }
 
@@ -1063,13 +1063,9 @@ final class ParallelIteratorIntStream extends IteratorIntStream {
     }
 
     @Override
-    public int head() {
-        if (tail == null) {
-            if (elements.hasNext() == false) {
-                throw new NoSuchElementException();
-            }
-
-            head = elements.nextInt();
+    public OptionalInt head() {
+        if (head == null) {
+            head = elements.hasNext() ? OptionalInt.of(elements.nextInt()) : OptionalInt.empty();
             tail = new ParallelIteratorIntStream(elements, closeHandlers, sorted, maxThreadNum, splitor);
         }
 
@@ -1079,11 +1075,7 @@ final class ParallelIteratorIntStream extends IteratorIntStream {
     @Override
     public IntStream tail() {
         if (tail == null) {
-            if (elements.hasNext() == false) {
-                throw new IllegalStateException();
-            }
-
-            head = elements.nextInt();
+            head = elements.hasNext() ? OptionalInt.of(elements.nextInt()) : OptionalInt.empty();
             tail = new ParallelIteratorIntStream(elements, closeHandlers, sorted, maxThreadNum, splitor);
         }
 
@@ -1093,28 +1085,20 @@ final class ParallelIteratorIntStream extends IteratorIntStream {
     @Override
     public IntStream head2() {
         if (head2 == null) {
-            if (elements.hasNext() == false) {
-                throw new IllegalStateException();
-            }
-
             final int[] a = elements.toArray();
-            head2 = new ParallelArrayIntStream(a, 0, a.length - 1, closeHandlers, sorted, maxThreadNum, splitor);
-            tail2 = a[a.length - 1];
+            head2 = new ParallelArrayIntStream(a, 0, a.length == 0 ? 0 : a.length - 1, closeHandlers, sorted, maxThreadNum, splitor);
+            tail2 = a.length == 0 ? OptionalInt.empty() : OptionalInt.of(a[a.length - 1]);
         }
 
         return head2;
     }
 
     @Override
-    public int tail2() {
-        if (head2 == null) {
-            if (elements.hasNext() == false) {
-                throw new NoSuchElementException();
-            }
-
+    public OptionalInt tail2() {
+        if (tail2 == null) {
             final int[] a = elements.toArray();
-            head2 = new ArrayIntStream(a, 0, a.length - 1, closeHandlers, sorted);
-            tail2 = a[a.length - 1];
+            head2 = new ParallelArrayIntStream(a, 0, a.length == 0 ? 0 : a.length - 1, closeHandlers, sorted, maxThreadNum, splitor);
+            tail2 = a.length == 0 ? OptionalInt.empty() : OptionalInt.of(a[a.length - 1]);
         }
 
         return tail2;

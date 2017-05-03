@@ -503,21 +503,21 @@ final class ParallelArrayByteStream extends ArrayByteStream {
         if (maxThreadNum <= 1) {
             return sequential().toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
         }
-    
+
         final Function<? super Byte, ? extends K> keyMapper2 = new Function<Byte, K>() {
             @Override
             public K apply(Byte value) {
                 return keyMapper.apply(value);
             }
         };
-    
+
         final Function<? super Byte, ? extends U> valueMapper2 = new Function<Byte, U>() {
             @Override
             public U apply(Byte value) {
                 return valueMapper.apply(value);
             }
         };
-    
+
         return boxed().toMap(keyMapper2, valueMapper2, mergeFunction, mapFactory);
     }
 
@@ -766,18 +766,9 @@ final class ParallelArrayByteStream extends ArrayByteStream {
     }
 
     @Override
-    public byte head() {
-        if (fromIndex == toIndex) {
-            throw new NoSuchElementException();
-        }
-
-        return elements[fromIndex];
-    }
-
-    @Override
     public ByteStream tail() {
         if (fromIndex == toIndex) {
-            throw new IllegalStateException();
+            return this;
         }
 
         return new ParallelArrayByteStream(elements, fromIndex + 1, toIndex, closeHandlers, sorted, maxThreadNum, splitor);
@@ -786,19 +777,10 @@ final class ParallelArrayByteStream extends ArrayByteStream {
     @Override
     public ByteStream head2() {
         if (fromIndex == toIndex) {
-            throw new IllegalStateException();
+            return this;
         }
 
         return new ParallelArrayByteStream(elements, fromIndex, toIndex - 1, closeHandlers, sorted, maxThreadNum, splitor);
-    }
-
-    @Override
-    public byte tail2() {
-        if (fromIndex == toIndex) {
-            throw new NoSuchElementException();
-        }
-
-        return elements[toIndex - 1];
     }
 
     @Override

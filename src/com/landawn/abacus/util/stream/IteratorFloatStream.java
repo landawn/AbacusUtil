@@ -62,11 +62,11 @@ import com.landawn.abacus.util.function.ToFloatFunction;
 class IteratorFloatStream extends AbstractFloatStream {
     final ExFloatIterator elements;
 
-    float head;
+    OptionalFloat head;
     FloatStream tail;
 
     FloatStream head2;
-    float tail2;
+    OptionalFloat tail2;
 
     IteratorFloatStream(final FloatIterator values) {
         this(values, null);
@@ -898,12 +898,12 @@ class IteratorFloatStream extends AbstractFloatStream {
             Supplier<M> mapFactory) {
         final M result = mapFactory.get();
         float element = 0;
-    
+
         while (elements.hasNext()) {
             element = elements.nextFloat();
             Collectors.merge(result, keyMapper.apply(element), valueMapper.apply(element), mergeFunction);
         }
-    
+
         return result;
     }
 
@@ -995,13 +995,9 @@ class IteratorFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public float head() {
-        if (tail == null) {
-            if (elements.hasNext() == false) {
-                throw new NoSuchElementException();
-            }
-
-            head = elements.nextFloat();
+    public OptionalFloat head() {
+        if (head == null) {
+            head = elements.hasNext() ? OptionalFloat.of(elements.nextFloat()) : OptionalFloat.empty();
             tail = new IteratorFloatStream(elements, closeHandlers, sorted);
         }
 
@@ -1011,11 +1007,7 @@ class IteratorFloatStream extends AbstractFloatStream {
     @Override
     public FloatStream tail() {
         if (tail == null) {
-            if (elements.hasNext() == false) {
-                throw new IllegalStateException();
-            }
-
-            head = elements.nextFloat();
+            head = elements.hasNext() ? OptionalFloat.of(elements.nextFloat()) : OptionalFloat.empty();
             tail = new IteratorFloatStream(elements, closeHandlers, sorted);
         }
 
@@ -1025,28 +1017,20 @@ class IteratorFloatStream extends AbstractFloatStream {
     @Override
     public FloatStream head2() {
         if (head2 == null) {
-            if (elements.hasNext() == false) {
-                throw new IllegalStateException();
-            }
-
             final float[] a = elements.toArray();
-            head2 = new ArrayFloatStream(a, 0, a.length - 1, closeHandlers, sorted);
-            tail2 = a[a.length - 1];
+            head2 = new ArrayFloatStream(a, 0, a.length == 0 ? 0 : a.length - 1, closeHandlers, sorted);
+            tail2 = a.length == 0 ? OptionalFloat.empty() : OptionalFloat.of(a[a.length - 1]);
         }
 
         return head2;
     }
 
     @Override
-    public float tail2() {
-        if (head2 == null) {
-            if (elements.hasNext() == false) {
-                throw new NoSuchElementException();
-            }
-
+    public OptionalFloat tail2() {
+        if (tail2 == null) {
             final float[] a = elements.toArray();
-            head2 = new ArrayFloatStream(a, 0, a.length - 1, closeHandlers, sorted);
-            tail2 = a[a.length - 1];
+            head2 = new ArrayFloatStream(a, 0, a.length == 0 ? 0 : a.length - 1, closeHandlers, sorted);
+            tail2 = a.length == 0 ? OptionalFloat.empty() : OptionalFloat.of(a[a.length - 1]);
         }
 
         return tail2;

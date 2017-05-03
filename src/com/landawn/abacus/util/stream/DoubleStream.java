@@ -550,16 +550,14 @@ public abstract class DoubleStream
      * Don't call any other methods with this stream after head() and tail() are called. 
      * 
      * @return
-     * @throws NoSuchElementException if this stream is empty.
      */
-    public abstract double head();
+    public abstract OptionalDouble head();
 
     /**
      * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
      * Don't call any other methods with this stream after head() and tail() are called. 
      * 
      * @return
-     * @throws IllegalStateException if this stream is empty.
      */
     public abstract DoubleStream tail();
 
@@ -568,7 +566,6 @@ public abstract class DoubleStream
      * Don't call any other methods with this stream after head2() and tail2() are called.
      * 
      * @return
-     * @throws IllegalStateException if this stream is empty.
      */
     public abstract DoubleStream head2();
 
@@ -577,13 +574,12 @@ public abstract class DoubleStream
      * Don't call any other methods with this stream after head2() and tail2() are called. 
      * 
      * @return
-     * @throws NoSuchElementException if this stream is empty.
      */
-    public abstract double tail2();
+    public abstract OptionalDouble tail2();
 
-    public abstract Pair<Double, DoubleStream> headAndTail();
+    public abstract Pair<OptionalDouble, DoubleStream> headAndTail();
 
-    public abstract Pair<DoubleStream, Double> headAndTail2();
+    public abstract Pair<DoubleStream, OptionalDouble> headAndTail2();
 
     /**
      * Returns an {@code OptionalDouble} describing the minimum element of this

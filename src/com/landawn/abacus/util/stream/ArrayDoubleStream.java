@@ -958,11 +958,11 @@ class ArrayDoubleStream extends AbstractDoubleStream {
     public <K, U, M extends Map<K, U>> M toMap(DoubleFunction<? extends K> keyMapper, DoubleFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
             Supplier<M> mapFactory) {
         final M result = mapFactory.get();
-    
+
         for (int i = fromIndex; i < toIndex; i++) {
             Collectors.merge(result, keyMapper.apply(elements[i]), valueMapper.apply(elements[i]), mergeFunction);
         }
-    
+
         return result;
     }
 
@@ -1060,18 +1060,14 @@ class ArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public double head() {
-        if (fromIndex == toIndex) {
-            throw new NoSuchElementException();
-        }
-
-        return elements[fromIndex];
+    public OptionalDouble head() {
+        return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(elements[fromIndex]);
     }
 
     @Override
     public DoubleStream tail() {
         if (fromIndex == toIndex) {
-            throw new IllegalStateException();
+            return this;
         }
 
         return new ArrayDoubleStream(elements, fromIndex + 1, toIndex, closeHandlers, sorted);
@@ -1080,19 +1076,15 @@ class ArrayDoubleStream extends AbstractDoubleStream {
     @Override
     public DoubleStream head2() {
         if (fromIndex == toIndex) {
-            throw new IllegalStateException();
+            return this;
         }
 
         return new ArrayDoubleStream(elements, fromIndex, toIndex - 1, closeHandlers, sorted);
     }
 
     @Override
-    public double tail2() {
-        if (fromIndex == toIndex) {
-            throw new NoSuchElementException();
-        }
-
-        return elements[toIndex - 1];
+    public OptionalDouble tail2() {
+        return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(elements[toIndex - 1]);
     }
 
     @Override

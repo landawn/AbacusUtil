@@ -69,11 +69,11 @@ import com.landawn.abacus.util.function.ToIntFunction;
 class IteratorIntStream extends AbstractIntStream {
     final ExIntIterator elements;
 
-    int head;
+    OptionalInt head;
     IntStream tail;
 
     IntStream head2;
-    int tail2;
+    OptionalInt tail2;
 
     IteratorIntStream(final IntIterator values) {
         this(values, null);
@@ -1055,12 +1055,12 @@ class IteratorIntStream extends AbstractIntStream {
             Supplier<M> mapFactory) {
         final M result = mapFactory.get();
         int element = 0;
-    
+
         while (elements.hasNext()) {
             element = elements.nextInt();
             Collectors.merge(result, keyMapper.apply(element), valueMapper.apply(element), mergeFunction);
         }
-    
+
         return result;
     }
 
@@ -1152,13 +1152,9 @@ class IteratorIntStream extends AbstractIntStream {
     }
 
     @Override
-    public int head() {
-        if (tail == null) {
-            if (elements.hasNext() == false) {
-                throw new NoSuchElementException();
-            }
-
-            head = elements.nextInt();
+    public OptionalInt head() {
+        if (head == null) {
+            head = elements.hasNext() ? OptionalInt.of(elements.nextInt()) : OptionalInt.empty();
             tail = new IteratorIntStream(elements, closeHandlers, sorted);
         }
 
@@ -1168,11 +1164,7 @@ class IteratorIntStream extends AbstractIntStream {
     @Override
     public IntStream tail() {
         if (tail == null) {
-            if (elements.hasNext() == false) {
-                throw new IllegalStateException();
-            }
-
-            head = elements.nextInt();
+            head = elements.hasNext() ? OptionalInt.of(elements.nextInt()) : OptionalInt.empty();
             tail = new IteratorIntStream(elements, closeHandlers, sorted);
         }
 
@@ -1182,28 +1174,20 @@ class IteratorIntStream extends AbstractIntStream {
     @Override
     public IntStream head2() {
         if (head2 == null) {
-            if (elements.hasNext() == false) {
-                throw new IllegalStateException();
-            }
-
             final int[] a = elements.toArray();
-            head2 = new ArrayIntStream(a, 0, a.length - 1, closeHandlers, sorted);
-            tail2 = a[a.length - 1];
+            head2 = new ArrayIntStream(a, 0, a.length == 0 ? 0 : a.length - 1, closeHandlers, sorted);
+            tail2 = a.length == 0 ? OptionalInt.empty() : OptionalInt.of(a[a.length - 1]);
         }
 
         return head2;
     }
 
     @Override
-    public int tail2() {
-        if (head2 == null) {
-            if (elements.hasNext() == false) {
-                throw new NoSuchElementException();
-            }
-
+    public OptionalInt tail2() {
+        if (tail2 == null) {
             final int[] a = elements.toArray();
-            head2 = new ArrayIntStream(a, 0, a.length - 1, closeHandlers, sorted);
-            tail2 = a[a.length - 1];
+            head2 = new ArrayIntStream(a, 0, a.length == 0 ? 0 : a.length - 1, closeHandlers, sorted);
+            tail2 = a.length == 0 ? OptionalInt.empty() : OptionalInt.of(a[a.length - 1]);
         }
 
         return tail2;

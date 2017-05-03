@@ -714,21 +714,21 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
         if (maxThreadNum <= 1) {
             return sequential().toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
         }
-    
+
         final Function<? super Double, ? extends K> keyMapper2 = new Function<Double, K>() {
             @Override
             public K apply(Double value) {
                 return keyMapper.apply(value);
             }
         };
-    
+
         final Function<? super Double, ? extends U> valueMapper2 = new Function<Double, U>() {
             @Override
             public U apply(Double value) {
                 return valueMapper.apply(value);
             }
         };
-    
+
         return boxed().toMap(keyMapper2, valueMapper2, mergeFunction, mapFactory);
     }
 
@@ -961,13 +961,9 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
     };
 
     @Override
-    public double head() {
-        if (tail == null) {
-            if (elements.hasNext() == false) {
-                throw new NoSuchElementException();
-            }
-
-            head = elements.nextDouble();
+    public OptionalDouble head() {
+        if (head == null) {
+            head = elements.hasNext() ? OptionalDouble.of(elements.nextDouble()) : OptionalDouble.empty();
             tail = new ParallelIteratorDoubleStream(elements, closeHandlers, sorted, maxThreadNum, splitor);
         }
 
@@ -977,11 +973,7 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
     @Override
     public DoubleStream tail() {
         if (tail == null) {
-            if (elements.hasNext() == false) {
-                throw new IllegalStateException();
-            }
-
-            head = elements.nextDouble();
+            head = elements.hasNext() ? OptionalDouble.of(elements.nextDouble()) : OptionalDouble.empty();
             tail = new ParallelIteratorDoubleStream(elements, closeHandlers, sorted, maxThreadNum, splitor);
         }
 
@@ -991,28 +983,20 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
     @Override
     public DoubleStream head2() {
         if (head2 == null) {
-            if (elements.hasNext() == false) {
-                throw new IllegalStateException();
-            }
-
             final double[] a = elements.toArray();
-            head2 = new ParallelArrayDoubleStream(a, 0, a.length - 1, closeHandlers, sorted, maxThreadNum, splitor);
-            tail2 = a[a.length - 1];
+            head2 = new ParallelArrayDoubleStream(a, 0, a.length == 0 ? 0 : a.length - 1, closeHandlers, sorted, maxThreadNum, splitor);
+            tail2 = a.length == 0 ? OptionalDouble.empty() : OptionalDouble.of(a[a.length - 1]);
         }
 
         return head2;
     }
 
     @Override
-    public double tail2() {
-        if (head2 == null) {
-            if (elements.hasNext() == false) {
-                throw new NoSuchElementException();
-            }
-
+    public OptionalDouble tail2() {
+        if (tail2 == null) {
             final double[] a = elements.toArray();
-            head2 = new ArrayDoubleStream(a, 0, a.length - 1, closeHandlers, sorted);
-            tail2 = a[a.length - 1];
+            head2 = new ParallelArrayDoubleStream(a, 0, a.length == 0 ? 0 : a.length - 1, closeHandlers, sorted, maxThreadNum, splitor);
+            tail2 = a.length == 0 ? OptionalDouble.empty() : OptionalDouble.of(a[a.length - 1]);
         }
 
         return tail2;

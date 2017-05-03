@@ -334,7 +334,7 @@ abstract class AbstractLongStream extends LongStream {
     public <K, A, D> Map<K, D> toMap(LongFunction<? extends K> classifier, Collector<Long, A, D> downstream) {
         @SuppressWarnings("rawtypes")
         final Supplier<Map<K, D>> mapFactory = (Supplier) Supplier.MAP;
-    
+
         return toMap(classifier, downstream, mapFactory);
     }
 
@@ -681,12 +681,12 @@ abstract class AbstractLongStream extends LongStream {
     }
 
     @Override
-    public Pair<Long, LongStream> headAndTail() {
+    public Pair<OptionalLong, LongStream> headAndTail() {
         return Pair.of(head(), tail());
     }
 
     @Override
-    public Pair<LongStream, Long> headAndTail2() {
+    public Pair<LongStream, OptionalLong> headAndTail2() {
         return Pair.of(head2(), tail2());
     }
 

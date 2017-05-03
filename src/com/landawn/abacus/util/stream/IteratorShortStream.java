@@ -59,11 +59,11 @@ import com.landawn.abacus.util.function.ToShortFunction;
 class IteratorShortStream extends AbstractShortStream {
     final ExShortIterator elements;
 
-    short head;
+    OptionalShort head;
     ShortStream tail;
 
     ShortStream head2;
-    short tail2;
+    OptionalShort tail2;
 
     IteratorShortStream(final ShortIterator values) {
         this(values, null);
@@ -796,12 +796,12 @@ class IteratorShortStream extends AbstractShortStream {
             Supplier<M> mapFactory) {
         final M result = mapFactory.get();
         short element = 0;
-    
+
         while (elements.hasNext()) {
             element = elements.nextShort();
             Collectors.merge(result, keyMapper.apply(element), valueMapper.apply(element), mergeFunction);
         }
-    
+
         return result;
     }
 
@@ -893,13 +893,9 @@ class IteratorShortStream extends AbstractShortStream {
     }
 
     @Override
-    public short head() {
-        if (tail == null) {
-            if (elements.hasNext() == false) {
-                throw new NoSuchElementException();
-            }
-
-            head = elements.nextShort();
+    public OptionalShort head() {
+        if (head == null) {
+            head = elements.hasNext() ? OptionalShort.of(elements.nextShort()) : OptionalShort.empty();
             tail = new IteratorShortStream(elements, closeHandlers, sorted);
         }
 
@@ -909,11 +905,7 @@ class IteratorShortStream extends AbstractShortStream {
     @Override
     public ShortStream tail() {
         if (tail == null) {
-            if (elements.hasNext() == false) {
-                throw new IllegalStateException();
-            }
-
-            head = elements.nextShort();
+            head = elements.hasNext() ? OptionalShort.of(elements.nextShort()) : OptionalShort.empty();
             tail = new IteratorShortStream(elements, closeHandlers, sorted);
         }
 
@@ -923,28 +915,20 @@ class IteratorShortStream extends AbstractShortStream {
     @Override
     public ShortStream head2() {
         if (head2 == null) {
-            if (elements.hasNext() == false) {
-                throw new IllegalStateException();
-            }
-
             final short[] a = elements.toArray();
-            head2 = new ArrayShortStream(a, 0, a.length - 1, closeHandlers, sorted);
-            tail2 = a[a.length - 1];
+            head2 = new ArrayShortStream(a, 0, a.length == 0 ? 0 : a.length - 1, closeHandlers, sorted);
+            tail2 = a.length == 0 ? OptionalShort.empty() : OptionalShort.of(a[a.length - 1]);
         }
 
         return head2;
     }
 
     @Override
-    public short tail2() {
-        if (head2 == null) {
-            if (elements.hasNext() == false) {
-                throw new NoSuchElementException();
-            }
-
+    public OptionalShort tail2() {
+        if (tail2 == null) {
             final short[] a = elements.toArray();
-            head2 = new ArrayShortStream(a, 0, a.length - 1, closeHandlers, sorted);
-            tail2 = a[a.length - 1];
+            head2 = new ArrayShortStream(a, 0, a.length == 0 ? 0 : a.length - 1, closeHandlers, sorted);
+            tail2 = a.length == 0 ? OptionalShort.empty() : OptionalShort.of(a[a.length - 1]);
         }
 
         return tail2;

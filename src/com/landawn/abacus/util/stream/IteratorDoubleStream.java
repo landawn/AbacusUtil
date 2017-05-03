@@ -62,11 +62,11 @@ import com.landawn.abacus.util.function.ToDoubleFunction;
 class IteratorDoubleStream extends AbstractDoubleStream {
     final ExDoubleIterator elements;
 
-    double head;
+    OptionalDouble head;
     DoubleStream tail;
 
     DoubleStream head2;
-    double tail2;
+    OptionalDouble tail2;
 
     IteratorDoubleStream(final DoubleIterator values) {
         this(values, null);
@@ -898,12 +898,12 @@ class IteratorDoubleStream extends AbstractDoubleStream {
             Supplier<M> mapFactory) {
         final M result = mapFactory.get();
         double element = 0;
-    
+
         while (elements.hasNext()) {
             element = elements.nextDouble();
             Collectors.merge(result, keyMapper.apply(element), valueMapper.apply(element), mergeFunction);
         }
-    
+
         return result;
     }
 
@@ -995,13 +995,9 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public double head() {
-        if (tail == null) {
-            if (elements.hasNext() == false) {
-                throw new NoSuchElementException();
-            }
-
-            head = elements.nextDouble();
+    public OptionalDouble head() {
+        if (head == null) {
+            head = elements.hasNext() ? OptionalDouble.of(elements.nextDouble()) : OptionalDouble.empty();
             tail = new IteratorDoubleStream(elements, closeHandlers, sorted);
         }
 
@@ -1011,11 +1007,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     @Override
     public DoubleStream tail() {
         if (tail == null) {
-            if (elements.hasNext() == false) {
-                throw new IllegalStateException();
-            }
-
-            head = elements.nextDouble();
+            head = elements.hasNext() ? OptionalDouble.of(elements.nextDouble()) : OptionalDouble.empty();
             tail = new IteratorDoubleStream(elements, closeHandlers, sorted);
         }
 
@@ -1025,28 +1017,20 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     @Override
     public DoubleStream head2() {
         if (head2 == null) {
-            if (elements.hasNext() == false) {
-                throw new IllegalStateException();
-            }
-
             final double[] a = elements.toArray();
-            head2 = new ArrayDoubleStream(a, 0, a.length - 1, closeHandlers, sorted);
-            tail2 = a[a.length - 1];
+            head2 = new ArrayDoubleStream(a, 0, a.length == 0 ? 0 : a.length - 1, closeHandlers, sorted);
+            tail2 = a.length == 0 ? OptionalDouble.empty() : OptionalDouble.of(a[a.length - 1]);
         }
 
         return head2;
     }
 
     @Override
-    public double tail2() {
-        if (head2 == null) {
-            if (elements.hasNext() == false) {
-                throw new NoSuchElementException();
-            }
-
+    public OptionalDouble tail2() {
+        if (tail2 == null) {
             final double[] a = elements.toArray();
-            head2 = new ArrayDoubleStream(a, 0, a.length - 1, closeHandlers, sorted);
-            tail2 = a[a.length - 1];
+            head2 = new ArrayDoubleStream(a, 0, a.length == 0 ? 0 : a.length - 1, closeHandlers, sorted);
+            tail2 = a.length == 0 ? OptionalDouble.empty() : OptionalDouble.of(a[a.length - 1]);
         }
 
         return tail2;

@@ -550,16 +550,14 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
      * Don't call any other methods with this stream after head() and tail() are called. 
      * 
      * @return
-     * @throws NoSuchElementException if this stream is empty.
      */
-    public abstract float head();
+    public abstract OptionalFloat head();
 
     /**
      * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
      * Don't call any other methods with this stream after head() and tail() are called. 
      * 
      * @return
-     * @throws IllegalStateException if this stream is empty.
      */
     public abstract FloatStream tail();
 
@@ -568,7 +566,6 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
      * Don't call any other methods with this stream after head2() and tail2() are called.
      * 
      * @return
-     * @throws IllegalStateException if this stream is empty.
      */
     public abstract FloatStream head2();
 
@@ -577,13 +574,12 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
      * Don't call any other methods with this stream after head2() and tail2() are called. 
      * 
      * @return
-     * @throws NoSuchElementException if this stream is empty.
      */
-    public abstract float tail2();
+    public abstract OptionalFloat tail2();
 
-    public abstract Pair<Float, FloatStream> headAndTail();
+    public abstract Pair<OptionalFloat, FloatStream> headAndTail();
 
-    public abstract Pair<FloatStream, Float> headAndTail2();
+    public abstract Pair<FloatStream, OptionalFloat> headAndTail2();
 
     /**
      * Returns an {@code OptionalFloat} describing the minimum element of this

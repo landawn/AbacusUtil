@@ -715,21 +715,21 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
         if (maxThreadNum <= 1) {
             return sequential().toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
         }
-    
+
         final Function<? super Long, ? extends K> keyMapper2 = new Function<Long, K>() {
             @Override
             public K apply(Long value) {
                 return keyMapper.apply(value);
             }
         };
-    
+
         final Function<? super Long, ? extends U> valueMapper2 = new Function<Long, U>() {
             @Override
             public U apply(Long value) {
                 return valueMapper.apply(value);
             }
         };
-    
+
         return boxed().toMap(keyMapper2, valueMapper2, mergeFunction, mapFactory);
     }
 
@@ -962,13 +962,9 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
     }
 
     @Override
-    public long head() {
-        if (tail == null) {
-            if (elements.hasNext() == false) {
-                throw new NoSuchElementException();
-            }
-
-            head = elements.nextLong();
+    public OptionalLong head() {
+        if (head == null) {
+            head = elements.hasNext() ? OptionalLong.of(elements.nextLong()) : OptionalLong.empty();
             tail = new ParallelIteratorLongStream(elements, closeHandlers, sorted, maxThreadNum, splitor);
         }
 
@@ -978,11 +974,7 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
     @Override
     public LongStream tail() {
         if (tail == null) {
-            if (elements.hasNext() == false) {
-                throw new IllegalStateException();
-            }
-
-            head = elements.nextLong();
+            head = elements.hasNext() ? OptionalLong.of(elements.nextLong()) : OptionalLong.empty();
             tail = new ParallelIteratorLongStream(elements, closeHandlers, sorted, maxThreadNum, splitor);
         }
 
@@ -992,28 +984,20 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
     @Override
     public LongStream head2() {
         if (head2 == null) {
-            if (elements.hasNext() == false) {
-                throw new IllegalStateException();
-            }
-
             final long[] a = elements.toArray();
-            head2 = new ParallelArrayLongStream(a, 0, a.length - 1, closeHandlers, sorted, maxThreadNum, splitor);
-            tail2 = a[a.length - 1];
+            head2 = new ParallelArrayLongStream(a, 0, a.length == 0 ? 0 : a.length - 1, closeHandlers, sorted, maxThreadNum, splitor);
+            tail2 = a.length == 0 ? OptionalLong.empty() : OptionalLong.of(a[a.length - 1]);
         }
 
         return head2;
     }
 
     @Override
-    public long tail2() {
-        if (head2 == null) {
-            if (elements.hasNext() == false) {
-                throw new NoSuchElementException();
-            }
-
+    public OptionalLong tail2() {
+        if (tail2 == null) {
             final long[] a = elements.toArray();
-            head2 = new ArrayLongStream(a, 0, a.length - 1, closeHandlers, sorted);
-            tail2 = a[a.length - 1];
+            head2 = new ParallelArrayLongStream(a, 0, a.length == 0 ? 0 : a.length - 1, closeHandlers, sorted, maxThreadNum, splitor);
+            tail2 = a.length == 0 ? OptionalLong.empty() : OptionalLong.of(a[a.length - 1]);
         }
 
         return tail2;

@@ -525,21 +525,21 @@ final class ParallelArrayShortStream extends ArrayShortStream {
         if (maxThreadNum <= 1) {
             return sequential().toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
         }
-    
+
         final Function<? super Short, ? extends K> keyMapper2 = new Function<Short, K>() {
             @Override
             public K apply(Short value) {
                 return keyMapper.apply(value);
             }
         };
-    
+
         final Function<? super Short, ? extends U> valueMapper2 = new Function<Short, U>() {
             @Override
             public U apply(Short value) {
                 return valueMapper.apply(value);
             }
         };
-    
+
         return boxed().toMap(keyMapper2, valueMapper2, mergeFunction, mapFactory);
     }
 
@@ -876,18 +876,9 @@ final class ParallelArrayShortStream extends ArrayShortStream {
     }
 
     @Override
-    public short head() {
-        if (fromIndex == toIndex) {
-            throw new NoSuchElementException();
-        }
-
-        return elements[fromIndex];
-    }
-
-    @Override
     public ShortStream tail() {
         if (fromIndex == toIndex) {
-            throw new IllegalStateException();
+            return this;
         }
 
         return new ParallelArrayShortStream(elements, fromIndex + 1, toIndex, closeHandlers, sorted, maxThreadNum, splitor);
@@ -896,19 +887,10 @@ final class ParallelArrayShortStream extends ArrayShortStream {
     @Override
     public ShortStream head2() {
         if (fromIndex == toIndex) {
-            throw new IllegalStateException();
+            return this;
         }
 
         return new ParallelArrayShortStream(elements, fromIndex, toIndex - 1, closeHandlers, sorted, maxThreadNum, splitor);
-    }
-
-    @Override
-    public short tail2() {
-        if (fromIndex == toIndex) {
-            throw new NoSuchElementException();
-        }
-
-        return elements[toIndex - 1];
     }
 
     @Override

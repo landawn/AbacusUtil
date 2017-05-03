@@ -1501,12 +1501,12 @@ class IteratorStream<T> extends AbstractStream<T> {
             BinaryOperator<U> mergeFunction, Supplier<M> mapFactory) {
         final M result = mapFactory.get();
         T element = null;
-    
+
         while (elements.hasNext()) {
             element = elements.next();
             Collectors.merge(result, keyMapper.apply(element), valueMapper.apply(element), mergeFunction);
         }
-    
+
         return result;
     }
 
@@ -1622,7 +1622,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public NullabLe<T> head() {
-        if (tail == null) {
+        if (head == null) {
             head = elements.hasNext() ? NullabLe.of(elements.next()) : NullabLe.<T> empty();
             tail = new IteratorStream<>(elements, closeHandlers, sorted, cmp);
         }
@@ -1653,7 +1653,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public NullabLe<T> tail2() {
-        if (head2 == null) {
+        if (tail2 == null) {
             final Object[] a = this.toArray();
             head2 = new ArrayStream<>((T[]) a, 0, a.length == 0 ? 0 : a.length - 1, closeHandlers, sorted, cmp);
             tail2 = a.length == 0 ? NullabLe.<T> empty() : NullabLe.of((T) a[a.length - 1]);

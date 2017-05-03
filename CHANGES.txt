@@ -17,7 +17,9 @@
 
 7*, Remove toMap2 from IntList/ByteList/.../IntStream/ByteStream/...
 
-8, Improvements and bug fix.
+8*, Refactoring head/tail/head2/tail2 in Stream/IntStream/...
+
+9, Improvements and bug fix.
 
 
 ========Changes in 0.9.62=========================================================================

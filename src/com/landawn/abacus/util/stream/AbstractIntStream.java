@@ -335,7 +335,7 @@ abstract class AbstractIntStream extends IntStream {
     public <K, A, D> Map<K, D> toMap(IntFunction<? extends K> classifier, Collector<Integer, A, D> downstream) {
         @SuppressWarnings("rawtypes")
         final Supplier<Map<K, D>> mapFactory = (Supplier) Supplier.MAP;
-    
+
         return toMap(classifier, downstream, mapFactory);
     }
 
@@ -683,12 +683,12 @@ abstract class AbstractIntStream extends IntStream {
     }
 
     @Override
-    public Pair<Integer, IntStream> headAndTail() {
+    public Pair<OptionalInt, IntStream> headAndTail() {
         return Pair.of(head(), tail());
     }
 
     @Override
-    public Pair<IntStream, Integer> headAndTail2() {
+    public Pair<IntStream, OptionalInt> headAndTail2() {
         return Pair.of(head2(), tail2());
     }
 

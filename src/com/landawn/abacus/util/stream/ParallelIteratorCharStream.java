@@ -636,21 +636,21 @@ final class ParallelIteratorCharStream extends IteratorCharStream {
         if (maxThreadNum <= 1) {
             return sequential().toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
         }
-    
+
         final Function<? super Character, ? extends K> keyMapper2 = new Function<Character, K>() {
             @Override
             public K apply(Character value) {
                 return keyMapper.apply(value);
             }
         };
-    
+
         final Function<? super Character, ? extends U> valueMapper2 = new Function<Character, U>() {
             @Override
             public U apply(Character value) {
                 return valueMapper.apply(value);
             }
         };
-    
+
         return boxed().toMap(keyMapper2, valueMapper2, mergeFunction, mapFactory);
     }
 
@@ -883,13 +883,9 @@ final class ParallelIteratorCharStream extends IteratorCharStream {
     }
 
     @Override
-    public char head() {
-        if (tail == null) {
-            if (elements.hasNext() == false) {
-                throw new NoSuchElementException();
-            }
-
-            head = elements.nextChar();
+    public OptionalChar head() {
+        if (head == null) {
+            head = elements.hasNext() ? OptionalChar.of(elements.nextChar()) : OptionalChar.empty();
             tail = new ParallelIteratorCharStream(elements, closeHandlers, sorted, maxThreadNum, splitor);
         }
 
@@ -899,11 +895,7 @@ final class ParallelIteratorCharStream extends IteratorCharStream {
     @Override
     public CharStream tail() {
         if (tail == null) {
-            if (elements.hasNext() == false) {
-                throw new IllegalStateException();
-            }
-
-            head = elements.nextChar();
+            head = elements.hasNext() ? OptionalChar.of(elements.nextChar()) : OptionalChar.empty();
             tail = new ParallelIteratorCharStream(elements, closeHandlers, sorted, maxThreadNum, splitor);
         }
 
@@ -913,28 +905,20 @@ final class ParallelIteratorCharStream extends IteratorCharStream {
     @Override
     public CharStream head2() {
         if (head2 == null) {
-            if (elements.hasNext() == false) {
-                throw new IllegalStateException();
-            }
-
             final char[] a = elements.toArray();
-            head2 = new ParallelArrayCharStream(a, 0, a.length - 1, closeHandlers, sorted, maxThreadNum, splitor);
-            tail2 = a[a.length - 1];
+            head2 = new ParallelArrayCharStream(a, 0, a.length == 0 ? 0 : a.length - 1, closeHandlers, sorted, maxThreadNum, splitor);
+            tail2 = a.length == 0 ? OptionalChar.empty() : OptionalChar.of(a[a.length - 1]);
         }
 
         return head2;
     }
 
     @Override
-    public char tail2() {
-        if (head2 == null) {
-            if (elements.hasNext() == false) {
-                throw new NoSuchElementException();
-            }
-
+    public OptionalChar tail2() {
+        if (tail2 == null) {
             final char[] a = elements.toArray();
-            head2 = new ArrayCharStream(a, 0, a.length - 1, closeHandlers, sorted);
-            tail2 = a[a.length - 1];
+            head2 = new ParallelArrayCharStream(a, 0, a.length == 0 ? 0 : a.length - 1, closeHandlers, sorted, maxThreadNum, splitor);
+            tail2 = a.length == 0 ? OptionalChar.empty() : OptionalChar.of(a[a.length - 1]);
         }
 
         return tail2;

@@ -684,12 +684,12 @@ abstract class AbstractByteStream extends ByteStream {
     }
 
     @Override
-    public Pair<Byte, ByteStream> headAndTail() {
+    public Pair<OptionalByte, ByteStream> headAndTail() {
         return Pair.of(head(), tail());
     }
 
     @Override
-    public Pair<ByteStream, Byte> headAndTail2() {
+    public Pair<ByteStream, OptionalByte> headAndTail2() {
         return Pair.of(head2(), tail2());
     }
 

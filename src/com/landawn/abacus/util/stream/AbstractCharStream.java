@@ -335,7 +335,7 @@ abstract class AbstractCharStream extends CharStream {
     public <K, A, D> Map<K, D> toMap(CharFunction<? extends K> classifier, Collector<Character, A, D> downstream) {
         @SuppressWarnings("rawtypes")
         final Supplier<Map<K, D>> mapFactory = (Supplier) Supplier.MAP;
-    
+
         return toMap(classifier, downstream, mapFactory);
     }
 
@@ -683,12 +683,12 @@ abstract class AbstractCharStream extends CharStream {
     }
 
     @Override
-    public Pair<Character, CharStream> headAndTail() {
+    public Pair<OptionalChar, CharStream> headAndTail() {
         return Pair.of(head(), tail());
     }
 
     @Override
-    public Pair<CharStream, Character> headAndTail2() {
+    public Pair<CharStream, OptionalChar> headAndTail2() {
         return Pair.of(head2(), tail2());
     }
 

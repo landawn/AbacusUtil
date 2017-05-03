@@ -57,11 +57,11 @@ import com.landawn.abacus.util.function.Supplier;
 class IteratorByteStream extends AbstractByteStream {
     ExByteIterator elements;
 
-    byte head;
+    OptionalByte head;
     ByteStream tail;
 
     ByteStream head2;
-    byte tail2;
+    OptionalByte tail2;
 
     IteratorByteStream(final ByteIterator values) {
         this(values, null);
@@ -785,12 +785,12 @@ class IteratorByteStream extends AbstractByteStream {
             Supplier<M> mapFactory) {
         final M result = mapFactory.get();
         byte element = 0;
-    
+
         while (elements.hasNext()) {
             element = elements.nextByte();
             Collectors.merge(result, keyMapper.apply(element), valueMapper.apply(element), mergeFunction);
         }
-    
+
         return result;
     }
 
@@ -882,13 +882,9 @@ class IteratorByteStream extends AbstractByteStream {
     }
 
     @Override
-    public byte head() {
-        if (tail == null) {
-            if (elements.hasNext() == false) {
-                throw new NoSuchElementException();
-            }
-
-            head = elements.nextByte();
+    public OptionalByte head() {
+        if (head == null) {
+            head = elements.hasNext() ? OptionalByte.of(elements.nextByte()) : OptionalByte.empty();
             tail = new IteratorByteStream(elements, closeHandlers, sorted);
         }
 
@@ -898,11 +894,7 @@ class IteratorByteStream extends AbstractByteStream {
     @Override
     public ByteStream tail() {
         if (tail == null) {
-            if (elements.hasNext() == false) {
-                throw new IllegalStateException();
-            }
-
-            head = elements.nextByte();
+            head = elements.hasNext() ? OptionalByte.of(elements.nextByte()) : OptionalByte.empty();
             tail = new IteratorByteStream(elements, closeHandlers, sorted);
         }
 
@@ -912,28 +904,20 @@ class IteratorByteStream extends AbstractByteStream {
     @Override
     public ByteStream head2() {
         if (head2 == null) {
-            if (elements.hasNext() == false) {
-                throw new IllegalStateException();
-            }
-
             final byte[] a = elements.toArray();
-            head2 = new ArrayByteStream(a, 0, a.length - 1, closeHandlers, sorted);
-            tail2 = a[a.length - 1];
+            head2 = new ArrayByteStream(a, 0, a.length == 0 ? 0 : a.length - 1, closeHandlers, sorted);
+            tail2 = a.length == 0 ? OptionalByte.empty() : OptionalByte.of(a[a.length - 1]);
         }
 
         return head2;
     }
 
     @Override
-    public byte tail2() {
-        if (head2 == null) {
-            if (elements.hasNext() == false) {
-                throw new NoSuchElementException();
-            }
-
+    public OptionalByte tail2() {
+        if (tail2 == null) {
             final byte[] a = elements.toArray();
-            head2 = new ArrayByteStream(a, 0, a.length - 1, closeHandlers, sorted);
-            tail2 = a[a.length - 1];
+            head2 = new ArrayByteStream(a, 0, a.length == 0 ? 0 : a.length - 1, closeHandlers, sorted);
+            tail2 = a.length == 0 ? OptionalByte.empty() : OptionalByte.of(a[a.length - 1]);
         }
 
         return tail2;

@@ -815,28 +815,28 @@ class ArrayByteStream extends AbstractByteStream {
         final Map<K, A> intermediate = (Map<K, A>) result;
         K key = null;
         A v = null;
-    
+
         for (int i = fromIndex; i < toIndex; i++) {
             key = N.requireNonNull(classifier.apply(elements[i]), "element cannot be mapped to a null key");
-    
+
             if ((v = intermediate.get(key)) == null) {
                 if ((v = downstreamSupplier.get()) != null) {
                     intermediate.put(key, v);
                 }
             }
-    
+
             downstreamAccumulator.accept(v, elements[i]);
         }
-    
+
         final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
             @Override
             public A apply(K k, A v) {
                 return (A) downstream.finisher().apply(v);
             }
         };
-    
+
         Collectors.replaceAll(intermediate, function);
-    
+
         return result;
     }
 
@@ -900,18 +900,14 @@ class ArrayByteStream extends AbstractByteStream {
     }
 
     @Override
-    public byte head() {
-        if (fromIndex == toIndex) {
-            throw new NoSuchElementException();
-        }
-
-        return elements[fromIndex];
+    public OptionalByte head() {
+        return fromIndex == toIndex ? OptionalByte.empty() : OptionalByte.of(elements[fromIndex]);
     }
 
     @Override
     public ByteStream tail() {
         if (fromIndex == toIndex) {
-            throw new IllegalStateException();
+            return this;
         }
 
         return new ArrayByteStream(elements, fromIndex + 1, toIndex, closeHandlers, sorted);
@@ -920,19 +916,15 @@ class ArrayByteStream extends AbstractByteStream {
     @Override
     public ByteStream head2() {
         if (fromIndex == toIndex) {
-            throw new IllegalStateException();
+            return this;
         }
 
         return new ArrayByteStream(elements, fromIndex, toIndex - 1, closeHandlers, sorted);
     }
 
     @Override
-    public byte tail2() {
-        if (fromIndex == toIndex) {
-            throw new NoSuchElementException();
-        }
-
-        return elements[toIndex - 1];
+    public OptionalByte tail2() {
+        return fromIndex == toIndex ? OptionalByte.empty() : OptionalByte.of(elements[toIndex - 1]);
     }
 
     @Override

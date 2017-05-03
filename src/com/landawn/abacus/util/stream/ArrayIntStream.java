@@ -1166,11 +1166,11 @@ class ArrayIntStream extends AbstractIntStream {
     public <K, U, M extends Map<K, U>> M toMap(IntFunction<? extends K> keyMapper, IntFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
             Supplier<M> mapFactory) {
         final M result = mapFactory.get();
-    
+
         for (int i = fromIndex; i < toIndex; i++) {
             Collectors.merge(result, keyMapper.apply(elements[i]), valueMapper.apply(elements[i]), mergeFunction);
         }
-    
+
         return result;
     }
 
@@ -1268,18 +1268,14 @@ class ArrayIntStream extends AbstractIntStream {
     }
 
     @Override
-    public int head() {
-        if (fromIndex == toIndex) {
-            throw new NoSuchElementException();
-        }
-
-        return elements[fromIndex];
+    public OptionalInt head() {
+        return fromIndex == toIndex ? OptionalInt.empty() : OptionalInt.of(elements[fromIndex]);
     }
 
     @Override
     public IntStream tail() {
         if (fromIndex == toIndex) {
-            throw new IllegalStateException();
+            return this;
         }
 
         return new ArrayIntStream(elements, fromIndex + 1, toIndex, closeHandlers, sorted);
@@ -1288,19 +1284,15 @@ class ArrayIntStream extends AbstractIntStream {
     @Override
     public IntStream head2() {
         if (fromIndex == toIndex) {
-            throw new IllegalStateException();
+            return this;
         }
 
         return new ArrayIntStream(elements, fromIndex, toIndex - 1, closeHandlers, sorted);
     }
 
     @Override
-    public int tail2() {
-        if (fromIndex == toIndex) {
-            throw new NoSuchElementException();
-        }
-
-        return elements[toIndex - 1];
+    public OptionalInt tail2() {
+        return fromIndex == toIndex ? OptionalInt.empty() : OptionalInt.of(elements[toIndex - 1]);
     }
 
     @Override

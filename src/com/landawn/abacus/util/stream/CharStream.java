@@ -494,16 +494,14 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
      * Don't call any other methods with this stream after head() and tail() are called. 
      * 
      * @return
-     * @throws NoSuchElementException if this stream is empty.
      */
-    public abstract char head();
+    public abstract OptionalChar head();
 
     /**
      * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
      * Don't call any other methods with this stream after head() and tail() are called. 
      * 
      * @return
-     * @throws IllegalStateException if this stream is empty.
      */
     public abstract CharStream tail();
 
@@ -512,7 +510,6 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
      * Don't call any other methods with this stream after head2() and tail2() are called.
      * 
      * @return
-     * @throws IllegalStateException if this stream is empty.
      */
     public abstract CharStream head2();
 
@@ -521,13 +518,12 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
      * Don't call any other methods with this stream after head2() and tail2() are called.
      * 
      * @return
-     * @throws NoSuchElementException if this stream is empty.
      */
-    public abstract char tail2();
+    public abstract OptionalChar tail2();
 
-    public abstract Pair<Character, CharStream> headAndTail();
+    public abstract Pair<OptionalChar, CharStream> headAndTail();
 
-    public abstract Pair<CharStream, Character> headAndTail2();
+    public abstract Pair<CharStream, OptionalChar> headAndTail2();
 
     /**
      * Returns an {@code OptionalChar} describing the minimum element of this

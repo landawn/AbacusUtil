@@ -798,11 +798,11 @@ class ArrayCharStream extends AbstractCharStream {
     public <K, U, M extends Map<K, U>> M toMap(CharFunction<? extends K> keyMapper, CharFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
             Supplier<M> mapFactory) {
         final M result = mapFactory.get();
-    
+
         for (int i = fromIndex; i < toIndex; i++) {
             Collectors.merge(result, keyMapper.apply(elements[i]), valueMapper.apply(elements[i]), mergeFunction);
         }
-    
+
         return result;
     }
 
@@ -900,18 +900,14 @@ class ArrayCharStream extends AbstractCharStream {
     }
 
     @Override
-    public char head() {
-        if (fromIndex == toIndex) {
-            throw new NoSuchElementException();
-        }
-
-        return elements[fromIndex];
+    public OptionalChar head() {
+        return fromIndex == toIndex ? OptionalChar.empty() : OptionalChar.of(elements[fromIndex]);
     }
 
     @Override
     public CharStream tail() {
         if (fromIndex == toIndex) {
-            throw new IllegalStateException();
+            return this;
         }
 
         return new ArrayCharStream(elements, fromIndex + 1, toIndex, closeHandlers, sorted);
@@ -920,19 +916,15 @@ class ArrayCharStream extends AbstractCharStream {
     @Override
     public CharStream head2() {
         if (fromIndex == toIndex) {
-            throw new IllegalStateException();
+            return this;
         }
 
         return new ArrayCharStream(elements, fromIndex, toIndex - 1, closeHandlers, sorted);
     }
 
     @Override
-    public char tail2() {
-        if (fromIndex == toIndex) {
-            throw new NoSuchElementException();
-        }
-
-        return elements[toIndex - 1];
+    public OptionalChar tail2() {
+        return fromIndex == toIndex ? OptionalChar.empty() : OptionalChar.of(elements[toIndex - 1]);
     }
 
     @Override

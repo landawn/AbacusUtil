@@ -502,16 +502,14 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
      * Don't call any other methods with this stream after head() and tail() are called. 
      * 
      * @return
-     * @throws NoSuchElementException if this stream is empty.
      */
-    public abstract short head();
+    public abstract OptionalShort head();
 
     /**
      * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
      * Don't call any other methods with this stream after head() and tail() are called. 
      * 
      * @return
-     * @throws IllegalStateException if this stream is empty.
      */
     public abstract ShortStream tail();
 
@@ -520,7 +518,6 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
      * Don't call any other methods with this stream after head2() and tail2() are called. 
      * 
      * @return
-     * @throws IllegalStateException if this stream is empty.
      */
     public abstract ShortStream head2();
 
@@ -529,13 +526,12 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
      * Don't call any other methods with this stream after head2() and tail2() are called. 
      * 
      * @return
-     * @throws NoSuchElementException if this stream is empty.
      */
-    public abstract short tail2();
+    public abstract OptionalShort tail2();
 
-    public abstract Pair<Short, ShortStream> headAndTail();
+    public abstract Pair<OptionalShort, ShortStream> headAndTail();
 
-    public abstract Pair<ShortStream, Short> headAndTail2();
+    public abstract Pair<ShortStream, OptionalShort> headAndTail2();
 
     /**
      * Returns an {@code OptionalShort} describing the minimum element of this

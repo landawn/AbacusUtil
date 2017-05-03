@@ -335,7 +335,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
     public <K, A, D> Map<K, D> toMap(DoubleFunction<? extends K> classifier, Collector<Double, A, D> downstream) {
         @SuppressWarnings("rawtypes")
         final Supplier<Map<K, D>> mapFactory = (Supplier) Supplier.MAP;
-    
+
         return toMap(classifier, downstream, mapFactory);
     }
 
@@ -747,12 +747,12 @@ abstract class AbstractDoubleStream extends DoubleStream {
     }
 
     @Override
-    public Pair<Double, DoubleStream> headAndTail() {
+    public Pair<OptionalDouble, DoubleStream> headAndTail() {
         return Pair.of(head(), tail());
     }
 
     @Override
-    public Pair<DoubleStream, Double> headAndTail2() {
+    public Pair<DoubleStream, OptionalDouble> headAndTail2() {
         return Pair.of(head2(), tail2());
     }
 

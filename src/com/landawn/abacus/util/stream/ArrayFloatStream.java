@@ -956,11 +956,11 @@ class ArrayFloatStream extends AbstractFloatStream {
     public <K, U, M extends Map<K, U>> M toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
             Supplier<M> mapFactory) {
         final M result = mapFactory.get();
-    
+
         for (int i = fromIndex; i < toIndex; i++) {
             Collectors.merge(result, keyMapper.apply(elements[i]), valueMapper.apply(elements[i]), mergeFunction);
         }
-    
+
         return result;
     }
 
@@ -1058,18 +1058,14 @@ class ArrayFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public float head() {
-        if (fromIndex == toIndex) {
-            throw new NoSuchElementException();
-        }
-
-        return elements[fromIndex];
+    public OptionalFloat head() {
+        return fromIndex == toIndex ? OptionalFloat.empty() : OptionalFloat.of(elements[fromIndex]);
     }
 
     @Override
     public FloatStream tail() {
         if (fromIndex == toIndex) {
-            throw new IllegalStateException();
+            return this;
         }
 
         return new ArrayFloatStream(elements, fromIndex + 1, toIndex, closeHandlers, sorted);
@@ -1078,19 +1074,15 @@ class ArrayFloatStream extends AbstractFloatStream {
     @Override
     public FloatStream head2() {
         if (fromIndex == toIndex) {
-            throw new IllegalStateException();
+            return this;
         }
 
         return new ArrayFloatStream(elements, fromIndex, toIndex - 1, closeHandlers, sorted);
     }
 
     @Override
-    public float tail2() {
-        if (fromIndex == toIndex) {
-            throw new NoSuchElementException();
-        }
-
-        return elements[toIndex - 1];
+    public OptionalFloat tail2() {
+        return fromIndex == toIndex ? OptionalFloat.empty() : OptionalFloat.of(elements[toIndex - 1]);
     }
 
     @Override

@@ -57,11 +57,11 @@ import com.landawn.abacus.util.function.Supplier;
 class IteratorCharStream extends AbstractCharStream {
     final ExCharIterator elements;
 
-    char head;
+    OptionalChar head;
     CharStream tail;
 
     CharStream head2;
-    char tail2;
+    OptionalChar tail2;
 
     IteratorCharStream(final CharIterator values) {
         this(values, null);
@@ -784,12 +784,12 @@ class IteratorCharStream extends AbstractCharStream {
             Supplier<M> mapFactory) {
         final M result = mapFactory.get();
         char element = 0;
-    
+
         while (elements.hasNext()) {
             element = elements.nextChar();
             Collectors.merge(result, keyMapper.apply(element), valueMapper.apply(element), mergeFunction);
         }
-    
+
         return result;
     }
 
@@ -881,13 +881,9 @@ class IteratorCharStream extends AbstractCharStream {
     }
 
     @Override
-    public char head() {
-        if (tail == null) {
-            if (elements.hasNext() == false) {
-                throw new NoSuchElementException();
-            }
-
-            head = elements.nextChar();
+    public OptionalChar head() {
+        if (head == null) {
+            head = elements.hasNext() ? OptionalChar.of(elements.nextChar()) : OptionalChar.empty();
             tail = new IteratorCharStream(elements, closeHandlers, sorted);
         }
 
@@ -897,11 +893,7 @@ class IteratorCharStream extends AbstractCharStream {
     @Override
     public CharStream tail() {
         if (tail == null) {
-            if (elements.hasNext() == false) {
-                throw new IllegalStateException();
-            }
-
-            head = elements.nextChar();
+            head = elements.hasNext() ? OptionalChar.of(elements.nextChar()) : OptionalChar.empty();
             tail = new IteratorCharStream(elements, closeHandlers, sorted);
         }
 
@@ -911,28 +903,20 @@ class IteratorCharStream extends AbstractCharStream {
     @Override
     public CharStream head2() {
         if (head2 == null) {
-            if (elements.hasNext() == false) {
-                throw new IllegalStateException();
-            }
-
             final char[] a = elements.toArray();
-            head2 = new ArrayCharStream(a, 0, a.length - 1, closeHandlers, sorted);
-            tail2 = a[a.length - 1];
+            head2 = new ArrayCharStream(a, 0, a.length == 0 ? 0 : a.length - 1, closeHandlers, sorted);
+            tail2 = a.length == 0 ? OptionalChar.empty() : OptionalChar.of(a[a.length - 1]);
         }
 
         return head2;
     }
 
     @Override
-    public char tail2() {
-        if (head2 == null) {
-            if (elements.hasNext() == false) {
-                throw new NoSuchElementException();
-            }
-
+    public OptionalChar tail2() {
+        if (tail2 == null) {
             final char[] a = elements.toArray();
-            head2 = new ArrayCharStream(a, 0, a.length - 1, closeHandlers, sorted);
-            tail2 = a[a.length - 1];
+            head2 = new ArrayCharStream(a, 0, a.length == 0 ? 0 : a.length - 1, closeHandlers, sorted);
+            tail2 = a.length == 0 ? OptionalChar.empty() : OptionalChar.of(a[a.length - 1]);
         }
 
         return tail2;

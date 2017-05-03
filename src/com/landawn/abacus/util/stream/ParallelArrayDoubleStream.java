@@ -20,7 +20,6 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
@@ -591,21 +590,21 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
         if (maxThreadNum <= 1) {
             return sequential().toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
         }
-    
+
         final Function<? super Double, ? extends K> keyMapper2 = new Function<Double, K>() {
             @Override
             public K apply(Double value) {
                 return keyMapper.apply(value);
             }
         };
-    
+
         final Function<? super Double, ? extends U> valueMapper2 = new Function<Double, U>() {
             @Override
             public U apply(Double value) {
                 return valueMapper.apply(value);
             }
         };
-    
+
         return boxed().toMap(keyMapper2, valueMapper2, mergeFunction, mapFactory);
     }
 
@@ -942,18 +941,9 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
     }
 
     @Override
-    public double head() {
-        if (fromIndex == toIndex) {
-            throw new NoSuchElementException();
-        }
-
-        return elements[fromIndex];
-    }
-
-    @Override
     public DoubleStream tail() {
         if (fromIndex == toIndex) {
-            throw new IllegalStateException();
+            return this;
         }
 
         return new ParallelArrayDoubleStream(elements, fromIndex + 1, toIndex, closeHandlers, sorted, maxThreadNum, splitor);
@@ -962,19 +952,10 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
     @Override
     public DoubleStream head2() {
         if (fromIndex == toIndex) {
-            throw new IllegalStateException();
+            return this;
         }
 
         return new ParallelArrayDoubleStream(elements, fromIndex, toIndex - 1, closeHandlers, sorted, maxThreadNum, splitor);
-    }
-
-    @Override
-    public double tail2() {
-        if (fromIndex == toIndex) {
-            throw new NoSuchElementException();
-        }
-
-        return elements[toIndex - 1];
     }
 
     @Override

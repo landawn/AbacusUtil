@@ -335,7 +335,7 @@ abstract class AbstractShortStream extends ShortStream {
     public <K, A, D> Map<K, D> toMap(ShortFunction<? extends K> classifier, Collector<Short, A, D> downstream) {
         @SuppressWarnings("rawtypes")
         final Supplier<Map<K, D>> mapFactory = (Supplier) Supplier.MAP;
-    
+
         return toMap(classifier, downstream, mapFactory);
     }
 
@@ -682,12 +682,12 @@ abstract class AbstractShortStream extends ShortStream {
     }
 
     @Override
-    public Pair<Short, ShortStream> headAndTail() {
+    public Pair<OptionalShort, ShortStream> headAndTail() {
         return Pair.of(head(), tail());
     }
 
     @Override
-    public Pair<ShortStream, Short> headAndTail2() {
+    public Pair<ShortStream, OptionalShort> headAndTail2() {
         return Pair.of(head2(), tail2());
     }
 

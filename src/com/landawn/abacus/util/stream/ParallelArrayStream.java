@@ -2559,11 +2559,6 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     }
 
     @Override
-    public NullabLe<T> head() {
-        return fromIndex == toIndex ? NullabLe.<T> empty() : NullabLe.of(elements[fromIndex]);
-    }
-
-    @Override
     public Stream<T> tail() {
         if (fromIndex == toIndex) {
             return this;
@@ -2579,11 +2574,6 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
         }
 
         return new ParallelArrayStream<>(elements, fromIndex, toIndex - 1, closeHandlers, sorted, cmp, maxThreadNum, splitor);
-    }
-
-    @Override
-    public NullabLe<T> tail2() {
-        return fromIndex == toIndex ? NullabLe.<T> empty() : NullabLe.of(elements[toIndex - 1]);
     }
 
     @Override

@@ -957,11 +957,11 @@ class ArrayLongStream extends AbstractLongStream {
     public <K, U, M extends Map<K, U>> M toMap(LongFunction<? extends K> keyMapper, LongFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
             Supplier<M> mapFactory) {
         final M result = mapFactory.get();
-    
+
         for (int i = fromIndex; i < toIndex; i++) {
             Collectors.merge(result, keyMapper.apply(elements[i]), valueMapper.apply(elements[i]), mergeFunction);
         }
-    
+
         return result;
     }
 
@@ -1059,18 +1059,14 @@ class ArrayLongStream extends AbstractLongStream {
     }
 
     @Override
-    public long head() {
-        if (fromIndex == toIndex) {
-            throw new NoSuchElementException();
-        }
-
-        return elements[fromIndex];
+    public OptionalLong head() {
+        return fromIndex == toIndex ? OptionalLong.empty() : OptionalLong.of(elements[fromIndex]);
     }
 
     @Override
     public LongStream tail() {
         if (fromIndex == toIndex) {
-            throw new IllegalStateException();
+            return this;
         }
 
         return new ArrayLongStream(elements, fromIndex + 1, toIndex, closeHandlers, sorted);
@@ -1079,19 +1075,15 @@ class ArrayLongStream extends AbstractLongStream {
     @Override
     public LongStream head2() {
         if (fromIndex == toIndex) {
-            throw new IllegalStateException();
+            return this;
         }
 
         return new ArrayLongStream(elements, fromIndex, toIndex - 1, closeHandlers, sorted);
     }
 
     @Override
-    public long tail2() {
-        if (fromIndex == toIndex) {
-            throw new NoSuchElementException();
-        }
-
-        return elements[toIndex - 1];
+    public OptionalLong tail2() {
+        return fromIndex == toIndex ? OptionalLong.empty() : OptionalLong.of(elements[toIndex - 1]);
     }
 
     @Override

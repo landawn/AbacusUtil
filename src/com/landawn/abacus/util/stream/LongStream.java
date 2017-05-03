@@ -541,16 +541,14 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      * Don't call any other methods with this stream after head() and tail() are called. 
      * 
      * @return
-     * @throws NoSuchElementException if this stream is empty.
      */
-    public abstract long head();
+    public abstract OptionalLong head();
 
     /**
      * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
      * Don't call any other methods with this stream after head() and tail() are called. 
      * 
      * @return
-     * @throws IllegalStateException if this stream is empty.
      */
     public abstract LongStream tail();
 
@@ -559,7 +557,6 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      * Don't call any other methods with this stream after head2() and tail2() are called. 
      * 
      * @return
-     * @throws IllegalStateException if this stream is empty.
      */
     public abstract LongStream head2();
 
@@ -568,13 +565,12 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      * Don't call any other methods with this stream after head2() and tail2() are called.
      * 
      * @return
-     * @throws NoSuchElementException if this stream is empty.
      */
-    public abstract long tail2();
+    public abstract OptionalLong tail2();
 
-    public abstract Pair<Long, LongStream> headAndTail();
+    public abstract Pair<OptionalLong, LongStream> headAndTail();
 
-    public abstract Pair<LongStream, Long> headAndTail2();
+    public abstract Pair<LongStream, OptionalLong> headAndTail2();
 
     /**
      * Returns an {@code OptionalLong} describing the minimum element of this

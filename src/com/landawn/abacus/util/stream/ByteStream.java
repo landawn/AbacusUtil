@@ -494,16 +494,14 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * Don't call any other methods with this stream after head() and tail() are called. 
      * 
      * @return
-     * @throws NoSuchElementException if this stream is empty.
      */
-    public abstract byte head();
+    public abstract OptionalByte head();
 
     /**
      * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
      * Don't call any other methods with this stream after head() and tail() are called. 
      * 
      * @return
-     * @throws IllegalStateException if this stream is empty.
      */
     public abstract ByteStream tail();
 
@@ -512,7 +510,6 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * Don't call any other methods with this stream after head2() and tail2() are called.
      * 
      * @return
-     * @throws IllegalStateException if this stream is empty.
      */
     public abstract ByteStream head2();
 
@@ -521,13 +518,12 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * Don't call any other methods with this stream after head2() and tail2() are called.
      * 
      * @return
-     * @throws NoSuchElementException if this stream is empty.
      */
-    public abstract byte tail2();
+    public abstract OptionalByte tail2();
 
-    public abstract Pair<Byte, ByteStream> headAndTail();
+    public abstract Pair<OptionalByte, ByteStream> headAndTail();
 
-    public abstract Pair<ByteStream, Byte> headAndTail2();
+    public abstract Pair<ByteStream, OptionalByte> headAndTail2();
 
     /**
      * Returns an {@code OptionalByte} describing the minimum element of this

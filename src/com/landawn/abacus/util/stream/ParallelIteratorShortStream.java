@@ -647,21 +647,21 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
         if (maxThreadNum <= 1) {
             return sequential().toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
         }
-    
+
         final Function<? super Short, ? extends K> keyMapper2 = new Function<Short, K>() {
             @Override
             public K apply(Short value) {
                 return keyMapper.apply(value);
             }
         };
-    
+
         final Function<? super Short, ? extends U> valueMapper2 = new Function<Short, U>() {
             @Override
             public U apply(Short value) {
                 return valueMapper.apply(value);
             }
         };
-    
+
         return boxed().toMap(keyMapper2, valueMapper2, mergeFunction, mapFactory);
     }
 
@@ -894,13 +894,9 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
     }
 
     @Override
-    public short head() {
-        if (tail == null) {
-            if (elements.hasNext() == false) {
-                throw new NoSuchElementException();
-            }
-
-            head = elements.nextShort();
+    public OptionalShort head() {
+        if (head == null) {
+            head = elements.hasNext() ? OptionalShort.of(elements.nextShort()) : OptionalShort.empty();
             tail = new ParallelIteratorShortStream(elements, closeHandlers, sorted, maxThreadNum, splitor);
         }
 
@@ -910,11 +906,7 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
     @Override
     public ShortStream tail() {
         if (tail == null) {
-            if (elements.hasNext() == false) {
-                throw new IllegalStateException();
-            }
-
-            head = elements.nextShort();
+            head = elements.hasNext() ? OptionalShort.of(elements.nextShort()) : OptionalShort.empty();
             tail = new ParallelIteratorShortStream(elements, closeHandlers, sorted, maxThreadNum, splitor);
         }
 
@@ -924,28 +916,20 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
     @Override
     public ShortStream head2() {
         if (head2 == null) {
-            if (elements.hasNext() == false) {
-                throw new IllegalStateException();
-            }
-
             final short[] a = elements.toArray();
-            head2 = new ParallelArrayShortStream(a, 0, a.length - 1, closeHandlers, sorted, maxThreadNum, splitor);
-            tail2 = a[a.length - 1];
+            head2 = new ParallelArrayShortStream(a, 0, a.length == 0 ? 0 : a.length - 1, closeHandlers, sorted, maxThreadNum, splitor);
+            tail2 = a.length == 0 ? OptionalShort.empty() : OptionalShort.of(a[a.length - 1]);
         }
 
         return head2;
     }
 
     @Override
-    public short tail2() {
-        if (head2 == null) {
-            if (elements.hasNext() == false) {
-                throw new NoSuchElementException();
-            }
-
+    public OptionalShort tail2() {
+        if (tail2 == null) {
             final short[] a = elements.toArray();
-            head2 = new ArrayShortStream(a, 0, a.length - 1, closeHandlers, sorted);
-            tail2 = a[a.length - 1];
+            head2 = new ParallelArrayShortStream(a, 0, a.length == 0 ? 0 : a.length - 1, closeHandlers, sorted, maxThreadNum, splitor);
+            tail2 = a.length == 0 ? OptionalShort.empty() : OptionalShort.of(a[a.length - 1]);
         }
 
         return tail2;

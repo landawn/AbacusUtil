@@ -592,21 +592,21 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
         if (maxThreadNum <= 1) {
             return sequential().toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
         }
-    
+
         final Function<? super Float, ? extends K> keyMapper2 = new Function<Float, K>() {
             @Override
             public K apply(Float value) {
                 return keyMapper.apply(value);
             }
         };
-    
+
         final Function<? super Float, ? extends U> valueMapper2 = new Function<Float, U>() {
             @Override
             public U apply(Float value) {
                 return valueMapper.apply(value);
             }
         };
-    
+
         return boxed().toMap(keyMapper2, valueMapper2, mergeFunction, mapFactory);
     }
 
@@ -943,18 +943,9 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
     }
 
     @Override
-    public float head() {
-        if (fromIndex == toIndex) {
-            throw new NoSuchElementException();
-        }
-
-        return elements[fromIndex];
-    }
-
-    @Override
     public FloatStream tail() {
         if (fromIndex == toIndex) {
-            throw new IllegalStateException();
+            return this;
         }
 
         return new ParallelArrayFloatStream(elements, fromIndex + 1, toIndex, closeHandlers, sorted, maxThreadNum, splitor);
@@ -963,19 +954,10 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
     @Override
     public FloatStream head2() {
         if (fromIndex == toIndex) {
-            throw new IllegalStateException();
+            return this;
         }
 
         return new ParallelArrayFloatStream(elements, fromIndex, toIndex - 1, closeHandlers, sorted, maxThreadNum, splitor);
-    }
-
-    @Override
-    public float tail2() {
-        if (fromIndex == toIndex) {
-            throw new NoSuchElementException();
-        }
-
-        return elements[toIndex - 1];
     }
 
     @Override

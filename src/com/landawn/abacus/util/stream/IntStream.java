@@ -566,16 +566,14 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      * Don't call any other methods with this stream after head() and tail() are called. 
      * 
      * @return
-     * @throws NoSuchElementException if this stream is empty.
      */
-    public abstract int head();
+    public abstract OptionalInt head();
 
     /**
      * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
      * Don't call any other methods with this stream after head() and tail() are called. 
      * 
      * @return
-     * @throws IllegalStateException if this stream is empty.
      */
     public abstract IntStream tail();
 
@@ -584,7 +582,6 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      * Don't call any other methods with this stream after head2() and tail2() are called.
      * 
      * @return
-     * @throws IllegalStateException if this stream is empty.
      */
     public abstract IntStream head2();
 
@@ -593,13 +590,12 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      * Don't call any other methods with this stream after head2() and tail2() are called.
      * 
      * @return
-     * @throws NoSuchElementException if this stream is empty.
      */
-    public abstract int tail2();
+    public abstract OptionalInt tail2();
 
-    public abstract Pair<Integer, IntStream> headAndTail();
+    public abstract Pair<OptionalInt, IntStream> headAndTail();
 
-    public abstract Pair<IntStream, Integer> headAndTail2();
+    public abstract Pair<IntStream, OptionalInt> headAndTail2();
 
     /**
      * Returns an {@code OptionalInt} describing the minimum element of this
