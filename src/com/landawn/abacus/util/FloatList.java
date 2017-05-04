@@ -1425,32 +1425,32 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
         return multiset;
     }
 
-    public <K, U> Map<K, U> toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper) {
+    public <K, U> Map<K, U> toMap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends U> valueMapper) {
         @SuppressWarnings("rawtypes")
         final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
 
-        return toMap(keyMapper, valueMapper, mapFactory);
+        return toMap(keyExtractor, valueMapper, mapFactory);
     }
 
-    public <K, U, M extends Map<K, U>> M toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper, Supplier<M> mapFactory) {
+    public <K, U, M extends Map<K, U>> M toMap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends U> valueMapper, Supplier<M> mapFactory) {
         final BinaryOperator<U> mergeFunction = BinaryOperator.THROWING_MERGER;
 
-        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
+        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
-    public <K, U> Map<K, U> toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
+    public <K, U> Map<K, U> toMap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
         @SuppressWarnings("rawtypes")
         final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
 
-        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
+        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
-    public <K, U, M extends Map<K, U>> M toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
+    public <K, U, M extends Map<K, U>> M toMap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
             Supplier<M> mapFactory) {
         final M result = mapFactory.get();
 
         for (int i = 0; i < size; i++) {
-            Seq.merge(result, keyMapper.apply(elementData[i]), valueMapper.apply(elementData[i]), mergeFunction);
+            Seq.merge(result, keyExtractor.apply(elementData[i]), valueMapper.apply(elementData[i]), mergeFunction);
         }
 
         return result;

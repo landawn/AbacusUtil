@@ -780,14 +780,14 @@ class IteratorCharStream extends AbstractCharStream {
     }
 
     @Override
-    public <K, U, M extends Map<K, U>> M toMap(CharFunction<? extends K> keyMapper, CharFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
+    public <K, U, M extends Map<K, U>> M toMap(CharFunction<? extends K> keyExtractor, CharFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
             Supplier<M> mapFactory) {
         final M result = mapFactory.get();
         char element = 0;
 
         while (elements.hasNext()) {
             element = elements.nextChar();
-            Collectors.merge(result, keyMapper.apply(element), valueMapper.apply(element), mergeFunction);
+            Collectors.merge(result, keyExtractor.apply(element), valueMapper.apply(element), mergeFunction);
         }
 
         return result;
@@ -830,14 +830,14 @@ class IteratorCharStream extends AbstractCharStream {
     }
 
     @Override
-    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(CharFunction<? extends K> keyMapper, CharFunction<? extends U> valueMapper,
+    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(CharFunction<? extends K> keyExtractor, CharFunction<? extends U> valueMapper,
             Supplier<Multimap<K, U, V>> mapFactory) {
         final Multimap<K, U, V> result = mapFactory.get();
         char element = 0;
 
         while (elements.hasNext()) {
             element = elements.nextChar();
-            result.put(keyMapper.apply(element), valueMapper.apply(element));
+            result.put(keyExtractor.apply(element), valueMapper.apply(element));
         }
 
         return result;

@@ -1723,13 +1723,13 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     }
 
     @Override
-    public Stream<T> distinct(final Function<? super T, ?> keyMapper) {
+    public Stream<T> distinct(final Function<? super T, ?> keyExtractor) {
         final Set<Object> set = new HashSet<>();
 
         return filter(new Predicate<T>() {
             @Override
             public boolean test(T value) {
-                final Object key = hashKey(keyMapper.apply(value));
+                final Object key = hashKey(keyExtractor.apply(value));
 
                 synchronized (set) {
                     return set.add(key);
@@ -2059,9 +2059,9 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     }
 
     @Override
-    public <K, U, M extends Map<K, U>> M toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,
+    public <K, U, M extends Map<K, U>> M toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
             BinaryOperator<U> mergeFunction, Supplier<M> mapFactory) {
-        return collect(Collectors.toMap(keyMapper, valueMapper, mergeFunction, mapFactory));
+        return collect(Collectors.toMap(keyExtractor, valueMapper, mergeFunction, mapFactory));
     }
 
     @Override
@@ -2071,9 +2071,9 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     }
 
     @Override
-    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(Function<? super T, ? extends K> keyMapper,
+    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(Function<? super T, ? extends K> keyExtractor,
             Function<? super T, ? extends U> valueMapper, Supplier<Multimap<K, U, V>> mapFactory) {
-        return collect(Collectors.toMultimap(keyMapper, valueMapper, mapFactory));
+        return collect(Collectors.toMultimap(keyExtractor, valueMapper, mapFactory));
     }
 
     @Override

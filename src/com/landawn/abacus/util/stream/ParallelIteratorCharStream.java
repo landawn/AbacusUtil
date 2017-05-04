@@ -631,16 +631,16 @@ final class ParallelIteratorCharStream extends IteratorCharStream {
     }
 
     @Override
-    public <K, U, M extends Map<K, U>> M toMap(final CharFunction<? extends K> keyMapper, final CharFunction<? extends U> valueMapper,
+    public <K, U, M extends Map<K, U>> M toMap(final CharFunction<? extends K> keyExtractor, final CharFunction<? extends U> valueMapper,
             final BinaryOperator<U> mergeFunction, final Supplier<M> mapFactory) {
         if (maxThreadNum <= 1) {
-            return sequential().toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
+            return sequential().toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
         }
 
-        final Function<? super Character, ? extends K> keyMapper2 = new Function<Character, K>() {
+        final Function<? super Character, ? extends K> keyExtractor2 = new Function<Character, K>() {
             @Override
             public K apply(Character value) {
-                return keyMapper.apply(value);
+                return keyExtractor.apply(value);
             }
         };
 
@@ -651,7 +651,7 @@ final class ParallelIteratorCharStream extends IteratorCharStream {
             }
         };
 
-        return boxed().toMap(keyMapper2, valueMapper2, mergeFunction, mapFactory);
+        return boxed().toMap(keyExtractor2, valueMapper2, mergeFunction, mapFactory);
     }
 
     @Override
@@ -672,16 +672,16 @@ final class ParallelIteratorCharStream extends IteratorCharStream {
     }
 
     @Override
-    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final CharFunction<? extends K> keyMapper, final CharFunction<? extends U> valueMapper,
+    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final CharFunction<? extends K> keyExtractor, final CharFunction<? extends U> valueMapper,
             final Supplier<Multimap<K, U, V>> mapFactory) {
         if (maxThreadNum <= 1) {
-            return sequential().toMultimap(keyMapper, valueMapper, mapFactory);
+            return sequential().toMultimap(keyExtractor, valueMapper, mapFactory);
         }
 
-        final Function<? super Character, ? extends K> keyMapper2 = new Function<Character, K>() {
+        final Function<? super Character, ? extends K> keyExtractor2 = new Function<Character, K>() {
             @Override
             public K apply(Character value) {
-                return keyMapper.apply(value);
+                return keyExtractor.apply(value);
             }
         };
 
@@ -692,7 +692,7 @@ final class ParallelIteratorCharStream extends IteratorCharStream {
             }
         };
 
-        return boxed().toMultimap(keyMapper2, valueMapper2, mapFactory);
+        return boxed().toMultimap(keyExtractor2, valueMapper2, mapFactory);
     }
 
     @Override

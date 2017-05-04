@@ -324,43 +324,43 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
 
     /**
      * 
-     * @param keyMapper
+     * @param keyExtractor
      * @param valueMapper
      * @return
      * @see Collectors#toMap(Function, Function)
      */
-    public abstract <K, U> Map<K, U> toMap(IntFunction<? extends K> keyMapper, IntFunction<? extends U> valueMapper);
+    public abstract <K, U> Map<K, U> toMap(IntFunction<? extends K> keyExtractor, IntFunction<? extends U> valueMapper);
 
     /**
      * 
-     * @param keyMapper
+     * @param keyExtractor
      * @param valueMapper
      * @param mapFactory
      * @return
      * @see Collectors#toMap(Function, Function, Supplier)
      */
-    public abstract <K, U, M extends Map<K, U>> M toMap(IntFunction<? extends K> keyMapper, IntFunction<? extends U> valueMapper, Supplier<M> mapFactory);
+    public abstract <K, U, M extends Map<K, U>> M toMap(IntFunction<? extends K> keyExtractor, IntFunction<? extends U> valueMapper, Supplier<M> mapFactory);
 
     /**
      * 
-     * @param keyMapper
+     * @param keyExtractor
      * @param valueMapper
      * @param mergeFunction
      * @return
      * @see Collectors#toMap(Function, Function, BinaryOperator)
      */
-    public abstract <K, U> Map<K, U> toMap(IntFunction<? extends K> keyMapper, IntFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction);
+    public abstract <K, U> Map<K, U> toMap(IntFunction<? extends K> keyExtractor, IntFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction);
 
     /**
      * 
-     * @param keyMapper
+     * @param keyExtractor
      * @param valueMapper
      * @param mergeFunction
      * @param mapFactory
      * @return
      * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
      */
-    public abstract <K, U, M extends Map<K, U>> M toMap(IntFunction<? extends K> keyMapper, IntFunction<? extends U> valueMapper,
+    public abstract <K, U, M extends Map<K, U>> M toMap(IntFunction<? extends K> keyExtractor, IntFunction<? extends U> valueMapper,
             BinaryOperator<U> mergeFunction, Supplier<M> mapFactory);
 
     /**
@@ -385,40 +385,40 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
 
     /**
      * 
-     * @param keyMapper
+     * @param keyExtractor
      * @return
      * @see Collectors#toMultimap(Function)
      */
-    public abstract <K> Multimap<K, Integer, List<Integer>> toMultimap(IntFunction<? extends K> keyMapper);
+    public abstract <K> Multimap<K, Integer, List<Integer>> toMultimap(IntFunction<? extends K> keyExtractor);
 
     /**
      * 
-     * @param keyMapper
+     * @param keyExtractor
      * @param mapFactory
      * @return
      * @see Collectors#toMultimap(Function, Supplier)
      */
-    public abstract <K, V extends Collection<Integer>> Multimap<K, Integer, V> toMultimap(IntFunction<? extends K> keyMapper,
+    public abstract <K, V extends Collection<Integer>> Multimap<K, Integer, V> toMultimap(IntFunction<? extends K> keyExtractor,
             Supplier<Multimap<K, Integer, V>> mapFactory);
 
     /**
      * 
-     * @param keyMapper
+     * @param keyExtractor
      * @param valueMapper
      * @return
      * @see Collectors#toMultimap(Function, Function)
      */
-    public abstract <K, U> Multimap<K, U, List<U>> toMultimap(IntFunction<? extends K> keyMapper, IntFunction<? extends U> valueMapper);
+    public abstract <K, U> Multimap<K, U, List<U>> toMultimap(IntFunction<? extends K> keyExtractor, IntFunction<? extends U> valueMapper);
 
     /**
      * 
-     * @param keyMapper
+     * @param keyExtractor
      * @param valueMapper
      * @param mapFactory
      * @return
      * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
      */
-    public abstract <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(IntFunction<? extends K> keyMapper, IntFunction<? extends U> valueMapper,
+    public abstract <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(IntFunction<? extends K> keyExtractor, IntFunction<? extends U> valueMapper,
             Supplier<Multimap<K, U, V>> mapFactory);
 
     public abstract IntMatrix toMatrix();

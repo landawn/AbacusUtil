@@ -894,14 +894,14 @@ class IteratorFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public <K, U, M extends Map<K, U>> M toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
+    public <K, U, M extends Map<K, U>> M toMap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
             Supplier<M> mapFactory) {
         final M result = mapFactory.get();
         float element = 0;
 
         while (elements.hasNext()) {
             element = elements.nextFloat();
-            Collectors.merge(result, keyMapper.apply(element), valueMapper.apply(element), mergeFunction);
+            Collectors.merge(result, keyExtractor.apply(element), valueMapper.apply(element), mergeFunction);
         }
 
         return result;
@@ -944,14 +944,14 @@ class IteratorFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper,
+    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends U> valueMapper,
             Supplier<Multimap<K, U, V>> mapFactory) {
         final Multimap<K, U, V> result = mapFactory.get();
         float element = 0;
 
         while (elements.hasNext()) {
             element = elements.nextFloat();
-            result.put(keyMapper.apply(element), valueMapper.apply(element));
+            result.put(keyExtractor.apply(element), valueMapper.apply(element));
         }
 
         return result;

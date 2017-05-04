@@ -1785,10 +1785,10 @@ public interface DataSet extends Iterable<Object[]> {
     /**
      * 
      * @param columnName specifying the column to group by.
-     * @param keyMapper don't change value of the input parameter.
+     * @param keyExtractor don't change value of the input parameter.
      * @return
      */
-    DataSet groupBy(String columnName, Function<?, ?> keyMapper);
+    DataSet groupBy(String columnName, Function<?, ?> keyExtractor);
 
     /**
      * 
@@ -1816,27 +1816,27 @@ public interface DataSet extends Iterable<Object[]> {
     /**
      * 
      * @param columnName specifying the column to group by. 
-     * @param keyMapper don't change value of the input parameter.
+     * @param keyExtractor don't change value of the input parameter.
      * @param aggregateResultColumnName
      * @param aggregateOnColumnName specifying the column to apply the collector.
      * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
      * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
      * @return
      */
-    DataSet groupBy(String columnName, Function<?, ?> keyMapper, String aggregateResultColumnName, String aggregateOnColumnName,
+    DataSet groupBy(String columnName, Function<?, ?> keyExtractor, String aggregateResultColumnName, String aggregateOnColumnName,
             Collector<Object, ?, ?> collector);
 
     /**
      * 
      * @param columnName specifying the column to group by.
-     * @param keyMapper don't change value of the input parameter.
+     * @param keyExtractor don't change value of the input parameter.
      * @param aggregateResultColumnName
      * @param aggregateOnColumnNames specifying the columns to apply the collector.
      * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
      * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
      * @return
      */
-    DataSet groupBy(String columnName, Function<?, ?> keyMapper, String aggregateResultColumnName, Collection<String> aggregateOnColumnNames,
+    DataSet groupBy(String columnName, Function<?, ?> keyExtractor, String aggregateResultColumnName, Collection<String> aggregateOnColumnNames,
             Collector<? super Object[], ?, ?> collector);
 
     /**
@@ -1853,10 +1853,10 @@ public interface DataSet extends Iterable<Object[]> {
      * @param columnName specifying the column to group by.
      * @param fromRowIndex
      * @param toRowIndex
-     * @param keyMapper don't change value of the input parameter.
+     * @param keyExtractor don't change value of the input parameter.
      * @return
      */
-    DataSet groupBy(String columnName, int fromRowIndex, int toRowIndex, Function<?, ?> keyMapper);
+    DataSet groupBy(String columnName, int fromRowIndex, int toRowIndex, Function<?, ?> keyExtractor);
 
     /**
      * 
@@ -1891,14 +1891,14 @@ public interface DataSet extends Iterable<Object[]> {
      * @param columnName specifying the column to group by.
      * @param fromRowIndex
      * @param toRowIndex
-     * @param keyMapper don't change value of the input parameter.
+     * @param keyExtractor don't change value of the input parameter.
      * @param aggregateResultColumnName
      * @param aggregateOnColumnName specifying the column to apply the collector.
      * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
      * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
      * @return
      */
-    DataSet groupBy(String columnName, int fromRowIndex, int toRowIndex, Function<?, ?> keyMapper, String aggregateResultColumnName,
+    DataSet groupBy(String columnName, int fromRowIndex, int toRowIndex, Function<?, ?> keyExtractor, String aggregateResultColumnName,
             String aggregateOnColumnName, Collector<Object, ?, ?> collector);
 
     /**
@@ -1906,14 +1906,14 @@ public interface DataSet extends Iterable<Object[]> {
      * @param columnName specifying the column to group by.
      * @param fromRowIndex
      * @param toRowIndex
-     * @param keyMapper don't change value of the input parameter.
+     * @param keyExtractor don't change value of the input parameter.
      * @param aggregateResultColumnName
      * @param aggregateOnColumnNames specifying the columns to apply the collector.
      * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
      * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
      * @return
      */
-    DataSet groupBy(String columnName, int fromRowIndex, int toRowIndex, Function<?, ?> keyMapper, String aggregateResultColumnName,
+    DataSet groupBy(String columnName, int fromRowIndex, int toRowIndex, Function<?, ?> keyExtractor, String aggregateResultColumnName,
             Collection<String> aggregateOnColumnNames, Collector<? super Object[], ?, ?> collector);
 
     /**
@@ -1926,11 +1926,11 @@ public interface DataSet extends Iterable<Object[]> {
     /**
      * 
      * @param columnNames specifying the columns to group by. 
-     * @param keyMapper don't change value of the input parameter. 
+     * @param keyExtractor don't change value of the input parameter. 
      * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
      * @return
      */
-    DataSet groupBy(Collection<String> columnNames, Function<? super Object[], ?> keyMapper);
+    DataSet groupBy(Collection<String> columnNames, Function<? super Object[], ?> keyExtractor);
 
     /**
      * 
@@ -1958,27 +1958,27 @@ public interface DataSet extends Iterable<Object[]> {
     /**
      * 
      * @param columnNames specifying the columns to group by. 
-     * @param keyMapper don't change value of the input parameter.
+     * @param keyExtractor don't change value of the input parameter.
      * @param aggregateResultColumnName
      * @param aggregateOnColumnName specifying the column to apply the collector.
      * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
      * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
      * @return
      */
-    DataSet groupBy(Collection<String> columnNames, Function<? super Object[], ?> keyMapper, String aggregateResultColumnName, String aggregateOnColumnName,
+    DataSet groupBy(Collection<String> columnNames, Function<? super Object[], ?> keyExtractor, String aggregateResultColumnName, String aggregateOnColumnName,
             Collector<Object, ?, ?> collector);
 
     /**
      * 
      * @param columnNames specifying the columns to group by. 
-     * @param keyMapper don't change value of the input parameter.
+     * @param keyExtractor don't change value of the input parameter.
      * @param aggregateResultColumnName
      * @param aggregateOnColumnNames specifying the columns to apply the collector.
      * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
      * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
      * @return
      */
-    DataSet groupBy(Collection<String> columnNames, Function<? super Object[], ?> keyMapper, String aggregateResultColumnName,
+    DataSet groupBy(Collection<String> columnNames, Function<? super Object[], ?> keyExtractor, String aggregateResultColumnName,
             Collection<String> aggregateOnColumnNames, Collector<? super Object[], ?, ?> collector);
 
     /**
@@ -1995,10 +1995,10 @@ public interface DataSet extends Iterable<Object[]> {
      * @param columnNames specifying the columns to group by.
      * @param fromRowIndex
      * @param toRowIndex
-     * @param keyMapper don't change value of the input parameter.
+     * @param keyExtractor don't change value of the input parameter.
      * @return
      */
-    DataSet groupBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Function<? super Object[], ?> keyMapper);
+    DataSet groupBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Function<? super Object[], ?> keyExtractor);
 
     /**
      * 
@@ -2033,14 +2033,14 @@ public interface DataSet extends Iterable<Object[]> {
      * @param columnNames specifying the columns to group by.
      * @param fromRowIndex
      * @param toRowIndex
-     * @param keyMapper don't change value of the input parameter.
+     * @param keyExtractor don't change value of the input parameter.
      * @param aggregateResultColumnName
      * @param aggregateOnColumnName specifying the column to apply the collector.
      * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
      * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
      * @return
      */
-    DataSet groupBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Function<? super Object[], ?> keyMapper, String aggregateResultColumnName,
+    DataSet groupBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Function<? super Object[], ?> keyExtractor, String aggregateResultColumnName,
             String aggregateOnColumnName, Collector<Object, ?, ?> collector);
 
     /**
@@ -2048,14 +2048,14 @@ public interface DataSet extends Iterable<Object[]> {
      * @param columnNames specifying the columns to group by.
      * @param fromRowIndex
      * @param toRowIndex
-     * @param keyMapper don't change value of the input parameter.
+     * @param keyExtractor don't change value of the input parameter.
      * @param aggregateResultColumnName
      * @param aggregateOnColumnNames specifying the columns to apply the collector.
      * @param collector refer to {@link com.landawn.abacus.util.stream.Collectors#groupingBy(Function, Collector)}. 
      * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
      * @return
      */
-    DataSet groupBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Function<? super Object[], ?> keyMapper, String aggregateResultColumnName,
+    DataSet groupBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Function<? super Object[], ?> keyExtractor, String aggregateResultColumnName,
             Collection<String> aggregateOnColumnNames, Collector<? super Object[], ?, ?> collector);
 
     /**
@@ -2195,10 +2195,10 @@ public interface DataSet extends Iterable<Object[]> {
      * Returns a new <code>DataSet</code> with the rows de-duplicated by the value in the specified column from the specified <code>fromRowIndex</code> to <code>toRowIndex</code>
      * 
      * @param columnName
-     * @param keyMapper don't change value of the input parameter.
+     * @param keyExtractor don't change value of the input parameter.
      * @return
      */
-    DataSet distinct(String columnName, Function<?, ?> keyMapper);
+    DataSet distinct(String columnName, Function<?, ?> keyExtractor);
 
     /**
      * Returns a new <code>DataSet</code> with the rows de-duplicated by the value in the specified column from the specified <code>fromRowIndex</code> to <code>toRowIndex</code>
@@ -2216,10 +2216,10 @@ public interface DataSet extends Iterable<Object[]> {
      * @param columnName
      * @param fromRowIndex
      * @param toRowIndex
-     * @param keyMapper don't change value of the input parameter.
+     * @param keyExtractor don't change value of the input parameter.
      * @return
      */
-    DataSet distinct(String columnName, int fromRowIndex, int toRowIndex, Function<?, ?> keyMapper);
+    DataSet distinct(String columnName, int fromRowIndex, int toRowIndex, Function<?, ?> keyExtractor);
 
     /**
      * Returns a new <code>DataSet</code> with the rows de-duplicated by the values in the specified columns
@@ -2235,10 +2235,10 @@ public interface DataSet extends Iterable<Object[]> {
      * @param columnNames
      * @param fromRowIndex
      * @param toRowIndex
-     * @param keyMapper don't change value of the input parameter.
+     * @param keyExtractor don't change value of the input parameter.
      * @return
      */
-    DataSet distinct(Collection<String> columnNames, Function<? super Object[], ?> keyMapper);
+    DataSet distinct(Collection<String> columnNames, Function<? super Object[], ?> keyExtractor);
 
     /**
      *Returns a new <code>DataSet</code> with the rows de-duplicated by the values in the specified columns from the specified <code>fromRowIndex</code> to <code>toRowIndex</code>
@@ -2256,10 +2256,10 @@ public interface DataSet extends Iterable<Object[]> {
      * @param columnNames
      * @param fromRowIndex
      * @param toRowIndex
-     * @param keyMapper don't change value of the input parameter.
+     * @param keyExtractor don't change value of the input parameter.
      * @return
      */
-    DataSet distinct(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Function<? super Object[], ?> keyMapper);
+    DataSet distinct(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Function<? super Object[], ?> keyExtractor);
 
     /**
      *

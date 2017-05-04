@@ -795,12 +795,12 @@ class ArrayByteStream extends AbstractByteStream {
     }
 
     @Override
-    public <K, U, M extends Map<K, U>> M toMap(ByteFunction<? extends K> keyMapper, ByteFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
+    public <K, U, M extends Map<K, U>> M toMap(ByteFunction<? extends K> keyExtractor, ByteFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
             Supplier<M> mapFactory) {
         final M result = mapFactory.get();
 
         for (int i = fromIndex; i < toIndex; i++) {
-            Collectors.merge(result, keyMapper.apply(elements[i]), valueMapper.apply(elements[i]), mergeFunction);
+            Collectors.merge(result, keyExtractor.apply(elements[i]), valueMapper.apply(elements[i]), mergeFunction);
         }
 
         return result;
@@ -841,12 +841,12 @@ class ArrayByteStream extends AbstractByteStream {
     }
 
     @Override
-    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(ByteFunction<? extends K> keyMapper, ByteFunction<? extends U> valueMapper,
+    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(ByteFunction<? extends K> keyExtractor, ByteFunction<? extends U> valueMapper,
             Supplier<Multimap<K, U, V>> mapFactory) {
         final Multimap<K, U, V> result = mapFactory.get();
 
         for (int i = fromIndex; i < toIndex; i++) {
-            result.put(keyMapper.apply(elements[i]), valueMapper.apply(elements[i]));
+            result.put(keyExtractor.apply(elements[i]), valueMapper.apply(elements[i]));
         }
 
         return result;

@@ -29,36 +29,29 @@ import com.landawn.abacus.util.N;
 public interface BinaryOperator<T> extends BiFunction<T, T, T>, java.util.function.BinaryOperator<T> {
 
     @SuppressWarnings("rawtypes")
-    static final BinaryOperator THROWING_MERGER = new BinaryOperator<Object>() {
-        @Override
-        public Object apply(Object t, Object u) {
-            throw new IllegalStateException(String.format("Duplicate key %s", u));
-        }
-    };
-
-    static final BinaryOperator<Collection<Object>> ADD_ALL = (r, u) -> {
-        r.addAll(u);
-        return r;
-    };
-
-    static final BinaryOperator<Collection<?>> REMOVE_ALL = (r, u) -> {
-        r.removeAll(u);
-        return r;
-    };
-
-    static final BinaryOperator<Map<Object, Object>> PUT_ALL = (r, u) -> {
-        r.putAll(u);
-        return r;
+    static final BinaryOperator THROWING_MERGER = (r, u) -> {
+        throw new IllegalStateException(String.format("Duplicate key %s", u));
     };
 
     @SuppressWarnings("rawtypes")
-    static final BinaryOperator JUST_RETURN_FIRST = (t, u) -> {
+    static final BinaryOperator IGNORING_MERGER = (t, u) -> t;
+
+    @SuppressWarnings("rawtypes")
+    static final BinaryOperator REPLACING_MERGER = (t, u) -> u;
+
+    static final BinaryOperator<Collection<Object>> ADD_ALL = (t, u) -> {
+        t.addAll(u);
         return t;
     };
 
-    @SuppressWarnings("rawtypes")
-    static final BinaryOperator JUST_RETURN_SECOND = (t, u) -> {
-        return u;
+    static final BinaryOperator<Collection<?>> REMOVE_ALL = (t, u) -> {
+        t.removeAll(u);
+        return t;
+    };
+
+    static final BinaryOperator<Map<Object, Object>> PUT_ALL = (t, u) -> {
+        t.putAll(u);
+        return t;
     };
 
     static <T, C extends Collection<T>> BinaryOperator<C> ofAddAll() {
@@ -71,14 +64,6 @@ public interface BinaryOperator<T> extends BiFunction<T, T, T>, java.util.functi
 
     static <K, V, M extends Map<K, V>> BinaryOperator<M> ofPutAll() {
         return (BinaryOperator<M>) PUT_ALL;
-    }
-
-    static <T> BinaryOperator<T> ofJustReturnFirst() {
-        return JUST_RETURN_FIRST;
-    }
-
-    static <T> BinaryOperator<T> ofJustReturnSecond() {
-        return JUST_RETURN_SECOND;
     }
 
     static <T> BinaryOperator<T> minBy(Comparator<? super T> comparator) {

@@ -307,43 +307,43 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
 
     /**
      * 
-     * @param keyMapper
+     * @param keyExtractor
      * @param valueMapper
      * @return
      * @see Collectors#toMap(Function, Function)
      */
-    public abstract <K, U> Map<K, U> toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper);
+    public abstract <K, U> Map<K, U> toMap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends U> valueMapper);
 
     /**
      * 
-     * @param keyMapper
+     * @param keyExtractor
      * @param valueMapper
      * @param mapFactory
      * @return
      * @see Collectors#toMap(Function, Function, Supplier)
      */
-    public abstract <K, U, M extends Map<K, U>> M toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper, Supplier<M> mapFactory);
+    public abstract <K, U, M extends Map<K, U>> M toMap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends U> valueMapper, Supplier<M> mapFactory);
 
     /**
      * 
-     * @param keyMapper
+     * @param keyExtractor
      * @param valueMapper
      * @param mergeFunction
      * @return
      * @see Collectors#toMap(Function, Function, BinaryOperator)
      */
-    public abstract <K, U> Map<K, U> toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction);
+    public abstract <K, U> Map<K, U> toMap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction);
 
     /**
      * 
-     * @param keyMapper
+     * @param keyExtractor
      * @param valueMapper
      * @param mergeFunction
      * @param mapFactory
      * @return
      * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
      */
-    public abstract <K, U, M extends Map<K, U>> M toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper,
+    public abstract <K, U, M extends Map<K, U>> M toMap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends U> valueMapper,
             BinaryOperator<U> mergeFunction, Supplier<M> mapFactory);
 
     /**
@@ -368,40 +368,40 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
 
     /**
      * 
-     * @param keyMapper
+     * @param keyExtractor
      * @return
      * @see Collectors#toMultimap(Function)
      */
-    public abstract <K> Multimap<K, Float, List<Float>> toMultimap(FloatFunction<? extends K> keyMapper);
+    public abstract <K> Multimap<K, Float, List<Float>> toMultimap(FloatFunction<? extends K> keyExtractor);
 
     /**
      * 
-     * @param keyMapper
+     * @param keyExtractor
      * @param mapFactory
      * @return
      * @see Collectors#toMultimap(Function, Supplier)
      */
-    public abstract <K, V extends Collection<Float>> Multimap<K, Float, V> toMultimap(FloatFunction<? extends K> keyMapper,
+    public abstract <K, V extends Collection<Float>> Multimap<K, Float, V> toMultimap(FloatFunction<? extends K> keyExtractor,
             Supplier<Multimap<K, Float, V>> mapFactory);
 
     /**
      * 
-     * @param keyMapper
+     * @param keyExtractor
      * @param valueMapper
      * @return
      * @see Collectors#toMultimap(Function, Function)
      */
-    public abstract <K, U> Multimap<K, U, List<U>> toMultimap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper);
+    public abstract <K, U> Multimap<K, U, List<U>> toMultimap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends U> valueMapper);
 
     /**
      * 
-     * @param keyMapper
+     * @param keyExtractor
      * @param valueMapper
      * @param mapFactory
      * @return
      * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
      */
-    public abstract <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper,
+    public abstract <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends U> valueMapper,
             Supplier<Multimap<K, U, V>> mapFactory);
 
     public abstract FloatMatrix toMatrix();

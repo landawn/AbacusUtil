@@ -900,16 +900,16 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <K, U> Stream<Entry<K, List<U>>> groupBy(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper) {
-        return groupBy(keyMapper, (Collector<T, ?, List<U>>) (Collector<?, ?, ?>) Collectors.mapping(valueMapper, Collectors.toList()));
+    public <K, U> Stream<Entry<K, List<U>>> groupBy(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper) {
+        return groupBy(keyExtractor, (Collector<T, ?, List<U>>) (Collector<?, ?, ?>) Collectors.mapping(valueMapper, Collectors.toList()));
     }
 
     @Override
     @SuppressWarnings("rawtypes")
-    public <K, U, M extends Map<K, List<U>>> Stream<Map.Entry<K, List<U>>> groupBy(Function<? super T, ? extends K> keyMapper,
+    public <K, U, M extends Map<K, List<U>>> Stream<Map.Entry<K, List<U>>> groupBy(Function<? super T, ? extends K> keyExtractor,
             Function<? super T, ? extends U> valueMapper, Supplier<M> mapFactory) {
         final Map<K, List<U>> map = collect(
-                Collectors.groupingBy(keyMapper, (Collector<T, ?, List<U>>) (Collector) Collectors.mapping(valueMapper, Collectors.toList()), mapFactory));
+                Collectors.groupingBy(keyExtractor, (Collector<T, ?, List<U>>) (Collector) Collectors.mapping(valueMapper, Collectors.toList()), mapFactory));
     
         return newStream(map.entrySet().iterator(), false, null);
     }
@@ -930,58 +930,58 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <K, U> Stream<Entry<K, U>> groupBy2(final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper) {
-        final Map<K, U> map = collect(Collectors.toMap(keyMapper, valueMapper));
+    public <K, U> Stream<Entry<K, U>> groupBy2(final Function<? super T, ? extends K> keyExtractor, final Function<? super T, ? extends U> valueMapper) {
+        final Map<K, U> map = collect(Collectors.toMap(keyExtractor, valueMapper));
 
         return newStream(map.entrySet().iterator(), false, null);
     }
 
     @Override
-    public <K, U> Stream<Entry<K, U>> groupBy2(final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper,
+    public <K, U> Stream<Entry<K, U>> groupBy2(final Function<? super T, ? extends K> keyExtractor, final Function<? super T, ? extends U> valueMapper,
             Supplier<Map<K, U>> mapFactory) {
-        final Map<K, U> map = collect(Collectors.toMap(keyMapper, valueMapper, mapFactory));
+        final Map<K, U> map = collect(Collectors.toMap(keyExtractor, valueMapper, mapFactory));
 
         return newStream(map.entrySet().iterator(), false, null);
     }
 
     @Override
-    public <K, U> Stream<Entry<K, U>> groupBy2(final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper,
+    public <K, U> Stream<Entry<K, U>> groupBy2(final Function<? super T, ? extends K> keyExtractor, final Function<? super T, ? extends U> valueMapper,
             BinaryOperator<U> mergeFunction) {
-        final Map<K, U> map = collect(Collectors.toMap(keyMapper, valueMapper, mergeFunction));
+        final Map<K, U> map = collect(Collectors.toMap(keyExtractor, valueMapper, mergeFunction));
 
         return newStream(map.entrySet().iterator(), false, null);
     }
 
     @Override
-    public <K, U> Stream<Entry<K, U>> groupBy2(final Function<? super T, ? extends K> keyMapper, final Function<? super T, ? extends U> valueMapper,
+    public <K, U> Stream<Entry<K, U>> groupBy2(final Function<? super T, ? extends K> keyExtractor, final Function<? super T, ? extends U> valueMapper,
             BinaryOperator<U> mergeFunction, Supplier<Map<K, U>> mapFactory) {
-        final Map<K, U> map = collect(Collectors.toMap(keyMapper, valueMapper, mergeFunction, mapFactory));
+        final Map<K, U> map = collect(Collectors.toMap(keyExtractor, valueMapper, mergeFunction, mapFactory));
 
         return newStream(map.entrySet().iterator(), false, null);
     }
 
     @Override
-    public <K, U> Map<K, U> toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper) {
+    public <K, U> Map<K, U> toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper) {
         @SuppressWarnings("rawtypes")
         final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
 
-        return toMap(keyMapper, valueMapper, mapFactory);
+        return toMap(keyExtractor, valueMapper, mapFactory);
     }
 
     @Override
-    public <K, U, M extends Map<K, U>> M toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,
+    public <K, U, M extends Map<K, U>> M toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
             Supplier<M> mapFactory) {
         final BinaryOperator<U> mergeFunction = Collectors.throwingMerger();
 
-        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
+        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
     @Override
-    public <K, U> Map<K, U> toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
+    public <K, U> Map<K, U> toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
         @SuppressWarnings("rawtypes")
         final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
 
-        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
+        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
     @Override
@@ -1008,20 +1008,20 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <K, U> Map<K, List<U>> toMap2(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper) {
-        return toMap(keyMapper, (Collector<T, ?, List<U>>) (Collector<?, ?, ?>) Collectors.mapping(valueMapper, Collectors.toList()));
+    public <K, U> Map<K, List<U>> toMap2(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper) {
+        return toMap(keyExtractor, (Collector<T, ?, List<U>>) (Collector<?, ?, ?>) Collectors.mapping(valueMapper, Collectors.toList()));
     }
 
     @SuppressWarnings("rawtypes")
     @Override
-    public <K, U, M extends Map<K, List<U>>> M toMap2(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,
+    public <K, U, M extends Map<K, List<U>>> M toMap2(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
             Supplier<M> mapFactory) {
-        return toMap(keyMapper, (Collector<T, ?, List<U>>) (Collector) Collectors.mapping(valueMapper, Collectors.toList()), mapFactory);
+        return toMap(keyExtractor, (Collector<T, ?, List<U>>) (Collector) Collectors.mapping(valueMapper, Collectors.toList()), mapFactory);
     }
 
     @Override
-    public <K> Multimap<K, T, List<T>> toMultimap(Function<? super T, ? extends K> keyMapper) {
-        return toMultimap(keyMapper, new Function<T, T>() {
+    public <K> Multimap<K, T, List<T>> toMultimap(Function<? super T, ? extends K> keyExtractor) {
+        return toMultimap(keyExtractor, new Function<T, T>() {
             @Override
             public T apply(T t) {
                 return t;
@@ -1030,8 +1030,8 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <K, V extends Collection<T>> Multimap<K, T, V> toMultimap(Function<? super T, ? extends K> keyMapper, Supplier<Multimap<K, T, V>> mapFactory) {
-        return toMultimap(keyMapper, new Function<T, T>() {
+    public <K, V extends Collection<T>> Multimap<K, T, V> toMultimap(Function<? super T, ? extends K> keyExtractor, Supplier<Multimap<K, T, V>> mapFactory) {
+        return toMultimap(keyExtractor, new Function<T, T>() {
             @Override
             public T apply(T t) {
                 return t;
@@ -1040,8 +1040,8 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <K, U> Multimap<K, U, List<U>> toMultimap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper) {
-        return toMultimap(keyMapper, valueMapper, new Supplier<Multimap<K, U, List<U>>>() {
+    public <K, U> Multimap<K, U, List<U>> toMultimap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper) {
+        return toMultimap(keyExtractor, valueMapper, new Supplier<Multimap<K, U, List<U>>>() {
             @Override
             public Multimap<K, U, List<U>> get() {
                 return N.newListMultimap();
@@ -1871,13 +1871,13 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public Stream<T> distinct(final Function<? super T, ?> keyMapper) {
+    public Stream<T> distinct(final Function<? super T, ?> keyExtractor) {
         final Set<Object> set = new HashSet<>();
 
         return newStream(this.sequential().filter(new Predicate<T>() {
             @Override
             public boolean test(T value) {
-                return set.add(hashKey(keyMapper.apply(value)));
+                return set.add(hashKey(keyExtractor.apply(value)));
             }
         }).iterator(), sorted, cmp);
     }

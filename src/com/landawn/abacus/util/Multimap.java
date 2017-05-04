@@ -247,11 +247,11 @@ public final class Multimap<K, E, V extends Collection<E>> {
     //        return multimap;
     //    }
 
-    public static <K, E> Multimap<K, E, List<E>> from(final Collection<? extends E> c, final Function<? super E, ? extends K> keyMapper) {
+    public static <K, E> Multimap<K, E, List<E>> from(final Collection<? extends E> c, final Function<? super E, ? extends K> keyExtractor) {
         final Multimap<K, E, List<E>> multimap = N.newListMultimap(N.initHashCapacity(N.min(9, c.size())));
 
         for (E e : c) {
-            multimap.put(keyMapper.apply(e), e);
+            multimap.put(keyExtractor.apply(e), e);
         }
 
         return multimap;
@@ -428,7 +428,7 @@ public final class Multimap<K, E, V extends Collection<E>> {
         return val.addAll(c);
     }
 
-    public boolean putAll(final Collection<? extends E> c, final Function<? super E, K> keyMapper) {
+    public boolean putAll(final Collection<? extends E> c, final Function<? super E, K> keyExtractor) {
         if (N.isNullOrEmpty(c)) {
             return false;
         }
@@ -436,7 +436,7 @@ public final class Multimap<K, E, V extends Collection<E>> {
         boolean result = false;
 
         for (E e : c) {
-            result |= put(keyMapper.apply(e), e);
+            result |= put(keyExtractor.apply(e), e);
         }
 
         return result;

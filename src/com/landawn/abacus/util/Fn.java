@@ -34,10 +34,18 @@ import java.util.regex.Pattern;
 
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiPredicate;
+import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Predicate;
+import com.landawn.abacus.util.function.ToByteFunction;
+import com.landawn.abacus.util.function.ToCharFunction;
+import com.landawn.abacus.util.function.ToDoubleFunction;
+import com.landawn.abacus.util.function.ToFloatFunction;
+import com.landawn.abacus.util.function.ToIntFunction;
+import com.landawn.abacus.util.function.ToLongFunction;
+import com.landawn.abacus.util.function.ToShortFunction;
 
 /**
  * Utility class for function creation and Stream&lt;Entry&lt;K, V&gt;&gt;
@@ -73,6 +81,51 @@ public final class Fn {
         @Override
         public void accept(Object value) {
             N.println(value);
+        }
+    };
+
+    private static final BinaryOperator<Collection<Object>> ADDING_ALL_MERGER = new BinaryOperator<Collection<Object>>() {
+        @Override
+        public Collection<Object> apply(Collection<Object> t, Collection<Object> u) {
+            t.addAll(u);
+            return t;
+        }
+    };
+
+    private static final BinaryOperator<Collection<Object>> REMOVING_ALL_MERGER = new BinaryOperator<Collection<Object>>() {
+        @Override
+        public Collection<Object> apply(Collection<Object> t, Collection<Object> u) {
+            t.removeAll(u);
+            return t;
+        }
+    };
+
+    private static final BinaryOperator<Map<Object, Object>> PUTTING_ALL_MERGER = new BinaryOperator<Map<Object, Object>>() {
+        @Override
+        public Map<Object, Object> apply(Map<Object, Object> t, Map<Object, Object> u) {
+            t.putAll(u);
+            return t;
+        }
+    };
+
+    private static final BiConsumer<Collection<Object>, Collection<Object>> ADDING_ALL_COMBINER = new BiConsumer<Collection<Object>, Collection<Object>>() {
+        @Override
+        public void accept(Collection<Object> t, Collection<Object> u) {
+            t.addAll(u);
+        }
+    };
+
+    private static final BiConsumer<Collection<Object>, Collection<Object>> REMOVING_ALL_COMBINER = new BiConsumer<Collection<Object>, Collection<Object>>() {
+        @Override
+        public void accept(Collection<Object> t, Collection<Object> u) {
+            t.removeAll(u);
+        }
+    };
+
+    private static final BiConsumer<Map<Object, Object>, Map<Object, Object>> PUTTING_ALL_COMBINER = new BiConsumer<Map<Object, Object>, Map<Object, Object>>() {
+        @Override
+        public void accept(Map<Object, Object> t, Map<Object, Object> u) {
+            t.putAll(u);
         }
     };
 
@@ -304,7 +357,73 @@ public final class Fn {
         };
     }
 
+    public static <T> BinaryOperator<T> throwingMerger() {
+        return BinaryOperator.THROWING_MERGER;
+    }
+
+    public static <T> BinaryOperator<T> ignoringMerger() {
+        return BinaryOperator.IGNORING_MERGER;
+    }
+
+    public static <T> BinaryOperator<T> replacingMerger() {
+        return BinaryOperator.REPLACING_MERGER;
+    }
+
+    public static <T, C extends Collection<T>> BinaryOperator<C> addingAllMerge() {
+        return (BinaryOperator<C>) ADDING_ALL_MERGER;
+    }
+
+    public static <T, C extends Collection<T>> BinaryOperator<C> removingAllMerge() {
+        return (BinaryOperator<C>) REMOVING_ALL_MERGER;
+    }
+
+    public static <K, V, M extends Map<K, V>> BinaryOperator<M> puttingAllMerge() {
+        return (BinaryOperator<M>) PUTTING_ALL_MERGER;
+    }
+
+    public static <T, C extends Collection<T>> BiConsumer<C, C> addingAllCombiner() {
+        return (BiConsumer<C, C>) ADDING_ALL_COMBINER;
+    }
+
+    public static <T, C extends Collection<T>> BiConsumer<C, C> removingAllCombiner() {
+        return (BiConsumer<C, C>) REMOVING_ALL_COMBINER;
+    }
+
+    public static <K, V, M extends Map<K, V>> BiConsumer<M, M> puttingAllCombiner() {
+        return (BiConsumer<M, M>) PUTTING_ALL_COMBINER;
+    }
+
+    public static ToByteFunction<Byte> unboxB() {
+        return ToByteFunction.UNBOX;
+    }
+
+    public static ToCharFunction<Character> unboxC() {
+        return ToCharFunction.UNBOX;
+    }
+
+    public static ToShortFunction<Short> unboxS() {
+        return ToShortFunction.UNBOX;
+    }
+
+    public static ToIntFunction<Integer> unboxI() {
+        return ToIntFunction.UNBOX;
+    }
+
+    public static ToLongFunction<Long> unboxL() {
+        return ToLongFunction.UNBOX;
+    }
+
+    public static ToFloatFunction<Float> unboxF() {
+        return ToFloatFunction.UNBOX;
+    }
+
+    public static ToDoubleFunction<Double> unboxD() {
+        return ToDoubleFunction.UNBOX;
+    }
+
     public static final class Supplier {
+        public static final com.landawn.abacus.util.function.Supplier<String> UUID = com.landawn.abacus.util.function.Supplier.UUID;
+        public static final com.landawn.abacus.util.function.Supplier<String> GUID = com.landawn.abacus.util.function.Supplier.GUID;
         private Supplier() {
             // singleton.
         }
@@ -377,14 +496,6 @@ public final class Fn {
         @SuppressWarnings("rawtypes")
         public static <T> com.landawn.abacus.util.function.Supplier<PriorityQueue<T>> ofPriorityQueue() {
             return (com.landawn.abacus.util.function.Supplier) com.landawn.abacus.util.function.Supplier.PRIORITY_QUEUE;
-        }
-
-        public static com.landawn.abacus.util.function.Supplier<String> ofUUID() {
-            return com.landawn.abacus.util.function.Supplier.UUID;
-        }
-
-        public static com.landawn.abacus.util.function.Supplier<String> ofGUID() {
-            return com.landawn.abacus.util.function.Supplier.GUID;
         }
     }
 

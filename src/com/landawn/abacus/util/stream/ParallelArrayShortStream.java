@@ -520,16 +520,16 @@ final class ParallelArrayShortStream extends ArrayShortStream {
     }
 
     @Override
-    public <K, U, M extends Map<K, U>> M toMap(final ShortFunction<? extends K> keyMapper, final ShortFunction<? extends U> valueMapper,
+    public <K, U, M extends Map<K, U>> M toMap(final ShortFunction<? extends K> keyExtractor, final ShortFunction<? extends U> valueMapper,
             final BinaryOperator<U> mergeFunction, final Supplier<M> mapFactory) {
         if (maxThreadNum <= 1) {
-            return sequential().toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
+            return sequential().toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
         }
 
-        final Function<? super Short, ? extends K> keyMapper2 = new Function<Short, K>() {
+        final Function<? super Short, ? extends K> keyExtractor2 = new Function<Short, K>() {
             @Override
             public K apply(Short value) {
-                return keyMapper.apply(value);
+                return keyExtractor.apply(value);
             }
         };
 
@@ -540,7 +540,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
             }
         };
 
-        return boxed().toMap(keyMapper2, valueMapper2, mergeFunction, mapFactory);
+        return boxed().toMap(keyExtractor2, valueMapper2, mergeFunction, mapFactory);
     }
 
     @Override
@@ -561,16 +561,16 @@ final class ParallelArrayShortStream extends ArrayShortStream {
     }
 
     @Override
-    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final ShortFunction<? extends K> keyMapper,
+    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final ShortFunction<? extends K> keyExtractor,
             final ShortFunction<? extends U> valueMapper, final Supplier<Multimap<K, U, V>> mapFactory) {
         if (maxThreadNum <= 1) {
-            return sequential().toMultimap(keyMapper, valueMapper, mapFactory);
+            return sequential().toMultimap(keyExtractor, valueMapper, mapFactory);
         }
 
-        final Function<? super Short, ? extends K> keyMapper2 = new Function<Short, K>() {
+        final Function<? super Short, ? extends K> keyExtractor2 = new Function<Short, K>() {
             @Override
             public K apply(Short value) {
-                return keyMapper.apply(value);
+                return keyExtractor.apply(value);
             }
         };
 
@@ -581,7 +581,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
             }
         };
 
-        return boxed().toMultimap(keyMapper2, valueMapper2, mapFactory);
+        return boxed().toMultimap(keyExtractor2, valueMapper2, mapFactory);
     }
 
     @Override

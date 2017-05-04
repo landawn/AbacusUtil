@@ -20642,25 +20642,25 @@ public final class N {
     }
 
     /**
-     * Distinct by the value mapped from <code>keyMapper</code>.
+     * Distinct by the value mapped from <code>keyExtractor</code>.
      * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      * 
      * @param a
-     * @param keyMapper don't change value of the input parameter.
+     * @param keyExtractor don't change value of the input parameter.
      * @return
      */
-    public static <T> T[] distinct(final T[] a, final Function<? super T, ?> keyMapper) {
+    public static <T> T[] distinct(final T[] a, final Function<? super T, ?> keyExtractor) {
         if (N.isNullOrEmpty(a)) {
             return a;
         }
 
-        return distinct(a, 0, a.length, keyMapper);
+        return distinct(a, 0, a.length, keyExtractor);
     }
 
     /**
-     * Distinct by the value mapped from <code>keyMapper</code>.
+     * Distinct by the value mapped from <code>keyExtractor</code>.
      * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
@@ -20668,10 +20668,10 @@ public final class N {
      * @param a
      * @param fromIndex
      * @param toIndex
-     * @param keyMapper don't change value of the input parameter.
+     * @param keyExtractor don't change value of the input parameter.
      * @return
      */
-    public static <T> T[] distinct(final T[] a, final int fromIndex, final int toIndex, final Function<? super T, ?> keyMapper) {
+    public static <T> T[] distinct(final T[] a, final int fromIndex, final int toIndex, final Function<? super T, ?> keyExtractor) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -20682,7 +20682,7 @@ public final class N {
         final Set<Object> set = new HashSet<>();
 
         for (int i = fromIndex; i < toIndex; i++) {
-            if (set.add(hashKey(keyMapper.apply(a[i])))) {
+            if (set.add(hashKey(keyExtractor.apply(a[i])))) {
                 result.add(a[i]);
             }
         }
@@ -20755,25 +20755,25 @@ public final class N {
     }
 
     /**
-     * Distinct by the value mapped from <code>keyMapper</code>.
+     * Distinct by the value mapped from <code>keyExtractor</code>.
      * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      * 
      * @param c
-     * @param keyMapper don't change value of the input parameter.
+     * @param keyExtractor don't change value of the input parameter.
      * @return
      */
-    public static <T> ExList<T> distinct(final Collection<? extends T> c, final Function<? super T, ?> keyMapper) {
+    public static <T> ExList<T> distinct(final Collection<? extends T> c, final Function<? super T, ?> keyExtractor) {
         if (N.isNullOrEmpty(c)) {
             return new ExList<>();
         }
 
-        return distinct(c, 0, c.size(), keyMapper);
+        return distinct(c, 0, c.size(), keyExtractor);
     }
 
     /**
-     * Distinct by the value mapped from <code>keyMapper</code>.
+     * Distinct by the value mapped from <code>keyExtractor</code>.
      * 
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
@@ -20781,10 +20781,10 @@ public final class N {
      * @param c
      * @param fromIndex
      * @param toIndex
-     * @param keyMapper don't change value of the input parameter.
+     * @param keyExtractor don't change value of the input parameter.
      * @return
      */
-    public static <T> ExList<T> distinct(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Function<? super T, ?> keyMapper) {
+    public static <T> ExList<T> distinct(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Function<? super T, ?> keyExtractor) {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -20801,7 +20801,7 @@ public final class N {
             for (int i = fromIndex; i < toIndex; i++) {
                 e = list.get(i);
 
-                if (set.add(hashKey(keyMapper.apply(e)))) {
+                if (set.add(hashKey(keyExtractor.apply(e)))) {
                     result.add(e);
                 }
             }
@@ -20815,7 +20815,7 @@ public final class N {
                     continue;
                 }
 
-                if (set.add(hashKey(keyMapper.apply(e)))) {
+                if (set.add(hashKey(keyExtractor.apply(e)))) {
                     result.add(e);
                 }
             }

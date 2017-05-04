@@ -310,26 +310,26 @@ abstract class AbstractFloatStream extends FloatStream {
     }
 
     @Override
-    public <K, U> Map<K, U> toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper) {
+    public <K, U> Map<K, U> toMap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends U> valueMapper) {
         @SuppressWarnings("rawtypes")
         final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
 
-        return toMap(keyMapper, valueMapper, mapFactory);
+        return toMap(keyExtractor, valueMapper, mapFactory);
     }
 
     @Override
-    public <K, U, M extends Map<K, U>> M toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper, Supplier<M> mapFactory) {
+    public <K, U, M extends Map<K, U>> M toMap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends U> valueMapper, Supplier<M> mapFactory) {
         final BinaryOperator<U> mergeFunction = Collectors.throwingMerger();
 
-        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
+        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
     @Override
-    public <K, U> Map<K, U> toMap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
+    public <K, U> Map<K, U> toMap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
         @SuppressWarnings("rawtypes")
         final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
 
-        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
+        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
     @Override
@@ -341,18 +341,18 @@ abstract class AbstractFloatStream extends FloatStream {
     }
 
     @Override
-    public <K> Multimap<K, Float, List<Float>> toMultimap(FloatFunction<? extends K> keyMapper) {
-        return toMultimap(keyMapper, FloatFunction.BOX);
+    public <K> Multimap<K, Float, List<Float>> toMultimap(FloatFunction<? extends K> keyExtractor) {
+        return toMultimap(keyExtractor, FloatFunction.BOX);
     }
 
     @Override
-    public <K, V extends Collection<Float>> Multimap<K, Float, V> toMultimap(FloatFunction<? extends K> keyMapper, Supplier<Multimap<K, Float, V>> mapFactory) {
-        return toMultimap(keyMapper, FloatFunction.BOX, mapFactory);
+    public <K, V extends Collection<Float>> Multimap<K, Float, V> toMultimap(FloatFunction<? extends K> keyExtractor, Supplier<Multimap<K, Float, V>> mapFactory) {
+        return toMultimap(keyExtractor, FloatFunction.BOX, mapFactory);
     }
 
     @Override
-    public <K, U> Multimap<K, U, List<U>> toMultimap(FloatFunction<? extends K> keyMapper, FloatFunction<? extends U> valueMapper) {
-        return toMultimap(keyMapper, valueMapper, new Supplier<Multimap<K, U, List<U>>>() {
+    public <K, U> Multimap<K, U, List<U>> toMultimap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends U> valueMapper) {
+        return toMultimap(keyExtractor, valueMapper, new Supplier<Multimap<K, U, List<U>>>() {
             @Override
             public Multimap<K, U, List<U>> get() {
                 return N.newListMultimap();

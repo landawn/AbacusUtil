@@ -535,22 +535,22 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
 
     /**
      * 
-     * @param keyMapper
+     * @param keyExtractor
      * @param valueMapper
      * @return
      * @see Collectors#toMultimap(Function, Function)
      */
-    public abstract <K, U> Stream<Map.Entry<K, List<U>>> groupBy(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper);
+    public abstract <K, U> Stream<Map.Entry<K, List<U>>> groupBy(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper);
 
     /**
      * 
-     * @param keyMapper
+     * @param keyExtractor
      * @param valueMapper
      * @param mapFactory
      * @return
      * @see Collectors#toMultimap(Function, Function, Supplier)
      */
-    public abstract <K, U, M extends Map<K, List<U>>> Stream<Map.Entry<K, List<U>>> groupBy(Function<? super T, ? extends K> keyMapper,
+    public abstract <K, U, M extends Map<K, List<U>>> Stream<Map.Entry<K, List<U>>> groupBy(Function<? super T, ? extends K> keyExtractor,
             Function<? super T, ? extends U> valueMapper, Supplier<M> mapFactory);
 
     public abstract <K, A, D> Stream<Map.Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream);
@@ -558,16 +558,16 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     public abstract <K, A, D> Stream<Map.Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream,
             final Supplier<Map<K, D>> mapFactory);
 
-    public abstract <K, U> Stream<Map.Entry<K, U>> groupBy2(final Function<? super T, ? extends K> keyMapper,
+    public abstract <K, U> Stream<Map.Entry<K, U>> groupBy2(final Function<? super T, ? extends K> keyExtractor,
             final Function<? super T, ? extends U> valueMapper);
 
-    public abstract <K, U> Stream<Map.Entry<K, U>> groupBy2(final Function<? super T, ? extends K> keyMapper,
+    public abstract <K, U> Stream<Map.Entry<K, U>> groupBy2(final Function<? super T, ? extends K> keyExtractor,
             final Function<? super T, ? extends U> valueMapper, final Supplier<Map<K, U>> mapFactory);
 
-    public abstract <K, U> Stream<Map.Entry<K, U>> groupBy2(final Function<? super T, ? extends K> keyMapper,
+    public abstract <K, U> Stream<Map.Entry<K, U>> groupBy2(final Function<? super T, ? extends K> keyExtractor,
             final Function<? super T, ? extends U> valueMapper, BinaryOperator<U> mergeFunction);
 
-    public abstract <K, U> Stream<Map.Entry<K, U>> groupBy2(final Function<? super T, ? extends K> keyMapper,
+    public abstract <K, U> Stream<Map.Entry<K, U>> groupBy2(final Function<? super T, ? extends K> keyExtractor,
             final Function<? super T, ? extends U> valueMapper, final BinaryOperator<U> mergeFunction, final Supplier<Map<K, U>> mapFactory);
 
     /**
@@ -748,15 +748,15 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     public abstract Stream<T> intersperse(T value);
 
     /**
-     * Distinct by the value mapped from <code>keyMapper</code>
+     * Distinct by the value mapped from <code>keyExtractor</code>
      * 
      * <br />
      * This method only run sequentially, even in parallel stream.
      * 
-     * @param keyMapper don't change value of the input parameter.
+     * @param keyExtractor don't change value of the input parameter.
      * @return
      */
-    public abstract Stream<T> distinct(Function<? super T, ?> keyMapper);
+    public abstract Stream<T> distinct(Function<? super T, ?> keyExtractor);
 
     /**
      * 
@@ -925,45 +925,45 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
 
     /**
      * 
-     * @param keyMapper
+     * @param keyExtractor
      * @param valueMapper
      * @return
      * @see Collectors#toMap(Function, Function)
      */
-    public abstract <K, U> Map<K, U> toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper);
+    public abstract <K, U> Map<K, U> toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper);
 
     /**
      * 
-     * @param keyMapper
+     * @param keyExtractor
      * @param valueMapper
      * @param mapFactory
      * @return
      * @see Collectors#toMap(Function, Function, Supplier)
      */
-    public abstract <K, U, M extends Map<K, U>> M toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,
+    public abstract <K, U, M extends Map<K, U>> M toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
             Supplier<M> mapFactory);
 
     /**
      * 
-     * @param keyMapper
+     * @param keyExtractor
      * @param valueMapper
      * @param mergeFunction
      * @return
      * @see Collectors#toMap(Function, Function, BinaryOperator)
      */
-    public abstract <K, U> Map<K, U> toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,
+    public abstract <K, U> Map<K, U> toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
             BinaryOperator<U> mergeFunction);
 
     /**
      * 
-     * @param keyMapper
+     * @param keyExtractor
      * @param valueMapper
      * @param mergeFunction
      * @param mapFactory
      * @return
      * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
      */
-    public abstract <K, U, M extends Map<K, U>> M toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,
+    public abstract <K, U, M extends Map<K, U>> M toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
             BinaryOperator<U> mergeFunction, Supplier<M> mapFactory);
 
     /**
@@ -1003,55 +1003,55 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public abstract <K, M extends Map<K, List<T>>> M toMap2(final Function<? super T, ? extends K> classifier, final Supplier<M> mapFactory);
 
-    public abstract <K, U> Map<K, List<U>> toMap2(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper);
+    public abstract <K, U> Map<K, List<U>> toMap2(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper);
 
     /**
      * 
-     * @param keyMapper
+     * @param keyExtractor
      * @param valueMapper
      * @param mapFactory
      * @return
      * @see Collectors#toMultimap(Function, Function, Supplier)
      */
-    public abstract <K, U, M extends Map<K, List<U>>> M toMap2(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,
+    public abstract <K, U, M extends Map<K, List<U>>> M toMap2(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
             Supplier<M> mapFactory);
 
     /**
      * 
-     * @param keyMapper
+     * @param keyExtractor
      * @return
      * @see Collectors#toMultimap(Function, Function)
      */
-    public abstract <K> Multimap<K, T, List<T>> toMultimap(Function<? super T, ? extends K> keyMapper);
+    public abstract <K> Multimap<K, T, List<T>> toMultimap(Function<? super T, ? extends K> keyExtractor);
 
     /**
      * 
-     * @param keyMapper
+     * @param keyExtractor
      * @param mapFactory
      * @return
      * @see Collectors#toMultimap(Function, Function, Supplier)
      */
-    public abstract <K, V extends Collection<T>> Multimap<K, T, V> toMultimap(Function<? super T, ? extends K> keyMapper,
+    public abstract <K, V extends Collection<T>> Multimap<K, T, V> toMultimap(Function<? super T, ? extends K> keyExtractor,
             Supplier<Multimap<K, T, V>> mapFactory);
 
     /**
      * 
-     * @param keyMapper
+     * @param keyExtractor
      * @param valueMapper
      * @return
      * @see Collectors#toMultimap(Function, Function)
      */
-    public abstract <K, U> Multimap<K, U, List<U>> toMultimap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper);
+    public abstract <K, U> Multimap<K, U, List<U>> toMultimap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper);
 
     /**
      * 
-     * @param keyMapper
+     * @param keyExtractor
      * @param valueMapper
      * @param mapFactory
      * @return
      * @see Collectors#toMultimap(Function, Function, Supplier)
      */
-    public abstract <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(Function<? super T, ? extends K> keyMapper,
+    public abstract <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(Function<? super T, ? extends K> keyExtractor,
             Function<? super T, ? extends U> valueMapper, Supplier<Multimap<K, U, V>> mapFactory);
 
     public abstract Matrix<T> toMatrix(Class<T> type);

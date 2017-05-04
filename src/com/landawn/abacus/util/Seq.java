@@ -1366,11 +1366,11 @@ public final class Seq<T> implements Collection<T> {
 
     /**
      * 
-     * @param keyMapper don't change value of the input parameter.
+     * @param keyExtractor don't change value of the input parameter.
      * @return
      */
-    public ExList<T> distinct(final Function<? super T, ?> keyMapper) {
-        return N.distinct(coll, keyMapper);
+    public ExList<T> distinct(final Function<? super T, ?> keyExtractor) {
+        return N.distinct(coll, keyExtractor);
     }
 
     @SuppressWarnings("rawtypes")
@@ -1476,28 +1476,28 @@ public final class Seq<T> implements Collection<T> {
         return ExList.of((T[]) toArray());
     }
 
-    public <K, U> Map<K, U> toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper) {
+    public <K, U> Map<K, U> toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper) {
         @SuppressWarnings("rawtypes")
         final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
 
-        return toMap(keyMapper, valueMapper, mapFactory);
+        return toMap(keyExtractor, valueMapper, mapFactory);
     }
 
-    public <K, U, M extends Map<K, U>> M toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,
+    public <K, U, M extends Map<K, U>> M toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
             Supplier<M> mapFactory) {
         final BinaryOperator<U> mergeFunction = BinaryOperator.THROWING_MERGER;
 
-        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
+        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
-    public <K, U> Map<K, U> toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
+    public <K, U> Map<K, U> toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
         @SuppressWarnings("rawtypes")
         final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
 
-        return toMap(keyMapper, valueMapper, mergeFunction, mapFactory);
+        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
-    public <K, U, M extends Map<K, U>> M toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,
+    public <K, U, M extends Map<K, U>> M toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
             BinaryOperator<U> mergeFunction, Supplier<M> mapFactory) {
         final M result = mapFactory.get();
         final Iterator<T> iter = iterator();
@@ -1505,7 +1505,7 @@ public final class Seq<T> implements Collection<T> {
 
         while (iter.hasNext()) {
             element = iter.next();
-            merge(result, keyMapper.apply(element), valueMapper.apply(element), mergeFunction);
+            merge(result, keyExtractor.apply(element), valueMapper.apply(element), mergeFunction);
         }
 
         return result;
@@ -1569,36 +1569,36 @@ public final class Seq<T> implements Collection<T> {
         return toMap(classifier, downstream, mapFactory);
     }
 
-    public <K, U> Map<K, List<U>> toMap2(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper) {
-        return toMap(keyMapper, (Collector<T, ?, List<U>>) (Collector<?, ?, ?>) Collectors.mapping(valueMapper, Collectors.toList()));
+    public <K, U> Map<K, List<U>> toMap2(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper) {
+        return toMap(keyExtractor, (Collector<T, ?, List<U>>) (Collector<?, ?, ?>) Collectors.mapping(valueMapper, Collectors.toList()));
     }
 
     @SuppressWarnings("rawtypes")
-    public <K, U, M extends Map<K, List<U>>> M toMap2(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper,
+    public <K, U, M extends Map<K, List<U>>> M toMap2(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
             Supplier<M> mapFactory) {
-        return toMap(keyMapper, (Collector<T, ?, List<U>>) (Collector) Collectors.mapping(valueMapper, Collectors.toList()), mapFactory);
+        return toMap(keyExtractor, (Collector<T, ?, List<U>>) (Collector) Collectors.mapping(valueMapper, Collectors.toList()), mapFactory);
     }
 
     /**
      * 
-     * @param keyMapper
+     * @param keyExtractor
      * @return
      */
-    public <K> Multimap<K, T, List<T>> toMultimap(Function<? super T, ? extends K> keyMapper) {
+    public <K> Multimap<K, T, List<T>> toMultimap(Function<? super T, ? extends K> keyExtractor) {
         final Multimap<K, T, List<T>> m = N.newListMultimap();
 
         for (T e : coll) {
-            m.put(keyMapper.apply(e), e);
+            m.put(keyExtractor.apply(e), e);
         }
 
         return m;
     }
 
-    public <K, V extends Collection<T>> Multimap<K, T, V> toMultimap(Function<? super T, ? extends K> keyMapper, Supplier<Multimap<K, T, V>> mapFactory) {
+    public <K, V extends Collection<T>> Multimap<K, T, V> toMultimap(Function<? super T, ? extends K> keyExtractor, Supplier<Multimap<K, T, V>> mapFactory) {
         final Multimap<K, T, V> m = mapFactory.get();
 
         for (T e : coll) {
-            m.put(keyMapper.apply(e), e);
+            m.put(keyExtractor.apply(e), e);
         }
 
         return m;
@@ -1606,26 +1606,26 @@ public final class Seq<T> implements Collection<T> {
 
     /**
      * 
-     * @param keyMapper
+     * @param keyExtractor
      * @param valueMapper
      * @return
      */
-    public <K, V> Multimap<K, V, List<V>> toMultimap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends V> valueMapper) {
+    public <K, V> Multimap<K, V, List<V>> toMultimap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends V> valueMapper) {
         final Multimap<K, V, List<V>> m = N.newListMultimap();
 
         for (T e : coll) {
-            m.put(keyMapper.apply(e), valueMapper.apply(e));
+            m.put(keyExtractor.apply(e), valueMapper.apply(e));
         }
 
         return m;
     }
 
-    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(Function<? super T, ? extends K> keyMapper,
+    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(Function<? super T, ? extends K> keyExtractor,
             Function<? super T, ? extends U> valueMapper, Supplier<Multimap<K, U, V>> mapFactory) {
         final Multimap<K, U, V> m = mapFactory.get();
 
         for (T e : coll) {
-            m.put(keyMapper.apply(e), valueMapper.apply(e));
+            m.put(keyExtractor.apply(e), valueMapper.apply(e));
         }
 
         return m;
