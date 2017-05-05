@@ -34,7 +34,7 @@ import com.landawn.abacus.util.stream.FloatStream;
 /**
  * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
  * <br />
- * 
+ *
  * A container object which may or may not contain a {@code float} value.
  * If a value is present, {@code isPresent()} will return {@code true} and
  * {@code get()} will return the value.
@@ -128,7 +128,7 @@ public final class OptionalFloat implements Comparable<OptionalFloat> {
     }
 
     /**
-     * 
+     *
      * @return
      * @throws NoSuchElementException if the value is not present, or ArithmeticException if the value is present but bigger than Integer.MAX_VALUE or less than Integer.MIN_VALUE
      */
@@ -145,7 +145,7 @@ public final class OptionalFloat implements Comparable<OptionalFloat> {
     }
 
     /**
-     * 
+     *
      * @return
      * @throws NoSuchElementException if the value is not present, or ArithmeticException if the value is present but bigger than Long.MAX_VALUE or less than Long.MIN_VALUE
      */
@@ -186,11 +186,11 @@ public final class OptionalFloat implements Comparable<OptionalFloat> {
 
     /**
      * If a value is present, performs the given action with the value, otherwise performs the given empty-based action.
-     * 
+     *
      * @param action
      * @param emptyAction
      */
-    public void ifPresentOrElse​(FloatConsumer action, Runnable emptyAction) {
+    public void ifPresentOrElse(FloatConsumer action, Runnable emptyAction) {
         if (isPresent()) {
             action.accept(value);
         } else {
@@ -209,7 +209,7 @@ public final class OptionalFloat implements Comparable<OptionalFloat> {
     }
 
     /**
-     * 
+     *
      * @return
      * @throws ArithmeticException if the value is present but bigger than Integer.MAX_VALUE or less than Integer.MIN_VALUE
      */
@@ -218,7 +218,7 @@ public final class OptionalFloat implements Comparable<OptionalFloat> {
     }
 
     /**
-     * 
+     *
      * @return
      * @throws ArithmeticException if the value is present but bigger than Long.MAX_VALUE or less than Long.MIN_VALUE
      */

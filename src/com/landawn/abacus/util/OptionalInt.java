@@ -34,7 +34,7 @@ import com.landawn.abacus.util.stream.IntStream;
 /**
  * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
  * <br />
- * 
+ *
  * A container object which may or may not contain a {@code int} value.
  * If a value is present, {@code isPresent()} will return {@code true} and
  * {@code get()} will return the value.
@@ -152,11 +152,11 @@ public final class OptionalInt implements Comparable<OptionalInt> {
 
     /**
      * If a value is present, performs the given action with the value, otherwise performs the given empty-based action.
-     * 
+     *
      * @param action
      * @param emptyAction
      */
-    public void ifPresentOrElse​(IntConsumer action, Runnable emptyAction) {
+    public void ifPresentOrElse(IntConsumer action, Runnable emptyAction) {
         if (isPresent()) {
             action.accept(value);
         } else {

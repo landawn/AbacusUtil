@@ -34,7 +34,7 @@ import com.landawn.abacus.util.stream.DoubleStream;
 /**
  * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
  * <br />
- * 
+ *
  * A container object which may or may not contain a {@code double} value.
  * If a value is present, {@code isPresent()} will return {@code true} and
  * {@code get()} will return the value.
@@ -128,7 +128,7 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
     }
 
     /**
-     * 
+     *
      * @return
      * @throws NoSuchElementException if the value is not present, or ArithmeticException if the value is present but bigger than Integer.MAX_VALUE or less than Integer.MIN_VALUE
      */
@@ -145,7 +145,7 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
     }
 
     /**
-     * 
+     *
      * @return
      * @throws NoSuchElementException if the value is not present, or ArithmeticException if the value is present but bigger than Long.MAX_VALUE or less than Long.MIN_VALUE
      */
@@ -162,7 +162,7 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
     }
 
     /**
-     * 
+     *
      * @return
      * @throws NoSuchElementException if the value is not present, or ArithmeticException if the value is present but bigger than Float.MAX_VALUE or less than Float.MIN_VALUE
      */
@@ -203,11 +203,11 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
 
     /**
      * If a value is present, performs the given action with the value, otherwise performs the given empty-based action.
-     * 
+     *
      * @param action
      * @param emptyAction
      */
-    public void ifPresentOrElse​(DoubleConsumer action, Runnable emptyAction) {
+    public void ifPresentOrElse(DoubleConsumer action, Runnable emptyAction) {
         if (isPresent()) {
             action.accept(value);
         } else {
@@ -226,7 +226,7 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
     }
 
     /**
-     * 
+     *
      * @return
      * @throws ArithmeticException if the value is present but bigger than Integer.MAX_VALUE or less than Integer.MIN_VALUE
      */
@@ -235,7 +235,7 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
     }
 
     /**
-     * 
+     *
      * @return
      * @throws ArithmeticException if the value is present but bigger than Long.MAX_VALUE or less than Long.MIN_VALUE
      */
@@ -244,7 +244,7 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
     }
 
     /**
-     * 
+     *
      * @return
      * @throws ArithmeticException if the value is present but bigger than Float.MAX_VALUE or less than Float.MIN_VALUE
      */

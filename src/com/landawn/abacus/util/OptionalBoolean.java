@@ -34,7 +34,7 @@ import com.landawn.abacus.util.stream.Stream;
 /**
  * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
  * <br />
- * 
+ *
  * A container object which may or may not contain a {@code boolean} value.
  * If a value is present, {@code isPresent()} will return {@code true} and
  * {@code get()} will return the value.
@@ -152,11 +152,11 @@ public final class OptionalBoolean implements Comparable<OptionalBoolean> {
 
     /**
      * If a value is present, performs the given action with the value, otherwise performs the given empty-based action.
-     * 
+     *
      * @param action
      * @param emptyAction
      */
-    public void ifPresentOrElse​(BooleanConsumer action, Runnable emptyAction) {
+    public void ifPresentOrElse(BooleanConsumer action, Runnable emptyAction) {
         if (isPresent()) {
             action.accept(value);
         } else {

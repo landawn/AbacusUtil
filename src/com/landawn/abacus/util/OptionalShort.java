@@ -34,7 +34,7 @@ import com.landawn.abacus.util.stream.ShortStream;
 /**
  * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
  * <br />
- * 
+ *
  * A container object which may or may not contain a {@code short} value.
  * If a value is present, {@code isPresent()} will return {@code true} and
  * {@code get()} will return the value.
@@ -152,11 +152,11 @@ public final class OptionalShort implements Comparable<OptionalShort> {
 
     /**
      * If a value is present, performs the given action with the value, otherwise performs the given empty-based action.
-     * 
+     *
      * @param action
      * @param emptyAction
      */
-    public void ifPresentOrElse​(ShortConsumer action, Runnable emptyAction) {
+    public void ifPresentOrElse(ShortConsumer action, Runnable emptyAction) {
         if (isPresent()) {
             action.accept(value);
         } else {

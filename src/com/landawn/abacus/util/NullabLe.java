@@ -163,6 +163,20 @@ public final class NullabLe<T> {
     }
 
     /**
+    * If a value is present, performs the given action with the value, otherwise performs the given empty-based action.
+    *
+    * @param action
+    * @param emptyAction
+    */
+    public void ifPresentOrElse(Consumer<? super T> action, Runnable emptyAction) {
+        if (isPresent()) {
+            action.accept(value);
+        } else {
+            emptyAction.run();
+        }
+    }
+
+    /**
      * If a value is not null, invoke the specified consumer with the value,
      * otherwise do nothing.
      *
