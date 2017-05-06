@@ -23,6 +23,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.IndexedInt;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.IntList;
@@ -310,31 +311,28 @@ abstract class AbstractIntStream extends IntStream {
 
     @Override
     public <K, U> Map<K, U> toMap(IntFunction<? extends K> keyExtractor, IntFunction<? extends U> valueMapper) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
+        final Supplier<Map<K, U>> mapFactory = Fn.Supplier.ofMap();
 
         return toMap(keyExtractor, valueMapper, mapFactory);
     }
 
     @Override
     public <K, U, M extends Map<K, U>> M toMap(IntFunction<? extends K> keyExtractor, IntFunction<? extends U> valueMapper, Supplier<M> mapFactory) {
-        final BinaryOperator<U> mergeFunction = Collectors.throwingMerger();
+        final BinaryOperator<U> mergeFunction = Fn.throwingMerger();
 
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
     @Override
     public <K, U> Map<K, U> toMap(IntFunction<? extends K> keyExtractor, IntFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
+        final Supplier<Map<K, U>> mapFactory = Fn.Supplier.ofMap();
 
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
     @Override
     public <K, A, D> Map<K, D> toMap(IntFunction<? extends K> classifier, Collector<Integer, A, D> downstream) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, D>> mapFactory = (Supplier) Supplier.MAP;
+        final Supplier<Map<K, D>> mapFactory = Fn.Supplier.ofMap();
 
         return toMap(classifier, downstream, mapFactory);
     }

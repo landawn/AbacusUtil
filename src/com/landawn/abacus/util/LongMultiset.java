@@ -107,31 +107,15 @@ public final class LongMultiset<E> implements Iterable<E> {
         return multiset;
     }
 
-    //    @SuppressWarnings("rawtypes")
-    //    static <T> Multiset<T> of(final Class<? extends Map> valueMapType, final T... a) {
-    //        final Multiset<T> multiset = new Multiset<T>(valueMapType);
-    //
-    //        for (T e : a) {
-    //            multiset.add(e);
-    //        }
-    //
-    //        return multiset;
-    //    }
-
     public static <T> LongMultiset<T> from(final Collection<? extends T> coll) {
         return new LongMultiset<>(coll);
     }
 
-    //    @SuppressWarnings("rawtypes")
-    //    static <T> Multiset<T> of(final Class<? extends Map> valueMapType, final Collection<T> coll) {
-    //        final Multiset<T> multiset = new Multiset<T>(valueMapType);
-    //
-    //        multiset.addAll(coll);
-    //
-    //        return multiset;
-    //    }
-
     public static <T> LongMultiset<T> from(final Map<? extends T, Long> m) {
+        if (N.isNullOrEmpty(m)) {
+            return new LongMultiset<T>();
+        }
+
         final LongMultiset<T> multiset = new LongMultiset<>(N.initHashCapacity(m.size()));
 
         multiset.setAll(m);
@@ -140,6 +124,10 @@ public final class LongMultiset<E> implements Iterable<E> {
     }
 
     public static <T> LongMultiset<T> from2(final Map<? extends T, Integer> m) {
+        if (N.isNullOrEmpty(m)) {
+            return new LongMultiset<T>();
+        }
+
         final LongMultiset<T> multiset = new LongMultiset<>(N.initHashCapacity(m.size()));
 
         for (Map.Entry<? extends T, Integer> entry : m.entrySet()) {
@@ -154,6 +142,10 @@ public final class LongMultiset<E> implements Iterable<E> {
     }
 
     public static <T> LongMultiset<T> from(final Multiset<? extends T> multiset) {
+        if (N.isNullOrEmpty(multiset)) {
+            return new LongMultiset<T>();
+        }
+
         final LongMultiset<T> result = new LongMultiset<>(N.initHashCapacity(multiset.size()));
 
         for (Map.Entry<? extends T, MutableInt> entry : multiset.valueMap.entrySet()) {
@@ -162,47 +154,6 @@ public final class LongMultiset<E> implements Iterable<E> {
 
         return result;
     }
-
-    //    public static <T> LongMultiset<T> from(final LongLongMultiset<? extends T> multiset) {
-    //        final LongMultiset<T> result = new LongMultiset<>(N.initHashCapacity(multiset.size()));
-    //
-    //        for (Map.Entry<? extends T, MutableLong> entry : multiset.entrySet()) {
-    //            if (entry.getValue().value() < 0 || entry.getValue().value() > Long.MAX_VALUE) {
-    //                throw new IllegalArgumentException("The specified 'occurrences' can not be less than 0 or bigger than Long.MAX_VALUE");
-    //            }
-    //
-    //            result.set(entry.getKey(), entry.getValue().value());
-    //        }
-    //
-    //        return result;
-    //    }
-    //
-    //    public static LongMultiset<Character> from(CharSequence str) {
-    //        final LongMultiset<Character> result = new LongMultiset<>(N.initHashCapacity(str.length()));
-    //
-    //        if (N.notNullOrEmpty(str)) {
-    //            if (str instanceof String) {
-    //                for (char ch : N.getCharsForReadOnly((String) str)) {
-    //                    result.add(ch);
-    //                }
-    //            } else {
-    //                for (long i = 0, len = str.length(); i < len; i++) {
-    //                    result.add(str.charAt(i));
-    //                }
-    //            }
-    //        }
-    //
-    //        return result;
-    //    }
-
-    //    @SuppressWarnings("rawtypes")
-    //    public static <T> LongMultiset<T> from(final Class<? extends Map> valueMapType, final Map<? extends T, Long> m) {
-    //        final LongMultiset<T> multiset = new LongMultiset<T>(valueMapType);
-    //
-    //        multiset.setAll(m);
-    //
-    //        return multiset;
-    //    }
 
     /**
      *

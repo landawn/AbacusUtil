@@ -1633,21 +1633,19 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
     }
 
     public <K, U> Map<K, U> toMap(IntFunction<? extends K> keyExtractor, IntFunction<? extends U> valueMapper) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
+        final Supplier<Map<K, U>> mapFactory = Fn.Supplier.ofMap();
 
         return toMap(keyExtractor, valueMapper, mapFactory);
     }
 
     public <K, U, M extends Map<K, U>> M toMap(IntFunction<? extends K> keyExtractor, IntFunction<? extends U> valueMapper, Supplier<M> mapFactory) {
-        final BinaryOperator<U> mergeFunction = BinaryOperator.THROWING_MERGER;
+        final BinaryOperator<U> mergeFunction = Fn.throwingMerger();
 
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
     public <K, U> Map<K, U> toMap(IntFunction<? extends K> keyExtractor, IntFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
+        final Supplier<Map<K, U>> mapFactory = Fn.Supplier.ofMap();
 
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
@@ -1665,8 +1663,7 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
 
     @SuppressWarnings("hiding")
     public <K, A, D> Map<K, D> toMap(IntFunction<? extends K> classifier, Collector<Integer, A, D> downstream) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, D>> mapFactory = (Supplier) Supplier.MAP;
+        final Supplier<Map<K, D>> mapFactory = Fn.Supplier.ofMap();
 
         return toMap(classifier, downstream, mapFactory);
     }

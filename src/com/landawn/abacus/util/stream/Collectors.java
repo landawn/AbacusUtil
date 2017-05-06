@@ -62,6 +62,7 @@ import com.landawn.abacus.util.DoubleSummaryStatistics;
 import com.landawn.abacus.util.ExList;
 import com.landawn.abacus.util.FloatList;
 import com.landawn.abacus.util.FloatSummaryStatistics;
+import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.IntList;
 import com.landawn.abacus.util.IntSummaryStatistics;
 import com.landawn.abacus.util.Joiner;
@@ -149,38 +150,7 @@ public final class Collectors {
             .unmodifiableSet(EnumSet.of(Collector.Characteristics.UNORDERED, Collector.Characteristics.IDENTITY_FINISH));
     static final Set<Collector.Characteristics> CH_NOID = Collections.emptySet();
 
-    @SuppressWarnings("rawtypes")
-    private static final BinaryOperator<Collection> ADD_ALL_MERGER = new BinaryOperator<Collection>() {
-        @Override
-        public Collection apply(Collection t, Collection u) {
-            t.addAll(u);
-            return t;
-        }
-    };
-
-    @SuppressWarnings("rawtypes")
-    private static final BinaryOperator THROWING_MERGER = new BinaryOperator<Object>() {
-        @Override
-        public Object apply(Object t, Object u) {
-            throw new IllegalStateException(String.format("Duplicate key %s", u));
-        }
-    };
-
     private Collectors() {
-    }
-
-    /**
-     * Returns a merge function, suitable for use in
-     * {@link Map#merge(Object, Object, BiFunction) Map.merge()} or
-     * {@link #toMap(Function, Function, BinaryOperator) toMap()}, which always
-     * throws {@code IllegalStateException}.  This can be used to enforce the
-     * assumption that the elements being collected are distinct.
-     *
-     * @param <T> the type of input arguments to the merge function
-     * @return a merge function which always throw {@code IllegalStateException}
-     */
-    static <T> BinaryOperator<T> throwingMerger() {
-        return THROWING_MERGER;
     }
 
     @SuppressWarnings("unchecked")
@@ -448,7 +418,7 @@ public final class Collectors {
     }
 
     public static <T> Collector<T, ?, Object[]> toArray() {
-        return toArray(Supplier.EMPTY_OBJECT_ARRAY);
+        return toArray(Fn.Supplier.ofEmptyObjectArray());
     }
 
     public static <T, A> Collector<T, ?, A[]> toArray(final Supplier<A[]> arraySupplier) {
@@ -3132,14 +3102,14 @@ public final class Collectors {
      * @see #toConcurrentMap(Function, Function)
      */
     public static <T, K, U> Collector<T, ?, Map<K, U>> toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper) {
-        final BinaryOperator<U> mergeFunction = throwingMerger();
+        final BinaryOperator<U> mergeFunction = Fn.throwingMerger();
 
         return toMap(keyExtractor, valueMapper, mergeFunction);
     }
 
     public static <T, K, U, M extends Map<K, U>> Collector<T, ?, M> toMap(final Function<? super T, ? extends K> keyExtractor,
             final Function<? super T, ? extends U> valueMapper, final Supplier<M> mapFactory) {
-        final BinaryOperator<U> mergeFunction = throwingMerger();
+        final BinaryOperator<U> mergeFunction = Fn.throwingMerger();
 
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
@@ -3263,8 +3233,7 @@ public final class Collectors {
     }
 
     public static <K, V> Collector<Map.Entry<K, V>, ?, Map<K, List<V>>> toMap2() {
-        @SuppressWarnings("rawtypes")
-        final BinaryOperator<List<V>> mergeFunction = (BinaryOperator) ADD_ALL_MERGER;
+        final BinaryOperator<List<V>> mergeFunction = Fn.BinaryOperator.ofAddAll();
 
         return Collectors.toMap(new Function<Map.Entry<K, V>, K>() {
             @Override
@@ -3280,8 +3249,7 @@ public final class Collectors {
     }
 
     public static <K, V, M extends Map<K, List<V>>> Collector<Map.Entry<K, V>, ?, M> toMap2(final Supplier<M> mapFactory) {
-        @SuppressWarnings("rawtypes")
-        final BinaryOperator<List<V>> mergeFunction = (BinaryOperator) ADD_ALL_MERGER;
+        final BinaryOperator<List<V>> mergeFunction = Fn.BinaryOperator.ofAddAll();
 
         return Collectors.toMap(new Function<Map.Entry<K, V>, K>() {
             @Override
@@ -3298,8 +3266,7 @@ public final class Collectors {
 
     public static <T, K, V> Collector<T, ?, Map<K, List<V>>> toMap2(final Function<? super T, ? extends K> keyExtractor,
             final Function<? super T, ? extends V> valueMapper) {
-        @SuppressWarnings("rawtypes")
-        final BinaryOperator<List<V>> mergeFunction = (BinaryOperator) ADD_ALL_MERGER;
+        final BinaryOperator<List<V>> mergeFunction = Fn.BinaryOperator.ofAddAll();
 
         return Collectors.toMap(new Function<T, K>() {
             @Override
@@ -3316,8 +3283,7 @@ public final class Collectors {
 
     public static <T, K, V, M extends Map<K, List<V>>> Collector<T, ?, M> toMap2(final Function<? super T, ? extends K> keyExtractor,
             final Function<? super T, ? extends V> valueMapper, final Supplier<M> mapFactory) {
-        @SuppressWarnings("rawtypes")
-        final BinaryOperator<List<V>> mergeFunction = (BinaryOperator) ADD_ALL_MERGER;
+        final BinaryOperator<List<V>> mergeFunction = Fn.BinaryOperator.ofAddAll();
 
         return Collectors.toMap(new Function<T, K>() {
             @Override
@@ -3341,7 +3307,7 @@ public final class Collectors {
      */
     public static <T, K, U> Collector<T, ?, LinkedHashMap<K, U>> toLinkedHashMap(Function<? super T, ? extends K> keyExtractor,
             Function<? super T, ? extends U> valueMapper) {
-        final BinaryOperator<U> mergeFunction = throwingMerger();
+        final BinaryOperator<U> mergeFunction = Fn.throwingMerger();
 
         return toLinkedHashMap(keyExtractor, valueMapper, mergeFunction);
     }
@@ -3415,14 +3381,14 @@ public final class Collectors {
      */
     public static <T, K, U> Collector<T, ?, ConcurrentMap<K, U>> toConcurrentMap(Function<? super T, ? extends K> keyExtractor,
             Function<? super T, ? extends U> valueMapper) {
-        final BinaryOperator<U> mergeFunction = throwingMerger();
+        final BinaryOperator<U> mergeFunction = Fn.throwingMerger();
 
         return toConcurrentMap(keyExtractor, valueMapper, mergeFunction);
     }
 
     public static <T, K, U, M extends ConcurrentMap<K, U>> Collector<T, ?, M> toConcurrentMap(final Function<? super T, ? extends K> keyExtractor,
             final Function<? super T, ? extends U> valueMapper, Supplier<M> mapFactory) {
-        final BinaryOperator<U> mergeFunction = throwingMerger();
+        final BinaryOperator<U> mergeFunction = Fn.throwingMerger();
 
         return toConcurrentMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
@@ -3535,14 +3501,14 @@ public final class Collectors {
     }
 
     public static <T, K, U> Collector<T, ?, BiMap<K, U>> toBiMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper) {
-        final BinaryOperator<U> mergeFunction = throwingMerger();
+        final BinaryOperator<U> mergeFunction = Fn.throwingMerger();
 
         return toBiMap(keyExtractor, valueMapper, mergeFunction);
     }
 
     public static <T, K, U> Collector<T, ?, BiMap<K, U>> toBiMap(final Function<? super T, ? extends K> keyExtractor,
             final Function<? super T, ? extends U> valueMapper, final Supplier<BiMap<K, U>> mapFactory) {
-        final BinaryOperator<U> mergeFunction = throwingMerger();
+        final BinaryOperator<U> mergeFunction = Fn.throwingMerger();
 
         return toBiMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }

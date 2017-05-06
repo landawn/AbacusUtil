@@ -27,6 +27,7 @@ import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.DoubleList;
 import com.landawn.abacus.util.DoubleMatrix;
 import com.landawn.abacus.util.DoubleSummaryStatistics;
+import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.IndexedDouble;
 import com.landawn.abacus.util.Joiner;
 import com.landawn.abacus.util.Multimap;
@@ -310,31 +311,28 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
     @Override
     public <K, U> Map<K, U> toMap(DoubleFunction<? extends K> keyExtractor, DoubleFunction<? extends U> valueMapper) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
+        final Supplier<Map<K, U>> mapFactory = Fn.Supplier.ofMap();
 
         return toMap(keyExtractor, valueMapper, mapFactory);
     }
 
     @Override
     public <K, U, M extends Map<K, U>> M toMap(DoubleFunction<? extends K> keyExtractor, DoubleFunction<? extends U> valueMapper, Supplier<M> mapFactory) {
-        final BinaryOperator<U> mergeFunction = Collectors.throwingMerger();
+        final BinaryOperator<U> mergeFunction = Fn.throwingMerger();
 
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
     @Override
     public <K, U> Map<K, U> toMap(DoubleFunction<? extends K> keyExtractor, DoubleFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
+        final Supplier<Map<K, U>> mapFactory = Fn.Supplier.ofMap();
 
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
     @Override
     public <K, A, D> Map<K, D> toMap(DoubleFunction<? extends K> classifier, Collector<Double, A, D> downstream) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, D>> mapFactory = (Supplier) Supplier.MAP;
+        final Supplier<Map<K, D>> mapFactory = Fn.Supplier.ofMap();
 
         return toMap(classifier, downstream, mapFactory);
     }

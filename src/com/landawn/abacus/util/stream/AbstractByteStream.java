@@ -27,6 +27,7 @@ import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.ByteList;
 import com.landawn.abacus.util.ByteMatrix;
 import com.landawn.abacus.util.ByteSummaryStatistics;
+import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.IndexedByte;
 import com.landawn.abacus.util.Joiner;
 import com.landawn.abacus.util.Multimap;
@@ -312,31 +313,28 @@ abstract class AbstractByteStream extends ByteStream {
 
     @Override
     public <K, U> Map<K, U> toMap(ByteFunction<? extends K> keyExtractor, ByteFunction<? extends U> valueMapper) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
+        final Supplier<Map<K, U>> mapFactory = Fn.Supplier.ofMap();
 
         return toMap(keyExtractor, valueMapper, mapFactory);
     }
 
     @Override
     public <K, U, M extends Map<K, U>> M toMap(ByteFunction<? extends K> keyExtractor, ByteFunction<? extends U> valueMapper, Supplier<M> mapFactory) {
-        final BinaryOperator<U> mergeFunction = Collectors.throwingMerger();
+        final BinaryOperator<U> mergeFunction = Fn.throwingMerger();
 
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
     @Override
     public <K, U> Map<K, U> toMap(ByteFunction<? extends K> keyExtractor, ByteFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
+        final Supplier<Map<K, U>> mapFactory = Fn.Supplier.ofMap();
 
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
     @Override
     public <K, A, D> Map<K, D> toMap(ByteFunction<? extends K> classifier, Collector<Byte, A, D> downstream) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, D>> mapFactory = (Supplier) Supplier.MAP;
+        final Supplier<Map<K, D>> mapFactory = Fn.Supplier.ofMap();
 
         return toMap(classifier, downstream, mapFactory);
     }

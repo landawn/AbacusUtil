@@ -78,8 +78,6 @@ public final class Seq<T> implements Collection<T> {
      * @param c
      */
     Seq(final Collection<T> c) {
-        N.requireNonNull(c);
-
         this.coll = c;
     }
 
@@ -102,7 +100,7 @@ public final class Seq<T> implements Collection<T> {
      * @throws NullPointerException if the specified <code>Map</code> is null.
      */
     public static <K, V> Seq<Map.Entry<K, V>> of(Map<K, V> map) {
-        return of(map.entrySet());
+        return of(map == null ? null : map.entrySet());
     }
 
     /**
@@ -111,6 +109,10 @@ public final class Seq<T> implements Collection<T> {
      * @return
      */
     public Collection<T> interior() {
+        if (coll == null) {
+            return coll;
+        }
+
         Collection<T> tmp = coll;
 
         if (tmp instanceof Seq) {
@@ -197,12 +199,18 @@ public final class Seq<T> implements Collection<T> {
 
     @Override
     public boolean contains(Object e) {
+        if (N.isNullOrEmpty(coll)) {
+            return false;
+        }
+
         return coll.contains(e);
     }
 
     @Override
     public boolean containsAll(Collection<?> c) {
-        if (N.isNullOrEmpty(c)) {
+        if (N.isNullOrEmpty(coll)) {
+            return false;
+        } else if (N.isNullOrEmpty(c)) {
             return true;
         }
 
@@ -210,7 +218,9 @@ public final class Seq<T> implements Collection<T> {
     }
 
     public boolean containsAll(Object[] a) {
-        if (N.isNullOrEmpty(a)) {
+        if (N.isNullOrEmpty(coll)) {
+            return false;
+        } else if (N.isNullOrEmpty(a)) {
             return true;
         }
 
@@ -283,8 +293,10 @@ public final class Seq<T> implements Collection<T> {
      * @see IntList#difference(IntList)
      */
     public ExList<T> difference(Collection<?> b) {
-        if (N.isNullOrEmpty(b)) {
-            return N.isNullOrEmpty(coll) ? new ExList<T>() : new ExList<>((T[]) coll.toArray());
+        if (N.isNullOrEmpty(coll)) {
+            return new ExList<>();
+        } else if (N.isNullOrEmpty(b)) {
+            return new ExList<>((T[]) coll.toArray());
         }
 
         final Multiset<?> bOccurrences = Multiset.from(b);
@@ -300,8 +312,10 @@ public final class Seq<T> implements Collection<T> {
     }
 
     public ExList<T> difference(final Object[] a) {
-        if (N.isNullOrEmpty(a)) {
-            return N.isNullOrEmpty(coll) ? new ExList<T>() : new ExList<>((T[]) coll.toArray());
+        if (N.isNullOrEmpty(coll)) {
+            return new ExList<>();
+        } else if (N.isNullOrEmpty(a)) {
+            return new ExList<>((T[]) coll.toArray());
         }
 
         return difference(Arrays.asList(a));
@@ -353,7 +367,7 @@ public final class Seq<T> implements Collection<T> {
     }
 
     public int occurrencesOf(final Object objectToFind) {
-        return N.occurrencesOf(coll, objectToFind);
+        return N.isNullOrEmpty(coll) ? 0 : N.occurrencesOf(coll, objectToFind);
     }
 
     @SuppressWarnings("rawtypes")
@@ -393,6 +407,10 @@ public final class Seq<T> implements Collection<T> {
     }
 
     public Long sumInt() {
+        if (N.isNullOrEmpty(coll)) {
+            return 0L;
+        }
+
         long result = 0L;
 
         for (T e : coll) {
@@ -405,6 +423,10 @@ public final class Seq<T> implements Collection<T> {
     }
 
     public Long sumInt(final ToIntFunction<? super T> mapper) {
+        if (N.isNullOrEmpty(coll)) {
+            return 0L;
+        }
+
         long result = 0L;
 
         for (T e : coll) {
@@ -415,6 +437,10 @@ public final class Seq<T> implements Collection<T> {
     }
 
     public Long sumLong() {
+        if (N.isNullOrEmpty(coll)) {
+            return 0L;
+        }
+
         long result = 0L;
 
         for (T e : coll) {
@@ -427,6 +453,10 @@ public final class Seq<T> implements Collection<T> {
     }
 
     public Long sumLong(final ToLongFunction<? super T> mapper) {
+        if (N.isNullOrEmpty(coll)) {
+            return 0L;
+        }
+
         long result = 0L;
 
         for (T e : coll) {
@@ -437,6 +467,10 @@ public final class Seq<T> implements Collection<T> {
     }
 
     public Double sumDouble() {
+        if (N.isNullOrEmpty(coll)) {
+            return 0D;
+        }
+
         return sumDouble((ToDoubleFunction<? super T>) new ToDoubleFunction<Number>() {
             @Override
             public double applyAsDouble(Number value) {
@@ -543,7 +577,7 @@ public final class Seq<T> implements Collection<T> {
         if (coll instanceof List && coll instanceof RandomAccess) {
             return NullabLe.of(((List<T>) coll).get(size() - 1));
         } else {
-            final Iterator<T> iter = coll.iterator();
+            final Iterator<T> iter = iterator();
             T e = null;
 
             while (iter.hasNext()) {
@@ -597,6 +631,10 @@ public final class Seq<T> implements Collection<T> {
     }
 
     public OptionalInt findFirstIndex(Predicate<? super T> predicate) {
+        if (size() == 0) {
+            return OptionalInt.empty();
+        }
+
         int idx = 0;
 
         for (T e : coll) {
@@ -641,7 +679,11 @@ public final class Seq<T> implements Collection<T> {
         }
     }
 
-    public <U> NullabLe<T> findFirstOrLast(final Predicate<? super T> predicateForFirst, final Predicate<? super T> predicateForLast) {
+    public NullabLe<T> findFirstOrLast(final Predicate<? super T> predicateForFirst, final Predicate<? super T> predicateForLast) {
+        if (N.isNullOrEmpty(coll)) {
+            return NullabLe.<T> empty();
+        }
+
         final Iterator<T> iter = iterator();
         T last = (T) N.NULL_MASK;
         T next = null;
@@ -660,6 +702,10 @@ public final class Seq<T> implements Collection<T> {
     }
 
     public boolean allMatch(Predicate<? super T> filter) {
+        if (N.isNullOrEmpty(coll)) {
+            return true;
+        }
+
         for (T e : coll) {
             if (filter.test(e) == false) {
                 return false;
@@ -670,6 +716,10 @@ public final class Seq<T> implements Collection<T> {
     }
 
     public boolean anyMatch(Predicate<? super T> filter) {
+        if (N.isNullOrEmpty(coll)) {
+            return false;
+        }
+
         for (T e : coll) {
             if (filter.test(e)) {
                 return true;
@@ -680,6 +730,10 @@ public final class Seq<T> implements Collection<T> {
     }
 
     public boolean noneMatch(Predicate<? super T> filter) {
+        if (N.isNullOrEmpty(coll)) {
+            return true;
+        }
+
         for (T e : coll) {
             if (filter.test(e)) {
                 return false;
@@ -717,6 +771,10 @@ public final class Seq<T> implements Collection<T> {
     public ExList<T> takeWhile(Predicate<? super T> filter) {
         final ExList<T> result = new ExList<>(N.min(9, size()));
 
+        if (N.isNullOrEmpty(coll)) {
+            return result;
+        }
+
         for (T e : coll) {
             if (filter.test(e)) {
                 result.add(e);
@@ -740,6 +798,10 @@ public final class Seq<T> implements Collection<T> {
     public ExList<T> takeWhileInclusive(Predicate<? super T> filter) {
         final ExList<T> result = new ExList<>(N.min(9, size()));
 
+        if (N.isNullOrEmpty(coll)) {
+            return result;
+        }
+
         for (T e : coll) {
             result.add(e);
 
@@ -762,7 +824,12 @@ public final class Seq<T> implements Collection<T> {
 
     public ExList<T> dropWhile(Predicate<? super T> filter) {
         final ExList<T> result = new ExList<>(N.min(9, size()));
-        final Iterator<T> iter = coll.iterator();
+
+        if (N.isNullOrEmpty(coll)) {
+            return result;
+        }
+
+        final Iterator<T> iter = iterator();
         T e = null;
 
         while (iter.hasNext()) {
@@ -845,7 +912,11 @@ public final class Seq<T> implements Collection<T> {
     }
 
     public <R> ExList<R> flatMap(final Function<? super T, ? extends Collection<R>> func) {
-        final ExList<R> result = new ExList<>(coll.size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : coll.size() * 2);
+        final ExList<R> result = new ExList<>(size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : size() * 2);
+
+        if (N.isNullOrEmpty(coll)) {
+            return result;
+        }
 
         for (T e : coll) {
             result.addAll(func.apply(e));
@@ -855,7 +926,11 @@ public final class Seq<T> implements Collection<T> {
     }
 
     public <R> ExList<R> flatMap2(final Function<? super T, ? extends R[]> func) {
-        final ExList<R> result = new ExList<>(coll.size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : coll.size() * 2);
+        final ExList<R> result = new ExList<>(size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : size() * 2);
+
+        if (N.isNullOrEmpty(coll)) {
+            return result;
+        }
 
         for (T e : coll) {
             result.addAll(func.apply(e));
@@ -865,7 +940,11 @@ public final class Seq<T> implements Collection<T> {
     }
 
     public BooleanList flatMapToBoolean(final Function<? super T, ? extends Collection<Boolean>> func) {
-        final BooleanList result = new BooleanList(coll.size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : coll.size() * 2);
+        final BooleanList result = new BooleanList(size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : size() * 2);
+
+        if (N.isNullOrEmpty(coll)) {
+            return result;
+        }
 
         for (T e : coll) {
             for (boolean b : func.apply(e)) {
@@ -877,7 +956,11 @@ public final class Seq<T> implements Collection<T> {
     }
 
     public BooleanList flatMapToBoolean2(final Function<? super T, boolean[]> func) {
-        final BooleanList result = new BooleanList(coll.size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : coll.size() * 2);
+        final BooleanList result = new BooleanList(size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : size() * 2);
+
+        if (N.isNullOrEmpty(coll)) {
+            return result;
+        }
 
         for (T e : coll) {
             result.addAll(func.apply(e));
@@ -887,7 +970,11 @@ public final class Seq<T> implements Collection<T> {
     }
 
     public CharList flatMapToChar(final Function<? super T, ? extends Collection<Character>> func) {
-        final CharList result = new CharList(coll.size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : coll.size() * 2);
+        final CharList result = new CharList(size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : size() * 2);
+
+        if (N.isNullOrEmpty(coll)) {
+            return result;
+        }
 
         for (T e : coll) {
             for (char b : func.apply(e)) {
@@ -899,7 +986,11 @@ public final class Seq<T> implements Collection<T> {
     }
 
     public CharList flatMapToChar2(final Function<? super T, char[]> func) {
-        final CharList result = new CharList(coll.size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : coll.size() * 2);
+        final CharList result = new CharList(size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : size() * 2);
+
+        if (N.isNullOrEmpty(coll)) {
+            return result;
+        }
 
         for (T e : coll) {
             result.addAll(func.apply(e));
@@ -909,7 +1000,11 @@ public final class Seq<T> implements Collection<T> {
     }
 
     public ByteList flatMapToByte(final Function<? super T, ? extends Collection<Byte>> func) {
-        final ByteList result = new ByteList(coll.size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : coll.size() * 2);
+        final ByteList result = new ByteList(size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : size() * 2);
+
+        if (N.isNullOrEmpty(coll)) {
+            return result;
+        }
 
         for (T e : coll) {
             for (byte b : func.apply(e)) {
@@ -921,7 +1016,11 @@ public final class Seq<T> implements Collection<T> {
     }
 
     public ByteList flatMapToByte2(final Function<? super T, byte[]> func) {
-        final ByteList result = new ByteList(coll.size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : coll.size() * 2);
+        final ByteList result = new ByteList(size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : size() * 2);
+
+        if (N.isNullOrEmpty(coll)) {
+            return result;
+        }
 
         for (T e : coll) {
             result.addAll(func.apply(e));
@@ -931,7 +1030,11 @@ public final class Seq<T> implements Collection<T> {
     }
 
     public ShortList flatMapToShort(final Function<? super T, ? extends Collection<Short>> func) {
-        final ShortList result = new ShortList(coll.size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : coll.size() * 2);
+        final ShortList result = new ShortList(size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : size() * 2);
+
+        if (N.isNullOrEmpty(coll)) {
+            return result;
+        }
 
         for (T e : coll) {
             for (short b : func.apply(e)) {
@@ -943,7 +1046,11 @@ public final class Seq<T> implements Collection<T> {
     }
 
     public ShortList flatMapToShort2(final Function<? super T, short[]> func) {
-        final ShortList result = new ShortList(coll.size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : coll.size() * 2);
+        final ShortList result = new ShortList(size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : size() * 2);
+
+        if (N.isNullOrEmpty(coll)) {
+            return result;
+        }
 
         for (T e : coll) {
             result.addAll(func.apply(e));
@@ -953,7 +1060,11 @@ public final class Seq<T> implements Collection<T> {
     }
 
     public IntList flatMapToInt(final Function<? super T, ? extends Collection<Integer>> func) {
-        final IntList result = new IntList(coll.size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : coll.size() * 2);
+        final IntList result = new IntList(size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : size() * 2);
+
+        if (N.isNullOrEmpty(coll)) {
+            return result;
+        }
 
         for (T e : coll) {
             for (int b : func.apply(e)) {
@@ -965,7 +1076,11 @@ public final class Seq<T> implements Collection<T> {
     }
 
     public IntList flatMapToInt2(final Function<? super T, int[]> func) {
-        final IntList result = new IntList(coll.size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : coll.size() * 2);
+        final IntList result = new IntList(size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : size() * 2);
+
+        if (N.isNullOrEmpty(coll)) {
+            return result;
+        }
 
         for (T e : coll) {
             result.addAll(func.apply(e));
@@ -975,7 +1090,11 @@ public final class Seq<T> implements Collection<T> {
     }
 
     public LongList flatMapToLong(final Function<? super T, ? extends Collection<Long>> func) {
-        final LongList result = new LongList(coll.size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : coll.size() * 2);
+        final LongList result = new LongList(size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : size() * 2);
+
+        if (N.isNullOrEmpty(coll)) {
+            return result;
+        }
 
         for (T e : coll) {
             for (long b : func.apply(e)) {
@@ -987,7 +1106,11 @@ public final class Seq<T> implements Collection<T> {
     }
 
     public LongList flatMapToLong2(final Function<? super T, long[]> func) {
-        final LongList result = new LongList(coll.size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : coll.size() * 2);
+        final LongList result = new LongList(size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : size() * 2);
+
+        if (N.isNullOrEmpty(coll)) {
+            return result;
+        }
 
         for (T e : coll) {
             result.addAll(func.apply(e));
@@ -997,7 +1120,11 @@ public final class Seq<T> implements Collection<T> {
     }
 
     public FloatList flatMapToFloat(final Function<? super T, ? extends Collection<Float>> func) {
-        final FloatList result = new FloatList(coll.size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : coll.size() * 2);
+        final FloatList result = new FloatList(size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : size() * 2);
+
+        if (N.isNullOrEmpty(coll)) {
+            return result;
+        }
 
         for (T e : coll) {
             for (float b : func.apply(e)) {
@@ -1009,7 +1136,11 @@ public final class Seq<T> implements Collection<T> {
     }
 
     public FloatList flatMapToFloat2(final Function<? super T, float[]> func) {
-        final FloatList result = new FloatList(coll.size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : coll.size() * 2);
+        final FloatList result = new FloatList(size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : size() * 2);
+
+        if (N.isNullOrEmpty(coll)) {
+            return result;
+        }
 
         for (T e : coll) {
             result.addAll(func.apply(e));
@@ -1019,7 +1150,11 @@ public final class Seq<T> implements Collection<T> {
     }
 
     public DoubleList flatMapToDouble(final Function<? super T, ? extends Collection<Double>> func) {
-        final DoubleList result = new DoubleList(coll.size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : coll.size() * 2);
+        final DoubleList result = new DoubleList(size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : size() * 2);
+
+        if (N.isNullOrEmpty(coll)) {
+            return result;
+        }
 
         for (T e : coll) {
             for (double b : func.apply(e)) {
@@ -1031,7 +1166,11 @@ public final class Seq<T> implements Collection<T> {
     }
 
     public DoubleList flatMapToDouble2(final Function<? super T, double[]> func) {
-        final DoubleList result = new DoubleList(coll.size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : coll.size() * 2);
+        final DoubleList result = new DoubleList(size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : size() * 2);
+
+        if (N.isNullOrEmpty(coll)) {
+            return result;
+        }
 
         for (T e : coll) {
             result.addAll(func.apply(e));
@@ -1053,7 +1192,12 @@ public final class Seq<T> implements Collection<T> {
      */
     public ExList<T> collapse(final BiPredicate<? super T, ? super T> collapsible, final BiFunction<? super T, ? super T, T> mergeFunction) {
         final ExList<T> result = new ExList<>();
-        final Iterator<T> iter = coll.iterator();
+
+        if (N.isNullOrEmpty(coll)) {
+            return result;
+        }
+
+        final Iterator<T> iter = iterator();
         T next = null;
         boolean hasNext = false;
 
@@ -1088,7 +1232,12 @@ public final class Seq<T> implements Collection<T> {
      */
     public <R> ExList<R> collapse(final R seed, final BiPredicate<? super T, ? super T> collapsible, final BiFunction<? super R, ? super T, R> mergeFunction) {
         final ExList<R> result = new ExList<>();
-        final Iterator<T> iter = coll.iterator();
+
+        if (N.isNullOrEmpty(coll)) {
+            return result;
+        }
+
+        final Iterator<T> iter = iterator();
         T next = null;
         boolean hasNext = false;
 
@@ -1124,7 +1273,12 @@ public final class Seq<T> implements Collection<T> {
     public <C extends Collection<?>> ExList<C> collapse(final Supplier<C> supplier, final BiPredicate<? super T, ? super T> collapsible,
             final BiConsumer<? super C, ? super T> mergeFunction) {
         final ExList<C> result = new ExList<>();
-        final Iterator<T> iter = coll.iterator();
+
+        if (N.isNullOrEmpty(coll)) {
+            return result;
+        }
+
+        final Iterator<T> iter = iterator();
         T next = null;
         boolean hasNext = false;
 
@@ -1169,7 +1323,12 @@ public final class Seq<T> implements Collection<T> {
      */
     public ExList<T> scan(final BiFunction<? super T, ? super T, T> accumulator) {
         final ExList<T> result = new ExList<>();
-        final Iterator<T> iter = coll.iterator();
+
+        if (N.isNullOrEmpty(coll)) {
+            return result;
+        }
+
+        final Iterator<T> iter = iterator();
         T next = null;
 
         if (iter.hasNext()) {
@@ -1210,7 +1369,12 @@ public final class Seq<T> implements Collection<T> {
      */
     public <R> ExList<R> scan(final R seed, final BiFunction<? super R, ? super T, R> accumulator) {
         final ExList<R> result = new ExList<>();
-        final Iterator<T> iter = coll.iterator();
+
+        if (N.isNullOrEmpty(coll)) {
+            return result;
+        }
+
+        final Iterator<T> iter = iterator();
         R next = seed;
 
         while (iter.hasNext()) {
@@ -1347,6 +1511,11 @@ public final class Seq<T> implements Collection<T> {
 
     public ExList<Indexed<T>> indexed() {
         final ExList<Indexed<T>> result = new ExList<>(size());
+
+        if (N.isNullOrEmpty(coll)) {
+            return result;
+        }
+
         int idx = 0;
 
         for (T e : coll) {
@@ -1406,52 +1575,48 @@ public final class Seq<T> implements Collection<T> {
 
     @Override
     public boolean isEmpty() {
-        return coll.isEmpty();
+        return coll == null || coll.isEmpty();
     }
 
     @Override
     public int size() {
-        return coll.size();
+        return coll == null ? 0 : coll.size();
     }
 
     @Override
     public Object[] toArray() {
-        return coll.toArray();
+        return coll == null ? N.EMPTY_OBJECT_ARRAY : coll.toArray();
     }
 
     @Override
     public <A> A[] toArray(A[] a) {
-        return coll.toArray(a);
+        return coll == null ? a : coll.toArray(a);
     }
 
     public List<T> toList() {
-        final List<T> result = new ArrayList<>(size());
-
-        result.addAll(coll);
-
-        return result;
+        return coll == null ? new ArrayList<T>() : new ArrayList<T>(coll);
     }
 
     public <R extends List<T>> R toList(final IntFunction<R> supplier) {
         final R result = supplier.apply(size());
 
-        result.addAll(coll);
+        if (N.notNullOrEmpty(coll)) {
+            result.addAll(coll);
+        }
 
         return result;
     }
 
     public Set<T> toSet() {
-        final Set<T> result = new HashSet<>(N.initHashCapacity(size()));
-
-        result.addAll(coll);
-
-        return result;
+        return coll == null ? new HashSet<T>() : new HashSet<T>(coll);
     }
 
     public <R extends Set<T>> R toSet(final IntFunction<R> supplier) {
         final R result = supplier.apply(size());
 
-        result.addAll(coll);
+        if (N.notNullOrEmpty(coll)) {
+            result.addAll(coll);
+        }
 
         return result;
     }
@@ -1459,7 +1624,9 @@ public final class Seq<T> implements Collection<T> {
     public Multiset<T> toMultiset() {
         final Multiset<T> result = new Multiset<>(N.initHashCapacity(size()));
 
-        result.addAll(coll);
+        if (N.notNullOrEmpty(coll)) {
+            result.addAll(coll);
+        }
 
         return result;
     }
@@ -1467,7 +1634,9 @@ public final class Seq<T> implements Collection<T> {
     public Multiset<T> toMultiset(final IntFunction<Multiset<T>> supplier) {
         final Multiset<T> result = supplier.apply(N.initHashCapacity(size()));
 
-        result.addAll(coll);
+        if (N.notNullOrEmpty(coll)) {
+            result.addAll(coll);
+        }
 
         return result;
     }
@@ -1477,22 +1646,21 @@ public final class Seq<T> implements Collection<T> {
     }
 
     public <K, U> Map<K, U> toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
+        final Supplier<Map<K, U>> mapFactory = Fn.Supplier.ofMap();
 
         return toMap(keyExtractor, valueMapper, mapFactory);
     }
 
     public <K, U, M extends Map<K, U>> M toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
             Supplier<M> mapFactory) {
-        final BinaryOperator<U> mergeFunction = BinaryOperator.THROWING_MERGER;
+        final BinaryOperator<U> mergeFunction = Fn.throwingMerger();
 
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
-    public <K, U> Map<K, U> toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
+    public <K, U> Map<K, U> toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
+            BinaryOperator<U> mergeFunction) {
+        final Supplier<Map<K, U>> mapFactory = Fn.Supplier.ofMap();
 
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
@@ -1513,9 +1681,8 @@ public final class Seq<T> implements Collection<T> {
 
     @SuppressWarnings("hiding")
     public <K, A, D> Map<K, D> toMap(Function<? super T, ? extends K> classifier, Collector<? super T, A, D> downstream) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, D>> mapFactory = (Supplier) Supplier.MAP;
-    
+        final Supplier<Map<K, D>> mapFactory = Fn.Supplier.ofMap();
+
         return toMap(classifier, downstream, mapFactory);
     }
 
@@ -1530,42 +1697,41 @@ public final class Seq<T> implements Collection<T> {
         K key = null;
         A v = null;
         T element = null;
-    
+
         while (iter.hasNext()) {
             element = iter.next();
             key = N.requireNonNull(classifier.apply(element), "element cannot be mapped to a null key");
-    
+
             if ((v = intermediate.get(key)) == null) {
                 if ((v = downstreamSupplier.get()) != null) {
                     intermediate.put(key, v);
                 }
             }
-    
+
             downstreamAccumulator.accept(v, element);
         }
-    
+
         final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
             @Override
             public A apply(K k, A v) {
                 return (A) downstream.finisher().apply(v);
             }
         };
-    
+
         replaceAll(intermediate, function);
-    
+
         return result;
     }
 
     public <K> Map<K, List<T>> toMap2(Function<? super T, ? extends K> classifier) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, List<T>>> mapFactory = (Supplier) Supplier.MAP;
-    
+        final Supplier<Map<K, List<T>>> mapFactory = Fn.Supplier.ofMap();
+
         return toMap2(classifier, mapFactory);
     }
 
     public <K, M extends Map<K, List<T>>> M toMap2(Function<? super T, ? extends K> classifier, Supplier<M> mapFactory) {
         final Collector<? super T, ?, List<T>> downstream = Collectors.toList();
-    
+
         return toMap(classifier, downstream, mapFactory);
     }
 
@@ -1585,23 +1751,31 @@ public final class Seq<T> implements Collection<T> {
      * @return
      */
     public <K> Multimap<K, T, List<T>> toMultimap(Function<? super T, ? extends K> keyExtractor) {
-        final Multimap<K, T, List<T>> m = N.newListMultimap();
+        final Multimap<K, T, List<T>> result = N.newListMultimap();
 
-        for (T e : coll) {
-            m.put(keyExtractor.apply(e), e);
+        if (N.isNullOrEmpty(coll)) {
+            return result;
         }
 
-        return m;
+        for (T e : coll) {
+            result.put(keyExtractor.apply(e), e);
+        }
+
+        return result;
     }
 
     public <K, V extends Collection<T>> Multimap<K, T, V> toMultimap(Function<? super T, ? extends K> keyExtractor, Supplier<Multimap<K, T, V>> mapFactory) {
-        final Multimap<K, T, V> m = mapFactory.get();
+        final Multimap<K, T, V> result = mapFactory.get();
 
-        for (T e : coll) {
-            m.put(keyExtractor.apply(e), e);
+        if (N.isNullOrEmpty(coll)) {
+            return result;
         }
 
-        return m;
+        for (T e : coll) {
+            result.put(keyExtractor.apply(e), e);
+        }
+
+        return result;
     }
 
     /**
@@ -1611,24 +1785,32 @@ public final class Seq<T> implements Collection<T> {
      * @return
      */
     public <K, V> Multimap<K, V, List<V>> toMultimap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends V> valueMapper) {
-        final Multimap<K, V, List<V>> m = N.newListMultimap();
+        final Multimap<K, V, List<V>> result = N.newListMultimap();
 
-        for (T e : coll) {
-            m.put(keyExtractor.apply(e), valueMapper.apply(e));
+        if (N.isNullOrEmpty(coll)) {
+            return result;
         }
 
-        return m;
+        for (T e : coll) {
+            result.put(keyExtractor.apply(e), valueMapper.apply(e));
+        }
+
+        return result;
     }
 
     public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(Function<? super T, ? extends K> keyExtractor,
             Function<? super T, ? extends U> valueMapper, Supplier<Multimap<K, U, V>> mapFactory) {
-        final Multimap<K, U, V> m = mapFactory.get();
+        final Multimap<K, U, V> result = mapFactory.get();
 
-        for (T e : coll) {
-            m.put(keyExtractor.apply(e), valueMapper.apply(e));
+        if (N.isNullOrEmpty(coll)) {
+            return result;
         }
 
-        return m;
+        for (T e : coll) {
+            result.put(keyExtractor.apply(e), valueMapper.apply(e));
+        }
+
+        return result;
     }
 
     /**
@@ -1643,6 +1825,11 @@ public final class Seq<T> implements Collection<T> {
      */
     public <U> ExList<Pair<T, U>> innerJoin(final Collection<U> b, final Function<? super T, ?> leftKeyMapper, final Function<? super U, ?> rightKeyMapper) {
         final ExList<Pair<T, U>> result = new ExList<>(N.min(9, size(), b.size()));
+
+        if (N.isNullOrEmpty(coll) || N.isNullOrEmpty(b)) {
+            return result;
+        }
+
         final Multimap<Object, U, List<U>> rightKeyMap = Multimap.from(b, rightKeyMapper);
 
         for (T left : coll) {
@@ -1670,6 +1857,10 @@ public final class Seq<T> implements Collection<T> {
     public <U> ExList<Pair<T, U>> innerJoin(final Collection<U> b, final BiPredicate<? super T, ? super U> predicate) {
         final ExList<Pair<T, U>> result = new ExList<>(N.min(9, size(), b.size()));
 
+        if (N.isNullOrEmpty(coll) || N.isNullOrEmpty(b)) {
+            return result;
+        }
+
         for (T left : coll) {
             for (U right : b) {
                 if (predicate.test(left, right)) {
@@ -1693,25 +1884,36 @@ public final class Seq<T> implements Collection<T> {
      */
     public <U> ExList<Pair<T, U>> fullJoin(final Collection<U> b, final Function<? super T, ?> leftKeyMapper, final Function<? super U, ?> rightKeyMapper) {
         final ExList<Pair<T, U>> result = new ExList<>(N.max(9, size(), b.size()));
-        final Multimap<Object, U, List<U>> rightKeyMap = Multimap.from(b, rightKeyMapper);
-        final Map<U, U> joinedRights = new IdentityHashMap<>();
 
-        for (T left : coll) {
-            final List<U> rights = rightKeyMap.get(leftKeyMapper.apply(left));
-
-            if (N.notNullOrEmpty(rights)) {
-                for (U right : rights) {
-                    result.add(Pair.of(left, right));
-                    joinedRights.put(right, right);
-                }
-            } else {
+        if (N.isNullOrEmpty(coll)) {
+            for (T left : coll) {
                 result.add(Pair.of(left, (U) null));
             }
-        }
-
-        for (U right : b) {
-            if (joinedRights.containsKey(right) == false) {
+        } else if (N.isNullOrEmpty(b)) {
+            for (U right : b) {
                 result.add(Pair.of((T) null, right));
+            }
+        } else {
+            final Multimap<Object, U, List<U>> rightKeyMap = Multimap.from(b, rightKeyMapper);
+            final Map<U, U> joinedRights = new IdentityHashMap<>();
+
+            for (T left : coll) {
+                final List<U> rights = rightKeyMap.get(leftKeyMapper.apply(left));
+
+                if (N.notNullOrEmpty(rights)) {
+                    for (U right : rights) {
+                        result.add(Pair.of(left, right));
+                        joinedRights.put(right, right);
+                    }
+                } else {
+                    result.add(Pair.of(left, (U) null));
+                }
+            }
+
+            for (U right : b) {
+                if (joinedRights.containsKey(right) == false) {
+                    result.add(Pair.of((T) null, right));
+                }
             }
         }
 
@@ -1728,27 +1930,38 @@ public final class Seq<T> implements Collection<T> {
      */
     public <U> ExList<Pair<T, U>> fullJoin(final Collection<U> b, final BiPredicate<? super T, ? super U> predicate) {
         final ExList<Pair<T, U>> result = new ExList<>(N.max(9, size(), b.size()));
-        final Map<U, U> joinedRights = new IdentityHashMap<>();
 
-        for (T left : coll) {
-            boolean joined = false;
-
+        if (N.isNullOrEmpty(coll)) {
+            for (T left : coll) {
+                result.add(Pair.of(left, (U) null));
+            }
+        } else if (N.isNullOrEmpty(b)) {
             for (U right : b) {
-                if (predicate.test(left, right)) {
-                    result.add(Pair.of(left, right));
-                    joinedRights.put(right, right);
-                    joined = true;
+                result.add(Pair.of((T) null, right));
+            }
+        } else {
+            final Map<U, U> joinedRights = new IdentityHashMap<>();
+
+            for (T left : coll) {
+                boolean joined = false;
+
+                for (U right : b) {
+                    if (predicate.test(left, right)) {
+                        result.add(Pair.of(left, right));
+                        joinedRights.put(right, right);
+                        joined = true;
+                    }
+                }
+
+                if (joined == false) {
+                    result.add(Pair.of(left, (U) null));
                 }
             }
 
-            if (joined == false) {
-                result.add(Pair.of(left, (U) null));
-            }
-        }
-
-        for (U right : b) {
-            if (joinedRights.containsKey(right) == false) {
-                result.add(Pair.of((T) null, right));
+            for (U right : b) {
+                if (joinedRights.containsKey(right) == false) {
+                    result.add(Pair.of((T) null, right));
+                }
             }
         }
 
@@ -1767,17 +1980,26 @@ public final class Seq<T> implements Collection<T> {
      */
     public <U> ExList<Pair<T, U>> leftJoin(final Collection<U> b, final Function<? super T, ?> leftKeyMapper, final Function<? super U, ?> rightKeyMapper) {
         final ExList<Pair<T, U>> result = new ExList<>(size());
-        final Multimap<Object, U, List<U>> rightKeyMap = Multimap.from(b, rightKeyMapper);
 
-        for (T left : coll) {
-            final List<U> rights = rightKeyMap.get(leftKeyMapper.apply(left));
-
-            if (N.notNullOrEmpty(rights)) {
-                for (U right : rights) {
-                    result.add(Pair.of(left, right));
-                }
-            } else {
+        if (N.isNullOrEmpty(coll)) {
+            return result;
+        } else if (N.isNullOrEmpty(b)) {
+            for (T left : coll) {
                 result.add(Pair.of(left, (U) null));
+            }
+        } else {
+            final Multimap<Object, U, List<U>> rightKeyMap = Multimap.from(b, rightKeyMapper);
+
+            for (T left : coll) {
+                final List<U> rights = rightKeyMap.get(leftKeyMapper.apply(left));
+
+                if (N.notNullOrEmpty(rights)) {
+                    for (U right : rights) {
+                        result.add(Pair.of(left, right));
+                    }
+                } else {
+                    result.add(Pair.of(left, (U) null));
+                }
             }
         }
 
@@ -1795,18 +2017,26 @@ public final class Seq<T> implements Collection<T> {
     public <U> ExList<Pair<T, U>> leftJoin(final Collection<U> b, final BiPredicate<? super T, ? super U> predicate) {
         final ExList<Pair<T, U>> result = new ExList<>(size());
 
-        for (T left : coll) {
-            boolean joined = false;
-
-            for (U right : b) {
-                if (predicate.test(left, right)) {
-                    result.add(Pair.of(left, right));
-                    joined = true;
-                }
-            }
-
-            if (joined == false) {
+        if (N.isNullOrEmpty(coll)) {
+            return result;
+        } else if (N.isNullOrEmpty(b)) {
+            for (T left : coll) {
                 result.add(Pair.of(left, (U) null));
+            }
+        } else {
+            for (T left : coll) {
+                boolean joined = false;
+
+                for (U right : b) {
+                    if (predicate.test(left, right)) {
+                        result.add(Pair.of(left, right));
+                        joined = true;
+                    }
+                }
+
+                if (joined == false) {
+                    result.add(Pair.of(left, (U) null));
+                }
             }
         }
 
@@ -1825,17 +2055,26 @@ public final class Seq<T> implements Collection<T> {
      */
     public <U> ExList<Pair<T, U>> rightJoin(final Collection<U> b, final Function<? super T, ?> leftKeyMapper, final Function<? super U, ?> rightKeyMapper) {
         final ExList<Pair<T, U>> result = new ExList<>(b.size());
-        final Multimap<Object, T, List<T>> leftKeyMap = Multimap.from(coll, leftKeyMapper);
 
-        for (U right : b) {
-            final List<T> lefts = leftKeyMap.get(rightKeyMapper.apply(right));
-
-            if (N.notNullOrEmpty(lefts)) {
-                for (T left : lefts) {
-                    result.add(Pair.of(left, right));
-                }
-            } else {
+        if (N.isNullOrEmpty(b)) {
+            return result;
+        } else if (N.isNullOrEmpty(coll)) {
+            for (U right : b) {
                 result.add(Pair.of((T) null, right));
+            }
+        } else {
+            final Multimap<Object, T, List<T>> leftKeyMap = Multimap.from(coll, leftKeyMapper);
+
+            for (U right : b) {
+                final List<T> lefts = leftKeyMap.get(rightKeyMapper.apply(right));
+
+                if (N.notNullOrEmpty(lefts)) {
+                    for (T left : lefts) {
+                        result.add(Pair.of(left, right));
+                    }
+                } else {
+                    result.add(Pair.of((T) null, right));
+                }
             }
         }
 
@@ -1853,18 +2092,26 @@ public final class Seq<T> implements Collection<T> {
     public <U> ExList<Pair<T, U>> rightJoin(final Collection<U> b, final BiPredicate<? super T, ? super U> predicate) {
         final ExList<Pair<T, U>> result = new ExList<>(b.size());
 
-        for (U right : b) {
-            boolean joined = false;
-
-            for (T left : coll) {
-                if (predicate.test(left, right)) {
-                    result.add(Pair.of(left, right));
-                    joined = true;
-                }
-            }
-
-            if (joined == false) {
+        if (N.isNullOrEmpty(b)) {
+            return result;
+        } else if (N.isNullOrEmpty(coll)) {
+            for (U right : b) {
                 result.add(Pair.of((T) null, right));
+            }
+        } else {
+            for (U right : b) {
+                boolean joined = false;
+
+                for (T left : coll) {
+                    if (predicate.test(left, right)) {
+                        result.add(Pair.of(left, right));
+                        joined = true;
+                    }
+                }
+
+                if (joined == false) {
+                    result.add(Pair.of((T) null, right));
+                }
             }
         }
 
@@ -1881,6 +2128,10 @@ public final class Seq<T> implements Collection<T> {
     public Seq<T> slice(final int fromIndex, final int toIndex) {
         N.checkFromToIndex(fromIndex, toIndex, size());
 
+        if (N.isNullOrEmpty(coll)) {
+            return this;
+        }
+
         if (coll instanceof List) {
             return new Seq<T>(((List<T>) coll).subList(fromIndex, toIndex));
         }
@@ -1890,11 +2141,11 @@ public final class Seq<T> implements Collection<T> {
 
     @Override
     public Iterator<T> iterator() {
-        return coll.iterator();
+        return coll == null ? ImmutableIterator.EMPTY : coll.iterator();
     }
 
     public Stream<T> stream0() {
-        return Stream.of(coll);
+        return N.isNullOrEmpty(coll) ? Stream.<T> empty() : Stream.of(coll);
     }
 
     //    public ExListBuilder<T> __() {
@@ -1907,7 +2158,7 @@ public final class Seq<T> implements Collection<T> {
 
     @Override
     public int hashCode() {
-        return coll.hashCode();
+        return coll == null ? 0 : coll.hashCode();
     }
 
     @Override
@@ -1919,7 +2170,7 @@ public final class Seq<T> implements Collection<T> {
         if (obj instanceof Seq) {
             final Seq<T> other = (Seq<T>) obj;
 
-            return this.coll.equals(other.coll);
+            return N.equals(this.coll, other.coll);
         }
 
         return false;
@@ -1927,7 +2178,7 @@ public final class Seq<T> implements Collection<T> {
 
     @Override
     public String toString() {
-        return coll.toString();
+        return coll == null ? N.NULL_STRING : coll.toString();
     }
 
     public void println() {
@@ -2051,7 +2302,7 @@ public final class Seq<T> implements Collection<T> {
 
         @Override
         public Iterator<E> iterator() {
-            final Iterator<E> iter = c.iterator();
+            final Iterator<E> iter = c == null ? ImmutableIterator.EMPTY : c.iterator();
 
             if (fromIndex > 0) {
                 int offset = 0;

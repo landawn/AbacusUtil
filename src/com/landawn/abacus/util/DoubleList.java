@@ -1396,27 +1396,25 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
     }
 
     public <K, U> Map<K, U> toMap(DoubleFunction<? extends K> keyExtractor, DoubleFunction<? extends U> valueMapper) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
+        final Supplier<Map<K, U>> mapFactory = Fn.Supplier.ofMap();
 
         return toMap(keyExtractor, valueMapper, mapFactory);
     }
 
     public <K, U, M extends Map<K, U>> M toMap(DoubleFunction<? extends K> keyExtractor, DoubleFunction<? extends U> valueMapper, Supplier<M> mapFactory) {
-        final BinaryOperator<U> mergeFunction = BinaryOperator.THROWING_MERGER;
+        final BinaryOperator<U> mergeFunction = Fn.throwingMerger();
 
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
     public <K, U> Map<K, U> toMap(DoubleFunction<? extends K> keyExtractor, DoubleFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
+        final Supplier<Map<K, U>> mapFactory = Fn.Supplier.ofMap();
 
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
-    public <K, U, M extends Map<K, U>> M toMap(DoubleFunction<? extends K> keyExtractor, DoubleFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
-            Supplier<M> mapFactory) {
+    public <K, U, M extends Map<K, U>> M toMap(DoubleFunction<? extends K> keyExtractor, DoubleFunction<? extends U> valueMapper,
+            BinaryOperator<U> mergeFunction, Supplier<M> mapFactory) {
         final M result = mapFactory.get();
 
         for (int i = 0; i < size; i++) {
@@ -1428,8 +1426,7 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
 
     @SuppressWarnings("hiding")
     public <K, A, D> Map<K, D> toMap(DoubleFunction<? extends K> classifier, Collector<Double, A, D> downstream) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, D>> mapFactory = (Supplier) Supplier.MAP;
+        final Supplier<Map<K, D>> mapFactory = Fn.Supplier.ofMap();
 
         return toMap(classifier, downstream, mapFactory);
     }

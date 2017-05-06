@@ -14,6 +14,8 @@
 
 package com.landawn.abacus.util.function;
 
+import com.landawn.abacus.util.Fn;
+
 /**
  * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
  * @since 0.8
@@ -22,10 +24,7 @@ package com.landawn.abacus.util.function;
  */
 public interface Function<T, R> extends java.util.function.Function<T, R> {
 
-    @SuppressWarnings("rawtypes")
-    static final Function IDENTITY = t -> t;
-
     static <T> Function<T, T> identity() {
-        return IDENTITY;
+        return Fn.identity();
     }
 }

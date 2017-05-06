@@ -1,4 +1,17 @@
 
+========Changes in 0.9.64=========================================================================
+
+1, Add IntPair/LongPair/DoublePair/IntTriple/LongTriple/DoubleTriple/Tuple8/Tuple9.
+
+2, Refactoring Predicate/Function/BiPredicate/BiFunction/BiConsumer and move the factory method to Fn.
+
+3, Add upOf/downOf/leftOf/rightOf/adjacent4/adjacent8 to Matrix.
+
+4, Add collect(java.util.stream.Collector collector) to Stream for Java 8 build
+
+5, Improvements and bug fix.
+
+
 ========Changes in 0.9.63=========================================================================
 
 1, Support SQLExecutor.ExMapper in Transaction by adding Connection parameter.

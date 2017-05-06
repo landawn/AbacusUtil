@@ -153,105 +153,35 @@ public final class Multimap<K, E, V extends Collection<E>> {
         return N.asListMultimap(a);
     }
 
-    //    static <K, E, V extends Collection<E>> Multimap<K, E, V> of(final Class<V> collectionType, final Object... a) {
-    //        final Multimap<K, E, V> multimap = new Multimap<>(collectionType);
-    //
-    //        N.newMultimap(multimap, a);
-    //
-    //        return multimap;
-    //    }
-    //
-    //    @SuppressWarnings("rawtypes")
-    //    static <K, E, V extends Collection<E>> Multimap<K, E, V> of(final Class<? extends Map> valueMapType, final Class<? extends Collection> collectionType,
-    //            final Object... a) {
-    //        final Multimap<K, E, V> multimap = new Multimap<>(valueMapType, collectionType);
-    //
-    //        N.newMultimap(multimap, a);
-    //
-    //        return multimap;
-    //    }
-
     public static <K, E> Multimap<K, E, List<E>> from(final Map<? extends K, ? extends E> map) {
-        final Multimap<K, E, List<E>> multimap = new Multimap<>(N.initHashCapacity(map.size()));
+        final Multimap<K, E, List<E>> multimap = new Multimap<>(N.initHashCapacity(map == null ? 0 : map.size()));
 
-        multimap.putAll(map);
-
-        return multimap;
-    }
-
-    //    static <K, E, V extends Collection<E>> Multimap<K, E, V> of(final Class<V> collectionType, final Map<K, E> map) {
-    //        final Multimap<K, E, V> multimap = new Multimap<>(collectionType);
-    //
-    //        multimap.putAll(map);
-    //
-    //        return multimap;
-    //    }
-    //
-    //    @SuppressWarnings("rawtypes")
-    //    static <K, E, V extends Collection<E>> Multimap<K, E, V> of(final Class<? extends Map> valueMapType, final Class<V> collectionType,
-    //            final Map<K, E> map) {
-    //        final Multimap<K, E, V> multimap = new Multimap<>(valueMapType, collectionType);
-    //
-    //        multimap.putAll(map);
-    //
-    //        return multimap;
-    //    }
-
-    public static <K, E> Multimap<K, E, List<E>> from2(final Map<? extends K, ? extends Collection<? extends E>> map) {
-        final Multimap<K, E, List<E>> multimap = new Multimap<>(N.initHashCapacity(map.size()));
-
-        for (Map.Entry<? extends K, ? extends Collection<? extends E>> entry : map.entrySet()) {
-            multimap.putAll(entry.getKey(), entry.getValue());
+        if (N.notNullOrEmpty(map)) {
+            multimap.putAll(map);
         }
 
         return multimap;
     }
 
-    //    public static <K, E, V extends Collection<E>> Multimap<K, E, V> from(final Class<V> collectionType, final Map<? extends K, ? extends Collection<E>> map) {
-    //        final Multimap<K, E, V> multimap = new Multimap<>(collectionType);
-    //
-    //        for (Map.Entry<? extends K, ? extends Collection<E>> entry : map.entrySet()) {
-    //            multimap.putAll(entry.getKey(), entry.getValue());
-    //        }
-    //
-    //        return multimap;
-    //    }
-    //
-    //    @SuppressWarnings("rawtypes")
-    //    public static <K, E, V extends Collection<E>> Multimap<K, E, V> from(final Class<? extends Map> valueMapType, final Class<V> collectionType,
-    //            final Map<? extends K, ? extends Collection<E>> map) {
-    //        final Multimap<K, E, V> multimap = new Multimap<>(valueMapType, collectionType);
-    //
-    //        for (Map.Entry<? extends K, ? extends Collection<E>> entry : map.entrySet()) {
-    //            multimap.putAll(entry.getKey(), entry.getValue());
-    //        }
-    //
-    //        return multimap;
-    //    }
+    public static <K, E> Multimap<K, E, List<E>> from2(final Map<? extends K, ? extends Collection<? extends E>> map) {
+        final Multimap<K, E, List<E>> multimap = new Multimap<>(N.initHashCapacity(map == null ? 0 : map.size()));
 
-    //    static <K, E, V extends Collection<E>> Multimap<K, E, V> of(final Class<V> collectionType, final Object... a) {
-    //        final Multimap<K, E, V> multimap = new Multimap<>(collectionType);
-    //
-    //        N.newMultimap(multimap, a);
-    //
-    //        return multimap;
-    //    }
-    //
-    //    @SuppressWarnings("rawtypes")
-    //    static <K, E, V extends Collection<E>> Multimap<K, E, V> of(final Class<? extends Map> valueMapType, final Class<? extends Collection> collectionType,
-    //            final Object... a) {
-    //        final Multimap<K, E, V> multimap = new Multimap<>(valueMapType, collectionType);
-    //
-    //        N.newMultimap(multimap, a);
-    //
-    //        return multimap;
-    //    }
+        if (N.notNullOrEmpty(map)) {
+            for (Map.Entry<? extends K, ? extends Collection<? extends E>> entry : map.entrySet()) {
+                multimap.putAll(entry.getKey(), entry.getValue());
+            }
+        }
+
+        return multimap;
+    }
 
     public static <K, E> Multimap<K, E, List<E>> from(final Collection<? extends E> c, final Function<? super E, ? extends K> keyExtractor) {
-        final Multimap<K, E, List<E>> multimap = N.newListMultimap(N.initHashCapacity(N.min(9, c.size())));
+        final Multimap<K, E, List<E>> multimap = N.newListMultimap(N.initHashCapacity(N.min(9, c == null ? 0 : c.size())));
 
-        for (E e : c) {
-            multimap.put(keyExtractor.apply(e), e);
+        if (N.notNullOrEmpty(c)) {
+            for (E e : c) {
+                multimap.put(keyExtractor.apply(e), e);
+            }
         }
 
         return multimap;

@@ -53,6 +53,7 @@ import com.landawn.abacus.util.DoubleSummaryStatistics;
 import com.landawn.abacus.util.ExList;
 import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.FloatSummaryStatistics;
+import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.Indexed;
 import com.landawn.abacus.util.IntIterator;
@@ -910,7 +911,7 @@ abstract class AbstractStream<T> extends Stream<T> {
             Function<? super T, ? extends U> valueMapper, Supplier<M> mapFactory) {
         final Map<K, List<U>> map = collect(
                 Collectors.groupingBy(keyExtractor, (Collector<T, ?, List<U>>) (Collector) Collectors.mapping(valueMapper, Collectors.toList()), mapFactory));
-    
+
         return newStream(map.entrySet().iterator(), false, null);
     }
 
@@ -962,8 +963,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public <K, U> Map<K, U> toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
+        final Supplier<Map<K, U>> mapFactory = Fn.Supplier.ofMap();
 
         return toMap(keyExtractor, valueMapper, mapFactory);
     }
@@ -971,39 +971,37 @@ abstract class AbstractStream<T> extends Stream<T> {
     @Override
     public <K, U, M extends Map<K, U>> M toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
             Supplier<M> mapFactory) {
-        final BinaryOperator<U> mergeFunction = Collectors.throwingMerger();
+        final BinaryOperator<U> mergeFunction = Fn.throwingMerger();
 
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
     @Override
-    public <K, U> Map<K, U> toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, U>> mapFactory = (Supplier) Supplier.MAP;
+    public <K, U> Map<K, U> toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
+            BinaryOperator<U> mergeFunction) {
+        final Supplier<Map<K, U>> mapFactory = Fn.Supplier.ofMap();
 
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
     @Override
     public <K, A, D> Map<K, D> toMap(Function<? super T, ? extends K> classifier, Collector<? super T, A, D> downstream) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, D>> mapFactory = (Supplier) Supplier.MAP;
-    
+        final Supplier<Map<K, D>> mapFactory = Fn.Supplier.ofMap();
+
         return toMap(classifier, downstream, mapFactory);
     }
 
     @Override
     public <K> Map<K, List<T>> toMap2(Function<? super T, ? extends K> classifier) {
-        @SuppressWarnings("rawtypes")
-        final Supplier<Map<K, List<T>>> mapFactory = (Supplier) Supplier.MAP;
-    
+        final Supplier<Map<K, List<T>>> mapFactory = Fn.Supplier.ofMap();
+
         return toMap2(classifier, mapFactory);
     }
 
     @Override
     public <K, M extends Map<K, List<T>>> M toMap2(Function<? super T, ? extends K> classifier, Supplier<M> mapFactory) {
         final Collector<? super T, ?, List<T>> downstream = Collectors.toList();
-    
+
         return toMap(classifier, downstream, mapFactory);
     }
 
@@ -1661,7 +1659,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<T> skipNull() {
-        return filter(Predicate.NOT_NULL);
+        return filter(Fn.notNull());
     }
 
     @Override
@@ -2160,6 +2158,18 @@ abstract class AbstractStream<T> extends Stream<T> {
         final BiConsumer<R, R> combiner = collectingCombiner;
 
         return collect(supplier, accumulator, combiner);
+    }
+
+    @Override
+    public <R, A> R collect(java.util.stream.Collector<? super T, A, R> collector) {
+        final Supplier<A> supplier = () -> collector.supplier().get();
+        final BiConsumer<A, T> accumulator = (t, u) -> collector.accumulator().accept(t, u);
+        final BinaryOperator<A> combiner = (t, u) -> collector.combiner().apply(t, u);
+        final Function<A, R> finisher = t -> collector.finisher().apply(t);
+
+        final Collector<? super T, A, R> collector2 = new Collectors.CollectorImpl<>(supplier, accumulator, combiner, finisher, collector.characteristics());
+
+        return collect(collector2);
     }
 
     @Override

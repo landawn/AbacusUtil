@@ -22,14 +22,6 @@ package com.landawn.abacus.util.function;
  */
 public interface Consumer<T> extends java.util.function.Consumer<T> {
 
-    @SuppressWarnings("rawtypes")
-    static final Consumer DO_NOTHING = t -> {
-    };
-
     @Override
     void accept(T t);
-
-    static <T> Consumer<T> ofDoNothing() {
-        return DO_NOTHING;
-    }
 }

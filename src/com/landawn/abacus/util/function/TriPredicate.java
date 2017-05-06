@@ -14,6 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
+import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.N;
 
 /**
@@ -22,22 +23,6 @@ import com.landawn.abacus.util.N;
  * @author Haiyang Li
  */
 public interface TriPredicate<A, B, C> {
-
-    @SuppressWarnings("rawtypes")
-    static final TriPredicate ALWAYS_TRUE = new TriPredicate() {
-        @Override
-        public boolean test(Object a, Object b, Object c) {
-            return true;
-        }
-    };
-
-    @SuppressWarnings("rawtypes")
-    static final TriPredicate ALWAYS_FALSE = new TriPredicate() {
-        @Override
-        public boolean test(Object a, Object b, Object c) {
-            return false;
-        }
-    };
 
     boolean test(A a, B b, C c);
 
@@ -58,10 +43,10 @@ public interface TriPredicate<A, B, C> {
     }
 
     static <A, B, C> TriPredicate<A, B, C> alwaysTrue() {
-        return ALWAYS_TRUE;
+        return Fn.TriPredicate.alwaysTrue();
     }
 
     static <A, B, C> TriPredicate<A, B, C> alwaysFalse() {
-        return ALWAYS_FALSE;
+        return Fn.TriPredicate.alwaysFalse();
     }
 }

@@ -101,78 +101,21 @@ public final class Multiset<E> implements Iterable<E> {
         return N.asMultiset(a);
     }
 
-    //    @SuppressWarnings("rawtypes")
-    //    static <T> Multiset<T> of(final Class<? extends Map> valueMapType, final T... a) {
-    //        final Multiset<T> multiset = new Multiset<T>(valueMapType);
-    //
-    //        for (T e : a) {
-    //            multiset.add(e);
-    //        }
-    //
-    //        return multiset;
-    //    }
-
     public static <T> Multiset<T> from(final Collection<? extends T> coll) {
         return new Multiset<>(coll);
     }
 
-    //    @SuppressWarnings("rawtypes")
-    //    static <T> Multiset<T> of(final Class<? extends Map> valueMapType, final Collection<T> coll) {
-    //        final Multiset<T> multiset = new Multiset<T>(valueMapType);
-    //
-    //        multiset.addAll(coll);
-    //
-    //        return multiset;
-    //    }
-
     public static <T> Multiset<T> from(final Map<? extends T, Integer> m) {
+        if (N.isNullOrEmpty(m)) {
+            return new Multiset<T>();
+        }
+
         final Multiset<T> multiset = new Multiset<>(N.initHashCapacity(m.size()));
 
         multiset.setAll(m);
 
         return multiset;
     }
-
-    //    public static <T> Multiset<T> from(final LongMultiset<? extends T> multiset) {
-    //        final Multiset<T> result = new Multiset<>(N.initHashCapacity(multiset.size()));
-    //
-    //        for (Map.Entry<? extends T, MutableLong> entry : multiset.entrySet()) {
-    //            if (entry.getValue().longValue() < 0 || entry.getValue().longValue() > Integer.MAX_VALUE) {
-    //                throw new IllegalArgumentException("The specified 'occurrences' can not be less than 0 or bigger than Integer.MAX_VALUE");
-    //            }
-    //
-    //            result.set(entry.getKey(), entry.getValue().value());
-    //        }
-    //
-    //        return result;
-    //    }
-    //
-    //    public static Multiset<Character> from(CharSequence str) {
-    //        final Multiset<Character> result = new Multiset<>(N.initHashCapacity(str.length()));
-    //
-    //        if (N.notNullOrEmpty(str)) {
-    //            if (str instanceof String) {
-    //                for (char ch : N.getCharsForReadOnly((String) str)) {
-    //                    result.add(ch);
-    //                }
-    //            } else {
-    //                for (int i = 0, len = str.length(); i < len; i++) {
-    //                    result.add(str.charAt(i));
-    //                }
-    //            }
-    //        }
-    //
-    //        return result;
-    //    }
-
-    //    @SuppressWarnings("rawtypes")
-    //    public static <T> Multiset<T> from(final Class<? extends Map> valueMapType, final Map<? extends T, Integer> m) {
-    //        final Multiset<T> multiset = new Multiset<T>(valueMapType);
-    //
-    //        multiset.setAll(m);
-    //
-    //        return multiset;
-    //    }
 
     /**
      *

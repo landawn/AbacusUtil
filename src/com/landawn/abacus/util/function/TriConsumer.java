@@ -14,8 +14,6 @@
 
 package com.landawn.abacus.util.function;
 
-import java.util.Map;
-
 import com.landawn.abacus.util.N;
 
 /**
@@ -26,12 +24,6 @@ import com.landawn.abacus.util.N;
  */
 public interface TriConsumer<A, B, C> {
 
-    static final TriConsumer<Map<Object, Object>, Object, Object> PUT = (m, k, v) -> m.put(k, v);
-
-    @SuppressWarnings("rawtypes")
-    static final TriConsumer DO_NOTHING = (a, b, c) -> {
-    };
-
     void accept(A a, B b, C c);
 
     default TriConsumer<A, B, C> andThen(TriConsumer<? super A, ? super B, ? super C> after) {
@@ -41,13 +33,5 @@ public interface TriConsumer<A, B, C> {
             accept(a, b, c);
             after.accept(a, b, c);
         };
-    }
-
-    static <K, V, M extends Map<? super K, ? super V>> TriConsumer<M, K, V> ofPut() {
-        return (TriConsumer<M, K, V>) PUT;
-    }
-
-    static <A, B, C> TriConsumer<A, B, C> ofDoNothing() {
-        return DO_NOTHING;
     }
 }

@@ -17,6 +17,8 @@ package com.landawn.abacus.util.function;
 import java.util.Collection;
 import java.util.Map;
 
+import com.landawn.abacus.util.Fn;
+
 /**
  * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
  * @since 0.8
@@ -25,39 +27,23 @@ import java.util.Map;
  */
 public interface BiConsumer<T, U> extends java.util.function.BiConsumer<T, U> {
 
-    @SuppressWarnings("rawtypes")
-    static final BiConsumer DO_NOTHING = (c, t) -> {
-    };
-    static final BiConsumer<Collection<Object>, Object> ADD = (c, t) -> c.add(t);
-    static final BiConsumer<Collection<Object>, Collection<Object>> ADD_ALL = (c, t) -> c.addAll(t);
-    static final BiConsumer<Collection<Object>, Object> REMOVE = (c, t) -> c.remove(t);
-    static final BiConsumer<Collection<?>, Collection<?>> REMOVE_ALL = (c, t) -> c.removeAll(t);
-    static final BiConsumer<Map<Object, Object>, Map<Object, Object>> PUT_ALL = (m, t) -> m.putAll(t);
-
-    @Override
-    void accept(T t, U u);
-
     static <T, C extends Collection<? super T>> BiConsumer<C, T> ofAdd() {
-        return (BiConsumer<C, T>) ADD;
+        return Fn.BiConsumer.ofAdd();
     }
 
-    static <T, U extends Collection<? extends T>, C extends Collection<? super T>> BiConsumer<C, U> ofAddAll() {
-        return (BiConsumer<C, U>) ADD_ALL;
+    static <T, C extends Collection<T>> BiConsumer<C, C> ofAddAll() {
+        return Fn.BiConsumer.ofAddAll();
     }
 
     static <T, C extends Collection<? super T>> BiConsumer<C, T> ofRemove() {
-        return (BiConsumer<C, T>) REMOVE;
+        return Fn.BiConsumer.ofRemove();
     }
 
-    static <T, U extends Collection<?>, C extends Collection<? super T>> BiConsumer<C, U> ofRemoveAll() {
-        return (BiConsumer<C, U>) REMOVE_ALL;
+    static <T, C extends Collection<T>> BiConsumer<C, C> ofRemoveAll() {
+        return Fn.BiConsumer.ofRemoveAll();
     }
 
-    static <K, V, U extends Map<? extends K, ? extends V>, M extends Map<? super K, ? super V>> BiConsumer<M, U> ofPutAll() {
-        return (BiConsumer<M, U>) PUT_ALL;
-    }
-
-    static <T, U> BiConsumer<T, U> ofDoNothing() {
-        return DO_NOTHING;
+    static <K, V, M extends Map<K, V>> com.landawn.abacus.util.function.BiConsumer<M, M> ofPutAll() {
+        return Fn.BiConsumer.ofPutAll();
     }
 }

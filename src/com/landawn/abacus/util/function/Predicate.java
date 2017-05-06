@@ -14,9 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
-import java.util.Objects;
-
-import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.Fn;
 
 /**
  * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
@@ -26,78 +24,46 @@ import com.landawn.abacus.util.N;
  */
 public interface Predicate<T> extends java.util.function.Predicate<T> {
 
-    @SuppressWarnings("rawtypes")
-    static final Predicate ALWAYS_TRUE = new Predicate() {
-        @Override
-        public boolean test(Object value) {
-            return true;
-        }
-    };
-
-    @SuppressWarnings("rawtypes")
-    static final Predicate ALWAYS_FALSE = new Predicate() {
-        @Override
-        public boolean test(Object value) {
-            return false;
-        }
-    };
-
-    @SuppressWarnings("rawtypes")
-    static final Predicate IS_NULL = new Predicate() {
-        @Override
-        public boolean test(Object value) {
-            return value == null;
-        }
-    };
-
-    @SuppressWarnings("rawtypes")
-    static final Predicate NOT_NULL = new Predicate() {
-        @Override
-        public boolean test(Object value) {
-            return value != null;
-        }
-    };
-
     @Override
     boolean test(T value);
 
     static <T> Predicate<T> alwaysTrue() {
-        return ALWAYS_TRUE;
+        return Fn.alwaysTrue();
     }
 
     static <T> Predicate<T> alwaysFalse() {
-        return ALWAYS_FALSE;
+        return Fn.alwaysFalse();
     }
 
     static <T> Predicate<T> isNull() {
-        return IS_NULL;
+        return Fn.isNull();
     }
 
     static <T> Predicate<T> notNull() {
-        return NOT_NULL;
+        return Fn.notNull();
     }
 
     static <T> Predicate<T> equal(Object targetRef) {
-        return (null == targetRef) ? Objects::isNull : object -> targetRef.equals(object);
+        return Fn.equal(targetRef);
     }
 
     static <T> Predicate<T> notEqual(Object targetRef) {
-        return (null == targetRef) ? Objects::nonNull : object -> !targetRef.equals(object);
+        return Fn.notEqual(targetRef);
     }
 
     static <T extends Comparable<? super T>> Predicate<T> greaterThan(T targetRef) {
-        return object -> N.compare(object, targetRef) > 0;
+        return Fn.greaterThan(targetRef);
     }
 
     static <T extends Comparable<? super T>> Predicate<T> greaterEqual(T targetRef) {
-        return object -> N.compare(object, targetRef) >= 0;
+        return Fn.greaterEqual(targetRef);
     }
 
     static <T extends Comparable<? super T>> Predicate<T> lessThan(T targetRef) {
-        return object -> N.compare(object, targetRef) < 0;
+        return Fn.lessThan(targetRef);
     }
 
     static <T extends Comparable<? super T>> Predicate<T> lessEqual(T targetRef) {
-        return object -> N.compare(object, targetRef) <= 0;
+        return Fn.lessEqual(targetRef);
     }
 }

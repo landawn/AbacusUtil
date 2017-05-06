@@ -17,6 +17,8 @@ package com.landawn.abacus.util.function;
 import java.util.Collection;
 import java.util.Map;
 
+import com.landawn.abacus.util.Fn;
+
 /**
  * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
  * @since 0.8
@@ -25,64 +27,26 @@ import java.util.Map;
  */
 public interface BiFunction<T, U, R> extends java.util.function.BiFunction<T, U, R> {
 
-    static final BiFunction<Collection<Object>, Object, Collection<Object>> ADD = (r, t) -> {
-        r.add(t);
-        return r;
-    };
-
-    static final BiFunction<Collection<Object>, Collection<Object>, Collection<Object>> ADD_ALL = (r, t) -> {
-        r.addAll(t);
-        return r;
-    };
-
-    static final BiFunction<Collection<Object>, Object, Collection<Object>> REMOVE = (r, t) -> {
-        r.remove(t);
-        return r;
-    };
-
-    static final BiFunction<Collection<Object>, Collection<?>, Collection<Object>> REMOVE_ALL = (r, t) -> {
-        r.removeAll(t);
-        return r;
-    };
-
-    static final BiFunction<Map<Object, Object>, Map<Object, Object>, Map<Object, Object>> PUT_ALL = (r, t) -> {
-        r.putAll(t);
-        return r;
-    };
-
-    @SuppressWarnings("rawtypes")
-    static final BiFunction JUST_RETURN_FIRST = (t, u) -> t;
-    @SuppressWarnings("rawtypes")
-    static final BiFunction JUST_RETURN_SECOND = (t, u) -> u;
-
     @Override
     R apply(T t, U u);
 
     static <T, R extends Collection<? super T>> BiFunction<R, T, R> ofAdd() {
-        return (BiFunction<R, T, R>) ADD;
+        return Fn.BiFunction.ofAdd();
     }
 
-    static <T, U extends Collection<? extends T>, R extends Collection<? super T>> BiFunction<R, U, R> ofAddAll() {
-        return (BiFunction<R, U, R>) ADD_ALL;
+    static <T, C extends Collection<T>> BiFunction<C, C, C> ofAddAll() {
+        return Fn.BiFunction.ofAddAll();
     }
 
     static <T, R extends Collection<? super T>> BiFunction<R, T, R> ofRemove() {
-        return (BiFunction<R, T, R>) REMOVE;
+        return Fn.BiFunction.ofRemove();
     }
 
-    static <T, U extends Collection<?>, R extends Collection<? super T>> BiFunction<R, U, R> ofRemoveAll() {
-        return (BiFunction<R, U, R>) REMOVE_ALL;
+    static <T, C extends Collection<T>> BiFunction<C, C, C> ofRemoveAll() {
+        return Fn.BiFunction.ofRemoveAll();
     }
 
-    static <K, V, U extends Map<? extends K, ? extends V>, R extends Map<? super K, ? super V>> BiFunction<R, U, R> ofPutAll() {
-        return (BiFunction<R, U, R>) PUT_ALL;
-    }
-
-    static <T, U> BiFunction<T, U, T> ofJustReturnFirst() {
-        return JUST_RETURN_FIRST;
-    }
-
-    static <T, U> BiFunction<T, U, U> ofJustReturnSecond() {
-        return JUST_RETURN_SECOND;
+    static <K, V, M extends Map<K, V>> BiFunction<M, M, M> ofPutAll() {
+        return Fn.BiFunction.ofPutAll();
     }
 }

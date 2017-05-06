@@ -14,7 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
-import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.Fn;
 
 /**
  * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
@@ -24,102 +24,38 @@ import com.landawn.abacus.util.N;
  */
 public interface BiPredicate<T, U> extends java.util.function.BiPredicate<T, U> {
 
-    @SuppressWarnings("rawtypes")
-    static final BiPredicate ALWAYS_TRUE = new BiPredicate() {
-        @Override
-        public boolean test(Object t, Object u) {
-            return true;
-        }
-    };
-
-    @SuppressWarnings("rawtypes")
-    static final BiPredicate ALWAYS_FALSE = new BiPredicate() {
-        @Override
-        public boolean test(Object t, Object u) {
-            return false;
-        }
-    };
-
-    @SuppressWarnings("rawtypes")
-    static final BiPredicate EQUAL = new BiPredicate() {
-        @Override
-        public boolean test(Object t, Object u) {
-            return N.equals(t, u);
-        }
-    };
-
-    @SuppressWarnings("rawtypes")
-    static final BiPredicate NOT_EQUAL = new BiPredicate() {
-        @Override
-        public boolean test(Object t, Object u) {
-            return !N.equals(t, u);
-        }
-    };
-
-    @SuppressWarnings("rawtypes")
-    static final BiPredicate<? extends Comparable, ? extends Comparable> GREATER_THAN = new BiPredicate<Comparable, Comparable>() {
-        @Override
-        public boolean test(Comparable t, Comparable u) {
-            return N.compare(t, u) > 0;
-        }
-    };
-
-    @SuppressWarnings("rawtypes")
-    static final BiPredicate<? extends Comparable, ? extends Comparable> GREATER_EQUAL = new BiPredicate<Comparable, Comparable>() {
-        @Override
-        public boolean test(Comparable t, Comparable u) {
-            return N.compare(t, u) >= 0;
-        }
-    };
-
-    @SuppressWarnings("rawtypes")
-    static final BiPredicate<? extends Comparable, ? extends Comparable> LESS_THAN = new BiPredicate<Comparable, Comparable>() {
-        @Override
-        public boolean test(Comparable t, Comparable u) {
-            return N.compare(t, u) < 0;
-        }
-    };
-
-    @SuppressWarnings("rawtypes")
-    static final BiPredicate<? extends Comparable, ? extends Comparable> LESS_EQUAL = new BiPredicate<Comparable, Comparable>() {
-        @Override
-        public boolean test(Comparable t, Comparable u) {
-            return N.compare(t, u) <= 0;
-        }
-    };
-
     @Override
     boolean test(T t, U u);
 
     static <T, U> BiPredicate<T, U> alwaysTrue() {
-        return ALWAYS_TRUE;
+        return Fn.BiPredicate.alwaysTrue();
     }
 
     static <T, U> BiPredicate<T, U> alwaysFalse() {
-        return ALWAYS_FALSE;
+        return Fn.BiPredicate.alwaysFalse();
     }
 
     static <T, U> BiPredicate<T, U> equal() {
-        return EQUAL;
+        return Fn.equal();
     }
 
     static <T, U> BiPredicate<T, U> notEqual() {
-        return NOT_EQUAL;
+        return Fn.notEqual();
     }
 
     static <T extends Comparable<? super T>> BiPredicate<T, T> greaterThan() {
-        return (BiPredicate<T, T>) GREATER_THAN;
+        return Fn.greaterThan();
     }
 
     static <T extends Comparable<? super T>> BiPredicate<T, T> greaterEqual() {
-        return (BiPredicate<T, T>) GREATER_EQUAL;
+        return Fn.greaterEqual();
     }
 
     static <T extends Comparable<? super T>> BiPredicate<T, T> lessThan() {
-        return (BiPredicate<T, T>) LESS_THAN;
+        return Fn.lessThan();
     }
 
     static <T extends Comparable<? super T>> BiPredicate<T, T> lessEqual() {
-        return (BiPredicate<T, T>) LESS_EQUAL;
+        return Fn.lessEqual();
     }
 }

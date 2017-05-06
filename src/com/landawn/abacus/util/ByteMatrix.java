@@ -17,6 +17,7 @@ package com.landawn.abacus.util;
 import java.util.NoSuchElementException;
 
 import com.landawn.abacus.annotation.Beta;
+import com.landawn.abacus.util.Pair.IntPair;
 import com.landawn.abacus.util.function.ByteBiFunction;
 import com.landawn.abacus.util.function.ByteTriFunction;
 import com.landawn.abacus.util.function.ByteUnaryOperator;
@@ -123,6 +124,59 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
 
     public void set(final int i, final int j, final byte val) {
         a[i][j] = val;
+    }
+
+    public OptionalByte upOf(final int i, final int j) {
+        return i == 0 ? OptionalByte.empty() : OptionalByte.of(a[i - 1][j]);
+    }
+
+    public OptionalByte downOf(final int i, final int j) {
+        return i == n - 1 ? OptionalByte.empty() : OptionalByte.of(a[i + 1][j]);
+    }
+
+    public OptionalByte leftOf(final int i, final int j) {
+        return j == 0 ? OptionalByte.empty() : OptionalByte.of(a[i][j - 1]);
+    }
+
+    public OptionalByte rightOf(final int i, final int j) {
+        return j == m - 1 ? OptionalByte.empty() : OptionalByte.of(a[i][j + 1]);
+    }
+
+    /**
+     * Returns the four adjacencies with order: up, right, down, left. <code>null</code> is set if the adjacency doesn't exist.
+     * 
+     * @param i
+     * @param j
+     * @return
+     */
+    public Stream<IntPair> adjacent4(final int i, final int j) {
+        final IntPair up = i == 0 ? null : IntPair.of(i - 1, j);
+        final IntPair right = j == m - 1 ? null : IntPair.of(i, j + 1);
+        final IntPair down = i == n - 1 ? null : IntPair.of(i + 1, j);
+        final IntPair left = j == 0 ? null : IntPair.of(i, j - 1);
+
+        return Stream.of(up, right, down, left);
+    }
+
+    /**
+     * Returns the eight adjacencies with order: left-up, up, right-up, right, right-down, down, left-down, left. <code>null</code> is set if the adjacency doesn't exist.
+     * 
+     * @param i
+     * @param j
+     * @return
+     */
+    public Stream<IntPair> adjacent8(final int i, final int j) {
+        final IntPair up = i == 0 ? null : IntPair.of(i - 1, j);
+        final IntPair right = j == m - 1 ? null : IntPair.of(i, j + 1);
+        final IntPair down = i == n - 1 ? null : IntPair.of(i + 1, j);
+        final IntPair left = j == 0 ? null : IntPair.of(i, j - 1);
+
+        final IntPair leftUp = i > 0 && j > 0 ? IntPair.of(i - 1, j - 1) : null;
+        final IntPair rightUp = i > 0 && j < m - 1 ? IntPair.of(i - 1, j + 1) : null;
+        final IntPair rightDown = i < n - 1 && j < m - 1 ? IntPair.of(j + 1, j + 1) : null;
+        final IntPair leftDown = i < n - 1 && j > 0 ? IntPair.of(i + 1, j - 1) : null;
+
+        return Stream.of(leftUp, up, rightUp, right, rightDown, down, leftDown, left);
     }
 
     public byte[] row(final int rowIndex) {
