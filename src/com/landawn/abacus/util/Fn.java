@@ -48,6 +48,8 @@ import com.landawn.abacus.util.function.ToFloatFunction;
 import com.landawn.abacus.util.function.ToIntFunction;
 import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.function.ToShortFunction;
+import com.landawn.abacus.util.stream.Collector;
+import com.landawn.abacus.util.stream.Collectors;
 
 /**
  * Utility class for function creation and Stream&lt;Entry&lt;K, V&gt;&gt;
@@ -400,6 +402,18 @@ public final class Fn {
 
     public static ToDoubleFunction<Double> unboxD() {
         return ToDoubleFunction.UNBOX;
+    }
+
+    public static <T> Collector<T, ?, List<T>> toList() {
+        return Collectors.toList();
+    }
+
+    public static <T> Collector<T, ?, Set<T>> toSet() {
+        return Collectors.toSet();
+    }
+
+    public static <T> Collector<T, ?, Multiset<T>> toMultiset() {
+        return Collectors.toMultiset();
     }
 
     public static final class Factory {

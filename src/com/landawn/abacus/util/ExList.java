@@ -75,7 +75,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
      * The specified array is used as the element array for this list without copying action.
      * 
      * @param a
-     * @throws IllegalArgumentException the specified <code>a</code> is null.
+     * @throws NullPointerException the specified <code>a</code> is null.
      */
     public ExList(T[] a) {
         this(a, a.length);
@@ -85,7 +85,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
      * 
      * @param a
      * @param size
-     * @throws IllegalArgumentException the specified <code>a</code> is null.
+     * @throws NullPointerException the specified <code>a</code> is null.
      */
     public ExList(T[] a, int size) {
         N.checkFromIndexSize(0, size, a.length);
@@ -98,7 +98,6 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
      * 
      * @param a
      * @return
-     * @throws IllegalArgumentException the specified <code>a</code> is null.
      */
     public static <T> ExList<T> empty() {
         return new ExList<>((T[]) N.EMPTY_OBJECT_ARRAY);
@@ -108,7 +107,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
      * 
      * @param a
      * @return
-     * @throws IllegalArgumentException the specified <code>a</code> is null.
+     * @throws NullPointerException the specified <code>a</code> is null.
      */
     public static <T> ExList<T> of(T... a) {
         return new ExList<>(a);
@@ -119,7 +118,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
      * @param a
      * @param size
      * @return
-     * @throws IllegalArgumentException the specified <code>a</code> is null.
+     * @throws NullPointerException the specified <code>a</code> is null.
      */
     public static <T> ExList<T> of(T[] a, int size) {
         return new ExList<>(a, size);
