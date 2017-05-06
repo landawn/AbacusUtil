@@ -30,6 +30,7 @@ import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -607,12 +608,23 @@ public final class Seq<T> implements Collection<T> {
             return NullabLe.empty();
         }
 
-        if (coll instanceof List && coll instanceof RandomAccess) {
+        if (coll instanceof List) {
             final List<T> list = (List<T>) coll;
 
-            for (int i = size() - 1; i >= 0; i--) {
-                if (predicate.test(list.get(i))) {
-                    return NullabLe.of(list.get(i));
+            if (coll instanceof RandomAccess) {
+                for (int i = size() - 1; i >= 0; i--) {
+                    if (predicate.test(list.get(i))) {
+                        return NullabLe.of(list.get(i));
+                    }
+                }
+            } else {
+                final ListIterator<T> iter = list.listIterator(list.size());
+                T pre = null;
+
+                while (iter.hasPrevious()) {
+                    if (predicate.test((pre = iter.previous()))) {
+                        return NullabLe.of(pre);
+                    }
                 }
             }
 
@@ -653,12 +665,22 @@ public final class Seq<T> implements Collection<T> {
             return OptionalInt.empty();
         }
 
-        if (coll instanceof List && coll instanceof RandomAccess) {
+        if (coll instanceof List) {
             final List<T> list = (List<T>) coll;
 
-            for (int i = size() - 1; i >= 0; i--) {
-                if (predicate.test(list.get(i))) {
-                    return OptionalInt.of(i);
+            if (coll instanceof RandomAccess) {
+                for (int i = size() - 1; i >= 0; i--) {
+                    if (predicate.test(list.get(i))) {
+                        return OptionalInt.of(i);
+                    }
+                }
+            } else {
+                final ListIterator<T> iter = list.listIterator(list.size());
+
+                for (int i = size() - 1; iter.hasPrevious(); i--) {
+                    if (predicate.test(iter.previous())) {
+                        return OptionalInt.of(i);
+                    }
                 }
             }
 
