@@ -2073,14 +2073,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     public <K, A, D, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> classifier,
             final java.util.stream.Collector<? super T, A, D> downstream, final Supplier<M> mapFactory) {
 
-        final Supplier<A> supplier = () -> downstream.supplier().get();
-        final BiConsumer<A, T> accumulator = (t, u) -> downstream.accumulator().accept(t, u);
-        final BinaryOperator<A> combiner = (t, u) -> downstream.combiner().apply(t, u);
-        final Function<A, D> finisher = t -> downstream.finisher().apply(t);
-
-        final Collector<? super T, A, D> collector2 = Collector.of(supplier, accumulator, combiner, finisher, downstream.characteristics());
-
-        return toMap(classifier, collector2, mapFactory);
+        return toMap(classifier, Collector.of(downstream), mapFactory);
     }
 
     public <K> Map<K, List<T>> toMap2(Function<? super T, ? extends K> classifier) {

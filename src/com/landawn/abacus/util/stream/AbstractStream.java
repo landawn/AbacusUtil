@@ -940,15 +940,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     @Override
     public <K, A, D> Stream<Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier, java.util.stream.Collector<? super T, A, D> downstream,
             Supplier<Map<K, D>> mapFactory) {
-
-        final Supplier<A> supplier = () -> downstream.supplier().get();
-        final BiConsumer<A, T> accumulator = (t, u) -> downstream.accumulator().accept(t, u);
-        final BinaryOperator<A> combiner = (t, u) -> downstream.combiner().apply(t, u);
-        final Function<A, D> finisher = t -> downstream.finisher().apply(t);
-
-        final Collector<? super T, A, D> collector2 = Collector.of(supplier, accumulator, combiner, finisher, downstream.characteristics());
-
-        return groupBy(classifier, collector2, mapFactory);
+        return groupBy(classifier, Collector.of(downstream), mapFactory);
     }
 
     @Override
@@ -1023,14 +1015,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     public <K, A, D, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> classifier,
             final java.util.stream.Collector<? super T, A, D> downstream, final Supplier<M> mapFactory) {
 
-        final Supplier<A> supplier = () -> downstream.supplier().get();
-        final BiConsumer<A, T> accumulator = (t, u) -> downstream.accumulator().accept(t, u);
-        final BinaryOperator<A> combiner = (t, u) -> downstream.combiner().apply(t, u);
-        final Function<A, D> finisher = t -> downstream.finisher().apply(t);
-
-        final Collector<? super T, A, D> collector2 = Collector.of(supplier, accumulator, combiner, finisher, downstream.characteristics());
-
-        return toMap(classifier, collector2, mapFactory);
+        return toMap(classifier, Collector.of(downstream), mapFactory);
     }
 
     @Override
@@ -2204,14 +2189,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public <R, A> R collect(java.util.stream.Collector<? super T, A, R> collector) {
-        final Supplier<A> supplier = () -> collector.supplier().get();
-        final BiConsumer<A, T> accumulator = (t, u) -> collector.accumulator().accept(t, u);
-        final BinaryOperator<A> combiner = (t, u) -> collector.combiner().apply(t, u);
-        final Function<A, R> finisher = t -> collector.finisher().apply(t);
-
-        final Collector<? super T, A, R> collector2 = Collector.of(supplier, accumulator, combiner, finisher, collector.characteristics());
-
-        return collect(collector2);
+        return collect(Collector.of(collector));
     }
 
     @Override
