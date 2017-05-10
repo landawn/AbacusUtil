@@ -24,6 +24,7 @@
  */
 package com.landawn.abacus.util.stream;
 
+import java.util.Objects;
 import java.util.Set;
 
 import com.landawn.abacus.util.function.BiConsumer;
@@ -245,4 +246,13 @@ public interface Collector<T, A, R> extends java.util.stream.Collector<T, A, R> 
      */
     @Override
     Set<Characteristics> characteristics();
+
+    public static <T, A, R> Collector<T, A, R> of(Supplier<A> supplier, BiConsumer<A, T> accumulator, BinaryOperator<A> combiner, Function<A, R> finisher,
+            Set<Characteristics> characteristics) {
+        Objects.requireNonNull(supplier);
+        Objects.requireNonNull(accumulator);
+        Objects.requireNonNull(combiner);
+        Objects.requireNonNull(characteristics);
+        return new Collectors.CollectorImpl<>(supplier, accumulator, combiner, finisher, characteristics);
+    }
 }

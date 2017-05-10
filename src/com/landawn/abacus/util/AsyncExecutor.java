@@ -161,7 +161,7 @@ public class AsyncExecutor {
 
         executor.execute(futureTask);
 
-        return new CompletableFuture<>(futureTask, executor);
+        return new CompletableFuture<>(futureTask, null, executor);
     }
 
     private ExecutorService getExecutorService() {

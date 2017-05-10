@@ -14,6 +14,8 @@
 
 package com.landawn.abacus.util;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
@@ -33,8 +35,10 @@ import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 
 /**
+ * Differences between the run/call methods and apply/accept/combine/exceptionally methods:
  * The <code>action</code> in all <code>*run*</code> and <code>*call*</code> methods will be executed asynchronously by the specified or default <code>Executor</code> eventually.
- * The <code>action</code> in other methods (<code>apply/accept/combine/</code>) won't be executed until they're called/continued by <code>complete/get/run/call</code> methods.
+ * The (<code>apply/accept/combine/exceptionally</code>) methods just return a wrapped <code>CompletableFuture</code> with specified <code>action</code> applied to the <code>get</code> methods.
+ * They won't be executed by the executor.
  * 
  * @since 0.8
  * 
@@ -77,10 +81,12 @@ public class CompletableFuture<T> implements Future<T> {
     }
 
     final Future<T> future;
+    final List<CompletableFuture<?>> preFutures;
     final Executor asyncExecutor;
 
-    CompletableFuture(final Future<T> future, final Executor asyncExecutor) {
+    CompletableFuture(final Future<T> future, final List<CompletableFuture<?>> preFutures, final Executor asyncExecutor) {
         this.future = future;
+        this.preFutures = preFutures;
         this.asyncExecutor = asyncExecutor;
     }
 
@@ -97,7 +103,7 @@ public class CompletableFuture<T> implements Future<T> {
 
         executor.execute(futureTask);
 
-        return new CompletableFuture<>(futureTask, executor);
+        return new CompletableFuture<>(futureTask, null, executor);
     }
 
     public static <T> CompletableFuture<T> run(final Try.Callable<T> action, final Executor executor) {
@@ -105,7 +111,7 @@ public class CompletableFuture<T> implements Future<T> {
 
         executor.execute(futureTask);
 
-        return new CompletableFuture<>(futureTask, executor);
+        return new CompletableFuture<>(futureTask, null, executor);
     }
 
     /**
@@ -140,7 +146,7 @@ public class CompletableFuture<T> implements Future<T> {
             public T get(final long timeout, final TimeUnit unit) {
                 return result;
             }
-        }, commonPool);
+        }, null, commonPool);
     }
 
     @Override
@@ -151,6 +157,45 @@ public class CompletableFuture<T> implements Future<T> {
     @Override
     public boolean isCancelled() {
         return future.isCancelled();
+    }
+
+    /**
+     * Cancel this future and all the previous stage future recursively.
+     * 
+     * @param mayInterruptIfRunning
+     * @return
+     */
+    public boolean cancelAll(boolean mayInterruptIfRunning) {
+        boolean res = true;
+
+        if (N.notNullOrEmpty(preFutures)) {
+            for (CompletableFuture<?> preFuture : preFutures) {
+                if (preFuture.cancelAll(mayInterruptIfRunning) == false) {
+                    res = false;
+                }
+            }
+        }
+
+        return future.cancel(mayInterruptIfRunning) && res;
+    }
+
+    /**
+     * Returns true if this future and all previous stage futures have been recursively cancelled, otherwise false is returned.
+     * 
+     * @return
+     */
+    public boolean isAllCancelled() {
+        boolean res = true;
+
+        if (N.notNullOrEmpty(preFutures)) {
+            for (CompletableFuture<?> preFuture : preFutures) {
+                if (preFuture.isAllCancelled() == false) {
+                    res = false;
+                }
+            }
+        }
+
+        return future.isCancelled() && res;
     }
 
     @Override
@@ -236,7 +281,7 @@ public class CompletableFuture<T> implements Future<T> {
     }
 
     public <U> CompletableFuture<U> thenApply(final Function<? super T, ? extends U> action) {
-        return new CompletableFuture<>(new Future<U>() {
+        return new CompletableFuture<U>(new Future<U>() {
             @Override
             public boolean cancel(boolean mayInterruptIfRunning) {
                 return future.cancel(mayInterruptIfRunning);
@@ -261,11 +306,21 @@ public class CompletableFuture<T> implements Future<T> {
             public U get(final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
                 return action.apply(future.get(timeout, unit));
             }
-        }, asyncExecutor);
+        }, null, asyncExecutor) {
+            @Override
+            public boolean cancelAll(boolean mayInterruptIfRunning) {
+                return cancelAll(mayInterruptIfRunning);
+            }
+
+            @Override
+            public boolean isAllCancelled() {
+                return isAllCancelled();
+            }
+        };
     }
 
     public <U> CompletableFuture<U> thenApply(final BiFunction<? super T, Throwable, ? extends U> action) {
-        return new CompletableFuture<>(new Future<U>() {
+        return new CompletableFuture<U>(new Future<U>() {
             @Override
             public boolean cancel(boolean mayInterruptIfRunning) {
                 return future.cancel(mayInterruptIfRunning);
@@ -292,7 +347,17 @@ public class CompletableFuture<T> implements Future<T> {
                 final Pair<T, Throwable> result = get2(timeout, unit);
                 return action.apply(result.left, result.right);
             }
-        }, asyncExecutor);
+        }, null, asyncExecutor) {
+            @Override
+            public boolean cancelAll(boolean mayInterruptIfRunning) {
+                return cancelAll(mayInterruptIfRunning);
+            }
+
+            @Override
+            public boolean isAllCancelled() {
+                return isAllCancelled();
+            }
+        };
     }
 
     public <U> CompletableFuture<Void> thenAccept(final Consumer<? super T> action) {
@@ -316,7 +381,7 @@ public class CompletableFuture<T> implements Future<T> {
     }
 
     public <U, R> CompletableFuture<R> thenCombine(final CompletableFuture<? extends U> other, final BiFunction<? super T, ? super U, ? extends R> action) {
-        return new CompletableFuture<>(new Future<R>() {
+        return new CompletableFuture<R>(new Future<R>() {
             @Override
             public boolean cancel(boolean mayInterruptIfRunning) {
                 return future.cancel(mayInterruptIfRunning) && other.future.cancel(mayInterruptIfRunning);
@@ -348,11 +413,21 @@ public class CompletableFuture<T> implements Future<T> {
 
                 return action.apply(result, otherResult);
             }
-        }, asyncExecutor);
+        }, null, asyncExecutor) {
+            @Override
+            public boolean cancelAll(boolean mayInterruptIfRunning) {
+                return cancelAll(mayInterruptIfRunning) && other.cancelAll(mayInterruptIfRunning);
+            }
+
+            @Override
+            public boolean isAllCancelled() {
+                return isAllCancelled() && other.isAllCancelled();
+            }
+        };
     }
 
     public <U, R> CompletableFuture<R> thenCombine(final CompletableFuture<? extends U> other, final Function<Tuple4<T, Throwable, U, Throwable>, R> action) {
-        return new CompletableFuture<>(new Future<R>() {
+        return new CompletableFuture<R>(new Future<R>() {
             @Override
             public boolean cancel(boolean mayInterruptIfRunning) {
                 return future.cancel(mayInterruptIfRunning) && other.future.cancel(mayInterruptIfRunning);
@@ -387,7 +462,17 @@ public class CompletableFuture<T> implements Future<T> {
 
                 return action.apply(Tuple.of(result.left, result.right, (U) result2.left, result.right));
             }
-        }, asyncExecutor);
+        }, null, asyncExecutor) {
+            @Override
+            public boolean cancelAll(boolean mayInterruptIfRunning) {
+                return cancelAll(mayInterruptIfRunning) && other.cancelAll(mayInterruptIfRunning);
+            }
+
+            @Override
+            public boolean isAllCancelled() {
+                return isAllCancelled() && other.isAllCancelled();
+            }
+        };
     }
 
     public <U> CompletableFuture<Void> thenAcceptBoth(final CompletableFuture<? extends U> other, final BiConsumer<? super T, ? super U> action) {
@@ -479,7 +564,7 @@ public class CompletableFuture<T> implements Future<T> {
                 action.run();
                 return null;
             }
-        });
+        }, other);
     }
 
     public <U> CompletableFuture<Void> runAfterBoth(final CompletableFuture<U> other, final BiConsumer<T, U> action) {
@@ -489,7 +574,7 @@ public class CompletableFuture<T> implements Future<T> {
                 action.accept(get(), other.get());
                 return null;
             }
-        });
+        }, other);
     }
 
     public <U> CompletableFuture<Void> runAfterBoth(final CompletableFuture<U> other, final Consumer<Tuple4<T, Throwable, U, Throwable>> action) {
@@ -501,7 +586,7 @@ public class CompletableFuture<T> implements Future<T> {
 
                 action.accept(Tuple.of(result.left, result.right, result2.left, result.right));
             }
-        });
+        }, other);
     }
 
     public <U> CompletableFuture<U> callAfterBoth(final CompletableFuture<?> other, final Try.Callable<U> action) {
@@ -512,7 +597,7 @@ public class CompletableFuture<T> implements Future<T> {
                 other.get();
                 return action.call();
             }
-        });
+        }, other);
     }
 
     public <U, R> CompletableFuture<R> callAfterBoth(final CompletableFuture<U> other, final BiFunction<T, U, R> action) {
@@ -521,7 +606,7 @@ public class CompletableFuture<T> implements Future<T> {
             public R call() throws Exception {
                 return action.apply(get(), other.get());
             }
-        });
+        }, other);
     }
 
     public <U, R> CompletableFuture<R> callAfterBoth(final CompletableFuture<U> other, final Function<Tuple4<T, Throwable, U, Throwable>, R> action) {
@@ -533,7 +618,7 @@ public class CompletableFuture<T> implements Future<T> {
 
                 return action.apply(Tuple.of(result.left, result.right, result2.left, result.right));
             }
-        });
+        }, other);
     }
 
     public CompletableFuture<Void> runAfterEither(final CompletableFuture<?> other, final Runnable action) {
@@ -545,7 +630,7 @@ public class CompletableFuture<T> implements Future<T> {
                 action.run();
                 return null;
             }
-        });
+        }, other);
     }
 
     public CompletableFuture<Void> runAfterEither(final CompletableFuture<? extends T> other, final Consumer<? super T> action) {
@@ -557,7 +642,7 @@ public class CompletableFuture<T> implements Future<T> {
                 action.accept(result);
                 return null;
             }
-        });
+        }, other);
     }
 
     public CompletableFuture<Void> runAfterEither(final CompletableFuture<? extends T> other, final BiConsumer<? super T, Throwable> action) {
@@ -568,7 +653,7 @@ public class CompletableFuture<T> implements Future<T> {
 
                 action.accept(result.left, result.right);
             }
-        });
+        }, other);
     }
 
     public <U> CompletableFuture<U> callAfterEither(final CompletableFuture<?> other, final Try.Callable<U> action) {
@@ -579,7 +664,7 @@ public class CompletableFuture<T> implements Future<T> {
 
                 return action.call();
             }
-        });
+        }, other);
     }
 
     public <R> CompletableFuture<R> callAfterEither(final CompletableFuture<? extends T> other, final Function<? super T, R> action) {
@@ -590,7 +675,7 @@ public class CompletableFuture<T> implements Future<T> {
 
                 return action.apply(result);
             }
-        });
+        }, other);
     }
 
     public <R> CompletableFuture<R> callAfterEither(final CompletableFuture<? extends T> other, final BiFunction<? super T, Throwable, R> action) {
@@ -601,7 +686,7 @@ public class CompletableFuture<T> implements Future<T> {
 
                 return action.apply(result.left, result.right);
             }
-        });
+        }, other);
     }
 
     /**
@@ -643,7 +728,7 @@ public class CompletableFuture<T> implements Future<T> {
      * @return
      */
     public CompletableFuture<T> exceptionally(final Function<Throwable, ? extends T> action) {
-        return new CompletableFuture<>(new Future<T>() {
+        return new CompletableFuture<T>(new Future<T>() {
             @Override
             public boolean cancel(boolean mayInterruptIfRunning) {
                 return future.cancel(mayInterruptIfRunning);
@@ -676,7 +761,17 @@ public class CompletableFuture<T> implements Future<T> {
                     return action.apply(e);
                 }
             }
-        }, asyncExecutor);
+        }, null, asyncExecutor) {
+            @Override
+            public boolean cancelAll(boolean mayInterruptIfRunning) {
+                return cancelAll(mayInterruptIfRunning);
+            }
+
+            @Override
+            public boolean isAllCancelled() {
+                return isAllCancelled();
+            }
+        };
     }
 
     //    public CompletableFuture<T> whenComplete(final BiConsumer<? super T, ? super Throwable> action) {
@@ -778,17 +873,27 @@ public class CompletableFuture<T> implements Future<T> {
     //    }
 
     private CompletableFuture<Void> execute(final Runnable command) {
-        return execute(new FutureTask<Void>(command, null));
+        return execute(command, null);
+    }
+
+    private CompletableFuture<Void> execute(final Runnable command, final CompletableFuture<?> other) {
+        return execute(new FutureTask<Void>(command, null), other);
     }
 
     private <U> CompletableFuture<U> execute(final Callable<U> command) {
-        return execute(new FutureTask<>(command));
+        return execute(command, null);
     }
 
-    private <U> CompletableFuture<U> execute(final FutureTask<U> futureTask) {
+    private <U> CompletableFuture<U> execute(final Callable<U> command, final CompletableFuture<?> other) {
+        return execute(new FutureTask<>(command), other);
+    }
+
+    private <U> CompletableFuture<U> execute(final FutureTask<U> futureTask, final CompletableFuture<?> other) {
         asyncExecutor.execute(futureTask);
 
-        return new CompletableFuture<>(futureTask, asyncExecutor);
+        @SuppressWarnings("rawtypes")
+        final List<CompletableFuture<?>> preFutures = other == null ? (List) Arrays.asList(this) : Arrays.asList(this, other);
+        return new CompletableFuture<>(futureTask, preFutures, asyncExecutor);
     }
 
     public CompletableFuture<T> delayed(long delay, TimeUnit unit) {
@@ -806,7 +911,7 @@ public class CompletableFuture<T> implements Future<T> {
     public CompletableFuture<T> with(final Executor executor, final long delay, final TimeUnit unit) {
         N.requireNonNull(executor);
 
-        return new CompletableFuture<>(new Future<T>() {
+        return new CompletableFuture<T>(new Future<T>() {
             @Override
             public boolean cancel(boolean mayInterruptIfRunning) {
                 return future.cancel(mayInterruptIfRunning);
@@ -843,7 +948,16 @@ public class CompletableFuture<T> implements Future<T> {
                     return future.get(timeout, unit);
                 }
             }
-        }, executor);
-    }
+        }, null, executor) {
+            @Override
+            public boolean cancelAll(boolean mayInterruptIfRunning) {
+                return cancelAll(mayInterruptIfRunning);
+            }
 
+            @Override
+            public boolean isAllCancelled() {
+                return isAllCancelled();
+            }
+        };
+    }
 }

@@ -558,6 +558,12 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     public abstract <K, A, D> Stream<Map.Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream,
             final Supplier<Map<K, D>> mapFactory);
 
+    public abstract <K, A, D> Stream<Map.Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier,
+            final java.util.stream.Collector<? super T, A, D> downstream);
+
+    public abstract <K, A, D> Stream<Map.Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier,
+            final java.util.stream.Collector<? super T, A, D> downstream, final Supplier<Map<K, D>> mapFactory);
+
     public abstract <K, U> Stream<Map.Entry<K, U>> groupBy2(final Function<? super T, ? extends K> keyExtractor,
             final Function<? super T, ? extends U> valueMapper);
 
@@ -985,6 +991,26 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public abstract <K, A, D, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream,
             final Supplier<M> mapFactory);
+
+    /**
+     * 
+     * @param classifier
+     * @param downstream
+     * @return
+     * @see Collectors#groupingBy(Function, Collector)
+     */
+    public abstract <K, A, D> Map<K, D> toMap(final Function<? super T, ? extends K> classifier, final java.util.stream.Collector<? super T, A, D> downstream);
+
+    /**
+     * 
+     * @param classifier
+     * @param downstream
+     * @param mapFactory
+     * @return
+     * @see Collectors#groupingBy(Function, Collector, Supplier)
+     */
+    public abstract <K, A, D, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> classifier,
+            final java.util.stream.Collector<? super T, A, D> downstream, final Supplier<M> mapFactory);
 
     /**
      * 

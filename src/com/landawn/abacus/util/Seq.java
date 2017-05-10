@@ -1745,6 +1745,28 @@ public final class Seq<T> implements Collection<T> {
         return result;
     }
 
+    @SuppressWarnings("hiding")
+    public <K, A, D> Map<K, D> toMap(Function<? super T, ? extends K> classifier, java.util.stream.Collector<? super T, A, D> downstream) {
+        final Supplier<Map<K, D>> mapFactory = Fn.Supplier.ofMap();
+
+        return toMap(classifier, downstream, mapFactory);
+    }
+
+    @SuppressWarnings("hiding")
+    public <K, A, D, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> classifier,
+            final java.util.stream.Collector<? super T, A, D> downstream, final Supplier<M> mapFactory) {
+
+        final Supplier<A> supplier = () -> downstream.supplier().get();
+        final BiConsumer<A, T> accumulator = (t, u) -> downstream.accumulator().accept(t, u);
+        final BinaryOperator<A> combiner = (t, u) -> downstream.combiner().apply(t, u);
+        final Function<A, D> finisher = t -> downstream.finisher().apply(t);
+
+        final Collector<? super T, A, D> collector2 = Collector.of(supplier, accumulator, combiner, finisher, downstream.characteristics());
+
+        return toMap(classifier, collector2, mapFactory);
+
+    }
+
     public <K> Map<K, List<T>> toMap2(Function<? super T, ? extends K> classifier) {
         final Supplier<Map<K, List<T>>> mapFactory = Fn.Supplier.ofMap();
 

@@ -417,9 +417,6 @@ public final class Fn {
     }
 
     public static final class Factory {
-        private Factory() {
-            // singleton.
-        }
 
         private static final IntFunction<boolean[]> BOOLEAN_ARRAY = new IntFunction<boolean[]>() {
             @Override
@@ -665,6 +662,10 @@ public final class Fn {
             }
         };
 
+        private Factory() {
+            // singleton.
+        }
+
         public static IntFunction<boolean[]> ofBooleanArray() {
             return BOOLEAN_ARRAY;
         }
@@ -814,7 +815,6 @@ public final class Fn {
     }
 
     public static final class Supplier {
-
         private static final com.landawn.abacus.util.function.Supplier<String> UUID = new com.landawn.abacus.util.function.Supplier<String>() {
             @Override
             public String get() {
@@ -1300,6 +1300,10 @@ public final class Fn {
             }
         };
 
+        private BiPredicate() {
+            // singleton.
+        }
+
         public static <T, U> com.landawn.abacus.util.function.BiPredicate<T, U> alwaysTrue() {
             return ALWAYS_TRUE;
         }
@@ -1326,6 +1330,10 @@ public final class Fn {
                 return false;
             }
         };
+
+        private TriPredicate() {
+            // singleton.
+        }
 
         public static <A, B, C> com.landawn.abacus.util.function.TriPredicate<A, B, C> alwaysTrue() {
             return ALWAYS_TRUE;
@@ -1410,6 +1418,10 @@ public final class Fn {
                 t.remove(u);
             }
         };
+
+        private BiConsumer() {
+            // singleton.
+        }
 
         public static <T, U> com.landawn.abacus.util.function.BiConsumer<T, U> ofDoNothing() {
             return DO_NOTHING;
@@ -1544,6 +1556,10 @@ public final class Fn {
             }
         };
 
+        private BiFunction() {
+            // singleton.
+        }
+
         public static <T, C extends Collection<? super T>> com.landawn.abacus.util.function.BiFunction<C, T, C> ofAdd() {
             return (com.landawn.abacus.util.function.BiFunction<C, T, C>) ADD;
         }
@@ -1640,6 +1656,10 @@ public final class Fn {
             }
         };
 
+        private BinaryOperator() {
+            // singleton.
+        }
+
         public static <T, C extends Collection<T>> com.landawn.abacus.util.function.BinaryOperator<C> ofAddAll() {
             return (com.landawn.abacus.util.function.BinaryOperator<C>) ADD_ALL;
         }
@@ -1692,6 +1712,10 @@ public final class Fn {
                 return t;
             }
         };
+
+        private UnaryOperator() {
+            // singleton.
+        }
 
         public static <T> com.landawn.abacus.util.function.UnaryOperator<T> identity() {
             return IDENTITY;

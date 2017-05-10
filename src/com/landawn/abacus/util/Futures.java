@@ -241,7 +241,7 @@ public final class Futures {
 
                 return result;
             }
-        }, ((CompletableFuture<?>) cfs.iterator().next()).asyncExecutor);
+        }, new ArrayList<>(cfs), ((CompletableFuture<?>) cfs.iterator().next()).asyncExecutor);
     }
 
     /**
@@ -345,7 +345,7 @@ public final class Futures {
 
                 return handle(result);
             }
-        }, ((CompletableFuture<?>) cfs.iterator().next()).asyncExecutor);
+        }, new ArrayList<>(cfs), ((CompletableFuture<?>) cfs.iterator().next()).asyncExecutor);
     }
 
     public static Iterator<Object> iterate(final CompletableFuture<?>... cfs) {

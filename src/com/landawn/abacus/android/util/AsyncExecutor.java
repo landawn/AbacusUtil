@@ -41,12 +41,15 @@ import android.os.Looper;
  * @since 0.8
  * 
  * @author Haiyang Li
+ * 
+ * @deprecated replaced with SerialExecutor/TPExecutor/UIExecutor.
  */
+@Deprecated
 public class AsyncExecutor {
 
-    public static final UIExecutor UI_EXECUTOR = new UIExecutor();
-    public static final Executor SERIAL_EXECUTOR = AsyncTask.SERIAL_EXECUTOR;
-    public static final Executor TP_EXECUTOR = AsyncTask.THREAD_POOL_EXECUTOR;
+    static final UIExecutor2 UI_EXECUTOR = new UIExecutor2();
+    static final Executor SERIAL_EXECUTOR = AsyncTask.SERIAL_EXECUTOR;
+    static final Executor TP_EXECUTOR = AsyncTask.THREAD_POOL_EXECUTOR;
 
     private AsyncExecutor() {
         // Singleton
@@ -200,19 +203,19 @@ public class AsyncExecutor {
     private static <T> CompletableFuture<T> execute(final FutureTask<T> futureTask, final Executor executor) {
         executor.execute(futureTask);
 
-        return new CompletableFuture<>(futureTask, executor);
+        return new CompletableFuture<>(futureTask, null, executor);
     }
 
-    private static <T> CompletableFuture<T> execute(final FutureTask<T> futureTask, final UIExecutor executor, final long delay) {
+    private static <T> CompletableFuture<T> execute(final FutureTask<T> futureTask, final UIExecutor2 executor, final long delay) {
         executor.execute(futureTask, delay);
 
-        return new CompletableFuture<>(futureTask, executor);
+        return new CompletableFuture<>(futureTask, null, executor);
     }
 
-    public static final class UIExecutor implements Executor {
+    static final class UIExecutor2 implements Executor {
         private static final Handler HANDLER = new Handler(Looper.getMainLooper());
 
-        private UIExecutor() {
+        private UIExecutor2() {
             // Singleton.
         }
 
@@ -230,10 +233,148 @@ public class AsyncExecutor {
         }
     }
 
+    public static final class SerialExecutor {
+        private SerialExecutor() {
+            // singleton
+        }
+
+        /**
+         * The action will be asynchronously executed with {@code android.io.AsyncTask#SERIAL_EXECUTOR} in background.
+         * 
+         * @param action
+         * @return
+         */
+        public static CompletableFuture<Void> execute(final Runnable action) {
+            return AsyncExecutor.execute(action);
+        }
+
+        public static CompletableFuture<Void> execute(final Runnable action, final int retryTimes, final long retryInterval,
+                final Function<Throwable, Boolean> retryCondition) {
+            return AsyncExecutor.execute(action, retryTimes, retryInterval, retryCondition);
+
+        }
+
+        /**
+         * The action will be asynchronously executed with {@code android.io.AsyncTask#SERIAL_EXECUTOR} in background.
+         * 
+         * @param action
+         * @return
+         */
+        public static <T> CompletableFuture<T> execute(final Callable<T> action) {
+            return AsyncExecutor.execute(action);
+        }
+
+        public static <T> CompletableFuture<T> execute(final Callable<T> action, final int retryTimes, final long retryInterval,
+                final BiFunction<? super T, Throwable, Boolean> retryCondition) {
+            return AsyncExecutor.execute(action, retryTimes, retryInterval, retryCondition);
+        }
+    }
+
+    public static final class TPExecutor {
+        private TPExecutor() {
+            // singleton
+        }
+
+        /**
+         * The action will be asynchronously executed with {@code android.io.AsyncTask#THREAD_POOL_EXECUTOR} in background.
+         * 
+         * @param action
+         * @return
+         */
+        public static CompletableFuture<Void> execute(final Runnable action) {
+            return AsyncExecutor.executeWithThreadPool(action);
+        }
+
+        public static CompletableFuture<Void> execute(final Runnable action, final int retryTimes, final long retryInterval,
+                final Function<Throwable, Boolean> retryCondition) {
+            return AsyncExecutor.executeWithThreadPool(action, retryTimes, retryInterval, retryCondition);
+
+        }
+
+        /**
+         * The action will be asynchronously executed with {@code android.io.AsyncTask#THREAD_POOL_EXECUTOR} in background.
+         * 
+         * @param action
+         * @return
+         */
+        public static <T> CompletableFuture<T> execute(final Callable<T> action) {
+            return AsyncExecutor.executeWithThreadPool(action);
+        }
+
+        public static <T> CompletableFuture<T> execute(final Callable<T> action, final int retryTimes, final long retryInterval,
+                final BiFunction<? super T, Throwable, Boolean> retryCondition) {
+            return AsyncExecutor.executeWithThreadPool(action, retryTimes, retryInterval, retryCondition);
+        }
+    }
+
+    public static final class UIExecutor {
+        private UIExecutor() {
+            // singleton
+        }
+
+        /**
+         * The action will be asynchronously executed in UI thread.
+         * 
+         * @param action
+         * @return
+         */
+        public static CompletableFuture<Void> execute(final Runnable action) {
+            return AsyncExecutor.executeOnUiThread(action);
+        }
+
+        /**
+         * The action will be asynchronously executed in UI thread.
+         * 
+         * @param action
+         * @param delay
+         * @return
+         */
+        public static CompletableFuture<Void> execute(final Runnable action, final long delay) {
+            return AsyncExecutor.executeOnUiThread(action, delay);
+        }
+
+        public static CompletableFuture<Void> execute(final Runnable action, final int retryTimes, final long retryInterval,
+                final Function<Throwable, Boolean> retryCondition) {
+            return AsyncExecutor.executeOnUiThread(action, retryTimes, retryInterval, retryCondition);
+        }
+
+        /**
+         * The action will be asynchronously executed in UI thread.
+         * 
+         * @param action
+         * @return
+         */
+        public static <T> CompletableFuture<T> execute(final Callable<T> action) {
+            return AsyncExecutor.executeOnUiThread(action);
+        }
+
+        /**
+         * The action will be asynchronously executed in UI thread.
+         * 
+         * @param action
+         * @param delay
+         * @return
+         */
+        public static <T> CompletableFuture<T> execute(final Callable<T> action, final long delay) {
+            return AsyncExecutor.executeOnUiThread(action, delay);
+        }
+
+        public static <T> CompletableFuture<T> execute(final Callable<T> action, final int retryTimes, final long retryInterval,
+                final BiFunction<? super T, Throwable, Boolean> retryCondition) {
+            return AsyncExecutor.executeOnUiThread(action, retryTimes, retryInterval, retryCondition);
+        }
+    }
+
     /**
      * Short name for AsyncExecutor
+     * 
+     * @deprecated replaced with SerialExecutor/TPExecutor/UIExecutor.
      */
+    @Deprecated
     @Beta
     public static class Asyn extends AsyncExecutor {
+        private Asyn() {
+            // singleton
+        }
     }
 }

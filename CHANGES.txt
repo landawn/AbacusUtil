@@ -1,4 +1,13 @@
 
+========Changes in 0.9.65=========================================================================
+
+1, Replace AsyncExecutor with SerialExecutor/TPExecutor/UIExecutor to AsyncExecutor for Android.
+
+2, Add cancelAll and isAllCancelled to CompletableFuture
+
+3, Improvements and bug fix.
+
+
 ========Changes in 0.9.64=========================================================================
 
 1, Add IntPair/LongPair/DoublePair/IntTriple/LongTriple/DoubleTriple/Tuple8/Tuple9.

@@ -931,6 +931,27 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
+    public <K, A, D> Stream<Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier, java.util.stream.Collector<? super T, A, D> downstream) {
+        final Supplier<Map<K, D>> mapFactory = Fn.Supplier.ofMap();
+
+        return groupBy(classifier, downstream, mapFactory);
+    }
+
+    @Override
+    public <K, A, D> Stream<Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier, java.util.stream.Collector<? super T, A, D> downstream,
+            Supplier<Map<K, D>> mapFactory) {
+
+        final Supplier<A> supplier = () -> downstream.supplier().get();
+        final BiConsumer<A, T> accumulator = (t, u) -> downstream.accumulator().accept(t, u);
+        final BinaryOperator<A> combiner = (t, u) -> downstream.combiner().apply(t, u);
+        final Function<A, D> finisher = t -> downstream.finisher().apply(t);
+
+        final Collector<? super T, A, D> collector2 = Collector.of(supplier, accumulator, combiner, finisher, downstream.characteristics());
+
+        return groupBy(classifier, collector2, mapFactory);
+    }
+
+    @Override
     public <K, U> Stream<Entry<K, U>> groupBy2(final Function<? super T, ? extends K> keyExtractor, final Function<? super T, ? extends U> valueMapper) {
         final Map<K, U> map = collect(Collectors.toMap(keyExtractor, valueMapper));
 
@@ -989,6 +1010,27 @@ abstract class AbstractStream<T> extends Stream<T> {
         final Supplier<Map<K, D>> mapFactory = Fn.Supplier.ofMap();
 
         return toMap(classifier, downstream, mapFactory);
+    }
+
+    @Override
+    public <K, A, D> Map<K, D> toMap(Function<? super T, ? extends K> classifier, java.util.stream.Collector<? super T, A, D> downstream) {
+        final Supplier<Map<K, D>> mapFactory = Fn.Supplier.ofMap();
+
+        return toMap(classifier, downstream, mapFactory);
+    }
+
+    @Override
+    public <K, A, D, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> classifier,
+            final java.util.stream.Collector<? super T, A, D> downstream, final Supplier<M> mapFactory) {
+
+        final Supplier<A> supplier = () -> downstream.supplier().get();
+        final BiConsumer<A, T> accumulator = (t, u) -> downstream.accumulator().accept(t, u);
+        final BinaryOperator<A> combiner = (t, u) -> downstream.combiner().apply(t, u);
+        final Function<A, D> finisher = t -> downstream.finisher().apply(t);
+
+        final Collector<? super T, A, D> collector2 = Collector.of(supplier, accumulator, combiner, finisher, downstream.characteristics());
+
+        return toMap(classifier, collector2, mapFactory);
     }
 
     @Override
@@ -2167,7 +2209,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         final BinaryOperator<A> combiner = (t, u) -> collector.combiner().apply(t, u);
         final Function<A, R> finisher = t -> collector.finisher().apply(t);
 
-        final Collector<? super T, A, R> collector2 = new Collectors.CollectorImpl<>(supplier, accumulator, combiner, finisher, collector.characteristics());
+        final Collector<? super T, A, R> collector2 = Collector.of(supplier, accumulator, combiner, finisher, collector.characteristics());
 
         return collect(collector2);
     }
