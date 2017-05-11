@@ -309,12 +309,12 @@ public class CompletableFuture<T> implements Future<T> {
         }, null, asyncExecutor) {
             @Override
             public boolean cancelAll(boolean mayInterruptIfRunning) {
-                return cancelAll(mayInterruptIfRunning);
+                return super.cancelAll(mayInterruptIfRunning);
             }
 
             @Override
             public boolean isAllCancelled() {
-                return isAllCancelled();
+                return super.isAllCancelled();
             }
         };
     }
@@ -350,12 +350,12 @@ public class CompletableFuture<T> implements Future<T> {
         }, null, asyncExecutor) {
             @Override
             public boolean cancelAll(boolean mayInterruptIfRunning) {
-                return cancelAll(mayInterruptIfRunning);
+                return super.cancelAll(mayInterruptIfRunning);
             }
 
             @Override
             public boolean isAllCancelled() {
-                return isAllCancelled();
+                return super.isAllCancelled();
             }
         };
     }
@@ -416,12 +416,12 @@ public class CompletableFuture<T> implements Future<T> {
         }, null, asyncExecutor) {
             @Override
             public boolean cancelAll(boolean mayInterruptIfRunning) {
-                return cancelAll(mayInterruptIfRunning) && other.cancelAll(mayInterruptIfRunning);
+                return super.cancelAll(mayInterruptIfRunning) && other.cancelAll(mayInterruptIfRunning);
             }
 
             @Override
             public boolean isAllCancelled() {
-                return isAllCancelled() && other.isAllCancelled();
+                return super.isAllCancelled() && other.isAllCancelled();
             }
         };
     }
@@ -465,12 +465,12 @@ public class CompletableFuture<T> implements Future<T> {
         }, null, asyncExecutor) {
             @Override
             public boolean cancelAll(boolean mayInterruptIfRunning) {
-                return cancelAll(mayInterruptIfRunning) && other.cancelAll(mayInterruptIfRunning);
+                return super.cancelAll(mayInterruptIfRunning) && other.cancelAll(mayInterruptIfRunning);
             }
 
             @Override
             public boolean isAllCancelled() {
-                return isAllCancelled() && other.isAllCancelled();
+                return super.isAllCancelled() && other.isAllCancelled();
             }
         };
     }
@@ -764,12 +764,12 @@ public class CompletableFuture<T> implements Future<T> {
         }, null, asyncExecutor) {
             @Override
             public boolean cancelAll(boolean mayInterruptIfRunning) {
-                return cancelAll(mayInterruptIfRunning);
+                return super.cancelAll(mayInterruptIfRunning);
             }
 
             @Override
             public boolean isAllCancelled() {
-                return isAllCancelled();
+                return super.isAllCancelled();
             }
         };
     }
@@ -951,12 +951,12 @@ public class CompletableFuture<T> implements Future<T> {
         }, null, executor) {
             @Override
             public boolean cancelAll(boolean mayInterruptIfRunning) {
-                return cancelAll(mayInterruptIfRunning);
+                return super.cancelAll(mayInterruptIfRunning);
             }
 
             @Override
             public boolean isAllCancelled() {
-                return isAllCancelled();
+                return super.isAllCancelled();
             }
         };
     }

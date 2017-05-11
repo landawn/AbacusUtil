@@ -1757,7 +1757,6 @@ public final class Seq<T> implements Collection<T> {
             final java.util.stream.Collector<? super T, A, D> downstream, final Supplier<M> mapFactory) {
 
         return toMap(classifier, Collector.of(downstream), mapFactory);
-
     }
 
     public <K> Map<K, List<T>> toMap2(Function<? super T, ? extends K> classifier) {
