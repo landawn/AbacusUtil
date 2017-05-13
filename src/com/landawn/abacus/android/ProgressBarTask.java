@@ -16,7 +16,7 @@ package com.landawn.abacus.android;
 
 import java.util.concurrent.Callable;
 
-import com.landawn.abacus.android.util.AsyncExecutor;
+import com.landawn.abacus.android.util.AsyncExecutor.UIExecutor;
 import com.landawn.abacus.android.util.CompletableFuture;
 import com.landawn.abacus.util.Multiset;
 
@@ -60,7 +60,7 @@ public class ProgressBarTask {
     protected ProgressBar progressBar;
 
     public ProgressBarTask(final ViewGroup root, final long delay, final int circleColor) {
-        future = AsyncExecutor.executeOnUiThread(new Callable<ProgressBar>() {
+        future = UIExecutor.execute(new Callable<ProgressBar>() {
             @Override
             public ProgressBar call() {
                 synchronized (ProgressBarTask.this) {

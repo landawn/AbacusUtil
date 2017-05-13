@@ -25,7 +25,6 @@ import com.landawn.abacus.util.Output;
 import com.landawn.abacus.util.Tuple;
 import com.landawn.abacus.util.Tuple.Tuple2;
 import com.landawn.abacus.util.Tuple.Tuple4;
-import com.landawn.abacus.util.Tuple.Tuple5;
 import com.landawn.abacus.util.function.Consumer;
 
 import android.text.Editable;
@@ -34,7 +33,6 @@ import android.view.DragEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnDragListener;
-import android.view.View.OnScrollChangeListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.OnHierarchyChangeListener;
 import android.widget.SearchView;
@@ -92,13 +90,13 @@ public abstract class Observer<T> {
         return new OnChildViewRemovedObserver(listener);
     }
 
-    public static Observer<View> onScrollChange(OnScrollChangeListener listener) {
-        return new OnScrollChangeObserver(listener);
-    }
-
     public static Observer<View> onDrag(OnDragListener listener) {
         return new OnDragObserver(listener);
     }
+
+    //    public static Observer<View> onScrollChange(OnScrollChangeListener listener) {
+    //        return new OnScrollChangeObserver(listener);
+    //    }
 
     /**
      * 
@@ -791,59 +789,6 @@ public abstract class Observer<T> {
         }
     }
 
-    static final class OnScrollChangeObserver extends Observer<View> implements OnScrollChangeListener {
-        private final OnScrollChangeListener listener;
-
-        OnScrollChangeObserver(final OnScrollChangeListener listener) {
-            this.listener = listener;
-        }
-
-        @Override
-        public void observe(View view, final Consumer<? super Throwable> onError, final Runnable onComplete) {
-            N.requireNonNull(view, "view");
-            N.requireNonNull(onError, "onError");
-            N.requireNonNull(onComplete, "onComplete");
-
-            dispatcher.append(new Dispatcher<Object>() {
-                @Override
-                public void onNext(Object param) {
-                    if (param instanceof Tuple5) {
-                        @SuppressWarnings("unchecked")
-                        final Tuple5<View, Integer, Integer, Integer, Integer> tmp = (Tuple5<View, Integer, Integer, Integer, Integer>) param;
-
-                        if (Util.isUiThread()) {
-                            listener.onScrollChange(tmp._1, tmp._2, tmp._3, tmp._4, tmp._5);
-                        } else {
-                            UIExecutor.execute(new Runnable() {
-                                @Override
-                                public void run() {
-                                    listener.onScrollChange(tmp._1, tmp._2, tmp._3, tmp._4, tmp._5);
-                                }
-                            });
-                        }
-                    }
-                }
-
-                @Override
-                public void onError(final Throwable error) {
-                    onError.accept(error);
-                }
-
-                @Override
-                public void onComplete() {
-                    onComplete.run();
-                }
-            });
-
-            view.setOnScrollChangeListener(this);
-        }
-
-        @Override
-        public void onScrollChange(View v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
-            dispatcher.onNext(Tuple.of(v, scrollX, scrollY, oldScrollX, oldScrollY));
-        }
-    }
-
     static final class OnDragObserver extends Observer<View> implements OnDragListener {
         private final OnDragListener listener;
 
@@ -897,6 +842,59 @@ public abstract class Observer<T> {
             return true;
         }
     }
+
+    //    static final class OnScrollChangeObserver extends Observer<View> implements OnScrollChangeListener {
+    //        private final OnScrollChangeListener listener;
+    //
+    //        OnScrollChangeObserver(final OnScrollChangeListener listener) {
+    //            this.listener = listener;
+    //        }
+    //
+    //        @Override
+    //        public void observe(View view, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+    //            N.requireNonNull(view, "view");
+    //            N.requireNonNull(onError, "onError");
+    //            N.requireNonNull(onComplete, "onComplete");
+    //
+    //            dispatcher.append(new Dispatcher<Object>() {
+    //                @Override
+    //                public void onNext(Object param) {
+    //                    if (param instanceof Tuple5) {
+    //                        @SuppressWarnings("unchecked")
+    //                        final Tuple5<View, Integer, Integer, Integer, Integer> tmp = (Tuple5<View, Integer, Integer, Integer, Integer>) param;
+    //
+    //                        if (Util.isUiThread()) {
+    //                            listener.onScrollChange(tmp._1, tmp._2, tmp._3, tmp._4, tmp._5);
+    //                        } else {
+    //                            UIExecutor.execute(new Runnable() {
+    //                                @Override
+    //                                public void run() {
+    //                                    listener.onScrollChange(tmp._1, tmp._2, tmp._3, tmp._4, tmp._5);
+    //                                }
+    //                            });
+    //                        }
+    //                    }
+    //                }
+    //
+    //                @Override
+    //                public void onError(final Throwable error) {
+    //                    onError.accept(error);
+    //                }
+    //
+    //                @Override
+    //                public void onComplete() {
+    //                    onComplete.run();
+    //                }
+    //            });
+    //
+    //            view.setOnScrollChangeListener(this);
+    //        }
+    //
+    //        @Override
+    //        public void onScrollChange(View v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
+    //            dispatcher.onNext(Tuple.of(v, scrollX, scrollY, oldScrollX, oldScrollY));
+    //        }
+    //    }
 
     static final class OnChildViewAddedObserver extends Observer<ViewGroup> implements OnHierarchyChangeListener {
         private final OnChildViewAddedListener listener;
@@ -1041,5 +1039,4 @@ public abstract class Observer<T> {
     public static interface OnChildViewRemovedListener {
         void onChildViewRemoved(View parent, View child);
     }
-
 }
