@@ -60,7 +60,7 @@ import android.widget.Toast;
  * 
  * @author Haiyang Li
  */
-public final class Util {
+public class Util {
     static final Logger logger = LoggerFactory.getLogger(Util.class);
     private static final int CPU_COUNT = Runtime.getRuntime().availableProcessors();
 
@@ -848,6 +848,12 @@ public final class Util {
     private static class BitmapHoneycombMR1 {
         static int getByteCount(Bitmap bitmap) {
             return bitmap.getByteCount();
+        }
+    }
+
+    public static final class O extends Util {
+        private O() {
+            // singleton.
         }
     }
 }
