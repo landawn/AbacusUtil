@@ -40,7 +40,7 @@ import com.landawn.abacus.util.function.Function;
  * Differences between the run/call methods and apply/accept/combine/exceptionally methods:
  * The <code>action</code> in all <code>*run*</code> and <code>*call*</code> methods will be executed asynchronously by the specified or default <code>Executor</code> eventually.
  * The (<code>apply/accept/combine/exceptionally</code>) methods just return a wrapped <code>CompletableFuture</code> with specified <code>action</code> applied to the <code>get</code> methods.
- * They won't be executed by the executor.  
+ * They will be executed on the thread where any termination methods(get/complete/...) of the returned <code>CompletableFuture</code> is called.
  * 
  * <br />
  * <br />
@@ -50,7 +50,6 @@ import com.landawn.abacus.util.function.Function;
  * 
  * @author Haiyang Li
  */
-@SuppressWarnings("deprecation")
 public class CompletableFuture<T> implements Future<T> {
     static final Logger logger = LoggerFactory.getLogger(CompletableFuture.class);
 

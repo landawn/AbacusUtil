@@ -51,7 +51,6 @@ import android.widget.ProgressBar;
  * 
  * @author haiyangl
  */
-@SuppressWarnings("deprecation")
 public class ProgressBarTask {
     private static final Multiset<ViewGroup> activeProgressBarSet = new Multiset<>();
     private static volatile int maxProgressBarTask = Integer.MAX_VALUE;

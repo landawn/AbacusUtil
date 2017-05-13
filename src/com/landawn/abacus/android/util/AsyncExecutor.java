@@ -41,15 +41,14 @@ import android.os.Looper;
  * @since 0.8
  * 
  * @author Haiyang Li
- * 
- * @deprecated replaced with SerialExecutor/TPExecutor/UIExecutor.
  */
-@Deprecated
 public class AsyncExecutor {
 
-    static final UIExecutor2 UI_EXECUTOR = new UIExecutor2();
-    static final Executor SERIAL_EXECUTOR = AsyncTask.SERIAL_EXECUTOR;
-    static final Executor TP_EXECUTOR = AsyncTask.THREAD_POOL_EXECUTOR;
+    private static final _UIExecutor _UI_EXECUTOR = new _UIExecutor();
+
+    public static final Executor SERIAL_EXECUTOR = AsyncTask.SERIAL_EXECUTOR;
+    public static final Executor TP_EXECUTOR = AsyncTask.THREAD_POOL_EXECUTOR;
+    public static final Executor UI_EXECUTOR = _UI_EXECUTOR;
 
     private AsyncExecutor() {
         // Singleton
@@ -155,7 +154,7 @@ public class AsyncExecutor {
      * @return
      */
     public static CompletableFuture<Void> executeOnUiThread(final Runnable action, final long delay) {
-        return execute(new FutureTask<Void>(action, null), UI_EXECUTOR, delay);
+        return execute(new FutureTask<Void>(action, null), _UI_EXECUTOR, delay);
     }
 
     public static CompletableFuture<Void> executeOnUiThread(final Runnable action, final int retryTimes, final long retryInterval,
@@ -186,7 +185,7 @@ public class AsyncExecutor {
      * @return
      */
     public static <T> CompletableFuture<T> executeOnUiThread(final Callable<T> action, final long delay) {
-        return execute(new FutureTask<>(action), UI_EXECUTOR, delay);
+        return execute(new FutureTask<>(action), _UI_EXECUTOR, delay);
     }
 
     public static <T> CompletableFuture<T> executeOnUiThread(final Callable<T> action, final int retryTimes, final long retryInterval,
@@ -206,16 +205,16 @@ public class AsyncExecutor {
         return new CompletableFuture<>(futureTask, null, executor);
     }
 
-    private static <T> CompletableFuture<T> execute(final FutureTask<T> futureTask, final UIExecutor2 executor, final long delay) {
+    private static <T> CompletableFuture<T> execute(final FutureTask<T> futureTask, final _UIExecutor executor, final long delay) {
         executor.execute(futureTask, delay);
 
         return new CompletableFuture<>(futureTask, null, executor);
     }
 
-    static final class UIExecutor2 implements Executor {
+    static final class _UIExecutor implements Executor {
         private static final Handler HANDLER = new Handler(Looper.getMainLooper());
 
-        private UIExecutor2() {
+        private _UIExecutor() {
             // Singleton.
         }
 
