@@ -69,12 +69,12 @@ public class CompletableFuture<T> implements Future<T> {
     };
 
     final Future<T> future;
-    final List<CompletableFuture<?>> preFutures;
+    final List<CompletableFuture<?>> upFutures;
     final Executor asyncExecutor;
 
-    CompletableFuture(final Future<T> future, final List<CompletableFuture<?>> preFutures, final Executor asyncExecutor) {
+    CompletableFuture(final Future<T> future, final List<CompletableFuture<?>> upFutures, final Executor asyncExecutor) {
         this.future = future;
-        this.preFutures = preFutures;
+        this.upFutures = upFutures;
         this.asyncExecutor = asyncExecutor;
     }
 
@@ -84,30 +84,6 @@ public class CompletableFuture<T> implements Future<T> {
 
     public static <T> CompletableFuture<T> run(final Try.Callable<T> action) {
         return run(action, AsyncExecutor.SERIAL_EXECUTOR);
-    }
-
-    public static CompletableFuture<Void> runWithUIExecutor(final Runnable action) {
-        return run(action, AsyncExecutor.UI_EXECUTOR);
-    }
-
-    public static <T> CompletableFuture<T> runWithUIExecutor(final Try.Callable<T> action) {
-        return run(action, AsyncExecutor.UI_EXECUTOR);
-    }
-
-    //    public static CompletableFuture<Void> runWithSerialExecutor(final Runnable action) {
-    //        return run(action, AsyncExecutor.SERIAL_EXECUTOR);
-    //    }
-    //
-    //    public static <T> CompletableFuture<T> runWithSerialExecutor(final Try.Callable<T> action) {
-    //        return run(action, AsyncExecutor.SERIAL_EXECUTOR);
-    //    }
-
-    public static CompletableFuture<Void> runWithTPExecutor(final Runnable action) {
-        return run(action, AsyncExecutor.TP_EXECUTOR);
-    }
-
-    public static <T> CompletableFuture<T> runWithTPExecutor(final Try.Callable<T> action) {
-        return run(action, AsyncExecutor.TP_EXECUTOR);
     }
 
     public static CompletableFuture<Void> run(final Runnable action, final Executor executor) {
@@ -180,8 +156,8 @@ public class CompletableFuture<T> implements Future<T> {
     public boolean cancelAll(boolean mayInterruptIfRunning) {
         boolean res = true;
 
-        if (N.notNullOrEmpty(preFutures)) {
-            for (CompletableFuture<?> preFuture : preFutures) {
+        if (N.notNullOrEmpty(upFutures)) {
+            for (CompletableFuture<?> preFuture : upFutures) {
                 if (preFuture.cancelAll(mayInterruptIfRunning) == false) {
                     res = false;
                 }
@@ -199,8 +175,8 @@ public class CompletableFuture<T> implements Future<T> {
     public boolean isAllCancelled() {
         boolean res = true;
 
-        if (N.notNullOrEmpty(preFutures)) {
-            for (CompletableFuture<?> preFuture : preFutures) {
+        if (N.notNullOrEmpty(upFutures)) {
+            for (CompletableFuture<?> preFuture : upFutures) {
                 if (preFuture.isAllCancelled() == false) {
                     res = false;
                 }
@@ -1129,8 +1105,8 @@ public class CompletableFuture<T> implements Future<T> {
         asyncExecutor.execute(futureTask);
 
         @SuppressWarnings("rawtypes")
-        final List<CompletableFuture<?>> preFutures = other == null ? (List) Arrays.asList(this) : Arrays.asList(this, other);
-        return new CompletableFuture<>(futureTask, preFutures, asyncExecutor);
+        final List<CompletableFuture<?>> upFutures = other == null ? (List) Arrays.asList(this) : Arrays.asList(this, other);
+        return new CompletableFuture<>(futureTask, upFutures, asyncExecutor);
     }
 
     public CompletableFuture<T> delayed(long delay, TimeUnit unit) {

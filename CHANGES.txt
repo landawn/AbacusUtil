@@ -5,7 +5,9 @@
 
 2, Add cancelAll and isAllCancelled to CompletableFuture
 
-3, Improvements and bug fix.
+4, Support debounce/throttleFirst/throttleLast by Observer.
+
+5, Improvements and bug fix.
 
 
 ========Changes in 0.9.64=========================================================================
