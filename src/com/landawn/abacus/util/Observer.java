@@ -14,6 +14,7 @@
 
 package com.landawn.abacus.util;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
@@ -21,11 +22,14 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.landawn.abacus.annotation.NonNull;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
 import com.landawn.abacus.util.function.Consumer;
+import com.landawn.abacus.util.function.Function;
+import com.landawn.abacus.util.function.Predicate;
 
 /**
  * 
@@ -43,9 +47,9 @@ public abstract class Observer<T> {
 
     protected static final double INTERVAL_FACTOR = 3;
 
-    protected static final Executor asyncExecutor = Executors.newFixedThreadPool(N.CPU_CORES);
+    protected static final Executor asyncExecutor = Executors.newFixedThreadPool(N.IS_PLATFORM_ANDROID ? N.CPU_CORES : 32);
 
-    protected static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(N.CPU_CORES);
+    protected static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(N.IS_PLATFORM_ANDROID ? N.CPU_CORES : 32);
 
     protected final Dispatcher<Object> dispatcher = new Dispatcher<>();
 
@@ -326,26 +330,144 @@ public abstract class Observer<T> {
         }
 
         dispatcher.append(new Dispatcher<Object>() {
+            private final long startTime = N.currentMillis();
+            private boolean isDelayed = false;
+
             @Override
             public void onNext(final Object param) {
-                try {
-                    scheduler.schedule(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (downDispatcher != null) {
-                                downDispatcher.onNext(param);
-                            }
-                        }
-                    }, delay, unit);
-                } catch (Throwable e) {
-                    if (downDispatcher != null) {
-                        downDispatcher.onError(e);
-                    }
+                if (isDelayed == false) {
+                    N.sleep(unit.toMillis(delay) - (N.currentMillis() - startTime));
+                    isDelayed = true;
+                }
+
+                if (downDispatcher != null) {
+                    downDispatcher.onNext(param);
                 }
             }
         });
 
         return this;
+    }
+
+    /**
+     * 
+     * @return this instance.
+     * @see <a href="http://reactivex.io/RxJava/javadoc/io/reactivex/Observable.html#timeInterval()">RxJava#timeInterval</a>
+     */
+    public Observer<Timed<T>> timeInterval() {
+        dispatcher.append(new Dispatcher<Object>() {
+            private long startTime = N.currentMillis();
+
+            @Override
+            public synchronized void onNext(final Object param) {
+                if (downDispatcher != null) {
+                    long now = N.currentMillis();
+                    long interval = now - startTime;
+                    startTime = now;
+
+                    downDispatcher.onNext(Timed.of(param, interval));
+                }
+            }
+        });
+
+        return (Observer<Timed<T>>) this;
+    }
+
+    /**
+     * 
+     * @return this instance.
+     * @see <a href="http://reactivex.io/RxJava/javadoc/io/reactivex/Observable.html#timestamp()">RxJava#timestamp</a>
+     */
+    public Observer<Timed<T>> timestamp() {
+        dispatcher.append(new Dispatcher<Object>() {
+            @Override
+            public void onNext(final Object param) {
+                if (downDispatcher != null) {
+                    downDispatcher.onNext(Timed.of(param, N.currentMillis()));
+                }
+            }
+        });
+
+        return (Observer<Timed<T>>) this;
+    }
+
+    public Observer<T> skip(final long n) {
+        if (n > 0) {
+            dispatcher.append(new Dispatcher<Object>() {
+                private final AtomicLong counter = new AtomicLong();
+
+                @Override
+                public void onNext(final Object param) {
+                    if (downDispatcher != null && counter.incrementAndGet() > n) {
+                        downDispatcher.onNext(param);
+                    }
+                }
+            });
+        }
+
+        return this;
+    }
+
+    public Observer<T> limit(final long n) {
+        if (n > 0) {
+            dispatcher.append(new Dispatcher<Object>() {
+                private final AtomicLong counter = new AtomicLong();
+
+                @Override
+                public void onNext(final Object param) {
+                    if (downDispatcher != null && counter.incrementAndGet() <= n) {
+                        downDispatcher.onNext(param);
+                    }
+                }
+            });
+        }
+
+        return this;
+    }
+
+    public Observer<T> filter(final Predicate<? super T> filter) {
+        dispatcher.append(new Dispatcher<Object>() {
+            @Override
+            public void onNext(final Object param) {
+                if (downDispatcher != null && filter.test((T) param) == true) {
+                    downDispatcher.onNext(param);
+                }
+            }
+        });
+
+        return this;
+    }
+
+    public <U> Observer<U> map(final Function<? super T, U> map) {
+        dispatcher.append(new Dispatcher<Object>() {
+            @Override
+            public void onNext(final Object param) {
+                if (downDispatcher != null) {
+                    downDispatcher.onNext(map.apply((T) param));
+                }
+            }
+        });
+
+        return (Observer<U>) this;
+    }
+
+    public <U> Observer<U> flatMap(final Function<? super T, Collection<U>> map) {
+        dispatcher.append(new Dispatcher<Object>() {
+            @Override
+            public void onNext(final Object param) {
+                if (downDispatcher != null) {
+                    final Collection<U> c = map.apply((T) param);
+
+                    if (N.notNullOrEmpty(c)) {
+                        for (U u : c) {
+                            downDispatcher.onNext(u);
+                        }
+                    }
+                }
+            }
+        });
+
+        return (Observer<U>) this;
     }
 
     public abstract void observe(final Consumer<? super T> action);

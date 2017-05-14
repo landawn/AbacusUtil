@@ -78,7 +78,7 @@ public abstract class ObserverX<T> {
                 }
             });
 
-            view.setOnScrollChangeListener(new OnScrollChangeListener() {
+            _view.setOnScrollChangeListener(new OnScrollChangeListener() {
                 @Override
                 public void onScrollChange(View v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
                     dispatcher.onNext(Tuple.of(v, scrollX, scrollY, oldScrollX, oldScrollY));

@@ -930,23 +930,19 @@ public class CompletableFuture<T> implements Future<T> {
             @Override
             public T get() throws InterruptedException, ExecutionException {
                 if (delay > 0) {
-                    final T result = future.get();
                     N.sleep(unit.toMillis(delay));
-                    return result;
-                } else {
-                    return future.get();
                 }
+
+                return future.get();
             }
 
             @Override
             public T get(final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
                 if (delay > 0) {
-                    final T result = future.get(timeout, unit);
                     N.sleep(unit.toMillis(delay));
-                    return result;
-                } else {
-                    return future.get(timeout, unit);
                 }
+
+                return future.get(timeout, unit);
             }
         }, null, executor) {
             @Override

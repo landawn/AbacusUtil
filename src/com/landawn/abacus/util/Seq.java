@@ -64,6 +64,7 @@ import com.landawn.abacus.util.stream.Stream;
 
 /**
  * It's an immutable wrapper for <code>Collection</code> to support more daily used/functional methods.
+ * All the operations are null safety.
  * 
  * @since 0.8
  * 

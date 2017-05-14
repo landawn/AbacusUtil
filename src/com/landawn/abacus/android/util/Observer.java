@@ -14,16 +14,20 @@
 
 package com.landawn.abacus.android.util;
 
+import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
 import com.landawn.abacus.android.util.AsyncExecutor.UIExecutor;
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.Timed;
 import com.landawn.abacus.util.Tuple;
 import com.landawn.abacus.util.Tuple.Tuple2;
 import com.landawn.abacus.util.Tuple.Tuple3;
 import com.landawn.abacus.util.Tuple.Tuple4;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.Consumer;
+import com.landawn.abacus.util.function.Function;
+import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.TriConsumer;
 
 import android.text.Editable;
@@ -34,6 +38,7 @@ import android.view.MenuItem;
 import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnAttachStateChangeListener;
 import android.view.View.OnClickListener;
 import android.view.View.OnDragListener;
 import android.view.View.OnHoverListener;
@@ -78,12 +83,32 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
         return new SearchViewObserver<>(view);
     }
 
-    public static <T extends MenuItem, O extends MenuItemObserver<T, O>> MenuItemObserver<T, O> of(final T view) {
-        return new MenuItemObserver<>(view);
+    public static <T extends MenuItem, O extends MenuItemObserver<T, O>> MenuItemObserver<T, O> of(final T menuItem) {
+        return new MenuItemObserver<>(menuItem);
     }
 
     public static <T extends AutoCompleteTextView, O extends AutoCompleteTextViewObserver<T, O>> AutoCompleteTextViewObserver<T, O> of(final T view) {
         return new AutoCompleteTextViewObserver<>(view);
+    }
+
+    protected static abstract class DispatcherBase<T> extends Dispatcher<T> {
+        private final Consumer<? super Throwable> onError;
+        private final Runnable onComplete;
+
+        protected DispatcherBase(final Consumer<? super Throwable> onError, final Runnable onComplete) {
+            this.onError = onError;
+            this.onComplete = onComplete;
+        }
+
+        @Override
+        public void onError(final Throwable error) {
+            onError.accept(error);
+        }
+
+        @Override
+        public void onComplete() {
+            onComplete.run();
+        }
     }
 
     protected static abstract class ObserverBase<T, O extends ObserverBase<T, O>> extends Observer<T> {
@@ -131,40 +156,79 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
         }
 
         /**
+         * 
          * @deprecated
          */
-        @Override
         @Deprecated
+        @Override
+        public Observer<Timed<T>> timeInterval() {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * 
+         * @deprecated
+         */
+        @Deprecated
+        @Override
+        public Observer<Timed<T>> timestamp() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public O skip(final long n) {
+            return (O) super.skip(n);
+
+        }
+
+        @Override
+        public O limit(final long n) {
+            return (O) super.limit(n);
+
+        }
+
+        @Override
+        public O filter(final Predicate<? super T> filter) {
+            return (O) super.filter(filter);
+        }
+
+        /**
+         * @param map
+         * @deprecated
+         */
+        @Deprecated
+        @Override
+        public <U> Observer<U> map(final Function<? super T, U> map) {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * @param map
+         * @deprecated
+         */
+        @Deprecated
+        @Override
+        public <U> Observer<U> flatMap(final Function<? super T, Collection<U>> map) {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * @param action
+         * 
+         * @deprecated
+         */
+        @Deprecated
+        @Override
         public void observe(Consumer<? super T> action) {
             throw new UnsupportedOperationException();
         }
     }
 
-    protected static abstract class DispatcherBase<T> extends Dispatcher<T> {
-        private final Consumer<? super Throwable> onError;
-        private final Runnable onComplete;
-
-        protected DispatcherBase(final Consumer<? super Throwable> onError, final Runnable onComplete) {
-            this.onError = onError;
-            this.onComplete = onComplete;
-        }
-
-        @Override
-        public void onError(final Throwable error) {
-            onError.accept(error);
-        }
-
-        @Override
-        public void onComplete() {
-            onComplete.run();
-        }
-    }
-
     public static class ViewObserver<T extends View, O extends ViewObserver<T, O>> extends ObserverBase<T, O> {
-        final T view;
+        final T _view;
 
         ViewObserver(final T view) {
-            this.view = view;
+            this._view = view;
         }
 
         public void onClick(final Consumer<? super View> onNext) {
@@ -198,7 +262,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                 }
             });
 
-            view.setOnClickListener(new OnClickListener() {
+            _view.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     dispatcher.onNext(view);
@@ -237,7 +301,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                 }
             });
 
-            view.setOnLongClickListener(new OnLongClickListener() {
+            _view.setOnLongClickListener(new OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View view) {
                     dispatcher.onNext(view);
@@ -277,7 +341,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                 }
             });
 
-            view.setOnDragListener(new OnDragListener() {
+            _view.setOnDragListener(new OnDragListener() {
                 @Override
                 public boolean onDrag(View view, DragEvent dragEvent) {
                     dispatcher.onNext(Tuple.of(view, dragEvent));
@@ -317,7 +381,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                 }
             });
 
-            view.setOnTouchListener(new OnTouchListener() {
+            _view.setOnTouchListener(new OnTouchListener() {
                 @Override
                 public boolean onTouch(View view, MotionEvent dragEvent) {
                     dispatcher.onNext(Tuple.of(view, dragEvent));
@@ -357,7 +421,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                 }
             });
 
-            view.setOnHoverListener(new OnHoverListener() {
+            _view.setOnHoverListener(new OnHoverListener() {
                 @Override
                 public boolean onHover(View view, MotionEvent dragEvent) {
                     dispatcher.onNext(Tuple.of(view, dragEvent));
@@ -398,12 +462,100 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                 }
             });
 
-            view.setOnKeyListener(new OnKeyListener() {
+            _view.setOnKeyListener(new OnKeyListener() {
                 @Override
                 public boolean onKey(View view, int keyCode, KeyEvent event) {
                     dispatcher.onNext(Tuple.of(view, keyCode, event));
                     return true;
                 }
+            });
+        }
+
+        public void onViewAttachedToWindow(final Consumer<? super View> onNext) {
+            onViewAttachedToWindow(onNext, Fu.ON_ERROR_MISSING);
+        }
+
+        public void onViewAttachedToWindow(final Consumer<? super View> onNext, final Consumer<? super Throwable> onError) {
+            onViewAttachedToWindow(onNext, onError, Fu.EMPTY_ACTION);
+        }
+
+        public void onViewAttachedToWindow(final Consumer<? super View> onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+            N.requireNonNull(onNext, "onNext");
+            N.requireNonNull(onError, "onError");
+            N.requireNonNull(onComplete, "onComplete");
+
+            dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
+                @Override
+                public void onNext(Object param) {
+                    final View tmp = (View) param;
+
+                    if (Util.isUiThread()) {
+                        onNext.accept(tmp);
+                    } else {
+                        UIExecutor.execute(new Runnable() {
+                            @Override
+                            public void run() {
+                                onNext.accept(tmp);
+                            }
+                        });
+                    }
+                }
+            });
+
+            _view.addOnAttachStateChangeListener(new OnAttachStateChangeListener() {
+                @Override
+                public void onViewAttachedToWindow(View view) {
+                    dispatcher.onNext(view);
+                }
+
+                @Override
+                public void onViewDetachedFromWindow(View view) {
+                    // Do nothing
+                };
+            });
+        }
+
+        public void onViewDetachedFromWindow(final Consumer<? super View> onNext) {
+            onViewDetachedFromWindow(onNext, Fu.ON_ERROR_MISSING);
+        }
+
+        public void onViewDetachedFromWindow(final Consumer<? super View> onNext, final Consumer<? super Throwable> onError) {
+            onViewDetachedFromWindow(onNext, onError, Fu.EMPTY_ACTION);
+        }
+
+        public void onViewDetachedFromWindow(final Consumer<? super View> onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+            N.requireNonNull(onNext, "onNext");
+            N.requireNonNull(onError, "onError");
+            N.requireNonNull(onComplete, "onComplete");
+
+            dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
+                @Override
+                public void onNext(Object param) {
+                    final View tmp = (View) param;
+
+                    if (Util.isUiThread()) {
+                        onNext.accept(tmp);
+                    } else {
+                        UIExecutor.execute(new Runnable() {
+                            @Override
+                            public void run() {
+                                onNext.accept(tmp);
+                            }
+                        });
+                    }
+                }
+            });
+
+            _view.addOnAttachStateChangeListener(new OnAttachStateChangeListener() {
+                @Override
+                public void onViewAttachedToWindow(View view) {
+                    // Do nothing
+                }
+
+                @Override
+                public void onViewDetachedFromWindow(View view) {
+                    dispatcher.onNext(view);
+                };
             });
         }
     }
@@ -447,7 +599,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                 }
             });
 
-            view.setOnHierarchyChangeListener(new OnHierarchyChangeListener() {
+            _view.setOnHierarchyChangeListener(new OnHierarchyChangeListener() {
                 @Override
                 public void onChildViewAdded(View parent, View child) {
                     dispatcher.onNext(Tuple.of(parent, child));
@@ -493,7 +645,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                 }
             });
 
-            view.setOnHierarchyChangeListener(new OnHierarchyChangeListener() {
+            _view.setOnHierarchyChangeListener(new OnHierarchyChangeListener() {
                 @Override
                 public void onChildViewAdded(View parent, View child) {
                     // Do nothing
@@ -545,7 +697,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                 }
             });
 
-            view.addTextChangedListener(new TextWatcher() {
+            _view.addTextChangedListener(new TextWatcher() {
                 @Override
                 public void beforeTextChanged(CharSequence s, int start, int count, int after) {
                     // Do nothing
@@ -596,7 +748,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                 }
             });
 
-            view.addTextChangedListener(new TextWatcher() {
+            _view.addTextChangedListener(new TextWatcher() {
                 @Override
                 public void beforeTextChanged(CharSequence s, int start, int count, int after) {
                     // Do nothing
@@ -646,7 +798,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                 }
             });
 
-            view.addTextChangedListener(new TextWatcher() {
+            _view.addTextChangedListener(new TextWatcher() {
                 @Override
                 public void beforeTextChanged(CharSequence s, int start, int before, int count) {
                     dispatcher.onNext(s.toString());
@@ -698,7 +850,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                 }
             });
 
-            view.addTextChangedListener(new TextWatcher() {
+            _view.addTextChangedListener(new TextWatcher() {
                 @Override
                 public void beforeTextChanged(CharSequence s, int start, int before, int count) {
                     dispatcher.onNext(Tuple.of(s, start, before, count));
@@ -748,7 +900,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                 }
             });
 
-            view.addTextChangedListener(new TextWatcher() {
+            _view.addTextChangedListener(new TextWatcher() {
                 @Override
                 public void beforeTextChanged(CharSequence s, int start, int after, int count) {
                     // Do nothing
@@ -798,7 +950,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                 }
             });
 
-            view.addTextChangedListener(new TextWatcher() {
+            _view.addTextChangedListener(new TextWatcher() {
                 @Override
                 public void beforeTextChanged(CharSequence s, int start, int after, int count) {
                     // Do nothing
@@ -856,7 +1008,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                 }
             });
 
-            view.setOnQueryTextListener(new OnQueryTextListener() {
+            _view.setOnQueryTextListener(new OnQueryTextListener() {
                 @Override
                 public boolean onQueryTextChange(String newText) {
                     dispatcher.onNext(newText);
@@ -903,7 +1055,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                 }
             });
 
-            view.setOnQueryTextListener(new OnQueryTextListener() {
+            _view.setOnQueryTextListener(new OnQueryTextListener() {
                 @Override
                 public boolean onQueryTextChange(String newText) {
                     // Do nothing.
@@ -920,10 +1072,10 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
     }
 
     public static class MenuItemObserver<T extends MenuItem, O extends MenuItemObserver<T, O>> extends ObserverBase<T, O> {
-        final MenuItem view;
+        final MenuItem _menuItem;
 
-        MenuItemObserver(final MenuItem view) {
-            this.view = view;
+        MenuItemObserver(final MenuItem menuItem) {
+            this._menuItem = menuItem;
         }
 
         public void onMenuItemClick(final Consumer<? super MenuItem> onNext) {
@@ -957,7 +1109,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                 }
             });
 
-            view.setOnMenuItemClickListener(new OnMenuItemClickListener() {
+            _menuItem.setOnMenuItemClickListener(new OnMenuItemClickListener() {
                 @Override
                 public boolean onMenuItemClick(MenuItem item) {
                     dispatcher.onNext(item);
@@ -1006,7 +1158,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                 }
             });
 
-            view.setOnItemClickListener(new OnItemClickListener() {
+            _view.setOnItemClickListener(new OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                     dispatcher.onNext(Tuple.of(parent, view, position, id));
