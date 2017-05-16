@@ -14,7 +14,9 @@
 
 package com.landawn.abacus.android.util;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import com.landawn.abacus.android.util.AsyncExecutor.UIExecutor;
@@ -24,11 +26,12 @@ import com.landawn.abacus.util.Tuple;
 import com.landawn.abacus.util.Tuple.Tuple2;
 import com.landawn.abacus.util.Tuple.Tuple3;
 import com.landawn.abacus.util.Tuple.Tuple4;
+import com.landawn.abacus.util.Tuple.Tuple5;
+import com.landawn.abacus.util.Tuple.Tuple9;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.Predicate;
-import com.landawn.abacus.util.function.TriConsumer;
 
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -41,8 +44,10 @@ import android.view.View;
 import android.view.View.OnAttachStateChangeListener;
 import android.view.View.OnClickListener;
 import android.view.View.OnDragListener;
+import android.view.View.OnFocusChangeListener;
 import android.view.View.OnHoverListener;
 import android.view.View.OnKeyListener;
+import android.view.View.OnLayoutChangeListener;
 import android.view.View.OnLongClickListener;
 import android.view.View.OnTouchListener;
 import android.view.ViewGroup;
@@ -83,36 +88,19 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
         return new SearchViewObserver<>(view);
     }
 
-    public static <T extends MenuItem, O extends MenuItemObserver<T, O>> MenuItemObserver<T, O> of(final T menuItem) {
-        return new MenuItemObserver<>(menuItem);
-    }
-
     public static <T extends AutoCompleteTextView, O extends AutoCompleteTextViewObserver<T, O>> AutoCompleteTextViewObserver<T, O> of(final T view) {
         return new AutoCompleteTextViewObserver<>(view);
     }
 
-    protected static abstract class DispatcherBase<T> extends Dispatcher<T> {
-        private final Consumer<? super Throwable> onError;
-        private final Runnable onComplete;
-
-        protected DispatcherBase(final Consumer<? super Throwable> onError, final Runnable onComplete) {
-            this.onError = onError;
-            this.onComplete = onComplete;
-        }
-
-        @Override
-        public void onError(final Throwable error) {
-            onError.accept(error);
-        }
-
-        @Override
-        public void onComplete() {
-            onComplete.run();
-        }
+    public static <T extends MenuItem, O extends MenuItemObserver<T, O>> MenuItemObserver<T, O> of(final T menuItem) {
+        return new MenuItemObserver<>(menuItem);
     }
 
-    protected static abstract class ObserverBase<T, O extends ObserverBase<T, O>> extends Observer<T> {
-        protected ObserverBase() {
+    protected static abstract class UIObserverBase<T, O extends UIObserverBase<T, O>> extends Observer<T> implements Disposable {
+        final List<Runnable> disposeActions = new ArrayList<>();
+        boolean isDisposed = false;
+
+        protected UIObserverBase() {
         }
 
         @Override
@@ -187,6 +175,34 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
 
         }
 
+        /*
+         * Is it possible to cause memory leak by caching the previous values?
+         */
+        /**
+         * 
+         * @return
+         * @deprecated
+         */
+        @Deprecated
+        @Override
+        public Observer<T> distinct() {
+            throw new UnsupportedOperationException();
+        }
+
+        /*
+         * Is it possible to cause memory leak by caching the previous values?
+         */
+        /**
+         * 
+         * @param keyExtractor
+         * @deprecated
+         */
+        @Deprecated
+        @Override
+        public Observer<T> distinct(final Function<? super T, ?> keyExtractor) {
+            throw new UnsupportedOperationException();
+        }
+
         @Override
         public O filter(final Predicate<? super T> filter) {
             return (O) super.filter(filter);
@@ -213,6 +229,54 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
         }
 
         /**
+         * @param timespan
+         * @param unit
+         * @deprecated
+         */
+        @Deprecated
+        @Override
+        public Observer<List<T>> buffer(final long timespan, final TimeUnit unit) {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * @param timespan
+         * @param unit
+         * @param count
+         * @deprecated
+         */
+        @Deprecated
+        @Override
+        public Observer<List<T>> buffer(final long timespan, final TimeUnit unit, final int count) {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * @param timespan
+         * @param timeskip
+         * @param unit
+         * @deprecated
+         */
+        @Deprecated
+        @Override
+        public Observer<List<T>> buffer(final long timespan, final long timeskip, final TimeUnit unit) {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * @param timespan
+         * @param timeskip
+         * @param unit
+         * @param count
+         * @deprecated
+         */
+        @Deprecated
+        @Override
+        public Observer<List<T>> buffer(final long timespan, final long timeskip, final TimeUnit unit, final int count) {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
          * @param action
          * 
          * @deprecated
@@ -222,24 +286,61 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
         public void observe(Consumer<? super T> action) {
             throw new UnsupportedOperationException();
         }
+
+        /**
+         * 
+         * @deprecated
+         */
+        @Deprecated
+        @Override
+        public void observe(final Consumer<? super T> action, final Consumer<? super Throwable> onError) {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * 
+         * @deprecated
+         */
+        @Deprecated
+        @Override
+        public void observe(final Consumer<? super T> action, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void dispose() {
+            if (isDisposed() == false) {
+                isDisposed = true;
+                if (N.notNullOrEmpty(disposeActions)) {
+                    for (Runnable action : disposeActions) {
+                        action.run();
+                    }
+                }
+            }
+        }
+
+        @Override
+        public boolean isDisposed() {
+            return isDisposed;
+        }
     }
 
-    public static class ViewObserver<T extends View, O extends ViewObserver<T, O>> extends ObserverBase<T, O> {
+    public static class ViewObserver<T extends View, O extends ViewObserver<T, O>> extends UIObserverBase<T, O> {
         final T _view;
 
         ViewObserver(final T view) {
             this._view = view;
         }
 
-        public void onClick(final Consumer<? super View> onNext) {
-            onClick(onNext, Fu.ON_ERROR_MISSING);
+        public Disposable onClick(final OnClickListener onNext) {
+            return onClick(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public void onClick(final Consumer<? super View> onNext, final Consumer<? super Throwable> onError) {
-            onClick(onNext, onError, Fu.EMPTY_ACTION);
+        public Disposable onClick(final OnClickListener onNext, final Consumer<? super Throwable> onError) {
+            return onClick(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public void onClick(final Consumer<? super View> onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+        public Disposable onClick(final OnClickListener onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
             N.requireNonNull(onComplete, "onComplete");
@@ -250,12 +351,12 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                     final View tmp = (View) param;
 
                     if (Util.isUiThread()) {
-                        onNext.accept(tmp);
+                        onNext.onClick(tmp);
                     } else {
                         UIExecutor.execute(new Runnable() {
                             @Override
                             public void run() {
-                                onNext.accept(tmp);
+                                onNext.onClick(tmp);
                             }
                         });
                     }
@@ -268,17 +369,26 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                     dispatcher.onNext(view);
                 };
             });
+
+            disposeActions.add(new Runnable() {
+                @Override
+                public void run() {
+                    _view.setOnClickListener(null);
+                }
+            });
+
+            return this;
         }
 
-        public void onLongClick(final Consumer<? super View> onNext) {
-            onLongClick(onNext, Fu.ON_ERROR_MISSING);
+        public Disposable onLongClick(final OnLongClickListener onNext) {
+            return onLongClick(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public void onLongClick(final Consumer<? super View> onNext, final Consumer<? super Throwable> onError) {
-            onLongClick(onNext, onError, Fu.EMPTY_ACTION);
+        public Disposable onLongClick(final OnLongClickListener onNext, final Consumer<? super Throwable> onError) {
+            return onLongClick(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public void onLongClick(final Consumer<? super View> onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+        public Disposable onLongClick(final OnLongClickListener onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
             N.requireNonNull(onComplete, "onComplete");
@@ -289,12 +399,12 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                     final View tmp = (View) param;
 
                     if (Util.isUiThread()) {
-                        onNext.accept(tmp);
+                        onNext.onLongClick(tmp);
                     } else {
                         UIExecutor.execute(new Runnable() {
                             @Override
                             public void run() {
-                                onNext.accept(tmp);
+                                onNext.onLongClick(tmp);
                             }
                         });
                     }
@@ -308,17 +418,26 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                     return true;
                 };
             });
+
+            disposeActions.add(new Runnable() {
+                @Override
+                public void run() {
+                    _view.setOnLongClickListener(null);
+                }
+            });
+
+            return this;
         }
 
-        public void onDrag(final BiConsumer<? super View, ? super DragEvent> onNext) {
-            onDrag(onNext, Fu.ON_ERROR_MISSING);
+        public Disposable onDrag(final OnDragListener onNext) {
+            return onDrag(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public void onDrag(final BiConsumer<? super View, ? super DragEvent> onNext, final Consumer<? super Throwable> onError) {
-            onDrag(onNext, onError, Fu.EMPTY_ACTION);
+        public Disposable onDrag(final OnDragListener onNext, final Consumer<? super Throwable> onError) {
+            return onDrag(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public void onDrag(final BiConsumer<? super View, ? super DragEvent> onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+        public Disposable onDrag(final OnDragListener onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
             N.requireNonNull(onComplete, "onComplete");
@@ -329,12 +448,12 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                     final Tuple2<View, DragEvent> tmp = (Tuple2<View, DragEvent>) param;
 
                     if (Util.isUiThread()) {
-                        onNext.accept(tmp._1, tmp._2);
+                        onNext.onDrag(tmp._1, tmp._2);
                     } else {
                         UIExecutor.execute(new Runnable() {
                             @Override
                             public void run() {
-                                onNext.accept(tmp._1, tmp._2);
+                                onNext.onDrag(tmp._1, tmp._2);
                             }
                         });
                     }
@@ -348,17 +467,26 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                     return true;
                 }
             });
+
+            disposeActions.add(new Runnable() {
+                @Override
+                public void run() {
+                    _view.setOnDragListener(null);
+                }
+            });
+
+            return this;
         }
 
-        public void onTouch(final BiConsumer<? super View, ? super MotionEvent> onNext) {
-            onTouch(onNext, Fu.ON_ERROR_MISSING);
+        public Disposable onTouch(final OnTouchListener onNext) {
+            return onTouch(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public void onTouch(final BiConsumer<? super View, ? super MotionEvent> onNext, final Consumer<? super Throwable> onError) {
-            onTouch(onNext, onError, Fu.EMPTY_ACTION);
+        public Disposable onTouch(final OnTouchListener onNext, final Consumer<? super Throwable> onError) {
+            return onTouch(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public void onTouch(final BiConsumer<? super View, ? super MotionEvent> onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+        public Disposable onTouch(final OnTouchListener onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
             N.requireNonNull(onComplete, "onComplete");
@@ -369,12 +497,12 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                     final Tuple2<View, MotionEvent> tmp = (Tuple2<View, MotionEvent>) param;
 
                     if (Util.isUiThread()) {
-                        onNext.accept(tmp._1, tmp._2);
+                        onNext.onTouch(tmp._1, tmp._2);
                     } else {
                         UIExecutor.execute(new Runnable() {
                             @Override
                             public void run() {
-                                onNext.accept(tmp._1, tmp._2);
+                                onNext.onTouch(tmp._1, tmp._2);
                             }
                         });
                     }
@@ -388,17 +516,74 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                     return true;
                 }
             });
+
+            disposeActions.add(new Runnable() {
+                @Override
+                public void run() {
+                    _view.setOnTouchListener(null);
+                }
+            });
+
+            return this;
         }
 
-        public void onHover(final BiConsumer<? super View, ? super MotionEvent> onNext) {
-            onHover(onNext, Fu.ON_ERROR_MISSING);
+        public Disposable onFocusChange(final OnFocusChangeListener onNext) {
+            return onFocusChange(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public void onHover(final BiConsumer<? super View, ? super MotionEvent> onNext, final Consumer<? super Throwable> onError) {
-            onHover(onNext, onError, Fu.EMPTY_ACTION);
+        public Disposable onFocusChange(final OnFocusChangeListener onNext, final Consumer<? super Throwable> onError) {
+            return onFocusChange(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public void onHover(final BiConsumer<? super View, ? super MotionEvent> onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+        public Disposable onFocusChange(final OnFocusChangeListener onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+            N.requireNonNull(onNext, "onNext");
+            N.requireNonNull(onError, "onError");
+            N.requireNonNull(onComplete, "onComplete");
+
+            dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
+                @Override
+                public void onNext(Object param) {
+                    final Tuple2<View, Boolean> tmp = (Tuple2<View, Boolean>) param;
+
+                    if (Util.isUiThread()) {
+                        onNext.onFocusChange(tmp._1, tmp._2);
+                    } else {
+                        UIExecutor.execute(new Runnable() {
+                            @Override
+                            public void run() {
+                                onNext.onFocusChange(tmp._1, tmp._2);
+                            }
+                        });
+                    }
+                }
+            });
+
+            _view.setOnFocusChangeListener(new OnFocusChangeListener() {
+                @Override
+                public void onFocusChange(View v, boolean hasFocus) {
+                    dispatcher.onNext(Tuple.of(v, hasFocus));
+                }
+            });
+
+            disposeActions.add(new Runnable() {
+                @Override
+                public void run() {
+                    _view.setOnFocusChangeListener(null);
+                }
+            });
+
+            return this;
+        }
+
+        public Disposable onHover(final OnHoverListener onNext) {
+            return onHover(onNext, Fu.ON_ERROR_MISSING);
+        }
+
+        public Disposable onHover(final OnHoverListener onNext, final Consumer<? super Throwable> onError) {
+            return onHover(onNext, onError, Fu.EMPTY_ACTION);
+        }
+
+        public Disposable onHover(final OnHoverListener onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
             N.requireNonNull(onComplete, "onComplete");
@@ -409,12 +594,12 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                     final Tuple2<View, MotionEvent> tmp = (Tuple2<View, MotionEvent>) param;
 
                     if (Util.isUiThread()) {
-                        onNext.accept(tmp._1, tmp._2);
+                        onNext.onHover(tmp._1, tmp._2);
                     } else {
                         UIExecutor.execute(new Runnable() {
                             @Override
                             public void run() {
-                                onNext.accept(tmp._1, tmp._2);
+                                onNext.onHover(tmp._1, tmp._2);
                             }
                         });
                     }
@@ -428,18 +613,26 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                     return true;
                 }
             });
+
+            disposeActions.add(new Runnable() {
+                @Override
+                public void run() {
+                    _view.setOnHoverListener(null);
+                }
+            });
+
+            return this;
         }
 
-        public void onKey(final TriConsumer<? super View, ? super Integer, ? super KeyEvent> onNext) {
-            onKey(onNext, Fu.ON_ERROR_MISSING);
+        public Disposable onKey(final OnKeyListener onNext) {
+            return onKey(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public void onKey(final TriConsumer<? super View, ? super Integer, ? super KeyEvent> onNext, final Consumer<? super Throwable> onError) {
-            onKey(onNext, onError, Fu.EMPTY_ACTION);
+        public Disposable onKey(final OnKeyListener onNext, final Consumer<? super Throwable> onError) {
+            return onKey(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public void onKey(final TriConsumer<? super View, ? super Integer, ? super KeyEvent> onNext, final Consumer<? super Throwable> onError,
-                final Runnable onComplete) {
+        public Disposable onKey(final OnKeyListener onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
             N.requireNonNull(onComplete, "onComplete");
@@ -450,12 +643,12 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                     final Tuple3<View, Integer, KeyEvent> tmp = (Tuple3<View, Integer, KeyEvent>) param;
 
                     if (Util.isUiThread()) {
-                        onNext.accept(tmp._1, tmp._2, tmp._3);
+                        onNext.onKey(tmp._1, tmp._2, tmp._3);
                     } else {
                         UIExecutor.execute(new Runnable() {
                             @Override
                             public void run() {
-                                onNext.accept(tmp._1, tmp._2, tmp._3);
+                                onNext.onKey(tmp._1, tmp._2, tmp._3);
                             }
                         });
                     }
@@ -469,17 +662,26 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                     return true;
                 }
             });
+
+            disposeActions.add(new Runnable() {
+                @Override
+                public void run() {
+                    _view.setOnKeyListener(null);
+                }
+            });
+
+            return this;
         }
 
-        public void onViewAttachedToWindow(final Consumer<? super View> onNext) {
-            onViewAttachedToWindow(onNext, Fu.ON_ERROR_MISSING);
+        public Disposable onViewAttachedToWindow(final Consumer<? super View> onNext) {
+            return onViewAttachedToWindow(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public void onViewAttachedToWindow(final Consumer<? super View> onNext, final Consumer<? super Throwable> onError) {
-            onViewAttachedToWindow(onNext, onError, Fu.EMPTY_ACTION);
+        public Disposable onViewAttachedToWindow(final Consumer<? super View> onNext, final Consumer<? super Throwable> onError) {
+            return onViewAttachedToWindow(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public void onViewAttachedToWindow(final Consumer<? super View> onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+        public Disposable onViewAttachedToWindow(final Consumer<? super View> onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
             N.requireNonNull(onComplete, "onComplete");
@@ -502,7 +704,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                 }
             });
 
-            _view.addOnAttachStateChangeListener(new OnAttachStateChangeListener() {
+            final OnAttachStateChangeListener onAttachStateChangeListener = new OnAttachStateChangeListener() {
                 @Override
                 public void onViewAttachedToWindow(View view) {
                     dispatcher.onNext(view);
@@ -512,18 +714,29 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                 public void onViewDetachedFromWindow(View view) {
                     // Do nothing
                 };
+            };
+
+            _view.addOnAttachStateChangeListener(onAttachStateChangeListener);
+
+            disposeActions.add(new Runnable() {
+                @Override
+                public void run() {
+                    _view.removeOnAttachStateChangeListener(onAttachStateChangeListener);
+                }
             });
+
+            return this;
         }
 
-        public void onViewDetachedFromWindow(final Consumer<? super View> onNext) {
-            onViewDetachedFromWindow(onNext, Fu.ON_ERROR_MISSING);
+        public Disposable onViewDetachedFromWindow(final Consumer<? super View> onNext) {
+            return onViewDetachedFromWindow(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public void onViewDetachedFromWindow(final Consumer<? super View> onNext, final Consumer<? super Throwable> onError) {
-            onViewDetachedFromWindow(onNext, onError, Fu.EMPTY_ACTION);
+        public Disposable onViewDetachedFromWindow(final Consumer<? super View> onNext, final Consumer<? super Throwable> onError) {
+            return onViewDetachedFromWindow(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public void onViewDetachedFromWindow(final Consumer<? super View> onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+        public Disposable onViewDetachedFromWindow(final Consumer<? super View> onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
             N.requireNonNull(onComplete, "onComplete");
@@ -546,7 +759,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                 }
             });
 
-            _view.addOnAttachStateChangeListener(new OnAttachStateChangeListener() {
+            final OnAttachStateChangeListener onAttachStateChangeListener = new OnAttachStateChangeListener() {
                 @Override
                 public void onViewAttachedToWindow(View view) {
                     // Do nothing
@@ -556,7 +769,183 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                 public void onViewDetachedFromWindow(View view) {
                     dispatcher.onNext(view);
                 };
+            };
+
+            _view.addOnAttachStateChangeListener(onAttachStateChangeListener);
+
+            disposeActions.add(new Runnable() {
+                @Override
+                public void run() {
+                    _view.removeOnAttachStateChangeListener(onAttachStateChangeListener);
+                }
             });
+
+            return this;
+        }
+
+        public Disposable onAttachStateChange(final OnAttachStateChangeListener onNext) {
+            return onAttachStateChange(onNext, Fu.ON_ERROR_MISSING);
+        }
+
+        public Disposable onAttachStateChange(final OnAttachStateChangeListener onNext, final Consumer<? super Throwable> onError) {
+            return onAttachStateChange(onNext, onError, Fu.EMPTY_ACTION);
+        }
+
+        public Disposable onAttachStateChange(final OnAttachStateChangeListener onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+            N.requireNonNull(onNext, "onNext");
+            N.requireNonNull(onError, "onError");
+            N.requireNonNull(onComplete, "onComplete");
+
+            dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
+                @Override
+                public void onNext(Object param) {
+                    final Tuple2<Integer, View> tmp = (Tuple2<Integer, View>) param;
+
+                    if (Util.isUiThread()) {
+                        if (tmp._1 == 0) {
+                            onNext.onViewAttachedToWindow(tmp._2);
+                        } else {
+                            onNext.onViewDetachedFromWindow(tmp._2);
+                        }
+                    } else {
+                        UIExecutor.execute(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (tmp._1 == 0) {
+                                    onNext.onViewAttachedToWindow(tmp._2);
+                                } else {
+                                    onNext.onViewDetachedFromWindow(tmp._2);
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+
+            final OnAttachStateChangeListener onAttachStateChangeListener = new OnAttachStateChangeListener() {
+                @Override
+                public void onViewAttachedToWindow(View view) {
+                    dispatcher.onNext(Tuple.of(0, view));
+                }
+
+                @Override
+                public void onViewDetachedFromWindow(View view) {
+                    dispatcher.onNext(Tuple.of(1, view));
+                };
+            };
+
+            _view.addOnAttachStateChangeListener(onAttachStateChangeListener);
+
+            disposeActions.add(new Runnable() {
+                @Override
+                public void run() {
+                    _view.removeOnAttachStateChangeListener(onAttachStateChangeListener);
+                }
+            });
+
+            return this;
+        }
+
+        public Disposable onLayoutChange(final OnLayoutChangeListener onNext) {
+            return onLayoutChange(onNext, Fu.ON_ERROR_MISSING);
+        }
+
+        public Disposable onLayoutChange(final OnLayoutChangeListener onNext, final Consumer<? super Throwable> onError) {
+            return onLayoutChange(onNext, onError, Fu.EMPTY_ACTION);
+        }
+
+        public Disposable onLayoutChange(final OnLayoutChangeListener onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+            N.requireNonNull(onNext, "onNext");
+            N.requireNonNull(onError, "onError");
+            N.requireNonNull(onComplete, "onComplete");
+
+            dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
+                @Override
+                public void onNext(Object param) {
+                    final Tuple9<View, Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer> tmp = (Tuple9<View, Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>) param;
+
+                    if (Util.isUiThread()) {
+                        onNext.onLayoutChange(tmp._1, tmp._2, tmp._3, tmp._4, tmp._5, tmp._6, tmp._7, tmp._8, tmp._9);
+                    } else {
+                        UIExecutor.execute(new Runnable() {
+                            @Override
+                            public void run() {
+                                onNext.onLayoutChange(tmp._1, tmp._2, tmp._3, tmp._4, tmp._5, tmp._6, tmp._7, tmp._8, tmp._9);
+                            }
+                        });
+                    }
+                }
+            });
+
+            final OnLayoutChangeListener onAttachStateChangeListener = new OnLayoutChangeListener() {
+                @Override
+                public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                    dispatcher.onNext(Tuple.of(v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom));
+                };
+            };
+
+            _view.addOnLayoutChangeListener(onAttachStateChangeListener);
+
+            disposeActions.add(new Runnable() {
+                @Override
+                public void run() {
+                    _view.removeOnLayoutChangeListener(onAttachStateChangeListener);
+                }
+            });
+
+            return this;
+        }
+
+        public Disposable onLayoutChange(final Consumer<? super Tuple9<View, Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>> onNext) {
+            return onLayoutChange(onNext, Fu.ON_ERROR_MISSING);
+        }
+
+        public Disposable onLayoutChange(final Consumer<? super Tuple9<View, Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>> onNext,
+                final Consumer<? super Throwable> onError) {
+            return onLayoutChange(onNext, onError, Fu.EMPTY_ACTION);
+        }
+
+        public Disposable onLayoutChange(final Consumer<? super Tuple9<View, Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>> onNext,
+                final Consumer<? super Throwable> onError, final Runnable onComplete) {
+            N.requireNonNull(onNext, "onNext");
+            N.requireNonNull(onError, "onError");
+            N.requireNonNull(onComplete, "onComplete");
+
+            dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
+                @Override
+                public void onNext(Object param) {
+                    final Tuple9<View, Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer> tmp = (Tuple9<View, Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>) param;
+
+                    if (Util.isUiThread()) {
+                        onNext.accept(tmp);
+                    } else {
+                        UIExecutor.execute(new Runnable() {
+                            @Override
+                            public void run() {
+                                onNext.accept(tmp);
+                            }
+                        });
+                    }
+                }
+            });
+
+            final OnLayoutChangeListener onAttachStateChangeListener = new OnLayoutChangeListener() {
+                @Override
+                public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                    dispatcher.onNext(Tuple.of(v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom));
+                };
+            };
+
+            _view.addOnLayoutChangeListener(onAttachStateChangeListener);
+
+            disposeActions.add(new Runnable() {
+                @Override
+                public void run() {
+                    _view.removeOnLayoutChangeListener(onAttachStateChangeListener);
+                }
+            });
+
+            return this;
         }
     }
 
@@ -566,15 +955,15 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
             super(view);
         }
 
-        public void onChildViewAdded(final BiConsumer<? super View, ? super View> onNext) {
-            onChildViewAdded(onNext, Fu.ON_ERROR_MISSING);
+        public Disposable onChildViewAdded(final BiConsumer<? super View, ? super View> onNext) {
+            return onChildViewAdded(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public void onChildViewAdded(final BiConsumer<? super View, ? super View> onNext, final Consumer<? super Throwable> onError) {
-            onChildViewAdded(onNext, onError, Fu.EMPTY_ACTION);
+        public Disposable onChildViewAdded(final BiConsumer<? super View, ? super View> onNext, final Consumer<? super Throwable> onError) {
+            return onChildViewAdded(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public void onChildViewAdded(final BiConsumer<? super View, ? super View> onNext, final Consumer<? super Throwable> onError,
+        public Disposable onChildViewAdded(final BiConsumer<? super View, ? super View> onNext, final Consumer<? super Throwable> onError,
                 final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
@@ -610,17 +999,26 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                     // Do nothing
                 }
             });
+
+            disposeActions.add(new Runnable() {
+                @Override
+                public void run() {
+                    _view.setOnHierarchyChangeListener(null);
+                }
+            });
+
+            return this;
         }
 
-        public void onChildViewRemoved(final BiConsumer<? super View, ? super View> onNext) {
-            onChildViewRemoved(onNext, Fu.ON_ERROR_MISSING);
+        public Disposable onChildViewRemoved(final BiConsumer<? super View, ? super View> onNext) {
+            return onChildViewRemoved(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public void onChildViewRemoved(final BiConsumer<? super View, ? super View> onNext, final Consumer<? super Throwable> onError) {
-            onChildViewRemoved(onNext, onError, Fu.EMPTY_ACTION);
+        public Disposable onChildViewRemoved(final BiConsumer<? super View, ? super View> onNext, final Consumer<? super Throwable> onError) {
+            return onChildViewRemoved(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public void onChildViewRemoved(final BiConsumer<? super View, ? super View> onNext, final Consumer<? super Throwable> onError,
+        public Disposable onChildViewRemoved(final BiConsumer<? super View, ? super View> onNext, final Consumer<? super Throwable> onError,
                 final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
@@ -656,6 +1054,77 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                     dispatcher.onNext(Tuple.of(parent, child));
                 }
             });
+
+            disposeActions.add(new Runnable() {
+                @Override
+                public void run() {
+                    _view.setOnHierarchyChangeListener(null);
+                }
+            });
+
+            return this;
+        }
+
+        public Disposable onHierarchyChange(final OnHierarchyChangeListener onNext) {
+            return onHierarchyChange(onNext, Fu.ON_ERROR_MISSING);
+        }
+
+        public Disposable onHierarchyChange(final OnHierarchyChangeListener onNext, final Consumer<? super Throwable> onError) {
+            return onHierarchyChange(onNext, onError, Fu.EMPTY_ACTION);
+        }
+
+        public Disposable onHierarchyChange(final OnHierarchyChangeListener onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+            N.requireNonNull(onNext, "onNext");
+            N.requireNonNull(onError, "onError");
+            N.requireNonNull(onComplete, "onComplete");
+
+            dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
+                @Override
+                public void onNext(Object param) {
+                    @SuppressWarnings("unchecked")
+                    final Tuple3<Integer, View, View> tmp = (Tuple3<Integer, View, View>) param;
+
+                    if (Util.isUiThread()) {
+                        if (tmp._1 == 0) {
+                            onNext.onChildViewAdded(tmp._2, tmp._3);
+                        } else {
+                            onNext.onChildViewRemoved(tmp._2, tmp._3);
+                        }
+                    } else {
+                        UIExecutor.execute(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (tmp._1 == 0) {
+                                    onNext.onChildViewAdded(tmp._2, tmp._3);
+                                } else {
+                                    onNext.onChildViewRemoved(tmp._2, tmp._3);
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+
+            _view.setOnHierarchyChangeListener(new OnHierarchyChangeListener() {
+                @Override
+                public void onChildViewAdded(View parent, View child) {
+                    dispatcher.onNext(Tuple.of(0, parent, child));
+                }
+
+                @Override
+                public void onChildViewRemoved(View parent, View child) {
+                    dispatcher.onNext(Tuple.of(1, parent, child));
+                }
+            });
+
+            disposeActions.add(new Runnable() {
+                @Override
+                public void run() {
+                    _view.setOnHierarchyChangeListener(null);
+                }
+            });
+
+            return this;
         }
     }
 
@@ -665,15 +1134,15 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
             super(view);
         }
 
-        public void onTextChanged(final Consumer<? super String> onNext) {
-            onTextChanged(onNext, Fu.ON_ERROR_MISSING);
+        public Disposable onTextChanged(final Consumer<? super String> onNext) {
+            return onTextChanged(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public void onTextChanged(final Consumer<? super String> onNext, final Consumer<? super Throwable> onError) {
-            onTextChanged(onNext, onError, Fu.EMPTY_ACTION);
+        public Disposable onTextChanged(final Consumer<? super String> onNext, final Consumer<? super Throwable> onError) {
+            return onTextChanged(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public void onTextChanged(final Consumer<? super String> onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+        public Disposable onTextChanged(final Consumer<? super String> onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
             N.requireNonNull(onComplete, "onComplete");
@@ -697,7 +1166,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                 }
             });
 
-            _view.addTextChangedListener(new TextWatcher() {
+            final TextWatcher textWatcher = new TextWatcher() {
                 @Override
                 public void beforeTextChanged(CharSequence s, int start, int count, int after) {
                     // Do nothing
@@ -712,120 +1181,30 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                 public void afterTextChanged(Editable s) {
                     // Do nothing
                 }
-            });
-        }
+            };
 
-        public void onTextChanged2(final Consumer<? super Tuple4<CharSequence, Integer, Integer, Integer>> onNext) {
-            onTextChanged2(onNext, Fu.ON_ERROR_MISSING);
-        }
+            _view.addTextChangedListener(textWatcher);
 
-        public void onTextChanged2(final Consumer<? super Tuple4<CharSequence, Integer, Integer, Integer>> onNext, final Consumer<? super Throwable> onError) {
-            onTextChanged2(onNext, onError, Fu.EMPTY_ACTION);
-        }
-
-        public void onTextChanged2(final Consumer<? super Tuple4<CharSequence, Integer, Integer, Integer>> onNext, final Consumer<? super Throwable> onError,
-                final Runnable onComplete) {
-            N.requireNonNull(onNext, "onNext");
-            N.requireNonNull(onError, "onError");
-            N.requireNonNull(onComplete, "onComplete");
-
-            dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
+            disposeActions.add(new Runnable() {
                 @Override
-                public void onNext(Object param) {
-                    @SuppressWarnings("unchecked")
-                    final Tuple4<CharSequence, Integer, Integer, Integer> tmp = (Tuple4<CharSequence, Integer, Integer, Integer>) param;
-
-                    if (Util.isUiThread()) {
-                        onNext.accept(tmp);
-                    } else {
-                        UIExecutor.execute(new Runnable() {
-                            @Override
-                            public void run() {
-                                onNext.accept(tmp);
-                            }
-                        });
-                    }
+                public void run() {
+                    _view.removeTextChangedListener(textWatcher);
                 }
             });
 
-            _view.addTextChangedListener(new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                    // Do nothing
-                }
-
-                @Override
-                public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    dispatcher.onNext(Tuple.of(s, start, before, count));
-                }
-
-                @Override
-                public void afterTextChanged(Editable s) {
-                    // Do nothing
-                }
-            });
+            return this;
         }
 
-        public void beforeTextChanged(final Consumer<? super String> onNext) {
-            beforeTextChanged(onNext, Fu.ON_ERROR_MISSING);
+        public Disposable onTextChanged2(final Consumer<? super Tuple4<CharSequence, Integer, Integer, Integer>> onNext) {
+            return onTextChanged2(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public void beforeTextChanged(final Consumer<? super String> onNext, final Consumer<? super Throwable> onError) {
-            beforeTextChanged(onNext, onError, Fu.EMPTY_ACTION);
-        }
-
-        public void beforeTextChanged(final Consumer<? super String> onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
-            N.requireNonNull(onNext, "onNext");
-            N.requireNonNull(onError, "onError");
-            N.requireNonNull(onComplete, "onComplete");
-
-            dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
-                @Override
-                public void onNext(Object param) {
-                    @SuppressWarnings("unchecked")
-                    final String tmp = (String) param;
-
-                    if (Util.isUiThread()) {
-                        onNext.accept(tmp);
-                    } else {
-                        UIExecutor.execute(new Runnable() {
-                            @Override
-                            public void run() {
-                                onNext.accept(tmp);
-                            }
-                        });
-                    }
-                }
-            });
-
-            _view.addTextChangedListener(new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence s, int start, int before, int count) {
-                    dispatcher.onNext(s.toString());
-                }
-
-                @Override
-                public void onTextChanged(CharSequence s, int start, int count, int after) {
-                    // Do nothing
-                }
-
-                @Override
-                public void afterTextChanged(Editable s) {
-                    // Do nothing
-                }
-            });
-        }
-
-        public void beforeTextChanged2(final Consumer<? super Tuple4<CharSequence, Integer, Integer, Integer>> onNext) {
-            beforeTextChanged2(onNext, Fu.ON_ERROR_MISSING);
-        }
-
-        public void beforeTextChanged2(final Consumer<? super Tuple4<CharSequence, Integer, Integer, Integer>> onNext,
+        public Disposable onTextChanged2(final Consumer<? super Tuple4<CharSequence, Integer, Integer, Integer>> onNext,
                 final Consumer<? super Throwable> onError) {
-            beforeTextChanged2(onNext, onError, Fu.EMPTY_ACTION);
+            return onTextChanged2(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public void beforeTextChanged2(final Consumer<? super Tuple4<CharSequence, Integer, Integer, Integer>> onNext,
+        public Disposable onTextChanged2(final Consumer<? super Tuple4<CharSequence, Integer, Integer, Integer>> onNext,
                 final Consumer<? super Throwable> onError, final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
@@ -850,33 +1229,44 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                 }
             });
 
-            _view.addTextChangedListener(new TextWatcher() {
+            final TextWatcher textWatcher = new TextWatcher() {
                 @Override
-                public void beforeTextChanged(CharSequence s, int start, int before, int count) {
-                    dispatcher.onNext(Tuple.of(s, start, before, count));
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                    // Do nothing
                 }
 
                 @Override
-                public void onTextChanged(CharSequence s, int start, int count, int after) {
-                    // Do nothing
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    dispatcher.onNext(Tuple.of(s, start, before, count));
                 }
 
                 @Override
                 public void afterTextChanged(Editable s) {
                     // Do nothing
                 }
+            };
+
+            _view.addTextChangedListener(textWatcher);
+
+            disposeActions.add(new Runnable() {
+                @Override
+                public void run() {
+                    _view.removeTextChangedListener(textWatcher);
+                }
             });
+
+            return this;
         }
 
-        public void afterTextChanged(final Consumer<? super String> onNext) {
-            afterTextChanged(onNext, Fu.ON_ERROR_MISSING);
+        public Disposable beforeTextChanged(final Consumer<? super String> onNext) {
+            return beforeTextChanged(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public void afterTextChanged(final Consumer<? super String> onNext, final Consumer<? super Throwable> onError) {
-            afterTextChanged(onNext, onError, Fu.EMPTY_ACTION);
+        public Disposable beforeTextChanged(final Consumer<? super String> onNext, final Consumer<? super Throwable> onError) {
+            return beforeTextChanged(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public void afterTextChanged(final Consumer<? super String> onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+        public Disposable beforeTextChanged(final Consumer<? super String> onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
             N.requireNonNull(onComplete, "onComplete");
@@ -900,7 +1290,131 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                 }
             });
 
-            _view.addTextChangedListener(new TextWatcher() {
+            final TextWatcher textWatcher = new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int before, int count) {
+                    dispatcher.onNext(s.toString());
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int count, int after) {
+                    // Do nothing
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+                    // Do nothing
+                }
+            };
+
+            _view.addTextChangedListener(textWatcher);
+
+            disposeActions.add(new Runnable() {
+                @Override
+                public void run() {
+                    _view.removeTextChangedListener(textWatcher);
+                }
+            });
+
+            return this;
+        }
+
+        public Disposable beforeTextChanged2(final Consumer<? super Tuple4<CharSequence, Integer, Integer, Integer>> onNext) {
+            return beforeTextChanged2(onNext, Fu.ON_ERROR_MISSING);
+        }
+
+        public Disposable beforeTextChanged2(final Consumer<? super Tuple4<CharSequence, Integer, Integer, Integer>> onNext,
+                final Consumer<? super Throwable> onError) {
+            return beforeTextChanged2(onNext, onError, Fu.EMPTY_ACTION);
+        }
+
+        public Disposable beforeTextChanged2(final Consumer<? super Tuple4<CharSequence, Integer, Integer, Integer>> onNext,
+                final Consumer<? super Throwable> onError, final Runnable onComplete) {
+            N.requireNonNull(onNext, "onNext");
+            N.requireNonNull(onError, "onError");
+            N.requireNonNull(onComplete, "onComplete");
+
+            dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
+                @Override
+                public void onNext(Object param) {
+                    @SuppressWarnings("unchecked")
+                    final Tuple4<CharSequence, Integer, Integer, Integer> tmp = (Tuple4<CharSequence, Integer, Integer, Integer>) param;
+
+                    if (Util.isUiThread()) {
+                        onNext.accept(tmp);
+                    } else {
+                        UIExecutor.execute(new Runnable() {
+                            @Override
+                            public void run() {
+                                onNext.accept(tmp);
+                            }
+                        });
+                    }
+                }
+            });
+
+            final TextWatcher textWatcher = new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int before, int count) {
+                    dispatcher.onNext(Tuple.of(s, start, before, count));
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int count, int after) {
+                    // Do nothing
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+                    // Do nothing
+                }
+            };
+
+            _view.addTextChangedListener(textWatcher);
+
+            disposeActions.add(new Runnable() {
+                @Override
+                public void run() {
+                    _view.removeTextChangedListener(textWatcher);
+                }
+            });
+
+            return this;
+        }
+
+        public Disposable afterTextChanged(final Consumer<? super String> onNext) {
+            return afterTextChanged(onNext, Fu.ON_ERROR_MISSING);
+        }
+
+        public Disposable afterTextChanged(final Consumer<? super String> onNext, final Consumer<? super Throwable> onError) {
+            return afterTextChanged(onNext, onError, Fu.EMPTY_ACTION);
+        }
+
+        public Disposable afterTextChanged(final Consumer<? super String> onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+            N.requireNonNull(onNext, "onNext");
+            N.requireNonNull(onError, "onError");
+            N.requireNonNull(onComplete, "onComplete");
+
+            dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
+                @Override
+                public void onNext(Object param) {
+                    @SuppressWarnings("unchecked")
+                    final String tmp = (String) param;
+
+                    if (Util.isUiThread()) {
+                        onNext.accept(tmp);
+                    } else {
+                        UIExecutor.execute(new Runnable() {
+                            @Override
+                            public void run() {
+                                onNext.accept(tmp);
+                            }
+                        });
+                    }
+                }
+            });
+
+            final TextWatcher textWatcher = new TextWatcher() {
                 @Override
                 public void beforeTextChanged(CharSequence s, int start, int after, int count) {
                     // Do nothing
@@ -915,18 +1429,29 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                 public void afterTextChanged(Editable s) {
                     dispatcher.onNext(s.toString());
                 }
+            };
+
+            _view.addTextChangedListener(textWatcher);
+
+            disposeActions.add(new Runnable() {
+                @Override
+                public void run() {
+                    _view.removeTextChangedListener(textWatcher);
+                }
             });
+
+            return this;
         }
 
-        public void afterTextChanged2(final Consumer<? super Editable> onNext) {
-            afterTextChanged2(onNext, Fu.ON_ERROR_MISSING);
+        public Disposable afterTextChanged2(final Consumer<? super Editable> onNext) {
+            return afterTextChanged2(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public void afterTextChanged2(final Consumer<? super Editable> onNext, final Consumer<? super Throwable> onError) {
-            afterTextChanged2(onNext, onError, Fu.EMPTY_ACTION);
+        public Disposable afterTextChanged2(final Consumer<? super Editable> onNext, final Consumer<? super Throwable> onError) {
+            return afterTextChanged2(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public void afterTextChanged2(final Consumer<? super Editable> onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+        public Disposable afterTextChanged2(final Consumer<? super Editable> onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
             N.requireNonNull(onComplete, "onComplete");
@@ -950,7 +1475,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                 }
             });
 
-            _view.addTextChangedListener(new TextWatcher() {
+            final TextWatcher textWatcher = new TextWatcher() {
                 @Override
                 public void beforeTextChanged(CharSequence s, int start, int after, int count) {
                     // Do nothing
@@ -965,9 +1490,101 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                 public void afterTextChanged(Editable s) {
                     dispatcher.onNext(s);
                 }
+            };
+
+            _view.addTextChangedListener(textWatcher);
+
+            disposeActions.add(new Runnable() {
+                @Override
+                public void run() {
+                    _view.removeTextChangedListener(textWatcher);
+                }
             });
+
+            return this;
         }
 
+        public Disposable onTextChanged(final TextWatcher onNext) {
+            return onTextChanged(onNext, Fu.ON_ERROR_MISSING);
+        }
+
+        public Disposable onTextChanged(final TextWatcher onNext, final Consumer<? super Throwable> onError) {
+            return onTextChanged(onNext, onError, Fu.EMPTY_ACTION);
+        }
+
+        public Disposable onTextChanged(final TextWatcher onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+            N.requireNonNull(onNext, "onNext");
+            N.requireNonNull(onError, "onError");
+            N.requireNonNull(onComplete, "onComplete");
+
+            dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
+                @Override
+                public void onNext(final Object param) {
+                    if (Util.isUiThread()) {
+                        if (param instanceof Tuple5) {
+                            final Tuple5<Integer, CharSequence, Integer, Integer, Integer> tmp = (Tuple5<Integer, CharSequence, Integer, Integer, Integer>) param;
+
+                            if (tmp._1 == 0) {
+                                onNext.beforeTextChanged(tmp._2, tmp._3, tmp._4, tmp._5);
+                            } else {
+                                onNext.onTextChanged(tmp._2, tmp._3, tmp._4, tmp._5);
+                            }
+                        } else {
+                            final Tuple2<Integer, Editable> tmp = (Tuple2<Integer, Editable>) param;
+
+                            onNext.afterTextChanged(tmp._2);
+                        }
+                    } else {
+                        UIExecutor.execute(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (param instanceof Tuple5) {
+                                    final Tuple5<Integer, CharSequence, Integer, Integer, Integer> tmp = (Tuple5<Integer, CharSequence, Integer, Integer, Integer>) param;
+
+                                    if (tmp._1 == 0) {
+                                        onNext.beforeTextChanged(tmp._2, tmp._3, tmp._4, tmp._5);
+                                    } else {
+                                        onNext.onTextChanged(tmp._2, tmp._3, tmp._4, tmp._5);
+                                    }
+                                } else {
+                                    final Tuple2<Integer, Editable> tmp = (Tuple2<Integer, Editable>) param;
+
+                                    onNext.afterTextChanged(tmp._2);
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+
+            final TextWatcher textWatcher = new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                    dispatcher.onNext(Tuple.of(0, s, start, count, after));
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    dispatcher.onNext(Tuple.of(1, s, start, before, count));
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+                    dispatcher.onNext(Tuple.of(2, s));
+                }
+            };
+
+            _view.addTextChangedListener(textWatcher);
+
+            disposeActions.add(new Runnable() {
+                @Override
+                public void run() {
+                    _view.removeTextChangedListener(textWatcher);
+                }
+            });
+
+            return this;
+        }
     }
 
     public static class SearchViewObserver<T extends SearchView, O extends SearchViewObserver<T, O>> extends ViewGroupObserver<T, O> {
@@ -976,15 +1593,15 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
             super(view);
         }
 
-        public void onQueryTextChange(final Consumer<? super String> onNext) {
-            onQueryTextChange(onNext, Fu.ON_ERROR_MISSING);
+        public Disposable onQueryTextChange(final Consumer<? super String> onNext) {
+            return onQueryTextChange(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public void onQueryTextChange(final Consumer<? super String> onNext, final Consumer<? super Throwable> onError) {
-            onQueryTextChange(onNext, onError, Fu.EMPTY_ACTION);
+        public Disposable onQueryTextChange(final Consumer<? super String> onNext, final Consumer<? super Throwable> onError) {
+            return onQueryTextChange(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public void onQueryTextChange(final Consumer<? super String> onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+        public Disposable onQueryTextChange(final Consumer<? super String> onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
             N.requireNonNull(onComplete, "onComplete");
@@ -1021,17 +1638,26 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                     return false;
                 }
             });
+
+            disposeActions.add(new Runnable() {
+                @Override
+                public void run() {
+                    _view.setOnQueryTextListener(null);
+                }
+            });
+
+            return this;
         }
 
-        public void onQueryTextSubmit(final Consumer<? super String> onNext) {
-            onQueryTextSubmit(onNext, Fu.ON_ERROR_MISSING);
+        public Disposable onQueryTextSubmit(final Consumer<? super String> onNext) {
+            return onQueryTextSubmit(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public void onQueryTextSubmit(final Consumer<? super String> onNext, final Consumer<? super Throwable> onError) {
-            onQueryTextSubmit(onNext, onError, Fu.EMPTY_ACTION);
+        public Disposable onQueryTextSubmit(final Consumer<? super String> onNext, final Consumer<? super Throwable> onError) {
+            return onQueryTextSubmit(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public void onQueryTextSubmit(final Consumer<? super String> onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+        public Disposable onQueryTextSubmit(final Consumer<? super String> onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
             N.requireNonNull(onComplete, "onComplete");
@@ -1068,25 +1694,26 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                     return true;
                 }
             });
-        }
-    }
 
-    public static class MenuItemObserver<T extends MenuItem, O extends MenuItemObserver<T, O>> extends ObserverBase<T, O> {
-        final MenuItem _menuItem;
+            disposeActions.add(new Runnable() {
+                @Override
+                public void run() {
+                    _view.setOnQueryTextListener(null);
+                }
+            });
 
-        MenuItemObserver(final MenuItem menuItem) {
-            this._menuItem = menuItem;
-        }
-
-        public void onMenuItemClick(final Consumer<? super MenuItem> onNext) {
-            onMenuItemClick(onNext, Fu.ON_ERROR_MISSING);
+            return this;
         }
 
-        public void onMenuItemClick(final Consumer<? super MenuItem> onNext, final Consumer<? super Throwable> onError) {
-            onMenuItemClick(onNext, onError, Fu.EMPTY_ACTION);
+        public Disposable onQueryText(final OnQueryTextListener onNext) {
+            return onQueryText(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public void onMenuItemClick(final Consumer<? super MenuItem> onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+        public Disposable onQueryText(final OnQueryTextListener onNext, final Consumer<? super Throwable> onError) {
+            return onQueryText(onNext, onError, Fu.EMPTY_ACTION);
+        }
+
+        public Disposable onQueryText(final OnQueryTextListener onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
             N.requireNonNull(onComplete, "onComplete");
@@ -1094,28 +1721,52 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
             dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
                 @Override
                 public void onNext(Object param) {
-                    final MenuItem tmp = (MenuItem) param;
+                    @SuppressWarnings("unchecked")
+                    final Tuple2<Integer, String> tmp = (Tuple2<Integer, String>) param;
 
                     if (Util.isUiThread()) {
-                        onNext.accept(tmp);
+                        if (tmp._1 == 0) {
+                            onNext.onQueryTextChange(tmp._2);
+                        } else {
+                            onNext.onQueryTextSubmit(tmp._2);
+                        }
                     } else {
                         UIExecutor.execute(new Runnable() {
                             @Override
                             public void run() {
-                                onNext.accept(tmp);
+                                if (tmp._1 == 0) {
+                                    onNext.onQueryTextChange(tmp._2);
+                                } else {
+                                    onNext.onQueryTextSubmit(tmp._2);
+                                }
                             }
                         });
                     }
                 }
             });
 
-            _menuItem.setOnMenuItemClickListener(new OnMenuItemClickListener() {
+            _view.setOnQueryTextListener(new OnQueryTextListener() {
                 @Override
-                public boolean onMenuItemClick(MenuItem item) {
-                    dispatcher.onNext(item);
+                public boolean onQueryTextChange(String newText) {
+                    dispatcher.onNext(Tuple.of(0, newText));
                     return true;
-                };
+                }
+
+                @Override
+                public boolean onQueryTextSubmit(String query) {
+                    dispatcher.onNext(Tuple.of(1, query));
+                    return true;
+                }
             });
+
+            disposeActions.add(new Runnable() {
+                @Override
+                public void run() {
+                    _view.setOnQueryTextListener(null);
+                }
+            });
+
+            return this;
         }
     }
 
@@ -1126,15 +1777,64 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
             super(view);
         }
 
-        public void onItemClick(final Consumer<? super Tuple4<AdapterView<?>, View, Integer, Integer>> onNext) {
-            onItemClick(onNext, Fu.ON_ERROR_MISSING);
+        public Disposable onItemClick(final OnItemClickListener onNext) {
+            return onItemClick(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public void onItemClick(final Consumer<? super Tuple4<AdapterView<?>, View, Integer, Integer>> onNext, final Consumer<? super Throwable> onError) {
-            onItemClick(onNext, onError, Fu.EMPTY_ACTION);
+        public Disposable onItemClick(final OnItemClickListener onNext, final Consumer<? super Throwable> onError) {
+            return onItemClick(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public void onItemClick(final Consumer<? super Tuple4<AdapterView<?>, View, Integer, Integer>> onNext, final Consumer<? super Throwable> onError,
+        public Disposable onItemClick(final OnItemClickListener onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+            N.requireNonNull(onNext, "onNext");
+            N.requireNonNull(onError, "onError");
+            N.requireNonNull(onComplete, "onComplete");
+
+            dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
+                @Override
+                public void onNext(Object param) {
+                    final Tuple4<AdapterView<?>, View, Integer, Integer> tmp = (Tuple4<AdapterView<?>, View, Integer, Integer>) param;
+
+                    if (Util.isUiThread()) {
+                        onNext.onItemClick(tmp._1, tmp._2, tmp._3, tmp._4);
+                    } else {
+                        UIExecutor.execute(new Runnable() {
+                            @Override
+                            public void run() {
+                                onNext.onItemClick(tmp._1, tmp._2, tmp._3, tmp._4);
+                            }
+                        });
+                    }
+                }
+            });
+
+            _view.setOnItemClickListener(new OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    dispatcher.onNext(Tuple.of(parent, view, position, id));
+                }
+            });
+
+            disposeActions.add(new Runnable() {
+                @Override
+                public void run() {
+                    _view.setOnItemClickListener(null);
+                }
+            });
+
+            return this;
+        }
+
+        public Disposable onItemClick(final Consumer<? super Tuple4<AdapterView<?>, View, Integer, Integer>> onNext) {
+            return onItemClick(onNext, Fu.ON_ERROR_MISSING);
+        }
+
+        public Disposable onItemClick(final Consumer<? super Tuple4<AdapterView<?>, View, Integer, Integer>> onNext,
+                final Consumer<? super Throwable> onError) {
+            return onItemClick(onNext, onError, Fu.EMPTY_ACTION);
+        }
+
+        public Disposable onItemClick(final Consumer<? super Tuple4<AdapterView<?>, View, Integer, Integer>> onNext, final Consumer<? super Throwable> onError,
                 final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
@@ -1164,6 +1864,72 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                     dispatcher.onNext(Tuple.of(parent, view, position, id));
                 }
             });
+
+            disposeActions.add(new Runnable() {
+                @Override
+                public void run() {
+                    _view.setOnItemClickListener(null);
+                }
+            });
+
+            return this;
+        }
+    }
+
+    public static class MenuItemObserver<T extends MenuItem, O extends MenuItemObserver<T, O>> extends UIObserverBase<T, O> {
+        final MenuItem _menuItem;
+
+        MenuItemObserver(final MenuItem menuItem) {
+            this._menuItem = menuItem;
+        }
+
+        public Disposable onMenuItemClick(final OnMenuItemClickListener onNext) {
+            return onMenuItemClick(onNext, Fu.ON_ERROR_MISSING);
+        }
+
+        public Disposable onMenuItemClick(final OnMenuItemClickListener onNext, final Consumer<? super Throwable> onError) {
+            return onMenuItemClick(onNext, onError, Fu.EMPTY_ACTION);
+        }
+
+        public Disposable onMenuItemClick(final OnMenuItemClickListener onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+            N.requireNonNull(onNext, "onNext");
+            N.requireNonNull(onError, "onError");
+            N.requireNonNull(onComplete, "onComplete");
+
+            dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
+                @Override
+                public void onNext(Object param) {
+                    final MenuItem tmp = (MenuItem) param;
+
+                    if (Util.isUiThread()) {
+                        onNext.onMenuItemClick(tmp);
+                    } else {
+                        UIExecutor.execute(new Runnable() {
+                            @Override
+                            public void run() {
+                                onNext.onMenuItemClick(tmp);
+                            }
+                        });
+                    }
+                }
+            });
+
+            _menuItem.setOnMenuItemClickListener(new OnMenuItemClickListener() {
+                @Override
+                public boolean onMenuItemClick(MenuItem item) {
+                    dispatcher.onNext(item);
+                    return true;
+                };
+            });
+
+            disposeActions.add(new Runnable() {
+                @Override
+                public void run() {
+                    _menuItem.setOnMenuItemClickListener(null);
+                }
+            });
+
+            return this;
         }
     }
 }

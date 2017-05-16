@@ -46,16 +46,65 @@ public abstract class ObserverX<T> {
             super(view);
         }
 
-        public void onScrollChange(final Consumer<? super Tuple5<View, Integer, Integer, Integer, Integer>> onNext) {
-            onScrollChange(onNext, Fu.ON_ERROR_MISSING);
+        public Disposable onScrollChange(final OnScrollChangeListener onNext) {
+            return onScrollChange(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public void onScrollChange(final Consumer<? super Tuple5<View, Integer, Integer, Integer, Integer>> onNext, final Consumer<? super Throwable> onError) {
-            onScrollChange(onNext, onError, Fu.EMPTY_ACTION);
+        public Disposable onScrollChange(final OnScrollChangeListener onNext, final Consumer<? super Throwable> onError) {
+            return onScrollChange(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public void onScrollChange(final Consumer<? super Tuple5<View, Integer, Integer, Integer, Integer>> onNext, final Consumer<? super Throwable> onError,
-                final Runnable onComplete) {
+        public Disposable onScrollChange(final OnScrollChangeListener onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+            N.requireNonNull(onNext, "onNext");
+            N.requireNonNull(onError, "onError");
+            N.requireNonNull(onComplete, "onComplete");
+
+            dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
+                @Override
+                public void onNext(Object param) {
+                    final Tuple5<View, Integer, Integer, Integer, Integer> tmp = (Tuple5<View, Integer, Integer, Integer, Integer>) param;
+
+                    if (Util.isUiThread()) {
+                        onNext.onScrollChange(tmp._1, tmp._2, tmp._3, tmp._4, tmp._5);
+                    } else {
+                        UIExecutor.execute(new Runnable() {
+                            @Override
+                            public void run() {
+                                onNext.onScrollChange(tmp._1, tmp._2, tmp._3, tmp._4, tmp._5);
+                            }
+                        });
+                    }
+                }
+            });
+
+            _view.setOnScrollChangeListener(new OnScrollChangeListener() {
+                @Override
+                public void onScrollChange(View v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
+                    dispatcher.onNext(Tuple.of(v, scrollX, scrollY, oldScrollX, oldScrollY));
+                };
+            });
+
+            disposeActions.add(new Runnable() {
+                @Override
+                public void run() {
+                    _view.setOnScrollChangeListener(null);
+                }
+            });
+
+            return this;
+        }
+
+        public Disposable onScrollChange(final Consumer<? super Tuple5<View, Integer, Integer, Integer, Integer>> onNext) {
+            return onScrollChange(onNext, Fu.ON_ERROR_MISSING);
+        }
+
+        public Disposable onScrollChange(final Consumer<? super Tuple5<View, Integer, Integer, Integer, Integer>> onNext,
+                final Consumer<? super Throwable> onError) {
+            return onScrollChange(onNext, onError, Fu.EMPTY_ACTION);
+        }
+
+        public Disposable onScrollChange(final Consumer<? super Tuple5<View, Integer, Integer, Integer, Integer>> onNext,
+                final Consumer<? super Throwable> onError, final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
             N.requireNonNull(onComplete, "onComplete");
@@ -84,7 +133,15 @@ public abstract class ObserverX<T> {
                     dispatcher.onNext(Tuple.of(v, scrollX, scrollY, oldScrollX, oldScrollY));
                 };
             });
-        }
 
+            disposeActions.add(new Runnable() {
+                @Override
+                public void run() {
+                    _view.setOnScrollChangeListener(null);
+                }
+            });
+
+            return this;
+        }
     }
 }

@@ -138,8 +138,20 @@ public class Builder<T> {
             return this;
         }
 
+        public BooleanListBuilder add(int index, boolean e) {
+            val.add(index, e);
+
+            return this;
+        }
+
         public BooleanListBuilder addAll(BooleanList c) {
             val.addAll(c);
+
+            return this;
+        }
+
+        public BooleanListBuilder addAll(int index, BooleanList c) {
+            val.addAll(index, c);
 
             return this;
         }
@@ -180,8 +192,20 @@ public class Builder<T> {
             return this;
         }
 
+        public CharListBuilder add(int index, char e) {
+            val.add(index, e);
+
+            return this;
+        }
+
         public CharListBuilder addAll(CharList c) {
             val.addAll(c);
+
+            return this;
+        }
+
+        public CharListBuilder addAll(int index, CharList c) {
+            val.addAll(index, c);
 
             return this;
         }
@@ -222,8 +246,20 @@ public class Builder<T> {
             return this;
         }
 
+        public ByteListBuilder add(int index, byte e) {
+            val.add(index, e);
+
+            return this;
+        }
+
         public ByteListBuilder addAll(ByteList c) {
             val.addAll(c);
+
+            return this;
+        }
+
+        public ByteListBuilder addAll(int index, ByteList c) {
+            val.addAll(index, c);
 
             return this;
         }
@@ -264,8 +300,20 @@ public class Builder<T> {
             return this;
         }
 
+        public ShortListBuilder add(int index, short e) {
+            val.add(index, e);
+
+            return this;
+        }
+
         public ShortListBuilder addAll(ShortList c) {
             val.addAll(c);
+
+            return this;
+        }
+
+        public ShortListBuilder addAll(int index, ShortList c) {
+            val.addAll(index, c);
 
             return this;
         }
@@ -306,8 +354,20 @@ public class Builder<T> {
             return this;
         }
 
+        public IntListBuilder add(int index, int e) {
+            val.add(index, e);
+
+            return this;
+        }
+
         public IntListBuilder addAll(IntList c) {
             val.addAll(c);
+
+            return this;
+        }
+
+        public IntListBuilder addAll(int index, IntList c) {
+            val.addAll(index, c);
 
             return this;
         }
@@ -348,8 +408,20 @@ public class Builder<T> {
             return this;
         }
 
+        public LongListBuilder add(int index, long e) {
+            val.add(index, e);
+
+            return this;
+        }
+
         public LongListBuilder addAll(LongList c) {
             val.addAll(c);
+
+            return this;
+        }
+
+        public LongListBuilder addAll(int index, LongList c) {
+            val.addAll(index, c);
 
             return this;
         }
@@ -390,8 +462,20 @@ public class Builder<T> {
             return this;
         }
 
+        public FloatListBuilder add(int index, float e) {
+            val.add(index, e);
+
+            return this;
+        }
+
         public FloatListBuilder addAll(FloatList c) {
             val.addAll(c);
+
+            return this;
+        }
+
+        public FloatListBuilder addAll(int index, FloatList c) {
+            val.addAll(index, c);
 
             return this;
         }
@@ -432,8 +516,20 @@ public class Builder<T> {
             return this;
         }
 
+        public DoubleListBuilder add(int index, double e) {
+            val.add(index, e);
+
+            return this;
+        }
+
         public DoubleListBuilder addAll(DoubleList c) {
             val.addAll(c);
+
+            return this;
+        }
+
+        public DoubleListBuilder addAll(int index, DoubleList c) {
+            val.addAll(index, c);
 
             return this;
         }
@@ -474,8 +570,20 @@ public class Builder<T> {
             return this;
         }
 
+        public ExListBuilder<T> add(int index, T e) {
+            val.add(index, e);
+
+            return this;
+        }
+
         public ExListBuilder<T> addAll(ExList<T> c) {
             val.addAll(c);
+
+            return this;
+        }
+
+        public ExListBuilder<T> addAll(int index, ExList<T> c) {
+            val.addAll(index, c);
 
             return this;
         }

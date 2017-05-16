@@ -14,19 +14,25 @@
 
 package com.landawn.abacus.util;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.landawn.abacus.android.util.Fu;
 import com.landawn.abacus.annotation.NonNull;
-import com.landawn.abacus.logging.Logger;
-import com.landawn.abacus.logging.LoggerFactory;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.Predicate;
@@ -41,8 +47,6 @@ import com.landawn.abacus.util.function.Predicate;
  */
 public abstract class Observer<T> {
 
-    private static final Logger logger = LoggerFactory.getLogger(Observer.class);
-
     private static final Object COMPLETE_FLAG = N.NULL_MASK;
 
     protected static final double INTERVAL_FACTOR = 3;
@@ -51,7 +55,9 @@ public abstract class Observer<T> {
 
     protected static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(N.IS_PLATFORM_ANDROID ? N.CPU_CORES : 32);
 
+    protected final Map<ScheduledFuture<?>, Long> scheduledFutures = new LinkedHashMap<>();
     protected final Dispatcher<Object> dispatcher = new Dispatcher<>();
+    protected boolean hasMore = true;
 
     protected Observer() {
 
@@ -65,13 +71,54 @@ public abstract class Observer<T> {
     public static <T> Observer<T> of(final BlockingQueue<T> queue) {
         N.requireNonNull(queue, "queue");
 
-        return new BlockingQueueObserver<T>(queue);
+        return new BlockingQueueObserver<>(queue);
     }
 
     public static <T> Observer<T> of(final Iterator<T> iter) {
         N.requireNonNull(iter, "iterator");
 
-        return new IteratorObserver<T>(iter);
+        return new IteratorObserver<>(iter);
+    }
+
+    /**
+     *  
+     * @param delay
+     * @param unit
+     * @return
+     * @see <a href="http://reactivex.io/RxJava/2.x/javadoc/io/reactivex/Observable.html#timer(long,%20java.util.concurrent.TimeUnit)">RxJava#timer</a>
+     */
+    public static Observer<Long> timer(long delay, TimeUnit unit) {
+        N.checkArgument(delay >= 0, "delay can't be negative");
+        N.requireNonNull(unit, "Time unit can't be null");
+
+        return new TimerObserver<>(delay, unit);
+    }
+
+    /**
+     *   
+     * @param period
+     * @param unit
+     * @return
+     * @see <a href="http://reactivex.io/RxJava/2.x/javadoc/io/reactivex/Observable.html#interval(long,%20long,%20java.util.concurrent.TimeUnit)">RxJava#interval</a>
+     */
+    public static Observer<Long> interval(long period, TimeUnit unit) {
+        return interval(0, period, unit);
+    }
+
+    /**
+     *  
+     * @param initialDelay
+     * @param period
+     * @param unit
+     * @return
+     * @see <a href="http://reactivex.io/RxJava/2.x/javadoc/io/reactivex/Observable.html#interval(long,%20long,%20java.util.concurrent.TimeUnit)">RxJava#interval</a>
+     */
+    public static Observer<Long> interval(long initialDelay, long period, TimeUnit unit) {
+        N.checkArgument(initialDelay >= 0, "initialDelay can't be negative");
+        N.checkArgument(period > 0, "period can't be 0 or negative");
+        N.requireNonNull(unit, "Time unit can't be null");
+
+        return new IntervalObserver<>(initialDelay, period, unit);
     }
 
     /**
@@ -417,6 +464,8 @@ public abstract class Observer<T> {
                 public void onNext(final Object param) {
                     if (downDispatcher != null && counter.incrementAndGet() <= n) {
                         downDispatcher.onNext(param);
+                    } else {
+                        hasMore = false;
                     }
                 }
             });
@@ -425,11 +474,50 @@ public abstract class Observer<T> {
         return this;
     }
 
+    /**
+     * 
+     * @return
+     */
+    public Observer<T> distinct() {
+        dispatcher.append(new Dispatcher<Object>() {
+            private Set<T> set = new HashSet<>();
+
+            @Override
+            public void onNext(final Object param) {
+                if (downDispatcher != null && set.add((T) param)) {
+                    downDispatcher.onNext(param);
+                }
+            }
+        });
+
+        return this;
+    }
+
+    /**
+     * 
+     * @param keyExtractor
+     * @return
+     */
+    public Observer<T> distinct(final Function<? super T, ?> keyExtractor) {
+        dispatcher.append(new Dispatcher<Object>() {
+            private Set<Object> set = new HashSet<>();
+
+            @Override
+            public void onNext(final Object param) {
+                if (downDispatcher != null && set.add(keyExtractor.apply((T) param))) { // onError if keyExtractor.apply throws exception?
+                    downDispatcher.onNext(param);
+                }
+            }
+        });
+
+        return this;
+    }
+
     public Observer<T> filter(final Predicate<? super T> filter) {
         dispatcher.append(new Dispatcher<Object>() {
             @Override
             public void onNext(final Object param) {
-                if (downDispatcher != null && filter.test((T) param) == true) {
+                if (downDispatcher != null && filter.test((T) param) == true) { // onError if filter.test throws exception?
                     downDispatcher.onNext(param);
                 }
             }
@@ -443,7 +531,7 @@ public abstract class Observer<T> {
             @Override
             public void onNext(final Object param) {
                 if (downDispatcher != null) {
-                    downDispatcher.onNext(map.apply((T) param));
+                    downDispatcher.onNext(map.apply((T) param)); // onError if map.apply throws exception?
                 }
             }
         });
@@ -456,7 +544,7 @@ public abstract class Observer<T> {
             @Override
             public void onNext(final Object param) {
                 if (downDispatcher != null) {
-                    final Collection<U> c = map.apply((T) param);
+                    final Collection<U> c = map.apply((T) param); // onError if map.apply throws exception?
 
                     if (N.notNullOrEmpty(c)) {
                         for (U u : c) {
@@ -470,7 +558,170 @@ public abstract class Observer<T> {
         return (Observer<U>) this;
     }
 
-    public abstract void observe(final Consumer<? super T> action);
+    /**
+     * 
+     * @param timespan
+     * @param unit
+     * @return this instance
+     * @see <a href="http://reactivex.io/RxJava/2.x/javadoc/io/reactivex/Observable.html#buffer(long,%20java.util.concurrent.TimeUnit)">RxJava#window(long, java.util.concurrent.TimeUnit)</a>
+     */
+    public Observer<List<T>> buffer(final long timespan, final TimeUnit unit) {
+        return buffer(timespan, unit, Integer.MAX_VALUE);
+    }
+
+    /**
+     * 
+     * @param timespan
+     * @param unit
+     * @return this instance
+     * @see <a href="http://reactivex.io/RxJava/2.x/javadoc/io/reactivex/Observable.html#buffer(long,%20java.util.concurrent.TimeUnit,%20int)">RxJava#window(long, java.util.concurrent.TimeUnit, int)</a>
+     */
+    public Observer<List<T>> buffer(final long timespan, final TimeUnit unit, final int count) {
+        N.checkArgument(timespan > 0, "timespan can't be 0 or negative");
+        N.requireNonNull(unit, "Time unit can't be null");
+        N.checkArgument(count > 0, "count can't be 0 or negative");
+
+        dispatcher.append(new Dispatcher<Object>() {
+            private final List<T> queue = new ArrayList<>();
+
+            {
+                scheduledFutures.put(scheduler.scheduleAtFixedRate(new Runnable() {
+                    @Override
+                    public void run() {
+                        List<T> list = null;
+                        synchronized (queue) {
+                            list = new ArrayList<>(queue);
+                            queue.clear();
+                        }
+
+                        if (downDispatcher != null) {
+                            downDispatcher.onNext(list);
+                        }
+                    }
+
+                }, timespan, timespan, unit), timespan);
+            }
+
+            @Override
+            public void onNext(final Object param) {
+                List<T> list = null;
+
+                synchronized (queue) {
+                    queue.add((T) param);
+
+                    if (queue.size() == count) {
+                        list = new ArrayList<>(queue);
+                        queue.clear();
+                    }
+                }
+
+                if (list != null && downDispatcher != null) {
+                    downDispatcher.onNext(list);
+                }
+            }
+        });
+
+        return (Observer<List<T>>) this;
+    }
+
+    /**
+     * 
+     * @param timespan
+     * @param timeskip
+     * @param unit
+     * @return
+     * @see <a href="http://reactivex.io/RxJava/2.x/javadoc/io/reactivex/Observable.html#buffer(long,%20long,%20java.util.concurrent.TimeUnit)">RxJava#window(long, long, java.util.concurrent.TimeUnit)</a>
+     */
+    public Observer<List<T>> buffer(final long timespan, final long timeskip, final TimeUnit unit) {
+        return buffer(timespan, timeskip, unit, Integer.MAX_VALUE);
+    }
+
+    /**
+     * 
+     * @param timespan
+     * @param timeskip
+     * @param unit
+     * @param count
+     * @return
+     * @see <a href="http://reactivex.io/RxJava/2.x/javadoc/io/reactivex/Observable.html#buffer(long,%20long,%20java.util.concurrent.TimeUnit)">RxJava#window(long, long, java.util.concurrent.TimeUnit)</a>
+     */
+    public Observer<List<T>> buffer(final long timespan, final long timeskip, final TimeUnit unit, final int count) {
+        N.checkArgument(timespan > 0, "timespan can't be 0 or negative");
+        N.checkArgument(timeskip > 0, "timeskip can't be 0 or negative");
+        N.requireNonNull(unit, "Time unit can't be null");
+        N.checkArgument(count > 0, "count can't be 0 or negative");
+
+        dispatcher.append(new Dispatcher<Object>() {
+            private final long startTime = N.currentMillis();
+            private final long interval = timespan + timeskip;
+            private final List<T> queue = new ArrayList<>();
+
+            {
+                scheduledFutures.put(scheduler.scheduleAtFixedRate(new Runnable() {
+                    @Override
+                    public void run() {
+                        List<T> list = null;
+                        synchronized (queue) {
+                            list = new ArrayList<>(queue);
+                            queue.clear();
+                        }
+
+                        if (downDispatcher != null) {
+                            downDispatcher.onNext(list);
+                        }
+                    }
+
+                }, timespan, interval, unit), interval);
+            }
+
+            @Override
+            public void onNext(final Object param) {
+                if ((N.currentMillis() - startTime) % interval <= timespan) {
+                    List<T> list = null;
+
+                    synchronized (queue) {
+                        queue.add((T) param);
+
+                        if (queue.size() == count) {
+                            list = new ArrayList<>(queue);
+                            queue.clear();
+                        }
+                    }
+
+                    if (list != null && downDispatcher != null) {
+                        downDispatcher.onNext(list);
+                    }
+                }
+            }
+        });
+
+        return (Observer<List<T>>) this;
+    }
+
+    public void observe(final Consumer<? super T> action) {
+        observe(action, Fu.ON_ERROR_MISSING);
+    }
+
+    public void observe(final Consumer<? super T> action, final Consumer<? super Throwable> onError) {
+        observe(action, onError, Fu.EMPTY_ACTION);
+    }
+
+    public abstract void observe(final Consumer<? super T> action, final Consumer<? super Throwable> onError, final Runnable onComplete);
+
+    void cancelScheduledFutures() {
+        final long startTime = N.currentMillis();
+
+        if (N.notNullOrEmpty(scheduledFutures)) {
+            for (Map.Entry<ScheduledFuture<?>, Long> entry : scheduledFutures.entrySet()) {
+                final long delay = entry.getValue();
+
+                N.sleep(delay - (N.currentMillis() - startTime)
+                        + delay /* Extending another delay just want to make sure last schedule can be completed before the schedule task is cancelled*/);
+
+                entry.getKey().cancel(false);
+            }
+        }
+    }
 
     protected static class Dispatcher<T> {
         protected final Output<Object> holder = Output.of(N.NULL_MASK);
@@ -512,7 +763,33 @@ public abstract class Observer<T> {
         }
     }
 
-    static final class BlockingQueueObserver<T> extends Observer<T> {
+    protected static abstract class DispatcherBase<T> extends Dispatcher<T> {
+        private final Consumer<? super Throwable> onError;
+        private final Runnable onComplete;
+
+        protected DispatcherBase(final Consumer<? super Throwable> onError, final Runnable onComplete) {
+            this.onError = onError;
+            this.onComplete = onComplete;
+        }
+
+        @Override
+        public void onError(final Throwable error) {
+            onError.accept(error);
+        }
+
+        @Override
+        public void onComplete() {
+            onComplete.run();
+        }
+    }
+
+    protected static abstract class ObserverBase<T> extends Observer<T> {
+        protected ObserverBase() {
+
+        }
+    }
+
+    static final class BlockingQueueObserver<T> extends ObserverBase<T> {
         private final BlockingQueue<T> queue;
 
         BlockingQueueObserver(final BlockingQueue<T> queue) {
@@ -520,10 +797,10 @@ public abstract class Observer<T> {
         }
 
         @Override
-        public void observe(final Consumer<? super T> action) {
+        public void observe(final Consumer<? super T> action, final Consumer<? super Throwable> onError, final Runnable onComplete) {
             N.requireNonNull(action, "action");
 
-            dispatcher.append(new Dispatcher<Object>() {
+            dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
                 @Override
                 public void onNext(Object param) {
                     action.accept((T) param);
@@ -534,20 +811,35 @@ public abstract class Observer<T> {
                 @Override
                 public void run() {
                     T next = null;
+                    boolean isOnError = true;
+
                     try {
-                        while ((next = queue.poll(Long.MAX_VALUE, TimeUnit.MILLISECONDS)) != COMPLETE_FLAG) {
+                        while (hasMore && (next = queue.poll(Long.MAX_VALUE, TimeUnit.MILLISECONDS)) != COMPLETE_FLAG) {
+                            isOnError = false;
+
                             dispatcher.onNext(next);
+
+                            isOnError = true;
                         }
-                    } catch (InterruptedException e) {
-                        logger.error("Observer is interrupted by exception", e);
-                        throw new RuntimeException("");
+
+                        isOnError = false;
+
+                        onComplete.run();
+                    } catch (Throwable e) {
+                        if (isOnError) {
+                            onError.accept(e);
+                        } else {
+                            throw N.toRuntimeException(e);
+                        }
+                    } finally {
+                        cancelScheduledFutures();
                     }
                 }
             });
         }
     }
 
-    static final class IteratorObserver<T> extends Observer<T> {
+    static final class IteratorObserver<T> extends ObserverBase<T> {
         private final Iterator<T> iter;
 
         IteratorObserver(final Iterator<T> iter) {
@@ -555,10 +847,10 @@ public abstract class Observer<T> {
         }
 
         @Override
-        public void observe(final Consumer<? super T> action) {
+        public void observe(final Consumer<? super T> action, final Consumer<? super Throwable> onError, final Runnable onComplete) {
             N.requireNonNull(action, "action");
 
-            dispatcher.append(new Dispatcher<Object>() {
+            dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
                 @Override
                 public void onNext(Object param) {
                     action.accept((T) param);
@@ -568,11 +860,121 @@ public abstract class Observer<T> {
             asyncExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
-                    while (iter.hasNext()) {
-                        dispatcher.onNext(iter.next());
+                    boolean isOnError = true;
+
+                    try {
+                        while (hasMore && iter.hasNext()) {
+                            isOnError = false;
+
+                            dispatcher.onNext(iter.next());
+
+                            isOnError = true;
+                        }
+
+                        isOnError = false;
+
+                        onComplete.run();
+                    } catch (Throwable e) {
+                        if (isOnError) {
+                            onError.accept(e);
+                        } else {
+                            throw N.toRuntimeException(e);
+                        }
+                    } finally {
+                        cancelScheduledFutures();
                     }
                 }
             });
+        }
+
+    }
+
+    static final class TimerObserver<T> extends ObserverBase<T> {
+        private final long delay;
+        private final TimeUnit unit;
+
+        TimerObserver(long delay, TimeUnit unit) {
+            this.delay = delay;
+            this.unit = unit;
+        }
+
+        @Override
+        public void observe(final Consumer<? super T> action, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+            N.requireNonNull(action, "action");
+
+            dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
+                @Override
+                public void onNext(Object param) {
+                    action.accept((T) param);
+                }
+            });
+
+            scheduler.schedule(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        dispatcher.onNext(0L);
+
+                        onComplete.run();
+                    } finally {
+                        cancelScheduledFutures();
+                    }
+                }
+            }, delay, unit);
+        }
+    }
+
+    static final class IntervalObserver<T> extends ObserverBase<T> {
+        private final long initialDelay;
+        private final long period;
+        private final TimeUnit unit;
+        private ScheduledFuture<?> future = null;
+
+        IntervalObserver(long initialDelay, long period, TimeUnit unit) {
+            this.initialDelay = initialDelay;
+            this.period = period;
+            this.unit = unit;
+        }
+
+        @Override
+        public void observe(final Consumer<? super T> action, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+            N.requireNonNull(action, "action");
+
+            dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
+                @Override
+                public void onNext(Object param) {
+                    action.accept((T) param);
+                }
+            });
+
+            future = scheduler.scheduleAtFixedRate(new Runnable() {
+                private long val = 0;
+
+                @Override
+                public void run() {
+                    if (hasMore == false) {
+                        try {
+                            dispatcher.onComplete();
+                        } finally {
+                            try {
+                                future.cancel(true);
+                            } finally {
+                                cancelScheduledFutures();
+                            }
+                        }
+                    } else {
+                        try {
+                            dispatcher.onNext(val++);
+                        } catch (Throwable e) {
+                            try {
+                                future.cancel(true);
+                            } finally {
+                                cancelScheduledFutures();
+                            }
+                        }
+                    }
+                }
+            }, initialDelay, period, unit);
         }
     }
 }

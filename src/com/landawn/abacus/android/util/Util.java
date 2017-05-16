@@ -19,8 +19,10 @@ import java.io.File;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import com.landawn.abacus.DataSet;
+import com.landawn.abacus.android.util.AsyncExecutor.UIExecutor;
 import com.landawn.abacus.android.util.SQLiteExecutor.Type;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
@@ -691,6 +693,22 @@ public class Util {
 
     public static boolean isUiThread(Thread thread) {
         return thread == Looper.getMainLooper().getThread();
+    }
+
+    public void runOnUiThread(Runnable action) {
+        if (isUiThread()) {
+            action.run();
+        } else {
+            UIExecutor.execute(action);
+        }
+    }
+
+    public <T> T callOnUiThread(Callable<? extends T> action) throws Exception {
+        if (isUiThread()) {
+            return action.call();
+        } else {
+            return UIExecutor.execute(action).get();
+        }
     }
 
     public static <T extends View> T getViewById(View root, int id) {
