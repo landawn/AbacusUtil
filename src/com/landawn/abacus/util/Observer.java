@@ -95,7 +95,7 @@ public abstract class Observer<T> {
 
     /**
      *  
-     * @param delay
+     * @param delayInMillis
      * @return
      * @see <a href="http://reactivex.io/RxJava/2.x/javadoc/io/reactivex/Observable.html#timer(long,%20java.util.concurrent.TimeUnit)">RxJava#timer</a>
      */
@@ -119,12 +119,22 @@ public abstract class Observer<T> {
 
     /**
      *   
-     * @param period
+     * @param periodInMillis
      * @return
      * @see <a href="http://reactivex.io/RxJava/2.x/javadoc/io/reactivex/Observable.html#interval(long,%20long,%20java.util.concurrent.TimeUnit)">RxJava#interval</a>
      */
     public static Observer<Long> interval(long periodInMillis) {
         return interval(0, periodInMillis, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * @param initialDelayInMillis
+     * @param periodInMillis
+     * @return
+     * @see <a href="http://reactivex.io/RxJava/2.x/javadoc/io/reactivex/Observable.html#interval(long,%20long,%20java.util.concurrent.TimeUnit)">RxJava#interval</a>
+     */
+    public static Observer<Long> interval(long initialDelayInMillis, long periodInMillis) {
+        return interval(initialDelayInMillis, periodInMillis, TimeUnit.MILLISECONDS);
     }
 
     /**

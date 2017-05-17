@@ -30,12 +30,6 @@ import android.os.Handler;
 import android.os.Looper;
 
 /**
- * <pre>
- * AsyncExecutor.executeWithThreadPool(() -> { // download image })
-    .executeOnUiThread((e, image) -> {// refresh UI })
-    .execute((e, image) -> {// convert image to bitmap format})
-    .callbackOnUiThread((e, bitmap) -> {// update UI});
- * </pre>
  * 
  * @since 0.8
  * 
