@@ -912,37 +912,49 @@ public class CompletableFuture<T> implements Future<T> {
         N.requireNonNull(executor);
 
         return new CompletableFuture<T>(new Future<T>() {
+            private volatile boolean isDelayed = false;
+
             @Override
             public boolean cancel(boolean mayInterruptIfRunning) {
+                delay();
+
                 return future.cancel(mayInterruptIfRunning);
             }
 
             @Override
             public boolean isCancelled() {
+                delay();
+
                 return future.isCancelled();
             }
 
             @Override
             public boolean isDone() {
+                delay();
+
                 return future.isDone();
             }
 
             @Override
             public T get() throws InterruptedException, ExecutionException {
-                if (delay > 0) {
-                    N.sleep(unit.toMillis(delay));
-                }
+                delay();
 
                 return future.get();
             }
 
             @Override
             public T get(final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-                if (delay > 0) {
-                    N.sleep(unit.toMillis(delay));
-                }
+                delay();
 
                 return future.get(timeout, unit);
+            }
+
+            private void delay() {
+                if (isDelayed == false) {
+                    isDelayed = true;
+
+                    N.sleep(unit.toMillis(delay));
+                }
             }
         }, null, executor) {
             @Override

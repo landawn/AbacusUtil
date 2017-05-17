@@ -19,7 +19,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import com.landawn.abacus.android.util.AsyncExecutor.UIExecutor;
+import com.landawn.abacus.android.util.Async.UIExecutor;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Timed;
 import com.landawn.abacus.util.Tuple;
@@ -350,7 +350,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                 public void onNext(Object param) {
                     final View tmp = (View) param;
 
-                    if (Util.isUiThread()) {
+                    if (Fu.isUiThread()) {
                         onNext.onClick(tmp);
                     } else {
                         UIExecutor.execute(new Runnable() {
@@ -398,7 +398,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                 public void onNext(Object param) {
                     final View tmp = (View) param;
 
-                    if (Util.isUiThread()) {
+                    if (Fu.isUiThread()) {
                         onNext.onLongClick(tmp);
                     } else {
                         UIExecutor.execute(new Runnable() {
@@ -447,7 +447,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                 public void onNext(Object param) {
                     final Tuple2<View, DragEvent> tmp = (Tuple2<View, DragEvent>) param;
 
-                    if (Util.isUiThread()) {
+                    if (Fu.isUiThread()) {
                         onNext.onDrag(tmp._1, tmp._2);
                     } else {
                         UIExecutor.execute(new Runnable() {
@@ -496,7 +496,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                 public void onNext(Object param) {
                     final Tuple2<View, MotionEvent> tmp = (Tuple2<View, MotionEvent>) param;
 
-                    if (Util.isUiThread()) {
+                    if (Fu.isUiThread()) {
                         onNext.onTouch(tmp._1, tmp._2);
                     } else {
                         UIExecutor.execute(new Runnable() {
@@ -545,7 +545,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                 public void onNext(Object param) {
                     final Tuple2<View, Boolean> tmp = (Tuple2<View, Boolean>) param;
 
-                    if (Util.isUiThread()) {
+                    if (Fu.isUiThread()) {
                         onNext.onFocusChange(tmp._1, tmp._2);
                     } else {
                         UIExecutor.execute(new Runnable() {
@@ -593,7 +593,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                 public void onNext(Object param) {
                     final Tuple2<View, MotionEvent> tmp = (Tuple2<View, MotionEvent>) param;
 
-                    if (Util.isUiThread()) {
+                    if (Fu.isUiThread()) {
                         onNext.onHover(tmp._1, tmp._2);
                     } else {
                         UIExecutor.execute(new Runnable() {
@@ -642,7 +642,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                 public void onNext(Object param) {
                     final Tuple3<View, Integer, KeyEvent> tmp = (Tuple3<View, Integer, KeyEvent>) param;
 
-                    if (Util.isUiThread()) {
+                    if (Fu.isUiThread()) {
                         onNext.onKey(tmp._1, tmp._2, tmp._3);
                     } else {
                         UIExecutor.execute(new Runnable() {
@@ -691,7 +691,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                 public void onNext(Object param) {
                     final View tmp = (View) param;
 
-                    if (Util.isUiThread()) {
+                    if (Fu.isUiThread()) {
                         onNext.accept(tmp);
                     } else {
                         UIExecutor.execute(new Runnable() {
@@ -746,7 +746,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                 public void onNext(Object param) {
                     final View tmp = (View) param;
 
-                    if (Util.isUiThread()) {
+                    if (Fu.isUiThread()) {
                         onNext.accept(tmp);
                     } else {
                         UIExecutor.execute(new Runnable() {
@@ -801,7 +801,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                 public void onNext(Object param) {
                     final Tuple2<Integer, View> tmp = (Tuple2<Integer, View>) param;
 
-                    if (Util.isUiThread()) {
+                    if (Fu.isUiThread()) {
                         if (tmp._1 == 0) {
                             onNext.onViewAttachedToWindow(tmp._2);
                         } else {
@@ -864,7 +864,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                 public void onNext(Object param) {
                     final Tuple9<View, Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer> tmp = (Tuple9<View, Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>) param;
 
-                    if (Util.isUiThread()) {
+                    if (Fu.isUiThread()) {
                         onNext.onLayoutChange(tmp._1, tmp._2, tmp._3, tmp._4, tmp._5, tmp._6, tmp._7, tmp._8, tmp._9);
                     } else {
                         UIExecutor.execute(new Runnable() {
@@ -916,7 +916,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                 public void onNext(Object param) {
                     final Tuple9<View, Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer> tmp = (Tuple9<View, Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>) param;
 
-                    if (Util.isUiThread()) {
+                    if (Fu.isUiThread()) {
                         onNext.accept(tmp);
                     } else {
                         UIExecutor.execute(new Runnable() {
@@ -975,7 +975,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                     @SuppressWarnings("unchecked")
                     final Tuple2<View, View> tmp = (Tuple2<View, View>) param;
 
-                    if (Util.isUiThread()) {
+                    if (Fu.isUiThread()) {
                         onNext.accept(tmp._1, tmp._2);
                     } else {
                         UIExecutor.execute(new Runnable() {
@@ -1030,7 +1030,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                     @SuppressWarnings("unchecked")
                     final Tuple2<View, View> tmp = (Tuple2<View, View>) param;
 
-                    if (Util.isUiThread()) {
+                    if (Fu.isUiThread()) {
                         onNext.accept(tmp._1, tmp._2);
                     } else {
                         UIExecutor.execute(new Runnable() {
@@ -1084,7 +1084,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                     @SuppressWarnings("unchecked")
                     final Tuple3<Integer, View, View> tmp = (Tuple3<Integer, View, View>) param;
 
-                    if (Util.isUiThread()) {
+                    if (Fu.isUiThread()) {
                         if (tmp._1 == 0) {
                             onNext.onChildViewAdded(tmp._2, tmp._3);
                         } else {
@@ -1153,7 +1153,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                     @SuppressWarnings("unchecked")
                     final String tmp = (String) param;
 
-                    if (Util.isUiThread()) {
+                    if (Fu.isUiThread()) {
                         onNext.accept(tmp);
                     } else {
                         UIExecutor.execute(new Runnable() {
@@ -1216,7 +1216,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                     @SuppressWarnings("unchecked")
                     final Tuple4<CharSequence, Integer, Integer, Integer> tmp = (Tuple4<CharSequence, Integer, Integer, Integer>) param;
 
-                    if (Util.isUiThread()) {
+                    if (Fu.isUiThread()) {
                         onNext.accept(tmp);
                     } else {
                         UIExecutor.execute(new Runnable() {
@@ -1277,7 +1277,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                     @SuppressWarnings("unchecked")
                     final String tmp = (String) param;
 
-                    if (Util.isUiThread()) {
+                    if (Fu.isUiThread()) {
                         onNext.accept(tmp);
                     } else {
                         UIExecutor.execute(new Runnable() {
@@ -1340,7 +1340,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                     @SuppressWarnings("unchecked")
                     final Tuple4<CharSequence, Integer, Integer, Integer> tmp = (Tuple4<CharSequence, Integer, Integer, Integer>) param;
 
-                    if (Util.isUiThread()) {
+                    if (Fu.isUiThread()) {
                         onNext.accept(tmp);
                     } else {
                         UIExecutor.execute(new Runnable() {
@@ -1401,7 +1401,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                     @SuppressWarnings("unchecked")
                     final String tmp = (String) param;
 
-                    if (Util.isUiThread()) {
+                    if (Fu.isUiThread()) {
                         onNext.accept(tmp);
                     } else {
                         UIExecutor.execute(new Runnable() {
@@ -1462,7 +1462,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                     @SuppressWarnings("unchecked")
                     final Editable tmp = (Editable) param;
 
-                    if (Util.isUiThread()) {
+                    if (Fu.isUiThread()) {
                         onNext.accept(tmp);
                     } else {
                         UIExecutor.execute(new Runnable() {
@@ -1520,7 +1520,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
             dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
                 @Override
                 public void onNext(final Object param) {
-                    if (Util.isUiThread()) {
+                    if (Fu.isUiThread()) {
                         if (param instanceof Tuple5) {
                             final Tuple5<Integer, CharSequence, Integer, Integer, Integer> tmp = (Tuple5<Integer, CharSequence, Integer, Integer, Integer>) param;
 
@@ -1612,7 +1612,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                     @SuppressWarnings("unchecked")
                     final String tmp = (String) param;
 
-                    if (Util.isUiThread()) {
+                    if (Fu.isUiThread()) {
                         onNext.accept(tmp);
                     } else {
                         UIExecutor.execute(new Runnable() {
@@ -1668,7 +1668,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                     @SuppressWarnings("unchecked")
                     final String tmp = (String) param;
 
-                    if (Util.isUiThread()) {
+                    if (Fu.isUiThread()) {
                         onNext.accept(tmp);
                     } else {
                         UIExecutor.execute(new Runnable() {
@@ -1724,7 +1724,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                     @SuppressWarnings("unchecked")
                     final Tuple2<Integer, String> tmp = (Tuple2<Integer, String>) param;
 
-                    if (Util.isUiThread()) {
+                    if (Fu.isUiThread()) {
                         if (tmp._1 == 0) {
                             onNext.onQueryTextChange(tmp._2);
                         } else {
@@ -1795,7 +1795,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                 public void onNext(Object param) {
                     final Tuple4<AdapterView<?>, View, Integer, Integer> tmp = (Tuple4<AdapterView<?>, View, Integer, Integer>) param;
 
-                    if (Util.isUiThread()) {
+                    if (Fu.isUiThread()) {
                         onNext.onItemClick(tmp._1, tmp._2, tmp._3, tmp._4);
                     } else {
                         UIExecutor.execute(new Runnable() {
@@ -1845,7 +1845,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                 public void onNext(Object param) {
                     final Tuple4<AdapterView<?>, View, Integer, Integer> tmp = (Tuple4<AdapterView<?>, View, Integer, Integer>) param;
 
-                    if (Util.isUiThread()) {
+                    if (Fu.isUiThread()) {
                         onNext.accept(tmp);
                     } else {
                         UIExecutor.execute(new Runnable() {
@@ -1901,7 +1901,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
                 public void onNext(Object param) {
                     final MenuItem tmp = (MenuItem) param;
 
-                    if (Util.isUiThread()) {
+                    if (Fu.isUiThread()) {
                         onNext.onMenuItemClick(tmp);
                     } else {
                         UIExecutor.execute(new Runnable() {

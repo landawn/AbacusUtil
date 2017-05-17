@@ -14,7 +14,7 @@
 
 package com.landawn.abacus.android.util;
 
-import com.landawn.abacus.android.util.AsyncExecutor.UIExecutor;
+import com.landawn.abacus.android.util.Async.UIExecutor;
 import com.landawn.abacus.android.util.Observer.ViewObserver;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Tuple;
@@ -64,7 +64,7 @@ public abstract class ObserverX<T> {
                 public void onNext(Object param) {
                     final Tuple5<View, Integer, Integer, Integer, Integer> tmp = (Tuple5<View, Integer, Integer, Integer, Integer>) param;
 
-                    if (Util.isUiThread()) {
+                    if (Fu.isUiThread()) {
                         onNext.onScrollChange(tmp._1, tmp._2, tmp._3, tmp._4, tmp._5);
                     } else {
                         UIExecutor.execute(new Runnable() {
@@ -114,7 +114,7 @@ public abstract class ObserverX<T> {
                 public void onNext(Object param) {
                     final Tuple5<View, Integer, Integer, Integer, Integer> tmp = (Tuple5<View, Integer, Integer, Integer, Integer>) param;
 
-                    if (Util.isUiThread()) {
+                    if (Fu.isUiThread()) {
                         onNext.accept(tmp);
                     } else {
                         UIExecutor.execute(new Runnable() {

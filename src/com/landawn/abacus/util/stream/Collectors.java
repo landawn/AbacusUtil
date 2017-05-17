@@ -1022,6 +1022,49 @@ public final class Collectors {
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
     }
 
+    public static <T> Collector<T, ?, List<T>> last(final int n) {
+        N.checkArgument(n >= 0, "'n' can't be negative");
+
+        final Supplier<ArrayDeque<T>> supplier = new Supplier<ArrayDeque<T>>() {
+            @Override
+            public ArrayDeque<T> get() {
+                return new ArrayDeque<>(n);
+            }
+        };
+
+        final BiConsumer<ArrayDeque<T>, T> accumulator = new BiConsumer<ArrayDeque<T>, T>() {
+            @Override
+            public void accept(ArrayDeque<T> dqueue, T t) {
+                if (n > 0) {
+                    if (dqueue.size() >= n) {
+                        dqueue.pollFirst();
+                    }
+
+                    dqueue.offerLast(t);
+                }
+            }
+        };
+
+        final BinaryOperator<ArrayDeque<T>> combiner = new BinaryOperator<ArrayDeque<T>>() {
+            @Override
+            public ArrayDeque<T> apply(ArrayDeque<T> a, ArrayDeque<T> b) {
+                while (b.size() < n && !a.isEmpty()) {
+                    b.addFirst(a.pollLast());
+                }
+                return b;
+            }
+        };
+
+        final Function<ArrayDeque<T>, List<T>> finisher = new Function<ArrayDeque<T>, List<T>>() {
+            @Override
+            public List<T> apply(ArrayDeque<T> dqueue) {
+                return new ArrayList<>(dqueue);
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
+    }
+
     /**
      * Returns a {@code Collector} that concatenates the input elements into a
      * {@code String}, in encounter order.

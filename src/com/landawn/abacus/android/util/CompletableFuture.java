@@ -79,11 +79,11 @@ public class CompletableFuture<T> implements Future<T> {
     }
 
     public static CompletableFuture<Void> run(final Runnable action) {
-        return run(action, AsyncExecutor.SERIAL_EXECUTOR);
+        return run(action, Async.SERIAL_EXECUTOR);
     }
 
     public static <T> CompletableFuture<T> run(final Try.Callable<T> action) {
-        return run(action, AsyncExecutor.SERIAL_EXECUTOR);
+        return run(action, Async.SERIAL_EXECUTOR);
     }
 
     public static CompletableFuture<Void> run(final Runnable action, final Executor executor) {
@@ -134,7 +134,7 @@ public class CompletableFuture<T> implements Future<T> {
             public T get(final long timeout, final TimeUnit unit) {
                 return result;
             }
-        }, null, AsyncExecutor.SERIAL_EXECUTOR);
+        }, null, Async.SERIAL_EXECUTOR);
     }
 
     @Override
@@ -1125,37 +1125,49 @@ public class CompletableFuture<T> implements Future<T> {
         N.requireNonNull(executor);
 
         return new CompletableFuture<T>(new Future<T>() {
+            private volatile boolean isDelayed = false;
+
             @Override
             public boolean cancel(boolean mayInterruptIfRunning) {
+                delay();
+
                 return future.cancel(mayInterruptIfRunning);
             }
 
             @Override
             public boolean isCancelled() {
+                delay();
+
                 return future.isCancelled();
             }
 
             @Override
             public boolean isDone() {
+                delay();
+
                 return future.isDone();
             }
 
             @Override
             public T get() throws InterruptedException, ExecutionException {
-                if (delay > 0) {
-                    N.sleep(unit.toMillis(delay));
-                }
+                delay();
 
                 return future.get();
             }
 
             @Override
             public T get(final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-                if (delay > 0) {
-                    N.sleep(unit.toMillis(delay));
-                }
+                delay();
 
                 return future.get(timeout, unit);
+            }
+
+            private void delay() {
+                if (isDelayed == false) {
+                    isDelayed = true;
+
+                    N.sleep(unit.toMillis(delay));
+                }
             }
         }, null, executor) {
             @Override
@@ -1171,15 +1183,15 @@ public class CompletableFuture<T> implements Future<T> {
     }
 
     public CompletableFuture<T> withUIExecutor() {
-        return with(AsyncExecutor.UI_EXECUTOR);
+        return with(Async.UI_EXECUTOR);
     }
 
     public CompletableFuture<T> withUIExecutor(final long delay) {
-        return with(AsyncExecutor.UI_EXECUTOR, delay, TimeUnit.MILLISECONDS);
+        return with(Async.UI_EXECUTOR, delay, TimeUnit.MILLISECONDS);
     }
 
     public CompletableFuture<T> withSerialExecutor() {
-        return with(AsyncExecutor.SERIAL_EXECUTOR);
+        return with(Async.SERIAL_EXECUTOR);
     }
 
     /**
@@ -1187,6 +1199,6 @@ public class CompletableFuture<T> implements Future<T> {
      * @return
      */
     public CompletableFuture<T> withTPExecutor() {
-        return with(AsyncExecutor.TP_EXECUTOR);
+        return with(Async.TP_EXECUTOR);
     }
 }

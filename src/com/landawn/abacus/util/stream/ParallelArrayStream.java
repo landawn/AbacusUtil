@@ -2577,6 +2577,17 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     }
 
     @Override
+    public Stream<T> last(final int n) {
+        N.checkArgument(n >= 0, "'n' can't be negative");
+
+        if (toIndex - fromIndex <= n) {
+            return this;
+        }
+
+        return new ParallelArrayStream<>(elements, toIndex - n, toIndex, closeHandlers, sorted, cmp, maxThreadNum, splitor);
+    }
+
+    @Override
     public NullabLe<T> min(Comparator<? super T> comparator) {
         if (fromIndex == toIndex) {
             return NullabLe.empty();

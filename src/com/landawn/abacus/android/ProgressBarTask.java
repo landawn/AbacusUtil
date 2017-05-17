@@ -16,7 +16,7 @@ package com.landawn.abacus.android;
 
 import java.util.concurrent.Callable;
 
-import com.landawn.abacus.android.util.AsyncExecutor.UIExecutor;
+import com.landawn.abacus.android.util.Async.UIExecutor;
 import com.landawn.abacus.android.util.CompletableFuture;
 import com.landawn.abacus.util.Multiset;
 

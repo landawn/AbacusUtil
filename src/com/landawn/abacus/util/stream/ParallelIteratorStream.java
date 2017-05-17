@@ -15,10 +15,12 @@
 package com.landawn.abacus.util.stream;
 
 import java.sql.PreparedStatement;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -1939,6 +1941,27 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
         }
 
         return tail2;
+    }
+
+    @Override
+    public Stream<T> last(final int n) {
+        N.checkArgument(n >= 0, "'n' can't be negative");
+
+        if (n == 0) {
+            return new ParallelIteratorStream<>(ExIterator.EMPTY, closeHandlers, sorted, cmp, maxThreadNum, splitor);
+        }
+
+        final Deque<T> dqueue = new ArrayDeque<>(n);
+
+        while (elements.hasNext()) {
+            if (dqueue.size() >= n) {
+                dqueue.pollFirst();
+            }
+
+            dqueue.offerLast(elements.next());
+        }
+
+        return new ParallelIteratorStream<>(dqueue.iterator(), closeHandlers, sorted, cmp, maxThreadNum, splitor);
     }
 
     @Override

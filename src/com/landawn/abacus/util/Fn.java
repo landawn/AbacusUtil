@@ -136,6 +136,8 @@ public final class Fn {
         }
     };
 
+    private static final Object NULL = new Object();
+
     private Fn() {
         // Singleton.
     }
@@ -308,6 +310,24 @@ public final class Fn {
 
     public static <T extends Comparable<? super T>> com.landawn.abacus.util.function.BiPredicate<T, T> lessEqual() {
         return (com.landawn.abacus.util.function.BiPredicate<T, T>) BiPredicate.LESS_EQUAL;
+    }
+
+    /**
+     * Remove the continuous repeat elements.
+     * 
+     * @return
+     */
+    public static <T> Predicate<T> removeRepeats() {
+        return new Predicate<T>() {
+            private T pre = (T) NULL;
+
+            @Override
+            public boolean test(T value) {
+                boolean res = pre == NULL || N.equals(value, pre) == false;
+                pre = value;
+                return res;
+            }
+        };
     }
 
     public static <K, V> Predicate<Map.Entry<K, V>> testByKey(final Predicate<? super K> predicate) {

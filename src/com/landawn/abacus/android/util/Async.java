@@ -41,7 +41,7 @@ import android.os.Looper;
  * 
  * @author Haiyang Li
  */
-public class AsyncExecutor {
+public class Async {
 
     private static final _UIExecutor _UI_EXECUTOR = new _UIExecutor();
 
@@ -49,7 +49,7 @@ public class AsyncExecutor {
     public static final Executor TP_EXECUTOR = AsyncTask.THREAD_POOL_EXECUTOR;
     public static final Executor UI_EXECUTOR = _UI_EXECUTOR;
 
-    private AsyncExecutor() {
+    private Async() {
         // Singleton
     }
 
@@ -61,7 +61,7 @@ public class AsyncExecutor {
      * @deprecated replaced with SerialExecutor
      */
     @Deprecated
-    public static CompletableFuture<Void> execute(final Runnable action) {
+    static CompletableFuture<Void> execute(final Runnable action) {
         return execute(new FutureTask<Void>(action, null), SERIAL_EXECUTOR);
     }
 
@@ -75,7 +75,7 @@ public class AsyncExecutor {
      * @deprecated replaced with SerialExecutor
      */
     @Deprecated
-    public static CompletableFuture<Void> execute(final Runnable action, final int retryTimes, final long retryInterval,
+    static CompletableFuture<Void> execute(final Runnable action, final int retryTimes, final long retryInterval,
             final Function<Throwable, Boolean> retryCondition) {
         return execute(new Runnable() {
             @Override
@@ -93,7 +93,7 @@ public class AsyncExecutor {
      * @deprecated replaced with SerialExecutor
      */
     @Deprecated
-    public static <T> CompletableFuture<T> execute(final Callable<T> action) {
+    static <T> CompletableFuture<T> execute(final Callable<T> action) {
         return execute(new FutureTask<>(action), SERIAL_EXECUTOR);
     }
 
@@ -107,7 +107,7 @@ public class AsyncExecutor {
      * @deprecated replaced with SerialExecutor
      */
     @Deprecated
-    public static <T> CompletableFuture<T> execute(final Callable<T> action, final int retryTimes, final long retryInterval,
+    static <T> CompletableFuture<T> execute(final Callable<T> action, final int retryTimes, final long retryInterval,
             final BiFunction<? super T, Throwable, Boolean> retryCondition) {
         return execute(new Callable<T>() {
             @Override
@@ -126,7 +126,7 @@ public class AsyncExecutor {
      * @deprecated replaced with TPExecutor
      */
     @Deprecated
-    public static CompletableFuture<Void> executeWithThreadPool(final Runnable action) {
+    static CompletableFuture<Void> executeWithThreadPool(final Runnable action) {
         return execute(new FutureTask<Void>(action, null), TP_EXECUTOR);
     }
 
@@ -140,7 +140,7 @@ public class AsyncExecutor {
      * @deprecated replaced with TPExecutor
      */
     @Deprecated
-    public static CompletableFuture<Void> executeWithThreadPool(final Runnable action, final int retryTimes, final long retryInterval,
+    static CompletableFuture<Void> executeWithThreadPool(final Runnable action, final int retryTimes, final long retryInterval,
             final Function<Throwable, Boolean> retryCondition) {
         return executeWithThreadPool(new Runnable() {
             @Override
@@ -158,7 +158,7 @@ public class AsyncExecutor {
      * @deprecated replaced with TPExecutor
      */
     @Deprecated
-    public static <T> CompletableFuture<T> executeWithThreadPool(final Callable<T> action) {
+    static <T> CompletableFuture<T> executeWithThreadPool(final Callable<T> action) {
         return execute(new FutureTask<>(action), TP_EXECUTOR);
     }
 
@@ -172,7 +172,7 @@ public class AsyncExecutor {
      * @deprecated replaced with TPExecutor
      */
     @Deprecated
-    public static <T> CompletableFuture<T> executeWithThreadPool(final Callable<T> action, final int retryTimes, final long retryInterval,
+    static <T> CompletableFuture<T> executeWithThreadPool(final Callable<T> action, final int retryTimes, final long retryInterval,
             final BiFunction<? super T, Throwable, Boolean> retryCondition) {
         return executeWithThreadPool(new Callable<T>() {
             @Override
@@ -191,7 +191,7 @@ public class AsyncExecutor {
      * @deprecated replaced with UIExecutor
      */
     @Deprecated
-    public static CompletableFuture<Void> executeOnUiThread(final Runnable action) {
+    static CompletableFuture<Void> executeOnUiThread(final Runnable action) {
         return executeOnUiThread(action, 0);
     }
 
@@ -204,7 +204,7 @@ public class AsyncExecutor {
      * @deprecated replaced with UIExecutor
      */
     @Deprecated
-    public static CompletableFuture<Void> executeOnUiThread(final Runnable action, final long delay) {
+    static CompletableFuture<Void> executeOnUiThread(final Runnable action, final long delay) {
         return execute(new FutureTask<Void>(action, null), _UI_EXECUTOR, delay);
     }
 
@@ -218,7 +218,7 @@ public class AsyncExecutor {
      * @deprecated replaced with UIExecutor
      */
     @Deprecated
-    public static CompletableFuture<Void> executeOnUiThread(final Runnable action, final int retryTimes, final long retryInterval,
+    static CompletableFuture<Void> executeOnUiThread(final Runnable action, final int retryTimes, final long retryInterval,
             final Function<Throwable, Boolean> retryCondition) {
         return executeOnUiThread(new Runnable() {
             @Override
@@ -236,7 +236,7 @@ public class AsyncExecutor {
      * @deprecated replaced with UIExecutor
      */
     @Deprecated
-    public static <T> CompletableFuture<T> executeOnUiThread(final Callable<T> action) {
+    static <T> CompletableFuture<T> executeOnUiThread(final Callable<T> action) {
         return executeOnUiThread(action, 0);
     }
 
@@ -249,7 +249,7 @@ public class AsyncExecutor {
      * @deprecated replaced with UIExecutor
      */
     @Deprecated
-    public static <T> CompletableFuture<T> executeOnUiThread(final Callable<T> action, final long delay) {
+    static <T> CompletableFuture<T> executeOnUiThread(final Callable<T> action, final long delay) {
         return execute(new FutureTask<>(action), _UI_EXECUTOR, delay);
     }
 
@@ -263,7 +263,7 @@ public class AsyncExecutor {
      * @deprecated replaced with UIExecutor
      */
     @Deprecated
-    public static <T> CompletableFuture<T> executeOnUiThread(final Callable<T> action, final int retryTimes, final long retryInterval,
+    static <T> CompletableFuture<T> executeOnUiThread(final Callable<T> action, final int retryTimes, final long retryInterval,
             final BiFunction<? super T, Throwable, Boolean> retryCondition) {
         return executeOnUiThread(new Callable<T>() {
             @Override
@@ -319,12 +319,12 @@ public class AsyncExecutor {
          * @return
          */
         public static CompletableFuture<Void> execute(final Runnable action) {
-            return AsyncExecutor.execute(action);
+            return Async.execute(action);
         }
 
         public static CompletableFuture<Void> execute(final Runnable action, final int retryTimes, final long retryInterval,
                 final Function<Throwable, Boolean> retryCondition) {
-            return AsyncExecutor.execute(action, retryTimes, retryInterval, retryCondition);
+            return Async.execute(action, retryTimes, retryInterval, retryCondition);
 
         }
 
@@ -335,12 +335,12 @@ public class AsyncExecutor {
          * @return
          */
         public static <T> CompletableFuture<T> execute(final Callable<T> action) {
-            return AsyncExecutor.execute(action);
+            return Async.execute(action);
         }
 
         public static <T> CompletableFuture<T> execute(final Callable<T> action, final int retryTimes, final long retryInterval,
                 final BiFunction<? super T, Throwable, Boolean> retryCondition) {
-            return AsyncExecutor.execute(action, retryTimes, retryInterval, retryCondition);
+            return Async.execute(action, retryTimes, retryInterval, retryCondition);
         }
     }
 
@@ -356,12 +356,12 @@ public class AsyncExecutor {
          * @return
          */
         public static CompletableFuture<Void> execute(final Runnable action) {
-            return AsyncExecutor.executeWithThreadPool(action);
+            return Async.executeWithThreadPool(action);
         }
 
         public static CompletableFuture<Void> execute(final Runnable action, final int retryTimes, final long retryInterval,
                 final Function<Throwable, Boolean> retryCondition) {
-            return AsyncExecutor.executeWithThreadPool(action, retryTimes, retryInterval, retryCondition);
+            return Async.executeWithThreadPool(action, retryTimes, retryInterval, retryCondition);
 
         }
 
@@ -372,12 +372,12 @@ public class AsyncExecutor {
          * @return
          */
         public static <T> CompletableFuture<T> execute(final Callable<T> action) {
-            return AsyncExecutor.executeWithThreadPool(action);
+            return Async.executeWithThreadPool(action);
         }
 
         public static <T> CompletableFuture<T> execute(final Callable<T> action, final int retryTimes, final long retryInterval,
                 final BiFunction<? super T, Throwable, Boolean> retryCondition) {
-            return AsyncExecutor.executeWithThreadPool(action, retryTimes, retryInterval, retryCondition);
+            return Async.executeWithThreadPool(action, retryTimes, retryInterval, retryCondition);
         }
     }
 
@@ -393,7 +393,7 @@ public class AsyncExecutor {
          * @return
          */
         public static CompletableFuture<Void> execute(final Runnable action) {
-            return AsyncExecutor.executeOnUiThread(action);
+            return Async.executeOnUiThread(action);
         }
 
         /**
@@ -404,12 +404,12 @@ public class AsyncExecutor {
          * @return
          */
         public static CompletableFuture<Void> execute(final Runnable action, final long delay) {
-            return AsyncExecutor.executeOnUiThread(action, delay);
+            return Async.executeOnUiThread(action, delay);
         }
 
         public static CompletableFuture<Void> execute(final Runnable action, final int retryTimes, final long retryInterval,
                 final Function<Throwable, Boolean> retryCondition) {
-            return AsyncExecutor.executeOnUiThread(action, retryTimes, retryInterval, retryCondition);
+            return Async.executeOnUiThread(action, retryTimes, retryInterval, retryCondition);
         }
 
         /**
@@ -419,7 +419,7 @@ public class AsyncExecutor {
          * @return
          */
         public static <T> CompletableFuture<T> execute(final Callable<T> action) {
-            return AsyncExecutor.executeOnUiThread(action);
+            return Async.executeOnUiThread(action);
         }
 
         /**
@@ -430,12 +430,12 @@ public class AsyncExecutor {
          * @return
          */
         public static <T> CompletableFuture<T> execute(final Callable<T> action, final long delay) {
-            return AsyncExecutor.executeOnUiThread(action, delay);
+            return Async.executeOnUiThread(action, delay);
         }
 
         public static <T> CompletableFuture<T> execute(final Callable<T> action, final int retryTimes, final long retryInterval,
                 final BiFunction<? super T, Throwable, Boolean> retryCondition) {
-            return AsyncExecutor.executeOnUiThread(action, retryTimes, retryInterval, retryCondition);
+            return Async.executeOnUiThread(action, retryTimes, retryInterval, retryCondition);
         }
     }
 

@@ -31,7 +31,6 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.landawn.abacus.android.util.Fu;
 import com.landawn.abacus.annotation.NonNull;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
@@ -50,6 +49,20 @@ public abstract class Observer<T> {
     private static final Object COMPLETE_FLAG = N.NULL_MASK;
 
     protected static final double INTERVAL_FACTOR = 3;
+
+    protected static final Runnable EMPTY_ACTION = new Runnable() {
+        @Override
+        public void run() {
+            // Do nothing;            
+        }
+    };
+
+    protected static final Consumer<Throwable> ON_ERROR_MISSING = new Consumer<Throwable>() {
+        @Override
+        public void accept(Throwable t) {
+            throw new RuntimeException(t);
+        }
+    };
 
     protected static final Executor asyncExecutor = Executors.newFixedThreadPool(N.IS_PLATFORM_ANDROID ? N.CPU_CORES : 32);
 
@@ -83,6 +96,16 @@ public abstract class Observer<T> {
     /**
      *  
      * @param delay
+     * @return
+     * @see <a href="http://reactivex.io/RxJava/2.x/javadoc/io/reactivex/Observable.html#timer(long,%20java.util.concurrent.TimeUnit)">RxJava#timer</a>
+     */
+    public static Observer<Long> timer(long delayInMillis) {
+        return timer(delayInMillis, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     *  
+     * @param delay
      * @param unit
      * @return
      * @see <a href="http://reactivex.io/RxJava/2.x/javadoc/io/reactivex/Observable.html#timer(long,%20java.util.concurrent.TimeUnit)">RxJava#timer</a>
@@ -92,6 +115,16 @@ public abstract class Observer<T> {
         N.requireNonNull(unit, "Time unit can't be null");
 
         return new TimerObserver<>(delay, unit);
+    }
+
+    /**
+     *   
+     * @param period
+     * @return
+     * @see <a href="http://reactivex.io/RxJava/2.x/javadoc/io/reactivex/Observable.html#interval(long,%20long,%20java.util.concurrent.TimeUnit)">RxJava#interval</a>
+     */
+    public static Observer<Long> interval(long periodInMillis) {
+        return interval(0, periodInMillis, TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -439,6 +472,8 @@ public abstract class Observer<T> {
     }
 
     public Observer<T> skip(final long n) {
+        N.checkArgument(n >= 0, "n can't be negative");
+
         if (n > 0) {
             dispatcher.append(new Dispatcher<Object>() {
                 private final AtomicLong counter = new AtomicLong();
@@ -456,20 +491,20 @@ public abstract class Observer<T> {
     }
 
     public Observer<T> limit(final long n) {
-        if (n > 0) {
-            dispatcher.append(new Dispatcher<Object>() {
-                private final AtomicLong counter = new AtomicLong();
+        N.checkArgument(n >= 0, "n can't be negative");
 
-                @Override
-                public void onNext(final Object param) {
-                    if (downDispatcher != null && counter.incrementAndGet() <= n) {
-                        downDispatcher.onNext(param);
-                    } else {
-                        hasMore = false;
-                    }
+        dispatcher.append(new Dispatcher<Object>() {
+            private final AtomicLong counter = new AtomicLong();
+
+            @Override
+            public void onNext(final Object param) {
+                if (downDispatcher != null && counter.incrementAndGet() <= n) {
+                    downDispatcher.onNext(param);
+                } else {
+                    hasMore = false;
                 }
-            });
-        }
+            }
+        });
 
         return this;
     }
@@ -699,11 +734,11 @@ public abstract class Observer<T> {
     }
 
     public void observe(final Consumer<? super T> action) {
-        observe(action, Fu.ON_ERROR_MISSING);
+        observe(action, ON_ERROR_MISSING);
     }
 
     public void observe(final Consumer<? super T> action, final Consumer<? super Throwable> onError) {
-        observe(action, onError, Fu.EMPTY_ACTION);
+        observe(action, onError, EMPTY_ACTION);
     }
 
     public abstract void observe(final Consumer<? super T> action, final Consumer<? super Throwable> onError, final Runnable onComplete);

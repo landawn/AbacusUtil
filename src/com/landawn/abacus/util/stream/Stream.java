@@ -1417,6 +1417,8 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public abstract Pair<Stream<T>, NullabLe<T>> headAndTail2();
 
+    public abstract Stream<T> last(int n);
+
     /**
      * Returns the minimum element of this stream according to the provided
      * {@code Comparator}.  This is a special case of a

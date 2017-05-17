@@ -1463,11 +1463,11 @@ class ArrayStream<T> extends AbstractStream<T> {
     public <K, U, M extends Map<K, U>> M toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
             BinaryOperator<U> mergeFunction, Supplier<M> mapFactory) {
         final M result = mapFactory.get();
-    
+
         for (int i = fromIndex; i < toIndex; i++) {
             Collectors.merge(result, keyExtractor.apply(elements[i]), valueMapper.apply(elements[i]), mergeFunction);
         }
-    
+
         return result;
     }
 
@@ -1621,6 +1621,17 @@ class ArrayStream<T> extends AbstractStream<T> {
     @Override
     public NullabLe<T> tail2() {
         return fromIndex == toIndex ? NullabLe.<T> empty() : NullabLe.of(elements[toIndex - 1]);
+    }
+
+    @Override
+    public Stream<T> last(final int n) {
+        N.checkArgument(n >= 0, "'n' can't be negative");
+
+        if (toIndex - fromIndex <= n) {
+            return this;
+        }
+
+        return new ArrayStream<>(elements, toIndex - n, toIndex, closeHandlers, sorted, cmp);
     }
 
     @Override
