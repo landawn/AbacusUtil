@@ -39,8 +39,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 
-import com.landawn.abacus.util.function.Consumer;
-import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.ToByteFunction;
 import com.landawn.abacus.util.function.ToCharFunction;
@@ -82,7 +80,7 @@ public final class Fn {
     public static final com.landawn.abacus.util.function.Supplier<LinkedHashMap<String, Object>> SUPPLIER_OF_LINKED_HASH_MAP = (com.landawn.abacus.util.function.Supplier) Supplier.LINKED_HASH_MAP;
 
     @SuppressWarnings("rawtypes")
-    private static final Consumer DO_NOTHING = new Consumer() {
+    private static final com.landawn.abacus.util.function.Consumer DO_NOTHING = new com.landawn.abacus.util.function.Consumer() {
         @Override
         public void accept(Object value) {
             // do nothing.
@@ -90,7 +88,7 @@ public final class Fn {
     };
 
     @SuppressWarnings("rawtypes")
-    private static final Consumer PRINTLN = new Consumer() {
+    private static final com.landawn.abacus.util.function.Consumer PRINTLN = new com.landawn.abacus.util.function.Consumer() {
         @Override
         public void accept(Object value) {
             N.println(value);
@@ -98,7 +96,7 @@ public final class Fn {
     };
 
     @SuppressWarnings("rawtypes")
-    private static final Function IDENTITY = new Function() {
+    private static final com.landawn.abacus.util.function.Function IDENTITY = new com.landawn.abacus.util.function.Function() {
         @Override
         public Object apply(Object t) {
             return t;
@@ -155,11 +153,11 @@ public final class Fn {
         return Comparators.reverseOrder(cmp);
     }
 
-    public static <T> Consumer<T> doNothing() {
+    public static <T> com.landawn.abacus.util.function.Consumer<T> doNothing() {
         return DO_NOTHING;
     }
 
-    public static <T> Consumer<T> println() {
+    public static <T> com.landawn.abacus.util.function.Consumer<T> println() {
         return PRINTLN;
     }
 
@@ -172,12 +170,12 @@ public final class Fn {
         };
     }
 
-    public static <T> Function<T, T> identity() {
+    public static <T> com.landawn.abacus.util.function.Function<T, T> identity() {
         return IDENTITY;
     }
 
-    public static <T, U> Function<T, U> cast(final Class<U> clazz) {
-        return new Function<T, U>() {
+    public static <T, U> com.landawn.abacus.util.function.Function<T, U> cast(final Class<U> clazz) {
+        return new com.landawn.abacus.util.function.Function<T, U>() {
             @Override
             public U apply(T t) {
                 return (U) t;
@@ -363,8 +361,9 @@ public final class Fn {
         };
     }
 
-    public static <K, V> Consumer<Map.Entry<K, V>> acceptByKey(final Consumer<? super K> consumer) {
-        return new Consumer<Map.Entry<K, V>>() {
+    public static <K, V> com.landawn.abacus.util.function.Consumer<Map.Entry<K, V>> acceptByKey(
+            final com.landawn.abacus.util.function.Consumer<? super K> consumer) {
+        return new com.landawn.abacus.util.function.Consumer<Map.Entry<K, V>>() {
             @Override
             public void accept(Entry<K, V> entry) {
                 consumer.accept(entry.getKey());
@@ -372,8 +371,9 @@ public final class Fn {
         };
     }
 
-    public static <K, V> Consumer<Map.Entry<K, V>> acceptByValue(final Consumer<? super V> consumer) {
-        return new Consumer<Map.Entry<K, V>>() {
+    public static <K, V> com.landawn.abacus.util.function.Consumer<Map.Entry<K, V>> acceptByValue(
+            final com.landawn.abacus.util.function.Consumer<? super V> consumer) {
+        return new com.landawn.abacus.util.function.Consumer<Map.Entry<K, V>>() {
             @Override
             public void accept(Entry<K, V> entry) {
                 consumer.accept(entry.getValue());
@@ -381,8 +381,9 @@ public final class Fn {
         };
     }
 
-    public static <K, V, R> Function<Map.Entry<K, V>, R> applyByKey(final Function<? super K, R> func) {
-        return new Function<Map.Entry<K, V>, R>() {
+    public static <K, V, R> com.landawn.abacus.util.function.Function<Map.Entry<K, V>, R> applyByKey(
+            final com.landawn.abacus.util.function.Function<? super K, R> func) {
+        return new com.landawn.abacus.util.function.Function<Map.Entry<K, V>, R>() {
             @Override
             public R apply(Entry<K, V> entry) {
                 return func.apply(entry.getKey());
@@ -390,8 +391,9 @@ public final class Fn {
         };
     }
 
-    public static <K, V, R> Function<Map.Entry<K, V>, R> applyByValue(final Function<? super V, R> func) {
-        return new Function<Map.Entry<K, V>, R>() {
+    public static <K, V, R> com.landawn.abacus.util.function.Function<Map.Entry<K, V>, R> applyByValue(
+            final com.landawn.abacus.util.function.Function<? super V, R> func) {
+        return new com.landawn.abacus.util.function.Function<Map.Entry<K, V>, R>() {
             @Override
             public R apply(Entry<K, V> entry) {
                 return func.apply(entry.getValue());
@@ -449,6 +451,88 @@ public final class Fn {
 
     public static <T> Collector<T, ?, Multiset<T>> toMultiset() {
         return Collectors.toMultiset();
+    }
+
+    public static <T> com.landawn.abacus.util.function.Predicate<T> withLimit(final com.landawn.abacus.util.function.Predicate<T> predicate, final int limit) {
+        N.requireNonNull(predicate);
+
+        return new com.landawn.abacus.util.function.Predicate<T>() {
+            private final AtomicInteger counter = new AtomicInteger(limit);
+
+            @Override
+            public boolean test(T t) {
+                return predicate.test(t) && counter.decrementAndGet() >= 0;
+            }
+        };
+    }
+
+    public static <T> com.landawn.abacus.util.function.Predicate<T> withLimit(final com.landawn.abacus.util.function.Predicate<T> predicate, final long limit) {
+        N.requireNonNull(predicate);
+
+        return new com.landawn.abacus.util.function.Predicate<T>() {
+            private final AtomicLong counter = new AtomicLong(limit);
+
+            @Override
+            public boolean test(T t) {
+                return predicate.test(t) && counter.decrementAndGet() >= 0;
+            }
+        };
+    }
+
+    public static <T, U> com.landawn.abacus.util.function.BiPredicate<T, U> withLimit(final com.landawn.abacus.util.function.BiPredicate<T, U> predicate,
+            final int limit) {
+        N.requireNonNull(predicate);
+
+        return new com.landawn.abacus.util.function.BiPredicate<T, U>() {
+            private final AtomicInteger counter = new AtomicInteger(limit);
+
+            @Override
+            public boolean test(T t, U u) {
+                return predicate.test(t, u) && counter.decrementAndGet() >= 0;
+            }
+        };
+    }
+
+    public static <T, U> com.landawn.abacus.util.function.BiPredicate<T, U> withLimit(final com.landawn.abacus.util.function.BiPredicate<T, U> predicate,
+            final long limit) {
+        N.requireNonNull(predicate);
+
+        return new com.landawn.abacus.util.function.BiPredicate<T, U>() {
+            private final AtomicLong counter = new AtomicLong(limit);
+
+            @Override
+            public boolean test(T t, U u) {
+                return predicate.test(t, u) && counter.decrementAndGet() >= 0;
+            }
+        };
+    }
+
+    public static <A, B, C> com.landawn.abacus.util.function.TriPredicate<A, B, C> withLimit(
+            final com.landawn.abacus.util.function.TriPredicate<A, B, C> predicate, final int limit) {
+        N.requireNonNull(predicate);
+
+        return new com.landawn.abacus.util.function.TriPredicate<A, B, C>() {
+            private final AtomicInteger counter = new AtomicInteger(limit);
+
+            @Override
+            public boolean test(A a, B b, C c) {
+                return predicate.test(a, b, c) && counter.decrementAndGet() >= 0;
+            }
+        };
+    }
+
+    public static <A, B, C> com.landawn.abacus.util.function.TriPredicate<A, B, C> withLimit(
+            final com.landawn.abacus.util.function.TriPredicate<A, B, C> predicate, final long limit) {
+        N.requireNonNull(predicate);
+
+        return new com.landawn.abacus.util.function.TriPredicate<A, B, C>() {
+            private final AtomicLong counter = new AtomicLong(limit);
+
+            @Override
+            public boolean test(A a, B b, C c) {
+                return predicate.test(a, b, c) && counter.decrementAndGet() >= 0;
+            }
+        };
     }
 
     public static final class Factory {
@@ -1271,28 +1355,18 @@ public final class Fn {
 
     public static final class Predicate {
 
-        public static <T> com.landawn.abacus.util.function.Predicate<T> limit(final com.landawn.abacus.util.function.Predicate<T> predicate, final int n) {
-            N.requireNonNull(predicate);
-
-            return new com.landawn.abacus.util.function.Predicate<T>() {
-                private final AtomicInteger counter = new AtomicInteger(n);
-
-                @Override
-                public boolean test(T t) {
-                    return predicate.test(t) && counter.decrementAndGet() >= 0;
-                }
-            };
+        private Predicate() {
+            // singleton.
         }
 
-        public static <T> com.landawn.abacus.util.function.Predicate<T> limit(final com.landawn.abacus.util.function.Predicate<T> predicate, final long n) {
+        public static <T, U> com.landawn.abacus.util.function.Predicate<T> of(final U u,
+                final com.landawn.abacus.util.function.BiPredicate<? super T, ? super U> predicate) {
             N.requireNonNull(predicate);
 
             return new com.landawn.abacus.util.function.Predicate<T>() {
-                private final AtomicLong counter = new AtomicLong(n);
-
                 @Override
                 public boolean test(T t) {
-                    return predicate.test(t) && counter.decrementAndGet() >= 0;
+                    return predicate.test(t, u);
                 }
             };
         }
@@ -1375,34 +1449,6 @@ public final class Fn {
         public static <T, U> com.landawn.abacus.util.function.BiPredicate<T, U> alwaysFalse() {
             return ALWAYS_FALSE;
         }
-
-        public static <T, U> com.landawn.abacus.util.function.BiPredicate<T, U> limit(final com.landawn.abacus.util.function.BiPredicate<T, U> predicate,
-                final int n) {
-            N.requireNonNull(predicate);
-
-            return new com.landawn.abacus.util.function.BiPredicate<T, U>() {
-                private final AtomicInteger counter = new AtomicInteger(n);
-
-                @Override
-                public boolean test(T t, U u) {
-                    return predicate.test(t, u) && counter.decrementAndGet() >= 0;
-                }
-            };
-        }
-
-        public static <T, U> com.landawn.abacus.util.function.BiPredicate<T, U> limit(final com.landawn.abacus.util.function.BiPredicate<T, U> predicate,
-                final long n) {
-            N.requireNonNull(predicate);
-
-            return new com.landawn.abacus.util.function.BiPredicate<T, U>() {
-                private final AtomicLong counter = new AtomicLong(n);
-
-                @Override
-                public boolean test(T t, U u) {
-                    return predicate.test(t, u) && counter.decrementAndGet() >= 0;
-                }
-            };
-        }
     }
 
     public static final class TriPredicate {
@@ -1434,31 +1480,22 @@ public final class Fn {
         public static <A, B, C> com.landawn.abacus.util.function.TriPredicate<A, B, C> alwaysFalse() {
             return ALWAYS_FALSE;
         }
+    }
 
-        public static <A, B, C> com.landawn.abacus.util.function.TriPredicate<A, B, C> limit(
-                final com.landawn.abacus.util.function.TriPredicate<A, B, C> predicate, final int n) {
-            N.requireNonNull(predicate);
+    public static final class Consumer {
 
-            return new com.landawn.abacus.util.function.TriPredicate<A, B, C>() {
-                private final AtomicInteger counter = new AtomicInteger(n);
-
-                @Override
-                public boolean test(A a, B b, C c) {
-                    return predicate.test(a, b, c) && counter.decrementAndGet() >= 0;
-                }
-            };
+        private Consumer() {
+            // singleton.
         }
 
-        public static <A, B, C> com.landawn.abacus.util.function.TriPredicate<A, B, C> limit(
-                final com.landawn.abacus.util.function.TriPredicate<A, B, C> predicate, final long n) {
-            N.requireNonNull(predicate);
+        public static <T, U> com.landawn.abacus.util.function.Consumer<T> of(final U u,
+                final com.landawn.abacus.util.function.BiConsumer<? super T, ? super U> action) {
+            N.requireNonNull(action);
 
-            return new com.landawn.abacus.util.function.TriPredicate<A, B, C>() {
-                private final AtomicLong counter = new AtomicLong(n);
-
+            return new com.landawn.abacus.util.function.Consumer<T>() {
                 @Override
-                public boolean test(A a, B b, C c) {
-                    return predicate.test(a, b, c) && counter.decrementAndGet() >= 0;
+                public void accept(T t) {
+                    action.accept(t, u);
                 }
             };
         }
@@ -1583,6 +1620,25 @@ public final class Fn {
 
         public static <K, V, M extends Map<K, V>> com.landawn.abacus.util.function.BiConsumer<M, K> ofRemoveByKey() {
             return (com.landawn.abacus.util.function.BiConsumer<M, K>) REMOVE_BY_KEY;
+        }
+    }
+
+    public static final class Function {
+
+        private Function() {
+            // singleton.
+        }
+
+        public static <T, U, R> com.landawn.abacus.util.function.Function<T, R> of(final U u,
+                final com.landawn.abacus.util.function.BiFunction<? super T, ? super U, R> func) {
+            N.requireNonNull(func);
+
+            return new com.landawn.abacus.util.function.Function<T, R>() {
+                @Override
+                public R apply(T t) {
+                    return func.apply(t, u);
+                }
+            };
         }
     }
 
@@ -1792,6 +1848,15 @@ public final class Fn {
             return (com.landawn.abacus.util.function.BinaryOperator<M>) PUT_ALL;
         }
 
+        public static com.landawn.abacus.util.function.BinaryOperator<String> ofJoin(final String seperator) {
+            return new com.landawn.abacus.util.function.BinaryOperator<String>() {
+                @Override
+                public String apply(String t, String u) {
+                    return t + seperator + u;
+                }
+            };
+        }
+
         public static <T> com.landawn.abacus.util.function.BinaryOperator<T> minBy(final Comparator<? super T> comparator) {
             N.requireNonNull(comparator);
 
@@ -1810,15 +1875,6 @@ public final class Fn {
                 @Override
                 public T apply(T t, T u) {
                     return comparator.compare(t, u) >= 0 ? t : u;
-                }
-            };
-        }
-
-        public static com.landawn.abacus.util.function.BinaryOperator<String> ofJoin(final String seperator) {
-            return new com.landawn.abacus.util.function.BinaryOperator<String>() {
-                @Override
-                public String apply(String t, String u) {
-                    return t + seperator + u;
                 }
             };
         }
