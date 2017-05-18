@@ -35,12 +35,13 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
-import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.ToByteFunction;
 import com.landawn.abacus.util.function.ToCharFunction;
 import com.landawn.abacus.util.function.ToDoubleFunction;
@@ -105,7 +106,7 @@ public final class Fn {
     };
 
     @SuppressWarnings("rawtypes")
-    private static final Predicate ALWAYS_TRUE = new Predicate() {
+    private static final com.landawn.abacus.util.function.Predicate ALWAYS_TRUE = new com.landawn.abacus.util.function.Predicate() {
         @Override
         public boolean test(Object value) {
             return true;
@@ -113,7 +114,7 @@ public final class Fn {
     };
 
     @SuppressWarnings("rawtypes")
-    private static final Predicate ALWAYS_FALSE = new Predicate() {
+    private static final com.landawn.abacus.util.function.Predicate ALWAYS_FALSE = new com.landawn.abacus.util.function.Predicate() {
         @Override
         public boolean test(Object value) {
             return false;
@@ -121,7 +122,7 @@ public final class Fn {
     };
 
     @SuppressWarnings("rawtypes")
-    private static final Predicate IS_NULL = new Predicate() {
+    private static final com.landawn.abacus.util.function.Predicate IS_NULL = new com.landawn.abacus.util.function.Predicate() {
         @Override
         public boolean test(Object value) {
             return value == null;
@@ -129,7 +130,7 @@ public final class Fn {
     };
 
     @SuppressWarnings("rawtypes")
-    private static final Predicate NOT_NULL = new Predicate() {
+    private static final com.landawn.abacus.util.function.Predicate NOT_NULL = new com.landawn.abacus.util.function.Predicate() {
         @Override
         public boolean test(Object value) {
             return value != null;
@@ -140,6 +141,18 @@ public final class Fn {
 
     private Fn() {
         // Singleton.
+    }
+
+    public static <T> Comparator<T> naturalOrder() {
+        return Comparators.naturalOrder();
+    }
+
+    public static <T> Comparator<T> reverseOrder() {
+        return Comparators.reverseOrder();
+    }
+
+    public static <T> Comparator<T> reverseOrder(final Comparator<T> cmp) {
+        return Comparators.reverseOrder(cmp);
     }
 
     public static <T> Consumer<T> doNothing() {
@@ -172,24 +185,24 @@ public final class Fn {
         };
     }
 
-    public static <T> Predicate<T> alwaysTrue() {
+    public static <T> com.landawn.abacus.util.function.Predicate<T> alwaysTrue() {
         return ALWAYS_TRUE;
     }
 
-    public static <T> Predicate<T> alwaysFalse() {
+    public static <T> com.landawn.abacus.util.function.Predicate<T> alwaysFalse() {
         return ALWAYS_FALSE;
     }
 
-    public static <T> Predicate<T> isNull() {
+    public static <T> com.landawn.abacus.util.function.Predicate<T> isNull() {
         return IS_NULL;
     }
 
-    public static <T> Predicate<T> notNull() {
+    public static <T> com.landawn.abacus.util.function.Predicate<T> notNull() {
         return NOT_NULL;
     }
 
-    public static <T> Predicate<T> equal(final Object target) {
-        return new Predicate<T>() {
+    public static <T> com.landawn.abacus.util.function.Predicate<T> equal(final Object target) {
+        return new com.landawn.abacus.util.function.Predicate<T>() {
             @Override
             public boolean test(T value) {
                 return N.equals(value, target);
@@ -197,8 +210,8 @@ public final class Fn {
         };
     }
 
-    public static <T> Predicate<T> notEqual(final Object target) {
-        return new Predicate<T>() {
+    public static <T> com.landawn.abacus.util.function.Predicate<T> notEqual(final Object target) {
+        return new com.landawn.abacus.util.function.Predicate<T>() {
             @Override
             public boolean test(T value) {
                 return !N.equals(value, target);
@@ -206,8 +219,8 @@ public final class Fn {
         };
     }
 
-    public static <T extends Comparable<? super T>> Predicate<T> greaterThan(final T target) {
-        return new Predicate<T>() {
+    public static <T extends Comparable<? super T>> com.landawn.abacus.util.function.Predicate<T> greaterThan(final T target) {
+        return new com.landawn.abacus.util.function.Predicate<T>() {
             @Override
             public boolean test(T value) {
                 return N.compare(value, target) > 0;
@@ -215,8 +228,8 @@ public final class Fn {
         };
     }
 
-    public static <T extends Comparable<? super T>> Predicate<T> greaterEqual(final T target) {
-        return new Predicate<T>() {
+    public static <T extends Comparable<? super T>> com.landawn.abacus.util.function.Predicate<T> greaterEqual(final T target) {
+        return new com.landawn.abacus.util.function.Predicate<T>() {
             @Override
             public boolean test(T value) {
                 return N.compare(value, target) >= 0;
@@ -224,8 +237,8 @@ public final class Fn {
         };
     }
 
-    public static <T extends Comparable<? super T>> Predicate<T> lessThan(final T target) {
-        return new Predicate<T>() {
+    public static <T extends Comparable<? super T>> com.landawn.abacus.util.function.Predicate<T> lessThan(final T target) {
+        return new com.landawn.abacus.util.function.Predicate<T>() {
             @Override
             public boolean test(T value) {
                 return N.compare(value, target) < 0;
@@ -233,8 +246,8 @@ public final class Fn {
         };
     }
 
-    public static <T extends Comparable<? super T>> Predicate<T> lessEqual(final T target) {
-        return new Predicate<T>() {
+    public static <T extends Comparable<? super T>> com.landawn.abacus.util.function.Predicate<T> lessEqual(final T target) {
+        return new com.landawn.abacus.util.function.Predicate<T>() {
             @Override
             public boolean test(T value) {
                 return N.compare(value, target) <= 0;
@@ -242,8 +255,8 @@ public final class Fn {
         };
     }
 
-    public static <T> Predicate<T> in(final Collection<?> c) {
-        return new Predicate<T>() {
+    public static <T> com.landawn.abacus.util.function.Predicate<T> in(final Collection<?> c) {
+        return new com.landawn.abacus.util.function.Predicate<T>() {
             @Override
             public boolean test(T value) {
                 return c.contains(value);
@@ -251,8 +264,8 @@ public final class Fn {
         };
     }
 
-    public static <T> Predicate<T> notIn(final Collection<?> c) {
-        return new Predicate<T>() {
+    public static <T> com.landawn.abacus.util.function.Predicate<T> notIn(final Collection<?> c) {
+        return new com.landawn.abacus.util.function.Predicate<T>() {
             @Override
             public boolean test(T value) {
                 return !c.contains(value);
@@ -260,8 +273,8 @@ public final class Fn {
         };
     }
 
-    public static <T> Predicate<T> instanceOf(final Class<?> clazz) {
-        return new Predicate<T>() {
+    public static <T> com.landawn.abacus.util.function.Predicate<T> instanceOf(final Class<?> clazz) {
+        return new com.landawn.abacus.util.function.Predicate<T>() {
             @Override
             public boolean test(T value) {
                 return clazz.isInstance(value);
@@ -270,8 +283,8 @@ public final class Fn {
     }
 
     @SuppressWarnings("rawtypes")
-    public static Predicate<Class> subtypeOf(final Class<?> clazz) {
-        return new Predicate<Class>() {
+    public static com.landawn.abacus.util.function.Predicate<Class> subtypeOf(final Class<?> clazz) {
+        return new com.landawn.abacus.util.function.Predicate<Class>() {
             @Override
             public boolean test(Class value) {
                 return clazz.isAssignableFrom(value);
@@ -279,8 +292,8 @@ public final class Fn {
         };
     }
 
-    public static Predicate<CharSequence> matches(final Pattern pattern) {
-        return new Predicate<CharSequence>() {
+    public static com.landawn.abacus.util.function.Predicate<CharSequence> matches(final Pattern pattern) {
+        return new com.landawn.abacus.util.function.Predicate<CharSequence>() {
             @Override
             public boolean test(CharSequence value) {
                 return pattern.matcher(value).find();
@@ -317,8 +330,8 @@ public final class Fn {
      * 
      * @return
      */
-    public static <T> Predicate<T> removeRepeats() {
-        return new Predicate<T>() {
+    public static <T> com.landawn.abacus.util.function.Predicate<T> removeRepeats() {
+        return new com.landawn.abacus.util.function.Predicate<T>() {
             private T pre = (T) NULL;
 
             @Override
@@ -330,8 +343,9 @@ public final class Fn {
         };
     }
 
-    public static <K, V> Predicate<Map.Entry<K, V>> testByKey(final Predicate<? super K> predicate) {
-        return new Predicate<Map.Entry<K, V>>() {
+    public static <K, V> com.landawn.abacus.util.function.Predicate<Map.Entry<K, V>> testByKey(
+            final com.landawn.abacus.util.function.Predicate<? super K> predicate) {
+        return new com.landawn.abacus.util.function.Predicate<Map.Entry<K, V>>() {
             @Override
             public boolean test(Entry<K, V> entry) {
                 return predicate.test(entry.getKey());
@@ -339,8 +353,9 @@ public final class Fn {
         };
     }
 
-    public static <K, V> Predicate<Map.Entry<K, V>> testByValue(final Predicate<? super V> predicate) {
-        return new Predicate<Map.Entry<K, V>>() {
+    public static <K, V> com.landawn.abacus.util.function.Predicate<Map.Entry<K, V>> testByValue(
+            final com.landawn.abacus.util.function.Predicate<? super V> predicate) {
+        return new com.landawn.abacus.util.function.Predicate<Map.Entry<K, V>>() {
             @Override
             public boolean test(Entry<K, V> entry) {
                 return predicate.test(entry.getValue());
@@ -1254,6 +1269,35 @@ public final class Fn {
         }
     }
 
+    public static final class Predicate {
+
+        public static <T> com.landawn.abacus.util.function.Predicate<T> limit(final com.landawn.abacus.util.function.Predicate<T> predicate, final int n) {
+            N.requireNonNull(predicate);
+
+            return new com.landawn.abacus.util.function.Predicate<T>() {
+                private final AtomicInteger counter = new AtomicInteger(n);
+
+                @Override
+                public boolean test(T t) {
+                    return predicate.test(t) && counter.decrementAndGet() >= 0;
+                }
+            };
+        }
+
+        public static <T> com.landawn.abacus.util.function.Predicate<T> limit(final com.landawn.abacus.util.function.Predicate<T> predicate, final long n) {
+            N.requireNonNull(predicate);
+
+            return new com.landawn.abacus.util.function.Predicate<T>() {
+                private final AtomicLong counter = new AtomicLong(n);
+
+                @Override
+                public boolean test(T t) {
+                    return predicate.test(t) && counter.decrementAndGet() >= 0;
+                }
+            };
+        }
+    }
+
     public static final class BiPredicate {
 
         @SuppressWarnings("rawtypes")
@@ -1331,6 +1375,34 @@ public final class Fn {
         public static <T, U> com.landawn.abacus.util.function.BiPredicate<T, U> alwaysFalse() {
             return ALWAYS_FALSE;
         }
+
+        public static <T, U> com.landawn.abacus.util.function.BiPredicate<T, U> limit(final com.landawn.abacus.util.function.BiPredicate<T, U> predicate,
+                final int n) {
+            N.requireNonNull(predicate);
+
+            return new com.landawn.abacus.util.function.BiPredicate<T, U>() {
+                private final AtomicInteger counter = new AtomicInteger(n);
+
+                @Override
+                public boolean test(T t, U u) {
+                    return predicate.test(t, u) && counter.decrementAndGet() >= 0;
+                }
+            };
+        }
+
+        public static <T, U> com.landawn.abacus.util.function.BiPredicate<T, U> limit(final com.landawn.abacus.util.function.BiPredicate<T, U> predicate,
+                final long n) {
+            N.requireNonNull(predicate);
+
+            return new com.landawn.abacus.util.function.BiPredicate<T, U>() {
+                private final AtomicLong counter = new AtomicLong(n);
+
+                @Override
+                public boolean test(T t, U u) {
+                    return predicate.test(t, u) && counter.decrementAndGet() >= 0;
+                }
+            };
+        }
     }
 
     public static final class TriPredicate {
@@ -1361,6 +1433,34 @@ public final class Fn {
 
         public static <A, B, C> com.landawn.abacus.util.function.TriPredicate<A, B, C> alwaysFalse() {
             return ALWAYS_FALSE;
+        }
+
+        public static <A, B, C> com.landawn.abacus.util.function.TriPredicate<A, B, C> limit(
+                final com.landawn.abacus.util.function.TriPredicate<A, B, C> predicate, final int n) {
+            N.requireNonNull(predicate);
+
+            return new com.landawn.abacus.util.function.TriPredicate<A, B, C>() {
+                private final AtomicInteger counter = new AtomicInteger(n);
+
+                @Override
+                public boolean test(A a, B b, C c) {
+                    return predicate.test(a, b, c) && counter.decrementAndGet() >= 0;
+                }
+            };
+        }
+
+        public static <A, B, C> com.landawn.abacus.util.function.TriPredicate<A, B, C> limit(
+                final com.landawn.abacus.util.function.TriPredicate<A, B, C> predicate, final long n) {
+            N.requireNonNull(predicate);
+
+            return new com.landawn.abacus.util.function.TriPredicate<A, B, C>() {
+                private final AtomicLong counter = new AtomicLong(n);
+
+                @Override
+                public boolean test(A a, B b, C c) {
+                    return predicate.test(a, b, c) && counter.decrementAndGet() >= 0;
+                }
+            };
         }
     }
 

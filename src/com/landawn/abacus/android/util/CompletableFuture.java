@@ -164,7 +164,7 @@ public class CompletableFuture<T> implements Future<T> {
             }
         }
 
-        return future.cancel(mayInterruptIfRunning) && res;
+        return cancel(mayInterruptIfRunning) && res;
     }
 
     /**
@@ -183,7 +183,7 @@ public class CompletableFuture<T> implements Future<T> {
             }
         }
 
-        return future.isCancelled() && res;
+        return isCancelled() && res;
     }
 
     @Override
@@ -1125,27 +1125,28 @@ public class CompletableFuture<T> implements Future<T> {
         N.requireNonNull(executor);
 
         return new CompletableFuture<T>(new Future<T>() {
+            private final long delayEndTime = N.currentMillis() + unit.toMillis(delay);
             private volatile boolean isDelayed = false;
 
             @Override
             public boolean cancel(boolean mayInterruptIfRunning) {
-                delay();
-
                 return future.cancel(mayInterruptIfRunning);
             }
 
             @Override
             public boolean isCancelled() {
-                delay();
-
                 return future.isCancelled();
             }
 
             @Override
             public boolean isDone() {
-                delay();
+                boolean isDone = future.isDone();
 
-                return future.isDone();
+                if (isDone) {
+                    delay();
+                }
+
+                return isDone;
             }
 
             @Override
@@ -1166,7 +1167,7 @@ public class CompletableFuture<T> implements Future<T> {
                 if (isDelayed == false) {
                     isDelayed = true;
 
-                    N.sleep(unit.toMillis(delay));
+                    N.sleep(delayEndTime - N.currentMillis());
                 }
             }
         }, null, executor) {
