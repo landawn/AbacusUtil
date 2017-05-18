@@ -1396,7 +1396,7 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
     }
 
     public <K, U> Map<K, U> toMap(DoubleFunction<? extends K> keyExtractor, DoubleFunction<? extends U> valueMapper) {
-        final Supplier<Map<K, U>> mapFactory = Fn.Supplier.ofMap();
+        final Supplier<Map<K, U>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(keyExtractor, valueMapper, mapFactory);
     }
@@ -1408,7 +1408,7 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
     }
 
     public <K, U> Map<K, U> toMap(DoubleFunction<? extends K> keyExtractor, DoubleFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
-        final Supplier<Map<K, U>> mapFactory = Fn.Supplier.ofMap();
+        final Supplier<Map<K, U>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
@@ -1426,7 +1426,7 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
 
     @SuppressWarnings("hiding")
     public <K, A, D> Map<K, D> toMap(DoubleFunction<? extends K> classifier, Collector<Double, A, D> downstream) {
-        final Supplier<Map<K, D>> mapFactory = Fn.Supplier.ofMap();
+        final Supplier<Map<K, D>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(classifier, downstream, mapFactory);
     }

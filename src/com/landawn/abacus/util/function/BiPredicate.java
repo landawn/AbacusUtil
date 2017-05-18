@@ -28,11 +28,11 @@ public interface BiPredicate<T, U> extends java.util.function.BiPredicate<T, U> 
     boolean test(T t, U u);
 
     static <T, U> BiPredicate<T, U> alwaysTrue() {
-        return Fn.BiPredicate.alwaysTrue();
+        return Fn.BiPredicates.alwaysTrue();
     }
 
     static <T, U> BiPredicate<T, U> alwaysFalse() {
-        return Fn.BiPredicate.alwaysFalse();
+        return Fn.BiPredicates.alwaysFalse();
     }
 
     static <T, U> BiPredicate<T, U> equal() {

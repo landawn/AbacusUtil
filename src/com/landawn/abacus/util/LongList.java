@@ -1462,7 +1462,7 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
     }
 
     public <K, U> Map<K, U> toMap(LongFunction<? extends K> keyExtractor, LongFunction<? extends U> valueMapper) {
-        final Supplier<Map<K, U>> mapFactory = Fn.Supplier.ofMap();
+        final Supplier<Map<K, U>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(keyExtractor, valueMapper, mapFactory);
     }
@@ -1474,7 +1474,7 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
     }
 
     public <K, U> Map<K, U> toMap(LongFunction<? extends K> keyExtractor, LongFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
-        final Supplier<Map<K, U>> mapFactory = Fn.Supplier.ofMap();
+        final Supplier<Map<K, U>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
@@ -1492,7 +1492,7 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
 
     @SuppressWarnings("hiding")
     public <K, A, D> Map<K, D> toMap(LongFunction<? extends K> classifier, Collector<Long, A, D> downstream) {
-        final Supplier<Map<K, D>> mapFactory = Fn.Supplier.ofMap();
+        final Supplier<Map<K, D>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(classifier, downstream, mapFactory);
     }

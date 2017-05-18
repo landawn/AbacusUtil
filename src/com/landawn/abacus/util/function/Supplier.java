@@ -44,62 +44,62 @@ public interface Supplier<T> extends java.util.function.Supplier<T> {
     T get();
 
     static <T> Supplier<ExList<T>> ofExList() {
-        return Fn.Supplier.ofExList();
+        return Fn.Suppliers.ofExList();
     }
 
     static <T> Supplier<List<T>> ofList() {
-        return Fn.Supplier.ofList();
+        return Fn.Suppliers.ofList();
     }
 
     static <T> Supplier<LinkedList<T>> ofLinkedList() {
-        return Fn.Supplier.ofLinkedList();
+        return Fn.Suppliers.ofLinkedList();
     }
 
     static <T> Supplier<Set<T>> ofSet() {
-        return Fn.Supplier.ofSet();
+        return Fn.Suppliers.ofSet();
     }
 
     static <T> Supplier<LinkedHashSet<T>> ofLinkedHashSet() {
-        return Fn.Supplier.ofLinkedHashSet();
+        return Fn.Suppliers.ofLinkedHashSet();
     }
 
     static <T> Supplier<TreeSet<T>> ofTreeSet() {
-        return Fn.Supplier.ofTreeSet();
+        return Fn.Suppliers.ofTreeSet();
     }
 
     static <K, V> Supplier<Map<K, V>> ofMap() {
-        return Fn.Supplier.ofMap();
+        return Fn.Suppliers.ofMap();
     }
 
     static <K, V> Supplier<LinkedHashMap<K, V>> ofLinkedHashMap() {
-        return Fn.Supplier.ofLinkedHashMap();
+        return Fn.Suppliers.ofLinkedHashMap();
     }
 
     static <K, V> Supplier<TreeMap<K, V>> ofTreeMap() {
-        return Fn.Supplier.ofTreeMap();
+        return Fn.Suppliers.ofTreeMap();
     }
 
     static <K, V> Supplier<ConcurrentHashMap<K, V>> ofConcurrentHashMap() {
-        return Fn.Supplier.ofConcurrentHashMap();
+        return Fn.Suppliers.ofConcurrentHashMap();
     }
 
     static <T> Supplier<Queue<T>> ofQueue() {
-        return Fn.Supplier.ofQueue();
+        return Fn.Suppliers.ofQueue();
     }
 
     static <T> Supplier<ArrayDeque<T>> ofArrayDeque() {
-        return Fn.Supplier.ofArrayDeque();
+        return Fn.Suppliers.ofArrayDeque();
     }
 
     static <T> Supplier<LinkedBlockingQueue<T>> ofLinkedBlockingQueue() {
-        return Fn.Supplier.ofLinkedBlockingQueue();
+        return Fn.Suppliers.ofLinkedBlockingQueue();
     }
 
     static <T> Supplier<ConcurrentLinkedQueue<T>> ofConcurrentLinkedQueue() {
-        return Fn.Supplier.ofConcurrentLinkedQueue();
+        return Fn.Suppliers.ofConcurrentLinkedQueue();
     }
 
     static <T> Supplier<PriorityQueue<T>> ofPriorityQueue() {
-        return Fn.Supplier.ofPriorityQueue();
+        return Fn.Suppliers.ofPriorityQueue();
     }
 }

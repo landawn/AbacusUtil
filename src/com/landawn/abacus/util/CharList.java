@@ -1411,7 +1411,7 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
     }
 
     public <K, U> Map<K, U> toMap(CharFunction<? extends K> keyExtractor, CharFunction<? extends U> valueMapper) {
-        final Supplier<Map<K, U>> mapFactory = Fn.Supplier.ofMap();
+        final Supplier<Map<K, U>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(keyExtractor, valueMapper, mapFactory);
     }
@@ -1423,7 +1423,7 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
     }
 
     public <K, U> Map<K, U> toMap(CharFunction<? extends K> keyExtractor, CharFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
-        final Supplier<Map<K, U>> mapFactory = Fn.Supplier.ofMap();
+        final Supplier<Map<K, U>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
@@ -1441,7 +1441,7 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
 
     @SuppressWarnings("hiding")
     public <K, A, D> Map<K, D> toMap(CharFunction<? extends K> classifier, Collector<Character, A, D> downstream) {
-        final Supplier<Map<K, D>> mapFactory = Fn.Supplier.ofMap();
+        final Supplier<Map<K, D>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(classifier, downstream, mapFactory);
     }

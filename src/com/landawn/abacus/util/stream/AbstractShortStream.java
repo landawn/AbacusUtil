@@ -311,7 +311,7 @@ abstract class AbstractShortStream extends ShortStream {
 
     @Override
     public <K, U> Map<K, U> toMap(ShortFunction<? extends K> keyExtractor, ShortFunction<? extends U> valueMapper) {
-        final Supplier<Map<K, U>> mapFactory = Fn.Supplier.ofMap();
+        final Supplier<Map<K, U>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(keyExtractor, valueMapper, mapFactory);
     }
@@ -325,14 +325,14 @@ abstract class AbstractShortStream extends ShortStream {
 
     @Override
     public <K, U> Map<K, U> toMap(ShortFunction<? extends K> keyExtractor, ShortFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
-        final Supplier<Map<K, U>> mapFactory = Fn.Supplier.ofMap();
+        final Supplier<Map<K, U>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
     @Override
     public <K, A, D> Map<K, D> toMap(ShortFunction<? extends K> classifier, Collector<Short, A, D> downstream) {
-        final Supplier<Map<K, D>> mapFactory = Fn.Supplier.ofMap();
+        final Supplier<Map<K, D>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(classifier, downstream, mapFactory);
     }

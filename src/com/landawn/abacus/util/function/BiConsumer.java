@@ -28,22 +28,22 @@ import com.landawn.abacus.util.Fn;
 public interface BiConsumer<T, U> extends java.util.function.BiConsumer<T, U> {
 
     static <T, C extends Collection<? super T>> BiConsumer<C, T> ofAdd() {
-        return Fn.BiConsumer.ofAdd();
+        return Fn.BiConsumers.ofAdd();
     }
 
     static <T, C extends Collection<T>> BiConsumer<C, C> ofAddAll() {
-        return Fn.BiConsumer.ofAddAll();
+        return Fn.BiConsumers.ofAddAll();
     }
 
     static <T, C extends Collection<? super T>> BiConsumer<C, T> ofRemove() {
-        return Fn.BiConsumer.ofRemove();
+        return Fn.BiConsumers.ofRemove();
     }
 
     static <T, C extends Collection<T>> BiConsumer<C, C> ofRemoveAll() {
-        return Fn.BiConsumer.ofRemoveAll();
+        return Fn.BiConsumers.ofRemoveAll();
     }
 
     static <K, V, M extends Map<K, V>> com.landawn.abacus.util.function.BiConsumer<M, M> ofPutAll() {
-        return Fn.BiConsumer.ofPutAll();
+        return Fn.BiConsumers.ofPutAll();
     }
 }

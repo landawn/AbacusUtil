@@ -418,7 +418,7 @@ public final class Collectors {
     }
 
     public static <T> Collector<T, ?, Object[]> toArray() {
-        return toArray(Fn.Supplier.ofEmptyObjectArray());
+        return toArray(Fn.Suppliers.ofEmptyObjectArray());
     }
 
     public static <T, A> Collector<T, ?, A[]> toArray(final Supplier<A[]> arraySupplier) {
@@ -3276,7 +3276,7 @@ public final class Collectors {
     }
 
     public static <K, V> Collector<Map.Entry<K, V>, ?, Map<K, List<V>>> toMap2() {
-        final BinaryOperator<List<V>> mergeFunction = Fn.BinaryOperator.ofAddAll();
+        final BinaryOperator<List<V>> mergeFunction = Fn.BinaryOperators.ofAddAll();
 
         return Collectors.toMap(new Function<Map.Entry<K, V>, K>() {
             @Override
@@ -3292,7 +3292,7 @@ public final class Collectors {
     }
 
     public static <K, V, M extends Map<K, List<V>>> Collector<Map.Entry<K, V>, ?, M> toMap2(final Supplier<M> mapFactory) {
-        final BinaryOperator<List<V>> mergeFunction = Fn.BinaryOperator.ofAddAll();
+        final BinaryOperator<List<V>> mergeFunction = Fn.BinaryOperators.ofAddAll();
 
         return Collectors.toMap(new Function<Map.Entry<K, V>, K>() {
             @Override
@@ -3309,7 +3309,7 @@ public final class Collectors {
 
     public static <T, K, V> Collector<T, ?, Map<K, List<V>>> toMap2(final Function<? super T, ? extends K> keyExtractor,
             final Function<? super T, ? extends V> valueMapper) {
-        final BinaryOperator<List<V>> mergeFunction = Fn.BinaryOperator.ofAddAll();
+        final BinaryOperator<List<V>> mergeFunction = Fn.BinaryOperators.ofAddAll();
 
         return Collectors.toMap(new Function<T, K>() {
             @Override
@@ -3326,7 +3326,7 @@ public final class Collectors {
 
     public static <T, K, V, M extends Map<K, List<V>>> Collector<T, ?, M> toMap2(final Function<? super T, ? extends K> keyExtractor,
             final Function<? super T, ? extends V> valueMapper, final Supplier<M> mapFactory) {
-        final BinaryOperator<List<V>> mergeFunction = Fn.BinaryOperator.ofAddAll();
+        final BinaryOperator<List<V>> mergeFunction = Fn.BinaryOperators.ofAddAll();
 
         return Collectors.toMap(new Function<T, K>() {
             @Override

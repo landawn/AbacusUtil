@@ -43,7 +43,7 @@ import com.landawn.abacus.util.stream.Stream;
  * <p>Additional methods that depend on the presence or absence of a contained
  * value are provided, such as {@link #or(java.lang.Object) orElse()}
  * (return a default value if value not present) and
- * {@link #ifPresent(java.util.function.Consumer) ifPresent()} (execute a block
+ * {@link #ifPresent(java.util.function.Consumers) ifPresent()} (execute a block
  * of code if the value is present).
  *
  * <p>This is a <a href="../lang/doc-files/ValueBased.html">value-based</a>

@@ -1245,7 +1245,7 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
     }
 
     public <K, U> Map<K, U> toMap(BooleanFunction<? extends K> keyExtractor, BooleanFunction<? extends U> valueMapper) {
-        final Supplier<Map<K, U>> mapFactory = Fn.Supplier.ofMap();
+        final Supplier<Map<K, U>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(keyExtractor, valueMapper, mapFactory);
     }
@@ -1257,7 +1257,7 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
     }
 
     public <K, U> Map<K, U> toMap(BooleanFunction<? extends K> keyExtractor, BooleanFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
-        final Supplier<Map<K, U>> mapFactory = Fn.Supplier.ofMap();
+        final Supplier<Map<K, U>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
@@ -1275,7 +1275,7 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
 
     @SuppressWarnings("hiding")
     public <K, A, D> Map<K, D> toMap(BooleanFunction<? extends K> classifier, Collector<Boolean, A, D> downstream) {
-        final Supplier<Map<K, D>> mapFactory = Fn.Supplier.ofMap();
+        final Supplier<Map<K, D>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(classifier, downstream, mapFactory);
     }

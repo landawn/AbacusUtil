@@ -31,22 +31,22 @@ public interface BiFunction<T, U, R> extends java.util.function.BiFunction<T, U,
     R apply(T t, U u);
 
     static <T, R extends Collection<? super T>> BiFunction<R, T, R> ofAdd() {
-        return Fn.BiFunction.ofAdd();
+        return Fn.BiFunctions.ofAdd();
     }
 
     static <T, C extends Collection<T>> BiFunction<C, C, C> ofAddAll() {
-        return Fn.BiFunction.ofAddAll();
+        return Fn.BiFunctions.ofAddAll();
     }
 
     static <T, R extends Collection<? super T>> BiFunction<R, T, R> ofRemove() {
-        return Fn.BiFunction.ofRemove();
+        return Fn.BiFunctions.ofRemove();
     }
 
     static <T, C extends Collection<T>> BiFunction<C, C, C> ofRemoveAll() {
-        return Fn.BiFunction.ofRemoveAll();
+        return Fn.BiFunctions.ofRemoveAll();
     }
 
     static <K, V, M extends Map<K, V>> BiFunction<M, M, M> ofPutAll() {
-        return Fn.BiFunction.ofPutAll();
+        return Fn.BiFunctions.ofPutAll();
     }
 }

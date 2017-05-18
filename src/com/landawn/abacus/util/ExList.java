@@ -1991,7 +1991,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     }
 
     public <K, U> Map<K, U> toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper) {
-        final Supplier<Map<K, U>> mapFactory = Fn.Supplier.ofMap();
+        final Supplier<Map<K, U>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(keyExtractor, valueMapper, mapFactory);
     }
@@ -2005,7 +2005,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
 
     public <K, U> Map<K, U> toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
             BinaryOperator<U> mergeFunction) {
-        final Supplier<Map<K, U>> mapFactory = Fn.Supplier.ofMap();
+        final Supplier<Map<K, U>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
@@ -2023,7 +2023,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
 
     @SuppressWarnings("hiding")
     public <K, A, D> Map<K, D> toMap(Function<? super T, ? extends K> classifier, Collector<? super T, A, D> downstream) {
-        final Supplier<Map<K, D>> mapFactory = Fn.Supplier.ofMap();
+        final Supplier<Map<K, D>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(classifier, downstream, mapFactory);
     }
@@ -2064,7 +2064,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
 
     @SuppressWarnings("hiding")
     public <K, A, D> Map<K, D> toMap(Function<? super T, ? extends K> classifier, java.util.stream.Collector<? super T, A, D> downstream) {
-        final Supplier<Map<K, D>> mapFactory = Fn.Supplier.ofMap();
+        final Supplier<Map<K, D>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(classifier, downstream, mapFactory);
     }
@@ -2077,7 +2077,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
     }
 
     public <K> Map<K, List<T>> toMap2(Function<? super T, ? extends K> classifier) {
-        final Supplier<Map<K, List<T>>> mapFactory = Fn.Supplier.ofMap();
+        final Supplier<Map<K, List<T>>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap2(classifier, mapFactory);
     }

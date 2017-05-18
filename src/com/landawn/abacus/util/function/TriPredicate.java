@@ -43,10 +43,10 @@ public interface TriPredicate<A, B, C> {
     }
 
     static <A, B, C> TriPredicate<A, B, C> alwaysTrue() {
-        return Fn.TriPredicate.alwaysTrue();
+        return Fn.TriPredicates.alwaysTrue();
     }
 
     static <A, B, C> TriPredicate<A, B, C> alwaysFalse() {
-        return Fn.TriPredicate.alwaysFalse();
+        return Fn.TriPredicates.alwaysFalse();
     }
 }

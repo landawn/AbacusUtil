@@ -29,22 +29,22 @@ import com.landawn.abacus.util.Fn;
 public interface BinaryOperator<T> extends BiFunction<T, T, T>, java.util.function.BinaryOperator<T> {
 
     static <T, C extends Collection<T>> BinaryOperator<C> ofAddAll() {
-        return Fn.BinaryOperator.ofAddAll();
+        return Fn.BinaryOperators.ofAddAll();
     }
 
     static <T, C extends Collection<T>> BinaryOperator<C> ofRemoveAll() {
-        return Fn.BinaryOperator.ofRemoveAll();
+        return Fn.BinaryOperators.ofRemoveAll();
     }
 
     static <K, V, M extends Map<K, V>> BinaryOperator<M> ofPutAll() {
-        return Fn.BinaryOperator.ofPutAll();
+        return Fn.BinaryOperators.ofPutAll();
     }
 
     static <T> BinaryOperator<T> minBy(Comparator<? super T> comparator) {
-        return Fn.BinaryOperator.minBy(comparator);
+        return Fn.BinaryOperators.minBy(comparator);
     }
 
     static <T> BinaryOperator<T> maxBy(Comparator<? super T> comparator) {
-        return Fn.BinaryOperator.maxBy(comparator);
+        return Fn.BinaryOperators.maxBy(comparator);
     }
 }
