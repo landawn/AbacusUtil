@@ -1482,6 +1482,32 @@ public final class Seq<T> implements Collection<T> {
         return result;
     }
 
+    public <R> R collect(final Supplier<R> supplier, final BiConsumer<R, ? super T> accumulator) {
+        final R result = supplier.get();
+
+        if (N.notNullOrEmpty(coll)) {
+            for (T e : coll) {
+                accumulator.accept(result, e);
+            }
+        }
+
+        return result;
+    }
+
+    public <R, A> R collect(final Collector<? super T, A, R> collector) {
+        final Supplier<A> supplier = collector.supplier();
+        final BiConsumer<A, ? super T> accumulator = collector.accumulator();
+        final A result = supplier.get();
+
+        if (N.notNullOrEmpty(coll)) {
+            for (T e : coll) {
+                accumulator.accept(result, e);
+            }
+        }
+
+        return collector.finisher().apply(result);
+    }
+
     public ExList<T> append(final Collection<? extends T> c) {
         return Seq.concat(this, c);
     }

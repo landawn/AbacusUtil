@@ -15,6 +15,7 @@
 package com.landawn.abacus.util.stream;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -1372,6 +1373,10 @@ class ArrayStream<T> extends AbstractStream<T> {
     @Override
     public List<T> toList() {
         // return N.asList(N.copyOfRange(elements, fromIndex, toIndex));
+
+        if (fromIndex == 0 && toIndex == elements.length && elements.length > 9) {
+            return new ArrayList<>(Arrays.asList(elements));
+        }
 
         final List<T> result = new ArrayList<>(toIndex - fromIndex);
 

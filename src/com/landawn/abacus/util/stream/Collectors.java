@@ -74,10 +74,13 @@ import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.NullabLe;
 import com.landawn.abacus.util.OptionalDouble;
+import com.landawn.abacus.util.OptionalLong;
+import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.ShortList;
 import com.landawn.abacus.util.ShortSummaryStatistics;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
+import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.DoubleSupplier;
@@ -140,6 +143,7 @@ import com.landawn.abacus.util.function.ToShortFunction;
  * @since 1.8
  */
 public final class Collectors {
+    static final Object NONE = new Object();
 
     static final Set<Collector.Characteristics> CH_CONCURRENT_ID = Collections
             .unmodifiableSet(EnumSet.of(Collector.Characteristics.CONCURRENT, Collector.Characteristics.UNORDERED, Collector.Characteristics.IDENTITY_FINISH));
@@ -148,6 +152,7 @@ public final class Collectors {
     static final Set<Collector.Characteristics> CH_ID = Collections.unmodifiableSet(EnumSet.of(Collector.Characteristics.IDENTITY_FINISH));
     static final Set<Collector.Characteristics> CH_UNORDERED_ID = Collections
             .unmodifiableSet(EnumSet.of(Collector.Characteristics.UNORDERED, Collector.Characteristics.IDENTITY_FINISH));
+    static final Set<Collector.Characteristics> CH_UNORDERED = Collections.unmodifiableSet(EnumSet.of(Collector.Characteristics.UNORDERED));
     static final Set<Collector.Characteristics> CH_NOID = Collections.emptySet();
 
     private Collectors() {
@@ -1022,6 +1027,12 @@ public final class Collectors {
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
     }
 
+    /**
+     * Sequential only.
+     * 
+     * @param n
+     * @return
+     */
     public static <T> Collector<T, ?, List<T>> last(final int n) {
         N.checkArgument(n >= 0, "'n' can't be negative");
 
@@ -1253,6 +1264,91 @@ public final class Collectors {
     }
 
     /**
+     * It's copied from StreamEx: https://github.com/amaembo/streamex
+     * <br />
+     * 
+     * Returns a {@code Collector} which filters input elements by the supplied
+     * predicate, collecting them to the list.
+     *
+     * <p>
+     * This method behaves like
+     * {@code filtering(predicate, Collectors.toList())}.
+     * 
+     * <p>
+     * There are no guarantees on the type, mutability, serializability, or
+     * thread-safety of the {@code List} returned.
+     * 
+     * @param <T> the type of the input elements
+     * @param predicate a filter function to be applied to the input elements
+     * @return a collector which applies the predicate to the input elements and
+     *         collects the elements for which predicate returned true to the
+     *         {@code List}
+     * @see #filtering(Predicate, Collector)
+     * @since 0.6.0
+     */
+    public static <T> Collector<T, ?, List<T>> filtering(Predicate<? super T> predicate) {
+        final Collector<? super T, ?, List<T>> downstream = Collectors.toList();
+
+        return filtering(predicate, downstream);
+    }
+
+    /**
+     * It's copied from StreamEx: https://github.com/amaembo/streamex
+     * <br />
+     * 
+     * Returns a {@code Collector} which passes only those elements to the
+     * specified downstream collector which match given predicate.
+     *
+     * <p>
+     * This method returns a
+     * <a href="package-summary.html#ShortCircuitReduction">short-circuiting
+     * collector</a> if downstream collector is short-circuiting.
+     * 
+     * <p>
+     * The operation performed by the returned collector is equivalent to
+     * {@code stream.filter(predicate).collect(downstream)}. This collector is
+     * mostly useful as a downstream collector in cascaded operation involving
+     * {@link #pairing(Collector, Collector, BiFunction)} collector.
+     *
+     * <p>
+     * This method is similar to {@code Collectors.filtering} method which
+     * appears in JDK 9. However when downstream collector is
+     * <a href="package-summary.html#ShortCircuitReduction">short-circuiting</a>
+     * , this method will also return a short-circuiting collector.
+     * 
+     * @param <T> the type of the input elements
+     * @param <A> intermediate accumulation type of the downstream collector
+     * @param <R> result type of collector
+     * @param predicate a filter function to be applied to the input elements
+     * @param downstream a collector which will accept filtered values
+     * @return a collector which applies the predicate to the input elements and
+     *         provides the elements for which predicate returned true to the
+     *         downstream collector
+     * @see #pairing(Collector, Collector, BiFunction)
+     * @since 0.4.0
+     */
+    public static <T, A, R> Collector<T, ?, R> filtering(final Predicate<? super T> predicate, final Collector<? super T, A, R> downstream) {
+        final BiConsumer<A, ? super T> downstreamAccumulator = downstream.accumulator();
+
+        final BiConsumer<A, T> accumulator = new BiConsumer<A, T>() {
+            @Override
+            public void accept(A a, T t) {
+                if (predicate.test(t)) {
+                    downstreamAccumulator.accept(a, t);
+                }
+            }
+        };
+
+        return new CollectorImpl<>(downstream.supplier(), accumulator, downstream.combiner(), downstream.finisher(), downstream.characteristics());
+    }
+
+    public static <T, U> Collector<T, ?, List<U>> mapping(Function<? super T, ? extends U> mapper) {
+        final Collector<? super U, ?, List<U>> downstream = Collectors.toList();
+
+        return Collectors.mapping(mapper, downstream);
+    }
+
+    /**
      * Adapts a {@code Collector} accepting elements of type {@code U} to one
      * accepting elements of type {@code T} by applying a mapping function to
      * each input element before accumulation.
@@ -1284,6 +1380,33 @@ public final class Collectors {
             @Override
             public void accept(A a, T t) {
                 downstreamAccumulator.accept(a, mapper.apply(t));
+            }
+        };
+
+        return new CollectorImpl<>(downstream.supplier(), accumulator, downstream.combiner(), downstream.finisher(), downstream.characteristics());
+    }
+
+    public static <T, U> Collector<T, ?, List<U>> flatMapping(Function<? super T, ? extends Stream<? extends U>> mapper) {
+        final Collector<? super U, ?, List<U>> downstream = Collectors.toList();
+
+        return flatMapping(mapper, downstream);
+    }
+
+    public static <T, U, A, R> Collector<T, ?, R> flatMapping(final Function<? super T, ? extends Stream<? extends U>> mapper,
+            Collector<? super U, A, R> downstream) {
+        final BiConsumer<A, ? super U> downstreamAccumulator = downstream.accumulator();
+
+        final BiConsumer<A, T> accumulator = new BiConsumer<A, T>() {
+            @Override
+            public void accept(final A a, final T t) {
+                try (Stream<? extends U> stream = mapper.apply(t)) {
+                    stream.forEach(new Consumer<U>() {
+                        @Override
+                        public void accept(U u) {
+                            downstreamAccumulator.accept(a, u);
+                        }
+                    });
+                }
             }
         };
 
@@ -1336,6 +1459,102 @@ public final class Collectors {
     }
 
     /**
+     * Returns a {@code Collector} which collects into the {@link List} the
+     * input elements for which given mapper function returns distinct results.
+     *
+     * <p>
+     * For ordered source the order of collected elements is preserved. If the
+     * same result is returned by mapper function for several elements, only the
+     * first element is included into the resulting list.
+     * 
+     * <p>
+     * There are no guarantees on the type, mutability, serializability, or
+     * thread-safety of the {@code List} returned.
+     * 
+     * <p>
+     * The operation performed by the returned collector is equivalent to
+     * {@code stream.distinct(mapper).toList()}, but may work faster.
+     * 
+     * @param <T> the type of the input elements
+     * @param mapper a function which classifies input elements.
+     * @return a collector which collects distinct elements to the {@code List}.
+     * @since 0.3.8
+     */
+    public static <T> Collector<T, ?, List<T>> distinctBy(final Function<? super T, ?> mapper) {
+
+        final Supplier<Map<Object, T>> supplier = new Supplier<Map<Object, T>>() {
+            @Override
+            public Map<Object, T> get() {
+                return new LinkedHashMap<>();
+            }
+        };
+
+        final BiConsumer<Map<Object, T>, T> accumulator = new BiConsumer<Map<Object, T>, T>() {
+            @Override
+            public void accept(Map<Object, T> a, T t) {
+                final Object key = mapper.apply(t);
+
+                if (a.containsKey(key) == false) {
+                    a.put(key, t);
+                }
+            }
+        };
+
+        final BinaryOperator<Map<Object, T>> combiner = new BinaryOperator<Map<Object, T>>() {
+            @Override
+            public Map<Object, T> apply(Map<Object, T> a, Map<Object, T> b) {
+
+                for (Map.Entry<Object, T> entry : b.entrySet()) {
+                    if (a.containsKey(entry.getKey()) == false) {
+                        a.put(entry.getKey(), entry.getValue());
+                    }
+                }
+
+                return a;
+            }
+        };
+
+        final Function<Map<Object, T>, List<T>> finisher = new Function<Map<Object, T>, List<T>>() {
+            @Override
+            public List<T> apply(Map<Object, T> a) {
+                return new ArrayList<>(a.values());
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
+    }
+
+    /**
+     * It's copied from StreamEx: https://github.com/amaembo/streamex
+     * <br />
+     * 
+     * Returns a {@code Collector} which counts a number of distinct values the
+     * mapper function returns for the stream elements.
+     * 
+     * <p>
+     * The operation performed by the returned collector is equivalent to
+     * {@code stream.map(mapper).distinct().count()}. This collector is mostly
+     * useful as a downstream collector.
+     * 
+     * @param <T> the type of the input elements
+     * @param mapper a function which classifies input elements.
+     * @return a collector which counts a number of distinct classes the mapper
+     *         function returns for the stream elements.
+     */
+    public static <T> Collector<T, ?, Integer> distinctCount(Function<? super T, ?> mapper) {
+        final Collector<Object, ?, Set<Object>> downstream = Collectors.toSet();
+
+        final Function<Set<Object>, Integer> finisher = new Function<Set<Object>, Integer>() {
+            @Override
+            public Integer apply(Set<Object> t) {
+                return t.size();
+            }
+        };
+
+        return Collectors.collectingAndThen(Collectors.mapping(mapper, downstream), finisher);
+    }
+
+    /**
      * Returns a {@code Collector} accepting elements of type {@code T} that
      * counts the number of input elements.  If no elements are present, the
      * result is 0.
@@ -1365,6 +1584,28 @@ public final class Collectors {
         };
 
         return reducing(0L, mapper, op);
+    }
+
+    public static <T> Collector<T, ?, Integer> countingInt() {
+        final Function<? super T, ? extends Integer> mapper = new Function<T, Integer>() {
+            @Override
+            public Integer apply(T t) {
+                return 1;
+            }
+        };
+
+        final BinaryOperator<Integer> op = new BinaryOperator<Integer>() {
+            @Override
+            public Integer apply(Integer a, Integer b) {
+                return a + b;
+            }
+        };
+
+        return reducing(0, mapper, op);
+    }
+
+    public static <T extends Comparable<? super T>> Collector<T, ?, NullabLe<T>> min() {
+        return minBy(Fn.naturalOrder());
     }
 
     /**
@@ -1419,6 +1660,10 @@ public final class Collectors {
         };
 
         return reducingOrThrow(op, exceptionSupplier);
+    }
+
+    public static <T extends Comparable<? super T>> Collector<T, ?, NullabLe<T>> max() {
+        return maxBy(Fn.naturalOrder());
     }
 
     /**
@@ -1476,6 +1721,362 @@ public final class Collectors {
     }
 
     /**
+     * It's copied from StreamEx: https://github.com/amaembo/streamex
+     * <br />
+     * Returns a {@code Collector} which aggregates the results of two supplied
+     * collectors using the supplied finisher function.
+     * 
+     * <p>
+     * This method returns a
+     * <a href="package-summary.html#ShortCircuitReduction">short-circuiting
+     * collector</a> if both downstream collectors are short-circuiting. The
+     * collection might stop when both downstream collectors report that the
+     * collection is complete.
+     *
+     * @param <T> the type of the input elements
+     * @param <A1> the intermediate accumulation type of the first collector
+     * @param <A2> the intermediate accumulation type of the second collector
+     * @param <R1> the result type of the first collector
+     * @param <R2> the result type of the second collector
+     * @param <R> the final result type
+     * @param c1 the first collector
+     * @param c2 the second collector
+     * @param finisher the function which merges two results into the single
+     *        one.
+     * @return a {@code Collector} which aggregates the results of two supplied
+     *         collectors.
+     */
+    public static <T, A1, A2, R1, R2, R> Collector<T, ?, R> pairing(final Collector<? super T, A1, R1> c1, final Collector<? super T, A2, R2> c2,
+            final BiFunction<? super R1, ? super R2, ? extends R> finisher) {
+        final Supplier<A1> c1Supplier = c1.supplier();
+        final Supplier<A2> c2Supplier = c2.supplier();
+        final BiConsumer<A1, ? super T> c1Accumulator = c1.accumulator();
+        final BiConsumer<A2, ? super T> c2Accumulator = c2.accumulator();
+        final BinaryOperator<A1> c1Combiner = c1.combiner();
+        final BinaryOperator<A2> c2combiner = c2.combiner();
+
+        final Supplier<Pair<A1, A2>> supplier = new Supplier<Pair<A1, A2>>() {
+            @Override
+            public Pair<A1, A2> get() {
+                return Pair.of(c1Supplier.get(), c2Supplier.get());
+            }
+        };
+
+        final BiConsumer<Pair<A1, A2>, T> accumulator = new BiConsumer<Pair<A1, A2>, T>() {
+            @Override
+            public void accept(Pair<A1, A2> t, T u) {
+                c1Accumulator.accept(t.left, u);
+                c2Accumulator.accept(t.right, u);
+            }
+        };
+
+        final BinaryOperator<Pair<A1, A2>> combiner = new BinaryOperator<Pair<A1, A2>>() {
+            @Override
+            public Pair<A1, A2> apply(Pair<A1, A2> t, Pair<A1, A2> u) {
+                t.left = c1Combiner.apply(t.left, u.left);
+                t.right = c2combiner.apply(t.right, u.right);
+
+                return t;
+            }
+        };
+
+        final Function<Pair<A1, A2>, R> resFinisher = new Function<Pair<A1, A2>, R>() {
+            @Override
+            public R apply(Pair<A1, A2> t) {
+                final R1 r1 = c1.finisher().apply(t.left);
+                final R2 r2 = c2.finisher().apply(t.right);
+
+                return finisher.apply(r1, r2);
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, resFinisher, CH_NOID);
+    }
+
+    /**
+     * It's copied from StreamEx: https://github.com/amaembo/streamex
+     * <br />
+     * 
+     * Returns a {@code Collector} which finds the minimal and maximal element
+     * according to the supplied comparator, then applies finisher function to
+     * them producing the final result.
+     * 
+     * <p>
+     * This collector produces stable result for ordered stream: if several
+     * minimal or maximal elements appear, the collector always selects the
+     * first encountered.
+     * 
+     * <p>
+     * If there are no input elements, the finisher method is not called and
+     * empty {@code Optional} is returned. Otherwise the finisher result is
+     * wrapped into {@code Optional}.
+     *
+     * @param <T> the type of the input elements
+     * @param <R> the type of the result wrapped into {@code Optional}
+     * @param comparator comparator which is used to find minimal and maximal
+     *        element
+     * @param finisher a {@link BiFunction} which takes minimal and maximal
+     *        element and produces the final result.
+     * @return a {@code Collector} which finds minimal and maximal elements.
+     */
+    public static <T, R> Collector<T, ?, NullabLe<R>> minMax(final Comparator<? super T> comparator,
+            final BiFunction<? super T, ? super T, ? extends R> finisher) {
+        final BiFunction<NullabLe<T>, NullabLe<T>, NullabLe<R>> resFinisher = new BiFunction<NullabLe<T>, NullabLe<T>, NullabLe<R>>() {
+            @Override
+            public NullabLe<R> apply(NullabLe<T> t, NullabLe<T> u) {
+                return t.isPresent() ? NullabLe.<R> of(finisher.apply(t.get(), u.get())) : NullabLe.<R> empty();
+            }
+        };
+
+        return pairing(Collectors.minBy(comparator), Collectors.maxBy(comparator), resFinisher);
+    }
+
+    /**
+     * It's copied from StreamEx: https://github.com/amaembo/streamex
+     * <br />
+     * 
+     * Returns a {@code Collector} which finds all the elements which are equal
+     * to each other and bigger than any other element according to the
+     * specified {@link Comparator}. The found elements are reduced using the
+     * specified downstream {@code Collector}.
+     *
+     * @param <T> the type of the input elements
+     * @param <A> the intermediate accumulation type of the downstream collector
+     * @param <D> the result type of the downstream reduction
+     * @param comparator a {@code Comparator} to compare the elements
+     * @param downstream a {@code Collector} implementing the downstream
+     *        reduction
+     * @return a {@code Collector} which finds all the maximal elements.
+     * @see #maxAll(Comparator)
+     * @see #maxAll(Collector)
+     * @see #maxAll()
+     */
+    public static <T, A, D> Collector<T, ?, D> maxAll(final Comparator<? super T> comparator, final Collector<? super T, A, D> downstream) {
+        final Supplier<A> downstreamSupplier = downstream.supplier();
+        final BiConsumer<A, ? super T> downstreamAccumulator = downstream.accumulator();
+        final BinaryOperator<A> downstreamCombiner = downstream.combiner();
+
+        final Supplier<Pair<A, T>> supplier = new Supplier<Pair<A, T>>() {
+            @Override
+            public Pair<A, T> get() {
+                return Pair.of(downstreamSupplier.get(), (T) none());
+            }
+        };
+
+        final BiConsumer<Pair<A, T>, T> accumulator = new BiConsumer<Pair<A, T>, T>() {
+            @Override
+            public void accept(Pair<A, T> t, T u) {
+                if (t.right == NONE) {
+                    downstreamAccumulator.accept(t.left, u);
+                    t.right = u;
+                } else {
+                    final int cmp = comparator.compare(u, t.right);
+
+                    if (cmp > 0) {
+                        t.left = downstreamSupplier.get();
+                        t.right = u;
+                    }
+
+                    if (cmp >= 0) {
+                        downstreamAccumulator.accept(t.left, u);
+                    }
+                }
+            }
+        };
+
+        final BinaryOperator<Pair<A, T>> combiner = new BinaryOperator<Pair<A, T>>() {
+            @Override
+            public Pair<A, T> apply(Pair<A, T> t, Pair<A, T> u) {
+                if (u.right == NONE) {
+                    return t;
+                } else if (t.right == NONE) {
+                    return u;
+                }
+
+                final int cmp = comparator.compare(t.right, u.right);
+
+                if (cmp > 0) {
+                    return t;
+                } else if (cmp < 0) {
+                    return u;
+                }
+
+                t.left = downstreamCombiner.apply(t.left, u.left);
+
+                return t;
+            }
+        };
+
+        final Function<Pair<A, T>, D> finisher = new Function<Pair<A, T>, D>() {
+            @Override
+            public D apply(Pair<A, T> t) {
+                return downstream.finisher().apply(t.left);
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
+    }
+
+    @SuppressWarnings("unchecked")
+    static <T> T none() {
+        return (T) NONE;
+    }
+
+    /**
+     * It's copied from StreamEx: https://github.com/amaembo/streamex
+     * <br />
+     * 
+     * Returns a {@code Collector} which finds all the elements which are equal
+     * to each other and bigger than any other element according to the
+     * specified {@link Comparator}. The found elements are collected to
+     * {@link List}.
+     *
+     * @param <T> the type of the input elements
+     * @param comparator a {@code Comparator} to compare the elements
+     * @return a {@code Collector} which finds all the maximal elements and
+     *         collects them to the {@code List}.
+     * @see #maxAll(Comparator, Collector)
+     * @see #maxAll()
+     */
+    public static <T> Collector<T, ?, List<T>> maxAll(Comparator<? super T> comparator) {
+        final Collector<? super T, ?, List<T>> downstream = Collectors.toList();
+
+        return maxAll(Fn.reverseOrder(comparator), downstream);
+    }
+
+    /**
+     * It's copied from StreamEx: https://github.com/amaembo/streamex
+     * <br />
+     * 
+     * Returns a {@code Collector} which finds all the elements which are equal
+     * to each other and bigger than any other element according to the natural
+     * order. The found elements are reduced using the specified downstream
+     * {@code Collector}.
+     *
+     * @param <T> the type of the input elements
+     * @param <A> the intermediate accumulation type of the downstream collector
+     * @param <D> the result type of the downstream reduction
+     * @param downstream a {@code Collector} implementing the downstream
+     *        reduction
+     * @return a {@code Collector} which finds all the maximal elements.
+     * @see #maxAll(Comparator, Collector)
+     * @see #maxAll(Comparator)
+     * @see #maxAll()
+     */
+    public static <T extends Comparable<? super T>, A, D> Collector<T, ?, D> maxAll(Collector<T, A, D> downstream) {
+        return maxAll(Fn.naturalOrder(), downstream);
+    }
+
+    /**
+     * It's copied from StreamEx: https://github.com/amaembo/streamex
+     * <br />
+     * 
+     * Returns a {@code Collector} which finds all the elements which are equal
+     * to each other and bigger than any other element according to the natural
+     * order. The found elements are collected to {@link List}.
+     *
+     * @param <T> the type of the input elements
+     * @return a {@code Collector} which finds all the maximal elements and
+     *         collects them to the {@code List}.
+     * @see #maxAll(Comparator)
+     * @see #maxAll(Collector)
+     */
+    public static <T extends Comparable<? super T>> Collector<T, ?, List<T>> maxAll() {
+        final Collector<? super T, ?, List<T>> downstream = Collectors.toList();
+
+        return maxAll(Fn.reverseOrder(), downstream);
+    }
+
+    /**
+     * It's copied from StreamEx: https://github.com/amaembo/streamex
+     * <br />
+     * 
+     * Returns a {@code Collector} which finds all the elements which are equal
+     * to each other and smaller than any other element according to the
+     * specified {@link Comparator}. The found elements are reduced using the
+     * specified downstream {@code Collector}.
+     *
+     * @param <T> the type of the input elements
+     * @param <A> the intermediate accumulation type of the downstream collector
+     * @param <D> the result type of the downstream reduction
+     * @param comparator a {@code Comparator} to compare the elements
+     * @param downstream a {@code Collector} implementing the downstream
+     *        reduction
+     * @return a {@code Collector} which finds all the minimal elements.
+     * @see #minAll(Comparator)
+     * @see #minAll(Collector)
+     * @see #minAll()
+     */
+    public static <T, A, D> Collector<T, ?, D> minAll(Comparator<? super T> comparator, Collector<T, A, D> downstream) {
+        return maxAll(Fn.reverseOrder(comparator), downstream);
+    }
+
+    /**
+     * It's copied from StreamEx: https://github.com/amaembo/streamex
+     * <br />
+     * 
+     * Returns a {@code Collector} which finds all the elements which are equal
+     * to each other and smaller than any other element according to the
+     * specified {@link Comparator}. The found elements are collected to
+     * {@link List}.
+     *
+     * @param <T> the type of the input elements
+     * @param comparator a {@code Comparator} to compare the elements
+     * @return a {@code Collector} which finds all the minimal elements and
+     *         collects them to the {@code List}.
+     * @see #minAll(Comparator, Collector)
+     * @see #minAll()
+     */
+    public static <T> Collector<T, ?, List<T>> minAll(Comparator<? super T> comparator) {
+        final Collector<? super T, ?, List<T>> downstream = Collectors.toList();
+
+        return maxAll(Fn.reverseOrder(comparator), downstream);
+    }
+
+    /**
+     * It's copied from StreamEx: https://github.com/amaembo/streamex
+     * <br />
+     * 
+     * Returns a {@code Collector} which finds all the elements which are equal
+     * to each other and smaller than any other element according to the natural
+     * order. The found elements are reduced using the specified downstream
+     * {@code Collector}.
+     *
+     * @param <T> the type of the input elements
+     * @param <A> the intermediate accumulation type of the downstream collector
+     * @param <D> the result type of the downstream reduction
+     * @param downstream a {@code Collector} implementing the downstream
+     *        reduction
+     * @return a {@code Collector} which finds all the minimal elements.
+     * @see #minAll(Comparator, Collector)
+     * @see #minAll(Comparator)
+     * @see #minAll()
+     */
+    public static <T extends Comparable<? super T>, A, D> Collector<T, ?, D> minAll(Collector<T, A, D> downstream) {
+        return maxAll(Fn.reverseOrder(), downstream);
+    }
+
+    /**
+     * It's copied from StreamEx: https://github.com/amaembo/streamex
+     * <br />
+     * 
+     * Returns a {@code Collector} which finds all the elements which are equal
+     * to each other and smaller than any other element according to the natural
+     * order. The found elements are collected to {@link List}.
+     *
+     * @param <T> the type of the input elements
+     * @return a {@code Collector} which finds all the minimal elements and
+     *         collects them to the {@code List}.
+     * @see #minAll(Comparator)
+     * @see #minAll(Collector)
+     */
+    public static <T extends Comparable<? super T>> Collector<T, ?, List<T>> minAll() {
+        final Collector<? super T, ?, List<T>> downstream = Collectors.toList();
+
+        return maxAll(Fn.reverseOrder(), downstream);
+    }
+
+    /**
      * Returns a {@code Collector} that produces the sum of a integer-valued
      * function applied to the input elements.  If no elements are present,
      * the result is 0.
@@ -1511,6 +2112,41 @@ public final class Collectors {
             @Override
             public Long apply(long[] a) {
                 return a[0];
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
+    }
+
+    public static <T> Collector<T, ?, OptionalLong> summingInt2(final ToIntFunction<? super T> mapper) {
+        final Supplier<long[]> supplier = new Supplier<long[]>() {
+            @Override
+            public long[] get() {
+                return new long[2];
+            }
+        };
+
+        final BiConsumer<long[], T> accumulator = new BiConsumer<long[], T>() {
+            @Override
+            public void accept(long[] a, T t) {
+                a[0] += mapper.applyAsInt(t);
+                a[1]++;
+            }
+        };
+
+        final BinaryOperator<long[]> combiner = new BinaryOperator<long[]>() {
+            @Override
+            public long[] apply(long[] a, long[] b) {
+                a[0] += b[0];
+                a[1] += b[1];
+                return a;
+            }
+        };
+
+        final Function<long[], OptionalLong> finisher = new Function<long[], OptionalLong>() {
+            @Override
+            public OptionalLong apply(long[] a) {
+                return a[1] == 0 ? OptionalLong.empty() : OptionalLong.of(a[0]);
             }
         };
 
@@ -1553,6 +2189,41 @@ public final class Collectors {
             @Override
             public Long apply(long[] a) {
                 return a[0];
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
+    }
+
+    public static <T> Collector<T, ?, OptionalLong> summingLong2(final ToLongFunction<? super T> mapper) {
+        final Supplier<long[]> supplier = new Supplier<long[]>() {
+            @Override
+            public long[] get() {
+                return new long[2];
+            }
+        };
+
+        final BiConsumer<long[], T> accumulator = new BiConsumer<long[], T>() {
+            @Override
+            public void accept(long[] a, T t) {
+                a[0] += mapper.applyAsLong(t);
+                a[1]++;
+            }
+        };
+
+        final BinaryOperator<long[]> combiner = new BinaryOperator<long[]>() {
+            @Override
+            public long[] apply(long[] a, long[] b) {
+                a[0] += b[0];
+                a[1] += b[1];
+                return a;
+            }
+        };
+
+        final Function<long[], OptionalLong> finisher = new Function<long[], OptionalLong>() {
+            @Override
+            public OptionalLong apply(long[] a) {
+                return a[1] == 0 ? OptionalLong.empty() : OptionalLong.of(a[0]);
             }
         };
 
@@ -1623,6 +2294,63 @@ public final class Collectors {
             @Override
             public Double apply(double[] a) {
                 return computeFinalSum(a);
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
+    }
+
+    public static <T> Collector<T, ?, OptionalDouble> summingDouble2(final ToDoubleFunction<? super T> mapper) {
+        /*
+         * In the arrays allocated for the collect operation, index 0
+         * holds the high-order bits of the running sum, index 1 holds
+         * the low-order bits of the sum computed via compensated
+         * summation, and index 2 holds the simple sum used to compute
+         * the proper result if the stream contains infinite values of
+         * the same sign.
+         */
+        //        return new CollectorImpl<>(
+        //                () -> new double[3],
+        //                (a, t) -> { sumWithCompensation(a, mapper.applyAsDouble(t));
+        //                            a[2] += mapper.applyAsDouble(t);},
+        //                (a, b) -> { sumWithCompensation(a, b[0]);
+        //                            a[2] += b[2];
+        //                            return sumWithCompensation(a, b[1]); },
+        //                a -> computeFinalSum(a),
+        //                CH_NOID);
+
+        final Supplier<double[]> supplier = new Supplier<double[]>() {
+            @Override
+            public double[] get() {
+                return new double[4];
+            }
+        };
+
+        final BiConsumer<double[], T> accumulator = new BiConsumer<double[], T>() {
+            @Override
+            public void accept(double[] a, T t) {
+                final double d = mapper.applyAsDouble(t);
+                sumWithCompensation(a, d);
+                a[2] += d;
+
+                a[3]++;
+            }
+        };
+
+        final BinaryOperator<double[]> combiner = new BinaryOperator<double[]>() {
+            @Override
+            public double[] apply(double[] a, double[] b) {
+                sumWithCompensation(a, b[0]);
+                a[2] += b[2];
+                a[3] += b[3];
+                return sumWithCompensation(a, b[1]);
+            }
+        };
+
+        final Function<double[], OptionalDouble> finisher = new Function<double[], OptionalDouble>() {
+            @Override
+            public OptionalDouble apply(double[] a) {
+                return a[3] == 0 ? OptionalDouble.empty() : OptionalDouble.of(computeFinalSum(a));
             }
         };
 
@@ -2501,6 +3229,266 @@ public final class Collectors {
         };
 
         return new CollectorImpl<>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
+    }
+
+    /**
+     * It's copied from StreamEx: https://github.com/amaembo/streamex
+     * <br />
+     * 
+     * Returns a {@code Collector} which computes a common prefix of input
+     * {@code CharSequence} objects returning the result as {@code String}. For
+     * empty input the empty {@code String} is returned.
+     *
+     * <p>
+     * The returned {@code Collector} handles specially Unicode surrogate pairs:
+     * the returned prefix may end with
+     * <a href="http://www.unicode.org/glossary/#high_surrogate_code_unit">
+     * Unicode high-surrogate code unit</a> only if it's not succeeded by
+     * <a href="http://www.unicode.org/glossary/#low_surrogate_code_unit">
+     * Unicode low-surrogate code unit</a> in any of the input sequences.
+     * Normally the ending high-surrogate code unit is removed from the prefix.
+     * 
+     * <p>
+     * This method returns a
+     * <a href="package-summary.html#ShortCircuitReduction">short-circuiting
+     * collector</a>: it may not process all the elements if the common prefix
+     * is empty.
+     * 
+     * @return a {@code Collector} which computes a common prefix.
+     * @since 0.5.0
+     */
+    public static Collector<CharSequence, ?, String> commonPrefix() {
+        final Supplier<Pair<CharSequence, Integer>> supplier = new Supplier<Pair<CharSequence, Integer>>() {
+            @Override
+            public Pair<CharSequence, Integer> get() {
+                return new Pair<>();
+            }
+        };
+
+        final BiConsumer<Pair<CharSequence, Integer>, CharSequence> accumulator = new BiConsumer<Pair<CharSequence, Integer>, CharSequence>() {
+            @Override
+            public void accept(Pair<CharSequence, Integer> a, CharSequence t) {
+                if (a.right == -1) {
+                    a.left = t;
+                    a.right = t.length();
+                } else if (a.right > 0) {
+                    if (t.length() < a.right) {
+                        a.right = t.length();
+                    }
+
+                    for (int i = 0, to = a.right; i < to; i++) {
+                        if (a.left.charAt(i) != t.charAt(i)) {
+                            if (i > 0 && Character.isHighSurrogate(t.charAt(i - 1))
+                                    && (Character.isLowSurrogate(t.charAt(i)) || Character.isLowSurrogate(a.left.charAt(i)))) {
+                                i--;
+                            }
+
+                            a.right = i;
+
+                            break;
+                        }
+                    }
+                }
+            }
+        };
+
+        final BinaryOperator<Pair<CharSequence, Integer>> combiner = new BinaryOperator<Pair<CharSequence, Integer>>() {
+            @Override
+            public Pair<CharSequence, Integer> apply(Pair<CharSequence, Integer> a, Pair<CharSequence, Integer> b) {
+                if (a.right == -1) {
+                    return b;
+                }
+
+                if (b.right != -1) {
+                    accumulator.accept(a, b.left.subSequence(0, b.right));
+                }
+
+                return a;
+            }
+        };
+
+        final Function<Pair<CharSequence, Integer>, String> finisher = new Function<Pair<CharSequence, Integer>, String>() {
+            @Override
+            public String apply(Pair<CharSequence, Integer> a) {
+                return a.left == null ? "" : a.left.subSequence(0, a.right).toString();
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_UNORDERED);
+    }
+
+    /**
+     * It's copied from StreamEx: https://github.com/amaembo/streamex
+     * <br />
+     * 
+     * Returns a {@code Collector} which computes a common suffix of input
+     * {@code CharSequence} objects returning the result as {@code String}. For
+     * empty input the empty {@code String} is returned.
+     *
+     * <p>
+     * The returned {@code Collector} handles specially Unicode surrogate pairs:
+     * the returned suffix may start with
+     * <a href="http://www.unicode.org/glossary/#low_surrogate_code_unit">
+     * Unicode low-surrogate code unit</a> only if it's not preceded by
+     * <a href="http://www.unicode.org/glossary/#high_surrogate_code_unit">
+     * Unicode high-surrogate code unit</a> in any of the input sequences.
+     * Normally the starting low-surrogate code unit is removed from the suffix.
+     * 
+     * <p>
+     * This method returns a
+     * <a href="package-summary.html#ShortCircuitReduction">short-circuiting
+     * collector</a>: it may not process all the elements if the common suffix
+     * is empty.
+     * 
+     * @return a {@code Collector} which computes a common suffix.
+     * @since 0.5.0
+     */
+    public static Collector<CharSequence, ?, String> commonSuffix() {
+        final Supplier<Pair<CharSequence, Integer>> supplier = new Supplier<Pair<CharSequence, Integer>>() {
+            @Override
+            public Pair<CharSequence, Integer> get() {
+                return new Pair<>();
+            }
+        };
+
+        final BiConsumer<Pair<CharSequence, Integer>, CharSequence> accumulator = new BiConsumer<Pair<CharSequence, Integer>, CharSequence>() {
+            @Override
+            public void accept(Pair<CharSequence, Integer> a, CharSequence t) {
+                if (a.right == -1) {
+                    a.left = t;
+                    a.right = t.length();
+                } else if (a.right > 0) {
+                    int alen = a.left.length();
+                    int blen = t.length();
+
+                    if (blen < a.right) {
+                        a.right = blen;
+                    }
+
+                    for (int i = 0, to = a.right; i < to; i++) {
+                        if (a.left.charAt(alen - 1 - i) != t.charAt(blen - 1 - i)) {
+                            if (i > 0 && Character.isLowSurrogate(t.charAt(blen - i))
+                                    && (Character.isHighSurrogate(t.charAt(blen - 1 - i)) || Character.isHighSurrogate(a.left.charAt(alen - 1 - i)))) {
+                                i--;
+                            }
+
+                            a.right = i;
+
+                            break;
+                        }
+                    }
+                }
+            }
+        };
+
+        final BinaryOperator<Pair<CharSequence, Integer>> combiner = new BinaryOperator<Pair<CharSequence, Integer>>() {
+            @Override
+            public Pair<CharSequence, Integer> apply(Pair<CharSequence, Integer> a, Pair<CharSequence, Integer> b) {
+                if (a.right == -1) {
+                    return b;
+                }
+
+                if (b.right != -1) {
+                    accumulator.accept(a, b.left.subSequence(b.left.length() - b.right, b.left.length()));
+                }
+
+                return a;
+            }
+        };
+
+        final Function<Pair<CharSequence, Integer>, String> finisher = new Function<Pair<CharSequence, Integer>, String>() {
+            @Override
+            public String apply(Pair<CharSequence, Integer> a) {
+                return a.left == null ? "" : a.left.subSequence(a.left.length() - a.right, a.left.length()).toString();
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_UNORDERED);
+    }
+
+    /**
+     * It's copied from StreamEx: https://github.com/amaembo/streamex
+     * <br />
+     * 
+     * Sequential only.
+     * <br />
+     * 
+     * 
+     * Returns a collector which collects input elements into {@code List}
+     * removing the elements following their dominator element. The dominator
+     * elements are defined according to given isDominator {@code BiPredicate}.
+     * The isDominator relation must be transitive (if A dominates over B and B
+     * dominates over C, then A also dominates over C).
+     * 
+     * <p>
+     * This operation is similar to
+     * {@code streamEx.collapse(isDominator).toList()}. The important difference
+     * is that in this method {@code BiPredicate} accepts not the adjacent
+     * stream elements, but the leftmost element of the series (current
+     * dominator) and the current element.
+     * 
+     * <p>
+     * For example, consider the stream of numbers:
+     * 
+     * <pre>{@code
+     * StreamEx<Integer> stream = StreamEx.of(1, 5, 3, 4, 2, 7);
+     * }</pre>
+     * 
+     * <p>
+     * Using {@code stream.collapse((a, b) -> a >= b).toList()} you will get the
+     * numbers which are bigger than their immediate predecessor (
+     * {@code [1, 5, 4, 7]}), because (3, 4) pair is not collapsed. However
+     * using {@code stream.collect(dominators((a, b) -> a >= b))} you will get
+     * the numbers which are bigger than any predecessor ({@code [1, 5, 7]}) as
+     * 5 is the dominator element for the subsequent 3, 4 and 2.
+     * 
+     * @param <T> type of the input elements.
+     * @param isDominator a non-interfering, stateless, transitive
+     *        {@code BiPredicate} which returns true if the first argument is
+     *        the dominator for the second argument.
+     * @return a collector which collects input element into {@code List}
+     *         leaving only dominator elements. 
+     * @since 0.5.1
+     */
+    public static <T> Collector<T, ?, List<T>> dominators(final BiPredicate<? super T, ? super T> isDominator) {
+        final Supplier<List<T>> supplier = new Supplier<List<T>>() {
+            @Override
+            public List<T> get() {
+                return new ArrayList<>();
+            }
+        };
+
+        final BiConsumer<List<T>, T> accumulator = new BiConsumer<List<T>, T>() {
+            @Override
+            public void accept(List<T> a, T t) {
+                if (a.isEmpty() || !isDominator.test(a.get(a.size() - 1), t))
+                    a.add(t);
+            }
+        };
+
+        final BinaryOperator<List<T>> combiner = new BinaryOperator<List<T>>() {
+            @Override
+            public List<T> apply(List<T> a, List<T> b) {
+                if (a.isEmpty()) {
+                    return b;
+                }
+
+                int i = 0, l = b.size();
+                T last = a.get(a.size() - 1);
+
+                while (i < l && isDominator.test(last, b.get(i))) {
+                    i++;
+                }
+
+                if (i < l) {
+                    a.addAll(b.subList(i, l));
+                }
+
+                return a;
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, CH_NOID);
     }
 
     /**
