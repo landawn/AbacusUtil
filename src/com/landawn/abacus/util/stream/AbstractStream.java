@@ -2224,6 +2224,16 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
+    public <R, A, RR> RR collectAndThen(Collector<? super T, A, R> downstream, Function<R, RR> finisher) {
+        return finisher.apply(collect(downstream));
+    }
+
+    @Override
+    public <R, A, RR> RR collectAndThen(java.util.stream.Collector<? super T, A, R> downstream, Function<R, RR> finisher) {
+        return finisher.apply(collect(downstream));
+    }
+
+    @Override
     public Pair<NullabLe<T>, Stream<T>> headAndTail() {
         return Pair.of(head(), tail());
     }

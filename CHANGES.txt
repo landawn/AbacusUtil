@@ -1,4 +1,11 @@
 
+========Changes in 0.9.67=========================================================================
+
+1, Add collectAndThen to Stream and Seq
+
+2, Improvements and bug fix.
+
+
 ========Changes in 0.9.66=========================================================================
 
 1*, Remove apply*/accept*/complete/exceptionally from CompletableFuture.

@@ -1508,6 +1508,10 @@ public final class Seq<T> implements Collection<T> {
         return collector.finisher().apply(result);
     }
 
+    public <R, A, RR> RR collectAndThen(final Collector<T, A, R> downstream, final Function<R, RR> finisher) {
+        return finisher.apply(collect(downstream));
+    }
+
     public ExList<T> append(final Collection<? extends T> c) {
         return Seq.concat(this, c);
     }

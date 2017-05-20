@@ -1394,6 +1394,10 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
 
     public abstract <R, A> R collect(java.util.stream.Collector<? super T, A, R> collector);
 
+    public abstract <R, A, RR> RR collectAndThen(Collector<? super T, A, R> downstream, Function<R, RR> finisher);
+
+    public abstract <R, A, RR> RR collectAndThen(java.util.stream.Collector<? super T, A, R> downstream, Function<R, RR> finisher);
+
     /**
      * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
      * Don't call any other methods with this stream after head() or tail() is called. 
