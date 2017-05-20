@@ -584,12 +584,6 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     public abstract <K, A, D> Stream<Map.Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream,
             final Supplier<Map<K, D>> mapFactory);
 
-    public abstract <K, A, D> Stream<Map.Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier,
-            final java.util.stream.Collector<? super T, A, D> downstream);
-
-    public abstract <K, A, D> Stream<Map.Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier,
-            final java.util.stream.Collector<? super T, A, D> downstream, final Supplier<Map<K, D>> mapFactory);
-
     public abstract <K, U> Stream<Map.Entry<K, U>> groupBy2(final Function<? super T, ? extends K> keyExtractor,
             final Function<? super T, ? extends U> valueMapper);
 
@@ -1021,26 +1015,6 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     /**
      * 
      * @param classifier
-     * @param downstream
-     * @return
-     * @see Collectors#groupingBy(Function, Collector)
-     */
-    public abstract <K, A, D> Map<K, D> toMap(final Function<? super T, ? extends K> classifier, final java.util.stream.Collector<? super T, A, D> downstream);
-
-    /**
-     * 
-     * @param classifier
-     * @param downstream
-     * @param mapFactory
-     * @return
-     * @see Collectors#groupingBy(Function, Collector, Supplier)
-     */
-    public abstract <K, A, D, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> classifier,
-            final java.util.stream.Collector<? super T, A, D> downstream, final Supplier<M> mapFactory);
-
-    /**
-     * 
-     * @param classifier
      * @return
      * @see Collectors#groupingBy(Function)
      */
@@ -1391,8 +1365,6 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @see Collectors
      */
     public abstract <R, A> R collect(Collector<? super T, A, R> collector);
-
-    public abstract <R, A> R collect(java.util.stream.Collector<? super T, A, R> collector);
 
     /**
      * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
@@ -1917,57 +1889,6 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
 
         final Stream<T> stream = of(iterator);
         return stream.skip(startIndex).limit(endIndex - startIndex);
-    }
-
-    public static <T> Stream<T> of(final java.util.stream.Stream<T> stream) {
-        return of(new ExIterator<T>() {
-            private Iterator<T> iter = null;
-
-            @Override
-            public boolean hasNext() {
-                if (iter == null) {
-                    iter = stream.iterator();
-                }
-
-                return iter.hasNext();
-            }
-
-            @Override
-            public T next() {
-                if (iter == null) {
-                    iter = stream.iterator();
-                }
-
-                return iter.next();
-            }
-
-            @Override
-            public long count() {
-                final long result = stream.count();
-                iter = null;
-                return result;
-            }
-
-            @Override
-            public void skip(long n) {
-                stream.skip(n);
-                iter = null;
-            }
-
-            @Override
-            public <A> A[] toArray(final A[] a) {
-                final A[] result = stream.toArray(new IntFunction<A[]>() {
-                    @Override
-                    public A[] apply(int value) {
-                        return a;
-                    }
-                });
-
-                iter = null;
-
-                return result;
-            }
-        });
     }
 
     /**
