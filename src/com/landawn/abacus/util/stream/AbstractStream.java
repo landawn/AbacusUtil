@@ -334,6 +334,9 @@ abstract class AbstractStream<T> extends Stream<T> {
 
                 while (iter.hasNext() && sameRange.test(left, (next = iter.next()))) {
                     right = next;
+                }
+
+                if (right == next) {
                     next = NULL;
                 }
 
