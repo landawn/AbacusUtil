@@ -1,4 +1,19 @@
 
+========Changes in 0.9.66=========================================================================
+
+1*, Remove apply*/accept*/complete/exceptionally from CompletableFuture.
+
+2, Add methods to Fn to convert Function/BiFunction/TriFunction from/to Consumer/BiConsumer/TriConsumer.
+
+3, Add rangeMap to Stream.
+
+4, Add reverseSorted() to IntStream/LongStream/DoubleStream/...
+
+5, Support execute(action, delay) in AsyncExecutor/SerialExecutor/UIExecutor/TPExecutor.
+
+6, Improvements and bug fix.
+
+
 ========Changes in 0.9.65=========================================================================
 
 1, Add cancelAll and isAllCancelled to CompletableFuture

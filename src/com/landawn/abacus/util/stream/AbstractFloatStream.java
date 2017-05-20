@@ -311,6 +311,11 @@ abstract class AbstractFloatStream extends FloatStream {
     }
 
     @Override
+    public FloatStream reverseSorted() {
+        return sorted().reversed();
+    }
+
+    @Override
     public <K, U> Map<K, U> toMap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends U> valueMapper) {
         final Supplier<Map<K, U>> mapFactory = Fn.Suppliers.ofMap();
 

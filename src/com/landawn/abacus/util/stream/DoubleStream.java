@@ -284,6 +284,8 @@ public abstract class DoubleStream
      */
     public abstract DoubleStream scan(final double seed, final DoubleBiFunction<Double> accumulator);
 
+    public abstract DoubleStream reverseSorted();
+
     /**
      * <br />
      * This method only run sequentially, even in parallel stream.
@@ -322,7 +324,8 @@ public abstract class DoubleStream
      * @return
      * @see Collectors#toMap(Function, Function, Supplier)
      */
-    public abstract <K, U, M extends Map<K, U>> M toMap(DoubleFunction<? extends K> keyExtractor, DoubleFunction<? extends U> valueMapper, Supplier<M> mapFactory);
+    public abstract <K, U, M extends Map<K, U>> M toMap(DoubleFunction<? extends K> keyExtractor, DoubleFunction<? extends U> valueMapper,
+            Supplier<M> mapFactory);
 
     /**
      * 
@@ -401,8 +404,8 @@ public abstract class DoubleStream
      * @return
      * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
      */
-    public abstract <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(DoubleFunction<? extends K> keyExtractor, DoubleFunction<? extends U> valueMapper,
-            Supplier<Multimap<K, U, V>> mapFactory);
+    public abstract <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(DoubleFunction<? extends K> keyExtractor,
+            DoubleFunction<? extends U> valueMapper, Supplier<Multimap<K, U, V>> mapFactory);
 
     public abstract DoubleMatrix toMatrix();
 
@@ -1641,8 +1644,8 @@ public abstract class DoubleStream
         return merge(queue.poll(), queue.poll(), nextSelector).onClose(newCloseHandler(c));
     }
 
-    public static abstract class ExDoubleStream extends DoubleStream {
-        private ExDoubleStream(Collection<Runnable> closeHandlers, boolean sorted) {
+    public static abstract class DoubleStreamEx extends DoubleStream {
+        private DoubleStreamEx(Collection<Runnable> closeHandlers, boolean sorted) {
             super(closeHandlers, sorted);
             // Factory class.
         }

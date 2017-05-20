@@ -312,6 +312,11 @@ abstract class AbstractByteStream extends ByteStream {
     }
 
     @Override
+    public ByteStream reverseSorted() {
+        return sorted().reversed();
+    }
+
+    @Override
     public <K, U> Map<K, U> toMap(ByteFunction<? extends K> keyExtractor, ByteFunction<? extends U> valueMapper) {
         final Supplier<Map<K, U>> mapFactory = Fn.Suppliers.ofMap();
 

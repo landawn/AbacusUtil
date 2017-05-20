@@ -309,6 +309,11 @@ abstract class AbstractLongStream extends LongStream {
     }
 
     @Override
+    public LongStream reverseSorted() {
+        return sorted().reversed();
+    }
+
+    @Override
     public <K, U> Map<K, U> toMap(LongFunction<? extends K> keyExtractor, LongFunction<? extends U> valueMapper) {
         final Supplier<Map<K, U>> mapFactory = Fn.Suppliers.ofMap();
 

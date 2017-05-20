@@ -310,6 +310,11 @@ abstract class AbstractDoubleStream extends DoubleStream {
     }
 
     @Override
+    public DoubleStream reverseSorted() {
+        return sorted().reversed();
+    }
+
+    @Override
     public <K, U> Map<K, U> toMap(DoubleFunction<? extends K> keyExtractor, DoubleFunction<? extends U> valueMapper) {
         final Supplier<Map<K, U>> mapFactory = Fn.Suppliers.ofMap();
 

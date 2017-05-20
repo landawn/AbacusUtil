@@ -314,6 +314,34 @@ abstract class AbstractStream<T> extends Stream<T> {
         return map3(mapper, false);
     }
 
+    @Override
+    public <U> Stream<U> rangeMap(final BiPredicate<? super T, ? super T> sameRange, final BiFunction<? super T, ? super T, ? extends U> mapper) {
+        final Iterator<T> iter = iterator();
+
+        return newStream(new ExIterator<U>() {
+            private final T NULL = (T) Stream.NONE;
+            private T next = NULL;
+
+            @Override
+            public boolean hasNext() {
+                return next != NULL || iter.hasNext();
+            }
+
+            @Override
+            public U next() {
+                final T left = next == NULL ? iter.next() : next;
+                T right = left;
+
+                while (iter.hasNext() && sameRange.test(left, (next = iter.next()))) {
+                    right = next;
+                    next = NULL;
+                }
+
+                return mapper.apply(left, right);
+            }
+        }, false, null);
+    }
+
     abstract <R> Stream<R> flatMap0(final Function<? super T, ? extends Iterator<? extends R>> mapper);
 
     @Override

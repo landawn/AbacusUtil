@@ -20,11 +20,17 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
@@ -40,6 +46,8 @@ import com.landawn.abacus.util.function.Function;
  */
 public class AsyncExecutor {
     private static final Logger logger = LoggerFactory.getLogger(AsyncExecutor.class);
+
+    private static final ScheduledExecutorService SCHEDULED_EXECUTOR = Executors.newScheduledThreadPool(N.CPU_CORES);
 
     private final int maxConcurrentThreadNumber;
     private final long keepAliveTime;
@@ -91,6 +99,21 @@ public class AsyncExecutor {
         return execute(new FutureTask<Void>(command, null));
     }
 
+    public CompletableFuture<Void> execute(final Runnable action, final long delay) {
+        final ExecutorService executor = getExecutorService();
+
+        final Callable<CompletableFuture<Void>> scheduledAction = new Callable<CompletableFuture<Void>>() {
+            @Override
+            public CompletableFuture<Void> call() throws Exception {
+                return execute(action);
+            }
+        };
+
+        final ScheduledFuture<CompletableFuture<Void>> scheduledFuture = SCHEDULED_EXECUTOR.schedule(scheduledAction, delay, TimeUnit.MILLISECONDS);
+
+        return new CompletableFuture<>(wrap(scheduledFuture), null, executor);
+    }
+
     public List<CompletableFuture<Void>> execute(final Runnable... commands) {
         final List<CompletableFuture<Void>> results = new ArrayList<>(commands.length);
 
@@ -113,6 +136,21 @@ public class AsyncExecutor {
 
     public <T> CompletableFuture<T> execute(final Callable<T> command) {
         return execute(new FutureTask<>(command));
+    }
+
+    public <T> CompletableFuture<T> execute(final Callable<T> action, final long delay) {
+        final ExecutorService executor = getExecutorService();
+
+        final Callable<CompletableFuture<T>> scheduledAction = new Callable<CompletableFuture<T>>() {
+            @Override
+            public CompletableFuture<T> call() throws Exception {
+                return execute(action);
+            }
+        };
+
+        final ScheduledFuture<CompletableFuture<T>> scheduledFuture = SCHEDULED_EXECUTOR.schedule(scheduledAction, delay, TimeUnit.MILLISECONDS);
+
+        return new CompletableFuture<>(wrap(scheduledFuture), null, executor);
     }
 
     public <T> List<CompletableFuture<T>> execute(final Callable<T>... commands) {
@@ -162,6 +200,69 @@ public class AsyncExecutor {
         executor.execute(futureTask);
 
         return new CompletableFuture<>(futureTask, null, executor);
+    }
+
+    private static <T> Future<T> wrap(final ScheduledFuture<CompletableFuture<T>> scheduledFuture) {
+        return new Future<T>() {
+            @Override
+            public boolean cancel(boolean mayInterruptIfRunning) {
+                if (scheduledFuture.cancel(mayInterruptIfRunning) && scheduledFuture.isDone()) {
+                    try {
+                        final CompletableFuture<T> resFuture = scheduledFuture.get();
+                        return resFuture == null || resFuture.cancel(mayInterruptIfRunning);
+                    } catch (Throwable e) {
+                        return false;
+                    }
+                }
+
+                return false;
+            }
+
+            @Override
+            public boolean isCancelled() {
+                if (scheduledFuture.isCancelled() && scheduledFuture.isDone()) {
+                    try {
+                        final CompletableFuture<T> resFuture = scheduledFuture.get();
+                        return resFuture == null || resFuture.isCancelled();
+                    } catch (Throwable e) {
+                        return false;
+                    }
+                }
+
+                return false;
+            }
+
+            @Override
+            public boolean isDone() {
+                if (scheduledFuture.isDone()) {
+                    try {
+                        final CompletableFuture<T> resFuture = scheduledFuture.get();
+                        return resFuture == null || resFuture.isDone();
+                    } catch (Throwable e) {
+                        return false;
+                    }
+                }
+
+                return false;
+            }
+
+            @Override
+            public T get() throws InterruptedException, ExecutionException {
+                final CompletableFuture<T> resFuture = scheduledFuture.get();
+                return resFuture == null ? null : resFuture.get();
+            }
+
+            @Override
+            public T get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+                final long beginTime = N.currentMillis();
+
+                final CompletableFuture<T> resFuture = scheduledFuture.get(timeout, unit);
+
+                final long remainingTimeout = unit.toMillis(timeout) - (N.currentMillis() - beginTime);
+
+                return resFuture == null ? null : (remainingTimeout > 0 ? resFuture.get(remainingTimeout, TimeUnit.MILLISECONDS) : resFuture.get());
+            }
+        };
     }
 
     private ExecutorService getExecutorService() {

@@ -238,6 +238,8 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
      */
     public abstract ShortStream scan(final short seed, final ShortBiFunction<Short> accumulator);
 
+    public abstract ShortStream reverseSorted();
+
     /**
      * <br />
      * This method only run sequentially, even in parallel stream.
@@ -275,7 +277,8 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
      * @return
      * @see Collectors#toMap(Function, Function, Supplier)
      */
-    public abstract <K, U, M extends Map<K, U>> M toMap(ShortFunction<? extends K> keyExtractor, ShortFunction<? extends U> valueMapper, Supplier<M> mapFactory);
+    public abstract <K, U, M extends Map<K, U>> M toMap(ShortFunction<? extends K> keyExtractor, ShortFunction<? extends U> valueMapper,
+            Supplier<M> mapFactory);
 
     /**
      * 
@@ -354,8 +357,8 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
      * @return
      * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
      */
-    public abstract <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(ShortFunction<? extends K> keyExtractor, ShortFunction<? extends U> valueMapper,
-            Supplier<Multimap<K, U, V>> mapFactory);
+    public abstract <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(ShortFunction<? extends K> keyExtractor,
+            ShortFunction<? extends U> valueMapper, Supplier<Multimap<K, U, V>> mapFactory);
 
     public abstract ShortMatrix toMatrix();
 

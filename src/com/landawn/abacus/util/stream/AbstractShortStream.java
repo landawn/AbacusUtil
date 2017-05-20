@@ -310,6 +310,11 @@ abstract class AbstractShortStream extends ShortStream {
     }
 
     @Override
+    public ShortStream reverseSorted() {
+        return sorted().reversed();
+    }
+
+    @Override
     public <K, U> Map<K, U> toMap(ShortFunction<? extends K> keyExtractor, ShortFunction<? extends U> valueMapper) {
         final Supplier<Map<K, U>> mapFactory = Fn.Suppliers.ofMap();
 

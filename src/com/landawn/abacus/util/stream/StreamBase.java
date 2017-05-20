@@ -82,7 +82,7 @@ import com.landawn.abacus.util.function.BinaryOperator;
 abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, C, PL, OT, IT, S>> implements BaseStream<T, A, P, C, PL, OT, IT, S> {
     static final Logger logger = LoggerFactory.getLogger(StreamBase.class);
 
-    public static final Object NONE = N.NULL_MASK;
+    static final Object NONE = new Object();
 
     static final int CORE_THREAD_POOL_SIZE = 64;
 

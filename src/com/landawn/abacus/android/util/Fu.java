@@ -19,7 +19,6 @@ import java.io.File;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
 import com.landawn.abacus.DataSet;
 import com.landawn.abacus.android.util.Async.UIExecutor;
@@ -36,10 +35,13 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.Dialog;
+import android.app.KeyguardManager;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -48,7 +50,9 @@ import android.os.CancellationSignal;
 import android.os.Looper;
 import android.os.StatFs;
 import android.util.DisplayMetrics;
+import android.view.Surface;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -57,11 +61,19 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 /**
- * Always remember to initialize {@code Util} class by calling method {@code init(Context context)} when the application is started.
+ * Always remember to initialize {@code Fu} class by calling method {@code init(Context context)} when the application is started.
  *
+ * More:
+ * 
  * @since 0.8
  * 
  * @author Haiyang Li
+ * 
+ * @see <a href="https://github.com/wasabeef/awesome-android-ui">awesome-android-ui</a>
+ * @see <a href="https://github.com/wasabeef/awesome-android-libraries">awesome-android-libraries</a>
+ * @see <a href="https://github.com/Blankj/AndroidUtilCode">AndroidUtilCode</a>
+ * @see <a href="https://github.com/jingle1267/android-utils">android-utils</a>
+ * @see <a href="https://github.com/wyouflf/xUtils3">xUtils3</a>
  */
 public class Fu {
     static final Logger logger = LoggerFactory.getLogger(Fu.class);
@@ -197,10 +209,6 @@ public class Fu {
     //    public static String baseOS() {
     //        return Build.VERSION.BASE_OS;
     //    }
-
-    public static DisplayMetrics getDisplayMetrics() {
-        return context.getResources().getDisplayMetrics();
-    }
 
     /**
      * 
@@ -710,7 +718,7 @@ public class Fu {
         return thread == Looper.getMainLooper().getThread();
     }
 
-    public void runOnUiThread(Runnable action) {
+    public static void runOnUiThread(Runnable action) {
         if (isUiThread()) {
             action.run();
         } else {
@@ -718,13 +726,13 @@ public class Fu {
         }
     }
 
-    public <T> T callOnUiThread(Callable<? extends T> action) throws Exception {
-        if (isUiThread()) {
-            return action.call();
-        } else {
-            return UIExecutor.execute(action).get();
-        }
-    }
+    //    public static <T> T callOnUiThread(Callable<? extends T> action) throws Exception {
+    //        if (isUiThread()) {
+    //            return action.call();
+    //        } else {
+    //            return UIExecutor.execute(action).get();
+    //        }
+    //    }
 
     public static <T extends View> T getViewById(View root, int id) {
         return (T) root.findViewById(id);
@@ -843,6 +851,81 @@ public class Fu {
         Toast.makeText(context, text, duration).show();
     }
 
+    public static int dp2px(float dpValue) {
+        final float scale = getDisplayMetrics().density;
+        return (int) (dpValue * scale + 0.5f);
+    }
+
+    public static int px2dp(float pxValue) {
+        final float scale = getDisplayMetrics().density;
+        return (int) (pxValue / scale + 0.5f);
+    }
+
+    public static int sp2px(float spValue) {
+        final float fontScale = getDisplayMetrics().scaledDensity;
+        return (int) (spValue * fontScale + 0.5f);
+    }
+
+    public static int px2sp(float pxValue) {
+        final float fontScale = getDisplayMetrics().scaledDensity;
+        return (int) (pxValue / fontScale + 0.5f);
+    }
+
+    public static DisplayMetrics getDisplayMetrics() {
+        return context.getResources().getDisplayMetrics();
+    }
+
+    public static int getScreenWidth() {
+        // cache the result?
+        final WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        final DisplayMetrics dm = new DisplayMetrics();
+        windowManager.getDefaultDisplay().getMetrics(dm);
+        return dm.widthPixels;
+    }
+
+    public static int getScreenHeight() {
+        // cache the result?
+        final WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        final DisplayMetrics dm = new DisplayMetrics();
+        windowManager.getDefaultDisplay().getMetrics(dm);
+        return dm.heightPixels;
+    }
+
+    public static boolean isLandscape() {
+        return context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
+    }
+
+    public static boolean isPortrait() {
+        return context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT;
+    }
+
+    public static void setLandscape(Activity activity) {
+        activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+    }
+
+    public static void setPortrait(Activity activity) {
+        activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+    }
+
+    public static int getScreenRotation(Activity activity) {
+        switch (activity.getWindowManager().getDefaultDisplay().getRotation()) {
+            default:
+            case Surface.ROTATION_0:
+                return 0;
+            case Surface.ROTATION_90:
+                return 90;
+            case Surface.ROTATION_180:
+                return 180;
+            case Surface.ROTATION_270:
+                return 270;
+        }
+    }
+
+    public static boolean isScreenLocked() {
+        final KeyguardManager km = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
+        return km.inKeyguardRestrictedInputMode();
+    }
+
     public static void close(Closeable closeable) {
         IOUtil.close(closeable);
     }
@@ -881,6 +964,13 @@ public class Fu {
     private static class BitmapHoneycombMR1 {
         static int getByteCount(Bitmap bitmap) {
             return bitmap.getByteCount();
+        }
+    }
+
+    public static final class O extends Fu {
+
+        private O() {
+            // singleton.
         }
     }
 }

@@ -329,6 +329,32 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public abstract <R> Stream<R> map3(TriFunction<? super T, ? super T, ? super T, ? extends R> mapper, boolean ignoreNotPaired);
 
+    /**
+     * Note: copied from StreamEx: https://github.com/amaembo/streamex
+     * 
+     * <br />
+     * 
+     * Returns a stream consisting of results of applying the given function to
+     * the ranges created from the source elements.
+     * 
+     * <p>
+     * This is a <a href="package-summary.html#StreamOps">quasi-intermediate</a>
+     * partial reduction operation.
+     * 
+     * @param <U> the type of the resulting elements
+     * @param sameRange a non-interfering, stateless predicate to apply to
+     *        the pair of adjacent elements which returns true for elements
+     *        which belong to the same range.
+     * @param mapper a non-interfering, stateless function to apply to the
+     *        range borders and produce the resulting element. If value was
+     *        not merged to the interval, then mapper will receive the same
+     *        value twice, otherwise it will receive the leftmost and the
+     *        rightmost values which were merged to the range.
+     * @return the new stream
+     * @see #collapse(BiPredicate, BinaryOperator)
+     */
+    public abstract <U> Stream<U> rangeMap(final BiPredicate<? super T, ? super T> sameRange, final BiFunction<? super T, ? super T, ? extends U> mapper);
+
     public abstract CharStream mapToChar(ToCharFunction<? super T> mapper);
 
     public abstract ByteStream mapToByte(ToByteFunction<? super T> mapper);

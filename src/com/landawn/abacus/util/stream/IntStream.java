@@ -299,6 +299,8 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      */
     public abstract IntStream scan(final int seed, final IntBiFunction<Integer> accumulator);
 
+    public abstract IntStream reverseSorted();
+
     /**
      * 
      * <br />
@@ -1978,8 +1980,8 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
         return merge(queue.poll(), queue.poll(), nextSelector).onClose(newCloseHandler(c));
     }
 
-    public static abstract class ExIntStream extends IntStream {
-        private ExIntStream(Collection<Runnable> closeHandlers, boolean sorted) {
+    public static abstract class IntStreamEx extends IntStream {
+        private IntStreamEx(Collection<Runnable> closeHandlers, boolean sorted) {
             super(closeHandlers, sorted);
             // Factory class.
         }

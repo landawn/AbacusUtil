@@ -39,6 +39,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 
+import com.landawn.abacus.util.function.BiConsumer;
+import com.landawn.abacus.util.function.BiFunction;
+import com.landawn.abacus.util.function.Consumer;
+import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.ToByteFunction;
 import com.landawn.abacus.util.function.ToCharFunction;
@@ -47,6 +51,8 @@ import com.landawn.abacus.util.function.ToFloatFunction;
 import com.landawn.abacus.util.function.ToIntFunction;
 import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.function.ToShortFunction;
+import com.landawn.abacus.util.function.TriConsumer;
+import com.landawn.abacus.util.function.TriFunction;
 import com.landawn.abacus.util.stream.Collector;
 import com.landawn.abacus.util.stream.Collectors;
 
@@ -1502,6 +1508,21 @@ public final class Fn {
                 }
             };
         }
+
+        /**
+         * Returns a <code>Consumer</code> which calls the specified <code>func</code>.
+         * 
+         * @param func
+         * @return
+         */
+        public static <T> Consumer<T> of(final Function<? super T, ?> func) {
+            return new Consumer<T>() {
+                @Override
+                public void accept(T t) {
+                    func.apply(t);
+                }
+            };
+        }
     }
 
     public static final class BiConsumers {
@@ -1624,6 +1645,42 @@ public final class Fn {
         public static <K, V, M extends Map<K, V>> com.landawn.abacus.util.function.BiConsumer<M, K> ofRemoveByKey() {
             return (com.landawn.abacus.util.function.BiConsumer<M, K>) REMOVE_BY_KEY;
         }
+
+        /**
+         * Returns a <code>BiConsumer</code> which calls the specified <code>func</code>.
+         * 
+         * @param func
+         * @return
+         */
+        public static <T, U> BiConsumer<T, U> of(final BiFunction<? super T, ? super U, ?> func) {
+            return new BiConsumer<T, U>() {
+                @Override
+                public void accept(T t, U u) {
+                    func.apply(t, u);
+                }
+            };
+        }
+    }
+
+    public static final class TriConsumers {
+        private TriConsumers() {
+            // singleton.
+        }
+
+        /**
+         * Returns a <code>TriConsumer</code> which calls the specified <code>func</code>.
+         * 
+         * @param func
+         * @return
+         */
+        public static <A, B, C> TriConsumer<A, B, C> of(final TriFunction<? super A, ? super B, ? super C, ?> func) {
+            return new TriConsumer<A, B, C>() {
+                @Override
+                public void accept(A a, B b, C c) {
+                    func.apply(a, b, c);
+                }
+            };
+        }
     }
 
     public static final class Functions {
@@ -1643,6 +1700,23 @@ public final class Fn {
                 }
             };
         }
+
+        /**
+         * Returns a <code>Function</code> which calls the specified <code>action</code> and always return an empty<code>Optional</code> if <code>action</code> is executed successfully.
+         * 
+         * @param action
+         * @return
+         */
+        public static <T, R> Function<T, Optional<R>> of(final Consumer<? super T> action) {
+            return new Function<T, Optional<R>>() {
+                @Override
+                public Optional<R> apply(T t) {
+                    action.accept(t);
+                    return Optional.empty();
+                }
+            };
+        }
+
     }
 
     public static final class BiFunctions {
@@ -1783,6 +1857,44 @@ public final class Fn {
 
         public static <T, U> com.landawn.abacus.util.function.BiFunction<T, U, U> ofReturnSecond() {
             return (com.landawn.abacus.util.function.BiFunction<T, U, U>) RETURN_SECOND;
+        }
+
+        /**
+         * Returns a <code>BiFunction</code> which calls the specified <code>action</code> and always return an empty<code>Optional</code> if <code>action</code> is executed successfully.
+         * 
+         * @param action
+         * @return
+         */
+        public static <T, U, R> BiFunction<T, U, Optional<R>> of(final BiConsumer<? super T, ? super U> action) {
+            return new BiFunction<T, U, Optional<R>>() {
+                @Override
+                public Optional<R> apply(T t, U u) {
+                    action.accept(t, u);
+                    return Optional.empty();
+                }
+            };
+        }
+    }
+
+    public static final class TriFunctions {
+        private TriFunctions() {
+            // singleton.
+        }
+
+        /**
+         * Returns a <code>TriFunction</code> which calls the specified <code>action</code> and always return an empty<code>Optional</code> if <code>action</code> is executed successfully.
+         * 
+         * @param action
+         * @return
+         */
+        public static <A, B, C, R> TriFunction<A, B, C, Optional<R>> of(final TriConsumer<? super A, ? super B, ? super C> action) {
+            return new TriFunction<A, B, C, Optional<R>>() {
+                @Override
+                public Optional<R> apply(A a, B b, C c) {
+                    action.accept(a, b, c);
+                    return Optional.empty();
+                }
+            };
         }
     }
 

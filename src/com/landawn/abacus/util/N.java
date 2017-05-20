@@ -29591,6 +29591,10 @@ public final class N {
         return asyncExecutor.execute(command);
     }
 
+    public static CompletableFuture<Void> asyncExecute(final Runnable command, final long delay) {
+        return asyncExecutor.execute(command, delay);
+    }
+
     public static List<CompletableFuture<Void>> asyncExecute(final Runnable... commands) {
         return asyncExecutor.execute(commands);
     }
@@ -29601,6 +29605,10 @@ public final class N {
 
     public static <T> CompletableFuture<T> asyncExecute(final Callable<T> command) {
         return asyncExecutor.execute(command);
+    }
+
+    public static <T> CompletableFuture<T> asyncExecute(final Callable<T> command, final long delay) {
+        return asyncExecutor.execute(command, delay);
     }
 
     public static <T> List<CompletableFuture<T>> asyncExecute(final Callable<T>... commands) {
