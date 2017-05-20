@@ -584,6 +584,12 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     public abstract <K, A, D> Stream<Map.Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream,
             final Supplier<Map<K, D>> mapFactory);
 
+    public abstract <K, A, D> Stream<Map.Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier,
+            final java.util.stream.Collector<? super T, A, D> downstream);
+
+    public abstract <K, A, D> Stream<Map.Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier,
+            final java.util.stream.Collector<? super T, A, D> downstream, final Supplier<Map<K, D>> mapFactory);
+
     public abstract <K, U> Stream<Map.Entry<K, U>> groupBy2(final Function<? super T, ? extends K> keyExtractor,
             final Function<? super T, ? extends U> valueMapper);
 
@@ -1015,6 +1021,26 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     /**
      * 
      * @param classifier
+     * @param downstream
+     * @return
+     * @see Collectors#groupingBy(Function, Collector)
+     */
+    public abstract <K, A, D> Map<K, D> toMap(final Function<? super T, ? extends K> classifier, final java.util.stream.Collector<? super T, A, D> downstream);
+
+    /**
+     * 
+     * @param classifier
+     * @param downstream
+     * @param mapFactory
+     * @return
+     * @see Collectors#groupingBy(Function, Collector, Supplier)
+     */
+    public abstract <K, A, D, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> classifier,
+            final java.util.stream.Collector<? super T, A, D> downstream, final Supplier<M> mapFactory);
+
+    /**
+     * 
+     * @param classifier
      * @return
      * @see Collectors#groupingBy(Function)
      */
@@ -1365,6 +1391,8 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @see Collectors
      */
     public abstract <R, A> R collect(Collector<? super T, A, R> collector);
+
+    public abstract <R, A> R collect(java.util.stream.Collector<? super T, A, R> collector);
 
     /**
      * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
@@ -1889,6 +1917,57 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
 
         final Stream<T> stream = of(iterator);
         return stream.skip(startIndex).limit(endIndex - startIndex);
+    }
+
+    public static <T> Stream<T> of(final java.util.stream.Stream<T> stream) {
+        return of(new ExIterator<T>() {
+            private Iterator<T> iter = null;
+
+            @Override
+            public boolean hasNext() {
+                if (iter == null) {
+                    iter = stream.iterator();
+                }
+
+                return iter.hasNext();
+            }
+
+            @Override
+            public T next() {
+                if (iter == null) {
+                    iter = stream.iterator();
+                }
+
+                return iter.next();
+            }
+
+            @Override
+            public long count() {
+                final long result = stream.count();
+                iter = null;
+                return result;
+            }
+
+            @Override
+            public void skip(long n) {
+                stream.skip(n);
+                iter = null;
+            }
+
+            @Override
+            public <A> A[] toArray(final A[] a) {
+                final A[] result = stream.toArray(new IntFunction<A[]>() {
+                    @Override
+                    public A[] apply(int value) {
+                        return a;
+                    }
+                });
+
+                iter = null;
+
+                return result;
+            }
+        });
     }
 
     /**
@@ -7899,10 +7978,53 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         }
     }
 
-    public static abstract class ExStream<T> extends Stream<T> {
-        private ExStream(Collection<Runnable> closeHandlers, boolean sorted, Comparator<? super T> cmp) {
+    public static abstract class StreamEx<T> extends Stream<T> {
+        private StreamEx(Collection<Runnable> closeHandlers, boolean sorted, Comparator<? super T> cmp) {
             super(closeHandlers, sorted, cmp);
             // Factory class.
         }
+    }
+
+    /**
+     * SOO = Sequential Only Operations.
+     * These operations run sequentially only, even under parallel stream.
+     * 
+     * Mostly, if an operation is a single operation, or has to be executed in order,
+     *  or there is no benefit to execute it in parallel, it will run sequentially, even under parallel stream.
+     *
+     */
+    public static enum SOO {
+        SPLIT, SPLIT_0, SPLIT_2, SPLIT_3, SPLIT_AT, SLIDING, SLIDING_0, SLIDING_2, //
+        INTERSECTION, DIFFERENCE, SYMMETRIC_DIFFERENCE, //
+        REVERSED, SHUFFLED, ROTATED, DISTINCT, //
+        APPEND, PREPEND, CACHED, INDEXED, SKIP, LIMIT, STEP, //
+        QUEUED, MERGE, ZIP_WITH, PERSIST_FILE_OUTPUT_STREAM_WRITE, //
+        COMBINATIONS, PERMUTATIONS, ORDERED_PERMUTATIONS, DISTRIBUTION, //
+        CARTESIAN_PRODUCT, INNER_JOIN, FULL_JOIN, LEFT_JOIN, RIGHT_JOIN, //
+        COLLAPSE, RANGE_MAP, SCAN, INTERSPERSE, TOP, K_TH_LARGEST, FOR_EACH_WITH_RESULT, HAS_DUPLICATE, //
+        COUNT, FIND_FIRST_OR_LAST, FIND_FIRST_AND_LAST, //
+        LAST, HEAD, HEAD_2, TAIL, TAIL_2, HEAD_AND_TAIL, HEAD_AND_TAIL_2, //
+        TO_ARRAY, TO_EXlIST, TO_LIST, TO_SET, TO_MULTISET, TO_LONG_MULTISET, TO_MATRIX, TO_DATA_SET, //
+        BOXED, ITERATOR, AS_INT_STREAM, AS_LONG_STREAM, AS_FLOAT_STREAM, AS_DOUBLE_STREAM, //
+        PRINTLN, IS_PARALLEL, SEQUENTIAL, PARALLEL, MAX_THREAD_NUM, SPLITOR, TRIED, ON_CLOSE, CLOSE;
+    }
+
+    /**
+     * PSO = Parallel supported Operations.
+     * These operations run in parallel under parallel stream.
+     * 
+     * Mostly, if an operation can be executed in parallel and has benefit to execute it in parallel. it will run in parallel under parallel stream.
+     * 
+     * @author haiyangl
+     *
+     */
+    public static enum PSO {
+        MAP, MAP_2, MAP_3, MAP_TO_, FLAT_MAP, FLAT_MAP_TO_, REDUCE, COLLECT, //
+        MIN, MAX, SUM_INT, SUM_LONG, SUM_DOUBLE, AVERAGE_INT, AVERAGE_LONG, AVERAGE_DOUBLE, SUMMARIZE_, //
+        GROUP_BY, GROUP_BY_2, TO_MAP, TO_MAP2, TO_MULTIMAP, //
+        FILTER, TAKE_WHILE, DROP_WHILE, REMOVE, REMOVE_IF, REMOVE_WHILE, SKIP_NULL, //
+        SPLIT_BY, SORTED, REVERSE_SORTED, DISTINCT_BY, JOIN, PEEK, //
+        FOR_EACH, ANY_MATCH, ALL_MATCH, NONE_MATCH, FIND_FIRST, FIND_LAST, //
+        PERSIST_DB;
     }
 }
