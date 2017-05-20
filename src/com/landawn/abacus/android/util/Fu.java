@@ -967,6 +967,12 @@ public class Fu {
         }
     }
 
+    public static final class Fragments {
+        private Fragments() {
+            // singleton.
+        }
+    }
+
     public static final class O extends Fu {
 
         private O() {
