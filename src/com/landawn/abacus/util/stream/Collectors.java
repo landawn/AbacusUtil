@@ -1028,17 +1028,27 @@ public final class Collectors {
     }
 
     /**
-     * Sequential only.
+     * This <code>Collector</code> can only be used in sequential streams.
+     * <br />
      * 
      * @param n
      * @return
+     * @throws UnsupportedOperationException it's used in parallel stream.
      */
     public static <T> Collector<T, ?, List<T>> last(final int n) {
         N.checkArgument(n >= 0, "'n' can't be negative");
 
         final Supplier<ArrayDeque<T>> supplier = new Supplier<ArrayDeque<T>>() {
+            private volatile boolean isCalled = false;
+
             @Override
             public ArrayDeque<T> get() {
+                if (isCalled) {
+                    throw new UnsupportedOperationException("The 'last' Collector only can be used in sequential stream");
+                }
+
+                isCalled = true;
+
                 return new ArrayDeque<>(n);
             }
         };
@@ -1059,9 +1069,14 @@ public final class Collectors {
         final BinaryOperator<ArrayDeque<T>> combiner = new BinaryOperator<ArrayDeque<T>>() {
             @Override
             public ArrayDeque<T> apply(ArrayDeque<T> a, ArrayDeque<T> b) {
+                if (N.notNullOrEmpty(a) && N.notNullOrEmpty(b)) {
+                    throw new UnsupportedOperationException("The 'last' Collector only can be used in sequential stream");
+                }
+
                 while (b.size() < n && !a.isEmpty()) {
                     b.addFirst(a.pollLast());
                 }
+
                 return b;
             }
         };
@@ -3410,7 +3425,7 @@ public final class Collectors {
      * It's copied from StreamEx: https://github.com/amaembo/streamex
      * <br />
      * 
-     * Sequential only.
+     * This <code>Collector</code> can only be used in sequential streams.
      * <br />
      * 
      * 
@@ -3448,12 +3463,20 @@ public final class Collectors {
      *        the dominator for the second argument.
      * @return a collector which collects input element into {@code List}
      *         leaving only dominator elements. 
+     * @throws UnsupportedOperationException it's used in parallel stream.
      * @since 0.5.1
      */
     public static <T> Collector<T, ?, List<T>> dominators(final BiPredicate<? super T, ? super T> isDominator) {
         final Supplier<List<T>> supplier = new Supplier<List<T>>() {
+            private volatile boolean isCalled = false;
+
             @Override
             public List<T> get() {
+                if (isCalled) {
+                    throw new UnsupportedOperationException("The 'dominators' Collector only can be used in sequential stream");
+                }
+
+                isCalled = true;
                 return new ArrayList<>();
             }
         };
@@ -3469,6 +3492,10 @@ public final class Collectors {
         final BinaryOperator<List<T>> combiner = new BinaryOperator<List<T>>() {
             @Override
             public List<T> apply(List<T> a, List<T> b) {
+                if (N.notNullOrEmpty(a) && N.notNullOrEmpty(b)) {
+                    throw new UnsupportedOperationException("The 'dominators' Collector only can be used in sequential streams");
+                }
+
                 if (a.isEmpty()) {
                     return b;
                 }
