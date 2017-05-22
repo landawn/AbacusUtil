@@ -151,9 +151,7 @@ public class CompletableFuture<T> implements Future<T> {
 
         if (N.notNullOrEmpty(upFutures)) {
             for (CompletableFuture<?> preFuture : upFutures) {
-                if (preFuture.cancelAll(mayInterruptIfRunning) == false) {
-                    res = false;
-                }
+                res = res & preFuture.cancelAll(mayInterruptIfRunning);
             }
         }
 
@@ -170,9 +168,7 @@ public class CompletableFuture<T> implements Future<T> {
 
         if (N.notNullOrEmpty(upFutures)) {
             for (CompletableFuture<?> preFuture : upFutures) {
-                if (preFuture.isAllCancelled() == false) {
-                    res = false;
-                }
+                res = res & preFuture.isAllCancelled();
             }
         }
 

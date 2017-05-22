@@ -46,7 +46,7 @@ import com.landawn.abacus.util.function.Predicate;
  */
 public abstract class Observer<T> {
 
-    private static final Object COMPLETE_FLAG = N.NULL_MASK;
+    private static final Object COMPLETE_FLAG = new Object();
 
     protected static final double INTERVAL_FACTOR = 3;
 
@@ -69,15 +69,19 @@ public abstract class Observer<T> {
     protected static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(N.IS_PLATFORM_ANDROID ? N.CPU_CORES : 32);
 
     protected final Map<ScheduledFuture<?>, Long> scheduledFutures = new LinkedHashMap<>();
-    protected final Dispatcher<Object> dispatcher = new Dispatcher<>();
+    protected final Dispatcher<Object> dispatcher;
     protected boolean hasMore = true;
 
     protected Observer() {
+        this(new Dispatcher<>());
+    }
 
+    protected Observer(Dispatcher<Object> dispatcher) {
+        this.dispatcher = dispatcher;
     }
 
     @SuppressWarnings("rawtypes")
-    public static void complete(Queue<?> queue) {
+    public static void complete(BlockingQueue<?> queue) {
         ((Queue) queue).offer(COMPLETE_FLAG);
     }
 
@@ -85,6 +89,10 @@ public abstract class Observer<T> {
         N.requireNonNull(queue, "queue");
 
         return new BlockingQueueObserver<>(queue);
+    }
+
+    public static <T> Observer<T> of(final Collection<T> c) {
+        return of(N.isNullOrEmpty(c) ? ImmutableIterator.EMPTY : c.iterator());
     }
 
     public static <T> Observer<T> of(final Iterator<T> iter) {
@@ -765,6 +773,20 @@ public abstract class Observer<T> {
 
                 entry.getKey().cancel(false);
             }
+        }
+    }
+
+    protected static class Node<T> {
+        public final T value;
+        public Node<T> next;
+
+        public Node(final T value) {
+            this(value, null);
+        }
+
+        public Node(final T value, Node<T> next) {
+            this.value = value;
+            this.next = next;
         }
     }
 

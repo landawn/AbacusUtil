@@ -186,13 +186,13 @@ public final class Futures {
         return new CompletableFuture<>(new Future<List<Object>>() {
             @Override
             public boolean cancel(boolean mayInterruptIfRunning) {
+                boolean res = true;
+
                 for (CompletableFuture<?> future : cfs) {
-                    if (future.cancel(mayInterruptIfRunning) == false) {
-                        return false;
-                    }
+                    res = res & future.cancel(mayInterruptIfRunning);
                 }
 
-                return true;
+                return res;
             }
 
             @Override
@@ -284,13 +284,13 @@ public final class Futures {
         return new CompletableFuture<>(new Future<Object>() {
             @Override
             public boolean cancel(boolean mayInterruptIfRunning) {
+                boolean res = true;
+
                 for (CompletableFuture<?> future : cfs) {
-                    if (future.cancel(mayInterruptIfRunning) == false) {
-                        return false;
-                    }
+                    res = res & future.cancel(mayInterruptIfRunning);
                 }
 
-                return true;
+                return res;
             }
 
             @Override
