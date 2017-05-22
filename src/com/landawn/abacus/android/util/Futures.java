@@ -136,12 +136,12 @@ public final class Futures {
     }
 
     public static <R> CompletableFuture<R> combine(final Collection<? extends CompletableFuture<?>> cfs, final Function<List<Object>, ? extends R> action) {
-        return allOf(cfs).thenApply(new Function<List<Object>, R>() {
-            @Override
-            public R apply(List<Object> t) {
-                return action.apply(t);
-            }
-        });
+        return allOf(cfs).thenApply(action);
+    }
+
+    public static <T, R> CompletableFuture<R> combine(final List<? extends CompletableFuture<? extends T>> cfs, final Function<List<T>, ? extends R> action) {
+        final CompletableFuture<List<T>> future = allOf(cfs);
+        return future.thenApply(action);
     }
 
     /**
@@ -179,8 +179,9 @@ public final class Futures {
      * @param cfs
      * @return
      */
-    public static <T> CompletableFuture<List<Object>> allOf(final List<? extends CompletableFuture<? extends T>> cfs) {
-        return allOf2(cfs);
+    @SuppressWarnings("rawtypes")
+    public static <T> CompletableFuture<List<T>> allOf(final List<? extends CompletableFuture<? extends T>> cfs) {
+        return (CompletableFuture) allOf2(cfs);
     }
 
     private static CompletableFuture<List<Object>> allOf2(final Collection<? extends CompletableFuture<?>> cfs) {

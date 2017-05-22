@@ -50,7 +50,7 @@ public final class Futures {
     }
 
     public static <T1, T2> CompletableFuture<Tuple2<T1, T2>> combine(final CompletableFuture<? extends T1> cf1, final CompletableFuture<? extends T2> cf2) {
-        return Futures.allOf(N.asList(cf1, cf2)).thenApply(new Function<List<Object>, Tuple2<T1, T2>>() {
+        return allOf(N.asList(cf1, cf2)).thenApply(new Function<List<Object>, Tuple2<T1, T2>>() {
             @Override
             public Tuple2<T1, T2> apply(List<Object> t) {
                 return Tuple.of((T1) t.get(0), (T2) t.get(1));
@@ -60,7 +60,7 @@ public final class Futures {
 
     public static <T1, T2, T3> CompletableFuture<Tuple3<T1, T2, T3>> combine(final CompletableFuture<? extends T1> cf1,
             final CompletableFuture<? extends T2> cf2, final CompletableFuture<? extends T3> cf3) {
-        return Futures.allOf(N.asList(cf1, cf2, cf3)).thenApply(new Function<List<Object>, Tuple3<T1, T2, T3>>() {
+        return allOf(N.asList(cf1, cf2, cf3)).thenApply(new Function<List<Object>, Tuple3<T1, T2, T3>>() {
             @Override
             public Tuple3<T1, T2, T3> apply(List<Object> t) {
                 return Tuple.of((T1) t.get(0), (T2) t.get(1), (T3) t.get(2));
@@ -70,7 +70,7 @@ public final class Futures {
 
     public static <T1, T2, T3, T4> CompletableFuture<Tuple4<T1, T2, T3, T4>> combine(final CompletableFuture<? extends T1> cf1,
             final CompletableFuture<? extends T2> cf2, final CompletableFuture<? extends T3> cf3, final CompletableFuture<? extends T4> cf4) {
-        return Futures.allOf(N.asList(cf1, cf2, cf3, cf4)).thenApply(new Function<List<Object>, Tuple4<T1, T2, T3, T4>>() {
+        return allOf(N.asList(cf1, cf2, cf3, cf4)).thenApply(new Function<List<Object>, Tuple4<T1, T2, T3, T4>>() {
             @Override
             public Tuple4<T1, T2, T3, T4> apply(List<Object> t) {
                 return Tuple.of((T1) t.get(0), (T2) t.get(1), (T3) t.get(2), (T4) t.get(3));
@@ -81,7 +81,7 @@ public final class Futures {
     public static <T1, T2, T3, T4, T5> CompletableFuture<Tuple5<T1, T2, T3, T4, T5>> combine(final CompletableFuture<? extends T1> cf1,
             final CompletableFuture<? extends T2> cf2, final CompletableFuture<? extends T3> cf3, final CompletableFuture<? extends T4> cf4,
             final CompletableFuture<? extends T5> cf5) {
-        return Futures.allOf(N.asList(cf1, cf2, cf3, cf4, cf5)).thenApply(new Function<List<Object>, Tuple5<T1, T2, T3, T4, T5>>() {
+        return allOf(N.asList(cf1, cf2, cf3, cf4, cf5)).thenApply(new Function<List<Object>, Tuple5<T1, T2, T3, T4, T5>>() {
             @Override
             public Tuple5<T1, T2, T3, T4, T5> apply(List<Object> t) {
                 return Tuple.of((T1) t.get(0), (T2) t.get(1), (T3) t.get(2), (T4) t.get(3), (T5) t.get(4));
@@ -92,7 +92,7 @@ public final class Futures {
     public static <T1, T2, T3, T4, T5, T6> CompletableFuture<Tuple6<T1, T2, T3, T4, T5, T6>> combine(final CompletableFuture<? extends T1> cf1,
             final CompletableFuture<? extends T2> cf2, final CompletableFuture<? extends T3> cf3, final CompletableFuture<? extends T4> cf4,
             final CompletableFuture<? extends T5> cf5, final CompletableFuture<? extends T6> cf6) {
-        return Futures.allOf(N.asList(cf1, cf2, cf3, cf4, cf5, cf6)).thenApply(new Function<List<Object>, Tuple6<T1, T2, T3, T4, T5, T6>>() {
+        return allOf(N.asList(cf1, cf2, cf3, cf4, cf5, cf6)).thenApply(new Function<List<Object>, Tuple6<T1, T2, T3, T4, T5, T6>>() {
             @Override
             public Tuple6<T1, T2, T3, T4, T5, T6> apply(List<Object> t) {
                 return Tuple.of((T1) t.get(0), (T2) t.get(1), (T3) t.get(2), (T4) t.get(3), (T5) t.get(4), (T6) t.get(5));
@@ -103,7 +103,7 @@ public final class Futures {
     public static <T1, T2, T3, T4, T5, T6, T7> CompletableFuture<Tuple7<T1, T2, T3, T4, T5, T6, T7>> combine(final CompletableFuture<? extends T1> cf1,
             final CompletableFuture<? extends T2> cf2, final CompletableFuture<? extends T3> cf3, final CompletableFuture<? extends T4> cf4,
             final CompletableFuture<? extends T5> cf5, final CompletableFuture<? extends T6> cf6, final CompletableFuture<? extends T7> cf7) {
-        return Futures.allOf(N.asList(cf1, cf2, cf3, cf4, cf5, cf6, cf7)).thenApply(new Function<List<Object>, Tuple7<T1, T2, T3, T4, T5, T6, T7>>() {
+        return allOf(N.asList(cf1, cf2, cf3, cf4, cf5, cf6, cf7)).thenApply(new Function<List<Object>, Tuple7<T1, T2, T3, T4, T5, T6, T7>>() {
             @Override
             public Tuple7<T1, T2, T3, T4, T5, T6, T7> apply(List<Object> t) {
                 return Tuple.of((T1) t.get(0), (T2) t.get(1), (T3) t.get(2), (T4) t.get(3), (T5) t.get(4), (T6) t.get(5), (T7) t.get(6));
@@ -113,7 +113,7 @@ public final class Futures {
 
     public static <T1, T2, R> CompletableFuture<R> combine(final CompletableFuture<? extends T1> cf1, final CompletableFuture<? extends T2> cf2,
             final BiFunction<? super T1, ? super T2, ? extends R> action) {
-        return Futures.allOf(N.asList(cf1, cf2)).thenApply(new Function<List<Object>, R>() {
+        return allOf(N.asList(cf1, cf2)).thenApply(new Function<List<Object>, R>() {
             @Override
             public R apply(List<Object> t) {
                 return action.apply((T1) t.get(0), (T2) t.get(1));
@@ -123,7 +123,7 @@ public final class Futures {
 
     public static <T1, T2, T3, R> CompletableFuture<R> combine(final CompletableFuture<? extends T1> cf1, final CompletableFuture<? extends T2> cf2,
             final CompletableFuture<? extends T3> cf3, final TriFunction<? super T1, ? super T2, ? super T3, ? extends R> action) {
-        return Futures.allOf(N.asList(cf1, cf2, cf3)).thenApply(new Function<List<Object>, R>() {
+        return allOf(N.asList(cf1, cf2, cf3)).thenApply(new Function<List<Object>, R>() {
             @Override
             public R apply(List<Object> t) {
                 return action.apply((T1) t.get(0), (T2) t.get(1), (T3) t.get(2));
@@ -132,12 +132,12 @@ public final class Futures {
     }
 
     public static <R> CompletableFuture<R> combine(final Collection<? extends CompletableFuture<?>> cfs, final Function<List<Object>, ? extends R> action) {
-        return Futures.allOf(cfs).thenApply(new Function<List<Object>, R>() {
-            @Override
-            public R apply(List<Object> t) {
-                return action.apply(t);
-            }
-        });
+        return allOf(cfs).thenApply(action);
+    }
+
+    public static <T, R> CompletableFuture<R> combine(final List<? extends CompletableFuture<? extends T>> cfs, final Function<List<T>, ? extends R> action) {
+        final CompletableFuture<List<T>> future = allOf(cfs);
+        return future.thenApply(action);
     }
 
     /**
@@ -175,8 +175,9 @@ public final class Futures {
      * @param cfs
      * @return
      */
-    public static <T> CompletableFuture<List<Object>> allOf(final List<? extends CompletableFuture<? extends T>> cfs) {
-        return allOf2(cfs);
+    @SuppressWarnings("rawtypes")
+    public static <T> CompletableFuture<List<T>> allOf(final List<? extends CompletableFuture<? extends T>> cfs) {
+        return (CompletableFuture) allOf2(cfs);
     }
 
     private static CompletableFuture<List<Object>> allOf2(final Collection<? extends CompletableFuture<?>> cfs) {
