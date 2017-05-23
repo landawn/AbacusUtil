@@ -636,6 +636,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
         return EMPTY;
     }
 
+    @SafeVarargs
     public static ShortStream of(final short... a) {
         return N.isNullOrEmpty(a) ? empty() : new ArrayShortStream(a);
     }
@@ -666,6 +667,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
         return iterator == null ? empty() : new IteratorShortStream(iterator);
     }
 
+    @SafeVarargs
     public static ShortStream from(final int... a) {
         return N.isNullOrEmpty(a) ? empty() : of(ShortList.from(a).trimToSize().array());
     }
@@ -1097,6 +1099,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
         });
     }
 
+    @SafeVarargs
     public static ShortStream concat(final short[]... a) {
         return N.isNullOrEmpty(a) ? empty() : new IteratorShortStream(new ExShortIterator() {
             private final Iterator<short[]> iter = N.asList(a).iterator();
@@ -1122,6 +1125,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
         });
     }
 
+    @SafeVarargs
     public static ShortStream concat(final ShortIterator... a) {
         return N.isNullOrEmpty(a) ? empty() : new IteratorShortStream(new ExShortIterator() {
             private final Iterator<? extends ShortIterator> iter = N.asList(a).iterator();
@@ -1147,6 +1151,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
         });
     }
 
+    @SafeVarargs
     public static ShortStream concat(final ShortStream... a) {
         return N.isNullOrEmpty(a) ? empty() : concat(N.asList(a));
     }

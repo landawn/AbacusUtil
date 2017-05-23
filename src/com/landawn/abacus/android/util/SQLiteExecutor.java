@@ -2598,6 +2598,7 @@ public final class SQLiteExecutor {
             return (Type<T>) sqliteType;
         }
 
+        @SafeVarargs
         public static <T> Type<T>[] arrayOf(final int... androidSQLiteTypes) {
 
             final Type<T>[] types = new Type[androidSQLiteTypes.length];
@@ -2609,6 +2610,7 @@ public final class SQLiteExecutor {
             return types;
         }
 
+        @SafeVarargs
         public static <T> Type<T>[] arrayOf(final Class<?>... typeClasses) {
             final Type<T>[] types = new Type[typeClasses.length];
 

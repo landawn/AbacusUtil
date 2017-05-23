@@ -2494,6 +2494,7 @@ public final class IOUtil {
         }
     }
 
+    @SafeVarargs
     public static void close(final AutoCloseable... a) {
         if (N.isNullOrEmpty(a)) {
             return;
@@ -2564,6 +2565,7 @@ public final class IOUtil {
         }
     }
 
+    @SafeVarargs
     public static void closeQuietly(final AutoCloseable... a) {
         if (N.isNullOrEmpty(a)) {
             return;
@@ -2777,6 +2779,7 @@ public final class IOUtil {
      * @return
      * @see Files#copy(Path, Path, CopyOption...)
      */
+    @SafeVarargs
     public static Path copy(Path source, Path target, CopyOption... options) {
         try {
             return Files.copy(source, target, options);
@@ -2793,6 +2796,7 @@ public final class IOUtil {
      * @return
      * @see Files#copy(InputStream, Path, CopyOption...)
      */
+    @SafeVarargs
     public static long copy(InputStream in, Path target, CopyOption... options) {
         try {
             return Files.copy(in, target, options);

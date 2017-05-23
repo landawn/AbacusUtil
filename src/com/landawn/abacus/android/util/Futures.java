@@ -139,10 +139,10 @@ public final class Futures {
         return allOf(cfs).thenApply(action);
     }
 
-    public static <T, R> CompletableFuture<R> combine(final List<? extends CompletableFuture<? extends T>> cfs, final Function<List<T>, ? extends R> action) {
-        final CompletableFuture<List<T>> future = allOf(cfs);
-        return future.thenApply(action);
-    }
+    //    public static <T, R> CompletableFuture<R> combine(final List<? extends CompletableFuture<? extends T>> cfs, final Function<List<T>, ? extends R> action) {
+    //        final CompletableFuture<List<T>> future = allOf(cfs);
+    //        return future.thenApply(action);
+    //    }
 
     /**
      * Returns a new CompletableFuture that is completed when all of
@@ -153,6 +153,7 @@ public final class Futures {
      * @param cfs
      * @return
      */
+    @SafeVarargs
     public static CompletableFuture<List<Object>> allOf(final CompletableFuture<?>... cfs) {
         return allOf2(Arrays.asList(cfs));
     }
@@ -256,6 +257,7 @@ public final class Futures {
      * @param cfs
      * @return
      */
+    @SafeVarargs
     public static CompletableFuture<Object> anyOf(final CompletableFuture<?>... cfs) {
         return anyOf2(Arrays.asList(cfs));
     }
@@ -353,6 +355,7 @@ public final class Futures {
         }, new ArrayList<>(cfs), ((CompletableFuture<?>) cfs.iterator().next()).asyncExecutor);
     }
 
+    @SafeVarargs
     public static Iterator<Object> iterate(final CompletableFuture<?>... cfs) {
         return iterate02(N.asList(cfs));
     }
@@ -402,6 +405,7 @@ public final class Futures {
         };
     }
 
+    @SafeVarargs
     public static Iterator<Pair<Object, Throwable>> iterate2(final CompletableFuture<?>... cfs) {
         return iterate22(N.asList(cfs));
     }

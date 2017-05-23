@@ -97,6 +97,7 @@ public final class Multiset<E> implements Iterable<E> {
         this.valueMap = valueMap;
     }
 
+    @SafeVarargs
     public static <T> Multiset<T> of(final T... a) {
         return N.asMultiset(a);
     }

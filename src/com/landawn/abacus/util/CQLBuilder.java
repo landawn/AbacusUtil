@@ -1763,6 +1763,7 @@ public abstract class CQLBuilder {
             return insert(Array.of(expr));
         }
 
+        @SafeVarargs
         public static CQLBuilder insert(final String... columnNames) {
             final CQLBuilder instance = createInstance();
 
@@ -1824,6 +1825,7 @@ public abstract class CQLBuilder {
             return select(Array.of(expr));
         }
 
+        @SafeVarargs
         public static CQLBuilder select(final String... columnNames) {
             final CQLBuilder instance = createInstance();
 
@@ -1926,6 +1928,7 @@ public abstract class CQLBuilder {
             return delete(Array.of(expr));
         }
 
+        @SafeVarargs
         public static CQLBuilder delete(final String... columnNames) {
             final CQLBuilder instance = createInstance();
 
@@ -1989,6 +1992,7 @@ public abstract class CQLBuilder {
             return insert(Array.of(expr));
         }
 
+        @SafeVarargs
         public static CQLBuilder insert(final String... columnNames) {
             final CQLBuilder instance = createInstance();
 
@@ -2050,6 +2054,7 @@ public abstract class CQLBuilder {
             return select(Array.of(expr));
         }
 
+        @SafeVarargs
         public static CQLBuilder select(final String... columnNames) {
             final CQLBuilder instance = createInstance();
 
@@ -2152,6 +2157,7 @@ public abstract class CQLBuilder {
             return delete(Array.of(expr));
         }
 
+        @SafeVarargs
         public static CQLBuilder delete(final String... columnNames) {
             final CQLBuilder instance = createInstance();
 
@@ -2214,6 +2220,7 @@ public abstract class CQLBuilder {
             return insert(Array.of(expr));
         }
 
+        @SafeVarargs
         public static CQLBuilder insert(final String... columnNames) {
             final CQLBuilder instance = createInstance();
 
@@ -2275,6 +2282,7 @@ public abstract class CQLBuilder {
             return select(Array.of(expr));
         }
 
+        @SafeVarargs
         public static CQLBuilder select(final String... columnNames) {
             final CQLBuilder instance = createInstance();
 
@@ -2377,6 +2385,7 @@ public abstract class CQLBuilder {
             return delete(Array.of(expr));
         }
 
+        @SafeVarargs
         public static CQLBuilder delete(final String... columnNames) {
             final CQLBuilder instance = createInstance();
 
@@ -2440,6 +2449,7 @@ public abstract class CQLBuilder {
             return insert(Array.of(expr));
         }
 
+        @SafeVarargs
         public static CQLBuilder insert(final String... columnNames) {
             final CQLBuilder instance = createInstance();
 
@@ -2501,6 +2511,7 @@ public abstract class CQLBuilder {
             return select(Array.of(expr));
         }
 
+        @SafeVarargs
         public static CQLBuilder select(final String... columnNames) {
             final CQLBuilder instance = createInstance();
 
@@ -2593,6 +2604,7 @@ public abstract class CQLBuilder {
             return delete(Array.of(expr));
         }
 
+        @SafeVarargs
         public static CQLBuilder delete(final String... columnNames) {
             final CQLBuilder instance = createInstance();
 
@@ -2656,6 +2668,7 @@ public abstract class CQLBuilder {
             return insert(Array.of(expr));
         }
 
+        @SafeVarargs
         public static CQLBuilder insert(final String... columnNames) {
             final CQLBuilder instance = createInstance();
 
@@ -2717,6 +2730,7 @@ public abstract class CQLBuilder {
             return select(Array.of(expr));
         }
 
+        @SafeVarargs
         public static CQLBuilder select(final String... columnNames) {
             final CQLBuilder instance = createInstance();
 
@@ -2819,6 +2833,7 @@ public abstract class CQLBuilder {
             return delete(Array.of(expr));
         }
 
+        @SafeVarargs
         public static CQLBuilder delete(final String... columnNames) {
             final CQLBuilder instance = createInstance();
 
@@ -2882,6 +2897,7 @@ public abstract class CQLBuilder {
             return insert(Array.of(expr));
         }
 
+        @SafeVarargs
         public static CQLBuilder insert(final String... columnNames) {
             final CQLBuilder instance = createInstance();
 
@@ -2943,6 +2959,7 @@ public abstract class CQLBuilder {
             return select(Array.of(expr));
         }
 
+        @SafeVarargs
         public static CQLBuilder select(final String... columnNames) {
             final CQLBuilder instance = createInstance();
 
@@ -3045,6 +3062,7 @@ public abstract class CQLBuilder {
             return delete(Array.of(expr));
         }
 
+        @SafeVarargs
         public static CQLBuilder delete(final String... columnNames) {
             final CQLBuilder instance = createInstance();
 
@@ -3108,6 +3126,7 @@ public abstract class CQLBuilder {
             return insert(Array.of(expr));
         }
 
+        @SafeVarargs
         public static CQLBuilder insert(final String... columnNames) {
             final CQLBuilder instance = createInstance();
 
@@ -3169,6 +3188,7 @@ public abstract class CQLBuilder {
             return select(Array.of(expr));
         }
 
+        @SafeVarargs
         public static CQLBuilder select(final String... columnNames) {
             final CQLBuilder instance = createInstance();
 
@@ -3271,6 +3291,7 @@ public abstract class CQLBuilder {
             return delete(Array.of(expr));
         }
 
+        @SafeVarargs
         public static CQLBuilder delete(final String... columnNames) {
             final CQLBuilder instance = createInstance();
 
@@ -3334,6 +3355,7 @@ public abstract class CQLBuilder {
             return insert(Array.of(expr));
         }
 
+        @SafeVarargs
         public static CQLBuilder insert(final String... columnNames) {
             final CQLBuilder instance = createInstance();
 
@@ -3395,6 +3417,7 @@ public abstract class CQLBuilder {
             return select(Array.of(expr));
         }
 
+        @SafeVarargs
         public static CQLBuilder select(final String... columnNames) {
             final CQLBuilder instance = createInstance();
 
@@ -3487,6 +3510,7 @@ public abstract class CQLBuilder {
             return delete(Array.of(expr));
         }
 
+        @SafeVarargs
         public static CQLBuilder delete(final String... columnNames) {
             final CQLBuilder instance = createInstance();
 
@@ -3550,6 +3574,7 @@ public abstract class CQLBuilder {
             return insert(Array.of(expr));
         }
 
+        @SafeVarargs
         public static CQLBuilder insert(final String... columnNames) {
             final CQLBuilder instance = createInstance();
 
@@ -3611,6 +3636,7 @@ public abstract class CQLBuilder {
             return select(Array.of(expr));
         }
 
+        @SafeVarargs
         public static CQLBuilder select(final String... columnNames) {
             final CQLBuilder instance = createInstance();
 
@@ -3713,6 +3739,7 @@ public abstract class CQLBuilder {
             return delete(Array.of(expr));
         }
 
+        @SafeVarargs
         public static CQLBuilder delete(final String... columnNames) {
             final CQLBuilder instance = createInstance();
 
@@ -3776,6 +3803,7 @@ public abstract class CQLBuilder {
             return insert(Array.of(expr));
         }
 
+        @SafeVarargs
         public static CQLBuilder insert(final String... columnNames) {
             final CQLBuilder instance = createInstance();
 
@@ -3837,6 +3865,7 @@ public abstract class CQLBuilder {
             return select(Array.of(expr));
         }
 
+        @SafeVarargs
         public static CQLBuilder select(final String... columnNames) {
             final CQLBuilder instance = createInstance();
 
@@ -3939,6 +3968,7 @@ public abstract class CQLBuilder {
             return delete(Array.of(expr));
         }
 
+        @SafeVarargs
         public static CQLBuilder delete(final String... columnNames) {
             final CQLBuilder instance = createInstance();
 
@@ -4002,6 +4032,7 @@ public abstract class CQLBuilder {
             return insert(Array.of(expr));
         }
 
+        @SafeVarargs
         public static CQLBuilder insert(final String... columnNames) {
             final CQLBuilder instance = createInstance();
 
@@ -4063,6 +4094,7 @@ public abstract class CQLBuilder {
             return select(Array.of(expr));
         }
 
+        @SafeVarargs
         public static CQLBuilder select(final String... columnNames) {
             final CQLBuilder instance = createInstance();
 
@@ -4165,6 +4197,7 @@ public abstract class CQLBuilder {
             return delete(Array.of(expr));
         }
 
+        @SafeVarargs
         public static CQLBuilder delete(final String... columnNames) {
             final CQLBuilder instance = createInstance();
 
@@ -4228,6 +4261,7 @@ public abstract class CQLBuilder {
             return insert(Array.of(expr));
         }
 
+        @SafeVarargs
         public static CQLBuilder insert(final String... columnNames) {
             final CQLBuilder instance = createInstance();
 
@@ -4289,6 +4323,7 @@ public abstract class CQLBuilder {
             return select(Array.of(expr));
         }
 
+        @SafeVarargs
         public static CQLBuilder select(final String... columnNames) {
             final CQLBuilder instance = createInstance();
 
@@ -4381,6 +4416,7 @@ public abstract class CQLBuilder {
             return delete(Array.of(expr));
         }
 
+        @SafeVarargs
         public static CQLBuilder delete(final String... columnNames) {
             final CQLBuilder instance = createInstance();
 

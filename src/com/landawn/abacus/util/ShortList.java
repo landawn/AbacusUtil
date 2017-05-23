@@ -78,6 +78,7 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
         return new ShortList(N.EMPTY_SHORT_ARRAY);
     }
 
+    @SafeVarargs
     public static ShortList of(short... a) {
         return a == null ? empty() : new ShortList(a);
     }
@@ -92,6 +93,7 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
      * @return
      * @throws ArithmeticException if any elements in the specified array is bigger than Short.MAX_VALUE or less than Short.MIN_VALUE
      */
+    @SafeVarargs
     public static ShortList from(int... a) {
         return a == null ? empty() : from(a, 0, a.length);
     }

@@ -627,6 +627,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
         return EMPTY;
     }
 
+    @SafeVarargs
     public static CharStream of(final char... a) {
         return N.isNullOrEmpty(a) ? empty() : new ArrayCharStream(a);
     }
@@ -657,6 +658,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
         return iterator == null ? empty() : new IteratorCharStream(iterator);
     }
 
+    @SafeVarargs
     public static CharStream from(final int... a) {
         return N.isNullOrEmpty(a) ? empty() : of(CharList.from(a).trimToSize().array());
     }
@@ -1174,6 +1176,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
         });
     }
 
+    @SafeVarargs
     public static CharStream concat(final char[]... a) {
         return N.isNullOrEmpty(a) ? empty() : new IteratorCharStream(new ExCharIterator() {
             private final Iterator<char[]> iter = N.asList(a).iterator();
@@ -1199,6 +1202,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
         });
     }
 
+    @SafeVarargs
     public static CharStream concat(final CharIterator... a) {
         return N.isNullOrEmpty(a) ? empty() : new IteratorCharStream(new ExCharIterator() {
             private final Iterator<? extends CharIterator> iter = N.asList(a).iterator();
@@ -1224,6 +1228,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
         });
     }
 
+    @SafeVarargs
     public static CharStream concat(final CharStream... a) {
         return N.isNullOrEmpty(a) ? empty() : concat(N.asList(a));
     }

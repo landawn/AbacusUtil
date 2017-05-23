@@ -51,6 +51,7 @@ public final class Matrix<T> extends AbstractMatrix<T[], ExList<T>, Stream<T>, S
         this.componentType = (Class<T>) this.arrayType.getComponentType();
     }
 
+    @SafeVarargs
     public static <T> Matrix<T> of(final T[]... a) {
         return new Matrix<>(a);
     }

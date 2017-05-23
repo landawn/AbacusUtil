@@ -631,6 +631,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
         return EMPTY;
     }
 
+    @SafeVarargs
     public static ByteStream of(final byte... a) {
         return N.isNullOrEmpty(a) ? empty() : new ArrayByteStream(a);
     }
@@ -661,6 +662,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
         });
     }
 
+    @SafeVarargs
     public static ByteStream from(final int... a) {
         return N.isNullOrEmpty(a) ? empty() : of(ByteList.from(a).trimToSize().array());
     }
@@ -1092,6 +1094,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
         });
     }
 
+    @SafeVarargs
     public static ByteStream concat(final byte[]... a) {
         return N.isNullOrEmpty(a) ? empty() : new IteratorByteStream(new ExByteIterator() {
             private final Iterator<byte[]> iter = N.asList(a).iterator();
@@ -1117,6 +1120,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
         });
     }
 
+    @SafeVarargs
     public static ByteStream concat(final ByteIterator... a) {
         return N.isNullOrEmpty(a) ? empty() : new IteratorByteStream(new ExByteIterator() {
             private final Iterator<? extends ByteIterator> iter = N.asList(a).iterator();
@@ -1142,6 +1146,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
         });
     }
 
+    @SafeVarargs
     public static ByteStream concat(final ByteStream... a) {
         return N.isNullOrEmpty(a) ? empty() : concat(N.asList(a));
     }

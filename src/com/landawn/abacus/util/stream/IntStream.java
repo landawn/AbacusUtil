@@ -747,6 +747,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
         return EMPTY;
     }
 
+    @SafeVarargs
     public static IntStream of(final int... a) {
         return N.isNullOrEmpty(a) ? empty() : new ArrayIntStream(a);
     }
@@ -821,6 +822,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
         });
     }
 
+    @SafeVarargs
     public static IntStream from(final char... a) {
         return N.isNullOrEmpty(a) ? empty() : from(a, 0, a.length);
     }
@@ -872,6 +874,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
         });
     }
 
+    @SafeVarargs
     public static IntStream from(final byte... a) {
         return N.isNullOrEmpty(a) ? empty() : from(a, 0, a.length);
     }
@@ -923,6 +926,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
         });
     }
 
+    @SafeVarargs
     public static IntStream from(final short... a) {
         return N.isNullOrEmpty(a) ? empty() : from(a, 0, a.length);
     }
@@ -1423,6 +1427,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
         });
     }
 
+    @SafeVarargs
     public static IntStream concat(final int[]... a) {
         return N.isNullOrEmpty(a) ? empty() : new IteratorIntStream(new ExIntIterator() {
             private final Iterator<int[]> iter = N.asList(a).iterator();
@@ -1448,6 +1453,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
         });
     }
 
+    @SafeVarargs
     public static IntStream concat(final IntIterator... a) {
         return N.isNullOrEmpty(a) ? empty() : new IteratorIntStream(new ExIntIterator() {
             private final Iterator<? extends IntIterator> iter = N.asList(a).iterator();
@@ -1473,6 +1479,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
         });
     }
 
+    @SafeVarargs
     public static IntStream concat(final IntStream... a) {
         return N.isNullOrEmpty(a) ? empty() : concat(N.asList(a));
     }

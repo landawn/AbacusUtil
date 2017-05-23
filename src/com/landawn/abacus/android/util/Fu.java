@@ -503,6 +503,7 @@ public class Fu {
         return result;
     }
 
+    @SafeVarargs
     public static final ContentValues asContentValues(final Object... a) {
         final ContentValues result = new ContentValues();
 
@@ -547,6 +548,7 @@ public class Fu {
     }
 
     @SuppressWarnings("rawtypes")
+    @SafeVarargs
     public static Map<String, Class> asColumnTypes(final Object... a) {
         return N.asMap(a);
     }

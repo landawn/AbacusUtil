@@ -77,6 +77,7 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
         return new ByteList(N.EMPTY_BYTE_ARRAY);
     }
 
+    @SafeVarargs
     public static ByteList of(byte... a) {
         return a == null ? empty() : new ByteList(a);
     }
@@ -91,6 +92,7 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
      * @return
      * @throws ArithmeticException if any elements in the specified array is bigger than Byte.MAX_VALUE or less than Byte.MIN_VALUE
      */
+    @SafeVarargs
     public static ByteList from(int... a) {
         return a == null ? empty() : from(a, 0, a.length);
     }

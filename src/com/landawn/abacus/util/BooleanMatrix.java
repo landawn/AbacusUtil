@@ -43,6 +43,7 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
         return EMPTY_BOOLEAN_MATRIX;
     }
 
+    @SafeVarargs
     public static BooleanMatrix of(final boolean[]... a) {
         return N.isNullOrEmpty(a) ? EMPTY_BOOLEAN_MATRIX : new BooleanMatrix(a);
     }

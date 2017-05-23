@@ -45,10 +45,12 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
         return EMPTY_DOUBLE_MATRIX;
     }
 
+    @SafeVarargs
     public static DoubleMatrix of(final double[]... a) {
         return N.isNullOrEmpty(a) ? EMPTY_DOUBLE_MATRIX : new DoubleMatrix(a);
     }
 
+    @SafeVarargs
     public static DoubleMatrix from(final int[]... a) {
         if (N.isNullOrEmpty(a)) {
             return EMPTY_DOUBLE_MATRIX;
@@ -65,6 +67,7 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
         return new DoubleMatrix(c);
     }
 
+    @SafeVarargs
     public static DoubleMatrix from(final long[]... a) {
         if (N.isNullOrEmpty(a)) {
             return EMPTY_DOUBLE_MATRIX;
@@ -81,6 +84,7 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
         return new DoubleMatrix(c);
     }
 
+    @SafeVarargs
     public static DoubleMatrix from(final float[]... a) {
         if (N.isNullOrEmpty(a)) {
             return EMPTY_DOUBLE_MATRIX;

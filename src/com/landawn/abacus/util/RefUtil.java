@@ -972,6 +972,7 @@ public final class RefUtil {
      * @param parameterTypes
      * @return {@code null} if no constructor is found
      */
+    @SafeVarargs
     public static <T> Constructor<T> getDeclaredConstructor(final Class<T> cls, final Class<?>... parameterTypes) {
         Map<Class<?>[], Constructor<?>> constructorPool = classDeclaredConstructorPool.get(cls);
         Constructor<T> constructor = null;
@@ -1011,6 +1012,7 @@ public final class RefUtil {
      * @param parameterTypes
      * @return {@code null} if no method is found
      */
+    @SafeVarargs
     public static Method getDeclaredMethod(final Class<?> cls, final String methodName, final Class<?>... parameterTypes) {
         Map<String, Map<Class<?>[], Method>> methodNamePool = classDeclaredMethodPool.get(cls);
         Map<Class<?>[], Method> methodPool = methodNamePool == null ? null : methodNamePool.get(methodName);
@@ -1071,6 +1073,7 @@ public final class RefUtil {
         return method;
     }
 
+    @SafeVarargs
     public static <T> T invokeConstructor(final Constructor<T> constructor, final Object... args) {
         try {
             return constructor.newInstance(args);
@@ -1080,11 +1083,13 @@ public final class RefUtil {
     }
 
     @SuppressWarnings("unchecked")
+    @SafeVarargs
     public static <T> T invokeMethod(final Method method, final Object... args) {
         return invokeMethod(null, method, args);
     }
 
     @SuppressWarnings("unchecked")
+    @SafeVarargs
     public static <T> T invokeMethod(final Object instance, final Method method, final Object... args) {
         try {
             return (T) method.invoke(instance, args);

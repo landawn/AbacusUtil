@@ -758,6 +758,7 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
         return EMPTY;
     }
 
+    @SafeVarargs
     public static FloatStream of(final float... a) {
         return N.isNullOrEmpty(a) ? empty() : new ArrayFloatStream(a);
     }
@@ -1003,6 +1004,7 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
         });
     }
 
+    @SafeVarargs
     public static FloatStream concat(final float[]... a) {
         return N.isNullOrEmpty(a) ? empty() : new IteratorFloatStream(new ExFloatIterator() {
             private final Iterator<float[]> iter = N.asList(a).iterator();
@@ -1028,6 +1030,7 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
         });
     }
 
+    @SafeVarargs
     public static FloatStream concat(final FloatIterator... a) {
         return N.isNullOrEmpty(a) ? empty() : new IteratorFloatStream(new ExFloatIterator() {
             private final Iterator<? extends FloatIterator> iter = N.asList(a).iterator();
@@ -1053,6 +1056,7 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
         });
     }
 
+    @SafeVarargs
     public static FloatStream concat(final FloatStream... a) {
         return N.isNullOrEmpty(a) ? empty() : concat(N.asList(a));
     }

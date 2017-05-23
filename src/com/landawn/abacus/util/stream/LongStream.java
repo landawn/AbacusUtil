@@ -711,6 +711,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
         return EMPTY;
     }
 
+    @SafeVarargs
     public static LongStream of(final long... a) {
         return N.isNullOrEmpty(a) ? empty() : new ArrayLongStream(a);
     }
@@ -1290,6 +1291,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
         return interval(startTimeInMillis, unit.toMillis(interval));
     }
 
+    @SafeVarargs
     public static LongStream concat(final long[]... a) {
         return N.isNullOrEmpty(a) ? empty() : new IteratorLongStream(new ExLongIterator() {
             private final Iterator<long[]> iter = N.asList(a).iterator();
@@ -1315,6 +1317,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
         });
     }
 
+    @SafeVarargs
     public static LongStream concat(final LongIterator... a) {
         return N.isNullOrEmpty(a) ? empty() : new IteratorLongStream(new ExLongIterator() {
             private final Iterator<? extends LongIterator> iter = N.asList(a).iterator();
@@ -1340,6 +1343,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
         });
     }
 
+    @SafeVarargs
     public static LongStream concat(final LongStream... a) {
         return N.isNullOrEmpty(a) ? empty() : concat(N.asList(a));
     }

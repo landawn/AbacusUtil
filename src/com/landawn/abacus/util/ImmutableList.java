@@ -36,6 +36,7 @@ public final class ImmutableList<E> extends ImmutableCollection<E> implements Li
         this.list = (List<E>) c;
     }
 
+    @SafeVarargs
     public static <E> ImmutableList<E> of(E... a) {
         return new ImmutableList<>(Arrays.asList(a));
     }

@@ -78,6 +78,7 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
         return new DoubleList(N.EMPTY_DOUBLE_ARRAY);
     }
 
+    @SafeVarargs
     public static DoubleList of(double... a) {
         return a == null ? empty() : new DoubleList(a);
     }
@@ -86,6 +87,7 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
         return a == null && size == 0 ? empty() : new DoubleList(a, size);
     }
 
+    @SafeVarargs
     public static DoubleList from(int... a) {
         return a == null ? empty() : from(a, 0, a.length);
     }
@@ -106,6 +108,7 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
         return of(elementData);
     }
 
+    @SafeVarargs
     public static DoubleList from(long... a) {
         return a == null ? empty() : from(a, 0, a.length);
     }
@@ -126,6 +129,7 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
         return of(elementData);
     }
 
+    @SafeVarargs
     public static DoubleList from(float... a) {
         return a == null ? empty() : from(a, 0, a.length);
     }

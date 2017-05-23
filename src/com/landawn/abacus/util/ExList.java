@@ -109,6 +109,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
      * @return
      * @throws NullPointerException the specified <code>a</code> is null.
      */
+    @SafeVarargs
     public static <T> ExList<T> of(T... a) {
         return new ExList<>(a);
     }
@@ -148,6 +149,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
         return of(a);
     }
 
+    @SafeVarargs
     public static ExList<Boolean> from(boolean... a) {
         return of(a == null ? N.EMPTY_BOOLEAN_OBJECT_ARRAY : Array.box(a));
     }
@@ -156,6 +158,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
         return of(a == null && (fromIndex == 0 && toIndex == 0) ? N.EMPTY_BOOLEAN_OBJECT_ARRAY : Array.box(a, fromIndex, toIndex));
     }
 
+    @SafeVarargs
     public static ExList<Character> from(char... a) {
         return of(a == null ? N.EMPTY_CHARACTER_OBJECT_ARRAY : Array.box(a));
     }
@@ -164,6 +167,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
         return of(a == null && (fromIndex == 0 && toIndex == 0) ? N.EMPTY_CHARACTER_OBJECT_ARRAY : Array.box(a, fromIndex, toIndex));
     }
 
+    @SafeVarargs
     public static ExList<Byte> from(byte... a) {
         return of(a == null ? N.EMPTY_BYTE_OBJECT_ARRAY : Array.box(a));
     }
@@ -172,6 +176,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
         return of(a == null && (fromIndex == 0 && toIndex == 0) ? N.EMPTY_BYTE_OBJECT_ARRAY : Array.box(a, fromIndex, toIndex));
     }
 
+    @SafeVarargs
     public static ExList<Short> from(short... a) {
         return of(a == null ? N.EMPTY_SHORT_OBJECT_ARRAY : Array.box(a));
     }
@@ -180,6 +185,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
         return of(a == null && (fromIndex == 0 && toIndex == 0) ? N.EMPTY_SHORT_OBJECT_ARRAY : Array.box(a, fromIndex, toIndex));
     }
 
+    @SafeVarargs
     public static ExList<Integer> from(int... a) {
         return of(a == null ? N.EMPTY_INTEGER_OBJECT_ARRAY : Array.box(a));
     }
@@ -188,6 +194,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
         return of(a == null && (fromIndex == 0 && toIndex == 0) ? N.EMPTY_INTEGER_OBJECT_ARRAY : Array.box(a, fromIndex, toIndex));
     }
 
+    @SafeVarargs
     public static ExList<Long> from(long... a) {
         return of(a == null ? N.EMPTY_LONG_OBJECT_ARRAY : Array.box(a));
     }
@@ -196,6 +203,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
         return of(a == null && (fromIndex == 0 && toIndex == 0) ? N.EMPTY_LONG_OBJECT_ARRAY : Array.box(a, fromIndex, toIndex));
     }
 
+    @SafeVarargs
     public static ExList<Float> from(float... a) {
         return of(a == null ? N.EMPTY_FLOAT_OBJECT_ARRAY : Array.box(a));
     }
@@ -204,6 +212,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
         return of(a == null && (fromIndex == 0 && toIndex == 0) ? N.EMPTY_FLOAT_OBJECT_ARRAY : Array.box(a, fromIndex, toIndex));
     }
 
+    @SafeVarargs
     public static ExList<Double> from(double... a) {
         return of(a == null ? N.EMPTY_DOUBLE_OBJECT_ARRAY : Array.box(a));
     }

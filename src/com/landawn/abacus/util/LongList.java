@@ -78,6 +78,7 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
         return new LongList(N.EMPTY_LONG_ARRAY);
     }
 
+    @SafeVarargs
     public static LongList of(long... a) {
         return a == null ? empty() : new LongList(a);
     }
@@ -86,6 +87,7 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
         return a == null && size == 0 ? empty() : new LongList(a, size);
     }
 
+    @SafeVarargs
     public static LongList from(int... a) {
         return a == null ? empty() : from(a, 0, a.length);
     }
@@ -112,6 +114,7 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
      * @return
      * @throws ArithmeticException if any elements in the specified array is bigger than Long.MAX_VALUE or less than Long.MIN_VALUE
      */
+    @SafeVarargs
     public static LongList from(float... a) {
         return a == null ? empty() : from(a, 0, a.length);
     }
@@ -148,6 +151,7 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
      * @return
      * @throws ArithmeticException if any elements in the specified array is bigger than Long.MAX_VALUE or less than Long.MIN_VALUE
      */
+    @SafeVarargs
     public static LongList from(double... a) {
         return a == null ? empty() : from(a, 0, a.length);
     }

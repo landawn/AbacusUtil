@@ -2237,6 +2237,7 @@ public abstract class SQLBuilder {
             return insert(Array.of(expr));
         }
 
+        @SafeVarargs
         public static SQLBuilder insert(final String... columnNames) {
             final SQLBuilder instance = createInstance();
 
@@ -2315,6 +2316,7 @@ public abstract class SQLBuilder {
             return select(Array.of(expr));
         }
 
+        @SafeVarargs
         public static SQLBuilder select(final String... columnNames) {
             final SQLBuilder instance = createInstance();
 
@@ -2446,6 +2448,7 @@ public abstract class SQLBuilder {
             return insert(Array.of(expr));
         }
 
+        @SafeVarargs
         public static SQLBuilder insert(final String... columnNames) {
             final SQLBuilder instance = createInstance();
 
@@ -2524,6 +2527,7 @@ public abstract class SQLBuilder {
             return select(Array.of(expr));
         }
 
+        @SafeVarargs
         public static SQLBuilder select(final String... columnNames) {
             final SQLBuilder instance = createInstance();
 
@@ -2654,6 +2658,7 @@ public abstract class SQLBuilder {
             return insert(Array.of(expr));
         }
 
+        @SafeVarargs
         public static SQLBuilder insert(final String... columnNames) {
             final SQLBuilder instance = createInstance();
 
@@ -2732,6 +2737,7 @@ public abstract class SQLBuilder {
             return select(Array.of(expr));
         }
 
+        @SafeVarargs
         public static SQLBuilder select(final String... columnNames) {
             final SQLBuilder instance = createInstance();
 
@@ -2863,6 +2869,7 @@ public abstract class SQLBuilder {
             return insert(Array.of(expr));
         }
 
+        @SafeVarargs
         public static SQLBuilder insert(final String... columnNames) {
             final SQLBuilder instance = createInstance();
 
@@ -2941,6 +2948,7 @@ public abstract class SQLBuilder {
             return select(Array.of(expr));
         }
 
+        @SafeVarargs
         public static SQLBuilder select(final String... columnNames) {
             final SQLBuilder instance = createInstance();
 
@@ -3072,6 +3080,7 @@ public abstract class SQLBuilder {
             return insert(Array.of(expr));
         }
 
+        @SafeVarargs
         public static SQLBuilder insert(final String... columnNames) {
             final SQLBuilder instance = createInstance();
 
@@ -3150,6 +3159,7 @@ public abstract class SQLBuilder {
             return select(Array.of(expr));
         }
 
+        @SafeVarargs
         public static SQLBuilder select(final String... columnNames) {
             final SQLBuilder instance = createInstance();
 
@@ -3281,6 +3291,7 @@ public abstract class SQLBuilder {
             return insert(Array.of(expr));
         }
 
+        @SafeVarargs
         public static SQLBuilder insert(final String... columnNames) {
             final SQLBuilder instance = createInstance();
 
@@ -3359,6 +3370,7 @@ public abstract class SQLBuilder {
             return select(Array.of(expr));
         }
 
+        @SafeVarargs
         public static SQLBuilder select(final String... columnNames) {
             final SQLBuilder instance = createInstance();
 
@@ -3490,6 +3502,7 @@ public abstract class SQLBuilder {
             return insert(Array.of(expr));
         }
 
+        @SafeVarargs
         public static SQLBuilder insert(final String... columnNames) {
             final SQLBuilder instance = createInstance();
 
@@ -3568,6 +3581,7 @@ public abstract class SQLBuilder {
             return select(Array.of(expr));
         }
 
+        @SafeVarargs
         public static SQLBuilder select(final String... columnNames) {
             final SQLBuilder instance = createInstance();
 
@@ -3699,6 +3713,7 @@ public abstract class SQLBuilder {
             return insert(Array.of(expr));
         }
 
+        @SafeVarargs
         public static SQLBuilder insert(final String... columnNames) {
             final SQLBuilder instance = createInstance();
 
@@ -3777,6 +3792,7 @@ public abstract class SQLBuilder {
             return select(Array.of(expr));
         }
 
+        @SafeVarargs
         public static SQLBuilder select(final String... columnNames) {
             final SQLBuilder instance = createInstance();
 
@@ -3908,6 +3924,7 @@ public abstract class SQLBuilder {
             return insert(Array.of(expr));
         }
 
+        @SafeVarargs
         public static SQLBuilder insert(final String... columnNames) {
             final SQLBuilder instance = createInstance();
 
@@ -3986,6 +4003,7 @@ public abstract class SQLBuilder {
             return select(Array.of(expr));
         }
 
+        @SafeVarargs
         public static SQLBuilder select(final String... columnNames) {
             final SQLBuilder instance = createInstance();
 
@@ -4117,6 +4135,7 @@ public abstract class SQLBuilder {
             return insert(Array.of(expr));
         }
 
+        @SafeVarargs
         public static SQLBuilder insert(final String... columnNames) {
             final SQLBuilder instance = createInstance();
 
@@ -4195,6 +4214,7 @@ public abstract class SQLBuilder {
             return select(Array.of(expr));
         }
 
+        @SafeVarargs
         public static SQLBuilder select(final String... columnNames) {
             final SQLBuilder instance = createInstance();
 
@@ -4326,6 +4346,7 @@ public abstract class SQLBuilder {
             return insert(Array.of(expr));
         }
 
+        @SafeVarargs
         public static SQLBuilder insert(final String... columnNames) {
             final SQLBuilder instance = createInstance();
 
@@ -4404,6 +4425,7 @@ public abstract class SQLBuilder {
             return select(Array.of(expr));
         }
 
+        @SafeVarargs
         public static SQLBuilder select(final String... columnNames) {
             final SQLBuilder instance = createInstance();
 
@@ -4535,6 +4557,7 @@ public abstract class SQLBuilder {
             return insert(Array.of(expr));
         }
 
+        @SafeVarargs
         public static SQLBuilder insert(final String... columnNames) {
             final SQLBuilder instance = createInstance();
 
@@ -4613,6 +4636,7 @@ public abstract class SQLBuilder {
             return select(Array.of(expr));
         }
 
+        @SafeVarargs
         public static SQLBuilder select(final String... columnNames) {
             final SQLBuilder instance = createInstance();
 

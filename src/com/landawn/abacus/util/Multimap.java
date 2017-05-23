@@ -149,6 +149,7 @@ public final class Multimap<K, E, V extends Collection<E>> {
         return N.asListMultimap(k1, v1, k2, v2, k3, v3, k4, v4, k5, v5, k6, v6, k7, v7);
     }
 
+    @SafeVarargs
     public static <K, V, k extends K, v extends V> Multimap<K, V, List<V>> of(final Object... a) {
         return N.asListMultimap(a);
     }

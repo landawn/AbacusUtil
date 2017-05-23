@@ -848,6 +848,7 @@ public final class N {
     }
 
     @SuppressWarnings("unchecked")
+    @SafeVarargs
     public static <T> List<Type<T>> typeOf(final Class<?>... classes) {
         final List<Type<T>> result = new ArrayList<>(classes.length);
 
@@ -1646,6 +1647,7 @@ public final class N {
      * @param a
      * @return
      */
+    @SafeVarargs
     public static <T> T[] asArray(final T... a) {
         return a;
     }
@@ -1688,6 +1690,7 @@ public final class N {
      *            allows access to properties using getter and setter methods.
      * @return
      */
+    @SafeVarargs
     public static Map<String, Object> asOptions(final Object... a) {
         return newMap(new HashMap<String, Object>(initHashCapacity(a.length / 2)), a);
     }
@@ -1699,6 +1702,7 @@ public final class N {
      *            allows access to properties using getter and setter methods.
      * @return
      */
+    @SafeVarargs
     public static Map<String, Object> asProps(final Object... a) {
         return newMap(new LinkedHashMap<String, Object>(initHashCapacity(a.length / 2)), a);
     }
@@ -1753,6 +1757,7 @@ public final class N {
         return map;
     }
 
+    @SafeVarargs
     public static <K, V> Map<K, V> asMap(final Object... a) {
         return newMap(new HashMap<K, V>(initHashCapacity(a.length / 2)), a);
     }
@@ -1778,6 +1783,7 @@ public final class N {
         return map;
     }
 
+    @SafeVarargs
     public static <K, V> LinkedHashMap<K, V> asLinkedHashMap(final Object... a) {
         return newMap(new LinkedHashMap<K, V>(initHashCapacity(a.length / 2)), a);
     }
@@ -1804,6 +1810,7 @@ public final class N {
         return map;
     }
 
+    @SafeVarargs
     public static <K, V> ConcurrentHashMap<K, V> asConcurrentHashMap(final Object... a) {
         return newMap(new ConcurrentHashMap<K, V>(initHashCapacity(a.length / 2)), a);
     }
@@ -1829,6 +1836,7 @@ public final class N {
         return map;
     }
 
+    @SafeVarargs
     public static <K, V> BiMap<K, V> asBiMap(final Object... a) {
         return newMap(new BiMap<K, V>(initHashCapacity(a.length / 2)), a);
     }
@@ -1855,6 +1863,7 @@ public final class N {
         return map;
     }
 
+    @SafeVarargs
     public static <K, E> Multimap<K, E, List<E>> asListMultimap(final Object... a) {
         return newMultimap(new Multimap<>(new HashMap<K, List<E>>(initHashCapacity(a.length / 2)), ArrayList.class), a);
     }
@@ -1881,6 +1890,7 @@ public final class N {
         return map;
     }
 
+    @SafeVarargs
     public static <K, E> Multimap<K, E, Set<E>> asSetMultimap(final Object... a) {
         return newMultimap(new Multimap<>(new HashMap<K, Set<E>>(initHashCapacity(a.length / 2)), HashSet.class), a);
     }
@@ -1942,6 +1952,7 @@ public final class N {
      * @param a
      * @return
      */
+    @SafeVarargs
     public static <T> List<T> asList(final T... a) {
         if (a.length == 0) {
             return new ArrayList<>();
@@ -1960,6 +1971,7 @@ public final class N {
         return list;
     }
 
+    @SafeVarargs
     public static <T> LinkedList<T> asLinkedList(final T... a) {
         if (a.length == 0) {
             return new LinkedList<>();
@@ -1974,6 +1986,7 @@ public final class N {
         return list;
     }
 
+    @SafeVarargs
     public static <T> Set<T> asSet(final T... a) {
         final Set<T> set = new HashSet<>(initHashCapacity(a.length));
 
@@ -1984,6 +1997,7 @@ public final class N {
         return set;
     }
 
+    @SafeVarargs
     public static <T> LinkedHashSet<T> asLinkedHashSet(final T... a) {
         final LinkedHashSet<T> set = new LinkedHashSet<>(initHashCapacity(a.length));
 
@@ -1994,6 +2008,7 @@ public final class N {
         return set;
     }
 
+    @SafeVarargs
     public static <T> SortedSet<T> asSortedSet(final T... a) {
         final SortedSet<T> set = new TreeSet<>();
 
@@ -2004,6 +2019,7 @@ public final class N {
         return set;
     }
 
+    @SafeVarargs
     public static <T> Queue<T> asQueue(final T... a) {
         final Queue<T> queue = new ArrayDeque<>(a.length);
 
@@ -2014,6 +2030,7 @@ public final class N {
         return queue;
     }
 
+    @SafeVarargs
     public static <T> ArrayBlockingQueue<T> asArrayBlockingQueue(final T... a) {
         final ArrayBlockingQueue<T> queue = new ArrayBlockingQueue<>(a.length);
 
@@ -2024,6 +2041,7 @@ public final class N {
         return queue;
     }
 
+    @SafeVarargs
     public static <T> LinkedBlockingQueue<T> asLinkedBlockingQueue(final T... a) {
         final LinkedBlockingQueue<T> queue = new LinkedBlockingQueue<>(a.length);
 
@@ -2034,6 +2052,7 @@ public final class N {
         return queue;
     }
 
+    @SafeVarargs
     public static <T> ConcurrentLinkedQueue<T> asConcurrentLinkedQueue(final T... a) {
         final ConcurrentLinkedQueue<T> queue = new ConcurrentLinkedQueue<>();
 
@@ -2044,6 +2063,7 @@ public final class N {
         return queue;
     }
 
+    @SafeVarargs
     public static <T extends Delayed> DelayQueue<T> asDelayQueue(final T... a) {
         final DelayQueue<T> queue = new DelayQueue<>();
 
@@ -2054,6 +2074,7 @@ public final class N {
         return queue;
     }
 
+    @SafeVarargs
     public static <T> PriorityQueue<T> asPriorityQueue(final T... a) {
         final PriorityQueue<T> queue = new PriorityQueue<>(a.length);
 
@@ -2064,6 +2085,7 @@ public final class N {
         return queue;
     }
 
+    @SafeVarargs
     public static <T> Deque<T> asDeque(final T... a) {
         final Deque<T> deque = new ArrayDeque<>(a.length);
 
@@ -2074,6 +2096,7 @@ public final class N {
         return deque;
     }
 
+    @SafeVarargs
     public static <T> LinkedBlockingDeque<T> asLinkedBlockingDeque(final T... a) {
         final LinkedBlockingDeque<T> deque = new LinkedBlockingDeque<>(a.length);
 
@@ -2084,6 +2107,7 @@ public final class N {
         return deque;
     }
 
+    @SafeVarargs
     public static <T> ConcurrentLinkedDeque<T> asConcurrentLinkedDeque(final T... a) {
         final ConcurrentLinkedDeque<T> deque = new ConcurrentLinkedDeque<>();
 
@@ -2094,6 +2118,7 @@ public final class N {
         return deque;
     }
 
+    @SafeVarargs
     public static <T> Multiset<T> asMultiset(final T... a) {
         final Multiset<T> multiset = new Multiset<>(new HashMap<T, MutableInt>(initHashCapacity(a.length)));
 
@@ -2172,6 +2197,7 @@ public final class N {
      * @return
      * @see java.util.Collections#unmodifiableList(List)
      */
+    @SafeVarargs
     public static <T> List<T> asImmutableList(final T... a) {
         return ImmutableList.of(a);
     }
@@ -2194,6 +2220,7 @@ public final class N {
      * @return
      * @see java.util.Collections#unmodifiableSet(Set)
      */
+    @SafeVarargs
     public static <T> Set<T> asImmutableSet(final T... a) {
         return ImmutableSet.of(a);
     }
@@ -2243,6 +2270,7 @@ public final class N {
         return ImmutableMap.of(k1, v1, k2, v2, k3, v3);
     }
 
+    @SafeVarargs
     public static <K, V> Map<K, V> asImmutableMap(final Object... a) {
         final Map<K, V> map = (a.length == 1 && a[0] instanceof Map) ? (Map<K, V>) a[0] : (Map<K, V>) N.asLinkedHashMap(a);
         return new ImmutableMap<>(map);
@@ -4666,6 +4694,7 @@ public final class N {
     }
 
     @SuppressWarnings("deprecation")
+    @SafeVarargs
     public static void erase(final Object entity, final String... propNames) {
         if (entity == null || N.isNullOrEmpty(propNames) || (entity instanceof DirtyMarker && ((DirtyMarker) entity).signedPropNames().size() == 0)) {
             return;
@@ -15624,6 +15653,7 @@ public final class N {
         return str.indexOf(substr, fromIndex);
     }
 
+    @SafeVarargs
     public static int indexOfAny(final String str, final char... chs) {
         if (N.isNullOrEmpty(str) || N.isNullOrEmpty(chs)) {
             return N.INDEX_NOT_FOUND;
@@ -15652,6 +15682,7 @@ public final class N {
         return N.INDEX_NOT_FOUND;
     }
 
+    @SafeVarargs
     public static int indexOfAny(final String str, final String... substrs) {
         if (N.isNullOrEmpty(str) || N.isNullOrEmpty(substrs)) {
             return N.INDEX_NOT_FOUND;
@@ -15677,6 +15708,7 @@ public final class N {
         return result;
     }
 
+    @SafeVarargs
     public static int indexOfAnyBut(final String str, final char... chs) {
         if (N.isNullOrEmpty(str)) {
             return N.INDEX_NOT_FOUND;
@@ -16215,6 +16247,7 @@ public final class N {
         return str.lastIndexOf(substr, fromIndex);
     }
 
+    @SafeVarargs
     public static int lastIndexOfAny(final String str, final char... chs) {
         if (N.isNullOrEmpty(str) || N.isNullOrEmpty(chs)) {
             return N.INDEX_NOT_FOUND;
@@ -16236,6 +16269,7 @@ public final class N {
         return result;
     }
 
+    @SafeVarargs
     public static int lastIndexOfAny(final String str, final String... substrs) {
         if (N.isNullOrEmpty(str) || N.isNullOrEmpty(substrs)) {
             return N.INDEX_NOT_FOUND;
@@ -16582,6 +16616,7 @@ public final class N {
         return indexOf(str, substr) != N.INDEX_NOT_FOUND;
     }
 
+    @SafeVarargs
     public static boolean containsAny(final String str, final char... chs) {
         if (N.isNullOrEmpty(str) || N.isNullOrEmpty(chs)) {
             return false;
@@ -16590,6 +16625,7 @@ public final class N {
         return indexOfAny(str, chs) != N.INDEX_NOT_FOUND;
     }
 
+    @SafeVarargs
     public static boolean containsOnly(final String str, final char... chs) {
         if (N.isNullOrEmpty(str) || N.isNullOrEmpty(chs)) {
             return false;
@@ -16598,6 +16634,7 @@ public final class N {
         return indexOfAnyBut(str, chs) == N.INDEX_NOT_FOUND;
     }
 
+    @SafeVarargs
     public static boolean containsNone(final String str, final char... chs) {
         if (N.isNullOrEmpty(str) || N.isNullOrEmpty(chs)) {
             return true;
@@ -16679,6 +16716,7 @@ public final class N {
         return ignoreCase ? str.regionMatches(true, 0, prefix, 0, prefix.length()) : str.startsWith(prefix);
     }
 
+    @SafeVarargs
     public static boolean startsWithAny(final String str, final String... substrs) {
         if (N.isNullOrEmpty(str) || N.isNullOrEmpty(substrs)) {
             return false;
@@ -16712,6 +16750,7 @@ public final class N {
         return ignoreCase ? str.regionMatches(true, strOffset, suffix, 0, suffix.length()) : str.endsWith(suffix);
     }
 
+    @SafeVarargs
     public static boolean endsWithAny(final String str, final String... substrs) {
         if (N.isNullOrEmpty(str) || N.isNullOrEmpty(substrs)) {
             return false;
@@ -16813,6 +16852,7 @@ public final class N {
      * @return the index where the strings begin to differ; -1 if they are all
      *         equal or null/empty
      */
+    @SafeVarargs
     public static int indexOfDifference(final String... strs) {
         if (N.isNullOrEmpty(strs) || strs.length == 1) {
             return N.INDEX_NOT_FOUND;
@@ -16905,6 +16945,7 @@ public final class N {
         }
     }
 
+    @SafeVarargs
     public static String commonPrefix(final String... strs) {
         if (N.isNullOrEmpty(strs)) {
             return N.EMPTY_STRING;
@@ -16967,6 +17008,7 @@ public final class N {
         }
     }
 
+    @SafeVarargs
     public static String commonSuffix(final String... strs) {
         if (N.isNullOrEmpty(strs)) {
             return N.EMPTY_STRING;
@@ -22046,6 +22088,7 @@ public final class N {
         }
     }
 
+    @SafeVarargs
     public static String concat(final String... a) {
         final StringBuilder sb = ObjectFactory.createStringBuilder();
 
@@ -22085,6 +22128,7 @@ public final class N {
      * @param aa 
      * @return
      */
+    @SafeVarargs
     public static boolean[] concat(final boolean[]... aa) {
         if (N.isNullOrEmpty(aa)) {
             return N.EMPTY_BOOLEAN_ARRAY;
@@ -22144,6 +22188,7 @@ public final class N {
      * @param aa 
      * @return
      */
+    @SafeVarargs
     public static char[] concat(final char[]... aa) {
         if (N.isNullOrEmpty(aa)) {
             return N.EMPTY_CHAR_ARRAY;
@@ -22203,6 +22248,7 @@ public final class N {
      * @param aa 
      * @return
      */
+    @SafeVarargs
     public static byte[] concat(final byte[]... aa) {
         if (N.isNullOrEmpty(aa)) {
             return N.EMPTY_BYTE_ARRAY;
@@ -22262,6 +22308,7 @@ public final class N {
      * @param aa 
      * @return
      */
+    @SafeVarargs
     public static short[] concat(final short[]... aa) {
         if (N.isNullOrEmpty(aa)) {
             return N.EMPTY_SHORT_ARRAY;
@@ -22321,6 +22368,7 @@ public final class N {
      * @param aa 
      * @return
      */
+    @SafeVarargs
     public static int[] concat(final int[]... aa) {
         if (N.isNullOrEmpty(aa)) {
             return N.EMPTY_INT_ARRAY;
@@ -22380,6 +22428,7 @@ public final class N {
      * @param aa 
      * @return
      */
+    @SafeVarargs
     public static long[] concat(final long[]... aa) {
         if (N.isNullOrEmpty(aa)) {
             return N.EMPTY_LONG_ARRAY;
@@ -22439,6 +22488,7 @@ public final class N {
      * @param aa 
      * @return
      */
+    @SafeVarargs
     public static float[] concat(final float[]... aa) {
         if (N.isNullOrEmpty(aa)) {
             return N.EMPTY_FLOAT_ARRAY;
@@ -22498,6 +22548,7 @@ public final class N {
      * @param aa 
      * @return
      */
+    @SafeVarargs
     public static double[] concat(final double[]... aa) {
         if (N.isNullOrEmpty(aa)) {
             return N.EMPTY_DOUBLE_ARRAY;
@@ -22558,6 +22609,7 @@ public final class N {
      * @param aa 
      * @return
      */
+    @SafeVarargs
     public static <T> T[] concat(final T[]... aa) {
         N.requireNonNull(aa, "aa");
 
@@ -23064,6 +23116,7 @@ public final class N {
      *            the second array whose elements are added to the new array.
      * @return A new array containing the elements from a and b
      */
+    @SafeVarargs
     public static boolean[] addAll(final boolean[] a, final boolean... b) {
         if (N.isNullOrEmpty(a)) {
             return N.isNullOrEmpty(b) ? N.EMPTY_BOOLEAN_ARRAY : b.clone();
@@ -23088,6 +23141,7 @@ public final class N {
      *            the second array whose elements are added to the new array.
      * @return A new array containing the elements from a and b
      */
+    @SafeVarargs
     public static char[] addAll(final char[] a, final char... b) {
         if (N.isNullOrEmpty(a)) {
             return N.isNullOrEmpty(b) ? N.EMPTY_CHAR_ARRAY : b.clone();
@@ -23112,6 +23166,7 @@ public final class N {
      *            the second array whose elements are added to the new array.
      * @return A new array containing the elements from a and b
      */
+    @SafeVarargs
     public static byte[] addAll(final byte[] a, final byte... b) {
         if (N.isNullOrEmpty(a)) {
             return N.isNullOrEmpty(b) ? N.EMPTY_BYTE_ARRAY : b.clone();
@@ -23136,6 +23191,7 @@ public final class N {
      *            the second array whose elements are added to the new array.
      * @return A new array containing the elements from a and b
      */
+    @SafeVarargs
     public static short[] addAll(final short[] a, final short... b) {
         if (N.isNullOrEmpty(a)) {
             return N.isNullOrEmpty(b) ? N.EMPTY_SHORT_ARRAY : b.clone();
@@ -23160,6 +23216,7 @@ public final class N {
      *            the second array whose elements are added to the new array.
      * @return A new array containing the elements from a and b
      */
+    @SafeVarargs
     public static int[] addAll(final int[] a, final int... b) {
         if (N.isNullOrEmpty(a)) {
             return N.isNullOrEmpty(b) ? N.EMPTY_INT_ARRAY : b.clone();
@@ -23184,6 +23241,7 @@ public final class N {
      *            the second array whose elements are added to the new array.
      * @return A new array containing the elements from a and b
      */
+    @SafeVarargs
     public static long[] addAll(final long[] a, final long... b) {
         if (N.isNullOrEmpty(a)) {
             return N.isNullOrEmpty(b) ? N.EMPTY_LONG_ARRAY : b.clone();
@@ -23208,6 +23266,7 @@ public final class N {
      *            the second array whose elements are added to the new array.
      * @return A new array containing the elements from a and b
      */
+    @SafeVarargs
     public static float[] addAll(final float[] a, final float... b) {
         if (N.isNullOrEmpty(a)) {
             return N.isNullOrEmpty(b) ? N.EMPTY_FLOAT_ARRAY : b.clone();
@@ -23232,6 +23291,7 @@ public final class N {
      *            the second array whose elements are added to the new array.
      * @return A new array containing the elements from a and b
      */
+    @SafeVarargs
     public static double[] addAll(final double[] a, final double... b) {
         if (N.isNullOrEmpty(a)) {
             return N.isNullOrEmpty(b) ? N.EMPTY_DOUBLE_ARRAY : b.clone();
@@ -23256,6 +23316,7 @@ public final class N {
      *            the second array whose elements are added to the new array.
      * @return A new array containing the elements from a and b
      */
+    @SafeVarargs
     public static String[] addAll(final String[] a, final String... b) {
         if (N.isNullOrEmpty(a)) {
             return N.isNullOrEmpty(b) ? N.EMPTY_STRING_ARRAY : b.clone();
@@ -23281,6 +23342,7 @@ public final class N {
      * @return A new array containing the elements from a and b
      * @throws NullPointerException if the specified <code>a</code> is <code>null</code>.
      */
+    @SafeVarargs
     public static <T> T[] addAll(final T[] a, final T... b) {
         N.requireNonNull(a, "a");
 
@@ -23690,6 +23752,7 @@ public final class N {
      *            the second array whose elements are added to the new array.
      * @return A new array containing the elements from a and b
      */
+    @SafeVarargs
     public static boolean[] insertAll(final boolean[] a, final int index, final boolean... b) {
         if (N.isNullOrEmpty(a) && index == 0) {
             return b.clone();
@@ -23725,6 +23788,7 @@ public final class N {
      *            the second array whose elements are added to the new array.
      * @return A new array containing the elements from a and b
      */
+    @SafeVarargs
     public static char[] insertAll(final char[] a, final int index, final char... b) {
         if (N.isNullOrEmpty(a) && index == 0) {
             return b.clone();
@@ -23760,6 +23824,7 @@ public final class N {
      *            the second array whose elements are added to the new array.
      * @return A new array containing the elements from a and b
      */
+    @SafeVarargs
     public static byte[] insertAll(final byte[] a, final int index, final byte... b) {
         if (N.isNullOrEmpty(a) && index == 0) {
             return b.clone();
@@ -23795,6 +23860,7 @@ public final class N {
      *            the second array whose elements are added to the new array.
      * @return A new array containing the elements from a and b
      */
+    @SafeVarargs
     public static short[] insertAll(final short[] a, final int index, final short... b) {
         if (N.isNullOrEmpty(a) && index == 0) {
             return b.clone();
@@ -23830,6 +23896,7 @@ public final class N {
      *            the second array whose elements are added to the new array.
      * @return A new array containing the elements from a and b
      */
+    @SafeVarargs
     public static int[] insertAll(final int[] a, final int index, final int... b) {
         if (N.isNullOrEmpty(a) && index == 0) {
             return b.clone();
@@ -23865,6 +23932,7 @@ public final class N {
      *            the second array whose elements are added to the new array.
      * @return A new array containing the elements from a and b
      */
+    @SafeVarargs
     public static long[] insertAll(final long[] a, final int index, final long... b) {
         if (N.isNullOrEmpty(a) && index == 0) {
             return b.clone();
@@ -23900,6 +23968,7 @@ public final class N {
      *            the second array whose elements are added to the new array.
      * @return A new array containing the elements from a and b
      */
+    @SafeVarargs
     public static float[] insertAll(final float[] a, final int index, final float... b) {
         if (N.isNullOrEmpty(a) && index == 0) {
             return b.clone();
@@ -23935,6 +24004,7 @@ public final class N {
      *            the second array whose elements are added to the new array.
      * @return A new array containing the elements from a and b
      */
+    @SafeVarargs
     public static double[] insertAll(final double[] a, final int index, final double... b) {
         if (N.isNullOrEmpty(a) && index == 0) {
             return b.clone();
@@ -23955,6 +24025,7 @@ public final class N {
         return newArray;
     }
 
+    @SafeVarargs
     public static String[] insertAll(final String[] a, final int index, final String... b) {
         if (N.isNullOrEmpty(a) && index == 0) {
             return b.clone();
@@ -23991,6 +24062,7 @@ public final class N {
      * @return A new array containing the elements from a and b
      * @throws NullPointerException if the specified <code>a</code> is <code>null</code>.
      */
+    @SafeVarargs
     public static <T> T[] insertAll(final T[] a, final int index, final T... b) {
         N.requireNonNull(a, "a");
 
@@ -24362,6 +24434,7 @@ public final class N {
      * @return A new array containing the existing elements except those at the
      *         specified positions.
      */
+    @SafeVarargs
     public static boolean[] deleteAll(final boolean[] a, int... indices) {
         if (N.isNullOrEmpty(indices)) {
             return a.clone();
@@ -24433,6 +24506,7 @@ public final class N {
      * @return A new array containing the existing elements except those at the
      *         specified positions.
      */
+    @SafeVarargs
     public static char[] deleteAll(final char[] a, int... indices) {
         if (N.isNullOrEmpty(indices)) {
             return a.clone();
@@ -24505,6 +24579,7 @@ public final class N {
      *         specified positions.
      *
      */
+    @SafeVarargs
     public static byte[] deleteAll(final byte[] a, int... indices) {
         if (N.isNullOrEmpty(indices)) {
             return a.clone();
@@ -24577,6 +24652,7 @@ public final class N {
      *         specified positions.
      *
      */
+    @SafeVarargs
     public static short[] deleteAll(final short[] a, int... indices) {
         if (N.isNullOrEmpty(indices)) {
             return a.clone();
@@ -24652,6 +24728,7 @@ public final class N {
      *             array.length), or if the array is {@code null}.
      *
      */
+    @SafeVarargs
     public static int[] deleteAll(final int[] a, int... indices) {
         if (N.isNullOrEmpty(indices)) {
             return a.clone();
@@ -24724,6 +24801,7 @@ public final class N {
      * @return A new array containing the existing elements except those at the
      *         specified positions.
      */
+    @SafeVarargs
     public static long[] deleteAll(final long[] a, int... indices) {
         if (N.isNullOrEmpty(indices)) {
             return a.clone();
@@ -24796,6 +24874,7 @@ public final class N {
      *         specified positions.
      *
      */
+    @SafeVarargs
     public static float[] deleteAll(final float[] a, int... indices) {
         if (N.isNullOrEmpty(indices)) {
             return a.clone();
@@ -24868,6 +24947,7 @@ public final class N {
      *         specified positions.
      *
      */
+    @SafeVarargs
     public static double[] deleteAll(final double[] a, int... indices) {
         if (N.isNullOrEmpty(indices)) {
             return a.clone();
@@ -24939,6 +25019,7 @@ public final class N {
      *         specified positions.
      *
      */
+    @SafeVarargs
     public static <T> T[] deleteAll(final T[] a, int... indices) {
         if (N.isNullOrEmpty(indices)) {
             return a.clone();
@@ -24991,6 +25072,7 @@ public final class N {
      * @param indices
      * @return
      */
+    @SafeVarargs
     public static boolean deleteAll(final List<?> list, int... indices) {
         N.requireNonNull(list);
 
@@ -25602,6 +25684,7 @@ public final class N {
      * @return
      * @see Collection#removeAll(Collection)
      */
+    @SafeVarargs
     public static boolean[] removeAll(final boolean[] a, final boolean... elements) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_BOOLEAN_ARRAY;
@@ -25624,6 +25707,7 @@ public final class N {
      * @return
      * @see Collection#removeAll(Collection)
      */
+    @SafeVarargs
     public static char[] removeAll(final char[] a, final char... elements) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_CHAR_ARRAY;
@@ -25646,6 +25730,7 @@ public final class N {
      * @return
      * @see Collection#removeAll(Collection)
      */
+    @SafeVarargs
     public static byte[] removeAll(final byte[] a, final byte... elements) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_BYTE_ARRAY;
@@ -25668,6 +25753,7 @@ public final class N {
      * @return
      * @see Collection#removeAll(Collection)
      */
+    @SafeVarargs
     public static short[] removeAll(final short[] a, final short... elements) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_SHORT_ARRAY;
@@ -25690,6 +25776,7 @@ public final class N {
      * @return
      * @see Collection#removeAll(Collection)
      */
+    @SafeVarargs
     public static int[] removeAll(final int[] a, final int... elements) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_INT_ARRAY;
@@ -25712,6 +25799,7 @@ public final class N {
      * @return
      * @see Collection#removeAll(Collection)
      */
+    @SafeVarargs
     public static long[] removeAll(final long[] a, final long... elements) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_LONG_ARRAY;
@@ -25734,6 +25822,7 @@ public final class N {
      * @return
      * @see Collection#removeAll(Collection)
      */
+    @SafeVarargs
     public static float[] removeAll(final float[] a, final float... elements) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_FLOAT_ARRAY;
@@ -25756,6 +25845,7 @@ public final class N {
      * @return
      * @see Collection#removeAll(Collection)
      */
+    @SafeVarargs
     public static double[] removeAll(final double[] a, final double... elements) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_DOUBLE_ARRAY;
@@ -25778,6 +25868,7 @@ public final class N {
      * @return
      * @see Collection#removeAll(Collection)
      */
+    @SafeVarargs
     public static <T> T[] removeAll(final T[] a, final Object... elements) {
         if (N.isNullOrEmpty(a)) {
             return a;
@@ -25792,6 +25883,7 @@ public final class N {
         return (T[]) list.trimToSize().array();
     }
 
+    @SafeVarargs
     public static boolean removeAll(final Collection<?> c, final Object... elements) {
         if (N.isNullOrEmpty(c) || N.isNullOrEmpty(elements)) {
             return false;
@@ -26772,6 +26864,7 @@ public final class N {
      * @param a
      * @return a long number
      */
+    @SafeVarargs
     public static Long sum(final char... a) {
         if (N.isNullOrEmpty(a)) {
             return 0L;
@@ -26805,6 +26898,7 @@ public final class N {
      * @param a
      * @return a long number
      */
+    @SafeVarargs
     public static Long sum(final byte... a) {
         if (N.isNullOrEmpty(a)) {
             return 0L;
@@ -26838,6 +26932,7 @@ public final class N {
      * @param a
      * @return a long number
      */
+    @SafeVarargs
     public static Long sum(final short... a) {
         if (N.isNullOrEmpty(a)) {
             return 0L;
@@ -26871,6 +26966,7 @@ public final class N {
      * @param a
      * @return a long number
      */
+    @SafeVarargs
     public static Long sum(final int... a) {
         if (N.isNullOrEmpty(a)) {
             return 0L;
@@ -26904,6 +27000,7 @@ public final class N {
      * @param a
      * @return a long number
      */
+    @SafeVarargs
     public static Long sum(final long... a) {
         if (N.isNullOrEmpty(a)) {
             return 0L;
@@ -26937,6 +27034,7 @@ public final class N {
      * @param a
      * @return a double number
      */
+    @SafeVarargs
     public static Double sum(final float... a) {
         if (N.isNullOrEmpty(a)) {
             return 0d;
@@ -26972,6 +27070,7 @@ public final class N {
      * @param a
      * @return a double number
      */
+    @SafeVarargs
     public static Double sum(final double... a) {
         if (N.isNullOrEmpty(a)) {
             return 0d;
@@ -27007,6 +27106,7 @@ public final class N {
      * @param a
      * @return a double number
      */
+    @SafeVarargs
     public static Double average(final char... a) {
         if (N.isNullOrEmpty(a)) {
             return 0d;
@@ -27034,6 +27134,7 @@ public final class N {
     * @param a
     * @return a double number
     */
+    @SafeVarargs
     public static Double average(final byte... a) {
         if (N.isNullOrEmpty(a)) {
             return 0d;
@@ -27061,6 +27162,7 @@ public final class N {
      * @param a
      * @return a double number
      */
+    @SafeVarargs
     public static Double average(final short... a) {
         if (N.isNullOrEmpty(a)) {
             return 0d;
@@ -27088,6 +27190,7 @@ public final class N {
      * @param a
      * @return a double number
      */
+    @SafeVarargs
     public static Double average(final int... a) {
         if (N.isNullOrEmpty(a)) {
             return 0d;
@@ -27115,6 +27218,7 @@ public final class N {
      * @param a
      * @return a double number
      */
+    @SafeVarargs
     public static Double average(final long... a) {
         if (N.isNullOrEmpty(a)) {
             return 0d;
@@ -27142,6 +27246,7 @@ public final class N {
      * @param a
      * @return a double number
      */
+    @SafeVarargs
     public static Double average(final float... a) {
         if (N.isNullOrEmpty(a)) {
             return 0d;
@@ -27171,6 +27276,7 @@ public final class N {
      * @param a
      * @return a double number
      */
+    @SafeVarargs
     public static Double average(final double... a) {
         if (N.isNullOrEmpty(a)) {
             return 0d;
@@ -27419,6 +27525,7 @@ public final class N {
      *            an array, must not be null or empty
      * @return the minimum value in the array
      */
+    @SafeVarargs
     public static char min(final char... a) {
         if (N.isNullOrEmpty(a)) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
@@ -27452,6 +27559,7 @@ public final class N {
      *            an array, must not be null or empty
      * @return the minimum value in the array
      */
+    @SafeVarargs
     public static byte min(final byte... a) {
         if (N.isNullOrEmpty(a)) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
@@ -27485,6 +27593,7 @@ public final class N {
      *            an array, must not be null or empty
      * @return the minimum value in the array
      */
+    @SafeVarargs
     public static short min(final short... a) {
         if (N.isNullOrEmpty(a)) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
@@ -27518,6 +27627,7 @@ public final class N {
      *            an array, must not be null or empty
      * @return the minimum value in the array
      */
+    @SafeVarargs
     public static int min(final int... a) {
         if (N.isNullOrEmpty(a)) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
@@ -27553,6 +27663,7 @@ public final class N {
      *            an array, must not be null or empty
      * @return the minimum value in the array
      */
+    @SafeVarargs
     public static long min(final long... a) {
         if (N.isNullOrEmpty(a)) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
@@ -27588,6 +27699,7 @@ public final class N {
      * @see IEEE754rUtil#min(float[]) IEEE754rUtils for a version of this method
      *      that handles NaN differently
      */
+    @SafeVarargs
     public static float min(final float... a) {
         if (N.isNullOrEmpty(a)) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
@@ -27625,6 +27737,7 @@ public final class N {
      * @see IEEE754rUtil#min(double[]) IEEE754rUtils for a version of this
      *      method that handles NaN differently
      */
+    @SafeVarargs
     public static double min(final double... a) {
         if (N.isNullOrEmpty(a)) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
@@ -28003,6 +28116,7 @@ public final class N {
      *            an array, must not be null or empty
      * @return the maximum value in the array
      */
+    @SafeVarargs
     public static char max(final char... a) {
         if (N.isNullOrEmpty(a)) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
@@ -28036,6 +28150,7 @@ public final class N {
      *            an array, must not be null or empty
      * @return the maximum value in the array
      */
+    @SafeVarargs
     public static byte max(final byte... a) {
         if (N.isNullOrEmpty(a)) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
@@ -28069,6 +28184,7 @@ public final class N {
      *            an array, must not be null or empty
      * @return the maximum value in the array
      */
+    @SafeVarargs
     public static short max(final short... a) {
         if (N.isNullOrEmpty(a)) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
@@ -28102,6 +28218,7 @@ public final class N {
      *            an array, must not be null or empty
      * @return the maximum value in the array
      */
+    @SafeVarargs
     public static int max(final int... a) {
         if (N.isNullOrEmpty(a)) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
@@ -28135,6 +28252,7 @@ public final class N {
      *            an array, must not be null or empty
      * @return the maximum value in the array
      */
+    @SafeVarargs
     public static long max(final long... a) {
         if (N.isNullOrEmpty(a)) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
@@ -28170,6 +28288,7 @@ public final class N {
      * @see IEEE754rUtil#max(float[]) IEEE754rUtils for a version of this method
      *      that handles NaN differently
      */
+    @SafeVarargs
     public static float max(final float... a) {
         if (N.isNullOrEmpty(a)) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
@@ -28207,6 +28326,7 @@ public final class N {
      * @see IEEE754rUtil#max(double[]) IEEE754rUtils for a version of this
      *      method that handles NaN differently
      */
+    @SafeVarargs
     public static double max(final double... a) {
         if (N.isNullOrEmpty(a)) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
@@ -28581,6 +28701,7 @@ public final class N {
      *            an array, must not be null or empty
      * @return the median value in the array
      */
+    @SafeVarargs
     public static char median(final char... a) {
         if (N.isNullOrEmpty(a)) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
@@ -28616,6 +28737,7 @@ public final class N {
      *            an array, must not be null or empty
      * @return the median value in the array
      */
+    @SafeVarargs
     public static byte median(final byte... a) {
         if (N.isNullOrEmpty(a)) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
@@ -28651,6 +28773,7 @@ public final class N {
      *            an array, must not be null or empty
      * @return the median value in the array
      */
+    @SafeVarargs
     public static short median(final short... a) {
         if (N.isNullOrEmpty(a)) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
@@ -28686,6 +28809,7 @@ public final class N {
      *            an array, must not be null or empty
      * @return the median value in the array
      */
+    @SafeVarargs
     public static int median(final int... a) {
         if (N.isNullOrEmpty(a)) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
@@ -28721,6 +28845,7 @@ public final class N {
      *            an array, must not be null or empty
      * @return the median value in the array
      */
+    @SafeVarargs
     public static long median(final long... a) {
         if (N.isNullOrEmpty(a)) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
@@ -28756,6 +28881,7 @@ public final class N {
      *            an array, must not be null or empty
      * @return the median value in the array
      */
+    @SafeVarargs
     public static float median(final float... a) {
         if (N.isNullOrEmpty(a)) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
@@ -28791,6 +28917,7 @@ public final class N {
      *            an array, must not be null or empty
      * @return the median value in the array
      */
+    @SafeVarargs
     public static double median(final double... a) {
         if (N.isNullOrEmpty(a)) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
@@ -29595,6 +29722,7 @@ public final class N {
         return asyncExecutor.execute(command, delay);
     }
 
+    @SafeVarargs
     public static List<CompletableFuture<Void>> asyncExecute(final Runnable... commands) {
         return asyncExecutor.execute(commands);
     }
@@ -29611,6 +29739,7 @@ public final class N {
         return asyncExecutor.execute(command, delay);
     }
 
+    @SafeVarargs
     public static <T> List<CompletableFuture<T>> asyncExecute(final Callable<T>... commands) {
         return asyncExecutor.execute(commands);
     }
@@ -29786,6 +29915,7 @@ public final class N {
      * @param args
      * @return the input <code>args</code>
      */
+    @SafeVarargs
     public static <T> T[] fprintln(final String format, final T... args) {
         System.out.printf(format, args);
         System.out.println();

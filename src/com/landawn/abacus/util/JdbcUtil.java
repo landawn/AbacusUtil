@@ -656,6 +656,7 @@ public final class JdbcUtil {
         return new SQLTransaction(conn, isolationLevel);
     }
 
+    @SafeVarargs
     public static PreparedStatement prepareStatement(final Connection conn, final String sql, final Object... parameters) throws SQLException {
         final NamedSQL namedSQL = NamedSQL.parse(sql);
         final PreparedStatement stmt = conn.prepareStatement(namedSQL.getPureSQL());
@@ -678,6 +679,7 @@ public final class JdbcUtil {
     //        return stmt;
     //    }
 
+    @SafeVarargs
     public static CallableStatement prepareCall(final Connection conn, final String sql, final Object... parameters) throws SQLException {
         final NamedSQL namedSQL = NamedSQL.parse(sql);
         final CallableStatement stmt = conn.prepareCall(namedSQL.getPureSQL());
@@ -724,6 +726,7 @@ public final class JdbcUtil {
         return stmt;
     }
 
+    @SafeVarargs
     public static DataSet executeQuery(final Connection conn, final String sql, final Object... parameters) {
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -770,6 +773,7 @@ public final class JdbcUtil {
         }
     }
 
+    @SafeVarargs
     public static int executeUpdate(final Connection conn, final String sql, final Object... parameters) {
         PreparedStatement stmt = null;
 
@@ -806,6 +810,7 @@ public final class JdbcUtil {
         }
     }
 
+    @SafeVarargs
     public static boolean execute(final Connection conn, final String sql, final Object... parameters) {
         PreparedStatement stmt = null;
 

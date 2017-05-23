@@ -45,10 +45,12 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatS
         return EMPTY_FLOAT_MATRIX;
     }
 
+    @SafeVarargs
     public static FloatMatrix of(final float[]... a) {
         return N.isNullOrEmpty(a) ? EMPTY_FLOAT_MATRIX : new FloatMatrix(a);
     }
 
+    @SafeVarargs
     public static FloatMatrix from(final int[]... a) {
         if (N.isNullOrEmpty(a)) {
             return EMPTY_FLOAT_MATRIX;

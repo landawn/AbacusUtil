@@ -78,6 +78,7 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
         return new FloatList(N.EMPTY_FLOAT_ARRAY);
     }
 
+    @SafeVarargs
     public static FloatList of(float... a) {
         return new FloatList(a);
     }
@@ -86,6 +87,7 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
         return a == null && size == 0 ? empty() : new FloatList(a, size);
     }
 
+    @SafeVarargs
     public static FloatList from(int... a) {
         return a == null ? empty() : from(a, 0, a.length);
     }
@@ -106,6 +108,7 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
         return of(elementData);
     }
 
+    @SafeVarargs
     public static FloatList from(long... a) {
         return a == null ? empty() : from(a, 0, a.length);
     }
@@ -132,6 +135,7 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
      * @return
      * @throws ArithmeticException if any elements in the specified array is bigger than Float.MAX_VALUE or less than Float.MIN_VALUE
      */
+    @SafeVarargs
     public static FloatList from(double... a) {
         return a == null ? empty() : from(a, 0, a.length);
     }

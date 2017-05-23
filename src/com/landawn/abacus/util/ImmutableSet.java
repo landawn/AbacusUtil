@@ -29,6 +29,7 @@ public final class ImmutableSet<E> extends ImmutableCollection<E> implements Set
         super(Collections.unmodifiableSet(set));
     }
 
+    @SafeVarargs
     public static <E> ImmutableSet<E> of(E... a) {
         return new ImmutableSet<>(N.asLinkedHashSet(a));
     }

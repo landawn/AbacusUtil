@@ -5508,6 +5508,7 @@ public final class SQLExecutor implements Closeable {
          * @param types
          * @return
          */
+        @SafeVarargs
         public static TypedParameters of(final Object parameters, final int... types) {
             if (Object[].class.isAssignableFrom(parameters.getClass()) && (((Object[]) parameters).length == types.length)) {
                 return new TypedParameters((Object[]) parameters, types);
@@ -5567,6 +5568,7 @@ public final class SQLExecutor implements Closeable {
             return typedParameters;
         }
 
+        @SafeVarargs
         public static List<TypedParameters> batchOf(final List<?> parameters, final int... types) {
             List<TypedParameters> typedParameters = new ArrayList<>(parameters.size());
 

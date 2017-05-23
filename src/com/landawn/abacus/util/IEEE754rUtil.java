@@ -98,6 +98,7 @@ public final class IEEE754rUtil {
      * @throws IllegalArgumentException
      *             if <code>array</code> is empty
      */
+    @SafeVarargs
     public static float min(final float... array) {
         // Validates input
         if (N.isNullOrEmpty(array)) {
@@ -172,6 +173,7 @@ public final class IEEE754rUtil {
      * @throws IllegalArgumentException
      *             if <code>array</code> is empty
      */
+    @SafeVarargs
     public static double min(final double... array) {
         // Validates input
         if (N.isNullOrEmpty(array)) {
@@ -246,6 +248,7 @@ public final class IEEE754rUtil {
      * @throws IllegalArgumentException
      *             if <code>array</code> is empty
      */
+    @SafeVarargs
     public static float max(final float... array) {
         // Validates input
         if (N.isNullOrEmpty(array)) {
@@ -320,6 +323,7 @@ public final class IEEE754rUtil {
      * @throws IllegalArgumentException
      *             if <code>array</code> is empty
      */
+    @SafeVarargs
     public static double max(final double... array) {
         // Validates input
         if (N.isNullOrEmpty(array)) {

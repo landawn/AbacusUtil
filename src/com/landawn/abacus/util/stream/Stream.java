@@ -1784,6 +1784,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         return of(N.asArray(a, b, c));
     }
 
+    @SafeVarargs
     public static <T> Stream<T> of(final T... a) {
         return N.isNullOrEmpty(a) ? (Stream<T>) empty() : of(a, 0, a.length);
     }
@@ -2117,6 +2118,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         return t == null ? Stream.<T> empty() : of(t);
     }
 
+    @SafeVarargs
     public static Stream<Boolean> from(final boolean... a) {
         if (N.isNullOrEmpty(a)) {
             return empty();
@@ -2171,6 +2173,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         });
     }
 
+    @SafeVarargs
     public static Stream<Character> from(char... a) {
         if (N.isNullOrEmpty(a)) {
             return empty();
@@ -2226,6 +2229,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         });
     }
 
+    @SafeVarargs
     public static Stream<Byte> from(byte... a) {
         if (N.isNullOrEmpty(a)) {
             return empty();
@@ -2281,6 +2285,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         });
     }
 
+    @SafeVarargs
     public static Stream<Short> from(short... a) {
         if (N.isNullOrEmpty(a)) {
             return empty();
@@ -2336,6 +2341,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         });
     }
 
+    @SafeVarargs
     public static Stream<Integer> from(int... a) {
         if (N.isNullOrEmpty(a)) {
             return empty();
@@ -2391,6 +2397,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         });
     }
 
+    @SafeVarargs
     public static Stream<Long> from(long... a) {
         if (N.isNullOrEmpty(a)) {
             return empty();
@@ -2446,6 +2453,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         });
     }
 
+    @SafeVarargs
     public static Stream<Float> from(float... a) {
         if (N.isNullOrEmpty(a)) {
             return empty();
@@ -2501,6 +2509,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         });
     }
 
+    @SafeVarargs
     public static Stream<Double> from(double... a) {
         if (N.isNullOrEmpty(a)) {
             return empty();
@@ -2896,6 +2905,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     //        });
     //    }
 
+    @SafeVarargs
     public static <T> Stream<T> concat(final T[]... a) {
         return N.isNullOrEmpty(a) ? (Stream<T>) empty() : new IteratorStream<>(new ExIterator<T>() {
             private final Iterator<T[]> iter = N.asList(a).iterator();
@@ -2921,6 +2931,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         });
     }
 
+    @SafeVarargs
     public static <T> Stream<T> concat(final Collection<? extends T>... a) {
         return N.isNullOrEmpty(a) ? (Stream<T>) empty() : new IteratorStream<>(new ExIterator<T>() {
             private final Iterator<Collection<? extends T>> iter = N.asList(a).iterator();
@@ -2946,6 +2957,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         });
     }
 
+    @SafeVarargs
     public static <T> Stream<T> concat(final Iterator<? extends T>... a) {
         if (N.isNullOrEmpty(a)) {
             return empty();
@@ -2954,6 +2966,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         return concat2(N.asList(a));
     }
 
+    @SafeVarargs
     public static <T> Stream<T> concat(final Stream<? extends T>... a) {
         if (N.isNullOrEmpty(a)) {
             return empty();
@@ -3110,6 +3123,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param a
      * @return
      */
+    @SafeVarargs
     public static <T> Stream<T> parallelConcat(final Iterator<? extends T>... a) {
         return parallelConcat(a, DEFAULT_READING_THREAD_NUM, calculateQueueSize(a.length));
     }
@@ -3150,6 +3164,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param a
      * @return
      */
+    @SafeVarargs
     public static <T> Stream<T> parallelConcat(final Stream<? extends T>... a) {
         return parallelConcat(a, DEFAULT_READING_THREAD_NUM, calculateQueueSize(a.length));
     }

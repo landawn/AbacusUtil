@@ -24,6 +24,7 @@ import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.DoubleConsumer;
+import com.landawn.abacus.util.function.FloatConsumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.function.LongConsumer;
@@ -355,6 +356,83 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
                 return false;
             } else {
                 LongPair other = (LongPair) obj;
+                return this._1 == other._1 && this._2 == other._2;
+            }
+        }
+
+        @Override
+        public String toString() {
+            return "[" + this._1 + ", " + this._2 + "]";
+        }
+    }
+
+    public static final class FloatPair {
+        public final float _1;
+        public final float _2;
+
+        private FloatPair(float _1, float _2) {
+            this._1 = _1;
+            this._2 = _2;
+        }
+
+        public static FloatPair of(float _1, float _2) {
+            return new FloatPair(_1, _2);
+        }
+
+        public float min() {
+            return N.min(_1, _2);
+        }
+
+        public float max() {
+            return N.max(_1, _2);
+        }
+
+        public float sum() {
+            return _1 + _2;
+        }
+
+        public double average() {
+            return sum() / 2;
+        }
+
+        public FloatPair reversed() {
+            return new FloatPair(_2, _1);
+        }
+
+        public float[] toArray() {
+            return new float[] { _1, _2 };
+        }
+
+        public void forEach(FloatConsumer comsumer) {
+            comsumer.accept(this._1);
+            comsumer.accept(this._2);
+        }
+
+        public void accept(Consumer<FloatPair> action) {
+            action.accept(this);
+        }
+
+        public <U> U apply(Function<FloatPair, U> action) {
+            return action.apply(this);
+        }
+
+        public Stream<FloatPair> stream() {
+            return Stream.of(this);
+        }
+
+        @Override
+        public int hashCode() {
+            return (int) (31 * _1 + this._2);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            } else if (!(obj instanceof FloatPair)) {
+                return false;
+            } else {
+                FloatPair other = (FloatPair) obj;
                 return this._1 == other._1 && this._2 == other._2;
             }
         }

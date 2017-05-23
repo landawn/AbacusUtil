@@ -2056,6 +2056,7 @@ public final class Math2 {
      * @param values a nonempty series of values
      * @throws IllegalArgumentException if {@code values} is empty 
      */
+    @SafeVarargs
     public static double mean(int... values) {
         N.checkArgument(values.length > 0, "Cannot take mean of 0 values");
         // The upper bound on the the length of an array and the bounds on the int values mean that, in
@@ -2079,6 +2080,7 @@ public final class Math2 {
      *     (this may cause loss of precision for longs of magnitude over 2^53 (slightly over 9e15))
      * @throws IllegalArgumentException if {@code values} is empty 
      */
+    @SafeVarargs
     public static double mean(long... values) {
         N.checkArgument(values.length > 0, "Cannot take mean of 0 values");
         long count = 1;
@@ -2091,6 +2093,7 @@ public final class Math2 {
         return mean;
     }
 
+    @SafeVarargs
     public static double mean(double... values) {
         N.checkArgument(values.length > 0, "Cannot take mean of 0 values");
         long count = 1;

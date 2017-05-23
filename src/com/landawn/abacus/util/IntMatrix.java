@@ -44,10 +44,12 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntStream, S
         return EMPTY_INT_MATRIX;
     }
 
+    @SafeVarargs
     public static IntMatrix of(final int[]... a) {
         return N.isNullOrEmpty(a) ? EMPTY_INT_MATRIX : new IntMatrix(a);
     }
 
+    @SafeVarargs
     public static IntMatrix from(final char[]... a) {
         if (N.isNullOrEmpty(a)) {
             return EMPTY_INT_MATRIX;
@@ -64,6 +66,7 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntStream, S
         return new IntMatrix(c);
     }
 
+    @SafeVarargs
     public static IntMatrix from(final byte[]... a) {
         if (N.isNullOrEmpty(a)) {
             return EMPTY_INT_MATRIX;
@@ -80,6 +83,7 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntStream, S
         return new IntMatrix(c);
     }
 
+    @SafeVarargs
     public static IntMatrix from(final short[]... a) {
         if (N.isNullOrEmpty(a)) {
             return EMPTY_INT_MATRIX;

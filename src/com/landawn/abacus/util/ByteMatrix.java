@@ -45,6 +45,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
         return EMPTY_BYTE_MATRIX;
     }
 
+    @SafeVarargs
     public static ByteMatrix of(final byte[]... a) {
         return N.isNullOrEmpty(a) ? EMPTY_BYTE_MATRIX : new ByteMatrix(a);
     }

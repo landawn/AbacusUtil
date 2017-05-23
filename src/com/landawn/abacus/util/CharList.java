@@ -77,6 +77,7 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
         return new CharList(N.EMPTY_CHAR_ARRAY);
     }
 
+    @SafeVarargs
     public static CharList of(char... a) {
         return a == null ? empty() : new CharList(a);
     }
@@ -91,6 +92,7 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
      * @return
      * @throws ArithmeticException if any elements in the specified array is bigger than Character.MAX_VALUE or less than Character.MIN_VALUE
      */
+    @SafeVarargs
     public static CharList from(int... a) {
         return a == null ? empty() : from(a, 0, a.length);
     }

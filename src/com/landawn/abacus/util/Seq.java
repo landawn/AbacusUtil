@@ -2546,6 +2546,7 @@ public final class Seq<T> implements Collection<T> {
         return N.concat(a, b);
     }
 
+    @SafeVarargs
     public static <T> ExList<T> concat(final Collection<? extends T>... a) {
         return concat(Arrays.asList(a));
     }
@@ -2577,6 +2578,7 @@ public final class Seq<T> implements Collection<T> {
         return concat(Arrays.asList(a, b));
     }
 
+    @SafeVarargs
     public static <T> Iterator<T> concat(final Iterator<? extends T>... a) {
         return concat(Arrays.asList(a));
     }
@@ -2606,6 +2608,7 @@ public final class Seq<T> implements Collection<T> {
         };
     }
 
+    @SafeVarargs
     public static <T> Iterator<T> iterate(T[]... a) {
         if (N.isNullOrEmpty(a)) {
             return ImmutableIterator.EMPTY;
@@ -2622,6 +2625,7 @@ public final class Seq<T> implements Collection<T> {
         return concat(list);
     }
 
+    @SafeVarargs
     public static <T> Iterator<T> iterate(Collection<? extends T>... a) {
         if (N.isNullOrEmpty(a)) {
             return ImmutableIterator.EMPTY;

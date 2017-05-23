@@ -746,6 +746,7 @@ public abstract class DoubleStream
         return EMPTY;
     }
 
+    @SafeVarargs
     public static DoubleStream of(final double... a) {
         return N.isNullOrEmpty(a) ? empty() : new ArrayDoubleStream(a);
     }
@@ -820,6 +821,7 @@ public abstract class DoubleStream
         });
     }
 
+    @SafeVarargs
     public static DoubleStream from(final float... a) {
         return N.isNullOrEmpty(a) ? empty() : from(a, 0, a.length);
     }
@@ -1086,6 +1088,7 @@ public abstract class DoubleStream
         });
     }
 
+    @SafeVarargs
     public static DoubleStream concat(final double[]... a) {
         return N.isNullOrEmpty(a) ? empty() : new IteratorDoubleStream(new ExDoubleIterator() {
             private final Iterator<double[]> iter = N.asList(a).iterator();
@@ -1111,6 +1114,7 @@ public abstract class DoubleStream
         });
     }
 
+    @SafeVarargs
     public static DoubleStream concat(final DoubleIterator... a) {
         return N.isNullOrEmpty(a) ? empty() : new IteratorDoubleStream(new ExDoubleIterator() {
             private final Iterator<? extends DoubleIterator> iter = N.asList(a).iterator();
@@ -1136,6 +1140,7 @@ public abstract class DoubleStream
         });
     }
 
+    @SafeVarargs
     public static DoubleStream concat(final DoubleStream... a) {
         return N.isNullOrEmpty(a) ? empty() : concat(N.asList(a));
     }

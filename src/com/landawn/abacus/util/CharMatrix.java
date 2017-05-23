@@ -45,6 +45,7 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
         return EMPTY_CHAR_MATRIX;
     }
 
+    @SafeVarargs
     public static CharMatrix of(final char[]... a) {
         return N.isNullOrEmpty(a) ? EMPTY_CHAR_MATRIX : new CharMatrix(a);
     }

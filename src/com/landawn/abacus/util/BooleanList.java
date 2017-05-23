@@ -77,6 +77,7 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
         return new BooleanList(N.EMPTY_BOOLEAN_ARRAY);
     }
 
+    @SafeVarargs
     public static BooleanList of(boolean... a) {
         return a == null ? empty() : new BooleanList(a);
     }

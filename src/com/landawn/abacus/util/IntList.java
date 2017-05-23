@@ -77,6 +77,7 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
         return new IntList(N.EMPTY_INT_ARRAY);
     }
 
+    @SafeVarargs
     public static IntList of(int... a) {
         return a == null ? empty() : new IntList(a);
     }
@@ -85,6 +86,7 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
         return a == null && size == 0 ? empty() : new IntList(a, size);
     }
 
+    @SafeVarargs
     public static IntList from(char... a) {
         return a == null ? empty() : from(a, 0, a.length);
     }
@@ -105,6 +107,7 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
         return of(elementData);
     }
 
+    @SafeVarargs
     public static IntList from(byte... a) {
         return a == null ? empty() : from(a, 0, a.length);
     }
@@ -125,6 +128,7 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
         return of(elementData);
     }
 
+    @SafeVarargs
     public static IntList from(short... a) {
         return a == null ? empty() : from(a, 0, a.length);
     }
@@ -151,6 +155,7 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
      * @return
      * @throws ArithmeticException if any elements in the specified array is bigger than Integer.MAX_VALUE or less than Integer.MIN_VALUE
      */
+    @SafeVarargs
     public static IntList from(long... a) {
         return a == null ? empty() : from(a, 0, a.length);
     }
@@ -189,6 +194,7 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
      * @return
      * @throws ArithmeticException if any elements in the specified array is bigger than Integer.MAX_VALUE or less than Integer.MIN_VALUE
      */
+    @SafeVarargs
     public static IntList from(float... a) {
         return a == null ? empty() : from(a, 0, a.length);
     }
@@ -227,6 +233,7 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
      * @return
      * @throws ArithmeticException if any elements in the specified array is bigger than Integer.MAX_VALUE or less than Integer.MIN_VALUE
      */
+    @SafeVarargs
     public static IntList from(double... a) {
         return a == null ? empty() : from(a, 0, a.length);
     }

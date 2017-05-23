@@ -45,6 +45,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortS
         return EMPTY_SHORT_MATRIX;
     }
 
+    @SafeVarargs
     public static ShortMatrix of(final short[]... a) {
         return N.isNullOrEmpty(a) ? EMPTY_SHORT_MATRIX : new ShortMatrix(a);
     }

@@ -591,6 +591,7 @@ public final class Hashing {
      *
      * @since 19.0
      */
+    @SafeVarargs
     public static HashFunction concatenating(HashFunction first, HashFunction second, HashFunction... rest) {
         // We can't use Lists.asList() here because there's no hash->collect dependency
         List<HashFunction> list = new ArrayList<HashFunction>();

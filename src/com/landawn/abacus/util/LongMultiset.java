@@ -97,6 +97,7 @@ public final class LongMultiset<E> implements Iterable<E> {
         this.valueMap = valueMap;
     }
 
+    @SafeVarargs
     public static <T> LongMultiset<T> of(final T... a) {
         final LongMultiset<T> multiset = new LongMultiset<>(new HashMap<T, MutableLong>(N.initHashCapacity(a.length)));
 

@@ -113,6 +113,7 @@ public final class BiMap<K, V> implements Map<K, V> {
         return N.asBiMap(k1, v1, k2, v2, k3, v3, k4, v4, k5, v5, k6, v6, k7, v7);
     }
 
+    @SafeVarargs
     public static <K, V, k extends K, v extends V> BiMap<K, V> of(final Object... a) {
         return N.asBiMap(a);
     }

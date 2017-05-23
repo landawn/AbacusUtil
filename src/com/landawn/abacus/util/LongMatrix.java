@@ -45,10 +45,12 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongStrea
         return EMPTY_LONG_MATRIX;
     }
 
+    @SafeVarargs
     public static LongMatrix of(final long[]... a) {
         return N.isNullOrEmpty(a) ? EMPTY_LONG_MATRIX : new LongMatrix(a);
     }
 
+    @SafeVarargs
     public static LongMatrix from(final int[]... a) {
         if (N.isNullOrEmpty(a)) {
             return EMPTY_LONG_MATRIX;
