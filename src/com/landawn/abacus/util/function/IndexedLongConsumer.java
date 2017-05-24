@@ -24,14 +24,14 @@ import com.landawn.abacus.util.N;
  */
 public interface IndexedLongConsumer {
 
-    void accept(int idx, long e, long[] a);
+    void accept(int idx, long e);
 
     default IndexedLongConsumer andThen(IndexedLongConsumer after) {
         N.requireNonNull(after);
 
-        return (idx, e, a) -> {
-            accept(idx, e, a);
-            after.accept(idx, e, a);
+        return (idx, e) -> {
+            accept(idx, e);
+            after.accept(idx, e);
         };
     }
 }

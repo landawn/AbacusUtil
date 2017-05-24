@@ -24,14 +24,14 @@ import com.landawn.abacus.util.N;
  */
 public interface IndexedByteConsumer {
 
-    void accept(int idx, byte e, byte[] a);
+    void accept(int idx, byte e);
 
     default IndexedByteConsumer andThen(IndexedByteConsumer after) {
         N.requireNonNull(after);
 
-        return (idx, e, a) -> {
-            accept(idx, e, a);
-            after.accept(idx, e, a);
+        return (idx, e) -> {
+            accept(idx, e);
+            after.accept(idx, e);
         };
     }
 }

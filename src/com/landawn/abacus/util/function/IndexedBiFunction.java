@@ -14,8 +14,6 @@
 
 package com.landawn.abacus.util.function;
 
-import java.util.function.Function;
-
 import com.landawn.abacus.util.N;
 
 /**
@@ -24,13 +22,13 @@ import com.landawn.abacus.util.N;
  * 
  * @author Haiyang Li
  */
-public interface IndexedBiFunction<U, T, A, R> {
+public interface IndexedBiFunction<U, T, R> {
 
-    R apply(U u, int idx, T e, A a);
+    R apply(U u, int idx, T e);
 
-    default <V> IndexedBiFunction<U, T, A, V> andThen(Function<? super R, ? extends V> after) {
+    default <V> IndexedBiFunction<U, T, V> andThen(IndexedFunction<? super R, ? extends V> after) {
         N.requireNonNull(after);
 
-        return (u, idx, e, a) -> after.apply(apply(u, idx, e, a));
+        return (u, idx, e) -> after.apply(idx, apply(u, idx, e));
     }
 }

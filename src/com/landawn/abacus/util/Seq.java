@@ -522,11 +522,11 @@ public final class Seq<T> implements Collection<T> {
         N.forEach(coll, fromIndex, toIndex, action);
     }
 
-    public void forEach(final IndexedConsumer<? super T, Collection<T>> action) {
+    public void forEach(final IndexedConsumer<? super T> action) {
         forEach(0, size(), action);
     }
 
-    public void forEach(int fromIndex, final int toIndex, final IndexedConsumer<? super T, Collection<T>> action) {
+    public void forEach(int fromIndex, final int toIndex, final IndexedConsumer<? super T> action) {
         N.forEach(coll, fromIndex, toIndex, action);
     }
 
@@ -539,8 +539,7 @@ public final class Seq<T> implements Collection<T> {
         return N.forEach(coll, fromIndex, toIndex, seed, accumulator, conditionToBreak);
     }
 
-    public <R> R forEach(final R seed, final IndexedBiFunction<R, ? super T, Collection<T>, R> accumulator,
-            final BiPredicate<? super T, ? super R> conditionToBreak) {
+    public <R> R forEach(final R seed, final IndexedBiFunction<R, ? super T, R> accumulator, final BiPredicate<? super T, ? super R> conditionToBreak) {
         return forEach(0, size(), seed, accumulator, conditionToBreak);
     }
 
@@ -554,7 +553,7 @@ public final class Seq<T> implements Collection<T> {
      * @param conditionToBreak break if <code>true</code> is return.
      * @return
      */
-    public <R> R forEach(int fromIndex, final int toIndex, final R seed, final IndexedBiFunction<R, ? super T, Collection<T>, R> accumulator,
+    public <R> R forEach(int fromIndex, final int toIndex, final R seed, final IndexedBiFunction<R, ? super T, R> accumulator,
             final BiPredicate<? super T, ? super R> conditionToBreak) {
         return N.forEach(coll, fromIndex, toIndex, seed, accumulator, conditionToBreak);
     }

@@ -1279,10 +1279,11 @@ public final class Fn {
 
         /**
          * Remove the continuous repeat elements.
+         * Returns a stateful predicate which should not be used in parallel stream.
          * 
          * @return
          */
-        public static <T> com.landawn.abacus.util.function.Predicate<T> removeRepeats() {
+        public static <T> com.landawn.abacus.util.function.Predicate<T> skipRepeats() {
             return new com.landawn.abacus.util.function.Predicate<T>() {
                 private T pre = (T) NULL;
 
@@ -1295,7 +1296,14 @@ public final class Fn {
             };
         }
 
-        public static <T> com.landawn.abacus.util.function.Predicate<T> withLimit(final com.landawn.abacus.util.function.Predicate<T> predicate,
+        /**
+         * Returns a stateful predicate which should not be used in parallel stream.
+         * 
+         * @param predicate
+         * @param limit
+         * @return
+         */
+        public static <T> com.landawn.abacus.util.function.Predicate<T> limited(final com.landawn.abacus.util.function.Predicate<T> predicate,
                 final int limit) {
             N.requireNonNull(predicate);
 
@@ -1309,7 +1317,14 @@ public final class Fn {
             };
         }
 
-        public static <T> com.landawn.abacus.util.function.Predicate<T> withLimit(final com.landawn.abacus.util.function.Predicate<T> predicate,
+        /**
+         * Returns a stateful predicate which should not be used in parallel stream.
+         * 
+         * @param predicate
+         * @param limit
+         * @return
+         */
+        public static <T> com.landawn.abacus.util.function.Predicate<T> limited(final com.landawn.abacus.util.function.Predicate<T> predicate,
                 final long limit) {
             N.requireNonNull(predicate);
 
@@ -1319,6 +1334,25 @@ public final class Fn {
                 @Override
                 public boolean test(T t) {
                     return predicate.test(t) && counter.decrementAndGet() >= 0;
+                }
+            };
+        }
+
+        /**
+         * Returns a stateful predicate which should not be used in parallel stream.
+         * 
+         * @param predicate
+         * @return
+         */
+        public static <T> com.landawn.abacus.util.function.Predicate<T> indexed(final com.landawn.abacus.util.function.IndexedPredicate<T> predicate) {
+            N.requireNonNull(predicate);
+
+            return new com.landawn.abacus.util.function.Predicate<T>() {
+                private final AtomicInteger idx = new AtomicInteger(0);
+
+                @Override
+                public boolean test(T t) {
+                    return predicate.test(idx.getAndIncrement(), t);
                 }
             };
         }
@@ -1402,7 +1436,14 @@ public final class Fn {
             return ALWAYS_FALSE;
         }
 
-        public static <T, U> com.landawn.abacus.util.function.BiPredicate<T, U> withLimit(final com.landawn.abacus.util.function.BiPredicate<T, U> predicate,
+        /**
+         * Returns a stateful predicate which should not be used in parallel stream.
+         * 
+         * @param predicate
+         * @param limit
+         * @return
+         */
+        public static <T, U> com.landawn.abacus.util.function.BiPredicate<T, U> limited(final com.landawn.abacus.util.function.BiPredicate<T, U> predicate,
                 final int limit) {
             N.requireNonNull(predicate);
 
@@ -1416,7 +1457,14 @@ public final class Fn {
             };
         }
 
-        public static <T, U> com.landawn.abacus.util.function.BiPredicate<T, U> withLimit(final com.landawn.abacus.util.function.BiPredicate<T, U> predicate,
+        /**
+         * Returns a stateful predicate which should not be used in parallel stream.
+         * 
+         * @param predicate
+         * @param limit
+         * @return
+         */
+        public static <T, U> com.landawn.abacus.util.function.BiPredicate<T, U> limited(final com.landawn.abacus.util.function.BiPredicate<T, U> predicate,
                 final long limit) {
             N.requireNonNull(predicate);
 
@@ -1426,6 +1474,26 @@ public final class Fn {
                 @Override
                 public boolean test(T t, U u) {
                     return predicate.test(t, u) && counter.decrementAndGet() >= 0;
+                }
+            };
+        }
+
+        /**
+         * Returns a stateful predicate which should not be used in parallel stream.
+         * 
+         * @param predicate
+         * @return
+         */
+        public static <U, T> com.landawn.abacus.util.function.BiPredicate<U, T> indexed(
+                final com.landawn.abacus.util.function.IndexedBiPredicate<U, T> predicate) {
+            N.requireNonNull(predicate);
+
+            return new com.landawn.abacus.util.function.BiPredicate<U, T>() {
+                private final AtomicInteger idx = new AtomicInteger(0);
+
+                @Override
+                public boolean test(U u, T t) {
+                    return predicate.test(u, idx.getAndIncrement(), t);
                 }
             };
         }
@@ -1461,7 +1529,14 @@ public final class Fn {
             return ALWAYS_FALSE;
         }
 
-        public static <A, B, C> com.landawn.abacus.util.function.TriPredicate<A, B, C> withLimit(
+        /**
+         * Returns a stateful predicate which should not be used in parallel stream.
+         * 
+         * @param predicate
+         * @param limit
+         * @return
+         */
+        public static <A, B, C> com.landawn.abacus.util.function.TriPredicate<A, B, C> limited(
                 final com.landawn.abacus.util.function.TriPredicate<A, B, C> predicate, final int limit) {
             N.requireNonNull(predicate);
 
@@ -1475,7 +1550,14 @@ public final class Fn {
             };
         }
 
-        public static <A, B, C> com.landawn.abacus.util.function.TriPredicate<A, B, C> withLimit(
+        /**
+         * Returns a stateful predicate which should not be used in parallel stream.
+         * 
+         * @param predicate
+         * @param limit
+         * @return
+         */
+        public static <A, B, C> com.landawn.abacus.util.function.TriPredicate<A, B, C> limited(
                 final com.landawn.abacus.util.function.TriPredicate<A, B, C> predicate, final long limit) {
             N.requireNonNull(predicate);
 

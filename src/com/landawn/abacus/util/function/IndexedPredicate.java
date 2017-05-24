@@ -22,16 +22,23 @@ import com.landawn.abacus.util.N;
  * 
  * @author Haiyang Li
  */
-public interface IndexedShortConsumer {
+public interface IndexedPredicate<T> {
 
-    void accept(int idx, short e);
+    boolean test(int idx, T e);
 
-    default IndexedShortConsumer andThen(IndexedShortConsumer after) {
-        N.requireNonNull(after);
+    default IndexedPredicate<T> negate() {
+        return (idx, e) -> !test(idx, e);
+    }
 
-        return (idx, e) -> {
-            accept(idx, e);
-            after.accept(idx, e);
-        };
+    default IndexedPredicate<T> and(IndexedPredicate<? super T> other) {
+        N.requireNonNull(other);
+
+        return (idx, e) -> test(idx, e) && other.test(idx, e);
+    }
+
+    default IndexedPredicate<T> or(IndexedPredicate<? super T> other) {
+        N.requireNonNull(other);
+
+        return (idx, e) -> test(idx, e) || other.test(idx, e);
     }
 }

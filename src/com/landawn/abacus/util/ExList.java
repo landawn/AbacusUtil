@@ -1149,21 +1149,21 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
         }
     }
 
-    public void forEach(IndexedConsumer<T, ExList<T>> action) {
+    public void forEach(IndexedConsumer<T> action) {
         forEach(0, size(), action);
     }
 
-    public void forEach(final int fromIndex, final int toIndex, final IndexedConsumer<? super T, ExList<T>> action) {
+    public void forEach(final int fromIndex, final int toIndex, final IndexedConsumer<? super T> action) {
         N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, size);
 
         if (size > 0) {
             if (fromIndex <= toIndex) {
                 for (int i = fromIndex; i < toIndex; i++) {
-                    action.accept(i, elementData[i], this);
+                    action.accept(i, elementData[i]);
                 }
             } else {
                 for (int i = N.min(size - 1, fromIndex); i > toIndex; i--) {
-                    action.accept(i, elementData[i], this);
+                    action.accept(i, elementData[i]);
                 }
             }
         }
@@ -1212,7 +1212,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
         return result;
     }
 
-    public <R> R forEach(final R seed, IndexedBiFunction<R, ? super T, ExList<T>, R> accumulator, BiPredicate<? super T, ? super R> conditionToBreak) {
+    public <R> R forEach(final R seed, IndexedBiFunction<R, ? super T, R> accumulator, BiPredicate<? super T, ? super R> conditionToBreak) {
         return forEach(0, size(), seed, accumulator, conditionToBreak);
     }
 
@@ -1226,7 +1226,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
      * @param conditionToBreak break if <code>true</code> is return.
      * @return
      */
-    public <R> R forEach(final int fromIndex, final int toIndex, final R seed, IndexedBiFunction<R, ? super T, ExList<T>, R> accumulator,
+    public <R> R forEach(final int fromIndex, final int toIndex, final R seed, IndexedBiFunction<R, ? super T, R> accumulator,
             final BiPredicate<? super T, ? super R> conditionToBreak) {
         N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, size);
 
@@ -1235,7 +1235,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
         if (size > 0) {
             if (fromIndex <= toIndex) {
                 for (int i = fromIndex; i < toIndex; i++) {
-                    result = accumulator.apply(result, i, elementData[i], this);
+                    result = accumulator.apply(result, i, elementData[i]);
 
                     if (conditionToBreak.test(elementData[i], result)) {
                         break;
@@ -1243,7 +1243,7 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
                 }
             } else {
                 for (int i = N.min(size - 1, fromIndex); i > toIndex; i--) {
-                    result = accumulator.apply(result, i, elementData[i], this);
+                    result = accumulator.apply(result, i, elementData[i]);
 
                     if (conditionToBreak.test(elementData[i], result)) {
                         break;

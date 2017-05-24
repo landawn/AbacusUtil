@@ -188,9 +188,22 @@ public final class Futures {
             @Override
             public boolean cancel(boolean mayInterruptIfRunning) {
                 boolean res = true;
+                RuntimeException exception = null;
 
                 for (CompletableFuture<?> future : cfs) {
-                    res = res & future.cancel(mayInterruptIfRunning);
+                    try {
+                        res = res & future.cancel(mayInterruptIfRunning);
+                    } catch (RuntimeException e) {
+                        if (exception == null) {
+                            exception = e;
+                        } else {
+                            exception.addSuppressed(e);
+                        }
+                    }
+                }
+
+                if (exception != null) {
+                    throw exception;
                 }
 
                 return res;
@@ -287,9 +300,22 @@ public final class Futures {
             @Override
             public boolean cancel(boolean mayInterruptIfRunning) {
                 boolean res = true;
+                RuntimeException exception = null;
 
                 for (CompletableFuture<?> future : cfs) {
-                    res = res & future.cancel(mayInterruptIfRunning);
+                    try {
+                        res = res & future.cancel(mayInterruptIfRunning);
+                    } catch (RuntimeException e) {
+                        if (exception == null) {
+                            exception = e;
+                        } else {
+                            exception.addSuppressed(e);
+                        }
+                    }
+                }
+
+                if (exception != null) {
+                    throw exception;
                 }
 
                 return res;

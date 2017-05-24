@@ -942,11 +942,11 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
         if (size > 0) {
             if (fromIndex <= toIndex) {
                 for (int i = fromIndex; i < toIndex; i++) {
-                    action.accept(i, elementData[i], elementData);
+                    action.accept(i, elementData[i]);
                 }
             } else {
                 for (int i = N.min(size - 1, fromIndex); i > toIndex; i--) {
-                    action.accept(i, elementData[i], elementData);
+                    action.accept(i, elementData[i]);
                 }
             }
         }

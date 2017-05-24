@@ -318,7 +318,7 @@ public final class SQLExecutor implements Closeable {
     private final IsolationLevel _defaultIsolationLevel;
     private final AsyncSQLExecutor _asyncSQLExecutor;
 
-    private final Map<Class<?>, ExMapper<?>> mapperPool = new ConcurrentHashMap<>();
+    private final Map<Class<?>, Mapper<?>> mapperPool = new ConcurrentHashMap<>();
 
     /**
      * 
@@ -520,13 +520,13 @@ public final class SQLExecutor implements Closeable {
     //        return _sqlMapper;
     //    }
 
-    public <T> ExMapper<T> mapper(final Class<T> targetClass) {
-        ExMapper<T> mapper = (ExMapper<T>) mapperPool.get(targetClass);
+    public <T> Mapper<T> mapper(final Class<T> targetClass) {
+        Mapper<T> mapper = (Mapper<T>) mapperPool.get(targetClass);
 
         if (mapper == null) {
             N.checkArgument(N.isEntity(targetClass), RefUtil.getCanonicalClassName(targetClass) + " is not an entity class with getter/setter methods");
 
-            mapper = new ExMapper<T>(targetClass, this, this._namingPolicy);
+            mapper = new Mapper<T>(targetClass, this, this._namingPolicy);
             mapperPool.put(targetClass, mapper);
         }
 
@@ -3448,7 +3448,7 @@ public final class SQLExecutor implements Closeable {
      *
      * @param <T>
      */
-    public static final class ExMapper<T> {
+    public static final class Mapper<T> {
         static final List<String> EXISTS_SELECT_PROP_NAMES = ImmutableList.of(NE._1);
         static final List<String> COUNT_SELECT_PROP_NAMES = ImmutableList.of(NE.COUNT_ALL);
         static final Map<Class<?>, String> entityIdMap = new ConcurrentHashMap<>();
@@ -3464,7 +3464,7 @@ public final class SQLExecutor implements Closeable {
         private final String sql_delete_by_id;
         // TODO cache more sqls to improve performance.
 
-        ExMapper(final Class<T> targetClass, final SQLExecutor sqlExecutor, final NamingPolicy namingPolicy) {
+        Mapper(final Class<T> targetClass, final SQLExecutor sqlExecutor, final NamingPolicy namingPolicy) {
             this.targetClass = targetClass;
             this.sqlExecutor = sqlExecutor;
             this.namingPolicy = namingPolicy;

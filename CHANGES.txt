@@ -3,7 +3,9 @@
 
 1, Add collectAndThen to Stream and Seq
 
-2, Improvements and bug fix.
+2, Rename SQLExecutor.ExMapper to Mapper.
+
+3, Improvements and bug fix.
 
 
 ========Changes in 0.9.66=========================================================================

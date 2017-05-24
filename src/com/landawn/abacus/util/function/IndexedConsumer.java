@@ -22,16 +22,16 @@ import com.landawn.abacus.util.N;
  * 
  * @author Haiyang Li
  */
-public interface IndexedConsumer<T, A> {
+public interface IndexedConsumer<T> {
 
-    void accept(int idx, T e, A ac);
+    void accept(int idx, T e);
 
-    default IndexedConsumer<T, A> andThen(IndexedConsumer<T, A> after) {
+    default IndexedConsumer<T> andThen(IndexedConsumer<? super T> after) {
         N.requireNonNull(after);
 
-        return (idx, e, a) -> {
-            accept(idx, e, a);
-            after.accept(idx, e, a);
+        return (idx, e) -> {
+            accept(idx, e);
+            after.accept(idx, e);
         };
     }
 }
