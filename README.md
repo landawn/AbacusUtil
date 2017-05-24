@@ -1,5 +1,7 @@
 # Abacus-Util
 
+A general programming library/framework in Java. It's simple, powerful and easy to use with concise APIs
+
 Docs: http://www.landawn.com
 
 ## Features:
