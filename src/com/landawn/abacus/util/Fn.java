@@ -109,6 +109,27 @@ public final class Fn {
         }
     };
 
+    private static final com.landawn.abacus.util.function.Function<Map.Entry<Object, Object>, Object> KEY = new com.landawn.abacus.util.function.Function<Map.Entry<Object, Object>, Object>() {
+        @Override
+        public Object apply(Map.Entry<Object, Object> t) {
+            return t.getKey();
+        }
+    };
+
+    private static final com.landawn.abacus.util.function.Function<Map.Entry<Object, Object>, Object> VALUE = new com.landawn.abacus.util.function.Function<Map.Entry<Object, Object>, Object>() {
+        @Override
+        public Object apply(Map.Entry<Object, Object> t) {
+            return t.getValue();
+        }
+    };
+
+    private static final com.landawn.abacus.util.function.BiFunction<Object, Object, Pair<Object, Object>> PAIR = new com.landawn.abacus.util.function.BiFunction<Object, Object, Pair<Object, Object>>() {
+        @Override
+        public Pair<Object, Object> apply(Object key, Object value) {
+            return Pair.of(key, value);
+        }
+    };
+
     @SuppressWarnings("rawtypes")
     private static final com.landawn.abacus.util.function.Predicate ALWAYS_TRUE = new com.landawn.abacus.util.function.Predicate() {
         @Override
@@ -178,6 +199,21 @@ public final class Fn {
 
     public static <T> com.landawn.abacus.util.function.Function<T, T> identity() {
         return IDENTITY;
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static <K, V> com.landawn.abacus.util.function.Function<Entry<K, V>, K> key() {
+        return (com.landawn.abacus.util.function.Function) KEY;
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static <K, V> com.landawn.abacus.util.function.Function<Entry<K, V>, V> value() {
+        return (com.landawn.abacus.util.function.Function) VALUE;
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static <K, V> com.landawn.abacus.util.function.BiFunction<K, V, Pair<K, V>> pair() {
+        return (com.landawn.abacus.util.function.BiFunction) PAIR;
     }
 
     public static <T, U> com.landawn.abacus.util.function.Function<T, U> cast(final Class<U> clazz) {

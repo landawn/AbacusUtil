@@ -5,7 +5,9 @@
 
 2, Rename SQLExecutor.ExMapper to Mapper.
 
-3, Improvements and bug fix.
+3, Refactoring IndexedPredicate/IndexedFunction/IndexedConsumer/...
+
+4, Improvements and bug fix.
 
 
 ========Changes in 0.9.66=========================================================================
