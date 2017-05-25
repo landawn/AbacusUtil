@@ -65,7 +65,7 @@ addByStream,    0.002,      0.001,      0.499,      0.104,      0.015,      0.00
 [HttpClient]: http://www.landawn.com/HttpClient_view.html
 [N]:http://www.landawn.com/N_view.html
 
-[BooleanList] : http://www.landawn.com/BooleanList_view.html
+[BooleanList]: http://www.landawn.com/BooleanList_view.html
 [CharList]: http://www.landawn.com/CharList_view.html
 [ByteList]: http://www.landawn.com/ByteList_view.html
 [ShortList]: http://www.landawn.com/ShortList_view.html
