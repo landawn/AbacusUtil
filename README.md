@@ -57,7 +57,7 @@ compile 'com.landawn:abacus-android-se:0.9.66'
 
 ## Usage:
 
-* Benchmark test by [Profiler][]:
+### Benchmark test by [Profiler][]:
 
 One line: Easy, Simple and Accurate by running the test multiple rounds:
 ```java
@@ -82,7 +82,7 @@ addByStream,    0.002,      0.001,      0.499,      0.104,      0.015,      0.00
 ========================================================================================================================
 ```
 
-* Code generator for entity classes with getter/setter methods: [CodeGenerator](http://www.landawn.com/api-docs/com/landawn/abacus/util/CodeGenerator.html). Here are the at least benefits of generating code by tool:
+### Code generator for entity classes with getter/setter methods: [CodeGenerator](http://www.landawn.com/api-docs/com/landawn/abacus/util/CodeGenerator.html). Here are the at least benefits of generating code by tool:
 
 1. Productivity: generate tens, even hundreds of lines of code by couple of lines of codes in one minute.
 
@@ -106,9 +106,7 @@ OR:
 public class Account {
     private String firstName;
     private String lastName;
-    private java.util.Date birthdate;
-    private String email;
-    private String address;
+    private Date birthdate;
     private Map<String, List<Date>> attrs;
 }
 
