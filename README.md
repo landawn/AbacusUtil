@@ -90,8 +90,6 @@ addByStream,    0.002,      0.001,      0.499,      0.104,      0.015,      0.00
 
 3. Bug free. No test is required for the auto-generated codes and no test coverage is counted. 
 
-4. Actually, the auto-generated code can be built to jar file directly. Things could be as beautiful as you could imagine. 
-
 ```java
 File srcDir = new File("./src");
 String packageName = "com.x.y";
