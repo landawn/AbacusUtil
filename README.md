@@ -6,7 +6,7 @@ Docs: http://www.landawn.com
 
 ## Features:
 * Benchmark test.
-* Most daily used APIs: [IOUtil][IOUtil], Multiset, LongMultiset, BiMap, Multimap, ImmutableList, ImmutableSet, ImmutableMap, Sheet, Pair, Triple, Tuple, Splitter, Joiner, Builder, Difference, Profiler, AsyncExecutor, CompletableFuture, Futures, CodeGenerator, HttpClient, N ...
+* Most daily used APIs: [IOUtil][], Multiset, LongMultiset, BiMap, Multimap, ImmutableList, ImmutableSet, ImmutableMap, Sheet, Pair, Triple, Tuple, Splitter, Joiner, Builder, Difference, Profiler, AsyncExecutor, CompletableFuture, Futures, CodeGenerator, HttpClient, N ...
 
 ## Usage:
 * Benchmark test:
@@ -33,4 +33,4 @@ addByStream,    0.002,      0.001,      0.499,      0.104,      0.015,      0.00
 ========================================================================================================================
 ```
 
-[IOUtil: http://www.landawn.com/IOUtil_view.html
+[IOUtil]: http://www.landawn.com/IOUtil_view.html
