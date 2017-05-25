@@ -8,6 +8,12 @@ Docs: http://www.landawn.com
 
 * Most daily used APIs: [IOUtil][], [Multiset][], [LongMultiset][], [BiMap][], [Multimap][], [ImmutableList][], [ImmutableSet][], [ImmutableMap][], [Sheet][], [Pair][], [Triple][], [Tuple][], [Splitter][], [Joiner][], [Builder][], [Difference][], [Profiler][], [AsyncExecutor][], [CompletableFuture][], [Futures][], [CodeGenerator][], [HttpClient][], [N][] ...
 
+* Primitive List: [BooleanList][], [CharList][], [ByteList][], [ShortList][], [IntList][], [LongList][], [FloatList][],[DoubleList][], [ExList][] and [Seq][].
+
+* Streams, both sequential and parallel, are supported for JDK7/Anrdoid and primitive types with more functions: [Stream][], [CharStream][], [ByteStream][], [ShortStream][], [IntStream][], [LongStream][], [FloatStream][], [DoubleStream][] , [Fn][] and more [Collectors][].
+
+* Programming in Android: [SQLiteExecutor][], [SQLBuilder][], [Async][], [CompletableFuture][], [Futures][], [EventBus][], [Observer][], and [Fu][]
+
 * Benchmark test.
 
 ## Usage:
@@ -58,3 +64,15 @@ addByStream,    0.002,      0.001,      0.499,      0.104,      0.015,      0.00
 [CodeGenerator]: http://www.landawn.com/CodeGenerator_view.html
 [HttpClient]: http://www.landawn.com/HttpClient_view.html
 [N]:http://www.landawn.com/N_view.html
+
+[BooleanList] : http://www.landawn.com/BooleanList_view.html
+[CharList]: http://www.landawn.com/CharList_view.html
+[ByteList]: http://www.landawn.com/ByteList_view.html
+[ShortList]: http://www.landawn.com/ShortList_view.html
+[IntList]: http://www.landawn.com/IntList_view.html
+[LongList]: http://www.landawn.com/LongList_view.html
+[FloatList]: http://www.landawn.com/FloatList_view.html
+[DoubleList]: http://www.landawn.com/DoubleList_view.html
+[ExList]: http://www.landawn.com/ExList_view.html
+[Seq]: http://www.landawn.com/Seq_view.html
+
