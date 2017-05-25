@@ -56,7 +56,9 @@ compile 'com.landawn:abacus-android-se:0.9.66'
 ```
 
 ## Usage:
-* Benchmark test:
+
+* Benchmark test by [Profiler][]:
+
 One line: Easy, Simple and Accurate by running the test multiple rounds:
 ```java
 Profiler.run(threadNum, loopNum, roundNum, "addByStream", () -> addByStream()).printResult();
@@ -79,6 +81,41 @@ totalElapsedTime: 60.736
 addByStream,    0.002,      0.001,      0.499,      0.104,      0.015,      0.007,      0.003,      0.003,      0.001,      0.001,      0.001,      0.001,      0.001,      0.001,      
 ========================================================================================================================
 ```
+
+* Code generator for entity classes with getter/setter methods: [CodeGenerator](http://www.landawn.com/api-docs/com/landawn/abacus/util/CodeGenerator.html). Here are the at least benefits of generating code by tool:
+
+1. Productivity: generate tens, even hundreds of lines of code by couple of lines of codes in one minute.
+
+2. Maintainability: It's easy and simple to add/remove fields or change types of fields. And all the codes follow the same format.
+
+3. Bug free. No test is required for the auto-generated codes and no test coverage is counted. 
+
+4. Actually, the auto-generated code can be built to jar file directly. Things could be as beautiful as you could imagine. 
+
+```java
+File srcDir = new File("./src");
+String packageName = "com.x.y";
+
+Map<String, Object> fields = N.asLinkedHashMap("firstName", String.class, "lastName", String.class, "birthdate", Date.class, "attrs", "Map<String, List<java.sql.Date>>");
+CodeGenerator.generateEntity(srcDir, packageName, "Account", fields);
+```
+OR:
+
+```java
+// Prepare the class with fields first:
+public class Account {
+    private String firstName;
+    private String lastName;
+    private java.util.Date birthdate;
+    private String email;
+    private String address;
+    private Map<String, List<Date>> attrs;
+}
+
+// Then generate the constructors/getter/setter methods by one line code:
+CodeGenerator.writeClassMethod(srcDir, Account.class);
+```
+
 
 [IOUtil]: http://www.landawn.com/IOUtil_view.html
 [Multiset]: http://www.landawn.com/Multiset_view.html
