@@ -82,7 +82,7 @@ addByStream,    0.002,      0.001,      0.499,      0.104,      0.015,      0.00
 ========================================================================================================================
 ```
 
-### Code generator for entity classes with getter/setter methods: [CodeGenerator](http://www.landawn.com/api-docs/com/landawn/abacus/util/CodeGenerator.html). Here are the at least benefits of generating code by tool:
+### [CodeGenerator](http://www.landawn.com/api-docs/com/landawn/abacus/util/CodeGenerator.html) for entity classes with getter/setter methods. Here are the at least benefits of generating code by tool:
 
 1. Productivity: generate tens, even hundreds of lines of code by couple of lines of codes in one minute.
 
