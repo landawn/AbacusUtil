@@ -112,6 +112,20 @@ public class Account {
 CodeGenerator.writeClassMethod(srcDir, Account.class);
 ```
 
+### Programming in Android with [retrolambda](https://github.com/orfjackal/retrolambda)
+
+```java
+Observer.of(inputEditText).debounce(3000).afterTextChanged(s -> {
+    TPExecutor.execute(() -> searchService.search(s, ...))
+        .thenRunWithUIExecutor((resp, error) -> {
+            if (error != null) {
+                // handle the error case.
+            }
+            
+            // do other stuffs to display the search result.            
+        });
+});
+```
 
 [IOUtil]: http://www.landawn.com/IOUtil_view.html
 [Multiset]: http://www.landawn.com/Multiset_view.html
