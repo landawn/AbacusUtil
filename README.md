@@ -124,6 +124,8 @@ Account account3 = N.fromXML(Account.class, xml);
 assertEquals(account, account3);
 ```
 
+More see: [ParserFactory](http://www.landawn.com/api-docs/com/landawn/abacus/parser/ParserFactory.html)
+
 ### SQLBuilder/SQLExecutor/Mapper
 A simple CRUD(create/read/update/delete) sample by SQLExecutor
 
@@ -163,7 +165,6 @@ Observer.of(inputEditText).debounce(3000).afterTextChanged(s -> {
 sqliteExecutor.queryForEntity(User.class, N.asList("firstName", "lastName"), eq("id", 1));
 ```
 
-More see: [ParserFactory](http://www.landawn.com/api-docs/com/landawn/abacus/parser/ParserFactory.html)
 
 [IOUtil]: http://www.landawn.com/IOUtil_view.html
 [Multiset]: http://www.landawn.com/Multiset_view.html
