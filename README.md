@@ -132,12 +132,11 @@ More see: [ParserFactory](http://www.landawn.com/api-docs/com/landawn/abacus/par
 ```java
 
 List<String> myList = N.asList("a1", "a2", "b1", "c2", "c1");
-myList
-    .stream()
-    .filter(s -> s.startsWith("c"))
-    .map(N::toUpperCase)
-    .sorted()
-    .forEach(N::println);
+myList.stream()
+      .filter(s -> s.startsWith("c"))
+      .map(N::toUpperCase)
+      .sorted()
+      .forEach(N::println);
 // C1
 // C2
 ```
