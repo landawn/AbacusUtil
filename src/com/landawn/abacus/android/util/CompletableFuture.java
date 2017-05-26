@@ -57,29 +57,29 @@ public class CompletableFuture<T> implements Future<T> {
         this.asyncExecutor = asyncExecutor;
     }
 
-    public static CompletableFuture<Void> run(final Runnable action) {
-        return run(action, Async.SERIAL_EXECUTOR);
-    }
-
-    public static <T> CompletableFuture<T> run(final Try.Callable<T> action) {
-        return run(action, Async.SERIAL_EXECUTOR);
-    }
-
-    public static CompletableFuture<Void> run(final Runnable action, final Executor executor) {
-        final FutureTask<Void> futureTask = new FutureTask<>(action, null);
-
-        executor.execute(futureTask);
-
-        return new CompletableFuture<>(futureTask, null, executor);
-    }
-
-    public static <T> CompletableFuture<T> run(final Try.Callable<T> action, final Executor executor) {
-        final FutureTask<T> futureTask = new FutureTask<>(action);
-
-        executor.execute(futureTask);
-
-        return new CompletableFuture<>(futureTask, null, executor);
-    }
+    //    public static CompletableFuture<Void> run(final Runnable action) {
+    //        return run(action, Async.SERIAL_EXECUTOR);
+    //    }
+    //
+    //    public static <T> CompletableFuture<T> run(final Try.Callable<T> action) {
+    //        return run(action, Async.SERIAL_EXECUTOR);
+    //    }
+    //
+    //    public static CompletableFuture<Void> run(final Runnable action, final Executor executor) {
+    //        final FutureTask<Void> futureTask = new FutureTask<>(action, null);
+    //
+    //        executor.execute(futureTask);
+    //
+    //        return new CompletableFuture<>(futureTask, null, executor);
+    //    }
+    //
+    //    public static <T> CompletableFuture<T> run(final Try.Callable<T> action, final Executor executor) {
+    //        final FutureTask<T> futureTask = new FutureTask<>(action);
+    //
+    //        executor.execute(futureTask);
+    //
+    //        return new CompletableFuture<>(futureTask, null, executor);
+    //    }
 
     /**
      * 
@@ -856,11 +856,11 @@ public class CompletableFuture<T> implements Future<T> {
         return withTPExecutor().runAfterEither(other, action);
     }
 
-    public <U> CompletableFuture<Void> runWithTPExecutorAfterEither(final CompletableFuture<? extends T> other, final BiConsumer<? super T, Throwable> action) {
+    public <U> CompletableFuture<Void> runWithTPExecutorAfterEither(final CompletableFuture<? extends T> other, final Consumer<? super T> action) {
         return withTPExecutor().runAfterEither(other, action);
     }
 
-    public <U> CompletableFuture<Void> runWithTPExecutorAfterEither(final CompletableFuture<? extends T> other, final Consumer<? super T> action) {
+    public <U> CompletableFuture<Void> runWithTPExecutorAfterEither(final CompletableFuture<? extends T> other, final BiConsumer<? super T, Throwable> action) {
         return withTPExecutor().runAfterEither(other, action);
     }
 
@@ -1170,11 +1170,19 @@ public class CompletableFuture<T> implements Future<T> {
         return with(Async.SERIAL_EXECUTOR);
     }
 
+    public CompletableFuture<T> withSerialExecutor(final long delay) {
+        return with(Async.SERIAL_EXECUTOR, delay, TimeUnit.MILLISECONDS);
+    }
+
     /**
      * With Thread Pool Executor.
      * @return
      */
     public CompletableFuture<T> withTPExecutor() {
         return with(Async.TP_EXECUTOR);
+    }
+
+    public CompletableFuture<T> withTPExecutor(final long delay) {
+        return with(Async.TP_EXECUTOR, delay, TimeUnit.MILLISECONDS);
     }
 }
