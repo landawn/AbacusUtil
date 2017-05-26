@@ -112,6 +112,39 @@ public class Account {
 CodeGenerator.writeClassMethod(srcDir, Account.class);
 ```
 
+### A quick/fast way to/from JSON/XML.
+```java
+String json = N.toJSON(account); // {"firstName":"Jack", "lastName":"Do", "birthDate":1495815803177}
+
+Account account2 = N.fromJSON(Account.class, json);
+assertEquals(account, account2);
+
+String xml = N.toXML(account); // <account><firstName>Jack</firstName><lastName>Do</lastName><birthDate>1495815803177</birthDate></account>
+Account account3 = N.fromXML(Account.class, xml);
+assertEquals(account, account3);
+```
+
+### SQLBuilder/SQLExecutor/Mapper
+A simple CRUD(create/read/update/delete) sample by SQLExecutor
+
+```java
+Account account = createAccount();
+// create
+String sql_insert = insert("gui", "firstName", "lastName", "lastUpdateTime").into(Account.class).sql();
+sqlExecutor.insert(sql_insert, account);
+// read
+String sql_selectByGUI = selectFrom(Account.class).where(L.eq("gui")).sql();
+Account dbAccount = sqlExecutor.queryForEntity(Account.class, sql_selectByGUI, account);
+// update
+String sql_updateByLastName = update(Account.class).set("firstName").where(L.eq("lastName")).sql();
+dbAccount.setFirstName("newFirstName");
+sqlExecutor.update(sql_updateByLastName, dbAccount);
+// delete
+String sql_deleteByFirstName = deleteFrom(Account.class).where(L.eq("firstName)).sql();
+sqlExecutor.update(sql_deleteByFirstName, dbAccount);
+```
+
+
 ### Programming in Android with [retrolambda](https://github.com/orfjackal/retrolambda)
 
 ```java
@@ -125,7 +158,12 @@ Observer.of(inputEditText).debounce(3000).afterTextChanged(s -> {
             // do other stuffs to display the search result.            
         });
 });
+
+// Get 'firstName' and 'lastName' of user with 'id' = 1.             
+sqliteExecutor.queryForEntity(User.class, N.asList("firstName", "lastName"), eq("id", 1));
 ```
+
+More see: [ParserFactory](http://www.landawn.com/api-docs/com/landawn/abacus/parser/ParserFactory.html)
 
 [IOUtil]: http://www.landawn.com/IOUtil_view.html
 [Multiset]: http://www.landawn.com/Multiset_view.html
