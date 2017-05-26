@@ -128,6 +128,20 @@ assertEquals(account, account3);
 
 More see: [ParserFactory](http://www.landawn.com/api-docs/com/landawn/abacus/parser/ParserFactory.html)
 
+### Functional Programming
+```java
+
+List<String> myList = N.asList("a1", "a2", "b1", "c2", "c1");
+myList
+    .stream()
+    .filter(s -> s.startsWith("c"))
+    .map(N::toUpperCase)
+    .sorted()
+    .forEach(N::println);
+// C1
+// C2
+```
+
 ### The Best SQLBuilder/SQLExecutor/Mapper Ever
 A simple CRUD(create/read/update/delete) sample by SQLExecutor
 
@@ -147,7 +161,6 @@ sqlExecutor.update(sql_updateByLastName, dbAccount);
 String sql_deleteByFirstName = deleteFrom(Account.class).where(L.eq("firstName)).sql();
 sqlExecutor.update(sql_deleteByFirstName, dbAccount);
 ```
-
 
 ### Programming in Android with [retrolambda](https://github.com/orfjackal/retrolambda)
 
