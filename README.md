@@ -78,7 +78,7 @@ totalElapsedTime: 60.736
 addByStream,    0.002,      0.001,      0.499,      0.104,      0.015,      0.007,      0.003,      0.003,      0.001,      0.001,      0.001,      0.001,      0.001,      0.001,      
 ========================================================================================================================
 ```
-### The most simple HttpClient:
+### The most simple [HttpClient][]:
 
 ```java
 HttpClient.of("https://api.github.com/octocat").get()
