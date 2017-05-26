@@ -141,7 +141,7 @@ myList.stream()
 // C2
 ```
 
-### The Best SQLBuilder/SQLExecutor/Mapper Ever
+### The Best [SQLBuilder][]/[SQLExecutor][]/Mapper Ever
 A simple CRUD(create/read/update/delete) sample by SQLExecutor
 
 ```java
@@ -179,7 +179,7 @@ Observer.of(inputEditText).debounce(3000).afterTextChanged(s -> {
 sqliteExecutor.queryForEntity(User.class, N.asList("firstName", "lastName"), eq("id", 1));
 ```
 
-### NoSQL: MongoDB/Cassandra/Couchbase...
+### NoSQL: [MongoDB][MongoDBExecutor]/[Cassandra][CassandraExecutor]/[Couchbase][CouchbaseExecutor]...
 A simple CRUD(create/read/update/delete) sample for MongoDB:
 ```java
 // create
