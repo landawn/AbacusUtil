@@ -258,7 +258,7 @@ assertFalse(collExecutor.exists(dbAccount.getId()));
 [CSVUtil]: http://www.landawn.com/CSVUtil_view.html
 
 [MongoDBExecutor]: http://www.landawn.com/MongoDBExecutor_view.html
-[CassandraExecutor]: http://www.landawn.com/MongoDBExecutor_view.html
+[CassandraExecutor]: http://www.landawn.com/CassandraExecutor_view.html
 [CQLBuilder]: http://www.landawn.com/CQLBuilder_view.html
 [CouchbaseExecutor]: http://www.landawn.com/CouchbaseExecutor_view.html
 [HBaseExecutor]: http://www.landawn.com/HBaseExecutor_view.html
