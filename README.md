@@ -11,7 +11,7 @@ A general programming library/framework in Java. It's simple, powerful and easy 
 
 * Streams, both sequential and parallel, are supported for JDK7/Anrdoid and primitive types with more functions: [Stream][], [CharStream][], [ByteStream][], [ShortStream][], [IntStream][], [LongStream][], [FloatStream][], [DoubleStream][] , [Fn][] and more [Collectors][].
 
-* Programming in Android: [SQLiteExecutor][], [SQLBuilder][], [Async][], [CompletableFuture][], [Futures][], [EventBus][], [Observer][], and [Fu][]
+* Programming in Android: [SQLiteExecutor][], [SQLBuilder][], [Async][], [CompletableFuture][], [Futures][], [EventBus][], [Observer][], [ObserverX][] and [Fu][]
 
 * SQL Builder/ORM: [SQLExecutor][], [SQLBuilder][], [DataSet][], [JdbcUtil][], [CSVUtil][]...
 
@@ -248,6 +248,7 @@ assertFalse(collExecutor.exists(dbAccount.getId()));
 [Futures]: http://www.landawn.com/Futures_Android_view.html
 [EventBus]: http://www.landawn.com/EventBus_view.html
 [Observer]: http://www.landawn.com/api-docs/com/landawn/abacus/android/util/Observer.html
+[ObserverX]: http://www.landawn.com/api-docs/com/landawn/abacus/android/util/ObserverX.html
 [Fu]: http://www.landawn.com/Fu_view.html
 
 [SQLExecutor]: http://www.landawn.com/SQLExecutor_view.html
