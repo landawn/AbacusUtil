@@ -165,6 +165,21 @@ Observer.of(inputEditText).debounce(3000).afterTextChanged(s -> {
 sqliteExecutor.queryForEntity(User.class, N.asList("firstName", "lastName"), eq("id", 1));
 ```
 
+### NoSQL: MongoDB/Cassandra/Couchbase...
+A simple CRUD(create/read/update/delete) sample for MongoDB:
+```java
+// create
+collExecutor.insert(account);
+// read
+Account dbAccount = collExecutor.get(Account.class, account.getId());
+// update
+dbAccount.setFirstName("newFirstName");
+collExecutor.update(dbAccount.getId(), N.asMap(FIRST_NAME, dbAccount.getFirstName()));
+// delete
+collExecutor.delete(dbAccount.getId());
+// check
+assertFalse(collExecutor.exists(dbAccount.getId()));
+```
 
 [IOUtil]: http://www.landawn.com/IOUtil_view.html
 [Multiset]: http://www.landawn.com/Multiset_view.html
