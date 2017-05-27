@@ -242,6 +242,10 @@ public final class ExList<T> extends AbstractList<Consumer<? super T>, Predicate
         return Seq.of(this);
     }
 
+    public Seq<T> slice(int fromIndex, int toIndex) {
+        return Seq.of(subList(fromIndex, toIndex));
+    }
+
     @Override
     public T get(int index) {
         rangeCheck(index);

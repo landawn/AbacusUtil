@@ -63,6 +63,9 @@ import com.landawn.abacus.util.ExList;
 import com.landawn.abacus.util.FloatList;
 import com.landawn.abacus.util.FloatSummaryStatistics;
 import com.landawn.abacus.util.Fn;
+import com.landawn.abacus.util.ImmutableList;
+import com.landawn.abacus.util.ImmutableMap;
+import com.landawn.abacus.util.ImmutableSet;
 import com.landawn.abacus.util.IntList;
 import com.landawn.abacus.util.IntSummaryStatistics;
 import com.landawn.abacus.util.Joiner;
@@ -278,6 +281,19 @@ public final class Collectors {
         return toCollection(supplier);
     }
 
+    public static <T> Collector<T, ?, ImmutableList<T>> toImmutableList() {
+        final Collector<T, ?, List<T>> downstream = toList();
+
+        final Function<List<T>, ImmutableList<T>> finisher = new Function<List<T>, ImmutableList<T>>() {
+            @Override
+            public ImmutableList<T> apply(List<T> t) {
+                return ImmutableList.of(t);
+            }
+        };
+
+        return collectingAndThen(downstream, finisher);
+    }
+
     /**
      * Returns a {@code Collector} that accumulates the input elements into a
      * new {@code Set}. There are no guarantees on the type, mutability,
@@ -312,6 +328,19 @@ public final class Collectors {
         };
 
         return toCollection(supplier);
+    }
+
+    public static <T> Collector<T, ?, ImmutableSet<T>> toImmutableSet() {
+        final Collector<T, ?, Set<T>> downstream = toSet();
+
+        final Function<Set<T>, ImmutableSet<T>> finisher = new Function<Set<T>, ImmutableSet<T>>() {
+            @Override
+            public ImmutableSet<T> apply(Set<T> t) {
+                return ImmutableSet.of(t);
+            }
+        };
+
+        return collectingAndThen(downstream, finisher);
     }
 
     public static <T> Collector<T, ?, Queue<T>> toQueue() {
@@ -1035,7 +1064,7 @@ public final class Collectors {
      * @return
      * @throws UnsupportedOperationException it's used in parallel stream.
      */
-    public static <T> Collector<T, ?, List<T>> last(final int n) {
+    public static <T> Collector<T, ?, List<T>> _last(final int n) {
         N.checkArgument(n >= 0, "'n' can't be negative");
 
         final Supplier<ArrayDeque<T>> supplier = new Supplier<ArrayDeque<T>>() {
@@ -3466,7 +3495,7 @@ public final class Collectors {
      * @throws UnsupportedOperationException it's used in parallel stream.
      * @since 0.5.1
      */
-    public static <T> Collector<T, ?, List<T>> dominators(final BiPredicate<? super T, ? super T> isDominator) {
+    public static <T> Collector<T, ?, List<T>> _dominators(final BiPredicate<? super T, ? super T> isDominator) {
         final Supplier<List<T>> supplier = new Supplier<List<T>>() {
             private volatile boolean isCalled = false;
 
@@ -4076,8 +4105,8 @@ public final class Collectors {
         return toMap(keyExtractor, valueMapper);
     }
 
-    public static <K, V, A> Collector<Map.Entry<K, V>, A, Map<K, V>> toMap(final BinaryOperator<V> mergeFunction) {
-        return (Collector<Map.Entry<K, V>, A, Map<K, V>>) Collectors.toMap(new Function<Map.Entry<K, V>, K>() {
+    public static <K, V> Collector<Map.Entry<K, V>, ?, Map<K, V>> toMap(final BinaryOperator<V> mergeFunction) {
+        return Collectors.toMap(new Function<Map.Entry<K, V>, K>() {
             @Override
             public K apply(Entry<K, V> entry) {
                 return entry.getKey();
@@ -4354,6 +4383,87 @@ public final class Collectors {
                 return N.asList(valueMapper.apply(t));
             }
         }, mergeFunction, mapFactory);
+    }
+
+    public static <K, V> Collector<Map.Entry<? extends K, ? extends V>, ?, ImmutableMap<K, V>> toImmutableMap() {
+        final Collector<Map.Entry<? extends K, ? extends V>, ?, Map<K, V>> downstream = toMap();
+
+        final Function<Map<K, V>, ImmutableMap<K, V>> finisher = new Function<Map<K, V>, ImmutableMap<K, V>>() {
+            @Override
+            public ImmutableMap<K, V> apply(Map<K, V> t) {
+                return ImmutableMap.of(t);
+            }
+        };
+
+        return collectingAndThen(downstream, finisher);
+    }
+
+    public static <K, V> Collector<Map.Entry<K, V>, ?, ImmutableMap<K, V>> toImmutableMap(final BinaryOperator<V> mergeFunction) {
+        final Collector<Map.Entry<K, V>, ?, Map<K, V>> downstream = toMap(mergeFunction);
+
+        final Function<Map<K, V>, ImmutableMap<K, V>> finisher = new Function<Map<K, V>, ImmutableMap<K, V>>() {
+            @Override
+            public ImmutableMap<K, V> apply(Map<K, V> t) {
+                return ImmutableMap.of(t);
+            }
+        };
+
+        return collectingAndThen(downstream, finisher);
+    }
+
+    public static <T, K, U> Collector<T, ?, ImmutableMap<K, U>> toImmutableMap(Function<? super T, ? extends K> keyExtractor,
+            Function<? super T, ? extends U> valueMapper) {
+        final Collector<T, ?, Map<K, U>> downstream = toMap(keyExtractor, valueMapper);
+
+        final Function<Map<K, U>, ImmutableMap<K, U>> finisher = new Function<Map<K, U>, ImmutableMap<K, U>>() {
+            @Override
+            public ImmutableMap<K, U> apply(Map<K, U> t) {
+                return ImmutableMap.of(t);
+            }
+        };
+
+        return collectingAndThen(downstream, finisher);
+    }
+
+    public static <T, K, U> Collector<T, ?, ImmutableMap<K, U>> toImmutableMap(Function<? super T, ? extends K> keyExtractor,
+            Function<? super T, ? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
+        final Collector<T, ?, Map<K, U>> downstream = toMap(keyExtractor, valueMapper, mergeFunction);
+
+        final Function<Map<K, U>, ImmutableMap<K, U>> finisher = new Function<Map<K, U>, ImmutableMap<K, U>>() {
+            @Override
+            public ImmutableMap<K, U> apply(Map<K, U> t) {
+                return ImmutableMap.of(t);
+            }
+        };
+
+        return collectingAndThen(downstream, finisher);
+    }
+
+    public static <K, V> Collector<Map.Entry<K, V>, ?, ImmutableMap<K, List<V>>> toImmutableMap2() {
+        final Collector<Map.Entry<K, V>, ?, Map<K, List<V>>> downstream = toMap2();
+
+        final Function<Map<K, List<V>>, ImmutableMap<K, List<V>>> finisher = new Function<Map<K, List<V>>, ImmutableMap<K, List<V>>>() {
+            @Override
+            public ImmutableMap<K, List<V>> apply(Map<K, List<V>> t) {
+                return ImmutableMap.of(t);
+            }
+        };
+
+        return collectingAndThen(downstream, finisher);
+    }
+
+    public static <T, K, V> Collector<T, ?, ImmutableMap<K, List<V>>> toImmutableMap2(final Function<? super T, ? extends K> keyExtractor,
+            final Function<? super T, ? extends V> valueMapper) {
+        final Collector<T, ?, Map<K, List<V>>> downstream = toMap2(keyExtractor, valueMapper);
+
+        final Function<Map<K, List<V>>, ImmutableMap<K, List<V>>> finisher = new Function<Map<K, List<V>>, ImmutableMap<K, List<V>>>() {
+            @Override
+            public ImmutableMap<K, List<V>> apply(Map<K, List<V>> t) {
+                return ImmutableMap.of(t);
+            }
+        };
+
+        return collectingAndThen(downstream, finisher);
     }
 
     /**

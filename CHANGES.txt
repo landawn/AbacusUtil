@@ -7,7 +7,14 @@
 
 3, Refactoring IndexedPredicate/IndexedFunction/IndexedConsumer/...
 
-4, Improvements and bug fix.
+4, Add slice(fromIndex, toIndex) to ExList
+
+5, Rename indexed to _indexed in Fn and last to _last, dominators to _dominators in Collectors.
+   All the Function/Predicate/Collector... which can only be used in sequential stream start with _. 
+
+6, Add toImmutableList/toImmutableSet/toImmutableMap to Collectors
+
+7, Improvements and bug fix.
 
 
 ========Changes in 0.9.66=========================================================================

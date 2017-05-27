@@ -1333,7 +1333,6 @@ public final class Fn {
         }
 
         /**
-         * Returns a stateful predicate which should not be used in parallel stream.
          * 
          * @param predicate
          * @param limit
@@ -1354,7 +1353,6 @@ public final class Fn {
         }
 
         /**
-         * Returns a stateful predicate which should not be used in parallel stream.
          * 
          * @param predicate
          * @param limit
@@ -1380,7 +1378,7 @@ public final class Fn {
          * @param predicate
          * @return
          */
-        public static <T> com.landawn.abacus.util.function.Predicate<T> indexed(final com.landawn.abacus.util.function.IndexedPredicate<T> predicate) {
+        public static <T> com.landawn.abacus.util.function.Predicate<T> _indexed(final com.landawn.abacus.util.function.IndexedPredicate<T> predicate) {
             N.requireNonNull(predicate);
 
             return new com.landawn.abacus.util.function.Predicate<T>() {
@@ -1472,8 +1470,7 @@ public final class Fn {
             return ALWAYS_FALSE;
         }
 
-        /**
-         * Returns a stateful predicate which should not be used in parallel stream.
+        /** 
          * 
          * @param predicate
          * @param limit
@@ -1494,7 +1491,6 @@ public final class Fn {
         }
 
         /**
-         * Returns a stateful predicate which should not be used in parallel stream.
          * 
          * @param predicate
          * @param limit
@@ -1520,7 +1516,7 @@ public final class Fn {
          * @param predicate
          * @return
          */
-        public static <U, T> com.landawn.abacus.util.function.BiPredicate<U, T> indexed(
+        public static <U, T> com.landawn.abacus.util.function.BiPredicate<U, T> _indexed(
                 final com.landawn.abacus.util.function.IndexedBiPredicate<U, T> predicate) {
             N.requireNonNull(predicate);
 
@@ -1566,7 +1562,6 @@ public final class Fn {
         }
 
         /**
-         * Returns a stateful predicate which should not be used in parallel stream.
          * 
          * @param predicate
          * @param limit
@@ -1587,7 +1582,6 @@ public final class Fn {
         }
 
         /**
-         * Returns a stateful predicate which should not be used in parallel stream.
          * 
          * @param predicate
          * @param limit
