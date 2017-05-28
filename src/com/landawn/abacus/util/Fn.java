@@ -477,6 +477,14 @@ public final class Fn {
         return Collectors.toMultiset();
     }
 
+    public static <K, V> Collector<Map.Entry<? extends K, ? extends V>, ?, Map<K, V>> toMap() {
+        return Collectors.toMap();
+    }
+
+    public static <K, V> Collector<Map.Entry<K, V>, ?, Map<K, List<V>>> toMap2() {
+        return Collectors.toMap2();
+    }
+
     public static final class Factory {
 
         private static final IntFunction<boolean[]> BOOLEAN_ARRAY = new IntFunction<boolean[]>() {
