@@ -111,11 +111,11 @@ public class Joiner {
      *         element added to the {@code StringJoiner} value
      * @throws NullPointerException if {@code delimiter} is {@code null}
      */
-    public Joiner(CharSequence delimiter) {
+    Joiner(CharSequence delimiter) {
         this(delimiter, DEFAULT_KEY_VALUE_DELIMITER);
     }
 
-    public Joiner(final CharSequence delimiter, CharSequence keyValueDelimiter) {
+    Joiner(final CharSequence delimiter, CharSequence keyValueDelimiter) {
         this(delimiter, keyValueDelimiter, "", "");
     }
 
@@ -134,11 +134,11 @@ public class Joiner {
      * @throws NullPointerException if {@code prefix}, {@code delimiter}, or
      *         {@code suffix} is {@code null}
      */
-    public Joiner(CharSequence delimiter, CharSequence prefix, CharSequence suffix) {
+    Joiner(CharSequence delimiter, CharSequence prefix, CharSequence suffix) {
         this(delimiter, DEFAULT_KEY_VALUE_DELIMITER, prefix, suffix);
     }
 
-    public Joiner(CharSequence delimiter, CharSequence keyValueDelimiter, CharSequence prefix, CharSequence suffix) {
+    Joiner(CharSequence delimiter, CharSequence keyValueDelimiter, CharSequence prefix, CharSequence suffix) {
         N.requireNonNull(prefix, "The prefix must not be null");
         N.requireNonNull(delimiter, "The delimiter must not be null");
         N.requireNonNull(keyValueDelimiter, "The keyValueDelimiter must not be null");

@@ -1061,6 +1061,22 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
         return N.filter(elementData, fromIndex, toIndex, filter, max);
     }
 
+    public CharList map(final CharUnaryOperator mapper) {
+        return map(0, size, mapper);
+    }
+
+    public CharList map(final int fromIndex, final int toIndex, final CharUnaryOperator mapper) {
+        checkFromToIndex(fromIndex, toIndex);
+
+        final CharList result = new CharList(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(mapper.applyAsChar(elementData[i]));
+        }
+
+        return result;
+    }
+
     public <T> ExList<T> mapToObj(final CharFunction<? extends T> mapper) {
         return mapToObj(0, size, mapper);
     }

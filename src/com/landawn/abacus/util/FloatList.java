@@ -1059,6 +1059,22 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
         return N.filter(elementData, fromIndex, toIndex, filter, max);
     }
 
+    public FloatList map(final FloatUnaryOperator mapper) {
+        return map(0, size, mapper);
+    }
+
+    public FloatList map(final int fromIndex, final int toIndex, final FloatUnaryOperator mapper) {
+        checkFromToIndex(fromIndex, toIndex);
+
+        final FloatList result = new FloatList(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(mapper.applyAsFloat(elementData[i]));
+        }
+
+        return result;
+    }
+
     public <T> ExList<T> mapToObj(final FloatFunction<? extends T> mapper) {
         return mapToObj(0, size, mapper);
     }

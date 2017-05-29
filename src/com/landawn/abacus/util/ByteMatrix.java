@@ -19,6 +19,7 @@ import java.util.NoSuchElementException;
 import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.util.Pair.IntPair;
 import com.landawn.abacus.util.function.ByteBiFunction;
+import com.landawn.abacus.util.function.ByteFunction;
 import com.landawn.abacus.util.function.ByteTriFunction;
 import com.landawn.abacus.util.function.ByteUnaryOperator;
 import com.landawn.abacus.util.function.IntConsumer;
@@ -267,6 +268,94 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
                 }
             }
         }
+    }
+
+    public ByteMatrix map(final ByteUnaryOperator func) {
+        final byte[][] c = new byte[n][m];
+
+        if (isParallelable()) {
+            if (n <= m) {
+                IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int i) {
+                        for (int j = 0; j < m; j++) {
+                            c[i][j] = func.applyAsByte(a[i][j]);
+                        }
+                    }
+                });
+            } else {
+                IntStream.range(0, m).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int j) {
+                        for (int i = 0; i < n; i++) {
+                            c[i][j] = func.applyAsByte(a[i][j]);
+                        }
+                    }
+                });
+            }
+        } else {
+            if (n <= m) {
+                for (int i = 0; i < n; i++) {
+                    for (int j = 0; j < m; j++) {
+                        c[i][j] = func.applyAsByte(a[i][j]);
+                    }
+                }
+            } else {
+                for (int j = 0; j < m; j++) {
+                    for (int i = 0; i < n; i++) {
+                        c[i][j] = func.applyAsByte(a[i][j]);
+                    }
+                }
+            }
+        }
+
+        return ByteMatrix.of(c);
+    }
+
+    public <T> Matrix<T> mapToObj(final Class<T> cls, final ByteFunction<? extends T> func) {
+        final T[][] c = N.newArray(N.newArray(cls, 0).getClass(), n);
+
+        for (int i = 0; i < n; i++) {
+            c[i] = N.newArray(cls, m);
+        }
+
+        if (isParallelable()) {
+            if (n <= m) {
+                IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int i) {
+                        for (int j = 0; j < m; j++) {
+                            c[i][j] = func.apply(a[i][j]);
+                        }
+                    }
+                });
+            } else {
+                IntStream.range(0, m).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int j) {
+                        for (int i = 0; i < n; i++) {
+                            c[i][j] = func.apply(a[i][j]);
+                        }
+                    }
+                });
+            }
+        } else {
+            if (n <= m) {
+                for (int i = 0; i < n; i++) {
+                    for (int j = 0; j < m; j++) {
+                        c[i][j] = func.apply(a[i][j]);
+                    }
+                }
+            } else {
+                for (int j = 0; j < m; j++) {
+                    for (int i = 0; i < n; i++) {
+                        c[i][j] = func.apply(a[i][j]);
+                    }
+                }
+            }
+        }
+
+        return Matrix.of(c);
     }
 
     // Replaced by stream and stream2.

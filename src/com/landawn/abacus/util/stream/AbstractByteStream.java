@@ -656,7 +656,7 @@ abstract class AbstractByteStream extends ByteStream {
         final Supplier<Joiner> supplier = new Supplier<Joiner>() {
             @Override
             public Joiner get() {
-                return new Joiner(delimiter, prefix, suffix);
+                return Joiner.with(delimiter, prefix, suffix);
             }
         };
 

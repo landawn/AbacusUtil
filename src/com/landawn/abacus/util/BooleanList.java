@@ -915,6 +915,22 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
         return N.filter(elementData, fromIndex, toIndex, filter, max);
     }
 
+    public BooleanList map(final BooleanUnaryOperator mapper) {
+        return map(0, size, mapper);
+    }
+
+    public BooleanList map(final int fromIndex, final int toIndex, final BooleanUnaryOperator mapper) {
+        checkFromToIndex(fromIndex, toIndex);
+
+        final BooleanList result = new BooleanList(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(mapper.applyAsBoolean(elementData[i]));
+        }
+
+        return result;
+    }
+
     public <T> ExList<T> mapToObj(final BooleanFunction<? extends T> mapper) {
         return mapToObj(0, size, mapper);
     }

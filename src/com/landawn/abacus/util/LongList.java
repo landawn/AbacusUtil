@@ -1091,6 +1091,22 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
         return N.filter(elementData, fromIndex, toIndex, filter, max);
     }
 
+    public LongList map(final LongUnaryOperator mapper) {
+        return map(0, size, mapper);
+    }
+
+    public LongList map(final int fromIndex, final int toIndex, final LongUnaryOperator mapper) {
+        checkFromToIndex(fromIndex, toIndex);
+
+        final LongList result = new LongList(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(mapper.applyAsLong(elementData[i]));
+        }
+
+        return result;
+    }
+
     public <T> ExList<T> mapToObj(final LongFunction<? extends T> mapper) {
         return mapToObj(0, size, mapper);
     }

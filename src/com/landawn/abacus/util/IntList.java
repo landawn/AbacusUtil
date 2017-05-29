@@ -1261,6 +1261,22 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
         return N.filter(elementData, fromIndex, toIndex, filter, max);
     }
 
+    public IntList map(final IntUnaryOperator mapper) {
+        return map(0, size, mapper);
+    }
+
+    public IntList map(final int fromIndex, final int toIndex, final IntUnaryOperator mapper) {
+        checkFromToIndex(fromIndex, toIndex);
+
+        final IntList result = new IntList(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(mapper.applyAsInt(elementData[i]));
+        }
+
+        return result;
+    }
+
     public <T> ExList<T> mapToObj(final IntFunction<? extends T> mapper) {
         return mapToObj(0, size, mapper);
     }

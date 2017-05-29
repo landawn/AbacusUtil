@@ -1033,6 +1033,22 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
         return N.filter(elementData, fromIndex, toIndex, filter, max);
     }
 
+    public ShortList map(final ShortUnaryOperator mapper) {
+        return map(0, size, mapper);
+    }
+
+    public ShortList map(final int fromIndex, final int toIndex, final ShortUnaryOperator mapper) {
+        checkFromToIndex(fromIndex, toIndex);
+
+        final ShortList result = new ShortList(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(mapper.applyAsShort(elementData[i]));
+        }
+
+        return result;
+    }
+
     public <T> ExList<T> mapToObj(final ShortFunction<? extends T> mapper) {
         return mapToObj(0, size, mapper);
     }

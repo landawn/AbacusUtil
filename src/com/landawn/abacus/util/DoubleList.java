@@ -1033,6 +1033,22 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
         return N.filter(elementData, fromIndex, toIndex, filter, max);
     }
 
+    public DoubleList map(final DoubleUnaryOperator mapper) {
+        return map(0, size, mapper);
+    }
+
+    public DoubleList map(final int fromIndex, final int toIndex, final DoubleUnaryOperator mapper) {
+        checkFromToIndex(fromIndex, toIndex);
+
+        final DoubleList result = new DoubleList(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(mapper.applyAsDouble(elementData[i]));
+        }
+
+        return result;
+    }
+
     public <T> ExList<T> mapToObj(final DoubleFunction<? extends T> mapper) {
         return mapToObj(0, size, mapper);
     }

@@ -20,6 +20,7 @@ import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.util.Pair.IntPair;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.function.LongBiFunction;
+import com.landawn.abacus.util.function.LongFunction;
 import com.landawn.abacus.util.function.LongTriFunction;
 import com.landawn.abacus.util.function.LongUnaryOperator;
 import com.landawn.abacus.util.stream.ExIterator;
@@ -284,6 +285,94 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongStrea
                 }
             }
         }
+    }
+
+    public LongMatrix map(final LongUnaryOperator func) {
+        final long[][] c = new long[n][m];
+
+        if (isParallelable()) {
+            if (n <= m) {
+                IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int i) {
+                        for (int j = 0; j < m; j++) {
+                            c[i][j] = func.applyAsLong(a[i][j]);
+                        }
+                    }
+                });
+            } else {
+                IntStream.range(0, m).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int j) {
+                        for (int i = 0; i < n; i++) {
+                            c[i][j] = func.applyAsLong(a[i][j]);
+                        }
+                    }
+                });
+            }
+        } else {
+            if (n <= m) {
+                for (int i = 0; i < n; i++) {
+                    for (int j = 0; j < m; j++) {
+                        c[i][j] = func.applyAsLong(a[i][j]);
+                    }
+                }
+            } else {
+                for (int j = 0; j < m; j++) {
+                    for (int i = 0; i < n; i++) {
+                        c[i][j] = func.applyAsLong(a[i][j]);
+                    }
+                }
+            }
+        }
+
+        return LongMatrix.of(c);
+    }
+
+    public <T> Matrix<T> mapToObj(final Class<T> cls, final LongFunction<? extends T> func) {
+        final T[][] c = N.newArray(N.newArray(cls, 0).getClass(), n);
+
+        for (int i = 0; i < n; i++) {
+            c[i] = N.newArray(cls, m);
+        }
+
+        if (isParallelable()) {
+            if (n <= m) {
+                IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int i) {
+                        for (int j = 0; j < m; j++) {
+                            c[i][j] = func.apply(a[i][j]);
+                        }
+                    }
+                });
+            } else {
+                IntStream.range(0, m).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int j) {
+                        for (int i = 0; i < n; i++) {
+                            c[i][j] = func.apply(a[i][j]);
+                        }
+                    }
+                });
+            }
+        } else {
+            if (n <= m) {
+                for (int i = 0; i < n; i++) {
+                    for (int j = 0; j < m; j++) {
+                        c[i][j] = func.apply(a[i][j]);
+                    }
+                }
+            } else {
+                for (int j = 0; j < m; j++) {
+                    for (int i = 0; i < n; i++) {
+                        c[i][j] = func.apply(a[i][j]);
+                    }
+                }
+            }
+        }
+
+        return Matrix.of(c);
     }
 
     // Replaced by stream and stream2.

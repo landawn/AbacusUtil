@@ -655,7 +655,7 @@ abstract class AbstractShortStream extends ShortStream {
         final Supplier<Joiner> supplier = new Supplier<Joiner>() {
             @Override
             public Joiner get() {
-                return new Joiner(delimiter, prefix, suffix);
+                return Joiner.with(delimiter, prefix, suffix);
             }
         };
 

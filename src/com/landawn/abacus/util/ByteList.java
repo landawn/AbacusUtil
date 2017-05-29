@@ -1035,6 +1035,22 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
         return N.filter(elementData, fromIndex, toIndex, filter, max);
     }
 
+    public ByteList map(final ByteUnaryOperator mapper) {
+        return map(0, size, mapper);
+    }
+
+    public ByteList map(final int fromIndex, final int toIndex, final ByteUnaryOperator mapper) {
+        checkFromToIndex(fromIndex, toIndex);
+
+        final ByteList result = new ByteList(toIndex - fromIndex);
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            result.add(mapper.applyAsByte(elementData[i]));
+        }
+
+        return result;
+    }
+
     public <T> ExList<T> mapToObj(final ByteFunction<? extends T> mapper) {
         return mapToObj(0, size, mapper);
     }

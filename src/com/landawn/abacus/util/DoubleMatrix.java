@@ -19,6 +19,7 @@ import java.util.NoSuchElementException;
 import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.util.Pair.IntPair;
 import com.landawn.abacus.util.function.DoubleBiFunction;
+import com.landawn.abacus.util.function.DoubleFunction;
 import com.landawn.abacus.util.function.DoubleTriFunction;
 import com.landawn.abacus.util.function.DoubleUnaryOperator;
 import com.landawn.abacus.util.function.IntConsumer;
@@ -302,6 +303,94 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
                 }
             }
         }
+    }
+
+    public DoubleMatrix map(final DoubleUnaryOperator func) {
+        final double[][] c = new double[n][m];
+
+        if (isParallelable()) {
+            if (n <= m) {
+                IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int i) {
+                        for (int j = 0; j < m; j++) {
+                            c[i][j] = func.applyAsDouble(a[i][j]);
+                        }
+                    }
+                });
+            } else {
+                IntStream.range(0, m).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int j) {
+                        for (int i = 0; i < n; i++) {
+                            c[i][j] = func.applyAsDouble(a[i][j]);
+                        }
+                    }
+                });
+            }
+        } else {
+            if (n <= m) {
+                for (int i = 0; i < n; i++) {
+                    for (int j = 0; j < m; j++) {
+                        c[i][j] = func.applyAsDouble(a[i][j]);
+                    }
+                }
+            } else {
+                for (int j = 0; j < m; j++) {
+                    for (int i = 0; i < n; i++) {
+                        c[i][j] = func.applyAsDouble(a[i][j]);
+                    }
+                }
+            }
+        }
+
+        return DoubleMatrix.of(c);
+    }
+
+    public <T> Matrix<T> mapToObj(final Class<T> cls, final DoubleFunction<? extends T> func) {
+        final T[][] c = N.newArray(N.newArray(cls, 0).getClass(), n);
+
+        for (int i = 0; i < n; i++) {
+            c[i] = N.newArray(cls, m);
+        }
+
+        if (isParallelable()) {
+            if (n <= m) {
+                IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int i) {
+                        for (int j = 0; j < m; j++) {
+                            c[i][j] = func.apply(a[i][j]);
+                        }
+                    }
+                });
+            } else {
+                IntStream.range(0, m).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int j) {
+                        for (int i = 0; i < n; i++) {
+                            c[i][j] = func.apply(a[i][j]);
+                        }
+                    }
+                });
+            }
+        } else {
+            if (n <= m) {
+                for (int i = 0; i < n; i++) {
+                    for (int j = 0; j < m; j++) {
+                        c[i][j] = func.apply(a[i][j]);
+                    }
+                }
+            } else {
+                for (int j = 0; j < m; j++) {
+                    for (int i = 0; i < n; i++) {
+                        c[i][j] = func.apply(a[i][j]);
+                    }
+                }
+            }
+        }
+
+        return Matrix.of(c);
     }
 
     // Replaced by stream and stream2.

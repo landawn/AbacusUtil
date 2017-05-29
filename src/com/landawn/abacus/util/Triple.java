@@ -251,6 +251,10 @@ public final class Triple<L, M, R> {
             return N.max(_1, _2, _3);
         }
 
+        public int median() {
+            return N.median(_1, _2, _3);
+        }
+
         public int sum() {
             return _1 + _2 + _3;
         }
@@ -329,6 +333,10 @@ public final class Triple<L, M, R> {
 
         public long max() {
             return N.max(_1, _2, _3);
+        }
+
+        public long median() {
+            return N.median(_1, _2, _3);
         }
 
         public long sum() {
@@ -411,6 +419,10 @@ public final class Triple<L, M, R> {
             return N.max(_1, _2, _3);
         }
 
+        public float median() {
+            return N.median(_1, _2, _3);
+        }
+
         public float sum() {
             return _1 + _2 + _3;
         }
@@ -489,6 +501,10 @@ public final class Triple<L, M, R> {
 
         public double max() {
             return N.max(_1, _2, _3);
+        }
+
+        public double median() {
+            return N.median(_1, _2, _3);
         }
 
         public double sum() {
