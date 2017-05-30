@@ -697,7 +697,7 @@ abstract class AbstractCharStream extends CharStream {
 
     @Override
     public Stream<IndexedChar> indexed() {
-        final MutableLong idx = new MutableLong();
+        final MutableLong idx = MutableLong.of(0);
 
         return newStream(this.sequential().mapToObj(new CharFunction<IndexedChar>() {
             @Override

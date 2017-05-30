@@ -46,7 +46,7 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
     public Pair() {
     }
 
-    public Pair(final L l, final R r) {
+    Pair(final L l, final R r) {
         this.left = l;
         this.right = r;
     }

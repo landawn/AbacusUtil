@@ -698,7 +698,7 @@ abstract class AbstractByteStream extends ByteStream {
 
     @Override
     public Stream<IndexedByte> indexed() {
-        final MutableLong idx = new MutableLong();
+        final MutableLong idx = MutableLong.of(0);
 
         return newStream(this.sequential().mapToObj(new ByteFunction<IndexedByte>() {
             @Override

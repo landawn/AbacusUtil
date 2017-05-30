@@ -761,7 +761,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
     @Override
     public Stream<IndexedDouble> indexed() {
-        final MutableLong idx = new MutableLong();
+        final MutableLong idx = MutableLong.of(0);
 
         return newStream(this.sequential().mapToObj(new DoubleFunction<IndexedDouble>() {
             @Override

@@ -47,7 +47,7 @@ public final class Triple<L, M, R> {
     public Triple() {
     }
 
-    public Triple(final L l, final M m, final R r) {
+    Triple(final L l, final M m, final R r) {
         this.left = l;
         this.middle = m;
         this.right = r;

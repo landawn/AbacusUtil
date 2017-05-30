@@ -697,7 +697,7 @@ abstract class AbstractIntStream extends IntStream {
 
     @Override
     public Stream<IndexedInt> indexed() {
-        final MutableLong idx = new MutableLong();
+        final MutableLong idx = MutableLong.of(0);
 
         return newStream(this.sequential().mapToObj(new IntFunction<IndexedInt>() {
             @Override

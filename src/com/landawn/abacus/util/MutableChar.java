@@ -37,7 +37,7 @@ public final class MutableChar implements Comparable<MutableChar>, Mutable {
     /**
      * Constructs a new MutableChar with the default value of zero.
      */
-    public MutableChar() {
+    MutableChar() {
         super();
     }
 
@@ -46,7 +46,7 @@ public final class MutableChar implements Comparable<MutableChar>, Mutable {
      * 
      * @param value  the initial value to store
      */
-    public MutableChar(final char value) {
+    MutableChar(final char value) {
         super();
         this.value = value;
     }

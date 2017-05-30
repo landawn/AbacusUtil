@@ -1,7 +1,11 @@
 
 ========Changes in 0.9.68=========================================================================
 
-1, Improvements and bug fix.
+1, Add map/mapToObj to IntList/LongList/DoubleList/.../IntMatrix/LongMatrix/Double/Matrix
+
+2, Add median to IntTriple/LongTriple/FloatTriple/DoubleTriple
+
+3, Improvements and bug fix.
 
 
 ========Changes in 0.9.67=========================================================================

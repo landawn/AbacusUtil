@@ -45,7 +45,7 @@ public final class MutableInt extends Number implements Comparable<MutableInt>, 
     /**
      * Constructs a new MutableInt with the default value of zero.
      */
-    public MutableInt() {
+    MutableInt() {
         super();
     }
 
@@ -54,7 +54,7 @@ public final class MutableInt extends Number implements Comparable<MutableInt>, 
      * 
      * @param value  the initial value to store
      */
-    public MutableInt(final int value) {
+    MutableInt(final int value) {
         super();
         this.value = value;
     }

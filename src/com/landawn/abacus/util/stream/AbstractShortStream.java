@@ -698,7 +698,7 @@ abstract class AbstractShortStream extends ShortStream {
     @Override
     public Stream<IndexedShort> indexed() {
         return newStream(this.sequential().mapToObj(new ShortFunction<IndexedShort>() {
-            final MutableLong idx = new MutableLong();
+            final MutableLong idx = MutableLong.of(0);
 
             @Override
             public IndexedShort apply(short t) {

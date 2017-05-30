@@ -695,7 +695,7 @@ abstract class AbstractLongStream extends LongStream {
 
     @Override
     public Stream<IndexedLong> indexed() {
-        final MutableLong idx = new MutableLong();
+        final MutableLong idx = MutableLong.of(0);
 
         return newStream(this.sequential().mapToObj(new LongFunction<IndexedLong>() {
             @Override

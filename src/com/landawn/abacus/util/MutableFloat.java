@@ -45,7 +45,7 @@ public final class MutableFloat extends Number implements Comparable<MutableFloa
     /**
      * Constructs a new MutableFloat with the default value of zero.
      */
-    public MutableFloat() {
+    MutableFloat() {
         super();
     }
 
@@ -54,7 +54,7 @@ public final class MutableFloat extends Number implements Comparable<MutableFloa
      * 
      * @param value  the initial value to store
      */
-    public MutableFloat(final float value) {
+    MutableFloat(final float value) {
         super();
         this.value = value;
     }

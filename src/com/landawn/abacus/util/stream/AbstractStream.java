@@ -2245,7 +2245,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<Indexed<T>> indexed() {
-        final MutableLong idx = new MutableLong();
+        final MutableLong idx = MutableLong.of(0);
 
         return newStream(this.sequential().map(new Function<T, Indexed<T>>() {
             @Override

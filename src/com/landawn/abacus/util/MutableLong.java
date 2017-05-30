@@ -45,7 +45,7 @@ public final class MutableLong extends Number implements Comparable<MutableLong>
     /**
      * Constructs a new MutableLong with the default value of zero.
      */
-    public MutableLong() {
+    MutableLong() {
         super();
     }
 
@@ -54,7 +54,7 @@ public final class MutableLong extends Number implements Comparable<MutableLong>
      * 
      * @param value  the initial value to store
      */
-    public MutableLong(final long value) {
+    MutableLong(final long value) {
         super();
         this.value = value;
     }

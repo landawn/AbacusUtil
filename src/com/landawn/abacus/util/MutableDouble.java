@@ -45,7 +45,7 @@ public final class MutableDouble extends Number implements Comparable<MutableDou
     /**
      * Constructs a new MutableDouble with the default value of zero.
      */
-    public MutableDouble() {
+    MutableDouble() {
         super();
     }
 
@@ -54,7 +54,7 @@ public final class MutableDouble extends Number implements Comparable<MutableDou
      * 
      * @param value  the initial value to store
      */
-    public MutableDouble(final double value) {
+    MutableDouble(final double value) {
         super();
         this.value = value;
     }

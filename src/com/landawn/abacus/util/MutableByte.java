@@ -45,7 +45,7 @@ public final class MutableByte extends Number implements Comparable<MutableByte>
     /**
      * Constructs a new MutableByte with the default value of zero.
      */
-    public MutableByte() {
+    MutableByte() {
         super();
     }
 
@@ -54,7 +54,7 @@ public final class MutableByte extends Number implements Comparable<MutableByte>
      * 
      * @param value  the initial value to store
      */
-    public MutableByte(final byte value) {
+    MutableByte(final byte value) {
         super();
         this.value = value;
     }

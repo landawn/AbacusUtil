@@ -3305,7 +3305,7 @@ public final class Collectors {
         final Supplier<Pair<CharSequence, Integer>> supplier = new Supplier<Pair<CharSequence, Integer>>() {
             @Override
             public Pair<CharSequence, Integer> get() {
-                return new Pair<>(null, -1);
+                return Pair.of(null, -1);
             }
         };
 
@@ -3391,7 +3391,7 @@ public final class Collectors {
         final Supplier<Pair<CharSequence, Integer>> supplier = new Supplier<Pair<CharSequence, Integer>>() {
             @Override
             public Pair<CharSequence, Integer> get() {
-                return new Pair<>(null, -1);
+                return Pair.of(null, -1);
             }
         };
 

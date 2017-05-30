@@ -31,7 +31,7 @@ public final class Output<T> {
     public Output() {
     }
 
-    public Output(T value) {
+    Output(T value) {
         this.value = value;
     }
 

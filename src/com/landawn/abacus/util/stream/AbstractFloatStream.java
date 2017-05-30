@@ -762,7 +762,7 @@ abstract class AbstractFloatStream extends FloatStream {
 
     @Override
     public Stream<IndexedFloat> indexed() {
-        final MutableLong idx = new MutableLong();
+        final MutableLong idx = MutableLong.of(0);
 
         return newStream(this.sequential().mapToObj(new FloatFunction<IndexedFloat>() {
             @Override
