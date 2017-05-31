@@ -238,6 +238,10 @@ public final class OptionalByte implements Comparable<OptionalByte> {
         return isPresent() ? ByteStream.of(value) : ByteStream.empty();
     }
 
+    public Optional<Byte> boxed() {
+        return isPresent() ? Optional.of(value) : Optional.<Byte> empty();
+    }
+
     /**
      * Indicates whether some other object is "equal to" this OptionalByte. The
      * other object is considered equal if:

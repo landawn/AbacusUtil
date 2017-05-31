@@ -290,6 +290,10 @@ public final class OptionalFloat implements Comparable<OptionalFloat> {
         return isPresent() ? FloatStream.of(value) : FloatStream.empty();
     }
 
+    public Optional<Float> boxed() {
+        return isPresent() ? Optional.of(value) : Optional.<Float> empty();
+    }
+
     /**
      * Indicates whether some other object is "equal to" this OptionalFloat. The
      * other object is considered equal if:

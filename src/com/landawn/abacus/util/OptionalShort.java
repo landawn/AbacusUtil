@@ -238,6 +238,10 @@ public final class OptionalShort implements Comparable<OptionalShort> {
         return isPresent() ? ShortStream.of(value) : ShortStream.empty();
     }
 
+    public Optional<Short> boxed() {
+        return isPresent() ? Optional.of(value) : Optional.<Short> empty();
+    }
+
     /**
      * Indicates whether some other object is "equal to" this OptionalShort. The
      * other object is considered equal if:

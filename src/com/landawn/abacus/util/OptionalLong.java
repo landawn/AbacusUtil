@@ -264,6 +264,10 @@ public final class OptionalLong implements Comparable<OptionalLong> {
         return isPresent() ? LongStream.of(value) : LongStream.empty();
     }
 
+    public Optional<Long> boxed() {
+        return isPresent() ? Optional.of(value) : Optional.<Long> empty();
+    }
+
     public java.util.OptionalLong __() {
         return isPresent() ? java.util.OptionalLong.empty() : java.util.OptionalLong.of(value);
     }

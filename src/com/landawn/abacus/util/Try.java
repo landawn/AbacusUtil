@@ -285,11 +285,27 @@ public final class Try<T extends AutoCloseable> {
         T get() throws Exception;
     }
 
+    public static interface Predicate<T> {
+        boolean test(T t) throws Exception;
+    }
+
+    public static interface BiPredicate<T, U> {
+        boolean test(T t, U u) throws Exception;
+    }
+
     public static interface Function<T, R> {
         R apply(T t) throws Exception;
     }
 
+    public static interface BiFunction<T, U, R> {
+        R apply(T t, U u) throws Exception;
+    }
+
     public static interface Consumer<T> {
         void accept(T t) throws Exception;
+    }
+
+    public static interface BiConsumer<T, U> {
+        void accept(T t, U u) throws Exception;
     }
 }

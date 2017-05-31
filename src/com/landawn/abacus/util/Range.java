@@ -17,7 +17,6 @@
 package com.landawn.abacus.util;
 
 import java.io.Serializable;
-import java.util.Comparator;
 
 /**
  * <p>
@@ -30,72 +29,30 @@ import java.util.Comparator;
  * </p>
  * 
  * <p>
- * The objects need to either be implementations of {@code Comparable} or you need to supply a {@code Comparator}.
- * </p>
- * 
- * <p>
  * #ThreadSafe# if the objects and comparator are thread-safe
  * </p>
  * 
  * @since 3.0
  * @version $Id: Range.java 1565243 2014-02-06 13:37:12Z sebb $
  */
-public final class Range<T> implements Serializable {
+@SuppressWarnings("rawtypes")
+public final class Range<T extends Comparable> implements Serializable {
     private static final long serialVersionUID = 545606166758706779L;
 
-    @SuppressWarnings("rawtypes")
-    private static final Comparator CMP = new Comparator<Comparable>() {
-        @Override
-        public int compare(Comparable o1, Comparable o2) {
-            return N.compare(o1, o2);
-        }
-    };
     /**
      * The minimum value in this range (inclusive).
      */
-    private final T minimum;
+    private final LowerEndpoint<T> lowerEndpoint;
     /**
      * The maximum value in this range (inclusive).
      */
-    private final T maximum;
-    /**
-     * The ordering scheme used in this range.
-     */
-    private final Comparator<? super T> comparator;
-    /**
-     * Cached output hashCode (class is immutable).
-     */
-    private transient int hashCode;
+    private final UpperEndpoint<T> upperEndpoint;
 
-    /**
-     * Creates an instance.
-     * 
-     * @param element1
-     *            the first element, not null
-     * @param element2
-     *            the second element, not null
-     * @param cmp
-     *            the comparator to be used, null for natural ordering
-     */
     @SuppressWarnings("unchecked")
-    private Range(final T element1, final T element2, final Comparator<? super T> cmp) {
-        if (element1 == null || element2 == null) {
-            throw new IllegalArgumentException("Elements in a range must not be null: element1=" + element1 + ", element2=" + element2);
-        }
-
-        this.comparator = cmp == null ? CMP : cmp;
-
-        if (this.comparator.compare(element1, element2) < 1) {
-            this.minimum = element1;
-            this.maximum = element2;
-        } else {
-            this.minimum = element2;
-            this.maximum = element1;
-        }
+    private Range(final LowerEndpoint<T> lowerEndpoint, final UpperEndpoint<T> upperEndpoint) {
+        this.lowerEndpoint = lowerEndpoint;
+        this.upperEndpoint = upperEndpoint;
     }
-
-    // Accessors
-    //--------------------------------------------------------------------
 
     /**
      * <p>
@@ -111,100 +68,70 @@ public final class Range<T> implements Serializable {
      * @param element
      *            the value to use for this range, not null
      * @return the range object, not null
-     * @throws IllegalArgumentException
-     *             if the element is null
-     * @throws ClassCastException
-     *             if the element is not {@code Comparable}
+     * @throws IllegalArgumentException if the element is null
      */
     public static <T extends Comparable<T>> Range<T> just(final T element) {
-        return between(element, element, null);
+        return closed(element, element);
     }
 
     /**
-     * <p>
-     * Obtains a range using the specified element as both the minimum and maximum in this range.
-     * </p>
      * 
-     * <p>
-     * The range uses the specified {@code Comparator} to determine where values lie in the range.
-     * </p>
-     * 
-     * @param <T>
-     *            the type of the elements in this range
-     * @param element
-     *            the value to use for this range, must not be {@code null}
-     * @param comparator
-     *            the comparator to be used, null for natural ordering
-     * @return the range object, not null
-     * @throws IllegalArgumentException
-     *             if the element is null
-     * @throws ClassCastException
-     *             if using natural ordering and the elements are not {@code Comparable}
+     * @param min
+     * @param max
+     * @return
+     * @throws IllegalArgumentException if the 'min' or 'max' is null, or min > max.
      */
-    public static <T> Range<T> just(final T element, final Comparator<? super T> comparator) {
-        return between(element, element, comparator);
+    public static <T extends Comparable<T>> Range<T> open(final T min, final T max) {
+        if (min == null || max == null || min.compareTo(max) > 0) {
+            throw new IllegalArgumentException("'fromInclusive' and 'toInclusive' can't be null, or min > max");
+        }
+
+        return new Range<T>(new LowerEndpoint<T>(min, false), new UpperEndpoint<T>(max, false));
     }
 
     /**
-     * <p>
-     * Obtains a range with the specified minimum and maximum values (both inclusive).
-     * </p>
      * 
-     * <p>
-     * The range uses the natural ordering of the elements to determine where values lie in the range.
-     * </p>
-     * 
-     * <p>
-     * The arguments may be passed in the order (min,max) or (max,min). The getMinimum and getMaximum methods will
-     * return the correct values.
-     * </p>
-     * 
-     * @param <T>
-     *            the type of the elements in this range
-     * @param fromInclusive
-     *            the first value that defines the edge of the range, inclusive
-     * @param toInclusive
-     *            the second value that defines the edge of the range, inclusive
-     * @return the range object, not null
-     * @throws IllegalArgumentException
-     *             if either element is null
-     * @throws ClassCastException
-     *             if the elements are not {@code Comparable}
+     * @param min
+     * @param max
+     * @return
+     * @throws IllegalArgumentException if the 'min' or 'max' is null, or min > max.
      */
-    public static <T extends Comparable<T>> Range<T> between(final T fromInclusive, final T toInclusive) {
-        return between(fromInclusive, toInclusive, null);
+    public static <T extends Comparable<T>> Range<T> openClosed(final T min, final T max) {
+        if (min == null || max == null || min.compareTo(max) > 0) {
+            throw new IllegalArgumentException("'fromInclusive' and 'toInclusive' can't be null, or min > max");
+        }
+
+        return new Range<T>(new LowerEndpoint<T>(min, false), new UpperEndpoint<T>(max, true));
     }
 
     /**
-     * <p>
-     * Obtains a range with the specified minimum and maximum values (both inclusive).
-     * </p>
      * 
-     * <p>
-     * The range uses the specified {@code Comparator} to determine where values lie in the range.
-     * </p>
-     * 
-     * <p>
-     * The arguments may be passed in the order (min,max) or (max,min). The getMinimum and getMaximum methods will
-     * return the correct values.
-     * </p>
-     * 
-     * @param <T>
-     *            the type of the elements in this range
-     * @param fromInclusive
-     *            the first value that defines the edge of the range, inclusive
-     * @param toInclusive
-     *            the second value that defines the edge of the range, inclusive
-     * @param comparator
-     *            the comparator to be used, null for natural ordering
-     * @return the range object, not null
-     * @throws IllegalArgumentException
-     *             if either element is null
-     * @throws ClassCastException
-     *             if using natural ordering and the elements are not {@code Comparable}
+     * @param min
+     * @param max
+     * @return
+     * @throws IllegalArgumentException if the 'min' or 'max' is null, or min > max.
      */
-    public static <T> Range<T> between(final T fromInclusive, final T toInclusive, final Comparator<? super T> comparator) {
-        return new Range<T>(fromInclusive, toInclusive, comparator);
+    public static <T extends Comparable<T>> Range<T> closedOpen(final T min, final T max) {
+        if (min == null || max == null || min.compareTo(max) > 0) {
+            throw new IllegalArgumentException("'fromInclusive' and 'toInclusive' can't be null, or min > max");
+        }
+
+        return new Range<T>(new LowerEndpoint<T>(min, true), new UpperEndpoint<T>(max, false));
+    }
+
+    /**
+     * 
+     * @param min
+     * @param max
+     * @return
+     * @throws IllegalArgumentException if the 'min' or 'max' is null, or min > max.
+     */
+    public static <T extends Comparable<T>> Range<T> closed(final T min, final T max) {
+        if (min == null || max == null || min.compareTo(max) > 0) {
+            throw new IllegalArgumentException("'fromInclusive' and 'toInclusive' can't be null, or min > max");
+        }
+
+        return new Range<T>(new LowerEndpoint<T>(min, true), new UpperEndpoint<T>(max, true));
     }
 
     /**
@@ -214,8 +141,8 @@ public final class Range<T> implements Serializable {
      * 
      * @return the minimum value in this range, not null
      */
-    public T getMinimum() {
-        return minimum;
+    public T lowerEndpoint() {
+        return lowerEndpoint.value;
     }
 
     /**
@@ -225,40 +152,8 @@ public final class Range<T> implements Serializable {
      * 
      * @return the maximum value in this range, not null
      */
-    public T getMaximum() {
-        return maximum;
-    }
-
-    /**
-     * <p>
-     * Gets the comparator being used to determine if objects are within the range.
-     * </p>
-     * 
-     * <p>
-     * Natural ordering uses an internal comparator implementation, thus this method never returns null. See
-     * {@link #isNaturalOrdering()}.
-     * </p>
-     * 
-     * @return the comparator being used, not null
-     */
-    public Comparator<? super T> getComparator() {
-        return comparator;
-    }
-
-    /**
-     * <p>
-     * Whether or not the Range is using the natural ordering of the elements.
-     * </p>
-     * 
-     * <p>
-     * Natural ordering uses an internal comparator implementation, thus this method is the only way to check if a null
-     * comparator was specified.
-     * </p>
-     * 
-     * @return true if using natural ordering
-     */
-    public boolean isNaturalOrdering() {
-        return comparator == CMP;
+    public T upperEndpoint() {
+        return upperEndpoint.value;
     }
 
     // Element tests
@@ -277,7 +172,8 @@ public final class Range<T> implements Serializable {
         if (element == null) {
             return false;
         }
-        return comparator.compare(element, minimum) > -1 && comparator.compare(element, maximum) < 1;
+
+        return lowerEndpoint.includes(element) && upperEndpoint.includes(element);
     }
 
     /**
@@ -293,7 +189,8 @@ public final class Range<T> implements Serializable {
         if (element == null) {
             return false;
         }
-        return comparator.compare(element, minimum) == 0;
+
+        return lowerEndpoint.isClosed && lowerEndpoint.compareTo(element) == 0;
     }
 
     /**
@@ -309,7 +206,8 @@ public final class Range<T> implements Serializable {
         if (element == null) {
             return false;
         }
-        return comparator.compare(element, maximum) == 0;
+
+        return upperEndpoint.isClosed && upperEndpoint.compareTo(element) == 0;
     }
 
     /**
@@ -325,7 +223,8 @@ public final class Range<T> implements Serializable {
         if (element == null) {
             return false;
         }
-        return comparator.compare(element, minimum) < 0;
+
+        return lowerEndpoint.includes(element) == false;
     }
 
     /**
@@ -341,7 +240,8 @@ public final class Range<T> implements Serializable {
         if (element == null) {
             return false;
         }
-        return comparator.compare(element, maximum) > 0;
+
+        return upperEndpoint.includes(element) == false;
     }
 
     /**
@@ -350,22 +250,23 @@ public final class Range<T> implements Serializable {
      * </p>
      * 
      * <p>
-     * The API is reminiscent of the Comparable interface returning {@code -1} if the element is before the range,
-     * {@code 0} if contained within the range and {@code 1} if the element is after the range.
+     * Returns {@code -1} if this range is before the specified element,
+     * {@code 1} if the this range is after the specified element, otherwise {@code 0} if the specified element is contained in this range. 
      * </p>
      * 
      * @param element
      *            the element to check for, not null
      * @return -1, 0 or +1 depending on the element's location relative to the range
      */
-    public int elementCompareTo(final T element) {
+    public int compareTo(final T element) {
         if (element == null) {
             // Comparable API says throw NPE on null
             throw new NullPointerException("Element is null");
         }
-        if (isAfter(element)) {
+
+        if (isBefore(element)) {
             return -1;
-        } else if (isBefore(element)) {
+        } else if (isAfter(element)) {
             return 1;
         } else {
             return 0;
@@ -380,21 +281,19 @@ public final class Range<T> implements Serializable {
      * Checks whether this range contains all the elements of the specified range.
      * </p>
      * 
-     * <p>
-     * This method may fail if the ranges have two different comparators or element types.
-     * </p>
-     * 
-     * @param otherRange
+     * @param other
      *            the range to check, null returns false
      * @return true if this range contains the specified range
      * @throws RuntimeException
      *             if ranges cannot be compared
      */
-    public boolean containsRange(final Range<T> otherRange) {
-        if (otherRange == null) {
+    public boolean containsRange(final Range<T> other) {
+        if (other == null) {
             return false;
         }
-        return contains(otherRange.minimum) && contains(otherRange.maximum);
+
+        return (other.lowerEndpoint.isClosed ? contains(other.lowerEndpoint.value) : lowerEndpoint.value.compareTo(other.lowerEndpoint.value) <= 0)
+                && (other.upperEndpoint.isClosed ? contains(other.upperEndpoint.value) : upperEndpoint.value.compareTo(other.upperEndpoint.value) >= 0);
     }
 
     /**
@@ -402,21 +301,38 @@ public final class Range<T> implements Serializable {
      * Checks whether this range is completely after the specified range.
      * </p>
      * 
-     * <p>
-     * This method may fail if the ranges have two different comparators or element types.
-     * </p>
      * 
-     * @param otherRange
+     * @param other
      *            the range to check, null returns false
      * @return true if this range is completely after the specified range
      * @throws RuntimeException
      *             if ranges cannot be compared
      */
-    public boolean isAfterRange(final Range<T> otherRange) {
-        if (otherRange == null) {
+    public boolean isAfterRange(final Range<T> other) {
+        if (other == null) {
             return false;
         }
-        return isAfter(otherRange.maximum);
+        return other.upperEndpoint.isClosed ? isAfter(other.upperEndpoint.value) : this.lowerEndpoint.compareTo(other.upperEndpoint.value) >= 0;
+    }
+
+    /**
+     * <p>
+     * Checks whether this range is completely before the specified range.
+     * </p>
+     * 
+     * 
+     * @param other
+     *            the range to check, null returns false
+     * @return true if this range is completely before the specified range
+     * @throws RuntimeException
+     *             if ranges cannot be compared
+     */
+    public boolean isBeforeRange(final Range<T> other) {
+        if (other == null) {
+            return false;
+        }
+
+        return other.lowerEndpoint.isClosed ? isBefore(other.lowerEndpoint.value) : this.upperEndpoint.compareTo(other.lowerEndpoint.value) <= 0;
     }
 
     /**
@@ -428,43 +344,21 @@ public final class Range<T> implements Serializable {
      * Two ranges overlap if there is at least one element in common.
      * </p>
      * 
-     * <p>
-     * This method may fail if the ranges have two different comparators or element types.
-     * </p>
      * 
-     * @param otherRange
+     * @param other
      *            the range to test, null returns false
      * @return true if the specified range overlaps with this range; otherwise, {@code false}
      * @throws RuntimeException
      *             if ranges cannot be compared
      */
-    public boolean isOverlappedBy(final Range<T> otherRange) {
-        if (otherRange == null) {
+    public boolean isOverlappedBy(final Range<T> other) {
+        if (other == null) {
+            return false;
+        } else if (isAfterRange(other) || isBeforeRange(other)) {
             return false;
         }
-        return otherRange.contains(minimum) || otherRange.contains(maximum) || contains(otherRange.minimum);
-    }
 
-    /**
-     * <p>
-     * Checks whether this range is completely before the specified range.
-     * </p>
-     * 
-     * <p>
-     * This method may fail if the ranges have two different comparators or element types.
-     * </p>
-     * 
-     * @param otherRange
-     *            the range to check, null returns false
-     * @return true if this range is completely before the specified range
-     * @throws RuntimeException
-     *             if ranges cannot be compared
-     */
-    public boolean isBeforeRange(final Range<T> otherRange) {
-        if (otherRange == null) {
-            return false;
-        }
-        return isBefore(otherRange.minimum);
+        return true;
     }
 
     /**
@@ -477,16 +371,19 @@ public final class Range<T> implements Serializable {
      *             if {@code other} does not overlap {@code this}
      * @since 3.0.1
      */
-    public Range<T> intersectionWith(final Range<T> other) {
+    public Range<T> intersection(final Range<T> other) {
         if (!this.isOverlappedBy(other)) {
             throw new IllegalArgumentException(String.format("Cannot calculate intersection with non-overlapping range %s", other));
         }
+
         if (this.equals(other)) {
             return this;
         }
-        final T min = getComparator().compare(minimum, other.minimum) < 0 ? other.minimum : minimum;
-        final T max = getComparator().compare(maximum, other.maximum) < 0 ? maximum : other.maximum;
-        return between(min, max, getComparator());
+
+        final LowerEndpoint<T> newLowerEndpoint = lowerEndpoint.includes(other.lowerEndpoint.value) ? other.lowerEndpoint : lowerEndpoint;
+        final UpperEndpoint<T> newUpperEndpoint = upperEndpoint.includes(other.upperEndpoint.value) ? other.upperEndpoint : upperEndpoint;
+
+        return new Range<T>(newLowerEndpoint, newUpperEndpoint);
     }
 
     // Basics
@@ -514,7 +411,7 @@ public final class Range<T> implements Serializable {
 
         if (obj instanceof Range) {
             final Range<T> other = (Range<T>) obj;
-            return N.equals(minimum, other.minimum) && N.equals(maximum, other.maximum);
+            return N.equals(lowerEndpoint, other.lowerEndpoint) && N.equals(upperEndpoint, other.upperEndpoint);
         }
 
         return false;
@@ -529,19 +426,131 @@ public final class Range<T> implements Serializable {
      */
     @Override
     public int hashCode() {
-        int result = hashCode;
-        if (hashCode == 0) {
-            result = 17;
-            result = 37 * result + getClass().hashCode();
-            result = 37 * result + N.hashCode(minimum);
-            result = 37 * result + N.hashCode(maximum);
-            hashCode = result;
-        }
+        int result = 17;
+
+        result = 37 * result + getClass().hashCode();
+        result = 37 * result + lowerEndpoint.hashCode();
+        result = 37 * result + upperEndpoint.hashCode();
+
         return result;
     }
 
     @Override
     public String toString() {
-        return "[" + N.toString(minimum) + ", " + N.toString(maximum) + "]";
+        return lowerEndpoint.toString() + ", " + upperEndpoint.toString();
+    }
+
+    static abstract class Endpoint<T extends Comparable> {
+        final T value;
+        final boolean isClosed;
+
+        protected Endpoint(final T value, boolean isClosed) {
+            this.value = value;
+            this.isClosed = isClosed;
+        }
+
+        public int compareTo(T value) {
+            return N.compare(this.value, value);
+        }
+
+        public abstract boolean includes(T value);
+
+    }
+
+    static class LowerEndpoint<T extends Comparable> extends Endpoint<T> {
+        LowerEndpoint(final T value, boolean isClosed) {
+            super(value, isClosed);
+        }
+
+        @Override
+        public boolean includes(T value) {
+            return isClosed ? N.compare(value, this.value) >= 0 : N.compare(value, this.value) > 0;
+        }
+
+        /**
+         * <p>
+         * Gets a suitable hash code for the range.
+         * </p>
+         * 
+         * @return a hash code value for this object
+         */
+        @Override
+        public int hashCode() {
+            int result = isClosed ? 0 : 1;
+            result = 37 * result + N.hashCode(value);
+            return result;
+        }
+
+        /**
+         * <p>
+         * Compares this range to another object to test if they are equal.
+         * </p>
+         * .
+         * 
+         * <p>
+         * To be equal, the minimum and maximum values must be equal, which ignores any differences in the comparator.
+         * </p>
+         * 
+         * @param obj
+         *            the reference object with which to compare
+         * @return true if this object is equal
+         */
+        @Override
+        public boolean equals(final Object obj) {
+            if (obj == this) {
+                return true;
+            }
+
+            if (obj instanceof LowerEndpoint) {
+                final LowerEndpoint<T> other = (LowerEndpoint<T>) obj;
+
+                return N.equals(isClosed, other.isClosed) && N.equals(value, other.value);
+            }
+
+            return false;
+        }
+
+        @Override
+        public String toString() {
+            return (isClosed ? "[" : "(") + N.toString(value);
+        }
+    }
+
+    static class UpperEndpoint<T extends Comparable> extends Endpoint<T> {
+        UpperEndpoint(final T value, boolean isClosed) {
+            super(value, isClosed);
+        }
+
+        @Override
+        public boolean includes(T value) {
+            return isClosed ? N.compare(value, this.value) <= 0 : N.compare(value, this.value) < 0;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = isClosed ? 0 : 1;
+            result = 37 * result + N.hashCode(value);
+            return result;
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            if (obj == this) {
+                return true;
+            }
+
+            if (obj instanceof UpperEndpoint) {
+                final UpperEndpoint<T> other = (UpperEndpoint<T>) obj;
+
+                return N.equals(isClosed, other.isClosed) && N.equals(value, other.value);
+            }
+
+            return false;
+        }
+
+        @Override
+        public String toString() {
+            return N.toString(value) + (isClosed ? "]" : ")");
+        }
     }
 }

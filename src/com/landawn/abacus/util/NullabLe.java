@@ -191,6 +191,20 @@ public final class NullabLe<T> {
     }
 
     /**
+    * If a value is not null, performs the given action with the value, otherwise performs the given empty-based action.
+    *
+    * @param action
+    * @param emptyAction
+    */
+    public void ifNotNullOrElse(Consumer<? super T> action, Runnable emptyAction) {
+        if (isNotNull()) {
+            action.accept(value);
+        } else {
+            emptyAction.run();
+        }
+    }
+
+    /**
      * If a value is present, and the value matches the given predicate,
      * return an {@code NullabLe} describing the value, otherwise return an
      * empty {@code NullabLe}.

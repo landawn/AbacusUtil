@@ -85,9 +85,12 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.Delayed;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
 import javax.xml.datatype.DatatypeFactory;
@@ -145,6 +148,7 @@ import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.function.ToShortFunction;
 import com.landawn.abacus.util.stream.DoubleStream;
 import com.landawn.abacus.util.stream.FloatStream;
+import com.landawn.abacus.util.stream.Stream;
 
 /**
  * <p>
@@ -29786,11 +29790,16 @@ public final class N {
     }
 
     public static <T> void parse(final Iterator<? extends T> iter, final Consumer<? super T> elementParser) {
-        IOUtil.parse(iter, elementParser);
+        parse(iter, 0, Long.MAX_VALUE, elementParser);
+    }
+
+    @Deprecated
+    static <T> void parse(final Iterator<? extends T> iter, final int processThreadNumber, final int queueSize, final Consumer<? super T> elementParser) {
+        parse(iter, 0, Long.MAX_VALUE, processThreadNumber, queueSize, elementParser);
     }
 
     public static <T> void parse(final Iterator<? extends T> iter, final long offset, final long count, final Consumer<? super T> elementParser) {
-        IOUtil.parse(iter, offset, count, elementParser);
+        parse(iter, offset, count, 0, 0, elementParser);
     }
 
     /**
@@ -29805,21 +29814,21 @@ public final class N {
      */
     public static <T> void parse(final Iterator<? extends T> iter, long offset, long count, final int processThreadNumber, final int queueSize,
             final Consumer<? super T> elementParser) {
-        IOUtil.parse(iter, offset, count, processThreadNumber, queueSize, elementParser);
+        parseII(N.asList(iter), offset, count, 1, processThreadNumber, queueSize, elementParser);
     }
 
     public static <T> void parse(final Collection<? extends Iterator<? extends T>> iterators, final Consumer<? super T> elementParser) {
-        IOUtil.parse(iterators, elementParser);
+        parse(iterators, 0, Long.MAX_VALUE, elementParser);
     }
 
     public static <T> void parse(final Collection<? extends Iterator<? extends T>> iterators, final long offset, final long count,
             final Consumer<? super T> elementParser) {
-        IOUtil.parse(iterators, offset, count, elementParser);
+        parse(iterators, offset, count, 0, 0, 0, elementParser);
     }
 
     public static <T> void parse(final Collection<? extends Iterator<? extends T>> iterators, final int readThreadNumber, final int processThreadNumber,
             final int queueSize, final Consumer<? super T> elementParser) {
-        IOUtil.parse(iterators, readThreadNumber, processThreadNumber, queueSize, elementParser);
+        parse(iterators, 0, Long.MAX_VALUE, readThreadNumber, processThreadNumber, queueSize, elementParser);
     }
 
     /**
@@ -29834,7 +29843,92 @@ public final class N {
      */
     public static <T> void parse(final Collection<? extends Iterator<? extends T>> iterators, final long offset, final long count, final int readThreadNumber,
             final int processThreadNumber, final int queueSize, final Consumer<? super T> elementParser) {
-        IOUtil.parse(iterators, offset, count, readThreadNumber, processThreadNumber, queueSize, elementParser);
+        if (N.isNullOrEmpty(iterators)) {
+            return;
+        }
+
+        parseII(iterators, offset, count, readThreadNumber, processThreadNumber, queueSize, elementParser);
+    }
+
+    private static <T> void parseII(final Collection<? extends Iterator<? extends T>> iterators, long offset, long count, final int readThreadNum,
+            final int processThreadNumber, final int queueSize, final Consumer<? super T> elementParser) {
+
+        if (logger.isInfoEnabled()) {
+            logger.info("### Start to parse");
+        }
+
+        try (final Stream<T> stream = ((readThreadNum > 1 || processThreadNumber > 0)
+                ? Stream.parallelConcat2(iterators, (readThreadNum == 0 ? 1 : readThreadNum), (queueSize == 0 ? 1024 : queueSize))
+                : Stream.concat2(iterators))) {
+
+            final Iterator<? extends T> iteratorII = stream.skip(offset).limit(count).iterator();
+
+            if (processThreadNumber == 0) {
+                while (iteratorII.hasNext()) {
+                    elementParser.accept(iteratorII.next());
+                }
+
+                elementParser.accept(null);
+            } else {
+                final AtomicInteger activeThreadNum = new AtomicInteger();
+                final ExecutorService executorService = Executors.newFixedThreadPool(processThreadNumber);
+                final Output<Throwable> errorHolder = new Output<>();
+
+                for (int i = 0; i < processThreadNumber; i++) {
+                    activeThreadNum.incrementAndGet();
+
+                    executorService.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            T element = null;
+                            try {
+                                while (errorHolder.value() == null) {
+                                    synchronized (iteratorII) {
+                                        if (iteratorII.hasNext()) {
+                                            element = iteratorII.next();
+                                        } else {
+                                            break;
+                                        }
+                                    }
+
+                                    elementParser.accept(element);
+                                }
+                            } catch (Throwable e) {
+                                synchronized (errorHolder) {
+                                    if (errorHolder.value() == null) {
+                                        errorHolder.setValue(e);
+                                    } else {
+                                        errorHolder.value().addSuppressed(e);
+                                    }
+                                }
+                            } finally {
+                                activeThreadNum.decrementAndGet();
+                            }
+                        }
+                    });
+                }
+
+                while (activeThreadNum.get() > 0) {
+                    N.sleep(1);
+                }
+
+                if (errorHolder.value() == null) {
+                    try {
+                        elementParser.accept(null);
+                    } catch (Throwable e) {
+                        errorHolder.setValue(e);
+                    }
+                }
+
+                if (errorHolder.value() != null) {
+                    throw N.toRuntimeException(errorHolder.value());
+                }
+            }
+        } finally {
+            if (logger.isInfoEnabled()) {
+                logger.info("### ### End to parse");
+            }
+        }
     }
 
     @Beta

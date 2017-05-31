@@ -50,9 +50,6 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
@@ -63,7 +60,6 @@ import com.landawn.abacus.exception.AbacusIOException;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
 import com.landawn.abacus.util.function.Consumer;
-import com.landawn.abacus.util.stream.Stream;
 
 /**
  *
@@ -3906,7 +3902,7 @@ public final class IOUtil {
                 iterators.add(new LineIterator(reader));
             }
 
-            parseII(iterators, lineOffset, count, 1, processThreadNumber, queueSize, lineParser);
+            N.parse(iterators, lineOffset, count, 1, processThreadNumber, queueSize, lineParser);
         } finally {
             for (Reader reader : readers) {
                 closeQuietly(reader);
@@ -4002,7 +3998,7 @@ public final class IOUtil {
                 iterators.add(new LineIterator(reader));
             }
 
-            parseII(iterators, lineOffset, count, readThreadNumber, processThreadNumber, queueSize, lineParser);
+            N.parse(iterators, lineOffset, count, readThreadNumber, processThreadNumber, queueSize, lineParser);
         } finally {
             for (Reader reader : readers) {
                 closeQuietly(reader);
@@ -4121,7 +4117,7 @@ public final class IOUtil {
      */
     public static void parse(final Reader reader, final long lineOffset, final long count, final int processThreadNumber, final int queueSize,
             final Consumer<String> lineParser) {
-        parse(new LineIterator(reader), lineOffset, count, processThreadNumber, queueSize, lineParser);
+        N.parse(new LineIterator(reader), lineOffset, count, processThreadNumber, queueSize, lineParser);
     }
 
     //    private static void parse(final Reader reader, final File file, final AtomicLong offset, final AtomicLong count, final int processThreadNumber,
@@ -4252,148 +4248,6 @@ public final class IOUtil {
     //            logger.info(file == null ? "### ### End to parse" : "### End to parse file: " + file);
     //        }
     //    }
-
-    public static <T> void parse(final Iterator<? extends T> iter, final Consumer<? super T> elementParser) {
-        parse(iter, 0, Long.MAX_VALUE, elementParser);
-    }
-
-    @Deprecated
-    static <T> void parse(final Iterator<? extends T> iter, final int processThreadNumber, final int queueSize, final Consumer<? super T> elementParser) {
-        parse(iter, 0, Long.MAX_VALUE, processThreadNumber, queueSize, elementParser);
-    }
-
-    public static <T> void parse(final Iterator<? extends T> iter, final long offset, final long count, final Consumer<? super T> elementParser) {
-        parse(iter, offset, count, 0, 0, elementParser);
-    }
-
-    /**
-     * Parse the elements in the specified iterators one by one.
-     * 
-     * @param iter
-     * @param offset
-     * @param count
-     * @param processThreadNumber thread number used to parse/process the lines/records
-     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-     * @param elementParser always remember to handle the ending element <code>null</code>
-     */
-    public static <T> void parse(final Iterator<? extends T> iter, long offset, long count, final int processThreadNumber, final int queueSize,
-            final Consumer<? super T> elementParser) {
-        parseII(N.asList(iter), offset, count, 1, processThreadNumber, queueSize, elementParser);
-    }
-
-    public static <T> void parse(final Collection<? extends Iterator<? extends T>> iterators, final Consumer<? super T> elementParser) {
-        parse(iterators, 0, Long.MAX_VALUE, elementParser);
-    }
-
-    public static <T> void parse(final Collection<? extends Iterator<? extends T>> iterators, final long offset, final long count,
-            final Consumer<? super T> elementParser) {
-        parse(iterators, offset, count, 0, 0, 0, elementParser);
-    }
-
-    public static <T> void parse(final Collection<? extends Iterator<? extends T>> iterators, final int readThreadNumber, final int processThreadNumber,
-            final int queueSize, final Consumer<? super T> elementParser) {
-        parse(iterators, 0, Long.MAX_VALUE, readThreadNumber, processThreadNumber, queueSize, elementParser);
-    }
-
-    /**
-     * Parse the elements in the specified iterators one by one.
-     * 
-     * @param iterators
-     * @param offset
-     * @param count
-     * @param processThreadNumber thread number used to parse/process the lines/records
-     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-     * @param elementParser always remember to handle the ending element <code>null</code>
-     */
-    public static <T> void parse(final Collection<? extends Iterator<? extends T>> iterators, final long offset, final long count, final int readThreadNumber,
-            final int processThreadNumber, final int queueSize, final Consumer<? super T> elementParser) {
-        if (N.isNullOrEmpty(iterators)) {
-            return;
-        }
-
-        parseII(iterators, offset, count, readThreadNumber, processThreadNumber, queueSize, elementParser);
-    }
-
-    private static <T> void parseII(final Collection<? extends Iterator<? extends T>> iterators, long offset, long count, final int readThreadNum,
-            final int processThreadNumber, final int queueSize, final Consumer<? super T> elementParser) {
-
-        if (logger.isInfoEnabled()) {
-            logger.info("### Start to parse");
-        }
-
-        try (final Stream<T> stream = ((readThreadNum > 1 || processThreadNumber > 0)
-                ? Stream.parallelConcat2(iterators, (readThreadNum == 0 ? 1 : readThreadNum), (queueSize == 0 ? 1024 : queueSize))
-                : Stream.concat2(iterators))) {
-
-            final Iterator<? extends T> iteratorII = stream.skip(offset).limit(count).iterator();
-
-            if (processThreadNumber == 0) {
-                while (iteratorII.hasNext()) {
-                    elementParser.accept(iteratorII.next());
-                }
-
-                elementParser.accept(null);
-            } else {
-                final AtomicInteger activeThreadNum = new AtomicInteger();
-                final ExecutorService executorService = Executors.newFixedThreadPool(processThreadNumber);
-                final Output<Throwable> errorHolder = new Output<>();
-
-                for (int i = 0; i < processThreadNumber; i++) {
-                    activeThreadNum.incrementAndGet();
-
-                    executorService.execute(new Runnable() {
-                        @Override
-                        public void run() {
-                            T element = null;
-                            try {
-                                while (errorHolder.value() == null) {
-                                    synchronized (iteratorII) {
-                                        if (iteratorII.hasNext()) {
-                                            element = iteratorII.next();
-                                        } else {
-                                            break;
-                                        }
-                                    }
-
-                                    elementParser.accept(element);
-                                }
-                            } catch (Throwable e) {
-                                synchronized (errorHolder) {
-                                    if (errorHolder.value() == null) {
-                                        errorHolder.setValue(e);
-                                    } else {
-                                        errorHolder.value().addSuppressed(e);
-                                    }
-                                }
-                            } finally {
-                                activeThreadNum.decrementAndGet();
-                            }
-                        }
-                    });
-                }
-
-                while (activeThreadNum.get() > 0) {
-                    N.sleep(1);
-                }
-
-                if (errorHolder.value() == null) {
-                    try {
-                        elementParser.accept(null);
-                    } catch (Throwable e) {
-                        errorHolder.setValue(e);
-                    }
-                }
-
-                if (errorHolder.value() != null) {
-                    throw N.toRuntimeException(errorHolder.value());
-                }
-            }
-        } finally {
-            if (logger.isInfoEnabled()) {
-                logger.info("### ### End to parse");
-            }
-        }
-    }
 
     private static InputStream openFile(final Output<ZipFile> outputZipFile, final File file) throws IOException {
         InputStream is = null;

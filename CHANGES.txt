@@ -5,7 +5,17 @@
 
 2, Add median to IntTriple/LongTriple/FloatTriple/DoubleTriple
 
-3, Improvements and bug fix.
+3*, Remove parameterized constructors from Pair/Triple/Tuple/Output/MutableInt/Indexed/IndexedInt/...
+
+4, Add boxed to OptionalInt/OptionalDouble/...
+
+5*, Change the parameter order of CSVUtil.loadCSV(Map<String, ? extends Type> columnTypeMap ...) and CSVUtil.loadCSV(List<? extends Type> columnTypeList ...)
+
+6*, Change the parameter order of JdbcUtil.importData(...final Map<String, ? extends Type> columnTypeMap final int batchSize, final int batchInterval)
+
+7*, Remove parse(iter..) and parse(iters...) from IOUtil/JdbcUtil, replaced by the methods in N.
+
+8, Improvements and bug fix.
 
 
 ========Changes in 0.9.67=========================================================================

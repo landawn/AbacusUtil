@@ -238,6 +238,10 @@ public final class OptionalBoolean implements Comparable<OptionalBoolean> {
         return isPresent() ? Stream.of(value) : Stream.<Boolean> empty();
     }
 
+    public Optional<Boolean> boxed() {
+        return isPresent() ? Optional.of(value) : Optional.<Boolean> empty();
+    }
+
     /**
      * Indicates whether some other object is "equal to" this OptionalBoolean. The
      * other object is considered equal if:

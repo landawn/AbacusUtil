@@ -85,8 +85,6 @@ import com.landawn.abacus.exception.ParseException;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
 import com.landawn.abacus.type.Type;
-import com.landawn.abacus.util.SQLExecutor.StatementSetter;
-import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.Predicate;
@@ -109,9 +107,9 @@ public final class JdbcUtil {
     // ...
     private static final String CURRENT_DIR_PATH = "./";
 
-    private static final StatementSetter DEFAULT_STATEMENT_SETTER = new StatementSetter() {
+    private static final BiConsumer<PreparedStatement, Object[]> DEFAULT_STMT_SETTER = new BiConsumer<PreparedStatement, Object[]>() {
         @Override
-        public void setParameters(NamedSQL namedSQL, PreparedStatement stmt, Object... parameters) throws SQLException {
+        public void accept(PreparedStatement stmt, Object[] parameters) throws SQLException {
             for (int i = 0, len = parameters.length; i < len; i++) {
                 stmt.setObject(i + 1, parameters[i]);
             }
@@ -1066,7 +1064,7 @@ public final class JdbcUtil {
     @SuppressWarnings("rawtypes")
     public static int importData(final DataSet dataset, final int offset, final int count, final Connection conn, final String insertSQL,
             final Map<String, ? extends Type> columnTypeMap) {
-        return importData(dataset, offset, count, conn, insertSQL, columnTypeMap, 200, 0);
+        return importData(dataset, offset, count, conn, insertSQL, 200, 0, columnTypeMap);
     }
 
     /**
@@ -1082,15 +1080,15 @@ public final class JdbcUtil {
         columnNameList.retainAll(yourSelectColumnNames);        
         String sql = RE.insert(columnNameList).into(tableName).sql();  
      * </code></pre>
-     * @param columnTypeMap
      * @param batchSize
      * @param batchInterval
+     * @param columnTypeMap
      * @return
      */
     @SuppressWarnings("rawtypes")
-    public static int importData(final DataSet dataset, final int offset, final int count, final Connection conn, final String insertSQL,
-            final Map<String, ? extends Type> columnTypeMap, final int batchSize, final int batchInterval) {
-        return importData(dataset, offset, count, null, conn, insertSQL, columnTypeMap, batchSize, batchInterval);
+    public static int importData(final DataSet dataset, final int offset, final int count, final Connection conn, final String insertSQL, final int batchSize,
+            final int batchInterval, final Map<String, ? extends Type> columnTypeMap) {
+        return importData(dataset, offset, count, null, conn, insertSQL, batchSize, batchInterval, columnTypeMap);
     }
 
     /**
@@ -1107,14 +1105,14 @@ public final class JdbcUtil {
         columnNameList.retainAll(yourSelectColumnNames);        
         String sql = RE.insert(columnNameList).into(tableName).sql();  
      * </code></pre>
-     * @param columnTypeMap
      * @param batchSize
      * @param batchInterval
+     * @param columnTypeMap
      * @return
      */
     @SuppressWarnings("rawtypes")
     public static int importData(final DataSet dataset, final int offset, final int count, final Predicate<Object[]> filter, final Connection conn,
-            final String insertSQL, final Map<String, ? extends Type> columnTypeMap, final int batchSize, final int batchInterval) {
+            final String insertSQL, final int batchSize, final int batchInterval, final Map<String, ? extends Type> columnTypeMap) {
         PreparedStatement stmt = null;
 
         try {
@@ -2156,90 +2154,6 @@ public final class JdbcUtil {
         parseII(new RowIterator(rs), offset, count, processThreadNumber, queueSize, rowParser);
     }
 
-    /**
-     * Parse the specified ResultSet.
-     * The last row will always be null to identity the ending of row set even offset/count is specified.
-     * 
-     * @param iter must not return <code>null</code> because <code>null</code> will be set automatically to identify the end of lines/rows.
-     * @param rowParser always remember to handle the ending element <code>null</code>
-     */
-    public static void parse(final RowIterator iter, final Consumer<Object[]> rowParser) {
-        parse(iter, 0, Long.MAX_VALUE, rowParser);
-    }
-
-    /**
-     * Parse the specified ResultSet.
-     * The last row will always be null to identity the ending of row set even offset/count is specified.
-     * 
-     * @param iter must not return <code>null</code> because <code>null</code> will be set automatically to identify the end of lines/rows.
-     * @param offset
-     * @param count
-     * @param rowParser always remember to handle the ending element <code>null</code>
-     */
-    public static void parse(final RowIterator iter, long offset, long count, final Consumer<Object[]> rowParser) {
-        parse(iter, offset, count, 0, 0, rowParser);
-    }
-
-    //    /**
-    //     * Parse the specified ResultSet.
-    //     * The last row will always be null to identity the ending of row set even offset/count is specified.
-    //     * 
-    //     * @param iter must not return <code>null</code> because <code>null</code> will be set automatically to identify the end of lines/rows.
-    //     * @param processThreadNumber thread number used to parse/process the lines/records
-    //     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-    //     * @param rowParser always remember to handle the ending element <code>null</code>
-    //     */
-    //    @Deprecated
-    //    static void parse(final RowIterator iter, final int processThreadNumber, final int queueSize, final Consumer<Object[]> rowParser) {
-    //        parse(iter, 0, Long.MAX_VALUE, processThreadNumber, queueSize, rowParser);
-    //    }
-
-    /**
-     * Parse the specified ResultSet.
-     * The last row will always be null to identity the ending of row set even offset/count is specified.
-     * 
-     * @param iter must not return <code>null</code> because <code>null</code> will be set automatically to identify the end of lines/rows.
-     * @param offset
-     * @param count
-     * @param processThreadNumber thread number used to parse/process the lines/records
-     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-     * @param rowParser always remember to handle the ending element <code>null</code>
-     */
-    public static void parse(final RowIterator iter, long offset, long count, final int processThreadNumber, final int queueSize,
-            final Consumer<Object[]> rowParser) {
-        parseII(iter, offset, count, processThreadNumber, queueSize, rowParser);
-    }
-
-    public static void parse(final Collection<? extends RowIterator> iterators, final Consumer<Object[]> elementParser) {
-        if (N.isNullOrEmpty(iterators)) {
-            return;
-        }
-
-        parse(iterators, 0, Long.MAX_VALUE, elementParser);
-    }
-
-    public static void parse(final Collection<? extends RowIterator> iterators, final long offset, final long count, final Consumer<Object[]> elementParser) {
-        if (N.isNullOrEmpty(iterators)) {
-            return;
-        }
-
-        parse(iterators, offset, count, 0, 0, 0, elementParser);
-    }
-
-    public static void parse(final Collection<? extends RowIterator> iterators, final int readThreadNumber, final int processThreadNumber, final int queueSize,
-            final Consumer<Object[]> elementParser) {
-        parse(iterators, 0, Long.MAX_VALUE, readThreadNumber, processThreadNumber, queueSize, elementParser);
-    }
-
-    public static void parse(final Collection<? extends RowIterator> iterators, final long offset, final long count, final int readThreadNumber,
-            final int processThreadNumber, final int queueSize, final Consumer<Object[]> elementParser) {
-        if (N.isNullOrEmpty(iterators)) {
-            return;
-        }
-
-        IOUtil.parse(iterators, offset, count, readThreadNumber, processThreadNumber, queueSize, elementParser);
-    }
-
     private static void parseII(final RowIterator iter, long offset, long count, final int processThreadNumber, final int queueSize,
             final Consumer<Object[]> rowParser) {
         while (offset-- > 0 && iter.moveToNext()) {
@@ -2313,7 +2227,7 @@ public final class JdbcUtil {
     }
 
     public static long copy(final Connection sourceConn, final String selectSql, final Connection targetConn, final String insertSql) {
-        return copy(sourceConn, selectSql, 200, 0, Integer.MAX_VALUE, targetConn, insertSql, DEFAULT_STATEMENT_SETTER, 200, 0, false);
+        return copy(sourceConn, selectSql, 200, 0, Integer.MAX_VALUE, targetConn, insertSql, DEFAULT_STMT_SETTER, 200, 0, false);
     }
 
     /**
@@ -2325,15 +2239,15 @@ public final class JdbcUtil {
      * @param count
      * @param targetConn
      * @param insertSql
-     * @param parametersSetter
+     * @param stmtSetter
      * @param batchSize
      * @param batchInterval
      * @param inParallel do the read and write in separated threads.
      * @return
      */
     public static long copy(final Connection sourceConn, final String selectSql, final int fetchSize, final long offset, final long count,
-            final Connection targetConn, final String insertSql, final StatementSetter parametersSetter, final int batchSize, final int batchInterval,
-            final boolean inParallel) {
+            final Connection targetConn, final String insertSql, final BiConsumer<PreparedStatement, Object[]> stmtSetter, final int batchSize,
+            final int batchInterval, final boolean inParallel) {
         PreparedStatement selectStmt = null;
         PreparedStatement insertStmt = null;
 
@@ -2345,7 +2259,7 @@ public final class JdbcUtil {
             selectStmt = sourceConn.prepareStatement(selectSql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
             selectStmt.setFetchSize(fetchSize);
 
-            copy(selectStmt, offset, count, insertStmt, parametersSetter, batchSize, batchInterval, inParallel);
+            copy(selectStmt, offset, count, insertStmt, stmtSetter, batchSize, batchInterval, inParallel);
         } catch (SQLException e) {
             throw new AbacusSQLException(e);
         } finally {
@@ -2356,8 +2270,8 @@ public final class JdbcUtil {
         return result;
     }
 
-    public static long copy(final PreparedStatement selectStmt, final PreparedStatement insertStmt, final StatementSetter statementSetter) {
-        return copy(selectStmt, 0, Integer.MAX_VALUE, insertStmt, statementSetter, 200, 0, false);
+    public static long copy(final PreparedStatement selectStmt, final PreparedStatement insertStmt, final BiConsumer<PreparedStatement, Object[]> stmtSetter) {
+        return copy(selectStmt, 0, Integer.MAX_VALUE, insertStmt, stmtSetter, 200, 0, false);
     }
 
     /**
@@ -2366,20 +2280,20 @@ public final class JdbcUtil {
      * @param offset
      * @param count
      * @param insertStmt
-     * @param statementSetter
+     * @param stmtSetter
      * @param batchSize
      * @param batchInterval
      * @param inParallel do the read and write in separated threads.
      * @return
      */
     public static long copy(final PreparedStatement selectStmt, final long offset, final long count, final PreparedStatement insertStmt,
-            final StatementSetter statementSetter, final int batchSize, final int batchInterval, final boolean inParallel) {
+            final BiConsumer<PreparedStatement, Object[]> stmtSetter, final int batchSize, final int batchInterval, final boolean inParallel) {
 
         if (((offset < 0) || (count < 0) || batchSize < 0) || (batchInterval < 0)) {
             throw new IllegalArgumentException("'offset', 'count' 'batchSize' and 'batchInterval' can't be negative number");
         }
 
-        final StatementSetter parametersSetter = statementSetter == null ? DEFAULT_STATEMENT_SETTER : statementSetter;
+        final BiConsumer<PreparedStatement, Object[]> setter = stmtSetter == null ? DEFAULT_STMT_SETTER : stmtSetter;
         final AtomicLong result = new AtomicLong();
 
         final Consumer<Object[]> rowParser = new Consumer<Object[]>() {
@@ -2392,7 +2306,7 @@ public final class JdbcUtil {
                             insertStmt.clearBatch();
                         }
                     } else {
-                        parametersSetter.setParameters(null, insertStmt, row);
+                        setter.accept(insertStmt, row);
 
                         insertStmt.addBatch();
                         result.incrementAndGet();
@@ -2697,5 +2611,9 @@ public final class JdbcUtil {
         public boolean isClosed() {
             return isClosed;
         }
+    }
+
+    public static interface BiConsumer<T, U> {
+        void accept(T t, U u) throws SQLException;
     }
 }

@@ -238,6 +238,10 @@ public final class OptionalInt implements Comparable<OptionalInt> {
         return isPresent() ? IntStream.of(value) : IntStream.empty();
     }
 
+    public Optional<Integer> boxed() {
+        return isPresent() ? Optional.of(value) : Optional.<Integer> empty();
+    }
+
     public java.util.OptionalInt __() {
         return isPresent() ? java.util.OptionalInt.empty() : java.util.OptionalInt.of(value);
     }

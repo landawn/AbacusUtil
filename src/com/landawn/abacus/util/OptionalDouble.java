@@ -316,6 +316,10 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
         return isPresent() ? DoubleStream.of(value) : DoubleStream.empty();
     }
 
+    public Optional<Double> boxed() {
+        return isPresent() ? Optional.of(value) : Optional.<Double> empty();
+    }
+
     public java.util.OptionalDouble __() {
         return isPresent() ? java.util.OptionalDouble.empty() : java.util.OptionalDouble.of(value);
     }

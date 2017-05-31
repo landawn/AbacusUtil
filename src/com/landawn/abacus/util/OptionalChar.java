@@ -238,6 +238,10 @@ public final class OptionalChar implements Comparable<OptionalChar> {
         return isPresent() ? CharStream.of(value) : CharStream.empty();
     }
 
+    public Optional<Character> boxed() {
+        return isPresent() ? Optional.of(value) : Optional.<Character> empty();
+    }
+
     /**
      * Indicates whether some other object is "equal to" this OptionalChar. The
      * other object is considered equal if:

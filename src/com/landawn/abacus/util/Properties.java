@@ -86,8 +86,8 @@ public class Properties<K, V> implements Map<K, V> {
      * @return
      */
     @SuppressWarnings("unchecked")
-    public <T extends V> T get(Object propName, T defaultValue) {
-        T result = (T) values.get(propName);
+    public V getOrDefault(Object propName, V defaultValue) {
+        V result = values.get(propName);
 
         if (result == null) {
             return defaultValue;
@@ -104,7 +104,7 @@ public class Properties<K, V> implements Map<K, V> {
      *            is returned if the specified {@code propName} is not contained in this Properties instance or it's null.
      * @return
      */
-    public <T> T get(Class<T> targetClass, Object propName, T defaultValue) {
+    public <T> T getOrDefault(Class<T> targetClass, Object propName, T defaultValue) {
         Object result = values.get(propName);
 
         if (result == null) {
