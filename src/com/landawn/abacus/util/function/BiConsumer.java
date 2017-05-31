@@ -27,6 +27,10 @@ import com.landawn.abacus.util.Fn;
  */
 public interface BiConsumer<T, U> extends java.util.function.BiConsumer<T, U> {
 
+    static <T, U> BiConsumer<T, U> doNothing() {
+        return Fn.BiConsumers.doNothing();
+    }
+
     static <T, C extends Collection<? super T>> BiConsumer<C, T> ofAdd() {
         return Fn.BiConsumers.ofAdd();
     }

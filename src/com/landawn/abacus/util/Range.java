@@ -17,6 +17,7 @@
 package com.landawn.abacus.util;
 
 import java.io.Serializable;
+import java.util.Collection;
 
 /**
  * <p>
@@ -174,6 +175,20 @@ public final class Range<T extends Comparable> implements Serializable {
         }
 
         return lowerEndpoint.includes(element) && upperEndpoint.includes(element);
+    }
+
+    public boolean containsAll(Collection<? extends T> c) {
+        if (N.isNullOrEmpty(c)) {
+            return true;
+        }
+
+        for (T e : c) {
+            if (contains(e) == false) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

@@ -14,6 +14,8 @@
 
 package com.landawn.abacus.util.function;
 
+import com.landawn.abacus.util.Fn;
+
 /**
  * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
  * @since 0.8
@@ -24,4 +26,8 @@ public interface Consumer<T> extends java.util.function.Consumer<T> {
 
     @Override
     void accept(T t);
+
+    static <T> Consumer<T> doNothing() {
+        return Fn.doNothing();
+    }
 }

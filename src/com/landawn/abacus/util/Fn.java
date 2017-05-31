@@ -85,6 +85,12 @@ public final class Fn {
     @SuppressWarnings("rawtypes")
     public static final com.landawn.abacus.util.function.Supplier<LinkedHashMap<String, Object>> SUPPLIER_OF_LINKED_HASH_MAP = (com.landawn.abacus.util.function.Supplier) Suppliers.LINKED_HASH_MAP;
 
+    private static final Runnable EMPTY_ACTION = new Runnable() {
+        @Override
+        public void run() {
+        }
+    };
+
     @SuppressWarnings("rawtypes")
     private static final com.landawn.abacus.util.function.Consumer DO_NOTHING = new com.landawn.abacus.util.function.Consumer() {
         @Override
@@ -178,6 +184,10 @@ public final class Fn {
 
     public static <T> Comparator<T> reverseOrder(final Comparator<T> cmp) {
         return Comparators.reverseOrder(cmp);
+    }
+
+    public static Runnable emptyAction() {
+        return EMPTY_ACTION;
     }
 
     public static <T> com.landawn.abacus.util.function.Consumer<T> doNothing() {
@@ -1724,7 +1734,7 @@ public final class Fn {
             // singleton.
         }
 
-        public static <T, U> com.landawn.abacus.util.function.BiConsumer<T, U> ofDoNothing() {
+        public static <T, U> com.landawn.abacus.util.function.BiConsumer<T, U> doNothing() {
             return DO_NOTHING;
         }
 
@@ -1933,6 +1943,14 @@ public final class Fn {
             // singleton.
         }
 
+        public static <T, U> com.landawn.abacus.util.function.BiFunction<T, U, T> returnFirst() {
+            return (com.landawn.abacus.util.function.BiFunction<T, U, T>) RETURN_FIRST;
+        }
+
+        public static <T, U> com.landawn.abacus.util.function.BiFunction<T, U, U> returnSecond() {
+            return (com.landawn.abacus.util.function.BiFunction<T, U, U>) RETURN_SECOND;
+        }
+
         public static <T, C extends Collection<? super T>> com.landawn.abacus.util.function.BiFunction<C, T, C> ofAdd() {
             return (com.landawn.abacus.util.function.BiFunction<C, T, C>) ADD;
         }
@@ -1969,14 +1987,6 @@ public final class Fn {
 
         public static <K, V, M extends Map<K, V>, U> com.landawn.abacus.util.function.BiFunction<M, K, M> ofRemoveByKey() {
             return (com.landawn.abacus.util.function.BiFunction<M, K, M>) REMOVE_BY_KEY;
-        }
-
-        public static <T, U> com.landawn.abacus.util.function.BiFunction<T, U, T> ofReturnFirst() {
-            return (com.landawn.abacus.util.function.BiFunction<T, U, T>) RETURN_FIRST;
-        }
-
-        public static <T, U> com.landawn.abacus.util.function.BiFunction<T, U, U> ofReturnSecond() {
-            return (com.landawn.abacus.util.function.BiFunction<T, U, U>) RETURN_SECOND;
         }
 
         /**
