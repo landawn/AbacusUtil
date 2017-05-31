@@ -366,24 +366,28 @@ public final class Range<T extends Comparable> implements Serializable {
      * 
      * @param other
      *            overlapping Range
-     * @return range representing the intersection of {@code this} and {@code other} ({@code this} if equal)
-     * @throws IllegalArgumentException
-     *             if {@code other} does not overlap {@code this}
+     * @return range representing the intersection of {@code this} and {@code other}, {@code this} if equal, or <code>Optional.empty()</code> if they're not overlapped.
      * @since 3.0.1
      */
-    public Range<T> intersection(final Range<T> other) {
+    public Optional<Range<T>> intersection(final Range<T> other) {
         if (!this.isOverlappedBy(other)) {
-            throw new IllegalArgumentException(String.format("Cannot calculate intersection with non-overlapping range %s", other));
-        }
-
-        if (this.equals(other)) {
-            return this;
+            return Optional.empty();
+        } else if (this.equals(other)) {
+            return Optional.of(this);
         }
 
         final LowerEndpoint<T> newLowerEndpoint = lowerEndpoint.includes(other.lowerEndpoint.value) ? other.lowerEndpoint : lowerEndpoint;
         final UpperEndpoint<T> newUpperEndpoint = upperEndpoint.includes(other.upperEndpoint.value) ? other.upperEndpoint : upperEndpoint;
 
-        return new Range<T>(newLowerEndpoint, newUpperEndpoint);
+        return Optional.of(new Range<T>(newLowerEndpoint, newUpperEndpoint));
+    }
+
+    public boolean isEmpty() {
+        if (lowerEndpoint.isClosed || upperEndpoint.isClosed || lowerEndpoint.compareTo(upperEndpoint.value) != 0) {
+            return false;
+        }
+
+        return true;
     }
 
     // Basics
