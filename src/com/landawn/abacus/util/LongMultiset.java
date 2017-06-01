@@ -1306,11 +1306,7 @@ public final class LongMultiset<E> implements Iterable<E> {
         return newValue;
     }
 
-    public Stream<E> stream() {
-        return Stream.of(valueMap.keySet());
-    }
-
-    public Stream<Entry<E, Long>> stream2() {
+    public Stream<Entry<E, Long>> stream() {
         return Stream.of(valueMap.entrySet()).map(new Function<Map.Entry<E, MutableLong>, Map.Entry<E, Long>>() {
             @Override
             public Entry<E, Long> apply(Entry<E, MutableLong> t) {

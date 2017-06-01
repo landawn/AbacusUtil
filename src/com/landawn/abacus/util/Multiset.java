@@ -1268,11 +1268,7 @@ public final class Multiset<E> implements Iterable<E> {
         return newValue;
     }
 
-    public Stream<E> stream() {
-        return Stream.of(valueMap.keySet());
-    }
-
-    public Stream<Entry<E, Integer>> stream2() {
+    public Stream<Entry<E, Integer>> stream() {
         return Stream.of(valueMap.entrySet()).map(new Function<Map.Entry<E, MutableInt>, Map.Entry<E, Integer>>() {
             @Override
             public Entry<E, Integer> apply(Entry<E, MutableInt> t) {
