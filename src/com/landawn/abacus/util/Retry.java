@@ -475,7 +475,7 @@ public final class Retry<T> {
             return new Retry0<R>(retryTimes, retryInterval, null, retryCondition);
         }
 
-        public void run(final Try.Runnable cmd) throws Exception {
+        public void run(final Try.Runnable<Exception> cmd) throws Exception {
             try {
                 cmd.run();
             } catch (Exception e) {

@@ -85,6 +85,7 @@ import com.landawn.abacus.exception.ParseException;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
 import com.landawn.abacus.type.Type;
+import com.landawn.abacus.util.Try.BiConsumer;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.Predicate;
@@ -107,7 +108,7 @@ public final class JdbcUtil {
     // ...
     private static final String CURRENT_DIR_PATH = "./";
 
-    private static final BiConsumer<PreparedStatement, Object[]> DEFAULT_STMT_SETTER = new BiConsumer<PreparedStatement, Object[]>() {
+    private static final BiConsumer<? super PreparedStatement, ? super Object[], SQLException> DEFAULT_STMT_SETTER = new BiConsumer<PreparedStatement, Object[], SQLException>() {
         @Override
         public void accept(PreparedStatement stmt, Object[] parameters) throws SQLException {
             for (int i = 0, len = parameters.length; i < len; i++) {
@@ -1141,7 +1142,7 @@ public final class JdbcUtil {
      * @return
      */
     public static int importData(final DataSet dataset, final Connection conn, final String insertSQL,
-            final BiConsumer<? super PreparedStatement, ? super Object[]> stmtSetter) {
+            final BiConsumer<? super PreparedStatement, ? super Object[], SQLException> stmtSetter) {
         return importData(dataset, 0, dataset.size(), conn, insertSQL, stmtSetter);
     }
 
@@ -1162,7 +1163,7 @@ public final class JdbcUtil {
      * @return
      */
     public static int importData(final DataSet dataset, final int offset, final int count, final Connection conn, final String insertSQL,
-            final BiConsumer<? super PreparedStatement, ? super Object[]> stmtSetter) {
+            final BiConsumer<? super PreparedStatement, ? super Object[], SQLException> stmtSetter) {
         return importData(dataset, offset, count, conn, insertSQL, 200, 0, stmtSetter);
     }
 
@@ -1185,7 +1186,7 @@ public final class JdbcUtil {
      * @return
      */
     public static int importData(final DataSet dataset, final int offset, final int count, final Connection conn, final String insertSQL, final int batchSize,
-            final int batchInterval, final BiConsumer<? super PreparedStatement, ? super Object[]> stmtSetter) {
+            final int batchInterval, final BiConsumer<? super PreparedStatement, ? super Object[], SQLException> stmtSetter) {
         return importData(dataset, offset, count, null, conn, insertSQL, batchSize, batchInterval, stmtSetter);
     }
 
@@ -1209,7 +1210,8 @@ public final class JdbcUtil {
      * @return
      */
     public static int importData(final DataSet dataset, final int offset, final int count, final Predicate<Object[]> filter, final Connection conn,
-            final String insertSQL, final int batchSize, final int batchInterval, final BiConsumer<? super PreparedStatement, ? super Object[]> stmtSetter) {
+            final String insertSQL, final int batchSize, final int batchInterval,
+            final BiConsumer<? super PreparedStatement, ? super Object[], SQLException> stmtSetter) {
         PreparedStatement stmt = null;
 
         try {
@@ -1438,7 +1440,7 @@ public final class JdbcUtil {
     }
 
     public static int importData(final DataSet dataset, final PreparedStatement stmt,
-            final BiConsumer<? super PreparedStatement, ? super Object[]> stmtSetter) {
+            final BiConsumer<? super PreparedStatement, ? super Object[], SQLException> stmtSetter) {
         return importData(dataset, 0, dataset.size(), stmt, stmtSetter);
     }
 
@@ -1452,7 +1454,7 @@ public final class JdbcUtil {
      * @return
      */
     public static int importData(final DataSet dataset, final int offset, final int count, final PreparedStatement stmt,
-            final BiConsumer<? super PreparedStatement, ? super Object[]> stmtSetter) {
+            final BiConsumer<? super PreparedStatement, ? super Object[], SQLException> stmtSetter) {
         return importData(dataset, offset, count, stmt, 200, 0, stmtSetter);
     }
 
@@ -1469,7 +1471,7 @@ public final class JdbcUtil {
      * @return
      */
     public static int importData(final DataSet dataset, final int offset, final int count, final PreparedStatement stmt, final int batchSize,
-            final int batchInterval, final BiConsumer<? super PreparedStatement, ? super Object[]> stmtSetter) {
+            final int batchInterval, final BiConsumer<? super PreparedStatement, ? super Object[], SQLException> stmtSetter) {
         return importData(dataset, offset, count, null, stmt, batchSize, batchInterval, stmtSetter);
     }
 
@@ -1488,7 +1490,7 @@ public final class JdbcUtil {
      * @return
      */
     public static int importData(final DataSet dataset, final int offset, final int count, final Predicate<Object[]> filter, final PreparedStatement stmt,
-            final int batchSize, final int batchInterval, final BiConsumer<? super PreparedStatement, ? super Object[]> stmtSetter) {
+            final int batchSize, final int batchInterval, final BiConsumer<? super PreparedStatement, ? super Object[], SQLException> stmtSetter) {
         if (((offset < 0) || (count < 0) || batchSize < 0) || (batchInterval < 0)) {
             throw new IllegalArgumentException("'offset', 'count' 'batchSize' and 'batchInterval' can't be negative number");
         }
@@ -1792,12 +1794,12 @@ public final class JdbcUtil {
     }
 
     public static <T> long importData(final Iterator<T> iter, final Connection conn, final String insertSQL,
-            final BiConsumer<? super PreparedStatement, ? super T> stmtSetter) {
+            final BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter) {
         return importData(iter, 0, Long.MAX_VALUE, conn, insertSQL, 200, 0, stmtSetter);
     }
 
     public static <T> long importData(final Iterator<T> iter, final long offset, final long count, final Connection conn, final String insertSQL,
-            final int batchSize, final int batchInterval, final BiConsumer<? super PreparedStatement, ? super T> stmtSetter) {
+            final int batchSize, final int batchInterval, final BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter) {
         return importData(iter, offset, count, null, conn, insertSQL, batchSize, batchInterval, stmtSetter);
     }
 
@@ -1815,7 +1817,8 @@ public final class JdbcUtil {
      * @return
      */
     public static <T> long importData(final Iterator<T> iter, final long offset, final long count, final Predicate<? super T> filter, final Connection conn,
-            final String insertSQL, final int batchSize, final int batchInterval, final BiConsumer<? super PreparedStatement, ? super T> stmtSetter) {
+            final String insertSQL, final int batchSize, final int batchInterval,
+            final BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter) {
         PreparedStatement stmt = null;
 
         try {
@@ -1829,12 +1832,13 @@ public final class JdbcUtil {
         }
     }
 
-    public static <T> long importData(final Iterator<T> iter, final PreparedStatement stmt, final BiConsumer<? super PreparedStatement, ? super T> stmtSetter) {
+    public static <T> long importData(final Iterator<T> iter, final PreparedStatement stmt,
+            final BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter) {
         return importData(iter, 0, Long.MAX_VALUE, stmt, 200, 0, stmtSetter);
     }
 
     public static <T> long importData(final Iterator<T> iter, long offset, final long count, final PreparedStatement stmt, final int batchSize,
-            final int batchInterval, final BiConsumer<? super PreparedStatement, ? super T> stmtSetter) {
+            final int batchInterval, final BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter) {
         return importData(iter, offset, count, null, stmt, batchSize, batchInterval, stmtSetter);
     }
 
@@ -1852,7 +1856,7 @@ public final class JdbcUtil {
      * @return
      */
     public static <T> long importData(final Iterator<T> iter, long offset, final long count, final Predicate<? super T> filter, final PreparedStatement stmt,
-            final int batchSize, final int batchInterval, final BiConsumer<? super PreparedStatement, ? super T> stmtSetter) {
+            final int batchSize, final int batchInterval, final BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter) {
         long result = 0;
 
         try {
@@ -2246,8 +2250,8 @@ public final class JdbcUtil {
      * @return
      */
     public static long copy(final Connection sourceConn, final String selectSql, final int fetchSize, final long offset, final long count,
-            final Connection targetConn, final String insertSql, final BiConsumer<PreparedStatement, Object[]> stmtSetter, final int batchSize,
-            final int batchInterval, final boolean inParallel) {
+            final Connection targetConn, final String insertSql, final BiConsumer<? super PreparedStatement, ? super Object[], SQLException> stmtSetter,
+            final int batchSize, final int batchInterval, final boolean inParallel) {
         PreparedStatement selectStmt = null;
         PreparedStatement insertStmt = null;
 
@@ -2270,7 +2274,8 @@ public final class JdbcUtil {
         return result;
     }
 
-    public static long copy(final PreparedStatement selectStmt, final PreparedStatement insertStmt, final BiConsumer<PreparedStatement, Object[]> stmtSetter) {
+    public static long copy(final PreparedStatement selectStmt, final PreparedStatement insertStmt,
+            final BiConsumer<? super PreparedStatement, ? super Object[], SQLException> stmtSetter) {
         return copy(selectStmt, 0, Integer.MAX_VALUE, insertStmt, stmtSetter, 200, 0, false);
     }
 
@@ -2287,13 +2292,16 @@ public final class JdbcUtil {
      * @return
      */
     public static long copy(final PreparedStatement selectStmt, final long offset, final long count, final PreparedStatement insertStmt,
-            final BiConsumer<PreparedStatement, Object[]> stmtSetter, final int batchSize, final int batchInterval, final boolean inParallel) {
+            final BiConsumer<? super PreparedStatement, ? super Object[], SQLException> stmtSetter, final int batchSize, final int batchInterval,
+            final boolean inParallel) {
 
         if (((offset < 0) || (count < 0) || batchSize < 0) || (batchInterval < 0)) {
             throw new IllegalArgumentException("'offset', 'count' 'batchSize' and 'batchInterval' can't be negative number");
         }
 
-        final BiConsumer<PreparedStatement, Object[]> setter = stmtSetter == null ? DEFAULT_STMT_SETTER : stmtSetter;
+        @SuppressWarnings("rawtypes")
+        final BiConsumer<? super PreparedStatement, ? super Object[], SQLException> setter = (BiConsumer) (stmtSetter == null ? DEFAULT_STMT_SETTER
+                : stmtSetter);
         final AtomicLong result = new AtomicLong();
 
         final Consumer<Object[]> rowParser = new Consumer<Object[]>() {
@@ -2611,9 +2619,5 @@ public final class JdbcUtil {
         public boolean isClosed() {
             return isClosed;
         }
-    }
-
-    public static interface BiConsumer<T, U> {
-        void accept(T t, U u) throws SQLException;
     }
 }

@@ -103,13 +103,13 @@ public final class Synchronized<T> {
             return new Synchronized0<>(target);
         }
 
-        public void run(final Try.Runnable cmd) throws Exception {
+        public void run(final Try.Runnable<Exception> cmd) throws Exception {
             synchronized (target) {
                 cmd.run();
             }
         }
 
-        public void run(final Try.Consumer<? super T> cmd) throws Exception {
+        public void run(final Try.Consumer<? super T, Exception> cmd) throws Exception {
             synchronized (target) {
                 cmd.accept(target);
             }
@@ -121,7 +121,7 @@ public final class Synchronized<T> {
             }
         }
 
-        public <R> R call(final Try.Function<? super T, R> cmd) throws Exception {
+        public <R> R call(final Try.Function<? super T, R, Exception> cmd) throws Exception {
             synchronized (target) {
                 return cmd.apply(target);
             }

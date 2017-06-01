@@ -15,7 +15,11 @@
 
 7*, Remove parse(iter..) and parse(iters...) from IOUtil/JdbcUtil, replaced by the methods in N.
 
-8, Improvements and bug fix.
+8*, Refactoring LongStream/Stream.interval(...)
+
+9*, Refactoring Try.Predicate/Function/Consumer/...
+
+10, Improvements and bug fix.
 
 
 ========Changes in 0.9.67=========================================================================

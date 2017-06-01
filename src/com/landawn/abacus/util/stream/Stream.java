@@ -1756,10 +1756,10 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     public abstract long persist(Writer writer, Function<? super T, String> toLine);
 
     public abstract long persist(final Connection conn, final String insertSQL, final int batchSize, final int batchInterval,
-            final BiConsumer<? super T, ? super PreparedStatement> stmtSetter);
+            final Try.BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter);
 
     public abstract long persist(final PreparedStatement stmt, final int batchSize, final int batchInterval,
-            final BiConsumer<? super T, ? super PreparedStatement> stmtSetter);
+            final Try.BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter);
 
     @Override
     public com.landawn.abacus.util.ImmutableIterator<T> iterator() {
@@ -2772,26 +2772,38 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <T> Stream<T> interval(final long intervalInMillis, final Supplier<T> s) {
-        return interval(System.currentTimeMillis(), intervalInMillis, s);
+        return interval(0, intervalInMillis, s);
     }
 
     /**
      * 
-     * @param startTimeInMillis first time value in milliseconds.
-     * @param intervalInMillis use TimeUnit to convert interval to milliseconds.
+     * @param delayInMillis
+     * @param intervalInMillis
      * @param s
      * @return
      * @see java.util.concurrent.TimeUnit
      */
-    public static <T> Stream<T> interval(final long startTimeInMillis, final long intervalInMillis, final Supplier<T> s) {
+    public static <T> Stream<T> interval(final long delayInMillis, final long intervalInMillis, final Supplier<T> s) {
+        return interval(delayInMillis, intervalInMillis, TimeUnit.MILLISECONDS, s);
+    }
+
+    /**
+     * 
+     * @param delay
+     * @param interval
+     * @param unit
+     * @param s
+     * @return
+     */
+    public static <T> Stream<T> interval(final long delay, final long interval, final TimeUnit unit, final Supplier<T> s) {
         N.requireNonNull(s);
 
-        final ExLongIterator timer = LongStream.interval(startTimeInMillis, intervalInMillis).exIterator();
+        final ExLongIterator timer = LongStream.interval(delay, interval, unit).exIterator();
 
         return of(new ExIterator<T>() {
             @Override
             public boolean hasNext() {
-                return true;
+                return timer.hasNext();
             }
 
             @Override
@@ -2802,39 +2814,39 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         });
     }
 
+    public static <T> Stream<T> interval(final long intervalInMillis, final LongFunction<T> s) {
+        return interval(0, intervalInMillis, s);
+    }
+
     /**
      * 
-     * @param startTimeInMillis
+     * @param delayInMillis
+     * @param intervalInMillis
+     * @param s
+     * @return
+     * @see java.util.concurrent.TimeUnit
+     */
+    public static <T> Stream<T> interval(final long delayInMillis, final long intervalInMillis, final LongFunction<T> s) {
+        return interval(delayInMillis, intervalInMillis, TimeUnit.MILLISECONDS, s);
+    }
+
+    /**
+     * 
+     * @param delay
      * @param interval
      * @param unit
      * @param s
      * @return
      */
-    public static <T> Stream<T> interval(final long startTimeInMillis, final long interval, final TimeUnit unit, final Supplier<T> s) {
-        return interval(startTimeInMillis, unit.toMillis(interval), s);
-    }
-
-    public static <T> Stream<T> interval(final long intervalInMillis, final LongFunction<T> s) {
-        return interval(System.currentTimeMillis(), intervalInMillis, s);
-    }
-
-    /**
-     * 
-     * @param startTimeInMillis first time value in milliseconds.
-     * @param intervalInMillis use TimeUnit to convert interval to milliseconds.
-     * @param s
-     * @return
-     * @see java.util.concurrent.TimeUnit
-     */
-    public static <T> Stream<T> interval(final long startTimeInMillis, final long intervalInMillis, final LongFunction<T> s) {
+    public static <T> Stream<T> interval(final long delay, final long interval, final TimeUnit unit, final LongFunction<T> s) {
         N.requireNonNull(s);
 
-        final ExLongIterator timer = LongStream.interval(startTimeInMillis, intervalInMillis).exIterator();
+        final ExLongIterator timer = LongStream.interval(delay, interval, unit).exIterator();
 
         return of(new ExIterator<T>() {
             @Override
             public boolean hasNext() {
-                return true;
+                return timer.hasNext();
             }
 
             @Override
@@ -2842,18 +2854,6 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
                 return s.apply(timer.nextLong());
             }
         });
-    }
-
-    /**
-     * 
-     * @param startTimeInMillis
-     * @param interval
-     * @param unit
-     * @param s
-     * @return
-     */
-    public static <T> Stream<T> interval(final long startTimeInMillis, final long interval, final TimeUnit unit, final LongFunction<T> s) {
-        return interval(startTimeInMillis, unit.toMillis(interval), s);
     }
 
     //    /**

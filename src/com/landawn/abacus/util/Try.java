@@ -42,7 +42,7 @@ public final class Try<T extends AutoCloseable> {
         return new Try<>(t);
     }
 
-    public static <T extends AutoCloseable> Try<T> of(final Supplier<T> supplier) {
+    public static <T extends AutoCloseable> Try<T> of(final Supplier<T, Exception> supplier) {
         try {
             return new Try<>(supplier.get());
         } catch (Exception e) {
@@ -103,11 +103,11 @@ public final class Try<T extends AutoCloseable> {
     //        };
     //    }
 
-    public static void run(final Try.Runnable cmd) {
+    public static void run(final Try.Runnable<Exception> cmd) {
         run(cmd, null);
     }
 
-    public static void run(final Try.Runnable cmd, final com.landawn.abacus.util.function.Consumer<? super Throwable> actionOnError) {
+    public static void run(final Try.Runnable<Exception> cmd, final com.landawn.abacus.util.function.Consumer<? super Throwable> actionOnError) {
         try {
             cmd.run();
         } catch (Exception e) {
@@ -135,11 +135,11 @@ public final class Try<T extends AutoCloseable> {
         }
     }
 
-    public void run(final Try.Consumer<? super T> cmd) {
+    public void run(final Try.Consumer<? super T, Exception> cmd) {
         run(cmd, null);
     }
 
-    public void run(final Try.Consumer<? super T> cmd, final com.landawn.abacus.util.function.Consumer<? super Throwable> actionOnError) {
+    public void run(final Try.Consumer<? super T, Exception> cmd, final com.landawn.abacus.util.function.Consumer<? super Throwable> actionOnError) {
         try {
             cmd.accept(t);
         } catch (Throwable e) {
@@ -153,11 +153,11 @@ public final class Try<T extends AutoCloseable> {
         }
     }
 
-    public <R> R call(final Try.Function<? super T, R> cmd) {
+    public <R> R call(final Try.Function<? super T, R, Exception> cmd) {
         return call(cmd, null);
     }
 
-    public <R> R call(final Try.Function<? super T, R> cmd, final com.landawn.abacus.util.function.Function<? super Throwable, R> actionOnError) {
+    public <R> R call(final Try.Function<? super T, R, Exception> cmd, final com.landawn.abacus.util.function.Function<? super Throwable, R> actionOnError) {
         try {
             return cmd.apply(t);
         } catch (Throwable e) {
@@ -182,7 +182,7 @@ public final class Try<T extends AutoCloseable> {
             return new Try0<>(t);
         }
 
-        public static <T extends AutoCloseable> Try0<T> of(final Supplier<T> supplier) {
+        public static <T extends AutoCloseable> Try0<T> of(final Supplier<T, Exception> supplier) {
             try {
                 return new Try0<>(supplier.get());
             } catch (Exception e) {
@@ -235,11 +235,11 @@ public final class Try<T extends AutoCloseable> {
         //        };
         //    }
 
-        public void run(final Try.Runnable cmd) {
+        public void run(final Try.Runnable<Exception> cmd) {
             run(cmd, null);
         }
 
-        public void run(final Try.Runnable cmd, final com.landawn.abacus.util.function.Consumer<? super Throwable> actionOnError) {
+        public void run(final Try.Runnable<Exception> cmd, final com.landawn.abacus.util.function.Consumer<? super Throwable> actionOnError) {
             try {
                 cmd.run();
             } catch (Exception e) {
@@ -272,40 +272,40 @@ public final class Try<T extends AutoCloseable> {
         }
     }
 
-    public static interface Runnable {
-        void run() throws Exception;
-    }
-
     public static interface Callable<R> extends java.util.concurrent.Callable<R> {
         @Override
         R call();
     }
 
-    public static interface Supplier<T> {
-        T get() throws Exception;
+    public static interface Runnable<E extends Throwable> {
+        void run() throws E;
     }
 
-    public static interface Predicate<T> {
-        boolean test(T t) throws Exception;
+    public static interface Supplier<T, E extends Throwable> {
+        T get() throws E;
     }
 
-    public static interface BiPredicate<T, U> {
-        boolean test(T t, U u) throws Exception;
+    public static interface Predicate<T, E extends Throwable> {
+        boolean test(T t) throws E;
     }
 
-    public static interface Function<T, R> {
-        R apply(T t) throws Exception;
+    public static interface BiPredicate<T, U, E extends Throwable> {
+        boolean test(T t, U u) throws E;
     }
 
-    public static interface BiFunction<T, U, R> {
-        R apply(T t, U u) throws Exception;
+    public static interface Function<T, R, E extends Throwable> {
+        R apply(T t) throws E;
     }
 
-    public static interface Consumer<T> {
-        void accept(T t) throws Exception;
+    public static interface BiFunction<T, U, R, E extends Throwable> {
+        R apply(T t, U u) throws E;
     }
 
-    public static interface BiConsumer<T, U> {
-        void accept(T t, U u) throws Exception;
+    public static interface Consumer<T, E extends Throwable> {
+        void accept(T t) throws E;
+    }
+
+    public static interface BiConsumer<T, U, E extends Throwable> {
+        void accept(T t, U u) throws E;
     }
 }

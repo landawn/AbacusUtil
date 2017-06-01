@@ -29700,7 +29700,8 @@ public final class N {
         return xmlParser.serialize(jsonParser.deserialize(cls, json));
     }
 
-    public static void execute(final Try.Runnable cmd, final int retryTimes, final long retryInterval, final Function<Throwable, Boolean> retryCondition) {
+    public static void execute(final Try.Runnable<Exception> cmd, final int retryTimes, final long retryInterval,
+            final Function<Throwable, Boolean> retryCondition) {
         try {
             Retry0.of(retryTimes, retryInterval, retryCondition).run(cmd);
         } catch (Exception e) {
@@ -29760,7 +29761,7 @@ public final class N {
     //        return asyncExecutor.invoke(instance, method, args);
     //    }
 
-    public static CompletableFuture<Void> asyncExecute(final Try.Runnable cmd, final int retryTimes, final long retryInterval,
+    public static CompletableFuture<Void> asyncExecute(final Try.Runnable<Exception> cmd, final int retryTimes, final long retryInterval,
             final Function<Throwable, Boolean> retryCondition) {
         return asyncExecutor.execute(new Runnable() {
             @Override

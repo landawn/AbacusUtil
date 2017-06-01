@@ -1241,21 +1241,39 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
         });
     }
 
+    /**
+     * 
+     * @param intervalInMillis
+     * @return
+     */
     public static LongStream interval(final long intervalInMillis) {
-        return interval(N.currentMillis(), intervalInMillis);
+        return interval(0, intervalInMillis);
     }
 
     /**
-     * Generates the long value by the specified period.
+     * Generates the long value by the specified period: [0, 1, 2, 3...]
      * 
-     * @param startTimeInMillis first time value in milliseconds.
-     * @param intervalInMillis use TimeUnit to convert interval to milliseconds.
-     * @return
-     * @see java.util.concurrent.TimeUnit
+     * @param delayInMillis
+     * @param intervalInMillis
+     * @return 
      */
-    public static LongStream interval(final long startTimeInMillis, final long intervalInMillis) {
+    public static LongStream interval(final long delayInMillis, final long intervalInMillis) {
+        return interval(delayInMillis, intervalInMillis, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * Generates the long value by the specified period: [0, 1, 2, 3...]
+     * 
+     * @param delay
+     * @param interval
+     * @param unit
+     * @return
+     */
+    public static LongStream interval(final long delay, final long interval, final TimeUnit unit) {
         return of(new ExLongIterator() {
-            private long next = startTimeInMillis;
+            private final long intervalInMillis = unit.toMillis(interval);
+            private long nextTime = N.currentMillis() + unit.toMillis(delay);
+            private long val = 0;
 
             @Override
             public boolean hasNext() {
@@ -1266,29 +1284,15 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
             public long nextLong() {
                 long now = N.currentMillis();
 
-                if (now < next) {
-                    N.sleep(next - now);
+                if (now < nextTime) {
+                    N.sleep(nextTime - now);
                 }
 
-                final long current = next;
+                nextTime += intervalInMillis;
 
-                next += intervalInMillis;
-
-                return current;
+                return val++;
             }
         });
-    }
-
-    /**
-     * Generates the long value by the specified period.
-     * 
-     * @param startTimeInMillis
-     * @param interval
-     * @param unit
-     * @return
-     */
-    public static LongStream interval(final long startTimeInMillis, final long interval, final TimeUnit unit) {
-        return interval(startTimeInMillis, unit.toMillis(interval));
     }
 
     @SafeVarargs

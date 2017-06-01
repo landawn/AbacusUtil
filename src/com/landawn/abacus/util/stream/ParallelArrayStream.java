@@ -15,6 +15,7 @@
 package com.landawn.abacus.util.stream;
 
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -48,6 +49,7 @@ import com.landawn.abacus.util.NullabLe;
 import com.landawn.abacus.util.Output;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.ShortIterator;
+import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
@@ -3197,7 +3199,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public long persist(final PreparedStatement stmt, final int batchSize, final int batchInterval,
-            final BiConsumer<? super T, ? super PreparedStatement> stmtSetter) {
+            final Try.BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter) {
         if (maxThreadNum <= 1) {
             return sequential().persist(stmt, batchSize, batchInterval, stmtSetter);
         }
@@ -3221,7 +3223,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
                         try {
                             while (cursor < to && eHolder.value() == null) {
-                                stmtSetter.accept(elements[cursor++], stmt);
+                                stmtSetter.accept(stmt, elements[cursor++]);
                                 stmt.addBatch();
 
                                 if ((++cnt % batchSize) == 0) {
@@ -3266,7 +3268,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                                     }
                                 }
 
-                                stmtSetter.accept(next, stmt);
+                                stmtSetter.accept(stmt, next);
                                 stmt.addBatch();
 
                                 if ((++cnt % batchSize) == 0) {

@@ -77,6 +77,7 @@ import com.landawn.abacus.util.PermutationIterator;
 import com.landawn.abacus.util.Seq;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.ShortSummaryStatistics;
+import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
@@ -2365,7 +2366,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public long persist(final Connection conn, final String insertSQL, final int batchSize, final int batchInterval,
-            final BiConsumer<? super T, ? super PreparedStatement> stmtSetter) {
+            final Try.BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter) {
         PreparedStatement stmt = null;
 
         try {
@@ -2381,13 +2382,13 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public long persist(final PreparedStatement stmt, final int batchSize, final int batchInterval,
-            final BiConsumer<? super T, ? super PreparedStatement> stmtSetter) {
+            final Try.BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter) {
         final Iterator<T> iter = iterator();
 
         long cnt = 0;
         try {
             while (iter.hasNext()) {
-                stmtSetter.accept(iter.next(), stmt);
+                stmtSetter.accept(stmt, iter.next());
 
                 stmt.addBatch();
 
