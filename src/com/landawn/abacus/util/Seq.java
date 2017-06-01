@@ -70,9 +70,7 @@ import com.landawn.abacus.util.stream.Stream;
  * 
  * @author Haiyang Li
  */
-public final class Seq<T> implements Collection<T> {
-    private final Collection<T> coll;
-
+public final class Seq<T> extends ImmutableCollection<T> {
     /**
      * The returned <code>Seq</code> and the specified <code>Collection</code> are backed by the same data.
      * Any changes to one will appear in the other.
@@ -80,7 +78,7 @@ public final class Seq<T> implements Collection<T> {
      * @param c
      */
     Seq(final Collection<T> c) {
-        this.coll = c;
+        super(c);
     }
 
     /**
@@ -134,69 +132,6 @@ public final class Seq<T> implements Collection<T> {
         } else {
             return tmp;
         }
-    }
-
-    /**
-     * @deprecated Unsupported operation.
-     */
-    @Deprecated
-    @Override
-    public boolean add(T e) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * @deprecated Unsupported operation.
-     */
-    @Deprecated
-    @Override
-    public boolean remove(Object o) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * @deprecated Unsupported operation.
-     */
-    @Deprecated
-    @Override
-    public boolean addAll(Collection<? extends T> c) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * @deprecated Unsupported operation.
-     */
-    @Deprecated
-    @Override
-    public boolean removeAll(Collection<?> c) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * @deprecated Unsupported operation.
-     */
-    @Deprecated
-    @Override
-    public boolean removeIf(java.util.function.Predicate<? super T> filter) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * @deprecated Unsupported operation.
-     */
-    @Deprecated
-    @Override
-    public boolean retainAll(Collection<?> c) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * @deprecated Unsupported operation.
-     */
-    @Deprecated
-    @Override
-    public void clear() {
-        throw new UnsupportedOperationException();
     }
 
     @Override

@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.Set;
 
 import com.landawn.abacus.annotation.Internal;
-import com.landawn.abacus.util.stream.Stream;
 
 /**
  * A BiMap (or "bidirectional map") is a map that preserves the uniqueness of its values as well as that of its keys. 
@@ -296,9 +295,9 @@ public final class BiMap<K, V> implements Map<K, V> {
         return keyMap.size();
     }
 
-    public Stream<Map.Entry<K, V>> stream0() {
-        return Stream.of(keyMap.entrySet());
-    }
+    //    public Stream<Map.Entry<K, V>> stream0() {
+    //        return Stream.of(keyMap.entrySet());
+    //    }
 
     @Override
     public int hashCode() {

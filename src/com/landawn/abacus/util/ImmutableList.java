@@ -33,7 +33,7 @@ public final class ImmutableList<E> extends ImmutableCollection<E> implements Li
 
     ImmutableList(List<? extends E> list) {
         super(Collections.unmodifiableList(list));
-        this.list = (List<E>) c;
+        this.list = (List<E>) coll;
     }
 
     @SafeVarargs

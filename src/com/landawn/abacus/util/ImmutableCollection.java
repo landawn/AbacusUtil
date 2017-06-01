@@ -26,10 +26,10 @@ import java.util.function.Predicate;
  * @author Haiyang Li
  */
 abstract class ImmutableCollection<E> extends AbstractCollection<E> {
-    final Collection<E> c;
+    final Collection<E> coll;
 
     protected ImmutableCollection(Collection<? extends E> c) {
-        this.c = (Collection<E>) c;
+        this.coll = (Collection<E>) c;
     }
 
     /**
@@ -97,41 +97,41 @@ abstract class ImmutableCollection<E> extends AbstractCollection<E> {
 
     @Override
     public boolean contains(Object o) {
-        return c.contains(o);
+        return coll.contains(o);
     }
 
     @Override
     public Iterator<E> iterator() {
-        return c.iterator();
+        return coll.iterator();
     }
 
     @Override
     public int size() {
-        return c.size();
+        return coll.size();
     }
 
     @Override
     public Object[] toArray() {
-        return c.toArray();
+        return coll.toArray();
     }
 
     @Override
     public <T> T[] toArray(T[] a) {
-        return c.toArray(a);
+        return coll.toArray(a);
     }
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof ImmutableCollection && ((ImmutableCollection<E>) obj).c.equals(c);
+        return obj instanceof ImmutableCollection && ((ImmutableCollection<E>) obj).coll.equals(coll);
     }
 
     @Override
     public int hashCode() {
-        return c.hashCode();
+        return coll.hashCode();
     }
 
     @Override
     public String toString() {
-        return c.toString();
+        return coll.toString();
     }
 }
