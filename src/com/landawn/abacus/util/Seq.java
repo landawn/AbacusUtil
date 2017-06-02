@@ -81,6 +81,11 @@ public final class Seq<T> extends ImmutableCollection<T> {
         super(c);
     }
 
+    @SafeVarargs
+    public static <T> Seq<T> of(final T... a) {
+        return of(Arrays.asList(a));
+    }
+
     /**
      * The returned <code>Seq</code> and the specified <code>Collection</code> are backed by the same data.
      * Any changes to one will appear in the other.
@@ -450,48 +455,56 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public void forEach(final Consumer<? super T> action) {
-        forEach(0, size(), action);
+        N.forEach(coll, action);
     }
 
-    public void forEach(int fromIndex, final int toIndex, final Consumer<? super T> action) {
-        N.forEach(coll, fromIndex, toIndex, action);
-    }
+    //    public void forEach(int fromIndex, final int toIndex, final Consumer<? super T> action) {
+    //        N.forEach(coll, fromIndex, toIndex, action);
+    //    }
 
     public void forEach(final IndexedConsumer<? super T> action) {
-        forEach(0, size(), action);
+        N.forEach(coll, action);
     }
 
-    public void forEach(int fromIndex, final int toIndex, final IndexedConsumer<? super T> action) {
-        N.forEach(coll, fromIndex, toIndex, action);
-    }
+    //    public void forEach(int fromIndex, final int toIndex, final IndexedConsumer<? super T> action) {
+    //        N.forEach(coll, fromIndex, toIndex, action);
+    //    }
 
     public <R> R forEach(final R seed, BiFunction<R, ? super T, R> accumulator, final BiPredicate<? super T, ? super R> conditionToBreak) {
-        return forEach(0, size(), seed, accumulator, conditionToBreak);
+        return N.forEach(coll, seed, accumulator, conditionToBreak);
     }
 
-    public <R> R forEach(int fromIndex, final int toIndex, final R seed, final BiFunction<R, ? super T, R> accumulator,
-            final BiPredicate<? super T, ? super R> conditionToBreak) {
-        return N.forEach(coll, fromIndex, toIndex, seed, accumulator, conditionToBreak);
-    }
-
-    public <R> R forEach(final R seed, final IndexedBiFunction<R, ? super T, R> accumulator, final BiPredicate<? super T, ? super R> conditionToBreak) {
-        return forEach(0, size(), seed, accumulator, conditionToBreak);
-    }
+    //    public <R> R forEach(int fromIndex, final int toIndex, final R seed, final BiFunction<R, ? super T, R> accumulator,
+    //            final BiPredicate<? super T, ? super R> conditionToBreak) {
+    //        return N.forEach(coll, fromIndex, toIndex, seed, accumulator, conditionToBreak);
+    //    }
 
     /**
      * Execute <code>accumulator</code> on each element till <code>true</code> is returned by <code>conditionToBreak</code>
      * 
-     * @param fromIndex
-     * @param toIndex
      * @param seed The seed element is both the initial value of the reduction and the default result if there are no elements.
      * @param accumulator
      * @param conditionToBreak break if <code>true</code> is return.
      * @return
      */
-    public <R> R forEach(int fromIndex, final int toIndex, final R seed, final IndexedBiFunction<R, ? super T, R> accumulator,
-            final BiPredicate<? super T, ? super R> conditionToBreak) {
-        return N.forEach(coll, fromIndex, toIndex, seed, accumulator, conditionToBreak);
+    public <R> R forEach(final R seed, final IndexedBiFunction<R, ? super T, R> accumulator, final BiPredicate<? super T, ? super R> conditionToBreak) {
+        return N.forEach(coll, seed, accumulator, conditionToBreak);
     }
+
+    //    /**
+    //     * Execute <code>accumulator</code> on each element till <code>true</code> is returned by <code>conditionToBreak</code>
+    //     * 
+    //     * @param fromIndex
+    //     * @param toIndex
+    //     * @param seed The seed element is both the initial value of the reduction and the default result if there are no elements.
+    //     * @param accumulator
+    //     * @param conditionToBreak break if <code>true</code> is return.
+    //     * @return
+    //     */
+    //    public <R> R forEach(int fromIndex, final int toIndex, final R seed, final IndexedBiFunction<R, ? super T, R> accumulator,
+    //            final BiPredicate<? super T, ? super R> conditionToBreak) {
+    //        return N.forEach(coll, fromIndex, toIndex, seed, accumulator, conditionToBreak);
+    //    }
 
     public NullabLe<T> first() {
         if (size() == 0) {

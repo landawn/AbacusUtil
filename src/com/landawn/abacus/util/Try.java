@@ -287,10 +287,18 @@ public final class Try<T extends AutoCloseable> {
 
     public static interface Predicate<T, E extends Throwable> {
         boolean test(T t) throws E;
+
+        default Predicate<T, E> negate() throws E {
+            return (t) -> !test(t);
+        }
     }
 
     public static interface BiPredicate<T, U, E extends Throwable> {
         boolean test(T t, U u) throws E;
+
+        default BiPredicate<T, U, E> negate() throws E {
+            return (T t, U u) -> !test(t, u);
+        }
     }
 
     public static interface Function<T, R, E extends Throwable> {
