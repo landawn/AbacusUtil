@@ -69,10 +69,6 @@ public class Builder<T> {
         return new DoubleListBuilder(val);
     }
 
-    public static final <T> ExListBuilder<T> of(ExList<T> val) {
-        return new ExListBuilder<>(val);
-    }
-
     public static final <T, C extends Collection<T>> CollectionBuilder<T, C> of(C val) {
         return new CollectionBuilder<>(val);
     }
@@ -547,54 +543,6 @@ public class Builder<T> {
         //        }
 
         public DoubleListBuilder removeAll(DoubleList c) {
-            val.removeAll(c);
-
-            return this;
-        }
-    }
-
-    public static final class ExListBuilder<T> extends Builder<ExList<T>> {
-        ExListBuilder(ExList<T> val) {
-            super(val);
-        }
-
-        public ExListBuilder<T> set(int index, T e) {
-            val.set(index, e);
-
-            return this;
-        }
-
-        public ExListBuilder<T> add(T e) {
-            val.add(e);
-
-            return this;
-        }
-
-        public ExListBuilder<T> add(int index, T e) {
-            val.add(index, e);
-
-            return this;
-        }
-
-        public ExListBuilder<T> addAll(ExList<T> c) {
-            val.addAll(c);
-
-            return this;
-        }
-
-        public ExListBuilder<T> addAll(int index, ExList<T> c) {
-            val.addAll(index, c);
-
-            return this;
-        }
-
-        public ExListBuilder<T> remove(Object e) {
-            val.remove(e);
-
-            return this;
-        }
-
-        public ExListBuilder<T> removeAll(ExList<?> c) {
             val.removeAll(c);
 
             return this;

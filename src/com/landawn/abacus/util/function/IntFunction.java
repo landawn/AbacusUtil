@@ -30,7 +30,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Function;
 
-import com.landawn.abacus.util.ExList;
 import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.N;
 
@@ -59,10 +58,6 @@ public interface IntFunction<R> extends java.util.function.IntFunction<R> {
 
     static IntFunction<Integer> identity() {
         return t -> t;
-    }
-
-    public static <T> IntFunction<ExList<T>> ofExList() {
-        return Fn.Factory.ofExList();
     }
 
     public static <T> IntFunction<List<T>> ofList() {

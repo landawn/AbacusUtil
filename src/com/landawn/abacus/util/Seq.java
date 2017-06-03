@@ -60,7 +60,6 @@ import com.landawn.abacus.util.function.ToShortFunction;
 import com.landawn.abacus.util.function.TriFunction;
 import com.landawn.abacus.util.stream.Collector;
 import com.landawn.abacus.util.stream.Collectors;
-import com.landawn.abacus.util.stream.Stream;
 
 /**
  * It's an immutable wrapper for <code>Collection</code> to support more daily used/functional methods.
@@ -203,13 +202,13 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @return
      * @see IntList#intersection(IntList)
      */
-    public ExList<T> intersection(Collection<?> b) {
+    public List<T> intersection(Collection<?> b) {
         if (N.isNullOrEmpty(coll) || N.isNullOrEmpty(b)) {
-            return new ExList<>();
+            return new ArrayList<>();
         }
 
         final Multiset<?> bOccurrences = Multiset.from(b);
-        final ExList<T> result = new ExList<>(N.min(9, size(), b.size()));
+        final List<T> result = new ArrayList<>(N.min(9, size(), b.size()));
 
         for (T e : coll) {
             if (bOccurrences.getAndRemove(e) > 0) {
@@ -220,9 +219,9 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
-    public ExList<T> intersection(final Object[] a) {
+    public List<T> intersection(final Object[] a) {
         if (N.isNullOrEmpty(coll) || N.isNullOrEmpty(a)) {
-            return new ExList<>();
+            return new ArrayList<>();
         }
 
         return intersection(Arrays.asList(a));
@@ -234,15 +233,15 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @return
      * @see IntList#difference(IntList)
      */
-    public ExList<T> difference(Collection<?> b) {
+    public List<T> difference(Collection<?> b) {
         if (N.isNullOrEmpty(coll)) {
-            return new ExList<>();
+            return new ArrayList<>();
         } else if (N.isNullOrEmpty(b)) {
-            return new ExList<>((T[]) coll.toArray());
+            return new ArrayList<>(coll);
         }
 
         final Multiset<?> bOccurrences = Multiset.from(b);
-        final ExList<T> result = new ExList<>(N.min(size(), N.max(9, size() - b.size())));
+        final List<T> result = new ArrayList<>(N.min(size(), N.max(9, size() - b.size())));
 
         for (T e : coll) {
             if (bOccurrences.getAndRemove(e) < 1) {
@@ -253,11 +252,11 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
-    public ExList<T> difference(final Object[] a) {
+    public List<T> difference(final Object[] a) {
         if (N.isNullOrEmpty(coll)) {
-            return new ExList<>();
+            return new ArrayList<>();
         } else if (N.isNullOrEmpty(a)) {
-            return new ExList<>((T[]) coll.toArray());
+            return new ArrayList<>(coll);
         }
 
         return difference(Arrays.asList(a));
@@ -269,15 +268,15 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @return this.difference(b).addAll(b.difference(this))
      * @see IntList#symmetricDifference(IntList)
      */
-    public ExList<T> symmetricDifference(Collection<T> b) {
+    public List<T> symmetricDifference(Collection<T> b) {
         if (N.isNullOrEmpty(b)) {
-            return N.isNullOrEmpty(coll) ? new ExList<T>() : new ExList<>((T[]) coll.toArray());
+            return N.isNullOrEmpty(coll) ? new ArrayList<T>() : new ArrayList<>(coll);
         } else if (N.isNullOrEmpty(coll)) {
-            return new ExList<>((T[]) b.toArray());
+            return new ArrayList<>(b);
         }
 
         final Multiset<?> bOccurrences = Multiset.from(b);
-        final ExList<T> result = new ExList<>(N.max(9, Math.abs(size() - b.size())));
+        final List<T> result = new ArrayList<>(N.max(9, Math.abs(size() - b.size())));
 
         for (T e : coll) {
             if (bOccurrences.getAndRemove(e) < 1) {
@@ -298,11 +297,11 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
-    public ExList<T> symmetricDifference(final T[] a) {
+    public List<T> symmetricDifference(final T[] a) {
         if (N.isNullOrEmpty(a)) {
-            return N.isNullOrEmpty(coll) ? new ExList<T>() : new ExList<>((T[]) coll.toArray());
+            return N.isNullOrEmpty(coll) ? new ArrayList<T>() : new ArrayList<>(coll);
         } else if (N.isNullOrEmpty(coll)) {
-            return new ExList<>(a.clone());
+            return N.asList(a);
         }
 
         return symmetricDifference(Arrays.asList(a));
@@ -721,15 +720,15 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return N.count(coll, filter);
     }
 
-    public ExList<T> filter(Predicate<? super T> filter) {
+    public List<T> filter(Predicate<? super T> filter) {
         return N.filter(coll, filter);
     }
 
-    public ExList<T> filter(Predicate<? super T> filter, final int max) {
+    public List<T> filter(Predicate<? super T> filter, final int max) {
         return N.filter(coll, filter, max);
     }
 
-    public <U> ExList<T> filter(final U seed, final BiPredicate<? super T, ? super U> predicate) {
+    public <U> List<T> filter(final U seed, final BiPredicate<? super T, ? super U> predicate) {
         return filter(new Predicate<T>() {
             @Override
             public boolean test(T value) {
@@ -738,8 +737,8 @@ public final class Seq<T> extends ImmutableCollection<T> {
         });
     }
 
-    public ExList<T> takeWhile(Predicate<? super T> filter) {
-        final ExList<T> result = new ExList<>(N.min(9, size()));
+    public List<T> takeWhile(Predicate<? super T> filter) {
+        final List<T> result = new ArrayList<>(N.min(9, size()));
 
         if (N.isNullOrEmpty(coll)) {
             return result;
@@ -756,7 +755,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
-    public <U> ExList<T> takeWhile(final U seed, final BiPredicate<? super T, ? super U> predicate) {
+    public <U> List<T> takeWhile(final U seed, final BiPredicate<? super T, ? super U> predicate) {
         return takeWhile(new Predicate<T>() {
             @Override
             public boolean test(T value) {
@@ -765,8 +764,8 @@ public final class Seq<T> extends ImmutableCollection<T> {
         });
     }
 
-    public ExList<T> takeWhileInclusive(Predicate<? super T> filter) {
-        final ExList<T> result = new ExList<>(N.min(9, size()));
+    public List<T> takeWhileInclusive(Predicate<? super T> filter) {
+        final List<T> result = new ArrayList<>(N.min(9, size()));
 
         if (N.isNullOrEmpty(coll)) {
             return result;
@@ -783,7 +782,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
-    public <U> ExList<T> takeWhileInclusive(final U seed, final BiPredicate<? super T, ? super U> predicate) {
+    public <U> List<T> takeWhileInclusive(final U seed, final BiPredicate<? super T, ? super U> predicate) {
         return takeWhileInclusive(new Predicate<T>() {
             @Override
             public boolean test(T value) {
@@ -792,8 +791,8 @@ public final class Seq<T> extends ImmutableCollection<T> {
         });
     }
 
-    public ExList<T> dropWhile(Predicate<? super T> filter) {
-        final ExList<T> result = new ExList<>(N.min(9, size()));
+    public List<T> dropWhile(Predicate<? super T> filter) {
+        final List<T> result = new ArrayList<>(N.min(9, size()));
 
         if (N.isNullOrEmpty(coll)) {
             return result;
@@ -818,7 +817,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
-    public <U> ExList<T> dropWhile(final U seed, final BiPredicate<? super T, ? super U> predicate) {
+    public <U> List<T> dropWhile(final U seed, final BiPredicate<? super T, ? super U> predicate) {
         return dropWhile(new Predicate<T>() {
             @Override
             public boolean test(T value) {
@@ -827,7 +826,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
         });
     }
 
-    public ExList<T> skipUntil(final Predicate<? super T> filter) {
+    public List<T> skipUntil(final Predicate<? super T> filter) {
         return dropWhile(new Predicate<T>() {
             @Override
             public boolean test(T value) {
@@ -836,7 +835,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
         });
     }
 
-    public <U> ExList<T> skipUntil(final U seed, final BiPredicate<? super T, ? super U> predicate) {
+    public <U> List<T> skipUntil(final U seed, final BiPredicate<? super T, ? super U> predicate) {
         return dropWhile(new Predicate<T>() {
             @Override
             public boolean test(T value) {
@@ -845,7 +844,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
         });
     }
 
-    public <R> ExList<R> map(final Function<? super T, ? extends R> func) {
+    public <R> List<R> map(final Function<? super T, ? extends R> func) {
         return N.map(coll, func);
     }
 
@@ -881,8 +880,8 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return N.mapToDouble(coll, func);
     }
 
-    public <R> ExList<R> flatMap(final Function<? super T, ? extends Collection<R>> func) {
-        final ExList<R> result = new ExList<>(size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : size() * 2);
+    public <R> List<R> flatMap(final Function<? super T, ? extends Collection<R>> func) {
+        final List<R> result = new ArrayList<>(size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : size() * 2);
 
         if (N.isNullOrEmpty(coll)) {
             return result;
@@ -895,15 +894,26 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
-    public <R> ExList<R> flatMap2(final Function<? super T, ? extends R[]> func) {
-        final ExList<R> result = new ExList<>(size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : size() * 2);
+    public <R> List<R> flatMap2(final Function<? super T, ? extends R[]> func) {
+        final List<R> result = new ArrayList<>(size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : size() * 2);
 
         if (N.isNullOrEmpty(coll)) {
             return result;
         }
 
+        R[] a = null;
         for (T e : coll) {
-            result.addAll(func.apply(e));
+            a = func.apply(e);
+
+            if (N.notNullOrEmpty(a)) {
+                if (a.length < 9) {
+                    for (R r : a) {
+                        result.add(r);
+                    }
+                } else {
+                    result.addAll(Arrays.asList(a));
+                }
+            }
         }
 
         return result;
@@ -1160,8 +1170,8 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @param mergeFunction
      * @return
      */
-    public ExList<T> collapse(final BiPredicate<? super T, ? super T> collapsible, final BiFunction<? super T, ? super T, T> mergeFunction) {
-        final ExList<T> result = new ExList<>();
+    public List<T> collapse(final BiPredicate<? super T, ? super T> collapsible, final BiFunction<? super T, ? super T, T> mergeFunction) {
+        final List<T> result = new ArrayList<>();
 
         if (N.isNullOrEmpty(coll)) {
             return result;
@@ -1200,8 +1210,8 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @param mergeFunction
      * @return
      */
-    public <R> ExList<R> collapse(final R seed, final BiPredicate<? super T, ? super T> collapsible, final BiFunction<? super R, ? super T, R> mergeFunction) {
-        final ExList<R> result = new ExList<>();
+    public <R> List<R> collapse(final R seed, final BiPredicate<? super T, ? super T> collapsible, final BiFunction<? super R, ? super T, R> mergeFunction) {
+        final List<R> result = new ArrayList<>();
 
         if (N.isNullOrEmpty(coll)) {
             return result;
@@ -1240,9 +1250,9 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @param mergeFunction
      * @return
      */
-    public <C extends Collection<?>> ExList<C> collapse(final Supplier<C> supplier, final BiPredicate<? super T, ? super T> collapsible,
+    public <C extends Collection<?>> List<C> collapse(final Supplier<C> supplier, final BiPredicate<? super T, ? super T> collapsible,
             final BiConsumer<? super C, ? super T> mergeFunction) {
-        final ExList<C> result = new ExList<>();
+        final List<C> result = new ArrayList<>();
 
         if (N.isNullOrEmpty(coll)) {
             return result;
@@ -1291,8 +1301,8 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @param accumulator  the accumulation function
      * @return the new stream which has the extract same size as this stream.
      */
-    public ExList<T> scan(final BiFunction<? super T, ? super T, T> accumulator) {
-        final ExList<T> result = new ExList<>();
+    public List<T> scan(final BiFunction<? super T, ? super T, T> accumulator) {
+        final List<T> result = new ArrayList<>();
 
         if (N.isNullOrEmpty(coll)) {
             return result;
@@ -1337,8 +1347,8 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @param accumulator  the accumulation function
      * @return the new stream which has the extract same size as this stream.
      */
-    public <R> ExList<R> scan(final R seed, final BiFunction<? super R, ? super T, R> accumulator) {
-        final ExList<R> result = new ExList<>();
+    public <R> List<R> scan(final R seed, final BiFunction<? super R, ? super T, R> accumulator) {
+        final List<R> result = new ArrayList<>();
 
         if (N.isNullOrEmpty(coll)) {
             return result;
@@ -1459,43 +1469,42 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return finisher.apply(collect(downstream));
     }
 
-    public ExList<T> append(final Collection<? extends T> c) {
+    public List<T> append(final Collection<? extends T> c) {
         return Seq.concat(this, c);
     }
 
-    public ExList<T> prepend(final Collection<? extends T> c) {
+    public List<T> prepend(final Collection<? extends T> c) {
         return Seq.concat(c, this);
     }
 
-    public ExList<T> merge(final Collection<? extends T> b, final BiFunction<? super T, ? super T, Nth> nextSelector) {
+    public List<T> merge(final Collection<? extends T> b, final BiFunction<? super T, ? super T, Nth> nextSelector) {
         return Seq.merge(this, b, nextSelector);
     }
 
-    public <B, R> ExList<R> zipWith(final Collection<B> b, final BiFunction<? super T, ? super B, R> zipFunction) {
+    public <B, R> List<R> zipWith(final Collection<B> b, final BiFunction<? super T, ? super B, R> zipFunction) {
         return Seq.zip(this, b, zipFunction);
     }
 
-    public <B, R> ExList<R> zipWith(final Collection<B> b, final T valueForNoneA, final B valueForNoneB,
-            final BiFunction<? super T, ? super B, R> zipFunction) {
+    public <B, R> List<R> zipWith(final Collection<B> b, final T valueForNoneA, final B valueForNoneB, final BiFunction<? super T, ? super B, R> zipFunction) {
         return Seq.zip(this, b, valueForNoneA, valueForNoneB, zipFunction);
     }
 
-    public <B, C, R> ExList<R> zipWith(final Collection<B> b, final Collection<C> c, final TriFunction<? super T, ? super B, ? super C, R> zipFunction) {
+    public <B, C, R> List<R> zipWith(final Collection<B> b, final Collection<C> c, final TriFunction<? super T, ? super B, ? super C, R> zipFunction) {
         return Seq.zip(this, b, c, zipFunction);
     }
 
-    public <B, C, R> ExList<R> zipWith(final Collection<B> b, final Collection<C> c, final T valueForNoneA, final B valueForNoneB, final C valueForNoneC,
+    public <B, C, R> List<R> zipWith(final Collection<B> b, final Collection<C> c, final T valueForNoneA, final B valueForNoneB, final C valueForNoneC,
             final TriFunction<? super T, ? super B, ? super C, R> zipFunction) {
         return Seq.zip(this, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
     }
 
-    public ExList<T> intersperse(T value) {
+    public List<T> intersperse(T value) {
         if (isEmpty()) {
-            return new ExList<>();
+            return new ArrayList<>();
         }
 
         final int size = size();
-        final ExList<T> result = new ExList<>(size * 2 - 1);
+        final List<T> result = new ArrayList<>(size * 2 - 1);
         int idx = 0;
 
         for (T e : coll) {
@@ -1509,8 +1518,8 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
-    public ExList<Indexed<T>> indexed() {
-        final ExList<Indexed<T>> result = new ExList<>(size());
+    public List<Indexed<T>> indexed() {
+        final List<Indexed<T>> result = new ArrayList<>(size());
 
         if (N.isNullOrEmpty(coll)) {
             return result;
@@ -1519,7 +1528,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
         int idx = 0;
 
         for (T e : coll) {
-            result.add(Indexed.of(idx++, e));
+            result.add(Indexed.of(e, idx++));
         }
 
         return result;
@@ -1529,7 +1538,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
      *
      * @return a new List with distinct elements
      */
-    public ExList<T> distinct() {
+    public List<T> distinct() {
         return N.distinct(coll);
     }
 
@@ -1538,16 +1547,16 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @param keyExtractor don't change value of the input parameter.
      * @return
      */
-    public ExList<T> distinct(final Function<? super T, ?> keyExtractor) {
+    public List<T> distinct(final Function<? super T, ?> keyExtractor) {
         return N.distinct(coll, keyExtractor);
     }
 
     @SuppressWarnings("rawtypes")
-    public ExList<T> top(final int n) {
+    public List<T> top(final int n) {
         return N.top((Collection) coll, n);
     }
 
-    public ExList<T> top(final int n, final Comparator<? super T> cmp) {
+    public List<T> top(final int n, final Comparator<? super T> cmp) {
         return N.top(coll, n, cmp);
     }
 
@@ -1557,7 +1566,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
      *
      * @return
      */
-    public ExList<ExList<T>> split(int size) {
+    public List<List<T>> split(int size) {
         return N.split(coll, size);
     }
 
@@ -1639,10 +1648,6 @@ public final class Seq<T> extends ImmutableCollection<T> {
         }
 
         return result;
-    }
-
-    public ExList<T> toExList() {
-        return ExList.of((T[]) toArray());
     }
 
     public <K, U> Map<K, U> toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper) {
@@ -1837,8 +1842,8 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @return
      * @see <a href="http://stackoverflow.com/questions/5706437/whats-the-difference-between-inner-join-left-join-right-join-and-full-join">sql join</a>
      */
-    public <U> ExList<Pair<T, U>> innerJoin(final Collection<U> b, final Function<? super T, ?> leftKeyMapper, final Function<? super U, ?> rightKeyMapper) {
-        final ExList<Pair<T, U>> result = new ExList<>(N.min(9, size(), b.size()));
+    public <U> List<Pair<T, U>> innerJoin(final Collection<U> b, final Function<? super T, ?> leftKeyMapper, final Function<? super U, ?> rightKeyMapper) {
+        final List<Pair<T, U>> result = new ArrayList<>(N.min(9, size(), b.size()));
 
         if (N.isNullOrEmpty(coll) || N.isNullOrEmpty(b)) {
             return result;
@@ -1868,8 +1873,8 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @return
      * @see <a href="http://stackoverflow.com/questions/5706437/whats-the-difference-between-inner-join-left-join-right-join-and-ful
      */
-    public <U> ExList<Pair<T, U>> innerJoin(final Collection<U> b, final BiPredicate<? super T, ? super U> predicate) {
-        final ExList<Pair<T, U>> result = new ExList<>(N.min(9, size(), b.size()));
+    public <U> List<Pair<T, U>> innerJoin(final Collection<U> b, final BiPredicate<? super T, ? super U> predicate) {
+        final List<Pair<T, U>> result = new ArrayList<>(N.min(9, size(), b.size()));
 
         if (N.isNullOrEmpty(coll) || N.isNullOrEmpty(b)) {
             return result;
@@ -1896,8 +1901,8 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @return
      * @see <a href="http://stackoverflow.com/questions/5706437/whats-the-difference-between-inner-join-left-join-right-join-and-ful
      */
-    public <U> ExList<Pair<T, U>> fullJoin(final Collection<U> b, final Function<? super T, ?> leftKeyMapper, final Function<? super U, ?> rightKeyMapper) {
-        final ExList<Pair<T, U>> result = new ExList<>(N.max(9, size(), b.size()));
+    public <U> List<Pair<T, U>> fullJoin(final Collection<U> b, final Function<? super T, ?> leftKeyMapper, final Function<? super U, ?> rightKeyMapper) {
+        final List<Pair<T, U>> result = new ArrayList<>(N.max(9, size(), b.size()));
 
         if (N.isNullOrEmpty(coll)) {
             for (T left : coll) {
@@ -1942,8 +1947,8 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @return
      * @see <a href="http://stackoverflow.com/questions/5706437/whats-the-difference-between-inner-join-left-join-right-join-and-ful
      */
-    public <U> ExList<Pair<T, U>> fullJoin(final Collection<U> b, final BiPredicate<? super T, ? super U> predicate) {
-        final ExList<Pair<T, U>> result = new ExList<>(N.max(9, size(), b.size()));
+    public <U> List<Pair<T, U>> fullJoin(final Collection<U> b, final BiPredicate<? super T, ? super U> predicate) {
+        final List<Pair<T, U>> result = new ArrayList<>(N.max(9, size(), b.size()));
 
         if (N.isNullOrEmpty(coll)) {
             for (T left : coll) {
@@ -1992,8 +1997,8 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @return
      * @see <a href="http://stackoverflow.com/questions/5706437/whats-the-difference-between-inner-join-left-join-right-join-and-ful
      */
-    public <U> ExList<Pair<T, U>> leftJoin(final Collection<U> b, final Function<? super T, ?> leftKeyMapper, final Function<? super U, ?> rightKeyMapper) {
-        final ExList<Pair<T, U>> result = new ExList<>(size());
+    public <U> List<Pair<T, U>> leftJoin(final Collection<U> b, final Function<? super T, ?> leftKeyMapper, final Function<? super U, ?> rightKeyMapper) {
+        final List<Pair<T, U>> result = new ArrayList<>(size());
 
         if (N.isNullOrEmpty(coll)) {
             return result;
@@ -2028,8 +2033,8 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @return
      * @see <a href="http://stackoverflow.com/questions/5706437/whats-the-difference-between-inner-join-left-join-right-join-and-ful
      */
-    public <U> ExList<Pair<T, U>> leftJoin(final Collection<U> b, final BiPredicate<? super T, ? super U> predicate) {
-        final ExList<Pair<T, U>> result = new ExList<>(size());
+    public <U> List<Pair<T, U>> leftJoin(final Collection<U> b, final BiPredicate<? super T, ? super U> predicate) {
+        final List<Pair<T, U>> result = new ArrayList<>(size());
 
         if (N.isNullOrEmpty(coll)) {
             return result;
@@ -2067,8 +2072,8 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @return
      * @see <a href="http://stackoverflow.com/questions/5706437/whats-the-difference-between-inner-join-left-join-right-join-and-ful
      */
-    public <U> ExList<Pair<T, U>> rightJoin(final Collection<U> b, final Function<? super T, ?> leftKeyMapper, final Function<? super U, ?> rightKeyMapper) {
-        final ExList<Pair<T, U>> result = new ExList<>(b.size());
+    public <U> List<Pair<T, U>> rightJoin(final Collection<U> b, final Function<? super T, ?> leftKeyMapper, final Function<? super U, ?> rightKeyMapper) {
+        final List<Pair<T, U>> result = new ArrayList<>(b.size());
 
         if (N.isNullOrEmpty(b)) {
             return result;
@@ -2103,8 +2108,8 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @return
      * @see <a href="http://stackoverflow.com/questions/5706437/whats-the-difference-between-inner-join-left-join-right-join-and-ful
      */
-    public <U> ExList<Pair<T, U>> rightJoin(final Collection<U> b, final BiPredicate<? super T, ? super U> predicate) {
-        final ExList<Pair<T, U>> result = new ExList<>(b.size());
+    public <U> List<Pair<T, U>> rightJoin(final Collection<U> b, final BiPredicate<? super T, ? super U> predicate) {
+        final List<Pair<T, U>> result = new ArrayList<>(b.size());
 
         if (N.isNullOrEmpty(b)) {
             return result;
@@ -2158,15 +2163,15 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return coll == null ? ImmutableIterator.EMPTY : coll.iterator();
     }
 
-    public Stream<T> stream0() {
-        return N.isNullOrEmpty(coll) ? Stream.<T> empty() : Stream.of(coll);
-    }
-
-    //    public ExListBuilder<T> __() {
+    //    public Stream<T> stream() {
+    //        return N.isNullOrEmpty(coll) ? Stream.<T> empty() : Stream.of(coll);
+    //    }
+    //
+    //    public ListBuilder<T> __() {
     //        return Builder.of(this);
     //    }
     //
-    //    public ExListBuilder<T> __(Consumer<? super ExList<T>> func) {
+    //    public ListBuilder<T> __(Consumer<? super List<T>> func) {
     //        return Builder.of(this).__(func);
     //    }
 
@@ -2439,11 +2444,11 @@ public final class Seq<T> extends ImmutableCollection<T> {
         }
     }
 
-    //    public ExListBuilder<T> __() {
+    //    public ListBuilder<T> __() {
     //        return Builder.of(this);
     //    }
     //
-    //    public ExListBuilder<T> __(Consumer<? super ExList<T>> func) {
+    //    public ListBuilder<T> __(Consumer<? super List<T>> func) {
     //        return Builder.of(this).__(func);
     //    }
 
@@ -2452,7 +2457,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
             return true;
         }
 
-        return ExList.of(a).disjoint(b);
+        return a.length >= b.length ? disjoint(Arrays.asList(a), N.asSet(b)) : disjoint(N.asSet(a), Arrays.asList(b));
     }
 
     /**
@@ -2485,22 +2490,22 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return true;
     }
 
-    public static <T> ExList<T> concat(final T[] a, final T[] b) {
-        return ExList.of(N.concat(a, b));
+    public static <T> List<T> concat(final T[] a, final T[] b) {
+        return Array.asList(N.concat(a, b));
     }
 
-    public static <T> ExList<T> concat(final Collection<? extends T> a, final Collection<? extends T> b) {
+    public static <T> List<T> concat(final Collection<? extends T> a, final Collection<? extends T> b) {
         return N.concat(a, b);
     }
 
     @SafeVarargs
-    public static <T> ExList<T> concat(final Collection<? extends T>... a) {
+    public static <T> List<T> concat(final Collection<? extends T>... a) {
         return concat(Arrays.asList(a));
     }
 
-    public static <T> ExList<T> concat(final List<? extends Collection<? extends T>> c) {
+    public static <T> List<T> concat(final List<? extends Collection<? extends T>> c) {
         if (N.isNullOrEmpty(c)) {
-            return new ExList<>();
+            return new ArrayList<>();
         }
 
         int count = 0;
@@ -2510,7 +2515,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
             }
         }
 
-        final ExList<T> result = new ExList<>(count);
+        final List<T> result = new ArrayList<>(count);
 
         for (Collection<? extends T> e : c) {
             if (N.notNullOrEmpty(e)) {
@@ -2597,8 +2602,8 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return concat(list);
     }
 
-    public static <T> ExList<T> merge(final T[] a, final T[] b, final BiFunction<? super T, ? super T, Nth> nextSelector) {
-        final ExList<T> result = new ExList<>(a.length + b.length);
+    public static <T> List<T> merge(final T[] a, final T[] b, final BiFunction<? super T, ? super T, Nth> nextSelector) {
+        final List<T> result = new ArrayList<>(a.length + b.length);
         final int lenA = a.length;
         final int lenB = b.length;
         int cursorA = 0;
@@ -2623,9 +2628,9 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
-    public static <T> ExList<T> merge(final Collection<? extends T> a, final Collection<? extends T> b,
+    public static <T> List<T> merge(final Collection<? extends T> a, final Collection<? extends T> b,
             final BiFunction<? super T, ? super T, Nth> nextSelector) {
-        final ExList<T> result = new ExList<>(a.size() + b.size());
+        final List<T> result = new ArrayList<>(a.size() + b.size());
         final Iterator<? extends T> iterA = a.iterator();
         final Iterator<? extends T> iterB = b.iterator();
 
@@ -2743,12 +2748,12 @@ public final class Seq<T> extends ImmutableCollection<T> {
         };
     }
 
-    public static <A, B, R> ExList<R> zip(final A[] a, final B[] b, final BiFunction<? super A, ? super B, R> zipFunction) {
+    public static <A, B, R> List<R> zip(final A[] a, final B[] b, final BiFunction<? super A, ? super B, R> zipFunction) {
         return zip(Arrays.asList(a), Arrays.asList(b), zipFunction);
     }
 
-    public static <A, B, R> ExList<R> zip(final Collection<A> a, final Collection<B> b, final BiFunction<? super A, ? super B, R> zipFunction) {
-        final ExList<R> result = new ExList<>(N.min(a.size(), b.size()));
+    public static <A, B, R> List<R> zip(final Collection<A> a, final Collection<B> b, final BiFunction<? super A, ? super B, R> zipFunction) {
+        final List<R> result = new ArrayList<>(N.min(a.size(), b.size()));
 
         final Iterator<A> iterA = a.iterator();
         final Iterator<B> iterB = b.iterator();
@@ -2766,13 +2771,13 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
-    public static <A, B, C, R> ExList<R> zip(final A[] a, final B[] b, final C[] c, final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
+    public static <A, B, C, R> List<R> zip(final A[] a, final B[] b, final C[] c, final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
         return zip(Arrays.asList(a), Arrays.asList(b), Arrays.asList(c), zipFunction);
     }
 
-    public static <A, B, C, R> ExList<R> zip(final Collection<A> a, final Collection<B> b, final Collection<C> c,
+    public static <A, B, C, R> List<R> zip(final Collection<A> a, final Collection<B> b, final Collection<C> c,
             final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
-        final ExList<R> result = new ExList<>(N.min(a.size(), b.size(), c.size()));
+        final List<R> result = new ArrayList<>(N.min(a.size(), b.size(), c.size()));
 
         final Iterator<A> iterA = a.iterator();
         final Iterator<B> iterB = b.iterator();
@@ -2785,14 +2790,14 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
-    public static <A, B, R> ExList<R> zip(final A[] a, final B[] b, final A valueForNoneA, final B valueForNoneB,
+    public static <A, B, R> List<R> zip(final A[] a, final B[] b, final A valueForNoneA, final B valueForNoneB,
             final BiFunction<? super A, ? super B, R> zipFunction) {
         return zip(Arrays.asList(a), Arrays.asList(b), valueForNoneA, valueForNoneB, zipFunction);
     }
 
-    public static <A, B, R> ExList<R> zip(final Collection<A> a, final Collection<B> b, final A valueForNoneA, final B valueForNoneB,
+    public static <A, B, R> List<R> zip(final Collection<A> a, final Collection<B> b, final A valueForNoneA, final B valueForNoneB,
             final BiFunction<? super A, ? super B, R> zipFunction) {
-        final ExList<R> result = new ExList<>(N.max(a.size(), b.size()));
+        final List<R> result = new ArrayList<>(N.max(a.size(), b.size()));
 
         final Iterator<A> iterA = a.iterator();
         final Iterator<B> iterB = b.iterator();
@@ -2810,14 +2815,14 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
-    public static <A, B, C, R> ExList<R> zip(final A[] a, final B[] b, final C[] c, final A valueForNoneA, final B valueForNoneB, final C valueForNoneC,
+    public static <A, B, C, R> List<R> zip(final A[] a, final B[] b, final C[] c, final A valueForNoneA, final B valueForNoneB, final C valueForNoneC,
             final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
         return zip(Arrays.asList(a), Arrays.asList(b), Arrays.asList(c), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
     }
 
-    public static <A, B, C, R> ExList<R> zip(final Collection<A> a, final Collection<B> b, final Collection<C> c, final A valueForNoneA, final B valueForNoneB,
+    public static <A, B, C, R> List<R> zip(final Collection<A> a, final Collection<B> b, final Collection<C> c, final A valueForNoneA, final B valueForNoneB,
             final C valueForNoneC, final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
-        final ExList<R> result = new ExList<>(N.max(a.size(), b.size(), c.size()));
+        final List<R> result = new ArrayList<>(N.max(a.size(), b.size(), c.size()));
 
         final Iterator<A> iterA = a.iterator();
         final Iterator<B> iterB = b.iterator();
@@ -2837,9 +2842,9 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @param unzip the second parameter is an output parameter.
      * @return
      */
-    public static <T, L, R> Pair<ExList<L>, ExList<R>> unzip(final Collection<? extends T> c, final BiConsumer<? super T, Pair<L, R>> unzip) {
-        final ExList<L> l = new ExList<L>(c.size());
-        final ExList<R> r = new ExList<R>(c.size());
+    public static <T, L, R> Pair<List<L>, List<R>> unzip(final Collection<? extends T> c, final BiConsumer<? super T, Pair<L, R>> unzip) {
+        final List<L> l = new ArrayList<L>(c.size());
+        final List<R> r = new ArrayList<R>(c.size());
 
         final Pair<L, R> pair = new Pair<>();
 
@@ -2883,11 +2888,10 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @param unzip the second parameter is an output parameter.
      * @return
      */
-    public static <T, L, M, R> Triple<ExList<L>, ExList<M>, ExList<R>> unzip3(final Collection<? extends T> c,
-            final BiConsumer<? super T, Triple<L, M, R>> unzip) {
-        final ExList<L> l = new ExList<L>(c.size());
-        final ExList<M> m = new ExList<M>(c.size());
-        final ExList<R> r = new ExList<R>(c.size());
+    public static <T, L, M, R> Triple<List<L>, List<M>, List<R>> unzip3(final Collection<? extends T> c, final BiConsumer<? super T, Triple<L, M, R>> unzip) {
+        final List<L> l = new ArrayList<L>(c.size());
+        final List<M> m = new ArrayList<M>(c.size());
+        final List<R> r = new ArrayList<R>(c.size());
 
         final Triple<L, M, R> triple = new Triple<>();
 
@@ -3172,11 +3176,11 @@ public final class Seq<T> extends ImmutableCollection<T> {
      *     null elements.
      * @since 12.0
      */
-    public static <E> Collection<ExList<E>> permutations(Collection<E> elements) {
+    public static <E> Collection<List<E>> permutations(Collection<E> elements) {
         return new PermutationCollection<E>(elements);
     }
 
-    private static final class PermutationCollection<E> extends AbstractCollection<ExList<E>> {
+    private static final class PermutationCollection<E> extends AbstractCollection<List<E>> {
         final List<E> inputList;
 
         PermutationCollection(Collection<E> input) {
@@ -3194,7 +3198,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
         }
 
         @Override
-        public Iterator<ExList<E>> iterator() {
+        public Iterator<List<E>> iterator() {
             return PermutationIterator.of(inputList);
         }
 
@@ -3243,7 +3247,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
      *     null elements.
      * @since 12.0
      */
-    public static <E extends Comparable<? super E>> Collection<ExList<E>> orderedPermutations(Collection<E> elements) {
+    public static <E extends Comparable<? super E>> Collection<List<E>> orderedPermutations(Collection<E> elements) {
         return orderedPermutations(elements, Comparators.OBJ_COMPARATOR);
     }
 
@@ -3297,11 +3301,11 @@ public final class Seq<T> extends ImmutableCollection<T> {
      *     null elements, or if the specified comparator is null.
      * @since 12.0
      */
-    public static <E> Collection<ExList<E>> orderedPermutations(Collection<E> elements, Comparator<? super E> comparator) {
+    public static <E> Collection<List<E>> orderedPermutations(Collection<E> elements, Comparator<? super E> comparator) {
         return new OrderedPermutationCollection<E>(elements, comparator);
     }
 
-    private static final class OrderedPermutationCollection<E> extends AbstractCollection<ExList<E>> {
+    private static final class OrderedPermutationCollection<E> extends AbstractCollection<List<E>> {
         final List<E> inputList;
         final Comparator<? super E> comparator;
         final int size;
@@ -3324,7 +3328,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
         }
 
         @Override
-        public Iterator<ExList<E>> iterator() {
+        public Iterator<List<E>> iterator() {
             return PermutationIterator.ordered(inputList, comparator);
         }
 
@@ -3456,7 +3460,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @since 19.0
      */
     @SafeVarargs
-    public static <E> List<ExList<E>> cartesianProduct(final Collection<? extends E>... cs) {
+    public static <E> List<List<E>> cartesianProduct(final Collection<? extends E>... cs) {
         return cartesianProduct(Arrays.asList(cs));
     }
 
@@ -3520,11 +3524,11 @@ public final class Seq<T> extends ImmutableCollection<T> {
      *     or any element of a provided list is null
      * @since 19.0
      */
-    public static <E> List<ExList<E>> cartesianProduct(final Collection<? extends Collection<? extends E>> cs) {
+    public static <E> List<List<E>> cartesianProduct(final Collection<? extends Collection<? extends E>> cs) {
         return new CartesianList<>(cs);
     }
 
-    private static final class CartesianList<E> extends AbstractList<ExList<E>> implements RandomAccess {
+    private static final class CartesianList<E> extends AbstractList<List<E>> implements RandomAccess {
         private final transient Object[][] axes;
         private final transient int[] axesSizeProduct;
 
@@ -3549,10 +3553,10 @@ public final class Seq<T> extends ImmutableCollection<T> {
         }
 
         @Override
-        public ExList<E> get(final int index) {
+        public List<E> get(final int index) {
             N.checkArgument(index < size(), "Invalid index %s. It must be less than the size %s", index, size());
 
-            final ExList<E> result = new ExList<>(axes.length);
+            final List<E> result = new ArrayList<>(axes.length);
 
             for (int k = 0, len = axes.length; k < len; k++) {
                 result.add((E) axes[k][getAxisIndexForProductIndex(index, k)]);

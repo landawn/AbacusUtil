@@ -5448,23 +5448,27 @@ public final class N {
             return str;
         }
 
-        final CharList charList = new CharList();
+        final StringBuilder sb = ObjectFactory.createStringBuilder();
 
-        for (int i = 0, len = str.length(); i < len; i++) {
-            char ch = str.charAt(i);
+        try {
+            for (int i = 0, len = str.length(); i < len; i++) {
+                char ch = str.charAt(i);
 
-            if (Character.isUpperCase(ch)) {
-                if (i > 0 && (Character.isLowerCase(str.charAt(i - 1)) || (i < len - 1 && Character.isLowerCase(str.charAt(i + 1))))) {
-                    charList.add(D._UNDERSCORE);
+                if (Character.isUpperCase(ch)) {
+                    if (i > 0 && (Character.isLowerCase(str.charAt(i - 1)) || (i < len - 1 && Character.isLowerCase(str.charAt(i + 1))))) {
+                        sb.append(D._UNDERSCORE);
+                    }
+
+                    sb.append(Character.toLowerCase(ch));
+                } else {
+                    sb.append(ch);
                 }
-
-                charList.add(Character.toLowerCase(ch));
-            } else {
-                charList.add(ch);
             }
-        }
 
-        return String.valueOf(charList.array(), 0, charList.size());
+            return sb.toString();
+        } finally {
+            ObjectFactory.recycle(sb);
+        }
     }
 
     public static char toUpperCase(final char ch) {
@@ -5545,23 +5549,27 @@ public final class N {
             return str;
         }
 
-        final CharList charList = new CharList();
+        final StringBuilder sb = ObjectFactory.createStringBuilder();
 
-        for (int i = 0, len = str.length(); i < len; i++) {
-            char ch = str.charAt(i);
+        try {
+            for (int i = 0, len = str.length(); i < len; i++) {
+                char ch = str.charAt(i);
 
-            if (Character.isUpperCase(ch)) {
-                if (i > 0 && (Character.isLowerCase(str.charAt(i - 1)) || (i < len - 1 && Character.isLowerCase(str.charAt(i + 1))))) {
-                    charList.add(D._UNDERSCORE);
+                if (Character.isUpperCase(ch)) {
+                    if (i > 0 && (Character.isLowerCase(str.charAt(i - 1)) || (i < len - 1 && Character.isLowerCase(str.charAt(i + 1))))) {
+                        sb.append(D._UNDERSCORE);
+                    }
+
+                    sb.append(ch);
+                } else {
+                    sb.append(Character.toUpperCase(ch));
                 }
-
-                charList.add(ch);
-            } else {
-                charList.add(Character.toUpperCase(ch));
             }
-        }
 
-        return String.valueOf(charList.array(), 0, charList.size());
+            return sb.toString();
+        } finally {
+            ObjectFactory.recycle(sb);
+        }
     }
 
     public static char swapCase(final char ch) {
@@ -9155,12 +9163,12 @@ public final class N {
         return (m == null) || (m.isEmpty());
     }
 
-    public static boolean isNullOrEmpty(final ExList<?> list) {
+    public static boolean isNullOrEmpty(final List<?> list) {
         return (list == null) || (list.isEmpty());
     }
 
     @SuppressWarnings("rawtypes")
-    public static boolean isNullOrEmpty(final AbstractList list) {
+    public static boolean isNullOrEmpty(final PrimitiveList list) {
         return (list == null) || (list.isEmpty());
     }
 
@@ -9246,12 +9254,12 @@ public final class N {
         return (m != null) && (m.size() > 0);
     }
 
-    public static boolean notNullOrEmpty(final ExList<?> list) {
+    public static boolean notNullOrEmpty(final List<?> list) {
         return (list != null) && (list.size() > 0);
     }
 
     @SuppressWarnings("rawtypes")
-    public static boolean notNullOrEmpty(final AbstractList list) {
+    public static boolean notNullOrEmpty(final PrimitiveList list) {
         return (list != null) && (list.size() > 0);
     }
 
@@ -9512,7 +9520,7 @@ public final class N {
         return parameter;
     }
 
-    public static <T> ExList<T> checkNullOrEmpty(final ExList<T> parameter, final String msg) {
+    public static <T> List<T> checkNullOrEmpty(final List<T> parameter, final String msg) {
         if (parameter == null || parameter.isEmpty()) {
             if (isErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
@@ -9525,7 +9533,7 @@ public final class N {
     }
 
     @SuppressWarnings("rawtypes")
-    public static <T extends AbstractList> T checkNullOrEmpty(final T parameter, final String msg) {
+    public static <T extends PrimitiveList> T checkNullOrEmpty(final T parameter, final String msg) {
         if (parameter == null || parameter.isEmpty()) {
             if (isErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
@@ -14117,13 +14125,9 @@ public final class N {
     public static <T> List<T> copyOfRange(final List<T> c, final int from, final int to) {
         N.checkFromToIndex(from, to, c.size());
 
-        if (c instanceof ExList && ((ExList<T>) c).array().getClass().equals(Object[].class)) {
-            return Array.asList(N.copyOfRange((T[]) ((ExList<T>) c).array(), from, to));
-        } else {
-            final List<T> result = new ArrayList<>(to - from);
-            result.addAll(c.subList(from, to));
-            return result;
-        }
+        final List<T> result = new ArrayList<>(to - from);
+        result.addAll(c.subList(from, to));
+        return result;
     }
 
     /**
@@ -17089,17 +17093,28 @@ public final class N {
             return;
         }
 
-        ExList.of(a).forEach(action);
+        for (T e : a) {
+            action.accept(e);
+        }
     }
 
     public static <T> void forEach(final T[] a, final int fromIndex, final int toIndex, final Consumer<? super T> action) {
-        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+        N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex,
+                a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
             return;
         }
 
-        ExList.of(a).forEach(fromIndex, toIndex, action);
+        if (fromIndex <= toIndex) {
+            for (int i = fromIndex; i < toIndex; i++) {
+                action.accept(a[i]);
+            }
+        } else {
+            for (int i = min(a.length - 1, toIndex); i > toIndex; i--) {
+                action.accept(a[i]);
+            }
+        }
     }
 
     public static <T> void forEach(final T[] a, final IndexedConsumer<T> action) {
@@ -17135,7 +17150,7 @@ public final class N {
             return seed;
         }
 
-        return ExList.of(a).forEach(seed, accumulator, conditionToBreak);
+        return forEach(a, 0, a.length, seed, accumulator, conditionToBreak);
     }
 
     /**
@@ -18018,23 +18033,23 @@ public final class N {
         return result;
     }
 
-    public static <T> ExList<T> filter(final T[] a, final Predicate<? super T> filter) {
+    public static <T> List<T> filter(final T[] a, final Predicate<? super T> filter) {
         if (N.isNullOrEmpty(a)) {
-            return ExList.empty();
+            return new ArrayList<>();
         }
 
         return filter(a, filter, Integer.MAX_VALUE);
     }
 
-    public static <T> ExList<T> filter(final T[] a, final Predicate<? super T> filter, final int max) {
+    public static <T> List<T> filter(final T[] a, final Predicate<? super T> filter, final int max) {
         if (N.isNullOrEmpty(a)) {
-            return ExList.empty();
+            return new ArrayList<>();
         }
 
         return filter(a, 0, a.length, filter, max);
     }
 
-    public static <T> ExList<T> filter(final T[] a, final int fromIndex, final int toIndex, final Predicate<? super T> filter) {
+    public static <T> List<T> filter(final T[] a, final int fromIndex, final int toIndex, final Predicate<? super T> filter) {
         return filter(a, fromIndex, toIndex, filter, Integer.MAX_VALUE);
     }
 
@@ -18049,14 +18064,14 @@ public final class N {
      * @param max
      * @return
      */
-    public static <T> ExList<T> filter(final T[] a, final int fromIndex, final int toIndex, final Predicate<? super T> filter, final int max) {
+    public static <T> List<T> filter(final T[] a, final int fromIndex, final int toIndex, final Predicate<? super T> filter, final int max) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
-            return ExList.empty();
+            return new ArrayList<>();
         }
 
-        final ExList<T> result = new ExList<>(min(9, max, (toIndex - fromIndex)));
+        final List<T> result = new ArrayList<>(min(9, max, (toIndex - fromIndex)));
 
         for (int i = fromIndex, cnt = 0; i < toIndex && cnt < max; i++) {
             if (filter.test(a[i])) {
@@ -18068,35 +18083,35 @@ public final class N {
         return result;
     }
 
-    public static <T> ExList<T> filter(final Collection<? extends T> c, final Predicate<? super T> filter) {
+    public static <T> List<T> filter(final Collection<? extends T> c, final Predicate<? super T> filter) {
         if (N.isNullOrEmpty(c)) {
-            return ExList.empty();
+            return new ArrayList<>();
         }
 
         return filter(c, filter, Integer.MAX_VALUE);
     }
 
-    public static <T> ExList<T> filter(final Collection<? extends T> c, final Predicate<? super T> filter, final int max) {
+    public static <T> List<T> filter(final Collection<? extends T> c, final Predicate<? super T> filter, final int max) {
         if (N.isNullOrEmpty(c)) {
-            return ExList.empty();
+            return new ArrayList<>();
         }
 
         return filter(c, 0, c.size(), filter, max);
     }
 
-    public static <T> ExList<T> filter(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Predicate<? super T> filter) {
+    public static <T> List<T> filter(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Predicate<? super T> filter) {
         return filter(c, fromIndex, toIndex, filter, Integer.MAX_VALUE);
     }
 
-    public static <T> ExList<T> filter(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Predicate<? super T> filter,
+    public static <T> List<T> filter(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Predicate<? super T> filter,
             final int max) {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
-            return ExList.empty();
+            return new ArrayList<>();
         }
 
-        final ExList<T> result = new ExList<>(min(9, max, (toIndex - fromIndex)));
+        final List<T> result = new ArrayList<>(min(9, max, (toIndex - fromIndex)));
 
         if (c instanceof List && c instanceof RandomAccess) {
             final List<T> list = (List<T>) c;
@@ -18952,9 +18967,9 @@ public final class N {
         return result;
     }
 
-    public static <T, R> ExList<R> map(final T[] a, final Function<? super T, ? extends R> func) {
+    public static <T, R> List<R> map(final T[] a, final Function<? super T, ? extends R> func) {
         if (N.isNullOrEmpty(a)) {
-            return ExList.empty();
+            return new ArrayList<>();
         }
 
         return map(a, 0, a.length, func);
@@ -18970,14 +18985,14 @@ public final class N {
      * @param func 
      * @return
      */
-    public static <T, R> ExList<R> map(final T[] a, final int fromIndex, final int toIndex, final Function<? super T, ? extends R> func) {
+    public static <T, R> List<R> map(final T[] a, final int fromIndex, final int toIndex, final Function<? super T, ? extends R> func) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
-            return ExList.empty();
+            return new ArrayList<>();
         }
 
-        final ExList<R> result = new ExList<>(toIndex - fromIndex);
+        final List<R> result = new ArrayList<>(toIndex - fromIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(func.apply(a[i]));
@@ -18986,9 +19001,9 @@ public final class N {
         return result;
     }
 
-    public static <T, R> ExList<R> map(final Collection<? extends T> c, final Function<? super T, ? extends R> func) {
+    public static <T, R> List<R> map(final Collection<? extends T> c, final Function<? super T, ? extends R> func) {
         if (N.isNullOrEmpty(c)) {
-            return ExList.empty();
+            return new ArrayList<>();
         }
 
         return map(c, 0, c.size(), func);
@@ -19004,14 +19019,14 @@ public final class N {
      * @param func 
      * @return
      */
-    public static <T, R> ExList<R> map(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Function<? super T, ? extends R> func) {
+    public static <T, R> List<R> map(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Function<? super T, ? extends R> func) {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
-            return ExList.empty();
+            return new ArrayList<>();
         }
 
-        final ExList<R> result = new ExList<>(toIndex - fromIndex);
+        final List<R> result = new ArrayList<>(toIndex - fromIndex);
 
         if (c instanceof List && c instanceof RandomAccess) {
             final List<T> list = (List<T>) c;
@@ -19958,23 +19973,23 @@ public final class N {
             return N.copyOfRange(a, fromIndex, toIndex);
         }
 
-        final Comparator<Pair<Short, Integer>> pairCmp = cmp == null ? new Comparator<Pair<Short, Integer>>() {
+        final Comparator<IndexedShort> pairCmp = cmp == null ? new Comparator<IndexedShort>() {
             @Override
-            public int compare(final Pair<Short, Integer> o1, final Pair<Short, Integer> o2) {
-                return Short.compare(o1.left.shortValue(), o2.left.shortValue());
+            public int compare(final IndexedShort o1, final IndexedShort o2) {
+                return Short.compare(o1.value(), o2.value());
             }
-        } : new Comparator<Pair<Short, Integer>>() {
+        } : new Comparator<IndexedShort>() {
             @Override
-            public int compare(final Pair<Short, Integer> o1, final Pair<Short, Integer> o2) {
-                return N.compare(o1.left, o2.left, cmp);
+            public int compare(final IndexedShort o1, final IndexedShort o2) {
+                return N.compare(o1.value(), o2.value(), cmp);
             }
         };
 
-        final Queue<Pair<Short, Integer>> heap = new PriorityQueue<>(n, pairCmp);
-        Pair<Short, Integer> pair = null;
+        final Queue<IndexedShort> heap = new PriorityQueue<>(n, pairCmp);
+        IndexedShort pair = null;
 
         for (int i = fromIndex; i < toIndex; i++) {
-            pair = Pair.of(a[i], i);
+            pair = IndexedShort.of(a[i], i);
 
             if (heap.size() >= n) {
                 if (pairCmp.compare(heap.peek(), pair) < 0) {
@@ -19986,19 +20001,19 @@ public final class N {
             }
         }
 
-        final Pair<Short, Integer>[] arrayOfPair = heap.toArray(new Pair[heap.size()]);
+        final IndexedShort[] arrayOfPair = heap.toArray(new IndexedShort[heap.size()]);
 
-        N.sort(arrayOfPair, new Comparator<Pair<Short, Integer>>() {
+        N.sort(arrayOfPair, new Comparator<IndexedShort>() {
             @Override
-            public int compare(final Pair<Short, Integer> o1, final Pair<Short, Integer> o2) {
-                return o1.right.intValue() - o2.right.intValue();
+            public int compare(final IndexedShort o1, final IndexedShort o2) {
+                return o1.index() - o2.index();
             }
         });
 
         final short[] res = new short[arrayOfPair.length];
 
         for (int i = 0, len = arrayOfPair.length; i < len; i++) {
-            res[i] = arrayOfPair[i].left;
+            res[i] = arrayOfPair[i].value();
         }
 
         return res;
@@ -20025,23 +20040,23 @@ public final class N {
             return N.copyOfRange(a, fromIndex, toIndex);
         }
 
-        final Comparator<Pair<Integer, Integer>> pairCmp = cmp == null ? new Comparator<Pair<Integer, Integer>>() {
+        final Comparator<IndexedInt> pairCmp = cmp == null ? new Comparator<IndexedInt>() {
             @Override
-            public int compare(final Pair<Integer, Integer> o1, final Pair<Integer, Integer> o2) {
-                return Integer.compare(o1.left.intValue(), o2.left.intValue());
+            public int compare(final IndexedInt o1, final IndexedInt o2) {
+                return Integer.compare(o1.value(), o2.value());
             }
-        } : new Comparator<Pair<Integer, Integer>>() {
+        } : new Comparator<IndexedInt>() {
             @Override
-            public int compare(final Pair<Integer, Integer> o1, final Pair<Integer, Integer> o2) {
-                return N.compare(o1.left, o2.left, cmp);
+            public int compare(final IndexedInt o1, final IndexedInt o2) {
+                return N.compare(o1.value(), o2.value(), cmp);
             }
         };
 
-        final Queue<Pair<Integer, Integer>> heap = new PriorityQueue<>(n, pairCmp);
-        Pair<Integer, Integer> pair = null;
+        final Queue<IndexedInt> heap = new PriorityQueue<>(n, pairCmp);
+        IndexedInt pair = null;
 
         for (int i = fromIndex; i < toIndex; i++) {
-            pair = Pair.of(a[i], i);
+            pair = IndexedInt.of(a[i], i);
 
             if (heap.size() >= n) {
                 if (pairCmp.compare(heap.peek(), pair) < 0) {
@@ -20053,19 +20068,19 @@ public final class N {
             }
         }
 
-        final Pair<Integer, Integer>[] arrayOfPair = heap.toArray(new Pair[heap.size()]);
+        final IndexedInt[] arrayOfPair = heap.toArray(new IndexedInt[heap.size()]);
 
-        N.sort(arrayOfPair, new Comparator<Pair<Integer, Integer>>() {
+        N.sort(arrayOfPair, new Comparator<IndexedInt>() {
             @Override
-            public int compare(final Pair<Integer, Integer> o1, final Pair<Integer, Integer> o2) {
-                return o1.right.intValue() - o2.right.intValue();
+            public int compare(final IndexedInt o1, final IndexedInt o2) {
+                return o1.index() - o2.index();
             }
         });
 
         final int[] res = new int[arrayOfPair.length];
 
         for (int i = 0, len = arrayOfPair.length; i < len; i++) {
-            res[i] = arrayOfPair[i].left;
+            res[i] = arrayOfPair[i].value();
         }
 
         return res;
@@ -20092,23 +20107,23 @@ public final class N {
             return N.copyOfRange(a, fromIndex, toIndex);
         }
 
-        final Comparator<Pair<Long, Integer>> pairCmp = cmp == null ? new Comparator<Pair<Long, Integer>>() {
+        final Comparator<IndexedLong> pairCmp = cmp == null ? new Comparator<IndexedLong>() {
             @Override
-            public int compare(final Pair<Long, Integer> o1, final Pair<Long, Integer> o2) {
-                return Long.compare(o1.left.longValue(), o2.left.longValue());
+            public int compare(final IndexedLong o1, final IndexedLong o2) {
+                return Long.compare(o1.value(), o2.value());
             }
-        } : new Comparator<Pair<Long, Integer>>() {
+        } : new Comparator<IndexedLong>() {
             @Override
-            public int compare(final Pair<Long, Integer> o1, final Pair<Long, Integer> o2) {
-                return N.compare(o1.left, o2.left, cmp);
+            public int compare(final IndexedLong o1, final IndexedLong o2) {
+                return N.compare(o1.value(), o2.value(), cmp);
             }
         };
 
-        final Queue<Pair<Long, Integer>> heap = new PriorityQueue<>(n, pairCmp);
-        Pair<Long, Integer> pair = null;
+        final Queue<IndexedLong> heap = new PriorityQueue<>(n, pairCmp);
+        IndexedLong pair = null;
 
         for (int i = fromIndex; i < toIndex; i++) {
-            pair = Pair.of(a[i], i);
+            pair = IndexedLong.of(a[i], i);
 
             if (heap.size() >= n) {
                 if (pairCmp.compare(heap.peek(), pair) < 0) {
@@ -20120,19 +20135,19 @@ public final class N {
             }
         }
 
-        final Pair<Long, Integer>[] arrayOfPair = heap.toArray(new Pair[heap.size()]);
+        final IndexedLong[] arrayOfPair = heap.toArray(new IndexedLong[heap.size()]);
 
-        N.sort(arrayOfPair, new Comparator<Pair<Long, Integer>>() {
+        N.sort(arrayOfPair, new Comparator<IndexedLong>() {
             @Override
-            public int compare(final Pair<Long, Integer> o1, final Pair<Long, Integer> o2) {
-                return o1.right.intValue() - o2.right.intValue();
+            public int compare(final IndexedLong o1, final IndexedLong o2) {
+                return o1.index() - o2.index();
             }
         });
 
         final long[] res = new long[arrayOfPair.length];
 
         for (int i = 0, len = arrayOfPair.length; i < len; i++) {
-            res[i] = arrayOfPair[i].left;
+            res[i] = arrayOfPair[i].value();
         }
 
         return res;
@@ -20159,23 +20174,23 @@ public final class N {
             return N.copyOfRange(a, fromIndex, toIndex);
         }
 
-        final Comparator<Pair<Float, Integer>> pairCmp = cmp == null ? new Comparator<Pair<Float, Integer>>() {
+        final Comparator<IndexedFloat> pairCmp = cmp == null ? new Comparator<IndexedFloat>() {
             @Override
-            public int compare(final Pair<Float, Integer> o1, final Pair<Float, Integer> o2) {
-                return Float.compare(o1.left.floatValue(), o2.left.floatValue());
+            public int compare(final IndexedFloat o1, final IndexedFloat o2) {
+                return Float.compare(o1.value(), o2.value());
             }
-        } : new Comparator<Pair<Float, Integer>>() {
+        } : new Comparator<IndexedFloat>() {
             @Override
-            public int compare(final Pair<Float, Integer> o1, final Pair<Float, Integer> o2) {
-                return N.compare(o1.left, o2.left, cmp);
+            public int compare(final IndexedFloat o1, final IndexedFloat o2) {
+                return N.compare(o1.value(), o2.value(), cmp);
             }
         };
 
-        final Queue<Pair<Float, Integer>> heap = new PriorityQueue<>(n, pairCmp);
-        Pair<Float, Integer> pair = null;
+        final Queue<IndexedFloat> heap = new PriorityQueue<>(n, pairCmp);
+        IndexedFloat pair = null;
 
         for (int i = fromIndex; i < toIndex; i++) {
-            pair = Pair.of(a[i], i);
+            pair = IndexedFloat.of(a[i], i);
 
             if (heap.size() >= n) {
                 if (pairCmp.compare(heap.peek(), pair) < 0) {
@@ -20187,19 +20202,19 @@ public final class N {
             }
         }
 
-        final Pair<Float, Integer>[] arrayOfPair = heap.toArray(new Pair[heap.size()]);
+        final IndexedFloat[] arrayOfPair = heap.toArray(new IndexedFloat[heap.size()]);
 
-        N.sort(arrayOfPair, new Comparator<Pair<Float, Integer>>() {
+        N.sort(arrayOfPair, new Comparator<IndexedFloat>() {
             @Override
-            public int compare(final Pair<Float, Integer> o1, final Pair<Float, Integer> o2) {
-                return o1.right.intValue() - o2.right.intValue();
+            public int compare(final IndexedFloat o1, final IndexedFloat o2) {
+                return o1.index() - o2.index();
             }
         });
 
         final float[] res = new float[arrayOfPair.length];
 
         for (int i = 0, len = arrayOfPair.length; i < len; i++) {
-            res[i] = arrayOfPair[i].left;
+            res[i] = arrayOfPair[i].value();
         }
 
         return res;
@@ -20226,23 +20241,23 @@ public final class N {
             return N.copyOfRange(a, fromIndex, toIndex);
         }
 
-        final Comparator<Pair<Double, Integer>> pairCmp = cmp == null ? new Comparator<Pair<Double, Integer>>() {
+        final Comparator<IndexedDouble> pairCmp = cmp == null ? new Comparator<IndexedDouble>() {
             @Override
-            public int compare(final Pair<Double, Integer> o1, final Pair<Double, Integer> o2) {
-                return Double.compare(o1.left.doubleValue(), o2.left.doubleValue());
+            public int compare(final IndexedDouble o1, final IndexedDouble o2) {
+                return Double.compare(o1.value(), o2.value());
             }
-        } : new Comparator<Pair<Double, Integer>>() {
+        } : new Comparator<IndexedDouble>() {
             @Override
-            public int compare(final Pair<Double, Integer> o1, final Pair<Double, Integer> o2) {
-                return N.compare(o1.left, o2.left, cmp);
+            public int compare(final IndexedDouble o1, final IndexedDouble o2) {
+                return N.compare(o1.value(), o2.value(), cmp);
             }
         };
 
-        final Queue<Pair<Double, Integer>> heap = new PriorityQueue<>(n, pairCmp);
-        Pair<Double, Integer> pair = null;
+        final Queue<IndexedDouble> heap = new PriorityQueue<>(n, pairCmp);
+        IndexedDouble pair = null;
 
         for (int i = fromIndex; i < toIndex; i++) {
-            pair = Pair.of(a[i], i);
+            pair = IndexedDouble.of(a[i], i);
 
             if (heap.size() >= n) {
                 if (pairCmp.compare(heap.peek(), pair) < 0) {
@@ -20254,19 +20269,19 @@ public final class N {
             }
         }
 
-        final Pair<Double, Integer>[] arrayOfPair = heap.toArray(new Pair[heap.size()]);
+        final IndexedDouble[] arrayOfPair = heap.toArray(new IndexedDouble[heap.size()]);
 
-        N.sort(arrayOfPair, new Comparator<Pair<Double, Integer>>() {
+        N.sort(arrayOfPair, new Comparator<IndexedDouble>() {
             @Override
-            public int compare(final Pair<Double, Integer> o1, final Pair<Double, Integer> o2) {
-                return o1.right.intValue() - o2.right.intValue();
+            public int compare(final IndexedDouble o1, final IndexedDouble o2) {
+                return o1.index() - o2.index();
             }
         });
 
         final double[] res = new double[arrayOfPair.length];
 
         for (int i = 0, len = arrayOfPair.length; i < len; i++) {
-            res[i] = arrayOfPair[i].left;
+            res[i] = arrayOfPair[i].value();
         }
 
         return res;
@@ -20294,23 +20309,23 @@ public final class N {
             return N.copyOfRange(a, fromIndex, toIndex);
         }
 
-        final Comparator<Pair<T, Integer>> pairCmp = cmp == null ? (Comparator) new Comparator<Pair<Comparable, Integer>>() {
+        final Comparator<Indexed<T>> pairCmp = cmp == null ? (Comparator) new Comparator<Indexed<Comparable>>() {
             @Override
-            public int compare(final Pair<Comparable, Integer> o1, final Pair<Comparable, Integer> o2) {
-                return N.compare(o1.left, o2.left);
+            public int compare(final Indexed<Comparable> o1, final Indexed<Comparable> o2) {
+                return N.compare(o1.value(), o2.value());
             }
-        } : new Comparator<Pair<T, Integer>>() {
+        } : new Comparator<Indexed<T>>() {
             @Override
-            public int compare(final Pair<T, Integer> o1, final Pair<T, Integer> o2) {
-                return N.compare(o1.left, o2.left, cmp);
+            public int compare(final Indexed<T> o1, final Indexed<T> o2) {
+                return N.compare(o1.value(), o2.value(), cmp);
             }
         };
 
-        final Queue<Pair<T, Integer>> heap = new PriorityQueue<>(n, pairCmp);
-        Pair<T, Integer> pair = null;
+        final Queue<Indexed<T>> heap = new PriorityQueue<>(n, pairCmp);
+        Indexed<T> pair = null;
 
         for (int i = fromIndex; i < toIndex; i++) {
-            pair = Pair.of(a[i], i);
+            pair = Indexed.of(a[i], i);
 
             if (heap.size() >= n) {
                 if (pairCmp.compare(heap.peek(), pair) < 0) {
@@ -20322,44 +20337,44 @@ public final class N {
             }
         }
 
-        final Pair<T, Integer>[] arrayOfPair = heap.toArray(new Pair[heap.size()]);
+        final Indexed<T>[] arrayOfPair = heap.toArray(new Indexed[heap.size()]);
 
-        N.sort(arrayOfPair, new Comparator<Pair<T, Integer>>() {
+        N.sort(arrayOfPair, new Comparator<Indexed<T>>() {
             @Override
-            public int compare(final Pair<T, Integer> o1, final Pair<T, Integer> o2) {
-                return o1.right.intValue() - o2.right.intValue();
+            public int compare(final Indexed<T> o1, final Indexed<T> o2) {
+                return o1.index() - o2.index();
             }
         });
 
         final T[] res = N.newArray(a.getClass().getComponentType(), arrayOfPair.length);
 
         for (int i = 0, len = arrayOfPair.length; i < len; i++) {
-            res[i] = arrayOfPair[i].left;
+            res[i] = arrayOfPair[i].value();
         }
 
         return res;
     }
 
-    public static <T extends Comparable<T>> ExList<T> top(final Collection<? extends T> c, final int n) {
+    public static <T extends Comparable<T>> List<T> top(final Collection<? extends T> c, final int n) {
         return top(c, n, null);
     }
 
-    public static <T> ExList<T> top(final Collection<? extends T> c, final int n, final Comparator<? super T> cmp) {
+    public static <T> List<T> top(final Collection<? extends T> c, final int n, final Comparator<? super T> cmp) {
         return top(c, 0, c.size(), n, cmp);
     }
 
-    public static <T extends Comparable<T>> ExList<T> top(final Collection<? extends T> c, final int fromIndex, final int toIndex, final int n) {
+    public static <T extends Comparable<T>> List<T> top(final Collection<? extends T> c, final int fromIndex, final int toIndex, final int n) {
         return top(c, fromIndex, toIndex, n, null);
     }
 
     @SuppressWarnings("rawtypes")
-    public static <T> ExList<T> top(final Collection<? extends T> c, final int fromIndex, final int toIndex, final int n, final Comparator<? super T> cmp) {
+    public static <T> List<T> top(final Collection<? extends T> c, final int fromIndex, final int toIndex, final int n, final Comparator<? super T> cmp) {
         if (n < 1) {
             throw new IllegalArgumentException("'n' can not be less than 1");
         }
 
         if (n >= toIndex - fromIndex) {
-            final ExList<T> res = new ExList<>(toIndex - fromIndex);
+            final List<T> res = new ArrayList<>(toIndex - fromIndex);
             final Iterator<? extends T> iter = c.iterator();
             T e = null;
 
@@ -20376,29 +20391,29 @@ public final class N {
             return res;
         }
 
-        final Comparator<Pair<T, Integer>> pairCmp = cmp == null ? (Comparator) new Comparator<Pair<Comparable, Integer>>() {
+        final Comparator<Indexed<T>> pairCmp = cmp == null ? (Comparator) new Comparator<Indexed<Comparable>>() {
             @Override
-            public int compare(final Pair<Comparable, Integer> o1, final Pair<Comparable, Integer> o2) {
-                return N.compare(o1.left, o2.left);
+            public int compare(final Indexed<Comparable> o1, final Indexed<Comparable> o2) {
+                return N.compare(o1.value(), o2.value());
             }
-        } : new Comparator<Pair<T, Integer>>() {
+        } : new Comparator<Indexed<T>>() {
             @Override
-            public int compare(final Pair<T, Integer> o1, final Pair<T, Integer> o2) {
-                return N.compare(o1.left, o2.left, cmp);
+            public int compare(final Indexed<T> o1, final Indexed<T> o2) {
+                return N.compare(o1.value(), o2.value(), cmp);
             }
         };
 
-        final Queue<Pair<T, Integer>> heap = new PriorityQueue<>(n, pairCmp);
+        final Queue<Indexed<T>> heap = new PriorityQueue<>(n, pairCmp);
 
         if (c instanceof List && c instanceof RandomAccess) {
             final List<T> list = (List<T>) c;
-            Pair<T, Integer> pair = null;
+            Indexed<T> pair = null;
             T e = null;
 
             for (int i = fromIndex; i < toIndex; i++) {
                 e = list.get(i);
 
-                pair = Pair.of(e, i);
+                pair = Indexed.of(e, i);
 
                 if (heap.size() >= n) {
                     if (pairCmp.compare(heap.peek(), pair) < 0) {
@@ -20411,7 +20426,7 @@ public final class N {
             }
         } else {
             final Iterator<? extends T> iter = c.iterator();
-            Pair<T, Integer> pair = null;
+            Indexed<T> pair = null;
             T e = null;
 
             for (int i = 0; i < toIndex && iter.hasNext(); i++) {
@@ -20421,7 +20436,7 @@ public final class N {
                     continue;
                 }
 
-                pair = Pair.of(e, i);
+                pair = Indexed.of(e, i);
 
                 if (heap.size() >= n) {
                     if (pairCmp.compare(heap.peek(), pair) < 0) {
@@ -20434,19 +20449,19 @@ public final class N {
             }
         }
 
-        final Pair<T, Integer>[] arrayOfPair = heap.toArray(new Pair[heap.size()]);
+        final Indexed<T>[] arrayOfPair = heap.toArray(new Indexed[heap.size()]);
 
-        N.sort(arrayOfPair, new Comparator<Pair<T, Integer>>() {
+        N.sort(arrayOfPair, new Comparator<Indexed<T>>() {
             @Override
-            public int compare(final Pair<T, Integer> o1, final Pair<T, Integer> o2) {
-                return o1.right.intValue() - o2.right.intValue();
+            public int compare(final Indexed<T> o1, final Indexed<T> o2) {
+                return o1.index() - o2.index();
             }
         });
 
-        final ExList<T> res = new ExList<>(arrayOfPair.length);
+        final List<T> res = new ArrayList<>(arrayOfPair.length);
 
         for (int i = 0, len = arrayOfPair.length; i < len; i++) {
-            res.add(arrayOfPair[i].left);
+            res.add(arrayOfPair[i].value());
         }
 
         return res;
@@ -20743,9 +20758,9 @@ public final class N {
      * @param c
      * @return
      */
-    public static <T> ExList<T> distinct(final Collection<? extends T> c) {
+    public static <T> List<T> distinct(final Collection<? extends T> c) {
         if (N.isNullOrEmpty(c)) {
-            return new ExList<>();
+            return new ArrayList<>();
         }
 
         return distinct(c, 0, c.size());
@@ -20760,14 +20775,14 @@ public final class N {
      * @param toIndex
      * @return
      */
-    public static <T> ExList<T> distinct(final Collection<? extends T> c, final int fromIndex, final int toIndex) {
+    public static <T> List<T> distinct(final Collection<? extends T> c, final int fromIndex, final int toIndex) {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
-            return new ExList<>();
+            return new ArrayList<>();
         }
 
-        final ExList<T> result = new ExList<>();
+        final List<T> result = new ArrayList<>();
         final Set<Object> set = new HashSet<>();
         T e = null;
 
@@ -20810,9 +20825,9 @@ public final class N {
      * @param keyExtractor don't change value of the input parameter.
      * @return
      */
-    public static <T> ExList<T> distinct(final Collection<? extends T> c, final Function<? super T, ?> keyExtractor) {
+    public static <T> List<T> distinct(final Collection<? extends T> c, final Function<? super T, ?> keyExtractor) {
         if (N.isNullOrEmpty(c)) {
-            return new ExList<>();
+            return new ArrayList<>();
         }
 
         return distinct(c, 0, c.size(), keyExtractor);
@@ -20830,14 +20845,14 @@ public final class N {
      * @param keyExtractor don't change value of the input parameter.
      * @return
      */
-    public static <T> ExList<T> distinct(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Function<? super T, ?> keyExtractor) {
+    public static <T> List<T> distinct(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Function<? super T, ?> keyExtractor) {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
-            return new ExList<>();
+            return new ArrayList<>();
         }
 
-        final ExList<T> result = new ExList<>();
+        final List<T> result = new ArrayList<>();
         final Set<Object> set = new HashSet<>();
         T e = null;
 
@@ -20882,17 +20897,17 @@ public final class N {
      * @param size
      * @return
      */
-    public static ExList<boolean[]> split(final boolean[] a, final int size) {
+    public static List<boolean[]> split(final boolean[] a, final int size) {
         if (size < 1) {
             throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ExList<>();
+            return new ArrayList<>();
         }
 
         final int len = a.length;
-        final ExList<boolean[]> res = new ExList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<boolean[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = 0, toIndex = a.length; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -20911,7 +20926,7 @@ public final class N {
      * @param size
      * @return
      */
-    public static ExList<boolean[]> split(final boolean[] a, final int fromIndex, final int toIndex, final int size) {
+    public static List<boolean[]> split(final boolean[] a, final int fromIndex, final int toIndex, final int size) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (size < 1) {
@@ -20919,11 +20934,11 @@ public final class N {
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ExList<>();
+            return new ArrayList<>();
         }
 
         final int len = toIndex - fromIndex;
-        final ExList<boolean[]> res = new ExList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<boolean[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = fromIndex; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -20940,17 +20955,17 @@ public final class N {
      * @param size
      * @return
      */
-    public static ExList<char[]> split(final char[] a, final int size) {
+    public static List<char[]> split(final char[] a, final int size) {
         if (size < 1) {
             throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ExList<>();
+            return new ArrayList<>();
         }
 
         final int len = a.length;
-        final ExList<char[]> res = new ExList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<char[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = 0, toIndex = a.length; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -20969,7 +20984,7 @@ public final class N {
      * @param size
      * @return
      */
-    public static ExList<char[]> split(final char[] a, final int fromIndex, final int toIndex, final int size) {
+    public static List<char[]> split(final char[] a, final int fromIndex, final int toIndex, final int size) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (size < 1) {
@@ -20977,11 +20992,11 @@ public final class N {
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ExList<>();
+            return new ArrayList<>();
         }
 
         final int len = toIndex - fromIndex;
-        final ExList<char[]> res = new ExList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<char[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = fromIndex; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -20998,17 +21013,17 @@ public final class N {
      * @param size
      * @return
      */
-    public static ExList<byte[]> split(final byte[] a, final int size) {
+    public static List<byte[]> split(final byte[] a, final int size) {
         if (size < 1) {
             throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ExList<>();
+            return new ArrayList<>();
         }
 
         final int len = a.length;
-        final ExList<byte[]> res = new ExList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<byte[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = 0, toIndex = a.length; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -21027,7 +21042,7 @@ public final class N {
      * @param size
      * @return
      */
-    public static ExList<byte[]> split(final byte[] a, final int fromIndex, final int toIndex, final int size) {
+    public static List<byte[]> split(final byte[] a, final int fromIndex, final int toIndex, final int size) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (size < 1) {
@@ -21035,11 +21050,11 @@ public final class N {
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ExList<>();
+            return new ArrayList<>();
         }
 
         final int len = toIndex - fromIndex;
-        final ExList<byte[]> res = new ExList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<byte[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = fromIndex; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -21056,17 +21071,17 @@ public final class N {
      * @param size
      * @return
      */
-    public static ExList<short[]> split(final short[] a, final int size) {
+    public static List<short[]> split(final short[] a, final int size) {
         if (size < 1) {
             throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ExList<>();
+            return new ArrayList<>();
         }
 
         final int len = a.length;
-        final ExList<short[]> res = new ExList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<short[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = 0, toIndex = a.length; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -21085,7 +21100,7 @@ public final class N {
      * @param size
      * @return
      */
-    public static ExList<short[]> split(final short[] a, final int fromIndex, final int toIndex, final int size) {
+    public static List<short[]> split(final short[] a, final int fromIndex, final int toIndex, final int size) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (size < 1) {
@@ -21093,11 +21108,11 @@ public final class N {
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ExList<>();
+            return new ArrayList<>();
         }
 
         final int len = toIndex - fromIndex;
-        final ExList<short[]> res = new ExList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<short[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = fromIndex; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -21114,17 +21129,17 @@ public final class N {
      * @param size
      * @return
      */
-    public static ExList<int[]> split(final int[] a, final int size) {
+    public static List<int[]> split(final int[] a, final int size) {
         if (size < 1) {
             throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ExList<>();
+            return new ArrayList<>();
         }
 
         final int len = a.length;
-        final ExList<int[]> res = new ExList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<int[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = 0, toIndex = a.length; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -21143,7 +21158,7 @@ public final class N {
      * @param size
      * @return
      */
-    public static ExList<int[]> split(final int[] a, final int fromIndex, final int toIndex, final int size) {
+    public static List<int[]> split(final int[] a, final int fromIndex, final int toIndex, final int size) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (size < 1) {
@@ -21151,11 +21166,11 @@ public final class N {
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ExList<>();
+            return new ArrayList<>();
         }
 
         final int len = toIndex - fromIndex;
-        final ExList<int[]> res = new ExList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<int[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = fromIndex; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -21178,11 +21193,11 @@ public final class N {
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ExList<>();
+            return new ArrayList<>();
         }
 
         final int len = a.length;
-        final ExList<long[]> res = new ExList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<long[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = 0, toIndex = a.length; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -21201,7 +21216,7 @@ public final class N {
      * @param size
      * @return
      */
-    public static ExList<long[]> split(final long[] a, final int fromIndex, final int toIndex, final int size) {
+    public static List<long[]> split(final long[] a, final int fromIndex, final int toIndex, final int size) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (size < 1) {
@@ -21209,11 +21224,11 @@ public final class N {
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ExList<>();
+            return new ArrayList<>();
         }
 
         final int len = toIndex - fromIndex;
-        final ExList<long[]> res = new ExList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<long[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = fromIndex; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -21230,17 +21245,17 @@ public final class N {
      * @param size
      * @return
      */
-    public static ExList<float[]> split(final float[] a, final int size) {
+    public static List<float[]> split(final float[] a, final int size) {
         if (size < 1) {
             throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ExList<>();
+            return new ArrayList<>();
         }
 
         final int len = a.length;
-        final ExList<float[]> res = new ExList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<float[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = 0, toIndex = a.length; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -21259,7 +21274,7 @@ public final class N {
      * @param size
      * @return
      */
-    public static ExList<float[]> split(final float[] a, final int fromIndex, final int toIndex, final int size) {
+    public static List<float[]> split(final float[] a, final int fromIndex, final int toIndex, final int size) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (size < 1) {
@@ -21267,11 +21282,11 @@ public final class N {
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ExList<>();
+            return new ArrayList<>();
         }
 
         final int len = toIndex - fromIndex;
-        final ExList<float[]> res = new ExList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<float[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = fromIndex; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -21288,17 +21303,17 @@ public final class N {
      * @param size
      * @return
      */
-    public static ExList<double[]> split(final double[] a, final int size) {
+    public static List<double[]> split(final double[] a, final int size) {
         if (size < 1) {
             throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ExList<>();
+            return new ArrayList<>();
         }
 
         final int len = a.length;
-        final ExList<double[]> res = new ExList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<double[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = 0, toIndex = a.length; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -21317,7 +21332,7 @@ public final class N {
      * @param size
      * @return
      */
-    public static ExList<double[]> split(final double[] a, final int fromIndex, final int toIndex, final int size) {
+    public static List<double[]> split(final double[] a, final int fromIndex, final int toIndex, final int size) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (size < 1) {
@@ -21325,11 +21340,11 @@ public final class N {
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ExList<>();
+            return new ArrayList<>();
         }
 
         final int len = toIndex - fromIndex;
-        final ExList<double[]> res = new ExList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<double[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = fromIndex; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -21346,17 +21361,17 @@ public final class N {
      * @param size
      * @return
      */
-    public static <T> ExList<T[]> split(final T[] a, final int size) {
+    public static <T> List<T[]> split(final T[] a, final int size) {
         if (size < 1) {
             throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ExList<>();
+            return new ArrayList<>();
         }
 
         final int len = a.length;
-        final ExList<T[]> res = new ExList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<T[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = 0, toIndex = a.length; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -21375,7 +21390,7 @@ public final class N {
      * @param size
      * @return
      */
-    public static <T> ExList<T[]> split(final T[] a, final int fromIndex, final int toIndex, final int size) {
+    public static <T> List<T[]> split(final T[] a, final int fromIndex, final int toIndex, final int size) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (size < 1) {
@@ -21383,11 +21398,11 @@ public final class N {
         }
 
         if (N.isNullOrEmpty(a)) {
-            return new ExList<>();
+            return new ArrayList<>();
         }
 
         final int len = toIndex - fromIndex;
-        final ExList<T[]> res = new ExList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<T[]> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = fromIndex; from < toIndex; from += size) {
             res.add(copyOfRange(a, from, from <= toIndex - size ? from + size : toIndex));
@@ -21404,13 +21419,13 @@ public final class N {
      * @param size
      * @return
      */
-    public static <T> ExList<ExList<T>> split(final Collection<? extends T> c, final int size) {
+    public static <T> List<List<T>> split(final Collection<? extends T> c, final int size) {
         if (size < 1) {
             throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
         }
 
         if (N.isNullOrEmpty(c)) {
-            return new ExList<>();
+            return new ArrayList<>();
         }
 
         return split(c, 0, c.size(), size);
@@ -21426,7 +21441,7 @@ public final class N {
      * @param size
      * @return
      */
-    public static <T> ExList<ExList<T>> split(final Collection<? extends T> c, final int fromIndex, final int toIndex, final int size) {
+    public static <T> List<List<T>> split(final Collection<? extends T> c, final int fromIndex, final int toIndex, final int size) {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if (size < 1) {
@@ -21434,17 +21449,17 @@ public final class N {
         }
 
         if (N.isNullOrEmpty(c)) {
-            return new ExList<>();
+            return new ArrayList<>();
         }
 
         final int len = toIndex - fromIndex;
-        final ExList<ExList<T>> res = new ExList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<List<T>> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         if (c instanceof List) {
             final List<T> list = (List<T>) c;
 
             for (int i = fromIndex; i < toIndex; i += size) {
-                res.add(new ExList<>((T[]) list.subList(i, i <= toIndex - size ? i + size : toIndex).toArray()));
+                res.add(new ArrayList<>(list.subList(i, i <= toIndex - size ? i + size : toIndex)));
             }
         } else {
             final Iterator<? extends T> iter = c.iterator();
@@ -21456,7 +21471,7 @@ public final class N {
                     continue;
                 }
 
-                final ExList<T> subList = new ExList<>(N.min(size, toIndex - i));
+                final List<T> subList = new ArrayList<>(N.min(size, toIndex - i));
 
                 for (int j = i, to = i <= toIndex - size ? i + size : toIndex; j < to; j++) {
                     subList.add(iter.next());
@@ -21477,19 +21492,19 @@ public final class N {
      * @param size
      * @return
      */
-    public static ExList<String> split(final CharSequence str, final int size) {
+    public static List<String> split(final CharSequence str, final int size) {
         if (size < 1) {
             throw new IllegalArgumentException("The parameter 'size' can't be zero or less than zero");
         }
 
         if (N.isNullOrEmpty(str)) {
-            return new ExList<>();
+            return new ArrayList<>();
         }
 
         return split(str, 0, str.length(), size);
     }
 
-    public static ExList<String> split(final CharSequence str, final int fromIndex, final int toIndex, final int size) {
+    public static List<String> split(final CharSequence str, final int fromIndex, final int toIndex, final int size) {
         N.checkFromToIndex(fromIndex, toIndex, str == null ? 0 : str.length());
 
         if (size < 1) {
@@ -21497,11 +21512,11 @@ public final class N {
         }
 
         if (N.isNullOrEmpty(str)) {
-            return new ExList<>();
+            return new ArrayList<>();
         }
 
         final int len = toIndex - fromIndex;
-        final ExList<String> res = new ExList<>(len % size == 0 ? len / size : (len / size) + 1);
+        final List<String> res = new ArrayList<>(len % size == 0 ? len / size : (len / size) + 1);
 
         for (int from = fromIndex; from < toIndex; from += size) {
             res.add(str.subSequence(from, from <= toIndex - size ? from + size : toIndex).toString());
@@ -21653,7 +21668,16 @@ public final class N {
             return N.isNullOrEmpty(a) ? a : (T[]) N.newArray(a.getClass().getComponentType(), 0);
         }
 
-        return (T[]) ExList.of(a).intersection(ExList.of(b)).trimToSize().array();
+        final Multiset<?> bOccurrences = Multiset.of(b);
+        final List<T> result = new ArrayList<>(N.min(9, a.length, b.length));
+
+        for (T e : a) {
+            if (bOccurrences.getAndRemove(e) > 0) {
+                result.add(e);
+            }
+        }
+
+        return result.toArray((T[]) N.newArray(a.getClass().getComponentType(), result.size()));
     }
 
     /**
@@ -21663,14 +21687,14 @@ public final class N {
      * @return
      * @see IntList#intersection(IntList)
      */
-    public static <T> ExList<T> intersection(final Collection<? extends T> a, final Collection<?> b) {
+    public static <T> List<T> intersection(final Collection<? extends T> a, final Collection<?> b) {
         if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
-            return new ExList<>();
+            return new ArrayList<>();
         }
 
         final Multiset<Object> bOccurrences = Multiset.from(b);
 
-        final ExList<T> result = new ExList<>(N.min(a.size(), N.max(9, a.size() - b.size())));
+        final List<T> result = new ArrayList<>(N.min(a.size(), N.max(9, a.size() - b.size())));
 
         for (T e : a) {
             if (bOccurrences.getAndRemove(e) > 0) {
@@ -21842,7 +21866,16 @@ public final class N {
             return a.clone();
         }
 
-        return (T[]) ExList.of(a).difference(ExList.of(b)).trimToSize().array();
+        final Multiset<?> bOccurrences = Multiset.of(b);
+        final List<T> result = new ArrayList<>(N.min(9, a.length, b.length));
+
+        for (T e : a) {
+            if (bOccurrences.getAndRemove(e) < 1) {
+                result.add(e);
+            }
+        }
+
+        return result.toArray((T[]) N.newArray(a.getClass().getComponentType(), result.size()));
     }
 
     /**
@@ -21852,14 +21885,14 @@ public final class N {
      * @return
      * @see IntList#difference(IntList)
      */
-    public static <T> ExList<T> difference(final Collection<? extends T> a, final Collection<?> b) {
+    public static <T> List<T> difference(final Collection<? extends T> a, final Collection<?> b) {
         if (N.isNullOrEmpty(a)) {
-            return new ExList<>();
+            return new ArrayList<>();
         }
 
         final Multiset<Object> bOccurrences = Multiset.from(b);
 
-        final ExList<T> result = new ExList<>(N.min(a.size(), N.max(9, a.size() - b.size())));
+        final List<T> result = new ArrayList<>(N.min(a.size(), N.max(9, a.size() - b.size())));
 
         for (T e : a) {
             if (bOccurrences.getAndRemove(e) < 1) {
@@ -22026,7 +22059,27 @@ public final class N {
             return a.clone();
         }
 
-        return (T[]) ExList.of(a).symmetricDifference(ExList.of(b)).trimToSize().array();
+        final Multiset<T> bOccurrences = Multiset.of(b);
+
+        final List<T> result = new ArrayList<>(N.max(9, Math.abs(a.length - b.length)));
+
+        for (T e : a) {
+            if (bOccurrences.getAndRemove(e) < 1) {
+                result.add(e);
+            }
+        }
+
+        for (T e : b) {
+            if (bOccurrences.getAndRemove(e) > 0) {
+                result.add(e);
+            }
+
+            if (bOccurrences.isEmpty()) {
+                break;
+            }
+        }
+
+        return result.toArray((T[]) N.newArray(a.getClass().getComponentType(), result.size()));
     }
 
     /**
@@ -22036,11 +22089,11 @@ public final class N {
      * @return
      * @see IntList#symmetricDifference(IntList)
      */
-    public static <T> ExList<T> symmetricDifference(final Collection<? extends T> a, final Collection<? extends T> b) {
+    public static <T> List<T> symmetricDifference(final Collection<? extends T> a, final Collection<? extends T> b) {
         if (N.isNullOrEmpty(a)) {
-            return N.isNullOrEmpty(b) ? new ExList<T>() : new ExList<>((T[]) b.toArray());
+            return N.isNullOrEmpty(b) ? new ArrayList<T>() : N.asList((T[]) b.toArray());
         } else if (N.isNullOrEmpty(b)) {
-            return N.isNullOrEmpty(a) ? new ExList<T>() : new ExList<>((T[]) a.toArray());
+            return N.isNullOrEmpty(a) ? new ArrayList<T>() : N.asList((T[]) a.toArray());
         }
 
         //        final List<T> result = difference(a, b);
@@ -22050,7 +22103,7 @@ public final class N {
         //        return result;
 
         final Multiset<T> bOccurrences = Multiset.from(b);
-        final ExList<T> result = new ExList<>(N.max(9, Math.abs(a.size() - b.size())));
+        final List<T> result = new ArrayList<>(N.max(9, Math.abs(a.size() - b.size())));
 
         for (T e : a) {
             if (bOccurrences.getAndRemove(e) < 1) {
@@ -22647,14 +22700,14 @@ public final class N {
         return c;
     }
 
-    public static <T> ExList<T> concat(final Collection<? extends T> a, final Collection<? extends T> b) {
+    public static <T> List<T> concat(final Collection<? extends T> a, final Collection<? extends T> b) {
         if (N.isNullOrEmpty(a)) {
-            return N.isNullOrEmpty(b) ? new ExList<T>(0) : ExList.from(b);
+            return N.isNullOrEmpty(b) ? new ArrayList<T>(0) : new ArrayList<>(b);
         } else if (N.isNullOrEmpty(b)) {
-            return ExList.from(a);
+            return new ArrayList<>(a);
         }
 
-        final ExList<T> result = new ExList<>(a.size() + b.size());
+        final List<T> result = new ArrayList<>(a.size() + b.size());
 
         result.addAll(a);
         result.addAll(b);
@@ -25882,9 +25935,16 @@ public final class N {
             return removeAllOccurrences(a, elements[0]);
         }
 
-        final ExList<T> list = ExList.of(a.clone());
-        list.removeAll(ExList.of(elements));
-        return (T[]) list.trimToSize().array();
+        final Set<Object> set = N.asSet(elements);
+        final List<T> result = new ArrayList<>();
+
+        for (T e : a) {
+            if (!set.contains(e)) {
+                result.add(e);
+            }
+        }
+
+        return result.toArray((T[]) N.newArray(a.getClass().getComponentType(), result.size()));
     }
 
     @SafeVarargs

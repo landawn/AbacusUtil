@@ -177,7 +177,7 @@ abstract class AbstractFloatStream extends FloatStream {
 
     @Override
     public Stream<FloatStream> split(final int size) {
-        return split0(size).map(new Function<FloatList, FloatStream>() {
+        return split2(size).map(new Function<FloatList, FloatStream>() {
             @Override
             public FloatStream apply(FloatList t) {
                 return new ArrayFloatStream(t.array(), 0, t.size(), null, sorted);
@@ -188,7 +188,7 @@ abstract class AbstractFloatStream extends FloatStream {
     @Override
     public <U> Stream<FloatStream> split(final U identity, final BiFunction<? super Float, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
-        return split0(identity, predicate, identityUpdate).map(new Function<FloatList, FloatStream>() {
+        return split2(identity, predicate, identityUpdate).map(new Function<FloatList, FloatStream>() {
             @Override
             public FloatStream apply(FloatList t) {
                 return new ArrayFloatStream(t.array(), 0, t.size(), null, sorted);
@@ -198,7 +198,7 @@ abstract class AbstractFloatStream extends FloatStream {
 
     @Override
     public Stream<FloatStream> sliding(final int windowSize, final int increment) {
-        return sliding0(windowSize, increment).map(new Function<FloatList, FloatStream>() {
+        return sliding2(windowSize, increment).map(new Function<FloatList, FloatStream>() {
             @Override
             public FloatStream apply(FloatList t) {
                 return new ArrayFloatStream(t.array(), 0, t.size(), null, sorted);
@@ -767,7 +767,7 @@ abstract class AbstractFloatStream extends FloatStream {
         return newStream(this.sequential().mapToObj(new FloatFunction<IndexedFloat>() {
             @Override
             public IndexedFloat apply(float t) {
-                return IndexedFloat.of(idx.getAndIncrement(), t);
+                return IndexedFloat.of(t, idx.getAndIncrement());
             }
         }).iterator(), true, INDEXED_FLOAT_COMPARATOR);
     }

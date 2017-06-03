@@ -176,7 +176,7 @@ abstract class AbstractCharStream extends CharStream {
 
     @Override
     public Stream<CharStream> split(final int size) {
-        return split0(size).map(new Function<CharList, CharStream>() {
+        return split2(size).map(new Function<CharList, CharStream>() {
             @Override
             public CharStream apply(CharList t) {
                 return new ArrayCharStream(t.array(), 0, t.size(), null, sorted);
@@ -187,7 +187,7 @@ abstract class AbstractCharStream extends CharStream {
     @Override
     public <U> Stream<CharStream> split(final U identity, final BiFunction<? super Character, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
-        return split0(identity, predicate, identityUpdate).map(new Function<CharList, CharStream>() {
+        return split2(identity, predicate, identityUpdate).map(new Function<CharList, CharStream>() {
             @Override
             public CharStream apply(CharList t) {
                 return new ArrayCharStream(t.array(), 0, t.size(), null, sorted);
@@ -197,7 +197,7 @@ abstract class AbstractCharStream extends CharStream {
 
     @Override
     public Stream<CharStream> sliding(final int windowSize, final int increment) {
-        return sliding0(windowSize, increment).map(new Function<CharList, CharStream>() {
+        return sliding2(windowSize, increment).map(new Function<CharList, CharStream>() {
             @Override
             public CharStream apply(CharList t) {
                 return new ArrayCharStream(t.array(), 0, t.size(), null, sorted);
@@ -702,7 +702,7 @@ abstract class AbstractCharStream extends CharStream {
         return newStream(this.sequential().mapToObj(new CharFunction<IndexedChar>() {
             @Override
             public IndexedChar apply(char t) {
-                return IndexedChar.of(idx.getAndIncrement(), t);
+                return IndexedChar.of(t, idx.getAndIncrement());
             }
         }).iterator(), true, INDEXED_CHAR_COMPARATOR);
     }

@@ -35,7 +35,6 @@ import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.DoubleIterator;
-import com.landawn.abacus.util.ExList;
 import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.Indexed;
 import com.landawn.abacus.util.IntIterator;
@@ -1070,11 +1069,6 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     }
 
     @Override
-    public Stream<ExList<T>> split0(final int size) {
-        return new ParallelIteratorStream<>(sequential().split0(size).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
-    }
-
-    @Override
     public Stream<List<T>> split2(final int size) {
         return new ParallelIteratorStream<>(sequential().split2(size).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
     }
@@ -1087,12 +1081,6 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     @Override
     public <U> Stream<Stream<T>> split(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
         return new ParallelIteratorStream<>(sequential().split(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null, maxThreadNum,
-                splitor);
-    }
-
-    @Override
-    public <U> Stream<ExList<T>> split0(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
-        return new ParallelIteratorStream<>(sequential().split0(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null, maxThreadNum,
                 splitor);
     }
 
@@ -1163,11 +1151,6 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     @Override
     public Stream<Stream<T>> sliding(final int windowSize, final int increment) {
         return new ParallelIteratorStream<>(sequential().sliding(windowSize, increment).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
-    }
-
-    @Override
-    public Stream<ExList<T>> sliding0(final int windowSize, final int increment) {
-        return new ParallelIteratorStream<>(sequential().sliding0(windowSize, increment).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
     }
 
     @Override
@@ -1489,11 +1472,6 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     @Override
     public <A> A[] toArray(IntFunction<A[]> generator) {
         return toArray(generator.apply(0));
-    }
-
-    @Override
-    public ExList<T> toExList() {
-        return ExList.of((T[]) toArray());
     }
 
     @Override

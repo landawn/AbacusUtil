@@ -42,7 +42,6 @@ import com.landawn.abacus.util.CharList;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.DoubleList;
-import com.landawn.abacus.util.ExList;
 import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.FloatList;
 import com.landawn.abacus.util.Indexed;
@@ -267,7 +266,7 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
         clsNum.put(LongList.class, idx++);
         clsNum.put(FloatList.class, idx++);
         clsNum.put(DoubleList.class, idx++);
-        clsNum.put(ExList.class, idx++); // 16
+        clsNum.put(List.class, idx++); // 16
     }
 
     @SuppressWarnings("rawtypes")
@@ -304,7 +303,7 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
 
                 if (num == null) {
                     throw new RuntimeException(cls.getCanonicalName()
-                            + " can't be combined by default. Only Map/Collection/StringBuilder/String/Multiset/LongMultiset/Multimap/Sheet/BooleanList ... ExList/boolean[] ... Object[] are supported");
+                            + " can't be combined by default. Only Map/Collection/StringBuilder/String/Multiset/LongMultiset/Multimap/Sheet/BooleanList ... List/boolean[] ... Object[] are supported");
                 }
 
                 switch (num.intValue()) {
@@ -349,12 +348,12 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
                         ((DoubleList) t).addAll((DoubleList) u);
                         return t;
                     case 16:
-                        ((ExList) t).addAll((ExList) u);
+                        ((List) t).addAll((List) u);
                         return t;
 
                     default:
                         throw new RuntimeException(cls.getCanonicalName()
-                                + " can't be combined by default. Only Map/Collection/StringBuilder/String/Multiset/LongMultiset/Multimap/Sheet/BooleanList ... ExList/boolean[] ... Object[] are supported");
+                                + " can't be combined by default. Only Map/Collection/StringBuilder/String/Multiset/LongMultiset/Multimap/Sheet/BooleanList ... List/boolean[] ... Object[] are supported");
                 }
             }
         }
@@ -384,7 +383,7 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
 
                 if (num == null) {
                     throw new RuntimeException(cls.getCanonicalName()
-                            + " can't be combined by default. Only Map/Collection/StringBuilder/Multiset/LongMultiset/Multimap/Sheet/BooleanList ... ExList are supported");
+                            + " can't be combined by default. Only Map/Collection/StringBuilder/Multiset/LongMultiset/Multimap/Sheet/BooleanList ... List are supported");
                 }
 
                 switch (num.intValue()) {
@@ -413,12 +412,12 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
                         ((DoubleList) t).addAll((DoubleList) u);
                         break;
                     case 16:
-                        ((ExList) t).addAll((ExList) u);
+                        ((List) t).addAll((List) u);
                         break;
 
                     default:
                         throw new RuntimeException(cls.getCanonicalName()
-                                + " can't be combined by default. Only Map/Collection/StringBuilder/Multiset/LongMultiset/Multimap/Sheet/BooleanList ... ExList are supported");
+                                + " can't be combined by default. Only Map/Collection/StringBuilder/Multiset/LongMultiset/Multimap/Sheet/BooleanList ... List are supported");
                 }
             }
         }
@@ -483,8 +482,8 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
     }
 
     @Override
-    public Stream<PL> sliding0(int windowSize) {
-        return sliding0(windowSize, 1);
+    public Stream<PL> sliding2(int windowSize) {
+        return sliding2(windowSize, 1);
     }
 
     @Override
@@ -859,6 +858,19 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
 
     static Object hashKey(Object obj) {
         return obj == null || obj.getClass().isArray() == false ? obj : Wrapper.of(obj);
+    }
+
+    static <T> T[] toArray(Collection<T> c) {
+        if (isListElementDataFieldGettable && listElementDataField != null && c instanceof ArrayList) {
+            try {
+                return (T[]) listElementDataField.get(c);
+            } catch (Throwable e) {
+                // ignore;
+                isListElementDataFieldGettable = false;
+            }
+        }
+
+        return (T[]) c.toArray();
     }
 
     static final class LocalLinkedHashSet<T> extends LinkedHashSet<T> {

@@ -16,11 +16,13 @@ package com.landawn.abacus.util.stream;
 
 import static com.landawn.abacus.util.stream.StreamBase.checkFromToIndex;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
 
-import com.landawn.abacus.util.ExList;
+import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.N;
 
 /**
@@ -169,13 +171,17 @@ public abstract class ExIterator<T> extends com.landawn.abacus.util.ImmutableIte
     }
 
     public <A> A[] toArray(A[] a) {
-        final ExList<A> list = new ExList<>(a, 0);
+        final List<A> list = new ArrayList<>();
 
         while (hasNext()) {
             list.add((A) next());
         }
 
-        return list.array() == a ? a : (A[]) list.trimToSize().array();
+        if (a.length >= list.size()) {
+            return list.toArray(a);
+        } else {
+            return list.toArray((A[]) Array.newInstance(a.getClass().getComponentType(), list.size()));
+        }
     }
 
     static abstract class QueuedIterator<T> extends ExIterator<T> {

@@ -623,13 +623,6 @@ public final class Fn {
             }
         };
         @SuppressWarnings("rawtypes")
-        private static final IntFunction<ExList> EX_LIST_FACTORY = new IntFunction<ExList>() {
-            @Override
-            public ExList apply(int len) {
-                return new ExList(len);
-            }
-        };
-        @SuppressWarnings("rawtypes")
         private static final IntFunction<? super List> LIST_FACTORY = new IntFunction<List>() {
             @Override
             public List apply(int len) {
@@ -815,11 +808,6 @@ public final class Fn {
 
         public static IntFunction<DoubleList> ofDoubleList() {
             return DOUBLE_LIST;
-        }
-
-        @SuppressWarnings("rawtypes")
-        public static <T> IntFunction<ExList<T>> ofExList() {
-            return (IntFunction) EX_LIST_FACTORY;
         }
 
         @SuppressWarnings("rawtypes")
@@ -1033,13 +1021,6 @@ public final class Fn {
                 return new DoubleList();
             }
         };
-        @SuppressWarnings("rawtypes")
-        private static final com.landawn.abacus.util.function.Supplier<ExList> EX_LIST = new com.landawn.abacus.util.function.Supplier<ExList>() {
-            @Override
-            public ExList get() {
-                return new ExList();
-            }
-        };
 
         @SuppressWarnings("rawtypes")
         private static final com.landawn.abacus.util.function.Supplier<? super List> LIST = new com.landawn.abacus.util.function.Supplier<List>() {
@@ -1235,11 +1216,6 @@ public final class Fn {
 
         public static com.landawn.abacus.util.function.Supplier<DoubleList> ofDoubleList() {
             return DOUBLE_LIST;
-        }
-
-        @SuppressWarnings("rawtypes")
-        public static <T> com.landawn.abacus.util.function.Supplier<ExList<T>> ofExList() {
-            return (com.landawn.abacus.util.function.Supplier) EX_LIST;
         }
 
         @SuppressWarnings("rawtypes")
@@ -1680,9 +1656,9 @@ public final class Fn {
         };
 
         @SuppressWarnings("rawtypes")
-        private static final com.landawn.abacus.util.function.BiConsumer<AbstractList, AbstractList> ADD_ALL_2 = new com.landawn.abacus.util.function.BiConsumer<AbstractList, AbstractList>() {
+        private static final com.landawn.abacus.util.function.BiConsumer<PrimitiveList, PrimitiveList> ADD_ALL_2 = new com.landawn.abacus.util.function.BiConsumer<PrimitiveList, PrimitiveList>() {
             @Override
-            public void accept(AbstractList t, AbstractList u) {
+            public void accept(PrimitiveList t, PrimitiveList u) {
                 t.addAll(u);
             }
         };
@@ -1702,9 +1678,9 @@ public final class Fn {
         };
 
         @SuppressWarnings("rawtypes")
-        private static final com.landawn.abacus.util.function.BiConsumer<AbstractList, AbstractList> REMOVE_ALL_2 = new com.landawn.abacus.util.function.BiConsumer<AbstractList, AbstractList>() {
+        private static final com.landawn.abacus.util.function.BiConsumer<PrimitiveList, PrimitiveList> REMOVE_ALL_2 = new com.landawn.abacus.util.function.BiConsumer<PrimitiveList, PrimitiveList>() {
             @Override
-            public void accept(AbstractList t, AbstractList u) {
+            public void accept(PrimitiveList t, PrimitiveList u) {
                 t.removeAll(u);
             }
         };
@@ -1747,7 +1723,7 @@ public final class Fn {
         }
 
         @SuppressWarnings("rawtypes")
-        public static <T extends AbstractList> com.landawn.abacus.util.function.BiConsumer<T, T> ofAddAll2() {
+        public static <T extends PrimitiveList> com.landawn.abacus.util.function.BiConsumer<T, T> ofAddAll2() {
             return (com.landawn.abacus.util.function.BiConsumer<T, T>) ADD_ALL_2;
         }
 
@@ -1760,7 +1736,7 @@ public final class Fn {
         }
 
         @SuppressWarnings("rawtypes")
-        public static <T extends AbstractList> com.landawn.abacus.util.function.BiConsumer<T, T> ofRemoveAll2() {
+        public static <T extends PrimitiveList> com.landawn.abacus.util.function.BiConsumer<T, T> ofRemoveAll2() {
             return (com.landawn.abacus.util.function.BiConsumer<T, T>) REMOVE_ALL_2;
         }
 
@@ -1868,9 +1844,9 @@ public final class Fn {
         };
 
         @SuppressWarnings("rawtypes")
-        private static final com.landawn.abacus.util.function.BiFunction<AbstractList, AbstractList, AbstractList> ADD_ALL_2 = new com.landawn.abacus.util.function.BiFunction<AbstractList, AbstractList, AbstractList>() {
+        private static final com.landawn.abacus.util.function.BiFunction<PrimitiveList, PrimitiveList, PrimitiveList> ADD_ALL_2 = new com.landawn.abacus.util.function.BiFunction<PrimitiveList, PrimitiveList, PrimitiveList>() {
             @Override
-            public AbstractList apply(AbstractList t, AbstractList u) {
+            public PrimitiveList apply(PrimitiveList t, PrimitiveList u) {
                 t.addAll(u);
                 return t;
             }
@@ -1893,9 +1869,9 @@ public final class Fn {
         };
 
         @SuppressWarnings("rawtypes")
-        private static final com.landawn.abacus.util.function.BiFunction<AbstractList, AbstractList, AbstractList> REMOVE_ALL_2 = new com.landawn.abacus.util.function.BiFunction<AbstractList, AbstractList, AbstractList>() {
+        private static final com.landawn.abacus.util.function.BiFunction<PrimitiveList, PrimitiveList, PrimitiveList> REMOVE_ALL_2 = new com.landawn.abacus.util.function.BiFunction<PrimitiveList, PrimitiveList, PrimitiveList>() {
             @Override
-            public AbstractList apply(AbstractList t, AbstractList u) {
+            public PrimitiveList apply(PrimitiveList t, PrimitiveList u) {
                 t.removeAll(u);
                 return t;
             }
@@ -1960,7 +1936,7 @@ public final class Fn {
         }
 
         @SuppressWarnings("rawtypes")
-        public static <T extends AbstractList> com.landawn.abacus.util.function.BiFunction<T, T, T> ofAddAll2() {
+        public static <T extends PrimitiveList> com.landawn.abacus.util.function.BiFunction<T, T, T> ofAddAll2() {
             return (com.landawn.abacus.util.function.BiFunction<T, T, T>) ADD_ALL_2;
         }
 
@@ -1973,7 +1949,7 @@ public final class Fn {
         }
 
         @SuppressWarnings("rawtypes")
-        public static <T extends AbstractList> com.landawn.abacus.util.function.BiFunction<T, T, T> ofRemoveAll2() {
+        public static <T extends PrimitiveList> com.landawn.abacus.util.function.BiFunction<T, T, T> ofRemoveAll2() {
             return (com.landawn.abacus.util.function.BiFunction<T, T, T>) REMOVE_ALL_2;
         }
 

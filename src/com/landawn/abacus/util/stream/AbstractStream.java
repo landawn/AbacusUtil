@@ -50,7 +50,6 @@ import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.CharSummaryStatistics;
 import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.DoubleSummaryStatistics;
-import com.landawn.abacus.util.ExList;
 import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.FloatSummaryStatistics;
 import com.landawn.abacus.util.Fn;
@@ -718,30 +717,30 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<Stream<T>> split(final int size) {
-        return split0(size).map(new Function<ExList<T>, Stream<T>>() {
+        return split2(size).map(new Function<List<T>, Stream<T>>() {
             @Override
-            public Stream<T> apply(ExList<T> t) {
-                return new ArrayStream<>((T[]) t.array(), 0, t.size(), null, sorted, cmp);
+            public Stream<T> apply(List<T> t) {
+                return new ArrayStream<>(toArray(t), 0, t.size(), null, sorted, cmp);
             }
         });
     }
 
     @Override
     public <U> Stream<Stream<T>> split(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
-        return split0(identity, predicate, identityUpdate).map(new Function<ExList<T>, Stream<T>>() {
+        return split2(identity, predicate, identityUpdate).map(new Function<List<T>, Stream<T>>() {
             @Override
-            public Stream<T> apply(ExList<T> t) {
-                return new ArrayStream<>((T[]) t.array(), 0, t.size(), null, sorted, cmp);
+            public Stream<T> apply(List<T> t) {
+                return new ArrayStream<>(toArray(t), 0, t.size(), null, sorted, cmp);
             }
         });
     }
 
     @Override
     public Stream<Stream<T>> sliding(final int windowSize, final int increment) {
-        return sliding0(windowSize, increment).map(new Function<ExList<T>, Stream<T>>() {
+        return sliding2(windowSize, increment).map(new Function<List<T>, Stream<T>>() {
             @Override
-            public Stream<T> apply(ExList<T> t) {
-                return new ArrayStream<>((T[]) t.array(), 0, t.size(), null, sorted, cmp);
+            public Stream<T> apply(List<T> t) {
+                return new ArrayStream<>(toArray(t), 0, t.size(), null, sorted, cmp);
             }
         });
     }
@@ -1728,13 +1727,13 @@ abstract class AbstractStream<T> extends Stream<T> {
         }
 
         final Iterator<T> iter = this.iterator();
-        final ExList<T> list = new ExList<>();
+        final List<T> list = new ArrayList<>();
 
         while (list.size() < n && iter.hasNext()) {
             list.add(iter.next());
         }
 
-        final Stream<T>[] a = new Stream[] { new ArrayStream<>((T[]) list.array(), 0, list.size(), null, sorted, cmp),
+        final Stream<T>[] a = new Stream[] { new ArrayStream<>(toArray(list), 0, list.size(), null, sorted, cmp),
                 new IteratorStream<>(iter, null, sorted, cmp) };
 
         return newStream(a, false, null);
@@ -2051,11 +2050,11 @@ abstract class AbstractStream<T> extends Stream<T> {
     //    }
 
     @Override
-    public Stream<ExList<T>> combinations() {
+    public Stream<List<T>> combinations() {
         if (this instanceof ArrayStream) {
-            return newStream(IntStream.rangeClosed(0, (int) count()).flatMapToObj(new IntFunction<Stream<ExList<T>>>() {
+            return newStream(IntStream.rangeClosed(0, (int) count()).flatMapToObj(new IntFunction<Stream<List<T>>>() {
                 @Override
-                public Stream<ExList<T>> apply(int value) {
+                public Stream<List<T>> apply(int value) {
                     return combinations(value);
                 }
             }).iterator(), false, null);
@@ -2065,27 +2064,27 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public Stream<ExList<T>> combinations(final int len) {
+    public Stream<List<T>> combinations(final int len) {
         if (this instanceof ArrayStream) {
             N.checkFromIndexSize(0, len, (int) count());
 
             if (len == 0) {
-                return newStream(N.asArray(ExList.<T> empty()), false, null);
+                return newStream(N.asArray((List<T>) N.EMPTY_LIST), false, null);
             } else if (len == 1) {
-                return map(new Function<T, ExList<T>>() {
+                return map(new Function<T, List<T>>() {
                     @Override
-                    public ExList<T> apply(T t) {
-                        return ExList.of(t);
+                    public List<T> apply(T t) {
+                        return N.asList(t);
                     }
                 });
             } else if (len == count()) {
-                return newStream(N.asArray(toExList()), false, null);
+                return newStream(N.asArray(toList()), false, null);
             } else {
                 final T[] a = ((ArrayStream<T>) this).elements;
                 final int fromIndex = ((ArrayStream<T>) this).fromIndex;
                 final int toIndex = ((ArrayStream<T>) this).toIndex;
 
-                return newStream(new ExIterator<ExList<T>>() {
+                return newStream(new ExIterator<List<T>>() {
 
                     private final int[] indices = Array.range(fromIndex, fromIndex + len);
 
@@ -2095,8 +2094,8 @@ abstract class AbstractStream<T> extends Stream<T> {
                     }
 
                     @Override
-                    public ExList<T> next() {
-                        final ExList<T> result = new ExList<>(len);
+                    public List<T> next() {
+                        final List<T> result = new ArrayList<>(len);
 
                         for (int idx : indices) {
                             result.add(a[idx]);
@@ -2125,29 +2124,29 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public Stream<ExList<T>> permutations() {
+    public Stream<List<T>> permutations() {
         return newStream(PermutationIterator.of(toList()), false, null);
     }
 
     @Override
-    public Stream<ExList<T>> orderedPermutations() {
+    public Stream<List<T>> orderedPermutations() {
         return orderedPermutations(OBJECT_COMPARATOR);
     }
 
     @Override
-    public Stream<ExList<T>> orderedPermutations(Comparator<? super T> comparator) {
-        final Iterator<ExList<T>> iter = PermutationIterator.ordered(toList(), comparator == null ? OBJECT_COMPARATOR : comparator);
+    public Stream<List<T>> orderedPermutations(Comparator<? super T> comparator) {
+        final Iterator<List<T>> iter = PermutationIterator.ordered(toList(), comparator == null ? OBJECT_COMPARATOR : comparator);
 
         return newStream(iter, false, null);
     }
 
     @Override
-    public Stream<ExList<T>> cartesianProduct(final Collection<? extends T>... cs) {
+    public Stream<List<T>> cartesianProduct(final Collection<? extends T>... cs) {
         return cartesianProduct(Arrays.asList(cs));
     }
 
     @Override
-    public Stream<ExList<T>> cartesianProduct(final Collection<? extends Collection<? extends T>> cs) {
+    public Stream<List<T>> cartesianProduct(final Collection<? extends Collection<? extends T>> cs) {
         final List<Collection<? extends T>> cList = new ArrayList<>(cs.size() + 1);
         cList.add(this.toList());
         cList.addAll(cs);
@@ -2251,7 +2250,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         return newStream(this.sequential().map(new Function<T, Indexed<T>>() {
             @Override
             public Indexed<T> apply(T t) {
-                return Indexed.of(idx.getAndIncrement(), t);
+                return Indexed.of(t, idx.getAndIncrement());
             }
         }).iterator(), true, INDEXED_COMPARATOR);
     }

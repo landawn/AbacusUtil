@@ -294,8 +294,8 @@ final class ParallelArrayLongStream extends ArrayLongStream {
     }
 
     @Override
-    public Stream<LongList> split0(final int size) {
-        return new ParallelIteratorStream<LongList>(sequential().split0(size).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
+    public Stream<LongList> split2(final int size) {
+        return new ParallelIteratorStream<LongList>(sequential().split2(size).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
     }
 
     @Override
@@ -306,9 +306,9 @@ final class ParallelArrayLongStream extends ArrayLongStream {
     }
 
     @Override
-    public <U> Stream<LongList> split0(final U identity, final BiFunction<? super Long, ? super U, Boolean> predicate,
+    public <U> Stream<LongList> split2(final U identity, final BiFunction<? super Long, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
-        return new ParallelIteratorStream<LongList>(sequential().split0(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null,
+        return new ParallelIteratorStream<LongList>(sequential().split2(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null,
                 maxThreadNum, splitor);
     }
 
@@ -347,8 +347,8 @@ final class ParallelArrayLongStream extends ArrayLongStream {
     }
 
     @Override
-    public Stream<LongList> sliding0(final int windowSize, final int increment) {
-        return new ParallelIteratorStream<LongList>(sequential().sliding0(windowSize, increment).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
+    public Stream<LongList> sliding2(final int windowSize, final int increment) {
+        return new ParallelIteratorStream<LongList>(sequential().sliding2(windowSize, increment).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
     }
 
     @Override

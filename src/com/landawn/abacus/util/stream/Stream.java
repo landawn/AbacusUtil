@@ -37,6 +37,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -64,7 +65,6 @@ import com.landawn.abacus.util.Charsets;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.DoubleSummaryStatistics;
-import com.landawn.abacus.util.ExList;
 import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.FloatSummaryStatistics;
 import com.landawn.abacus.util.IOUtil;
@@ -239,7 +239,7 @@ import com.landawn.abacus.util.stream.ExIterator.QueuedIterator;
  * @see DoubleStream
  * @see <a href="package-summary.html">java.util.stream</a>
  */
-public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? super T>, Consumer<? super T>, ExList<T>, NullabLe<T>, Indexed<T>, Stream<T>> {
+public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? super T>, Consumer<? super T>, List<T>, NullabLe<T>, Indexed<T>, Stream<T>> {
 
     @SuppressWarnings("rawtypes")
     private static final Stream EMPTY = new ArrayStream(N.EMPTY_OBJECT_ARRAY, null, true, OBJECT_COMPARATOR);
@@ -953,8 +953,6 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public abstract <A> A[] toArray(IntFunction<A[]> generator);
 
-    public abstract ExList<T> toExList();
-
     /**
      * 
      * @param keyExtractor
@@ -1502,19 +1500,19 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
 
     public abstract Optional<Map<Percentage, T>> distribution(Comparator<? super T> comparator);
 
-    public abstract Stream<ExList<T>> combinations();
+    public abstract Stream<List<T>> combinations();
 
-    public abstract Stream<ExList<T>> combinations(int len);
+    public abstract Stream<List<T>> combinations(int len);
 
-    public abstract Stream<ExList<T>> permutations();
+    public abstract Stream<List<T>> permutations();
 
-    public abstract Stream<ExList<T>> orderedPermutations();
+    public abstract Stream<List<T>> orderedPermutations();
 
-    public abstract Stream<ExList<T>> orderedPermutations(Comparator<? super T> comparator);
+    public abstract Stream<List<T>> orderedPermutations(Comparator<? super T> comparator);
 
-    public abstract Stream<ExList<T>> cartesianProduct(Collection<? extends T>... cs);
+    public abstract Stream<List<T>> cartesianProduct(Collection<? extends T>... cs);
 
-    public abstract Stream<ExList<T>> cartesianProduct(Collection<? extends Collection<? extends T>> cs);
+    public abstract Stream<List<T>> cartesianProduct(Collection<? extends Collection<? extends T>> cs);
 
     /**
      * 
@@ -1826,10 +1824,6 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
 
         if (startIndex < 0 || endIndex < startIndex || endIndex > c.size()) {
             throw new IllegalArgumentException("startIndex(" + startIndex + ") or endIndex(" + endIndex + ") is invalid");
-        }
-
-        if (c instanceof ExList) {
-            return of((T[]) ((ExList<T>) c).array(), startIndex, endIndex);
         }
 
         // return new CollectionStream<T>(c);
@@ -5873,7 +5867,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param zipFunction
      * @return
      */
-    public static <T, R> Stream<R> zip(final Collection<? extends Stream<? extends T>> c, final Function<? super ExList<? extends T>, R> zipFunction) {
+    public static <T, R> Stream<R> zip(final Collection<? extends Stream<? extends T>> c, final Function<? super List<? extends T>, R> zipFunction) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
@@ -5888,7 +5882,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         return zip2(iterList, zipFunction).onClose(newCloseHandler(c));
     }
 
-    public static <T, R> Stream<R> zip2(final Collection<? extends Iterator<? extends T>> c, final Function<? super ExList<? extends T>, R> zipFunction) {
+    public static <T, R> Stream<R> zip2(final Collection<? extends Iterator<? extends T>> c, final Function<? super List<? extends T>, R> zipFunction) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
@@ -5916,7 +5910,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
                     args[idx++] = e.next();
                 }
 
-                return zipFunction.apply(ExList.of((T[]) args));
+                return zipFunction.apply(Arrays.asList((T[]) args));
             }
         });
     }
@@ -6097,7 +6091,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <T, R> Stream<R> zip(final Collection<? extends Stream<? extends T>> c, final Object[] valuesForNone,
-            Function<? super ExList<? extends T>, R> zipFunction) {
+            Function<? super List<? extends T>, R> zipFunction) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
@@ -6125,7 +6119,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <T, R> Stream<R> zip2(final Collection<? extends Iterator<? extends T>> c, final Object[] valuesForNone,
-            final Function<? super ExList<? extends T>, R> zipFunction) {
+            final Function<? super List<? extends T>, R> zipFunction) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
@@ -6168,7 +6162,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
                     throw new NoSuchElementException();
                 }
 
-                return zipFunction.apply(ExList.of((T[]) args));
+                return zipFunction.apply(Arrays.asList((T[]) args));
             }
         });
     }
@@ -6607,7 +6601,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param zipFunction
      * @return
      */
-    public static <T, R> Stream<R> parallelZip(final Collection<? extends Stream<? extends T>> c, final Function<? super ExList<? extends T>, R> zipFunction) {
+    public static <T, R> Stream<R> parallelZip(final Collection<? extends Stream<? extends T>> c, final Function<? super List<? extends T>, R> zipFunction) {
         return parallelZip(c, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
     }
 
@@ -6627,7 +6621,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param queueSize for each iterator. Default value is 8
      * @return
      */
-    public static <T, R> Stream<R> parallelZip(final Collection<? extends Stream<? extends T>> c, final Function<? super ExList<? extends T>, R> zipFunction,
+    public static <T, R> Stream<R> parallelZip(final Collection<? extends Stream<? extends T>> c, final Function<? super List<? extends T>, R> zipFunction,
             final int queueSize) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
@@ -6656,8 +6650,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param zipFunction
      * @return
      */
-    public static <T, R> Stream<R> parallelZip2(final Collection<? extends Iterator<? extends T>> c,
-            final Function<? super ExList<? extends T>, R> zipFunction) {
+    public static <T, R> Stream<R> parallelZip2(final Collection<? extends Iterator<? extends T>> c, final Function<? super List<? extends T>, R> zipFunction) {
         return parallelZip2(c, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
     }
 
@@ -6677,7 +6670,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param queueSize for each iterator. Default value is 8
      * @return
      */
-    public static <T, R> Stream<R> parallelZip2(final Collection<? extends Iterator<? extends T>> c, final Function<? super ExList<? extends T>, R> zipFunction,
+    public static <T, R> Stream<R> parallelZip2(final Collection<? extends Iterator<? extends T>> c, final Function<? super List<? extends T>, R> zipFunction,
             final int queueSize) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
@@ -6746,7 +6739,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
                 boolean isOK = false;
 
                 try {
-                    R result = zipFunction.apply(ExList.of((T[]) next));
+                    R result = zipFunction.apply(Arrays.asList((T[]) next));
                     next = null;
                     isOK = true;
                     return result;
@@ -7294,7 +7287,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <T, R> Stream<R> parallelZip(final Collection<? extends Stream<? extends T>> c, final Object[] valuesForNone,
-            Function<? super ExList<? extends T>, R> zipFunction) {
+            Function<? super List<? extends T>, R> zipFunction) {
         return parallelZip(c, valuesForNone, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
     }
 
@@ -7314,7 +7307,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <T, R> Stream<R> parallelZip(final Collection<? extends Stream<? extends T>> c, final Object[] valuesForNone,
-            Function<? super ExList<? extends T>, R> zipFunction, final int queueSize) {
+            Function<? super List<? extends T>, R> zipFunction, final int queueSize) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
@@ -7349,7 +7342,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <T, R> Stream<R> parallelZip2(final Collection<? extends Iterator<? extends T>> c, final Object[] valuesForNone,
-            Function<? super ExList<? extends T>, R> zipFunction) {
+            Function<? super List<? extends T>, R> zipFunction) {
         return parallelZip2(c, valuesForNone, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
     }
 
@@ -7369,7 +7362,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <T, R> Stream<R> parallelZip2(final Collection<? extends Iterator<? extends T>> c, final Object[] valuesForNone,
-            final Function<? super ExList<? extends T>, R> zipFunction, final int queueSize) {
+            final Function<? super List<? extends T>, R> zipFunction, final int queueSize) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
@@ -7432,7 +7425,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
 
                 boolean isOK = false;
                 try {
-                    R result = zipFunction.apply(ExList.of((T[]) next));
+                    R result = zipFunction.apply(Arrays.asList((T[]) next));
                     next = null;
                     isOK = true;
                     return result;

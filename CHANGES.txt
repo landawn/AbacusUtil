@@ -19,7 +19,11 @@
 
 9*, Refactoring Try.Predicate/Function/Consumer/...
 
-10, Improvements and bug fix.
+10*, Remove ExList
+
+11*, Refatoring to reduce the size of abacus-android-*.jar.
+
+12, Improvements and bug fix.
 
 
 ========Changes in 0.9.67=========================================================================

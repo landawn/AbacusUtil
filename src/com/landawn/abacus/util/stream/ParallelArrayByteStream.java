@@ -225,8 +225,8 @@ final class ParallelArrayByteStream extends ArrayByteStream {
     }
 
     @Override
-    public Stream<ByteList> split0(final int size) {
-        return new ParallelIteratorStream<ByteList>(sequential().split0(size).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
+    public Stream<ByteList> split2(final int size) {
+        return new ParallelIteratorStream<ByteList>(sequential().split2(size).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
     }
 
     @Override
@@ -237,9 +237,9 @@ final class ParallelArrayByteStream extends ArrayByteStream {
     }
 
     @Override
-    public <U> Stream<ByteList> split0(final U identity, final BiFunction<? super Byte, ? super U, Boolean> predicate,
+    public <U> Stream<ByteList> split2(final U identity, final BiFunction<? super Byte, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
-        return new ParallelIteratorStream<ByteList>(sequential().split0(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null,
+        return new ParallelIteratorStream<ByteList>(sequential().split2(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null,
                 maxThreadNum, splitor);
     }
 
@@ -278,8 +278,8 @@ final class ParallelArrayByteStream extends ArrayByteStream {
     }
 
     @Override
-    public Stream<ByteList> sliding0(final int windowSize, final int increment) {
-        return new ParallelIteratorStream<ByteList>(sequential().sliding0(windowSize, increment).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
+    public Stream<ByteList> sliding2(final int windowSize, final int increment) {
+        return new ParallelIteratorStream<ByteList>(sequential().sliding2(windowSize, increment).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
     }
 
     @Override

@@ -237,8 +237,8 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
     }
 
     @Override
-    public Stream<ShortList> split0(final int size) {
-        return new ParallelIteratorStream<>(sequential().split0(size).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
+    public Stream<ShortList> split2(final int size) {
+        return new ParallelIteratorStream<>(sequential().split2(size).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
     }
 
     @Override
@@ -249,9 +249,9 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
     }
 
     @Override
-    public <U> Stream<ShortList> split0(final U identity, final BiFunction<? super Short, ? super U, Boolean> predicate,
+    public <U> Stream<ShortList> split2(final U identity, final BiFunction<? super Short, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
-        return new ParallelIteratorStream<>(sequential().split0(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null, maxThreadNum,
+        return new ParallelIteratorStream<>(sequential().split2(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null, maxThreadNum,
                 splitor);
     }
 
@@ -293,9 +293,9 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
 
         if (N.notNullOrEmpty(list2)) {
             if (sorted) {
-                a[1] = new IteratorShortStream(a[1].prepend(list2.stream0()).exIterator(), null, sorted);
+                a[1] = new IteratorShortStream(a[1].prepend(list2.stream()).exIterator(), null, sorted);
             } else {
-                a[1] = a[1].prepend(list2.stream0());
+                a[1] = a[1].prepend(list2.stream());
             }
         }
 
@@ -308,8 +308,8 @@ final class ParallelIteratorShortStream extends IteratorShortStream {
     }
 
     @Override
-    public Stream<ShortList> sliding0(final int windowSize, final int increment) {
-        return new ParallelIteratorStream<>(sequential().sliding0(windowSize, increment).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
+    public Stream<ShortList> sliding2(final int windowSize, final int increment) {
+        return new ParallelIteratorStream<>(sequential().sliding2(windowSize, increment).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
     }
 
     @Override

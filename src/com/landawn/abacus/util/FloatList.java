@@ -16,6 +16,7 @@
 
 package com.landawn.abacus.util;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -44,7 +45,7 @@ import com.landawn.abacus.util.stream.FloatStream;
  * 
  * @author Haiyang Li
  */
-public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate, Float, float[], FloatList> {
+public final class FloatList extends PrimitiveList<FloatConsumer, FloatPredicate, Float, float[], FloatList> {
     private static final long serialVersionUID = 6459013170687883950L;
 
     private float[] elementData = N.EMPTY_FLOAT_ARRAY;
@@ -1075,14 +1076,14 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
         return result;
     }
 
-    public <T> ExList<T> mapToObj(final FloatFunction<? extends T> mapper) {
+    public <T> List<T> mapToObj(final FloatFunction<? extends T> mapper) {
         return mapToObj(0, size, mapper);
     }
 
-    public <T> ExList<T> mapToObj(final int fromIndex, final int toIndex, final FloatFunction<? extends T> mapper) {
+    public <T> List<T> mapToObj(final int fromIndex, final int toIndex, final FloatFunction<? extends T> mapper) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final ExList<T> result = new ExList<>(toIndex - fromIndex);
+        final List<T> result = new ArrayList<>(toIndex - fromIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(mapper.apply(elementData[i]));
@@ -1302,12 +1303,12 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
     }
 
     @Override
-    public ExList<FloatList> split(final int fromIndex, final int toIndex, final int size) {
+    public List<FloatList> split(final int fromIndex, final int toIndex, final int size) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final ExList<float[]> list = N.split(elementData, fromIndex, toIndex, size);
+        final List<float[]> list = N.split(elementData, fromIndex, toIndex, size);
         @SuppressWarnings("rawtypes")
-        final ExList<FloatList> result = (ExList) list;
+        final List<FloatList> result = (List) list;
 
         for (int i = 0, len = list.size(); i < len; i++) {
             result.set(i, of(list.get(i)));
@@ -1386,20 +1387,20 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
         return size;
     }
 
-    public ExList<Float> boxed() {
+    public List<Float> boxed() {
         return boxed(0, size);
     }
 
-    public ExList<Float> boxed(int fromIndex, int toIndex) {
+    public List<Float> boxed(int fromIndex, int toIndex) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final Float[] b = new Float[toIndex - fromIndex];
+        final List<Float> res = new ArrayList<>(toIndex - fromIndex);
 
-        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
-            b[j] = elementData[i];
+        for (int i = fromIndex; i < toIndex; i++) {
+            res.add(elementData[i]);
         }
 
-        return ExList.of(b);
+        return res;
     }
 
     public DoubleList toDoubleList() {
@@ -1523,11 +1524,11 @@ public final class FloatList extends AbstractList<FloatConsumer, FloatPredicate,
         return FloatIterator.of(elementData, 0, size);
     }
 
-    public FloatStream stream0() {
+    public FloatStream stream() {
         return FloatStream.of(elementData, 0, size());
     }
 
-    public FloatStream stream0(final int fromIndex, final int toIndex) {
+    public FloatStream stream(final int fromIndex, final int toIndex) {
         checkFromToIndex(fromIndex, toIndex);
 
         return FloatStream.of(elementData, fromIndex, toIndex);

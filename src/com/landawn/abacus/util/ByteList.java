@@ -16,6 +16,7 @@
 
 package com.landawn.abacus.util;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -43,7 +44,7 @@ import com.landawn.abacus.util.stream.Collector;
  * 
  * @author Haiyang Li
  */
-public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, Byte, byte[], ByteList> {
+public final class ByteList extends PrimitiveList<ByteConsumer, BytePredicate, Byte, byte[], ByteList> {
     private static final long serialVersionUID = 6361439693114081075L;
 
     private byte[] elementData = N.EMPTY_BYTE_ARRAY;
@@ -1051,14 +1052,14 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
         return result;
     }
 
-    public <T> ExList<T> mapToObj(final ByteFunction<? extends T> mapper) {
+    public <T> List<T> mapToObj(final ByteFunction<? extends T> mapper) {
         return mapToObj(0, size, mapper);
     }
 
-    public <T> ExList<T> mapToObj(final int fromIndex, final int toIndex, final ByteFunction<? extends T> mapper) {
+    public <T> List<T> mapToObj(final int fromIndex, final int toIndex, final ByteFunction<? extends T> mapper) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final ExList<T> result = new ExList<>(toIndex - fromIndex);
+        final List<T> result = new ArrayList<>(toIndex - fromIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(mapper.apply(elementData[i]));
@@ -1258,12 +1259,12 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
     }
 
     @Override
-    public ExList<ByteList> split(final int fromIndex, final int toIndex, final int size) {
+    public List<ByteList> split(final int fromIndex, final int toIndex, final int size) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final ExList<byte[]> list = N.split(elementData, fromIndex, toIndex, size);
+        final List<byte[]> list = N.split(elementData, fromIndex, toIndex, size);
         @SuppressWarnings("rawtypes")
-        final ExList<ByteList> result = (ExList) list;
+        final List<ByteList> result = (List) list;
 
         for (int i = 0, len = list.size(); i < len; i++) {
             result.set(i, of(list.get(i)));
@@ -1342,20 +1343,20 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
         return size;
     }
 
-    public ExList<Byte> boxed() {
+    public List<Byte> boxed() {
         return boxed(0, size);
     }
 
-    public ExList<Byte> boxed(int fromIndex, int toIndex) {
+    public List<Byte> boxed(int fromIndex, int toIndex) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final Byte[] b = new Byte[toIndex - fromIndex];
+        final List<Byte> res = new ArrayList<>(toIndex - fromIndex);
 
-        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
-            b[j] = elementData[i];
+        for (int i = fromIndex; i < toIndex; i++) {
+            res.add(elementData[i]);
         }
 
-        return ExList.of(b);
+        return res;
     }
 
     public IntList toIntList() {
@@ -1479,11 +1480,11 @@ public final class ByteList extends AbstractList<ByteConsumer, BytePredicate, By
         return ByteIterator.of(elementData, 0, size);
     }
 
-    public ByteStream stream0() {
+    public ByteStream stream() {
         return ByteStream.of(elementData, 0, size());
     }
 
-    public ByteStream stream0(final int fromIndex, final int toIndex) {
+    public ByteStream stream(final int fromIndex, final int toIndex) {
         checkFromToIndex(fromIndex, toIndex);
 
         return ByteStream.of(elementData, fromIndex, toIndex);

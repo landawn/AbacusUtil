@@ -67,7 +67,7 @@ import com.landawn.abacus.util.function.Supplier;
  * @param <A> the type of array
  * @param <P> the type of predicate
  * @param <C> the type of consumer
- * @param <PL> the type of PrimitiveList/ExList
+ * @param <PL> the type of PrimitiveList/List
  * @param <OT> the type of Optional
  * @param <IT> the type of Indexed
  * @param <S> the type of of the stream implementing {@code BaseStream}
@@ -162,7 +162,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * @param size
      * @return
      */
-    public abstract Stream<PL> split0(int size);
+    public abstract Stream<PL> split2(int size);
 
     /**
      * Split the stream by the specified predicate.
@@ -204,7 +204,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * @param identityUpdate
      * @return
      */
-    <U> Stream<PL> split0(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate);
+    <U> Stream<PL> split2(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate);
 
     /**
      * Split the stream into two pieces at <code>where</code>
@@ -236,7 +236,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * @return
      * @see #sliding(int, int)
      */
-    Stream<PL> sliding0(int windowSize);
+    Stream<PL> sliding2(int windowSize);
 
     /**
      * <code>Stream.of(1, 2, 3, 4, 5, 6, 7, 8).sliding(3, 1).forEach(Stream::println)</code>
@@ -277,7 +277,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * @return
      * @see #sliding(int, int)
      */
-    Stream<PL> sliding0(int windowSize, int increment);
+    Stream<PL> sliding2(int windowSize, int increment);
 
     /**
      * <br />
@@ -852,7 +852,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * Because the sequential way is as fast, or even faster than the parallel way for some methods, or is pretty difficult, if not possible, to implement the method by parallel approach.
      * Here are the methods which are executed sequentially even in parallel Streams.  
      * <br></br>
-     * <i>splitXXX/splitAt/splitBy/slidingXXX/collapse, distinct, reverse, rotate, shuffle, indexed, cached, top, kthLargest, count, toArray, toExList, toList, toSet, toMultiset, toLongMultiset, 
+     * <i>splitXXX/splitAt/splitBy/slidingXXX/collapse, distinct, reverse, rotate, shuffle, indexed, cached, top, kthLargest, count, toArray, toList, toList, toSet, toMultiset, toLongMultiset, 
      * intersection(Collection c), difference(Collection c), symmetricDifference(Collection c), forEach(identity, accumulator, predicate), findFirstOrLast, findFirstAndLast</i>
      * 
      * @param maxThreadNum Default value is the number of cpu-cores. Steps/operations will be executed sequentially if <code>maxThreadNum</code> is 1.

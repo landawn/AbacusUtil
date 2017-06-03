@@ -16,6 +16,7 @@
 
 package com.landawn.abacus.util;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -44,7 +45,7 @@ import com.landawn.abacus.util.stream.ShortStream;
  * 
  * @author Haiyang Li
  */
-public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate, Short, short[], ShortList> {
+public final class ShortList extends PrimitiveList<ShortConsumer, ShortPredicate, Short, short[], ShortList> {
     private static final long serialVersionUID = 25682021483156507L;
 
     private short[] elementData = N.EMPTY_SHORT_ARRAY;
@@ -1049,14 +1050,14 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
         return result;
     }
 
-    public <T> ExList<T> mapToObj(final ShortFunction<? extends T> mapper) {
+    public <T> List<T> mapToObj(final ShortFunction<? extends T> mapper) {
         return mapToObj(0, size, mapper);
     }
 
-    public <T> ExList<T> mapToObj(final int fromIndex, final int toIndex, final ShortFunction<? extends T> mapper) {
+    public <T> List<T> mapToObj(final int fromIndex, final int toIndex, final ShortFunction<? extends T> mapper) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final ExList<T> result = new ExList<>(toIndex - fromIndex);
+        final List<T> result = new ArrayList<>(toIndex - fromIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(mapper.apply(elementData[i]));
@@ -1276,12 +1277,12 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
     }
 
     @Override
-    public ExList<ShortList> split(final int fromIndex, final int toIndex, final int size) {
+    public List<ShortList> split(final int fromIndex, final int toIndex, final int size) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final ExList<short[]> list = N.split(elementData, fromIndex, toIndex, size);
+        final List<short[]> list = N.split(elementData, fromIndex, toIndex, size);
         @SuppressWarnings("rawtypes")
-        final ExList<ShortList> result = (ExList) list;
+        final List<ShortList> result = (List) list;
 
         for (int i = 0, len = list.size(); i < len; i++) {
             result.set(i, of(list.get(i)));
@@ -1360,20 +1361,20 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
         return size;
     }
 
-    public ExList<Short> boxed() {
+    public List<Short> boxed() {
         return boxed(0, size);
     }
 
-    public ExList<Short> boxed(int fromIndex, int toIndex) {
+    public List<Short> boxed(int fromIndex, int toIndex) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final Short[] b = new Short[toIndex - fromIndex];
+        final List<Short> res = new ArrayList<>(toIndex - fromIndex);
 
-        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
-            b[j] = elementData[i];
+        for (int i = fromIndex; i < toIndex; i++) {
+            res.add(elementData[i]);
         }
 
-        return ExList.of(b);
+        return res;
     }
 
     public IntList toIntList() {
@@ -1497,11 +1498,11 @@ public final class ShortList extends AbstractList<ShortConsumer, ShortPredicate,
         return ShortIterator.of(elementData, 0, size);
     }
 
-    public ShortStream stream0() {
+    public ShortStream stream() {
         return ShortStream.of(elementData, 0, size());
     }
 
-    public ShortStream stream0(final int fromIndex, final int toIndex) {
+    public ShortStream stream(final int fromIndex, final int toIndex) {
         checkFromToIndex(fromIndex, toIndex);
 
         return ShortStream.of(elementData, fromIndex, toIndex);

@@ -176,7 +176,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
     @Override
     public Stream<DoubleStream> split(final int size) {
-        return split0(size).map(new Function<DoubleList, DoubleStream>() {
+        return split2(size).map(new Function<DoubleList, DoubleStream>() {
             @Override
             public DoubleStream apply(DoubleList t) {
                 return new ArrayDoubleStream(t.array(), 0, t.size(), null, sorted);
@@ -187,7 +187,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
     @Override
     public <U> Stream<DoubleStream> split(final U identity, final BiFunction<? super Double, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
-        return split0(identity, predicate, identityUpdate).map(new Function<DoubleList, DoubleStream>() {
+        return split2(identity, predicate, identityUpdate).map(new Function<DoubleList, DoubleStream>() {
             @Override
             public DoubleStream apply(DoubleList t) {
                 return new ArrayDoubleStream(t.array(), 0, t.size(), null, sorted);
@@ -197,7 +197,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
     @Override
     public Stream<DoubleStream> sliding(final int windowSize, final int increment) {
-        return sliding0(windowSize, increment).map(new Function<DoubleList, DoubleStream>() {
+        return sliding2(windowSize, increment).map(new Function<DoubleList, DoubleStream>() {
             @Override
             public DoubleStream apply(DoubleList t) {
                 return new ArrayDoubleStream(t.array(), 0, t.size(), null, sorted);
@@ -766,7 +766,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
         return newStream(this.sequential().mapToObj(new DoubleFunction<IndexedDouble>() {
             @Override
             public IndexedDouble apply(double t) {
-                return IndexedDouble.of(idx.getAndIncrement(), t);
+                return IndexedDouble.of(t, idx.getAndIncrement());
             }
         }).iterator(), true, INDEXED_DOUBLE_COMPARATOR);
     }

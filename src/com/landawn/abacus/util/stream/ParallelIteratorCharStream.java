@@ -236,8 +236,8 @@ final class ParallelIteratorCharStream extends IteratorCharStream {
     }
 
     @Override
-    public Stream<CharList> split0(final int size) {
-        return new ParallelIteratorStream<>(sequential().split0(size).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
+    public Stream<CharList> split2(final int size) {
+        return new ParallelIteratorStream<>(sequential().split2(size).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
     }
 
     @Override
@@ -248,9 +248,9 @@ final class ParallelIteratorCharStream extends IteratorCharStream {
     }
 
     @Override
-    public <U> Stream<CharList> split0(final U identity, final BiFunction<? super Character, ? super U, Boolean> predicate,
+    public <U> Stream<CharList> split2(final U identity, final BiFunction<? super Character, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
-        return new ParallelIteratorStream<>(sequential().split0(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null, maxThreadNum,
+        return new ParallelIteratorStream<>(sequential().split2(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null, maxThreadNum,
                 splitor);
     }
 
@@ -292,9 +292,9 @@ final class ParallelIteratorCharStream extends IteratorCharStream {
 
         if (N.notNullOrEmpty(list2)) {
             if (sorted) {
-                a[1] = new IteratorCharStream(a[1].prepend(list2.stream0()).exIterator(), null, sorted);
+                a[1] = new IteratorCharStream(a[1].prepend(list2.stream()).exIterator(), null, sorted);
             } else {
-                a[1] = a[1].prepend(list2.stream0());
+                a[1] = a[1].prepend(list2.stream());
             }
         }
 
@@ -307,8 +307,8 @@ final class ParallelIteratorCharStream extends IteratorCharStream {
     }
 
     @Override
-    public Stream<CharList> sliding0(final int windowSize, final int increment) {
-        return new ParallelIteratorStream<>(sequential().sliding0(windowSize, increment).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
+    public Stream<CharList> sliding2(final int windowSize, final int increment) {
+        return new ParallelIteratorStream<>(sequential().sliding2(windowSize, increment).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
     }
 
     @Override

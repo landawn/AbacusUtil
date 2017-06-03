@@ -28,7 +28,6 @@ import java.util.Set;
 import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.DoubleIterator;
-import com.landawn.abacus.util.ExList;
 import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.LongIterator;
@@ -871,30 +870,6 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Stream<ExList<T>> split0(final int size) {
-        N.checkArgument(size > 0, "'size' must be bigger than 0");
-
-        return new IteratorStream<>(new ExIterator<ExList<T>>() {
-            private int cursor = fromIndex;
-
-            @Override
-            public boolean hasNext() {
-                return cursor < toIndex;
-            }
-
-            @Override
-            public ExList<T> next() {
-                if (cursor >= toIndex) {
-                    throw new NoSuchElementException();
-                }
-
-                return ExList.of(N.copyOfRange(elements, cursor, (cursor = size < toIndex - cursor ? cursor + size : toIndex)));
-            }
-
-        }, closeHandlers);
-    }
-
-    @Override
     public Stream<List<T>> split2(final int size) {
         return new IteratorStream<>(new ExIterator<List<T>>() {
             private int cursor = fromIndex;
@@ -979,45 +954,6 @@ class ArrayStream<T> extends AbstractStream<T> {
                 }
 
                 return new ArrayStream<>(elements, from, cursor, null, sorted, cmp);
-            }
-        }, closeHandlers);
-    }
-
-    @Override
-    public <U> Stream<ExList<T>> split0(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
-        return new IteratorStream<>(new ExIterator<ExList<T>>() {
-            private int cursor = fromIndex;
-            private boolean preCondition = false;
-
-            @Override
-            public boolean hasNext() {
-                return cursor < toIndex;
-            }
-
-            @Override
-            public ExList<T> next() {
-                if (cursor >= toIndex) {
-                    throw new NoSuchElementException();
-                }
-
-                final int from = cursor;
-
-                while (cursor < toIndex) {
-                    if (from == cursor) {
-                        preCondition = predicate.apply(elements[from], identity);
-                        cursor++;
-                    } else if (predicate.apply(elements[cursor], identity) == preCondition) {
-                        cursor++;
-                    } else {
-                        if (identityUpdate != null) {
-                            identityUpdate.accept(identity);
-                        }
-
-                        break;
-                    }
-                }
-
-                return new ExList<>(N.copyOfRange(elements, from, cursor));
             }
         }, closeHandlers);
     }
@@ -1158,36 +1094,6 @@ class ArrayStream<T> extends AbstractStream<T> {
                 }
 
                 final Stream<T> result = new ArrayStream<>(elements, cursor, windowSize < toIndex - cursor ? cursor + windowSize : toIndex, null, sorted, cmp);
-
-                cursor = increment < toIndex - cursor && windowSize < toIndex - cursor ? cursor + increment : toIndex;
-
-                return result;
-            }
-
-        }, closeHandlers);
-    }
-
-    @Override
-    public Stream<ExList<T>> sliding0(final int windowSize, final int increment) {
-        if (windowSize < 1 || increment < 1) {
-            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
-        }
-
-        return new IteratorStream<>(new ExIterator<ExList<T>>() {
-            private int cursor = fromIndex;
-
-            @Override
-            public boolean hasNext() {
-                return cursor < toIndex;
-            }
-
-            @Override
-            public ExList<T> next() {
-                if (cursor >= toIndex) {
-                    throw new NoSuchElementException();
-                }
-
-                final ExList<T> result = ExList.of(N.copyOfRange(elements, cursor, windowSize < toIndex - cursor ? cursor + windowSize : toIndex));
 
                 cursor = increment < toIndex - cursor && windowSize < toIndex - cursor ? cursor + increment : toIndex;
 
@@ -1363,11 +1269,6 @@ class ArrayStream<T> extends AbstractStream<T> {
     @Override
     public <A> A[] toArray(IntFunction<A[]> generator) {
         return toArray(generator.apply(toIndex - fromIndex));
-    }
-
-    @Override
-    public ExList<T> toExList() {
-        return ExList.of(N.copyOfRange(elements, fromIndex, toIndex));
     }
 
     @Override

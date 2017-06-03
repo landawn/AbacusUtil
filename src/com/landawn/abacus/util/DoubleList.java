@@ -16,6 +16,7 @@
 
 package com.landawn.abacus.util;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -44,7 +45,7 @@ import com.landawn.abacus.util.stream.DoubleStream;
  * 
  * @author Haiyang Li
  */
-public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredicate, Double, double[], DoubleList> {
+public final class DoubleList extends PrimitiveList<DoubleConsumer, DoublePredicate, Double, double[], DoubleList> {
     private static final long serialVersionUID = 766157472430159621L;
 
     private double[] elementData = N.EMPTY_DOUBLE_ARRAY;
@@ -1049,14 +1050,14 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
         return result;
     }
 
-    public <T> ExList<T> mapToObj(final DoubleFunction<? extends T> mapper) {
+    public <T> List<T> mapToObj(final DoubleFunction<? extends T> mapper) {
         return mapToObj(0, size, mapper);
     }
 
-    public <T> ExList<T> mapToObj(final int fromIndex, final int toIndex, final DoubleFunction<? extends T> mapper) {
+    public <T> List<T> mapToObj(final int fromIndex, final int toIndex, final DoubleFunction<? extends T> mapper) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final ExList<T> result = new ExList<>(toIndex - fromIndex);
+        final List<T> result = new ArrayList<>(toIndex - fromIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(mapper.apply(elementData[i]));
@@ -1276,12 +1277,12 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
     }
 
     @Override
-    public ExList<DoubleList> split(final int fromIndex, final int toIndex, final int size) {
+    public List<DoubleList> split(final int fromIndex, final int toIndex, final int size) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final ExList<double[]> list = N.split(elementData, fromIndex, toIndex, size);
+        final List<double[]> list = N.split(elementData, fromIndex, toIndex, size);
         @SuppressWarnings("rawtypes")
-        final ExList<DoubleList> result = (ExList) list;
+        final List<DoubleList> result = (List) list;
 
         for (int i = 0, len = list.size(); i < len; i++) {
             result.set(i, of(list.get(i)));
@@ -1360,20 +1361,20 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
         return size;
     }
 
-    public ExList<Double> boxed() {
+    public List<Double> boxed() {
         return boxed(0, size);
     }
 
-    public ExList<Double> boxed(int fromIndex, int toIndex) {
+    public List<Double> boxed(int fromIndex, int toIndex) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final Double[] b = new Double[toIndex - fromIndex];
+        final List<Double> res = new ArrayList<>(toIndex - fromIndex);
 
-        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
-            b[j] = elementData[i];
+        for (int i = fromIndex; i < toIndex; i++) {
+            res.add(elementData[i]);
         }
 
-        return ExList.of(b);
+        return res;
     }
 
     @Override
@@ -1493,11 +1494,11 @@ public final class DoubleList extends AbstractList<DoubleConsumer, DoublePredica
         return DoubleIterator.of(elementData, 0, size);
     }
 
-    public DoubleStream stream0() {
+    public DoubleStream stream() {
         return DoubleStream.of(elementData, 0, size());
     }
 
-    public DoubleStream stream0(final int fromIndex, final int toIndex) {
+    public DoubleStream stream(final int fromIndex, final int toIndex) {
         checkFromToIndex(fromIndex, toIndex);
 
         return DoubleStream.of(elementData, fromIndex, toIndex);

@@ -29,7 +29,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import com.landawn.abacus.util.ExList;
 import com.landawn.abacus.util.Fn;
 
 /**
@@ -42,10 +41,6 @@ public interface Supplier<T> extends java.util.function.Supplier<T> {
 
     @Override
     T get();
-
-    static <T> Supplier<ExList<T>> ofExList() {
-        return Fn.Suppliers.ofExList();
-    }
 
     static <T> Supplier<List<T>> ofList() {
         return Fn.Suppliers.ofList();

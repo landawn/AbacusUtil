@@ -16,6 +16,7 @@
 
 package com.landawn.abacus.util;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -43,7 +44,7 @@ import com.landawn.abacus.util.stream.IntStream;
  *
  * @author Haiyang Li
  */
-public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integer, int[], IntList> {
+public final class IntList extends PrimitiveList<IntConsumer, IntPredicate, Integer, int[], IntList> {
     private static final long serialVersionUID = 8661773953226671696L;
 
     private int[] elementData = N.EMPTY_INT_ARRAY;
@@ -1277,14 +1278,14 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
         return result;
     }
 
-    public <T> ExList<T> mapToObj(final IntFunction<? extends T> mapper) {
+    public <T> List<T> mapToObj(final IntFunction<? extends T> mapper) {
         return mapToObj(0, size, mapper);
     }
 
-    public <T> ExList<T> mapToObj(final int fromIndex, final int toIndex, final IntFunction<? extends T> mapper) {
+    public <T> List<T> mapToObj(final int fromIndex, final int toIndex, final IntFunction<? extends T> mapper) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final ExList<T> result = new ExList<>(toIndex - fromIndex);
+        final List<T> result = new ArrayList<>(toIndex - fromIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(mapper.apply(elementData[i]));
@@ -1504,12 +1505,12 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
     }
 
     @Override
-    public ExList<IntList> split(final int fromIndex, final int toIndex, final int size) {
+    public List<IntList> split(final int fromIndex, final int toIndex, final int size) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final ExList<int[]> list = N.split(elementData, fromIndex, toIndex, size);
+        final List<int[]> list = N.split(elementData, fromIndex, toIndex, size);
         @SuppressWarnings("rawtypes")
-        final ExList<IntList> result = (ExList) list;
+        final List<IntList> result = (List) list;
 
         for (int i = 0, len = list.size(); i < len; i++) {
             result.set(i, of(list.get(i)));
@@ -1588,20 +1589,20 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
         return size;
     }
 
-    public ExList<Integer> boxed() {
+    public List<Integer> boxed() {
         return boxed(0, size);
     }
 
-    public ExList<Integer> boxed(int fromIndex, int toIndex) {
+    public List<Integer> boxed(int fromIndex, int toIndex) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final Integer[] b = new Integer[toIndex - fromIndex];
+        final List<Integer> res = new ArrayList<>(toIndex - fromIndex);
 
-        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
-            b[j] = elementData[i];
+        for (int i = fromIndex; i < toIndex; i++) {
+            res.add(elementData[i]);
         }
 
-        return ExList.of(b);
+        return res;
     }
 
     public LongList toLongList() {
@@ -1733,11 +1734,11 @@ public final class IntList extends AbstractList<IntConsumer, IntPredicate, Integ
         return IntIterator.of(elementData, 0, size);
     }
 
-    public IntStream stream0() {
+    public IntStream stream() {
         return IntStream.of(elementData, 0, size());
     }
 
-    public IntStream stream0(final int fromIndex, final int toIndex) {
+    public IntStream stream(final int fromIndex, final int toIndex) {
         checkFromToIndex(fromIndex, toIndex);
 
         return IntStream.of(elementData, fromIndex, toIndex);

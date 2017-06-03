@@ -860,24 +860,6 @@ public class Joiner {
         return join(c.array(), fromIndex, toIndex);
     }
 
-    public Joiner join(final ExList<?> c) {
-        if (N.isNullOrEmpty(c)) {
-            return this;
-        }
-
-        return join(c.array(), 0, c.size());
-    }
-
-    public Joiner join(final ExList<?> c, final int fromIndex, final int toIndex) {
-        N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
-
-        if (N.isNullOrEmpty(c) || fromIndex == toIndex) {
-            return this;
-        }
-
-        return join(c.array(), fromIndex, toIndex);
-    }
-
     /**
      * Adds the contents of the given {@code StringJoiner} without prefix and
      * suffix as the next element if it is non-empty. If the given {@code

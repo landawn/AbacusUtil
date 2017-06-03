@@ -33,8 +33,8 @@ import java.util.Set;
 import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.DoubleIterator;
-import com.landawn.abacus.util.ExList;
 import com.landawn.abacus.util.FloatIterator;
+import com.landawn.abacus.util.Indexed;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.LongIterator;
 import com.landawn.abacus.util.LongMultiset;
@@ -42,7 +42,6 @@ import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.NullabLe;
-import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
@@ -704,34 +703,6 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Stream<ExList<T>> split0(final int size) {
-        N.checkArgument(size > 0, "'size' must be bigger than 0");
-
-        return new IteratorStream<>(new ExIterator<ExList<T>>() {
-            @Override
-            public boolean hasNext() {
-                return elements.hasNext();
-            }
-
-            @Override
-            public ExList<T> next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                final ExList<T> result = new ExList<>(N.min(9, size));
-
-                while (result.size() < size && elements.hasNext()) {
-                    result.add(elements.next());
-                }
-
-                return result;
-            }
-
-        }, closeHandlers);
-    }
-
-    @Override
     public Stream<List<T>> split2(final int size) {
         return new IteratorStream<>(new ExIterator<List<T>>() {
             @Override
@@ -779,52 +750,6 @@ class IteratorStream<T> extends AbstractStream<T> {
                 while (cnt < size && elements.hasNext()) {
                     result.add(elements.next());
                     cnt++;
-                }
-
-                return result;
-            }
-
-        }, closeHandlers);
-    }
-
-    @Override
-    public <U> Stream<ExList<T>> split0(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
-        return new IteratorStream<>(new ExIterator<ExList<T>>() {
-            private T next = (T) NONE;
-            private boolean preCondition = false;
-
-            @Override
-            public boolean hasNext() {
-                return next != NONE || elements.hasNext();
-            }
-
-            @Override
-            public ExList<T> next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                final ExList<T> result = new ExList<>();
-
-                if (next == NONE) {
-                    next = elements.next();
-                }
-
-                while (next != NONE) {
-                    if (result.size() == 0) {
-                        result.add(next);
-                        preCondition = predicate.apply(next, identity);
-                        next = elements.hasNext() ? elements.next() : (T) NONE;
-                    } else if (predicate.apply(next, identity) == preCondition) {
-                        result.add(next);
-                        next = elements.hasNext() ? elements.next() : (T) NONE;
-                    } else {
-                        if (identityUpdate != null) {
-                            identityUpdate.accept(identity);
-                        }
-
-                        break;
-                    }
                 }
 
                 return result;
@@ -922,66 +847,6 @@ class IteratorStream<T> extends AbstractStream<T> {
                 return result;
             }
 
-        }, closeHandlers);
-    }
-
-    @Override
-    public Stream<ExList<T>> sliding0(final int windowSize, final int increment) {
-        if (windowSize < 1 || increment < 1) {
-            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
-        }
-
-        return new IteratorStream<>(new ExIterator<ExList<T>>() {
-            private ExList<T> prev = null;
-
-            @Override
-            public boolean hasNext() {
-                if (prev != null && increment > windowSize) {
-                    int skipNum = increment - windowSize;
-
-                    while (skipNum-- > 0 && elements.hasNext()) {
-                        elements.next();
-                    }
-
-                    prev = null;
-                }
-
-                return elements.hasNext();
-            }
-
-            @Override
-            public ExList<T> next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                ExList<T> result = null;
-                int cnt = 0;
-
-                if (prev != null && increment < windowSize) {
-                    cnt = windowSize - increment;
-
-                    if (cnt <= 8) {
-                        result = new ExList<>(windowSize);
-
-                        for (int i = windowSize - cnt; i < windowSize; i++) {
-                            result.add(prev.get(i));
-                        }
-                    } else {
-                        final Object[] dest = new Object[windowSize];
-                        N.copy(prev.trimToSize().array(), windowSize - cnt, dest, 0, cnt);
-                        result = ExList.of((T[]) dest, cnt);
-                    }
-                } else {
-                    result = new ExList<>(windowSize);
-                }
-
-                while (cnt++ < windowSize && elements.hasNext()) {
-                    result.add(elements.next());
-                }
-
-                return prev = result;
-            }
         }, closeHandlers);
     }
 
@@ -1120,18 +985,18 @@ class IteratorStream<T> extends AbstractStream<T> {
 
                     a = (T[]) queue.toArray();
                 } else {
-                    final Comparator<Pair<T, Long>> pairCmp = new Comparator<Pair<T, Long>>() {
+                    final Comparator<Indexed<T>> pairCmp = new Comparator<Indexed<T>>() {
                         @Override
-                        public int compare(final Pair<T, Long> o1, final Pair<T, Long> o2) {
-                            return N.compare(o1.left, o2.left, comparator);
+                        public int compare(final Indexed<T> o1, final Indexed<T> o2) {
+                            return N.compare(o1.value(), o2.value(), comparator);
                         }
                     };
 
-                    final Queue<Pair<T, Long>> heap = new PriorityQueue<>(n, pairCmp);
+                    final Queue<Indexed<T>> heap = new PriorityQueue<>(n, pairCmp);
 
-                    Pair<T, Long> pair = null;
+                    Indexed<T> pair = null;
                     for (long i = 0; elements.hasNext(); i++) {
-                        pair = Pair.of(elements.next(), i);
+                        pair = Indexed.of(elements.next(), i);
 
                         if (heap.size() >= n) {
                             if (pairCmp.compare(pair, heap.peek()) > 0) {
@@ -1143,19 +1008,19 @@ class IteratorStream<T> extends AbstractStream<T> {
                         }
                     }
 
-                    final Pair<T, Long>[] arrayOfPair = heap.toArray(new Pair[heap.size()]);
+                    final Indexed<T>[] arrayOfPair = heap.toArray(new Indexed[heap.size()]);
 
-                    N.sort(arrayOfPair, new Comparator<Pair<T, Long>>() {
+                    N.sort(arrayOfPair, new Comparator<Indexed<T>>() {
                         @Override
-                        public int compare(final Pair<T, Long> o1, final Pair<T, Long> o2) {
-                            return N.compare(o1.right.longValue(), o2.right.longValue());
+                        public int compare(final Indexed<T> o1, final Indexed<T> o2) {
+                            return N.compare(o1.longIndex(), o2.longIndex());
                         }
                     });
 
                     a = (T[]) new Object[arrayOfPair.length];
 
                     for (int i = 0, len = arrayOfPair.length; i < len; i++) {
-                        a[i] = arrayOfPair[i].left;
+                        a[i] = arrayOfPair[i].value();
                     }
                 }
 
@@ -1403,11 +1268,6 @@ class IteratorStream<T> extends AbstractStream<T> {
     @Override
     public <A> A[] toArray(IntFunction<A[]> generator) {
         return toArray(generator.apply(0));
-    }
-
-    @Override
-    public ExList<T> toExList() {
-        return ExList.of((T[]) toArray());
     }
 
     @Override

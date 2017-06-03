@@ -51,6 +51,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import com.landawn.abacus.DataSet;
+import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.BiMap;
 import com.landawn.abacus.util.BooleanList;
 import com.landawn.abacus.util.ByteList;
@@ -59,7 +60,6 @@ import com.landawn.abacus.util.CharList;
 import com.landawn.abacus.util.CharSummaryStatistics;
 import com.landawn.abacus.util.DoubleList;
 import com.landawn.abacus.util.DoubleSummaryStatistics;
-import com.landawn.abacus.util.ExList;
 import com.landawn.abacus.util.FloatList;
 import com.landawn.abacus.util.FloatSummaryStatistics;
 import com.landawn.abacus.util.Fn;
@@ -425,63 +425,43 @@ public final class Collectors {
         return new CollectorImpl<>(supplier, accumulator, combiner, CH_UNORDERED_ID);
     }
 
-    public static <T> Collector<T, ?, ExList<T>> toExList() {
-        final Supplier<ExList<T>> supplier = new Supplier<ExList<T>>() {
-            @Override
-            public ExList<T> get() {
-                return new ExList<>();
-            }
-        };
-
-        final BiConsumer<ExList<T>, T> accumulator = new BiConsumer<ExList<T>, T>() {
-            @Override
-            public void accept(ExList<T> c, T t) {
-                c.add(t);
-            }
-        };
-
-        final BinaryOperator<ExList<T>> combiner = new BinaryOperator<ExList<T>>() {
-            @Override
-            public ExList<T> apply(ExList<T> a, ExList<T> b) {
-                a.addAll(b);
-                return a;
-            }
-        };
-
-        return new CollectorImpl<>(supplier, accumulator, combiner, CH_ID);
-    }
-
     public static <T> Collector<T, ?, Object[]> toArray() {
         return toArray(Fn.Suppliers.ofEmptyObjectArray());
     }
 
     public static <T, A> Collector<T, ?, A[]> toArray(final Supplier<A[]> arraySupplier) {
-        final Supplier<ExList<A>> supplier = new Supplier<ExList<A>>() {
+        final Supplier<List<A>> supplier = new Supplier<List<A>>() {
             @Override
-            public ExList<A> get() {
-                return new ExList<A>(arraySupplier.get(), 0);
+            public List<A> get() {
+                return new ArrayList<A>();
             }
         };
 
-        final BiConsumer<ExList<A>, T> accumulator = new BiConsumer<ExList<A>, T>() {
+        final BiConsumer<List<A>, T> accumulator = new BiConsumer<List<A>, T>() {
             @Override
-            public void accept(ExList<A> c, T t) {
+            public void accept(List<A> c, T t) {
                 c.add((A) t);
             }
         };
 
-        final BinaryOperator<ExList<A>> combiner = new BinaryOperator<ExList<A>>() {
+        final BinaryOperator<List<A>> combiner = new BinaryOperator<List<A>>() {
             @Override
-            public ExList<A> apply(ExList<A> a, ExList<A> b) {
+            public List<A> apply(List<A> a, List<A> b) {
                 a.addAll(b);
                 return a;
             }
         };
 
-        final Function<ExList<A>, A[]> finisher = new Function<ExList<A>, A[]>() {
+        final Function<List<A>, A[]> finisher = new Function<List<A>, A[]>() {
             @Override
-            public A[] apply(ExList<A> t) {
-                return (A[]) t.trimToSize().array();
+            public A[] apply(List<A> t) {
+                final A[] a = arraySupplier.get();
+
+                if (a.length >= t.size()) {
+                    return t.toArray(a);
+                } else {
+                    return t.toArray((A[]) Array.newInstance(a.getClass().getComponentType(), t.size()));
+                }
             }
         };
 

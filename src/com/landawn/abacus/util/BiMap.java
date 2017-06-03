@@ -295,7 +295,7 @@ public final class BiMap<K, V> implements Map<K, V> {
         return keyMap.size();
     }
 
-    //    public Stream<Map.Entry<K, V>> stream0() {
+    //    public Stream<Map.Entry<K, V>> stream() {
     //        return Stream.of(keyMap.entrySet());
     //    }
 

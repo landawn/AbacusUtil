@@ -1061,7 +1061,7 @@ public final class LongMultiset<E> implements Iterable<E> {
      * 
      * @return a list with all elements, each of them is repeated with the occurrences in this <code>LongMultiset</code>   
      */
-    public ExList<E> flatten() {
+    public List<E> flatten() {
         final long totalOccurrences = sumOfOccurrences().longValue();
 
         if (totalOccurrences > Integer.MAX_VALUE) {
@@ -1080,7 +1080,7 @@ public final class LongMultiset<E> implements Iterable<E> {
             fromIndex = toIndex;
         }
 
-        return ExList.of((E[]) a);
+        return N.asList((E[]) a);
     }
 
     public LongMultiset<E> filter(Predicate<? super E> filter) {

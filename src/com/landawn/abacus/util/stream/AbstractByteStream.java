@@ -178,7 +178,7 @@ abstract class AbstractByteStream extends ByteStream {
 
     @Override
     public Stream<ByteStream> split(final int size) {
-        return split0(size).map(new Function<ByteList, ByteStream>() {
+        return split2(size).map(new Function<ByteList, ByteStream>() {
             @Override
             public ByteStream apply(ByteList t) {
                 return new ArrayByteStream(t.array(), 0, t.size(), null, sorted);
@@ -189,7 +189,7 @@ abstract class AbstractByteStream extends ByteStream {
     @Override
     public <U> Stream<ByteStream> split(final U identity, final BiFunction<? super Byte, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
-        return split0(identity, predicate, identityUpdate).map(new Function<ByteList, ByteStream>() {
+        return split2(identity, predicate, identityUpdate).map(new Function<ByteList, ByteStream>() {
             @Override
             public ByteStream apply(ByteList t) {
                 return new ArrayByteStream(t.array(), 0, t.size(), null, sorted);
@@ -199,7 +199,7 @@ abstract class AbstractByteStream extends ByteStream {
 
     @Override
     public Stream<ByteStream> sliding(final int windowSize, final int increment) {
-        return sliding0(windowSize, increment).map(new Function<ByteList, ByteStream>() {
+        return sliding2(windowSize, increment).map(new Function<ByteList, ByteStream>() {
             @Override
             public ByteStream apply(ByteList t) {
                 return new ArrayByteStream(t.array(), 0, t.size(), null, sorted);
@@ -703,7 +703,7 @@ abstract class AbstractByteStream extends ByteStream {
         return newStream(this.sequential().mapToObj(new ByteFunction<IndexedByte>() {
             @Override
             public IndexedByte apply(byte t) {
-                return IndexedByte.of(idx.getAndIncrement(), t);
+                return IndexedByte.of(t, idx.getAndIncrement());
             }
         }).iterator(), true, INDEXED_BYTE_COMPARATOR);
     }

@@ -16,6 +16,7 @@
 
 package com.landawn.abacus.util;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -43,7 +44,7 @@ import com.landawn.abacus.util.stream.Collector;
  * 
  * @author Haiyang Li
  */
-public final class CharList extends AbstractList<CharConsumer, CharPredicate, Character, char[], CharList> {
+public final class CharList extends PrimitiveList<CharConsumer, CharPredicate, Character, char[], CharList> {
     private static final long serialVersionUID = 7293826835233022514L;
 
     private char[] elementData = N.EMPTY_CHAR_ARRAY;
@@ -1077,14 +1078,14 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
         return result;
     }
 
-    public <T> ExList<T> mapToObj(final CharFunction<? extends T> mapper) {
+    public <T> List<T> mapToObj(final CharFunction<? extends T> mapper) {
         return mapToObj(0, size, mapper);
     }
 
-    public <T> ExList<T> mapToObj(final int fromIndex, final int toIndex, final CharFunction<? extends T> mapper) {
+    public <T> List<T> mapToObj(final int fromIndex, final int toIndex, final CharFunction<? extends T> mapper) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final ExList<T> result = new ExList<>(toIndex - fromIndex);
+        final List<T> result = new ArrayList<>(toIndex - fromIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(mapper.apply(elementData[i]));
@@ -1284,12 +1285,12 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
     }
 
     @Override
-    public ExList<CharList> split(final int fromIndex, final int toIndex, final int size) {
+    public List<CharList> split(final int fromIndex, final int toIndex, final int size) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final ExList<char[]> list = N.split(elementData, fromIndex, toIndex, size);
+        final List<char[]> list = N.split(elementData, fromIndex, toIndex, size);
         @SuppressWarnings("rawtypes")
-        final ExList<CharList> result = (ExList) list;
+        final List<CharList> result = (List) list;
 
         for (int i = 0, len = list.size(); i < len; i++) {
             result.set(i, of(list.get(i)));
@@ -1368,20 +1369,20 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
         return size;
     }
 
-    public ExList<Character> boxed() {
+    public List<Character> boxed() {
         return boxed(0, size);
     }
 
-    public ExList<Character> boxed(int fromIndex, int toIndex) {
+    public List<Character> boxed(int fromIndex, int toIndex) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final Character[] b = new Character[toIndex - fromIndex];
+        final List<Character> res = new ArrayList<>(toIndex - fromIndex);
 
-        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
-            b[j] = elementData[i];
+        for (int i = fromIndex; i < toIndex; i++) {
+            res.add(elementData[i]);
         }
 
-        return ExList.of(b);
+        return res;
     }
 
     public IntList toIntList() {
@@ -1506,11 +1507,11 @@ public final class CharList extends AbstractList<CharConsumer, CharPredicate, Ch
         return CharIterator.of(elementData, 0, size);
     }
 
-    public CharStream stream0() {
+    public CharStream stream() {
         return CharStream.of(elementData, 0, size());
     }
 
-    public CharStream stream0(final int fromIndex, final int toIndex) {
+    public CharStream stream(final int fromIndex, final int toIndex) {
         checkFromToIndex(fromIndex, toIndex);
 
         return CharStream.of(elementData, fromIndex, toIndex);

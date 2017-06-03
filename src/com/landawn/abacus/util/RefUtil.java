@@ -211,7 +211,7 @@ public final class RefUtil {
         BUILT_IN_TYPE.put(LongList.class.getCanonicalName(), LongList.class);
         BUILT_IN_TYPE.put(FloatList.class.getCanonicalName(), FloatList.class);
         BUILT_IN_TYPE.put(DoubleList.class.getCanonicalName(), DoubleList.class);
-        BUILT_IN_TYPE.put(ExList.class.getCanonicalName(), ExList.class);
+        BUILT_IN_TYPE.put(List.class.getCanonicalName(), List.class);
 
         BUILT_IN_TYPE.put(MutableBoolean.class.getCanonicalName(), MutableBoolean.class);
         BUILT_IN_TYPE.put(MutableChar.class.getCanonicalName(), MutableChar.class);

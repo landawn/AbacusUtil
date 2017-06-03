@@ -16,6 +16,7 @@
 
 package com.landawn.abacus.util;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -44,7 +45,7 @@ import com.landawn.abacus.util.stream.LongStream;
  * 
  * @author Haiyang Li
  */
-public final class LongList extends AbstractList<LongConsumer, LongPredicate, Long, long[], LongList> {
+public final class LongList extends PrimitiveList<LongConsumer, LongPredicate, Long, long[], LongList> {
     private static final long serialVersionUID = -7764836427712181163L;
 
     private long[] elementData = N.EMPTY_LONG_ARRAY;
@@ -1107,14 +1108,14 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
         return result;
     }
 
-    public <T> ExList<T> mapToObj(final LongFunction<? extends T> mapper) {
+    public <T> List<T> mapToObj(final LongFunction<? extends T> mapper) {
         return mapToObj(0, size, mapper);
     }
 
-    public <T> ExList<T> mapToObj(final int fromIndex, final int toIndex, final LongFunction<? extends T> mapper) {
+    public <T> List<T> mapToObj(final int fromIndex, final int toIndex, final LongFunction<? extends T> mapper) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final ExList<T> result = new ExList<>(toIndex - fromIndex);
+        final List<T> result = new ArrayList<>(toIndex - fromIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(mapper.apply(elementData[i]));
@@ -1334,12 +1335,12 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
     }
 
     @Override
-    public ExList<LongList> split(final int fromIndex, final int toIndex, final int size) {
+    public List<LongList> split(final int fromIndex, final int toIndex, final int size) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final ExList<long[]> list = N.split(elementData, fromIndex, toIndex, size);
+        final List<long[]> list = N.split(elementData, fromIndex, toIndex, size);
         @SuppressWarnings("rawtypes")
-        final ExList<LongList> result = (ExList) list;
+        final List<LongList> result = (List) list;
 
         for (int i = 0, len = list.size(); i < len; i++) {
             result.set(i, of(list.get(i)));
@@ -1418,20 +1419,20 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
         return size;
     }
 
-    public ExList<Long> boxed() {
+    public List<Long> boxed() {
         return boxed(0, size);
     }
 
-    public ExList<Long> boxed(int fromIndex, int toIndex) {
+    public List<Long> boxed(int fromIndex, int toIndex) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final Long[] b = new Long[toIndex - fromIndex];
+        final List<Long> res = new ArrayList<>(toIndex - fromIndex);
 
-        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
-            b[j] = elementData[i];
+        for (int i = fromIndex; i < toIndex; i++) {
+            res.add(elementData[i]);
         }
 
-        return ExList.of(b);
+        return res;
     }
 
     public FloatList toFloatList() {
@@ -1559,11 +1560,11 @@ public final class LongList extends AbstractList<LongConsumer, LongPredicate, Lo
         return LongIterator.of(elementData, 0, size);
     }
 
-    public LongStream stream0() {
+    public LongStream stream() {
         return LongStream.of(elementData, 0, size());
     }
 
-    public LongStream stream0(final int fromIndex, final int toIndex) {
+    public LongStream stream(final int fromIndex, final int toIndex) {
         checkFromToIndex(fromIndex, toIndex);
 
         return LongStream.of(elementData, fromIndex, toIndex);

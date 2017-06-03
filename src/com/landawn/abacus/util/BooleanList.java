@@ -16,6 +16,7 @@
 
 package com.landawn.abacus.util;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -43,7 +44,7 @@ import com.landawn.abacus.util.stream.Stream;
  * 
  * @author Haiyang Li
  */
-public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPredicate, Boolean, boolean[], BooleanList> {
+public final class BooleanList extends PrimitiveList<BooleanConsumer, BooleanPredicate, Boolean, boolean[], BooleanList> {
     private static final long serialVersionUID = -1194435277403867258L;
 
     private boolean[] elementData = N.EMPTY_BOOLEAN_ARRAY;
@@ -931,14 +932,14 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
         return result;
     }
 
-    public <T> ExList<T> mapToObj(final BooleanFunction<? extends T> mapper) {
+    public <T> List<T> mapToObj(final BooleanFunction<? extends T> mapper) {
         return mapToObj(0, size, mapper);
     }
 
-    public <T> ExList<T> mapToObj(final int fromIndex, final int toIndex, final BooleanFunction<? extends T> mapper) {
+    public <T> List<T> mapToObj(final int fromIndex, final int toIndex, final BooleanFunction<? extends T> mapper) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final ExList<T> result = new ExList<>(toIndex - fromIndex);
+        final List<T> result = new ArrayList<>(toIndex - fromIndex);
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.add(mapper.apply(elementData[i]));
@@ -1122,12 +1123,12 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
     }
 
     @Override
-    public ExList<BooleanList> split(final int fromIndex, final int toIndex, final int size) {
+    public List<BooleanList> split(final int fromIndex, final int toIndex, final int size) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final ExList<boolean[]> list = N.split(elementData, fromIndex, toIndex, size);
+        final List<boolean[]> list = N.split(elementData, fromIndex, toIndex, size);
         @SuppressWarnings("rawtypes")
-        final ExList<BooleanList> result = (ExList) list;
+        final List<BooleanList> result = (List) list;
 
         for (int i = 0, len = list.size(); i < len; i++) {
             result.set(i, of(list.get(i)));
@@ -1206,20 +1207,20 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
         return size;
     }
 
-    public ExList<Boolean> boxed() {
+    public List<Boolean> boxed() {
         return boxed(0, size);
     }
 
-    public ExList<Boolean> boxed(int fromIndex, int toIndex) {
+    public List<Boolean> boxed(int fromIndex, int toIndex) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final Boolean[] b = new Boolean[toIndex - fromIndex];
+        final List<Boolean> res = new ArrayList<>(toIndex - fromIndex);
 
-        for (int i = fromIndex, j = 0; i < toIndex; i++, j++) {
-            b[j] = elementData[i];
+        for (int i = fromIndex; i < toIndex; i++) {
+            res.add(elementData[i]);
         }
 
-        return ExList.of(b);
+        return res;
     }
 
     @Override
@@ -1339,11 +1340,11 @@ public final class BooleanList extends AbstractList<BooleanConsumer, BooleanPred
         return BooleanIterator.of(elementData, 0, size);
     }
 
-    public Stream<Boolean> stream0() {
+    public Stream<Boolean> stream() {
         return Stream.from(elementData, 0, size());
     }
 
-    public Stream<Boolean> stream0(final int fromIndex, final int toIndex) {
+    public Stream<Boolean> stream(final int fromIndex, final int toIndex) {
         checkFromToIndex(fromIndex, toIndex);
 
         return Stream.from(elementData, fromIndex, toIndex);
