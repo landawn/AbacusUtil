@@ -1,4 +1,13 @@
 
+========Changes in 0.9.69=========================================================================
+
+1*, Rename CompletableFuture.thenRun/CallWithUIExecutor... to thenRun/CallOnUI..., Rename thenRun/CallWithTPExecutor... to thenRun/CallByTP, 
+    And remove thenRun/CallWithSerialExecutor...
+
+2, Improvements and bug fix.
+
+
+
 ========Changes in 0.9.68=========================================================================
 
 1, Add map/mapToObj to IntList/LongList/DoubleList/.../IntMatrix/LongMatrix/Double/Matrix
