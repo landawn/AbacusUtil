@@ -301,6 +301,10 @@ public final class Try<T extends AutoCloseable> {
         }
     }
 
+    public static interface TriPredicate<A, B, C, E extends Throwable> {
+        boolean test(A a, B b, C c) throws E;
+    }
+
     public static interface Function<T, R, E extends Throwable> {
         R apply(T t) throws E;
     }
@@ -309,11 +313,19 @@ public final class Try<T extends AutoCloseable> {
         R apply(T t, U u) throws E;
     }
 
+    public static interface TriFunction<A, B, C, R, E extends Throwable> {
+        R apply(A a, B b, C c) throws E;
+    }
+
     public static interface Consumer<T, E extends Throwable> {
         void accept(T t) throws E;
     }
 
     public static interface BiConsumer<T, U, E extends Throwable> {
         void accept(T t, U u) throws E;
+    }
+
+    public static interface TriConsumer<A, B, C, E extends Throwable> {
+        void accept(A a, B b, C c) throws E;
     }
 }

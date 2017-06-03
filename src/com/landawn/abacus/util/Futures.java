@@ -49,6 +49,161 @@ public final class Futures {
         // singleton.
     }
 
+    public static <T1, T2, R> CompletableFuture<R> zip(final CompletableFuture<T1> cf1, final CompletableFuture<T2> cf2,
+            final Try.BiFunction<? super CompletableFuture<T1>, ? super CompletableFuture<T2>, R, Exception> zipFunctionForGet) {
+        return zip(cf1, cf2, zipFunctionForGet, new Try.Function<Tuple4<CompletableFuture<T1>, CompletableFuture<T2>, Long, TimeUnit>, R, Exception>() {
+            @Override
+            public R apply(Tuple4<CompletableFuture<T1>, CompletableFuture<T2>, Long, TimeUnit> t) throws Exception {
+                return zipFunctionForGet.apply(t._1, t._2);
+            }
+        });
+    }
+
+    public static <T1, T2, R> CompletableFuture<R> zip(final CompletableFuture<T1> cf1, final CompletableFuture<T2> cf2,
+            final Try.BiFunction<? super CompletableFuture<T1>, ? super CompletableFuture<T2>, R, Exception> zipFunctionForGet,
+            final Try.Function<? super Tuple4<CompletableFuture<T1>, CompletableFuture<T2>, Long, TimeUnit>, R, Exception> zipFunctionTimeoutGet) {
+        final List<CompletableFuture<?>> cfs = N.asList(cf1, cf2);
+
+        return zip(cfs, new Try.Function<Collection<? extends CompletableFuture<?>>, R, Exception>() {
+            @SuppressWarnings("rawtypes")
+            @Override
+            public R apply(Collection<? extends CompletableFuture<?>> c) throws Exception {
+                return zipFunctionForGet.apply((CompletableFuture<T1>) ((List) c).get(0), (CompletableFuture<T2>) ((List) c).get(1));
+            }
+        }, new Try.Function<Tuple3<Collection<? extends CompletableFuture<?>>, Long, TimeUnit>, R, Exception>() {
+            @SuppressWarnings("rawtypes")
+            @Override
+            public R apply(Tuple3<Collection<? extends CompletableFuture<?>>, Long, TimeUnit> t) throws Exception {
+                return zipFunctionTimeoutGet
+                        .apply(Tuple.of((CompletableFuture<T1>) ((List) t._1).get(0), (CompletableFuture<T2>) ((List) t._1).get(1), t._2, t._3));
+            }
+        });
+    }
+
+    public static <T1, T2, T3, R> CompletableFuture<R> zip(final CompletableFuture<T1> cf1, final CompletableFuture<T2> cf2, final CompletableFuture<T3> cf3,
+            final Try.TriFunction<? super CompletableFuture<T1>, ? super CompletableFuture<T2>, ? super CompletableFuture<T3>, R, Exception> zipFunctionForGet) {
+        return zip(cf1, cf2, cf3, zipFunctionForGet,
+                new Try.Function<Tuple5<CompletableFuture<T1>, CompletableFuture<T2>, CompletableFuture<T3>, Long, TimeUnit>, R, Exception>() {
+                    @Override
+                    public R apply(Tuple5<CompletableFuture<T1>, CompletableFuture<T2>, CompletableFuture<T3>, Long, TimeUnit> t) throws Exception {
+                        return zipFunctionForGet.apply(t._1, t._2, t._3);
+                    }
+                });
+    }
+
+    public static <T1, T2, T3, R> CompletableFuture<R> zip(final CompletableFuture<T1> cf1, final CompletableFuture<T2> cf2, final CompletableFuture<T3> cf3,
+            final Try.TriFunction<? super CompletableFuture<T1>, ? super CompletableFuture<T2>, ? super CompletableFuture<T3>, R, Exception> zipFunctionForGet,
+            final Try.Function<? super Tuple5<CompletableFuture<T1>, CompletableFuture<T2>, CompletableFuture<T3>, Long, TimeUnit>, R, Exception> zipFunctionTimeoutGet) {
+        final List<CompletableFuture<?>> cfs = N.asList(cf1, cf2, cf3);
+
+        return zip(cfs, new Try.Function<Collection<? extends CompletableFuture<?>>, R, Exception>() {
+            @SuppressWarnings("rawtypes")
+            @Override
+            public R apply(Collection<? extends CompletableFuture<?>> c) throws Exception {
+                return zipFunctionForGet.apply((CompletableFuture<T1>) ((List) c).get(0), (CompletableFuture<T2>) ((List) c).get(1),
+                        (CompletableFuture<T3>) ((List) c).get(2));
+            }
+        }, new Try.Function<Tuple3<Collection<? extends CompletableFuture<?>>, Long, TimeUnit>, R, Exception>() {
+            @SuppressWarnings("rawtypes")
+            @Override
+            public R apply(Tuple3<Collection<? extends CompletableFuture<?>>, Long, TimeUnit> t) throws Exception {
+                return zipFunctionTimeoutGet.apply(Tuple.of((CompletableFuture<T1>) ((List) t._1).get(0), (CompletableFuture<T2>) ((List) t._1).get(1),
+                        (CompletableFuture<T3>) ((List) t._1).get(2), t._2, t._3));
+            }
+        });
+    }
+
+    public static <R> CompletableFuture<R> zip(final Collection<? extends CompletableFuture<?>> cfs,
+            final Try.Function<? super Collection<? extends CompletableFuture<?>>, R, Exception> zipFunctionForGet) {
+        return zip(cfs, zipFunctionForGet, new Try.Function<Tuple3<Collection<? extends CompletableFuture<?>>, Long, TimeUnit>, R, Exception>() {
+            @Override
+            public R apply(Tuple3<Collection<? extends CompletableFuture<?>>, Long, TimeUnit> t) throws Exception {
+                return zipFunctionForGet.apply(t._1);
+            }
+        });
+    }
+
+    public static <R> CompletableFuture<R> zip(final Collection<? extends CompletableFuture<?>> cfs,
+            final Try.Function<? super Collection<? extends CompletableFuture<?>>, R, Exception> zipFunctionForGet,
+            final Try.Function<? super Tuple3<Collection<? extends CompletableFuture<?>>, Long, TimeUnit>, R, Exception> zipFunctionTimeoutGet) {
+        N.checkArgument(N.notNullOrEmpty(cfs), "'cfs' can't be null or empty");
+        N.requireNonNull(zipFunctionForGet);
+        N.requireNonNull(zipFunctionTimeoutGet);
+
+        return new CompletableFuture<>(new Future<R>() {
+            @Override
+            public boolean cancel(boolean mayInterruptIfRunning) {
+                boolean res = true;
+                RuntimeException exception = null;
+
+                for (CompletableFuture<?> future : cfs) {
+                    try {
+                        res = res & future.cancel(mayInterruptIfRunning);
+                    } catch (RuntimeException e) {
+                        if (exception == null) {
+                            exception = e;
+                        } else {
+                            exception.addSuppressed(e);
+                        }
+                    }
+                }
+
+                if (exception != null) {
+                    throw exception;
+                }
+
+                return res;
+            }
+
+            @Override
+            public boolean isCancelled() {
+                for (CompletableFuture<?> future : cfs) {
+                    if (future.isCancelled()) {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            @Override
+            public boolean isDone() {
+                for (CompletableFuture<?> future : cfs) {
+                    if (future.isDone() == false) {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            @Override
+            public R get() throws InterruptedException, ExecutionException {
+                try {
+                    return zipFunctionForGet.apply(cfs);
+                } catch (InterruptedException | ExecutionException e) {
+                    throw e;
+                } catch (Throwable e) {
+                    throw N.toRuntimeException(e);
+                }
+            }
+
+            @Override
+            public R get(final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+                @SuppressWarnings("rawtypes")
+                final Tuple3<Collection<? extends CompletableFuture<?>>, Long, TimeUnit> t = (Tuple3) Tuple.of(cfs, timeout, unit);
+
+                try {
+                    return zipFunctionTimeoutGet.apply(t);
+                } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                    throw e;
+                } catch (Throwable e) {
+                    throw N.toRuntimeException(e);
+                }
+            }
+        }, null, ((CompletableFuture<?>) cfs.iterator().next()).asyncExecutor);
+    }
+
     public static <T1, T2> CompletableFuture<Tuple2<T1, T2>> combine(final CompletableFuture<? extends T1> cf1, final CompletableFuture<? extends T2> cf2) {
         return allOf(N.asList(cf1, cf2)).thenApply(new Function<List<Object>, Tuple2<T1, T2>>() {
             @Override
@@ -256,7 +411,7 @@ public final class Futures {
 
                 return result;
             }
-        }, new ArrayList<>(cfs), ((CompletableFuture<?>) cfs.iterator().next()).asyncExecutor);
+        }, null, ((CompletableFuture<?>) cfs.iterator().next()).asyncExecutor);
     }
 
     /**
@@ -374,7 +529,7 @@ public final class Futures {
 
                 return handle(result);
             }
-        }, new ArrayList<>(cfs), ((CompletableFuture<?>) cfs.iterator().next()).asyncExecutor);
+        }, null, ((CompletableFuture<?>) cfs.iterator().next()).asyncExecutor);
     }
 
     @SafeVarargs
