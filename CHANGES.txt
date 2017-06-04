@@ -4,7 +4,10 @@
 1*, Rename CompletableFuture.thenRun/CallWithUIExecutor... to thenRun/CallOnUI..., Rename thenRun/CallWithTPExecutor... to thenRun/CallByTP, 
     And remove thenRun/CallWithSerialExecutor...
 
-2, Improvements and bug fix.
+2*, Rename asyncExecutor to async in SQLExecutor/DynamoDBExecutor/MongoDBExecutor/..., 
+    Rename executor to sync in AsyncSQLExeuctor/AsyncDynamoDBExecutor/AsyncMongoDBExecutor
+
+3, Improvements and bug fix.
 
 
 

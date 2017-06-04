@@ -566,7 +566,7 @@ public final class SQLExecutor implements Closeable {
     //        return new ExMapper<T>(conn, targetClass, this, this._namingPolicy);
     //    }
 
-    public AsyncSQLExecutor asyncExecutor() {
+    public AsyncSQLExecutor async() {
         return _asyncSQLExecutor;
     }
 
