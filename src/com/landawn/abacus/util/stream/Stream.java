@@ -611,6 +611,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param size
      * @return
      */
+    @Override
     public abstract Stream<List<T>> split2(int size);
 
     /**
@@ -644,6 +645,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param identityUpdate
      * @return
      */
+    @Override
     public abstract <U> Stream<List<T>> split2(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate);
 
@@ -670,8 +672,10 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     public abstract <U> Stream<Set<T>> split3(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate);
 
+    @Override
     public abstract Stream<List<T>> sliding2(int windowSize);
 
+    @Override
     public abstract Stream<List<T>> sliding2(int windowSize, int increment);
 
     /**
@@ -1772,14 +1776,6 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
 
     public static <T> Stream<T> just(final T a) {
         return of(N.asArray(a));
-    }
-
-    public static <T> Stream<T> just(final T a, final T b) {
-        return of(N.asArray(a, b));
-    }
-
-    public static <T> Stream<T> just(final T a, final T b, final T c) {
-        return of(N.asArray(a, b, c));
     }
 
     @SafeVarargs

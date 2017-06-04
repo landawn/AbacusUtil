@@ -80,6 +80,10 @@ public final class Seq<T> extends ImmutableCollection<T> {
         super(c);
     }
 
+    public static <T> Seq<T> just(T t) {
+        return of(t);
+    }
+
     @SafeVarargs
     public static <T> Seq<T> of(final T... a) {
         return of(Arrays.asList(a));
