@@ -27,6 +27,9 @@ package com.landawn.abacus.util;
 import java.util.Collection;
 import java.util.Map;
 
+import com.landawn.abacus.util.function.Function;
+import com.landawn.abacus.util.stream.Stream;
+
 /**
  * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
  * <br />
@@ -947,5 +950,21 @@ public class Joiner {
                 return result;
             }
         }
+    }
+
+    public <T> T map(Function<? super String, T> mapper) {
+        return mapper.apply(toString());
+    }
+
+    public <T> Optional<T> mapIfNotEmpty(Function<? super String, T> mapper) {
+        return value == null ? Optional.<T> empty() : Optional.of(mapper.apply(toString()));
+    }
+
+    public Stream<String> stream() {
+        return Stream.of(toString());
+    }
+
+    public Stream<String> streamIfNotEmpty() {
+        return value == null ? Stream.<String> empty() : Stream.of(toString());
     }
 }
