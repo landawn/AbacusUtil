@@ -27,4 +27,12 @@ public interface Function<T, R> extends java.util.function.Function<T, R> {
     static <T> Function<T, T> identity() {
         return Fn.identity();
     }
+
+    //    public static interface _2<T, R> extends Function<T, R> {
+    //
+    //    }
+    //
+    //    public static interface _3<T, R> extends _2<T, R> {
+    //
+    //    }
 }

@@ -47,7 +47,15 @@ public interface BiConsumer<T, U> extends java.util.function.BiConsumer<T, U> {
         return Fn.BiConsumers.ofRemoveAll();
     }
 
-    static <K, V, M extends Map<K, V>> com.landawn.abacus.util.function.BiConsumer<M, M> ofPutAll() {
+    static <K, V, M extends Map<K, V>> BiConsumer<M, M> ofPutAll() {
         return Fn.BiConsumers.ofPutAll();
     }
+
+    //    public static interface _2<T, U> extends BiConsumer<T, U> {
+    //
+    //    }
+    //
+    //    public static interface _3<T, U> extends _2<T, U> {
+    //
+    //    }
 }

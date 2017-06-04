@@ -58,4 +58,12 @@ public interface BiPredicate<T, U> extends java.util.function.BiPredicate<T, U> 
     static <T extends Comparable<? super T>> BiPredicate<T, T> lessEqual() {
         return Fn.lessEqual();
     }
+
+    //    public static interface _2<T, U> extends BiPredicate<T, U> {
+    //
+    //    }
+    //
+    //    public static interface _3<T, U> extends _2<T, U> {
+    //
+    //    }
 }

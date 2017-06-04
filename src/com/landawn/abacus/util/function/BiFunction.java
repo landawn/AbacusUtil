@@ -49,4 +49,12 @@ public interface BiFunction<T, U, R> extends java.util.function.BiFunction<T, U,
     static <K, V, M extends Map<K, V>> BiFunction<M, M, M> ofPutAll() {
         return Fn.BiFunctions.ofPutAll();
     }
+
+    //    public static interface _2<T, U, R> extends BiFunction<T, U, R> {
+    //
+    //    }
+    //
+    //    public static interface _3<T, U, R> extends _2<T, U, R> {
+    //
+    //    }
 }

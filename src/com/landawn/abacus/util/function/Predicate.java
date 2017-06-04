@@ -66,4 +66,12 @@ public interface Predicate<T> extends java.util.function.Predicate<T> {
     static <T extends Comparable<? super T>> Predicate<T> lessEqual(T targetRef) {
         return Fn.lessEqual(targetRef);
     }
+
+    //    public static interface _2<T> extends Predicate<T> {
+    //
+    //    }
+    //
+    //    public static interface _3<T> extends _2<T> {
+    //
+    //    }
 }
