@@ -9,7 +9,9 @@
 
 3, Add map/stream to Joiner
 
-4, Improvements and bug fix.
+4, Add EntryStream
+
+5, Improvements and bug fix.
 
 
 
