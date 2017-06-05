@@ -4066,17 +4066,17 @@ public final class Collectors {
         }
     }
 
-    public static <K, V> Collector<Map.Entry<? extends K, ? extends V>, ?, Map<K, V>> toMap() {
-        final Function<Map.Entry<? extends K, ? extends V>, ? extends K> keyExtractor = new Function<Map.Entry<? extends K, ? extends V>, K>() {
+    public static <K, V> Collector<Map.Entry<K, V>, ?, Map<K, V>> toMap() {
+        final Function<Map.Entry<K, V>, ? extends K> keyExtractor = new Function<Map.Entry<K, V>, K>() {
             @Override
-            public K apply(Entry<? extends K, ? extends V> t) {
+            public K apply(Map.Entry<K, V> t) {
                 return t.getKey();
             }
         };
 
-        final Function<Map.Entry<? extends K, ? extends V>, ? extends V> valueMapper = new Function<Map.Entry<? extends K, ? extends V>, V>() {
+        final Function<Map.Entry<K, V>, ? extends V> valueMapper = new Function<Map.Entry<K, V>, V>() {
             @Override
-            public V apply(Entry<? extends K, ? extends V> t) {
+            public V apply(Map.Entry<K, V> t) {
                 return t.getValue();
             }
         };
@@ -4087,28 +4087,28 @@ public final class Collectors {
     public static <K, V> Collector<Map.Entry<K, V>, ?, Map<K, V>> toMap(final BinaryOperator<V> mergeFunction) {
         return Collectors.toMap(new Function<Map.Entry<K, V>, K>() {
             @Override
-            public K apply(Entry<K, V> entry) {
+            public K apply(Map.Entry<K, V> entry) {
                 return entry.getKey();
             }
         }, new Function<Map.Entry<K, V>, V>() {
             @Override
-            public V apply(Entry<K, V> entry) {
+            public V apply(Map.Entry<K, V> entry) {
                 return entry.getValue();
             }
         }, mergeFunction);
     }
 
-    public static <K, V, M extends Map<K, V>> Collector<Map.Entry<? extends K, ? extends V>, ?, M> toMap(final Supplier<M> mapFactory) {
-        final Function<Map.Entry<? extends K, ? extends V>, ? extends K> keyExtractor = new Function<Map.Entry<? extends K, ? extends V>, K>() {
+    public static <K, V, M extends Map<K, V>> Collector<Map.Entry<K, V>, ?, M> toMap(final Supplier<M> mapFactory) {
+        final Function<Map.Entry<K, V>, ? extends K> keyExtractor = new Function<Map.Entry<K, V>, K>() {
             @Override
-            public K apply(Entry<? extends K, ? extends V> t) {
+            public K apply(Map.Entry<K, V> t) {
                 return t.getKey();
             }
         };
 
-        final Function<Map.Entry<? extends K, ? extends V>, ? extends V> valueMapper = new Function<Map.Entry<? extends K, ? extends V>, V>() {
+        final Function<Map.Entry<K, V>, ? extends V> valueMapper = new Function<Map.Entry<K, V>, V>() {
             @Override
-            public V apply(Entry<? extends K, ? extends V> t) {
+            public V apply(Map.Entry<K, V> t) {
                 return t.getValue();
             }
         };
@@ -4303,12 +4303,12 @@ public final class Collectors {
 
         return Collectors.toMap(new Function<Map.Entry<K, V>, K>() {
             @Override
-            public K apply(Entry<K, V> entry) {
+            public K apply(Map.Entry<K, V> entry) {
                 return entry.getKey();
             }
         }, new Function<Map.Entry<K, V>, List<V>>() {
             @Override
-            public List<V> apply(Entry<K, V> entry) {
+            public List<V> apply(Map.Entry<K, V> entry) {
                 return N.asList(entry.getValue());
             }
         }, mergeFunction);
@@ -4364,8 +4364,8 @@ public final class Collectors {
         }, mergeFunction, mapFactory);
     }
 
-    public static <K, V> Collector<Map.Entry<? extends K, ? extends V>, ?, ImmutableMap<K, V>> toImmutableMap() {
-        final Collector<Map.Entry<? extends K, ? extends V>, ?, Map<K, V>> downstream = toMap();
+    public static <K, V> Collector<Map.Entry<K, V>, ?, ImmutableMap<K, V>> toImmutableMap() {
+        final Collector<Map.Entry<K, V>, ?, Map<K, V>> downstream = toMap();
 
         final Function<Map<K, V>, ImmutableMap<K, V>> finisher = new Function<Map<K, V>, ImmutableMap<K, V>>() {
             @Override

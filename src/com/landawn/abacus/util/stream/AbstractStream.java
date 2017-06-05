@@ -715,6 +715,34 @@ abstract class AbstractStream<T> extends Stream<T> {
         });
     }
 
+    //    @Override
+    //    public <K, V> EntryStream<K, V> mapToEntry() {
+    //        return null;
+    //    }
+
+    @Override
+    public <K, V> EntryStream<K, V> mapToEntry(final Function<? super T, Map.Entry<K, V>> mapper) {
+        final Function<T, T> mapper2 = Fn.identity();
+
+        if (mapper == mapper2) {
+            return EntryStream.of((Stream<Map.Entry<K, V>>) this);
+        }
+
+        return EntryStream.of(map(mapper));
+    }
+
+    @Override
+    public <K, V> EntryStream<K, V> mapToEntry(final Function<? super T, K> keyMapper, final Function<? super T, V> valueMapper) {
+        final Function<T, Map.Entry<K, V>> mapper = new Function<T, Map.Entry<K, V>>() {
+            @Override
+            public Entry<K, V> apply(T t) {
+                return Pair.of(keyMapper.apply(t), valueMapper.apply(t));
+            }
+        };
+
+        return mapToEntry(mapper);
+    }
+
     @Override
     public Stream<Stream<T>> split(final int size) {
         return split2(size).map(new Function<List<T>, Stream<T>>() {

@@ -555,6 +555,12 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
 
     public abstract DoubleStream flatMapToDouble3(Function<? super T, double[]> mapper);
 
+    // public abstract <K, V> EntryStream<K, V> mapToEntry();
+
+    public abstract <K, V> EntryStream<K, V> mapToEntry(Function<? super T, Map.Entry<K, V>> mapper);
+
+    public abstract <K, V> EntryStream<K, V> mapToEntry(Function<? super T, K> keyMapper, Function<? super T, V> valueMapper);
+
     public abstract <K> Stream<Map.Entry<K, List<T>>> groupBy(final Function<? super T, ? extends K> classifier);
 
     public abstract <K> Stream<Map.Entry<K, List<T>>> groupBy(final Function<? super T, ? extends K> classifier, final Supplier<Map<K, List<T>>> mapFactory);

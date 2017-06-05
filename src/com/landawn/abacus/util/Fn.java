@@ -41,9 +41,15 @@ import java.util.regex.Pattern;
 
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
+import com.landawn.abacus.util.function.BiPredicate;
+import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
+import com.landawn.abacus.util.function.IndexedBiPredicate;
+import com.landawn.abacus.util.function.IndexedPredicate;
 import com.landawn.abacus.util.function.IntFunction;
+import com.landawn.abacus.util.function.Predicate;
+import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.function.ToByteFunction;
 import com.landawn.abacus.util.function.ToCharFunction;
 import com.landawn.abacus.util.function.ToDoubleFunction;
@@ -53,6 +59,8 @@ import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.function.ToShortFunction;
 import com.landawn.abacus.util.function.TriConsumer;
 import com.landawn.abacus.util.function.TriFunction;
+import com.landawn.abacus.util.function.TriPredicate;
+import com.landawn.abacus.util.function.UnaryOperator;
 import com.landawn.abacus.util.stream.Collector;
 import com.landawn.abacus.util.stream.Collectors;
 
@@ -81,9 +89,9 @@ public final class Fn {
     @SuppressWarnings("rawtypes")
     public static final IntFunction<LinkedHashMap<String, Object>> FACTORY_OF_LINKED_HASH_MAP = (IntFunction) Factory.LINKED_HASH_MAP_FACTORY;
     @SuppressWarnings("rawtypes")
-    public static final com.landawn.abacus.util.function.Supplier<Map<String, Object>> SUPPLIER_OF_MAP = (com.landawn.abacus.util.function.Supplier) Suppliers.MAP;
+    public static final Supplier<Map<String, Object>> SUPPLIER_OF_MAP = (Supplier) Suppliers.MAP;
     @SuppressWarnings("rawtypes")
-    public static final com.landawn.abacus.util.function.Supplier<LinkedHashMap<String, Object>> SUPPLIER_OF_LINKED_HASH_MAP = (com.landawn.abacus.util.function.Supplier) Suppliers.LINKED_HASH_MAP;
+    public static final Supplier<LinkedHashMap<String, Object>> SUPPLIER_OF_LINKED_HASH_MAP = (Supplier) Suppliers.LINKED_HASH_MAP;
 
     private static final Runnable EMPTY_ACTION = new Runnable() {
         @Override
@@ -92,7 +100,7 @@ public final class Fn {
     };
 
     @SuppressWarnings("rawtypes")
-    private static final com.landawn.abacus.util.function.Consumer DO_NOTHING = new com.landawn.abacus.util.function.Consumer() {
+    private static final Consumer DO_NOTHING = new Consumer() {
         @Override
         public void accept(Object value) {
             // do nothing.
@@ -100,7 +108,7 @@ public final class Fn {
     };
 
     @SuppressWarnings("rawtypes")
-    private static final com.landawn.abacus.util.function.Consumer PRINTLN = new com.landawn.abacus.util.function.Consumer() {
+    private static final Consumer PRINTLN = new Consumer() {
         @Override
         public void accept(Object value) {
             N.println(value);
@@ -108,28 +116,28 @@ public final class Fn {
     };
 
     @SuppressWarnings("rawtypes")
-    private static final com.landawn.abacus.util.function.Function IDENTITY = new com.landawn.abacus.util.function.Function() {
+    private static final Function IDENTITY = new Function() {
         @Override
         public Object apply(Object t) {
             return t;
         }
     };
 
-    private static final com.landawn.abacus.util.function.Function<Map.Entry<Object, Object>, Object> KEY = new com.landawn.abacus.util.function.Function<Map.Entry<Object, Object>, Object>() {
+    private static final Function<Map.Entry<Object, Object>, Object> KEY = new Function<Map.Entry<Object, Object>, Object>() {
         @Override
         public Object apply(Map.Entry<Object, Object> t) {
             return t.getKey();
         }
     };
 
-    private static final com.landawn.abacus.util.function.Function<Map.Entry<Object, Object>, Object> VALUE = new com.landawn.abacus.util.function.Function<Map.Entry<Object, Object>, Object>() {
+    private static final Function<Map.Entry<Object, Object>, Object> VALUE = new Function<Map.Entry<Object, Object>, Object>() {
         @Override
         public Object apply(Map.Entry<Object, Object> t) {
             return t.getValue();
         }
     };
 
-    private static final com.landawn.abacus.util.function.BiFunction<Object, Object, Pair<Object, Object>> PAIR = new com.landawn.abacus.util.function.BiFunction<Object, Object, Pair<Object, Object>>() {
+    private static final BiFunction<Object, Object, Pair<Object, Object>> PAIR = new BiFunction<Object, Object, Pair<Object, Object>>() {
         @Override
         public Pair<Object, Object> apply(Object key, Object value) {
             return Pair.of(key, value);
@@ -137,7 +145,7 @@ public final class Fn {
     };
 
     @SuppressWarnings("rawtypes")
-    private static final com.landawn.abacus.util.function.Predicate ALWAYS_TRUE = new com.landawn.abacus.util.function.Predicate() {
+    private static final Predicate ALWAYS_TRUE = new Predicate() {
         @Override
         public boolean test(Object value) {
             return true;
@@ -145,7 +153,7 @@ public final class Fn {
     };
 
     @SuppressWarnings("rawtypes")
-    private static final com.landawn.abacus.util.function.Predicate ALWAYS_FALSE = new com.landawn.abacus.util.function.Predicate() {
+    private static final Predicate ALWAYS_FALSE = new Predicate() {
         @Override
         public boolean test(Object value) {
             return false;
@@ -153,7 +161,7 @@ public final class Fn {
     };
 
     @SuppressWarnings("rawtypes")
-    private static final com.landawn.abacus.util.function.Predicate IS_NULL = new com.landawn.abacus.util.function.Predicate() {
+    private static final Predicate IS_NULL = new Predicate() {
         @Override
         public boolean test(Object value) {
             return value == null;
@@ -161,7 +169,7 @@ public final class Fn {
     };
 
     @SuppressWarnings("rawtypes")
-    private static final com.landawn.abacus.util.function.Predicate NOT_NULL = new com.landawn.abacus.util.function.Predicate() {
+    private static final Predicate NOT_NULL = new Predicate() {
         @Override
         public boolean test(Object value) {
             return value != null;
@@ -190,16 +198,16 @@ public final class Fn {
         return EMPTY_ACTION;
     }
 
-    public static <T> com.landawn.abacus.util.function.Consumer<T> doNothing() {
+    public static <T> Consumer<T> doNothing() {
         return DO_NOTHING;
     }
 
-    public static <T> com.landawn.abacus.util.function.Consumer<T> println() {
+    public static <T> Consumer<T> println() {
         return PRINTLN;
     }
 
-    public static <T, U> com.landawn.abacus.util.function.BiConsumer<T, U> println(final String separator) {
-        return new com.landawn.abacus.util.function.BiConsumer<T, U>() {
+    public static <T, U> BiConsumer<T, U> println(final String separator) {
+        return new BiConsumer<T, U>() {
             @Override
             public void accept(T t, U u) {
                 N.println(t + separator + u);
@@ -207,27 +215,27 @@ public final class Fn {
         };
     }
 
-    public static <T> com.landawn.abacus.util.function.Function<T, T> identity() {
+    public static <T> Function<T, T> identity() {
         return IDENTITY;
     }
 
     @SuppressWarnings("rawtypes")
-    public static <K, V> com.landawn.abacus.util.function.Function<Entry<K, V>, K> key() {
-        return (com.landawn.abacus.util.function.Function) KEY;
+    public static <K, V> Function<Entry<K, V>, K> key() {
+        return (Function) KEY;
     }
 
     @SuppressWarnings("rawtypes")
-    public static <K, V> com.landawn.abacus.util.function.Function<Entry<K, V>, V> value() {
-        return (com.landawn.abacus.util.function.Function) VALUE;
+    public static <K, V> Function<Entry<K, V>, V> value() {
+        return (Function) VALUE;
     }
 
     @SuppressWarnings("rawtypes")
-    public static <K, V> com.landawn.abacus.util.function.BiFunction<K, V, Pair<K, V>> pair() {
-        return (com.landawn.abacus.util.function.BiFunction) PAIR;
+    public static <K, V> BiFunction<K, V, Pair<K, V>> pair() {
+        return (BiFunction) PAIR;
     }
 
-    public static <T, U> com.landawn.abacus.util.function.Function<T, U> cast(final Class<U> clazz) {
-        return new com.landawn.abacus.util.function.Function<T, U>() {
+    public static <T, U> Function<T, U> cast(final Class<U> clazz) {
+        return new Function<T, U>() {
             @Override
             public U apply(T t) {
                 return (U) t;
@@ -235,24 +243,24 @@ public final class Fn {
         };
     }
 
-    public static <T> com.landawn.abacus.util.function.Predicate<T> alwaysTrue() {
+    public static <T> Predicate<T> alwaysTrue() {
         return ALWAYS_TRUE;
     }
 
-    public static <T> com.landawn.abacus.util.function.Predicate<T> alwaysFalse() {
+    public static <T> Predicate<T> alwaysFalse() {
         return ALWAYS_FALSE;
     }
 
-    public static <T> com.landawn.abacus.util.function.Predicate<T> isNull() {
+    public static <T> Predicate<T> isNull() {
         return IS_NULL;
     }
 
-    public static <T> com.landawn.abacus.util.function.Predicate<T> notNull() {
+    public static <T> Predicate<T> notNull() {
         return NOT_NULL;
     }
 
-    public static <T> com.landawn.abacus.util.function.Predicate<T> equal(final Object target) {
-        return new com.landawn.abacus.util.function.Predicate<T>() {
+    public static <T> Predicate<T> equal(final Object target) {
+        return new Predicate<T>() {
             @Override
             public boolean test(T value) {
                 return N.equals(value, target);
@@ -260,8 +268,8 @@ public final class Fn {
         };
     }
 
-    public static <T> com.landawn.abacus.util.function.Predicate<T> notEqual(final Object target) {
-        return new com.landawn.abacus.util.function.Predicate<T>() {
+    public static <T> Predicate<T> notEqual(final Object target) {
+        return new Predicate<T>() {
             @Override
             public boolean test(T value) {
                 return !N.equals(value, target);
@@ -269,8 +277,8 @@ public final class Fn {
         };
     }
 
-    public static <T extends Comparable<? super T>> com.landawn.abacus.util.function.Predicate<T> greaterThan(final T target) {
-        return new com.landawn.abacus.util.function.Predicate<T>() {
+    public static <T extends Comparable<? super T>> Predicate<T> greaterThan(final T target) {
+        return new Predicate<T>() {
             @Override
             public boolean test(T value) {
                 return N.compare(value, target) > 0;
@@ -278,8 +286,8 @@ public final class Fn {
         };
     }
 
-    public static <T extends Comparable<? super T>> com.landawn.abacus.util.function.Predicate<T> greaterEqual(final T target) {
-        return new com.landawn.abacus.util.function.Predicate<T>() {
+    public static <T extends Comparable<? super T>> Predicate<T> greaterEqual(final T target) {
+        return new Predicate<T>() {
             @Override
             public boolean test(T value) {
                 return N.compare(value, target) >= 0;
@@ -287,8 +295,8 @@ public final class Fn {
         };
     }
 
-    public static <T extends Comparable<? super T>> com.landawn.abacus.util.function.Predicate<T> lessThan(final T target) {
-        return new com.landawn.abacus.util.function.Predicate<T>() {
+    public static <T extends Comparable<? super T>> Predicate<T> lessThan(final T target) {
+        return new Predicate<T>() {
             @Override
             public boolean test(T value) {
                 return N.compare(value, target) < 0;
@@ -296,8 +304,8 @@ public final class Fn {
         };
     }
 
-    public static <T extends Comparable<? super T>> com.landawn.abacus.util.function.Predicate<T> lessEqual(final T target) {
-        return new com.landawn.abacus.util.function.Predicate<T>() {
+    public static <T extends Comparable<? super T>> Predicate<T> lessEqual(final T target) {
+        return new Predicate<T>() {
             @Override
             public boolean test(T value) {
                 return N.compare(value, target) <= 0;
@@ -305,8 +313,8 @@ public final class Fn {
         };
     }
 
-    public static <T> com.landawn.abacus.util.function.Predicate<T> in(final Collection<?> c) {
-        return new com.landawn.abacus.util.function.Predicate<T>() {
+    public static <T> Predicate<T> in(final Collection<?> c) {
+        return new Predicate<T>() {
             @Override
             public boolean test(T value) {
                 return c.contains(value);
@@ -314,8 +322,8 @@ public final class Fn {
         };
     }
 
-    public static <T> com.landawn.abacus.util.function.Predicate<T> notIn(final Collection<?> c) {
-        return new com.landawn.abacus.util.function.Predicate<T>() {
+    public static <T> Predicate<T> notIn(final Collection<?> c) {
+        return new Predicate<T>() {
             @Override
             public boolean test(T value) {
                 return !c.contains(value);
@@ -323,8 +331,8 @@ public final class Fn {
         };
     }
 
-    public static <T> com.landawn.abacus.util.function.Predicate<T> instanceOf(final Class<?> clazz) {
-        return new com.landawn.abacus.util.function.Predicate<T>() {
+    public static <T> Predicate<T> instanceOf(final Class<?> clazz) {
+        return new Predicate<T>() {
             @Override
             public boolean test(T value) {
                 return clazz.isInstance(value);
@@ -333,8 +341,8 @@ public final class Fn {
     }
 
     @SuppressWarnings("rawtypes")
-    public static com.landawn.abacus.util.function.Predicate<Class> subtypeOf(final Class<?> clazz) {
-        return new com.landawn.abacus.util.function.Predicate<Class>() {
+    public static Predicate<Class> subtypeOf(final Class<?> clazz) {
+        return new Predicate<Class>() {
             @Override
             public boolean test(Class value) {
                 return clazz.isAssignableFrom(value);
@@ -342,8 +350,8 @@ public final class Fn {
         };
     }
 
-    public static com.landawn.abacus.util.function.Predicate<CharSequence> matches(final Pattern pattern) {
-        return new com.landawn.abacus.util.function.Predicate<CharSequence>() {
+    public static Predicate<CharSequence> matches(final Pattern pattern) {
+        return new Predicate<CharSequence>() {
             @Override
             public boolean test(CharSequence value) {
                 return pattern.matcher(value).find();
@@ -351,33 +359,32 @@ public final class Fn {
         };
     }
 
-    public static <T, U> com.landawn.abacus.util.function.BiPredicate<T, U> equal() {
+    public static <T, U> BiPredicate<T, U> equal() {
         return BiPredicates.EQUAL;
     }
 
-    public static <T, U> com.landawn.abacus.util.function.BiPredicate<T, U> notEqual() {
+    public static <T, U> BiPredicate<T, U> notEqual() {
         return BiPredicates.NOT_EQUAL;
     }
 
-    public static <T extends Comparable<? super T>> com.landawn.abacus.util.function.BiPredicate<T, T> greaterThan() {
-        return (com.landawn.abacus.util.function.BiPredicate<T, T>) BiPredicates.GREATER_THAN;
+    public static <T extends Comparable<? super T>> BiPredicate<T, T> greaterThan() {
+        return (BiPredicate<T, T>) BiPredicates.GREATER_THAN;
     }
 
-    public static <T extends Comparable<? super T>> com.landawn.abacus.util.function.BiPredicate<T, T> greaterEqual() {
-        return (com.landawn.abacus.util.function.BiPredicate<T, T>) BiPredicates.GREATER_EQUAL;
+    public static <T extends Comparable<? super T>> BiPredicate<T, T> greaterEqual() {
+        return (BiPredicate<T, T>) BiPredicates.GREATER_EQUAL;
     }
 
-    public static <T extends Comparable<? super T>> com.landawn.abacus.util.function.BiPredicate<T, T> lessThan() {
-        return (com.landawn.abacus.util.function.BiPredicate<T, T>) BiPredicates.LESS_THAN;
+    public static <T extends Comparable<? super T>> BiPredicate<T, T> lessThan() {
+        return (BiPredicate<T, T>) BiPredicates.LESS_THAN;
     }
 
-    public static <T extends Comparable<? super T>> com.landawn.abacus.util.function.BiPredicate<T, T> lessEqual() {
-        return (com.landawn.abacus.util.function.BiPredicate<T, T>) BiPredicates.LESS_EQUAL;
+    public static <T extends Comparable<? super T>> BiPredicate<T, T> lessEqual() {
+        return (BiPredicate<T, T>) BiPredicates.LESS_EQUAL;
     }
 
-    public static <K, V> com.landawn.abacus.util.function.Predicate<Map.Entry<K, V>> testByKey(
-            final com.landawn.abacus.util.function.Predicate<? super K> predicate) {
-        return new com.landawn.abacus.util.function.Predicate<Map.Entry<K, V>>() {
+    public static <K, V> Predicate<Map.Entry<K, V>> testByKey(final Predicate<? super K> predicate) {
+        return new Predicate<Map.Entry<K, V>>() {
             @Override
             public boolean test(Entry<K, V> entry) {
                 return predicate.test(entry.getKey());
@@ -385,9 +392,8 @@ public final class Fn {
         };
     }
 
-    public static <K, V> com.landawn.abacus.util.function.Predicate<Map.Entry<K, V>> testByValue(
-            final com.landawn.abacus.util.function.Predicate<? super V> predicate) {
-        return new com.landawn.abacus.util.function.Predicate<Map.Entry<K, V>>() {
+    public static <K, V> Predicate<Map.Entry<K, V>> testByValue(final Predicate<? super V> predicate) {
+        return new Predicate<Map.Entry<K, V>>() {
             @Override
             public boolean test(Entry<K, V> entry) {
                 return predicate.test(entry.getValue());
@@ -395,9 +401,8 @@ public final class Fn {
         };
     }
 
-    public static <K, V> com.landawn.abacus.util.function.Consumer<Map.Entry<K, V>> acceptByKey(
-            final com.landawn.abacus.util.function.Consumer<? super K> consumer) {
-        return new com.landawn.abacus.util.function.Consumer<Map.Entry<K, V>>() {
+    public static <K, V> Consumer<Map.Entry<K, V>> acceptByKey(final Consumer<? super K> consumer) {
+        return new Consumer<Map.Entry<K, V>>() {
             @Override
             public void accept(Entry<K, V> entry) {
                 consumer.accept(entry.getKey());
@@ -405,9 +410,8 @@ public final class Fn {
         };
     }
 
-    public static <K, V> com.landawn.abacus.util.function.Consumer<Map.Entry<K, V>> acceptByValue(
-            final com.landawn.abacus.util.function.Consumer<? super V> consumer) {
-        return new com.landawn.abacus.util.function.Consumer<Map.Entry<K, V>>() {
+    public static <K, V> Consumer<Map.Entry<K, V>> acceptByValue(final Consumer<? super V> consumer) {
+        return new Consumer<Map.Entry<K, V>>() {
             @Override
             public void accept(Entry<K, V> entry) {
                 consumer.accept(entry.getValue());
@@ -415,9 +419,8 @@ public final class Fn {
         };
     }
 
-    public static <K, V, R> com.landawn.abacus.util.function.Function<Map.Entry<K, V>, R> applyByKey(
-            final com.landawn.abacus.util.function.Function<? super K, R> func) {
-        return new com.landawn.abacus.util.function.Function<Map.Entry<K, V>, R>() {
+    public static <K, V, R> Function<Map.Entry<K, V>, R> applyByKey(final Function<? super K, R> func) {
+        return new Function<Map.Entry<K, V>, R>() {
             @Override
             public R apply(Entry<K, V> entry) {
                 return func.apply(entry.getKey());
@@ -425,9 +428,8 @@ public final class Fn {
         };
     }
 
-    public static <K, V, R> com.landawn.abacus.util.function.Function<Map.Entry<K, V>, R> applyByValue(
-            final com.landawn.abacus.util.function.Function<? super V, R> func) {
-        return new com.landawn.abacus.util.function.Function<Map.Entry<K, V>, R>() {
+    public static <K, V, R> Function<Map.Entry<K, V>, R> applyByValue(final Function<? super V, R> func) {
+        return new Function<Map.Entry<K, V>, R>() {
             @Override
             public R apply(Entry<K, V> entry) {
                 return func.apply(entry.getValue());
@@ -435,15 +437,33 @@ public final class Fn {
         };
     }
 
-    public static <T> com.landawn.abacus.util.function.BinaryOperator<T> throwingMerger() {
+    public static <K, V, KK> Function<Map.Entry<K, V>, Map.Entry<KK, V>> mapKey(final Function<? super K, KK> func) {
+        return new Function<Map.Entry<K, V>, Map.Entry<KK, V>>() {
+            @Override
+            public Map.Entry<KK, V> apply(Entry<K, V> entry) {
+                return Pair.of(func.apply(entry.getKey()), entry.getValue());
+            }
+        };
+    }
+
+    public static <K, V, VV> Function<Map.Entry<K, V>, Map.Entry<K, VV>> mapValue(final Function<? super V, VV> func) {
+        return new Function<Map.Entry<K, V>, Map.Entry<K, VV>>() {
+            @Override
+            public Map.Entry<K, VV> apply(Entry<K, V> entry) {
+                return Pair.of(entry.getKey(), func.apply(entry.getValue()));
+            }
+        };
+    }
+
+    public static <T> BinaryOperator<T> throwingMerger() {
         return BinaryOperators.THROWING_MERGER;
     }
 
-    public static <T> com.landawn.abacus.util.function.BinaryOperator<T> ignoringMerger() {
+    public static <T> BinaryOperator<T> ignoringMerger() {
         return BinaryOperators.IGNORING_MERGER;
     }
 
-    public static <T> com.landawn.abacus.util.function.BinaryOperator<T> replacingMerger() {
+    public static <T> BinaryOperator<T> replacingMerger() {
         return BinaryOperators.REPLACING_MERGER;
     }
 
@@ -487,7 +507,7 @@ public final class Fn {
         return Collectors.toMultiset();
     }
 
-    public static <K, V> Collector<Map.Entry<? extends K, ? extends V>, ?, Map<K, V>> toMap() {
+    public static <K, V> Collector<Map.Entry<K, V>, ?, Map<K, V>> toMap() {
         return Collectors.toMap();
     }
 
@@ -882,140 +902,140 @@ public final class Fn {
     }
 
     public static final class Suppliers {
-        private static final com.landawn.abacus.util.function.Supplier<String> UUID = new com.landawn.abacus.util.function.Supplier<String>() {
+        private static final Supplier<String> UUID = new Supplier<String>() {
             @Override
             public String get() {
                 return N.uuid();
             }
         };
 
-        private static final com.landawn.abacus.util.function.Supplier<String> GUID = new com.landawn.abacus.util.function.Supplier<String>() {
+        private static final Supplier<String> GUID = new Supplier<String>() {
             @Override
             public String get() {
                 return N.guid();
             }
         };
 
-        private static final com.landawn.abacus.util.function.Supplier<boolean[]> EMPTY_BOOLEAN_ARRAY = new com.landawn.abacus.util.function.Supplier<boolean[]>() {
+        private static final Supplier<boolean[]> EMPTY_BOOLEAN_ARRAY = new Supplier<boolean[]>() {
             @Override
             public boolean[] get() {
                 return N.EMPTY_BOOLEAN_ARRAY;
             }
         };
 
-        private static final com.landawn.abacus.util.function.Supplier<char[]> EMPTY_CHAR_ARRAY = new com.landawn.abacus.util.function.Supplier<char[]>() {
+        private static final Supplier<char[]> EMPTY_CHAR_ARRAY = new Supplier<char[]>() {
             @Override
             public char[] get() {
                 return N.EMPTY_CHAR_ARRAY;
             }
         };
 
-        private static final com.landawn.abacus.util.function.Supplier<byte[]> EMPTY_BYTE_ARRAY = new com.landawn.abacus.util.function.Supplier<byte[]>() {
+        private static final Supplier<byte[]> EMPTY_BYTE_ARRAY = new Supplier<byte[]>() {
             @Override
             public byte[] get() {
                 return N.EMPTY_BYTE_ARRAY;
             }
         };
 
-        private static final com.landawn.abacus.util.function.Supplier<short[]> EMPTY_SHORT_ARRAY = new com.landawn.abacus.util.function.Supplier<short[]>() {
+        private static final Supplier<short[]> EMPTY_SHORT_ARRAY = new Supplier<short[]>() {
             @Override
             public short[] get() {
                 return N.EMPTY_SHORT_ARRAY;
             }
         };
 
-        private static final com.landawn.abacus.util.function.Supplier<int[]> EMPTY_INT_ARRAY = new com.landawn.abacus.util.function.Supplier<int[]>() {
+        private static final Supplier<int[]> EMPTY_INT_ARRAY = new Supplier<int[]>() {
             @Override
             public int[] get() {
                 return N.EMPTY_INT_ARRAY;
             }
         };
 
-        private static final com.landawn.abacus.util.function.Supplier<long[]> EMPTY_LONG_ARRAY = new com.landawn.abacus.util.function.Supplier<long[]>() {
+        private static final Supplier<long[]> EMPTY_LONG_ARRAY = new Supplier<long[]>() {
             @Override
             public long[] get() {
                 return N.EMPTY_LONG_ARRAY;
             }
         };
 
-        private static final com.landawn.abacus.util.function.Supplier<float[]> EMPTY_FLOAT_ARRAY = new com.landawn.abacus.util.function.Supplier<float[]>() {
+        private static final Supplier<float[]> EMPTY_FLOAT_ARRAY = new Supplier<float[]>() {
             @Override
             public float[] get() {
                 return N.EMPTY_FLOAT_ARRAY;
             }
         };
 
-        private static final com.landawn.abacus.util.function.Supplier<double[]> EMPTY_DOUBLE_ARRAY = new com.landawn.abacus.util.function.Supplier<double[]>() {
+        private static final Supplier<double[]> EMPTY_DOUBLE_ARRAY = new Supplier<double[]>() {
             @Override
             public double[] get() {
                 return N.EMPTY_DOUBLE_ARRAY;
             }
         };
 
-        private static final com.landawn.abacus.util.function.Supplier<String[]> EMPTY_STRING_ARRAY = new com.landawn.abacus.util.function.Supplier<String[]>() {
+        private static final Supplier<String[]> EMPTY_STRING_ARRAY = new Supplier<String[]>() {
             @Override
             public String[] get() {
                 return N.EMPTY_STRING_ARRAY;
             }
         };
 
-        private static final com.landawn.abacus.util.function.Supplier<Object[]> EMPTY_OBJECT_ARRAY = new com.landawn.abacus.util.function.Supplier<Object[]>() {
+        private static final Supplier<Object[]> EMPTY_OBJECT_ARRAY = new Supplier<Object[]>() {
             @Override
             public Object[] get() {
                 return N.EMPTY_OBJECT_ARRAY;
             }
         };
 
-        private static final com.landawn.abacus.util.function.Supplier<BooleanList> BOOLEAN_LIST = new com.landawn.abacus.util.function.Supplier<BooleanList>() {
+        private static final Supplier<BooleanList> BOOLEAN_LIST = new Supplier<BooleanList>() {
             @Override
             public BooleanList get() {
                 return new BooleanList();
             }
         };
 
-        private static final com.landawn.abacus.util.function.Supplier<CharList> CHAR_LIST = new com.landawn.abacus.util.function.Supplier<CharList>() {
+        private static final Supplier<CharList> CHAR_LIST = new Supplier<CharList>() {
             @Override
             public CharList get() {
                 return new CharList();
             }
         };
 
-        private static final com.landawn.abacus.util.function.Supplier<ByteList> BYTE_LIST = new com.landawn.abacus.util.function.Supplier<ByteList>() {
+        private static final Supplier<ByteList> BYTE_LIST = new Supplier<ByteList>() {
             @Override
             public ByteList get() {
                 return new ByteList();
             }
         };
 
-        private static final com.landawn.abacus.util.function.Supplier<ShortList> SHORT_LIST = new com.landawn.abacus.util.function.Supplier<ShortList>() {
+        private static final Supplier<ShortList> SHORT_LIST = new Supplier<ShortList>() {
             @Override
             public ShortList get() {
                 return new ShortList();
             }
         };
 
-        private static final com.landawn.abacus.util.function.Supplier<IntList> INT_LIST = new com.landawn.abacus.util.function.Supplier<IntList>() {
+        private static final Supplier<IntList> INT_LIST = new Supplier<IntList>() {
             @Override
             public IntList get() {
                 return new IntList();
             }
         };
 
-        private static final com.landawn.abacus.util.function.Supplier<LongList> LONG_LIST = new com.landawn.abacus.util.function.Supplier<LongList>() {
+        private static final Supplier<LongList> LONG_LIST = new Supplier<LongList>() {
             @Override
             public LongList get() {
                 return new LongList();
             }
         };
 
-        private static final com.landawn.abacus.util.function.Supplier<FloatList> FLOAT_LIST = new com.landawn.abacus.util.function.Supplier<FloatList>() {
+        private static final Supplier<FloatList> FLOAT_LIST = new Supplier<FloatList>() {
             @Override
             public FloatList get() {
                 return new FloatList();
             }
         };
 
-        private static final com.landawn.abacus.util.function.Supplier<DoubleList> DOUBLE_LIST = new com.landawn.abacus.util.function.Supplier<DoubleList>() {
+        private static final Supplier<DoubleList> DOUBLE_LIST = new Supplier<DoubleList>() {
             @Override
             public DoubleList get() {
                 return new DoubleList();
@@ -1023,7 +1043,7 @@ public final class Fn {
         };
 
         @SuppressWarnings("rawtypes")
-        private static final com.landawn.abacus.util.function.Supplier<? super List> LIST = new com.landawn.abacus.util.function.Supplier<List>() {
+        private static final Supplier<? super List> LIST = new Supplier<List>() {
             @Override
             public List get() {
                 return new ArrayList();
@@ -1031,7 +1051,7 @@ public final class Fn {
         };
 
         @SuppressWarnings("rawtypes")
-        private static final com.landawn.abacus.util.function.Supplier<? super LinkedList> LINKED_LIST = new com.landawn.abacus.util.function.Supplier<LinkedList>() {
+        private static final Supplier<? super LinkedList> LINKED_LIST = new Supplier<LinkedList>() {
             @Override
             public LinkedList get() {
                 return new LinkedList();
@@ -1039,7 +1059,7 @@ public final class Fn {
         };
 
         @SuppressWarnings("rawtypes")
-        private static final com.landawn.abacus.util.function.Supplier<? super Set> SET = new com.landawn.abacus.util.function.Supplier<Set>() {
+        private static final Supplier<? super Set> SET = new Supplier<Set>() {
             @Override
             public Set get() {
                 return new HashSet();
@@ -1047,7 +1067,7 @@ public final class Fn {
         };
 
         @SuppressWarnings("rawtypes")
-        private static final com.landawn.abacus.util.function.Supplier<? super LinkedHashSet> LINKED_HASH_SET = new com.landawn.abacus.util.function.Supplier<LinkedHashSet>() {
+        private static final Supplier<? super LinkedHashSet> LINKED_HASH_SET = new Supplier<LinkedHashSet>() {
             @Override
             public LinkedHashSet get() {
                 return new LinkedHashSet();
@@ -1055,7 +1075,7 @@ public final class Fn {
         };
 
         @SuppressWarnings("rawtypes")
-        private static final com.landawn.abacus.util.function.Supplier<? super TreeSet> TREE_SET = new com.landawn.abacus.util.function.Supplier<TreeSet>() {
+        private static final Supplier<? super TreeSet> TREE_SET = new Supplier<TreeSet>() {
             @Override
             public TreeSet get() {
                 return new TreeSet();
@@ -1063,7 +1083,7 @@ public final class Fn {
         };
 
         @SuppressWarnings("rawtypes")
-        private static final com.landawn.abacus.util.function.Supplier<? super Map> MAP = new com.landawn.abacus.util.function.Supplier<Map>() {
+        private static final Supplier<? super Map> MAP = new Supplier<Map>() {
             @Override
             public Map get() {
                 return new HashMap();
@@ -1071,7 +1091,7 @@ public final class Fn {
         };
 
         @SuppressWarnings("rawtypes")
-        private static final com.landawn.abacus.util.function.Supplier<? super LinkedHashMap> LINKED_HASH_MAP = new com.landawn.abacus.util.function.Supplier<LinkedHashMap>() {
+        private static final Supplier<? super LinkedHashMap> LINKED_HASH_MAP = new Supplier<LinkedHashMap>() {
             @Override
             public LinkedHashMap get() {
                 return new LinkedHashMap();
@@ -1079,7 +1099,7 @@ public final class Fn {
         };
 
         @SuppressWarnings("rawtypes")
-        private static final com.landawn.abacus.util.function.Supplier<? super TreeMap> TREE_MAP = new com.landawn.abacus.util.function.Supplier<TreeMap>() {
+        private static final Supplier<? super TreeMap> TREE_MAP = new Supplier<TreeMap>() {
             @Override
             public TreeMap get() {
                 return new TreeMap();
@@ -1087,7 +1107,7 @@ public final class Fn {
         };
 
         @SuppressWarnings("rawtypes")
-        private static final com.landawn.abacus.util.function.Supplier<? super ConcurrentHashMap> CONCURRENT_HASH_MAP = new com.landawn.abacus.util.function.Supplier<ConcurrentHashMap>() {
+        private static final Supplier<? super ConcurrentHashMap> CONCURRENT_HASH_MAP = new Supplier<ConcurrentHashMap>() {
             @Override
             public ConcurrentHashMap get() {
                 return new ConcurrentHashMap();
@@ -1095,7 +1115,7 @@ public final class Fn {
         };
 
         @SuppressWarnings("rawtypes")
-        private static final com.landawn.abacus.util.function.Supplier<? super Queue> QUEUE = new com.landawn.abacus.util.function.Supplier<Queue>() {
+        private static final Supplier<? super Queue> QUEUE = new Supplier<Queue>() {
             @Override
             public Queue get() {
                 return new LinkedList();
@@ -1103,7 +1123,7 @@ public final class Fn {
         };
 
         @SuppressWarnings("rawtypes")
-        private static final com.landawn.abacus.util.function.Supplier<? super ArrayDeque> ARRAY_DEQUE = new com.landawn.abacus.util.function.Supplier<ArrayDeque>() {
+        private static final Supplier<? super ArrayDeque> ARRAY_DEQUE = new Supplier<ArrayDeque>() {
             @Override
             public ArrayDeque get() {
                 return new ArrayDeque();
@@ -1111,7 +1131,7 @@ public final class Fn {
         };
 
         @SuppressWarnings("rawtypes")
-        private static final com.landawn.abacus.util.function.Supplier<? super LinkedBlockingQueue> LINKED_BLOCKING_QUEUE = new com.landawn.abacus.util.function.Supplier<LinkedBlockingQueue>() {
+        private static final Supplier<? super LinkedBlockingQueue> LINKED_BLOCKING_QUEUE = new Supplier<LinkedBlockingQueue>() {
             @Override
             public LinkedBlockingQueue get() {
                 return new LinkedBlockingQueue();
@@ -1119,7 +1139,7 @@ public final class Fn {
         };
 
         @SuppressWarnings("rawtypes")
-        private static final com.landawn.abacus.util.function.Supplier<? super ConcurrentLinkedQueue> CONCURRENT_LINKED_QUEUE = new com.landawn.abacus.util.function.Supplier<ConcurrentLinkedQueue>() {
+        private static final Supplier<? super ConcurrentLinkedQueue> CONCURRENT_LINKED_QUEUE = new Supplier<ConcurrentLinkedQueue>() {
             @Override
             public ConcurrentLinkedQueue get() {
                 return new ConcurrentLinkedQueue();
@@ -1127,7 +1147,7 @@ public final class Fn {
         };
 
         @SuppressWarnings("rawtypes")
-        private static final com.landawn.abacus.util.function.Supplier<? super PriorityQueue> PRIORITY_QUEUE = new com.landawn.abacus.util.function.Supplier<PriorityQueue>() {
+        private static final Supplier<? super PriorityQueue> PRIORITY_QUEUE = new Supplier<PriorityQueue>() {
             @Override
             public PriorityQueue get() {
                 return new PriorityQueue();
@@ -1138,154 +1158,154 @@ public final class Fn {
             // singleton.
         }
 
-        public static com.landawn.abacus.util.function.Supplier<String> ofUUID() {
+        public static Supplier<String> ofUUID() {
             return UUID;
         }
 
-        public static com.landawn.abacus.util.function.Supplier<String> ofGUID() {
+        public static Supplier<String> ofGUID() {
             return GUID;
         }
 
-        public static com.landawn.abacus.util.function.Supplier<boolean[]> ofEmptyBooleanArray() {
+        public static Supplier<boolean[]> ofEmptyBooleanArray() {
             return EMPTY_BOOLEAN_ARRAY;
         }
 
-        public static com.landawn.abacus.util.function.Supplier<char[]> ofEmptyCharArray() {
+        public static Supplier<char[]> ofEmptyCharArray() {
             return EMPTY_CHAR_ARRAY;
         }
 
-        public static com.landawn.abacus.util.function.Supplier<byte[]> ofEmptyByteArray() {
+        public static Supplier<byte[]> ofEmptyByteArray() {
             return EMPTY_BYTE_ARRAY;
         }
 
-        public static com.landawn.abacus.util.function.Supplier<short[]> ofEmptyShortArray() {
+        public static Supplier<short[]> ofEmptyShortArray() {
             return EMPTY_SHORT_ARRAY;
         }
 
-        public static com.landawn.abacus.util.function.Supplier<int[]> ofEmptyIntArray() {
+        public static Supplier<int[]> ofEmptyIntArray() {
             return EMPTY_INT_ARRAY;
         }
 
-        public static com.landawn.abacus.util.function.Supplier<long[]> ofEmptyLongArray() {
+        public static Supplier<long[]> ofEmptyLongArray() {
             return EMPTY_LONG_ARRAY;
         }
 
-        public static com.landawn.abacus.util.function.Supplier<float[]> ofEmptyFloatArray() {
+        public static Supplier<float[]> ofEmptyFloatArray() {
             return EMPTY_FLOAT_ARRAY;
         }
 
-        public static com.landawn.abacus.util.function.Supplier<double[]> ofEmptyDoubleArray() {
+        public static Supplier<double[]> ofEmptyDoubleArray() {
             return EMPTY_DOUBLE_ARRAY;
         }
 
-        public static com.landawn.abacus.util.function.Supplier<String[]> ofEmptyStringArray() {
+        public static Supplier<String[]> ofEmptyStringArray() {
             return EMPTY_STRING_ARRAY;
         }
 
-        public static com.landawn.abacus.util.function.Supplier<Object[]> ofEmptyObjectArray() {
+        public static Supplier<Object[]> ofEmptyObjectArray() {
             return EMPTY_OBJECT_ARRAY;
         }
 
-        public static com.landawn.abacus.util.function.Supplier<BooleanList> ofBooleanList() {
+        public static Supplier<BooleanList> ofBooleanList() {
             return BOOLEAN_LIST;
         }
 
-        public static com.landawn.abacus.util.function.Supplier<CharList> ofCharList() {
+        public static Supplier<CharList> ofCharList() {
             return CHAR_LIST;
         }
 
-        public static com.landawn.abacus.util.function.Supplier<ByteList> ofByteList() {
+        public static Supplier<ByteList> ofByteList() {
             return BYTE_LIST;
         }
 
-        public static com.landawn.abacus.util.function.Supplier<ShortList> ofShortList() {
+        public static Supplier<ShortList> ofShortList() {
             return SHORT_LIST;
         }
 
-        public static com.landawn.abacus.util.function.Supplier<IntList> ofIntList() {
+        public static Supplier<IntList> ofIntList() {
             return INT_LIST;
         }
 
-        public static com.landawn.abacus.util.function.Supplier<LongList> ofLongList() {
+        public static Supplier<LongList> ofLongList() {
             return LONG_LIST;
         }
 
-        public static com.landawn.abacus.util.function.Supplier<FloatList> ofFloatList() {
+        public static Supplier<FloatList> ofFloatList() {
             return FLOAT_LIST;
         }
 
-        public static com.landawn.abacus.util.function.Supplier<DoubleList> ofDoubleList() {
+        public static Supplier<DoubleList> ofDoubleList() {
             return DOUBLE_LIST;
         }
 
         @SuppressWarnings("rawtypes")
-        public static <T> com.landawn.abacus.util.function.Supplier<List<T>> ofList() {
-            return (com.landawn.abacus.util.function.Supplier) LIST;
+        public static <T> Supplier<List<T>> ofList() {
+            return (Supplier) LIST;
         }
 
         @SuppressWarnings("rawtypes")
-        public static <T> com.landawn.abacus.util.function.Supplier<LinkedList<T>> ofLinkedList() {
-            return (com.landawn.abacus.util.function.Supplier) LINKED_LIST;
+        public static <T> Supplier<LinkedList<T>> ofLinkedList() {
+            return (Supplier) LINKED_LIST;
         }
 
         @SuppressWarnings("rawtypes")
-        public static <T> com.landawn.abacus.util.function.Supplier<Set<T>> ofSet() {
-            return (com.landawn.abacus.util.function.Supplier) SET;
+        public static <T> Supplier<Set<T>> ofSet() {
+            return (Supplier) SET;
         }
 
         @SuppressWarnings("rawtypes")
-        public static <T> com.landawn.abacus.util.function.Supplier<LinkedHashSet<T>> ofLinkedHashSet() {
-            return (com.landawn.abacus.util.function.Supplier) LINKED_HASH_SET;
+        public static <T> Supplier<LinkedHashSet<T>> ofLinkedHashSet() {
+            return (Supplier) LINKED_HASH_SET;
         }
 
         @SuppressWarnings("rawtypes")
-        public static <T> com.landawn.abacus.util.function.Supplier<TreeSet<T>> ofTreeSet() {
-            return (com.landawn.abacus.util.function.Supplier) TREE_SET;
+        public static <T> Supplier<TreeSet<T>> ofTreeSet() {
+            return (Supplier) TREE_SET;
         }
 
         @SuppressWarnings("rawtypes")
-        public static <K, V> com.landawn.abacus.util.function.Supplier<Map<K, V>> ofMap() {
-            return (com.landawn.abacus.util.function.Supplier) MAP;
+        public static <K, V> Supplier<Map<K, V>> ofMap() {
+            return (Supplier) MAP;
         }
 
         @SuppressWarnings("rawtypes")
-        public static <K, V> com.landawn.abacus.util.function.Supplier<LinkedHashMap<K, V>> ofLinkedHashMap() {
-            return (com.landawn.abacus.util.function.Supplier) LINKED_HASH_MAP;
+        public static <K, V> Supplier<LinkedHashMap<K, V>> ofLinkedHashMap() {
+            return (Supplier) LINKED_HASH_MAP;
         }
 
         @SuppressWarnings("rawtypes")
-        public static <K, V> com.landawn.abacus.util.function.Supplier<TreeMap<K, V>> ofTreeMap() {
-            return (com.landawn.abacus.util.function.Supplier) TREE_MAP;
+        public static <K, V> Supplier<TreeMap<K, V>> ofTreeMap() {
+            return (Supplier) TREE_MAP;
         }
 
         @SuppressWarnings("rawtypes")
-        public static <K, V> com.landawn.abacus.util.function.Supplier<ConcurrentHashMap<K, V>> ofConcurrentHashMap() {
-            return (com.landawn.abacus.util.function.Supplier) CONCURRENT_HASH_MAP;
+        public static <K, V> Supplier<ConcurrentHashMap<K, V>> ofConcurrentHashMap() {
+            return (Supplier) CONCURRENT_HASH_MAP;
         }
 
         @SuppressWarnings("rawtypes")
-        public static <T> com.landawn.abacus.util.function.Supplier<Queue<T>> ofQueue() {
-            return (com.landawn.abacus.util.function.Supplier) QUEUE;
+        public static <T> Supplier<Queue<T>> ofQueue() {
+            return (Supplier) QUEUE;
         }
 
         @SuppressWarnings("rawtypes")
-        public static <T> com.landawn.abacus.util.function.Supplier<ArrayDeque<T>> ofArrayDeque() {
-            return (com.landawn.abacus.util.function.Supplier) ARRAY_DEQUE;
+        public static <T> Supplier<ArrayDeque<T>> ofArrayDeque() {
+            return (Supplier) ARRAY_DEQUE;
         }
 
         @SuppressWarnings("rawtypes")
-        public static <T> com.landawn.abacus.util.function.Supplier<LinkedBlockingQueue<T>> ofLinkedBlockingQueue() {
-            return (com.landawn.abacus.util.function.Supplier) LINKED_BLOCKING_QUEUE;
+        public static <T> Supplier<LinkedBlockingQueue<T>> ofLinkedBlockingQueue() {
+            return (Supplier) LINKED_BLOCKING_QUEUE;
         }
 
         @SuppressWarnings("rawtypes")
-        public static <T> com.landawn.abacus.util.function.Supplier<ConcurrentLinkedQueue<T>> ofConcurrentLinkedQueue() {
-            return (com.landawn.abacus.util.function.Supplier) CONCURRENT_LINKED_QUEUE;
+        public static <T> Supplier<ConcurrentLinkedQueue<T>> ofConcurrentLinkedQueue() {
+            return (Supplier) CONCURRENT_LINKED_QUEUE;
         }
 
         @SuppressWarnings("rawtypes")
-        public static <T> com.landawn.abacus.util.function.Supplier<PriorityQueue<T>> ofPriorityQueue() {
-            return (com.landawn.abacus.util.function.Supplier) PRIORITY_QUEUE;
+        public static <T> Supplier<PriorityQueue<T>> ofPriorityQueue() {
+            return (Supplier) PRIORITY_QUEUE;
         }
     }
 
@@ -1295,11 +1315,10 @@ public final class Fn {
             // singleton.
         }
 
-        public static <T, U> com.landawn.abacus.util.function.Predicate<T> of(final U u,
-                final com.landawn.abacus.util.function.BiPredicate<? super T, ? super U> predicate) {
+        public static <T, U> Predicate<T> of(final U u, final BiPredicate<? super T, ? super U> predicate) {
             N.requireNonNull(predicate);
 
-            return new com.landawn.abacus.util.function.Predicate<T>() {
+            return new Predicate<T>() {
                 @Override
                 public boolean test(T t) {
                     return predicate.test(t, u);
@@ -1313,8 +1332,8 @@ public final class Fn {
          * 
          * @return
          */
-        public static <T> com.landawn.abacus.util.function.Predicate<T> skipRepeats() {
-            return new com.landawn.abacus.util.function.Predicate<T>() {
+        public static <T> Predicate<T> skipRepeats() {
+            return new Predicate<T>() {
                 private T pre = (T) NULL;
 
                 @Override
@@ -1332,11 +1351,10 @@ public final class Fn {
          * @param limit
          * @return
          */
-        public static <T> com.landawn.abacus.util.function.Predicate<T> limited(final com.landawn.abacus.util.function.Predicate<T> predicate,
-                final int limit) {
+        public static <T> Predicate<T> limited(final Predicate<T> predicate, final int limit) {
             N.requireNonNull(predicate);
 
-            return new com.landawn.abacus.util.function.Predicate<T>() {
+            return new Predicate<T>() {
                 private final AtomicInteger counter = new AtomicInteger(limit);
 
                 @Override
@@ -1352,11 +1370,10 @@ public final class Fn {
          * @param limit
          * @return
          */
-        public static <T> com.landawn.abacus.util.function.Predicate<T> limited(final com.landawn.abacus.util.function.Predicate<T> predicate,
-                final long limit) {
+        public static <T> Predicate<T> limited(final Predicate<T> predicate, final long limit) {
             N.requireNonNull(predicate);
 
-            return new com.landawn.abacus.util.function.Predicate<T>() {
+            return new Predicate<T>() {
                 private final AtomicLong counter = new AtomicLong(limit);
 
                 @Override
@@ -1372,10 +1389,10 @@ public final class Fn {
          * @param predicate
          * @return
          */
-        public static <T> com.landawn.abacus.util.function.Predicate<T> _indexed(final com.landawn.abacus.util.function.IndexedPredicate<T> predicate) {
+        public static <T> Predicate<T> _indexed(final IndexedPredicate<T> predicate) {
             N.requireNonNull(predicate);
 
-            return new com.landawn.abacus.util.function.Predicate<T>() {
+            return new Predicate<T>() {
                 private final AtomicInteger idx = new AtomicInteger(0);
 
                 @Override
@@ -1389,7 +1406,7 @@ public final class Fn {
     public static final class BiPredicates {
 
         @SuppressWarnings("rawtypes")
-        private static final com.landawn.abacus.util.function.BiPredicate ALWAYS_TRUE = new com.landawn.abacus.util.function.BiPredicate() {
+        private static final BiPredicate ALWAYS_TRUE = new BiPredicate() {
             @Override
             public boolean test(Object t, Object u) {
                 return true;
@@ -1397,7 +1414,7 @@ public final class Fn {
         };
 
         @SuppressWarnings("rawtypes")
-        private static final com.landawn.abacus.util.function.BiPredicate ALWAYS_FALSE = new com.landawn.abacus.util.function.BiPredicate() {
+        private static final BiPredicate ALWAYS_FALSE = new BiPredicate() {
             @Override
             public boolean test(Object t, Object u) {
                 return false;
@@ -1405,7 +1422,7 @@ public final class Fn {
         };
 
         @SuppressWarnings("rawtypes")
-        private static final com.landawn.abacus.util.function.BiPredicate EQUAL = new com.landawn.abacus.util.function.BiPredicate() {
+        private static final BiPredicate EQUAL = new BiPredicate() {
             @Override
             public boolean test(Object t, Object u) {
                 return N.equals(t, u);
@@ -1413,7 +1430,7 @@ public final class Fn {
         };
 
         @SuppressWarnings("rawtypes")
-        private static final com.landawn.abacus.util.function.BiPredicate NOT_EQUAL = new com.landawn.abacus.util.function.BiPredicate() {
+        private static final BiPredicate NOT_EQUAL = new BiPredicate() {
             @Override
             public boolean test(Object t, Object u) {
                 return !N.equals(t, u);
@@ -1421,7 +1438,7 @@ public final class Fn {
         };
 
         @SuppressWarnings("rawtypes")
-        private static final com.landawn.abacus.util.function.BiPredicate<? extends Comparable, ? extends Comparable> GREATER_THAN = new com.landawn.abacus.util.function.BiPredicate<Comparable, Comparable>() {
+        private static final BiPredicate<? extends Comparable, ? extends Comparable> GREATER_THAN = new BiPredicate<Comparable, Comparable>() {
             @Override
             public boolean test(Comparable t, Comparable u) {
                 return N.compare(t, u) > 0;
@@ -1429,7 +1446,7 @@ public final class Fn {
         };
 
         @SuppressWarnings("rawtypes")
-        private static final com.landawn.abacus.util.function.BiPredicate<? extends Comparable, ? extends Comparable> GREATER_EQUAL = new com.landawn.abacus.util.function.BiPredicate<Comparable, Comparable>() {
+        private static final BiPredicate<? extends Comparable, ? extends Comparable> GREATER_EQUAL = new BiPredicate<Comparable, Comparable>() {
             @Override
             public boolean test(Comparable t, Comparable u) {
                 return N.compare(t, u) >= 0;
@@ -1437,7 +1454,7 @@ public final class Fn {
         };
 
         @SuppressWarnings("rawtypes")
-        private static final com.landawn.abacus.util.function.BiPredicate<? extends Comparable, ? extends Comparable> LESS_THAN = new com.landawn.abacus.util.function.BiPredicate<Comparable, Comparable>() {
+        private static final BiPredicate<? extends Comparable, ? extends Comparable> LESS_THAN = new BiPredicate<Comparable, Comparable>() {
             @Override
             public boolean test(Comparable t, Comparable u) {
                 return N.compare(t, u) < 0;
@@ -1445,7 +1462,7 @@ public final class Fn {
         };
 
         @SuppressWarnings("rawtypes")
-        private static final com.landawn.abacus.util.function.BiPredicate<? extends Comparable, ? extends Comparable> LESS_EQUAL = new com.landawn.abacus.util.function.BiPredicate<Comparable, Comparable>() {
+        private static final BiPredicate<? extends Comparable, ? extends Comparable> LESS_EQUAL = new BiPredicate<Comparable, Comparable>() {
             @Override
             public boolean test(Comparable t, Comparable u) {
                 return N.compare(t, u) <= 0;
@@ -1456,11 +1473,11 @@ public final class Fn {
             // singleton.
         }
 
-        public static <T, U> com.landawn.abacus.util.function.BiPredicate<T, U> alwaysTrue() {
+        public static <T, U> BiPredicate<T, U> alwaysTrue() {
             return ALWAYS_TRUE;
         }
 
-        public static <T, U> com.landawn.abacus.util.function.BiPredicate<T, U> alwaysFalse() {
+        public static <T, U> BiPredicate<T, U> alwaysFalse() {
             return ALWAYS_FALSE;
         }
 
@@ -1470,11 +1487,10 @@ public final class Fn {
          * @param limit
          * @return
          */
-        public static <T, U> com.landawn.abacus.util.function.BiPredicate<T, U> limited(final com.landawn.abacus.util.function.BiPredicate<T, U> predicate,
-                final int limit) {
+        public static <T, U> BiPredicate<T, U> limited(final BiPredicate<T, U> predicate, final int limit) {
             N.requireNonNull(predicate);
 
-            return new com.landawn.abacus.util.function.BiPredicate<T, U>() {
+            return new BiPredicate<T, U>() {
                 private final AtomicInteger counter = new AtomicInteger(limit);
 
                 @Override
@@ -1490,11 +1506,10 @@ public final class Fn {
          * @param limit
          * @return
          */
-        public static <T, U> com.landawn.abacus.util.function.BiPredicate<T, U> limited(final com.landawn.abacus.util.function.BiPredicate<T, U> predicate,
-                final long limit) {
+        public static <T, U> BiPredicate<T, U> limited(final BiPredicate<T, U> predicate, final long limit) {
             N.requireNonNull(predicate);
 
-            return new com.landawn.abacus.util.function.BiPredicate<T, U>() {
+            return new BiPredicate<T, U>() {
                 private final AtomicLong counter = new AtomicLong(limit);
 
                 @Override
@@ -1510,11 +1525,10 @@ public final class Fn {
          * @param predicate
          * @return
          */
-        public static <U, T> com.landawn.abacus.util.function.BiPredicate<U, T> _indexed(
-                final com.landawn.abacus.util.function.IndexedBiPredicate<U, T> predicate) {
+        public static <U, T> BiPredicate<U, T> _indexed(final IndexedBiPredicate<U, T> predicate) {
             N.requireNonNull(predicate);
 
-            return new com.landawn.abacus.util.function.BiPredicate<U, T>() {
+            return new BiPredicate<U, T>() {
                 private final AtomicInteger idx = new AtomicInteger(0);
 
                 @Override
@@ -1528,7 +1542,7 @@ public final class Fn {
     public static final class TriPredicates {
 
         @SuppressWarnings("rawtypes")
-        private static final com.landawn.abacus.util.function.TriPredicate ALWAYS_TRUE = new com.landawn.abacus.util.function.TriPredicate() {
+        private static final TriPredicate ALWAYS_TRUE = new TriPredicate() {
             @Override
             public boolean test(Object a, Object b, Object c) {
                 return true;
@@ -1536,7 +1550,7 @@ public final class Fn {
         };
 
         @SuppressWarnings("rawtypes")
-        private static final com.landawn.abacus.util.function.TriPredicate ALWAYS_FALSE = new com.landawn.abacus.util.function.TriPredicate() {
+        private static final TriPredicate ALWAYS_FALSE = new TriPredicate() {
             @Override
             public boolean test(Object a, Object b, Object c) {
                 return false;
@@ -1547,11 +1561,11 @@ public final class Fn {
             // singleton.
         }
 
-        public static <A, B, C> com.landawn.abacus.util.function.TriPredicate<A, B, C> alwaysTrue() {
+        public static <A, B, C> TriPredicate<A, B, C> alwaysTrue() {
             return ALWAYS_TRUE;
         }
 
-        public static <A, B, C> com.landawn.abacus.util.function.TriPredicate<A, B, C> alwaysFalse() {
+        public static <A, B, C> TriPredicate<A, B, C> alwaysFalse() {
             return ALWAYS_FALSE;
         }
 
@@ -1561,11 +1575,10 @@ public final class Fn {
          * @param limit
          * @return
          */
-        public static <A, B, C> com.landawn.abacus.util.function.TriPredicate<A, B, C> limited(
-                final com.landawn.abacus.util.function.TriPredicate<A, B, C> predicate, final int limit) {
+        public static <A, B, C> TriPredicate<A, B, C> limited(final TriPredicate<A, B, C> predicate, final int limit) {
             N.requireNonNull(predicate);
 
-            return new com.landawn.abacus.util.function.TriPredicate<A, B, C>() {
+            return new TriPredicate<A, B, C>() {
                 private final AtomicInteger counter = new AtomicInteger(limit);
 
                 @Override
@@ -1581,11 +1594,10 @@ public final class Fn {
          * @param limit
          * @return
          */
-        public static <A, B, C> com.landawn.abacus.util.function.TriPredicate<A, B, C> limited(
-                final com.landawn.abacus.util.function.TriPredicate<A, B, C> predicate, final long limit) {
+        public static <A, B, C> TriPredicate<A, B, C> limited(final TriPredicate<A, B, C> predicate, final long limit) {
             N.requireNonNull(predicate);
 
-            return new com.landawn.abacus.util.function.TriPredicate<A, B, C>() {
+            return new TriPredicate<A, B, C>() {
                 private final AtomicLong counter = new AtomicLong(limit);
 
                 @Override
@@ -1603,11 +1615,10 @@ public final class Fn {
             // singleton.
         }
 
-        public static <T, U> com.landawn.abacus.util.function.Consumer<T> of(final U u,
-                final com.landawn.abacus.util.function.BiConsumer<? super T, ? super U> action) {
+        public static <T, U> Consumer<T> of(final U u, final BiConsumer<? super T, ? super U> action) {
             N.requireNonNull(action);
 
-            return new com.landawn.abacus.util.function.Consumer<T>() {
+            return new Consumer<T>() {
                 @Override
                 public void accept(T t) {
                     action.accept(t, u);
@@ -1634,21 +1645,21 @@ public final class Fn {
     public static final class BiConsumers {
 
         @SuppressWarnings("rawtypes")
-        private static final com.landawn.abacus.util.function.BiConsumer DO_NOTHING = new com.landawn.abacus.util.function.BiConsumer() {
+        private static final BiConsumer DO_NOTHING = new BiConsumer() {
             @Override
             public void accept(Object t, Object u) {
                 // do nothing.
             }
         };
 
-        private static final com.landawn.abacus.util.function.BiConsumer<Collection<Object>, Object> ADD = new com.landawn.abacus.util.function.BiConsumer<Collection<Object>, Object>() {
+        private static final BiConsumer<Collection<Object>, Object> ADD = new BiConsumer<Collection<Object>, Object>() {
             @Override
             public void accept(Collection<Object> t, Object u) {
                 t.add(u);
             }
         };
 
-        private static final com.landawn.abacus.util.function.BiConsumer<Collection<Object>, Collection<Object>> ADD_ALL = new com.landawn.abacus.util.function.BiConsumer<Collection<Object>, Collection<Object>>() {
+        private static final BiConsumer<Collection<Object>, Collection<Object>> ADD_ALL = new BiConsumer<Collection<Object>, Collection<Object>>() {
             @Override
             public void accept(Collection<Object> t, Collection<Object> u) {
                 t.addAll(u);
@@ -1656,21 +1667,21 @@ public final class Fn {
         };
 
         @SuppressWarnings("rawtypes")
-        private static final com.landawn.abacus.util.function.BiConsumer<PrimitiveList, PrimitiveList> ADD_ALL_2 = new com.landawn.abacus.util.function.BiConsumer<PrimitiveList, PrimitiveList>() {
+        private static final BiConsumer<PrimitiveList, PrimitiveList> ADD_ALL_2 = new BiConsumer<PrimitiveList, PrimitiveList>() {
             @Override
             public void accept(PrimitiveList t, PrimitiveList u) {
                 t.addAll(u);
             }
         };
 
-        private static final com.landawn.abacus.util.function.BiConsumer<Collection<Object>, Object> REMOVE = new com.landawn.abacus.util.function.BiConsumer<Collection<Object>, Object>() {
+        private static final BiConsumer<Collection<Object>, Object> REMOVE = new BiConsumer<Collection<Object>, Object>() {
             @Override
             public void accept(Collection<Object> t, Object u) {
                 t.remove(u);
             }
         };
 
-        private static final com.landawn.abacus.util.function.BiConsumer<Collection<Object>, Collection<Object>> REMOVE_ALL = new com.landawn.abacus.util.function.BiConsumer<Collection<Object>, Collection<Object>>() {
+        private static final BiConsumer<Collection<Object>, Collection<Object>> REMOVE_ALL = new BiConsumer<Collection<Object>, Collection<Object>>() {
             @Override
             public void accept(Collection<Object> t, Collection<Object> u) {
                 t.removeAll(u);
@@ -1678,28 +1689,28 @@ public final class Fn {
         };
 
         @SuppressWarnings("rawtypes")
-        private static final com.landawn.abacus.util.function.BiConsumer<PrimitiveList, PrimitiveList> REMOVE_ALL_2 = new com.landawn.abacus.util.function.BiConsumer<PrimitiveList, PrimitiveList>() {
+        private static final BiConsumer<PrimitiveList, PrimitiveList> REMOVE_ALL_2 = new BiConsumer<PrimitiveList, PrimitiveList>() {
             @Override
             public void accept(PrimitiveList t, PrimitiveList u) {
                 t.removeAll(u);
             }
         };
 
-        private static final com.landawn.abacus.util.function.BiConsumer<Map<Object, Object>, Map.Entry<Object, Object>> PUT = new com.landawn.abacus.util.function.BiConsumer<Map<Object, Object>, Map.Entry<Object, Object>>() {
+        private static final BiConsumer<Map<Object, Object>, Map.Entry<Object, Object>> PUT = new BiConsumer<Map<Object, Object>, Map.Entry<Object, Object>>() {
             @Override
             public void accept(Map<Object, Object> t, Map.Entry<Object, Object> u) {
                 t.put(u.getKey(), u.getValue());
             }
         };
 
-        private static final com.landawn.abacus.util.function.BiConsumer<Map<Object, Object>, Map<Object, Object>> PUT_ALL = new com.landawn.abacus.util.function.BiConsumer<Map<Object, Object>, Map<Object, Object>>() {
+        private static final BiConsumer<Map<Object, Object>, Map<Object, Object>> PUT_ALL = new BiConsumer<Map<Object, Object>, Map<Object, Object>>() {
             @Override
             public void accept(Map<Object, Object> t, Map<Object, Object> u) {
                 t.putAll(u);
             }
         };
 
-        private static final com.landawn.abacus.util.function.BiConsumer<Map<Object, Object>, Object> REMOVE_BY_KEY = new com.landawn.abacus.util.function.BiConsumer<Map<Object, Object>, Object>() {
+        private static final BiConsumer<Map<Object, Object>, Object> REMOVE_BY_KEY = new BiConsumer<Map<Object, Object>, Object>() {
             @Override
             public void accept(Map<Object, Object> t, Object u) {
                 t.remove(u);
@@ -1710,46 +1721,46 @@ public final class Fn {
             // singleton.
         }
 
-        public static <T, U> com.landawn.abacus.util.function.BiConsumer<T, U> doNothing() {
+        public static <T, U> BiConsumer<T, U> doNothing() {
             return DO_NOTHING;
         }
 
-        public static <T, C extends Collection<? super T>> com.landawn.abacus.util.function.BiConsumer<C, T> ofAdd() {
-            return (com.landawn.abacus.util.function.BiConsumer<C, T>) ADD;
+        public static <T, C extends Collection<? super T>> BiConsumer<C, T> ofAdd() {
+            return (BiConsumer<C, T>) ADD;
         }
 
-        public static <T, C extends Collection<T>> com.landawn.abacus.util.function.BiConsumer<C, C> ofAddAll() {
-            return (com.landawn.abacus.util.function.BiConsumer<C, C>) ADD_ALL;
-        }
-
-        @SuppressWarnings("rawtypes")
-        public static <T extends PrimitiveList> com.landawn.abacus.util.function.BiConsumer<T, T> ofAddAll2() {
-            return (com.landawn.abacus.util.function.BiConsumer<T, T>) ADD_ALL_2;
-        }
-
-        public static <T, C extends Collection<? super T>> com.landawn.abacus.util.function.BiConsumer<C, T> ofRemove() {
-            return (com.landawn.abacus.util.function.BiConsumer<C, T>) REMOVE;
-        }
-
-        public static <T, C extends Collection<T>> com.landawn.abacus.util.function.BiConsumer<C, C> ofRemoveAll() {
-            return (com.landawn.abacus.util.function.BiConsumer<C, C>) REMOVE_ALL;
+        public static <T, C extends Collection<T>> BiConsumer<C, C> ofAddAll() {
+            return (BiConsumer<C, C>) ADD_ALL;
         }
 
         @SuppressWarnings("rawtypes")
-        public static <T extends PrimitiveList> com.landawn.abacus.util.function.BiConsumer<T, T> ofRemoveAll2() {
-            return (com.landawn.abacus.util.function.BiConsumer<T, T>) REMOVE_ALL_2;
+        public static <T extends PrimitiveList> BiConsumer<T, T> ofAddAll2() {
+            return (BiConsumer<T, T>) ADD_ALL_2;
         }
 
-        public static <K, V, M extends Map<K, V>, E extends Map.Entry<K, V>> com.landawn.abacus.util.function.BiConsumer<M, E> ofPut() {
-            return (com.landawn.abacus.util.function.BiConsumer<M, E>) PUT;
+        public static <T, C extends Collection<? super T>> BiConsumer<C, T> ofRemove() {
+            return (BiConsumer<C, T>) REMOVE;
         }
 
-        public static <K, V, M extends Map<K, V>> com.landawn.abacus.util.function.BiConsumer<M, M> ofPutAll() {
-            return (com.landawn.abacus.util.function.BiConsumer<M, M>) PUT_ALL;
+        public static <T, C extends Collection<T>> BiConsumer<C, C> ofRemoveAll() {
+            return (BiConsumer<C, C>) REMOVE_ALL;
         }
 
-        public static <K, V, M extends Map<K, V>> com.landawn.abacus.util.function.BiConsumer<M, K> ofRemoveByKey() {
-            return (com.landawn.abacus.util.function.BiConsumer<M, K>) REMOVE_BY_KEY;
+        @SuppressWarnings("rawtypes")
+        public static <T extends PrimitiveList> BiConsumer<T, T> ofRemoveAll2() {
+            return (BiConsumer<T, T>) REMOVE_ALL_2;
+        }
+
+        public static <K, V, M extends Map<K, V>, E extends Map.Entry<K, V>> BiConsumer<M, E> ofPut() {
+            return (BiConsumer<M, E>) PUT;
+        }
+
+        public static <K, V, M extends Map<K, V>> BiConsumer<M, M> ofPutAll() {
+            return (BiConsumer<M, M>) PUT_ALL;
+        }
+
+        public static <K, V, M extends Map<K, V>> BiConsumer<M, K> ofRemoveByKey() {
+            return (BiConsumer<M, K>) REMOVE_BY_KEY;
         }
 
         /**
@@ -1795,11 +1806,10 @@ public final class Fn {
             // singleton.
         }
 
-        public static <T, U, R> com.landawn.abacus.util.function.Function<T, R> of(final U u,
-                final com.landawn.abacus.util.function.BiFunction<? super T, ? super U, R> func) {
+        public static <T, U, R> Function<T, R> of(final U u, final BiFunction<? super T, ? super U, R> func) {
             N.requireNonNull(func);
 
-            return new com.landawn.abacus.util.function.Function<T, R>() {
+            return new Function<T, R>() {
                 @Override
                 public R apply(T t) {
                     return func.apply(t, u);
@@ -1827,7 +1837,7 @@ public final class Fn {
 
     public static final class BiFunctions {
 
-        private static final com.landawn.abacus.util.function.BiFunction<Collection<Object>, Object, Collection<Object>> ADD = new com.landawn.abacus.util.function.BiFunction<Collection<Object>, Object, Collection<Object>>() {
+        private static final BiFunction<Collection<Object>, Object, Collection<Object>> ADD = new BiFunction<Collection<Object>, Object, Collection<Object>>() {
             @Override
             public Collection<Object> apply(Collection<Object> t, Object u) {
                 t.add(u);
@@ -1835,7 +1845,7 @@ public final class Fn {
             }
         };
 
-        private static final com.landawn.abacus.util.function.BiFunction<Collection<Object>, Collection<Object>, Collection<Object>> ADD_ALL = new com.landawn.abacus.util.function.BiFunction<Collection<Object>, Collection<Object>, Collection<Object>>() {
+        private static final BiFunction<Collection<Object>, Collection<Object>, Collection<Object>> ADD_ALL = new BiFunction<Collection<Object>, Collection<Object>, Collection<Object>>() {
             @Override
             public Collection<Object> apply(Collection<Object> t, Collection<Object> u) {
                 t.addAll(u);
@@ -1844,7 +1854,7 @@ public final class Fn {
         };
 
         @SuppressWarnings("rawtypes")
-        private static final com.landawn.abacus.util.function.BiFunction<PrimitiveList, PrimitiveList, PrimitiveList> ADD_ALL_2 = new com.landawn.abacus.util.function.BiFunction<PrimitiveList, PrimitiveList, PrimitiveList>() {
+        private static final BiFunction<PrimitiveList, PrimitiveList, PrimitiveList> ADD_ALL_2 = new BiFunction<PrimitiveList, PrimitiveList, PrimitiveList>() {
             @Override
             public PrimitiveList apply(PrimitiveList t, PrimitiveList u) {
                 t.addAll(u);
@@ -1852,7 +1862,7 @@ public final class Fn {
             }
         };
 
-        private static final com.landawn.abacus.util.function.BiFunction<Collection<Object>, Object, Collection<Object>> REMOVE = new com.landawn.abacus.util.function.BiFunction<Collection<Object>, Object, Collection<Object>>() {
+        private static final BiFunction<Collection<Object>, Object, Collection<Object>> REMOVE = new BiFunction<Collection<Object>, Object, Collection<Object>>() {
             @Override
             public Collection<Object> apply(Collection<Object> t, Object u) {
                 t.remove(u);
@@ -1860,7 +1870,7 @@ public final class Fn {
             }
         };
 
-        private static final com.landawn.abacus.util.function.BiFunction<Collection<Object>, Collection<Object>, Collection<Object>> REMOVE_ALL = new com.landawn.abacus.util.function.BiFunction<Collection<Object>, Collection<Object>, Collection<Object>>() {
+        private static final BiFunction<Collection<Object>, Collection<Object>, Collection<Object>> REMOVE_ALL = new BiFunction<Collection<Object>, Collection<Object>, Collection<Object>>() {
             @Override
             public Collection<Object> apply(Collection<Object> t, Collection<Object> u) {
                 t.removeAll(u);
@@ -1869,7 +1879,7 @@ public final class Fn {
         };
 
         @SuppressWarnings("rawtypes")
-        private static final com.landawn.abacus.util.function.BiFunction<PrimitiveList, PrimitiveList, PrimitiveList> REMOVE_ALL_2 = new com.landawn.abacus.util.function.BiFunction<PrimitiveList, PrimitiveList, PrimitiveList>() {
+        private static final BiFunction<PrimitiveList, PrimitiveList, PrimitiveList> REMOVE_ALL_2 = new BiFunction<PrimitiveList, PrimitiveList, PrimitiveList>() {
             @Override
             public PrimitiveList apply(PrimitiveList t, PrimitiveList u) {
                 t.removeAll(u);
@@ -1877,7 +1887,7 @@ public final class Fn {
             }
         };
 
-        private static final com.landawn.abacus.util.function.BiFunction<Map<Object, Object>, Map.Entry<Object, Object>, Map<Object, Object>> PUT = new com.landawn.abacus.util.function.BiFunction<Map<Object, Object>, Map.Entry<Object, Object>, Map<Object, Object>>() {
+        private static final BiFunction<Map<Object, Object>, Map.Entry<Object, Object>, Map<Object, Object>> PUT = new BiFunction<Map<Object, Object>, Map.Entry<Object, Object>, Map<Object, Object>>() {
             @Override
             public Map<Object, Object> apply(Map<Object, Object> t, Map.Entry<Object, Object> u) {
                 t.put(u.getKey(), u.getValue());
@@ -1885,7 +1895,7 @@ public final class Fn {
             }
         };
 
-        private static final com.landawn.abacus.util.function.BiFunction<Map<Object, Object>, Map<Object, Object>, Map<Object, Object>> PUT_ALL = new com.landawn.abacus.util.function.BiFunction<Map<Object, Object>, Map<Object, Object>, Map<Object, Object>>() {
+        private static final BiFunction<Map<Object, Object>, Map<Object, Object>, Map<Object, Object>> PUT_ALL = new BiFunction<Map<Object, Object>, Map<Object, Object>, Map<Object, Object>>() {
             @Override
             public Map<Object, Object> apply(Map<Object, Object> t, Map<Object, Object> u) {
                 t.putAll(u);
@@ -1893,7 +1903,7 @@ public final class Fn {
             }
         };
 
-        private static final com.landawn.abacus.util.function.BiFunction<Map<Object, Object>, Object, Map<Object, Object>> REMOVE_BY_KEY = new com.landawn.abacus.util.function.BiFunction<Map<Object, Object>, Object, Map<Object, Object>>() {
+        private static final BiFunction<Map<Object, Object>, Object, Map<Object, Object>> REMOVE_BY_KEY = new BiFunction<Map<Object, Object>, Object, Map<Object, Object>>() {
             @Override
             public Map<Object, Object> apply(Map<Object, Object> t, Object u) {
                 t.remove(u);
@@ -1901,14 +1911,14 @@ public final class Fn {
             }
         };
 
-        private static final com.landawn.abacus.util.function.BiFunction<Object, Object, Object> RETURN_FIRST = new com.landawn.abacus.util.function.BiFunction<Object, Object, Object>() {
+        private static final BiFunction<Object, Object, Object> RETURN_FIRST = new BiFunction<Object, Object, Object>() {
             @Override
             public Object apply(Object t, Object u) {
                 return t;
             }
         };
 
-        private static final com.landawn.abacus.util.function.BiFunction<Object, Object, Object> RETURN_SECOND = new com.landawn.abacus.util.function.BiFunction<Object, Object, Object>() {
+        private static final BiFunction<Object, Object, Object> RETURN_SECOND = new BiFunction<Object, Object, Object>() {
             @Override
             public Object apply(Object t, Object u) {
                 return u;
@@ -1919,50 +1929,50 @@ public final class Fn {
             // singleton.
         }
 
-        public static <T, U> com.landawn.abacus.util.function.BiFunction<T, U, T> returnFirst() {
-            return (com.landawn.abacus.util.function.BiFunction<T, U, T>) RETURN_FIRST;
+        public static <T, U> BiFunction<T, U, T> returnFirst() {
+            return (BiFunction<T, U, T>) RETURN_FIRST;
         }
 
-        public static <T, U> com.landawn.abacus.util.function.BiFunction<T, U, U> returnSecond() {
-            return (com.landawn.abacus.util.function.BiFunction<T, U, U>) RETURN_SECOND;
+        public static <T, U> BiFunction<T, U, U> returnSecond() {
+            return (BiFunction<T, U, U>) RETURN_SECOND;
         }
 
-        public static <T, C extends Collection<? super T>> com.landawn.abacus.util.function.BiFunction<C, T, C> ofAdd() {
-            return (com.landawn.abacus.util.function.BiFunction<C, T, C>) ADD;
+        public static <T, C extends Collection<? super T>> BiFunction<C, T, C> ofAdd() {
+            return (BiFunction<C, T, C>) ADD;
         }
 
-        public static <T, C extends Collection<T>> com.landawn.abacus.util.function.BiFunction<C, C, C> ofAddAll() {
-            return (com.landawn.abacus.util.function.BiFunction<C, C, C>) ADD_ALL;
-        }
-
-        @SuppressWarnings("rawtypes")
-        public static <T extends PrimitiveList> com.landawn.abacus.util.function.BiFunction<T, T, T> ofAddAll2() {
-            return (com.landawn.abacus.util.function.BiFunction<T, T, T>) ADD_ALL_2;
-        }
-
-        public static <T, C extends Collection<? super T>> com.landawn.abacus.util.function.BiFunction<C, T, C> ofRemove() {
-            return (com.landawn.abacus.util.function.BiFunction<C, T, C>) REMOVE;
-        }
-
-        public static <T, C extends Collection<T>> com.landawn.abacus.util.function.BiFunction<C, C, C> ofRemoveAll() {
-            return (com.landawn.abacus.util.function.BiFunction<C, C, C>) REMOVE_ALL;
+        public static <T, C extends Collection<T>> BiFunction<C, C, C> ofAddAll() {
+            return (BiFunction<C, C, C>) ADD_ALL;
         }
 
         @SuppressWarnings("rawtypes")
-        public static <T extends PrimitiveList> com.landawn.abacus.util.function.BiFunction<T, T, T> ofRemoveAll2() {
-            return (com.landawn.abacus.util.function.BiFunction<T, T, T>) REMOVE_ALL_2;
+        public static <T extends PrimitiveList> BiFunction<T, T, T> ofAddAll2() {
+            return (BiFunction<T, T, T>) ADD_ALL_2;
         }
 
-        public static <K, V, M extends Map<K, V>, E extends Map.Entry<K, V>> com.landawn.abacus.util.function.BiFunction<M, E, M> ofPut() {
-            return (com.landawn.abacus.util.function.BiFunction<M, E, M>) PUT;
+        public static <T, C extends Collection<? super T>> BiFunction<C, T, C> ofRemove() {
+            return (BiFunction<C, T, C>) REMOVE;
         }
 
-        public static <K, V, M extends Map<K, V>> com.landawn.abacus.util.function.BiFunction<M, M, M> ofPutAll() {
-            return (com.landawn.abacus.util.function.BiFunction<M, M, M>) PUT_ALL;
+        public static <T, C extends Collection<T>> BiFunction<C, C, C> ofRemoveAll() {
+            return (BiFunction<C, C, C>) REMOVE_ALL;
         }
 
-        public static <K, V, M extends Map<K, V>, U> com.landawn.abacus.util.function.BiFunction<M, K, M> ofRemoveByKey() {
-            return (com.landawn.abacus.util.function.BiFunction<M, K, M>) REMOVE_BY_KEY;
+        @SuppressWarnings("rawtypes")
+        public static <T extends PrimitiveList> BiFunction<T, T, T> ofRemoveAll2() {
+            return (BiFunction<T, T, T>) REMOVE_ALL_2;
+        }
+
+        public static <K, V, M extends Map<K, V>, E extends Map.Entry<K, V>> BiFunction<M, E, M> ofPut() {
+            return (BiFunction<M, E, M>) PUT;
+        }
+
+        public static <K, V, M extends Map<K, V>> BiFunction<M, M, M> ofPutAll() {
+            return (BiFunction<M, M, M>) PUT_ALL;
+        }
+
+        public static <K, V, M extends Map<K, V>, U> BiFunction<M, K, M> ofRemoveByKey() {
+            return (BiFunction<M, K, M>) REMOVE_BY_KEY;
         }
 
         /**
@@ -2006,7 +2016,7 @@ public final class Fn {
 
     public static final class BinaryOperators {
         @SuppressWarnings("rawtypes")
-        private static final com.landawn.abacus.util.function.BinaryOperator THROWING_MERGER = new com.landawn.abacus.util.function.BinaryOperator() {
+        private static final BinaryOperator THROWING_MERGER = new BinaryOperator() {
             @Override
             public Object apply(Object t, Object u) {
                 throw new IllegalStateException(String.format("Duplicate key %s", u));
@@ -2014,7 +2024,7 @@ public final class Fn {
         };
 
         @SuppressWarnings("rawtypes")
-        private static final com.landawn.abacus.util.function.BinaryOperator IGNORING_MERGER = new com.landawn.abacus.util.function.BinaryOperator() {
+        private static final BinaryOperator IGNORING_MERGER = new BinaryOperator() {
             @Override
             public Object apply(Object t, Object u) {
                 return t;
@@ -2022,14 +2032,14 @@ public final class Fn {
         };
 
         @SuppressWarnings("rawtypes")
-        private static final com.landawn.abacus.util.function.BinaryOperator REPLACING_MERGER = new com.landawn.abacus.util.function.BinaryOperator() {
+        private static final BinaryOperator REPLACING_MERGER = new BinaryOperator() {
             @Override
             public Object apply(Object t, Object u) {
                 return u;
             }
         };
 
-        private static final com.landawn.abacus.util.function.BinaryOperator<Collection<Object>> ADD_ALL = new com.landawn.abacus.util.function.BinaryOperator<Collection<Object>>() {
+        private static final BinaryOperator<Collection<Object>> ADD_ALL = new BinaryOperator<Collection<Object>>() {
             @Override
             public Collection<Object> apply(Collection<Object> t, Collection<Object> u) {
                 t.addAll(u);
@@ -2037,7 +2047,7 @@ public final class Fn {
             }
         };
 
-        private static final com.landawn.abacus.util.function.BinaryOperator<Collection<Object>> REMOVE_ALL = new com.landawn.abacus.util.function.BinaryOperator<Collection<Object>>() {
+        private static final BinaryOperator<Collection<Object>> REMOVE_ALL = new BinaryOperator<Collection<Object>>() {
             @Override
             public Collection<Object> apply(Collection<Object> t, Collection<Object> u) {
                 t.removeAll(u);
@@ -2045,7 +2055,7 @@ public final class Fn {
             }
         };
 
-        private static final com.landawn.abacus.util.function.BinaryOperator<Map<Object, Object>> PUT_ALL = new com.landawn.abacus.util.function.BinaryOperator<Map<Object, Object>>() {
+        private static final BinaryOperator<Map<Object, Object>> PUT_ALL = new BinaryOperator<Map<Object, Object>>() {
             @Override
             public Map<Object, Object> apply(Map<Object, Object> t, Map<Object, Object> u) {
                 t.putAll(u);
@@ -2057,20 +2067,20 @@ public final class Fn {
             // singleton.
         }
 
-        public static <T, C extends Collection<T>> com.landawn.abacus.util.function.BinaryOperator<C> ofAddAll() {
-            return (com.landawn.abacus.util.function.BinaryOperator<C>) ADD_ALL;
+        public static <T, C extends Collection<T>> BinaryOperator<C> ofAddAll() {
+            return (BinaryOperator<C>) ADD_ALL;
         }
 
-        public static <T, C extends Collection<T>> com.landawn.abacus.util.function.BinaryOperator<C> ofRemoveAll() {
-            return (com.landawn.abacus.util.function.BinaryOperator<C>) REMOVE_ALL;
+        public static <T, C extends Collection<T>> BinaryOperator<C> ofRemoveAll() {
+            return (BinaryOperator<C>) REMOVE_ALL;
         }
 
-        public static <K, V, M extends Map<K, V>> com.landawn.abacus.util.function.BinaryOperator<M> ofPutAll() {
-            return (com.landawn.abacus.util.function.BinaryOperator<M>) PUT_ALL;
+        public static <K, V, M extends Map<K, V>> BinaryOperator<M> ofPutAll() {
+            return (BinaryOperator<M>) PUT_ALL;
         }
 
-        public static com.landawn.abacus.util.function.BinaryOperator<String> ofJoin(final String seperator) {
-            return new com.landawn.abacus.util.function.BinaryOperator<String>() {
+        public static BinaryOperator<String> ofJoin(final String seperator) {
+            return new BinaryOperator<String>() {
                 @Override
                 public String apply(String t, String u) {
                     return t + seperator + u;
@@ -2078,10 +2088,10 @@ public final class Fn {
             };
         }
 
-        public static <T> com.landawn.abacus.util.function.BinaryOperator<T> minBy(final Comparator<? super T> comparator) {
+        public static <T> BinaryOperator<T> minBy(final Comparator<? super T> comparator) {
             N.requireNonNull(comparator);
 
-            return new com.landawn.abacus.util.function.BinaryOperator<T>() {
+            return new BinaryOperator<T>() {
                 @Override
                 public T apply(T t, T u) {
                     return comparator.compare(t, u) <= 0 ? t : u;
@@ -2089,10 +2099,10 @@ public final class Fn {
             };
         }
 
-        public static <T> com.landawn.abacus.util.function.BinaryOperator<T> maxBy(final Comparator<? super T> comparator) {
+        public static <T> BinaryOperator<T> maxBy(final Comparator<? super T> comparator) {
             N.requireNonNull(comparator);
 
-            return new com.landawn.abacus.util.function.BinaryOperator<T>() {
+            return new BinaryOperator<T>() {
                 @Override
                 public T apply(T t, T u) {
                     return comparator.compare(t, u) >= 0 ? t : u;
@@ -2103,7 +2113,7 @@ public final class Fn {
 
     public static final class UnaryOperators {
         @SuppressWarnings("rawtypes")
-        private static final com.landawn.abacus.util.function.UnaryOperator IDENTITY = new com.landawn.abacus.util.function.UnaryOperator() {
+        private static final UnaryOperator IDENTITY = new UnaryOperator() {
             @Override
             public Object apply(Object t) {
                 return t;
@@ -2114,7 +2124,7 @@ public final class Fn {
             // singleton.
         }
 
-        public static <T> com.landawn.abacus.util.function.UnaryOperator<T> identity() {
+        public static <T> UnaryOperator<T> identity() {
             return IDENTITY;
         }
     }
