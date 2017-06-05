@@ -7,7 +7,10 @@ import java.util.Map.Entry;
 
 import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.Multimap;
+import com.landawn.abacus.util.NullabLe;
 import com.landawn.abacus.util.Pair;
+import com.landawn.abacus.util.function.BiConsumer;
+import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.Predicate;
@@ -16,23 +19,23 @@ import com.landawn.abacus.util.function.Supplier;
 public final class EntryStream<K, V> {
     private final Stream<Map.Entry<K, V>> s;
 
-    EntryStream(Stream<Map.Entry<K, V>> s) {
+    EntryStream(final Stream<Map.Entry<K, V>> s) {
         this.s = s;
     }
 
-    public static <K, V> EntryStream<K, V> of(Stream<Map.Entry<K, V>> s) {
+    public static <K, V> EntryStream<K, V> of(final Stream<Map.Entry<K, V>> s) {
         return new EntryStream<K, V>(s);
     }
 
-    public static <K, V> EntryStream<K, V> of(Map<K, V> map) {
+    public static <K, V> EntryStream<K, V> of(final Map<K, V> map) {
         return new EntryStream<K, V>(Stream.of(map));
     }
 
-    public static <K, V> EntryStream<K, V> of(Collection<? extends Map.Entry<K, V>> entries) {
+    public static <K, V> EntryStream<K, V> of(final Collection<? extends Map.Entry<K, V>> entries) {
         return new EntryStream<K, V>(Stream.of(entries));
     }
 
-    public static <K, V> EntryStream<K, V> of(Map.Entry<K, V>... entries) {
+    public static <K, V> EntryStream<K, V> of(final Map.Entry<K, V>... entries) {
         return new EntryStream<K, V>(Stream.of(entries));
     }
 
@@ -67,16 +70,16 @@ public final class EntryStream<K, V> {
         return of(s.filter(predicate));
     }
 
-    public <KK> EntryStream<K, V> filterByKey(final Predicate<? super K> predicate) {
-        final Predicate<Map.Entry<K, V>> predicate2 = Fn.testByKey(predicate);
+    public <KK> EntryStream<K, V> filterByKey(final Predicate<? super K> keyPredicate) {
+        final Predicate<Map.Entry<K, V>> predicate = Fn.testByKey(keyPredicate);
 
-        return of(s.filter(predicate2));
+        return of(s.filter(predicate));
     }
 
-    public <KK> EntryStream<K, V> filterByValue(final Predicate<? super V> predicate) {
-        final Predicate<Map.Entry<K, V>> predicate2 = Fn.testByValue(predicate);
+    public <KK> EntryStream<K, V> filterByValue(final Predicate<? super V> valuePredicate) {
+        final Predicate<Map.Entry<K, V>> predicate = Fn.testByValue(valuePredicate);
 
-        return of(s.filter(predicate2));
+        return of(s.filter(predicate));
     }
 
     public <KK, VV> EntryStream<KK, VV> map(final Function<? super Map.Entry<K, V>, Map.Entry<KK, VV>> mapper) {
@@ -94,16 +97,16 @@ public final class EntryStream<K, V> {
         return map(mapper);
     }
 
-    public <KK> EntryStream<KK, V> mapKey(final Function<? super K, KK> mapper) {
-        final Function<Map.Entry<K, V>, Map.Entry<KK, V>> func = Fn.mapKey(mapper);
+    public <KK> EntryStream<KK, V> mapKey(final Function<? super K, KK> keyMapper) {
+        final Function<Map.Entry<K, V>, Map.Entry<KK, V>> mapper = Fn.mapKey(keyMapper);
 
-        return of(s.map(func));
+        return of(s.map(mapper));
     }
 
-    public <VV> EntryStream<K, VV> mapValue(final Function<? super V, VV> mapper) {
-        final Function<Map.Entry<K, V>, Map.Entry<K, VV>> func = Fn.mapValue(mapper);
+    public <VV> EntryStream<K, VV> mapValue(final Function<? super V, VV> valueMapper) {
+        final Function<Map.Entry<K, V>, Map.Entry<K, VV>> mapper = Fn.mapValue(valueMapper);
 
-        return of(s.map(func));
+        return of(s.map(mapper));
     }
 
     public <KK, VV> EntryStream<KK, VV> flatMap(final Function<? super Map.Entry<K, V>, EntryStream<KK, VV>> mapper) {
@@ -132,11 +135,11 @@ public final class EntryStream<K, V> {
         return flatMap2(mapper2);
     }
 
-    public <KK> EntryStream<KK, V> flatMapKey(final Function<? super K, Stream<KK>> mapper) {
+    public <KK> EntryStream<KK, V> flatMapKey(final Function<? super K, Stream<KK>> keyMapper) {
         final Function<Map.Entry<K, V>, Stream<Map.Entry<KK, V>>> mapper2 = new Function<Map.Entry<K, V>, Stream<Map.Entry<KK, V>>>() {
             @Override
             public Stream<Entry<KK, V>> apply(final Map.Entry<K, V> e) {
-                return mapper.apply(e.getKey()).map(new Function<KK, Map.Entry<KK, V>>() {
+                return keyMapper.apply(e.getKey()).map(new Function<KK, Map.Entry<KK, V>>() {
                     @Override
                     public Map.Entry<KK, V> apply(KK kk) {
                         return Pair.of(kk, e.getValue());
@@ -148,11 +151,11 @@ public final class EntryStream<K, V> {
         return flatMap2(mapper2);
     }
 
-    public <VV> EntryStream<K, VV> flatMapValue(final Function<? super V, Stream<VV>> mapper) {
+    public <VV> EntryStream<K, VV> flatMapValue(final Function<? super V, Stream<VV>> valueMapper) {
         final Function<Map.Entry<K, V>, Stream<Map.Entry<K, VV>>> mapper2 = new Function<Map.Entry<K, V>, Stream<Map.Entry<K, VV>>>() {
             @Override
             public Stream<Entry<K, VV>> apply(final Entry<K, V> e) {
-                return mapper.apply(e.getValue()).map(new Function<VV, Map.Entry<K, VV>>() {
+                return valueMapper.apply(e.getValue()).map(new Function<VV, Map.Entry<K, VV>>() {
                     @Override
                     public Map.Entry<K, VV> apply(VV vv) {
                         return Pair.of(e.getKey(), vv);
@@ -582,4 +585,39 @@ public final class EntryStream<K, V> {
         return s.toMultimap(keyExtractor, valueMapper, mapFactory);
     }
 
+    public Map.Entry<K, V> reduce(final Map.Entry<K, V> identity, final BinaryOperator<Map.Entry<K, V>> accumulator) {
+        return s.reduce(identity, accumulator);
+    }
+
+    public NullabLe<Map.Entry<K, V>> reduce(final BinaryOperator<Map.Entry<K, V>> accumulator) {
+        return s.reduce(accumulator);
+    }
+
+    public <U> U reduce(final U identity, final BiFunction<U, ? super Map.Entry<K, V>, U> accumulator, final BinaryOperator<U> combiner) {
+        return s.reduce(identity, accumulator, combiner);
+    }
+
+    public <U> U reduce(final U identity, final BiFunction<U, ? super Map.Entry<K, V>, U> accumulator) {
+        return s.reduce(identity, accumulator);
+    }
+
+    public <R> R collect(final Supplier<R> supplier, final BiConsumer<R, ? super Map.Entry<K, V>> accumulator, final BiConsumer<R, R> combiner) {
+        return s.collect(supplier, accumulator, combiner);
+    }
+
+    public <R> R collect(final Supplier<R> supplier, final BiConsumer<R, ? super Map.Entry<K, V>> accumulator) {
+        return s.collect(supplier, accumulator);
+    }
+
+    public <R, A> R collect(final Collector<? super Map.Entry<K, V>, A, R> collector) {
+        return s.collect(collector);
+    }
+
+    public <R, A, RR> RR collectAndThen(final Collector<? super Map.Entry<K, V>, A, R> downstream, final Function<R, RR> finisher) {
+        return s.collectAndThen(downstream, finisher);
+    }
+
+    public long count() {
+        return s.count();
+    }
 }
