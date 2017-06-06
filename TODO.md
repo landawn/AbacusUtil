@@ -9,7 +9,7 @@
    public abstract <R> Stream<R> mapLastOrElse(Function<? super T, ? extends R> mapperForLast ,Function<? super T, ? extends R> mapperForElse);
 ```
 
-2, Add slidingMap, Refer to biMap/triMap. Parallel support is required. the purpose of these methods is reducing the creation of intermedia list.
+2, Add slidingMap, Refer to biMap/triMap. The purpose of these methods is reducing the creation of intermedia list. Parallel support is required.
 
 ```java
 public abstract Stream<R> slidingMap(BiFunction<? super T, ? super T, R> mapper);
