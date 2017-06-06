@@ -1,5 +1,5 @@
 
-1, Add mapFirstOrElse/mapLastOrElse, Refer to StreamEx: https://github.com/amaembo/streamex.
+1, Add mapFirstOrElse/mapLastOrElse, Refer to [StreamEx][]:
    Parallel support is required.
    
 ```java
@@ -13,3 +13,5 @@
 
 2, Add slidingMap(BiFunction<? super T, ? super T, R> mapper)/slidingMap(TriFunction<? superT, ? super T, ? super T, R> mapper),
    Refer to biMap/triMap. Parallel support is required.
+   
+   [StreamEx]: https://github.com/amaembo/streamex
