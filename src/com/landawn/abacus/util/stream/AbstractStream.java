@@ -305,13 +305,13 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <R> Stream<R> map2(BiFunction<? super T, ? super T, ? extends R> mapper) {
-        return map2(mapper, false);
+    public <R> Stream<R> biMap(BiFunction<? super T, ? super T, ? extends R> mapper) {
+        return biMap(mapper, false);
     }
 
     @Override
-    public <R> Stream<R> map3(TriFunction<? super T, ? super T, ? super T, ? extends R> mapper) {
-        return map3(mapper, false);
+    public <R> Stream<R> triMap(TriFunction<? super T, ? super T, ? super T, ? extends R> mapper) {
+        return triMap(mapper, false);
     }
 
     @Override
@@ -346,6 +346,34 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     abstract <R> Stream<R> flatMap0(final Function<? super T, ? extends Iterator<? extends R>> mapper);
+
+    //    @Override
+    //    public <K, V> EntryStream<K, V> mapToEntry() {
+    //        return null;
+    //    }
+
+    @Override
+    public <K, V> EntryStream<K, V> mapToEntry(final Function<? super T, Map.Entry<K, V>> mapper) {
+        final Function<T, T> mapper2 = Fn.identity();
+
+        if (mapper == mapper2) {
+            return EntryStream.of((Stream<Map.Entry<K, V>>) this);
+        }
+
+        return EntryStream.of(map(mapper));
+    }
+
+    @Override
+    public <K, V> EntryStream<K, V> mapToEntry(final Function<? super T, K> keyMapper, final Function<? super T, V> valueMapper) {
+        final Function<T, Map.Entry<K, V>> mapper = new Function<T, Map.Entry<K, V>>() {
+            @Override
+            public Entry<K, V> apply(T t) {
+                return Pair.of(keyMapper.apply(t), valueMapper.apply(t));
+            }
+        };
+
+        return mapToEntry(mapper);
+    }
 
     @Override
     public <R> Stream<R> flatMap(final Function<? super T, ? extends Stream<? extends R>> mapper) {
@@ -715,32 +743,9 @@ abstract class AbstractStream<T> extends Stream<T> {
         });
     }
 
-    //    @Override
-    //    public <K, V> EntryStream<K, V> mapToEntry() {
-    //        return null;
-    //    }
-
     @Override
-    public <K, V> EntryStream<K, V> mapToEntry(final Function<? super T, Map.Entry<K, V>> mapper) {
-        final Function<T, T> mapper2 = Fn.identity();
-
-        if (mapper == mapper2) {
-            return EntryStream.of((Stream<Map.Entry<K, V>>) this);
-        }
-
-        return EntryStream.of(map(mapper));
-    }
-
-    @Override
-    public <K, V> EntryStream<K, V> mapToEntry(final Function<? super T, K> keyMapper, final Function<? super T, V> valueMapper) {
-        final Function<T, Map.Entry<K, V>> mapper = new Function<T, Map.Entry<K, V>>() {
-            @Override
-            public Entry<K, V> apply(T t) {
-                return Pair.of(keyMapper.apply(t), valueMapper.apply(t));
-            }
-        };
-
-        return mapToEntry(mapper);
+    public <K, V> EntryStream<K, V> flatMapToEntry(final Function<? super T, ? extends Stream<Map.Entry<K, V>>> mapper) {
+        return EntryStream.of(flatMap(mapper));
     }
 
     @Override

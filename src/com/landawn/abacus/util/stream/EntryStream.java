@@ -35,6 +35,7 @@ public final class EntryStream<K, V> {
         return new EntryStream<K, V>(Stream.of(entries));
     }
 
+    @SafeVarargs
     public static <K, V> EntryStream<K, V> of(final Map.Entry<K, V>... entries) {
         return new EntryStream<K, V>(Stream.of(entries));
     }

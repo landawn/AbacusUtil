@@ -250,7 +250,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <R> Stream<R> map2(final BiFunction<? super T, ? super T, ? extends R> mapper, final boolean ignoreNotPaired) {
+    public <R> Stream<R> biMap(final BiFunction<? super T, ? super T, ? extends R> mapper, final boolean ignoreNotPaired) {
         return new IteratorStream<>(new ExIterator<R>() {
             private T pre = (T) NONE;
 
@@ -285,7 +285,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <R> Stream<R> map3(final TriFunction<? super T, ? super T, ? super T, ? extends R> mapper, final boolean ignoreNotPaired) {
+    public <R> Stream<R> triMap(final TriFunction<? super T, ? super T, ? super T, ? extends R> mapper, final boolean ignoreNotPaired) {
         return new IteratorStream<>(new ExIterator<R>() {
             private T prepre = (T) NONE;
             private T pre = (T) NONE;

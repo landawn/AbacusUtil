@@ -309,9 +309,9 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     }
 
     @Override
-    public <R> Stream<R> map2(final BiFunction<? super T, ? super T, ? extends R> mapper, final boolean ignoreNotPaired) {
+    public <R> Stream<R> biMap(final BiFunction<? super T, ? super T, ? extends R> mapper, final boolean ignoreNotPaired) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorStream<>(sequential().map2(mapper, ignoreNotPaired).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
+            return new ParallelIteratorStream<>(sequential().biMap(mapper, ignoreNotPaired).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
         }
 
         final List<Iterator<R>> iters = new ArrayList<>(maxThreadNum);
@@ -356,9 +356,9 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     }
 
     @Override
-    public <R> Stream<R> map3(final TriFunction<? super T, ? super T, ? super T, ? extends R> mapper, final boolean ignoreNotPaired) {
+    public <R> Stream<R> triMap(final TriFunction<? super T, ? super T, ? super T, ? extends R> mapper, final boolean ignoreNotPaired) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorStream<>(sequential().map3(mapper, ignoreNotPaired).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
+            return new ParallelIteratorStream<>(sequential().triMap(mapper, ignoreNotPaired).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
         }
 
         final List<Iterator<R>> iters = new ArrayList<>(maxThreadNum);

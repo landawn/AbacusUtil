@@ -215,7 +215,7 @@ public final class f {
         return c;
     }
 
-    public static <T> T[] map2(final T[] a, final Function<? super T, T> func) {
+    public static <T> T[] biMap(final T[] a, final Function<? super T, T> func) {
         if (a == null) {
             return null;
         }
@@ -238,7 +238,7 @@ public final class f {
         return c;
     }
 
-    public static <T> T[][] map2(final T[][] a, final Function<? super T, T> func) {
+    public static <T> T[][] biMap(final T[][] a, final Function<? super T, T> func) {
         if (a == null) {
             return null;
         }
@@ -261,7 +261,7 @@ public final class f {
         return c;
     }
 
-    public static <T> T[][][] map2(final T[][][] a, final Function<? super T, T> func) {
+    public static <T> T[][][] biMap(final T[][][] a, final Function<? super T, T> func) {
         if (a == null) {
             return null;
         }

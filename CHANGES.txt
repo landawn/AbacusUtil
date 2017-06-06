@@ -7,11 +7,13 @@
 2*, Rename asyncExecutor() to async() in SQLExecutor/DynamoDBExecutor/MongoDBExecutor/..., 
     Rename executor() to sync() in AsyncSQLExeuctor/AsyncDynamoDBExecutor/AsyncMongoDBExecutor
 
-3, Add map/stream to Joiner
+3*, Rename map2/map3 to biMap/triMap in Stream.
 
-4, Add EntryStream
+4, Add map/stream to Joiner
 
-5, Improvements and bug fix.
+5, Add EntryStream
+
+6, Improvements and bug fix.
 
 
 

@@ -305,7 +305,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
 
     public abstract <U, R> Stream<R> map(U seed, BiFunction<? super T, ? super U, ? extends R> mapper);
 
-    public abstract <R> Stream<R> map2(BiFunction<? super T, ? super T, ? extends R> mapper);
+    public abstract <R> Stream<R> biMap(BiFunction<? super T, ? super T, ? extends R> mapper);
 
     /**
      * Returns a stream consisting of the results of applying the given function
@@ -315,9 +315,9 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param ignoreNotPaired flag to identify if need to ignore the last element when the total length of the stream is odd number. Default value is false
      * @return
      */
-    public abstract <R> Stream<R> map2(BiFunction<? super T, ? super T, ? extends R> mapper, boolean ignoreNotPaired);
+    public abstract <R> Stream<R> biMap(BiFunction<? super T, ? super T, ? extends R> mapper, boolean ignoreNotPaired);
 
-    public abstract <R> Stream<R> map3(TriFunction<? super T, ? super T, ? super T, ? extends R> mapper);
+    public abstract <R> Stream<R> triMap(TriFunction<? super T, ? super T, ? super T, ? extends R> mapper);
 
     /**
      * Returns a stream consisting of the results of applying the given function
@@ -327,7 +327,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param ignoreNotPaired  flag to identify if need to ignore the last one or two elements when the total length of the stream is not multiple of 3. Default value is false
      * @return
      */
-    public abstract <R> Stream<R> map3(TriFunction<? super T, ? super T, ? super T, ? extends R> mapper, boolean ignoreNotPaired);
+    public abstract <R> Stream<R> triMap(TriFunction<? super T, ? super T, ? super T, ? extends R> mapper, boolean ignoreNotPaired);
 
     /**
      * Note: copied from StreamEx: https://github.com/amaembo/streamex
@@ -404,6 +404,12 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return the new stream
      */
     public abstract DoubleStream mapToDouble(ToDoubleFunction<? super T> mapper);
+
+    // public abstract <K, V> EntryStream<K, V> mapToEntry();
+
+    public abstract <K, V> EntryStream<K, V> mapToEntry(Function<? super T, Map.Entry<K, V>> mapper);
+
+    public abstract <K, V> EntryStream<K, V> mapToEntry(Function<? super T, K> keyMapper, Function<? super T, V> valueMapper);
 
     /**
      * Returns a stream consisting of the results of replacing each element of
@@ -555,11 +561,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
 
     public abstract DoubleStream flatMapToDouble3(Function<? super T, double[]> mapper);
 
-    // public abstract <K, V> EntryStream<K, V> mapToEntry();
-
-    public abstract <K, V> EntryStream<K, V> mapToEntry(Function<? super T, Map.Entry<K, V>> mapper);
-
-    public abstract <K, V> EntryStream<K, V> mapToEntry(Function<? super T, K> keyMapper, Function<? super T, V> valueMapper);
+    public abstract <K, V> EntryStream<K, V> flatMapToEntry(Function<? super T, ? extends Stream<Map.Entry<K, V>>> mapper);
 
     public abstract <K> Stream<Map.Entry<K, List<T>>> groupBy(final Function<? super T, ? extends K> classifier);
 
