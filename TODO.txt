@@ -2,7 +2,7 @@
 1, Add mapFirstOrElse/mapLastOrElse, Refer to StreamEx: https://github.com/amaembo/streamex.
    Parallel support is required.
    
-```
+```java
    public abstract Stream<T> mapFirst(Function<? super T, ? extends T> mapperForFirst);
    public abstract <R> Stream<R> mapFirstOrElse(Function<? super T, ? extends R> mapperForFirst ,Function<? super T, ? extends R> mapperForElse);
    public abstract Stream<T> mapLast(Function<? super T, ? extends T> mapperForLast);
