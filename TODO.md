@@ -1,5 +1,5 @@
 
-1, Add mapFirstOrElse/mapLastOrElse, Refer to [StreamEx][]:
+1, Add mapFirst/mapFirstOrElse/mapLast/mapLastOrElse, Refer to [StreamEx][]:
    Parallel support is required.
    
 ```java
