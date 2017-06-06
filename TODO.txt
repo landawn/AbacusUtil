@@ -1,6 +1,14 @@
 
 1, Add mapFirstOrElse/mapLastOrElse, Refer to StreamEx: https://github.com/amaembo/streamex.
    Parallel support is required.
+   
+```
+   public abstract Stream<T> mapFirst(Function<? super T, ? extends T> mapperForFirst);
+   public abstract <R> Stream<R> mapFirstOrElse(Function<? super T, ? extends R> mapperForFirst ,Function<? super T, ? extends R> mapperForElse);
+   public abstract Stream<T> mapLast(Function<? super T, ? extends T> mapperForLast);
+   public abstract <R> Stream<R> mapLastOrElse(Function<? super T, ? extends R> mapperForLast ,Function<? super T, ? extends R> mapperForElse);
+   
+```
 
 2, Add slidingMap(BiFunction<? super T, ? super T, R> mapper)/slidingMap(TriFunction<? superT, ? super T, ? super T, R> mapper),
    Refer to biMap/triMap. Parallel support is required.
