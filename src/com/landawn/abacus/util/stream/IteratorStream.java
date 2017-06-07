@@ -349,7 +349,7 @@ class IteratorStream<T> extends AbstractStream<T> {
             final Function<T, R> mapperForElse2 = (Function<T, R>) mapperForElse;
             final T first = elements.next();
 
-            return map(mapperForFirst2).prepend(Stream.of(first).map(mapperForElse2));
+            return map(mapperForElse2).prepend(Stream.of(first).map(mapperForFirst2));
         } else {
             return (Stream<R>) this;
         }
