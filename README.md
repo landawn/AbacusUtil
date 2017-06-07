@@ -166,7 +166,7 @@ sqlExecutor.update(sql_deleteByFirstName, dbAccount);
 ```java
 Observer.of(inputEditText).debounce(3000).afterTextChanged(s -> {
     TPExecutor.execute(() -> searchService.search(s, ...))
-        .thenRunWithUIExecutor((resp, error) -> {
+        .thenRunOnUI((resp, error) -> {
             if (error != null) {
                 // handle the error case.
             }
