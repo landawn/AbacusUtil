@@ -1,6 +1,6 @@
 
 1, Add mapFirst/mapFirstOrElse/mapLast/mapLastOrElse, Refer to [StreamEx][]:
-   Parallel support is required.
+   Parallel support is required. (Done on 6/6/2017)
    
 ```java
    public abstract Stream<T> mapFirst(Function<? super T, ? extends T> mapperForFirst);
