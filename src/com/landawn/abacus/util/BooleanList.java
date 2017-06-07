@@ -439,7 +439,8 @@ public final class BooleanList extends PrimitiveList<BooleanConsumer, BooleanPre
     }
 
     @Override
-    public void deleteAll(int... indices) {
+    @SafeVarargs
+    public final void deleteAll(int... indices) {
         N.deleteAll(elementData, indices);
     }
 

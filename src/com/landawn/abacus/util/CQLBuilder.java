@@ -418,7 +418,8 @@ public abstract class CQLBuilder {
         return from(tableName, expr);
     }
 
-    public CQLBuilder from(final String... tableNames) {
+    @SafeVarargs
+    public final CQLBuilder from(final String... tableNames) {
         if (tableNames.length == 1) {
             return from(tableNames[0]);
         } else {
@@ -607,7 +608,8 @@ public abstract class CQLBuilder {
         return this;
     }
 
-    public CQLBuilder orderBy(final String... columnNames) {
+    @SafeVarargs
+    public final CQLBuilder orderBy(final String... columnNames) {
         sb.append(_SPACE_ORDER_BY_SPACE);
 
         if (columnNames.length == 1) {
@@ -697,7 +699,8 @@ public abstract class CQLBuilder {
         return set(Array.of(expr));
     }
 
-    public CQLBuilder set(final String... columnNames) {
+    @SafeVarargs
+    public final CQLBuilder set(final String... columnNames) {
         init(false);
 
         sb.append(_SPACE_SET_SPACE);

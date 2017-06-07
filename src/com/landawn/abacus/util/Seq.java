@@ -1473,8 +1473,18 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return finisher.apply(collect(downstream));
     }
 
+    @SafeVarargs
+    public final List<T> append(T... a) {
+        return append(Arrays.asList(a));
+    }
+
     public List<T> append(final Collection<? extends T> c) {
         return Seq.concat(this, c);
+    }
+
+    @SafeVarargs
+    public final List<T> prepend(T... a) {
+        return prepend(Arrays.asList(a));
     }
 
     public List<T> prepend(final Collection<? extends T> c) {

@@ -409,6 +409,141 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     }
 
     @Override
+    public Stream<T> mapFirst(final Function<? super T, ? extends T> mapperForFirst) {
+        N.requireNonNull(mapperForFirst);
+
+        if (maxThreadNum <= 1) {
+            return new ParallelIteratorStream<>(sequential().mapFirst(mapperForFirst).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
+        }
+
+        if (elements.hasNext()) {
+            T first = elements.next();
+            return prepend(Stream.of(first).map(mapperForFirst));
+        } else {
+            return this;
+        }
+    }
+
+    @Override
+    public <R> Stream<R> mapFirstOrElse(final Function<? super T, ? extends R> mapperForFirst, final Function<? super T, ? extends R> mapperForElse) {
+        N.requireNonNull(mapperForFirst);
+        N.requireNonNull(mapperForElse);
+
+        if (maxThreadNum <= 1) {
+            return new ParallelIteratorStream<>(sequential().mapFirstOrElse(mapperForFirst, mapperForElse).iterator(), closeHandlers, false, null, maxThreadNum,
+                    splitor);
+        }
+
+        if (elements.hasNext()) {
+            final Function<T, R> mapperForFirst2 = (Function<T, R>) mapperForFirst;
+            final Function<T, R> mapperForElse2 = (Function<T, R>) mapperForElse;
+            final T first = elements.next();
+
+            return map(mapperForElse2).prepend(Stream.of(first).map(mapperForFirst2));
+        } else {
+            return (Stream<R>) this;
+        }
+    }
+
+    @Override
+    public Stream<T> mapLast(final Function<? super T, ? extends T> mapperForLast) {
+        N.requireNonNull(mapperForLast);
+
+        if (maxThreadNum <= 1) {
+            return new ParallelIteratorStream<>(sequential().mapLast(mapperForLast).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
+        }
+
+        final List<Iterator<T>> iters = new ArrayList<>(maxThreadNum);
+
+        for (int i = 0; i < maxThreadNum; i++) {
+            iters.add(new ExIterator<T>() {
+                private Object next = NONE;
+                private boolean isLast = false;
+
+                @Override
+                public boolean hasNext() {
+                    if (next == NONE) {
+                        synchronized (elements) {
+                            if (elements.hasNext()) {
+                                next = elements.next();
+
+                                if (elements.hasNext() == false) {
+                                    isLast = true;
+                                }
+                            }
+                        }
+                    }
+
+                    return next != NONE;
+                }
+
+                @Override
+                public T next() {
+                    if (next == NONE && hasNext() == false) {
+                        throw new NoSuchElementException();
+                    }
+
+                    final T result = isLast ? mapperForLast.apply((T) next) : (T) next;
+                    next = NONE;
+                    return result;
+                }
+            });
+        }
+
+        return new ParallelIteratorStream<>(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, null, maxThreadNum, splitor);
+    }
+
+    @Override
+    public <R> Stream<R> mapLastOrElse(final Function<? super T, ? extends R> mapperForLast, final Function<? super T, ? extends R> mapperForElse) {
+        N.requireNonNull(mapperForLast);
+        N.requireNonNull(mapperForElse);
+
+        if (maxThreadNum <= 1) {
+            return new ParallelIteratorStream<>(sequential().mapLastOrElse(mapperForLast, mapperForElse).iterator(), closeHandlers, false, null, maxThreadNum,
+                    splitor);
+        }
+
+        final List<Iterator<R>> iters = new ArrayList<>(maxThreadNum);
+
+        for (int i = 0; i < maxThreadNum; i++) {
+            iters.add(new ExIterator<R>() {
+                private Object next = NONE;
+                private boolean isLast = false;
+
+                @Override
+                public boolean hasNext() {
+                    if (next == NONE) {
+                        synchronized (elements) {
+                            if (elements.hasNext()) {
+                                next = elements.next();
+
+                                if (elements.hasNext() == false) {
+                                    isLast = true;
+                                }
+                            }
+                        }
+                    }
+
+                    return next != NONE;
+                }
+
+                @Override
+                public R next() {
+                    if (next == NONE && hasNext() == false) {
+                        throw new NoSuchElementException();
+                    }
+
+                    final R result = isLast ? mapperForLast.apply((T) next) : mapperForElse.apply((T) next);
+                    next = NONE;
+                    return result;
+                }
+            });
+        }
+
+        return new ParallelIteratorStream<>(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, null, maxThreadNum, splitor);
+    }
+
+    @Override
     public CharStream mapToChar(final ToCharFunction<? super T> mapper) {
         if (maxThreadNum <= 1) {
             return new ParallelIteratorCharStream(sequential().mapToChar(mapper).exIterator(), closeHandlers, false, maxThreadNum, splitor);

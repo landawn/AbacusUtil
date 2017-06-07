@@ -1,4 +1,13 @@
 
+========Changes in 0.9.70=========================================================================
+
+1, Add mapFirst/mapFirstOrElse/mapLast/mapLastOrElse to Stream
+
+2, Add append(T...)/prepend(T...) to Stream/Seq
+
+3, Improvements and bug fix.
+
+
 ========Changes in 0.9.69=========================================================================
 
 1*, Rename CompletableFuture.thenRun/CallWithUIExecutor... to thenRun/CallOnUI..., Rename thenRun/CallWithTPExecutor... to thenRun/CallByTP, 

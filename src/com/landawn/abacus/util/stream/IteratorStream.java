@@ -328,6 +328,105 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
+    public Stream<T> mapFirst(final Function<? super T, ? extends T> mapperForFirst) {
+        N.requireNonNull(mapperForFirst);
+
+        if (elements.hasNext()) {
+            T first = elements.next();
+            return prepend(Stream.of(first).map(mapperForFirst));
+        } else {
+            return this;
+        }
+    }
+
+    @Override
+    public <R> Stream<R> mapFirstOrElse(final Function<? super T, ? extends R> mapperForFirst, final Function<? super T, ? extends R> mapperForElse) {
+        N.requireNonNull(mapperForFirst);
+        N.requireNonNull(mapperForElse);
+
+        if (elements.hasNext()) {
+            final Function<T, R> mapperForFirst2 = (Function<T, R>) mapperForFirst;
+            final Function<T, R> mapperForElse2 = (Function<T, R>) mapperForElse;
+            final T first = elements.next();
+
+            return map(mapperForFirst2).prepend(Stream.of(first).map(mapperForElse2));
+        } else {
+            return (Stream<R>) this;
+        }
+    }
+
+    @Override
+    public Stream<T> mapLast(final Function<? super T, ? extends T> mapperForLast) {
+        N.requireNonNull(mapperForLast);
+
+        return new IteratorStream<>(new ExIterator<T>() {
+            private T last = (T) Stream.NONE;
+
+            @Override
+            public boolean hasNext() {
+                return last != Stream.NONE || elements.hasNext();
+            }
+
+            @Override
+            public T next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                if (last == Stream.NONE) {
+                    last = elements.next();
+                }
+
+                final T next = last;
+
+                if (elements.hasNext()) {
+                    last = elements.next();
+                    return next;
+                } else {
+                    last = (T) Stream.NONE;
+                    return mapperForLast.apply(next);
+                }
+            }
+        }, closeHandlers);
+    }
+
+    @Override
+    public <R> Stream<R> mapLastOrElse(final Function<? super T, ? extends R> mapperForLast, final Function<? super T, ? extends R> mapperForElse) {
+        N.requireNonNull(mapperForLast);
+        N.requireNonNull(mapperForElse);
+
+        return new IteratorStream<>(new ExIterator<R>() {
+            private T last = (T) Stream.NONE;
+
+            @Override
+            public boolean hasNext() {
+                return last != Stream.NONE || elements.hasNext();
+            }
+
+            @Override
+            public R next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                if (last == Stream.NONE) {
+                    last = elements.next();
+                }
+
+                final T next = last;
+
+                if (elements.hasNext()) {
+                    last = elements.next();
+                    return mapperForElse.apply(next);
+                } else {
+                    last = (T) Stream.NONE;
+                    return mapperForLast.apply(next);
+                }
+            }
+        }, closeHandlers);
+    }
+
+    @Override
     public CharStream mapToChar(final ToCharFunction<? super T> mapper) {
         return new IteratorCharStream(new ExCharIterator() {
             @Override

@@ -590,23 +590,28 @@ public final class SQLExecutor implements Closeable {
         return _dbVersion;
     }
 
-    public <T> T insert(final String sql, final Object... parameters) {
+    @SafeVarargs
+    public final <T> T insert(final String sql, final Object... parameters) {
         return insert(null, sql, null, null, parameters);
     }
 
-    public <T> T insert(final String sql, final StatementSetter statementSetter, final Object... parameters) {
+    @SafeVarargs
+    public final <T> T insert(final String sql, final StatementSetter statementSetter, final Object... parameters) {
         return insert(null, sql, statementSetter, null, parameters);
     }
 
-    public <T> T insert(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object... parameters) {
+    @SafeVarargs
+    public final <T> T insert(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object... parameters) {
         return insert(null, sql, statementSetter, jdbcSettings, parameters);
     }
 
-    public <T> T insert(final Connection conn, final String sql, final Object... parameters) {
+    @SafeVarargs
+    public final <T> T insert(final Connection conn, final String sql, final Object... parameters) {
         return insert(conn, sql, null, null, parameters);
     }
 
-    public <T> T insert(final Connection conn, final String sql, final StatementSetter statementSetter, final Object... parameters) {
+    @SafeVarargs
+    public final <T> T insert(final Connection conn, final String sql, final StatementSetter statementSetter, final Object... parameters) {
         return insert(conn, sql, statementSetter, null, parameters);
     }
 
@@ -614,7 +619,8 @@ public final class SQLExecutor implements Closeable {
      * @see #batchInsert(Connection, String, StatementSetter, JdbcSettings, String, Object[])
      */
     @SuppressWarnings({ "unchecked", "deprecation" })
-    public <T> T insert(final Connection conn, final String sql, StatementSetter statementSetter, JdbcSettings jdbcSettings, final Object... parameters) {
+    @SafeVarargs
+    public final <T> T insert(final Connection conn, final String sql, StatementSetter statementSetter, JdbcSettings jdbcSettings, final Object... parameters) {
         final NamedSQL namedSQL = getNamedSQL(sql);
         statementSetter = checkStatementSetter(namedSQL, statementSetter);
         jdbcSettings = checkJdbcSettings(jdbcSettings, namedSQL);
@@ -960,30 +966,36 @@ public final class SQLExecutor implements Closeable {
         stmt.clearBatch();
     }
 
-    public int update(final String sql, final Object... parameters) {
+    @SafeVarargs
+    public final int update(final String sql, final Object... parameters) {
         return update(null, sql, null, null, parameters);
     }
 
-    public int update(final String sql, final StatementSetter statementSetter, final Object... parameters) {
+    @SafeVarargs
+    public final int update(final String sql, final StatementSetter statementSetter, final Object... parameters) {
         return update(null, sql, statementSetter, null, parameters);
     }
 
-    public int update(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object... parameters) {
+    @SafeVarargs
+    public final int update(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object... parameters) {
         return update(null, sql, statementSetter, jdbcSettings, parameters);
     }
 
-    public int update(final Connection conn, final String sql, final Object... parameters) {
+    @SafeVarargs
+    public final int update(final Connection conn, final String sql, final Object... parameters) {
         return update(conn, sql, null, null, parameters);
     }
 
-    public int update(final Connection conn, final String sql, final StatementSetter statementSetter, final Object... parameters) {
+    @SafeVarargs
+    public final int update(final Connection conn, final String sql, final StatementSetter statementSetter, final Object... parameters) {
         return update(conn, sql, statementSetter, null, parameters);
     }
 
     /**
      * @see #batchUpdate(Connection, String, StatementSetter, JdbcSettings, Object[])
      */
-    public int update(final Connection conn, final String sql, StatementSetter statementSetter, JdbcSettings jdbcSettings, final Object... parameters) {
+    @SafeVarargs
+    public final int update(final Connection conn, final String sql, StatementSetter statementSetter, JdbcSettings jdbcSettings, final Object... parameters) {
         final NamedSQL namedSQL = getNamedSQL(sql);
         statementSetter = checkStatementSetter(namedSQL, statementSetter);
         jdbcSettings = checkJdbcSettings(jdbcSettings, namedSQL);
@@ -1281,19 +1293,23 @@ public final class SQLExecutor implements Closeable {
     //        return query(conn, pair.sql, null, EXISTS_RESULT_SET_EXTRACTOR, null, pair.parameters);
     //    }
 
-    public boolean exists(final String sql, final Object... parameters) {
+    @SafeVarargs
+    public final boolean exists(final String sql, final Object... parameters) {
         return exists(null, sql, parameters);
     }
 
-    public boolean exists(final Connection conn, final String sql, final Object... parameters) {
+    @SafeVarargs
+    public final boolean exists(final Connection conn, final String sql, final Object... parameters) {
         return query(conn, sql, null, EXISTS_RESULT_SET_EXTRACTOR, null, parameters);
     }
 
-    public int count(final String sql, final Object... parameters) {
+    @SafeVarargs
+    public final int count(final String sql, final Object... parameters) {
         return count(null, sql, parameters);
     }
 
-    public int count(final Connection conn, final String sql, final Object... parameters) {
+    @SafeVarargs
+    public final int count(final Connection conn, final String sql, final Object... parameters) {
         return queryForSingleResult(int.class, conn, sql, parameters).or(0);
     }
 
@@ -1358,7 +1374,8 @@ public final class SQLExecutor implements Closeable {
     //        }
     //    }
 
-    public <T> T get(final Class<T> targetClass, final String sql, final Object... parameters) {
+    @SafeVarargs
+    public final <T> T get(final Class<T> targetClass, final String sql, final Object... parameters) {
         return get(targetClass, sql, null, null, parameters);
     }
 
@@ -1367,7 +1384,8 @@ public final class SQLExecutor implements Closeable {
         return get(targetClass, null, sql, statementSetter, jdbcSettings, parameters);
     }
 
-    public <T> T get(final Class<T> targetClass, final Connection conn, final String sql, final Object... parameters) {
+    @SafeVarargs
+    public final <T> T get(final Class<T> targetClass, final Connection conn, final String sql, final Object... parameters) {
         return get(targetClass, conn, sql, null, null, parameters);
     }
 
@@ -1397,7 +1415,8 @@ public final class SQLExecutor implements Closeable {
         return (entities.size() > 0) ? entities.get(0) : null;
     }
 
-    public <T> List<T> find(final Class<T> targetClass, final String sql, final Object... parameters) {
+    @SafeVarargs
+    public final <T> List<T> find(final Class<T> targetClass, final String sql, final Object... parameters) {
         return find(targetClass, sql, null, null, parameters);
     }
 
@@ -1406,7 +1425,8 @@ public final class SQLExecutor implements Closeable {
         return find(targetClass, null, sql, statementSetter, jdbcSettings, parameters);
     }
 
-    public <T> List<T> find(final Class<T> targetClass, final Connection conn, final String sql, final Object... parameters) {
+    @SafeVarargs
+    public final <T> List<T> find(final Class<T> targetClass, final Connection conn, final String sql, final Object... parameters) {
         return find(targetClass, conn, sql, null, null, parameters);
     }
 
@@ -1426,7 +1446,8 @@ public final class SQLExecutor implements Closeable {
         return (List<T>) query(targetClass, conn, sql, statementSetter, ENTITY_LIST_RESULT_SET_EXTRACTOR, jdbcSettings, parameters);
     }
 
-    public <T> List<T> findAll(final Class<T> targetClass, final String sql, final JdbcSettings jdbcSettings, final Object... parameters) {
+    @SafeVarargs
+    public final <T> List<T> findAll(final Class<T> targetClass, final String sql, final JdbcSettings jdbcSettings, final Object... parameters) {
         return findAll(targetClass, sql, null, jdbcSettings, parameters);
     }
 
@@ -1514,7 +1535,8 @@ public final class SQLExecutor implements Closeable {
         }
     }
 
-    public <T> List<T> findAll(final Class<T> targetClass, final List<String> sqls, final JdbcSettings jdbcSettings, final Object... parameters) {
+    @SafeVarargs
+    public final <T> List<T> findAll(final Class<T> targetClass, final List<String> sqls, final JdbcSettings jdbcSettings, final Object... parameters) {
         return findAll(targetClass, sqls, null, jdbcSettings, parameters);
     }
 
@@ -1606,7 +1628,8 @@ public final class SQLExecutor implements Closeable {
     /**
      * @see SQLExecutor#queryForSingleResult(Class, Connection, String, Object...).
      */
-    public OptionalBoolean queryForBoolean(final String sql, final Object... parameters) {
+    @SafeVarargs
+    public final OptionalBoolean queryForBoolean(final String sql, final Object... parameters) {
         final NullabLe<Boolean> result = queryForSingleResult(boolean.class, null, sql, parameters);
 
         return result.isPresent() ? OptionalBoolean.of(result.get()) : OptionalBoolean.empty();
@@ -1616,7 +1639,8 @@ public final class SQLExecutor implements Closeable {
      *
      * @see SQLExecutor#queryForSingleResult(Class, Connection, String, Object...).
      */
-    public OptionalChar queryForChar(final String sql, final Object... parameters) {
+    @SafeVarargs
+    public final OptionalChar queryForChar(final String sql, final Object... parameters) {
         final NullabLe<Character> result = queryForSingleResult(char.class, null, sql, parameters);
 
         return result.isPresent() ? OptionalChar.of(result.get()) : OptionalChar.empty();
@@ -1625,7 +1649,8 @@ public final class SQLExecutor implements Closeable {
     /**
      * @see SQLExecutor#queryForSingleResult(Class, Connection, String, Object...).
      */
-    public OptionalByte queryForByte(final String sql, final Object... parameters) {
+    @SafeVarargs
+    public final OptionalByte queryForByte(final String sql, final Object... parameters) {
         final NullabLe<Byte> result = queryForSingleResult(byte.class, null, sql, parameters);
 
         return result.isPresent() ? OptionalByte.of(result.get()) : OptionalByte.empty();
@@ -1634,7 +1659,8 @@ public final class SQLExecutor implements Closeable {
     /**
      * @see SQLExecutor#queryForSingleResult(Class, Connection, String, Object...).
      */
-    public OptionalShort queryForShort(final String sql, final Object... parameters) {
+    @SafeVarargs
+    public final OptionalShort queryForShort(final String sql, final Object... parameters) {
         final NullabLe<Short> result = queryForSingleResult(short.class, null, sql, parameters);
 
         return result.isPresent() ? OptionalShort.of(result.get()) : OptionalShort.empty();
@@ -1643,7 +1669,8 @@ public final class SQLExecutor implements Closeable {
     /**
      * @see SQLExecutor#queryForSingleResult(Class, Connection, String, Object...).
      */
-    public OptionalInt queryForInt(final String sql, final Object... parameters) {
+    @SafeVarargs
+    public final OptionalInt queryForInt(final String sql, final Object... parameters) {
         final NullabLe<Integer> result = queryForSingleResult(int.class, null, sql, parameters);
 
         return result.isPresent() ? OptionalInt.of(result.get()) : OptionalInt.empty();
@@ -1652,7 +1679,8 @@ public final class SQLExecutor implements Closeable {
     /**
      * @see SQLExecutor#queryForSingleResult(Class, Connection, String, Object...).
      */
-    public OptionalLong queryForLong(final String sql, final Object... parameters) {
+    @SafeVarargs
+    public final OptionalLong queryForLong(final String sql, final Object... parameters) {
         final NullabLe<Long> result = queryForSingleResult(long.class, null, sql, parameters);
 
         return result.isPresent() ? OptionalLong.of(result.get()) : OptionalLong.empty();
@@ -1661,7 +1689,8 @@ public final class SQLExecutor implements Closeable {
     /**
      * @see SQLExecutor#queryForSingleResult(Class, Connection, String, Object...).
      */
-    public OptionalFloat queryForFloat(final String sql, final Object... parameters) {
+    @SafeVarargs
+    public final OptionalFloat queryForFloat(final String sql, final Object... parameters) {
         final NullabLe<Float> result = queryForSingleResult(float.class, null, sql, parameters);
 
         return result.isPresent() ? OptionalFloat.of(result.get()) : OptionalFloat.empty();
@@ -1670,7 +1699,8 @@ public final class SQLExecutor implements Closeable {
     /**
      * @see SQLExecutor#queryForSingleResult(Class, Connection, String, Object...).
      */
-    public OptionalDouble queryForDouble(final String sql, final Object... parameters) {
+    @SafeVarargs
+    public final OptionalDouble queryForDouble(final String sql, final Object... parameters) {
         final NullabLe<Double> result = queryForSingleResult(double.class, null, sql, parameters);
 
         return result.isPresent() ? OptionalDouble.of(result.get()) : OptionalDouble.empty();
@@ -1679,11 +1709,13 @@ public final class SQLExecutor implements Closeable {
     /**
      * @see SQLExecutor#queryForSingleResult(Class, Connection, String, Object...).
      */
-    public NullabLe<String> queryForString(final String sql, final Object... parameters) {
+    @SafeVarargs
+    public final NullabLe<String> queryForString(final String sql, final Object... parameters) {
         return queryForSingleResult(String.class, null, sql, parameters);
     }
 
-    public <T> NullabLe<T> queryForSingleResult(final Class<T> targetClass, final String sql, final Object... parameters) {
+    @SafeVarargs
+    public final <T> NullabLe<T> queryForSingleResult(final Class<T> targetClass, final String sql, final Object... parameters) {
         return queryForSingleResult(targetClass, sql, null, null, parameters);
     }
 
@@ -1692,7 +1724,8 @@ public final class SQLExecutor implements Closeable {
         return queryForSingleResult(targetClass, null, sql, statementSetter, jdbcSettings, parameters);
     }
 
-    public <T> NullabLe<T> queryForSingleResult(final Class<T> targetClass, final Connection conn, final String sql, final Object... parameters) {
+    @SafeVarargs
+    public final <T> NullabLe<T> queryForSingleResult(final Class<T> targetClass, final Connection conn, final String sql, final Object... parameters) {
         return queryForSingleResult(targetClass, conn, sql, null, null, parameters);
     }
 
@@ -1753,7 +1786,8 @@ public final class SQLExecutor implements Closeable {
     //        return query(conn, sql, statementSetter, MAP_RESULT_SET_EXTRACTOR, null, parameters);
     //    }
 
-    public <T> Optional<T> queryForEntity(final Class<T> targetClass, final String sql, final Object... parameters) {
+    @SafeVarargs
+    public final <T> Optional<T> queryForEntity(final Class<T> targetClass, final String sql, final Object... parameters) {
         return queryForEntity(targetClass, sql, null, null, parameters);
     }
 
@@ -1762,7 +1796,8 @@ public final class SQLExecutor implements Closeable {
         return queryForEntity(targetClass, null, sql, statementSetter, jdbcSettings, parameters);
     }
 
-    public <T> Optional<T> queryForEntity(final Class<T> targetClass, final Connection conn, final String sql, final Object... parameters) {
+    @SafeVarargs
+    public final <T> Optional<T> queryForEntity(final Class<T> targetClass, final Connection conn, final String sql, final Object... parameters) {
         return queryForEntity(targetClass, conn, sql, null, null, parameters);
     }
 
@@ -1789,11 +1824,13 @@ public final class SQLExecutor implements Closeable {
         return result == null ? (Optional<T>) Optional.empty() : Optional.of(result);
     }
 
-    public DataSet query(final String sql, final Object... parameters) {
+    @SafeVarargs
+    public final DataSet query(final String sql, final Object... parameters) {
         return query(sql, null, parameters);
     }
 
-    public DataSet query(final String sql, final StatementSetter statementSetter, final Object... parameters) {
+    @SafeVarargs
+    public final DataSet query(final String sql, final StatementSetter statementSetter, final Object... parameters) {
         return query(sql, statementSetter, null, parameters);
     }
 
@@ -1803,7 +1840,9 @@ public final class SQLExecutor implements Closeable {
     // return query(null, sql, null, resultSetExtractor, null, parameters);
     // }
     //
-    public <T> T query(final String sql, final StatementSetter statementSetter, final ResultSetExtractor<T> resultSetExtractor, final Object... parameters) {
+    @SafeVarargs
+    public final <T> T query(final String sql, final StatementSetter statementSetter, final ResultSetExtractor<T> resultSetExtractor,
+            final Object... parameters) {
         return query(sql, statementSetter, resultSetExtractor, null, parameters);
     }
 
@@ -1842,11 +1881,13 @@ public final class SQLExecutor implements Closeable {
         return query(null, sql, statementSetter, resultSetExtractor, jdbcSettings, parameters);
     }
 
-    public DataSet query(final Connection conn, final String sql, final Object... parameters) {
+    @SafeVarargs
+    public final DataSet query(final Connection conn, final String sql, final Object... parameters) {
         return query(conn, sql, null, parameters);
     }
 
-    public DataSet query(final Connection conn, final String sql, final StatementSetter statementSetter, final Object... parameters) {
+    @SafeVarargs
+    public final DataSet query(final Connection conn, final String sql, final StatementSetter statementSetter, final Object... parameters) {
         return query(conn, sql, statementSetter, null, parameters);
     }
 
@@ -1930,11 +1971,13 @@ public final class SQLExecutor implements Closeable {
         return result;
     }
 
-    public DataSet queryAll(final String sql, final JdbcSettings jdbcSettings, final Object... parameters) {
+    @SafeVarargs
+    public final DataSet queryAll(final String sql, final JdbcSettings jdbcSettings, final Object... parameters) {
         return queryAll(sql, null, jdbcSettings, parameters);
     }
 
-    public DataSet queryAll(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object... parameters) {
+    @SafeVarargs
+    public final DataSet queryAll(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object... parameters) {
         return queryAll(null, sql, statementSetter, jdbcSettings, parameters);
     }
 
@@ -1993,11 +2036,13 @@ public final class SQLExecutor implements Closeable {
         }
     }
 
-    public DataSet queryAll(final List<String> sqls, final JdbcSettings jdbcSettings, final Object... parameters) {
+    @SafeVarargs
+    public final DataSet queryAll(final List<String> sqls, final JdbcSettings jdbcSettings, final Object... parameters) {
         return queryAll(sqls, null, jdbcSettings, parameters);
     }
 
-    public DataSet queryAll(final List<String> sqls, final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object... parameters) {
+    @SafeVarargs
+    public final DataSet queryAll(final List<String> sqls, final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object... parameters) {
         return queryAll(null, sqls, statementSetter, jdbcSettings, parameters);
     }
 
@@ -2340,11 +2385,13 @@ public final class SQLExecutor implements Closeable {
         return iterators;
     }
 
-    public Try<Stream<Object[]>> stream(final String sql, final Object... parameters) {
+    @SafeVarargs
+    public final Try<Stream<Object[]>> stream(final String sql, final Object... parameters) {
         return stream(sql, null, parameters);
     }
 
-    public Try<Stream<Object[]>> stream(final String sql, final StatementSetter statementSetter, final Object... parameters) {
+    @SafeVarargs
+    public final Try<Stream<Object[]>> stream(final String sql, final StatementSetter statementSetter, final Object... parameters) {
         return stream(sql, statementSetter, null, parameters);
     }
 
@@ -2357,7 +2404,9 @@ public final class SQLExecutor implements Closeable {
      * @param parameters
      * @return
      */
-    public Try<Stream<Object[]>> stream(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object... parameters) {
+    @SafeVarargs
+    public final Try<Stream<Object[]>> stream(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
+            final Object... parameters) {
         return stream((Connection) null, sql, statementSetter, jdbcSettings, parameters);
     }
 
@@ -2400,7 +2449,8 @@ public final class SQLExecutor implements Closeable {
         }).tried();
     }
 
-    public Try<Stream<Object[]>> streamAll(final String sql, final JdbcSettings jdbcSettings, final Object... parameters) {
+    @SafeVarargs
+    public final Try<Stream<Object[]>> streamAll(final String sql, final JdbcSettings jdbcSettings, final Object... parameters) {
         return streamAll(sql, null, jdbcSettings, parameters);
     }
 
@@ -2460,7 +2510,8 @@ public final class SQLExecutor implements Closeable {
                 }).tried();
     }
 
-    public Try<Stream<Object[]>> streamAll(final List<String> sqls, final JdbcSettings jdbcSettings, final Object... parameters) {
+    @SafeVarargs
+    public final Try<Stream<Object[]>> streamAll(final List<String> sqls, final JdbcSettings jdbcSettings, final Object... parameters) {
         return streamAll(sqls, null, jdbcSettings, parameters);
     }
 
@@ -2520,11 +2571,13 @@ public final class SQLExecutor implements Closeable {
                 }).tried();
     }
 
-    public <T> Try<Stream<T>> stream(final Class<T> targetClass, final String sql, final Object... parameters) {
+    @SafeVarargs
+    public final <T> Try<Stream<T>> stream(final Class<T> targetClass, final String sql, final Object... parameters) {
         return stream(targetClass, sql, null, parameters);
     }
 
-    public <T> Try<Stream<T>> stream(final Class<T> targetClass, final String sql, final StatementSetter statementSetter, final Object... parameters) {
+    @SafeVarargs
+    public final <T> Try<Stream<T>> stream(final Class<T> targetClass, final String sql, final StatementSetter statementSetter, final Object... parameters) {
         return stream(targetClass, sql, statementSetter, null, parameters);
     }
 
@@ -2626,7 +2679,8 @@ public final class SQLExecutor implements Closeable {
         }
     }
 
-    public <T> Try<Stream<T>> streamAll(final Class<T> targetClass, final String sql, final JdbcSettings jdbcSettings, final Object... parameters) {
+    @SafeVarargs
+    public final <T> Try<Stream<T>> streamAll(final Class<T> targetClass, final String sql, final JdbcSettings jdbcSettings, final Object... parameters) {
         return streamAll(targetClass, sql, null, jdbcSettings, parameters);
     }
 
@@ -2731,7 +2785,9 @@ public final class SQLExecutor implements Closeable {
         }
     }
 
-    public <T> Try<Stream<T>> streamAll(final Class<T> targetClass, final List<String> sqls, final JdbcSettings jdbcSettings, final Object... parameters) {
+    @SafeVarargs
+    public final <T> Try<Stream<T>> streamAll(final Class<T> targetClass, final List<String> sqls, final JdbcSettings jdbcSettings,
+            final Object... parameters) {
         return streamAll(targetClass, sqls, null, jdbcSettings, parameters);
     }
 
@@ -2854,7 +2910,8 @@ public final class SQLExecutor implements Closeable {
      * 
      * @see java.sql.PreparedStatement#execute()
      */
-    public void execute(final String sql, final Object... parameters) {
+    @SafeVarargs
+    public final void execute(final String sql, final Object... parameters) {
         final NamedSQL namedSQL = getNamedSQL(sql);
         final StatementSetter statementSetter = checkStatementSetter(namedSQL, null);
         final JdbcSettings jdbcSettings = checkJdbcSettings(null, namedSQL);
@@ -3546,7 +3603,8 @@ public final class SQLExecutor implements Closeable {
             return get(id, (Collection<String>) null);
         }
 
-        public T get(final Object id, final String... selectPropNames) {
+        @SafeVarargs
+        public final T get(final Object id, final String... selectPropNames) {
             return get(id, Arrays.asList(selectPropNames));
         }
 
@@ -4340,7 +4398,8 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<T> asyncGet(final Object id, final String... selectPropNames) {
+        @SafeVarargs
+        public final CompletableFuture<T> asyncGet(final Object id, final String... selectPropNames) {
             return asyncExecutor.execute(new Callable<T>() {
                 @Override
                 public T call() throws Exception {

@@ -1135,7 +1135,8 @@ public final class SQLiteExecutor {
      * @param parameters A Object Array/List, and Map/Entity with getter/setter methods for parameterized sql with named parameters
      * @return
      */
-    public boolean exists(String sql, Object... parameters) {
+    @SafeVarargs
+    public final boolean exists(String sql, Object... parameters) {
         final Cursor cursor = rawQuery(sql, parameters);
 
         try {
@@ -1156,7 +1157,8 @@ public final class SQLiteExecutor {
         return count(pair.sql, parameters);
     }
 
-    public int count(String sql, Object... parameters) {
+    @SafeVarargs
+    public final int count(String sql, Object... parameters) {
         return queryForSingleResult(int.class, sql, parameters).or(0);
     }
 
@@ -1207,7 +1209,8 @@ public final class SQLiteExecutor {
     /**
      * @see SQLExecutor#queryForSingleResult(Class, String, Object...).
      */
-    public OptionalBoolean queryForBoolean(final String sql, final Object... parameters) {
+    @SafeVarargs
+    public final OptionalBoolean queryForBoolean(final String sql, final Object... parameters) {
         final NullabLe<Boolean> result = queryForSingleResult(boolean.class, sql, parameters);
 
         return result.isPresent() ? OptionalBoolean.of(result.get()) : OptionalBoolean.empty();
@@ -1217,7 +1220,8 @@ public final class SQLiteExecutor {
      *
      * @see SQLExecutor#queryForSingleResult(Class, String, Object...).
      */
-    public OptionalChar queryForChar(final String sql, final Object... parameters) {
+    @SafeVarargs
+    public final OptionalChar queryForChar(final String sql, final Object... parameters) {
         final NullabLe<Character> result = queryForSingleResult(char.class, sql, parameters);
 
         return result.isPresent() ? OptionalChar.of(result.get()) : OptionalChar.empty();
@@ -1226,7 +1230,8 @@ public final class SQLiteExecutor {
     /**
      * @see SQLExecutor#queryForSingleResult(Class, String, Object...).
      */
-    public OptionalByte queryForByte(final String sql, final Object... parameters) {
+    @SafeVarargs
+    public final OptionalByte queryForByte(final String sql, final Object... parameters) {
         final NullabLe<Byte> result = queryForSingleResult(byte.class, sql, parameters);
 
         return result.isPresent() ? OptionalByte.of(result.get()) : OptionalByte.empty();
@@ -1235,7 +1240,8 @@ public final class SQLiteExecutor {
     /**
      * @see SQLExecutor#queryForSingleResult(Class, String, Object...).
      */
-    public OptionalShort queryForShort(final String sql, final Object... parameters) {
+    @SafeVarargs
+    public final OptionalShort queryForShort(final String sql, final Object... parameters) {
         final NullabLe<Short> result = queryForSingleResult(short.class, sql, parameters);
 
         return result.isPresent() ? OptionalShort.of(result.get()) : OptionalShort.empty();
@@ -1244,7 +1250,8 @@ public final class SQLiteExecutor {
     /**
      * @see SQLExecutor#queryForSingleResult(Class, String, Object...).
      */
-    public OptionalInt queryForInt(final String sql, final Object... parameters) {
+    @SafeVarargs
+    public final OptionalInt queryForInt(final String sql, final Object... parameters) {
         final NullabLe<Integer> result = queryForSingleResult(int.class, sql, parameters);
 
         return result.isPresent() ? OptionalInt.of(result.get()) : OptionalInt.empty();
@@ -1253,7 +1260,8 @@ public final class SQLiteExecutor {
     /**
      * @see SQLExecutor#queryForSingleResult(Class, String, Object...).
      */
-    public OptionalLong queryForLong(final String sql, final Object... parameters) {
+    @SafeVarargs
+    public final OptionalLong queryForLong(final String sql, final Object... parameters) {
         final NullabLe<Long> result = queryForSingleResult(long.class, sql, parameters);
 
         return result.isPresent() ? OptionalLong.of(result.get()) : OptionalLong.empty();
@@ -1262,7 +1270,8 @@ public final class SQLiteExecutor {
     /**
      * @see SQLExecutor#queryForSingleResult(Class, String, Object...).
      */
-    public OptionalFloat queryForFloat(final String sql, final Object... parameters) {
+    @SafeVarargs
+    public final OptionalFloat queryForFloat(final String sql, final Object... parameters) {
         final NullabLe<Float> result = queryForSingleResult(float.class, sql, parameters);
 
         return result.isPresent() ? OptionalFloat.of(result.get()) : OptionalFloat.empty();
@@ -1271,7 +1280,8 @@ public final class SQLiteExecutor {
     /**
      * @see SQLExecutor#queryForSingleResult(Class, String, Object...).
      */
-    public OptionalDouble queryForDouble(final String sql, final Object... parameters) {
+    @SafeVarargs
+    public final OptionalDouble queryForDouble(final String sql, final Object... parameters) {
         final NullabLe<Double> result = queryForSingleResult(double.class, sql, parameters);
 
         return result.isPresent() ? OptionalDouble.of(result.get()) : OptionalDouble.empty();
@@ -1280,7 +1290,8 @@ public final class SQLiteExecutor {
     /**
      * @see SQLExecutor#queryForSingleResult(Class, String, Object...).
      */
-    public NullabLe<String> queryForString(final String sql, final Object... parameters) {
+    @SafeVarargs
+    public final NullabLe<String> queryForString(final String sql, final Object... parameters) {
         return queryForSingleResult(String.class, sql, parameters);
     }
 
@@ -1305,7 +1316,8 @@ public final class SQLiteExecutor {
      * @throws ClassCastException
      */
     @SuppressWarnings("unchecked")
-    public <T> NullabLe<T> queryForSingleResult(final Class<T> targetClass, final String sql, Object... parameters) {
+    @SafeVarargs
+    public final <T> NullabLe<T> queryForSingleResult(final Class<T> targetClass, final String sql, Object... parameters) {
         DataSet rs = null;
 
         final Cursor cursor = rawQuery(sql, parameters);
@@ -1394,7 +1406,8 @@ public final class SQLiteExecutor {
      * @param parameters A Object Array/List, and Map/Entity with getter/setter methods for parameterized sql with named parameters
      * @return
      */
-    public <T> Optional<T> queryForEntity(final Class<T> targetClass, final String sql, Object... parameters) {
+    @SafeVarargs
+    public final <T> Optional<T> queryForEntity(final Class<T> targetClass, final String sql, Object... parameters) {
         final DataSet rs = query(targetClass, sql, 0, 1, parameters);
 
         return N.isNullOrEmpty(rs) ? (Optional<T>) Optional.empty() : Optional.of(rs.getRow(targetClass, 0));
@@ -1504,7 +1517,8 @@ public final class SQLiteExecutor {
      * @param parameters A Object Array/List, and Map/Entity with getter/setter methods for parameterized sql with named parameters
      * @return
      */
-    public <T> List<T> find(final Class<T> targetClass, final String sql, Object... parameters) {
+    @SafeVarargs
+    public final <T> List<T> find(final Class<T> targetClass, final String sql, Object... parameters) {
         final DataSet rs = query(targetClass, sql, 0, Integer.MAX_VALUE, parameters);
 
         if (N.isNullOrEmpty(rs)) {
@@ -1869,7 +1883,8 @@ public final class SQLiteExecutor {
      * @param parameters A Object Array/List, and Map/Entity with getter/setter methods for parameterized sql with named parameters
      * @return
      */
-    public DataSet query(Class<?> targetClass, String sql, Object... parameters) {
+    @SafeVarargs
+    public final DataSet query(Class<?> targetClass, String sql, Object... parameters) {
         return query(targetClass, sql, 0, Integer.MAX_VALUE, parameters);
     }
 

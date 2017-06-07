@@ -24,7 +24,6 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -2171,11 +2170,6 @@ abstract class AbstractStream<T> extends Stream<T> {
         final Iterator<List<T>> iter = PermutationIterator.ordered(toList(), comparator == null ? OBJECT_COMPARATOR : comparator);
 
         return newStream(iter, false, null);
-    }
-
-    @Override
-    public Stream<List<T>> cartesianProduct(final Collection<? extends T>... cs) {
-        return cartesianProduct(Arrays.asList(cs));
     }
 
     @Override

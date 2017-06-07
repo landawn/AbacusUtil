@@ -524,6 +524,88 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     }
 
     @Override
+    public Stream<T> mapFirst(final Function<? super T, ? extends T> mapperForFirst) {
+        N.requireNonNull(mapperForFirst);
+
+        if (maxThreadNum <= 1) {
+            return new ParallelIteratorStream<>(sequential().mapFirst(mapperForFirst).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
+        }
+
+        if (fromIndex == toIndex) {
+            return this;
+        } else if (toIndex - fromIndex == 1) {
+            return map(mapperForFirst);
+        } else {
+            return new ParallelArrayStream<>(elements, fromIndex + 1, toIndex, closeHandlers, sorted, cmp, maxThreadNum, splitor)
+                    .prepend(new ArrayStream<>(elements, fromIndex, fromIndex + 1).map(mapperForFirst));
+        }
+    }
+
+    @Override
+    public <R> Stream<R> mapFirstOrElse(final Function<? super T, ? extends R> mapperForFirst, final Function<? super T, ? extends R> mapperForElse) {
+        N.requireNonNull(mapperForFirst);
+        N.requireNonNull(mapperForElse);
+
+        if (maxThreadNum <= 1) {
+            return new ParallelIteratorStream<>(sequential().mapFirstOrElse(mapperForFirst, mapperForElse).iterator(), closeHandlers, false, null, maxThreadNum,
+                    splitor);
+        }
+
+        if (fromIndex == toIndex) {
+            return (Stream<R>) this;
+        } else if (toIndex - fromIndex == 1) {
+            return map(mapperForFirst);
+        } else {
+            final Function<T, R> mapperForFirst2 = (Function<T, R>) mapperForFirst;
+            final Function<T, R> mapperForElse2 = (Function<T, R>) mapperForElse;
+
+            return new ParallelArrayStream<>(elements, fromIndex + 1, toIndex, closeHandlers, sorted, cmp, maxThreadNum, splitor).map(mapperForElse2)
+                    .prepend(new ArrayStream<>(elements, fromIndex, fromIndex + 1).map(mapperForFirst2));
+        }
+    }
+
+    @Override
+    public Stream<T> mapLast(final Function<? super T, ? extends T> mapperForLast) {
+        N.requireNonNull(mapperForLast);
+
+        if (maxThreadNum <= 1) {
+            return new ParallelIteratorStream<>(sequential().mapLast(mapperForLast).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
+        }
+
+        if (fromIndex == toIndex) {
+            return this;
+        } else if (toIndex - fromIndex == 1) {
+            return map(mapperForLast);
+        } else {
+            return new ParallelArrayStream<>(elements, fromIndex, toIndex - 1, closeHandlers, sorted, cmp, maxThreadNum, splitor)
+                    .append(new ArrayStream<>(elements, toIndex - 1, toIndex).map(mapperForLast));
+        }
+    }
+
+    @Override
+    public <R> Stream<R> mapLastOrElse(final Function<? super T, ? extends R> mapperForLast, final Function<? super T, ? extends R> mapperForElse) {
+        N.requireNonNull(mapperForLast);
+        N.requireNonNull(mapperForElse);
+
+        if (maxThreadNum <= 1) {
+            return new ParallelIteratorStream<>(sequential().mapLastOrElse(mapperForLast, mapperForElse).iterator(), closeHandlers, false, null, maxThreadNum,
+                    splitor);
+        }
+
+        if (fromIndex == toIndex) {
+            return (Stream<R>) this;
+        } else if (toIndex - fromIndex == 1) {
+            return map(mapperForLast);
+        } else {
+            final Function<T, R> mapperForLast2 = (Function<T, R>) mapperForLast;
+            final Function<T, R> mapperForElse2 = (Function<T, R>) mapperForElse;
+
+            return new ParallelArrayStream<>(elements, fromIndex, toIndex - 1, closeHandlers, sorted, cmp, maxThreadNum, splitor).map(mapperForElse2)
+                    .append(new ArrayStream<>(elements, toIndex - 1, toIndex).map(mapperForLast2));
+        }
+    }
+
+    @Override
     public CharStream mapToChar(final ToCharFunction<? super T> mapper) {
         if (maxThreadNum <= 1) {
             return new ParallelIteratorCharStream(sequential().mapToChar(mapper).exIterator(), closeHandlers, false, maxThreadNum, splitor);

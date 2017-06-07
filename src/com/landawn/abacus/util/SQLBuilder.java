@@ -481,7 +481,8 @@ public abstract class SQLBuilder {
         return from(tableName, expr);
     }
 
-    public SQLBuilder from(final String... tableNames) {
+    @SafeVarargs
+    public final SQLBuilder from(final String... tableNames) {
         if (tableNames.length == 1) {
             return from(tableNames[0]);
         } else {
@@ -784,7 +785,8 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder groupBy(final String... columnNames) {
+    @SafeVarargs
+    public final SQLBuilder groupBy(final String... columnNames) {
         sb.append(_SPACE_GROUP_BY_SPACE);
 
         if (columnNames.length == 1) {
@@ -896,7 +898,8 @@ public abstract class SQLBuilder {
         return this;
     }
 
-    public SQLBuilder orderBy(final String... columnNames) {
+    @SafeVarargs
+    public final SQLBuilder orderBy(final String... columnNames) {
         sb.append(_SPACE_ORDER_BY_SPACE);
 
         if (columnNames.length == 1) {
@@ -1014,7 +1017,8 @@ public abstract class SQLBuilder {
         return union(Array.of(query));
     }
 
-    public SQLBuilder union(final String... columnNames) {
+    @SafeVarargs
+    public final SQLBuilder union(final String... columnNames) {
         op = OperationType.QUERY;
 
         this.columnNames = columnNames;
@@ -1059,7 +1063,8 @@ public abstract class SQLBuilder {
         return unionAll(Array.of(query));
     }
 
-    public SQLBuilder unionAll(final String... columnNames) {
+    @SafeVarargs
+    public final SQLBuilder unionAll(final String... columnNames) {
         op = OperationType.QUERY;
 
         this.columnNames = columnNames;
@@ -1104,7 +1109,8 @@ public abstract class SQLBuilder {
         return intersect(Array.of(query));
     }
 
-    public SQLBuilder intersect(final String... columnNames) {
+    @SafeVarargs
+    public final SQLBuilder intersect(final String... columnNames) {
         op = OperationType.QUERY;
 
         this.columnNames = columnNames;
@@ -1149,7 +1155,8 @@ public abstract class SQLBuilder {
         return except(Array.of(query));
     }
 
-    public SQLBuilder except(final String... columnNames) {
+    @SafeVarargs
+    public final SQLBuilder except(final String... columnNames) {
         op = OperationType.QUERY;
 
         this.columnNames = columnNames;
@@ -1194,7 +1201,8 @@ public abstract class SQLBuilder {
         return minus(Array.of(query));
     }
 
-    public SQLBuilder minus(final String... columnNames) {
+    @SafeVarargs
+    public final SQLBuilder minus(final String... columnNames) {
         op = OperationType.QUERY;
 
         this.columnNames = columnNames;
@@ -1237,7 +1245,8 @@ public abstract class SQLBuilder {
         return set(Array.of(expr));
     }
 
-    public SQLBuilder set(final String... columnNames) {
+    @SafeVarargs
+    public final SQLBuilder set(final String... columnNames) {
         init(false);
 
         if (columnNames.length == 1 && SQLParser.parse(columnNames[0]).contains(D.EQUAL)) {

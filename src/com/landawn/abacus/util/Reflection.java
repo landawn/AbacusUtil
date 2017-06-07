@@ -80,7 +80,8 @@ public final class Reflection<T> {
         return new Reflection<>(cls, N.newInstance(cls));
     }
 
-    public Reflection<T> _new(Object... args) {
+    @SafeVarargs
+    public final Reflection<T> _new(Object... args) {
         if (N.isNullOrEmpty(args)) {
             return _new();
         }
@@ -136,7 +137,8 @@ public final class Reflection<T> {
         return this;
     }
 
-    public <V> V invoke(String methodName, Object... args) {
+    @SafeVarargs
+    public final <V> V invoke(String methodName, Object... args) {
         if (reflectASM != null) {
             return reflectASM.invoke(methodName, args);
         } else {
@@ -154,7 +156,8 @@ public final class Reflection<T> {
         }
     }
 
-    public Reflection<T> invoke2(String methodName, Object... args) {
+    @SafeVarargs
+    public final Reflection<T> invoke2(String methodName, Object... args) {
         if (reflectASM != null) {
             reflectASM.invoke2(methodName, args);
         } else {

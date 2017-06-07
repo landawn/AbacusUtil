@@ -344,6 +344,218 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
+    public Stream<T> mapFirst(final Function<? super T, ? extends T> mapperForFirst) {
+        N.requireNonNull(mapperForFirst);
+
+        return new IteratorStream<>(new ExIterator<T>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public T next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                if (cursor == fromIndex) {
+                    return mapperForFirst.apply(elements[cursor++]);
+                } else {
+                    return elements[cursor++];
+                }
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            }
+
+            @Override
+            public <A> A[] toArray(A[] a) {
+                a = a.length >= toIndex - cursor ? a : (A[]) N.newArray(a.getClass().getComponentType(), toIndex - cursor);
+
+                for (int i = 0, len = toIndex - cursor; i < len; i++) {
+                    if (cursor == fromIndex) {
+                        a[i] = (A) mapperForFirst.apply(elements[cursor++]);
+                    } else {
+                        a[i] = (A) elements[cursor++];
+                    }
+                }
+
+                return a;
+            }
+        }, closeHandlers);
+    }
+
+    @Override
+    public <R> Stream<R> mapFirstOrElse(final Function<? super T, ? extends R> mapperForFirst, final Function<? super T, ? extends R> mapperForElse) {
+        N.requireNonNull(mapperForFirst);
+        N.requireNonNull(mapperForElse);
+
+        return new IteratorStream<>(new ExIterator<R>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public R next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                if (cursor == fromIndex) {
+                    return mapperForFirst.apply(elements[cursor++]);
+                } else {
+                    return mapperForElse.apply(elements[cursor++]);
+                }
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            }
+
+            @Override
+            public <A> A[] toArray(A[] a) {
+                a = a.length >= toIndex - cursor ? a : (A[]) N.newArray(a.getClass().getComponentType(), toIndex - cursor);
+
+                for (int i = 0, len = toIndex - cursor; i < len; i++) {
+                    if (cursor == fromIndex) {
+                        a[i] = (A) mapperForFirst.apply(elements[cursor++]);
+                    } else {
+                        a[i] = (A) mapperForElse.apply(elements[cursor++]);
+                    }
+                }
+
+                return a;
+            }
+        }, closeHandlers);
+    }
+
+    @Override
+    public Stream<T> mapLast(final Function<? super T, ? extends T> mapperForLast) {
+        N.requireNonNull(mapperForLast);
+
+        return new IteratorStream<>(new ExIterator<T>() {
+            private int last = toIndex - 1;
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public T next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                if (cursor == last) {
+                    return mapperForLast.apply(elements[cursor++]);
+                } else {
+                    return elements[cursor++];
+                }
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            }
+
+            @Override
+            public <A> A[] toArray(A[] a) {
+                a = a.length >= toIndex - cursor ? a : (A[]) N.newArray(a.getClass().getComponentType(), toIndex - cursor);
+
+                for (int i = 0, len = toIndex - cursor; i < len; i++) {
+                    if (cursor == last) {
+                        a[i] = (A) mapperForLast.apply(elements[cursor++]);
+                    } else {
+                        a[i] = (A) elements[cursor++];
+                    }
+                }
+
+                return a;
+            }
+        }, closeHandlers);
+    }
+
+    @Override
+    public <R> Stream<R> mapLastOrElse(final Function<? super T, ? extends R> mapperForLast, final Function<? super T, ? extends R> mapperForElse) {
+        N.requireNonNull(mapperForLast);
+        N.requireNonNull(mapperForElse);
+
+        return new IteratorStream<>(new ExIterator<R>() {
+            private int last = toIndex - 1;
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public R next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                if (cursor == last) {
+                    return mapperForLast.apply(elements[cursor++]);
+                } else {
+                    return mapperForElse.apply(elements[cursor++]);
+                }
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            }
+
+            @Override
+            public <A> A[] toArray(A[] a) {
+                a = a.length >= toIndex - cursor ? a : (A[]) N.newArray(a.getClass().getComponentType(), toIndex - cursor);
+
+                for (int i = 0, len = toIndex - cursor; i < len; i++) {
+                    if (cursor == last) {
+                        a[i] = (A) mapperForLast.apply(elements[cursor++]);
+                    } else {
+                        a[i] = (A) mapperForElse.apply(elements[cursor++]);
+                    }
+                }
+
+                return a;
+            }
+        }, closeHandlers);
+    }
+
+    @Override
     public CharStream mapToChar(final ToCharFunction<? super T> mapper) {
         return new IteratorCharStream(new ExCharIterator() {
             int cursor = fromIndex;

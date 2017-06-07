@@ -114,7 +114,8 @@ public class AsyncExecutor {
         return new CompletableFuture<>(wrap(scheduledFuture), null, executor);
     }
 
-    public List<CompletableFuture<Void>> execute(final Runnable... commands) {
+    @SafeVarargs
+    public final List<CompletableFuture<Void>> execute(final Runnable... commands) {
         final List<CompletableFuture<Void>> results = new ArrayList<>(commands.length);
 
         for (int i = 0, len = commands.length; i < len; i++) {
@@ -153,7 +154,8 @@ public class AsyncExecutor {
         return new CompletableFuture<>(wrap(scheduledFuture), null, executor);
     }
 
-    public <T> List<CompletableFuture<T>> execute(final Callable<T>... commands) {
+    @SafeVarargs
+    public final <T> List<CompletableFuture<T>> execute(final Callable<T>... commands) {
         final List<CompletableFuture<T>> results = new ArrayList<>(commands.length);
 
         for (int i = 0, len = commands.length; i < len; i++) {

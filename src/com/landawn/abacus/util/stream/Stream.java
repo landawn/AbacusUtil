@@ -311,6 +311,13 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * Returns a stream consisting of the results of applying the given function
      * to the every two adjacent elements of this stream.
      * 
+     * <pre>
+     * <code>
+     * Stream.of("a", "b", "c", "d", "e").biMap((i, j) -> i + "-" + j).println();
+     * // print out: [a-b, c-d, e-null]
+     * </code>
+     * </pre>
+     * 
      * @param mapper
      * @param ignoreNotPaired flag to identify if need to ignore the last element when the total length of the stream is odd number. Default value is false
      * @return
@@ -322,6 +329,13 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     /**
      * Returns a stream consisting of the results of applying the given function
      * to the every three adjacent elements of this stream.
+     * 
+     * <pre>
+     * <code>
+     * Stream.of("a", "b", "c", "d", "e").triMap((i, j, k) -> i + "-" + j + "-" + k).println();
+     * // print out: [a-b-c, d-e-null]
+     * </code>
+     * </pre>
      * 
      * @param mapper
      * @param ignoreNotPaired  flag to identify if need to ignore the last one or two elements when the total length of the stream is not multiple of 3. Default value is false
@@ -354,6 +368,14 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @see #collapse(BiPredicate, BinaryOperator)
      */
     public abstract <U> Stream<U> rangeMap(final BiPredicate<? super T, ? super T> sameRange, final BiFunction<? super T, ? super T, ? extends U> mapper);
+
+    public abstract Stream<T> mapFirst(Function<? super T, ? extends T> mapperForFirst);
+
+    public abstract <R> Stream<R> mapFirstOrElse(Function<? super T, ? extends R> mapperForFirst, Function<? super T, ? extends R> mapperForElse);
+
+    public abstract Stream<T> mapLast(Function<? super T, ? extends T> mapperForLast);
+
+    public abstract <R> Stream<R> mapLastOrElse(Function<? super T, ? extends R> mapperForLast, Function<? super T, ? extends R> mapperForElse);
 
     public abstract CharStream mapToChar(ToCharFunction<? super T> mapper);
 
@@ -1522,7 +1544,10 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
 
     public abstract Stream<List<T>> orderedPermutations(Comparator<? super T> comparator);
 
-    public abstract Stream<List<T>> cartesianProduct(Collection<? extends T>... cs);
+    @SafeVarargs
+    public final Stream<List<T>> cartesianProduct(Collection<? extends T>... cs) {
+        return cartesianProduct(Arrays.asList(cs));
+    }
 
     public abstract Stream<List<T>> cartesianProduct(Collection<? extends Collection<? extends T>> cs);
 
@@ -1716,7 +1741,17 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public abstract Stream<T> difference(Function<? super T, ?> mapper, Collection<?> c);
 
+    @SafeVarargs
+    public final Stream<T> append(T... a) {
+        return append(Arrays.asList(a));
+    }
+
     public abstract Stream<T> append(Collection<? extends T> c);
+
+    @SafeVarargs
+    public final Stream<T> prepend(T... a) {
+        return prepend(Arrays.asList(a));
+    }
 
     public abstract Stream<T> prepend(Collection<? extends T> c);
 
