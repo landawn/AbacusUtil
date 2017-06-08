@@ -24,6 +24,7 @@ import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -2066,7 +2067,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
             return new ParallelIteratorStream<>(ExIterator.EMPTY, closeHandlers, sorted, cmp, maxThreadNum, splitor);
         }
 
-        final Deque<T> dqueue = new ArrayDeque<>(n);
+        final Deque<T> dqueue = n <= 1024 ? new ArrayDeque<T>(n) : new LinkedList<T>();
 
         while (elements.hasNext()) {
             if (dqueue.size() >= n) {
@@ -2077,6 +2078,44 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
         }
 
         return new ParallelIteratorStream<>(dqueue.iterator(), closeHandlers, sorted, cmp, maxThreadNum, splitor);
+    }
+
+    @Override
+    public Stream<T> skipLast(final int n) {
+        N.checkArgument(n >= 0, "'n' can't be negative");
+
+        if (n == 0) {
+            return this;
+        }
+
+        return new ParallelIteratorStream<>(new ExIterator<T>() {
+            private Deque<T> dqueue = null;
+
+            @Override
+            public boolean hasNext() {
+                if (dqueue == null) {
+                    dqueue = n <= 1024 ? new ArrayDeque<T>(n) : new LinkedList<T>();
+
+                    while (dqueue.size() < n && elements.hasNext()) {
+                        dqueue.offerLast(elements.next());
+                    }
+                }
+
+                return elements.hasNext();
+            }
+
+            @Override
+            public T next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                dqueue.offerLast(elements.next());
+
+                return dqueue.pollFirst();
+            }
+
+        }, closeHandlers, sorted, cmp, maxThreadNum, splitor);
     }
 
     @Override

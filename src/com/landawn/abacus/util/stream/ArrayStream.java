@@ -1753,6 +1753,17 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
+    public Stream<T> skipLast(int n) {
+        N.checkArgument(n >= 0, "'n' can't be negative");
+
+        if (n == 0) {
+            return this;
+        }
+
+        return new ArrayStream<>(elements, fromIndex, N.max(fromIndex, toIndex - n), closeHandlers, sorted, cmp);
+    }
+
+    @Override
     public NullabLe<T> min(Comparator<? super T> comparator) {
         if (fromIndex == toIndex) {
             return NullabLe.empty();

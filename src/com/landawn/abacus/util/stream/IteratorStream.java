@@ -1631,7 +1631,7 @@ class IteratorStream<T> extends AbstractStream<T> {
             return new IteratorStream<>(ExIterator.EMPTY, closeHandlers, sorted, cmp);
         }
 
-        final Deque<T> dqueue = new ArrayDeque<>(n);
+        final Deque<T> dqueue = n <= 1024 ? new ArrayDeque<T>(n) : new LinkedList<T>();
 
         while (elements.hasNext()) {
             if (dqueue.size() >= n) {
@@ -1642,6 +1642,44 @@ class IteratorStream<T> extends AbstractStream<T> {
         }
 
         return new IteratorStream<>(dqueue.iterator(), closeHandlers, sorted, cmp);
+    }
+
+    @Override
+    public Stream<T> skipLast(final int n) {
+        N.checkArgument(n >= 0, "'n' can't be negative");
+
+        if (n == 0) {
+            return this;
+        }
+
+        return new IteratorStream<>(new ExIterator<T>() {
+            private Deque<T> dqueue = null;
+
+            @Override
+            public boolean hasNext() {
+                if (dqueue == null) {
+                    dqueue = n <= 1024 ? new ArrayDeque<T>(n) : new LinkedList<T>();
+
+                    while (dqueue.size() < n && elements.hasNext()) {
+                        dqueue.offerLast(elements.next());
+                    }
+                }
+
+                return elements.hasNext();
+            }
+
+            @Override
+            public T next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                dqueue.offerLast(elements.next());
+
+                return dqueue.pollFirst();
+            }
+
+        }, closeHandlers, sorted, cmp);
     }
 
     @Override

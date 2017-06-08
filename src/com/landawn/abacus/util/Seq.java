@@ -521,6 +521,26 @@ public final class Seq<T> extends ImmutableCollection<T> {
         }
     }
 
+    /**
+     * Return at most first <code>n</code> elements.
+     * 
+     * @param n
+     * @return
+     */
+    public List<T> first(final int n) {
+        N.checkArgument(n >= 0, "'n' can't be negative: " + n);
+
+        if (N.isNullOrEmpty(coll) || n == 0) {
+            return new ArrayList<>();
+        } else if (coll.size() <= n) {
+            return new ArrayList<>(coll);
+        } else if (coll instanceof List) {
+            return new ArrayList<>(((List<T>) coll).subList(0, n));
+        } else {
+            return new ArrayList<>(slice(0, n));
+        }
+    }
+
     public NullabLe<T> last() {
         if (size() == 0) {
             return NullabLe.empty();
@@ -537,6 +557,26 @@ public final class Seq<T> extends ImmutableCollection<T> {
             }
 
             return NullabLe.of(e);
+        }
+    }
+
+    /**
+     * Return at most last <code>n</code> elements.
+     * 
+     * @param n
+     * @return
+     */
+    public List<T> last(final int n) {
+        N.checkArgument(n >= 0, "'n' can't be negative: " + n);
+
+        if (N.isNullOrEmpty(coll) || n == 0) {
+            return new ArrayList<>();
+        } else if (coll.size() <= n) {
+            return new ArrayList<>(coll);
+        } else if (coll instanceof List) {
+            return new ArrayList<>(((List<T>) coll).subList(coll.size() - n, coll.size()));
+        } else {
+            return new ArrayList<>(slice(coll.size() - n, coll.size()));
         }
     }
 

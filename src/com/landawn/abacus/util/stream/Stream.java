@@ -1479,7 +1479,23 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public abstract Pair<Stream<T>, NullabLe<T>> headAndTail2();
 
+    /**
+     * A queue with size up to <code>n</code> will be maintained to filter out the last <code>n</code> elements. 
+     * It may cause <code>out of memory error</code> if <code>n</code> is big enough.
+     *
+     * @param n
+     * @return
+     */
     public abstract Stream<T> last(int n);
+
+    /**
+     * A queue with size up to <code>n</code> will be maintained to filter out the last <code>n</code> elements. 
+     * It may cause <code>out of memory error</code> if <code>n</code> is big enough.
+     * 
+     * @param n
+     * @return
+     */
+    public abstract Stream<T> skipLast(int n);
 
     /**
      * Returns the minimum element of this stream according to the provided

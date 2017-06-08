@@ -5,7 +5,11 @@
 
 2, Add append(T...)/prepend(T...) to Stream/Seq
 
-3, Improvements and bug fix.
+3, Add skipLast to Stream.
+
+4, Add first(n) and last(n) to Seq
+
+5, Improvements and bug fix.
 
 
 ========Changes in 0.9.69=========================================================================
