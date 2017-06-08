@@ -1714,6 +1714,66 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return N.split(coll, size);
     }
 
+    /**
+     * 
+     * @param n
+     * @return
+     */
+    @SuppressWarnings("rawtypes")
+    public Pair<List<T>, List<T>> splitAt(final int n) {
+        N.checkArgument(n >= 0, "'n' can't be negative: ", n);
+
+        List<T> left = null;
+        List<T> right = null;
+
+        if (N.isNullOrEmpty(coll)) {
+            left = new ArrayList<>();
+            right = new ArrayList<>();
+        } else if (n == 0) {
+            left = new ArrayList<>();
+            right = new ArrayList<>(coll);
+        } else if (n >= coll.size()) {
+            left = new ArrayList<>();
+            right = new ArrayList<>(coll);
+        } else if (coll instanceof List) {
+            left = new ArrayList<>(((List) coll).subList(0, n));
+            right = new ArrayList<>(((List) coll).subList(n, size()));
+        } else {
+            left = new ArrayList<>(slice(0, n));
+            right = new ArrayList<>(slice(n, size()));
+        }
+
+        return Pair.of(left, right);
+    }
+
+    public Pair<List<T>, List<T>> splitBy(final Predicate<? super T> predicate) {
+        N.requireNonNull(predicate);
+
+        final List<T> left = new ArrayList<>();
+        final List<T> right = new ArrayList<>();
+
+        if (N.notNullOrEmpty(coll)) {
+            final Iterator<T> iter = iterator();
+            T next = (T) N.NULL_MASK;
+
+            while (iter.hasNext() && predicate.test((next = iter.next()))) {
+                left.add(next);
+
+                next = (T) N.NULL_MASK;
+            }
+
+            if (next != N.NULL_MASK) {
+                right.add(next);
+            }
+
+            while (iter.hasNext()) {
+                right.add(iter.next());
+            }
+        }
+
+        return Pair.of(left, right);
+    }
+
     public String join() {
         return join(N.ELEMENT_SEPARATOR);
     }

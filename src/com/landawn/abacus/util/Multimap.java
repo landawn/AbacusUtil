@@ -40,6 +40,7 @@ import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.TriFunction;
 import com.landawn.abacus.util.function.TriPredicate;
+import com.landawn.abacus.util.stream.EntryStream;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -1232,6 +1233,10 @@ public final class Multimap<K, E, V extends Collection<E>> {
 
     public Stream<Map.Entry<K, V>> stream() {
         return Stream.of(valueMap.entrySet());
+    }
+
+    public EntryStream<K, V> entryStream() {
+        return EntryStream.of(valueMap);
     }
 
     public void clear() {

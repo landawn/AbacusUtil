@@ -1,15 +1,19 @@
 
 ========Changes in 0.9.70=========================================================================
 
-1, Add mapFirst/mapFirstOrElse/mapLast/mapLastOrElse to Stream
+1, Add mapFirst/mapFirstOrElse/mapLast/mapLastOrElse to Stream.
 
-2, Add append(T...)/prepend(T...) to Stream/Seq
+2, Add append(T...)/prepend(T...) to Stream/Seq.
 
 3, Add skipLast to Stream.
 
-4, Add first(n) and last(n) to Seq
+4, Add entryStream to Multiset/Multimap.
 
-5, Improvements and bug fix.
+5, Add first(n) and last(n) to Seq.
+
+6, Add splitAt/splitBy/findFirstOrLast/findFirstAndLast to Seq.
+
+7, Improvements and bug fix.
 
 
 ========Changes in 0.9.69=========================================================================

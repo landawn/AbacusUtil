@@ -53,13 +53,19 @@ public final class EntryStream<K, V> {
     public static <E> EntryStream<E, Integer> of(final Multiset<E> multiset) {
         final Function<Map.Entry<E, Integer>, Map.Entry<E, Integer>> mapper = Fn.identity();
 
-        return (multiset == null ? Stream.<Map.Entry<E, Integer>> empty() : multiset.stream()).mapToEntry(mapper);
+        return multiset == null ? EntryStream.<E, Integer> empty() : multiset.stream().mapToEntry(mapper);
     }
 
     public static <E> EntryStream<E, Long> of(final LongMultiset<E> multiset) {
         final Function<Map.Entry<E, Long>, Map.Entry<E, Long>> mapper = Fn.identity();
 
-        return (multiset == null ? Stream.<Map.Entry<E, Long>> empty() : multiset.stream()).mapToEntry(mapper);
+        return multiset == null ? EntryStream.<E, Long> empty() : multiset.stream().mapToEntry(mapper);
+    }
+
+    public static <K, E, V extends Collection<E>> EntryStream<K, V> of(final Multimap<K, E, V> mulitmap) {
+        final Function<Map.Entry<K, V>, Map.Entry<K, V>> mapper = Fn.identity();
+
+        return mulitmap == null ? EntryStream.<K, V> empty() : mulitmap.stream().mapToEntry(mapper);
     }
 
     public Stream<K> keys() {
