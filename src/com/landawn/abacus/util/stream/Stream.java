@@ -135,7 +135,8 @@ import com.landawn.abacus.util.function.UnaryOperator;
 import com.landawn.abacus.util.stream.ExIterator.QueuedIterator;
 
 /**
- * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
+ * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk,
+ * And including methods copied from StreamEx: https://github.com/amaembo/streamex under Apache License, version 2.0.
  * <br />
  * 
  * A sequence of elements supporting sequential and parallel aggregate

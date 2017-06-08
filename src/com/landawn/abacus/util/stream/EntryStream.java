@@ -6,7 +6,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import com.landawn.abacus.util.Fn;
+import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
+import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.NullabLe;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.function.BiConsumer;
@@ -17,10 +19,18 @@ import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
 
 public final class EntryStream<K, V> {
+
+    @SuppressWarnings("rawtypes")
+    private static final EntryStream EMPTY = of(new Map.Entry[0]);
+
     private final Stream<Map.Entry<K, V>> s;
 
     EntryStream(final Stream<Map.Entry<K, V>> s) {
         this.s = s;
+    }
+
+    public static <K, V> EntryStream<K, V> empty() {
+        return EMPTY;
     }
 
     public static <K, V> EntryStream<K, V> of(final Stream<Map.Entry<K, V>> s) {
@@ -38,6 +48,18 @@ public final class EntryStream<K, V> {
     @SafeVarargs
     public static <K, V> EntryStream<K, V> of(final Map.Entry<K, V>... entries) {
         return new EntryStream<K, V>(Stream.of(entries));
+    }
+
+    public static <E> EntryStream<E, Integer> of(final Multiset<E> multiset) {
+        final Function<Map.Entry<E, Integer>, Map.Entry<E, Integer>> mapper = Fn.identity();
+
+        return (multiset == null ? Stream.<Map.Entry<E, Integer>> empty() : multiset.stream()).mapToEntry(mapper);
+    }
+
+    public static <E> EntryStream<E, Long> of(final LongMultiset<E> multiset) {
+        final Function<Map.Entry<E, Long>, Map.Entry<E, Long>> mapper = Fn.identity();
+
+        return (multiset == null ? Stream.<Map.Entry<E, Long>> empty() : multiset.stream()).mapToEntry(mapper);
     }
 
     public Stream<K> keys() {

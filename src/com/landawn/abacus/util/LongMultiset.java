@@ -39,6 +39,7 @@ import com.landawn.abacus.util.function.ObjLongConsumer;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.TriFunction;
 import com.landawn.abacus.util.function.TriPredicate;
+import com.landawn.abacus.util.stream.EntryStream;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -1313,6 +1314,10 @@ public final class LongMultiset<E> implements Iterable<E> {
                 return Pair.of(t.getKey(), t.getValue().value());
             }
         });
+    }
+
+    public EntryStream<E, Long> entryStream() {
+        return EntryStream.of(this);
     }
 
     @Override
