@@ -182,6 +182,10 @@ public final class Fn {
         // Singleton.
     }
 
+    public static <T> T get(final Supplier<T> supplier) {
+        return supplier.get();
+    }
+
     public static <T> Comparator<T> naturalOrder() {
         return Comparators.naturalOrder();
     }

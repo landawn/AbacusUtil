@@ -369,6 +369,18 @@ public final class EntryStream<K, V> {
         return of(toMap(keyExtractor, valueMapper, mergeFunction, mapFactory));
     }
 
+    public EntryStream<K, V> skip(long n) {
+        return of(s.skip(n));
+    }
+
+    public EntryStream<K, V> limit(long n) {
+        return of(s.limit(n));
+    }
+
+    public long count() {
+        return s.count();
+    }
+
     /**
      * 
      * @return
@@ -646,7 +658,7 @@ public final class EntryStream<K, V> {
         return s.collectAndThen(downstream, finisher);
     }
 
-    public long count() {
-        return s.count();
+    public <K2, V2> EntryStream<K2, V2> __(Function<? super Stream<Map.Entry<K, V>>, ? extends Stream<Map.Entry<K2, V2>>> func) {
+        return of(func.apply(s));
     }
 }

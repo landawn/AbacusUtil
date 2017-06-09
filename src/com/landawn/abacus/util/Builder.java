@@ -20,6 +20,7 @@ import java.util.Map;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.Predicate;
+import com.landawn.abacus.util.function.Supplier;
 
 /**
  * 
@@ -91,6 +92,10 @@ public class Builder<T> {
 
     public static final <T> Builder<T> of(T val) {
         return new Builder<>(val);
+    }
+
+    public static <T> Builder<T> get(final Supplier<T> supplier) {
+        return new Builder<>(supplier.get());
     }
 
     public Builder<T> accept(final Consumer<? super T> consumer) {

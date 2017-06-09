@@ -4831,6 +4831,124 @@ public final class N {
         return a == null ? (b == null ? 0 : -1) : (b == null ? 1 : (cmp == null ? OBJ_COMPARATOR : cmp).compare(a, b));
     }
 
+    /**
+     * Continue to compare the pairs of values <code>(a1, b1), (a2, b2)</code> until they're not equal.
+     * <code>0</code> is returned if all of the pairs of values are equal.
+     * 
+     * @param a1
+     * @param b1
+     * @param a2
+     * @param b2
+     * @return
+     */
+    public static <T1 extends Comparable<T1>, T2 extends Comparable<T2>> int compare(T1 a1, T1 b1, T2 a2, T2 b2) {
+        int res = N.compare(a1, b1);
+    
+        if (res == 0) {
+            res = N.compare(a2, b2);
+        }
+    
+        return res;
+    }
+
+    /**
+     * Continue to compare the pairs of values <code>(a1, b1), (a2, b2), (a3, b3)</code> until they're not equal.
+     * <code>0</code> is returned if all of the pairs of values are equal.
+     * 
+     * @param a1
+     * @param b1
+     * @param a2
+     * @param b2
+     * @param a3
+     * @param b3
+     * @return
+     */
+    public static <T1 extends Comparable<T1>, T2 extends Comparable<T2>, T3 extends Comparable<T3>> int compare(T1 a1, T1 b1, T2 a2, T2 b2, T3 a3, T3 b3) {
+        int res = N.compare(a1, b1);
+    
+        if (res == 0) {
+            res = N.compare(a2, b2);
+        }
+    
+        if (res == 0) {
+            res = N.compare(a3, b3);
+        }
+    
+        return res;
+    }
+
+    /** 
+     * Continue to compare the pairs of values <code>(a1, b1), (a2, b2), (a3, b3), (a4, b4)</code> until they're not equal.
+     * <code>0</code> is returned if all of the pairs of values are equal.
+     * 
+     * @param a1
+     * @param b1
+     * @param a2
+     * @param b2
+     * @param a3
+     * @param b3
+     * @param a4
+     * @param b4
+     * @return
+     */
+    public static <T1 extends Comparable<T1>, T2 extends Comparable<T2>, T3 extends Comparable<T3>, T4 extends Comparable<T4>> int compare(T1 a1, T1 b1, T2 a2,
+            T2 b2, T3 a3, T3 b3, T4 a4, T4 b4) {
+        int res = N.compare(a1, b1);
+    
+        if (res == 0) {
+            res = N.compare(a2, b2);
+        }
+    
+        if (res == 0) {
+            res = N.compare(a3, b3);
+        }
+    
+        if (res == 0) {
+            res = N.compare(a4, b4);
+        }
+    
+        return res;
+    }
+
+    /**
+     * Continue to compare the pairs of values <code>(a1, b1), (a2, b2), (a3, b3), (a4, b4), (a5, b5)</code> until they're not equal.
+     * <code>0</code> is returned if all of the pairs of values are equal.
+     * 
+     * @param a1
+     * @param b1
+     * @param a2
+     * @param b2
+     * @param a3
+     * @param b3
+     * @param a4
+     * @param b4
+     * @param a5
+     * @param b5
+     * @return
+     */
+    public static <T1 extends Comparable<T1>, T2 extends Comparable<T2>, T3 extends Comparable<T3>, T4 extends Comparable<T4>, T5 extends Comparable<T5>> int compare(
+            T1 a1, T1 b1, T2 a2, T2 b2, T3 a3, T3 b3, T4 a4, T4 b4, T5 a5, T5 b5) {
+        int res = N.compare(a1, b1);
+    
+        if (res == 0) {
+            res = N.compare(a2, b2);
+        }
+    
+        if (res == 0) {
+            res = N.compare(a3, b3);
+        }
+    
+        if (res == 0) {
+            res = N.compare(a4, b4);
+        }
+    
+        if (res == 0) {
+            res = N.compare(a5, b5);
+        }
+    
+        return res;
+    }
+
     public static int compare(final boolean[] a, final boolean[] b) {
         if (N.isNullOrEmpty(a)) {
             return N.isNullOrEmpty(b) ? 0 : -1;
