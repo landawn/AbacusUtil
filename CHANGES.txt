@@ -13,7 +13,11 @@
 
 6, Add splitAt/splitBy/findFirstOrLast/findFirstAndLast to Seq.
 
-7, Improvements and bug fix.
+7, Add compare(...) to N.
+
+8*, Remove orFalse() from OptionalBoolean.
+
+9, Improvements and bug fix.
 
 
 ========Changes in 0.9.69=========================================================================

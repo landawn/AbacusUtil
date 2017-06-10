@@ -42,10 +42,10 @@ public final class Try<T extends AutoCloseable> {
         return new Try<>(t);
     }
 
-    public static <T extends AutoCloseable> Try<T> of(final Supplier<T, Exception> supplier) {
+    public static <T extends AutoCloseable> Try<T> of(final Supplier<T, ? extends Throwable> supplier) {
         try {
             return new Try<>(supplier.get());
-        } catch (Exception e) {
+        } catch (Throwable e) {
             throw N.toRuntimeException(e);
         }
     }
@@ -103,14 +103,14 @@ public final class Try<T extends AutoCloseable> {
     //        };
     //    }
 
-    public static void run(final Try.Runnable<Exception> cmd) {
+    public static void run(final Try.Runnable<? extends Throwable> cmd) {
         run(cmd, null);
     }
 
-    public static void run(final Try.Runnable<Exception> cmd, final com.landawn.abacus.util.function.Consumer<? super Throwable> actionOnError) {
+    public static void run(final Try.Runnable<? extends Throwable> cmd, final com.landawn.abacus.util.function.Consumer<? super Throwable> actionOnError) {
         try {
             cmd.run();
-        } catch (Exception e) {
+        } catch (Throwable e) {
             if (actionOnError == null) {
                 throw N.toRuntimeException(e);
             } else {
@@ -126,7 +126,7 @@ public final class Try<T extends AutoCloseable> {
     public static <R> R call(final java.util.concurrent.Callable<R> cmd, final com.landawn.abacus.util.function.Function<? super Throwable, R> actionOnError) {
         try {
             return cmd.call();
-        } catch (Exception e) {
+        } catch (Throwable e) {
             if (actionOnError == null) {
                 throw N.toRuntimeException(e);
             } else {
@@ -135,11 +135,11 @@ public final class Try<T extends AutoCloseable> {
         }
     }
 
-    public void run(final Try.Consumer<? super T, Exception> cmd) {
+    public void run(final Try.Consumer<? super T, ? extends Throwable> cmd) {
         run(cmd, null);
     }
 
-    public void run(final Try.Consumer<? super T, Exception> cmd, final com.landawn.abacus.util.function.Consumer<? super Throwable> actionOnError) {
+    public void run(final Try.Consumer<? super T, ? extends Throwable> cmd, final com.landawn.abacus.util.function.Consumer<? super Throwable> actionOnError) {
         try {
             cmd.accept(t);
         } catch (Throwable e) {
@@ -153,11 +153,12 @@ public final class Try<T extends AutoCloseable> {
         }
     }
 
-    public <R> R call(final Try.Function<? super T, R, Exception> cmd) {
+    public <R> R call(final Try.Function<? super T, R, ? extends Throwable> cmd) {
         return call(cmd, null);
     }
 
-    public <R> R call(final Try.Function<? super T, R, Exception> cmd, final com.landawn.abacus.util.function.Function<? super Throwable, R> actionOnError) {
+    public <R> R call(final Try.Function<? super T, R, ? extends Throwable> cmd,
+            final com.landawn.abacus.util.function.Function<? super Throwable, R> actionOnError) {
         try {
             return cmd.apply(t);
         } catch (Throwable e) {
@@ -182,10 +183,10 @@ public final class Try<T extends AutoCloseable> {
             return new Try0<>(t);
         }
 
-        public static <T extends AutoCloseable> Try0<T> of(final Supplier<T, Exception> supplier) {
+        public static <T extends AutoCloseable> Try0<T> of(final Supplier<T, ? extends Throwable> supplier) {
             try {
                 return new Try0<>(supplier.get());
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 throw N.toRuntimeException(e);
             }
         }
@@ -235,14 +236,14 @@ public final class Try<T extends AutoCloseable> {
         //        };
         //    }
 
-        public void run(final Try.Runnable<Exception> cmd) {
+        public void run(final Try.Runnable<? extends Throwable> cmd) {
             run(cmd, null);
         }
 
-        public void run(final Try.Runnable<Exception> cmd, final com.landawn.abacus.util.function.Consumer<? super Throwable> actionOnError) {
+        public void run(final Try.Runnable<? extends Throwable> cmd, final com.landawn.abacus.util.function.Consumer<? super Throwable> actionOnError) {
             try {
                 cmd.run();
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 if (actionOnError == null) {
                     throw N.toRuntimeException(e);
                 } else {
