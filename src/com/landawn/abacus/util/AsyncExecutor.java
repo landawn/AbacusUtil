@@ -176,7 +176,7 @@ public class AsyncExecutor {
     }
 
     public CompletableFuture<Void> execute(final Runnable action, final int retryTimes, final long retryInterval,
-            final Function<Throwable, Boolean> retryCondition) {
+            final Function<? super Throwable, Boolean> retryCondition) {
         return execute(new Runnable() {
             @Override
             public void run() {
@@ -186,7 +186,7 @@ public class AsyncExecutor {
     }
 
     public <T> CompletableFuture<T> execute(final Callable<T> action, final int retryTimes, final long retryInterval,
-            final BiFunction<? super T, Throwable, Boolean> retryCondition) {
+            final BiFunction<? super T, ? super Throwable, Boolean> retryCondition) {
         return execute(new Callable<T>() {
             @Override
             public T call() throws Exception {

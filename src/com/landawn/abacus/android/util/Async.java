@@ -88,7 +88,7 @@ public class Async {
      * @return
      */
     static CompletableFuture<Void> execute(final Runnable action, final int retryTimes, final long retryInterval,
-            final Function<Throwable, Boolean> retryCondition) {
+            final Function<? super Throwable, Boolean> retryCondition) {
         return execute(new Runnable() {
             @Override
             public void run() {
@@ -129,7 +129,7 @@ public class Async {
      * @return
      */
     static <T> CompletableFuture<T> execute(final Callable<T> action, final int retryTimes, final long retryInterval,
-            final BiFunction<? super T, Throwable, Boolean> retryCondition) {
+            final BiFunction<? super T, ? super Throwable, Boolean> retryCondition) {
         return execute(new Callable<T>() {
             @Override
             public T call() throws Exception {
@@ -171,7 +171,7 @@ public class Async {
      * @return
      */
     static CompletableFuture<Void> executeWithThreadPool(final Runnable action, final int retryTimes, final long retryInterval,
-            final Function<Throwable, Boolean> retryCondition) {
+            final Function<? super Throwable, Boolean> retryCondition) {
         return executeWithThreadPool(new Runnable() {
             @Override
             public void run() {
@@ -212,7 +212,7 @@ public class Async {
      * @return
      */
     static <T> CompletableFuture<T> executeWithThreadPool(final Callable<T> action, final int retryTimes, final long retryInterval,
-            final BiFunction<? super T, Throwable, Boolean> retryCondition) {
+            final BiFunction<? super T, ? super Throwable, Boolean> retryCondition) {
         return executeWithThreadPool(new Callable<T>() {
             @Override
             public T call() throws Exception {
@@ -252,7 +252,7 @@ public class Async {
      * @return
      */
     static CompletableFuture<Void> executeOnUiThread(final Runnable action, final int retryTimes, final long retryInterval,
-            final Function<Throwable, Boolean> retryCondition) {
+            final Function<? super Throwable, Boolean> retryCondition) {
         return executeOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -291,7 +291,7 @@ public class Async {
      * @return
      */
     static <T> CompletableFuture<T> executeOnUiThread(final Callable<T> action, final int retryTimes, final long retryInterval,
-            final BiFunction<? super T, Throwable, Boolean> retryCondition) {
+            final BiFunction<? super T, ? super Throwable, Boolean> retryCondition) {
         return executeOnUiThread(new Callable<T>() {
             @Override
             public T call() throws Exception {
@@ -417,7 +417,7 @@ public class Async {
         }
 
         public static CompletableFuture<Void> execute(final Runnable action, final int retryTimes, final long retryInterval,
-                final Function<Throwable, Boolean> retryCondition) {
+                final Function<? super Throwable, Boolean> retryCondition) {
             return Async.execute(action, retryTimes, retryInterval, retryCondition);
 
         }
@@ -437,7 +437,7 @@ public class Async {
         }
 
         public static <T> CompletableFuture<T> execute(final Callable<T> action, final int retryTimes, final long retryInterval,
-                final BiFunction<? super T, Throwable, Boolean> retryCondition) {
+                final BiFunction<? super T, ? super Throwable, Boolean> retryCondition) {
             return Async.execute(action, retryTimes, retryInterval, retryCondition);
         }
     }
@@ -462,7 +462,7 @@ public class Async {
         }
 
         public static CompletableFuture<Void> execute(final Runnable action, final int retryTimes, final long retryInterval,
-                final Function<Throwable, Boolean> retryCondition) {
+                final Function<? super Throwable, Boolean> retryCondition) {
             return Async.executeWithThreadPool(action, retryTimes, retryInterval, retryCondition);
 
         }
@@ -482,7 +482,7 @@ public class Async {
         }
 
         public static <T> CompletableFuture<T> execute(final Callable<T> action, final int retryTimes, final long retryInterval,
-                final BiFunction<? super T, Throwable, Boolean> retryCondition) {
+                final BiFunction<? super T, ? super Throwable, Boolean> retryCondition) {
             return Async.executeWithThreadPool(action, retryTimes, retryInterval, retryCondition);
         }
     }
@@ -514,7 +514,7 @@ public class Async {
         }
 
         public static CompletableFuture<Void> execute(final Runnable action, final int retryTimes, final long retryInterval,
-                final Function<Throwable, Boolean> retryCondition) {
+                final Function<? super Throwable, Boolean> retryCondition) {
             return Async.executeOnUiThread(action, retryTimes, retryInterval, retryCondition);
         }
 
@@ -540,7 +540,7 @@ public class Async {
         }
 
         public static <T> CompletableFuture<T> execute(final Callable<T> action, final int retryTimes, final long retryInterval,
-                final BiFunction<? super T, Throwable, Boolean> retryCondition) {
+                final BiFunction<? super T, ? super Throwable, Boolean> retryCondition) {
             return Async.executeOnUiThread(action, retryTimes, retryInterval, retryCondition);
         }
     }
