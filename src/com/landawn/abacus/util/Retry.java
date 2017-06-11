@@ -33,11 +33,11 @@ public final class Retry<T> {
 
     private final int retryTimes;
     private final long retryInterval;
-    private final Function<Throwable, Boolean> retryCondition;
-    private final BiFunction<? super T, Throwable, Boolean> retryCondition2;
+    private final Function<? super Throwable, Boolean> retryCondition;
+    private final BiFunction<? super T, ? super Throwable, Boolean> retryCondition2;
 
-    Retry(final int retryTimes, final long retryInterval, final Function<Throwable, Boolean> retryCondition,
-            final BiFunction<? super T, Throwable, Boolean> retryCondition2) {
+    Retry(final int retryTimes, final long retryInterval, final Function<? super Throwable, Boolean> retryCondition,
+            final BiFunction<? super T, ? super Throwable, Boolean> retryCondition2) {
 
         this.retryTimes = retryTimes;
         this.retryInterval = retryInterval;
@@ -45,7 +45,7 @@ public final class Retry<T> {
         this.retryCondition2 = retryCondition2;
     }
 
-    public static Retry<Void> of(final int retryTimes, final long retryInterval, final Function<Throwable, Boolean> retryCondition) {
+    public static Retry<Void> of(final int retryTimes, final long retryInterval, final Function<? super Throwable, Boolean> retryCondition) {
         if (retryTimes < 0 || retryInterval < 0) {
             throw new IllegalArgumentException("'retryTimes' and 'retryInterval' can't be negative");
         }
@@ -55,7 +55,7 @@ public final class Retry<T> {
         return new Retry<Void>(retryTimes, retryInterval, retryCondition, null);
     }
 
-    public static <R> Retry<R> of(final int retryTimes, final long retryInterval, final BiFunction<? super R, Throwable, Boolean> retryCondition) {
+    public static <R> Retry<R> of(final int retryTimes, final long retryInterval, final BiFunction<? super R, ? super Throwable, Boolean> retryCondition) {
         if (retryTimes < 0 || retryInterval < 0) {
             throw new IllegalArgumentException("'retryTimes' and 'retryInterval' can't be negative");
         }
@@ -443,11 +443,11 @@ public final class Retry<T> {
     public static final class Retry0<T> {
         private final int retryTimes;
         private final long retryInterval;
-        private final Function<Throwable, Boolean> retryCondition;
-        private final BiFunction<? super T, Throwable, Boolean> retryCondition2;
+        private final Function<? super Throwable, Boolean> retryCondition;
+        private final BiFunction<? super T, ? super Throwable, Boolean> retryCondition2;
 
-        Retry0(final int retryTimes, final long retryInterval, final Function<Throwable, Boolean> retryCondition,
-                final BiFunction<? super T, Throwable, Boolean> retryCondition2) {
+        Retry0(final int retryTimes, final long retryInterval, final Function<? super Throwable, Boolean> retryCondition,
+                final BiFunction<? super T, ? super Throwable, Boolean> retryCondition2) {
 
             this.retryTimes = retryTimes;
             this.retryInterval = retryInterval;
@@ -455,7 +455,7 @@ public final class Retry<T> {
             this.retryCondition2 = retryCondition2;
         }
 
-        public static Retry0<Void> of(final int retryTimes, final long retryInterval, final Function<Throwable, Boolean> retryCondition) {
+        public static Retry0<Void> of(final int retryTimes, final long retryInterval, final Function<? super Throwable, Boolean> retryCondition) {
             if (retryTimes < 0 || retryInterval < 0) {
                 throw new IllegalArgumentException("'retryTimes' and 'retryInterval' can't be negative");
             }
@@ -465,7 +465,7 @@ public final class Retry<T> {
             return new Retry0<Void>(retryTimes, retryInterval, retryCondition, null);
         }
 
-        public static <R> Retry0<R> of(final int retryTimes, final long retryInterval, final BiFunction<? super R, Throwable, Boolean> retryCondition) {
+        public static <R> Retry0<R> of(final int retryTimes, final long retryInterval, final BiFunction<? super R, ? super Throwable, Boolean> retryCondition) {
             if (retryTimes < 0 || retryInterval < 0) {
                 throw new IllegalArgumentException("'retryTimes' and 'retryInterval' can't be negative");
             }
@@ -475,7 +475,7 @@ public final class Retry<T> {
             return new Retry0<R>(retryTimes, retryInterval, null, retryCondition);
         }
 
-        public void run(final Try.Runnable<Exception> cmd) throws Exception {
+        public void run(final Try.Runnable<? extends Exception> cmd) throws Exception {
             try {
                 cmd.run();
             } catch (Exception e) {

@@ -74,17 +74,17 @@ public final class Profiler {
         // singleton
     }
 
-    public static MultiLoopsStatistics run(final int threadNum, final int loopNum, final int roundNum, final Try.Runnable<Exception> command) {
+    public static MultiLoopsStatistics run(final int threadNum, final int loopNum, final int roundNum, final Try.Runnable<? extends Exception> command) {
         return run(threadNum, loopNum, roundNum, "run", command);
     }
 
     public static MultiLoopsStatistics run(final int threadNum, final int loopNum, final int roundNum, final String label,
-            final Try.Runnable<Exception> command) {
+            final Try.Runnable<? extends Exception> command) {
         return run(threadNum, 0, loopNum, 0, roundNum, label, command);
     }
 
     public static MultiLoopsStatistics run(final int threadNum, final long threadDelay, final int loopNum, final long loopDelay, final int roundNum,
-            final String label, final Try.Runnable<Exception> command) {
+            final String label, final Try.Runnable<? extends Exception> command) {
         return run(command, label, getMethod(command, "run"), null, null, null, null, null, threadNum, threadDelay, loopNum, loopDelay, roundNum);
     }
 

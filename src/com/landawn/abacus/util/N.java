@@ -4843,11 +4843,11 @@ public final class N {
      */
     public static <T1 extends Comparable<T1>, T2 extends Comparable<T2>> int compare(T1 a1, T1 b1, T2 a2, T2 b2) {
         int res = N.compare(a1, b1);
-    
+
         if (res == 0) {
             res = N.compare(a2, b2);
         }
-    
+
         return res;
     }
 
@@ -4865,15 +4865,15 @@ public final class N {
      */
     public static <T1 extends Comparable<T1>, T2 extends Comparable<T2>, T3 extends Comparable<T3>> int compare(T1 a1, T1 b1, T2 a2, T2 b2, T3 a3, T3 b3) {
         int res = N.compare(a1, b1);
-    
+
         if (res == 0) {
             res = N.compare(a2, b2);
         }
-    
+
         if (res == 0) {
             res = N.compare(a3, b3);
         }
-    
+
         return res;
     }
 
@@ -4894,19 +4894,19 @@ public final class N {
     public static <T1 extends Comparable<T1>, T2 extends Comparable<T2>, T3 extends Comparable<T3>, T4 extends Comparable<T4>> int compare(T1 a1, T1 b1, T2 a2,
             T2 b2, T3 a3, T3 b3, T4 a4, T4 b4) {
         int res = N.compare(a1, b1);
-    
+
         if (res == 0) {
             res = N.compare(a2, b2);
         }
-    
+
         if (res == 0) {
             res = N.compare(a3, b3);
         }
-    
+
         if (res == 0) {
             res = N.compare(a4, b4);
         }
-    
+
         return res;
     }
 
@@ -4929,23 +4929,23 @@ public final class N {
     public static <T1 extends Comparable<T1>, T2 extends Comparable<T2>, T3 extends Comparable<T3>, T4 extends Comparable<T4>, T5 extends Comparable<T5>> int compare(
             T1 a1, T1 b1, T2 a2, T2 b2, T3 a3, T3 b3, T4 a4, T4 b4, T5 a5, T5 b5) {
         int res = N.compare(a1, b1);
-    
+
         if (res == 0) {
             res = N.compare(a2, b2);
         }
-    
+
         if (res == 0) {
             res = N.compare(a3, b3);
         }
-    
+
         if (res == 0) {
             res = N.compare(a4, b4);
         }
-    
+
         if (res == 0) {
             res = N.compare(a5, b5);
         }
-    
+
         return res;
     }
 
@@ -29878,8 +29878,8 @@ public final class N {
         return xmlParser.serialize(jsonParser.deserialize(cls, json));
     }
 
-    public static void execute(final Try.Runnable<Exception> cmd, final int retryTimes, final long retryInterval,
-            final Function<Throwable, Boolean> retryCondition) {
+    public static void execute(final Try.Runnable<? extends Exception> cmd, final int retryTimes, final long retryInterval,
+            final Function<? super Throwable, Boolean> retryCondition) {
         try {
             Retry0.of(retryTimes, retryInterval, retryCondition).run(cmd);
         } catch (Exception e) {
@@ -29888,7 +29888,7 @@ public final class N {
     }
 
     public static <T> T execute(final Callable<T> cmd, final int retryTimes, final long retryInterval,
-            final BiFunction<? super T, Throwable, Boolean> retryCondition) {
+            final BiFunction<? super T, ? super Throwable, Boolean> retryCondition) {
         try {
             final Retry0<T> retry = Retry0.of(retryTimes, retryInterval, retryCondition);
             return retry.call(cmd);
@@ -29939,8 +29939,8 @@ public final class N {
     //        return asyncExecutor.invoke(instance, method, args);
     //    }
 
-    public static CompletableFuture<Void> asyncExecute(final Try.Runnable<Exception> cmd, final int retryTimes, final long retryInterval,
-            final Function<Throwable, Boolean> retryCondition) {
+    public static CompletableFuture<Void> asyncExecute(final Try.Runnable<? extends Exception> cmd, final int retryTimes, final long retryInterval,
+            final Function<? super Throwable, Boolean> retryCondition) {
         return asyncExecutor.execute(new Runnable() {
             @Override
             public void run() {
@@ -29954,7 +29954,7 @@ public final class N {
     }
 
     public static <T> CompletableFuture<T> asyncExecute(final Callable<T> cmd, final int retryTimes, final long retryInterval,
-            final BiFunction<? super T, Throwable, Boolean> retryCondition) {
+            final BiFunction<? super T, ? super Throwable, Boolean> retryCondition) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
             public T call() {
