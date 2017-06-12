@@ -1,4 +1,4 @@
-
+﻿
 ========Changes in 0.9.70=========================================================================
 
 1, Add mapFirst/mapFirstOrElse/mapLast/mapLastOrElse to Stream.
@@ -17,7 +17,9 @@
 
 8*, Remove orFalse() from OptionalBoolean.
 
-9, Improvements and bug fix.
+9*, Refactoring Stream API to reduce the size of abacus-android-*.jar
+
+10, Improvements and bug fix.
 
 
 ========Changes in 0.9.69=========================================================================
