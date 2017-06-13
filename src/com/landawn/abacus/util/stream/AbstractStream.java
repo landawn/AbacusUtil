@@ -331,7 +331,7 @@ abstract class AbstractStream<T> extends Stream<T> {
                 final T left = next == NULL ? iter.next() : next;
                 T right = left;
 
-                while (iter.hasNext() && sameRange.test(left, (next = iter.next()))) {
+                while (iter.hasNext() && sameRange.test(right, (next = iter.next()))) {
                     right = next;
                 }
 
@@ -793,36 +793,6 @@ abstract class AbstractStream<T> extends Stream<T> {
             @Override
             public T next() {
                 T res = hasNext ? pre : (pre = iter.next());
-
-                while ((hasNext = iter.hasNext())) {
-                    if (collapsible.test(pre, (pre = iter.next()))) {
-                        res = mergeFunction.apply(res, pre);
-                    } else {
-                        break;
-                    }
-                }
-
-                return res;
-            }
-        }, false, null);
-    }
-
-    @Override
-    public <R> Stream<R> collapse(final R seed, final BiPredicate<? super T, ? super T> collapsible, final BiFunction<? super R, ? super T, R> mergeFunction) {
-        final ExIterator<T> iter = exIterator();
-
-        return this.newStream(new ExIterator<R>() {
-            private T pre = null;
-            private boolean hasNext = false;
-
-            @Override
-            public boolean hasNext() {
-                return hasNext || iter.hasNext();
-            }
-
-            @Override
-            public R next() {
-                R res = mergeFunction.apply(seed, hasNext ? pre : (pre = iter.next()));
 
                 while ((hasNext = iter.hasNext())) {
                     if (collapsible.test(pre, (pre = iter.next()))) {

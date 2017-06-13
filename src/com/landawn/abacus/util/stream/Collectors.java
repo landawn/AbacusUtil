@@ -7,7 +7,7 @@
  * published by the Free Software Foundation.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Oracle in the LICENSE file that accompanied this code.
- * 
+ *
  * This code is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
@@ -158,12 +158,16 @@ public final class Collectors {
     static final Set<Collector.Characteristics> CH_UNORDERED = Collections.unmodifiableSet(EnumSet.of(Collector.Characteristics.UNORDERED));
     static final Set<Collector.Characteristics> CH_NOID = Collections.emptySet();
 
-    private Collectors() {
-    }
+    @SuppressWarnings("rawtypes")
+    private static final BinaryOperator<Collection> ADD_ALL_MERGER = new BinaryOperator<Collection>() {
+        @Override
+        public Collection apply(Collection t, Collection u) {
+            t.addAll(u);
+            return t;
+        }
+    };
 
-    @SuppressWarnings("unchecked")
-    private static <I, R> Function<I, R> castingIdentity() {
-        return i -> (R) i;
+    private Collectors() {
     }
 
     /**
@@ -173,11 +177,22 @@ public final class Collectors {
      * @param <R> the type of the result
      */
     static class CollectorImpl<T, A, R> implements Collector<T, A, R> {
+        private static final Function<Object, Object> IDENTITY_FINISHER = new Function<Object, Object>() {
+            @Override
+            public Object apply(Object t) {
+                return t;
+            }
+        };
+
         private final Supplier<A> supplier;
         private final BiConsumer<A, T> accumulator;
         private final BinaryOperator<A> combiner;
         private final Function<A, R> finisher;
         private final Set<Characteristics> characteristics;
+
+        CollectorImpl(Supplier<A> supplier, BiConsumer<A, T> accumulator, BinaryOperator<A> combiner, Set<Characteristics> characteristics) {
+            this(supplier, accumulator, combiner, (Function<A, R>) IDENTITY_FINISHER, characteristics);
+        }
 
         CollectorImpl(Supplier<A> supplier, BiConsumer<A, T> accumulator, BinaryOperator<A> combiner, Function<A, R> finisher,
                 Set<Characteristics> characteristics) {
@@ -186,10 +201,6 @@ public final class Collectors {
             this.combiner = combiner;
             this.finisher = finisher;
             this.characteristics = characteristics;
-        }
-
-        CollectorImpl(Supplier<A> supplier, BiConsumer<A, T> accumulator, BinaryOperator<A> combiner, Set<Characteristics> characteristics) {
-            this(supplier, accumulator, combiner, castingIdentity(), characteristics);
         }
 
         @Override
@@ -213,7 +224,7 @@ public final class Collectors {
         }
 
         @Override
-        public Set<Characteristics> characteristics() {
+        public Set<com.landawn.abacus.util.stream.Collector.Characteristics> characteristics() {
             return characteristics;
         }
     }
@@ -263,7 +274,7 @@ public final class Collectors {
         final Supplier<List<T>> supplier = new Supplier<List<T>>() {
             @Override
             public List<T> get() {
-                return new ArrayList<>();
+                return new ArrayList<T>();
             }
         };
 
@@ -274,7 +285,7 @@ public final class Collectors {
         final Supplier<LinkedList<T>> supplier = new Supplier<LinkedList<T>>() {
             @Override
             public LinkedList<T> get() {
-                return new LinkedList<>();
+                return new LinkedList<T>();
             }
         };
 
@@ -312,7 +323,7 @@ public final class Collectors {
         final Supplier<Set<T>> supplier = new Supplier<Set<T>>() {
             @Override
             public Set<T> get() {
-                return new HashSet<>();
+                return new HashSet<T>();
             }
         };
 
@@ -323,7 +334,7 @@ public final class Collectors {
         final Supplier<LinkedHashSet<T>> supplier = new Supplier<LinkedHashSet<T>>() {
             @Override
             public LinkedHashSet<T> get() {
-                return new LinkedHashSet<>();
+                return new LinkedHashSet<T>();
             }
         };
 
@@ -347,7 +358,7 @@ public final class Collectors {
         final Supplier<Queue<T>> supplier = new Supplier<Queue<T>>() {
             @Override
             public Queue<T> get() {
-                return new LinkedList<>();
+                return new LinkedList<T>();
             }
         };
 
@@ -358,7 +369,7 @@ public final class Collectors {
         final Supplier<Deque<T>> supplier = new Supplier<Deque<T>>() {
             @Override
             public Deque<T> get() {
-                return new ArrayDeque<>();
+                return new ArrayDeque<T>();
             }
         };
 
@@ -369,7 +380,7 @@ public final class Collectors {
         final Supplier<Multiset<T>> supplier = new Supplier<Multiset<T>>() {
             @Override
             public Multiset<T> get() {
-                return new Multiset<>();
+                return new Multiset<T>();
             }
         };
 
@@ -399,7 +410,7 @@ public final class Collectors {
         final Supplier<LongMultiset<T>> supplier = new Supplier<LongMultiset<T>>() {
             @Override
             public LongMultiset<T> get() {
-                return new LongMultiset<>();
+                return new LongMultiset<T>();
             }
         };
 
@@ -1037,14 +1048,12 @@ public final class Collectors {
     }
 
     /**
-     * This <code>Collector</code> can only be used in sequential streams.
-     * <br />
      * 
      * @param n
      * @return
      * @throws UnsupportedOperationException it's used in parallel stream.
      */
-    public static <T> Collector<T, ?, List<T>> _last(final int n) {
+    public static <T> Collector<T, ?, List<T>> last(final int n) {
         N.checkArgument(n >= 0, "'n' can't be negative");
 
         final Supplier<ArrayDeque<T>> supplier = new Supplier<ArrayDeque<T>>() {
@@ -1504,7 +1513,6 @@ public final class Collectors {
      * @since 0.3.8
      */
     public static <T> Collector<T, ?, List<T>> distinctBy(final Function<? super T, ?> mapper) {
-
         final Supplier<Map<Object, T>> supplier = new Supplier<Map<Object, T>>() {
             @Override
             public Map<Object, T> get() {
@@ -2746,7 +2754,7 @@ public final class Collectors {
             }
         };
 
-        return new CollectorImpl<>(supplier, accumulator, combiner, CH_ID);
+        return new CollectorImpl<T, CharSummaryStatistics, CharSummaryStatistics>(supplier, accumulator, combiner, CH_ID);
     }
 
     public static <T> Collector<T, ?, ByteSummaryStatistics> summarizingByte(final ToByteFunction<? super T> mapper) {
@@ -2772,7 +2780,7 @@ public final class Collectors {
             }
         };
 
-        return new CollectorImpl<>(supplier, accumulator, combiner, CH_ID);
+        return new CollectorImpl<T, ByteSummaryStatistics, ByteSummaryStatistics>(supplier, accumulator, combiner, CH_ID);
     }
 
     public static <T> Collector<T, ?, ShortSummaryStatistics> summarizingShort(final ToShortFunction<? super T> mapper) {
@@ -2798,7 +2806,7 @@ public final class Collectors {
             }
         };
 
-        return new CollectorImpl<>(supplier, accumulator, combiner, CH_ID);
+        return new CollectorImpl<T, ShortSummaryStatistics, ShortSummaryStatistics>(supplier, accumulator, combiner, CH_ID);
     }
 
     /**
@@ -2836,7 +2844,7 @@ public final class Collectors {
             }
         };
 
-        return new CollectorImpl<>(supplier, accumulator, combiner, CH_ID);
+        return new CollectorImpl<T, IntSummaryStatistics, IntSummaryStatistics>(supplier, accumulator, combiner, CH_ID);
     }
 
     /**
@@ -2874,7 +2882,7 @@ public final class Collectors {
             }
         };
 
-        return new CollectorImpl<>(supplier, accumulator, combiner, CH_ID);
+        return new CollectorImpl<T, LongSummaryStatistics, LongSummaryStatistics>(supplier, accumulator, combiner, CH_ID);
     }
 
     public static <T> Collector<T, ?, FloatSummaryStatistics> summarizingFloat(final ToFloatFunction<? super T> mapper) {
@@ -2900,7 +2908,7 @@ public final class Collectors {
             }
         };
 
-        return new CollectorImpl<>(supplier, accumulator, combiner, CH_ID);
+        return new CollectorImpl<T, FloatSummaryStatistics, FloatSummaryStatistics>(supplier, accumulator, combiner, CH_ID);
     }
 
     /**
@@ -2938,7 +2946,7 @@ public final class Collectors {
             }
         };
 
-        return new CollectorImpl<>(supplier, accumulator, combiner, CH_ID);
+        return new CollectorImpl<T, DoubleSummaryStatistics, DoubleSummaryStatistics>(supplier, accumulator, combiner, CH_ID);
     }
 
     /**
@@ -3027,7 +3035,7 @@ public final class Collectors {
         final Supplier<OptionalBox<T>> supplier = new Supplier<OptionalBox<T>>() {
             @Override
             public OptionalBox<T> get() {
-                return new OptionalBox<>(op);
+                return new OptionalBox<T>(op);
             }
         };
 
@@ -3171,7 +3179,7 @@ public final class Collectors {
         final Supplier<OptionalBox2<T, U>> supplier = new Supplier<OptionalBox2<T, U>>() {
             @Override
             public OptionalBox2<T, U> get() {
-                return new OptionalBox2<>(mapper, op);
+                return new OptionalBox2<T, U>(mapper, op);
             }
         };
 
@@ -3433,9 +3441,6 @@ public final class Collectors {
      * It's copied from StreamEx: https://github.com/amaembo/streamex
      * <br />
      * 
-     * This <code>Collector</code> can only be used in sequential streams.
-     * <br />
-     * 
      * 
      * Returns a collector which collects input elements into {@code List}
      * removing the elements following their dominator element. The dominator
@@ -3474,7 +3479,7 @@ public final class Collectors {
      * @throws UnsupportedOperationException it's used in parallel stream.
      * @since 0.5.1
      */
-    public static <T> Collector<T, ?, List<T>> _dominators(final BiPredicate<? super T, ? super T> isDominator) {
+    public static <T> Collector<T, ?, List<T>> dominators(final BiPredicate<? super T, ? super T> isDominator) {
         final Supplier<List<T>> supplier = new Supplier<List<T>>() {
             private volatile boolean isCalled = false;
 
@@ -3523,7 +3528,7 @@ public final class Collectors {
             }
         };
 
-        return new CollectorImpl<>(supplier, accumulator, combiner, CH_NOID);
+        return new CollectorImpl<>(supplier, accumulator, combiner, CH_ID);
     }
 
     /**
@@ -3722,7 +3727,7 @@ public final class Collectors {
             }
         };
 
-        final BinaryOperator<Map<K, A>> combiner = mapMerger(downstream.combiner());
+        final BinaryOperator<Map<K, A>> combiner = Collectors.<K, A, Map<K, A>> mapMerger(downstream.combiner());
         @SuppressWarnings("unchecked")
         final Supplier<Map<K, A>> mangledFactory = (Supplier<Map<K, A>>) mapFactory;
 
@@ -3736,21 +3741,17 @@ public final class Collectors {
             }
         };
 
-        if (downstream.characteristics().contains(Collector.Characteristics.IDENTITY_FINISH)) {
-            return new CollectorImpl<>(mangledFactory, accumulator, combiner, CH_ID);
-        } else {
-            final Function<Map<K, A>, M> finisher = new Function<Map<K, A>, M>() {
-                @Override
-                public M apply(Map<K, A> intermediate) {
-                    replaceAll(intermediate, function);
-                    @SuppressWarnings("unchecked")
-                    M castResult = (M) intermediate;
-                    return castResult;
-                }
-            };
+        final Function<Map<K, A>, M> finisher = new Function<Map<K, A>, M>() {
+            @Override
+            public M apply(Map<K, A> intermediate) {
+                replaceAll(intermediate, function);
+                @SuppressWarnings("unchecked")
+                M castResult = (M) intermediate;
+                return castResult;
+            }
+        };
 
-            return new CollectorImpl<>(mangledFactory, accumulator, combiner, finisher, CH_NOID);
-        }
+        return new CollectorImpl<>(mangledFactory, accumulator, combiner, finisher, CH_NOID);
     }
 
     /**
@@ -3943,7 +3944,7 @@ public final class Collectors {
             }
         };
 
-        final BinaryOperator<ConcurrentMap<K, A>> combiner = mapMerger(downstream.combiner());
+        final BinaryOperator<ConcurrentMap<K, A>> combiner = Collectors.<K, A, ConcurrentMap<K, A>> mapMerger(downstream.combiner());
         @SuppressWarnings("unchecked")
         final Supplier<ConcurrentMap<K, A>> mangledFactory = (Supplier<ConcurrentMap<K, A>>) mapFactory;
 
@@ -3957,21 +3958,17 @@ public final class Collectors {
             }
         };
 
-        if (downstream.characteristics().contains(Collector.Characteristics.IDENTITY_FINISH)) {
-            return new CollectorImpl<>(mangledFactory, accumulator, combiner, CH_CONCURRENT_ID);
-        } else {
-            final Function<ConcurrentMap<K, A>, M> finisher = new Function<ConcurrentMap<K, A>, M>() {
-                @Override
-                public M apply(ConcurrentMap<K, A> intermediate) {
-                    replaceAll(intermediate, function);
-                    @SuppressWarnings("unchecked")
-                    M castResult = (M) intermediate;
-                    return castResult;
-                }
-            };
+        final Function<ConcurrentMap<K, A>, M> finisher = new Function<ConcurrentMap<K, A>, M>() {
+            @Override
+            public M apply(ConcurrentMap<K, A> intermediate) {
+                replaceAll(intermediate, function);
+                @SuppressWarnings("unchecked")
+                M castResult = (M) intermediate;
+                return castResult;
+            }
+        };
 
-            return new CollectorImpl<>(mangledFactory, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
-        }
+        return new CollectorImpl<>(mangledFactory, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
     }
 
     /**
@@ -4052,18 +4049,14 @@ public final class Collectors {
             }
         };
 
-        if (downstream.characteristics().contains(Collector.Characteristics.IDENTITY_FINISH)) {
-            return new CollectorImpl<>(supplier, accumulator, combiner, CH_ID);
-        } else {
-            final Function<Partition<A>, Map<Boolean, D>> finisher = new Function<Partition<A>, Map<Boolean, D>>() {
-                @Override
-                public Map<Boolean, D> apply(Partition<A> a) {
-                    return new Partition<>(downstream.finisher().apply(a.forTrue), downstream.finisher().apply(a.forFalse));
-                }
-            };
+        final Function<Partition<A>, Map<Boolean, D>> finisher = new Function<Partition<A>, Map<Boolean, D>>() {
+            @Override
+            public Map<Boolean, D> apply(Partition<A> a) {
+                return new Partition<>(downstream.finisher().apply(a.forTrue), downstream.finisher().apply(a.forFalse));
+            }
+        };
 
-            return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
-        }
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
     }
 
     public static <K, V> Collector<Map.Entry<K, V>, ?, Map<K, V>> toMap() {
@@ -4299,7 +4292,8 @@ public final class Collectors {
     }
 
     public static <K, V> Collector<Map.Entry<K, V>, ?, Map<K, List<V>>> toMap2() {
-        final BinaryOperator<List<V>> mergeFunction = Fn.BinaryOperators.ofAddAll();
+        @SuppressWarnings("rawtypes")
+        final BinaryOperator<List<V>> mergeFunction = (BinaryOperator) ADD_ALL_MERGER;
 
         return Collectors.toMap(new Function<Map.Entry<K, V>, K>() {
             @Override
@@ -4315,7 +4309,8 @@ public final class Collectors {
     }
 
     public static <K, V, M extends Map<K, List<V>>> Collector<Map.Entry<K, V>, ?, M> toMap2(final Supplier<M> mapFactory) {
-        final BinaryOperator<List<V>> mergeFunction = Fn.BinaryOperators.ofAddAll();
+        @SuppressWarnings("rawtypes")
+        final BinaryOperator<List<V>> mergeFunction = (BinaryOperator) ADD_ALL_MERGER;
 
         return Collectors.toMap(new Function<Map.Entry<K, V>, K>() {
             @Override
@@ -4332,7 +4327,8 @@ public final class Collectors {
 
     public static <T, K, V> Collector<T, ?, Map<K, List<V>>> toMap2(final Function<? super T, ? extends K> keyExtractor,
             final Function<? super T, ? extends V> valueMapper) {
-        final BinaryOperator<List<V>> mergeFunction = Fn.BinaryOperators.ofAddAll();
+        @SuppressWarnings("rawtypes")
+        final BinaryOperator<List<V>> mergeFunction = (BinaryOperator) ADD_ALL_MERGER;
 
         return Collectors.toMap(new Function<T, K>() {
             @Override
@@ -4349,7 +4345,8 @@ public final class Collectors {
 
     public static <T, K, V, M extends Map<K, List<V>>> Collector<T, ?, M> toMap2(final Function<? super T, ? extends K> keyExtractor,
             final Function<? super T, ? extends V> valueMapper, final Supplier<M> mapFactory) {
-        final BinaryOperator<List<V>> mergeFunction = Fn.BinaryOperators.ofAddAll();
+        @SuppressWarnings("rawtypes")
+        final BinaryOperator<List<V>> mergeFunction = (BinaryOperator) ADD_ALL_MERGER;
 
         return Collectors.toMap(new Function<T, K>() {
             @Override
@@ -4644,7 +4641,7 @@ public final class Collectors {
 
         final BinaryOperator<M> combiner = (BinaryOperator<M>) mapMerger2(mergeFunction);
 
-        return new CollectorImpl<>(mapFactory, accumulator, combiner, CH_CONCURRENT_ID);
+        return new CollectorImpl<T, M, M>(mapFactory, accumulator, combiner, CH_CONCURRENT_ID);
     }
 
     public static <T, K, U> Collector<T, ?, BiMap<K, U>> toBiMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper) {
@@ -4778,7 +4775,7 @@ public final class Collectors {
             }
         };
 
-        return new CollectorImpl<>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
+        return new CollectorImpl<T, List<T>, DataSet>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
     }
 
     //    public static <T> Collector<T, ?, DataSet> toDataSet(final String entityName, final Class<?> entityClass, final List<String> columnNames) {

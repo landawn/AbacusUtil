@@ -729,21 +729,6 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * <br />
      * This method only run sequentially, even in parallel stream.
      * 
-     * @param seed
-     * @param collapsible
-     * @param mergeFunction
-     * @return
-     */
-    public abstract <R> Stream<R> collapse(final R seed, final BiPredicate<? super T, ? super T> collapsible,
-            final BiFunction<? super R, ? super T, R> mergeFunction);
-
-    /**
-     * Merge series of adjacent elements which satisfy the given predicate using
-     * the merger function and return a new stream.
-     * 
-     * <br />
-     * This method only run sequentially, even in parallel stream.
-     * 
      * @param collapsible
      * @param collector
      * @return

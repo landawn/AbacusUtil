@@ -1956,7 +1956,8 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public <R, A> R collect(final Collector<? super T, A, R> collector) {
-        if (maxThreadNum <= 1) {
+        if (maxThreadNum <= 1 || sorted || collector.characteristics().contains(Collector.Characteristics.CONCURRENT) == false
+                || collector.characteristics().contains(Collector.Characteristics.UNORDERED) == false) {
             return sequential().collect(collector);
         }
 

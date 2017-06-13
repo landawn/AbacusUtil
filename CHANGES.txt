@@ -1,12 +1,14 @@
 ﻿
 ========Changes in 0.9.71=========================================================================
 
-1, Replace:
+1*, Replace:
 		Stream<C> collapse(Supplier<C> supplier, BiPredicate<? super T, ? super T> collapsible, BiConsumer<? super C, ? super T> mergeFunction);
    with: 
    		Stream<R> collapse(BiPredicate<? super T, ? super T> collapsible, Collector<? super T, A, R> collector);
 
-2, Improvements and bug fix.
+2*, Remove Stream<R> collapse(R seed, BiPredicate<? super T, ? super T> collapsible, BiFunction<? super R, ? super T, R> mergeFunction)
+            
+3, Improvements and bug fix.
 
 
 ========Changes in 0.9.70=========================================================================
