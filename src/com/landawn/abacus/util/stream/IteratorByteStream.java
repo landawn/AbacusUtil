@@ -74,17 +74,47 @@ class IteratorByteStream extends AbstractByteStream {
     IteratorByteStream(final ByteIterator values, final Collection<Runnable> closeHandlers, final boolean sorted) {
         super(closeHandlers, sorted);
 
-        this.elements = values instanceof ExByteIterator ? (ExByteIterator) values : new ExByteIterator() {
-            @Override
-            public boolean hasNext() {
-                return values.hasNext();
-            }
+        ExByteIterator tmp = null;
 
-            @Override
-            public byte nextByte() {
-                return values.nextByte();
-            }
-        };
+        if (values instanceof ExByteIterator) {
+            tmp = (ExByteIterator) values;
+        } else if (values instanceof SkippableIterator) {
+            tmp = new ExByteIterator() {
+                @Override
+                public boolean hasNext() {
+                    return values.hasNext();
+                }
+
+                @Override
+                public byte nextByte() {
+                    return values.nextByte();
+                }
+
+                @Override
+                public void skip(long n) {
+                    ((SkippableIterator) values).skip(n);
+                }
+
+                @Override
+                public long count() {
+                    return ((SkippableIterator) values).count();
+                }
+            };
+        } else {
+            tmp = new ExByteIterator() {
+                @Override
+                public boolean hasNext() {
+                    return values.hasNext();
+                }
+
+                @Override
+                public byte nextByte() {
+                    return values.nextByte();
+                }
+            };
+        }
+
+        this.elements = tmp;
     }
 
     @Override

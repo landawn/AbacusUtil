@@ -29,7 +29,7 @@ import com.landawn.abacus.util.N;
  * 
  * @author Haiyang Li
  */
-public abstract class ExByteIterator extends ByteIterator {
+public abstract class ExByteIterator extends ByteIterator implements SkippableIterator {
     public static final ExByteIterator EMPTY = new ExByteIterator() {
         @Override
         public boolean hasNext() {
@@ -164,6 +164,7 @@ public abstract class ExByteIterator extends ByteIterator {
         }
     }
 
+    @Override
     public long count() {
         long result = 0;
 
@@ -175,6 +176,7 @@ public abstract class ExByteIterator extends ByteIterator {
         return result;
     }
 
+    @Override
     public void skip(long n) {
         while (n > 0 && hasNext()) {
             nextByte();

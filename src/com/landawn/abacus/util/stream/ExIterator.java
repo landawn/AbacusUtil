@@ -31,7 +31,7 @@ import com.landawn.abacus.util.N;
  * 
  * @author Haiyang Li
  */
-public abstract class ExIterator<T> extends com.landawn.abacus.util.ImmutableIterator<T> {
+public abstract class ExIterator<T> extends com.landawn.abacus.util.ImmutableIterator<T> implements SkippableIterator {
     @SuppressWarnings("rawtypes")
     public static final ExIterator EMPTY = new QueuedIterator(0) {
         @Override
@@ -152,6 +152,7 @@ public abstract class ExIterator<T> extends com.landawn.abacus.util.ImmutableIte
         };
     }
 
+    @Override
     public long count() {
         long result = 0;
 
@@ -163,6 +164,7 @@ public abstract class ExIterator<T> extends com.landawn.abacus.util.ImmutableIte
         return result;
     }
 
+    @Override
     public void skip(long n) {
         while (n > 0 && hasNext()) {
             next();

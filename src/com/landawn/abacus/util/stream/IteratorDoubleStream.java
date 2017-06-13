@@ -79,17 +79,47 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     IteratorDoubleStream(final DoubleIterator values, final Collection<Runnable> closeHandlers, final boolean sorted) {
         super(closeHandlers, sorted);
 
-        this.elements = values instanceof ExDoubleIterator ? (ExDoubleIterator) values : new ExDoubleIterator() {
-            @Override
-            public boolean hasNext() {
-                return values.hasNext();
-            }
+        ExDoubleIterator tmp = null;
 
-            @Override
-            public double nextDouble() {
-                return values.nextDouble();
-            }
-        };
+        if (values instanceof ExDoubleIterator) {
+            tmp = (ExDoubleIterator) values;
+        } else if (values instanceof SkippableIterator) {
+            tmp = new ExDoubleIterator() {
+                @Override
+                public boolean hasNext() {
+                    return values.hasNext();
+                }
+
+                @Override
+                public double nextDouble() {
+                    return values.nextDouble();
+                }
+
+                @Override
+                public void skip(long n) {
+                    ((SkippableIterator) values).skip(n);
+                }
+
+                @Override
+                public long count() {
+                    return ((SkippableIterator) values).count();
+                }
+            };
+        } else {
+            tmp = new ExDoubleIterator() {
+                @Override
+                public boolean hasNext() {
+                    return values.hasNext();
+                }
+
+                @Override
+                public double nextDouble() {
+                    return values.nextDouble();
+                }
+            };
+        }
+
+        this.elements = tmp;
     }
 
     @Override
@@ -894,8 +924,8 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public <K, U, M extends Map<K, U>> M toMap(DoubleFunction<? extends K> keyExtractor, DoubleFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
-            Supplier<M> mapFactory) {
+    public <K, U, M extends Map<K, U>> M toMap(DoubleFunction<? extends K> keyExtractor, DoubleFunction<? extends U> valueMapper,
+            BinaryOperator<U> mergeFunction, Supplier<M> mapFactory) {
         final M result = mapFactory.get();
         double element = 0;
 

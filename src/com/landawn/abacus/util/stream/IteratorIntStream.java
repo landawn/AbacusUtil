@@ -86,17 +86,47 @@ class IteratorIntStream extends AbstractIntStream {
     IteratorIntStream(final IntIterator values, final Collection<Runnable> closeHandlers, final boolean sorted) {
         super(closeHandlers, sorted);
 
-        this.elements = values instanceof ExIntIterator ? (ExIntIterator) values : new ExIntIterator() {
-            @Override
-            public boolean hasNext() {
-                return values.hasNext();
-            }
+        ExIntIterator tmp = null;
 
-            @Override
-            public int nextInt() {
-                return values.nextInt();
-            }
-        };
+        if (values instanceof ExIntIterator) {
+            tmp = (ExIntIterator) values;
+        } else if (values instanceof SkippableIterator) {
+            tmp = new ExIntIterator() {
+                @Override
+                public boolean hasNext() {
+                    return values.hasNext();
+                }
+
+                @Override
+                public int nextInt() {
+                    return values.nextInt();
+                }
+
+                @Override
+                public void skip(long n) {
+                    ((SkippableIterator) values).skip(n);
+                }
+
+                @Override
+                public long count() {
+                    return ((SkippableIterator) values).count();
+                }
+            };
+        } else {
+            tmp = new ExIntIterator() {
+                @Override
+                public boolean hasNext() {
+                    return values.hasNext();
+                }
+
+                @Override
+                public int nextInt() {
+                    return values.nextInt();
+                }
+            };
+        }
+
+        this.elements = tmp;
     }
 
     @Override

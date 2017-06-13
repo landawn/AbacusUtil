@@ -79,17 +79,47 @@ class IteratorFloatStream extends AbstractFloatStream {
     IteratorFloatStream(final FloatIterator values, final Collection<Runnable> closeHandlers, final boolean sorted) {
         super(closeHandlers, sorted);
 
-        this.elements = values instanceof ExFloatIterator ? (ExFloatIterator) values : new ExFloatIterator() {
-            @Override
-            public boolean hasNext() {
-                return values.hasNext();
-            }
+        ExFloatIterator tmp = null;
 
-            @Override
-            public float nextFloat() {
-                return values.nextFloat();
-            }
-        };
+        if (values instanceof ExFloatIterator) {
+            tmp = (ExFloatIterator) values;
+        } else if (values instanceof SkippableIterator) {
+            tmp = new ExFloatIterator() {
+                @Override
+                public boolean hasNext() {
+                    return values.hasNext();
+                }
+
+                @Override
+                public float nextFloat() {
+                    return values.nextFloat();
+                }
+
+                @Override
+                public void skip(long n) {
+                    ((SkippableIterator) values).skip(n);
+                }
+
+                @Override
+                public long count() {
+                    return ((SkippableIterator) values).count();
+                }
+            };
+        } else {
+            tmp = new ExFloatIterator() {
+                @Override
+                public boolean hasNext() {
+                    return values.hasNext();
+                }
+
+                @Override
+                public float nextFloat() {
+                    return values.nextFloat();
+                }
+            };
+        }
+
+        this.elements = tmp;
     }
 
     @Override

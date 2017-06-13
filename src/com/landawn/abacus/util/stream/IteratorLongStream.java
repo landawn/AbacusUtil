@@ -80,17 +80,47 @@ class IteratorLongStream extends AbstractLongStream {
     IteratorLongStream(final LongIterator values, final Collection<Runnable> closeHandlers, final boolean sorted) {
         super(closeHandlers, sorted);
 
-        this.elements = values instanceof ExLongIterator ? (ExLongIterator) values : new ExLongIterator() {
-            @Override
-            public boolean hasNext() {
-                return values.hasNext();
-            }
+        ExLongIterator tmp = null;
 
-            @Override
-            public long nextLong() {
-                return values.nextLong();
-            }
-        };
+        if (values instanceof ExLongIterator) {
+            tmp = (ExLongIterator) values;
+        } else if (values instanceof SkippableIterator) {
+            tmp = new ExLongIterator() {
+                @Override
+                public boolean hasNext() {
+                    return values.hasNext();
+                }
+
+                @Override
+                public long nextLong() {
+                    return values.nextLong();
+                }
+
+                @Override
+                public void skip(long n) {
+                    ((SkippableIterator) values).skip(n);
+                }
+
+                @Override
+                public long count() {
+                    return ((SkippableIterator) values).count();
+                }
+            };
+        } else {
+            tmp = new ExLongIterator() {
+                @Override
+                public boolean hasNext() {
+                    return values.hasNext();
+                }
+
+                @Override
+                public long nextLong() {
+                    return values.nextLong();
+                }
+            };
+        }
+
+        this.elements = tmp;
     }
 
     @Override

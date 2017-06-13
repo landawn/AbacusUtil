@@ -29,7 +29,7 @@ import com.landawn.abacus.util.N;
  * 
  * @author Haiyang Li
  */
-public abstract class ExFloatIterator extends FloatIterator {
+public abstract class ExFloatIterator extends FloatIterator implements SkippableIterator {
     public static final ExFloatIterator EMPTY = new ExFloatIterator() {
         @Override
         public boolean hasNext() {
@@ -164,6 +164,7 @@ public abstract class ExFloatIterator extends FloatIterator {
         }
     }
 
+    @Override
     public long count() {
         long result = 0;
 
@@ -175,6 +176,7 @@ public abstract class ExFloatIterator extends FloatIterator {
         return result;
     }
 
+    @Override
     public void skip(long n) {
         while (n > 0 && hasNext()) {
             nextFloat();

@@ -92,17 +92,47 @@ class IteratorStream<T> extends AbstractStream<T> {
 
         N.requireNonNull(values);
 
-        this.elements = values instanceof ExIterator ? (ExIterator<T>) values : new ExIterator<T>() {
-            @Override
-            public boolean hasNext() {
-                return values.hasNext();
-            }
+        ExIterator<T> tmp = null;
 
-            @Override
-            public T next() {
-                return values.next();
-            }
-        };
+        if (values instanceof ExIterator) {
+            tmp = (ExIterator<T>) values;
+        } else if (values instanceof SkippableIterator) {
+            tmp = new ExIterator<T>() {
+                @Override
+                public boolean hasNext() {
+                    return values.hasNext();
+                }
+
+                @Override
+                public T next() {
+                    return values.next();
+                }
+
+                @Override
+                public void skip(long n) {
+                    ((SkippableIterator) values).skip(n);
+                }
+
+                @Override
+                public long count() {
+                    return ((SkippableIterator) values).count();
+                }
+            };
+        } else {
+            tmp = new ExIterator<T>() {
+                @Override
+                public boolean hasNext() {
+                    return values.hasNext();
+                }
+
+                @Override
+                public T next() {
+                    return values.next();
+                }
+            };
+        }
+
+        this.elements = tmp;
     }
 
     IteratorStream(final Stream<T> stream, final Set<Runnable> closeHandlers, final boolean sorted, final Comparator<? super T> comparator) {

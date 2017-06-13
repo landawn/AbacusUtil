@@ -74,17 +74,47 @@ class IteratorCharStream extends AbstractCharStream {
     IteratorCharStream(final CharIterator values, final Collection<Runnable> closeHandlers, final boolean sorted) {
         super(closeHandlers, sorted);
 
-        this.elements = values instanceof ExCharIterator ? (ExCharIterator) values : new ExCharIterator() {
-            @Override
-            public boolean hasNext() {
-                return values.hasNext();
-            }
+        ExCharIterator tmp = null;
 
-            @Override
-            public char nextChar() {
-                return values.nextChar();
-            }
-        };
+        if (values instanceof ExCharIterator) {
+            tmp = (ExCharIterator) values;
+        } else if (values instanceof SkippableIterator) {
+            tmp = new ExCharIterator() {
+                @Override
+                public boolean hasNext() {
+                    return values.hasNext();
+                }
+
+                @Override
+                public char nextChar() {
+                    return values.nextChar();
+                }
+
+                @Override
+                public void skip(long n) {
+                    ((SkippableIterator) values).skip(n);
+                }
+
+                @Override
+                public long count() {
+                    return ((SkippableIterator) values).count();
+                }
+            };
+        } else {
+            tmp = new ExCharIterator() {
+                @Override
+                public boolean hasNext() {
+                    return values.hasNext();
+                }
+
+                @Override
+                public char nextChar() {
+                    return values.nextChar();
+                }
+            };
+        }
+
+        this.elements = tmp;
     }
 
     @Override
