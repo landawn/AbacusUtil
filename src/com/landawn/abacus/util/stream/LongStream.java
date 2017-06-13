@@ -815,7 +815,8 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
 
             @Override
             public void skip(long n) {
-                cnt = n >= cnt ? 0 : cnt - (int) n;
+                cnt = n >= cnt ? 0 : cnt - n;
+                next += n;
             }
 
             @Override
@@ -881,7 +882,8 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
 
             @Override
             public void skip(long n) {
-                cnt = n >= cnt ? 0 : cnt - (int) n;
+                cnt = n >= cnt ? 0 : cnt - n;
+                next += n * by;
             }
 
             @Override
@@ -935,7 +937,8 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
 
             @Override
             public void skip(long n) {
-                cnt = n >= cnt ? 0 : cnt - (int) n;
+                cnt = n >= cnt ? 0 : cnt - n;
+                next += n;
             }
 
             @Override
@@ -1003,7 +1006,8 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
 
             @Override
             public void skip(long n) {
-                cnt = n >= cnt ? 0 : cnt - (int) n;
+                cnt = n >= cnt ? 0 : cnt - n;
+                next += n * by;
             }
 
             @Override

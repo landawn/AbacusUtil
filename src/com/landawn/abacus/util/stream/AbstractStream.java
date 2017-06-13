@@ -838,11 +838,13 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <C extends Collection<?>> Stream<C> collapse(final Supplier<C> supplier, final BiPredicate<? super T, ? super T> collapsible,
-            final BiConsumer<? super C, ? super T> mergeFunction) {
+    public <R, A> Stream<R> collapse(final BiPredicate<? super T, ? super T> collapsible, final Collector<? super T, A, R> collector) {
+        final Supplier<A> supplier = collector.supplier();
+        final BiConsumer<A, ? super T> accumulator = collector.accumulator();
+        final Function<A, R> finisher = collector.finisher();
         final ExIterator<T> iter = exIterator();
 
-        return this.newStream(new ExIterator<C>() {
+        return this.newStream(new ExIterator<R>() {
             private T pre = null;
             private boolean hasNext = false;
 
@@ -852,19 +854,19 @@ abstract class AbstractStream<T> extends Stream<T> {
             }
 
             @Override
-            public C next() {
-                final C c = supplier.get();
-                mergeFunction.accept(c, hasNext ? pre : (pre = iter.next()));
+            public R next() {
+                final A c = supplier.get();
+                accumulator.accept(c, hasNext ? pre : (pre = iter.next()));
 
                 while ((hasNext = iter.hasNext())) {
                     if (collapsible.test(pre, (pre = iter.next()))) {
-                        mergeFunction.accept(c, pre);
+                        accumulator.accept(c, pre);
                     } else {
                         break;
                     }
                 }
 
-                return c;
+                return finisher.apply(c);
             }
         }, false, null);
     }

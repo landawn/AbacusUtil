@@ -744,13 +744,11 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * <br />
      * This method only run sequentially, even in parallel stream.
      * 
-     * @param supplier usually it's a creator of collection.
      * @param collapsible
-     * @param mergeFunction
+     * @param collector
      * @return
      */
-    public abstract <C extends Collection<?>> Stream<C> collapse(final Supplier<C> supplier, final BiPredicate<? super T, ? super T> collapsible,
-            final BiConsumer<? super C, ? super T> mergeFunction);
+    public abstract <R, A> Stream<R> collapse(final BiPredicate<? super T, ? super T> collapsible, final Collector<? super T, A, R> collector);
 
     /**
      * Returns a {@code Stream} produced by iterative application of a accumulation function

@@ -1,4 +1,14 @@
 ﻿
+========Changes in 0.9.71=========================================================================
+
+1, Replace:
+		Stream<C> collapse(Supplier<C> supplier, BiPredicate<? super T, ? super T> collapsible, BiConsumer<? super C, ? super T> mergeFunction);
+   with: 
+   		Stream<R> collapse(BiPredicate<? super T, ? super T> collapsible, Collector<? super T, A, R> collector);
+
+2, Improvements and bug fix.
+
+
 ========Changes in 0.9.70=========================================================================
 
 1, Add mapFirst/mapFirstOrElse/mapLast/mapLastOrElse to Stream.

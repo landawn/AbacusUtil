@@ -1004,6 +1004,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
             @Override
             public void skip(long n) {
                 cnt = n >= cnt ? 0 : cnt - (int) n;
+                next += n;
             }
 
             @Override
@@ -1058,6 +1059,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
             @Override
             public void skip(long n) {
                 cnt = n >= cnt ? 0 : cnt - (int) n;
+                next += n * by;
             }
 
             @Override
@@ -1108,6 +1110,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
             @Override
             public void skip(long n) {
                 cnt = n >= cnt ? 0 : cnt - (int) n;
+                next += n;
             }
 
             @Override
@@ -1164,6 +1167,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
             @Override
             public void skip(long n) {
                 cnt = n >= cnt ? 0 : cnt - (int) n;
+                next += n * by;
             }
 
             @Override

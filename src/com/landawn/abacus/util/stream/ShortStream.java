@@ -702,6 +702,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
             @Override
             public void skip(long n) {
                 cnt = n >= cnt ? 0 : cnt - (int) n;
+                next += n;
             }
 
             @Override
@@ -756,6 +757,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
             @Override
             public void skip(long n) {
                 cnt = n >= cnt ? 0 : cnt - (int) n;
+                next += n * by;
             }
 
             @Override
@@ -806,6 +808,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
             @Override
             public void skip(long n) {
                 cnt = n >= cnt ? 0 : cnt - (int) n;
+                next += n;
             }
 
             @Override
@@ -862,6 +865,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
             @Override
             public void skip(long n) {
                 cnt = n >= cnt ? 0 : cnt - (int) n;
+                next += n * by;
             }
 
             @Override
