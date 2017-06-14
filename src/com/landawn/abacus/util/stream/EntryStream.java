@@ -73,6 +73,18 @@ public final class EntryStream<K, V> {
         return mulitmap == null ? EntryStream.<K, V> empty() : mulitmap.stream().mapToEntry(mapper);
     }
 
+    public static <K, T> EntryStream<K, T> of(final Collection<? extends T> c, final Function<? super T, K> keyExtractor) {
+        final Function<T, T> valueMapper = Fn.identity();
+
+        return Stream.of(c).mapToEntry(keyExtractor, valueMapper);
+    }
+
+    public static <K, T> EntryStream<K, T> of(final T[] a, final Function<? super T, K> keyExtractor) {
+        final Function<T, T> valueMapper = Fn.identity();
+
+        return Stream.of(a).mapToEntry(keyExtractor, valueMapper);
+    }
+
     public Stream<K> keys() {
         final Function<Map.Entry<K, V>, K> func = Fn.key();
 
@@ -390,6 +402,26 @@ public final class EntryStream<K, V> {
         return of(s.sorted(comparator));
     }
 
+    public EntryStream<K, V> distinct() {
+        return of(s.distinct());
+    }
+
+    public EntryStream<K, V> distinct(final Function<? super Map.Entry<K, V>, ?> keyExtractor) {
+        return of(s.distinct(keyExtractor));
+    }
+
+    public EntryStream<K, V> distinctByKey() {
+        final Function<? super Entry<K, V>, K> keyExtractor = Fn.key();
+
+        return of(s.distinct(keyExtractor));
+    }
+
+    public EntryStream<K, V> distinctByValue() {
+        final Function<? super Entry<K, V>, V> keyExtractor = Fn.value();
+
+        return of(s.distinct(keyExtractor));
+    }
+
     public EntryStream<K, V> reversed() {
         return of(s.reversed());
     }
@@ -404,22 +436,6 @@ public final class EntryStream<K, V> {
 
     public EntryStream<K, V> rotated(final int distance) {
         return of(s.rotated(distance));
-    }
-
-    public EntryStream<K, V> distinct() {
-        return of(s.distinct());
-    }
-
-    public EntryStream<K, V> distinctByKey() {
-        final Function<? super Entry<K, V>, K> keyExtractor = Fn.key();
-
-        return of(s.distinct(keyExtractor));
-    }
-
-    public EntryStream<K, V> distinctByValue() {
-        final Function<? super Entry<K, V>, V> keyExtractor = Fn.value();
-
-        return of(s.distinct(keyExtractor));
     }
 
     public EntryStream<K, V> skip(long n) {
