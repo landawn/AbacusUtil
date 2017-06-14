@@ -1,10 +1,13 @@
 package com.landawn.abacus.util.stream;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
 
+import com.landawn.abacus.util.Comparators;
 import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.ImmutableIterator;
 import com.landawn.abacus.util.LongMultiset;
@@ -369,6 +372,54 @@ public final class EntryStream<K, V> {
     public <KK, VV, M extends Map<KK, VV>> EntryStream<KK, VV> groupBy2(final Function<? super Map.Entry<K, V>, ? extends KK> keyExtractor,
             final Function<? super Map.Entry<K, V>, ? extends VV> valueMapper, final BinaryOperator<VV> mergeFunction, final Supplier<M> mapFactory) {
         return of(toMap(keyExtractor, valueMapper, mergeFunction, mapFactory));
+    }
+
+    public EntryStream<K, V> sorted(final Comparator<? super Map.Entry<K, V>> comparator) {
+        return of(s.sorted(comparator));
+    }
+
+    public EntryStream<K, V> sortedByKey(final Comparator<? super K> keyComparator) {
+        final Comparator<Map.Entry<K, V>> comparator = Comparators.comparingByKey(keyComparator);
+
+        return of(s.sorted(comparator));
+    }
+
+    public EntryStream<K, V> sortedByValue(final Comparator<? super V> valueComparator) {
+        final Comparator<Map.Entry<K, V>> comparator = Comparators.comparingByValue(valueComparator);
+
+        return of(s.sorted(comparator));
+    }
+
+    public EntryStream<K, V> reversed() {
+        return of(s.reversed());
+    }
+
+    public EntryStream<K, V> shuffled() {
+        return of(s.shuffled());
+    }
+
+    public EntryStream<K, V> shuffled(final Random rnd) {
+        return of(s.shuffled(rnd));
+    }
+
+    public EntryStream<K, V> rotated(final int distance) {
+        return of(s.rotated(distance));
+    }
+
+    public EntryStream<K, V> distinct() {
+        return of(s.distinct());
+    }
+
+    public EntryStream<K, V> distinctByKey() {
+        final Function<? super Entry<K, V>, K> keyExtractor = Fn.key();
+
+        return of(s.distinct(keyExtractor));
+    }
+
+    public EntryStream<K, V> distinctByValue() {
+        final Function<? super Entry<K, V>, V> keyExtractor = Fn.value();
+
+        return of(s.distinct(keyExtractor));
     }
 
     public EntryStream<K, V> skip(long n) {
