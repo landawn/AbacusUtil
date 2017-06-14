@@ -20,4 +20,11 @@ public abstract Stream<R> slidingMap(TriFunction<? superT, ? super T, ? super T,
 
 3, Add <K> Stream<Map.Entry<K, Long>> countBy(final Function<? super T, ? extends K> classifier) to Stream. ---Undecided.
 
+4, Add PartitionBy to Stream. ---Undecided.
+
+```java
+Map<Boolean, List<T>> partitionBy(Predicate<? super T> predicate);
+Map<Boolean, D> partitionBy(Predicate<? super T> predicate, Collector<? super T, ?, D> downstream);
+```
+
    [StreamEx]: https://github.com/amaembo/streamex
