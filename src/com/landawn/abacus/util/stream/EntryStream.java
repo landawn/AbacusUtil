@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import com.landawn.abacus.util.Fn;
+import com.landawn.abacus.util.ImmutableIterator;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
@@ -14,6 +15,7 @@ import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
+import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
@@ -377,8 +379,20 @@ public final class EntryStream<K, V> {
         return of(s.limit(n));
     }
 
+    public EntryStream<K, V> peek(final Consumer<? super Map.Entry<K, V>> action) {
+        return of(s.peek(action));
+    }
+
+    public void forEach(final Consumer<? super Map.Entry<K, V>> action) {
+        s.forEach(action);
+    }
+
     public long count() {
         return s.count();
+    }
+
+    public ImmutableIterator<Map.Entry<K, V>> iterator() {
+        return s.iterator();
     }
 
     /**

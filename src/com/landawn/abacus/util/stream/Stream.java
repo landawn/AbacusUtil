@@ -68,6 +68,7 @@ import com.landawn.abacus.util.DoubleSummaryStatistics;
 import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.FloatSummaryStatistics;
 import com.landawn.abacus.util.IOUtil;
+import com.landawn.abacus.util.ImmutableIterator;
 import com.landawn.abacus.util.Indexed;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.IntList;
@@ -1807,7 +1808,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
             final Try.BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter);
 
     @Override
-    public com.landawn.abacus.util.ImmutableIterator<T> iterator() {
+    public ImmutableIterator<T> iterator() {
         return exIterator();
     }
 
@@ -8070,7 +8071,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      *
      */
     public static enum PSO {
-        MAP, MAP_2, MAP_3, MAP_TO_, FLAT_MAP, FLAT_MAP_TO_, REDUCE, COLLECT, //
+        MAP, BI_MAP, TRI_MAP, MAP_TO_, FLAT_MAP, FLAT_MAP_TO_, REDUCE, COLLECT, //
         MIN, MAX, SUM_INT, SUM_LONG, SUM_DOUBLE, AVERAGE_INT, AVERAGE_LONG, AVERAGE_DOUBLE, SUMMARIZE_, //
         GROUP_BY, GROUP_BY_2, TO_MAP, TO_MAP2, TO_MULTIMAP, //
         FILTER, TAKE_WHILE, DROP_WHILE, REMOVE, REMOVE_IF, REMOVE_WHILE, SKIP_NULL, //
