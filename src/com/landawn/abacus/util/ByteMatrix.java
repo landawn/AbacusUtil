@@ -163,7 +163,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
      * @param j
      * @return
      */
-    public Stream<IntPair> adjacent4(final int i, final int j) {
+    public Stream<IntPair> adjacent4Points(final int i, final int j) {
         final IntPair up = i == 0 ? null : IntPair.of(i - 1, j);
         final IntPair right = j == m - 1 ? null : IntPair.of(i, j + 1);
         final IntPair down = i == n - 1 ? null : IntPair.of(i + 1, j);
@@ -179,7 +179,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
      * @param j
      * @return
      */
-    public Stream<IntPair> adjacent8(final int i, final int j) {
+    public Stream<IntPair> adjacent8Points(final int i, final int j) {
         final IntPair up = i == 0 ? null : IntPair.of(i - 1, j);
         final IntPair right = j == m - 1 ? null : IntPair.of(i, j + 1);
         final IntPair down = i == n - 1 ? null : IntPair.of(i + 1, j);
@@ -955,88 +955,6 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
         return new DoubleMatrix(c);
     }
 
-    /**
-     * 
-     * @return a stream composed by elements on the diagonal line from left up to right down.
-     */
-    public ByteStream diagonalLU2RD() {
-        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
-
-        if (isEmpty()) {
-            return ByteStream.empty();
-        }
-
-        return ByteStream.of(new ExByteIterator() {
-            private final int toIndex = n;
-            private int cursor = 0;
-
-            @Override
-            public boolean hasNext() {
-                return cursor < toIndex;
-            }
-
-            @Override
-            public byte nextByte() {
-                if (cursor >= toIndex) {
-                    throw new NoSuchElementException();
-                }
-
-                return a[cursor][cursor++];
-            }
-
-            @Override
-            public void skip(long n) {
-                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-            }
-
-            @Override
-            public long count() {
-                return toIndex - cursor;
-            }
-        });
-    }
-
-    /**
-     * 
-     * @return a stream composed by elements on the diagonal line from right up to left down.
-     */
-    public ByteStream diagonalRU2LD() {
-        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
-
-        if (isEmpty()) {
-            return ByteStream.empty();
-        }
-
-        return ByteStream.of(new ExByteIterator() {
-            private final int toIndex = n;
-            private int cursor = 0;
-
-            @Override
-            public boolean hasNext() {
-                return cursor < toIndex;
-            }
-
-            @Override
-            public byte nextByte() {
-                if (cursor >= toIndex) {
-                    throw new NoSuchElementException();
-                }
-
-                return a[cursor][n - ++cursor];
-            }
-
-            @Override
-            public void skip(long n) {
-                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-            }
-
-            @Override
-            public long count() {
-                return toIndex - cursor;
-            }
-        });
-    }
-
     public ByteMatrix zipWith(final ByteMatrix matrixB, final ByteBiFunction<Byte> zipFunction) {
         N.checkArgument(isSameShape(matrixB), "Can't zip two matrices which have different shape.");
 
@@ -1083,7 +1001,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
     }
 
     public ByteMatrix zipWith(final ByteMatrix matrixB, final ByteMatrix matrixC, final ByteTriFunction<Byte> zipFunction) {
-        N.checkArgument(isSameShape(matrixB), "Can't zip two matrices which have different shape.");
+        N.checkArgument(isSameShape(matrixB) && isSameShape(matrixC), "Can't zip three matrices which have different shape.");
 
         final byte[][] result = new byte[n][m];
         final byte[][] b = matrixB.a;
@@ -1130,6 +1048,90 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
 
     /**
      * 
+     * @return a stream composed by elements on the diagonal line from left up to right down.
+     */
+    @Override
+    public ByteStream streamLU2RD() {
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
+
+        if (isEmpty()) {
+            return ByteStream.empty();
+        }
+
+        return ByteStream.of(new ExByteIterator() {
+            private final int toIndex = n;
+            private int cursor = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public byte nextByte() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return a[cursor][cursor++];
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+        });
+    }
+
+    /**
+     * 
+     * @return a stream composed by elements on the diagonal line from right up to left down.
+     */
+    @Override
+    public ByteStream streamRU2LD() {
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
+
+        if (isEmpty()) {
+            return ByteStream.empty();
+        }
+
+        return ByteStream.of(new ExByteIterator() {
+            private final int toIndex = n;
+            private int cursor = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public byte nextByte() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return a[cursor][n - ++cursor];
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+        });
+    }
+
+    /**
+     * 
      * @return a stream based on the order of row.
      */
     @Override
@@ -1137,6 +1139,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
         return streamH(0, n);
     }
 
+    @Override
     public ByteStream streamH(final int rowIndex) {
         return streamH(rowIndex, rowIndex + 1);
     }
@@ -1225,6 +1228,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
         return streamV(0, m);
     }
 
+    @Override
     public ByteStream streamV(final int columnIndex) {
         return streamV(columnIndex, columnIndex + 1);
     }

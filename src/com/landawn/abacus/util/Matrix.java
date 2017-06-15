@@ -155,7 +155,7 @@ public final class Matrix<T> extends AbstractMatrix<T[], List<T>, Stream<T>, Str
      * @param j
      * @return
      */
-    public Stream<IntPair> adjacent4(final int i, final int j) {
+    public Stream<IntPair> adjacent4Points(final int i, final int j) {
         final IntPair up = i == 0 ? null : IntPair.of(i - 1, j);
         final IntPair right = j == m - 1 ? null : IntPair.of(i, j + 1);
         final IntPair down = i == n - 1 ? null : IntPair.of(i + 1, j);
@@ -171,7 +171,7 @@ public final class Matrix<T> extends AbstractMatrix<T[], List<T>, Stream<T>, Str
      * @param j
      * @return
      */
-    public Stream<IntPair> adjacent8(final int i, final int j) {
+    public Stream<IntPair> adjacent8Points(final int i, final int j) {
         final IntPair up = i == 0 ? null : IntPair.of(i - 1, j);
         final IntPair right = j == m - 1 ? null : IntPair.of(i, j + 1);
         final IntPair down = i == n - 1 ? null : IntPair.of(i + 1, j);
@@ -929,88 +929,6 @@ public final class Matrix<T> extends AbstractMatrix<T[], List<T>, Stream<T>, Str
         return Matrix.of(c);
     }
 
-    /**
-     * 
-     * @return a stream composed by elements on the diagonal line from left up to right down.
-     */
-    public Stream<T> diagonalLU2RD() {
-        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
-
-        if (isEmpty()) {
-            return Stream.empty();
-        }
-
-        return Stream.of(new ExIterator<T>() {
-            private final int toIndex = n;
-            private int cursor = 0;
-
-            @Override
-            public boolean hasNext() {
-                return cursor < toIndex;
-            }
-
-            @Override
-            public T next() {
-                if (cursor >= toIndex) {
-                    throw new NoSuchElementException();
-                }
-
-                return a[cursor][cursor++];
-            }
-
-            @Override
-            public void skip(long n) {
-                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-            }
-
-            @Override
-            public long count() {
-                return toIndex - cursor;
-            }
-        });
-    }
-
-    /**
-     * 
-     * @return a stream composed by elements on the diagonal line from right up to left down.
-     */
-    public Stream<T> diagonalRU2LD() {
-        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
-
-        if (isEmpty()) {
-            return Stream.empty();
-        }
-
-        return Stream.of(new ExIterator<T>() {
-            private final int toIndex = n;
-            private int cursor = 0;
-
-            @Override
-            public boolean hasNext() {
-                return cursor < toIndex;
-            }
-
-            @Override
-            public T next() {
-                if (cursor >= toIndex) {
-                    throw new NoSuchElementException();
-                }
-
-                return a[cursor][n - ++cursor];
-            }
-
-            @Override
-            public void skip(long n) {
-                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-            }
-
-            @Override
-            public long count() {
-                return toIndex - cursor;
-            }
-        });
-    }
-
     public <B> Matrix<T> zipWith(final Matrix<B> matrixB, final BiFunction<? super T, ? super B, T> zipFunction) {
         return zipWith(componentType, matrixB, zipFunction);
     }
@@ -1123,6 +1041,90 @@ public final class Matrix<T> extends AbstractMatrix<T[], List<T>, Stream<T>, Str
 
     /**
      * 
+     * @return a stream composed by elements on the diagonal line from left up to right down.
+     */
+    @Override
+    public Stream<T> streamLU2RD() {
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
+
+        if (isEmpty()) {
+            return Stream.empty();
+        }
+
+        return Stream.of(new ExIterator<T>() {
+            private final int toIndex = n;
+            private int cursor = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public T next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return a[cursor][cursor++];
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+        });
+    }
+
+    /**
+     * 
+     * @return a stream composed by elements on the diagonal line from right up to left down.
+     */
+    @Override
+    public Stream<T> streamRU2LD() {
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
+
+        if (isEmpty()) {
+            return Stream.empty();
+        }
+
+        return Stream.of(new ExIterator<T>() {
+            private final int toIndex = n;
+            private int cursor = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public T next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return a[cursor][n - ++cursor];
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+        });
+    }
+
+    /**
+     * 
      * @return a stream based on the order of row.
      */
     @Override
@@ -1130,6 +1132,7 @@ public final class Matrix<T> extends AbstractMatrix<T[], List<T>, Stream<T>, Str
         return streamH(0, n);
     }
 
+    @Override
     public Stream<T> streamH(final int rowIndex) {
         return streamH(rowIndex, rowIndex + 1);
     }
@@ -1221,6 +1224,7 @@ public final class Matrix<T> extends AbstractMatrix<T[], List<T>, Stream<T>, Str
         return streamV(0, m);
     }
 
+    @Override
     public Stream<T> streamV(final int columnIndex) {
         return streamV(columnIndex, columnIndex + 1);
     }

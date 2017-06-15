@@ -31,6 +31,7 @@ import com.landawn.abacus.DataSet;
 import com.landawn.abacus.core.RowDataSet;
 import com.landawn.abacus.parser.KryoParser;
 import com.landawn.abacus.parser.ParserFactory;
+import com.landawn.abacus.util.Pair.IntPair;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
@@ -229,6 +230,10 @@ public final class Sheet<R, C, E> {
         }
     }
 
+    public E get(IntPair point) {
+        return get(point._1, point._2);
+    }
+
     public E put(R rowKey, C columnKey, E value) {
         checkFrozen();
 
@@ -249,6 +254,10 @@ public final class Sheet<R, C, E> {
         _columnList.get(columnIndex).set(rowIndex, value);
 
         return (E) previousValue;
+    }
+
+    public E put(IntPair point, E value) {
+        return put(point._1, point._2, value);
     }
 
     public void putAll(Sheet<? extends R, ? extends C, ? extends E> source) {
@@ -1138,10 +1147,11 @@ public final class Sheet<R, C, E> {
             return Stream.empty();
         }
 
+        final int columnLength = columnLength();
+
         initIndexMap();
 
         return Stream.of(new ExIterator<Sheet.Cell<R, C, E>>() {
-            private final int columnLength = columnLength();
             private final long toIndex = toRowIndex * columnLength * 1L;
             private long cursor = fromRowIndex * columnLength * 1L;
 
@@ -1206,10 +1216,11 @@ public final class Sheet<R, C, E> {
             return Stream.empty();
         }
 
+        final int rowLength = rowLength();
+
         initIndexMap();
 
         return Stream.of(new ExIterator<Sheet.Cell<R, C, E>>() {
-            private final int rowLength = rowLength();
             private final long toIndex = toColumnIndex * rowLength * 1L;
             private long cursor = fromColumnIndex * rowLength * 1L;
 
@@ -1393,6 +1404,102 @@ public final class Sheet<R, C, E> {
             @Override
             public long count() {
                 return toColumnIndex - columnIndex;
+            }
+        });
+    }
+
+    public Stream<IntPair> pointsH() {
+        return pointsH(0, rowLength());
+    }
+
+    public Stream<IntPair> pointsH(int rowIndex) {
+        return pointsH(rowIndex, rowIndex + 1);
+    }
+
+    public Stream<IntPair> pointsH(int fromRowIndex, int toRowIndex) {
+        N.checkFromToIndex(fromRowIndex, toRowIndex, rowLength());
+
+        final int columnLength = columnLength();
+
+        return IntStream.range(fromRowIndex, toRowIndex).flatMapToObj(new IntFunction<Stream<IntPair>>() {
+            @Override
+            public Stream<IntPair> apply(final int rowIndex) {
+                return IntStream.range(0, columnLength).mapToObj(new IntFunction<IntPair>() {
+                    @Override
+                    public IntPair apply(final int columnIndex) {
+                        return IntPair.of(rowIndex, columnIndex);
+                    }
+                });
+            }
+        });
+    }
+
+    public Stream<IntPair> pointsV() {
+        return pointsV(0, columnLength());
+    }
+
+    public Stream<IntPair> pointsV(int columnIndex) {
+        return pointsV(columnIndex, columnIndex + 1);
+    }
+
+    public Stream<IntPair> pointsV(int fromColumnIndex, int toColumnIndex) {
+        N.checkFromToIndex(fromColumnIndex, toColumnIndex, columnLength());
+
+        final int rowLength = rowLength();
+
+        return IntStream.range(fromColumnIndex, toColumnIndex).flatMapToObj(new IntFunction<Stream<IntPair>>() {
+            @Override
+            public Stream<IntPair> apply(final int columnIndex) {
+                return IntStream.range(0, rowLength).mapToObj(new IntFunction<IntPair>() {
+                    @Override
+                    public IntPair apply(final int rowIndex) {
+                        return IntPair.of(rowIndex, columnIndex);
+                    }
+                });
+            }
+        });
+    }
+
+    public Stream<Stream<IntPair>> pointsR() {
+        return pointsR(0, rowLength());
+    }
+
+    public Stream<Stream<IntPair>> pointsR(int fromRowIndex, int toRowIndex) {
+        N.checkFromToIndex(fromRowIndex, toRowIndex, rowLength());
+
+        final int columnLength = columnLength();
+
+        return IntStream.range(fromRowIndex, toRowIndex).mapToObj(new IntFunction<Stream<IntPair>>() {
+            @Override
+            public Stream<IntPair> apply(final int rowIndex) {
+                return IntStream.range(0, columnLength).mapToObj(new IntFunction<IntPair>() {
+                    @Override
+                    public IntPair apply(final int columnIndex) {
+                        return IntPair.of(rowIndex, columnIndex);
+                    }
+                });
+            }
+        });
+    }
+
+    public Stream<Stream<IntPair>> pointsC() {
+        return pointsR(0, columnLength());
+    }
+
+    public Stream<Stream<IntPair>> pointsC(int fromColumnIndex, int toColumnIndex) {
+        N.checkFromToIndex(fromColumnIndex, toColumnIndex, columnLength());
+
+        final int rowLength = rowLength();
+
+        return IntStream.range(fromColumnIndex, toColumnIndex).mapToObj(new IntFunction<Stream<IntPair>>() {
+            @Override
+            public Stream<IntPair> apply(final int columnIndex) {
+                return IntStream.range(0, rowLength).mapToObj(new IntFunction<IntPair>() {
+                    @Override
+                    public IntPair apply(final int rowIndex) {
+                        return IntPair.of(rowIndex, columnIndex);
+                    }
+                });
             }
         });
     }
@@ -2126,7 +2233,7 @@ public final class Sheet<R, C, E> {
 
         @Override
         public String toString() {
-            return "{rowKey=" + N.toString(rowKey) + ", columnKey=" + N.toString(columnKey) + ", value=" + N.toString(value) + "}";
+            return "[" + N.toString(rowKey) + ", " + N.toString(columnKey) + "]=" + N.toString(value);
         }
     }
 

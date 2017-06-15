@@ -154,8 +154,40 @@ public abstract class AbstractMatrix<A, PL, HS, RS, X extends AbstractMatrix<A, 
 
     public abstract PL flatten();
 
+    public Stream<IntPair> pointsLU2RD() {
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
+
+        return IntStream.range(0, n).mapToObj(new IntFunction<IntPair>() {
+            @Override
+            public IntPair apply(int i) {
+                return IntPair.of(i, i);
+            }
+        });
+    }
+
+    public Stream<IntPair> pointsRU2LD() {
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
+
+        return IntStream.range(0, n).mapToObj(new IntFunction<IntPair>() {
+            @Override
+            public IntPair apply(int i) {
+                return IntPair.of(i, m - i - 1);
+            }
+        });
+    }
+
     public Stream<IntPair> pointsH() {
-        return IntStream.range(0, n).flatMapToObj(new IntFunction<Stream<IntPair>>() {
+        return pointsH(0, n);
+    }
+
+    public Stream<IntPair> pointsH(int rowIndex) {
+        return pointsH(rowIndex, rowIndex + 1);
+    }
+
+    public Stream<IntPair> pointsH(int fromRowIndex, int toRowIndex) {
+        N.checkFromToIndex(fromRowIndex, toRowIndex, n);
+
+        return IntStream.range(fromRowIndex, toRowIndex).flatMapToObj(new IntFunction<Stream<IntPair>>() {
             @Override
             public Stream<IntPair> apply(final int rowIndex) {
                 return IntStream.range(0, m).mapToObj(new IntFunction<IntPair>() {
@@ -169,7 +201,17 @@ public abstract class AbstractMatrix<A, PL, HS, RS, X extends AbstractMatrix<A, 
     }
 
     public Stream<IntPair> pointsV() {
-        return IntStream.range(0, m).flatMapToObj(new IntFunction<Stream<IntPair>>() {
+        return pointsV(0, m);
+    }
+
+    public Stream<IntPair> pointsV(int columnIndex) {
+        return pointsV(columnIndex, columnIndex + 1);
+    }
+
+    public Stream<IntPair> pointsV(int fromColumnIndex, int toColumnIndex) {
+        N.checkFromToIndex(fromColumnIndex, toColumnIndex, m);
+
+        return IntStream.range(fromColumnIndex, toColumnIndex).flatMapToObj(new IntFunction<Stream<IntPair>>() {
             @Override
             public Stream<IntPair> apply(final int columnIndex) {
                 return IntStream.range(0, n).mapToObj(new IntFunction<IntPair>() {
@@ -182,11 +224,59 @@ public abstract class AbstractMatrix<A, PL, HS, RS, X extends AbstractMatrix<A, 
         });
     }
 
+    public Stream<Stream<IntPair>> pointsR() {
+        return pointsR(0, n);
+    }
+
+    public Stream<Stream<IntPair>> pointsR(int fromRowIndex, int toRowIndex) {
+        N.checkFromToIndex(fromRowIndex, toRowIndex, n);
+
+        return IntStream.range(fromRowIndex, toRowIndex).mapToObj(new IntFunction<Stream<IntPair>>() {
+            @Override
+            public Stream<IntPair> apply(final int rowIndex) {
+                return IntStream.range(0, m).mapToObj(new IntFunction<IntPair>() {
+                    @Override
+                    public IntPair apply(final int columnIndex) {
+                        return IntPair.of(rowIndex, columnIndex);
+                    }
+                });
+            }
+        });
+    }
+
+    public Stream<Stream<IntPair>> pointsC() {
+        return pointsR(0, m);
+    }
+
+    public Stream<Stream<IntPair>> pointsC(int fromColumnIndex, int toColumnIndex) {
+        N.checkFromToIndex(fromColumnIndex, toColumnIndex, m);
+
+        return IntStream.range(fromColumnIndex, toColumnIndex).mapToObj(new IntFunction<Stream<IntPair>>() {
+            @Override
+            public Stream<IntPair> apply(final int columnIndex) {
+                return IntStream.range(0, n).mapToObj(new IntFunction<IntPair>() {
+                    @Override
+                    public IntPair apply(final int rowIndex) {
+                        return IntPair.of(rowIndex, columnIndex);
+                    }
+                });
+            }
+        });
+    }
+
+    public abstract HS streamLU2RD();
+
+    public abstract HS streamRU2LD();
+
     public abstract HS streamH();
+
+    public abstract HS streamH(final int rowIndex);
 
     public abstract HS streamH(final int fromRowIndex, final int toRowIndex);
 
     public abstract HS streamV();
+
+    public abstract HS streamV(final int columnIndex);
 
     public abstract HS streamV(final int fromColumnIndex, final int toColumnIndex);
 

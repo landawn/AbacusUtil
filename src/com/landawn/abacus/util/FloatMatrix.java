@@ -164,7 +164,7 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatS
      * @param j
      * @return
      */
-    public Stream<IntPair> adjacent4(final int i, final int j) {
+    public Stream<IntPair> adjacent4Points(final int i, final int j) {
         final IntPair up = i == 0 ? null : IntPair.of(i - 1, j);
         final IntPair right = j == m - 1 ? null : IntPair.of(i, j + 1);
         final IntPair down = i == n - 1 ? null : IntPair.of(i + 1, j);
@@ -180,7 +180,7 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatS
      * @param j
      * @return
      */
-    public Stream<IntPair> adjacent8(final int i, final int j) {
+    public Stream<IntPair> adjacent8Points(final int i, final int j) {
         final IntPair up = i == 0 ? null : IntPair.of(i - 1, j);
         final IntPair right = j == m - 1 ? null : IntPair.of(i, j + 1);
         final IntPair down = i == n - 1 ? null : IntPair.of(i + 1, j);
@@ -896,88 +896,6 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatS
         return DoubleMatrix.from(a);
     }
 
-    /**
-     * 
-     * @return a stream composed by elements on the diagonal line from left up to right down.
-     */
-    public FloatStream diagonalLU2RD() {
-        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
-
-        if (isEmpty()) {
-            return FloatStream.empty();
-        }
-
-        return FloatStream.of(new ExFloatIterator() {
-            private final int toIndex = n;
-            private int cursor = 0;
-
-            @Override
-            public boolean hasNext() {
-                return cursor < toIndex;
-            }
-
-            @Override
-            public float nextFloat() {
-                if (cursor >= toIndex) {
-                    throw new NoSuchElementException();
-                }
-
-                return a[cursor][cursor++];
-            }
-
-            @Override
-            public void skip(long n) {
-                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-            }
-
-            @Override
-            public long count() {
-                return toIndex - cursor;
-            }
-        });
-    }
-
-    /**
-     * 
-     * @return a stream composed by elements on the diagonal line from right up to left down.
-     */
-    public FloatStream diagonalRU2LD() {
-        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
-
-        if (isEmpty()) {
-            return FloatStream.empty();
-        }
-
-        return FloatStream.of(new ExFloatIterator() {
-            private final int toIndex = n;
-            private int cursor = 0;
-
-            @Override
-            public boolean hasNext() {
-                return cursor < toIndex;
-            }
-
-            @Override
-            public float nextFloat() {
-                if (cursor >= toIndex) {
-                    throw new NoSuchElementException();
-                }
-
-                return a[cursor][n - ++cursor];
-            }
-
-            @Override
-            public void skip(long n) {
-                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-            }
-
-            @Override
-            public long count() {
-                return toIndex - cursor;
-            }
-        });
-    }
-
     public FloatMatrix zipWith(final FloatMatrix matrixB, final FloatBiFunction<Float> zipFunction) {
         N.checkArgument(isSameShape(matrixB), "Can't zip two matrices which have different shape.");
 
@@ -1024,7 +942,7 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatS
     }
 
     public FloatMatrix zipWith(final FloatMatrix matrixB, final FloatMatrix matrixC, final FloatTriFunction<Float> zipFunction) {
-        N.checkArgument(isSameShape(matrixB), "Can't zip two matrices which have different shape.");
+        N.checkArgument(isSameShape(matrixB) && isSameShape(matrixC), "Can't zip three matrices which have different shape.");
 
         final float[][] result = new float[n][m];
         final float[][] b = matrixB.a;
@@ -1071,6 +989,90 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatS
 
     /**
      * 
+     * @return a stream composed by elements on the diagonal line from left up to right down.
+     */
+    @Override
+    public FloatStream streamLU2RD() {
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
+
+        if (isEmpty()) {
+            return FloatStream.empty();
+        }
+
+        return FloatStream.of(new ExFloatIterator() {
+            private final int toIndex = n;
+            private int cursor = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public float nextFloat() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return a[cursor][cursor++];
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+        });
+    }
+
+    /**
+     * 
+     * @return a stream composed by elements on the diagonal line from right up to left down.
+     */
+    @Override
+    public FloatStream streamRU2LD() {
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
+
+        if (isEmpty()) {
+            return FloatStream.empty();
+        }
+
+        return FloatStream.of(new ExFloatIterator() {
+            private final int toIndex = n;
+            private int cursor = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public float nextFloat() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return a[cursor][n - ++cursor];
+            }
+
+            @Override
+            public void skip(long n) {
+                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            }
+
+            @Override
+            public long count() {
+                return toIndex - cursor;
+            }
+        });
+    }
+
+    /**
+     * 
      * @return a stream based on the order of row.
      */
     @Override
@@ -1078,6 +1080,7 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatS
         return streamH(0, n);
     }
 
+    @Override
     public FloatStream streamH(final int rowIndex) {
         return streamH(rowIndex, rowIndex + 1);
     }
@@ -1166,6 +1169,7 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatS
         return streamV(0, m);
     }
 
+    @Override
     public FloatStream streamV(final int columnIndex) {
         return streamV(columnIndex, columnIndex + 1);
     }

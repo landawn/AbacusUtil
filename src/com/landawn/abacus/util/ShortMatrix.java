@@ -163,7 +163,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortS
      * @param j
      * @return
      */
-    public Stream<IntPair> adjacent4(final int i, final int j) {
+    public Stream<IntPair> adjacent4Points(final int i, final int j) {
         final IntPair up = i == 0 ? null : IntPair.of(i - 1, j);
         final IntPair right = j == m - 1 ? null : IntPair.of(i, j + 1);
         final IntPair down = i == n - 1 ? null : IntPair.of(i + 1, j);
@@ -179,7 +179,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortS
      * @param j
      * @return
      */
-    public Stream<IntPair> adjacent8(final int i, final int j) {
+    public Stream<IntPair> adjacent8Points(final int i, final int j) {
         final IntPair up = i == 0 ? null : IntPair.of(i - 1, j);
         final IntPair right = j == m - 1 ? null : IntPair.of(i, j + 1);
         final IntPair down = i == n - 1 ? null : IntPair.of(i + 1, j);
@@ -250,6 +250,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortS
                 });
             } else {
                 IntStream.range(0, m).parallel().forEach(new IntConsumer() {
+
                     @Override
                     public void accept(final int j) {
                         for (int i = 0; i < n; i++) {
@@ -260,7 +261,9 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortS
             }
         } else {
             if (n <= m) {
-                for (int i = 0; i < n; i++) {
+                for (
+
+                        int i = 0; i < n; i++) {
                     for (int j = 0; j < m; j++) {
                         a[i][j] = operator.applyAsShort(a[i][j]);
                     }
@@ -290,6 +293,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortS
                 });
             } else {
                 IntStream.range(0, m).parallel().forEach(new IntConsumer() {
+
                     @Override
                     public void accept(final int j) {
                         for (int i = 0; i < n; i++) {
@@ -300,7 +304,9 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortS
             }
         } else {
             if (n <= m) {
-                for (int i = 0; i < n; i++) {
+                for (
+
+                        int i = 0; i < n; i++) {
                     for (int j = 0; j < m; j++) {
                         c[i][j] = func.applyAsShort(a[i][j]);
                     }
@@ -336,6 +342,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortS
                 });
             } else {
                 IntStream.range(0, m).parallel().forEach(new IntConsumer() {
+
                     @Override
                     public void accept(final int j) {
                         for (int i = 0; i < n; i++) {
@@ -346,7 +353,9 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortS
             }
         } else {
             if (n <= m) {
-                for (int i = 0; i < n; i++) {
+                for (
+
+                        int i = 0; i < n; i++) {
                     for (int j = 0; j < m; j++) {
                         c[i][j] = func.apply(a[i][j]);
                     }
@@ -659,6 +668,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortS
                 });
             } else {
                 IntStream.range(0, m).parallel().forEach(new IntConsumer() {
+
                     @Override
                     public void accept(final int j) {
                         for (int i = 0; i < n; i++) {
@@ -669,7 +679,9 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortS
             }
         } else {
             if (n <= m) {
-                for (int i = 0; i < n; i++) {
+                for (
+
+                        int i = 0; i < n; i++) {
                     for (int j = 0; j < m; j++) {
                         c[i][j] = (short) (a[i][j] + b.a[i][j]);
                     }
@@ -703,6 +715,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortS
                 });
             } else {
                 IntStream.range(0, m).parallel().forEach(new IntConsumer() {
+
                     @Override
                     public void accept(final int j) {
                         for (int i = 0; i < n; i++) {
@@ -713,7 +726,9 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortS
             }
         } else {
             if (n <= m) {
-                for (int i = 0; i < n; i++) {
+                for (
+
+                        int i = 0; i < n; i++) {
                     for (int j = 0; j < m; j++) {
                         c[i][j] = (short) (a[i][j] - b.a[i][j]);
                     }
@@ -751,6 +766,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortS
                     });
                 } else {
                     IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+
                         @Override
                         public void accept(final int i) {
                             for (int j = 0; j < b.m; j++) {
@@ -788,6 +804,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortS
             } else {
                 if (N.min(n, m) == n) {
                     IntStream.range(0, b.m).parallel().forEach(new IntConsumer() {
+
                         @Override
                         public void accept(final int j) {
                             for (int i = 0; i < n; i++) {
@@ -813,7 +830,9 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortS
         } else {
             if (N.min(n, m, b.m) == n) {
                 if (N.min(m, b.m) == m) {
-                    for (int i = 0; i < n; i++) {
+                    for (
+
+                            int i = 0; i < n; i++) {
                         for (int k = 0; k < m; k++) {
                             for (int j = 0; j < b.m; j++) {
                                 c[i][j] += a[i][k] * a2[k][j];
@@ -955,11 +974,109 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortS
         return new DoubleMatrix(c);
     }
 
+    public ShortMatrix zipWith(final ShortMatrix matrixB, final ShortBiFunction<Short> zipFunction) {
+        N.checkArgument(isSameShape(matrixB), "Can't zip two matrices which have different shape.");
+
+        final short[][] result = new short[n][m];
+        final short[][] b = matrixB.a;
+
+        if (isParallelable()) {
+            if (n <= m) {
+                IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int i) {
+                        for (int j = 0; j < m; j++) {
+                            result[i][j] = zipFunction.apply(a[i][j], b[i][j]);
+                        }
+                    }
+                });
+            } else {
+                IntStream.range(0, m).parallel().forEach(new IntConsumer() {
+
+                    @Override
+                    public void accept(final int j) {
+                        for (int i = 0; i < n; i++) {
+                            result[i][j] = zipFunction.apply(a[i][j], b[i][j]);
+                        }
+                    }
+                });
+            }
+        } else {
+            if (n <= m) {
+                for (
+
+                        int i = 0; i < n; i++) {
+                    for (int j = 0; j < m; j++) {
+                        result[i][j] = zipFunction.apply(a[i][j], b[i][j]);
+                    }
+                }
+            } else {
+                for (int j = 0; j < m; j++) {
+                    for (int i = 0; i < n; i++) {
+                        result[i][j] = zipFunction.apply(a[i][j], b[i][j]);
+                    }
+                }
+            }
+        }
+
+        return new ShortMatrix(result);
+    }
+
+    public ShortMatrix zipWith(final ShortMatrix matrixB, final ShortMatrix matrixC, final ShortTriFunction<Short> zipFunction) {
+        N.checkArgument(isSameShape(matrixB) && isSameShape(matrixC), "Can't zip three matrices which have different shape.");
+
+        final short[][] result = new short[n][m];
+        final short[][] b = matrixB.a;
+        final short[][] c = matrixC.a;
+
+        if (isParallelable()) {
+            if (n <= m) {
+                IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int i) {
+                        for (int j = 0; j < m; j++) {
+                            result[i][j] = zipFunction.apply(a[i][j], b[i][j], c[i][j]);
+                        }
+                    }
+                });
+            } else {
+                IntStream.range(0, m).parallel().forEach(new IntConsumer() {
+
+                    @Override
+                    public void accept(final int j) {
+                        for (int i = 0; i < n; i++) {
+                            result[i][j] = zipFunction.apply(a[i][j], b[i][j], c[i][j]);
+                        }
+                    }
+                });
+            }
+        } else {
+            if (n <= m) {
+                for (
+
+                        int i = 0; i < n; i++) {
+                    for (int j = 0; j < m; j++) {
+                        result[i][j] = zipFunction.apply(a[i][j], b[i][j], c[i][j]);
+                    }
+                }
+            } else {
+                for (int j = 0; j < m; j++) {
+                    for (int i = 0; i < n; i++) {
+                        result[i][j] = zipFunction.apply(a[i][j], b[i][j], c[i][j]);
+                    }
+                }
+            }
+        }
+
+        return new ShortMatrix(result);
+    }
+
     /**
      * 
      * @return a stream composed by elements on the diagonal line from left up to right down.
      */
-    public ShortStream diagonalLU2RD() {
+    @Override
+    public ShortStream streamLU2RD() {
         N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
 
         if (isEmpty()) {
@@ -1000,7 +1117,8 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortS
      * 
      * @return a stream composed by elements on the diagonal line from right up to left down.
      */
-    public ShortStream diagonalRU2LD() {
+    @Override
+    public ShortStream streamRU2LD() {
         N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
 
         if (isEmpty()) {
@@ -1037,97 +1155,6 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortS
         });
     }
 
-    public ShortMatrix zipWith(final ShortMatrix matrixB, final ShortBiFunction<Short> zipFunction) {
-        N.checkArgument(isSameShape(matrixB), "Can't zip two matrices which have different shape.");
-
-        final short[][] result = new short[n][m];
-        final short[][] b = matrixB.a;
-
-        if (isParallelable()) {
-            if (n <= m) {
-                IntStream.range(0, n).parallel().forEach(new IntConsumer() {
-                    @Override
-                    public void accept(final int i) {
-                        for (int j = 0; j < m; j++) {
-                            result[i][j] = zipFunction.apply(a[i][j], b[i][j]);
-                        }
-                    }
-                });
-            } else {
-                IntStream.range(0, m).parallel().forEach(new IntConsumer() {
-                    @Override
-                    public void accept(final int j) {
-                        for (int i = 0; i < n; i++) {
-                            result[i][j] = zipFunction.apply(a[i][j], b[i][j]);
-                        }
-                    }
-                });
-            }
-        } else {
-            if (n <= m) {
-                for (int i = 0; i < n; i++) {
-                    for (int j = 0; j < m; j++) {
-                        result[i][j] = zipFunction.apply(a[i][j], b[i][j]);
-                    }
-                }
-            } else {
-                for (int j = 0; j < m; j++) {
-                    for (int i = 0; i < n; i++) {
-                        result[i][j] = zipFunction.apply(a[i][j], b[i][j]);
-                    }
-                }
-            }
-        }
-
-        return new ShortMatrix(result);
-    }
-
-    public ShortMatrix zipWith(final ShortMatrix matrixB, final ShortMatrix matrixC, final ShortTriFunction<Short> zipFunction) {
-        N.checkArgument(isSameShape(matrixB), "Can't zip two matrices which have different shape.");
-
-        final short[][] result = new short[n][m];
-        final short[][] b = matrixB.a;
-        final short[][] c = matrixC.a;
-
-        if (isParallelable()) {
-            if (n <= m) {
-                IntStream.range(0, n).parallel().forEach(new IntConsumer() {
-                    @Override
-                    public void accept(final int i) {
-                        for (int j = 0; j < m; j++) {
-                            result[i][j] = zipFunction.apply(a[i][j], b[i][j], c[i][j]);
-                        }
-                    }
-                });
-            } else {
-                IntStream.range(0, m).parallel().forEach(new IntConsumer() {
-                    @Override
-                    public void accept(final int j) {
-                        for (int i = 0; i < n; i++) {
-                            result[i][j] = zipFunction.apply(a[i][j], b[i][j], c[i][j]);
-                        }
-                    }
-                });
-            }
-        } else {
-            if (n <= m) {
-                for (int i = 0; i < n; i++) {
-                    for (int j = 0; j < m; j++) {
-                        result[i][j] = zipFunction.apply(a[i][j], b[i][j], c[i][j]);
-                    }
-                }
-            } else {
-                for (int j = 0; j < m; j++) {
-                    for (int i = 0; i < n; i++) {
-                        result[i][j] = zipFunction.apply(a[i][j], b[i][j], c[i][j]);
-                    }
-                }
-            }
-        }
-
-        return new ShortMatrix(result);
-    }
-
     /**
      * 
      * @return a stream based on the order of row.
@@ -1137,6 +1164,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortS
         return streamH(0, n);
     }
 
+    @Override
     public ShortStream streamH(final int rowIndex) {
         return streamH(rowIndex, rowIndex + 1);
     }
@@ -1225,6 +1253,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortS
         return streamV(0, m);
     }
 
+    @Override
     public ShortStream streamV(final int columnIndex) {
         return streamV(columnIndex, columnIndex + 1);
     }
