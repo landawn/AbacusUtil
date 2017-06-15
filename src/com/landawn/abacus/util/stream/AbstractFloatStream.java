@@ -211,8 +211,8 @@ abstract class AbstractFloatStream extends FloatStream {
         final ExFloatIterator iter = exIterator();
 
         return this.newStream(new ExFloatIterator() {
-            private float pre = 0;
             private boolean hasNext = false;
+            private float next = 0;
 
             @Override
             public boolean hasNext() {
@@ -221,41 +221,11 @@ abstract class AbstractFloatStream extends FloatStream {
 
             @Override
             public float nextFloat() {
-                float res = hasNext ? pre : (pre = iter.nextFloat());
+                float res = hasNext ? next : (next = iter.nextFloat());
 
                 while ((hasNext = iter.hasNext())) {
-                    if (collapsible.test(pre, (pre = iter.nextFloat()))) {
-                        res = mergeFunction.apply(res, pre);
-                    } else {
-                        break;
-                    }
-                }
-
-                return res;
-            }
-        }, false);
-    }
-
-    @Override
-    public FloatStream collapse(final float seed, final FloatBiPredicate collapsible, final FloatBiFunction<Float> mergeFunction) {
-        final ExFloatIterator iter = exIterator();
-
-        return this.newStream(new ExFloatIterator() {
-            private float pre = 0;
-            private boolean hasNext = false;
-
-            @Override
-            public boolean hasNext() {
-                return hasNext || iter.hasNext();
-            }
-
-            @Override
-            public float nextFloat() {
-                float res = mergeFunction.apply(seed, hasNext ? pre : (pre = iter.nextFloat()));
-
-                while ((hasNext = iter.hasNext())) {
-                    if (collapsible.test(pre, (pre = iter.nextFloat()))) {
-                        res = mergeFunction.apply(res, pre);
+                    if (collapsible.test(next, (next = iter.nextFloat()))) {
+                        res = mergeFunction.apply(res, next);
                     } else {
                         break;
                     }

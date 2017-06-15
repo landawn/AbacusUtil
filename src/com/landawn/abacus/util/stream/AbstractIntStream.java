@@ -210,8 +210,8 @@ abstract class AbstractIntStream extends IntStream {
         final ExIntIterator iter = exIterator();
 
         return this.newStream(new ExIntIterator() {
-            private int pre = 0;
             private boolean hasNext = false;
+            private int next = 0;
 
             @Override
             public boolean hasNext() {
@@ -220,41 +220,11 @@ abstract class AbstractIntStream extends IntStream {
 
             @Override
             public int nextInt() {
-                int res = hasNext ? pre : (pre = iter.nextInt());
+                int res = hasNext ? next : (next = iter.nextInt());
 
                 while ((hasNext = iter.hasNext())) {
-                    if (collapsible.test(pre, (pre = iter.nextInt()))) {
-                        res = mergeFunction.apply(res, pre);
-                    } else {
-                        break;
-                    }
-                }
-
-                return res;
-            }
-        }, false);
-    }
-
-    @Override
-    public IntStream collapse(final int seed, final IntBiPredicate collapsible, final IntBiFunction<Integer> mergeFunction) {
-        final ExIntIterator iter = exIterator();
-
-        return this.newStream(new ExIntIterator() {
-            private int pre = 0;
-            private boolean hasNext = false;
-
-            @Override
-            public boolean hasNext() {
-                return hasNext || iter.hasNext();
-            }
-
-            @Override
-            public int nextInt() {
-                int res = mergeFunction.apply(seed, hasNext ? pre : (pre = iter.nextInt()));
-
-                while ((hasNext = iter.hasNext())) {
-                    if (collapsible.test(pre, (pre = iter.nextInt()))) {
-                        res = mergeFunction.apply(res, pre);
+                    if (collapsible.test(next, (next = iter.nextInt()))) {
+                        res = mergeFunction.apply(res, next);
                     } else {
                         break;
                     }

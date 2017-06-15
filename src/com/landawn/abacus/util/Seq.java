@@ -1312,8 +1312,8 @@ public final class Seq<T> extends ImmutableCollection<T> {
         }
 
         final Iterator<T> iter = iterator();
-        T next = null;
         boolean hasNext = false;
+        T next = null;
 
         while (hasNext || iter.hasNext()) {
             T res = hasNext ? next : (next = iter.next());
@@ -1339,76 +1339,37 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * <br />
      * This method only run sequentially, even in parallel stream.
      * 
-     * @param seed
      * @param collapsible
-     * @param mergeFunction
+     * @param collector
      * @return
      */
-    public <R> List<R> collapse(final R seed, final BiPredicate<? super T, ? super T> collapsible, final BiFunction<? super R, ? super T, R> mergeFunction) {
+    public <R, A> List<R> collapse(final BiPredicate<? super T, ? super T> collapsible, final Collector<? super T, A, R> collector) {
         final List<R> result = new ArrayList<>();
 
         if (N.isNullOrEmpty(coll)) {
             return result;
         }
 
+        final Supplier<A> supplier = collector.supplier();
+        final BiConsumer<A, ? super T> accumulator = collector.accumulator();
+        final Function<A, R> finisher = collector.finisher();
         final Iterator<T> iter = iterator();
-        T next = null;
         boolean hasNext = false;
+        T next = null;
 
         while (hasNext || iter.hasNext()) {
-            R res = mergeFunction.apply(seed, hasNext ? next : (next = iter.next()));
+            final A c = supplier.get();
+            accumulator.accept(c, hasNext ? next : (next = iter.next()));
 
             while ((hasNext = iter.hasNext())) {
                 if (collapsible.test(next, (next = iter.next()))) {
-                    res = mergeFunction.apply(res, next);
+                    accumulator.accept(c, next);
                 } else {
                     break;
                 }
             }
 
-            result.add(res);
-        }
-
-        return result;
-    }
-
-    /**
-     * Merge series of adjacent elements which satisfy the given predicate using
-     * the merger function and return a new stream.
-     * 
-     * <br />
-     * This method only run sequentially, even in parallel stream.
-     * 
-     * @param supplier usually it's a creator of collection.
-     * @param collapsible
-     * @param mergeFunction
-     * @return
-     */
-    public <C extends Collection<?>> List<C> collapse(final Supplier<C> supplier, final BiPredicate<? super T, ? super T> collapsible,
-            final BiConsumer<? super C, ? super T> mergeFunction) {
-        final List<C> result = new ArrayList<>();
-
-        if (N.isNullOrEmpty(coll)) {
-            return result;
-        }
-
-        final Iterator<T> iter = iterator();
-        T next = null;
-        boolean hasNext = false;
-
-        while (hasNext || iter.hasNext()) {
-            final C c = supplier.get();
-            mergeFunction.accept(c, hasNext ? next : (next = iter.next()));
-
-            while ((hasNext = iter.hasNext())) {
-                if (collapsible.test(next, (next = iter.next()))) {
-                    mergeFunction.accept(c, next);
-                } else {
-                    break;
-                }
-            }
-
-            result.add(c);
+            result.add(finisher.apply(c));
         }
 
         return result;

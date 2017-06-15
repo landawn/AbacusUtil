@@ -184,20 +184,6 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
     public abstract ByteStream collapse(final ByteBiPredicate collapsible, final ByteBiFunction<Byte> mergeFunction);
 
     /**
-     * Merge series of adjacent elements which satisfy the given predicate using
-     * the merger function and return a new stream.
-     * 
-     * <br />
-     * This method only run sequentially, even in parallel stream.
-     * 
-     * @param seed
-     * @param collapsible
-     * @param mergeFunction
-     * @return
-     */
-    public abstract ByteStream collapse(final byte seed, final ByteBiPredicate collapsible, final ByteBiFunction<Byte> mergeFunction);
-
-    /**
      * Returns a {@code Stream} produced by iterative application of a accumulation function
      * to an initial element {@code identity} and next element of the current stream.
      * Produces a {@code Stream} consisting of {@code identity}, {@code acc(identity, value1)},

@@ -27,6 +27,10 @@ import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.function.LongConsumer;
 import com.landawn.abacus.util.function.TriConsumer;
 import com.landawn.abacus.util.function.TriFunction;
+import com.landawn.abacus.util.stream.DoubleStream;
+import com.landawn.abacus.util.stream.FloatStream;
+import com.landawn.abacus.util.stream.IntStream;
+import com.landawn.abacus.util.stream.LongStream;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -289,6 +293,10 @@ public final class Triple<L, M, R> {
             return Stream.of(this);
         }
 
+        public IntStream streamI() {
+            return IntStream.of(_1, _2, _3);
+        }
+
         @Override
         public int hashCode() {
             return (31 * (31 * _1 + this._2)) + _3;
@@ -371,6 +379,10 @@ public final class Triple<L, M, R> {
 
         public Stream<LongTriple> stream() {
             return Stream.of(this);
+        }
+
+        public LongStream streamL() {
+            return LongStream.of(_1, _2, _3);
         }
 
         @Override
@@ -457,6 +469,10 @@ public final class Triple<L, M, R> {
             return Stream.of(this);
         }
 
+        public FloatStream streamF() {
+            return FloatStream.of(_1, _2, _3);
+        }
+
         @Override
         public int hashCode() {
             return (int) ((31 * (31 * _1 + this._2)) + _3);
@@ -539,6 +555,10 @@ public final class Triple<L, M, R> {
 
         public Stream<DoubleTriple> stream() {
             return Stream.of(this);
+        }
+
+        public DoubleStream streamD() {
+            return DoubleStream.of(_1, _2, _3);
         }
 
         @Override

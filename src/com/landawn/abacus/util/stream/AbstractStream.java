@@ -782,8 +782,8 @@ abstract class AbstractStream<T> extends Stream<T> {
         final ExIterator<T> iter = exIterator();
 
         return this.newStream(new ExIterator<T>() {
-            private T pre = null;
             private boolean hasNext = false;
+            private T next = null;
 
             @Override
             public boolean hasNext() {
@@ -792,11 +792,11 @@ abstract class AbstractStream<T> extends Stream<T> {
 
             @Override
             public T next() {
-                T res = hasNext ? pre : (pre = iter.next());
+                T res = hasNext ? next : (next = iter.next());
 
                 while ((hasNext = iter.hasNext())) {
-                    if (collapsible.test(pre, (pre = iter.next()))) {
-                        res = mergeFunction.apply(res, pre);
+                    if (collapsible.test(next, (next = iter.next()))) {
+                        res = mergeFunction.apply(res, next);
                     } else {
                         break;
                     }
@@ -815,8 +815,8 @@ abstract class AbstractStream<T> extends Stream<T> {
         final ExIterator<T> iter = exIterator();
 
         return this.newStream(new ExIterator<R>() {
-            private T pre = null;
             private boolean hasNext = false;
+            private T next = null;
 
             @Override
             public boolean hasNext() {
@@ -826,11 +826,11 @@ abstract class AbstractStream<T> extends Stream<T> {
             @Override
             public R next() {
                 final A c = supplier.get();
-                accumulator.accept(c, hasNext ? pre : (pre = iter.next()));
+                accumulator.accept(c, hasNext ? next : (next = iter.next()));
 
                 while ((hasNext = iter.hasNext())) {
-                    if (collapsible.test(pre, (pre = iter.next()))) {
-                        accumulator.accept(c, pre);
+                    if (collapsible.test(next, (next = iter.next()))) {
+                        accumulator.accept(c, next);
                     } else {
                         break;
                     }

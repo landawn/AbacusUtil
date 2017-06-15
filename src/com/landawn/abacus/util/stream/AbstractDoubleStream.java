@@ -210,8 +210,8 @@ abstract class AbstractDoubleStream extends DoubleStream {
         final ExDoubleIterator iter = exIterator();
 
         return this.newStream(new ExDoubleIterator() {
-            private double pre = 0;
             private boolean hasNext = false;
+            private double next = 0;
 
             @Override
             public boolean hasNext() {
@@ -220,41 +220,11 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
             @Override
             public double nextDouble() {
-                double res = hasNext ? pre : (pre = iter.nextDouble());
+                double res = hasNext ? next : (next = iter.nextDouble());
 
                 while ((hasNext = iter.hasNext())) {
-                    if (collapsible.test(pre, (pre = iter.nextDouble()))) {
-                        res = mergeFunction.apply(res, pre);
-                    } else {
-                        break;
-                    }
-                }
-
-                return res;
-            }
-        }, false);
-    }
-
-    @Override
-    public DoubleStream collapse(final double seed, final DoubleBiPredicate collapsible, final DoubleBiFunction<Double> mergeFunction) {
-        final ExDoubleIterator iter = exIterator();
-
-        return this.newStream(new ExDoubleIterator() {
-            private double pre = 0;
-            private boolean hasNext = false;
-
-            @Override
-            public boolean hasNext() {
-                return hasNext || iter.hasNext();
-            }
-
-            @Override
-            public double nextDouble() {
-                double res = mergeFunction.apply(seed, hasNext ? pre : (pre = iter.nextDouble()));
-
-                while ((hasNext = iter.hasNext())) {
-                    if (collapsible.test(pre, (pre = iter.nextDouble()))) {
-                        res = mergeFunction.apply(res, pre);
+                    if (collapsible.test(next, (next = iter.nextDouble()))) {
+                        res = mergeFunction.apply(res, next);
                     } else {
                         break;
                     }

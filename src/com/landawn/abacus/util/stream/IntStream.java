@@ -235,20 +235,6 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
     public abstract IntStream collapse(final IntBiPredicate collapsible, final IntBiFunction<Integer> mergeFunction);
 
     /**
-     * Merge series of adjacent elements which satisfy the given predicate using
-     * the merger function and return a new stream.
-     * 
-     * <br />
-     * This method only run sequentially, even in parallel stream.
-     * 
-     * @param seed
-     * @param collapsible
-     * @param mergeFunction
-     * @return
-     */
-    public abstract IntStream collapse(final int seed, final IntBiPredicate collapsible, final IntBiFunction<Integer> mergeFunction);
-
-    /**
      * Returns a {@code Stream} produced by iterative application of a accumulation function
      * to an initial element {@code identity} and next element of the current stream.
      * Produces a {@code Stream} consisting of {@code identity}, {@code acc(identity, value1)},

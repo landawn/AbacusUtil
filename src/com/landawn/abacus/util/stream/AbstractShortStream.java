@@ -210,8 +210,8 @@ abstract class AbstractShortStream extends ShortStream {
         final ExShortIterator iter = exIterator();
 
         return this.newStream(new ExShortIterator() {
-            private short pre = 0;
             private boolean hasNext = false;
+            private short next = 0;
 
             @Override
             public boolean hasNext() {
@@ -220,41 +220,11 @@ abstract class AbstractShortStream extends ShortStream {
 
             @Override
             public short nextShort() {
-                short res = hasNext ? pre : (pre = iter.nextShort());
+                short res = hasNext ? next : (next = iter.nextShort());
 
                 while ((hasNext = iter.hasNext())) {
-                    if (collapsible.test(pre, (pre = iter.nextShort()))) {
-                        res = mergeFunction.apply(res, pre);
-                    } else {
-                        break;
-                    }
-                }
-
-                return res;
-            }
-        }, false);
-    }
-
-    @Override
-    public ShortStream collapse(final short seed, final ShortBiPredicate collapsible, final ShortBiFunction<Short> mergeFunction) {
-        final ExShortIterator iter = exIterator();
-
-        return this.newStream(new ExShortIterator() {
-            private short pre = 0;
-            private boolean hasNext = false;
-
-            @Override
-            public boolean hasNext() {
-                return hasNext || iter.hasNext();
-            }
-
-            @Override
-            public short nextShort() {
-                short res = mergeFunction.apply(seed, hasNext ? pre : (pre = iter.nextShort()));
-
-                while ((hasNext = iter.hasNext())) {
-                    if (collapsible.test(pre, (pre = iter.nextShort()))) {
-                        res = mergeFunction.apply(res, pre);
+                    if (collapsible.test(next, (next = iter.nextShort()))) {
+                        res = mergeFunction.apply(res, next);
                     } else {
                         break;
                     }

@@ -209,8 +209,8 @@ abstract class AbstractLongStream extends LongStream {
         final ExLongIterator iter = exIterator();
 
         return this.newStream(new ExLongIterator() {
-            private long pre = 0;
             private boolean hasNext = false;
+            private long next = 0;
 
             @Override
             public boolean hasNext() {
@@ -219,41 +219,11 @@ abstract class AbstractLongStream extends LongStream {
 
             @Override
             public long nextLong() {
-                long res = hasNext ? pre : (pre = iter.nextLong());
+                long res = hasNext ? next : (next = iter.nextLong());
 
                 while ((hasNext = iter.hasNext())) {
-                    if (collapsible.test(pre, (pre = iter.nextLong()))) {
-                        res = mergeFunction.apply(res, pre);
-                    } else {
-                        break;
-                    }
-                }
-
-                return res;
-            }
-        }, false);
-    }
-
-    @Override
-    public LongStream collapse(final long seed, final LongBiPredicate collapsible, final LongBiFunction<Long> mergeFunction) {
-        final ExLongIterator iter = exIterator();
-
-        return this.newStream(new ExLongIterator() {
-            private long pre = 0;
-            private boolean hasNext = false;
-
-            @Override
-            public boolean hasNext() {
-                return hasNext || iter.hasNext();
-            }
-
-            @Override
-            public long nextLong() {
-                long res = mergeFunction.apply(seed, hasNext ? pre : (pre = iter.nextLong()));
-
-                while ((hasNext = iter.hasNext())) {
-                    if (collapsible.test(pre, (pre = iter.nextLong()))) {
-                        res = mergeFunction.apply(res, pre);
+                    if (collapsible.test(next, (next = iter.nextLong()))) {
+                        res = mergeFunction.apply(res, next);
                     } else {
                         break;
                     }
