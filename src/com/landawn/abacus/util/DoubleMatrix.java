@@ -20,12 +20,9 @@ import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.util.Pair.IntPair;
 import com.landawn.abacus.util.function.DoubleBiFunction;
 import com.landawn.abacus.util.function.DoubleFunction;
-import com.landawn.abacus.util.function.DoublePredicate;
 import com.landawn.abacus.util.function.DoubleTriFunction;
 import com.landawn.abacus.util.function.DoubleUnaryOperator;
 import com.landawn.abacus.util.function.IntConsumer;
-import com.landawn.abacus.util.function.IntFunction;
-import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.stream.DoubleStream;
 import com.landawn.abacus.util.stream.ExDoubleIterator;
 import com.landawn.abacus.util.stream.ExIterator;
@@ -166,8 +163,16 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
         return a[i][j];
     }
 
+    public double get(final IntPair point) {
+        return a[point._1][point._2];
+    }
+
     public void set(final int i, final int j, final double val) {
         a[i][j] = val;
+    }
+
+    public void set(final IntPair point, final double val) {
+        a[point._1][point._2] = val;
     }
 
     public OptionalDouble upOf(final int i, final int j) {
@@ -1092,25 +1097,6 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
         }
 
         return new DoubleMatrix(result);
-    }
-
-    public Stream<IntPair> filter(final DoublePredicate predicate) {
-        return IntStream.range(0, n).flatMapToObj(new IntFunction<Stream<IntPair>>() {
-            @Override
-            public Stream<IntPair> apply(final int rowIndex) {
-                return IntStream.range(0, m).mapToObj(new IntFunction<IntPair>() {
-                    @Override
-                    public IntPair apply(final int columnIndex) {
-                        return IntPair.of(rowIndex, columnIndex);
-                    }
-                });
-            }
-        }).filter(new Predicate<IntPair>() {
-            @Override
-            public boolean test(IntPair p) {
-                return predicate.test(a[p._1][p._2]);
-            }
-        });
     }
 
     /**

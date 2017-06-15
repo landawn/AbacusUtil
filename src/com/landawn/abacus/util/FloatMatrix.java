@@ -20,12 +20,9 @@ import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.util.Pair.IntPair;
 import com.landawn.abacus.util.function.FloatBiFunction;
 import com.landawn.abacus.util.function.FloatFunction;
-import com.landawn.abacus.util.function.FloatPredicate;
 import com.landawn.abacus.util.function.FloatTriFunction;
 import com.landawn.abacus.util.function.FloatUnaryOperator;
 import com.landawn.abacus.util.function.IntConsumer;
-import com.landawn.abacus.util.function.IntFunction;
-import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.stream.ExFloatIterator;
 import com.landawn.abacus.util.stream.ExIterator;
 import com.landawn.abacus.util.stream.FloatStream;
@@ -132,8 +129,16 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatS
         return a[i][j];
     }
 
+    public float get(final IntPair point) {
+        return a[point._1][point._2];
+    }
+
     public void set(final int i, final int j, final float val) {
         a[i][j] = val;
+    }
+
+    public void set(final IntPair point, final float val) {
+        a[point._1][point._2] = val;
     }
 
     public OptionalFloat upOf(final int i, final int j) {
@@ -1062,25 +1067,6 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatS
         }
 
         return new FloatMatrix(result);
-    }
-
-    public Stream<IntPair> filter(final FloatPredicate predicate) {
-        return IntStream.range(0, n).flatMapToObj(new IntFunction<Stream<IntPair>>() {
-            @Override
-            public Stream<IntPair> apply(final int rowIndex) {
-                return IntStream.range(0, m).mapToObj(new IntFunction<IntPair>() {
-                    @Override
-                    public IntPair apply(final int columnIndex) {
-                        return IntPair.of(rowIndex, columnIndex);
-                    }
-                });
-            }
-        }).filter(new Predicate<IntPair>() {
-            @Override
-            public boolean test(IntPair p) {
-                return predicate.test(a[p._1][p._2]);
-            }
-        });
     }
 
     /**

@@ -17,6 +17,11 @@ package com.landawn.abacus.util;
 import java.security.SecureRandom;
 import java.util.Random;
 
+import com.landawn.abacus.util.Pair.IntPair;
+import com.landawn.abacus.util.function.IntFunction;
+import com.landawn.abacus.util.stream.IntStream;
+import com.landawn.abacus.util.stream.Stream;
+
 /**
  * 
  * @since 0.8
@@ -148,6 +153,34 @@ public abstract class AbstractMatrix<A, PL, HS, RS, X extends AbstractMatrix<A, 
     }
 
     public abstract PL flatten();
+
+    public Stream<IntPair> pointsH() {
+        return IntStream.range(0, n).flatMapToObj(new IntFunction<Stream<IntPair>>() {
+            @Override
+            public Stream<IntPair> apply(final int rowIndex) {
+                return IntStream.range(0, m).mapToObj(new IntFunction<IntPair>() {
+                    @Override
+                    public IntPair apply(final int columnIndex) {
+                        return IntPair.of(rowIndex, columnIndex);
+                    }
+                });
+            }
+        });
+    }
+
+    public Stream<IntPair> pointsV() {
+        return IntStream.range(0, m).flatMapToObj(new IntFunction<Stream<IntPair>>() {
+            @Override
+            public Stream<IntPair> apply(final int columnIndex) {
+                return IntStream.range(0, n).mapToObj(new IntFunction<IntPair>() {
+                    @Override
+                    public IntPair apply(final int rowIndex) {
+                        return IntPair.of(rowIndex, columnIndex);
+                    }
+                });
+            }
+        });
+    }
 
     public abstract HS streamH();
 

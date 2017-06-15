@@ -22,8 +22,6 @@ import com.landawn.abacus.util.Pair.IntPair;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntConsumer;
-import com.landawn.abacus.util.function.IntFunction;
-import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.ToBooleanFunction;
 import com.landawn.abacus.util.function.ToByteFunction;
 import com.landawn.abacus.util.function.ToCharFunction;
@@ -122,8 +120,16 @@ public final class Matrix<T> extends AbstractMatrix<T[], List<T>, Stream<T>, Str
         return a[i][j];
     }
 
+    public T get(final IntPair point) {
+        return a[point._1][point._2];
+    }
+
     public void set(final int i, final int j, final T val) {
         a[i][j] = val;
+    }
+
+    public void set(final IntPair point, final T val) {
+        a[point._1][point._2] = val;
     }
 
     public NullabLe<T> upOf(final int i, final int j) {
@@ -1113,25 +1119,6 @@ public final class Matrix<T> extends AbstractMatrix<T[], List<T>, Stream<T>, Str
         }
 
         return new Matrix<>(result);
-    }
-
-    public Stream<IntPair> filter(final Predicate<? super T> predicate) {
-        return IntStream.range(0, n).flatMapToObj(new IntFunction<Stream<IntPair>>() {
-            @Override
-            public Stream<IntPair> apply(final int rowIndex) {
-                return IntStream.range(0, m).mapToObj(new IntFunction<IntPair>() {
-                    @Override
-                    public IntPair apply(final int columnIndex) {
-                        return IntPair.of(rowIndex, columnIndex);
-                    }
-                });
-            }
-        }).filter(new Predicate<IntPair>() {
-            @Override
-            public boolean test(IntPair p) {
-                return predicate.test(a[p._1][p._2]);
-            }
-        });
     }
 
     /**
