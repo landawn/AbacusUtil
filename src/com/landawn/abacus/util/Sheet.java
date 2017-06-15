@@ -33,7 +33,9 @@ import com.landawn.abacus.parser.KryoParser;
 import com.landawn.abacus.parser.ParserFactory;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.Function;
+import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.stream.ExIterator;
+import com.landawn.abacus.util.stream.IntStream;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -1115,8 +1117,12 @@ public final class Sheet<R, C, E> {
      * 
      * @return a stream of Cells based on the order of row.
      */
-    public Stream<Sheet.Cell<R, C, E>> cells() {
-        return cells(0, _rowKeySet.size());
+    public Stream<Sheet.Cell<R, C, E>> cellsH() {
+        return cellsH(0, _rowKeySet.size());
+    }
+
+    public Stream<Sheet.Cell<R, C, E>> cellsH(final int rowIndex) {
+        return cellsH(rowIndex, rowIndex + 1);
     }
 
     /**
@@ -1125,7 +1131,7 @@ public final class Sheet<R, C, E> {
      * @param toRowIndex
      * @return a stream of Cells based on the order of row.
      */
-    public Stream<Sheet.Cell<R, C, E>> cells(final int fromRowIndex, final int toRowIndex) {
+    public Stream<Sheet.Cell<R, C, E>> cellsH(final int fromRowIndex, final int toRowIndex) {
         N.checkFromToIndex(fromRowIndex, toRowIndex, _rowKeySet.size());
 
         if (_rowKeySet.size() == 0 || _columnKeySet.size() == 0) {
@@ -1173,8 +1179,17 @@ public final class Sheet<R, C, E> {
      * 
      * @return a stream of Cells based on the order of column.
      */
-    public Stream<Sheet.Cell<R, C, E>> cells0() {
-        return cells0(0, _columnKeySet.size());
+    public Stream<Sheet.Cell<R, C, E>> cellsV() {
+        return cellsV(0, _columnKeySet.size());
+    }
+
+    /**
+     * 
+     * @param columnIndex
+     * @return
+     */
+    public Stream<Sheet.Cell<R, C, E>> cellsV(final int columnIndex) {
+        return cellsV(columnIndex, columnIndex + 1);
     }
 
     /**
@@ -1184,7 +1199,7 @@ public final class Sheet<R, C, E> {
      * @return a stream of Cells based on the order of column.
      */
 
-    public Stream<Sheet.Cell<R, C, E>> cells0(final int fromColumnIndex, final int toColumnIndex) {
+    public Stream<Sheet.Cell<R, C, E>> cellsV(final int fromColumnIndex, final int toColumnIndex) {
         N.checkFromToIndex(fromColumnIndex, toColumnIndex, _columnKeySet.size());
 
         if (_rowKeySet.size() == 0 || _columnKeySet.size() == 0) {
@@ -1232,8 +1247,171 @@ public final class Sheet<R, C, E> {
      * 
      * @return a stream based on the order of row.
      */
+    public Stream<Stream<Cell<R, C, E>>> cellsR() {
+        return cellsR(0, _rowKeySet.size());
+    }
+
+    /**
+     * 
+     * @param fromRowIndex
+     * @param toRowIndex
+     * @return a stream based on the order of row.
+     */
+    public Stream<Stream<Cell<R, C, E>>> cellsR(final int fromRowIndex, final int toRowIndex) {
+        N.checkFromToIndex(fromRowIndex, toRowIndex, _rowKeySet.size());
+
+        if (_rowKeySet.size() == 0 || _columnKeySet.size() == 0) {
+            return Stream.empty();
+        }
+
+        final int columnLength = columnLength();
+
+        return Stream.of(new ExIterator<Stream<Cell<R, C, E>>>() {
+            private volatile int rowIndex = fromRowIndex;
+
+            @Override
+            public boolean hasNext() {
+                return rowIndex < toRowIndex;
+            }
+
+            @Override
+            public Stream<Cell<R, C, E>> next() {
+                if (rowIndex >= toRowIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                return Stream.of(new ExIterator<Cell<R, C, E>>() {
+                    private final int curRowIndex = rowIndex++;
+                    private final R r = _rowKeyIndexMap.getByValue(curRowIndex);
+                    private int columnIndex = 0;
+
+                    @Override
+                    public boolean hasNext() {
+                        return columnIndex < columnLength;
+                    }
+
+                    @Override
+                    public Cell<R, C, E> next() {
+                        if (columnIndex >= columnLength) {
+                            throw new NoSuchElementException();
+                        }
+
+                        final int curColumnIndex = columnIndex++;
+
+                        return new Cell0<>(r, _columnKeyIndexMap.getByValue(curColumnIndex),
+                                _initialized ? _columnList.get(curColumnIndex).get(curRowIndex) : null);
+                    }
+
+                    @Override
+                    public void skip(long n) {
+                        columnIndex = n < columnLength - columnIndex ? columnIndex + (int) n : columnLength;
+                    }
+
+                    @Override
+                    public long count() {
+                        return columnLength - columnIndex;
+                    }
+                });
+            }
+
+            @Override
+            public void skip(long n) {
+                rowIndex = n < toRowIndex - rowIndex ? rowIndex + (int) n : toRowIndex;
+            }
+
+            @Override
+            public long count() {
+                return toRowIndex - rowIndex;
+            }
+        });
+    }
+
+    /**
+     * 
+     * @return a stream based on the order of column.
+     */
+    public Stream<Stream<Cell<R, C, E>>> cellsC() {
+        return cellsC(0, _columnKeySet.size());
+    }
+
+    /**
+     * 
+     * @param fromColumnIndex
+     * @param toColumnIndex
+     * @return a stream based on the order of column.
+     */
+    public Stream<Stream<Cell<R, C, E>>> cellsC(final int fromColumnIndex, final int toColumnIndex) {
+        N.checkFromToIndex(fromColumnIndex, toColumnIndex, _columnKeySet.size());
+
+        if (_rowKeySet.size() == 0 || _columnKeySet.size() == 0) {
+            return Stream.empty();
+        }
+
+        final int rowLength = rowLength();
+
+        return Stream.of(new ExIterator<Stream<Cell<R, C, E>>>() {
+            private int columnIndex = fromColumnIndex;
+
+            @Override
+            public boolean hasNext() {
+                return columnIndex < toColumnIndex;
+            }
+
+            @Override
+            public Stream<Cell<R, C, E>> next() {
+                if (columnIndex >= toColumnIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final int curColumnIndex = columnIndex++;
+                final C c = _columnKeyIndexMap.getByValue(curColumnIndex);
+
+                if (_initialized) {
+                    final List<E> column = _columnList.get(curColumnIndex);
+
+                    return IntStream.range(0, rowLength).mapToObj(new IntFunction<Cell<R, C, E>>() {
+                        @Override
+                        public Cell<R, C, E> apply(int rowIndex) {
+                            return new Cell0<>(_rowKeyIndexMap.getByValue(rowIndex), c, column.get(rowIndex));
+                        }
+                    });
+                } else {
+                    return IntStream.range(0, rowLength).mapToObj(new IntFunction<Cell<R, C, E>>() {
+                        @Override
+                        public Cell<R, C, E> apply(int rowIndex) {
+                            return new Cell0<>(_rowKeyIndexMap.getByValue(rowIndex), c, null);
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void skip(long n) {
+                columnIndex = n < toColumnIndex - columnIndex ? columnIndex + (int) n : toColumnIndex;
+            }
+
+            @Override
+            public long count() {
+                return toColumnIndex - columnIndex;
+            }
+        });
+    }
+
+    /**
+     * 
+     * @return a stream based on the order of row.
+     */
     public Stream<E> streamH() {
         return streamH(0, _rowKeySet.size());
+    }
+
+    /**
+     * 
+     * @param rowIndex
+     * @return
+     */
+    public Stream<E> streamH(final int rowIndex) {
+        return streamH(rowIndex, rowIndex + 1);
     }
 
     /**
@@ -1291,6 +1469,15 @@ public final class Sheet<R, C, E> {
      */
     public Stream<E> streamV() {
         return streamV(0, _columnKeySet.size());
+    }
+
+    /**
+     * 
+     * @param columnIndex
+     * @return
+     */
+    public Stream<E> streamV(final int columnIndex) {
+        return streamV(columnIndex, columnIndex + 1);
     }
 
     /**
@@ -1486,7 +1673,7 @@ public final class Sheet<R, C, E> {
      * 
      * @return a DataSet based on row.
      */
-    public DataSet toDataSet() {
+    public DataSet toDataSetH() {
         final int rowLength = rowLength();
         final int columnLength = columnLength();
         final List<String> dataSetColumnNameList = new ArrayList<>(columnLength);
@@ -1516,7 +1703,7 @@ public final class Sheet<R, C, E> {
      * 
      * @return a DataSet based on column.
      */
-    public DataSet toDataSet0() {
+    public DataSet toDataSetV() {
         final int rowLength = rowLength();
         final int columnLength = columnLength();
         final List<String> dataSetColumnNameList = new ArrayList<>(rowLength);
@@ -1553,7 +1740,7 @@ public final class Sheet<R, C, E> {
      * @param cls
      * @return a Matrix based on row.
      */
-    public Matrix<E> toMatrix(Class<E> cls) {
+    public Matrix<E> toMatrixH(Class<E> cls) {
         final int rowLength = rowLength();
         final int columnLength = columnLength();
         final E[][] c = N.newArray(N.newArray(cls, 0).getClass(), rowLength);
@@ -1582,7 +1769,7 @@ public final class Sheet<R, C, E> {
      * @param cls
      * @return a Matrix based on column.
      */
-    public Matrix<E> toMatrix0(Class<E> cls) {
+    public Matrix<E> toMatrixV(Class<E> cls) {
         final int rowLength = rowLength();
         final int columnLength = columnLength();
         final E[][] c = N.newArray(N.newArray(cls, 0).getClass(), columnLength);
@@ -1610,7 +1797,7 @@ public final class Sheet<R, C, E> {
      * 
      * @return a 2D array based on row.
      */
-    public Object[][] toArray() {
+    public Object[][] toArrayH() {
         final int rowLength = rowLength();
         final int columnLength = columnLength();
         final Object[][] copy = new Object[rowLength][columnLength];
@@ -1632,7 +1819,7 @@ public final class Sheet<R, C, E> {
      * 
      * @return a 2D array based on row.
      */
-    public <T> T[][] toArray(Class<T> cls) {
+    public <T> T[][] toArrayH(Class<T> cls) {
         final int rowLength = rowLength();
         final int columnLength = columnLength();
         final T[][] copy = N.newArray(N.newArray(cls, 0).getClass(), rowLength);
@@ -1658,7 +1845,7 @@ public final class Sheet<R, C, E> {
      * 
      * @return a 2D array based on column.
      */
-    public Object[][] toArray0() {
+    public Object[][] toArrayV() {
         final int rowLength = rowLength();
         final int columnLength = columnLength();
         final Object[][] copy = new Object[columnLength][rowLength];
@@ -1680,7 +1867,7 @@ public final class Sheet<R, C, E> {
      * 
      * @return a 2D array based on column.
      */
-    public <T> T[][] toArray0(Class<T> cls) {
+    public <T> T[][] toArrayV(Class<T> cls) {
         final int rowLength = rowLength();
         final int columnLength = columnLength();
         final T[][] copy = N.newArray(N.newArray(cls, 0).getClass(), columnLength);

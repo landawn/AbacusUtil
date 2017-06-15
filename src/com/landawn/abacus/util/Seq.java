@@ -2588,6 +2588,24 @@ public final class Seq<T> extends ImmutableCollection<T> {
         }
     }
 
+    public static <T> List<T> repeat(final T value, final int n) {
+        return new ArrayList<>(Arrays.asList(Array.repeat(value, n)));
+    }
+
+    public static <T> List<T> repeat(final Collection<T> c, final int n) {
+        if (n < 1) {
+            throw new IllegalArgumentException("The specified count must be greater than 0");
+        }
+
+        final List<T> result = new ArrayList<>(c.size() * n);
+
+        for (int i = 0; i < n; i++) {
+            result.addAll(c);
+        }
+
+        return result;
+    }
+
     public static <T> void reverse(final Collection<T> c) {
         if (N.isNullOrEmpty(c) && c.size() < 2) {
             return;

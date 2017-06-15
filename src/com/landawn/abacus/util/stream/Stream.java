@@ -593,22 +593,22 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
 
     /**
      * 
-     * @param keyExtractor
+     * @param classifier
      * @param valueMapper
      * @return
      * @see Collectors#toMultimap(Function, Function)
      */
-    public abstract <K, U> Stream<Map.Entry<K, List<U>>> groupBy(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper);
+    public abstract <K, U> Stream<Map.Entry<K, List<U>>> groupBy(Function<? super T, ? extends K> classifier, Function<? super T, ? extends U> valueMapper);
 
     /**
      * 
-     * @param keyExtractor
+     * @param classifier
      * @param valueMapper
      * @param mapFactory
      * @return
      * @see Collectors#toMultimap(Function, Function, Supplier)
      */
-    public abstract <K, U, M extends Map<K, List<U>>> Stream<Map.Entry<K, List<U>>> groupBy(Function<? super T, ? extends K> keyExtractor,
+    public abstract <K, U, M extends Map<K, List<U>>> Stream<Map.Entry<K, List<U>>> groupBy(Function<? super T, ? extends K> classifier,
             Function<? super T, ? extends U> valueMapper, Supplier<M> mapFactory);
 
     public abstract <K, A, D> Stream<Map.Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream);
@@ -616,22 +616,57 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     public abstract <K, A, D> Stream<Map.Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream,
             final Supplier<Map<K, D>> mapFactory);
 
-    public abstract <K, A, D> Stream<Map.Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier,
-            final java.util.stream.Collector<? super T, A, D> downstream);
-
-    public abstract <K, A, D> Stream<Map.Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier,
-            final java.util.stream.Collector<? super T, A, D> downstream, final Supplier<Map<K, D>> mapFactory);
-
     public abstract <K, U> Stream<Map.Entry<K, U>> groupBy2(final Function<? super T, ? extends K> keyExtractor,
             final Function<? super T, ? extends U> valueMapper);
 
-    public abstract <K, U> Stream<Map.Entry<K, U>> groupBy2(final Function<? super T, ? extends K> keyExtractor,
+    public abstract <K, U> Stream<Map.Entry<K, U>> groupBy2(final Function<? super T, ? extends K> classifier,
             final Function<? super T, ? extends U> valueMapper, final Supplier<Map<K, U>> mapFactory);
 
-    public abstract <K, U> Stream<Map.Entry<K, U>> groupBy2(final Function<? super T, ? extends K> keyExtractor,
+    public abstract <K, U> Stream<Map.Entry<K, U>> groupBy2(final Function<? super T, ? extends K> classifier,
             final Function<? super T, ? extends U> valueMapper, BinaryOperator<U> mergeFunction);
 
-    public abstract <K, U> Stream<Map.Entry<K, U>> groupBy2(final Function<? super T, ? extends K> keyExtractor,
+    public abstract <K, U> Stream<Map.Entry<K, U>> groupBy2(final Function<? super T, ? extends K> classifier,
+            final Function<? super T, ? extends U> valueMapper, final BinaryOperator<U> mergeFunction, final Supplier<Map<K, U>> mapFactory);
+
+    public abstract <K> EntryStream<K, List<T>> groupByToEntry(final Function<? super T, ? extends K> classifier);
+
+    public abstract <K> EntryStream<K, List<T>> groupByToEntry(final Function<? super T, ? extends K> classifier, final Supplier<Map<K, List<T>>> mapFactory);
+
+    /**
+     * 
+     * @param classifier
+     * @param valueMapper
+     * @return
+     * @see Collectors#toMultimap(Function, Function)
+     */
+    public abstract <K, U> EntryStream<K, List<U>> groupByToEntry(Function<? super T, ? extends K> classifier, Function<? super T, ? extends U> valueMapper);
+
+    /**
+     * 
+     * @param classifier
+     * @param valueMapper
+     * @param mapFactory
+     * @return
+     * @see Collectors#toMultimap(Function, Function, Supplier)
+     */
+    public abstract <K, U, M extends Map<K, List<U>>> EntryStream<K, List<U>> groupByToEntry(Function<? super T, ? extends K> classifier,
+            Function<? super T, ? extends U> valueMapper, Supplier<M> mapFactory);
+
+    public abstract <K, A, D> EntryStream<K, D> groupByToEntry(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream);
+
+    public abstract <K, A, D> EntryStream<K, D> groupByToEntry(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream,
+            final Supplier<Map<K, D>> mapFactory);
+
+    public abstract <K, U> EntryStream<K, U> groupByToEntry2(final Function<? super T, ? extends K> classifier,
+            final Function<? super T, ? extends U> valueMapper);
+
+    public abstract <K, U> EntryStream<K, U> groupByToEntry2(final Function<? super T, ? extends K> classifier,
+            final Function<? super T, ? extends U> valueMapper, final Supplier<Map<K, U>> mapFactory);
+
+    public abstract <K, U> EntryStream<K, U> groupByToEntry2(final Function<? super T, ? extends K> classifier,
+            final Function<? super T, ? extends U> valueMapper, BinaryOperator<U> mergeFunction);
+
+    public abstract <K, U> EntryStream<K, U> groupByToEntry2(final Function<? super T, ? extends K> classifier,
             final Function<? super T, ? extends U> valueMapper, final BinaryOperator<U> mergeFunction, final Supplier<Map<K, U>> mapFactory);
 
     /**

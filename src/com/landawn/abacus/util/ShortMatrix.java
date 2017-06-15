@@ -75,40 +75,44 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortS
         return new ShortMatrix(new short[][] { Array.rangeClosed(startInclusive, endInclusive, by) });
     }
 
-    public static ShortMatrix diagonal(final short[] leftUp2RightLowDiagonal) {
-        return diagonal(leftUp2RightLowDiagonal, null);
+    public static ShortMatrix diagonalLU2RD(final short[] leftUp2RighDownDiagonal) {
+        return diagonal(leftUp2RighDownDiagonal, null);
     }
 
-    public static ShortMatrix diagonal(final short[] leftUp2RightLowDiagonal, short[] rightUp2LeftLowDiagonal) {
-        N.checkArgument(
-                N.isNullOrEmpty(leftUp2RightLowDiagonal) || N.isNullOrEmpty(rightUp2LeftLowDiagonal)
-                        || leftUp2RightLowDiagonal.length == rightUp2LeftLowDiagonal.length,
-                "The length of 'leftUp2RightLowDiagonal' and 'rightUp2LeftLowDiagonal' must be same");
+    public static ShortMatrix diagonalRU2LD(final short[] rightUp2LeftDownDiagonal) {
+        return diagonal(null, rightUp2LeftDownDiagonal);
+    }
 
-        if (N.isNullOrEmpty(leftUp2RightLowDiagonal)) {
-            if (N.isNullOrEmpty(rightUp2LeftLowDiagonal)) {
+    public static ShortMatrix diagonal(final short[] leftUp2RighDownDiagonal, short[] rightUp2LeftDownDiagonal) {
+        N.checkArgument(
+                N.isNullOrEmpty(leftUp2RighDownDiagonal) || N.isNullOrEmpty(rightUp2LeftDownDiagonal)
+                        || leftUp2RighDownDiagonal.length == rightUp2LeftDownDiagonal.length,
+                "The length of 'leftUp2RighDownDiagonal' and 'rightUp2LeftDownDiagonal' must be same");
+
+        if (N.isNullOrEmpty(leftUp2RighDownDiagonal)) {
+            if (N.isNullOrEmpty(rightUp2LeftDownDiagonal)) {
                 return empty();
             } else {
-                final int len = rightUp2LeftLowDiagonal.length;
+                final int len = rightUp2LeftDownDiagonal.length;
                 final short[][] c = new short[len][len];
 
                 for (int i = 0, j = len - 1; i < len; i++, j--) {
-                    c[i][j] = rightUp2LeftLowDiagonal[i];
+                    c[i][j] = rightUp2LeftDownDiagonal[i];
                 }
 
                 return new ShortMatrix(c);
             }
         } else {
-            final int len = leftUp2RightLowDiagonal.length;
+            final int len = leftUp2RighDownDiagonal.length;
             final short[][] c = new short[len][len];
 
             for (int i = 0; i < len; i++) {
-                c[i][i] = leftUp2RightLowDiagonal[i];
+                c[i][i] = leftUp2RighDownDiagonal[i];
             }
 
-            if (N.notNullOrEmpty(rightUp2LeftLowDiagonal)) {
+            if (N.notNullOrEmpty(rightUp2LeftDownDiagonal)) {
                 for (int i = 0, j = len - 1; i < len; i++, j--) {
-                    c[i][j] = rightUp2LeftLowDiagonal[i];
+                    c[i][j] = rightUp2LeftDownDiagonal[i];
                 }
             }
 
@@ -213,26 +217,19 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortS
         }
     }
 
-    public void fill(final short val) {
+    public void updateRow(int rowIndex, ShortUnaryOperator func) {
+        for (int i = 0; i < m; i++) {
+            a[rowIndex][i] = func.applyAsShort(a[rowIndex][i]);
+        }
+    }
+
+    public void updateColumn(int columnIndex, ShortUnaryOperator func) {
         for (int i = 0; i < n; i++) {
-            N.fill(a[i], val);
+            a[i][columnIndex] = func.applyAsShort(a[i][columnIndex]);
         }
     }
 
-    public void fill(final short[][] b) {
-        fill(0, 0, b);
-    }
-
-    public void fill(final int fromRowIndex, final int fromColumnIndex, final short[][] b) {
-        N.checkFromToIndex(fromRowIndex, n, n);
-        N.checkFromToIndex(fromColumnIndex, m, m);
-
-        for (int i = 0, minLen = N.min(n - fromRowIndex, b.length); i < minLen; i++) {
-            N.copy(b[i], 0, a[i + fromRowIndex], fromColumnIndex, N.min(b[i].length, m - fromColumnIndex));
-        }
-    }
-
-    public void replaceAll(final ShortUnaryOperator operator) {
+    public void updateAll(final ShortUnaryOperator operator) {
         if (isParallelable()) {
             if (n <= m) {
                 IntStream.range(0, n).parallel().forEach(new IntConsumer() {
@@ -356,6 +353,25 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortS
         }
 
         return Matrix.of(c);
+    }
+
+    public void fill(final short val) {
+        for (int i = 0; i < n; i++) {
+            N.fill(a[i], val);
+        }
+    }
+
+    public void fill(final short[][] b) {
+        fill(0, 0, b);
+    }
+
+    public void fill(final int fromRowIndex, final int fromColumnIndex, final short[][] b) {
+        N.checkFromToIndex(fromRowIndex, n, n);
+        N.checkFromToIndex(fromColumnIndex, m, m);
+
+        for (int i = 0, minLen = N.min(n - fromRowIndex, b.length); i < minLen; i++) {
+            N.copy(b[i], 0, a[i + fromRowIndex], fromColumnIndex, N.min(b[i].length, m - fromColumnIndex));
+        }
     }
 
     // Replaced by stream and stream2.
@@ -935,7 +951,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortS
      * 
      * @return a stream composed by elements on the diagonal line from left up to right down.
      */
-    public ShortStream diagonal() {
+    public ShortStream diagonalLU2RD() {
         N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
 
         if (isEmpty()) {
@@ -976,7 +992,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortS
      * 
      * @return a stream composed by elements on the diagonal line from right up to left down.
      */
-    public ShortStream diagonal2() {
+    public ShortStream diagonalRU2LD() {
         N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
 
         if (isEmpty()) {
@@ -1113,6 +1129,10 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortS
         return streamH(0, n);
     }
 
+    public ShortStream streamH(final int rowIndex) {
+        return streamH(rowIndex, rowIndex + 1);
+    }
+
     /**
      * 
      * @param fromRowIndex
@@ -1195,6 +1215,10 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortS
     @Beta
     public ShortStream streamV() {
         return streamV(0, m);
+    }
+
+    public ShortStream streamV(final int columnIndex) {
+        return streamV(columnIndex, columnIndex + 1);
     }
 
     /**

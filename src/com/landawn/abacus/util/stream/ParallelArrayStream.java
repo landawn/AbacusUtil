@@ -523,6 +523,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
         return new ParallelIteratorStream<>(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, null, maxThreadNum, splitor);
     }
 
+    @SuppressWarnings("resource")
     @Override
     public Stream<T> mapFirst(final Function<? super T, ? extends T> mapperForFirst) {
         N.requireNonNull(mapperForFirst);
@@ -541,6 +542,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
         }
     }
 
+    @SuppressWarnings("resource")
     @Override
     public <R> Stream<R> mapFirstOrElse(final Function<? super T, ? extends R> mapperForFirst, final Function<? super T, ? extends R> mapperForElse) {
         N.requireNonNull(mapperForFirst);
@@ -564,6 +566,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
         }
     }
 
+    @SuppressWarnings("resource")
     @Override
     public Stream<T> mapLast(final Function<? super T, ? extends T> mapperForLast) {
         N.requireNonNull(mapperForLast);
@@ -582,6 +585,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
         }
     }
 
+    @SuppressWarnings("resource")
     @Override
     public <R> Stream<R> mapLastOrElse(final Function<? super T, ? extends R> mapperForLast, final Function<? super T, ? extends R> mapperForElse) {
         N.requireNonNull(mapperForLast);

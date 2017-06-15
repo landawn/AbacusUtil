@@ -7,8 +7,18 @@
    		Stream<R> collapse(BiPredicate<? super T, ? super T> collapsible, Collector<? super T, A, R> collector);
 
 2*, Remove Stream<R> collapse(R seed, BiPredicate<? super T, ? super T> collapsible, BiFunction<? super R, ? super T, R> mergeFunction)
+
+3, Add groupByToEntry to Stream.
+
+4, Improve EntryStream.
+
+5*, Refactoring Sheet.
+
+6*, Refactoring Matrix.
+
+7*, Move N.repeat(Collection<T> c, int n) from Seq.
             
-3, Improvements and bug fix.
+8, Improvements and bug fix.
 
 
 ========Changes in 0.9.70=========================================================================

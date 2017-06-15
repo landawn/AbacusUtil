@@ -75,40 +75,44 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
         return new CharMatrix(new char[][] { Array.rangeClosed(startInclusive, endInclusive, by) });
     }
 
-    public static CharMatrix diagonal(final char[] leftUp2RightLowDiagonal) {
-        return diagonal(leftUp2RightLowDiagonal, null);
+    public static CharMatrix diagonalLU2RD(final char[] leftUp2RighDownDiagonal) {
+        return diagonal(leftUp2RighDownDiagonal, null);
     }
 
-    public static CharMatrix diagonal(final char[] leftUp2RightLowDiagonal, char[] rightUp2LeftLowDiagonal) {
-        N.checkArgument(
-                N.isNullOrEmpty(leftUp2RightLowDiagonal) || N.isNullOrEmpty(rightUp2LeftLowDiagonal)
-                        || leftUp2RightLowDiagonal.length == rightUp2LeftLowDiagonal.length,
-                "The length of 'leftUp2RightLowDiagonal' and 'rightUp2LeftLowDiagonal' must be same");
+    public static CharMatrix diagonalRU2LD(final char[] rightUp2LeftDownDiagonal) {
+        return diagonal(null, rightUp2LeftDownDiagonal);
+    }
 
-        if (N.isNullOrEmpty(leftUp2RightLowDiagonal)) {
-            if (N.isNullOrEmpty(rightUp2LeftLowDiagonal)) {
+    public static CharMatrix diagonal(final char[] leftUp2RighDownDiagonal, char[] rightUp2LeftDownDiagonal) {
+        N.checkArgument(
+                N.isNullOrEmpty(leftUp2RighDownDiagonal) || N.isNullOrEmpty(rightUp2LeftDownDiagonal)
+                        || leftUp2RighDownDiagonal.length == rightUp2LeftDownDiagonal.length,
+                "The length of 'leftUp2RighDownDiagonal' and 'rightUp2LeftDownDiagonal' must be same");
+
+        if (N.isNullOrEmpty(leftUp2RighDownDiagonal)) {
+            if (N.isNullOrEmpty(rightUp2LeftDownDiagonal)) {
                 return empty();
             } else {
-                final int len = rightUp2LeftLowDiagonal.length;
+                final int len = rightUp2LeftDownDiagonal.length;
                 final char[][] c = new char[len][len];
 
                 for (int i = 0, j = len - 1; i < len; i++, j--) {
-                    c[i][j] = rightUp2LeftLowDiagonal[i];
+                    c[i][j] = rightUp2LeftDownDiagonal[i];
                 }
 
                 return new CharMatrix(c);
             }
         } else {
-            final int len = leftUp2RightLowDiagonal.length;
+            final int len = leftUp2RighDownDiagonal.length;
             final char[][] c = new char[len][len];
 
             for (int i = 0; i < len; i++) {
-                c[i][i] = leftUp2RightLowDiagonal[i];
+                c[i][i] = leftUp2RighDownDiagonal[i];
             }
 
-            if (N.notNullOrEmpty(rightUp2LeftLowDiagonal)) {
+            if (N.notNullOrEmpty(rightUp2LeftDownDiagonal)) {
                 for (int i = 0, j = len - 1; i < len; i++, j--) {
-                    c[i][j] = rightUp2LeftLowDiagonal[i];
+                    c[i][j] = rightUp2LeftDownDiagonal[i];
                 }
             }
 
@@ -213,26 +217,19 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
         }
     }
 
-    public void fill(final char val) {
+    public void updateRow(int rowIndex, CharUnaryOperator func) {
+        for (int i = 0; i < m; i++) {
+            a[rowIndex][i] = func.applyAsChar(a[rowIndex][i]);
+        }
+    }
+
+    public void updateColumn(int columnIndex, CharUnaryOperator func) {
         for (int i = 0; i < n; i++) {
-            N.fill(a[i], val);
+            a[i][columnIndex] = func.applyAsChar(a[i][columnIndex]);
         }
     }
 
-    public void fill(final char[][] b) {
-        fill(0, 0, b);
-    }
-
-    public void fill(final int fromRowIndex, final int fromColumnIndex, final char[][] b) {
-        N.checkFromToIndex(fromRowIndex, n, n);
-        N.checkFromToIndex(fromColumnIndex, m, m);
-
-        for (int i = 0, minLen = N.min(n - fromRowIndex, b.length); i < minLen; i++) {
-            N.copy(b[i], 0, a[i + fromRowIndex], fromColumnIndex, N.min(b[i].length, m - fromColumnIndex));
-        }
-    }
-
-    public void replaceAll(final CharUnaryOperator operator) {
+    public void updateAll(final CharUnaryOperator operator) {
         if (isParallelable()) {
             if (n <= m) {
                 IntStream.range(0, n).parallel().forEach(new IntConsumer() {
@@ -356,6 +353,25 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
         }
 
         return Matrix.of(c);
+    }
+
+    public void fill(final char val) {
+        for (int i = 0; i < n; i++) {
+            N.fill(a[i], val);
+        }
+    }
+
+    public void fill(final char[][] b) {
+        fill(0, 0, b);
+    }
+
+    public void fill(final int fromRowIndex, final int fromColumnIndex, final char[][] b) {
+        N.checkFromToIndex(fromRowIndex, n, n);
+        N.checkFromToIndex(fromColumnIndex, m, m);
+
+        for (int i = 0, minLen = N.min(n - fromRowIndex, b.length); i < minLen; i++) {
+            N.copy(b[i], 0, a[i + fromRowIndex], fromColumnIndex, N.min(b[i].length, m - fromColumnIndex));
+        }
     }
 
     // Replaced by stream and stream2.
@@ -935,7 +951,7 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
      * 
      * @return a stream composed by elements on the diagonal line from left up to right down.
      */
-    public CharStream diagonal() {
+    public CharStream diagonalLU2RD() {
         N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
 
         if (isEmpty()) {
@@ -976,7 +992,7 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
      * 
      * @return a stream composed by elements on the diagonal line from right up to left down.
      */
-    public CharStream diagonal2() {
+    public CharStream diagonalRU2LD() {
         N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
 
         if (isEmpty()) {
@@ -1113,6 +1129,10 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
         return streamH(0, n);
     }
 
+    public CharStream streamH(final int rowIndex) {
+        return streamH(rowIndex, rowIndex + 1);
+    }
+
     /**
      * 
      * @param fromRowIndex
@@ -1195,6 +1215,10 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
     @Beta
     public CharStream streamV() {
         return streamV(0, m);
+    }
+
+    public CharStream streamV(final int columnIndex) {
+        return streamV(columnIndex, columnIndex + 1);
     }
 
     /**

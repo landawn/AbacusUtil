@@ -742,4 +742,12 @@ public final class EntryStream<K, V> {
     public <K2, V2> EntryStream<K2, V2> __(Function<? super Stream<Map.Entry<K, V>>, ? extends Stream<Map.Entry<K2, V2>>> func) {
         return of(func.apply(s));
     }
+
+    public EntryStream<K, V> onClose(Runnable closeHandler) {
+        return of(s.onClose(closeHandler));
+    }
+
+    public void close() {
+        s.close();
+    }
 }

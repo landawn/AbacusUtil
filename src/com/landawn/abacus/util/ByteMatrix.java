@@ -75,40 +75,44 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
         return new ByteMatrix(new byte[][] { Array.rangeClosed(startInclusive, endInclusive, by) });
     }
 
-    public static ByteMatrix diagonal(final byte[] leftUp2RightLowDiagonal) {
-        return diagonal(leftUp2RightLowDiagonal, null);
+    public static ByteMatrix diagonalLU2RD(final byte[] leftUp2RighDownDiagonal) {
+        return diagonal(leftUp2RighDownDiagonal, null);
     }
 
-    public static ByteMatrix diagonal(final byte[] leftUp2RightLowDiagonal, byte[] rightUp2LeftLowDiagonal) {
-        N.checkArgument(
-                N.isNullOrEmpty(leftUp2RightLowDiagonal) || N.isNullOrEmpty(rightUp2LeftLowDiagonal)
-                        || leftUp2RightLowDiagonal.length == rightUp2LeftLowDiagonal.length,
-                "The length of 'leftUp2RightLowDiagonal' and 'rightUp2LeftLowDiagonal' must be same");
+    public static ByteMatrix diagonalRU2LD(final byte[] rightUp2LeftDownDiagonal) {
+        return diagonal(null, rightUp2LeftDownDiagonal);
+    }
 
-        if (N.isNullOrEmpty(leftUp2RightLowDiagonal)) {
-            if (N.isNullOrEmpty(rightUp2LeftLowDiagonal)) {
+    public static ByteMatrix diagonal(final byte[] leftUp2RighDownDiagonal, byte[] rightUp2LeftDownDiagonal) {
+        N.checkArgument(
+                N.isNullOrEmpty(leftUp2RighDownDiagonal) || N.isNullOrEmpty(rightUp2LeftDownDiagonal)
+                        || leftUp2RighDownDiagonal.length == rightUp2LeftDownDiagonal.length,
+                "The length of 'leftUp2RighDownDiagonal' and 'rightUp2LeftDownDiagonal' must be same");
+
+        if (N.isNullOrEmpty(leftUp2RighDownDiagonal)) {
+            if (N.isNullOrEmpty(rightUp2LeftDownDiagonal)) {
                 return empty();
             } else {
-                final int len = rightUp2LeftLowDiagonal.length;
+                final int len = rightUp2LeftDownDiagonal.length;
                 final byte[][] c = new byte[len][len];
 
                 for (int i = 0, j = len - 1; i < len; i++, j--) {
-                    c[i][j] = rightUp2LeftLowDiagonal[i];
+                    c[i][j] = rightUp2LeftDownDiagonal[i];
                 }
 
                 return new ByteMatrix(c);
             }
         } else {
-            final int len = leftUp2RightLowDiagonal.length;
+            final int len = leftUp2RighDownDiagonal.length;
             final byte[][] c = new byte[len][len];
 
             for (int i = 0; i < len; i++) {
-                c[i][i] = leftUp2RightLowDiagonal[i];
+                c[i][i] = leftUp2RighDownDiagonal[i];
             }
 
-            if (N.notNullOrEmpty(rightUp2LeftLowDiagonal)) {
+            if (N.notNullOrEmpty(rightUp2LeftDownDiagonal)) {
                 for (int i = 0, j = len - 1; i < len; i++, j--) {
-                    c[i][j] = rightUp2LeftLowDiagonal[i];
+                    c[i][j] = rightUp2LeftDownDiagonal[i];
                 }
             }
 
@@ -213,26 +217,19 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
         }
     }
 
-    public void fill(final byte val) {
+    public void updateRow(int rowIndex, ByteUnaryOperator func) {
+        for (int i = 0; i < m; i++) {
+            a[rowIndex][i] = func.applyAsByte(a[rowIndex][i]);
+        }
+    }
+
+    public void updateColumn(int columnIndex, ByteUnaryOperator func) {
         for (int i = 0; i < n; i++) {
-            N.fill(a[i], val);
+            a[i][columnIndex] = func.applyAsByte(a[i][columnIndex]);
         }
     }
 
-    public void fill(final byte[][] b) {
-        fill(0, 0, b);
-    }
-
-    public void fill(final int fromRowIndex, final int fromColumnIndex, final byte[][] b) {
-        N.checkFromToIndex(fromRowIndex, n, n);
-        N.checkFromToIndex(fromColumnIndex, m, m);
-
-        for (int i = 0, minLen = N.min(n - fromRowIndex, b.length); i < minLen; i++) {
-            N.copy(b[i], 0, a[i + fromRowIndex], fromColumnIndex, N.min(b[i].length, m - fromColumnIndex));
-        }
-    }
-
-    public void replaceAll(final ByteUnaryOperator operator) {
+    public void updateAll(final ByteUnaryOperator operator) {
         if (isParallelable()) {
             if (n <= m) {
                 IntStream.range(0, n).parallel().forEach(new IntConsumer() {
@@ -356,6 +353,25 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
         }
 
         return Matrix.of(c);
+    }
+
+    public void fill(final byte val) {
+        for (int i = 0; i < n; i++) {
+            N.fill(a[i], val);
+        }
+    }
+
+    public void fill(final byte[][] b) {
+        fill(0, 0, b);
+    }
+
+    public void fill(final int fromRowIndex, final int fromColumnIndex, final byte[][] b) {
+        N.checkFromToIndex(fromRowIndex, n, n);
+        N.checkFromToIndex(fromColumnIndex, m, m);
+
+        for (int i = 0, minLen = N.min(n - fromRowIndex, b.length); i < minLen; i++) {
+            N.copy(b[i], 0, a[i + fromRowIndex], fromColumnIndex, N.min(b[i].length, m - fromColumnIndex));
+        }
     }
 
     // Replaced by stream and stream2.
@@ -935,7 +951,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
      * 
      * @return a stream composed by elements on the diagonal line from left up to right down.
      */
-    public ByteStream diagonal() {
+    public ByteStream diagonalLU2RD() {
         N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
 
         if (isEmpty()) {
@@ -976,7 +992,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
      * 
      * @return a stream composed by elements on the diagonal line from right up to left down.
      */
-    public ByteStream diagonal2() {
+    public ByteStream diagonalRU2LD() {
         N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
 
         if (isEmpty()) {
@@ -1113,6 +1129,10 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
         return streamH(0, n);
     }
 
+    public ByteStream streamH(final int rowIndex) {
+        return streamH(rowIndex, rowIndex + 1);
+    }
+
     /**
      * 
      * @param fromRowIndex
@@ -1195,6 +1215,10 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
     @Beta
     public ByteStream streamV() {
         return streamV(0, m);
+    }
+
+    public ByteStream streamV(final int columnIndex) {
+        return streamV(columnIndex, columnIndex + 1);
     }
 
     /**

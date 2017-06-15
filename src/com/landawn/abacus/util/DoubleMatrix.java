@@ -110,40 +110,44 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
         return new DoubleMatrix(new double[][] { Array.repeat(val, len) });
     }
 
-    public static DoubleMatrix diagonal(final double[] leftUp2RightLowDiagonal) {
-        return diagonal(leftUp2RightLowDiagonal, null);
+    public static DoubleMatrix diagonalLU2RD(final double[] leftUp2RighDownDiagonal) {
+        return diagonal(leftUp2RighDownDiagonal, null);
     }
 
-    public static DoubleMatrix diagonal(final double[] leftUp2RightLowDiagonal, double[] rightUp2LeftLowDiagonal) {
-        N.checkArgument(
-                N.isNullOrEmpty(leftUp2RightLowDiagonal) || N.isNullOrEmpty(rightUp2LeftLowDiagonal)
-                        || leftUp2RightLowDiagonal.length == rightUp2LeftLowDiagonal.length,
-                "The length of 'leftUp2RightLowDiagonal' and 'rightUp2LeftLowDiagonal' must be same");
+    public static DoubleMatrix diagonalRU2LD(final double[] rightUp2LeftDownDiagonal) {
+        return diagonal(null, rightUp2LeftDownDiagonal);
+    }
 
-        if (N.isNullOrEmpty(leftUp2RightLowDiagonal)) {
-            if (N.isNullOrEmpty(rightUp2LeftLowDiagonal)) {
+    public static DoubleMatrix diagonal(final double[] leftUp2RighDownDiagonal, double[] rightUp2LeftDownDiagonal) {
+        N.checkArgument(
+                N.isNullOrEmpty(leftUp2RighDownDiagonal) || N.isNullOrEmpty(rightUp2LeftDownDiagonal)
+                        || leftUp2RighDownDiagonal.length == rightUp2LeftDownDiagonal.length,
+                "The length of 'leftUp2RighDownDiagonal' and 'rightUp2LeftDownDiagonal' must be same");
+
+        if (N.isNullOrEmpty(leftUp2RighDownDiagonal)) {
+            if (N.isNullOrEmpty(rightUp2LeftDownDiagonal)) {
                 return empty();
             } else {
-                final int len = rightUp2LeftLowDiagonal.length;
+                final int len = rightUp2LeftDownDiagonal.length;
                 final double[][] c = new double[len][len];
 
                 for (int i = 0, j = len - 1; i < len; i++, j--) {
-                    c[i][j] = rightUp2LeftLowDiagonal[i];
+                    c[i][j] = rightUp2LeftDownDiagonal[i];
                 }
 
                 return new DoubleMatrix(c);
             }
         } else {
-            final int len = leftUp2RightLowDiagonal.length;
+            final int len = leftUp2RighDownDiagonal.length;
             final double[][] c = new double[len][len];
 
             for (int i = 0; i < len; i++) {
-                c[i][i] = leftUp2RightLowDiagonal[i];
+                c[i][i] = leftUp2RighDownDiagonal[i];
             }
 
-            if (N.notNullOrEmpty(rightUp2LeftLowDiagonal)) {
+            if (N.notNullOrEmpty(rightUp2LeftDownDiagonal)) {
                 for (int i = 0, j = len - 1; i < len; i++, j--) {
-                    c[i][j] = rightUp2LeftLowDiagonal[i];
+                    c[i][j] = rightUp2LeftDownDiagonal[i];
                 }
             }
 
@@ -248,26 +252,19 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
         }
     }
 
-    public void fill(final double val) {
+    public void updateRow(int rowIndex, DoubleUnaryOperator func) {
+        for (int i = 0; i < m; i++) {
+            a[rowIndex][i] = func.applyAsDouble(a[rowIndex][i]);
+        }
+    }
+
+    public void updateColumn(int columnIndex, DoubleUnaryOperator func) {
         for (int i = 0; i < n; i++) {
-            N.fill(a[i], val);
+            a[i][columnIndex] = func.applyAsDouble(a[i][columnIndex]);
         }
     }
 
-    public void fill(final double[][] b) {
-        fill(0, 0, b);
-    }
-
-    public void fill(final int fromRowIndex, final int fromColumnIndex, final double[][] b) {
-        N.checkFromToIndex(fromRowIndex, n, n);
-        N.checkFromToIndex(fromColumnIndex, m, m);
-
-        for (int i = 0, minLen = N.min(n - fromRowIndex, b.length); i < minLen; i++) {
-            N.copy(b[i], 0, a[i + fromRowIndex], fromColumnIndex, N.min(b[i].length, m - fromColumnIndex));
-        }
-    }
-
-    public void replaceAll(final DoubleUnaryOperator operator) {
+    public void updateAll(final DoubleUnaryOperator operator) {
         if (isParallelable()) {
             if (n <= m) {
                 IntStream.range(0, n).parallel().forEach(new IntConsumer() {
@@ -391,6 +388,25 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
         }
 
         return Matrix.of(c);
+    }
+
+    public void fill(final double val) {
+        for (int i = 0; i < n; i++) {
+            N.fill(a[i], val);
+        }
+    }
+
+    public void fill(final double[][] b) {
+        fill(0, 0, b);
+    }
+
+    public void fill(final int fromRowIndex, final int fromColumnIndex, final double[][] b) {
+        N.checkFromToIndex(fromRowIndex, n, n);
+        N.checkFromToIndex(fromColumnIndex, m, m);
+
+        for (int i = 0, minLen = N.min(n - fromRowIndex, b.length); i < minLen; i++) {
+            N.copy(b[i], 0, a[i + fromRowIndex], fromColumnIndex, N.min(b[i].length, m - fromColumnIndex));
+        }
     }
 
     // Replaced by stream and stream2.
@@ -906,7 +922,7 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
      * 
      * @return a stream composed by elements on the diagonal line from left up to right down.
      */
-    public DoubleStream diagonal() {
+    public DoubleStream diagonalLU2RD() {
         N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
 
         if (isEmpty()) {
@@ -947,7 +963,7 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
      * 
      * @return a stream composed by elements on the diagonal line from right up to left down.
      */
-    public DoubleStream diagonal2() {
+    public DoubleStream diagonalRU2LD() {
         N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
 
         if (isEmpty()) {
@@ -1084,6 +1100,10 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
         return streamH(0, n);
     }
 
+    public DoubleStream streamH(final int rowIndex) {
+        return streamH(rowIndex, rowIndex + 1);
+    }
+
     /**
      * 
      * @param fromRowIndex
@@ -1166,6 +1186,10 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
     @Beta
     public DoubleStream streamV() {
         return streamV(0, m);
+    }
+
+    public DoubleStream streamV(final int columnIndex) {
+        return streamV(columnIndex, columnIndex + 1);
     }
 
     /**

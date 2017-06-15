@@ -57,40 +57,44 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
         return new BooleanMatrix(new boolean[][] { Array.repeat(val, len) });
     }
 
-    public static BooleanMatrix diagonal(final boolean[] leftUp2RightLowDiagonal) {
-        return diagonal(leftUp2RightLowDiagonal, null);
+    public static BooleanMatrix diagonalLU2RD(final boolean[] leftUp2RighDownDiagonal) {
+        return diagonal(leftUp2RighDownDiagonal, null);
     }
 
-    public static BooleanMatrix diagonal(final boolean[] leftUp2RightLowDiagonal, boolean[] rightUp2LeftLowDiagonal) {
-        N.checkArgument(
-                N.isNullOrEmpty(leftUp2RightLowDiagonal) || N.isNullOrEmpty(rightUp2LeftLowDiagonal)
-                        || leftUp2RightLowDiagonal.length == rightUp2LeftLowDiagonal.length,
-                "The length of 'leftUp2RightLowDiagonal' and 'rightUp2LeftLowDiagonal' must be same");
+    public static BooleanMatrix diagonalRU2LD(final boolean[] rightUp2LeftDownDiagonal) {
+        return diagonal(null, rightUp2LeftDownDiagonal);
+    }
 
-        if (N.isNullOrEmpty(leftUp2RightLowDiagonal)) {
-            if (N.isNullOrEmpty(rightUp2LeftLowDiagonal)) {
+    public static BooleanMatrix diagonal(final boolean[] leftUp2RighDownDiagonal, boolean[] rightUp2LeftDownDiagonal) {
+        N.checkArgument(
+                N.isNullOrEmpty(leftUp2RighDownDiagonal) || N.isNullOrEmpty(rightUp2LeftDownDiagonal)
+                        || leftUp2RighDownDiagonal.length == rightUp2LeftDownDiagonal.length,
+                "The length of 'leftUp2RighDownDiagonal' and 'rightUp2LeftDownDiagonal' must be same");
+
+        if (N.isNullOrEmpty(leftUp2RighDownDiagonal)) {
+            if (N.isNullOrEmpty(rightUp2LeftDownDiagonal)) {
                 return empty();
             } else {
-                final int len = rightUp2LeftLowDiagonal.length;
+                final int len = rightUp2LeftDownDiagonal.length;
                 final boolean[][] c = new boolean[len][len];
 
                 for (int i = 0, j = len - 1; i < len; i++, j--) {
-                    c[i][j] = rightUp2LeftLowDiagonal[i];
+                    c[i][j] = rightUp2LeftDownDiagonal[i];
                 }
 
                 return new BooleanMatrix(c);
             }
         } else {
-            final int len = leftUp2RightLowDiagonal.length;
+            final int len = leftUp2RighDownDiagonal.length;
             final boolean[][] c = new boolean[len][len];
 
             for (int i = 0; i < len; i++) {
-                c[i][i] = leftUp2RightLowDiagonal[i];
+                c[i][i] = leftUp2RighDownDiagonal[i];
             }
 
-            if (N.notNullOrEmpty(rightUp2LeftLowDiagonal)) {
+            if (N.notNullOrEmpty(rightUp2LeftDownDiagonal)) {
                 for (int i = 0, j = len - 1; i < len; i++, j--) {
-                    c[i][j] = rightUp2LeftLowDiagonal[i];
+                    c[i][j] = rightUp2LeftDownDiagonal[i];
                 }
             }
 
@@ -195,26 +199,19 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
         }
     }
 
-    public void fill(final boolean val) {
+    public void updateRow(int rowIndex, BooleanUnaryOperator func) {
+        for (int i = 0; i < m; i++) {
+            a[rowIndex][i] = func.applyAsBoolean(a[rowIndex][i]);
+        }
+    }
+
+    public void updateColumn(int columnIndex, BooleanUnaryOperator func) {
         for (int i = 0; i < n; i++) {
-            N.fill(a[i], val);
+            a[i][columnIndex] = func.applyAsBoolean(a[i][columnIndex]);
         }
     }
 
-    public void fill(final boolean[][] b) {
-        fill(0, 0, b);
-    }
-
-    public void fill(final int fromRowIndex, final int fromColumnIndex, final boolean[][] b) {
-        N.checkFromToIndex(fromRowIndex, n, n);
-        N.checkFromToIndex(fromColumnIndex, m, m);
-
-        for (int i = 0, minLen = N.min(n - fromRowIndex, b.length); i < minLen; i++) {
-            N.copy(b[i], 0, a[i + fromRowIndex], fromColumnIndex, N.min(b[i].length, m - fromColumnIndex));
-        }
-    }
-
-    public void replaceAll(final BooleanUnaryOperator operator) {
+    public void updateAll(final BooleanUnaryOperator operator) {
         if (isParallelable()) {
             if (n <= m) {
                 IntStream.range(0, n).parallel().forEach(new IntConsumer() {
@@ -341,6 +338,25 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
         }
 
         return Matrix.of(c);
+    }
+
+    public void fill(final boolean val) {
+        for (int i = 0; i < n; i++) {
+            N.fill(a[i], val);
+        }
+    }
+
+    public void fill(final boolean[][] b) {
+        fill(0, 0, b);
+    }
+
+    public void fill(final int fromRowIndex, final int fromColumnIndex, final boolean[][] b) {
+        N.checkFromToIndex(fromRowIndex, n, n);
+        N.checkFromToIndex(fromColumnIndex, m, m);
+
+        for (int i = 0, minLen = N.min(n - fromRowIndex, b.length); i < minLen; i++) {
+            N.copy(b[i], 0, a[i + fromRowIndex], fromColumnIndex, N.min(b[i].length, m - fromColumnIndex));
+        }
     }
 
     // Replaced by stream and stream2.
@@ -627,7 +643,7 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
      * 
      * @return a stream composed by elements on the diagonal line from left up to right down.
      */
-    public Stream<Boolean> diagonal() {
+    public Stream<Boolean> diagonalLU2RD() {
         N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
 
         if (isEmpty()) {
@@ -668,7 +684,7 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
      * 
      * @return a stream composed by elements on the diagonal line from right up to left down.
      */
-    public Stream<Boolean> diagonal2() {
+    public Stream<Boolean> diagonalRU2LD() {
         N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
 
         if (isEmpty()) {
@@ -811,6 +827,10 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
         return streamH(0, n);
     }
 
+    public Stream<Boolean> streamH(final int rowIndex) {
+        return streamH(rowIndex, rowIndex + 1);
+    }
+
     /**
      * 
      * @param fromRowIndex
@@ -896,6 +916,10 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
     @Beta
     public Stream<Boolean> streamV() {
         return streamV(0, m);
+    }
+
+    public Stream<Boolean> streamV(final int columnIndex) {
+        return streamV(columnIndex, columnIndex + 1);
     }
 
     /**

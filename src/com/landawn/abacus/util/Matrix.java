@@ -63,19 +63,23 @@ public final class Matrix<T> extends AbstractMatrix<T[], List<T>, Stream<T>, Str
         return new Matrix<>(c);
     }
 
-    public static <T> Matrix<T> diagonal(final T[] leftUp2RightLowDiagonal) {
-        return diagonal(leftUp2RightLowDiagonal, null);
+    public static <T> Matrix<T> diagonalLU2RD(final T[] leftUp2RighDownDiagonal) {
+        return diagonal(leftUp2RighDownDiagonal, null);
     }
 
-    public static <T> Matrix<T> diagonal(final T[] leftUp2RightLowDiagonal, T[] rightUp2LeftLowDiagonal) {
-        N.checkArgument(
-                N.isNullOrEmpty(leftUp2RightLowDiagonal) || N.isNullOrEmpty(rightUp2LeftLowDiagonal)
-                        || leftUp2RightLowDiagonal.length == rightUp2LeftLowDiagonal.length,
-                "The length of 'leftUp2RightLowDiagonal' and 'rightUp2LeftLowDiagonal' must be same");
+    public static <T> Matrix<T> diagonalRU2LD(final T[] rightUp2LeftDownDiagonal) {
+        return diagonal(null, rightUp2LeftDownDiagonal);
+    }
 
-        final Class<?> arrayClass = leftUp2RightLowDiagonal != null ? leftUp2RightLowDiagonal.getClass() : rightUp2LeftLowDiagonal.getClass();
+    public static <T> Matrix<T> diagonal(final T[] leftUp2RighDownDiagonal, T[] rightUp2LeftDownDiagonal) {
+        N.checkArgument(
+                N.isNullOrEmpty(leftUp2RighDownDiagonal) || N.isNullOrEmpty(rightUp2LeftDownDiagonal)
+                        || leftUp2RighDownDiagonal.length == rightUp2LeftDownDiagonal.length,
+                "The length of 'leftUp2RighDownDiagonal' and 'rightUp2LeftDownDiagonal' must be same");
+
+        final Class<?> arrayClass = leftUp2RighDownDiagonal != null ? leftUp2RighDownDiagonal.getClass() : rightUp2LeftDownDiagonal.getClass();
         final Class<?> componentClass = arrayClass.getComponentType();
-        final int len = leftUp2RightLowDiagonal != null ? leftUp2RightLowDiagonal.length : rightUp2LeftLowDiagonal.length;
+        final int len = leftUp2RighDownDiagonal != null ? leftUp2RighDownDiagonal.length : rightUp2LeftDownDiagonal.length;
 
         final T[][] c = N.newArray(arrayClass, len);
 
@@ -83,24 +87,24 @@ public final class Matrix<T> extends AbstractMatrix<T[], List<T>, Stream<T>, Str
             c[i] = N.newArray(componentClass, len);
         }
 
-        if (N.isNullOrEmpty(leftUp2RightLowDiagonal)) {
-            if (N.isNullOrEmpty(rightUp2LeftLowDiagonal)) {
+        if (N.isNullOrEmpty(leftUp2RighDownDiagonal)) {
+            if (N.isNullOrEmpty(rightUp2LeftDownDiagonal)) {
                 return new Matrix<>(c);
             } else {
                 for (int i = 0, j = len - 1; i < len; i++, j--) {
-                    c[i][j] = rightUp2LeftLowDiagonal[i];
+                    c[i][j] = rightUp2LeftDownDiagonal[i];
                 }
 
                 return new Matrix<>(c);
             }
         } else {
             for (int i = 0; i < len; i++) {
-                c[i][i] = leftUp2RightLowDiagonal[i];
+                c[i][i] = leftUp2RighDownDiagonal[i];
             }
 
-            if (N.notNullOrEmpty(rightUp2LeftLowDiagonal)) {
+            if (N.notNullOrEmpty(rightUp2LeftDownDiagonal)) {
                 for (int i = 0, j = len - 1; i < len; i++, j--) {
-                    c[i][j] = rightUp2LeftLowDiagonal[i];
+                    c[i][j] = rightUp2LeftDownDiagonal[i];
                 }
             }
 
@@ -205,26 +209,19 @@ public final class Matrix<T> extends AbstractMatrix<T[], List<T>, Stream<T>, Str
         }
     }
 
-    public void fill(final T val) {
+    public void updateRow(int rowIndex, UnaryOperator<T> func) {
+        for (int i = 0; i < m; i++) {
+            a[rowIndex][i] = func.apply(a[rowIndex][i]);
+        }
+    }
+
+    public void updateColumn(int columnIndex, UnaryOperator<T> func) {
         for (int i = 0; i < n; i++) {
-            N.fill(a[i], val);
+            a[i][columnIndex] = func.apply(a[i][columnIndex]);
         }
     }
 
-    public void fill(final T[][] b) {
-        fill(0, 0, b);
-    }
-
-    public void fill(final int fromRowIndex, final int fromColumnIndex, final T[][] b) {
-        N.checkFromToIndex(fromRowIndex, n, n);
-        N.checkFromToIndex(fromColumnIndex, m, m);
-
-        for (int i = 0, minLen = N.min(n - fromRowIndex, b.length); i < minLen; i++) {
-            N.copy(b[i], 0, a[i + fromRowIndex], fromColumnIndex, N.min(b[i].length, m - fromColumnIndex));
-        }
-    }
-
-    public void replaceAll(final UnaryOperator<T> operator) {
+    public void updateAll(final UnaryOperator<T> operator) {
         if (isParallelable()) {
             if (n <= m) {
                 IntStream.range(0, n).parallel().forEach(new IntConsumer() {
@@ -697,6 +694,25 @@ public final class Matrix<T> extends AbstractMatrix<T[], List<T>, Stream<T>, Str
         return DoubleMatrix.of(c);
     }
 
+    public void fill(final T val) {
+        for (int i = 0; i < n; i++) {
+            N.fill(a[i], val);
+        }
+    }
+
+    public void fill(final T[][] b) {
+        fill(0, 0, b);
+    }
+
+    public void fill(final int fromRowIndex, final int fromColumnIndex, final T[][] b) {
+        N.checkFromToIndex(fromRowIndex, n, n);
+        N.checkFromToIndex(fromColumnIndex, m, m);
+
+        for (int i = 0, minLen = N.min(n - fromRowIndex, b.length); i < minLen; i++) {
+            N.copy(b[i], 0, a[i + fromRowIndex], fromColumnIndex, N.min(b[i].length, m - fromColumnIndex));
+        }
+    }
+
     @Override
     public Matrix<T> copy() {
         final T[][] c = N.newArray(arrayType, n);
@@ -909,7 +925,7 @@ public final class Matrix<T> extends AbstractMatrix<T[], List<T>, Stream<T>, Str
      * 
      * @return a stream composed by elements on the diagonal line from left up to right down.
      */
-    public Stream<T> diagonal() {
+    public Stream<T> diagonalLU2RD() {
         N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
 
         if (isEmpty()) {
@@ -950,7 +966,7 @@ public final class Matrix<T> extends AbstractMatrix<T[], List<T>, Stream<T>, Str
      * 
      * @return a stream composed by elements on the diagonal line from right up to left down.
      */
-    public Stream<T> diagonal2() {
+    public Stream<T> diagonalRU2LD() {
         N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
 
         if (isEmpty()) {
@@ -1106,6 +1122,10 @@ public final class Matrix<T> extends AbstractMatrix<T[], List<T>, Stream<T>, Str
         return streamH(0, n);
     }
 
+    public Stream<T> streamH(final int rowIndex) {
+        return streamH(rowIndex, rowIndex + 1);
+    }
+
     /**
      * 
      * @param fromRowIndex
@@ -1191,6 +1211,10 @@ public final class Matrix<T> extends AbstractMatrix<T[], List<T>, Stream<T>, Str
     @Beta
     public Stream<T> streamV() {
         return streamV(0, m);
+    }
+
+    public Stream<T> streamV(final int columnIndex) {
+        return streamV(columnIndex, columnIndex + 1);
     }
 
     /**

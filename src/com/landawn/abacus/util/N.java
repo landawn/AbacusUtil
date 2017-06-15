@@ -5476,20 +5476,6 @@ public final class N {
         return newString(cbuf, true);
     }
 
-    public static <T> List<T> repeat(Collection<? extends T> c, int repeat) {
-        if (repeat < 1) {
-            throw new IllegalArgumentException("The specified count must be greater than 0");
-        }
-
-        final List<T> result = new ArrayList<>(c.size() * repeat);
-
-        for (int i = 0; i < repeat; i++) {
-            result.addAll(c);
-        }
-
-        return result;
-    }
-
     public static char toLowerCase(final char ch) {
         return Character.toLowerCase(ch);
     }
