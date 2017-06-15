@@ -20,9 +20,12 @@ import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.util.Pair.IntPair;
 import com.landawn.abacus.util.function.ByteBiFunction;
 import com.landawn.abacus.util.function.ByteFunction;
+import com.landawn.abacus.util.function.BytePredicate;
 import com.landawn.abacus.util.function.ByteTriFunction;
 import com.landawn.abacus.util.function.ByteUnaryOperator;
 import com.landawn.abacus.util.function.IntConsumer;
+import com.landawn.abacus.util.function.IntFunction;
+import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.stream.ByteStream;
 import com.landawn.abacus.util.stream.ExByteIterator;
 import com.landawn.abacus.util.stream.ExIterator;
@@ -1118,6 +1121,25 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
         }
 
         return new ByteMatrix(result);
+    }
+
+    public Stream<IntPair> filter(final BytePredicate predicate) {
+        return IntStream.range(0, n).flatMapToObj(new IntFunction<Stream<IntPair>>() {
+            @Override
+            public Stream<IntPair> apply(final int rowIndex) {
+                return IntStream.range(0, m).mapToObj(new IntFunction<IntPair>() {
+                    @Override
+                    public IntPair apply(final int columnIndex) {
+                        return IntPair.of(rowIndex, columnIndex);
+                    }
+                });
+            }
+        }).filter(new Predicate<IntPair>() {
+            @Override
+            public boolean test(IntPair p) {
+                return predicate.test(a[p._1][p._2]);
+            }
+        });
     }
 
     /**

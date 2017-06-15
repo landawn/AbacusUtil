@@ -21,8 +21,10 @@ import com.landawn.abacus.util.Pair.IntPair;
 import com.landawn.abacus.util.function.IntBiFunction;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.function.IntFunction;
+import com.landawn.abacus.util.function.IntPredicate;
 import com.landawn.abacus.util.function.IntTriFunction;
 import com.landawn.abacus.util.function.IntUnaryOperator;
+import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.stream.ExIntIterator;
 import com.landawn.abacus.util.stream.ExIterator;
 import com.landawn.abacus.util.stream.IntStream;
@@ -1140,6 +1142,25 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntStream, S
         }
 
         return new IntMatrix(result);
+    }
+
+    public Stream<IntPair> filter(final IntPredicate predicate) {
+        return IntStream.range(0, n).flatMapToObj(new IntFunction<Stream<IntPair>>() {
+            @Override
+            public Stream<IntPair> apply(final int rowIndex) {
+                return IntStream.range(0, m).mapToObj(new IntFunction<IntPair>() {
+                    @Override
+                    public IntPair apply(final int columnIndex) {
+                        return IntPair.of(rowIndex, columnIndex);
+                    }
+                });
+            }
+        }).filter(new Predicate<IntPair>() {
+            @Override
+            public boolean test(IntPair p) {
+                return predicate.test(a[p._1][p._2]);
+            }
+        });
     }
 
     /**

@@ -68,8 +68,8 @@ public final class Sheet<R, C, E> {
     public Sheet(Collection<R> rowKeySet, Collection<C> columnKeySet, Object[][] rows) {
         this(rowKeySet, columnKeySet);
 
-        final int rowLength = this._rowKeySet.size();
-        final int columnLength = this._columnKeySet.size();
+        final int rowLength = this.rowLength();
+        final int columnLength = this.columnLength();
 
         if (N.notNullOrEmpty(rows)) {
             N.checkArgument(rows.length == rowLength, "The length of array is not equal to size of row/column key set");
@@ -103,8 +103,8 @@ public final class Sheet<R, C, E> {
     public static <R, C, E> Sheet<R, C, E> of(Collection<R> rowKeySet, Collection<C> columnKeySet, Collection<? extends Collection<? extends E>> rows) {
         final Sheet<R, C, E> instance = new Sheet<>(rowKeySet, columnKeySet);
 
-        final int rowLength = instance._rowKeySet.size();
-        final int columnLength = instance._columnKeySet.size();
+        final int rowLength = instance.rowLength();
+        final int columnLength = instance.columnLength();
 
         if (N.notNullOrEmpty(rows)) {
             N.checkArgument(rows.size() == rowLength, "The size of collection is not equal to size of row/column key set");
@@ -139,8 +139,8 @@ public final class Sheet<R, C, E> {
     public static <R, C, E> Sheet<R, C, E> from(Collection<R> rowKeySet, Collection<C> columnKeySet, Object[][] columns) {
         final Sheet<R, C, E> instance = new Sheet<>(rowKeySet, columnKeySet);
 
-        final int rowLength = instance._rowKeySet.size();
-        final int columnLength = instance._columnKeySet.size();
+        final int rowLength = instance.rowLength();
+        final int columnLength = instance.columnLength();
 
         if (N.notNullOrEmpty(columns)) {
             N.checkArgument(columns.length == columnLength, "The length of array is not equal to size of row/column key set");
@@ -166,8 +166,8 @@ public final class Sheet<R, C, E> {
     public static <R, C, E> Sheet<R, C, E> from(Collection<R> rowKeySet, Collection<C> columnKeySet, Collection<? extends Collection<? extends E>> columns) {
         final Sheet<R, C, E> instance = new Sheet<>(rowKeySet, columnKeySet);
 
-        final int rowLength = instance._rowKeySet.size();
-        final int columnLength = instance._columnKeySet.size();
+        final int rowLength = instance.rowLength();
+        final int columnLength = instance.columnLength();
 
         if (N.notNullOrEmpty(columns)) {
             N.checkArgument(columns.size() == columnLength, "The size of collection is not equal to size of row/column key set");
@@ -489,7 +489,7 @@ public final class Sheet<R, C, E> {
 
         if (_rowKeyIndexMap != null) {
             final int columnLength = columnLength();
-            final int newRowSize = _rowKeySet.size();
+            final int newRowSize = rowLength();
             final int removedRowIndex = _rowKeyIndexMap.remove(rowKey);
 
             if (removedRowIndex == newRowSize) {
@@ -762,7 +762,7 @@ public final class Sheet<R, C, E> {
         _columnKeySet.remove(columnKey);
 
         if (_columnKeyIndexMap != null) {
-            final int newColumnLength = _columnKeySet.size();
+            final int newColumnLength = columnLength();
             final int removedColumnIndex = _columnKeyIndexMap.remove(columnKey);
 
             if (removedColumnIndex == newColumnLength) {
@@ -963,9 +963,9 @@ public final class Sheet<R, C, E> {
         if (this._initialized) {
             copy.initIndexMap();
 
-            copy._columnList = new ArrayList<>(copy._columnKeySet.size());
+            copy._columnList = new ArrayList<>(copy.columnLength());
 
-            final int[] rowKeyIndices = new int[copy._rowKeySet.size()];
+            final int[] rowKeyIndices = new int[copy.rowLength()];
             int idx = 0;
 
             for (R rowKey : copy._rowKeySet) {
@@ -1118,7 +1118,7 @@ public final class Sheet<R, C, E> {
      * @return a stream of Cells based on the order of row.
      */
     public Stream<Sheet.Cell<R, C, E>> cellsH() {
-        return cellsH(0, _rowKeySet.size());
+        return cellsH(0, rowLength());
     }
 
     public Stream<Sheet.Cell<R, C, E>> cellsH(final int rowIndex) {
@@ -1132,9 +1132,9 @@ public final class Sheet<R, C, E> {
      * @return a stream of Cells based on the order of row.
      */
     public Stream<Sheet.Cell<R, C, E>> cellsH(final int fromRowIndex, final int toRowIndex) {
-        N.checkFromToIndex(fromRowIndex, toRowIndex, _rowKeySet.size());
+        N.checkFromToIndex(fromRowIndex, toRowIndex, rowLength());
 
-        if (_rowKeySet.size() == 0 || _columnKeySet.size() == 0) {
+        if (rowLength() == 0 || columnLength() == 0) {
             return Stream.empty();
         }
 
@@ -1180,7 +1180,7 @@ public final class Sheet<R, C, E> {
      * @return a stream of Cells based on the order of column.
      */
     public Stream<Sheet.Cell<R, C, E>> cellsV() {
-        return cellsV(0, _columnKeySet.size());
+        return cellsV(0, columnLength());
     }
 
     /**
@@ -1200,9 +1200,9 @@ public final class Sheet<R, C, E> {
      */
 
     public Stream<Sheet.Cell<R, C, E>> cellsV(final int fromColumnIndex, final int toColumnIndex) {
-        N.checkFromToIndex(fromColumnIndex, toColumnIndex, _columnKeySet.size());
+        N.checkFromToIndex(fromColumnIndex, toColumnIndex, columnLength());
 
-        if (_rowKeySet.size() == 0 || _columnKeySet.size() == 0) {
+        if (rowLength() == 0 || columnLength() == 0) {
             return Stream.empty();
         }
 
@@ -1248,7 +1248,7 @@ public final class Sheet<R, C, E> {
      * @return a stream based on the order of row.
      */
     public Stream<Stream<Cell<R, C, E>>> cellsR() {
-        return cellsR(0, _rowKeySet.size());
+        return cellsR(0, rowLength());
     }
 
     /**
@@ -1258,9 +1258,9 @@ public final class Sheet<R, C, E> {
      * @return a stream based on the order of row.
      */
     public Stream<Stream<Cell<R, C, E>>> cellsR(final int fromRowIndex, final int toRowIndex) {
-        N.checkFromToIndex(fromRowIndex, toRowIndex, _rowKeySet.size());
+        N.checkFromToIndex(fromRowIndex, toRowIndex, rowLength());
 
-        if (_rowKeySet.size() == 0 || _columnKeySet.size() == 0) {
+        if (rowLength() == 0 || columnLength() == 0) {
             return Stream.empty();
         }
 
@@ -1331,7 +1331,7 @@ public final class Sheet<R, C, E> {
      * @return a stream based on the order of column.
      */
     public Stream<Stream<Cell<R, C, E>>> cellsC() {
-        return cellsC(0, _columnKeySet.size());
+        return cellsC(0, columnLength());
     }
 
     /**
@@ -1341,9 +1341,9 @@ public final class Sheet<R, C, E> {
      * @return a stream based on the order of column.
      */
     public Stream<Stream<Cell<R, C, E>>> cellsC(final int fromColumnIndex, final int toColumnIndex) {
-        N.checkFromToIndex(fromColumnIndex, toColumnIndex, _columnKeySet.size());
+        N.checkFromToIndex(fromColumnIndex, toColumnIndex, columnLength());
 
-        if (_rowKeySet.size() == 0 || _columnKeySet.size() == 0) {
+        if (rowLength() == 0 || columnLength() == 0) {
             return Stream.empty();
         }
 
@@ -1402,7 +1402,7 @@ public final class Sheet<R, C, E> {
      * @return a stream based on the order of row.
      */
     public Stream<E> streamH() {
-        return streamH(0, _rowKeySet.size());
+        return streamH(0, rowLength());
     }
 
     /**
@@ -1421,9 +1421,9 @@ public final class Sheet<R, C, E> {
      * @return a stream based on the order of row.
      */
     public Stream<E> streamH(final int fromRowIndex, final int toRowIndex) {
-        N.checkFromToIndex(fromRowIndex, toRowIndex, _rowKeySet.size());
+        N.checkFromToIndex(fromRowIndex, toRowIndex, rowLength());
 
-        if (_rowKeySet.size() == 0 || _columnKeySet.size() == 0) {
+        if (rowLength() == 0 || columnLength() == 0) {
             return Stream.empty();
         }
 
@@ -1468,7 +1468,7 @@ public final class Sheet<R, C, E> {
      * @return a stream based on the order of column.
      */
     public Stream<E> streamV() {
-        return streamV(0, _columnKeySet.size());
+        return streamV(0, columnLength());
     }
 
     /**
@@ -1487,9 +1487,9 @@ public final class Sheet<R, C, E> {
      * @return a stream based on the order of column.
      */
     public Stream<E> streamV(final int fromColumnIndex, final int toColumnIndex) {
-        N.checkFromToIndex(fromColumnIndex, toColumnIndex, _columnKeySet.size());
+        N.checkFromToIndex(fromColumnIndex, toColumnIndex, columnLength());
 
-        if (_rowKeySet.size() == 0 || _columnKeySet.size() == 0) {
+        if (rowLength() == 0 || columnLength() == 0) {
             return Stream.empty();
         }
 
@@ -1534,7 +1534,7 @@ public final class Sheet<R, C, E> {
      * @return a stream based on the order of row.
      */
     public Stream<Stream<E>> streamR() {
-        return streamR(0, _rowKeySet.size());
+        return streamR(0, rowLength());
     }
 
     /**
@@ -1544,9 +1544,9 @@ public final class Sheet<R, C, E> {
      * @return a stream based on the order of row.
      */
     public Stream<Stream<E>> streamR(final int fromRowIndex, final int toRowIndex) {
-        N.checkFromToIndex(fromRowIndex, toRowIndex, _rowKeySet.size());
+        N.checkFromToIndex(fromRowIndex, toRowIndex, rowLength());
 
-        if (_rowKeySet.size() == 0 || _columnKeySet.size() == 0) {
+        if (rowLength() == 0 || columnLength() == 0) {
             return Stream.empty();
         }
 
@@ -1567,7 +1567,7 @@ public final class Sheet<R, C, E> {
 
                 return Stream.of(new ExIterator<E>() {
                     private final int rowIndex = cursor++;
-                    private final int toIndex2 = _columnKeySet.size();
+                    private final int toIndex2 = columnLength();
                     private int cursor2 = 0;
 
                     @Override
@@ -1618,7 +1618,7 @@ public final class Sheet<R, C, E> {
      * @return a stream based on the order of column.
      */
     public Stream<Stream<E>> streamC() {
-        return streamC(0, _columnKeySet.size());
+        return streamC(0, columnLength());
     }
 
     /**
@@ -1628,9 +1628,9 @@ public final class Sheet<R, C, E> {
      * @return a stream based on the order of column.
      */
     public Stream<Stream<E>> streamC(final int fromColumnIndex, final int toColumnIndex) {
-        N.checkFromToIndex(fromColumnIndex, toColumnIndex, _columnKeySet.size());
+        N.checkFromToIndex(fromColumnIndex, toColumnIndex, columnLength());
 
-        if (_rowKeySet.size() == 0 || _columnKeySet.size() == 0) {
+        if (rowLength() == 0 || columnLength() == 0) {
             return Stream.empty();
         }
 
@@ -1951,7 +1951,7 @@ public final class Sheet<R, C, E> {
         sb.append("[");
 
         if (_initialized) {
-            for (int i = 0, rowLength = _rowKeySet.size(), columnLength = _columnKeySet.size(); i < rowLength; i++) {
+            for (int i = 0, rowLength = rowLength(), columnLength = columnLength(); i < rowLength; i++) {
                 if (i > 0) {
                     sb.append(N.ELEMENT_SEPARATOR_CHAR_ARRAY);
                 }
@@ -2029,15 +2029,15 @@ public final class Sheet<R, C, E> {
     }
 
     private void checkRowIndex(int rowIndex) {
-        if (rowIndex < 0 || rowIndex >= _rowKeySet.size()) {
-            throw new IndexOutOfBoundsException("Row index: " + rowIndex + " can't be negative or equals to or bigger than the row size: " + _rowKeySet.size());
+        if (rowIndex < 0 || rowIndex >= rowLength()) {
+            throw new IndexOutOfBoundsException("Row index: " + rowIndex + " can't be negative or equals to or bigger than the row size: " + rowLength());
         }
     }
 
     private void checkColumnIndex(int columnIndex) {
-        if (columnIndex < 0 || columnIndex >= _columnKeySet.size()) {
+        if (columnIndex < 0 || columnIndex >= columnLength()) {
             throw new IndexOutOfBoundsException(
-                    "Column index: " + columnIndex + " can't be negative or equals to or bigger than the column size: " + _columnKeySet.size());
+                    "Column index: " + columnIndex + " can't be negative or equals to or bigger than the column size: " + columnLength());
         }
     }
 

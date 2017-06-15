@@ -20,9 +20,12 @@ import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.util.Pair.IntPair;
 import com.landawn.abacus.util.function.BooleanBiFunction;
 import com.landawn.abacus.util.function.BooleanFunction;
+import com.landawn.abacus.util.function.BooleanPredicate;
 import com.landawn.abacus.util.function.BooleanTriFunction;
 import com.landawn.abacus.util.function.BooleanUnaryOperator;
 import com.landawn.abacus.util.function.IntConsumer;
+import com.landawn.abacus.util.function.IntFunction;
+import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.stream.ExIterator;
 import com.landawn.abacus.util.stream.IntStream;
 import com.landawn.abacus.util.stream.Stream;
@@ -816,6 +819,25 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
         }
 
         return new BooleanMatrix(result);
+    }
+
+    public Stream<IntPair> filter(final BooleanPredicate predicate) {
+        return IntStream.range(0, n).flatMapToObj(new IntFunction<Stream<IntPair>>() {
+            @Override
+            public Stream<IntPair> apply(final int rowIndex) {
+                return IntStream.range(0, m).mapToObj(new IntFunction<IntPair>() {
+                    @Override
+                    public IntPair apply(final int columnIndex) {
+                        return IntPair.of(rowIndex, columnIndex);
+                    }
+                });
+            }
+        }).filter(new Predicate<IntPair>() {
+            @Override
+            public boolean test(IntPair p) {
+                return predicate.test(a[p._1][p._2]);
+            }
+        });
     }
 
     /**

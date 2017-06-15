@@ -19,8 +19,11 @@ import java.util.NoSuchElementException;
 import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.util.Pair.IntPair;
 import com.landawn.abacus.util.function.IntConsumer;
+import com.landawn.abacus.util.function.IntFunction;
+import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.ShortBiFunction;
 import com.landawn.abacus.util.function.ShortFunction;
+import com.landawn.abacus.util.function.ShortPredicate;
 import com.landawn.abacus.util.function.ShortTriFunction;
 import com.landawn.abacus.util.function.ShortUnaryOperator;
 import com.landawn.abacus.util.stream.ExIterator;
@@ -1118,6 +1121,25 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortS
         }
 
         return new ShortMatrix(result);
+    }
+
+    public Stream<IntPair> filter(final ShortPredicate predicate) {
+        return IntStream.range(0, n).flatMapToObj(new IntFunction<Stream<IntPair>>() {
+            @Override
+            public Stream<IntPair> apply(final int rowIndex) {
+                return IntStream.range(0, m).mapToObj(new IntFunction<IntPair>() {
+                    @Override
+                    public IntPair apply(final int columnIndex) {
+                        return IntPair.of(rowIndex, columnIndex);
+                    }
+                });
+            }
+        }).filter(new Predicate<IntPair>() {
+            @Override
+            public boolean test(IntPair p) {
+                return predicate.test(a[p._1][p._2]);
+            }
+        });
     }
 
     /**
