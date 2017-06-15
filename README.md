@@ -7,9 +7,9 @@ A general programming library/framework in Java. It's simple, powerful and easy 
 
 * Most daily used APIs: [IOUtil][], [Multiset][], [LongMultiset][], [BiMap][], [Multimap][], [ImmutableList][], [ImmutableSet][], [ImmutableMap][], [Sheet][], [Pair][], [Triple][], [Tuple][], [Splitter][], [Joiner][], [Builder][], [Difference][], [Profiler][], [AsyncExecutor][], [CompletableFuture][], [Futures][], [CodeGenerator][], [HttpClient][], [N][] ...
 
-* Primitive List: [BooleanList][], [CharList][], [ByteList][], [ShortList][], [IntList][], [LongList][], [FloatList][],[DoubleList][], [ExList][] and [Seq][].
+* Primitive List: [BooleanList][], [CharList][], [ByteList][], [ShortList][], [IntList][], [LongList][], [FloatList][],[DoubleList][] and [Seq][].
 
-* Streams, both sequential and parallel, are supported for JDK7/Anrdoid and primitive types with more functions: [Stream][], [CharStream][], [ByteStream][], [ShortStream][], [IntStream][], [LongStream][], [FloatStream][], [DoubleStream][] , [Fn][] and more [Collectors][].
+* Streams, both sequential and parallel, are supported for JDK7/Anrdoid and primitive types with more functions: [Stream][], [EntryStream][], [CharStream][], [ByteStream][], [ShortStream][], [IntStream][], [LongStream][], [FloatStream][], [DoubleStream][], [Fn][] and more [Collectors][].
 
 * Programming in Android: [SQLiteExecutor][], [SQLBuilder][], [Async][], [CompletableFuture][], [Futures][], [EventBus][], [Observer][], [ObserverX][] and [Fu][]
 
@@ -227,10 +227,10 @@ assertFalse(collExecutor.exists(dbAccount.getId()));
 [LongList]: http://www.landawn.com/LongList_view.html
 [FloatList]: http://www.landawn.com/FloatList_view.html
 [DoubleList]: http://www.landawn.com/DoubleList_view.html
-[ExList]: http://www.landawn.com/ExList_view.html
 [Seq]: http://www.landawn.com/Seq_view.html
 
 [Stream]: http://www.landawn.com/Stream_view.html
+[EntryStream]: http://www.landawn.com/EntryStream_view.html
 [CharStream]: http://www.landawn.com/CharStream_view.html
 [ByteStream]: http://www.landawn.com/ByteStream_view.html
 [ShortStream]: http://www.landawn.com/ShortStream_view.html
