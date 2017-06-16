@@ -229,14 +229,72 @@ public final class Matrix<T> extends AbstractMatrix<T[], List<T>, Stream<T>, Str
         }
     }
 
-    public void updateAll(final UnaryOperator<T> operator) {
+    public T[] getLU2RD() {
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
+
+        final T[] res = N.newArray(componentType, n);
+
+        for (int i = 0; i < n; i++) {
+            res[i] = a[i][i];
+        }
+
+        return res;
+    }
+
+    public void setLU2RD(final T[] diagonal) {
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
+        N.checkArgument(diagonal.length >= n, "The length of specified array is less than n=%s", n);
+
+        for (int i = 0; i < n; i++) {
+            a[i][i] = diagonal[i];
+        }
+    }
+
+    public void updateLU2RD(final UnaryOperator<T> func) {
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
+
+        for (int i = 0; i < n; i++) {
+            a[i][i] = func.apply(a[i][i]);
+        }
+    }
+
+    public T[] getRU2LD() {
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
+
+        final T[] res = N.newArray(componentType, n);
+
+        for (int i = 0; i < n; i++) {
+            res[i] = a[i][m - i - 1];
+        }
+
+        return res;
+    }
+
+    public void setRU2LD(final T[] diagonal) {
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
+        N.checkArgument(diagonal.length >= n, "The length of specified array is less than n=%s", n);
+
+        for (int i = 0; i < n; i++) {
+            a[i][m - i - 1] = diagonal[i];
+        }
+    }
+
+    public void updateRU2LD(final UnaryOperator<T> func) {
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
+
+        for (int i = 0; i < n; i++) {
+            a[i][m - i - 1] = func.apply(a[i][m - i - 1]);
+        }
+    }
+
+    public void updateAll(final UnaryOperator<T> func) {
         if (isParallelable()) {
             if (n <= m) {
                 IntStream.range(0, n).parallel().forEach(new IntConsumer() {
                     @Override
                     public void accept(final int i) {
                         for (int j = 0; j < m; j++) {
-                            a[i][j] = operator.apply(a[i][j]);
+                            a[i][j] = func.apply(a[i][j]);
                         }
                     }
                 });
@@ -245,7 +303,7 @@ public final class Matrix<T> extends AbstractMatrix<T[], List<T>, Stream<T>, Str
                     @Override
                     public void accept(final int j) {
                         for (int i = 0; i < n; i++) {
-                            a[i][j] = operator.apply(a[i][j]);
+                            a[i][j] = func.apply(a[i][j]);
                         }
                     }
                 });
@@ -254,13 +312,13 @@ public final class Matrix<T> extends AbstractMatrix<T[], List<T>, Stream<T>, Str
             if (n <= m) {
                 for (int i = 0; i < n; i++) {
                     for (int j = 0; j < m; j++) {
-                        a[i][j] = operator.apply(a[i][j]);
+                        a[i][j] = func.apply(a[i][j]);
                     }
                 }
             } else {
                 for (int j = 0; j < m; j++) {
                     for (int i = 0; i < n; i++) {
-                        a[i][j] = operator.apply(a[i][j]);
+                        a[i][j] = func.apply(a[i][j]);
                     }
                 }
             }

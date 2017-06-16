@@ -496,7 +496,23 @@ public interface DataSet extends Iterable<Object[]> {
     void removeColumnAll(Collection<String> columnNames);
 
     /**
-     * convert the specified column to target type.
+     * Update the values of the specified column by the specified function.
+     *
+     * @param columnName
+     * @param func
+     */
+    void updateColumn(String columnName, Function<?, ?> func);
+
+    /**
+     * Update the values of the specified columns by the specified function.
+     *
+     * @param columnNames
+     * @param func
+     */
+    void updateColumn(Collection<String> columnNames, Function<?, ?> func);
+
+    /**
+     * Convert the specified column to target type.
      *
      * @param columnName
      * @param targetType
@@ -504,27 +520,11 @@ public interface DataSet extends Iterable<Object[]> {
     void convertColumn(String columnName, Class<?> targetType);
 
     /**
-     * convert the specified columns to target types.
+     * Convert the specified columns to target types.
      *
      * @param columnTargetTypes
      */
     void convertColumn(Map<String, Class<?>> columnTargetTypes);
-
-    /**
-     * convert values of the specified column by the specified function.
-     *
-     * @param columnName
-     * @param func
-     */
-    void convertColumn(String columnName, Function<?, ?> func);
-
-    /**
-     * convert values of the specified columns by the specified function.
-     *
-     * @param columnNames
-     * @param func
-     */
-    void convertColumn(Collection<String> columnNames, Function<?, ?> func);
 
     //
     //    /**

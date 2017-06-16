@@ -748,6 +748,18 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
+    public <K, V> EntryStream<K, V> flatMapToEntry2(final Function<? super T, ? extends Map<K, V>> mapper) {
+        final Function<T, Stream<Map.Entry<K, V>>> mapper2 = new Function<T, Stream<Map.Entry<K, V>>>() {
+            @Override
+            public Stream<Entry<K, V>> apply(T t) {
+                return Stream.of(mapper.apply(t));
+            }
+        };
+
+        return EntryStream.of(flatMap(mapper2));
+    }
+
+    @Override
     public Stream<Stream<T>> split(final int size) {
         return split2(size).map(new Function<List<T>, Stream<T>>() {
             @Override

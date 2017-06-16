@@ -219,14 +219,72 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
         }
     }
 
-    public void updateAll(final BooleanUnaryOperator operator) {
+    public boolean[] getLU2RD() {
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
+
+        final boolean[] res = new boolean[n];
+
+        for (int i = 0; i < n; i++) {
+            res[i] = a[i][i];
+        }
+
+        return res;
+    }
+
+    public void setLU2RD(final boolean[] diagonal) {
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
+        N.checkArgument(diagonal.length >= n, "The length of specified array is less than n=%s", n);
+
+        for (int i = 0; i < n; i++) {
+            a[i][i] = diagonal[i];
+        }
+    }
+
+    public void updateLU2RD(final BooleanUnaryOperator func) {
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
+
+        for (int i = 0; i < n; i++) {
+            a[i][i] = func.applyAsBoolean(a[i][i]);
+        }
+    }
+
+    public boolean[] getRU2LD() {
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
+
+        final boolean[] res = new boolean[n];
+
+        for (int i = 0; i < n; i++) {
+            res[i] = a[i][m - i - 1];
+        }
+
+        return res;
+    }
+
+    public void setRU2LD(final boolean[] diagonal) {
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
+        N.checkArgument(diagonal.length >= n, "The length of specified array is less than n=%s", n);
+
+        for (int i = 0; i < n; i++) {
+            a[i][m - i - 1] = diagonal[i];
+        }
+    }
+
+    public void updateRU2LD(final BooleanUnaryOperator func) {
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
+
+        for (int i = 0; i < n; i++) {
+            a[i][m - i - 1] = func.applyAsBoolean(a[i][m - i - 1]);
+        }
+    }
+
+    public void updateAll(final BooleanUnaryOperator func) {
         if (isParallelable()) {
             if (n <= m) {
                 IntStream.range(0, n).parallel().forEach(new IntConsumer() {
                     @Override
                     public void accept(final int i) {
                         for (int j = 0; j < m; j++) {
-                            a[i][j] = operator.applyAsBoolean(a[i][j]);
+                            a[i][j] = func.applyAsBoolean(a[i][j]);
                         }
                     }
                 });
@@ -236,7 +294,7 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
                     @Override
                     public void accept(final int j) {
                         for (int i = 0; i < n; i++) {
-                            a[i][j] = operator.applyAsBoolean(a[i][j]);
+                            a[i][j] = func.applyAsBoolean(a[i][j]);
                         }
                     }
                 });
@@ -247,13 +305,13 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
 
                         int i = 0; i < n; i++) {
                     for (int j = 0; j < m; j++) {
-                        a[i][j] = operator.applyAsBoolean(a[i][j]);
+                        a[i][j] = func.applyAsBoolean(a[i][j]);
                     }
                 }
             } else {
                 for (int j = 0; j < m; j++) {
                     for (int i = 0; i < n; i++) {
-                        a[i][j] = operator.applyAsBoolean(a[i][j]);
+                        a[i][j] = func.applyAsBoolean(a[i][j]);
                     }
                 }
             }

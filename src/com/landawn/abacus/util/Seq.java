@@ -2558,6 +2558,10 @@ public final class Seq<T> extends ImmutableCollection<T> {
             throw new IllegalArgumentException("The specified count must be greater than 0");
         }
 
+        if (N.isNullOrEmpty(c)) {
+            return new ArrayList<T>();
+        }
+
         final List<T> result = new ArrayList<>(c.size() * n);
 
         for (int i = 0; i < n; i++) {

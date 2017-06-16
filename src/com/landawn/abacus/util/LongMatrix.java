@@ -254,14 +254,72 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongStrea
         }
     }
 
-    public void updateAll(final LongUnaryOperator operator) {
+    public long[] getLU2RD() {
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
+
+        final long[] res = new long[n];
+
+        for (int i = 0; i < n; i++) {
+            res[i] = a[i][i];
+        }
+
+        return res;
+    }
+
+    public void setLU2RD(final long[] diagonal) {
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
+        N.checkArgument(diagonal.length >= n, "The length of specified array is less than n=%s", n);
+
+        for (int i = 0; i < n; i++) {
+            a[i][i] = diagonal[i];
+        }
+    }
+
+    public void updateLU2RD(final LongUnaryOperator func) {
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
+
+        for (int i = 0; i < n; i++) {
+            a[i][i] = func.applyAsLong(a[i][i]);
+        }
+    }
+
+    public long[] getRU2LD() {
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
+
+        final long[] res = new long[n];
+
+        for (int i = 0; i < n; i++) {
+            res[i] = a[i][m - i - 1];
+        }
+
+        return res;
+    }
+
+    public void setRU2LD(final long[] diagonal) {
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
+        N.checkArgument(diagonal.length >= n, "The length of specified array is less than n=%s", n);
+
+        for (int i = 0; i < n; i++) {
+            a[i][m - i - 1] = diagonal[i];
+        }
+    }
+
+    public void updateRU2LD(final LongUnaryOperator func) {
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
+
+        for (int i = 0; i < n; i++) {
+            a[i][m - i - 1] = func.applyAsLong(a[i][m - i - 1]);
+        }
+    }
+
+    public void updateAll(final LongUnaryOperator func) {
         if (isParallelable()) {
             if (n <= m) {
                 IntStream.range(0, n).parallel().forEach(new IntConsumer() {
                     @Override
                     public void accept(final int i) {
                         for (int j = 0; j < m; j++) {
-                            a[i][j] = operator.applyAsLong(a[i][j]);
+                            a[i][j] = func.applyAsLong(a[i][j]);
                         }
                     }
                 });
@@ -270,7 +328,7 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongStrea
                     @Override
                     public void accept(final int j) {
                         for (int i = 0; i < n; i++) {
-                            a[i][j] = operator.applyAsLong(a[i][j]);
+                            a[i][j] = func.applyAsLong(a[i][j]);
                         }
                     }
                 });
@@ -279,13 +337,13 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongStrea
             if (n <= m) {
                 for (int i = 0; i < n; i++) {
                     for (int j = 0; j < m; j++) {
-                        a[i][j] = operator.applyAsLong(a[i][j]);
+                        a[i][j] = func.applyAsLong(a[i][j]);
                     }
                 }
             } else {
                 for (int j = 0; j < m; j++) {
                     for (int i = 0; i < n; i++) {
-                        a[i][j] = operator.applyAsLong(a[i][j]);
+                        a[i][j] = func.applyAsLong(a[i][j]);
                     }
                 }
             }

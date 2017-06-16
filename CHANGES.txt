@@ -17,8 +17,10 @@
 6*, Refactoring Matrix.
 
 7*, Move N.repeat(Collection<T> c, int n) from Seq.
-            
-8, Improvements and bug fix.
+
+8*, Rename DataSet.convertColumn(String columnName, Function<?, ?> func) to updateColumn.
+          
+9, Improvements and bug fix.
 
 
 ========Changes in 0.9.70=========================================================================

@@ -237,14 +237,72 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
         }
     }
 
-    public void updateAll(final ByteUnaryOperator operator) {
+    public byte[] getLU2RD() {
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
+
+        final byte[] res = new byte[n];
+
+        for (int i = 0; i < n; i++) {
+            res[i] = a[i][i];
+        }
+
+        return res;
+    }
+
+    public void setLU2RD(final byte[] diagonal) {
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
+        N.checkArgument(diagonal.length >= n, "The length of specified array is less than n=%s", n);
+
+        for (int i = 0; i < n; i++) {
+            a[i][i] = diagonal[i];
+        }
+    }
+
+    public void updateLU2RD(final ByteUnaryOperator func) {
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
+
+        for (int i = 0; i < n; i++) {
+            a[i][i] = func.applyAsByte(a[i][i]);
+        }
+    }
+
+    public byte[] getRU2LD() {
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
+
+        final byte[] res = new byte[n];
+
+        for (int i = 0; i < n; i++) {
+            res[i] = a[i][m - i - 1];
+        }
+
+        return res;
+    }
+
+    public void setRU2LD(final byte[] diagonal) {
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
+        N.checkArgument(diagonal.length >= n, "The length of specified array is less than n=%s", n);
+
+        for (int i = 0; i < n; i++) {
+            a[i][m - i - 1] = diagonal[i];
+        }
+    }
+
+    public void updateRU2LD(final ByteUnaryOperator func) {
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
+
+        for (int i = 0; i < n; i++) {
+            a[i][m - i - 1] = func.applyAsByte(a[i][m - i - 1]);
+        }
+    }
+
+    public void updateAll(final ByteUnaryOperator func) {
         if (isParallelable()) {
             if (n <= m) {
                 IntStream.range(0, n).parallel().forEach(new IntConsumer() {
                     @Override
                     public void accept(final int i) {
                         for (int j = 0; j < m; j++) {
-                            a[i][j] = operator.applyAsByte(a[i][j]);
+                            a[i][j] = func.applyAsByte(a[i][j]);
                         }
                     }
                 });
@@ -253,7 +311,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
                     @Override
                     public void accept(final int j) {
                         for (int i = 0; i < n; i++) {
-                            a[i][j] = operator.applyAsByte(a[i][j]);
+                            a[i][j] = func.applyAsByte(a[i][j]);
                         }
                     }
                 });
@@ -262,13 +320,13 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
             if (n <= m) {
                 for (int i = 0; i < n; i++) {
                     for (int j = 0; j < m; j++) {
-                        a[i][j] = operator.applyAsByte(a[i][j]);
+                        a[i][j] = func.applyAsByte(a[i][j]);
                     }
                 }
             } else {
                 for (int j = 0; j < m; j++) {
                     for (int i = 0; i < n; i++) {
-                        a[i][j] = operator.applyAsByte(a[i][j]);
+                        a[i][j] = func.applyAsByte(a[i][j]);
                     }
                 }
             }

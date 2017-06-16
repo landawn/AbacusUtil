@@ -287,14 +287,72 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntStream, S
         }
     }
 
-    public void updateAll(final IntUnaryOperator operator) {
+    public int[] getLU2RD() {
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
+
+        final int[] res = new int[n];
+
+        for (int i = 0; i < n; i++) {
+            res[i] = a[i][i];
+        }
+
+        return res;
+    }
+
+    public void setLU2RD(final int[] diagonal) {
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
+        N.checkArgument(diagonal.length >= n, "The length of specified array is less than n=%s", n);
+
+        for (int i = 0; i < n; i++) {
+            a[i][i] = diagonal[i];
+        }
+    }
+
+    public void updateLU2RD(final IntUnaryOperator func) {
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
+
+        for (int i = 0; i < n; i++) {
+            a[i][i] = func.applyAsInt(a[i][i]);
+        }
+    }
+
+    public int[] getRU2LD() {
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
+
+        final int[] res = new int[n];
+
+        for (int i = 0; i < n; i++) {
+            res[i] = a[i][m - i - 1];
+        }
+
+        return res;
+    }
+
+    public void setRU2LD(final int[] diagonal) {
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
+        N.checkArgument(diagonal.length >= n, "The length of specified array is less than n=%s", n);
+
+        for (int i = 0; i < n; i++) {
+            a[i][m - i - 1] = diagonal[i];
+        }
+    }
+
+    public void updateRU2LD(final IntUnaryOperator func) {
+        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
+
+        for (int i = 0; i < n; i++) {
+            a[i][m - i - 1] = func.applyAsInt(a[i][m - i - 1]);
+        }
+    }
+
+    public void updateAll(final IntUnaryOperator func) {
         if (isParallelable()) {
             if (n <= m) {
                 IntStream.range(0, n).parallel().forEach(new IntConsumer() {
                     @Override
                     public void accept(final int i) {
                         for (int j = 0; j < m; j++) {
-                            a[i][j] = operator.applyAsInt(a[i][j]);
+                            a[i][j] = func.applyAsInt(a[i][j]);
                         }
                     }
                 });
@@ -303,7 +361,7 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntStream, S
                     @Override
                     public void accept(final int j) {
                         for (int i = 0; i < n; i++) {
-                            a[i][j] = operator.applyAsInt(a[i][j]);
+                            a[i][j] = func.applyAsInt(a[i][j]);
                         }
                     }
                 });
@@ -312,13 +370,13 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntStream, S
             if (n <= m) {
                 for (int i = 0; i < n; i++) {
                     for (int j = 0; j < m; j++) {
-                        a[i][j] = operator.applyAsInt(a[i][j]);
+                        a[i][j] = func.applyAsInt(a[i][j]);
                     }
                 }
             } else {
                 for (int j = 0; j < m; j++) {
                     for (int i = 0; i < n; i++) {
-                        a[i][j] = operator.applyAsInt(a[i][j]);
+                        a[i][j] = func.applyAsInt(a[i][j]);
                     }
                 }
             }
