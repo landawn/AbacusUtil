@@ -1056,24 +1056,24 @@ public final class Collectors {
     public static <T> Collector<T, ?, List<T>> last(final int n) {
         N.checkArgument(n >= 0, "'n' can't be negative");
 
-        final Supplier<ArrayDeque<T>> supplier = new Supplier<ArrayDeque<T>>() {
+        final Supplier<Deque<T>> supplier = new Supplier<Deque<T>>() {
             private volatile boolean isCalled = false;
 
             @Override
-            public ArrayDeque<T> get() {
+            public Deque<T> get() {
                 if (isCalled) {
                     throw new UnsupportedOperationException("The 'last' Collector only can be used in sequential stream");
                 }
 
                 isCalled = true;
 
-                return new ArrayDeque<>(n);
+                return n <= 1024 ? new ArrayDeque<T>(n) : new LinkedList<T>();
             }
         };
 
-        final BiConsumer<ArrayDeque<T>, T> accumulator = new BiConsumer<ArrayDeque<T>, T>() {
+        final BiConsumer<Deque<T>, T> accumulator = new BiConsumer<Deque<T>, T>() {
             @Override
-            public void accept(ArrayDeque<T> dqueue, T t) {
+            public void accept(Deque<T> dqueue, T t) {
                 if (n > 0) {
                     if (dqueue.size() >= n) {
                         dqueue.pollFirst();
@@ -1084,9 +1084,9 @@ public final class Collectors {
             }
         };
 
-        final BinaryOperator<ArrayDeque<T>> combiner = new BinaryOperator<ArrayDeque<T>>() {
+        final BinaryOperator<Deque<T>> combiner = new BinaryOperator<Deque<T>>() {
             @Override
-            public ArrayDeque<T> apply(ArrayDeque<T> a, ArrayDeque<T> b) {
+            public Deque<T> apply(Deque<T> a, Deque<T> b) {
                 if (N.notNullOrEmpty(a) && N.notNullOrEmpty(b)) {
                     throw new UnsupportedOperationException("The 'last' Collector only can be used in sequential stream");
                 }
@@ -1099,9 +1099,9 @@ public final class Collectors {
             }
         };
 
-        final Function<ArrayDeque<T>, List<T>> finisher = new Function<ArrayDeque<T>, List<T>>() {
+        final Function<Deque<T>, List<T>> finisher = new Function<Deque<T>, List<T>>() {
             @Override
-            public List<T> apply(ArrayDeque<T> dqueue) {
+            public List<T> apply(Deque<T> dqueue) {
                 return new ArrayList<>(dqueue);
             }
         };
