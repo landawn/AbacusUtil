@@ -39,6 +39,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 
+import com.landawn.abacus.util.Tuple.Tuple2;
+import com.landawn.abacus.util.Tuple.Tuple3;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
@@ -144,6 +146,13 @@ public final class Fn {
         }
     };
 
+    private static final TriFunction<Object, Object, Object, Triple<Object, Object, Object>> TRIPLE = new TriFunction<Object, Object, Object, Triple<Object, Object, Object>>() {
+        @Override
+        public Triple<Object, Object, Object> apply(Object a, Object b, Object c) {
+            return Triple.of(a, b, c);
+        }
+    };
+
     @SuppressWarnings("rawtypes")
     private static final Predicate ALWAYS_TRUE = new Predicate() {
         @Override
@@ -238,6 +247,11 @@ public final class Fn {
         return (BiFunction) PAIR;
     }
 
+    @SuppressWarnings("rawtypes")
+    public static <A, B, C> TriFunction<A, B, C, Triple<A, B, C>> triple() {
+        return (TriFunction) TRIPLE;
+    }
+
     public static <T, U> Function<T, U> cast(final Class<U> clazz) {
         return new Function<T, U>() {
             @Override
@@ -281,7 +295,8 @@ public final class Fn {
         };
     }
 
-    public static <T extends Comparable<? super T>> Predicate<T> greaterThan(final T target) {
+    @SuppressWarnings("rawtypes")
+    public static <T extends Comparable> Predicate<T> greaterThan(final T target) {
         return new Predicate<T>() {
             @Override
             public boolean test(T value) {
@@ -290,7 +305,8 @@ public final class Fn {
         };
     }
 
-    public static <T extends Comparable<? super T>> Predicate<T> greaterEqual(final T target) {
+    @SuppressWarnings("rawtypes")
+    public static <T extends Comparable> Predicate<T> greaterEqual(final T target) {
         return new Predicate<T>() {
             @Override
             public boolean test(T value) {
@@ -299,7 +315,8 @@ public final class Fn {
         };
     }
 
-    public static <T extends Comparable<? super T>> Predicate<T> lessThan(final T target) {
+    @SuppressWarnings("rawtypes")
+    public static <T extends Comparable> Predicate<T> lessThan(final T target) {
         return new Predicate<T>() {
             @Override
             public boolean test(T value) {
@@ -308,7 +325,8 @@ public final class Fn {
         };
     }
 
-    public static <T extends Comparable<? super T>> Predicate<T> lessEqual(final T target) {
+    @SuppressWarnings("rawtypes")
+    public static <T extends Comparable> Predicate<T> lessEqual(final T target) {
         return new Predicate<T>() {
             @Override
             public boolean test(T value) {
@@ -371,19 +389,23 @@ public final class Fn {
         return BiPredicates.NOT_EQUAL;
     }
 
-    public static <T extends Comparable<? super T>> BiPredicate<T, T> greaterThan() {
+    @SuppressWarnings("rawtypes")
+    public static <T extends Comparable> BiPredicate<T, T> greaterThan() {
         return (BiPredicate<T, T>) BiPredicates.GREATER_THAN;
     }
 
-    public static <T extends Comparable<? super T>> BiPredicate<T, T> greaterEqual() {
+    @SuppressWarnings("rawtypes")
+    public static <T extends Comparable> BiPredicate<T, T> greaterEqual() {
         return (BiPredicate<T, T>) BiPredicates.GREATER_EQUAL;
     }
 
-    public static <T extends Comparable<? super T>> BiPredicate<T, T> lessThan() {
+    @SuppressWarnings("rawtypes")
+    public static <T extends Comparable> BiPredicate<T, T> lessThan() {
         return (BiPredicate<T, T>) BiPredicates.LESS_THAN;
     }
 
-    public static <T extends Comparable<? super T>> BiPredicate<T, T> lessEqual() {
+    @SuppressWarnings("rawtypes")
+    public static <T extends Comparable> BiPredicate<T, T> lessEqual() {
         return (BiPredicate<T, T>) BiPredicates.LESS_EQUAL;
     }
 
@@ -1841,6 +1863,14 @@ public final class Fn {
 
     public static final class BiFunctions {
 
+        @SuppressWarnings("rawtypes")
+        private static final BiFunction<Object, Object, Tuple2> TUPLE = new BiFunction<Object, Object, Tuple2>() {
+            @Override
+            public Tuple2 apply(Object t, Object u) {
+                return Tuple.of(t, u);
+            }
+        };
+
         private static final BiFunction<Collection<Object>, Object, Collection<Object>> ADD = new BiFunction<Collection<Object>, Object, Collection<Object>>() {
             @Override
             public Collection<Object> apply(Collection<Object> t, Object u) {
@@ -1941,6 +1971,11 @@ public final class Fn {
             return (BiFunction<T, U, U>) RETURN_SECOND;
         }
 
+        @SuppressWarnings("rawtypes")
+        public static <T, U> BiFunction<T, U, Tuple2<T, U>> ofTuple() {
+            return (BiFunction) TUPLE;
+        }
+
         public static <T, C extends Collection<? super T>> BiFunction<C, T, C> ofAdd() {
             return (BiFunction<C, T, C>) ADD;
         }
@@ -1997,8 +2032,22 @@ public final class Fn {
     }
 
     public static final class TriFunctions {
+
+        @SuppressWarnings("rawtypes")
+        private static final TriFunction<Object, Object, Object, Tuple3> TUPLE = new TriFunction<Object, Object, Object, Tuple3>() {
+            @Override
+            public Tuple3 apply(Object a, Object b, Object c) {
+                return Tuple.of(a, b, c);
+            }
+        };
+
         private TriFunctions() {
             // singleton.
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <A, B, C> TriFunction<A, B, C, Tuple3<A, B, C>> ofTuple() {
+            return (TriFunction) TUPLE;
         }
 
         /**

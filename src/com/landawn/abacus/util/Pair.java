@@ -28,10 +28,6 @@ import com.landawn.abacus.util.function.FloatConsumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.function.LongConsumer;
-import com.landawn.abacus.util.stream.DoubleStream;
-import com.landawn.abacus.util.stream.FloatStream;
-import com.landawn.abacus.util.stream.IntStream;
-import com.landawn.abacus.util.stream.LongStream;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -270,10 +266,6 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
             return Stream.of(this);
         }
 
-        public IntStream streamI() {
-            return IntStream.of(_1, _2);
-        }
-
         @Override
         public int hashCode() {
             return 31 * _1 + this._2;
@@ -349,10 +341,6 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
 
         public Stream<LongPair> stream() {
             return Stream.of(this);
-        }
-
-        public LongStream streamL() {
-            return LongStream.of(_1, _2);
         }
 
         @Override
@@ -432,10 +420,6 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
             return Stream.of(this);
         }
 
-        public FloatStream streamF() {
-            return FloatStream.of(_1, _2);
-        }
-
         @Override
         public int hashCode() {
             return (int) (31 * _1 + this._2);
@@ -511,10 +495,6 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
 
         public Stream<DoublePair> stream() {
             return Stream.of(this);
-        }
-
-        public DoubleStream streamD() {
-            return DoubleStream.of(_1, _2);
         }
 
         @Override

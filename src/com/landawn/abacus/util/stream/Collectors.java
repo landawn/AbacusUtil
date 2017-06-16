@@ -74,6 +74,7 @@ import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.LongSummaryStatistics;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
+import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.NullabLe;
 import com.landawn.abacus.util.OptionalDouble;
@@ -1635,7 +1636,8 @@ public final class Collectors {
         return reducing(0, mapper, op);
     }
 
-    public static <T extends Comparable<? super T>> Collector<T, ?, NullabLe<T>> min() {
+    @SuppressWarnings("rawtypes")
+    public static <T extends Comparable> Collector<T, ?, NullabLe<T>> min() {
         return minBy(Fn.naturalOrder());
     }
 
@@ -1693,7 +1695,8 @@ public final class Collectors {
         return reducingOrThrow(op, exceptionSupplier);
     }
 
-    public static <T extends Comparable<? super T>> Collector<T, ?, NullabLe<T>> max() {
+    @SuppressWarnings("rawtypes")
+    public static <T extends Comparable> Collector<T, ?, NullabLe<T>> max() {
         return maxBy(Fn.naturalOrder());
     }
 
@@ -1850,16 +1853,9 @@ public final class Collectors {
      *        element and produces the final result.
      * @return a {@code Collector} which finds minimal and maximal elements.
      */
-    public static <T, R> Collector<T, ?, NullabLe<R>> minMax(final Comparator<? super T> comparator,
-            final BiFunction<? super T, ? super T, ? extends R> finisher) {
-        final BiFunction<NullabLe<T>, NullabLe<T>, NullabLe<R>> resFinisher = new BiFunction<NullabLe<T>, NullabLe<T>, NullabLe<R>>() {
-            @Override
-            public NullabLe<R> apply(NullabLe<T> t, NullabLe<T> u) {
-                return t.isPresent() ? NullabLe.<R> of(finisher.apply(t.get(), u.get())) : NullabLe.<R> empty();
-            }
-        };
-
-        return pairing(Collectors.minBy(comparator), Collectors.maxBy(comparator), resFinisher);
+    public static <T, R> Collector<T, ?, R> minMax(final Comparator<? super T> comparator,
+            final BiFunction<? super NullabLe<T>, ? super NullabLe<T>, ? extends R> finisher) {
+        return pairing(Collectors.minBy(comparator), Collectors.maxBy(comparator), finisher);
     }
 
     /**
@@ -1886,15 +1882,30 @@ public final class Collectors {
         final Supplier<A> downstreamSupplier = downstream.supplier();
         final BiConsumer<A, ? super T> downstreamAccumulator = downstream.accumulator();
         final BinaryOperator<A> downstreamCombiner = downstream.combiner();
+        final MutableBoolean isCollection = MutableBoolean.of(false);
 
         final Supplier<Pair<A, T>> supplier = new Supplier<Pair<A, T>>() {
+            @SuppressWarnings("rawtypes")
             @Override
             public Pair<A, T> get() {
-                return Pair.of(downstreamSupplier.get(), (T) none());
+                final A c = downstreamSupplier.get();
+
+                if (c instanceof Collection && ((Collection) c).size() == 0) {
+                    try {
+                        ((Collection) c).clear();
+
+                        isCollection.setTrue();
+                    } catch (Throwable e) {
+                        // ignore
+                    }
+                }
+
+                return Pair.of(c, (T) none());
             }
         };
 
         final BiConsumer<Pair<A, T>, T> accumulator = new BiConsumer<Pair<A, T>, T>() {
+            @SuppressWarnings("rawtypes")
             @Override
             public void accept(Pair<A, T> t, T u) {
                 if (t.right == NONE) {
@@ -1904,7 +1915,13 @@ public final class Collectors {
                     final int cmp = comparator.compare(u, t.right);
 
                     if (cmp > 0) {
-                        t.left = downstreamSupplier.get();
+                        if (isCollection.isTrue()) {
+
+                            ((Collection) t.left).clear();
+                        } else {
+                            t.left = downstreamSupplier.get();
+                        }
+
                         t.right = u;
                     }
 
@@ -1972,7 +1989,7 @@ public final class Collectors {
     public static <T> Collector<T, ?, List<T>> maxAll(Comparator<? super T> comparator) {
         final Collector<? super T, ?, List<T>> downstream = Collectors.toList();
 
-        return maxAll(Fn.reverseOrder(comparator), downstream);
+        return maxAll(comparator, downstream);
     }
 
     /**
@@ -1994,7 +2011,8 @@ public final class Collectors {
      * @see #maxAll(Comparator)
      * @see #maxAll()
      */
-    public static <T extends Comparable<? super T>, A, D> Collector<T, ?, D> maxAll(Collector<T, A, D> downstream) {
+    @SuppressWarnings("rawtypes")
+    public static <T extends Comparable, A, D> Collector<T, ?, D> maxAll(Collector<T, A, D> downstream) {
         return maxAll(Fn.naturalOrder(), downstream);
     }
 
@@ -2012,10 +2030,11 @@ public final class Collectors {
      * @see #maxAll(Comparator)
      * @see #maxAll(Collector)
      */
-    public static <T extends Comparable<? super T>> Collector<T, ?, List<T>> maxAll() {
+    @SuppressWarnings("rawtypes")
+    public static <T extends Comparable> Collector<T, ?, List<T>> maxAll() {
         final Collector<? super T, ?, List<T>> downstream = Collectors.toList();
 
-        return maxAll(Fn.reverseOrder(), downstream);
+        return maxAll(Fn.naturalOrder(), downstream);
     }
 
     /**
@@ -2083,7 +2102,8 @@ public final class Collectors {
      * @see #minAll(Comparator)
      * @see #minAll()
      */
-    public static <T extends Comparable<? super T>, A, D> Collector<T, ?, D> minAll(Collector<T, A, D> downstream) {
+    @SuppressWarnings("rawtypes")
+    public static <T extends Comparable, A, D> Collector<T, ?, D> minAll(Collector<T, A, D> downstream) {
         return maxAll(Fn.reverseOrder(), downstream);
     }
 
@@ -2101,7 +2121,8 @@ public final class Collectors {
      * @see #minAll(Comparator)
      * @see #minAll(Collector)
      */
-    public static <T extends Comparable<? super T>> Collector<T, ?, List<T>> minAll() {
+    @SuppressWarnings("rawtypes")
+    public static <T extends Comparable> Collector<T, ?, List<T>> minAll() {
         final Collector<? super T, ?, List<T>> downstream = Collectors.toList();
 
         return maxAll(Fn.reverseOrder(), downstream);

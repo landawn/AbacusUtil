@@ -112,7 +112,8 @@ public final class Comparators {
         };
     }
 
-    public static <T, U extends Comparable<? super U>> Comparator<T> comparing(final Function<? super T, ? extends U> keyExtractor) {
+    @SuppressWarnings("rawtypes")
+    public static <T, U extends Comparable> Comparator<T> comparing(final Function<? super T, ? extends U> keyExtractor) {
         N.requireNonNull(keyExtractor);
 
         return new Comparator<T>() {
@@ -212,7 +213,8 @@ public final class Comparators {
         };
     }
 
-    public static <K extends Comparable<? super K>, V> Comparator<Map.Entry<K, V>> comparingByKey() {
+    @SuppressWarnings("rawtypes")
+    public static <K extends Comparable, V> Comparator<Map.Entry<K, V>> comparingByKey() {
         return new Comparator<Map.Entry<K, V>>() {
             @Override
             public int compare(Map.Entry<K, V> a, Map.Entry<K, V> b) {
@@ -221,7 +223,8 @@ public final class Comparators {
         };
     }
 
-    public static <K extends Comparable<? super K>, V> Comparator<Map.Entry<K, V>> reverseComparingByKey() {
+    @SuppressWarnings("rawtypes")
+    public static <K extends Comparable, V> Comparator<Map.Entry<K, V>> reverseComparingByKey() {
         return new Comparator<Map.Entry<K, V>>() {
             @Override
             public int compare(Map.Entry<K, V> a, Map.Entry<K, V> b) {
@@ -230,7 +233,8 @@ public final class Comparators {
         };
     }
 
-    public static <K, V extends Comparable<? super V>> Comparator<Map.Entry<K, V>> comparingByValue() {
+    @SuppressWarnings("rawtypes")
+    public static <K, V extends Comparable> Comparator<Map.Entry<K, V>> comparingByValue() {
         return new Comparator<Map.Entry<K, V>>() {
             @Override
             public int compare(Map.Entry<K, V> a, Map.Entry<K, V> b) {
@@ -239,7 +243,8 @@ public final class Comparators {
         };
     }
 
-    public static <K, V extends Comparable<? super V>> Comparator<Map.Entry<K, V>> reverseComparingByValue() {
+    @SuppressWarnings("rawtypes")
+    public static <K, V extends Comparable> Comparator<Map.Entry<K, V>> reverseComparingByValue() {
         return new Comparator<Map.Entry<K, V>>() {
             @Override
             public int compare(Map.Entry<K, V> a, Map.Entry<K, V> b) {
