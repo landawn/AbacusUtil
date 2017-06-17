@@ -35,6 +35,7 @@ import com.landawn.abacus.util.Pair.IntPair;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
+import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.stream.ExIterator;
 import com.landawn.abacus.util.stream.IntStream;
 import com.landawn.abacus.util.stream.Stream;
@@ -933,6 +934,25 @@ public final class Sheet<R, C, E> {
             for (List<E> column : _columnList) {
                 for (int rowIndex = 0; rowIndex < rowLength; rowIndex++) {
                     column.set(rowIndex, func.apply(column.get(rowIndex)));
+                }
+            }
+        }
+    }
+
+    public void replaceIf(final Predicate<? super E> predicate, final E newValue) {
+        checkFrozen();
+
+        if (rowLength() > 0 && columnLength() > 0) {
+            this.init();
+
+            final int rowLength = rowLength();
+            E val = null;
+
+            for (List<E> column : _columnList) {
+                for (int rowIndex = 0; rowIndex < rowLength; rowIndex++) {
+                    val = column.get(rowIndex);
+
+                    column.set(rowIndex, predicate.test(val) ? newValue : val);
                 }
             }
         }

@@ -1675,6 +1675,46 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return N.split(coll, size);
     }
 
+    public <U> List<List<T>> split(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
+        if (N.isNullOrEmpty(coll)) {
+            return new ArrayList<>();
+        }
+
+        final List<List<T>> res = new ArrayList<>();
+        final Iterator<T> elements = iterator();
+        T next = (T) N.NULL_MASK;
+        boolean preCondition = false;
+
+        while (next != N.NULL_MASK || elements.hasNext()) {
+            final List<T> piece = new ArrayList<>();
+
+            if (next == N.NULL_MASK) {
+                next = elements.next();
+            }
+
+            while (next != N.NULL_MASK) {
+                if (piece.size() == 0) {
+                    piece.add(next);
+                    preCondition = predicate.apply(next, identity);
+                    next = elements.hasNext() ? elements.next() : (T) N.NULL_MASK;
+                } else if (predicate.apply(next, identity) == preCondition) {
+                    piece.add(next);
+                    next = elements.hasNext() ? elements.next() : (T) N.NULL_MASK;
+                } else {
+                    if (identityUpdate != null) {
+                        identityUpdate.accept(identity);
+                    }
+
+                    break;
+                }
+            }
+
+            res.add(piece);
+        }
+
+        return res;
+    }
+
     /**
      * 
      * @param n

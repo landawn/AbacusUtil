@@ -581,6 +581,8 @@ public interface DataSet extends Iterable<Object[]> {
 
     void updateAll(Function<?, ?> func);
 
+    void replaceIf(Predicate<?> func, Object newValue);
+
     /**
      * Returns the current row number.
      *

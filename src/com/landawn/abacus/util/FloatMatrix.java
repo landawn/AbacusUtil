@@ -20,6 +20,7 @@ import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.util.Pair.IntPair;
 import com.landawn.abacus.util.function.FloatBiFunction;
 import com.landawn.abacus.util.function.FloatFunction;
+import com.landawn.abacus.util.function.FloatPredicate;
 import com.landawn.abacus.util.function.FloatTriFunction;
 import com.landawn.abacus.util.function.FloatUnaryOperator;
 import com.landawn.abacus.util.function.IntConsumer;
@@ -328,6 +329,44 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatS
                 for (int j = 0; j < m; j++) {
                     for (int i = 0; i < n; i++) {
                         a[i][j] = func.applyAsFloat(a[i][j]);
+                    }
+                }
+            }
+        }
+    }
+
+    public void replaceIf(final FloatPredicate predicate, final float newValue) {
+        if (isParallelable()) {
+            if (n <= m) {
+                IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int i) {
+                        for (int j = 0; j < m; j++) {
+                            a[i][j] = predicate.test(a[i][j]) ? newValue : a[i][j];
+                        }
+                    }
+                });
+            } else {
+                IntStream.range(0, m).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int j) {
+                        for (int i = 0; i < n; i++) {
+                            a[i][j] = predicate.test(a[i][j]) ? newValue : a[i][j];
+                        }
+                    }
+                });
+            }
+        } else {
+            if (n <= m) {
+                for (int i = 0; i < n; i++) {
+                    for (int j = 0; j < m; j++) {
+                        a[i][j] = predicate.test(a[i][j]) ? newValue : a[i][j];
+                    }
+                }
+            } else {
+                for (int j = 0; j < m; j++) {
+                    for (int i = 0; i < n; i++) {
+                        a[i][j] = predicate.test(a[i][j]) ? newValue : a[i][j];
                     }
                 }
             }
