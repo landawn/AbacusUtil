@@ -773,7 +773,7 @@ class ArrayIntStream extends AbstractIntStream {
     }
 
     @Override
-    public Stream<IntList> split2(final int size) {
+    public Stream<IntList> splitToList(final int size) {
         N.checkArgument(size > 0, "'size' must be bigger than 0");
 
         return new IteratorStream<IntList>(new ExIterator<IntList>() {
@@ -836,7 +836,7 @@ class ArrayIntStream extends AbstractIntStream {
     }
 
     @Override
-    public <U> Stream<IntList> split2(final U identity, final BiFunction<? super Integer, ? super U, Boolean> predicate,
+    public <U> Stream<IntList> splitToList(final U identity, final BiFunction<? super Integer, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
         return new IteratorStream<IntList>(new ExIterator<IntList>() {
             private int cursor = fromIndex;
@@ -937,7 +937,7 @@ class ArrayIntStream extends AbstractIntStream {
     }
 
     @Override
-    public Stream<IntList> sliding2(final int windowSize, final int increment) {
+    public Stream<IntList> slidingToList(final int windowSize, final int increment) {
         if (windowSize < 1 || increment < 1) {
             throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
         }

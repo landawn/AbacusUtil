@@ -1729,13 +1729,13 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     }
 
     @Override
-    public Stream<List<T>> split2(final int size) {
-        return new ParallelIteratorStream<>(sequential().split2(size).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
+    public Stream<List<T>> splitToList(final int size) {
+        return new ParallelIteratorStream<>(sequential().splitToList(size).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
     }
 
     @Override
-    public Stream<Set<T>> split3(final int size) {
-        return new ParallelIteratorStream<>(sequential().split3(size).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
+    public Stream<Set<T>> splitToSet(final int size) {
+        return new ParallelIteratorStream<>(sequential().splitToSet(size).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
     }
 
     @Override
@@ -1745,14 +1745,14 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     }
 
     @Override
-    public <U> Stream<List<T>> split2(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
-        return new ParallelIteratorStream<>(sequential().split2(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null, maxThreadNum,
+    public <U> Stream<List<T>> splitToList(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
+        return new ParallelIteratorStream<>(sequential().splitToList(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null, maxThreadNum,
                 splitor);
     }
 
     @Override
-    public <U> Stream<Set<T>> split3(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
-        return new ParallelIteratorStream<>(sequential().split3(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null, maxThreadNum,
+    public <U> Stream<Set<T>> splitToSet(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
+        return new ParallelIteratorStream<>(sequential().splitToSet(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null, maxThreadNum,
                 splitor);
     }
 
@@ -1790,8 +1790,8 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     }
 
     @Override
-    public Stream<List<T>> sliding2(final int windowSize, final int increment) {
-        return new ParallelIteratorStream<>(sequential().sliding2(windowSize, increment).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
+    public Stream<List<T>> slidingToList(final int windowSize, final int increment) {
+        return new ParallelIteratorStream<>(sequential().slidingToList(windowSize, increment).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
     }
 
     @Override

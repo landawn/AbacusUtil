@@ -832,7 +832,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Stream<List<T>> split2(final int size) {
+    public Stream<List<T>> splitToList(final int size) {
         return new IteratorStream<>(new ExIterator<List<T>>() {
             @Override
             public boolean hasNext() {
@@ -860,7 +860,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Stream<Set<T>> split3(final int size) {
+    public Stream<Set<T>> splitToSet(final int size) {
         return new IteratorStream<>(new ExIterator<Set<T>>() {
             @Override
             public boolean hasNext() {
@@ -888,7 +888,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <U> Stream<List<T>> split2(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
+    public <U> Stream<List<T>> splitToList(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
         return new IteratorStream<>(new ExIterator<List<T>>() {
             private T next = (T) NONE;
             private boolean preCondition = false;
@@ -934,7 +934,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <U> Stream<Set<T>> split3(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
+    public <U> Stream<Set<T>> splitToSet(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
         return new IteratorStream<>(new ExIterator<Set<T>>() {
             private T next = (T) NONE;
             private boolean preCondition = false;
@@ -980,7 +980,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Stream<List<T>> sliding2(final int windowSize, final int increment) {
+    public Stream<List<T>> slidingToList(final int windowSize, final int increment) {
         if (windowSize < 1 || increment < 1) {
             throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
         }

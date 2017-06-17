@@ -681,7 +681,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     @Override
-    public abstract Stream<List<T>> split2(int size);
+    public abstract Stream<List<T>> splitToList(int size);
 
     /**
      * Returns Stream of Stream with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
@@ -692,7 +692,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param size
      * @return
      */
-    public abstract Stream<Set<T>> split3(int size);
+    public abstract Stream<Set<T>> splitToSet(int size);
 
     /**
      * Split the stream by the specified predicate.
@@ -700,7 +700,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * <pre>
      * <code>
      * // split the number sequence by window 5.
-     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).split2(MutableInt.of(5), (e, b) -> e <= b.intValue(), b -> b.addAndGet(5)).forEach(N::println);
+     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).splitToList(MutableInt.of(5), (e, b) -> e <= b.intValue(), b -> b.addAndGet(5)).forEach(N::println);
      * </code>
      * </pre>
      * 
@@ -715,7 +715,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     @Override
-    public abstract <U> Stream<List<T>> split2(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate,
+    public abstract <U> Stream<List<T>> splitToList(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate);
 
     /**
@@ -724,7 +724,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * <pre>
      * <code>
      * // split the number sequence by window 5.
-     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).split3(MutableInt.of(5), (e, b) -> e <= b.intValue(), b -> b.addAndGet(5)).forEach(N::println);
+     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).splitToSet(MutableInt.of(5), (e, b) -> e <= b.intValue(), b -> b.addAndGet(5)).forEach(N::println);
      * </code>
      * </pre>
      * 
@@ -738,14 +738,14 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param identityUpdate
      * @return
      */
-    public abstract <U> Stream<Set<T>> split3(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate,
+    public abstract <U> Stream<Set<T>> splitToSet(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate);
 
     @Override
-    public abstract Stream<List<T>> sliding2(int windowSize);
+    public abstract Stream<List<T>> slidingToList(int windowSize);
 
     @Override
-    public abstract Stream<List<T>> sliding2(int windowSize, int increment);
+    public abstract Stream<List<T>> slidingToList(int windowSize, int increment);
 
     /**
      * Merge series of adjacent elements which satisfy the given predicate using

@@ -761,7 +761,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<Stream<T>> split(final int size) {
-        return split2(size).map(new Function<List<T>, Stream<T>>() {
+        return splitToList(size).map(new Function<List<T>, Stream<T>>() {
             @Override
             public Stream<T> apply(List<T> t) {
                 return new ArrayStream<>(toArray(t), 0, t.size(), null, sorted, cmp);
@@ -771,7 +771,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public <U> Stream<Stream<T>> split(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
-        return split2(identity, predicate, identityUpdate).map(new Function<List<T>, Stream<T>>() {
+        return splitToList(identity, predicate, identityUpdate).map(new Function<List<T>, Stream<T>>() {
             @Override
             public Stream<T> apply(List<T> t) {
                 return new ArrayStream<>(toArray(t), 0, t.size(), null, sorted, cmp);
@@ -781,7 +781,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<Stream<T>> sliding(final int windowSize, final int increment) {
-        return sliding2(windowSize, increment).map(new Function<List<T>, Stream<T>>() {
+        return slidingToList(windowSize, increment).map(new Function<List<T>, Stream<T>>() {
             @Override
             public Stream<T> apply(List<T> t) {
                 return new ArrayStream<>(toArray(t), 0, t.size(), null, sorted, cmp);
@@ -1860,8 +1860,8 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public Stream<List<T>> sliding2(int windowSize) {
-        return sliding2(windowSize, 1);
+    public Stream<List<T>> slidingToList(int windowSize) {
+        return slidingToList(windowSize, 1);
     }
 
     @Override

@@ -175,7 +175,7 @@ abstract class AbstractLongStream extends LongStream {
 
     @Override
     public Stream<LongStream> split(final int size) {
-        return split2(size).map(new Function<LongList, LongStream>() {
+        return splitToList(size).map(new Function<LongList, LongStream>() {
             @Override
             public LongStream apply(LongList t) {
                 return new ArrayLongStream(t.array(), 0, t.size(), null, sorted);
@@ -186,7 +186,7 @@ abstract class AbstractLongStream extends LongStream {
     @Override
     public <U> Stream<LongStream> split(final U identity, final BiFunction<? super Long, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
-        return split2(identity, predicate, identityUpdate).map(new Function<LongList, LongStream>() {
+        return splitToList(identity, predicate, identityUpdate).map(new Function<LongList, LongStream>() {
             @Override
             public LongStream apply(LongList t) {
                 return new ArrayLongStream(t.array(), 0, t.size(), null, sorted);
@@ -196,7 +196,7 @@ abstract class AbstractLongStream extends LongStream {
 
     @Override
     public Stream<LongStream> sliding(final int windowSize, final int increment) {
-        return sliding2(windowSize, increment).map(new Function<LongList, LongStream>() {
+        return slidingToList(windowSize, increment).map(new Function<LongList, LongStream>() {
             @Override
             public LongStream apply(LongList t) {
                 return new ArrayLongStream(t.array(), 0, t.size(), null, sorted);

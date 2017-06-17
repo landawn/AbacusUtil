@@ -488,7 +488,7 @@ class IteratorFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public Stream<FloatList> split2(final int size) {
+    public Stream<FloatList> splitToList(final int size) {
         N.checkArgument(size > 0, "'size' must be bigger than 0");
 
         return new IteratorStream<FloatList>(new ExIterator<FloatList>() {
@@ -516,7 +516,7 @@ class IteratorFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public <U> Stream<FloatList> split2(final U identity, final BiFunction<? super Float, ? super U, Boolean> predicate,
+    public <U> Stream<FloatList> splitToList(final U identity, final BiFunction<? super Float, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
         return new IteratorStream<FloatList>(new ExIterator<FloatList>() {
             private float next;
@@ -565,7 +565,7 @@ class IteratorFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public Stream<FloatList> sliding2(final int windowSize, final int increment) {
+    public Stream<FloatList> slidingToList(final int windowSize, final int increment) {
         if (windowSize < 1 || increment < 1) {
             throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
         }

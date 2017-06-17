@@ -162,7 +162,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * @param size
      * @return
      */
-    public abstract Stream<PL> split2(int size);
+    public abstract Stream<PL> splitToList(int size);
 
     /**
      * Split the stream by the specified predicate.
@@ -170,7 +170,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * <pre>
      * <code>
      * // split the number sequence by window 5.
-     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).split2(MutableInt.of(5), (e, b) -> e <= b.intValue(), b -> b.addAndGet(5)).forEach(N::println);
+     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).splitToList(MutableInt.of(5), (e, b) -> e <= b.intValue(), b -> b.addAndGet(5)).forEach(N::println);
      * </code>
      * </pre>
      * 
@@ -191,7 +191,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * <pre>
      * <code>
      * // split the number sequence by window 5.
-     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).split2(MutableInt.of(5), (e, b) -> e <= b.intValue(), b -> b.addAndGet(5)).forEach(N::println);
+     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).splitToList(MutableInt.of(5), (e, b) -> e <= b.intValue(), b -> b.addAndGet(5)).forEach(N::println);
      * </code>
      * </pre>
      * 
@@ -204,7 +204,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * @param identityUpdate
      * @return
      */
-    <U> Stream<PL> split2(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate);
+    <U> Stream<PL> splitToList(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate);
 
     /**
      * Split the stream into two pieces at <code>where</code>
@@ -236,7 +236,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * @return
      * @see #sliding(int, int)
      */
-    Stream<PL> sliding2(int windowSize);
+    Stream<PL> slidingToList(int windowSize);
 
     /**
      * <code>Stream.of(1, 2, 3, 4, 5, 6, 7, 8).sliding(3, 1).forEach(Stream::println)</code>
@@ -277,7 +277,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * @return
      * @see #sliding(int, int)
      */
-    Stream<PL> sliding2(int windowSize, int increment);
+    Stream<PL> slidingToList(int windowSize, int increment);
 
     /**
      * <br />

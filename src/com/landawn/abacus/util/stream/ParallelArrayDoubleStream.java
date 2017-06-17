@@ -292,8 +292,8 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
     }
 
     @Override
-    public Stream<DoubleList> split2(final int size) {
-        return new ParallelIteratorStream<DoubleList>(sequential().split2(size).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
+    public Stream<DoubleList> splitToList(final int size) {
+        return new ParallelIteratorStream<DoubleList>(sequential().splitToList(size).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
     }
 
     @Override
@@ -304,9 +304,9 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
     }
 
     @Override
-    public <U> Stream<DoubleList> split2(final U identity, final BiFunction<? super Double, ? super U, Boolean> predicate,
+    public <U> Stream<DoubleList> splitToList(final U identity, final BiFunction<? super Double, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
-        return new ParallelIteratorStream<DoubleList>(sequential().split2(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null,
+        return new ParallelIteratorStream<DoubleList>(sequential().splitToList(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null,
                 maxThreadNum, splitor);
     }
 
@@ -345,8 +345,8 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
     }
 
     @Override
-    public Stream<DoubleList> sliding2(final int windowSize, final int increment) {
-        return new ParallelIteratorStream<DoubleList>(sequential().sliding2(windowSize, increment).iterator(), closeHandlers, false, null, maxThreadNum,
+    public Stream<DoubleList> slidingToList(final int windowSize, final int increment) {
+        return new ParallelIteratorStream<DoubleList>(sequential().slidingToList(windowSize, increment).iterator(), closeHandlers, false, null, maxThreadNum,
                 splitor);
     }
 

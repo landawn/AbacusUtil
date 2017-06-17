@@ -383,7 +383,7 @@ class IteratorByteStream extends AbstractByteStream {
     }
 
     @Override
-    public Stream<ByteList> split2(final int size) {
+    public Stream<ByteList> splitToList(final int size) {
         N.checkArgument(size > 0, "'size' must be bigger than 0");
 
         return new IteratorStream<ByteList>(new ExIterator<ByteList>() {
@@ -411,7 +411,7 @@ class IteratorByteStream extends AbstractByteStream {
     }
 
     @Override
-    public <U> Stream<ByteList> split2(final U identity, final BiFunction<? super Byte, ? super U, Boolean> predicate,
+    public <U> Stream<ByteList> splitToList(final U identity, final BiFunction<? super Byte, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
         return new IteratorStream<ByteList>(new ExIterator<ByteList>() {
             private byte next;
@@ -460,7 +460,7 @@ class IteratorByteStream extends AbstractByteStream {
     }
 
     @Override
-    public Stream<ByteList> sliding2(final int windowSize, final int increment) {
+    public Stream<ByteList> slidingToList(final int windowSize, final int increment) {
         if (windowSize < 1 || increment < 1) {
             throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
         }

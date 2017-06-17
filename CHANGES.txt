@@ -1,4 +1,10 @@
 ﻿
+========Changes in 0.9.72=========================================================================
+
+1, Rename split2 to splitToList, split3 to splitToSet, sliding2 to slidingToList
+
+2, Improvements and bug fix.
+
 ========Changes in 0.9.71=========================================================================
 
 1*, Replace:

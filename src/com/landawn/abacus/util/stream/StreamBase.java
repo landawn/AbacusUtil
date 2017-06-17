@@ -482,8 +482,8 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
     }
 
     @Override
-    public Stream<PL> sliding2(int windowSize) {
-        return sliding2(windowSize, 1);
+    public Stream<PL> slidingToList(int windowSize) {
+        return slidingToList(windowSize, 1);
     }
 
     @Override

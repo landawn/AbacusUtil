@@ -176,7 +176,7 @@ abstract class AbstractShortStream extends ShortStream {
 
     @Override
     public Stream<ShortStream> split(final int size) {
-        return split2(size).map(new Function<ShortList, ShortStream>() {
+        return splitToList(size).map(new Function<ShortList, ShortStream>() {
             @Override
             public ShortStream apply(ShortList t) {
                 return new ArrayShortStream(t.array(), 0, t.size(), null, sorted);
@@ -187,7 +187,7 @@ abstract class AbstractShortStream extends ShortStream {
     @Override
     public <U> Stream<ShortStream> split(final U identity, final BiFunction<? super Short, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
-        return split2(identity, predicate, identityUpdate).map(new Function<ShortList, ShortStream>() {
+        return splitToList(identity, predicate, identityUpdate).map(new Function<ShortList, ShortStream>() {
             @Override
             public ShortStream apply(ShortList t) {
                 return new ArrayShortStream(t.array(), 0, t.size(), null, sorted);
@@ -197,7 +197,7 @@ abstract class AbstractShortStream extends ShortStream {
 
     @Override
     public Stream<ShortStream> sliding(final int windowSize, final int increment) {
-        return sliding2(windowSize, increment).map(new Function<ShortList, ShortStream>() {
+        return slidingToList(windowSize, increment).map(new Function<ShortList, ShortStream>() {
             @Override
             public ShortStream apply(ShortList t) {
                 return new ArrayShortStream(t.array(), 0, t.size(), null, sorted);
