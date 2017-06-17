@@ -23,6 +23,8 @@ import com.landawn.abacus.util.function.CharFunction;
 import com.landawn.abacus.util.function.CharPredicate;
 import com.landawn.abacus.util.function.CharTriFunction;
 import com.landawn.abacus.util.function.CharUnaryOperator;
+import com.landawn.abacus.util.function.IntBiFunction;
+import com.landawn.abacus.util.function.IntBiPredicate;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.stream.CharStream;
 import com.landawn.abacus.util.stream.ExCharIterator;
@@ -146,7 +148,7 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
     }
 
     public OptionalChar downOf(final int i, final int j) {
-        return i == n - 1 ? OptionalChar.empty() : OptionalChar.of(a[i + 1][j]);
+        return i == rows - 1 ? OptionalChar.empty() : OptionalChar.of(a[i + 1][j]);
     }
 
     public OptionalChar leftOf(final int i, final int j) {
@@ -154,7 +156,7 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
     }
 
     public OptionalChar rightOf(final int i, final int j) {
-        return j == m - 1 ? OptionalChar.empty() : OptionalChar.of(a[i][j + 1]);
+        return j == cols - 1 ? OptionalChar.empty() : OptionalChar.of(a[i][j + 1]);
     }
 
     /**
@@ -166,8 +168,8 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
      */
     public Stream<IntPair> adjacent4Points(final int i, final int j) {
         final IntPair up = i == 0 ? null : IntPair.of(i - 1, j);
-        final IntPair right = j == m - 1 ? null : IntPair.of(i, j + 1);
-        final IntPair down = i == n - 1 ? null : IntPair.of(i + 1, j);
+        final IntPair right = j == cols - 1 ? null : IntPair.of(i, j + 1);
+        final IntPair down = i == rows - 1 ? null : IntPair.of(i + 1, j);
         final IntPair left = j == 0 ? null : IntPair.of(i, j - 1);
 
         return Stream.of(up, right, down, left);
@@ -182,30 +184,30 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
      */
     public Stream<IntPair> adjacent8Points(final int i, final int j) {
         final IntPair up = i == 0 ? null : IntPair.of(i - 1, j);
-        final IntPair right = j == m - 1 ? null : IntPair.of(i, j + 1);
-        final IntPair down = i == n - 1 ? null : IntPair.of(i + 1, j);
+        final IntPair right = j == cols - 1 ? null : IntPair.of(i, j + 1);
+        final IntPair down = i == rows - 1 ? null : IntPair.of(i + 1, j);
         final IntPair left = j == 0 ? null : IntPair.of(i, j - 1);
 
         final IntPair leftUp = i > 0 && j > 0 ? IntPair.of(i - 1, j - 1) : null;
-        final IntPair rightUp = i > 0 && j < m - 1 ? IntPair.of(i - 1, j + 1) : null;
-        final IntPair rightDown = i < n - 1 && j < m - 1 ? IntPair.of(j + 1, j + 1) : null;
-        final IntPair leftDown = i < n - 1 && j > 0 ? IntPair.of(i + 1, j - 1) : null;
+        final IntPair rightUp = i > 0 && j < cols - 1 ? IntPair.of(i - 1, j + 1) : null;
+        final IntPair rightDown = i < rows - 1 && j < cols - 1 ? IntPair.of(j + 1, j + 1) : null;
+        final IntPair leftDown = i < rows - 1 && j > 0 ? IntPair.of(i + 1, j - 1) : null;
 
         return Stream.of(leftUp, up, rightUp, right, rightDown, down, leftDown, left);
     }
 
     public char[] row(final int rowIndex) {
-        N.checkArgument(rowIndex >= 0 && rowIndex < n, "Invalid row Index: %s", rowIndex);
+        N.checkArgument(rowIndex >= 0 && rowIndex < rows, "Invalid row Index: %s", rowIndex);
 
         return a[rowIndex];
     }
 
     public char[] column(final int columnIndex) {
-        N.checkArgument(columnIndex >= 0 && columnIndex < m, "Invalid column Index: %s", columnIndex);
+        N.checkArgument(columnIndex >= 0 && columnIndex < cols, "Invalid column Index: %s", columnIndex);
 
-        final char[] c = new char[n];
+        final char[] c = new char[rows];
 
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < rows; i++) {
             c[i] = a[i][columnIndex];
         }
 
@@ -213,37 +215,37 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
     }
 
     public void setRow(int rowIndex, char[] row) {
-        N.checkArgument(row.length == m, "The size of the specified row doesn't match the length of column");
+        N.checkArgument(row.length == cols, "The size of the specified row doesn't match the length of column");
 
-        N.copy(row, 0, a[rowIndex], 0, m);
+        N.copy(row, 0, a[rowIndex], 0, cols);
     }
 
     public void setColumn(int columnIndex, char[] column) {
-        N.checkArgument(column.length == n, "The size of the specified column doesn't match the length of row");
+        N.checkArgument(column.length == rows, "The size of the specified column doesn't match the length of row");
 
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < rows; i++) {
             a[i][columnIndex] = column[i];
         }
     }
 
     public void updateRow(int rowIndex, CharUnaryOperator func) {
-        for (int i = 0; i < m; i++) {
+        for (int i = 0; i < cols; i++) {
             a[rowIndex][i] = func.applyAsChar(a[rowIndex][i]);
         }
     }
 
     public void updateColumn(int columnIndex, CharUnaryOperator func) {
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < rows; i++) {
             a[i][columnIndex] = func.applyAsChar(a[i][columnIndex]);
         }
     }
 
     public char[] getLU2RD() {
-        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
+        N.checkState(rows == cols, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", rows, cols);
 
-        final char[] res = new char[n];
+        final char[] res = new char[rows];
 
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < rows; i++) {
             res[i] = a[i][i];
         }
 
@@ -251,83 +253,126 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
     }
 
     public void setLU2RD(final char[] diagonal) {
-        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
-        N.checkArgument(diagonal.length >= n, "The length of specified array is less than n=%s", n);
+        N.checkState(rows == cols, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", rows, cols);
+        N.checkArgument(diagonal.length >= rows, "The length of specified array is less than n=%s", rows);
 
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < rows; i++) {
             a[i][i] = diagonal[i];
         }
     }
 
     public void updateLU2RD(final CharUnaryOperator func) {
-        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
+        N.checkState(rows == cols, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", rows, cols);
 
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < rows; i++) {
             a[i][i] = func.applyAsChar(a[i][i]);
         }
     }
 
     public char[] getRU2LD() {
-        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
+        N.checkState(rows == cols, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", rows, cols);
 
-        final char[] res = new char[n];
+        final char[] res = new char[rows];
 
-        for (int i = 0; i < n; i++) {
-            res[i] = a[i][m - i - 1];
+        for (int i = 0; i < rows; i++) {
+            res[i] = a[i][cols - i - 1];
         }
 
         return res;
     }
 
     public void setRU2LD(final char[] diagonal) {
-        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
-        N.checkArgument(diagonal.length >= n, "The length of specified array is less than n=%s", n);
+        N.checkState(rows == cols, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", rows, cols);
+        N.checkArgument(diagonal.length >= rows, "The length of specified array is less than n=%s", rows);
 
-        for (int i = 0; i < n; i++) {
-            a[i][m - i - 1] = diagonal[i];
+        for (int i = 0; i < rows; i++) {
+            a[i][cols - i - 1] = diagonal[i];
         }
     }
 
     public void updateRU2LD(final CharUnaryOperator func) {
-        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
+        N.checkState(rows == cols, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", rows, cols);
 
-        for (int i = 0; i < n; i++) {
-            a[i][m - i - 1] = func.applyAsChar(a[i][m - i - 1]);
+        for (int i = 0; i < rows; i++) {
+            a[i][cols - i - 1] = func.applyAsChar(a[i][cols - i - 1]);
         }
     }
 
     public void updateAll(final CharUnaryOperator func) {
         if (isParallelable()) {
-            if (n <= m) {
-                IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+            if (rows <= cols) {
+                IntStream.range(0, rows).parallel().forEach(new IntConsumer() {
                     @Override
                     public void accept(final int i) {
-                        for (int j = 0; j < m; j++) {
+                        for (int j = 0; j < cols; j++) {
                             a[i][j] = func.applyAsChar(a[i][j]);
                         }
                     }
                 });
             } else {
-                IntStream.range(0, m).parallel().forEach(new IntConsumer() {
+                IntStream.range(0, cols).parallel().forEach(new IntConsumer() {
                     @Override
                     public void accept(final int j) {
-                        for (int i = 0; i < n; i++) {
+                        for (int i = 0; i < rows; i++) {
                             a[i][j] = func.applyAsChar(a[i][j]);
                         }
                     }
                 });
             }
         } else {
-            if (n <= m) {
-                for (int i = 0; i < n; i++) {
-                    for (int j = 0; j < m; j++) {
+            if (rows <= cols) {
+                for (int i = 0; i < rows; i++) {
+                    for (int j = 0; j < cols; j++) {
                         a[i][j] = func.applyAsChar(a[i][j]);
                     }
                 }
             } else {
-                for (int j = 0; j < m; j++) {
-                    for (int i = 0; i < n; i++) {
+                for (int j = 0; j < cols; j++) {
+                    for (int i = 0; i < rows; i++) {
                         a[i][j] = func.applyAsChar(a[i][j]);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Update all elements based on points
+     * 
+     * @param func
+     */
+    public void updateAll(final IntBiFunction<Character> func) {
+        if (isParallelable()) {
+            if (rows <= cols) {
+                IntStream.range(0, rows).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int i) {
+                        for (int j = 0; j < cols; j++) {
+                            a[i][j] = func.apply(i, j);
+                        }
+                    }
+                });
+            } else {
+                IntStream.range(0, cols).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int j) {
+                        for (int i = 0; i < rows; i++) {
+                            a[i][j] = func.apply(i, j);
+                        }
+                    }
+                });
+            }
+        } else {
+            if (rows <= cols) {
+                for (int i = 0; i < rows; i++) {
+                    for (int j = 0; j < cols; j++) {
+                        a[i][j] = func.apply(i, j);
+                    }
+                }
+            } else {
+                for (int j = 0; j < cols; j++) {
+                    for (int i = 0; i < rows; i++) {
+                        a[i][j] = func.apply(i, j);
                     }
                 }
             }
@@ -336,35 +381,35 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
 
     public void replaceIf(final CharPredicate predicate, final char newValue) {
         if (isParallelable()) {
-            if (n <= m) {
-                IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+            if (rows <= cols) {
+                IntStream.range(0, rows).parallel().forEach(new IntConsumer() {
                     @Override
                     public void accept(final int i) {
-                        for (int j = 0; j < m; j++) {
+                        for (int j = 0; j < cols; j++) {
                             a[i][j] = predicate.test(a[i][j]) ? newValue : a[i][j];
                         }
                     }
                 });
             } else {
-                IntStream.range(0, m).parallel().forEach(new IntConsumer() {
+                IntStream.range(0, cols).parallel().forEach(new IntConsumer() {
                     @Override
                     public void accept(final int j) {
-                        for (int i = 0; i < n; i++) {
+                        for (int i = 0; i < rows; i++) {
                             a[i][j] = predicate.test(a[i][j]) ? newValue : a[i][j];
                         }
                     }
                 });
             }
         } else {
-            if (n <= m) {
-                for (int i = 0; i < n; i++) {
-                    for (int j = 0; j < m; j++) {
+            if (rows <= cols) {
+                for (int i = 0; i < rows; i++) {
+                    for (int j = 0; j < cols; j++) {
                         a[i][j] = predicate.test(a[i][j]) ? newValue : a[i][j];
                     }
                 }
             } else {
-                for (int j = 0; j < m; j++) {
-                    for (int i = 0; i < n; i++) {
+                for (int j = 0; j < cols; j++) {
+                    for (int i = 0; i < rows; i++) {
                         a[i][j] = predicate.test(a[i][j]) ? newValue : a[i][j];
                     }
                 }
@@ -372,39 +417,83 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
         }
     }
 
-    public CharMatrix map(final CharUnaryOperator func) {
-        final char[][] c = new char[n][m];
-
+    /**
+     * Replace elements by <code>Predicate.test(i, j)</code> based on points
+     * 
+     * @param predicate
+     * @param newValue
+     */
+    public void replaceIf(final IntBiPredicate predicate, final char newValue) {
         if (isParallelable()) {
-            if (n <= m) {
-                IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+            if (rows <= cols) {
+                IntStream.range(0, rows).parallel().forEach(new IntConsumer() {
                     @Override
                     public void accept(final int i) {
-                        for (int j = 0; j < m; j++) {
+                        for (int j = 0; j < cols; j++) {
+                            a[i][j] = predicate.test(i, j) ? newValue : a[i][j];
+                        }
+                    }
+                });
+            } else {
+                IntStream.range(0, cols).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int j) {
+                        for (int i = 0; i < rows; i++) {
+                            a[i][j] = predicate.test(i, j) ? newValue : a[i][j];
+                        }
+                    }
+                });
+            }
+        } else {
+            if (rows <= cols) {
+                for (int i = 0; i < rows; i++) {
+                    for (int j = 0; j < cols; j++) {
+                        a[i][j] = predicate.test(i, j) ? newValue : a[i][j];
+                    }
+                }
+            } else {
+                for (int j = 0; j < cols; j++) {
+                    for (int i = 0; i < rows; i++) {
+                        a[i][j] = predicate.test(i, j) ? newValue : a[i][j];
+                    }
+                }
+            }
+        }
+    }
+
+    public CharMatrix map(final CharUnaryOperator func) {
+        final char[][] c = new char[rows][cols];
+
+        if (isParallelable()) {
+            if (rows <= cols) {
+                IntStream.range(0, rows).parallel().forEach(new IntConsumer() {
+                    @Override
+                    public void accept(final int i) {
+                        for (int j = 0; j < cols; j++) {
                             c[i][j] = func.applyAsChar(a[i][j]);
                         }
                     }
                 });
             } else {
-                IntStream.range(0, m).parallel().forEach(new IntConsumer() {
+                IntStream.range(0, cols).parallel().forEach(new IntConsumer() {
                     @Override
                     public void accept(final int j) {
-                        for (int i = 0; i < n; i++) {
+                        for (int i = 0; i < rows; i++) {
                             c[i][j] = func.applyAsChar(a[i][j]);
                         }
                     }
                 });
             }
         } else {
-            if (n <= m) {
-                for (int i = 0; i < n; i++) {
-                    for (int j = 0; j < m; j++) {
+            if (rows <= cols) {
+                for (int i = 0; i < rows; i++) {
+                    for (int j = 0; j < cols; j++) {
                         c[i][j] = func.applyAsChar(a[i][j]);
                     }
                 }
             } else {
-                for (int j = 0; j < m; j++) {
-                    for (int i = 0; i < n; i++) {
+                for (int j = 0; j < cols; j++) {
+                    for (int i = 0; i < rows; i++) {
                         c[i][j] = func.applyAsChar(a[i][j]);
                     }
                 }
@@ -415,42 +504,42 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
     }
 
     public <T> Matrix<T> mapToObj(final Class<T> cls, final CharFunction<? extends T> func) {
-        final T[][] c = N.newArray(N.newArray(cls, 0).getClass(), n);
+        final T[][] c = N.newArray(N.newArray(cls, 0).getClass(), rows);
 
-        for (int i = 0; i < n; i++) {
-            c[i] = N.newArray(cls, m);
+        for (int i = 0; i < rows; i++) {
+            c[i] = N.newArray(cls, cols);
         }
 
         if (isParallelable()) {
-            if (n <= m) {
-                IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+            if (rows <= cols) {
+                IntStream.range(0, rows).parallel().forEach(new IntConsumer() {
                     @Override
                     public void accept(final int i) {
-                        for (int j = 0; j < m; j++) {
+                        for (int j = 0; j < cols; j++) {
                             c[i][j] = func.apply(a[i][j]);
                         }
                     }
                 });
             } else {
-                IntStream.range(0, m).parallel().forEach(new IntConsumer() {
+                IntStream.range(0, cols).parallel().forEach(new IntConsumer() {
                     @Override
                     public void accept(final int j) {
-                        for (int i = 0; i < n; i++) {
+                        for (int i = 0; i < rows; i++) {
                             c[i][j] = func.apply(a[i][j]);
                         }
                     }
                 });
             }
         } else {
-            if (n <= m) {
-                for (int i = 0; i < n; i++) {
-                    for (int j = 0; j < m; j++) {
+            if (rows <= cols) {
+                for (int i = 0; i < rows; i++) {
+                    for (int j = 0; j < cols; j++) {
                         c[i][j] = func.apply(a[i][j]);
                     }
                 }
             } else {
-                for (int j = 0; j < m; j++) {
-                    for (int i = 0; i < n; i++) {
+                for (int j = 0; j < cols; j++) {
+                    for (int i = 0; i < rows; i++) {
                         c[i][j] = func.apply(a[i][j]);
                     }
                 }
@@ -461,7 +550,7 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
     }
 
     public void fill(final char val) {
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < rows; i++) {
             N.fill(a[i], val);
         }
     }
@@ -471,11 +560,11 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
     }
 
     public void fill(final int fromRowIndex, final int fromColumnIndex, final char[][] b) {
-        N.checkFromToIndex(fromRowIndex, n, n);
-        N.checkFromToIndex(fromColumnIndex, m, m);
+        N.checkFromToIndex(fromRowIndex, rows, rows);
+        N.checkFromToIndex(fromColumnIndex, cols, cols);
 
-        for (int i = 0, minLen = N.min(n - fromRowIndex, b.length); i < minLen; i++) {
-            N.copy(b[i], 0, a[i + fromRowIndex], fromColumnIndex, N.min(b[i].length, m - fromColumnIndex));
+        for (int i = 0, minLen = N.min(rows - fromRowIndex, b.length); i < minLen; i++) {
+            N.copy(b[i], 0, a[i + fromRowIndex], fromColumnIndex, N.min(b[i].length, cols - fromColumnIndex));
         }
     }
 
@@ -548,9 +637,9 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
 
     @Override
     public CharMatrix copy() {
-        final char[][] c = new char[n][];
+        final char[][] c = new char[rows][];
 
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < rows; i++) {
             c[i] = a[i].clone();
         }
 
@@ -559,7 +648,7 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
 
     @Override
     public CharMatrix copy(final int fromRowIndex, final int toRowIndex) {
-        N.checkFromToIndex(fromRowIndex, toRowIndex, n);
+        N.checkFromToIndex(fromRowIndex, toRowIndex, rows);
 
         final char[][] c = new char[toRowIndex - fromRowIndex][];
 
@@ -572,8 +661,8 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
 
     @Override
     public CharMatrix copy(final int fromRowIndex, final int toRowIndex, final int fromColumnIndex, final int toColumnIndex) {
-        N.checkFromToIndex(fromRowIndex, toRowIndex, n);
-        N.checkFromToIndex(fromColumnIndex, toColumnIndex, m);
+        N.checkFromToIndex(fromRowIndex, toRowIndex, rows);
+        N.checkFromToIndex(fromColumnIndex, toColumnIndex, cols);
 
         final char[][] c = new char[toRowIndex - fromRowIndex][];
 
@@ -586,18 +675,18 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
 
     @Override
     public CharMatrix rotate90() {
-        final char[][] c = new char[m][n];
+        final char[][] c = new char[cols][rows];
 
-        if (n <= m) {
-            for (int j = 0; j < n; j++) {
-                for (int i = 0; i < m; i++) {
-                    c[i][j] = a[n - j - 1][i];
+        if (rows <= cols) {
+            for (int j = 0; j < rows; j++) {
+                for (int i = 0; i < cols; i++) {
+                    c[i][j] = a[rows - j - 1][i];
                 }
             }
         } else {
-            for (int i = 0; i < m; i++) {
-                for (int j = 0; j < n; j++) {
-                    c[i][j] = a[n - j - 1][i];
+            for (int i = 0; i < cols; i++) {
+                for (int j = 0; j < rows; j++) {
+                    c[i][j] = a[rows - j - 1][i];
                 }
             }
         }
@@ -607,10 +696,10 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
 
     @Override
     public CharMatrix rotate180() {
-        final char[][] c = new char[n][];
+        final char[][] c = new char[rows][];
 
-        for (int i = 0; i < n; i++) {
-            c[i] = a[n - i - 1].clone();
+        for (int i = 0; i < rows; i++) {
+            c[i] = a[rows - i - 1].clone();
             N.reverse(c[i]);
         }
 
@@ -619,18 +708,18 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
 
     @Override
     public CharMatrix rotate270() {
-        final char[][] c = new char[m][n];
+        final char[][] c = new char[cols][rows];
 
-        if (n <= m) {
-            for (int j = 0; j < n; j++) {
-                for (int i = 0; i < m; i++) {
-                    c[i][j] = a[j][m - i - 1];
+        if (rows <= cols) {
+            for (int j = 0; j < rows; j++) {
+                for (int i = 0; i < cols; i++) {
+                    c[i][j] = a[j][cols - i - 1];
                 }
             }
         } else {
-            for (int i = 0; i < m; i++) {
-                for (int j = 0; j < n; j++) {
-                    c[i][j] = a[j][m - i - 1];
+            for (int i = 0; i < cols; i++) {
+                for (int j = 0; j < rows; j++) {
+                    c[i][j] = a[j][cols - i - 1];
                 }
             }
         }
@@ -640,17 +729,17 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
 
     @Override
     public CharMatrix transpose() {
-        final char[][] c = new char[m][n];
+        final char[][] c = new char[cols][rows];
 
-        if (n <= m) {
-            for (int j = 0; j < n; j++) {
-                for (int i = 0; i < m; i++) {
+        if (rows <= cols) {
+            for (int j = 0; j < rows; j++) {
+                for (int i = 0; i < cols; i++) {
                     c[i][j] = a[j][i];
                 }
             }
         } else {
-            for (int i = 0; i < m; i++) {
-                for (int j = 0; j < n; j++) {
+            for (int i = 0; i < cols; i++) {
+                for (int j = 0; j < rows; j++) {
                     c[i][j] = a[j][i];
                 }
             }
@@ -660,26 +749,47 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
     }
 
     @Override
-    public CharMatrix reshape(final int n, final int m) {
-        final char[][] c = new char[n][m];
+    public CharMatrix reshape(final int newRows, final int newCols) {
+        final char[][] c = new char[newRows][newCols];
 
-        if (n == 0 || m == 0 || N.isNullOrEmpty(a)) {
+        if (newRows == 0 || newCols == 0 || N.isNullOrEmpty(a)) {
             return new CharMatrix(c);
         }
 
         if (a.length == 1) {
             final char[] a0 = a[0];
 
-            for (int i = 0, len = (int) N.min(n, count % m == 0 ? count / m : count / m + 1); i < len; i++) {
-                N.copy(a0, i * m, c[i], 0, (int) N.min(m, count - i * m));
+            for (int i = 0, len = (int) N.min(newRows, count % newCols == 0 ? count / newCols : count / newCols + 1); i < len; i++) {
+                N.copy(a0, i * newCols, c[i], 0, (int) N.min(newCols, count - i * newCols));
             }
         } else {
             long cnt = 0;
 
-            for (int i = 0, len = (int) N.min(n, count % m == 0 ? count / m : count / m + 1); i < len; i++) {
-                for (int j = 0, col = (int) N.min(m, count - i * m); j < col; j++, cnt++) {
-                    c[i][j] = a[(int) (cnt / this.m)][(int) (cnt % this.m)];
+            for (int i = 0, len = (int) N.min(newRows, count % newCols == 0 ? count / newCols : count / newCols + 1); i < len; i++) {
+                for (int j = 0, col = (int) N.min(newCols, count - i * newCols); j < col; j++, cnt++) {
+                    c[i][j] = a[(int) (cnt / this.cols)][(int) (cnt % this.cols)];
                 }
+            }
+        }
+
+        return new CharMatrix(c);
+    }
+
+    @Override
+    public CharMatrix repmat(final int rowRepeats, final int colRepeats) {
+        N.checkArgument(rowRepeats > 0 && colRepeats > 0, "rowRepeats=%s and colRepeats=%s must be bigger than 0", rowRepeats, colRepeats);
+
+        final char[][] c = new char[rows * rowRepeats][cols * colRepeats];
+
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < colRepeats; j++) {
+                N.copy(a[i], 0, c[i], j * cols, cols);
+            }
+        }
+
+        for (int i = 1; i < rowRepeats; i++) {
+            for (int j = 0; j < rows; j++) {
+                N.copy(c[j], 0, c[i * rows + j], 0, c[j].length);
             }
         }
 
@@ -688,10 +798,10 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
 
     @Override
     public CharList flatten() {
-        final char[] c = new char[n * m];
+        final char[] c = new char[rows * cols];
 
-        for (int i = 0; i < n; i++) {
-            N.copy(a[i], 0, c, i * m, m);
+        for (int i = 0; i < rows; i++) {
+            N.copy(a[i], 0, c, i * cols, cols);
         }
 
         return CharList.of(c);
@@ -704,16 +814,16 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
      * @see IntMatrix#vstack(IntMatrix)
      */
     public CharMatrix vstack(final CharMatrix b) {
-        N.checkArgument(this.m == b.m, "The count of column in this matrix and the specified matrix are not equals");
+        N.checkArgument(this.cols == b.cols, "The count of column in this matrix and the specified matrix are not equals");
 
-        final char[][] c = new char[this.n + b.n][];
+        final char[][] c = new char[this.rows + b.rows][];
         int j = 0;
 
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < rows; i++) {
             c[j++] = a[i].clone();
         }
 
-        for (int i = 0; i < b.n; i++) {
+        for (int i = 0; i < b.rows; i++) {
             c[j++] = b.a[i].clone();
         }
 
@@ -727,53 +837,53 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
      * @see IntMatrix#hstack(IntMatrix)
      */
     public CharMatrix hstack(final CharMatrix b) {
-        N.checkArgument(this.n == b.n, "The count of row in this matrix and the specified matrix are not equals");
+        N.checkArgument(this.rows == b.rows, "The count of row in this matrix and the specified matrix are not equals");
 
-        final char[][] c = new char[n][m + b.m];
+        final char[][] c = new char[rows][cols + b.cols];
 
-        for (int i = 0; i < n; i++) {
-            N.copy(a[i], 0, c[i], 0, m);
-            N.copy(b.a[i], 0, c[i], m, b.m);
+        for (int i = 0; i < rows; i++) {
+            N.copy(a[i], 0, c[i], 0, cols);
+            N.copy(b.a[i], 0, c[i], cols, b.cols);
         }
 
         return CharMatrix.of(c);
     }
 
     public CharMatrix add(final CharMatrix b) {
-        N.checkArgument(this.n == b.n && this.m == b.m, "The 'n' and length are not equal");
+        N.checkArgument(this.rows == b.rows && this.cols == b.cols, "The 'n' and length are not equal");
 
-        final char[][] c = new char[n][m];
+        final char[][] c = new char[rows][cols];
 
         if (isParallelable()) {
-            if (n <= m) {
-                IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+            if (rows <= cols) {
+                IntStream.range(0, rows).parallel().forEach(new IntConsumer() {
                     @Override
                     public void accept(final int i) {
-                        for (int j = 0; j < m; j++) {
+                        for (int j = 0; j < cols; j++) {
                             c[i][j] = (char) (a[i][j] + b.a[i][j]);
                         }
                     }
                 });
             } else {
-                IntStream.range(0, m).parallel().forEach(new IntConsumer() {
+                IntStream.range(0, cols).parallel().forEach(new IntConsumer() {
                     @Override
                     public void accept(final int j) {
-                        for (int i = 0; i < n; i++) {
+                        for (int i = 0; i < rows; i++) {
                             c[i][j] = (char) (a[i][j] + b.a[i][j]);
                         }
                     }
                 });
             }
         } else {
-            if (n <= m) {
-                for (int i = 0; i < n; i++) {
-                    for (int j = 0; j < m; j++) {
+            if (rows <= cols) {
+                for (int i = 0; i < rows; i++) {
+                    for (int j = 0; j < cols; j++) {
                         c[i][j] = (char) (a[i][j] + b.a[i][j]);
                     }
                 }
             } else {
-                for (int j = 0; j < m; j++) {
-                    for (int i = 0; i < n; i++) {
+                for (int j = 0; j < cols; j++) {
+                    for (int i = 0; i < rows; i++) {
                         c[i][j] = (char) (a[i][j] + b.a[i][j]);
                     }
                 }
@@ -784,40 +894,40 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
     }
 
     public CharMatrix subtract(final CharMatrix b) {
-        N.checkArgument(this.n == b.n && this.m == b.m, "The 'n' and length are not equal");
+        N.checkArgument(this.rows == b.rows && this.cols == b.cols, "The 'n' and length are not equal");
 
-        final char[][] c = new char[n][m];
+        final char[][] c = new char[rows][cols];
 
         if (isParallelable()) {
-            if (n <= m) {
-                IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+            if (rows <= cols) {
+                IntStream.range(0, rows).parallel().forEach(new IntConsumer() {
                     @Override
                     public void accept(final int i) {
-                        for (int j = 0; j < m; j++) {
+                        for (int j = 0; j < cols; j++) {
                             c[i][j] = (char) (a[i][j] - b.a[i][j]);
                         }
                     }
                 });
             } else {
-                IntStream.range(0, m).parallel().forEach(new IntConsumer() {
+                IntStream.range(0, cols).parallel().forEach(new IntConsumer() {
                     @Override
                     public void accept(final int j) {
-                        for (int i = 0; i < n; i++) {
+                        for (int i = 0; i < rows; i++) {
                             c[i][j] = (char) (a[i][j] - b.a[i][j]);
                         }
                     }
                 });
             }
         } else {
-            if (n <= m) {
-                for (int i = 0; i < n; i++) {
-                    for (int j = 0; j < m; j++) {
+            if (rows <= cols) {
+                for (int i = 0; i < rows; i++) {
+                    for (int j = 0; j < cols; j++) {
                         c[i][j] = (char) (a[i][j] - b.a[i][j]);
                     }
                 }
             } else {
-                for (int j = 0; j < m; j++) {
-                    for (int i = 0; i < n; i++) {
+                for (int j = 0; j < cols; j++) {
+                    for (int i = 0; i < rows; i++) {
                         c[i][j] = (char) (a[i][j] - b.a[i][j]);
                     }
                 }
@@ -828,54 +938,54 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
     }
 
     public CharMatrix multiply(final CharMatrix b) {
-        N.checkArgument(this.m == b.n, "Illegal matrix dimensions");
+        N.checkArgument(this.cols == b.rows, "Illegal matrix dimensions");
 
-        final char[][] c = new char[n][b.m];
+        final char[][] c = new char[rows][b.cols];
         final char[][] a2 = b.a;
 
-        if (isParallelable(b.m)) {
-            if (N.min(n, m, b.m) == n) {
-                if (N.min(m, b.m) == m) {
-                    IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+        if (isParallelable(b.cols)) {
+            if (N.min(rows, cols, b.cols) == rows) {
+                if (N.min(cols, b.cols) == cols) {
+                    IntStream.range(0, rows).parallel().forEach(new IntConsumer() {
                         @Override
                         public void accept(final int i) {
-                            for (int k = 0; k < m; k++) {
-                                for (int j = 0; j < b.m; j++) {
+                            for (int k = 0; k < cols; k++) {
+                                for (int j = 0; j < b.cols; j++) {
                                     c[i][j] += a[i][k] * a2[k][j];
                                 }
                             }
                         }
                     });
                 } else {
-                    IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+                    IntStream.range(0, rows).parallel().forEach(new IntConsumer() {
                         @Override
                         public void accept(final int i) {
-                            for (int j = 0; j < b.m; j++) {
-                                for (int k = 0; k < m; k++) {
+                            for (int j = 0; j < b.cols; j++) {
+                                for (int k = 0; k < cols; k++) {
                                     c[i][j] += a[i][k] * a2[k][j];
                                 }
                             }
                         }
                     });
                 }
-            } else if (N.min(n, m, b.m) == m) {
-                if (N.min(n, b.m) == n) {
-                    IntStream.range(0, m).parallel().forEach(new IntConsumer() {
+            } else if (N.min(rows, cols, b.cols) == cols) {
+                if (N.min(rows, b.cols) == rows) {
+                    IntStream.range(0, cols).parallel().forEach(new IntConsumer() {
                         @Override
                         public void accept(final int k) {
-                            for (int i = 0; i < n; i++) {
-                                for (int j = 0; j < b.m; j++) {
+                            for (int i = 0; i < rows; i++) {
+                                for (int j = 0; j < b.cols; j++) {
                                     c[i][j] += a[i][k] * a2[k][j];
                                 }
                             }
                         }
                     });
                 } else {
-                    IntStream.range(0, m).parallel().forEach(new IntConsumer() {
+                    IntStream.range(0, cols).parallel().forEach(new IntConsumer() {
                         @Override
                         public void accept(final int k) {
-                            for (int j = 0; j < b.m; j++) {
-                                for (int i = 0; i < n; i++) {
+                            for (int j = 0; j < b.cols; j++) {
+                                for (int i = 0; i < rows; i++) {
                                     c[i][j] += a[i][k] * a2[k][j];
                                 }
                             }
@@ -883,23 +993,23 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
                     });
                 }
             } else {
-                if (N.min(n, m) == n) {
-                    IntStream.range(0, b.m).parallel().forEach(new IntConsumer() {
+                if (N.min(rows, cols) == rows) {
+                    IntStream.range(0, b.cols).parallel().forEach(new IntConsumer() {
                         @Override
                         public void accept(final int j) {
-                            for (int i = 0; i < n; i++) {
-                                for (int k = 0; k < m; k++) {
+                            for (int i = 0; i < rows; i++) {
+                                for (int k = 0; k < cols; k++) {
                                     c[i][j] += a[i][k] * a2[k][j];
                                 }
                             }
                         }
                     });
                 } else {
-                    IntStream.range(0, b.m).parallel().forEach(new IntConsumer() {
+                    IntStream.range(0, b.cols).parallel().forEach(new IntConsumer() {
                         @Override
                         public void accept(final int j) {
-                            for (int k = 0; k < m; k++) {
-                                for (int i = 0; i < n; i++) {
+                            for (int k = 0; k < cols; k++) {
+                                for (int i = 0; i < rows; i++) {
                                     c[i][j] += a[i][k] * a2[k][j];
                                 }
                             }
@@ -908,55 +1018,55 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
                 }
             }
         } else {
-            if (N.min(n, m, b.m) == n) {
-                if (N.min(m, b.m) == m) {
-                    for (int i = 0; i < n; i++) {
-                        for (int k = 0; k < m; k++) {
-                            for (int j = 0; j < b.m; j++) {
+            if (N.min(rows, cols, b.cols) == rows) {
+                if (N.min(cols, b.cols) == cols) {
+                    for (int i = 0; i < rows; i++) {
+                        for (int k = 0; k < cols; k++) {
+                            for (int j = 0; j < b.cols; j++) {
                                 c[i][j] += a[i][k] * a2[k][j];
                             }
                         }
                     }
                 } else {
-                    for (int i = 0; i < n; i++) {
-                        for (int j = 0; j < b.m; j++) {
-                            for (int k = 0; k < m; k++) {
+                    for (int i = 0; i < rows; i++) {
+                        for (int j = 0; j < b.cols; j++) {
+                            for (int k = 0; k < cols; k++) {
                                 c[i][j] += a[i][k] * a2[k][j];
                             }
                         }
                     }
                 }
-            } else if (N.min(n, m, b.m) == m) {
-                if (N.min(n, b.m) == n) {
-                    for (int k = 0; k < m; k++) {
-                        for (int i = 0; i < n; i++) {
-                            for (int j = 0; j < b.m; j++) {
+            } else if (N.min(rows, cols, b.cols) == cols) {
+                if (N.min(rows, b.cols) == rows) {
+                    for (int k = 0; k < cols; k++) {
+                        for (int i = 0; i < rows; i++) {
+                            for (int j = 0; j < b.cols; j++) {
                                 c[i][j] += a[i][k] * a2[k][j];
                             }
                         }
                     }
                 } else {
-                    for (int k = 0; k < m; k++) {
-                        for (int j = 0; j < b.m; j++) {
-                            for (int i = 0; i < n; i++) {
+                    for (int k = 0; k < cols; k++) {
+                        for (int j = 0; j < b.cols; j++) {
+                            for (int i = 0; i < rows; i++) {
                                 c[i][j] += a[i][k] * a2[k][j];
                             }
                         }
                     }
                 }
             } else {
-                if (N.min(n, m) == n) {
-                    for (int j = 0; j < b.m; j++) {
-                        for (int i = 0; i < n; i++) {
-                            for (int k = 0; k < m; k++) {
+                if (N.min(rows, cols) == rows) {
+                    for (int j = 0; j < b.cols; j++) {
+                        for (int i = 0; i < rows; i++) {
+                            for (int k = 0; k < cols; k++) {
                                 c[i][j] += a[i][k] * a2[k][j];
                             }
                         }
                     }
                 } else {
-                    for (int j = 0; j < b.m; j++) {
-                        for (int k = 0; k < m; k++) {
-                            for (int i = 0; i < n; i++) {
+                    for (int j = 0; j < b.cols; j++) {
+                        for (int k = 0; k < cols; k++) {
+                            for (int i = 0; i < rows; i++) {
                                 c[i][j] += a[i][k] * a2[k][j];
                             }
                         }
@@ -969,17 +1079,17 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
     }
 
     public Matrix<Character> boxed() {
-        final Character[][] c = new Character[n][m];
+        final Character[][] c = new Character[rows][cols];
 
-        if (n <= m) {
-            for (int i = 0; i < n; i++) {
-                for (int j = 0; j < m; j++) {
+        if (rows <= cols) {
+            for (int i = 0; i < rows; i++) {
+                for (int j = 0; j < cols; j++) {
                     c[i][j] = a[i][j];
                 }
             }
         } else {
-            for (int j = 0; j < m; j++) {
-                for (int i = 0; i < n; i++) {
+            for (int j = 0; j < cols; j++) {
+                for (int i = 0; i < rows; i++) {
                     c[i][j] = a[i][j];
                 }
             }
@@ -993,17 +1103,17 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
     }
 
     public LongMatrix toLongMatrix() {
-        final long[][] c = new long[n][m];
+        final long[][] c = new long[rows][cols];
 
-        if (n <= m) {
-            for (int i = 0; i < n; i++) {
-                for (int j = 0; j < m; j++) {
+        if (rows <= cols) {
+            for (int i = 0; i < rows; i++) {
+                for (int j = 0; j < cols; j++) {
                     c[i][j] = a[i][j];
                 }
             }
         } else {
-            for (int j = 0; j < m; j++) {
-                for (int i = 0; i < n; i++) {
+            for (int j = 0; j < cols; j++) {
+                for (int i = 0; i < rows; i++) {
                     c[i][j] = a[i][j];
                 }
             }
@@ -1013,17 +1123,17 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
     }
 
     public FloatMatrix toFloatMatrix() {
-        final float[][] c = new float[n][m];
+        final float[][] c = new float[rows][cols];
 
-        if (n <= m) {
-            for (int i = 0; i < n; i++) {
-                for (int j = 0; j < m; j++) {
+        if (rows <= cols) {
+            for (int i = 0; i < rows; i++) {
+                for (int j = 0; j < cols; j++) {
                     c[i][j] = a[i][j];
                 }
             }
         } else {
-            for (int j = 0; j < m; j++) {
-                for (int i = 0; i < n; i++) {
+            for (int j = 0; j < cols; j++) {
+                for (int i = 0; i < rows; i++) {
                     c[i][j] = a[i][j];
                 }
             }
@@ -1033,17 +1143,17 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
     }
 
     public DoubleMatrix toDoubleMatrix() {
-        final double[][] c = new double[n][m];
+        final double[][] c = new double[rows][cols];
 
-        if (n <= m) {
-            for (int i = 0; i < n; i++) {
-                for (int j = 0; j < m; j++) {
+        if (rows <= cols) {
+            for (int i = 0; i < rows; i++) {
+                for (int j = 0; j < cols; j++) {
                     c[i][j] = a[i][j];
                 }
             }
         } else {
-            for (int j = 0; j < m; j++) {
-                for (int i = 0; i < n; i++) {
+            for (int j = 0; j < cols; j++) {
+                for (int i = 0; i < rows; i++) {
                     c[i][j] = a[i][j];
                 }
             }
@@ -1055,39 +1165,39 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
     public CharMatrix zipWith(final CharMatrix matrixB, final CharBiFunction<Character> zipFunction) {
         N.checkArgument(isSameShape(matrixB), "Can't zip two matrices which have different shape.");
 
-        final char[][] result = new char[n][m];
+        final char[][] result = new char[rows][cols];
         final char[][] b = matrixB.a;
 
         if (isParallelable()) {
-            if (n <= m) {
-                IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+            if (rows <= cols) {
+                IntStream.range(0, rows).parallel().forEach(new IntConsumer() {
                     @Override
                     public void accept(final int i) {
-                        for (int j = 0; j < m; j++) {
+                        for (int j = 0; j < cols; j++) {
                             result[i][j] = zipFunction.apply(a[i][j], b[i][j]);
                         }
                     }
                 });
             } else {
-                IntStream.range(0, m).parallel().forEach(new IntConsumer() {
+                IntStream.range(0, cols).parallel().forEach(new IntConsumer() {
                     @Override
                     public void accept(final int j) {
-                        for (int i = 0; i < n; i++) {
+                        for (int i = 0; i < rows; i++) {
                             result[i][j] = zipFunction.apply(a[i][j], b[i][j]);
                         }
                     }
                 });
             }
         } else {
-            if (n <= m) {
-                for (int i = 0; i < n; i++) {
-                    for (int j = 0; j < m; j++) {
+            if (rows <= cols) {
+                for (int i = 0; i < rows; i++) {
+                    for (int j = 0; j < cols; j++) {
                         result[i][j] = zipFunction.apply(a[i][j], b[i][j]);
                     }
                 }
             } else {
-                for (int j = 0; j < m; j++) {
-                    for (int i = 0; i < n; i++) {
+                for (int j = 0; j < cols; j++) {
+                    for (int i = 0; i < rows; i++) {
                         result[i][j] = zipFunction.apply(a[i][j], b[i][j]);
                     }
                 }
@@ -1100,40 +1210,40 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
     public CharMatrix zipWith(final CharMatrix matrixB, final CharMatrix matrixC, final CharTriFunction<Character> zipFunction) {
         N.checkArgument(isSameShape(matrixB) && isSameShape(matrixC), "Can't zip three matrices which have different shape.");
 
-        final char[][] result = new char[n][m];
+        final char[][] result = new char[rows][cols];
         final char[][] b = matrixB.a;
         final char[][] c = matrixC.a;
 
         if (isParallelable()) {
-            if (n <= m) {
-                IntStream.range(0, n).parallel().forEach(new IntConsumer() {
+            if (rows <= cols) {
+                IntStream.range(0, rows).parallel().forEach(new IntConsumer() {
                     @Override
                     public void accept(final int i) {
-                        for (int j = 0; j < m; j++) {
+                        for (int j = 0; j < cols; j++) {
                             result[i][j] = zipFunction.apply(a[i][j], b[i][j], c[i][j]);
                         }
                     }
                 });
             } else {
-                IntStream.range(0, m).parallel().forEach(new IntConsumer() {
+                IntStream.range(0, cols).parallel().forEach(new IntConsumer() {
                     @Override
                     public void accept(final int j) {
-                        for (int i = 0; i < n; i++) {
+                        for (int i = 0; i < rows; i++) {
                             result[i][j] = zipFunction.apply(a[i][j], b[i][j], c[i][j]);
                         }
                     }
                 });
             }
         } else {
-            if (n <= m) {
-                for (int i = 0; i < n; i++) {
-                    for (int j = 0; j < m; j++) {
+            if (rows <= cols) {
+                for (int i = 0; i < rows; i++) {
+                    for (int j = 0; j < cols; j++) {
                         result[i][j] = zipFunction.apply(a[i][j], b[i][j], c[i][j]);
                     }
                 }
             } else {
-                for (int j = 0; j < m; j++) {
-                    for (int i = 0; i < n; i++) {
+                for (int j = 0; j < cols; j++) {
+                    for (int i = 0; i < rows; i++) {
                         result[i][j] = zipFunction.apply(a[i][j], b[i][j], c[i][j]);
                     }
                 }
@@ -1149,14 +1259,14 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
      */
     @Override
     public CharStream streamLU2RD() {
-        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
+        N.checkState(rows == cols, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", rows, cols);
 
         if (isEmpty()) {
             return CharStream.empty();
         }
 
         return CharStream.of(new ExCharIterator() {
-            private final int toIndex = n;
+            private final int toIndex = rows;
             private int cursor = 0;
 
             @Override
@@ -1191,14 +1301,14 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
      */
     @Override
     public CharStream streamRU2LD() {
-        N.checkState(n == m, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", n, m);
+        N.checkState(rows == cols, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", rows, cols);
 
         if (isEmpty()) {
             return CharStream.empty();
         }
 
         return CharStream.of(new ExCharIterator() {
-            private final int toIndex = n;
+            private final int toIndex = rows;
             private int cursor = 0;
 
             @Override
@@ -1212,7 +1322,7 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
                     throw new NoSuchElementException();
                 }
 
-                return a[cursor][n - ++cursor];
+                return a[cursor][rows - ++cursor];
             }
 
             @Override
@@ -1233,7 +1343,7 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
      */
     @Override
     public CharStream streamH() {
-        return streamH(0, n);
+        return streamH(0, rows);
     }
 
     @Override
@@ -1249,7 +1359,7 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
      */
     @Override
     public CharStream streamH(final int fromRowIndex, final int toRowIndex) {
-        N.checkFromToIndex(fromRowIndex, toRowIndex, n);
+        N.checkFromToIndex(fromRowIndex, toRowIndex, rows);
 
         if (isEmpty()) {
             return CharStream.empty();
@@ -1272,7 +1382,7 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
 
                 final char result = a[i][j++];
 
-                if (j >= m) {
+                if (j >= cols) {
                     i++;
                     j = 0;
                 }
@@ -1282,18 +1392,18 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
 
             @Override
             public void skip(long n) {
-                if (n >= (toRowIndex - i) * m * 1L - j) {
+                if (n >= (toRowIndex - i) * cols * 1L - j) {
                     i = toRowIndex;
                     j = 0;
                 } else {
-                    i += (n + j) / m;
-                    j += (n + j) % m;
+                    i += (n + j) / cols;
+                    j += (n + j) % cols;
                 }
             }
 
             @Override
             public long count() {
-                return (toRowIndex - i) * m * 1L - j;
+                return (toRowIndex - i) * cols * 1L - j;
             }
 
             @Override
@@ -1304,7 +1414,7 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
                 for (int k = 0; k < len; k++) {
                     c[k] = a[i][j++];
 
-                    if (j >= m) {
+                    if (j >= cols) {
                         i++;
                         j = 0;
                     }
@@ -1322,7 +1432,7 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
     @Override
     @Beta
     public CharStream streamV() {
-        return streamV(0, m);
+        return streamV(0, cols);
     }
 
     @Override
@@ -1339,7 +1449,7 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
     @Override
     @Beta
     public CharStream streamV(final int fromColumnIndex, final int toColumnIndex) {
-        N.checkFromToIndex(fromColumnIndex, toColumnIndex, m);
+        N.checkFromToIndex(fromColumnIndex, toColumnIndex, cols);
 
         if (isEmpty()) {
             return CharStream.empty();
@@ -1362,7 +1472,7 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
 
                 final char result = a[i++][j];
 
-                if (i >= n) {
+                if (i >= rows) {
                     i = 0;
                     j++;
                 }
@@ -1372,18 +1482,18 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
 
             @Override
             public void skip(long n) {
-                if (n >= (toColumnIndex - j) * CharMatrix.this.n * 1L - i) {
+                if (n >= (toColumnIndex - j) * CharMatrix.this.rows * 1L - i) {
                     i = 0;
                     j = toColumnIndex;
                 } else {
-                    i += (n + i) % CharMatrix.this.n;
-                    j += (n + i) / CharMatrix.this.n;
+                    i += (n + i) % CharMatrix.this.rows;
+                    j += (n + i) / CharMatrix.this.rows;
                 }
             }
 
             @Override
             public long count() {
-                return (toColumnIndex - j) * n - i;
+                return (toColumnIndex - j) * rows - i;
             }
 
             @Override
@@ -1394,7 +1504,7 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
                 for (int k = 0; k < len; k++) {
                     c[k] = a[i++][j];
 
-                    if (i >= n) {
+                    if (i >= rows) {
                         i = 0;
                         j++;
                     }
@@ -1411,7 +1521,7 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
      */
     @Override
     public Stream<CharStream> streamR() {
-        return streamR(0, n);
+        return streamR(0, rows);
     }
 
     /**
@@ -1422,7 +1532,7 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
      */
     @Override
     public Stream<CharStream> streamR(final int fromRowIndex, final int toRowIndex) {
-        N.checkFromToIndex(fromRowIndex, toRowIndex, n);
+        N.checkFromToIndex(fromRowIndex, toRowIndex, rows);
 
         if (isEmpty()) {
             return Stream.empty();
@@ -1465,7 +1575,7 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
     @Override
     @Beta
     public Stream<CharStream> streamC() {
-        return streamC(0, m);
+        return streamC(0, cols);
     }
 
     /**
@@ -1477,7 +1587,7 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
     @Override
     @Beta
     public Stream<CharStream> streamC(final int fromColumnIndex, final int toColumnIndex) {
-        N.checkFromToIndex(fromColumnIndex, toColumnIndex, m);
+        N.checkFromToIndex(fromColumnIndex, toColumnIndex, cols);
 
         if (isEmpty()) {
             return Stream.empty();
@@ -1500,7 +1610,7 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
 
                 return CharStream.of(new ExCharIterator() {
                     private final int columnIndex = cursor++;
-                    private final int toIndex2 = n;
+                    private final int toIndex2 = rows;
                     private int cursor2 = 0;
 
                     @Override

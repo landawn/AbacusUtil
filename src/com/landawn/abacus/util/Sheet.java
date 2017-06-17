@@ -34,6 +34,8 @@ import com.landawn.abacus.parser.ParserFactory;
 import com.landawn.abacus.util.Pair.IntPair;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.Function;
+import com.landawn.abacus.util.function.IntBiFunction;
+import com.landawn.abacus.util.function.IntBiPredicate;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.stream.ExIterator;
@@ -939,6 +941,35 @@ public final class Sheet<R, C, E> {
         }
     }
 
+    /**
+     * Update all elements based on points
+     * 
+     * @param func
+     */
+    public void updateAll(IntBiFunction<E> func) {
+        checkFrozen();
+
+        if (rowLength() > 0 && columnLength() > 0) {
+            this.init();
+
+            final int rowLength = rowLength();
+            int columnIndex = 0;
+
+            for (List<E> column : _columnList) {
+                for (int rowIndex = 0; rowIndex < rowLength; rowIndex++) {
+                    column.set(rowIndex, func.apply(rowIndex, columnIndex));
+                }
+
+                columnIndex++;
+            }
+        }
+    }
+
+    /**
+     * 
+     * @param predicate
+     * @param newValue
+     */
     public void replaceIf(final Predicate<? super E> predicate, final E newValue) {
         checkFrozen();
 
@@ -954,6 +985,34 @@ public final class Sheet<R, C, E> {
 
                     column.set(rowIndex, predicate.test(val) ? newValue : val);
                 }
+            }
+        }
+    }
+
+    /**
+     * Replace elements by <code>Predicate.test(i, j)</code> based on points
+     * 
+     * @param predicate
+     * @param newValue
+     */
+    public void replaceIf(final IntBiPredicate predicate, final E newValue) {
+        checkFrozen();
+
+        if (rowLength() > 0 && columnLength() > 0) {
+            this.init();
+
+            final int rowLength = rowLength();
+            int columnIndex = 0;
+            E val = null;
+
+            for (List<E> column : _columnList) {
+                for (int rowIndex = 0; rowIndex < rowLength; rowIndex++) {
+                    val = column.get(rowIndex);
+
+                    column.set(rowIndex, predicate.test(rowIndex, columnIndex) ? newValue : val);
+                }
+
+                columnIndex++;
             }
         }
     }

@@ -5,7 +5,11 @@
 
 2, Add replaceIf to Matrix/IntMatrix/.../DataSet/Sheet.
 
-3, Improvements and bug fix.
+3*, Rename Matrix.n to rows, Matrix.m to cols.
+
+4, Add repmat to Matrix/IntMatrix/...
+
+5, Improvements and bug fix.
 
 
 ========Changes in 0.9.72=========================================================================
