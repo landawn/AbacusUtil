@@ -776,6 +776,41 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
         return new ByteMatrix(c);
     }
 
+    /**
+     * Repeat elements <code>rowRepeats</code> times in row direction and <code>colRepeats</code> times in column direction.
+     * 
+     * @param rowRepeats
+     * @param colRepeats
+     * @return a new matrix
+     */
+    @Override
+    public ByteMatrix repelem(final int rowRepeats, final int colRepeats) {
+        N.checkArgument(rowRepeats > 0 && colRepeats > 0, "rowRepeats=%s and colRepeats=%s must be bigger than 0", rowRepeats, colRepeats);
+
+        final byte[][] c = new byte[rows * rowRepeats][cols * colRepeats];
+
+        for (int i = 0; i < rows; i++) {
+            final byte[] fr = c[i * rowRepeats];
+
+            for (int j = 0; j < cols; j++) {
+                N.copy(Array.repeat(a[i][j], colRepeats), 0, fr, j * colRepeats, colRepeats);
+            }
+
+            for (int k = 1; k < rowRepeats; k++) {
+                N.copy(fr, 0, c[i * rowRepeats + k], 0, fr.length);
+            }
+        }
+
+        return new ByteMatrix(c);
+    }
+
+    /**
+     * Repeat this matrix <code>rowRepeats</code> times in row direction and <code>colRepeats</code> times in column direction.
+     * 
+     * @param rowRepeats
+     * @param colRepeats
+     * @return a new matrix
+     */
     @Override
     public ByteMatrix repmat(final int rowRepeats, final int colRepeats) {
         N.checkArgument(rowRepeats > 0 && colRepeats > 0, "rowRepeats=%s and colRepeats=%s must be bigger than 0", rowRepeats, colRepeats);

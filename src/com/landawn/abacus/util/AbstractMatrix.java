@@ -149,6 +149,22 @@ public abstract class AbstractMatrix<A, PL, HS, RS, X extends AbstractMatrix<A, 
         return this.rows == x.rows && this.cols == x.cols;
     }
 
+    /**
+     * Repeat elements <code>rowRepeats</code> times in row direction and <code>colRepeats</code> times in column direction.
+     * 
+     * @param rowRepeats
+     * @param colRepeats
+     * @return a new matrix
+     */
+    public abstract X repelem(int rowRepeats, int colRepeats);
+
+    /**
+     * Repeat this matrix <code>rowRepeats</code> times in row direction and <code>colRepeats</code> times in column direction.
+     * 
+     * @param rowRepeats
+     * @param colRepeats
+     * @return a new matrix
+     */
     public abstract X repmat(int rowRepeats, int colRepeats);
 
     public abstract PL flatten();
