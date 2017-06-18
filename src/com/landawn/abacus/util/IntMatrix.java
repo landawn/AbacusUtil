@@ -1677,6 +1677,21 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntStream, S
         return a == null ? 0 : a.length;
     }
 
+    public void forEach(final IntConsumer action) {
+        forEach(0, rows, 0, cols, action);
+    }
+
+    public void forEach(final int fromRowIndex, final int toRowIndex, final int fromColumnIndex, final int toColumnIndex, final IntConsumer action) {
+        N.checkFromToIndex(fromRowIndex, toRowIndex, rows);
+        N.checkFromToIndex(fromColumnIndex, toColumnIndex, cols);
+
+        for (int i = fromRowIndex; i < toRowIndex; i++) {
+            for (int j = fromColumnIndex; j < toColumnIndex; j++) {
+                action.accept(a[i][j]);
+            }
+        }
+    }
+
     @Override
     public int hashCode() {
         return N.deepHashCode(a);

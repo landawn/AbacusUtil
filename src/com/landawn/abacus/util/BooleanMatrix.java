@@ -19,6 +19,7 @@ import java.util.NoSuchElementException;
 import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.util.Pair.IntPair;
 import com.landawn.abacus.util.function.BooleanBiFunction;
+import com.landawn.abacus.util.function.BooleanConsumer;
 import com.landawn.abacus.util.function.BooleanFunction;
 import com.landawn.abacus.util.function.BooleanPredicate;
 import com.landawn.abacus.util.function.BooleanTriFunction;
@@ -1358,6 +1359,21 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
     @Override
     protected int length(boolean[] a) {
         return a == null ? 0 : a.length;
+    }
+
+    public void forEach(final BooleanConsumer action) {
+        forEach(0, rows, 0, cols, action);
+    }
+
+    public void forEach(final int fromRowIndex, final int toRowIndex, final int fromColumnIndex, final int toColumnIndex, final BooleanConsumer action) {
+        N.checkFromToIndex(fromRowIndex, toRowIndex, rows);
+        N.checkFromToIndex(fromColumnIndex, toColumnIndex, cols);
+
+        for (int i = fromRowIndex; i < toRowIndex; i++) {
+            for (int j = fromColumnIndex; j < toColumnIndex; j++) {
+                action.accept(a[i][j]);
+            }
+        }
     }
 
     @Override

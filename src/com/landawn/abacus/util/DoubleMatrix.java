@@ -19,6 +19,7 @@ import java.util.NoSuchElementException;
 import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.util.Pair.IntPair;
 import com.landawn.abacus.util.function.DoubleBiFunction;
+import com.landawn.abacus.util.function.DoubleConsumer;
 import com.landawn.abacus.util.function.DoubleFunction;
 import com.landawn.abacus.util.function.DoublePredicate;
 import com.landawn.abacus.util.function.DoubleTriFunction;
@@ -1625,6 +1626,21 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
     @Override
     protected int length(double[] a) {
         return a == null ? 0 : a.length;
+    }
+
+    public void forEach(final DoubleConsumer action) {
+        forEach(0, rows, 0, cols, action);
+    }
+
+    public void forEach(final int fromRowIndex, final int toRowIndex, final int fromColumnIndex, final int toColumnIndex, final DoubleConsumer action) {
+        N.checkFromToIndex(fromRowIndex, toRowIndex, rows);
+        N.checkFromToIndex(fromColumnIndex, toColumnIndex, cols);
+
+        for (int i = fromRowIndex; i < toRowIndex; i++) {
+            for (int j = fromColumnIndex; j < toColumnIndex; j++) {
+                action.accept(a[i][j]);
+            }
+        }
     }
 
     @Override

@@ -22,6 +22,7 @@ import com.landawn.abacus.util.function.IntBiFunction;
 import com.landawn.abacus.util.function.IntBiPredicate;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.function.LongBiFunction;
+import com.landawn.abacus.util.function.LongConsumer;
 import com.landawn.abacus.util.function.LongFunction;
 import com.landawn.abacus.util.function.LongPredicate;
 import com.landawn.abacus.util.function.LongTriFunction;
@@ -1631,6 +1632,21 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongStrea
     @Override
     protected int length(long[] a) {
         return a == null ? 0 : a.length;
+    }
+
+    public void forEach(final LongConsumer action) {
+        forEach(0, rows, 0, cols, action);
+    }
+
+    public void forEach(final int fromRowIndex, final int toRowIndex, final int fromColumnIndex, final int toColumnIndex, final LongConsumer action) {
+        N.checkFromToIndex(fromRowIndex, toRowIndex, rows);
+        N.checkFromToIndex(fromColumnIndex, toColumnIndex, cols);
+
+        for (int i = fromRowIndex; i < toRowIndex; i++) {
+            for (int j = fromColumnIndex; j < toColumnIndex; j++) {
+                action.accept(a[i][j]);
+            }
+        }
     }
 
     @Override

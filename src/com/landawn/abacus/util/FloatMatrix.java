@@ -19,6 +19,7 @@ import java.util.NoSuchElementException;
 import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.util.Pair.IntPair;
 import com.landawn.abacus.util.function.FloatBiFunction;
+import com.landawn.abacus.util.function.FloatConsumer;
 import com.landawn.abacus.util.function.FloatFunction;
 import com.landawn.abacus.util.function.FloatPredicate;
 import com.landawn.abacus.util.function.FloatTriFunction;
@@ -1595,6 +1596,21 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatS
     @Override
     protected int length(float[] a) {
         return a == null ? 0 : a.length;
+    }
+
+    public void forEach(final FloatConsumer action) {
+        forEach(0, rows, 0, cols, action);
+    }
+
+    public void forEach(final int fromRowIndex, final int toRowIndex, final int fromColumnIndex, final int toColumnIndex, final FloatConsumer action) {
+        N.checkFromToIndex(fromRowIndex, toRowIndex, rows);
+        N.checkFromToIndex(fromColumnIndex, toColumnIndex, cols);
+
+        for (int i = fromRowIndex; i < toRowIndex; i++) {
+            for (int j = fromColumnIndex; j < toColumnIndex; j++) {
+                action.accept(a[i][j]);
+            }
+        }
     }
 
     @Override
