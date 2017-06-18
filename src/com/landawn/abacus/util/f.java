@@ -194,7 +194,7 @@ public final class f {
     }
 
     public static <T> T[][][] reshape2(final T[] a, final int m, final int l) {
-        N.checkArgument(m > 0 && l > 0, " 'm'  and 'l' must be positive number: m = %s, l = %s", m, l);
+        N.checkArgument(m > 0 && l > 0, "'m'  and 'l' must be positive number: m = %s, l = %s", m, l);
 
         //        if (N.isNullOrEmpty(a)) {
         //            return new T[0][0][0];
@@ -1584,7 +1584,7 @@ public final class f {
     }
 
     public static boolean[][][] reshape(final boolean[] a, final int m, final int l) {
-        N.checkArgument(m > 0 && l > 0, " 'm'  and 'l' must be positive number: m = %s, l = %s", m, l);
+        N.checkArgument(m > 0 && l > 0, "'m'  and 'l' must be positive number: m = %s, l = %s", m, l);
 
         if (N.isNullOrEmpty(a)) {
             return new boolean[0][0][0];
@@ -2304,7 +2304,7 @@ public final class f {
     }
 
     public static char[][][] reshape(final char[] a, final int m, final int l) {
-        N.checkArgument(m > 0 && l > 0, " 'm'  and 'l' must be positive number: m = %s, l = %s", m, l);
+        N.checkArgument(m > 0 && l > 0, "'m'  and 'l' must be positive number: m = %s, l = %s", m, l);
 
         if (N.isNullOrEmpty(a)) {
             return new char[0][0][0];
@@ -3023,7 +3023,7 @@ public final class f {
     }
 
     public static byte[][][] reshape(final byte[] a, final int m, final int l) {
-        N.checkArgument(m > 0 && l > 0, " 'm'  and 'l' must be positive number: m = %s, l = %s", m, l);
+        N.checkArgument(m > 0 && l > 0, "'m'  and 'l' must be positive number: m = %s, l = %s", m, l);
 
         if (N.isNullOrEmpty(a)) {
             return new byte[0][0][0];
@@ -4991,7 +4991,7 @@ public final class f {
     }
 
     public static short[][][] reshape(final short[] a, final int m, final int l) {
-        N.checkArgument(m > 0 && l > 0, " 'm'  and 'l' must be positive number: m = %s, l = %s", m, l);
+        N.checkArgument(m > 0 && l > 0, "'m'  and 'l' must be positive number: m = %s, l = %s", m, l);
 
         if (N.isNullOrEmpty(a)) {
             return new short[0][0][0];
@@ -6965,7 +6965,7 @@ public final class f {
     }
 
     public static int[][][] reshape(final int[] a, final int m, final int l) {
-        N.checkArgument(m > 0 && l > 0, " 'm'  and 'l' must be positive number: m = %s, l = %s", m, l);
+        N.checkArgument(m > 0 && l > 0, "'m'  and 'l' must be positive number: m = %s, l = %s", m, l);
 
         if (N.isNullOrEmpty(a)) {
             return new int[0][0][0];
@@ -8927,7 +8927,7 @@ public final class f {
     }
 
     public static long[][][] reshape(final long[] a, final int m, final int l) {
-        N.checkArgument(m > 0 && l > 0, " 'm'  and 'l' must be positive number: m = %s, l = %s", m, l);
+        N.checkArgument(m > 0 && l > 0, "'m'  and 'l' must be positive number: m = %s, l = %s", m, l);
 
         if (N.isNullOrEmpty(a)) {
             return new long[0][0][0];
@@ -10895,7 +10895,7 @@ public final class f {
     }
 
     public static float[][][] reshape(final float[] a, final int m, final int l) {
-        N.checkArgument(m > 0 && l > 0, " 'm'  and 'l' must be positive number: m = %s, l = %s", m, l);
+        N.checkArgument(m > 0 && l > 0, "'m'  and 'l' must be positive number: m = %s, l = %s", m, l);
 
         if (N.isNullOrEmpty(a)) {
             return new float[0][0][0];
@@ -12869,7 +12869,7 @@ public final class f {
     }
 
     public static double[][][] reshape(final double[] a, final int m, final int l) {
-        N.checkArgument(m > 0 && l > 0, " 'm'  and 'l' must be positive number: m = %s, l = %s", m, l);
+        N.checkArgument(m > 0 && l > 0, "'m'  and 'l' must be positive number: m = %s, l = %s", m, l);
 
         if (N.isNullOrEmpty(a)) {
             return new double[0][0][0];

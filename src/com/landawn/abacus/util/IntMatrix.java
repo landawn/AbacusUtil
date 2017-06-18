@@ -290,7 +290,7 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntStream, S
     }
 
     public int[] getLU2RD() {
-        N.checkState(rows == cols, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", rows, cols);
+        N.checkState(rows == cols, "'rows' and 'cols' must be same to get diagonals: rows=%s, cols=%s", rows, cols);
 
         final int[] res = new int[rows];
 
@@ -302,8 +302,8 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntStream, S
     }
 
     public void setLU2RD(final int[] diagonal) {
-        N.checkState(rows == cols, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", rows, cols);
-        N.checkArgument(diagonal.length >= rows, "The length of specified array is less than n=%s", rows);
+        N.checkState(rows == cols, "'rows' and 'cols' must be same to get diagonals: rows=%s, cols=%s", rows, cols);
+        N.checkArgument(diagonal.length >= rows, "The length of specified array is less than rows=%s", rows);
 
         for (int i = 0; i < rows; i++) {
             a[i][i] = diagonal[i];
@@ -311,7 +311,7 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntStream, S
     }
 
     public void updateLU2RD(final IntUnaryOperator func) {
-        N.checkState(rows == cols, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", rows, cols);
+        N.checkState(rows == cols, "'rows' and 'cols' must be same to get diagonals: rows=%s, cols=%s", rows, cols);
 
         for (int i = 0; i < rows; i++) {
             a[i][i] = func.applyAsInt(a[i][i]);
@@ -319,7 +319,7 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntStream, S
     }
 
     public int[] getRU2LD() {
-        N.checkState(rows == cols, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", rows, cols);
+        N.checkState(rows == cols, "'rows' and 'cols' must be same to get diagonals: rows=%s, cols=%s", rows, cols);
 
         final int[] res = new int[rows];
 
@@ -331,8 +331,8 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntStream, S
     }
 
     public void setRU2LD(final int[] diagonal) {
-        N.checkState(rows == cols, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", rows, cols);
-        N.checkArgument(diagonal.length >= rows, "The length of specified array is less than n=%s", rows);
+        N.checkState(rows == cols, "'rows' and 'cols' must be same to get diagonals: rows=%s, cols=%s", rows, cols);
+        N.checkArgument(diagonal.length >= rows, "The length of specified array is less than rows=%s", rows);
 
         for (int i = 0; i < rows; i++) {
             a[i][cols - i - 1] = diagonal[i];
@@ -340,7 +340,7 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntStream, S
     }
 
     public void updateRU2LD(final IntUnaryOperator func) {
-        N.checkState(rows == cols, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", rows, cols);
+        N.checkState(rows == cols, "'rows' and 'cols' must be same to get diagonals: rows=%s, cols=%s", rows, cols);
 
         for (int i = 0; i < rows; i++) {
             a[i][cols - i - 1] = func.applyAsInt(a[i][cols - i - 1]);
@@ -1280,7 +1280,7 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntStream, S
      */
     @Override
     public IntStream streamLU2RD() {
-        N.checkState(rows == cols, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", rows, cols);
+        N.checkState(rows == cols, "'rows' and 'cols' must be same to get diagonals: rows=%s, cols=%s", rows, cols);
 
         if (isEmpty()) {
             return IntStream.empty();
@@ -1322,7 +1322,7 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntStream, S
      */
     @Override
     public IntStream streamRU2LD() {
-        N.checkState(rows == cols, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", rows, cols);
+        N.checkState(rows == cols, "'rows' and 'cols' must be same to get diagonals: rows=%s, cols=%s", rows, cols);
 
         if (isEmpty()) {
             return IntStream.empty();

@@ -154,7 +154,7 @@ public abstract class AbstractMatrix<A, PL, HS, RS, X extends AbstractMatrix<A, 
     public abstract PL flatten();
 
     public Stream<IntPair> pointsLU2RD() {
-        N.checkState(rows == cols, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", rows, cols);
+        N.checkState(rows == cols, "'rows' and 'cols' must be same to get diagonals: rows=%s, cols=%s", rows, cols);
 
         return IntStream.range(0, rows).mapToObj(new IntFunction<IntPair>() {
             @Override
@@ -165,7 +165,7 @@ public abstract class AbstractMatrix<A, PL, HS, RS, X extends AbstractMatrix<A, 
     }
 
     public Stream<IntPair> pointsRU2LD() {
-        N.checkState(rows == cols, "'n' and 'm' must be same to get diagonals: n=%s, m=%s", rows, cols);
+        N.checkState(rows == cols, "'rows' and 'cols' must be same to get diagonals: rows=%s, cols=%s", rows, cols);
 
         return IntStream.range(0, rows).mapToObj(new IntFunction<IntPair>() {
             @Override
