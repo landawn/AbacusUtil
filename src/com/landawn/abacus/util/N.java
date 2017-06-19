@@ -121,6 +121,7 @@ import com.landawn.abacus.parser.XMLSerializationConfig.XSC;
 import com.landawn.abacus.type.EntityType;
 import com.landawn.abacus.type.Type;
 import com.landawn.abacus.type.TypeFactory;
+import com.landawn.abacus.util.Pair.IntPair;
 import com.landawn.abacus.util.Retry.Retry0;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
@@ -15470,6 +15471,258 @@ public final class N {
         beginIndex += N.isNullOrEmpty(prefix) ? 0 : prefix.length();
 
         return Optional.of(N.as(type, str.subSequence(beginIndex, endIndex)));
+    }
+
+    /**
+     * 
+     * <code>findAllIndices("3[a2[c]]2[a]", '[', ']') = [[2, 7], [10, 11]]</code>
+     * 
+     * @param str
+     * @param prefix
+     * @param postfix
+     * @return
+     */
+    public static List<IntPair> findAllIndices(final String str, final char prefix, final char postfix) {
+        return N.isNullOrEmpty(str) ? new ArrayList<IntPair>() : findAllIndices(str, 0, str.length(), prefix, postfix);
+    }
+
+    /**
+     * 
+     * <code>findAllIndices("3[a2[c]]2[a]", '[', ']') = [[2, 7], [10, 11]]</code>
+     * 
+     * @param str
+     * @param fromIndex
+     * @param toIndex
+     * @param prefix
+     * @param postfix
+     * @return
+     */
+    public static List<IntPair> findAllIndices(final String str, final int fromIndex, final int toIndex, final char prefix, final char postfix) {
+        N.checkFromToIndex(fromIndex, toIndex, str == null ? 0 : str.length());
+
+        final List<IntPair> res = new ArrayList<>();
+
+        if (N.isNullOrEmpty(str)) {
+            return res;
+        }
+
+        int idx = str.indexOf(prefix, fromIndex);
+
+        if (idx < 0) {
+            return res;
+        }
+
+        final char[] chs = N.getCharsForReadOnly(str);
+        final Deque<Integer> queue = new LinkedList<>();
+
+        for (int i = idx; i < toIndex; i++) {
+            if (chs[i] == prefix) {
+                queue.push(i + 1);
+            } else if (chs[i] == postfix && queue.size() > 0) {
+                final int startIndex = queue.pop();
+
+                if (res.size() > 0 && startIndex < res.get(res.size() - 1)._1) {
+                    while (res.size() > 0 && startIndex < res.get(res.size() - 1)._1) {
+                        res.remove(res.size() - 1);
+                    }
+                }
+
+                res.add(IntPair.of(startIndex, i));
+            }
+        }
+
+        return res;
+    }
+
+    /**
+     * 
+     * <code>findAllIndices("3[a2[c]]2[a]", '[', ']') = [[2, 7], [10, 11]]</code>
+     * 
+     * @param str
+     * @param prefix
+     * @param postfix
+     * @return
+     */
+    public static List<IntPair> findAllIndices(final String str, final String prefix, final String postfix) {
+        return N.isNullOrEmpty(str) ? new ArrayList<IntPair>() : findAllIndices(str, 0, str.length(), prefix, postfix);
+    }
+
+    /**
+     * 
+     * <code>findAllIndices("3[a2[c]]2[a]", '[', ']') = [[2, 7], [10, 11]]</code>
+     * 
+     * @param str
+     * @param fromIndex
+     * @param toIndex
+     * @param prefix
+     * @param postfix
+     * @return
+     */
+    public static List<IntPair> findAllIndices(final String str, final int fromIndex, final int toIndex, final String prefix, final String postfix) {
+        N.checkFromToIndex(fromIndex, toIndex, str == null ? 0 : str.length());
+
+        final List<IntPair> res = new ArrayList<>();
+
+        if (N.isNullOrEmpty(str)) {
+            return res;
+        }
+
+        int idx = str.indexOf(prefix, fromIndex);
+
+        if (idx < 0) {
+            return res;
+        }
+
+        final Deque<Integer> queue = new LinkedList<>();
+        queue.add(idx + prefix.length());
+        int next = -1;
+
+        for (int i = idx + prefix.length(), len = toIndex; i < len;) {
+            if (queue.size() == 0) {
+                idx = next >= i ? next : str.indexOf(prefix, i);
+
+                if (idx < 0) {
+                    break;
+                } else {
+                    queue.add(idx + prefix.length());
+                    i = idx + prefix.length();
+                }
+            }
+
+            idx = str.indexOf(postfix, i);
+
+            if (idx < 0) {
+                break;
+            } else {
+                final int endIndex = idx;
+                idx = res.size() > 0 ? Math.max(res.get(res.size() - 1)._2 + postfix.length(), queue.peekLast()) : queue.peekLast();
+
+                while ((idx = str.indexOf(prefix, idx)) >= 0 && idx < endIndex) {
+                    queue.push(idx + prefix.length());
+                    idx = idx + prefix.length();
+                }
+
+                if (idx > 0) {
+                    next = idx;
+                }
+
+                final int startIndex = queue.pop();
+
+                if (res.size() > 0 && startIndex < res.get(res.size() - 1)._1) {
+                    while (res.size() > 0 && startIndex < res.get(res.size() - 1)._1) {
+                        res.remove(res.size() - 1);
+                    }
+                }
+
+                res.add(IntPair.of(startIndex, endIndex));
+
+                i = endIndex + postfix.length();
+            }
+        }
+
+        return res;
+    }
+
+    /**
+     * 
+     * <code>findAllIndices("3[a2[c]]2[a]", '[', ']') = [[2, 7], [10, 11]]</code>
+     * 
+     * @param str
+     * @param prefix
+     * @param postfix
+     * @return
+     */
+    public static List<String> findAll(final String str, final char prefix, final char postfix) {
+        return N.isNullOrEmpty(str) ? new ArrayList<String>() : findAll(str, 0, str.length(), prefix, postfix);
+    }
+
+    public static <T> List<T> findAll(final String str, final char prefix, final char postfix, final Function<? super String, T> func) {
+        return N.isNullOrEmpty(str) ? new ArrayList<T>() : findAll(str, 0, str.length(), prefix, postfix, func);
+    }
+
+    /**
+     * 
+     * <code>findAllIndices("3[a2[c]]2[a]", '[', ']') = [[2, 7], [10, 11]]</code>
+     * 
+     * @param str
+     * @param fromIndex
+     * @param toIndex
+     * @param prefix
+     * @param postfix
+     * @return
+     */
+    public static List<String> findAll(final String str, final int fromIndex, final int toIndex, final char prefix, final char postfix) {
+        final List<IntPair> points = findAllIndices(str, prefix, postfix);
+        final List<String> res = new ArrayList<>(points.size());
+
+        for (IntPair p : points) {
+            res.add(str.substring(p._1, p._2));
+        }
+
+        return res;
+    }
+
+    public static <T> List<T> findAll(final String str, final int fromIndex, final int toIndex, final char prefix, final char postfix,
+            final Function<? super String, T> func) {
+        final List<String> strs = findAll(str, fromIndex, toIndex, prefix, postfix);
+        final List<T> res = new ArrayList<>(strs.size());
+
+        for (String s : strs) {
+            res.add(func.apply(s));
+        }
+
+        return res;
+    }
+
+    /**
+     * 
+     * <code>findAllIndices("3[a2[c]]2[a]", '[', ']') = [[2, 7], [10, 11]]</code>
+     * 
+     * @param str
+     * @param prefix
+     * @param postfix
+     * @return
+     */
+    public static List<String> findAll(final String str, final String prefix, final String postfix) {
+        return N.isNullOrEmpty(str) ? new ArrayList<String>() : findAll(str, 0, str.length(), prefix, postfix);
+    }
+
+    public static <T> List<T> findAll(final String str, final String prefix, final String postfix, final Function<? super String, T> func) {
+        return N.isNullOrEmpty(str) ? new ArrayList<T>() : findAll(str, 0, str.length(), prefix, postfix, func);
+    }
+
+    /**
+     * 
+     * <code>findAllIndices("3[a2[c]]2[a]", '[', ']') = [[2, 7], [10, 11]]</code>
+     * 
+     * @param str
+     * @param fromIndex
+     * @param toIndex
+     * @param prefix
+     * @param postfix
+     * @return
+     */
+    public static List<String> findAll(final String str, final int fromIndex, final int toIndex, final String prefix, final String postfix) {
+        final List<IntPair> points = findAllIndices(str, prefix, postfix);
+        final List<String> res = new ArrayList<>(points.size());
+
+        for (IntPair p : points) {
+            res.add(str.substring(p._1, p._2));
+        }
+
+        return res;
+    }
+
+    public static <T> List<T> findAll(final String str, final int fromIndex, final int toIndex, final String prefix, final String postfix,
+            final Function<? super String, T> func) {
+        final List<String> strs = findAll(str, fromIndex, toIndex, prefix, postfix);
+        final List<T> res = new ArrayList<>(strs.size());
+
+        for (String s : strs) {
+            res.add(func.apply(s));
+        }
+
+        return res;
     }
 
     public static int indexOf(final boolean[] a, final boolean e) {
