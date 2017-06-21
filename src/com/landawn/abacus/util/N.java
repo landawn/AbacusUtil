@@ -15379,20 +15379,51 @@ public final class N {
         return Array.binarySearch(c, fromIndex, toIndex, key, cmp);
     }
 
+    /**
+     * 
+     * <code>findFirst("3[a2[c]]2[a]", "[", "]") = "a2[c"</code>
+     * 
+     * @param str
+     * @param prefix
+     * @param postfix
+     * @return
+     */
     public static Optional<String> findFirst(String str, String prefix, String postfix) {
         return findFirst(String.class, str, prefix, postfix);
     }
 
+    /**
+     * 
+     * <code>findFirst("3[a2[c]]2[a]", "[", "]") = "a2[c"</code>
+     * 
+     * @param str
+     * @param fromIndex
+     * @param prefix
+     * @param postfix
+     * @return
+     */
     public static Optional<String> findFirst(String str, int fromIndex, String prefix, String postfix) {
         return findFirst(String.class, str, fromIndex, prefix, postfix);
     }
 
+    /**
+     * 
+     * <code>findFirst("3[a2[c]]2[a]", "[", "]") = "a2[c"</code>
+     * 
+     * @param targetClass
+     * @param str
+     * @param prefix
+     * @param postfix
+     * @return
+     */
     public static <T> Optional<T> findFirst(Class<T> targetClass, String str, String prefix, String postfix) {
         return findFirst(targetClass, str, 0, prefix, postfix);
     }
 
     /**
      * Returns first substring between the specified <code>prefix</code> and </code>postfix</code>, or default value if there is no substring found.
+     * 
+     * <code>findFirst("3[a2[c]]2[a]", "[", "]") = "a2[c"</code>
      * 
      * @param targetClass
      * @param str
@@ -15426,20 +15457,51 @@ public final class N {
         return Optional.of(N.as(type, str.subSequence(beginIndex, endIndex)));
     }
 
+    /**
+     * 
+     * <code>findLast("3[a2[c]]2a]", "[", "]") = "c]]2a"</code>
+     * 
+     * @param str
+     * @param prefix
+     * @param postfix
+     * @return
+     */
     public static Optional<String> findLast(String str, String prefix, String postfix) {
         return findLast(String.class, str, prefix, postfix);
     }
 
+    /**
+     * 
+     * <code>findLast("3[a2[c]]2a]", "[", "]") = "c]]2a"</code>
+     * 
+     * @param str
+     * @param fromIndex
+     * @param prefix
+     * @param postfix
+     * @return
+     */
     public static Optional<String> findLast(String str, int fromIndex, String prefix, String postfix) {
         return findLast(String.class, str, fromIndex, prefix, postfix);
     }
 
+    /**
+     * 
+     * <code>findLast("3[a2[c]]2a]", "[", "]") = "c]]2a"</code>
+     * 
+     * @param targetClass
+     * @param str
+     * @param prefix
+     * @param postfix
+     * @return
+     */
     public static <T> Optional<T> findLast(Class<T> targetClass, String str, String prefix, String postfix) {
         return findLast(targetClass, str, N.isNullOrEmpty(str) ? 0 : str.length(), prefix, postfix);
     }
 
     /**
      * Returns last substring between the specified <code>prefix</code> and </code>postfix</code>, or default value if there is no substring found.
+     * 
+     * <code>findLast("3[a2[c]]2a]", "[", "]") = "c]]2a"</code>
      * 
      * @param targetClass
      * @param str
