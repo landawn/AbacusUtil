@@ -826,12 +826,12 @@ public interface DataSet extends Iterable<Object[]> {
      */
     void forEach(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Consumer<? super Object[]> action, boolean shareRowArray);
 
-    <R> R forEach(R seed, BiFunction<R, ? super Object[], R> accumulator, BiPredicate<? super Object[], ? super R> conditionToBreak);
+    <R> R forEach(R seed, BiFunction<R, ? super Object[], R> accumulator, BiPredicate<? super R, ? super Object[]> conditionToBreak);
 
-    <R> R forEach(R seed, BiFunction<R, ? super Object[], R> accumulator, BiPredicate<? super Object[], ? super R> conditionToBreak, boolean shareRowArray);
+    <R> R forEach(R seed, BiFunction<R, ? super Object[], R> accumulator, BiPredicate<? super R, ? super Object[]> conditionToBreak, boolean shareRowArray);
 
     <R> R forEach(Collection<String> columnNames, R seed, BiFunction<R, ? super Object[], R> accumulator,
-            BiPredicate<? super Object[], ? super R> conditionToBreak);
+            BiPredicate<? super R, ? super Object[]> conditionToBreak);
 
     /**
      * Execute <code>accumulator</code> on each element till <code>true</code> is returned by <code>conditionToBreak</code>
@@ -844,16 +844,16 @@ public interface DataSet extends Iterable<Object[]> {
      * @return
      */
     <R> R forEach(Collection<String> columnNames, R seed, BiFunction<R, ? super Object[], R> accumulator,
-            BiPredicate<? super Object[], ? super R> conditionToBreak, boolean shareRowArray);
+            BiPredicate<? super R, ? super Object[]> conditionToBreak, boolean shareRowArray);
 
     <R> R forEach(int fromRowIndex, int toRowIndex, R seed, BiFunction<R, ? super Object[], R> accumulator,
-            BiPredicate<? super Object[], ? super R> conditionToBreak);
+            BiPredicate<? super R, ? super Object[]> conditionToBreak);
 
     <R> R forEach(int fromRowIndex, int toRowIndex, R seed, BiFunction<R, ? super Object[], R> accumulator,
-            BiPredicate<? super Object[], ? super R> conditionToBreak, boolean shareRowArray);
+            BiPredicate<? super R, ? super Object[]> conditionToBreak, boolean shareRowArray);
 
     <R> R forEach(Collection<String> columnNames, int fromRowIndex, int toRowIndex, R seed, BiFunction<R, ? super Object[], R> accumulator,
-            BiPredicate<? super Object[], ? super R> conditionToBreak);
+            BiPredicate<? super R, ? super Object[]> conditionToBreak);
 
     /**
      * Execute <code>accumulator</code> on each element till <code>true</code> is returned by <code>conditionToBreak</code>
@@ -868,7 +868,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @return
      */
     <R> R forEach(Collection<String> columnNames, int fromRowIndex, int toRowIndex, R seed, BiFunction<R, ? super Object[], R> accumulator,
-            BiPredicate<? super Object[], ? super R> conditionToBreak, boolean shareRowArray);
+            BiPredicate<? super R, ? super Object[]> conditionToBreak, boolean shareRowArray);
 
     /**
      *

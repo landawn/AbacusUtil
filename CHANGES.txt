@@ -11,7 +11,9 @@
 
 5, Add StreamEx, a simple wrapper for Lightweight-Stream-API.
 
-6, Improvements and bug fix.
+6*, Refatoring: forEach(...BiPredicate<? super T, ? super R> conditionToBreak) to forEach(...BiPredicate<? super R, ? super T> conditionToBreak) in N/Seq/Stream/DataSet/Multiset/Multimap.
+
+7, Improvements and bug fix.
 
 
 ========Changes in 0.9.72=========================================================================

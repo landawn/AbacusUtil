@@ -888,7 +888,8 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <U> Stream<List<T>> splitToList(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
+    public <U> Stream<List<T>> splitToList(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
         return new IteratorStream<>(new ExIterator<List<T>>() {
             private T next = (T) NONE;
             private boolean preCondition = false;
@@ -934,7 +935,8 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <U> Stream<Set<T>> splitToSet(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
+    public <U> Stream<Set<T>> splitToSet(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
         return new IteratorStream<>(new ExIterator<Set<T>>() {
             private T next = (T) NONE;
             private boolean preCondition = false;
@@ -1369,15 +1371,15 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <U> U forEach(U seed, BiFunction<U, ? super T, U> accumulator, BiPredicate<? super T, ? super U> conditionToBreak) {
-        U result = seed;
+    public <R> R forEach(R seed, BiFunction<R, ? super T, R> accumulator, BiPredicate<? super R, ? super T> conditionToBreak) {
+        R result = seed;
         T next = null;
 
         while (elements.hasNext()) {
             next = elements.next();
             result = accumulator.apply(result, next);
 
-            if (conditionToBreak.test(next, result)) {
+            if (conditionToBreak.test(result, next)) {
                 break;
             }
         }

@@ -473,12 +473,12 @@ public final class Seq<T> extends ImmutableCollection<T> {
     //        N.forEach(coll, fromIndex, toIndex, action);
     //    }
 
-    public <R> R forEach(final R seed, BiFunction<R, ? super T, R> accumulator, final BiPredicate<? super T, ? super R> conditionToBreak) {
+    public <R> R forEach(final R seed, BiFunction<R, ? super T, R> accumulator, final BiPredicate<? super R, ? super T> conditionToBreak) {
         return N.forEach(coll, seed, accumulator, conditionToBreak);
     }
 
     //    public <R> R forEach(int fromIndex, final int toIndex, final R seed, final BiFunction<R, ? super T, R> accumulator,
-    //            final BiPredicate<? super T, ? super R> conditionToBreak) {
+    //            final BiPredicate<? super R, ? super T> conditionToBreak) {
     //        return N.forEach(coll, fromIndex, toIndex, seed, accumulator, conditionToBreak);
     //    }
 
@@ -490,7 +490,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @param conditionToBreak break if <code>true</code> is return.
      * @return
      */
-    public <R> R forEach(final R seed, final IndexedBiFunction<R, ? super T, R> accumulator, final BiPredicate<? super T, ? super R> conditionToBreak) {
+    public <R> R forEach(final R seed, final IndexedBiFunction<R, ? super T, R> accumulator, final BiPredicate<? super R, ? super T> conditionToBreak) {
         return N.forEach(coll, seed, accumulator, conditionToBreak);
     }
 
@@ -505,7 +505,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     //     * @return
     //     */
     //    public <R> R forEach(int fromIndex, final int toIndex, final R seed, final IndexedBiFunction<R, ? super T, R> accumulator,
-    //            final BiPredicate<? super T, ? super R> conditionToBreak) {
+    //            final BiPredicate<? super R, ? super T> conditionToBreak) {
     //        return N.forEach(coll, fromIndex, toIndex, seed, accumulator, conditionToBreak);
     //    }
 
@@ -869,6 +869,37 @@ public final class Seq<T> extends ImmutableCollection<T> {
                 return predicate.test(value, seed);
             }
         });
+    }
+
+    public <R> List<R> filterThenMap(Predicate<? super T> filter, final Function<? super T, ? extends R> mapper) {
+        if (N.isNullOrEmpty(coll)) {
+            return new ArrayList<>();
+        }
+
+        final List<R> res = new ArrayList<>();
+
+        for (T e : coll) {
+            if (filter.test(e)) {
+                res.add(mapper.apply(e));
+            }
+        }
+
+        return res;
+    }
+
+    public <A, R> R filterThenCollect(Predicate<? super T> filter, final Collector<? super T, A, R> collector) {
+        final BiConsumer<A, ? super T> accumulator = collector.accumulator();
+        final A result = collector.supplier().get();
+
+        if (N.notNullOrEmpty(coll)) {
+            for (T e : coll) {
+                if (filter.test(e)) {
+                    accumulator.accept(result, e);
+                }
+            }
+        }
+
+        return collector.finisher().apply(result);
     }
 
     public List<T> takeWhile(Predicate<? super T> filter) {
@@ -1547,9 +1578,8 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public <R, A> R collect(final Collector<? super T, A, R> collector) {
-        final Supplier<A> supplier = collector.supplier();
         final BiConsumer<A, ? super T> accumulator = collector.accumulator();
-        final A result = supplier.get();
+        final A result = collector.supplier().get();
 
         if (N.notNullOrEmpty(coll)) {
             for (T e : coll) {

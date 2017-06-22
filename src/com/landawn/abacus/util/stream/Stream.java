@@ -431,7 +431,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
 
     // public abstract <K, V> EntryStream<K, V> mapToEntry();
 
-    public abstract <K, V> EntryStream<K, V> mapToEntry(Function<? super T, Map.Entry<K, V>> mapper);
+    public abstract <K, V> EntryStream<K, V> mapToEntry(Function<? super T, ? extends Map.Entry<K, V>> mapper);
 
     public abstract <K, V> EntryStream<K, V> mapToEntry(Function<? super T, K> keyMapper, Function<? super T, V> valueMapper);
 
@@ -585,7 +585,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
 
     public abstract DoubleStream flatMapToDouble3(Function<? super T, double[]> mapper);
 
-    public abstract <K, V> EntryStream<K, V> flatMapToEntry(Function<? super T, ? extends Stream<Map.Entry<K, V>>> mapper);
+    public abstract <K, V> EntryStream<K, V> flatMapToEntry(Function<? super T, ? extends Stream<? extends Map.Entry<K, V>>> mapper);
 
     public abstract <K, V> EntryStream<K, V> flatMapToEntry2(Function<? super T, ? extends Map<K, V>> mapper);
 
@@ -894,7 +894,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param conditionToBreak break if <code>true</code> is return.
      * @return
      */
-    public abstract <U> U forEach(final U seed, BiFunction<U, ? super T, U> accumulator, final BiPredicate<? super T, ? super U> conditionToBreak);
+    public abstract <R> R forEach(final R seed, BiFunction<R, ? super T, R> accumulator, final BiPredicate<? super R, ? super T> conditionToBreak);
 
     /**
      * <br />

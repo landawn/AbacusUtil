@@ -17564,7 +17564,7 @@ public final class N {
     }
 
     public static <T, R> R forEach(final T[] a, final R seed, final BiFunction<R, ? super T, R> accumulator,
-            final BiPredicate<? super T, ? super R> conditionToBreak) {
+            final BiPredicate<? super R, ? super T> conditionToBreak) {
         if (N.isNullOrEmpty(a)) {
             return seed;
         }
@@ -17583,7 +17583,7 @@ public final class N {
      * @return
      */
     public static <T, R> R forEach(final T[] a, final int fromIndex, final int toIndex, final R seed, final BiFunction<R, ? super T, R> accumulator,
-            final BiPredicate<? super T, ? super R> conditionToBreak) {
+            final BiPredicate<? super R, ? super T> conditionToBreak) {
         N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex,
                 a == null ? 0 : a.length);
 
@@ -17597,7 +17597,7 @@ public final class N {
             for (int i = fromIndex; i < toIndex; i++) {
                 result = accumulator.apply(result, a[i]);
 
-                if (conditionToBreak.test(a[i], result)) {
+                if (conditionToBreak.test(result, a[i])) {
                     break;
                 }
             }
@@ -17605,7 +17605,7 @@ public final class N {
             for (int i = N.min(a.length - 1, fromIndex); i > toIndex; i--) {
                 result = accumulator.apply(result, a[i]);
 
-                if (conditionToBreak.test(a[i], result)) {
+                if (conditionToBreak.test(result, a[i])) {
                     break;
                 }
             }
@@ -17615,7 +17615,7 @@ public final class N {
     }
 
     public static <T, R> R forEach(final T[] a, final R seed, final IndexedBiFunction<R, ? super T, R> accumulator,
-            final BiPredicate<? super T, ? super R> conditionToBreak) {
+            final BiPredicate<? super R, ? super T> conditionToBreak) {
         if (N.isNullOrEmpty(a)) {
             return seed;
         }
@@ -17634,7 +17634,7 @@ public final class N {
      * @return
      */
     public static <T, R> R forEach(final T[] a, final int fromIndex, final int toIndex, final R seed, final IndexedBiFunction<R, ? super T, R> accumulator,
-            final BiPredicate<? super T, ? super R> conditionToBreak) {
+            final BiPredicate<? super R, ? super T> conditionToBreak) {
         N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex,
                 a == null ? 0 : a.length);
 
@@ -17648,7 +17648,7 @@ public final class N {
             for (int i = fromIndex; i < toIndex; i++) {
                 result = accumulator.apply(result, i, a[i]);
 
-                if (conditionToBreak.test(a[i], result)) {
+                if (conditionToBreak.test(result, a[i])) {
                     break;
                 }
             }
@@ -17656,7 +17656,7 @@ public final class N {
             for (int i = N.min(a.length - 1, fromIndex); i > toIndex; i--) {
                 result = accumulator.apply(result, i, a[i]);
 
-                if (conditionToBreak.test(a[i], result)) {
+                if (conditionToBreak.test(result, a[i])) {
                     break;
                 }
             }
@@ -17835,7 +17835,7 @@ public final class N {
     }
 
     public static <T, C extends Collection<? extends T>, R> R forEach(final C c, final R seed, BiFunction<R, ? super T, R> accumulator,
-            final BiPredicate<? super T, ? super R> conditionToBreak) {
+            final BiPredicate<? super R, ? super T> conditionToBreak) {
         if (N.isNullOrEmpty(c)) {
             return seed;
         }
@@ -17854,7 +17854,7 @@ public final class N {
      * @return
      */
     public static <T, C extends Collection<? extends T>, R> R forEach(final C c, int fromIndex, final int toIndex, final R seed,
-            final BiFunction<R, ? super T, R> accumulator, final BiPredicate<? super T, ? super R> conditionToBreak) {
+            final BiFunction<R, ? super T, R> accumulator, final BiPredicate<? super R, ? super T> conditionToBreak) {
         N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex,
                 c == null ? 0 : c.size());
 
@@ -17873,7 +17873,7 @@ public final class N {
                 for (int i = fromIndex; i < toIndex; i++) {
                     result = accumulator.apply(result, list.get(i));
 
-                    if (conditionToBreak.test(list.get(i), result)) {
+                    if (conditionToBreak.test(result, list.get(i))) {
                         break;
                     }
                 }
@@ -17881,7 +17881,7 @@ public final class N {
                 for (int i = fromIndex; i > toIndex; i--) {
                     result = accumulator.apply(result, list.get(i));
 
-                    if (conditionToBreak.test(list.get(i), result)) {
+                    if (conditionToBreak.test(result, list.get(i))) {
                         break;
                     }
                 }
@@ -17902,7 +17902,7 @@ public final class N {
 
                     result = accumulator.apply(result, next);
 
-                    if (conditionToBreak.test(next, result)) {
+                    if (conditionToBreak.test(result, next)) {
                         break;
                     }
 
@@ -17929,7 +17929,7 @@ public final class N {
                 for (int i = a.length - 1; i >= 0; i--) {
                     result = accumulator.apply(result, a[i]);
 
-                    if (conditionToBreak.test(a[i], result)) {
+                    if (conditionToBreak.test(result, a[i])) {
                         break;
                     }
                 }
@@ -17940,7 +17940,7 @@ public final class N {
     }
 
     public static <T, C extends Collection<? extends T>, R> R forEach(final C c, final R seed, final IndexedBiFunction<R, ? super T, R> accumulator,
-            final BiPredicate<? super T, ? super R> conditionToBreak) {
+            final BiPredicate<? super R, ? super T> conditionToBreak) {
         if (N.isNullOrEmpty(c)) {
             return seed;
         }
@@ -17959,7 +17959,7 @@ public final class N {
      * @return
      */
     public static <T, C extends Collection<? extends T>, R> R forEach(final C c, int fromIndex, final int toIndex, final R seed,
-            final IndexedBiFunction<R, ? super T, R> accumulator, final BiPredicate<? super T, ? super R> conditionToBreak) {
+            final IndexedBiFunction<R, ? super T, R> accumulator, final BiPredicate<? super R, ? super T> conditionToBreak) {
         N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex,
                 c == null ? 0 : c.size());
 
@@ -17978,7 +17978,7 @@ public final class N {
                 for (int i = fromIndex; i < toIndex; i++) {
                     result = accumulator.apply(result, i, list.get(i));
 
-                    if (conditionToBreak.test(list.get(i), result)) {
+                    if (conditionToBreak.test(result, list.get(i))) {
                         break;
                     }
                 }
@@ -17986,7 +17986,7 @@ public final class N {
                 for (int i = fromIndex; i > toIndex; i--) {
                     result = accumulator.apply(result, i, list.get(i));
 
-                    if (conditionToBreak.test(list.get(i), result)) {
+                    if (conditionToBreak.test(result, list.get(i))) {
                         break;
                     }
                 }
@@ -18007,7 +18007,7 @@ public final class N {
                     next = iter.next();
                     result = accumulator.apply(result, idx, iter.next());
 
-                    if (conditionToBreak.test(next, result)) {
+                    if (conditionToBreak.test(result, next)) {
                         break;
                     }
 
@@ -18034,7 +18034,7 @@ public final class N {
                 for (int i = a.length - 1; i >= 0; i--) {
                     result = accumulator.apply(result, i + toIndex + 1, a[i]);
 
-                    if (conditionToBreak.test(a[i], result)) {
+                    if (conditionToBreak.test(result, a[i])) {
                         break;
                     }
                 }

@@ -50,15 +50,15 @@ public final class EntryStream<K, V> {
 
     private final Stream<Map.Entry<K, V>> s;
 
-    EntryStream(final Stream<Map.Entry<K, V>> s) {
-        this.s = s;
+    EntryStream(final Stream<? extends Map.Entry<K, V>> s) {
+        this.s = (Stream<Map.Entry<K, V>>) s;
     }
 
     public static <K, V> EntryStream<K, V> empty() {
         return EMPTY;
     }
 
-    public static <K, V> EntryStream<K, V> of(final Stream<Map.Entry<K, V>> s) {
+    public static <K, V> EntryStream<K, V> of(final Stream<? extends Map.Entry<K, V>> s) {
         return new EntryStream<K, V>(s);
     }
 
@@ -759,8 +759,8 @@ public final class EntryStream<K, V> {
         return s.collectAndThen(downstream, finisher);
     }
 
-    public <K2, V2> EntryStream<K2, V2> __(Function<? super Stream<Map.Entry<K, V>>, ? extends Stream<Map.Entry<K2, V2>>> func) {
-        return of(func.apply(s));
+    public <K2, V2> EntryStream<K2, V2> __(Function<? super Stream<Map.Entry<K, V>>, ? extends Stream<Map.Entry<K2, V2>>> transfer) {
+        return of(transfer.apply(s));
     }
 
     public EntryStream<K, V> onClose(Runnable closeHandler) {

@@ -352,7 +352,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     //    }
 
     @Override
-    public <K, V> EntryStream<K, V> mapToEntry(final Function<? super T, Map.Entry<K, V>> mapper) {
+    public <K, V> EntryStream<K, V> mapToEntry(final Function<? super T, ? extends Map.Entry<K, V>> mapper) {
         final Function<T, T> mapper2 = Fn.identity();
 
         if (mapper == mapper2) {
@@ -743,7 +743,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <K, V> EntryStream<K, V> flatMapToEntry(final Function<? super T, ? extends Stream<Map.Entry<K, V>>> mapper) {
+    public <K, V> EntryStream<K, V> flatMapToEntry(final Function<? super T, ? extends Stream<? extends Map.Entry<K, V>>> mapper) {
         return EntryStream.of(flatMap(mapper));
     }
 

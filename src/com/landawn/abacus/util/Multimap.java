@@ -969,7 +969,7 @@ public final class Multimap<K, E, V extends Collection<E>> {
      * @return
      */
     public <R> R forEach(final R seed, TriFunction<R, ? super K, ? super V, R> accumulator,
-            final TriPredicate<? super K, ? super V, ? super R> conditionToBreak) {
+            final TriPredicate<? super R, ? super K, ? super V> conditionToBreak) {
         N.requireNonNull(accumulator);
         N.requireNonNull(conditionToBreak);
 
@@ -978,7 +978,7 @@ public final class Multimap<K, E, V extends Collection<E>> {
         for (Map.Entry<K, V> entry : valueMap.entrySet()) {
             result = accumulator.apply(result, entry.getKey(), entry.getValue());
 
-            if (conditionToBreak.test(entry.getKey(), entry.getValue(), result)) {
+            if (conditionToBreak.test(result, entry.getKey(), entry.getValue())) {
                 break;
             }
         }

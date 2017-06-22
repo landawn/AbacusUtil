@@ -2008,7 +2008,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     }
 
     @Override
-    public <U> U forEach(U seed, BiFunction<U, ? super T, U> accumulator, BiPredicate<? super T, ? super U> conditionToBreak) {
+    public <R> R forEach(R seed, BiFunction<R, ? super T, R> accumulator, BiPredicate<? super R, ? super T> conditionToBreak) {
         if (logger.isWarnEnabled()) {
             logger.warn("The 'forEach' with break condition is sequentially executed in parallel stream");
         }

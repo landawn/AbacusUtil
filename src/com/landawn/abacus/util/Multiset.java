@@ -1086,7 +1086,7 @@ public final class Multiset<E> implements Iterable<E> {
      * @param conditionToBreak break if <code>true</code> is return.
      * @return
      */
-    public <R> R forEach(final R seed, TriFunction<R, ? super E, Integer, R> accumulator, final TriPredicate<? super E, Integer, ? super R> conditionToBreak) {
+    public <R> R forEach(final R seed, TriFunction<R, ? super E, Integer, R> accumulator, final TriPredicate<? super R, ? super E, Integer> conditionToBreak) {
         N.requireNonNull(accumulator);
         N.requireNonNull(conditionToBreak);
 
@@ -1095,7 +1095,7 @@ public final class Multiset<E> implements Iterable<E> {
         for (Map.Entry<E, MutableInt> entry : valueMap.entrySet()) {
             result = accumulator.apply(result, entry.getKey(), entry.getValue().value());
 
-            if (conditionToBreak.test(entry.getKey(), entry.getValue().value(), result)) {
+            if (conditionToBreak.test(result, entry.getKey(), entry.getValue().value())) {
                 break;
             }
         }

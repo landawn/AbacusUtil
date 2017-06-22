@@ -1171,7 +1171,8 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <U> Stream<List<T>> splitToList(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
+    public <U> Stream<List<T>> splitToList(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
         return new IteratorStream<>(new ExIterator<List<T>>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
@@ -1213,7 +1214,8 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <U> Stream<Set<T>> splitToSet(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
+    public <U> Stream<Set<T>> splitToSet(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
         return new IteratorStream<>(new ExIterator<Set<T>>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
@@ -1449,13 +1451,13 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <U> U forEach(U seed, BiFunction<U, ? super T, U> accumulator, BiPredicate<? super T, ? super U> conditionToBreak) {
-        U result = seed;
+    public <R> R forEach(R seed, BiFunction<R, ? super T, R> accumulator, BiPredicate<? super R, ? super T> conditionToBreak) {
+        R result = seed;
 
         for (int i = fromIndex; i < toIndex; i++) {
             result = accumulator.apply(result, elements[i]);
 
-            if (conditionToBreak.test(elements[i], result)) {
+            if (conditionToBreak.test(result, elements[i])) {
                 break;
             }
         }
