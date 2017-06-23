@@ -2194,15 +2194,6 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
      * Returns a new <code>DataSet</code> with the rows de-duplicated by the value in the specified column from the specified <code>fromRowIndex</code> to <code>toRowIndex</code>
-     * 
-     * @param columnName
-     * @param keyExtractor don't change value of the input parameter.
-     * @return
-     */
-    DataSet distinct(String columnName, Function<?, ?> keyExtractor);
-
-    /**
-     * Returns a new <code>DataSet</code> with the rows de-duplicated by the value in the specified column from the specified <code>fromRowIndex</code> to <code>toRowIndex</code>
      *
      * @param columnName
      * @param fromRowIndex
@@ -2212,34 +2203,12 @@ public interface DataSet extends Iterable<Object[]> {
     DataSet distinct(String columnName, int fromRowIndex, int toRowIndex);
 
     /**
-     * Returns a new <code>DataSet</code> with the rows de-duplicated by the value in the specified column from the specified <code>fromRowIndex</code> to <code>toRowIndex</code>
-     * 
-     * @param columnName
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param keyExtractor don't change value of the input parameter.
-     * @return
-     */
-    DataSet distinct(String columnName, int fromRowIndex, int toRowIndex, Function<?, ?> keyExtractor);
-
-    /**
      * Returns a new <code>DataSet</code> with the rows de-duplicated by the values in the specified columns
      *
      * @param columnNames
      * @return a new DataSet
      */
     DataSet distinct(Collection<String> columnNames);
-
-    /**
-     * Returns a new <code>DataSet</code> with the rows de-duplicated by the values in the specified columns from the specified <code>fromRowIndex</code> to <code>toRowIndex</code>
-     * 
-     * @param columnNames
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param keyExtractor don't change value of the input parameter.
-     * @return
-     */
-    DataSet distinct(Collection<String> columnNames, Function<? super Object[], ?> keyExtractor);
 
     /**
      *Returns a new <code>DataSet</code> with the rows de-duplicated by the values in the specified columns from the specified <code>fromRowIndex</code> to <code>toRowIndex</code>
@@ -2252,6 +2221,26 @@ public interface DataSet extends Iterable<Object[]> {
     DataSet distinct(Collection<String> columnNames, int fromRowIndex, int toRowIndex);
 
     /**
+     * Returns a new <code>DataSet</code> with the rows de-duplicated by the value in the specified column from the specified <code>fromRowIndex</code> to <code>toRowIndex</code>
+     * 
+     * @param columnName
+     * @param keyExtractor don't change value of the input parameter.
+     * @return
+     */
+    DataSet distinctBy(String columnName, Function<?, ?> keyExtractor);
+
+    /**
+     * Returns a new <code>DataSet</code> with the rows de-duplicated by the value in the specified column from the specified <code>fromRowIndex</code> to <code>toRowIndex</code>
+     * 
+     * @param columnName
+     * @param fromRowIndex
+     * @param toRowIndex
+     * @param keyExtractor don't change value of the input parameter.
+     * @return
+     */
+    DataSet distinctBy(String columnName, int fromRowIndex, int toRowIndex, Function<?, ?> keyExtractor);
+
+    /**
      * Returns a new <code>DataSet</code> with the rows de-duplicated by the values in the specified columns from the specified <code>fromRowIndex</code> to <code>toRowIndex</code>
      * 
      * @param columnNames
@@ -2260,7 +2249,18 @@ public interface DataSet extends Iterable<Object[]> {
      * @param keyExtractor don't change value of the input parameter.
      * @return
      */
-    DataSet distinct(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Function<? super Object[], ?> keyExtractor);
+    DataSet distinctBy(Collection<String> columnNames, Function<? super Object[], ?> keyExtractor);
+
+    /**
+     * Returns a new <code>DataSet</code> with the rows de-duplicated by the values in the specified columns from the specified <code>fromRowIndex</code> to <code>toRowIndex</code>
+     * 
+     * @param columnNames
+     * @param fromRowIndex
+     * @param toRowIndex
+     * @param keyExtractor don't change value of the input parameter.
+     * @return
+     */
+    DataSet distinctBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Function<? super Object[], ?> keyExtractor);
 
     /**
      *

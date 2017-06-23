@@ -1682,8 +1682,8 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @param keyExtractor don't change value of the input parameter.
      * @return
      */
-    public List<T> distinct(final Function<? super T, ?> keyExtractor) {
-        return N.distinct(coll, keyExtractor);
+    public List<T> distinctBy(final Function<? super T, ?> keyExtractor) {
+        return N.distinctBy(coll, keyExtractor);
     }
 
     @SuppressWarnings("rawtypes")

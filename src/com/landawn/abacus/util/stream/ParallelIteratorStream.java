@@ -1295,7 +1295,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     }
 
     @Override
-    public Stream<T> distinct(final Function<? super T, ?> keyExtractor) {
+    public Stream<T> distinctBy(final Function<? super T, ?> keyExtractor) {
         final Set<Object> set = new HashSet<>();
 
         return filter(new Predicate<T>() {

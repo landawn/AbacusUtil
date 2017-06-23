@@ -551,7 +551,7 @@ public abstract class Observer<T> {
      * @param keyExtractor
      * @return
      */
-    public Observer<T> distinct(final Function<? super T, ?> keyExtractor) {
+    public Observer<T> distinctBy(final Function<? super T, ?> keyExtractor) {
         dispatcher.append(new Dispatcher<Object>() {
             private Set<Object> set = new HashSet<>();
 

@@ -426,20 +426,20 @@ public final class EntryStream<K, V> {
         return of(s.distinct());
     }
 
-    public EntryStream<K, V> distinct(final Function<? super Map.Entry<K, V>, ?> keyExtractor) {
-        return of(s.distinct(keyExtractor));
+    public EntryStream<K, V> distinctBy(final Function<? super Map.Entry<K, V>, ?> keyExtractor) {
+        return of(s.distinctBy(keyExtractor));
     }
 
     public EntryStream<K, V> distinctByKey() {
         final Function<? super Entry<K, V>, K> keyExtractor = Fn.key();
 
-        return of(s.distinct(keyExtractor));
+        return of(s.distinctBy(keyExtractor));
     }
 
     public EntryStream<K, V> distinctByValue() {
         final Function<? super Entry<K, V>, V> keyExtractor = Fn.value();
 
-        return of(s.distinct(keyExtractor));
+        return of(s.distinctBy(keyExtractor));
     }
 
     public EntryStream<K, V> reversed() {

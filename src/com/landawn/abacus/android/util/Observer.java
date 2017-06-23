@@ -199,7 +199,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
          */
         @Deprecated
         @Override
-        public Observer<T> distinct(final Function<? super T, ?> keyExtractor) {
+        public Observer<T> distinctBy(final Function<? super T, ?> keyExtractor) {
             throw new UnsupportedOperationException();
         }
 

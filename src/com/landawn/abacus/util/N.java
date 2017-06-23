@@ -21122,55 +21122,6 @@ public final class N {
     }
 
     /**
-     * Distinct by the value mapped from <code>keyExtractor</code>.
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param keyExtractor don't change value of the input parameter.
-     * @return
-     */
-    public static <T> T[] distinct(final T[] a, final Function<? super T, ?> keyExtractor) {
-        if (N.isNullOrEmpty(a)) {
-            return a;
-        }
-
-        return distinct(a, 0, a.length, keyExtractor);
-    }
-
-    /**
-     * Distinct by the value mapped from <code>keyExtractor</code>.
-     * 
-     * Mostly it's designed for one-step operation to complete the operation in one step.
-     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
-     * 
-     * @param a
-     * @param fromIndex
-     * @param toIndex
-     * @param keyExtractor don't change value of the input parameter.
-     * @return
-     */
-    public static <T> T[] distinct(final T[] a, final int fromIndex, final int toIndex, final Function<? super T, ?> keyExtractor) {
-        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        if (N.isNullOrEmpty(a)) {
-            return a;
-        }
-
-        final List<T> result = new ArrayList<>();
-        final Set<Object> set = new HashSet<>();
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (set.add(hashKey(keyExtractor.apply(a[i])))) {
-                result.add(a[i]);
-            }
-        }
-
-        return result.toArray((T[]) N.newArray(a.getClass().getComponentType(), result.size()));
-    }
-
-    /**
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      * 
@@ -21240,16 +21191,65 @@ public final class N {
      * Mostly it's designed for one-step operation to complete the operation in one step.
      * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
      * 
+     * @param a
+     * @param keyExtractor don't change value of the input parameter.
+     * @return
+     */
+    public static <T> T[] distinctBy(final T[] a, final Function<? super T, ?> keyExtractor) {
+        if (N.isNullOrEmpty(a)) {
+            return a;
+        }
+    
+        return distinctBy(a, 0, a.length, keyExtractor);
+    }
+
+    /**
+     * Distinct by the value mapped from <code>keyExtractor</code>.
+     * 
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @param keyExtractor don't change value of the input parameter.
+     * @return
+     */
+    public static <T> T[] distinctBy(final T[] a, final int fromIndex, final int toIndex, final Function<? super T, ?> keyExtractor) {
+        checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+    
+        if (N.isNullOrEmpty(a)) {
+            return a;
+        }
+    
+        final List<T> result = new ArrayList<>();
+        final Set<Object> set = new HashSet<>();
+    
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (set.add(hashKey(keyExtractor.apply(a[i])))) {
+                result.add(a[i]);
+            }
+        }
+    
+        return result.toArray((T[]) N.newArray(a.getClass().getComponentType(), result.size()));
+    }
+
+    /**
+     * Distinct by the value mapped from <code>keyExtractor</code>.
+     * 
+     * Mostly it's designed for one-step operation to complete the operation in one step.
+     * <code>java.util.stream.Stream</code> is preferred for multiple phases operation.
+     * 
      * @param c
      * @param keyExtractor don't change value of the input parameter.
      * @return
      */
-    public static <T> List<T> distinct(final Collection<? extends T> c, final Function<? super T, ?> keyExtractor) {
+    public static <T> List<T> distinctBy(final Collection<? extends T> c, final Function<? super T, ?> keyExtractor) {
         if (N.isNullOrEmpty(c)) {
             return new ArrayList<>();
         }
 
-        return distinct(c, 0, c.size(), keyExtractor);
+        return distinctBy(c, 0, c.size(), keyExtractor);
     }
 
     /**
@@ -21264,7 +21264,7 @@ public final class N {
      * @param keyExtractor don't change value of the input parameter.
      * @return
      */
-    public static <T> List<T> distinct(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Function<? super T, ?> keyExtractor) {
+    public static <T> List<T> distinctBy(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Function<? super T, ?> keyExtractor) {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {

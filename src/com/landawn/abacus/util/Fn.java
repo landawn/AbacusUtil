@@ -207,6 +207,11 @@ public final class Fn {
         return Comparators.reverseOrder(cmp);
     }
 
+    @SuppressWarnings("rawtypes")
+    public static <T, U extends Comparable> Comparator<T> comparing(final Function<? super T, ? extends U> keyExtractor) {
+        return Comparators.comparing(keyExtractor);
+    }
+
     public static Runnable emptyAction() {
         return EMPTY_ACTION;
     }
@@ -368,6 +373,24 @@ public final class Fn {
             @Override
             public boolean test(Class value) {
                 return clazz.isAssignableFrom(value);
+            }
+        };
+    }
+
+    public static Predicate<String> startsWith(final String prefix) {
+        return new Predicate<String>() {
+            @Override
+            public boolean test(String value) {
+                return value.startsWith(prefix);
+            }
+        };
+    }
+
+    public static Predicate<String> endsWith(final String suffix) {
+        return new Predicate<String>() {
+            @Override
+            public boolean test(String value) {
+                return value.endsWith(suffix);
             }
         };
     }

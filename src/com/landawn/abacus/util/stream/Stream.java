@@ -844,7 +844,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param keyExtractor don't change value of the input parameter.
      * @return
      */
-    public abstract Stream<T> distinct(Function<? super T, ?> keyExtractor);
+    public abstract Stream<T> distinctBy(Function<? super T, ?> keyExtractor);
 
     /**
      * 
@@ -882,6 +882,9 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return the new stream
      */
     public abstract Stream<T> sorted(Comparator<? super T> comparator);
+
+    @SuppressWarnings("rawtypes")
+    public abstract Stream<T> sortedBy(Function<? super T, ? extends Comparable> keyExtractor);
 
     /**
      * Execute <code>accumulator</code> on each element till <code>true</code> is returned by <code>conditionToBreak</code>

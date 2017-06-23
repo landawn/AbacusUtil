@@ -40,6 +40,7 @@ import com.annimon.stream.function.ToIntFunction;
 import com.annimon.stream.function.ToLongFunction;
 import com.annimon.stream.function.UnaryOperator;
 import com.landawn.abacus.util.Indexed;
+import com.landawn.abacus.util.N;
 
 /**
  * A simple wrapper for <a href="https://github.com/aNNiMON/Lightweight-Stream-API">Lightweight-Stream-API</a>
@@ -245,6 +246,18 @@ public final class StreamEx<T> {
 
     public StreamEx<T> sorted(final Comparator<? super T> comparator) {
         return new StreamEx<>(s.sorted(comparator));
+    }
+
+    @SuppressWarnings("rawtypes")
+    public StreamEx<T> sortedBy(final Function<? super T, ? extends Comparable> keyExtractor) {
+        final Comparator<? super T> comparator = new Comparator<T>() {
+            @Override
+            public int compare(T o1, T o2) {
+                return N.compare(keyExtractor.apply(o1), keyExtractor.apply(o2));
+            }
+        };
+
+        return sorted(comparator);
     }
 
     public <K> StreamEx<Map.Entry<K, List<T>>> groupBy(final Function<? super T, ? extends K> classifier) {
