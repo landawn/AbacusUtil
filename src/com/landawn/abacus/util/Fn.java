@@ -208,8 +208,13 @@ public final class Fn {
     }
 
     @SuppressWarnings("rawtypes")
-    public static <T, U extends Comparable> Comparator<T> comparing(final Function<? super T, ? extends U> keyExtractor) {
-        return Comparators.comparing(keyExtractor);
+    public static <T, U extends Comparable> Comparator<T> comparingBy(final Function<? super T, ? extends U> keyExtractor) {
+        return Comparators.comparingBy(keyExtractor);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static <T, U extends Comparable> Comparator<T> reverseComparingBy(final Function<? super T, ? extends U> keyExtractor) {
+        return Comparators.reverseComparingBy(keyExtractor);
     }
 
     public static Runnable emptyAction() {
@@ -1766,6 +1771,20 @@ public final class Fn {
             }
         };
 
+        private static final BiConsumer<Joiner, Joiner> MERGE = new BiConsumer<Joiner, Joiner>() {
+            @Override
+            public void accept(Joiner t, Joiner u) {
+                t.merge(u);
+            }
+        };
+
+        private static final BiConsumer<StringBuilder, Object> APPEND = new BiConsumer<StringBuilder, Object>() {
+            @Override
+            public void accept(StringBuilder t, Object u) {
+                t.append(u);
+            }
+        };
+
         private BiConsumers() {
             // singleton.
         }
@@ -1810,6 +1829,14 @@ public final class Fn {
 
         public static <K, V, M extends Map<K, V>> BiConsumer<M, K> ofRemoveByKey() {
             return (BiConsumer<M, K>) REMOVE_BY_KEY;
+        }
+
+        public static BiConsumer<Joiner, Joiner> ofMerge() {
+            return MERGE;
+        }
+
+        public static <T> BiConsumer<StringBuilder, T> ofAppend() {
+            return (BiConsumer<StringBuilder, T>) APPEND;
         }
 
         /**
@@ -1885,6 +1912,20 @@ public final class Fn {
     }
 
     public static final class BiFunctions {
+
+        private static final BiFunction<Object, Object, Object> RETURN_FIRST = new BiFunction<Object, Object, Object>() {
+            @Override
+            public Object apply(Object t, Object u) {
+                return t;
+            }
+        };
+
+        private static final BiFunction<Object, Object, Object> RETURN_SECOND = new BiFunction<Object, Object, Object>() {
+            @Override
+            public Object apply(Object t, Object u) {
+                return u;
+            }
+        };
 
         @SuppressWarnings("rawtypes")
         private static final BiFunction<Object, Object, Tuple2> TUPLE = new BiFunction<Object, Object, Tuple2>() {
@@ -1968,17 +2009,17 @@ public final class Fn {
             }
         };
 
-        private static final BiFunction<Object, Object, Object> RETURN_FIRST = new BiFunction<Object, Object, Object>() {
+        private static final BiFunction<Joiner, Joiner, Joiner> MERGE = new BiFunction<Joiner, Joiner, Joiner>() {
             @Override
-            public Object apply(Object t, Object u) {
-                return t;
+            public Joiner apply(Joiner t, Joiner u) {
+                return t.merge(u);
             }
         };
 
-        private static final BiFunction<Object, Object, Object> RETURN_SECOND = new BiFunction<Object, Object, Object>() {
+        private static final BiFunction<StringBuilder, Object, StringBuilder> APPEND = new BiFunction<StringBuilder, Object, StringBuilder>() {
             @Override
-            public Object apply(Object t, Object u) {
-                return u;
+            public StringBuilder apply(StringBuilder t, Object u) {
+                return t.append(u);
             }
         };
 
@@ -2035,6 +2076,14 @@ public final class Fn {
 
         public static <K, V, M extends Map<K, V>, U> BiFunction<M, K, M> ofRemoveByKey() {
             return (BiFunction<M, K, M>) REMOVE_BY_KEY;
+        }
+
+        public static BiFunction<Joiner, Joiner, Joiner> ofMerge() {
+            return MERGE;
+        }
+
+        public static <T> BiFunction<StringBuilder, T, StringBuilder> ofAppend() {
+            return (BiFunction<StringBuilder, T, StringBuilder>) APPEND;
         }
 
         /**
@@ -2153,6 +2202,24 @@ public final class Fn {
 
         public static <K, V, M extends Map<K, V>> BinaryOperator<M> ofPutAll() {
             return (BinaryOperator<M>) PUT_ALL;
+        }
+
+        public static BinaryOperator<Joiner> ofMerge() {
+            return new BinaryOperator<Joiner>() {
+                @Override
+                public Joiner apply(Joiner t, Joiner u) {
+                    return t.merge(u);
+                }
+            };
+        }
+
+        public static BinaryOperator<StringBuilder> ofAppend() {
+            return new BinaryOperator<StringBuilder>() {
+                @Override
+                public StringBuilder apply(StringBuilder t, StringBuilder u) {
+                    return t.append(u);
+                }
+            };
         }
 
         public static BinaryOperator<String> ofJoin(final String seperator) {

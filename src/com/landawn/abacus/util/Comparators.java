@@ -113,7 +113,7 @@ public final class Comparators {
     }
 
     @SuppressWarnings("rawtypes")
-    public static <T, U extends Comparable> Comparator<T> comparing(final Function<? super T, ? extends U> keyExtractor) {
+    public static <T, U extends Comparable> Comparator<T> comparingBy(final Function<? super T, ? extends U> keyExtractor) {
         N.requireNonNull(keyExtractor);
 
         return new Comparator<T>() {
@@ -124,7 +124,19 @@ public final class Comparators {
         };
     }
 
-    public static <T, U> Comparator<T> comparing(final Function<? super T, ? extends U> keyExtractor, final Comparator<? super U> keyComparator) {
+    @SuppressWarnings("rawtypes")
+    public static <T, U extends Comparable> Comparator<T> reverseComparingBy(final Function<? super T, ? extends U> keyExtractor) {
+        N.requireNonNull(keyExtractor);
+
+        return new Comparator<T>() {
+            @Override
+            public int compare(T a, T b) {
+                return N.compare(keyExtractor.apply(b), keyExtractor.apply(a));
+            }
+        };
+    }
+
+    public static <T, U> Comparator<T> comparingBy(final Function<? super T, ? extends U> keyExtractor, final Comparator<? super U> keyComparator) {
         N.requireNonNull(keyExtractor);
         N.requireNonNull(keyComparator);
 
