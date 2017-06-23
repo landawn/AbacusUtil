@@ -64,11 +64,11 @@ public final class Comparators {
         return NATURAL_ORDER;
     }
 
-    public static <T> Comparator<T> reverseOrder() {
+    public static <T> Comparator<T> reversedOrder() {
         return REVERSED_ORDER;
     }
 
-    public static <T> Comparator<T> reverseOrder(final Comparator<T> cmp) {
+    public static <T> Comparator<T> reversedOrder(final Comparator<T> cmp) {
         if (cmp == null || cmp == NATURAL_ORDER) {
             return REVERSED_ORDER;
         } else if (cmp == REVERSED_ORDER) {
@@ -125,7 +125,7 @@ public final class Comparators {
     }
 
     @SuppressWarnings("rawtypes")
-    public static <T, U extends Comparable> Comparator<T> reverseComparingBy(final Function<? super T, ? extends U> keyExtractor) {
+    public static <T, U extends Comparable> Comparator<T> reversedComparingBy(final Function<? super T, ? extends U> keyExtractor) {
         N.requireNonNull(keyExtractor);
 
         return new Comparator<T>() {
@@ -236,7 +236,7 @@ public final class Comparators {
     }
 
     @SuppressWarnings("rawtypes")
-    public static <K extends Comparable, V> Comparator<Map.Entry<K, V>> reverseComparingByKey() {
+    public static <K extends Comparable, V> Comparator<Map.Entry<K, V>> reversedComparingByKey() {
         return new Comparator<Map.Entry<K, V>>() {
             @Override
             public int compare(Map.Entry<K, V> a, Map.Entry<K, V> b) {
@@ -256,7 +256,7 @@ public final class Comparators {
     }
 
     @SuppressWarnings("rawtypes")
-    public static <K, V extends Comparable> Comparator<Map.Entry<K, V>> reverseComparingByValue() {
+    public static <K, V extends Comparable> Comparator<Map.Entry<K, V>> reversedComparingByValue() {
         return new Comparator<Map.Entry<K, V>>() {
             @Override
             public int compare(Map.Entry<K, V> a, Map.Entry<K, V> b) {

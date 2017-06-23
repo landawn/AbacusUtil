@@ -199,12 +199,12 @@ public final class Fn {
         return Comparators.naturalOrder();
     }
 
-    public static <T> Comparator<T> reverseOrder() {
-        return Comparators.reverseOrder();
+    public static <T> Comparator<T> reversedOrder() {
+        return Comparators.reversedOrder();
     }
 
-    public static <T> Comparator<T> reverseOrder(final Comparator<T> cmp) {
-        return Comparators.reverseOrder(cmp);
+    public static <T> Comparator<T> reversedOrder(final Comparator<T> cmp) {
+        return Comparators.reversedOrder(cmp);
     }
 
     @SuppressWarnings("rawtypes")
@@ -213,8 +213,8 @@ public final class Fn {
     }
 
     @SuppressWarnings("rawtypes")
-    public static <T, U extends Comparable> Comparator<T> reverseComparingBy(final Function<? super T, ? extends U> keyExtractor) {
-        return Comparators.reverseComparingBy(keyExtractor);
+    public static <T, U extends Comparable> Comparator<T> reversedComparingBy(final Function<? super T, ? extends U> keyExtractor) {
+        return Comparators.reversedComparingBy(keyExtractor);
     }
 
     public static Runnable emptyAction() {

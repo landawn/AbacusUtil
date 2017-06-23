@@ -2058,7 +2058,7 @@ public final class Collectors {
      * @see #minAll()
      */
     public static <T, A, D> Collector<T, ?, D> minAll(Comparator<? super T> comparator, Collector<T, A, D> downstream) {
-        return maxAll(Fn.reverseOrder(comparator), downstream);
+        return maxAll(Fn.reversedOrder(comparator), downstream);
     }
 
     /**
@@ -2080,7 +2080,7 @@ public final class Collectors {
     public static <T> Collector<T, ?, List<T>> minAll(Comparator<? super T> comparator) {
         final Collector<? super T, ?, List<T>> downstream = Collectors.toList();
 
-        return maxAll(Fn.reverseOrder(comparator), downstream);
+        return maxAll(Fn.reversedOrder(comparator), downstream);
     }
 
     /**
@@ -2104,7 +2104,7 @@ public final class Collectors {
      */
     @SuppressWarnings("rawtypes")
     public static <T extends Comparable, A, D> Collector<T, ?, D> minAll(Collector<T, A, D> downstream) {
-        return maxAll(Fn.reverseOrder(), downstream);
+        return maxAll(Fn.reversedOrder(), downstream);
     }
 
     /**
@@ -2125,7 +2125,7 @@ public final class Collectors {
     public static <T extends Comparable> Collector<T, ?, List<T>> minAll() {
         final Collector<? super T, ?, List<T>> downstream = Collectors.toList();
 
-        return maxAll(Fn.reverseOrder(), downstream);
+        return maxAll(Fn.reversedOrder(), downstream);
     }
 
     /**
