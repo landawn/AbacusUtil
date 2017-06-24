@@ -399,38 +399,6 @@ abstract class AbstractByteStream extends ByteStream {
     }
 
     @Override
-    public Pair<OptionalByte, OptionalByte> findFirstAndLast(BytePredicate predicateForFirst, BytePredicate predicateForLast) {
-        final Pair<OptionalByte, OptionalByte> result = new Pair<>();
-        final ExByteIterator iter = exIterator();
-        MutableByte last = null;
-        byte next = 0;
-
-        while (iter.hasNext()) {
-            next = iter.nextByte();
-
-            if (result.left == null && predicateForFirst.test(next)) {
-                result.left = OptionalByte.of(next);
-            }
-
-            if (predicateForLast.test(next)) {
-                if (last == null) {
-                    last = MutableByte.of(next);
-                } else {
-                    last.setValue(next);
-                }
-            }
-        }
-
-        if (result.left == null) {
-            result.left = OptionalByte.empty();
-        }
-
-        result.right = last == null ? OptionalByte.empty() : OptionalByte.of(last.value());
-
-        return result;
-    }
-
-    @Override
     public ByteStream intersection(final Collection<?> c) {
         final Multiset<?> multiset = Multiset.from(c);
 

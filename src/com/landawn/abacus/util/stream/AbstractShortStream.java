@@ -398,38 +398,6 @@ abstract class AbstractShortStream extends ShortStream {
     }
 
     @Override
-    public Pair<OptionalShort, OptionalShort> findFirstAndLast(ShortPredicate predicateForFirst, ShortPredicate predicateForLast) {
-        final Pair<OptionalShort, OptionalShort> result = new Pair<>();
-        final ExShortIterator iter = exIterator();
-        MutableShort last = null;
-        short next = 0;
-
-        while (iter.hasNext()) {
-            next = iter.nextShort();
-
-            if (result.left == null && predicateForFirst.test(next)) {
-                result.left = OptionalShort.of(next);
-            }
-
-            if (predicateForLast.test(next)) {
-                if (last == null) {
-                    last = MutableShort.of(next);
-                } else {
-                    last.setValue(next);
-                }
-            }
-        }
-
-        if (result.left == null) {
-            result.left = OptionalShort.empty();
-        }
-
-        result.right = last == null ? OptionalShort.empty() : OptionalShort.of(last.value());
-
-        return result;
-    }
-
-    @Override
     public ShortStream intersection(final Collection<?> c) {
         final Multiset<?> multiset = Multiset.from(c);
 

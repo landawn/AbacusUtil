@@ -398,38 +398,6 @@ abstract class AbstractCharStream extends CharStream {
     }
 
     @Override
-    public Pair<OptionalChar, OptionalChar> findFirstAndLast(CharPredicate predicateForFirst, CharPredicate predicateForLast) {
-        final Pair<OptionalChar, OptionalChar> result = new Pair<>();
-        final ExCharIterator iter = exIterator();
-        MutableChar last = null;
-        char next = 0;
-
-        while (iter.hasNext()) {
-            next = iter.nextChar();
-
-            if (result.left == null && predicateForFirst.test(next)) {
-                result.left = OptionalChar.of(next);
-            }
-
-            if (predicateForLast.test(next)) {
-                if (last == null) {
-                    last = MutableChar.of(next);
-                } else {
-                    last.setValue(next);
-                }
-            }
-        }
-
-        if (result.left == null) {
-            result.left = OptionalChar.empty();
-        }
-
-        result.right = last == null ? OptionalChar.empty() : OptionalChar.of(last.value());
-
-        return result;
-    }
-
-    @Override
     public CharStream intersection(final Collection<?> c) {
         final Multiset<?> multiset = Multiset.from(c);
 

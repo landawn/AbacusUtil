@@ -35,7 +35,6 @@ import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.Optional;
-import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiFunction;
@@ -621,20 +620,6 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * @return
      */
     OT findFirstOrLast(P predicateForFirst, P predicateForLast);
-
-    /**
-     * Returns the first element which is tested by the specified <code>predicateForFirst</code>,
-     *  and the last element which is tested by the specified <code>predicateForLast</code>.
-     *  or an empty Optional if the first or last element is not found. 
-     *  
-     * <br />
-     * This method only run sequentially, even in parallel stream.
-     * 
-     * @param predicateForFirst
-     * @param predicateForLast
-     * @return
-     */
-    Pair<OT, OT> findFirstAndLast(P predicateForFirst, P predicateForLast);
 
     /**
      * Returns an {@link Optional} describing some element of the stream, or an

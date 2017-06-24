@@ -17,7 +17,9 @@
 
 8, Add sortedBy to Stream.
 
-9, Improvements and bug fix.
+9*, Rename reverseComparing… to reversedComparing, reverseOrder to reversedOrder in Fn/Comparators.
+
+11, Improvements and bug fix.
 
 
 ========Changes in 0.9.72=========================================================================

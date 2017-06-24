@@ -21199,7 +21199,7 @@ public final class N {
         if (N.isNullOrEmpty(a)) {
             return a;
         }
-    
+
         return distinctBy(a, 0, a.length, keyExtractor);
     }
 
@@ -21217,20 +21217,20 @@ public final class N {
      */
     public static <T> T[] distinctBy(final T[] a, final int fromIndex, final int toIndex, final Function<? super T, ?> keyExtractor) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-    
+
         if (N.isNullOrEmpty(a)) {
             return a;
         }
-    
+
         final List<T> result = new ArrayList<>();
         final Set<Object> set = new HashSet<>();
-    
+
         for (int i = fromIndex; i < toIndex; i++) {
             if (set.add(hashKey(keyExtractor.apply(a[i])))) {
                 result.add(a[i]);
             }
         }
-    
+
         return result.toArray((T[]) N.newArray(a.getClass().getComponentType(), result.size()));
     }
 
@@ -26144,12 +26144,12 @@ public final class N {
         return idx == copy.length ? copy : N.copyOfRange(copy, 0, idx);
     }
 
-    public boolean removeAllOccurrences(Collection<?> c, final Object element) {
+    public static boolean removeAllOccurrences(Collection<?> c, final Object element) {
         if (N.isNullOrEmpty(c)) {
             return false;
         }
 
-        return c.removeAll(N.asList(element));
+        return c.removeAll(N.asSet(element));
     }
 
     /**

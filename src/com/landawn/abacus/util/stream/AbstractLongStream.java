@@ -396,38 +396,6 @@ abstract class AbstractLongStream extends LongStream {
     }
 
     @Override
-    public Pair<OptionalLong, OptionalLong> findFirstAndLast(LongPredicate predicateForFirst, LongPredicate predicateForLast) {
-        final Pair<OptionalLong, OptionalLong> result = new Pair<>();
-        final ExLongIterator iter = exIterator();
-        MutableLong last = null;
-        long next = 0;
-
-        while (iter.hasNext()) {
-            next = iter.nextLong();
-
-            if (result.left == null && predicateForFirst.test(next)) {
-                result.left = OptionalLong.of(next);
-            }
-
-            if (predicateForLast.test(next)) {
-                if (last == null) {
-                    last = MutableLong.of(next);
-                } else {
-                    last.setValue(next);
-                }
-            }
-        }
-
-        if (result.left == null) {
-            result.left = OptionalLong.empty();
-        }
-
-        result.right = last == null ? OptionalLong.empty() : OptionalLong.of(last.value());
-
-        return result;
-    }
-
-    @Override
     public LongStream intersection(final Collection<?> c) {
         final Multiset<?> multiset = Multiset.from(c);
 

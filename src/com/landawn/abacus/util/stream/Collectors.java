@@ -1209,94 +1209,6 @@ public final class Collectors {
     }
 
     /**
-     * {@code BinaryOperator<Map>} that merges the contents of its right
-     * argument into its left argument, using the provided merge function to
-     * handle duplicate keys.
-     *
-     * @param <K> type of the map keys
-     * @param <V> type of the map values
-     * @param <M> type of the map
-     * @param mergeFunction A merge function suitable for
-     * {@link Map#merge(Object, Object, BiFunction) Map.merge()}
-     * @return a merge function for two maps
-     */
-    private static <K, V, M extends Map<K, V>> BinaryOperator<M> mapMerger(final BinaryOperator<V> mergeFunction) {
-        Objects.requireNonNull(mergeFunction);
-
-        return new BinaryOperator<M>() {
-            @Override
-            public M apply(M m1, M m2) {
-                K key = null;
-                V value = null;
-                for (Map.Entry<K, V> e : m2.entrySet()) {
-                    Objects.requireNonNull(e.getValue());
-                    key = e.getKey();
-                    value = e.getValue();
-                    V oldValue = m1.get(key);
-                    V newValue = (oldValue == null) ? value : mergeFunction.apply(oldValue, value);
-                    if (newValue == null) {
-                        m1.remove(key);
-                    } else {
-                        m1.put(key, newValue);
-                    }
-                }
-                return m1;
-            }
-        };
-    }
-
-    private static <K, V, M extends ConcurrentMap<K, V>> BinaryOperator<M> mapMerger2(final BinaryOperator<V> mergeFunction) {
-        Objects.requireNonNull(mergeFunction);
-
-        return new BinaryOperator<M>() {
-            @Override
-            public M apply(M m1, M m2) {
-                K key = null;
-                V value = null;
-                for (Map.Entry<K, V> e : m2.entrySet()) {
-                    Objects.requireNonNull(e.getValue());
-                    key = e.getKey();
-                    value = e.getValue();
-                    V oldValue = m1.get(key);
-                    V newValue = (oldValue == null) ? value : mergeFunction.apply(oldValue, value);
-                    if (newValue == null) {
-                        m1.remove(key);
-                    } else {
-                        m1.put(key, newValue);
-                    }
-                }
-                return m1;
-            }
-        };
-    }
-
-    private static <K, U, V extends Collection<U>> BinaryOperator<Multimap<K, U, V>> mapMerger3() {
-        return new BinaryOperator<Multimap<K, U, V>>() {
-            @Override
-            public Multimap<K, U, V> apply(Multimap<K, U, V> m1, Multimap<K, U, V> m2) {
-                K key = null;
-                V value = null;
-                for (Map.Entry<K, V> e : m2.entrySet()) {
-                    Objects.requireNonNull(e.getValue());
-                    key = e.getKey();
-                    value = e.getValue();
-
-                    if (N.notNullOrEmpty(value)) {
-                        V oldValue = m1.get(key);
-
-                        if (oldValue == null) {
-                            m1.putAll(key, value);
-                        } else {
-                            oldValue.addAll(value);
-                        }
-                    }
-                }
-                return m1;
-            }
-        };
-    }
-
-    /**
      * It's copied from StreamEx: https://github.com/amaembo/streamex
      * <br />
      * 
@@ -4660,7 +4572,7 @@ public final class Collectors {
             }
         };
 
-        final BinaryOperator<M> combiner = (BinaryOperator<M>) mapMerger2(mergeFunction);
+        final BinaryOperator<M> combiner = (BinaryOperator<M>) concurrentMapMerger(mergeFunction);
 
         return new CollectorImpl<T, M, M>(mapFactory, accumulator, combiner, CH_CONCURRENT_ID);
     }
@@ -4776,7 +4688,7 @@ public final class Collectors {
             }
         };
 
-        final BinaryOperator<Multimap<K, U, V>> combiner = mapMerger3();
+        final BinaryOperator<Multimap<K, U, V>> combiner = multimapMerger();
 
         return new CollectorImpl<>(mapFactory, accumulator, combiner, CH_ID);
     }
@@ -4853,10 +4765,106 @@ public final class Collectors {
         return v;
     }
 
+    /**
+     * {@code BinaryOperator<Map>} that merges the contents of its right
+     * argument into its left argument, using the provided merge function to
+     * handle duplicate keys.
+     *
+     * @param <K> type of the map keys
+     * @param <V> type of the map values
+     * @param <M> type of the map
+     * @param mergeFunction A merge function suitable for
+     * {@link Map#merge(Object, Object, BiFunction) Map.merge()}
+     * @return a merge function for two maps
+     */
+    private static <K, V, M extends Map<K, V>> BinaryOperator<M> mapMerger(final BinaryOperator<V> mergeFunction) {
+        Objects.requireNonNull(mergeFunction);
+
+        return new BinaryOperator<M>() {
+            @Override
+            public M apply(M m1, M m2) {
+                /*
+                K key = null;
+                V value = null;
+                for (Map.Entry<K, V> e : m2.entrySet()) {
+                    Objects.requireNonNull(e.getValue());
+                    key = e.getKey();
+                    value = e.getValue();
+                    V oldValue = m1.get(key);
+                    V newValue = (oldValue == null) ? value : mergeFunction.apply(oldValue, value);
+                    if (newValue == null) {
+                        m1.remove(key);
+                    } else {
+                        m1.put(key, newValue);
+                    }
+                }
+                */
+
+                for (Map.Entry<K, V> e : m2.entrySet()) {
+                    final V oldValue = m1.get(e.getKey());
+
+                    if (oldValue == null && m1.containsKey(e.getKey()) == false) {
+                        m1.put(e.getKey(), e.getValue());
+                    } else {
+                        m1.put(e.getKey(), mergeFunction.apply(oldValue, e.getValue()));
+                    }
+                }
+                return m1;
+            }
+        };
+    }
+
+    private static <K, V, M extends ConcurrentMap<K, V>> BinaryOperator<M> concurrentMapMerger(final BinaryOperator<V> mergeFunction) {
+        Objects.requireNonNull(mergeFunction);
+
+        return new BinaryOperator<M>() {
+            @Override
+            public M apply(M m1, M m2) {
+                for (Map.Entry<K, V> e : m2.entrySet()) {
+                    final V oldValue = m1.get(e.getKey());
+
+                    if (oldValue == null && m1.containsKey(e.getKey()) == false) {
+                        m1.put(e.getKey(), e.getValue());
+                    } else {
+                        m1.put(e.getKey(), mergeFunction.apply(oldValue, e.getValue()));
+                    }
+                }
+                return m1;
+            }
+        };
+    }
+
+    private static <K, U, V extends Collection<U>> BinaryOperator<Multimap<K, U, V>> multimapMerger() {
+        return new BinaryOperator<Multimap<K, U, V>>() {
+            @Override
+            public Multimap<K, U, V> apply(Multimap<K, U, V> m1, Multimap<K, U, V> m2) {
+                K key = null;
+                V value = null;
+                for (Map.Entry<K, V> e : m2.entrySet()) {
+                    Objects.requireNonNull(e.getValue());
+                    key = e.getKey();
+                    value = e.getValue();
+
+                    if (N.notNullOrEmpty(value)) {
+                        V oldValue = m1.get(key);
+
+                        if (oldValue == null) {
+                            m1.putAll(key, value);
+                        } else {
+                            oldValue.addAll(value);
+                        }
+                    }
+                }
+                return m1;
+            }
+        };
+    }
+
+    /*
     static <K, V> V merge(Map<K, V> map, K key, V value, BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
         Objects.requireNonNull(remappingFunction);
         Objects.requireNonNull(value);
-
+    
         V oldValue = map.get(key);
         V newValue = (oldValue == null) ? value : remappingFunction.apply(oldValue, value);
         if (newValue == null) {
@@ -4864,8 +4872,21 @@ public final class Collectors {
         } else {
             map.put(key, newValue);
         }
-
+    
         return newValue;
+    }
+    */
+
+    static <K, V> void merge(Map<K, V> map, K key, V value, BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
+        Objects.requireNonNull(remappingFunction);
+
+        final V oldValue = map.get(key);
+
+        if (oldValue == null && map.containsKey(key) == false) {
+            map.put(key, value);
+        } else {
+            map.put(key, remappingFunction.apply(oldValue, value));
+        }
     }
 
     /**

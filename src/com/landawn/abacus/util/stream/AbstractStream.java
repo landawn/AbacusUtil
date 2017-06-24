@@ -1598,16 +1598,6 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <U> NullabLe<T> findAny(final U seed, final BiPredicate<? super T, ? super U> predicate) {
-        return findAny(new Predicate<T>() {
-            @Override
-            public boolean test(T t) {
-                return predicate.test(t, seed);
-            }
-        });
-    }
-
-    @Override
     public NullabLe<T> findFirstOrLast(final Predicate<? super T> predicateForFirst, final Predicate<? super T> predicateForLast) {
         final ExIterator<T> iter = exIterator();
         T last = (T) NONE;
@@ -1669,91 +1659,13 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public Pair<NullabLe<T>, NullabLe<T>> findFirstAndLast(final Predicate<? super T> predicateForFirst, final Predicate<? super T> predicateForLast) {
-        final Pair<NullabLe<T>, NullabLe<T>> result = new Pair<>();
-        final ExIterator<T> iter = exIterator();
-        T last = (T) NONE;
-        T next = null;
-
-        while (iter.hasNext()) {
-            next = iter.next();
-
-            if (result.left == null && predicateForFirst.test(next)) {
-                result.left = NullabLe.of(next);
+    public <U> NullabLe<T> findAny(final U seed, final BiPredicate<? super T, ? super U> predicate) {
+        return findAny(new Predicate<T>() {
+            @Override
+            public boolean test(T t) {
+                return predicate.test(t, seed);
             }
-
-            if (predicateForLast.test(next)) {
-                last = next;
-            }
-        }
-
-        if (result.left == null) {
-            result.left = NullabLe.empty();
-        }
-
-        result.right = last == NONE ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(last);
-
-        return result;
-    }
-
-    @Override
-    public <U> Pair<NullabLe<T>, NullabLe<T>> findFirstAndLast(final U seed, final BiPredicate<? super T, ? super U> predicateForFirst,
-            final BiPredicate<? super T, ? super U> predicateForLast) {
-        final Pair<NullabLe<T>, NullabLe<T>> result = new Pair<>();
-        final ExIterator<T> iter = exIterator();
-        T last = (T) NONE;
-        T next = null;
-
-        while (iter.hasNext()) {
-            next = iter.next();
-
-            if (result.left == null && predicateForFirst.test(next, seed)) {
-                result.left = NullabLe.of(next);
-            }
-
-            if (predicateForLast.test(next, seed)) {
-                last = next;
-            }
-        }
-
-        if (result.left == null) {
-            result.left = NullabLe.empty();
-        }
-
-        result.right = last == NONE ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(last);
-
-        return result;
-    }
-
-    @Override
-    public <U> Pair<NullabLe<T>, NullabLe<T>> findFirstAndLast(final Function<? super T, U> preFunc, final BiPredicate<? super T, ? super U> predicateForFirst,
-            final BiPredicate<? super T, ? super U> predicateForLast) {
-        final Pair<NullabLe<T>, NullabLe<T>> result = new Pair<>();
-        final ExIterator<T> iter = exIterator();
-        U seed = null;
-        T last = (T) NONE;
-        T next = null;
-
-        while (iter.hasNext()) {
-            next = iter.next();
-            seed = preFunc.apply(next);
-
-            if (result.left == null && predicateForFirst.test(next, seed)) {
-                result.left = NullabLe.of(next);
-            }
-
-            if (predicateForLast.test(next, seed)) {
-                last = next;
-            }
-        }
-
-        if (result.left == null) {
-            result.left = NullabLe.empty();
-        }
-
-        result.right = last == NONE ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(last);
-
-        return result;
+        });
     }
 
     @Override

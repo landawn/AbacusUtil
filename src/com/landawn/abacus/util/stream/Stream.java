@@ -953,30 +953,6 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     public abstract <U> NullabLe<T> findFirstOrLast(final Function<? super T, U> preFunc, final BiPredicate<? super T, ? super U> predicateForFirst,
             final BiPredicate<? super T, ? super U> predicateForLast);
 
-    /**
-     * <br />
-     * This method only run sequentially, even in parallel stream.
-     * 
-     * @param seed
-     * @param predicateForFirst
-     * @param predicateForLast
-     * @return
-     */
-    public abstract <U> Pair<NullabLe<T>, NullabLe<T>> findFirstAndLast(final U seed, final BiPredicate<? super T, ? super U> predicateForFirst,
-            final BiPredicate<? super T, ? super U> predicateForLast);
-
-    /**
-     * <br />
-     * This method only run sequentially, even in parallel stream.
-     * 
-     * @param preFunc
-     * @param predicateForFirst
-     * @param predicateForLast
-     * @return
-     */
-    public abstract <U> Pair<NullabLe<T>, NullabLe<T>> findFirstAndLast(final Function<? super T, U> preFunc,
-            final BiPredicate<? super T, ? super U> predicateForFirst, final BiPredicate<? super T, ? super U> predicateForLast);
-
     public abstract <U> boolean anyMatch(final U seed, final BiPredicate<? super T, ? super U> predicate);
 
     public abstract <U> boolean allMatch(final U seed, final BiPredicate<? super T, ? super U> predicate);

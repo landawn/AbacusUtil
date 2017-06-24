@@ -398,38 +398,6 @@ abstract class AbstractIntStream extends IntStream {
     }
 
     @Override
-    public Pair<OptionalInt, OptionalInt> findFirstAndLast(IntPredicate predicateForFirst, IntPredicate predicateForLast) {
-        final Pair<OptionalInt, OptionalInt> result = new Pair<>();
-        final ExIntIterator iter = exIterator();
-        MutableInt last = null;
-        int next = 0;
-
-        while (iter.hasNext()) {
-            next = iter.nextInt();
-
-            if (result.left == null && predicateForFirst.test(next)) {
-                result.left = OptionalInt.of(next);
-            }
-
-            if (predicateForLast.test(next)) {
-                if (last == null) {
-                    last = MutableInt.of(next);
-                } else {
-                    last.setValue(next);
-                }
-            }
-        }
-
-        if (result.left == null) {
-            result.left = OptionalInt.empty();
-        }
-
-        result.right = last == null ? OptionalInt.empty() : OptionalInt.of(last.value());
-
-        return result;
-    }
-
-    @Override
     public IntStream intersection(final Collection<?> c) {
         final Multiset<?> multiset = Multiset.from(c);
 

@@ -422,12 +422,13 @@ public final class EntryStream<K, V> {
         return of(s.sorted(comparator));
     }
 
-    public EntryStream<K, V> distinct() {
-        return of(s.distinct());
+    @SuppressWarnings("rawtypes")
+    public EntryStream<K, V> sortedBy(Function<? super Map.Entry<K, V>, ? extends Comparable> keyExtractor) {
+        return of(s.sortedBy(keyExtractor));
     }
 
-    public EntryStream<K, V> distinctBy(final Function<? super Map.Entry<K, V>, ?> keyExtractor) {
-        return of(s.distinctBy(keyExtractor));
+    public EntryStream<K, V> distinct() {
+        return of(s.distinct());
     }
 
     public EntryStream<K, V> distinctByKey() {
@@ -439,6 +440,10 @@ public final class EntryStream<K, V> {
     public EntryStream<K, V> distinctByValue() {
         final Function<? super Entry<K, V>, V> keyExtractor = Fn.value();
 
+        return of(s.distinctBy(keyExtractor));
+    }
+
+    public EntryStream<K, V> distinctBy(final Function<? super Map.Entry<K, V>, ?> keyExtractor) {
         return of(s.distinctBy(keyExtractor));
     }
 

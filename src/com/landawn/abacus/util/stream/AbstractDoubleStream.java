@@ -462,38 +462,6 @@ abstract class AbstractDoubleStream extends DoubleStream {
     }
 
     @Override
-    public Pair<OptionalDouble, OptionalDouble> findFirstAndLast(DoublePredicate predicateForFirst, DoublePredicate predicateForLast) {
-        final Pair<OptionalDouble, OptionalDouble> result = new Pair<>();
-        final ExDoubleIterator iter = exIterator();
-        MutableDouble last = null;
-        double next = 0;
-
-        while (iter.hasNext()) {
-            next = iter.nextDouble();
-
-            if (result.left == null && predicateForFirst.test(next)) {
-                result.left = OptionalDouble.of(next);
-            }
-
-            if (predicateForLast.test(next)) {
-                if (last == null) {
-                    last = MutableDouble.of(next);
-                } else {
-                    last.setValue(next);
-                }
-            }
-        }
-
-        if (result.left == null) {
-            result.left = OptionalDouble.empty();
-        }
-
-        result.right = last == null ? OptionalDouble.empty() : OptionalDouble.of(last.value());
-
-        return result;
-    }
-
-    @Override
     public DoubleStream intersection(final Collection<?> c) {
         final Multiset<?> multiset = Multiset.from(c);
 

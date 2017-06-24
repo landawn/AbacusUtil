@@ -714,94 +714,52 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return last == N.NULL_MASK ? NullabLe.<T> empty() : NullabLe.of(last);
     }
 
-    public <U> NullabLe<T> findFirstOrLast(final Function<? super T, U> preFunc, final BiPredicate<? super T, ? super U> predicateForFirst,
-            final BiPredicate<? super T, ? super U> predicateForLast) {
+    public OptionalInt findFirstOrLastIndex(final Predicate<? super T> predicateForFirst, final Predicate<? super T> predicateForLast) {
         if (N.isNullOrEmpty(coll)) {
-            return NullabLe.<T> empty();
+            return OptionalInt.empty();
         }
-
+    
         final Iterator<T> iter = iterator();
-        T last = (T) N.NULL_MASK;
         T next = null;
-        U seed = null;
-
+        int idx = 0, lastIndex = -1;
+    
         while (iter.hasNext()) {
             next = iter.next();
-            seed = preFunc.apply(next);
-
-            if (predicateForFirst.test(next, seed)) {
-                return NullabLe.of(next);
-            } else if (predicateForLast.test(next, seed)) {
-                last = next;
+    
+            if (predicateForFirst.test(next)) {
+                return OptionalInt.of(idx);
+            } else if (predicateForLast.test(next)) {
+                lastIndex = idx;
             }
+    
+            idx++;
         }
-
-        return last == N.NULL_MASK ? NullabLe.<T> empty() : NullabLe.of(last);
+    
+        return lastIndex == -1 ? OptionalInt.empty() : OptionalInt.of(lastIndex);
     }
 
-    public Pair<NullabLe<T>, NullabLe<T>> findFirsAndLast(final Predicate<? super T> predicateForFirst, final Predicate<? super T> predicateForLast) {
+    public Pair<NullabLe<T>, NullabLe<T>> findFirstAndLast(final Predicate<? super T> predicate) {
+        return findFirstAndLast(predicate, predicate);
+    }
+
+    public Pair<NullabLe<T>, NullabLe<T>> findFirstAndLast(final Predicate<? super T> predicateForFirst, final Predicate<? super T> predicateForLast) {
         if (N.isNullOrEmpty(coll)) {
             return Pair.of(NullabLe.<T> empty(), NullabLe.<T> empty());
         }
 
-        final Pair<NullabLe<T>, NullabLe<T>> result = new Pair<>();
-        final Iterator<T> iter = iterator();
-        T last = (T) N.NULL_MASK;
-        T next = null;
-
-        while (iter.hasNext()) {
-            next = iter.next();
-
-            if (result.left == null && predicateForFirst.test(next)) {
-                result.left = NullabLe.of(next);
-            }
-
-            if (predicateForLast.test(next)) {
-                last = next;
-            }
-        }
-
-        if (result.left == null) {
-            result.left = NullabLe.empty();
-        }
-
-        result.right = last == N.NULL_MASK ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(last);
-
-        return result;
+        return Pair.of(findFirst(predicateForFirst), findLast(predicateForLast));
     }
 
-    public <U> Pair<NullabLe<T>, NullabLe<T>> findFirstAndLast(final Function<? super T, U> preFunc, final BiPredicate<? super T, ? super U> predicateForFirst,
-            final BiPredicate<? super T, ? super U> predicateForLast) {
+    public Pair<OptionalInt, OptionalInt> findFirstAndLastIndex(final Predicate<? super T> predicate) {
+        return findFirstAndLastIndex(predicate, predicate);
+    }
+
+    public Pair<OptionalInt, OptionalInt> findFirstAndLastIndex(final Predicate<? super T> predicateForFirst, final Predicate<? super T> predicateForLast) {
         if (N.isNullOrEmpty(coll)) {
-            return Pair.of(NullabLe.<T> empty(), NullabLe.<T> empty());
+            return Pair.of(OptionalInt.empty(), OptionalInt.empty());
         }
 
-        final Pair<NullabLe<T>, NullabLe<T>> result = new Pair<>();
-        final Iterator<T> iter = iterator();
-        T last = (T) N.NULL_MASK;
-        T next = null;
-        U seed = null;
-
-        while (iter.hasNext()) {
-            next = iter.next();
-            seed = preFunc.apply(next);
-
-            if (result.left == null && predicateForFirst.test(next, seed)) {
-                result.left = NullabLe.of(next);
-            }
-
-            if (predicateForLast.test(next, seed)) {
-                last = next;
-            }
-        }
-
-        if (result.left == null) {
-            result.left = NullabLe.empty();
-        }
-
-        result.right = last == N.NULL_MASK ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(last);
-
-        return result;
+        return Pair.of(findFirstIndex(predicateForFirst), findLastIndex(predicateForLast));
     }
 
     public boolean allMatch(Predicate<? super T> filter) {
@@ -885,6 +843,95 @@ public final class Seq<T> extends ImmutableCollection<T> {
         }
 
         return res;
+    }
+
+    public <R> List<R> filterThenFlatMap(Predicate<? super T> filter, final Function<? super T, ? extends Collection<R>> mapper) {
+        if (N.isNullOrEmpty(coll)) {
+            return new ArrayList<>();
+        }
+
+        final List<R> res = new ArrayList<>();
+
+        for (T e : coll) {
+            if (filter.test(e)) {
+                res.addAll(mapper.apply(e));
+            }
+        }
+
+        return res;
+    }
+
+    public <R> List<R> filterThenFlatMap2(Predicate<? super T> filter, final Function<? super T, ? extends R[]> mapper) {
+        if (N.isNullOrEmpty(coll)) {
+            return new ArrayList<>();
+        }
+
+        final List<R> res = new ArrayList<>();
+        R[] a = null;
+
+        for (T e : coll) {
+            if (filter.test(e)) {
+                a = mapper.apply(e);
+
+                if (N.notNullOrEmpty(a)) {
+                    if (a.length < 9) {
+                        for (R r : a) {
+                            res.add(r);
+                        }
+                    } else {
+                        res.addAll(Arrays.asList(a));
+                    }
+                }
+            }
+        }
+
+        return res;
+    }
+
+    public NullabLe<T> filterThenReduce(Predicate<? super T> filter, final BinaryOperator<T> accumulator) {
+        if (N.isNullOrEmpty(coll)) {
+            return NullabLe.<T> empty();
+        }
+
+        T result = (T) N.NULL_MASK;
+
+        for (T e : coll) {
+            if (filter.test(e)) {
+                result = result == N.NULL_MASK ? e : accumulator.apply(result, e);
+            }
+        }
+
+        return result == N.NULL_MASK ? NullabLe.<T> empty() : NullabLe.of(result);
+    }
+
+    public <U> NullabLe<U> filterThenReduce(Predicate<? super T> filter, final U identity, final BiFunction<U, ? super T, U> accumulator) {
+        if (N.isNullOrEmpty(coll)) {
+            return NullabLe.of(identity);
+        }
+
+        U result = identity;
+
+        for (T e : coll) {
+            if (filter.test(e)) {
+                result = accumulator.apply(result, e);
+            }
+        }
+
+        return NullabLe.of(result);
+    }
+
+    public <A, R> R filterThenCollect(Predicate<? super T> filter, final Supplier<R> supplier, final BiConsumer<R, ? super T> accumulator) {
+        final R result = supplier.get();
+
+        if (N.notNullOrEmpty(coll)) {
+            for (T e : coll) {
+                if (filter.test(e)) {
+                    accumulator.accept(result, e);
+                }
+            }
+        }
+
+        return result;
     }
 
     public <A, R> R filterThenCollect(Predicate<? super T> filter, final Collector<? super T, A, R> collector) {
