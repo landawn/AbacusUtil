@@ -718,23 +718,23 @@ public final class Seq<T> extends ImmutableCollection<T> {
         if (N.isNullOrEmpty(coll)) {
             return OptionalInt.empty();
         }
-    
+
         final Iterator<T> iter = iterator();
         T next = null;
         int idx = 0, lastIndex = -1;
-    
+
         while (iter.hasNext()) {
             next = iter.next();
-    
+
             if (predicateForFirst.test(next)) {
                 return OptionalInt.of(idx);
             } else if (predicateForLast.test(next)) {
                 lastIndex = idx;
             }
-    
+
             idx++;
         }
-    
+
         return lastIndex == -1 ? OptionalInt.empty() : OptionalInt.of(lastIndex);
     }
 
@@ -829,125 +829,125 @@ public final class Seq<T> extends ImmutableCollection<T> {
         });
     }
 
-    public <R> List<R> filterThenMap(Predicate<? super T> filter, final Function<? super T, ? extends R> mapper) {
-        if (N.isNullOrEmpty(coll)) {
-            return new ArrayList<>();
-        }
-
-        final List<R> res = new ArrayList<>();
-
-        for (T e : coll) {
-            if (filter.test(e)) {
-                res.add(mapper.apply(e));
-            }
-        }
-
-        return res;
-    }
-
-    public <R> List<R> filterThenFlatMap(Predicate<? super T> filter, final Function<? super T, ? extends Collection<R>> mapper) {
-        if (N.isNullOrEmpty(coll)) {
-            return new ArrayList<>();
-        }
-
-        final List<R> res = new ArrayList<>();
-
-        for (T e : coll) {
-            if (filter.test(e)) {
-                res.addAll(mapper.apply(e));
-            }
-        }
-
-        return res;
-    }
-
-    public <R> List<R> filterThenFlatMap2(Predicate<? super T> filter, final Function<? super T, ? extends R[]> mapper) {
-        if (N.isNullOrEmpty(coll)) {
-            return new ArrayList<>();
-        }
-
-        final List<R> res = new ArrayList<>();
-        R[] a = null;
-
-        for (T e : coll) {
-            if (filter.test(e)) {
-                a = mapper.apply(e);
-
-                if (N.notNullOrEmpty(a)) {
-                    if (a.length < 9) {
-                        for (R r : a) {
-                            res.add(r);
-                        }
-                    } else {
-                        res.addAll(Arrays.asList(a));
-                    }
-                }
-            }
-        }
-
-        return res;
-    }
-
-    public NullabLe<T> filterThenReduce(Predicate<? super T> filter, final BinaryOperator<T> accumulator) {
-        if (N.isNullOrEmpty(coll)) {
-            return NullabLe.<T> empty();
-        }
-
-        T result = (T) N.NULL_MASK;
-
-        for (T e : coll) {
-            if (filter.test(e)) {
-                result = result == N.NULL_MASK ? e : accumulator.apply(result, e);
-            }
-        }
-
-        return result == N.NULL_MASK ? NullabLe.<T> empty() : NullabLe.of(result);
-    }
-
-    public <U> NullabLe<U> filterThenReduce(Predicate<? super T> filter, final U identity, final BiFunction<U, ? super T, U> accumulator) {
-        if (N.isNullOrEmpty(coll)) {
-            return NullabLe.of(identity);
-        }
-
-        U result = identity;
-
-        for (T e : coll) {
-            if (filter.test(e)) {
-                result = accumulator.apply(result, e);
-            }
-        }
-
-        return NullabLe.of(result);
-    }
-
-    public <A, R> R filterThenCollect(Predicate<? super T> filter, final Supplier<R> supplier, final BiConsumer<R, ? super T> accumulator) {
-        final R result = supplier.get();
-
-        if (N.notNullOrEmpty(coll)) {
-            for (T e : coll) {
-                if (filter.test(e)) {
-                    accumulator.accept(result, e);
-                }
-            }
-        }
-
-        return result;
-    }
-
-    public <A, R> R filterThenCollect(Predicate<? super T> filter, final Collector<? super T, A, R> collector) {
-        final BiConsumer<A, ? super T> accumulator = collector.accumulator();
-        final A result = collector.supplier().get();
-
-        if (N.notNullOrEmpty(coll)) {
-            for (T e : coll) {
-                if (filter.test(e)) {
-                    accumulator.accept(result, e);
-                }
-            }
-        }
-
-        return collector.finisher().apply(result);
-    }
+    //    public <R> List<R> filterThenMap(Predicate<? super T> filter, final Function<? super T, ? extends R> mapper) {
+    //        if (N.isNullOrEmpty(coll)) {
+    //            return new ArrayList<>();
+    //        }
+    //
+    //        final List<R> res = new ArrayList<>();
+    //
+    //        for (T e : coll) {
+    //            if (filter.test(e)) {
+    //                res.add(mapper.apply(e));
+    //            }
+    //        }
+    //
+    //        return res;
+    //    }
+    //
+    //    public <R> List<R> filterThenFlatMap(Predicate<? super T> filter, final Function<? super T, ? extends Collection<R>> mapper) {
+    //        if (N.isNullOrEmpty(coll)) {
+    //            return new ArrayList<>();
+    //        }
+    //
+    //        final List<R> res = new ArrayList<>();
+    //
+    //        for (T e : coll) {
+    //            if (filter.test(e)) {
+    //                res.addAll(mapper.apply(e));
+    //            }
+    //        }
+    //
+    //        return res;
+    //    }
+    //
+    //    public <R> List<R> filterThenFlatMap2(Predicate<? super T> filter, final Function<? super T, ? extends R[]> mapper) {
+    //        if (N.isNullOrEmpty(coll)) {
+    //            return new ArrayList<>();
+    //        }
+    //
+    //        final List<R> res = new ArrayList<>();
+    //        R[] a = null;
+    //
+    //        for (T e : coll) {
+    //            if (filter.test(e)) {
+    //                a = mapper.apply(e);
+    //
+    //                if (N.notNullOrEmpty(a)) {
+    //                    if (a.length < 9) {
+    //                        for (R r : a) {
+    //                            res.add(r);
+    //                        }
+    //                    } else {
+    //                        res.addAll(Arrays.asList(a));
+    //                    }
+    //                }
+    //            }
+    //        }
+    //
+    //        return res;
+    //    }
+    //
+    //    public NullabLe<T> filterThenReduce(Predicate<? super T> filter, final BinaryOperator<T> accumulator) {
+    //        if (N.isNullOrEmpty(coll)) {
+    //            return NullabLe.<T> empty();
+    //        }
+    //
+    //        T result = (T) N.NULL_MASK;
+    //
+    //        for (T e : coll) {
+    //            if (filter.test(e)) {
+    //                result = result == N.NULL_MASK ? e : accumulator.apply(result, e);
+    //            }
+    //        }
+    //
+    //        return result == N.NULL_MASK ? NullabLe.<T> empty() : NullabLe.of(result);
+    //    }
+    //
+    //    public <U> NullabLe<U> filterThenReduce(Predicate<? super T> filter, final U identity, final BiFunction<U, ? super T, U> accumulator) {
+    //        if (N.isNullOrEmpty(coll)) {
+    //            return NullabLe.of(identity);
+    //        }
+    //
+    //        U result = identity;
+    //
+    //        for (T e : coll) {
+    //            if (filter.test(e)) {
+    //                result = accumulator.apply(result, e);
+    //            }
+    //        }
+    //
+    //        return NullabLe.of(result);
+    //    }
+    //
+    //    public <A, R> R filterThenCollect(Predicate<? super T> filter, final Supplier<R> supplier, final BiConsumer<R, ? super T> accumulator) {
+    //        final R result = supplier.get();
+    //
+    //        if (N.notNullOrEmpty(coll)) {
+    //            for (T e : coll) {
+    //                if (filter.test(e)) {
+    //                    accumulator.accept(result, e);
+    //                }
+    //            }
+    //        }
+    //
+    //        return result;
+    //    }
+    //
+    //    public <A, R> R filterThenCollect(Predicate<? super T> filter, final Collector<? super T, A, R> collector) {
+    //        final BiConsumer<A, ? super T> accumulator = collector.accumulator();
+    //        final A result = collector.supplier().get();
+    //
+    //        if (N.notNullOrEmpty(coll)) {
+    //            for (T e : coll) {
+    //                if (filter.test(e)) {
+    //                    accumulator.accept(result, e);
+    //                }
+    //            }
+    //        }
+    //
+    //        return collector.finisher().apply(result);
+    //    }
 
     public List<T> takeWhile(Predicate<? super T> filter) {
         final List<T> result = new ArrayList<>(N.min(9, size()));
