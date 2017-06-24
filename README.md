@@ -11,7 +11,7 @@ A general programming library/framework in Java. It's simple, powerful and easy 
 
 * Streams, both sequential and parallel, are supported for JDK7/Anrdoid and primitive types with more functions: [Stream][], [EntryStream][], [CharStream][], [ByteStream][], [ShortStream][], [IntStream][], [LongStream][], [FloatStream][], [DoubleStream][], [Fn][] and more [Collectors][].
 
-* Programming in Android: [SQLiteExecutor][], [SQLBuilder][], [Async][], [CompletableFuture][], [Futures][], [EventBus][], [Observer][], [ObserverX][] and [Fu][]
+* Programming in Android: [SQLiteExecutor][], [SQLBuilder][], [Async][], [CompletableFuture][CompletableFuture_Android], [Futures][], [EventBus][], [Observer][], [ObserverX][] and [Fu][]
 
 * SQL Builder/ORM: [SQLExecutor][], [SQLBuilder][], [DataSet][], [JdbcUtil][], [CSVUtil][]...
 
@@ -244,7 +244,7 @@ assertFalse(collExecutor.exists(dbAccount.getId()));
 [SQLiteExecutor]: http://www.landawn.com/SQLiteExecutor_view.html
 [SQLBuilder]: http://www.landawn.com/SQLBuilder_view.html
 [Async]: http://www.landawn.com/Async_Android_view.html
-[CompletableFuture]: http://www.landawn.com/CompletableFuture_Android_view.html
+[CompletableFuture_Android]: http://www.landawn.com/CompletableFuture_Android_view.html
 [Futures]: http://www.landawn.com/Futures_Android_view.html
 [EventBus]: http://www.landawn.com/EventBus_view.html
 [Observer]: http://www.landawn.com/api-docs/com/landawn/abacus/android/util/Observer.html
