@@ -90,8 +90,10 @@ import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.RefUtil;
 import com.landawn.abacus.util.RowIterator;
+import com.landawn.abacus.util.Seq;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.ShortSummaryStatistics;
+import com.landawn.abacus.util.Triple;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
@@ -7520,6 +7522,56 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
                 onGoing.setFalse();
             }
         });
+    }
+
+    /**
+     * 
+     * @param c
+     * @param unzip the second parameter is an output parameter.
+     * @return
+     */
+    public static <T, L, R> Pair<Stream<L>, Stream<R>> unzip(final Collection<? extends T> c, final BiConsumer<? super T, Pair<L, R>> unzip) {
+        final Pair<List<L>, List<R>> p = Seq.unzip(c, unzip);
+
+        return Pair.of(Stream.of(p.left), Stream.of(p.right));
+    }
+
+    /**
+     * 
+     * @param iter
+     * @param unzip the second parameter is an output parameter.
+     * @return
+     */
+    public static <T, L, R> Pair<Stream<L>, Stream<R>> unzip(final Iterator<? extends T> iter, final BiConsumer<? super T, Pair<L, R>> unzip) {
+        final Pair<List<L>, List<R>> p = Seq.unzip(iter, unzip);
+
+        return Pair.of(Stream.of(p.left), Stream.of(p.right));
+    }
+
+    /**
+     * 
+     * @param c
+     * @param unzip the second parameter is an output parameter.
+     * @return
+     */
+    public static <T, L, M, R> Triple<Stream<L>, Stream<M>, Stream<R>> unzip3(final Collection<? extends T> c,
+            final BiConsumer<? super T, Triple<L, M, R>> unzip) {
+        final Triple<List<L>, List<M>, List<R>> p = Seq.unzip3(c, unzip);
+
+        return Triple.of(Stream.of(p.left), Stream.of(p.middle), Stream.of(p.right));
+    }
+
+    /**
+     * 
+     * @param iter
+     * @param unzip the second parameter is an output parameter.
+     * @return
+     */
+    public static <T, L, M, R> Triple<Stream<L>, Stream<M>, Stream<R>> unzip3(final Iterator<? extends T> iter,
+            final BiConsumer<? super T, Triple<L, M, R>> unzip) {
+        final Triple<List<L>, List<M>, List<R>> p = Seq.unzip3(iter, unzip);
+
+        return Triple.of(Stream.of(p.left), Stream.of(p.middle), Stream.of(p.right));
     }
 
     /**
