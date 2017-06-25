@@ -12,10 +12,10 @@
 2, Add slidingMap, Refer to biMap/triMap. The purpose of these methods is reducing the creation of intermedia list. Parallel support is required. ---Undecided.
 
 ```java
-public abstract Stream<R> slidingMap(BiFunction<? super T, ? super T, R> mapper);
-public abstract Stream<R> slidingMap(BiFunction<? super T, ? super T, R> mapper, boolean ignoreNotPaired);
-public abstract Stream<R> slidingMap(TriFunction<? superT, ? super T, ? super T, R> mapper);
-public abstract Stream<R> slidingMap(TriFunction<? superT, ? super T, ? super T, R> mapper, boolean ignoreNotPaired);
+public abstract <R> Stream<R> slidingMap(BiFunction<? super T, ? super T, R> mapper);
+public abstract <R> Stream<R> slidingMap(BiFunction<? super T, ? super T, R> mapper, int increment);
+public abstract <R> Stream<R> slidingMap(TriFunction<? super T, ? super T, ? super T, R> mapper);
+public abstract <R> Stream<R> slidingMap(TriFunction<? super T, ? super T, ? super T, R> mapper, int increment);
 ```
 
 3, Add countBy to Stream. ---Undecided.
