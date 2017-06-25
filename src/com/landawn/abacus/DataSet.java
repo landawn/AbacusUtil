@@ -3622,7 +3622,7 @@ public interface DataSet extends Iterable<Object[]> {
      *
      * @return
      */
-    Properties<String, Object> getProperties();
+    Properties<String, Object> properties();
 
     //    /**
     //     *

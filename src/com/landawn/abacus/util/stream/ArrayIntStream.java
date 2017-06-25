@@ -908,9 +908,7 @@ class ArrayIntStream extends AbstractIntStream {
 
     @Override
     public Stream<IntStream> sliding(final int windowSize, final int increment) {
-        if (windowSize < 1 || increment < 1) {
-            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
-        }
+        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
         return new IteratorStream<IntStream>(new ExIterator<IntStream>() {
             private int cursor = fromIndex;
@@ -938,9 +936,7 @@ class ArrayIntStream extends AbstractIntStream {
 
     @Override
     public Stream<IntList> slidingToList(final int windowSize, final int increment) {
-        if (windowSize < 1 || increment < 1) {
-            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
-        }
+        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
         return new IteratorStream<IntList>(new ExIterator<IntList>() {
             private int cursor = fromIndex;

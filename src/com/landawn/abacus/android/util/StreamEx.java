@@ -277,6 +277,10 @@ public final class StreamEx<T> {
         return new StreamEx<>(s.chunkBy(classifier));
     }
 
+    public StreamEx<List<T>> split(final int size) {
+        return new StreamEx<>(s.slidingWindow(size, size));
+    }
+
     public StreamEx<List<T>> sliding(final int windowSize) {
         return new StreamEx<>(s.slidingWindow(windowSize));
     }

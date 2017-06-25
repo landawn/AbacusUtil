@@ -463,9 +463,7 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public Stream<ShortList> slidingToList(final int windowSize, final int increment) {
-        if (windowSize < 1 || increment < 1) {
-            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
-        }
+        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
         return new IteratorStream<ShortList>(new ExIterator<ShortList>() {
             private ShortList prev = null;

@@ -1724,6 +1724,101 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     }
 
     @Override
+    public <R> Stream<R> slidingMap(final BiFunction<? super T, ? super T, R> mapper, final int increment) {
+        if (maxThreadNum <= 1) {
+            return new ParallelIteratorStream<>(sequential().slidingMap(mapper, increment).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
+        }
+
+        final int windowSize = 2;
+
+        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+
+        final List<Iterator<R>> iters = new ArrayList<>(maxThreadNum);
+        final MutableInt curIndex = MutableInt.of(fromIndex);
+
+        for (int i = 0; i < maxThreadNum; i++) {
+            iters.add(new ExIterator<R>() {
+                private int cursor = -1;
+
+                @Override
+                public boolean hasNext() {
+                    if (cursor == -1) {
+                        synchronized (elements) {
+                            if (curIndex.intValue() < toIndex) {
+                                cursor = curIndex.value();
+                                curIndex.setValue(increment < toIndex - cursor && windowSize < toIndex - cursor ? cursor + increment : toIndex);
+                            }
+                        }
+                    }
+
+                    return cursor != -1;
+                }
+
+                @Override
+                public R next() {
+                    if (cursor == -1 && hasNext() == false) {
+                        throw new NoSuchElementException();
+                    }
+
+                    final R result = mapper.apply(elements[cursor], cursor < toIndex - 1 ? elements[cursor + 1] : null);
+                    cursor = -1;
+                    return result;
+                }
+            });
+        }
+
+        return new ParallelIteratorStream<>(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, null, maxThreadNum, splitor);
+    }
+
+    @Override
+    public <R> Stream<R> slidingMap(final TriFunction<? super T, ? super T, ? super T, R> mapper, final int increment) {
+        if (maxThreadNum <= 1) {
+            return new ParallelIteratorStream<>(sequential().slidingMap(mapper, increment).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
+        }
+
+        final int windowSize = 3;
+
+        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+
+        final List<Iterator<R>> iters = new ArrayList<>(maxThreadNum);
+        final MutableInt curIndex = MutableInt.of(fromIndex);
+
+        for (int i = 0; i < maxThreadNum; i++) {
+            iters.add(new ExIterator<R>() {
+                private int cursor = -1;
+
+                @Override
+                public boolean hasNext() {
+                    if (cursor == -1) {
+                        synchronized (elements) {
+                            if (curIndex.intValue() < toIndex) {
+                                cursor = curIndex.value();
+                                curIndex.setValue(increment < toIndex - cursor && windowSize < toIndex - cursor ? cursor + increment : toIndex);
+                            }
+                        }
+                    }
+
+                    return cursor != -1;
+                }
+
+                @Override
+                public R next() {
+                    if (cursor == -1 && hasNext() == false) {
+                        throw new NoSuchElementException();
+                    }
+
+                    final R result = mapper.apply(elements[cursor], cursor < toIndex - 1 ? elements[cursor + 1] : null,
+                            cursor < toIndex - 2 ? elements[cursor + 2] : null);
+                    cursor = -1;
+                    return result;
+                }
+            });
+        }
+
+        return new ParallelIteratorStream<>(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, null, maxThreadNum, splitor);
+    }
+
+    @Override
     public Stream<Stream<T>> split(final int size) {
         return new ParallelIteratorStream<>(sequential().split(size).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
     }
@@ -1745,13 +1840,15 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     }
 
     @Override
-    public <U> Stream<List<T>> splitToList(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
+    public <U> Stream<List<T>> splitToList(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
         return new ParallelIteratorStream<>(sequential().splitToList(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null, maxThreadNum,
                 splitor);
     }
 
     @Override
-    public <U> Stream<Set<T>> splitToSet(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
+    public <U> Stream<Set<T>> splitToSet(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
         return new ParallelIteratorStream<>(sequential().splitToSet(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null, maxThreadNum,
                 splitor);
     }

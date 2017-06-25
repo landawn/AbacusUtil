@@ -345,6 +345,28 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public abstract <R> Stream<R> triMap(TriFunction<? super T, ? super T, ? super T, ? extends R> mapper, boolean ignoreNotPaired);
 
+    public abstract <R> Stream<R> slidingMap(BiFunction<? super T, ? super T, R> mapper);
+
+    /**
+     * Slide with <code>windowSize = 2</code> and the specified <code>increment</code>, then <code>map</code> by the specified <code>mapper</code>.
+     * 
+     * @param mapper
+     * @param increment
+     * @return
+     */
+    public abstract <R> Stream<R> slidingMap(BiFunction<? super T, ? super T, R> mapper, int increment);
+
+    public abstract <R> Stream<R> slidingMap(TriFunction<? super T, ? super T, ? super T, R> mapper);
+
+    /**
+     * Slide with <code>windowSize = 3</code> and the specified <code>increment</code>, then <code>map</code> by the specified <code>mapper</code>.
+     * 
+     * @param mapper
+     * @param increment
+     * @return
+     */
+    public abstract <R> Stream<R> slidingMap(TriFunction<? super T, ? super T, ? super T, R> mapper, int increment);
+
     /**
      * Note: copied from StreamEx: https://github.com/amaembo/streamex
      * 

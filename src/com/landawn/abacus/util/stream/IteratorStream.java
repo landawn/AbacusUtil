@@ -832,6 +832,92 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
+    public <R> Stream<R> slidingMap(final BiFunction<? super T, ? super T, R> mapper, final int increment) {
+        final int windowSize = 2;
+
+        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+
+        return new IteratorStream<>(new ExIterator<R>() {
+            private T prev = (T) NONE;
+
+            @Override
+            public boolean hasNext() {
+                if (increment > windowSize && prev != NONE) {
+                    int skipNum = increment - windowSize;
+
+                    while (skipNum-- > 0 && elements.hasNext()) {
+                        elements.next();
+                    }
+
+                    prev = (T) NONE;
+                }
+
+                return elements.hasNext();
+            }
+
+            @Override
+            public R next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                if (increment == 1) {
+                    return mapper.apply(prev == NONE ? elements.next() : prev, (prev = (elements.hasNext() ? elements.next() : null)));
+                } else {
+                    return mapper.apply(elements.next(), (prev = (elements.hasNext() ? elements.next() : null)));
+                }
+            }
+        }, closeHandlers);
+    }
+
+    @Override
+    public <R> Stream<R> slidingMap(final TriFunction<? super T, ? super T, ? super T, R> mapper, final int increment) {
+        final int windowSize = 3;
+
+        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+
+        return new IteratorStream<>(new ExIterator<R>() {
+            private T prev = (T) NONE;
+            private T prev2 = (T) NONE;
+
+            @Override
+            public boolean hasNext() {
+                if (increment > windowSize && prev != NONE) {
+                    int skipNum = increment - windowSize;
+
+                    while (skipNum-- > 0 && elements.hasNext()) {
+                        elements.next();
+                    }
+
+                    prev = (T) NONE;
+                }
+
+                return elements.hasNext();
+            }
+
+            @Override
+            public R next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                if (increment == 1) {
+                    return mapper.apply(prev2 == NONE ? elements.next() : prev2,
+                            (prev2 = (prev == NONE ? (elements.hasNext() ? elements.next() : null) : prev)),
+                            (prev = (elements.hasNext() ? elements.next() : null)));
+
+                } else if (increment == 2) {
+                    return mapper.apply(prev == NONE ? elements.next() : prev, (prev2 = (elements.hasNext() ? elements.next() : null)),
+                            (prev = (elements.hasNext() ? elements.next() : null)));
+                } else {
+                    return mapper.apply(elements.next(), (prev2 = (elements.hasNext() ? elements.next() : null)),
+                            (prev = (elements.hasNext() ? elements.next() : null)));
+                }
+            }
+        }, closeHandlers);
+    }
+
+    @Override
     public Stream<List<T>> splitToList(final int size) {
         return new IteratorStream<>(new ExIterator<List<T>>() {
             @Override
@@ -983,9 +1069,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<List<T>> slidingToList(final int windowSize, final int increment) {
-        if (windowSize < 1 || increment < 1) {
-            throw new IllegalArgumentException("'windowSize' and 'increment' must not be less than 1");
-        }
+        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
         return new IteratorStream<>(new ExIterator<List<T>>() {
             private List<T> prev = null;

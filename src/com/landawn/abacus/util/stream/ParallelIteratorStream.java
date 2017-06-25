@@ -1200,6 +1200,157 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     }
 
     @Override
+    public <R> Stream<R> slidingMap(final BiFunction<? super T, ? super T, R> mapper, final int increment) {
+        if (maxThreadNum <= 1) {
+            return new ParallelIteratorStream<>(sequential().slidingMap(mapper, increment).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
+        }
+
+        final int windowSize = 2;
+
+        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+
+        final List<Iterator<R>> iters = new ArrayList<>(maxThreadNum);
+        final MutableBoolean isFirst = MutableBoolean.of(true);
+        final Output<T> prev = new Output<>();
+
+        for (int i = 0; i < maxThreadNum; i++) {
+            iters.add(new ExIterator<R>() {
+                private Object first = NONE;
+                private Object second = NONE;
+
+                @Override
+                public boolean hasNext() {
+                    if (first == NONE) {
+                        synchronized (elements) {
+                            if (elements.hasNext()) {
+                                if (increment > windowSize && isFirst.isFalse()) {
+                                    int skipNum = increment - windowSize;
+
+                                    while (skipNum-- > 0 && elements.hasNext()) {
+                                        elements.next();
+                                    }
+                                }
+
+                                if (elements.hasNext()) {
+                                    if (increment == 1) {
+                                        first = isFirst.isTrue() ? elements.next() : prev.value();
+                                        second = elements.hasNext() ? elements.next() : null;
+
+                                        prev.setValue((T) second);
+
+                                    } else {
+                                        first = elements.next();
+                                        second = elements.hasNext() ? elements.next() : null;
+                                    }
+                                }
+
+                                isFirst.setFalse();
+                            }
+                        }
+                    }
+
+                    return first != NONE;
+                }
+
+                @Override
+                public R next() {
+                    if (first == NONE && hasNext() == false) {
+                        throw new NoSuchElementException();
+                    }
+
+                    final R result = mapper.apply((T) first, second == NONE ? null : (T) second);
+                    first = NONE;
+                    second = NONE;
+                    return result;
+                }
+            });
+        }
+
+        return new ParallelIteratorStream<>(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, null, maxThreadNum, splitor);
+    }
+
+    @Override
+    public <R> Stream<R> slidingMap(final TriFunction<? super T, ? super T, ? super T, R> mapper, final int increment) {
+        if (maxThreadNum <= 1) {
+            return new ParallelIteratorStream<>(sequential().slidingMap(mapper, increment).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
+        }
+
+        final int windowSize = 3;
+
+        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+
+        final List<Iterator<R>> iters = new ArrayList<>(maxThreadNum);
+        final MutableBoolean isFirst = MutableBoolean.of(true);
+        final Output<T> prev = new Output<>();
+        final Output<T> prev2 = new Output<>();
+
+        for (int i = 0; i < maxThreadNum; i++) {
+            iters.add(new ExIterator<R>() {
+                private Object first = NONE;
+                private Object second = NONE;
+                private Object third = NONE;
+
+                @Override
+                public boolean hasNext() {
+                    if (first == NONE) {
+                        synchronized (elements) {
+                            if (elements.hasNext()) {
+                                if (increment > windowSize && isFirst.isFalse()) {
+                                    int skipNum = increment - windowSize;
+
+                                    while (skipNum-- > 0 && elements.hasNext()) {
+                                        elements.next();
+                                    }
+                                }
+
+                                if (elements.hasNext()) {
+                                    if (increment == 1) {
+                                        first = isFirst.isTrue() ? elements.next() : prev2.value();
+                                        second = isFirst.isTrue() ? (elements.hasNext() ? elements.next() : null) : prev.value();
+                                        third = elements.hasNext() ? elements.next() : null;
+
+                                        prev2.setValue((T) second);
+                                        prev.setValue((T) third);
+                                    } else if (increment == 2) {
+                                        first = isFirst.isTrue() ? elements.next() : prev.value();
+                                        second = elements.hasNext() ? elements.next() : null;
+                                        third = elements.hasNext() ? elements.next() : null;
+
+                                        prev.setValue((T) third);
+                                    } else {
+                                        first = elements.next();
+                                        second = elements.hasNext() ? elements.next() : null;
+                                        third = elements.hasNext() ? elements.next() : null;
+                                    }
+                                }
+
+                                isFirst.setFalse();
+                            }
+                        }
+                    }
+
+                    return first != NONE;
+                }
+
+                @Override
+                public R next() {
+                    if (first == NONE && hasNext() == false) {
+                        throw new NoSuchElementException();
+                    }
+
+                    final R result = mapper.apply((T) first, second == NONE ? null : (T) second, third == NONE ? null : (T) third);
+                    first = NONE;
+                    second = NONE;
+                    third = NONE;
+                    return result;
+                }
+            });
+        }
+
+        return new ParallelIteratorStream<>(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, null, maxThreadNum, splitor);
+    }
+
+    @Override
     public Stream<Stream<T>> split(final int size) {
         return new ParallelIteratorStream<>(sequential().split(size).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
     }
@@ -1221,13 +1372,15 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     }
 
     @Override
-    public <U> Stream<List<T>> splitToList(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
+    public <U> Stream<List<T>> splitToList(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
         return new ParallelIteratorStream<>(sequential().splitToList(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null, maxThreadNum,
                 splitor);
     }
 
     @Override
-    public <U> Stream<Set<T>> splitToSet(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
+    public <U> Stream<Set<T>> splitToSet(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate,
+            final Consumer<? super U> identityUpdate) {
         return new ParallelIteratorStream<>(sequential().splitToSet(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null, maxThreadNum,
                 splitor);
     }

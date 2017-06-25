@@ -314,6 +314,16 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
+    public <R> Stream<R> slidingMap(BiFunction<? super T, ? super T, R> mapper) {
+        return slidingMap(mapper, 1);
+    }
+
+    @Override
+    public <R> Stream<R> slidingMap(TriFunction<? super T, ? super T, ? super T, R> mapper) {
+        return slidingMap(mapper, 1);
+    }
+
+    @Override
     public <U> Stream<U> rangeMap(final BiPredicate<? super T, ? super T> sameRange, final BiFunction<? super T, ? super T, ? extends U> mapper) {
         final Iterator<T> iter = iterator();
 

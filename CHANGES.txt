@@ -1,4 +1,13 @@
 ﻿
+========Changes in 0.9.74=========================================================================
+
+1*, Rename DataSet.getProperties() to DataSet.properties().
+
+2, Add slidingMap to Stream
+
+3, Improvements and bug fix.
+
+
 ========Changes in 0.9.73=========================================================================
 
 1, Add split(U identity, BiFunction<? super T, ? super U, Boolean> predicate, Consumer<? super U> identityUpdate) to Seq
