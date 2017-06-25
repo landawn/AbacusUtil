@@ -16,7 +16,14 @@
 
 package com.landawn.abacus.util;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
+
+import com.landawn.abacus.util.function.Supplier;
 
 /**
  * 
@@ -79,5 +86,35 @@ public abstract class ImmutableIterator<E> implements java.util.Iterator<E> {
     @Override
     public void remove() {
         throw new UnsupportedOperationException();
+    }
+
+    public List<E> toList() {
+        final List<E> list = new ArrayList<>();
+
+        while (hasNext()) {
+            list.add(next());
+        }
+
+        return list;
+    }
+
+    public Set<E> toSet() {
+        final Set<E> list = new HashSet<>();
+
+        while (hasNext()) {
+            list.add(next());
+        }
+
+        return list;
+    }
+
+    public <C extends Collection<E>> C toCollection(Supplier<C> collectionFactory) {
+        final C c = collectionFactory.get();
+
+        while (hasNext()) {
+            c.add(next());
+        }
+
+        return c;
     }
 }

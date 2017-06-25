@@ -16,6 +16,7 @@ package com.landawn.abacus.util.stream;
 
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -60,6 +61,10 @@ public final class EntryStream<K, V> {
 
     public static <K, V> EntryStream<K, V> of(final Stream<? extends Map.Entry<K, V>> s) {
         return new EntryStream<K, V>(s);
+    }
+
+    public static <K, V> EntryStream<K, V> of(final Iterator<? extends Map.Entry<K, V>> entries) {
+        return new EntryStream<K, V>(Stream.of(entries));
     }
 
     public static <K, V> EntryStream<K, V> of(final Map<K, V> map) {
