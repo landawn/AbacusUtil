@@ -63,8 +63,8 @@ public final class EntryStream<K, V> {
         return new EntryStream<K, V>(s);
     }
 
-    public static <K, V> EntryStream<K, V> of(final Iterator<? extends Map.Entry<K, V>> entries) {
-        return new EntryStream<K, V>(Stream.of(entries));
+    public static <K, V> EntryStream<K, V> of(final Iterator<? extends Map.Entry<K, V>> iterator) {
+        return new EntryStream<K, V>(Stream.of(iterator));
     }
 
     public static <K, V> EntryStream<K, V> of(final Map<K, V> map) {

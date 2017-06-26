@@ -971,7 +971,7 @@ public abstract class Tuple {
 
         @Override
         public int arity() {
-            return 9;
+            return 8;
         }
 
         public Tuple8<T8, T7, T6, T5, T4, T3, T2, T1> reversed() {
