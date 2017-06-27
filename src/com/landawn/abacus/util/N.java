@@ -30332,6 +30332,7 @@ public final class N {
 
     private static <T> void parseII(final Collection<? extends Iterator<? extends T>> iterators, long offset, long count, final int readThreadNum,
             final int processThreadNumber, final int queueSize, final Consumer<? super T> elementParser) {
+        N.checkArgument(offset >= 0 && count >= 0, "'offset'=%s and 'count'=%s can't be negative", offset, count);
 
         if (logger.isInfoEnabled()) {
             logger.info("### Start to parse");

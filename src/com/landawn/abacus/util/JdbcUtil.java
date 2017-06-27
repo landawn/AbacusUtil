@@ -1364,9 +1364,9 @@ public final class JdbcUtil {
     @SuppressWarnings("rawtypes")
     public static int importData(final DataSet dataset, final int offset, final int count, final Predicate<Object[]> filter, final PreparedStatement stmt,
             final int batchSize, final int batchInterval, final Map<String, ? extends Type> columnTypeMap) {
-        if (((offset < 0) || (count < 0) || batchSize < 0) || (batchInterval < 0)) {
-            throw new IllegalArgumentException("'offset', 'count' 'batchSize' and 'batchInterval' can't be negative number");
-        }
+        N.checkArgument(offset >= 0 && count >= 0, "'offset'=%s and 'count'=%s can't be negative", offset, count);
+        N.checkArgument(batchSize > 0 && batchInterval >= 0, "'batchSize'=%s must be greater than 0 and 'batchInterval'=%s can't be negative", batchSize,
+                batchInterval);
 
         int result = 0;
 
@@ -1491,9 +1491,9 @@ public final class JdbcUtil {
      */
     public static int importData(final DataSet dataset, final int offset, final int count, final Predicate<Object[]> filter, final PreparedStatement stmt,
             final int batchSize, final int batchInterval, final BiConsumer<? super PreparedStatement, ? super Object[], SQLException> stmtSetter) {
-        if (((offset < 0) || (count < 0) || batchSize < 0) || (batchInterval < 0)) {
-            throw new IllegalArgumentException("'offset', 'count' 'batchSize' and 'batchInterval' can't be negative number");
-        }
+        N.checkArgument(offset >= 0 && count >= 0, "'offset'=%s and 'count'=%s can't be negative", offset, count);
+        N.checkArgument(batchSize > 0 && batchInterval >= 0, "'batchSize'=%s must be greater than 0 and 'batchInterval'=%s can't be negative", batchSize,
+                batchInterval);
 
         final int columnCount = dataset.columnNameList().size();
         final Object[] row = new Object[columnCount];
@@ -1665,6 +1665,10 @@ public final class JdbcUtil {
      */
     public static long importData(final Reader reader, long offset, final long count, final PreparedStatement stmt, final int batchSize,
             final int batchInterval, final Function<String, Object[]> func) {
+        N.checkArgument(offset >= 0 && count >= 0, "'offset'=%s and 'count'=%s can't be negative", offset, count);
+        N.checkArgument(batchSize > 0 && batchInterval >= 0, "'batchSize'=%s must be greater than 0 and 'batchInterval'=%s can't be negative", batchSize,
+                batchInterval);
+
         long result = 0;
         final BufferedReader br = ObjectFactory.createBufferedReader(reader);
 
@@ -1750,6 +1754,10 @@ public final class JdbcUtil {
      */
     public static <T> long importData(final Iterator<T> iter, long offset, final long count, final PreparedStatement stmt, final int batchSize,
             final int batchInterval, final Function<T, Object[]> func) {
+        N.checkArgument(offset >= 0 && count >= 0, "'offset'=%s and 'count'=%s can't be negative", offset, count);
+        N.checkArgument(batchSize > 0 && batchInterval >= 0, "'batchSize'=%s must be greater than 0 and 'batchInterval'=%s can't be negative", batchSize,
+                batchInterval);
+
         long result = 0;
 
         try {
@@ -1857,6 +1865,10 @@ public final class JdbcUtil {
      */
     public static <T> long importData(final Iterator<T> iter, long offset, final long count, final Predicate<? super T> filter, final PreparedStatement stmt,
             final int batchSize, final int batchInterval, final BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter) {
+        N.checkArgument(offset >= 0 && count >= 0, "'offset'=%s and 'count'=%s can't be negative", offset, count);
+        N.checkArgument(batchSize > 0 && batchInterval >= 0, "'batchSize'=%s must be greater than 0 and 'batchInterval'=%s can't be negative", batchSize,
+                batchInterval);
+
         long result = 0;
 
         try {
@@ -2160,6 +2172,8 @@ public final class JdbcUtil {
 
     private static void parseII(final RowIterator iter, long offset, long count, final int processThreadNumber, final int queueSize,
             final Consumer<Object[]> rowParser) {
+        N.checkArgument(offset >= 0 && count >= 0, "'offset'=%s and 'count'=%s can't be negative", offset, count);
+
         while (offset-- > 0 && iter.moveToNext()) {
         }
 
@@ -2294,10 +2308,9 @@ public final class JdbcUtil {
     public static long copy(final PreparedStatement selectStmt, final long offset, final long count, final PreparedStatement insertStmt,
             final BiConsumer<? super PreparedStatement, ? super Object[], SQLException> stmtSetter, final int batchSize, final int batchInterval,
             final boolean inParallel) {
-
-        if (((offset < 0) || (count < 0) || batchSize < 0) || (batchInterval < 0)) {
-            throw new IllegalArgumentException("'offset', 'count' 'batchSize' and 'batchInterval' can't be negative number");
-        }
+        N.checkArgument(offset >= 0 && count >= 0, "'offset'=%s and 'count'=%s can't be negative", offset, count);
+        N.checkArgument(batchSize > 0 && batchInterval >= 0, "'batchSize'=%s must be greater than 0 and 'batchInterval'=%s can't be negative", batchSize,
+                batchInterval);
 
         @SuppressWarnings("rawtypes")
         final BiConsumer<? super PreparedStatement, ? super Object[], SQLException> setter = (BiConsumer) (stmtSetter == null ? DEFAULT_STMT_SETTER
