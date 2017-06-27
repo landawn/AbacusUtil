@@ -2681,6 +2681,9 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     @Override
     public long persist(final PreparedStatement stmt, final int batchSize, final int batchInterval,
             final Try.BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter) {
+        N.checkArgument(batchSize > 0 && batchInterval >= 0, "'batchSize'=%s must be greater than 0 and 'batchInterval'=%s can't be negative", batchSize,
+                batchInterval);
+
         if (maxThreadNum <= 1) {
             return sequential().persist(stmt, batchSize, batchInterval, stmtSetter);
         }

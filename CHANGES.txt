@@ -9,7 +9,9 @@
 
 4, Add Stream.unzip
 
-5, Improvements and bug fix.
+5, Add XHashSet/XHashMap
+
+6, Improvements and bug fix.
 
 
 ========Changes in 0.9.73=========================================================================

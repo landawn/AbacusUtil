@@ -1276,7 +1276,7 @@ public final class CSVUtil {
      * 
      * @param file
      * @param conn
-     * @param insertSQL the column order in the sql must be consistent with the column order in the CSV file. the column order in the sql must be consistent with the column order in the CSV file.
+     * @param insertSQL the column order in the sql must be consistent with the column order in the CSV file.
      * @param columnTypeMap
      * @return
      */
@@ -1512,7 +1512,7 @@ public final class CSVUtil {
      * 
      * @param file
      * @param conn
-     * @param insertSQL the column order in the sql must be consistent with the column order in the CSV file. the column order in the sql must be consistent with the column order in the CSV file.
+     * @param insertSQL the column order in the sql should be consistent with the column order in the CSV file.
      * @param stmtSetter
      * @return
      */
@@ -1533,7 +1533,7 @@ public final class CSVUtil {
      * @param count
      * @param filter
      * @param conn
-     * @param insertSQL the column order in the sql must be consistent with the column order in the CSV file.
+     * @param insertSQL the column order in the sql should be consistent with the column order in the CSV file.
      * @param batchSize
      * @param batchInterval
      * @param stmtSetter
@@ -1572,7 +1572,7 @@ public final class CSVUtil {
      * @param offset
      * @param count
      * @param filter
-     * @param stmt the column order in the sql must be consistent with the column order in the CSV file.
+     * @param stmt the column order in the sql should be consistent with the column order in the CSV file.
      * @param batchSize
      * @param batchInterval
      * @param stmtSetter
@@ -1610,7 +1610,7 @@ public final class CSVUtil {
      * @param offset
      * @param count
      * @param filter
-     * @param stmt the column order in the sql must be consistent with the column order in the CSV file.
+     * @param stmt the column order in the sql should be consistent with the column order in the CSV file.
      * @param batchSize
      * @param batchInterval
      * @param stmtSetter
@@ -1640,7 +1640,7 @@ public final class CSVUtil {
      * @param offset
      * @param count
      * @param filter
-     * @param stmt the column order in the sql must be consistent with the column order in the CSV file.
+     * @param stmt the column order in the sql should be consistent with the column order in the CSV file.
      * @param batchSize
      * @param batchInterval
      * @param stmtSetter

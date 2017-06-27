@@ -2398,6 +2398,9 @@ abstract class AbstractStream<T> extends Stream<T> {
     @Override
     public long persist(final PreparedStatement stmt, final int batchSize, final int batchInterval,
             final Try.BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter) {
+        N.checkArgument(batchSize > 0 && batchInterval >= 0, "'batchSize'=%s must be greater than 0 and 'batchInterval'=%s can't be negative", batchSize,
+                batchInterval);
+
         final Iterator<T> iter = iterator();
 
         long cnt = 0;

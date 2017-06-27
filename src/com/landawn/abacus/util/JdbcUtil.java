@@ -1860,7 +1860,7 @@ public final class JdbcUtil {
      * @param stmt
      * @param batchSize
      * @param batchInterval
-     * @param func convert element to the parameters for record insert. Returns a <code>null</code> array to skip the line. 
+     * @param stmtSetter 
      * @return
      */
     public static <T> long importData(final Iterator<T> iter, long offset, final long count, final Predicate<? super T> filter, final PreparedStatement stmt,
