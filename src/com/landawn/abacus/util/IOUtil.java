@@ -530,7 +530,7 @@ public final class IOUtil {
     }
 
     public static byte[] readBytes(final File file, final long offset, final int maxLen) {
-        final Output<ZipFile> outputZipFile = new Output<>();
+        final Holder<ZipFile> outputZipFile = new Holder<>();
         InputStream is = null;
 
         try {
@@ -601,7 +601,7 @@ public final class IOUtil {
     }
 
     public static char[] readChars(final File file, final long offset, final int maxLen, final Charset encoding) {
-        final Output<ZipFile> outputZipFile = new Output<>();
+        final Holder<ZipFile> outputZipFile = new Holder<>();
         InputStream is = null;
 
         try {
@@ -739,7 +739,7 @@ public final class IOUtil {
     }
 
     public static String readLine(final File file, final int lineIndex, final Charset encoding) {
-        final Output<ZipFile> outputZipFile = new Output<>();
+        final Holder<ZipFile> outputZipFile = new Holder<>();
         InputStream is = null;
 
         try {
@@ -800,7 +800,7 @@ public final class IOUtil {
     }
 
     public static List<String> readLines(final File file, final int offset, final int count, final Charset encoding) {
-        final Output<ZipFile> outputZipFile = new Output<>();
+        final Holder<ZipFile> outputZipFile = new Holder<>();
         InputStream is = null;
 
         try {
@@ -3247,7 +3247,7 @@ public final class IOUtil {
         String prefix = file.getName().substring(0, index);
         String postfix = (index > 0) ? file.getName().substring(index) : "";
 
-        final Output<ZipFile> outputZipFile = new Output<>();
+        final Holder<ZipFile> outputZipFile = new Holder<>();
         InputStream is = null;
 
         BufferedReader br = null;
@@ -3309,7 +3309,7 @@ public final class IOUtil {
      * @return
      */
     private static long estimateLineCount(final File file, final int byReadingLineNum) {
-        final Output<ZipFile> outputZipFile = new Output<>();
+        final Holder<ZipFile> outputZipFile = new Holder<>();
         InputStream is = null;
         BufferedReader br = null;
 
@@ -4249,7 +4249,7 @@ public final class IOUtil {
     //        }
     //    }
 
-    private static InputStream openFile(final Output<ZipFile> outputZipFile, final File file) throws IOException {
+    private static InputStream openFile(final Holder<ZipFile> outputZipFile, final File file) throws IOException {
         InputStream is = null;
 
         if (file.getName().endsWith(GZ)) {

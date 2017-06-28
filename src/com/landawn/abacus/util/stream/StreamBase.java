@@ -61,7 +61,7 @@ import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.Output;
+import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.Sheet;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.ShortList;
@@ -707,7 +707,7 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
         }
     }
 
-    static void setError(final Output<Throwable> errorHolder, Throwable e, final MutableBoolean onGoing) {
+    static void setError(final Holder<Throwable> errorHolder, Throwable e, final MutableBoolean onGoing) {
         onGoing.setFalse();
 
         synchronized (errorHolder) {
@@ -719,13 +719,13 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
         }
     }
 
-    static void throwError(final Output<Throwable> errorHolder, final MutableBoolean onGoing) {
+    static void throwError(final Holder<Throwable> errorHolder, final MutableBoolean onGoing) {
         onGoing.setFalse();
 
         throw N.toRuntimeException(errorHolder.value());
     }
 
-    static void setError(final Output<Throwable> errorHolder, Throwable e) {
+    static void setError(final Holder<Throwable> errorHolder, Throwable e) {
         synchronized (errorHolder) {
             if (errorHolder.value() == null) {
                 errorHolder.setValue(e);
@@ -735,11 +735,11 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
         }
     }
 
-    static void throwError(final Output<Throwable> errorHolder) {
+    static void throwError(final Holder<Throwable> errorHolder) {
         throw N.toRuntimeException(errorHolder.value());
     }
 
-    static void complete(final List<CompletableFuture<Void>> futureList, final Output<Throwable> eHolder) {
+    static void complete(final List<CompletableFuture<Void>> futureList, final Holder<Throwable> eHolder) {
         if (eHolder.value() != null) {
             throw N.toRuntimeException(eHolder.value());
         }

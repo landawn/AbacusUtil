@@ -2222,7 +2222,7 @@ public final class SQLExecutor implements Closeable {
             return N.asList(iterate(conn, sql, statementSetter, jdbcSettings, parameters));
         } else {
             final List<RowIterator> iterators = new ArrayList<>();
-            final Output<Throwable> errorHolder = new Output<>();
+            final Holder<Throwable> errorHolder = new Holder<>();
             final AtomicInteger activeThreadNum = new AtomicInteger(0);
 
             for (String dataSource : jdbcSettings.getQueryWithDataSources()) {
@@ -2328,7 +2328,7 @@ public final class SQLExecutor implements Closeable {
         }
 
         final List<RowIterator> iterators = new ArrayList<>();
-        final Output<Throwable> errorHolder = new Output<>();
+        final Holder<Throwable> errorHolder = new Holder<>();
         final AtomicInteger activeThreadNum = new AtomicInteger(0);
 
         for (String e : sqls) {
@@ -2892,7 +2892,7 @@ public final class SQLExecutor implements Closeable {
         }
     }
 
-    private void setException(final Output<Throwable> errorHolder, Throwable e) {
+    private void setException(final Holder<Throwable> errorHolder, Throwable e) {
         synchronized (errorHolder) {
             if (errorHolder.value() == null) {
                 errorHolder.setValue(e);

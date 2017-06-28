@@ -25,18 +25,18 @@ import com.landawn.abacus.util.stream.Stream;
  * 
  * @author Haiyang Li
  */
-public final class Output<T> {
+public final class Holder<T> {
     private volatile T value;
 
-    public Output() {
+    public Holder() {
     }
 
-    Output(T value) {
+    Holder(T value) {
         this.value = value;
     }
 
-    public static <T> Output<T> of(T value) {
-        return new Output<>(value);
+    public static <T> Holder<T> of(T value) {
+        return new Holder<>(value);
     }
 
     public T value() {
@@ -47,7 +47,7 @@ public final class Output<T> {
         return value;
     }
 
-    public Output<T> setValue(final T value) {
+    public Holder<T> setValue(final T value) {
         this.value = value;
 
         return this;
@@ -154,7 +154,7 @@ public final class Output<T> {
 
     @Override
     public boolean equals(final Object obj) {
-        return this == obj || (obj instanceof Output && N.equals(((Output<T>) obj).value, value));
+        return this == obj || (obj instanceof Holder && N.equals(((Holder<T>) obj).value, value));
     }
 
     @Override

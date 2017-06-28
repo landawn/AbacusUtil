@@ -13,7 +13,9 @@
 
 6, Add copyOf to ImmutableMap/ImmutableList/ImmutableSet
 
-7, Improvements and bug fix.
+7*, Rename Output to Holder
+
+8, Improvements and bug fix.
 
 
 ========Changes in 0.9.73=========================================================================

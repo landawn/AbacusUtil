@@ -2188,7 +2188,7 @@ public final class JdbcUtil {
                 final Iterator<Object[]> iteratorII = stream.limit(count).iterator();
                 final ExecutorService executorService = Executors.newFixedThreadPool(processThreadNumber);
                 final AtomicInteger activeThreadNum = new AtomicInteger();
-                final Output<Throwable> errorHolder = new Output<>();
+                final Holder<Throwable> errorHolder = new Holder<>();
 
                 for (int i = 0; i < processThreadNumber; i++) {
                     activeThreadNum.incrementAndGet();

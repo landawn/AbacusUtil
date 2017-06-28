@@ -2681,7 +2681,7 @@ public final class Array {
 
         final Queue<Pair<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
         final AtomicInteger activeThreadNum = new AtomicInteger();
-        final Output<Throwable> errorHolder = new Output<>();
+        final Holder<Throwable> errorHolder = new Holder<>();
         final int lenOfSubArray = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
 
         for (int i = 0; i < CPU_CORES; i++) {
@@ -2802,7 +2802,7 @@ public final class Array {
 
         final Queue<Pair<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
         final AtomicInteger activeThreadNum = new AtomicInteger();
-        final Output<Throwable> errorHolder = new Output<>();
+        final Holder<Throwable> errorHolder = new Holder<>();
         final int lenOfSubArray = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
 
         for (int i = 0; i < CPU_CORES; i++) {
@@ -2923,7 +2923,7 @@ public final class Array {
 
         final Queue<Pair<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
         final AtomicInteger activeThreadNum = new AtomicInteger();
-        final Output<Throwable> errorHolder = new Output<>();
+        final Holder<Throwable> errorHolder = new Holder<>();
         final int lenOfSubArray = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
 
         for (int i = 0; i < CPU_CORES; i++) {
@@ -3044,7 +3044,7 @@ public final class Array {
 
         final Queue<Pair<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
         final AtomicInteger activeThreadNum = new AtomicInteger();
-        final Output<Throwable> errorHolder = new Output<>();
+        final Holder<Throwable> errorHolder = new Holder<>();
         final int lenOfSubArray = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
 
         for (int i = 0; i < CPU_CORES; i++) {
@@ -3165,7 +3165,7 @@ public final class Array {
 
         final Queue<Pair<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
         final AtomicInteger activeThreadNum = new AtomicInteger();
-        final Output<Throwable> errorHolder = new Output<>();
+        final Holder<Throwable> errorHolder = new Holder<>();
         final int lenOfSubArray = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
 
         for (int i = 0; i < CPU_CORES; i++) {
@@ -3286,7 +3286,7 @@ public final class Array {
 
         final Queue<Pair<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
         final AtomicInteger activeThreadNum = new AtomicInteger();
-        final Output<Throwable> errorHolder = new Output<>();
+        final Holder<Throwable> errorHolder = new Holder<>();
         final int lenOfSubArray = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
 
         for (int i = 0; i < CPU_CORES; i++) {
@@ -3426,7 +3426,7 @@ public final class Array {
 
         final Queue<Pair<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
         final AtomicInteger activeThreadNum = new AtomicInteger();
-        final Output<Throwable> errorHolder = new Output<>();
+        final Holder<Throwable> errorHolder = new Holder<>();
         final int lenOfSubArray = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
 
         for (int i = 0; i < CPU_CORES; i++) {
@@ -3579,7 +3579,7 @@ public final class Array {
 
         final Queue<Pair<Integer, Integer>> subArrayIndexQueue = new LinkedList<>();
         final AtomicInteger activeThreadNum = new AtomicInteger();
-        final Output<Throwable> errorHolder = new Output<>();
+        final Holder<Throwable> errorHolder = new Holder<>();
         final int lenOfSubArray = len % CPU_CORES == 0 ? len / CPU_CORES : (len / CPU_CORES) + 1;
 
         for (int i = 0; i < CPU_CORES; i++) {
@@ -5059,7 +5059,7 @@ public final class Array {
         return queue.peek();
     }
 
-    static void setError(final Output<Throwable> errorHolder, Throwable e) {
+    static void setError(final Holder<Throwable> errorHolder, Throwable e) {
         synchronized (errorHolder) {
             if (errorHolder.value() == null) {
                 errorHolder.setValue(e);

@@ -791,7 +791,7 @@ public abstract class Observer<T> {
     }
 
     protected static class Dispatcher<T> {
-        protected final Output<Object> holder = Output.of(N.NULL_MASK);
+        protected final Holder<Object> holder = Holder.of(N.NULL_MASK);
         protected Dispatcher<T> downDispatcher;
 
         public void onNext(@NonNull final T value) {

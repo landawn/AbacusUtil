@@ -85,7 +85,7 @@ import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.NullabLe;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
-import com.landawn.abacus.util.Output;
+import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.RefUtil;
@@ -3400,7 +3400,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
 
         final AtomicInteger threadCounter = new AtomicInteger(c.size());
         final ArrayBlockingQueue<T> queue = new ArrayBlockingQueue<>(queueSize);
-        final Output<Throwable> eHolder = new Output<>();
+        final Holder<Throwable> eHolder = new Holder<>();
         final MutableBoolean onGoing = MutableBoolean.of(true);
 
         for (Iterator<? extends T> e : c) {
@@ -6416,7 +6416,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         final AtomicInteger threadCounterB = new AtomicInteger(1);
         final BlockingQueue<A> queueA = new ArrayBlockingQueue<>(queueSize);
         final BlockingQueue<B> queueB = new ArrayBlockingQueue<>(queueSize);
-        final Output<Throwable> eHolder = new Output<>();
+        final Holder<Throwable> eHolder = new Holder<>();
         final MutableBoolean onGoing = MutableBoolean.of(true);
 
         readToQueue(a, b, asyncExecutor, threadCounterA, threadCounterB, queueA, queueB, eHolder, onGoing);
@@ -6519,7 +6519,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         final BlockingQueue<A> queueA = new ArrayBlockingQueue<>(queueSize);
         final BlockingQueue<B> queueB = new ArrayBlockingQueue<>(queueSize);
         final BlockingQueue<C> queueC = new ArrayBlockingQueue<>(queueSize);
-        final Output<Throwable> eHolder = new Output<>();
+        final Holder<Throwable> eHolder = new Holder<>();
         final MutableBoolean onGoing = MutableBoolean.of(true);
 
         readToQueue(a, b, c, asyncExecutor, threadCounterA, threadCounterB, threadCounterC, queueA, queueB, queueC, eHolder, onGoing);
@@ -6760,7 +6760,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         final AsyncExecutor asyncExecutor = new AsyncExecutor(len, 300L, TimeUnit.SECONDS);
         final AtomicInteger[] counters = new AtomicInteger[len];
         final BlockingQueue<Object>[] queues = new ArrayBlockingQueue[len];
-        final Output<Throwable> eHolder = new Output<>();
+        final Holder<Throwable> eHolder = new Holder<>();
         final MutableBoolean onGoing = MutableBoolean.of(true);
 
         readToQueue(c, queueSize, asyncExecutor, counters, queues, eHolder, onGoing);
@@ -7065,7 +7065,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         final AtomicInteger threadCounterB = new AtomicInteger(1);
         final BlockingQueue<A> queueA = new ArrayBlockingQueue<>(queueSize);
         final BlockingQueue<B> queueB = new ArrayBlockingQueue<>(queueSize);
-        final Output<Throwable> eHolder = new Output<>();
+        final Holder<Throwable> eHolder = new Holder<>();
         final MutableBoolean onGoing = MutableBoolean.of(true);
 
         readToQueue(a, b, asyncExecutor, threadCounterA, threadCounterB, queueA, queueB, eHolder, onGoing);
@@ -7185,7 +7185,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         final BlockingQueue<A> queueA = new ArrayBlockingQueue<>(queueSize);
         final BlockingQueue<B> queueB = new ArrayBlockingQueue<>(queueSize);
         final BlockingQueue<C> queueC = new ArrayBlockingQueue<>(queueSize);
-        final Output<Throwable> eHolder = new Output<>();
+        final Holder<Throwable> eHolder = new Holder<>();
         final MutableBoolean onGoing = MutableBoolean.of(true);
 
         readToQueue(a, b, c, asyncExecutor, threadCounterA, threadCounterB, threadCounterC, queueA, queueB, queueC, eHolder, onGoing);
@@ -7453,7 +7453,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
 
         final int len = c.size();
         final AsyncExecutor asyncExecutor = new AsyncExecutor(len, 300L, TimeUnit.SECONDS);
-        final Output<Throwable> eHolder = new Output<>();
+        final Holder<Throwable> eHolder = new Holder<>();
         final MutableBoolean onGoing = MutableBoolean.of(true);
         final AtomicInteger[] counters = new AtomicInteger[len];
         final BlockingQueue<Object>[] queues = new ArrayBlockingQueue[len];
@@ -7892,7 +7892,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         }
 
         final Queue<Iterator<? extends T>> queue = N.newLinkedList(c);
-        final Output<Throwable> eHolder = new Output<>();
+        final Holder<Throwable> eHolder = new Holder<>();
         final MutableInt cnt = MutableInt.of(c.size());
         final List<CompletableFuture<Void>> futureList = new ArrayList<>(c.size() - 1);
 
@@ -7947,7 +7947,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
 
     private static <B, A> void readToQueue(final Iterator<? extends A> a, final Iterator<? extends B> b, final AsyncExecutor asyncExecutor,
             final AtomicInteger threadCounterA, final AtomicInteger threadCounterB, final BlockingQueue<A> queueA, final BlockingQueue<B> queueB,
-            final Output<Throwable> eHolder, final MutableBoolean onGoing) {
+            final Holder<Throwable> eHolder, final MutableBoolean onGoing) {
         asyncExecutor.execute(new Runnable() {
             @Override
             public void run() {
@@ -8001,7 +8001,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
 
     private static <B, C, A> void readToQueue(final Iterator<? extends A> a, final Iterator<? extends B> b, final Iterator<? extends C> c,
             final AsyncExecutor asyncExecutor, final AtomicInteger threadCounterA, final AtomicInteger threadCounterB, final AtomicInteger threadCounterC,
-            final BlockingQueue<A> queueA, final BlockingQueue<B> queueB, final BlockingQueue<C> queueC, final Output<Throwable> eHolder,
+            final BlockingQueue<A> queueA, final BlockingQueue<B> queueB, final BlockingQueue<C> queueC, final Holder<Throwable> eHolder,
             final MutableBoolean onGoing) {
         asyncExecutor.execute(new Runnable() {
             @Override
@@ -8080,7 +8080,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     }
 
     private static void readToQueue(final Collection<? extends Iterator<?>> c, final int queueSize, final AsyncExecutor asyncExecutor,
-            final AtomicInteger[] counters, final BlockingQueue<Object>[] queues, final Output<Throwable> eHolder, final MutableBoolean onGoing) {
+            final AtomicInteger[] counters, final BlockingQueue<Object>[] queues, final Holder<Throwable> eHolder, final MutableBoolean onGoing) {
         int idx = 0;
 
         for (Iterator<?> e : c) {
