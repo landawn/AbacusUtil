@@ -1622,29 +1622,29 @@ public final class N {
         return mapEntity;
     }
 
-    /**
-     * Wrap the specified map with a unmodifiable BiMap.
-     *
-     * Note: To avoid the side-effects in the initialization of auto-generated interface *PNL/*CNL class,
-     * This method just return null if the specified keyMap has duplicated values, instead of throwing exception.
-     *
-     * @param keyMap
-     * @return null if the specified <code>keyMap</code> has duplicated values
-     */
-    @Internal
-    public static <K, V> BiMap<K, V> newImmutableBiMapForInterface(final Map<? extends K, ? extends V> keyMap) {
-        final Map<V, K> valueMap = new LinkedHashMap<>();
-
-        for (Map.Entry<? extends K, ? extends V> entry : keyMap.entrySet()) {
-            valueMap.put(entry.getValue(), entry.getKey());
-        }
-
-        if (valueMap.size() != keyMap.size()) {
-            return null;
-        }
-
-        return new BiMap<>(ImmutableMap.of(keyMap), ImmutableMap.of(valueMap));
-    }
+    //    /**
+    //     * Wrap the specified map with a unmodifiable BiMap.
+    //     *
+    //     * Note: To avoid the side-effects in the initialization of auto-generated interface *PNL/*CNL class,
+    //     * This method just return null if the specified keyMap has duplicated values, instead of throwing exception.
+    //     *
+    //     * @param keyMap
+    //     * @return null if the specified <code>keyMap</code> has duplicated values
+    //     */
+    //    @Internal
+    //    public static <K, V> BiMap<K, V> newImmutableBiMapForInterface(final Map<? extends K, ? extends V> keyMap) {
+    //        final Map<V, K> valueMap = new LinkedHashMap<>();
+    //
+    //        for (Map.Entry<? extends K, ? extends V> entry : keyMap.entrySet()) {
+    //            valueMap.put(entry.getValue(), entry.getKey());
+    //        }
+    //
+    //        if (valueMap.size() != keyMap.size()) {
+    //            return null;
+    //        }
+    //
+    //        return new BiMap<>(ImmutableMap.of(keyMap), ImmutableMap.of(valueMap));
+    //    }
 
     /**
      * The input array is returned.

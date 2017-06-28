@@ -16,8 +16,6 @@
 
 package com.landawn.abacus.util;
 
-import java.lang.reflect.Method;
-
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.ToIntFunction;
 
@@ -45,35 +43,12 @@ public final class Wrapper<T> {
     private final T value;
     private final ToIntFunction<? super T> hashFunction;
     private final BiFunction<? super T, ? super T, Boolean> equalsFunction;
-    private final Class<?> paramTypeOfHashFunction;
-    private final Class<?> paramTypeOfEqualsFunction;
     private int hashCode;
 
     private Wrapper(T value, ToIntFunction<? super T> hashFunction, BiFunction<? super T, ? super T, Boolean> equalsFunction) {
         this.value = value;
         this.hashFunction = hashFunction;
         this.equalsFunction = equalsFunction;
-        Method[] methods = hashFunction.getClass().getDeclaredMethods();
-
-        Class<?> paramType = null;
-
-        for (Method m : methods) {
-            if (m.getName().equals("applyAsInt")) {
-                paramType = m.getParameterTypes()[0];
-                break;
-            }
-        }
-
-        paramTypeOfHashFunction = paramType;
-
-        for (Method m : methods) {
-            if (m.getName().equals("apply")) {
-                paramType = m.getParameterTypes()[0];
-                break;
-            }
-        }
-
-        paramTypeOfEqualsFunction = paramType;
     }
 
     public static <T> Wrapper<T> of(T array) {
@@ -100,7 +75,7 @@ public final class Wrapper<T> {
     @Override
     public int hashCode() {
         if (hashCode == 0) {
-            hashCode = value == null ? 0 : paramTypeOfHashFunction.isAssignableFrom(value.getClass()) ? hashFunction.applyAsInt(value) : value.hashCode();
+            hashCode = value == null ? 0 : hashFunction.applyAsInt(value);
         }
 
         return hashCode;
@@ -108,21 +83,8 @@ public final class Wrapper<T> {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == this) {
-            return true;
-        }
+        return (obj == this) || (obj instanceof Wrapper && equalsFunction.apply(((Wrapper<T>) obj).value, value));
 
-        if (obj instanceof Wrapper) {
-            final Wrapper<T> other = (Wrapper<T>) obj;
-
-            if ((value == null || paramTypeOfEqualsFunction.isAssignableFrom(value.getClass()))
-                    && (other.value == null || paramTypeOfEqualsFunction.isAssignableFrom(other.value.getClass()))) {
-
-                return equalsFunction.apply(value, other.value);
-            }
-        }
-
-        return false;
     }
 
     @Override
