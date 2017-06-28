@@ -1734,7 +1734,7 @@ public abstract class CQLBuilder {
                 propNameList = classPropNameListPool.get(entityClass);
 
                 if (propNameList == null) {
-                    propNameList = N.asImmutableList(new ArrayList<>(RefUtil.getPropGetMethodList(entityClass).keySet()));
+                    propNameList = ImmutableList.of(new ArrayList<>(RefUtil.getPropGetMethodList(entityClass).keySet()));
                     classPropNameListPool.put(entityClass, propNameList);
                 }
             }

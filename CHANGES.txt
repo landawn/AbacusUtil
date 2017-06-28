@@ -11,7 +11,11 @@
 
 5, Add XHashSet/XHashMap
 
-6, Improvements and bug fix.
+6*, Remove asImmutable*/asSynchronized*/asChecked*/asLifoQueue from N.
+
+7, Add copyOf to ImmutableMap/ImmutableList/ImmutableSet
+
+8, Improvements and bug fix.
 
 
 ========Changes in 0.9.73=========================================================================

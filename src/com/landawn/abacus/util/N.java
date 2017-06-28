@@ -956,7 +956,7 @@ public final class N {
         List<E> enumList = (List<E>) enumListPool.get(enumClass);
 
         if (enumList == null) {
-            enumList = N.asImmutableList(N.asList(enumClass.getEnumConstants()));
+            enumList = ImmutableList.of(N.asList(enumClass.getEnumConstants()));
 
             enumListPool.put(enumClass, enumList);
         }
@@ -968,7 +968,7 @@ public final class N {
         Set<E> enumSet = (Set<E>) enumSetPool.get(enumClass);
 
         if (enumSet == null) {
-            enumSet = N.asImmutableSet(EnumSet.allOf(enumClass));
+            enumSet = ImmutableSet.of(EnumSet.allOf(enumClass));
 
             enumSetPool.put(enumClass, enumSet);
         }
@@ -988,7 +988,7 @@ public final class N {
                 valueMap.put(e.name(), e);
             }
 
-            enumMap = new BiMap<>(asImmutableMap(keyMap), asImmutableMap(valueMap));
+            enumMap = new BiMap<>(ImmutableMap.of(keyMap), ImmutableMap.of(valueMap));
 
             enumMapPool.put(enumClass, enumMap);
         }
@@ -1643,7 +1643,7 @@ public final class N {
             return null;
         }
 
-        return new BiMap<>(asImmutableMap(keyMap), asImmutableMap(valueMap));
+        return new BiMap<>(ImmutableMap.of(keyMap), ImmutableMap.of(valueMap));
     }
 
     /**
@@ -2193,264 +2193,6 @@ public final class N {
      */
     public static <K, V> Map<K, V> asSingletonMap(final K key, final V value) {
         return Collections.singletonMap(key, value);
-    }
-
-    /**
-     * Wrap the specified array with a unmodifiable list.
-     *
-     * @param a
-     * @return
-     * @see java.util.Collections#unmodifiableList(List)
-     */
-    @SafeVarargs
-    public static <T> List<T> asImmutableList(final T... a) {
-        return ImmutableList.of(a);
-    }
-
-    /**
-     * Wrap the specified list with a unmodifiable list.
-     *
-     * @param list
-     * @return
-     * @see java.util.Collections#unmodifiableList(List)
-     */
-    public static <T> List<T> asImmutableList(final List<? extends T> list) {
-        return ImmutableList.of(list);
-    }
-
-    /**
-     * Wrap the specified array with a unmodifiable set.
-     *
-     * @param a
-     * @return
-     * @see java.util.Collections#unmodifiableSet(Set)
-     */
-    @SafeVarargs
-    public static <T> Set<T> asImmutableSet(final T... a) {
-        return ImmutableSet.of(a);
-    }
-
-    /**
-     * Wrap the specified set with a unmodifiable set.
-     *
-     * @param s
-     * @return
-     * @see java.util.Collections#unmodifiableSet(Set)
-     */
-    public static <T> Set<T> asImmutableSet(final Set<? extends T> s) {
-        return ImmutableSet.of(s);
-    }
-
-    /**
-     * Wrap the specified set with a unmodifiable set.
-     *
-     * @param s
-     * @return
-     * @see java.util.Collections#unmodifiableSortedSet(SortedSet)
-     */
-    public static <T> SortedSet<T> asImmutableSortedSet(final SortedSet<T> s) {
-        return Collections.unmodifiableSortedSet(s);
-    }
-
-    /**
-     * Wrap the specified collection with a unmodifiable collection.
-     *
-     * @param c
-     * @return
-     * @see java.util.Collections#unmodifiableCollection(Collection)
-     */
-    public static <T> Collection<T> asImmutableCollection(final Collection<? extends T> c) {
-        return Collections.unmodifiableCollection(c);
-    }
-
-    public static <K, V, k extends K, v extends V> Map<K, V> asImmutableMap(final k k1, final v v1) {
-        return ImmutableMap.of(k1, v1);
-    }
-
-    public static <K, V, k extends K, v extends V> Map<K, V> asImmutableMap(final k k1, final v v1, final k k2, final v v2) {
-        return ImmutableMap.of(k1, v1, k2, v2);
-    }
-
-    public static <K, V, k extends K, v extends V> Map<K, V> asImmutableMap(final k k1, final v v1, final k k2, final v v2, final k k3, final v v3) {
-        return ImmutableMap.of(k1, v1, k2, v2, k3, v3);
-    }
-
-    @SafeVarargs
-    public static <K, V> Map<K, V> asImmutableMap(final Object... a) {
-        final Map<K, V> map = (a.length == 1 && a[0] instanceof Map) ? (Map<K, V>) a[0] : (Map<K, V>) N.asLinkedHashMap(a);
-        return new ImmutableMap<>(map);
-    }
-
-    /**
-     * Wrap the specified map with a unmodifiable map.
-     *
-     * @param m
-     * @return
-     * @see java.util.Collections#unmodifiableMap(Map)
-     */
-    public static <K, V> Map<K, V> asImmutableMap(final Map<? extends K, ? extends V> m) {
-        return ImmutableMap.of(m);
-    }
-
-    /**
-     * Wrap the specified map with a unmodifiable map.
-     *
-     * @param m
-     * @return
-     * @see java.util.Collections#unmodifiableSortedMap(SortedMap)
-     */
-    public static <K, V> SortedMap<K, V> asImmutableSortedMap(final SortedMap<K, ? extends V> m) {
-        return Collections.unmodifiableSortedMap(m);
-    }
-
-    /**
-     * Wrap the specified list with a synchronized list.
-     *
-     * @param list
-     * @return
-     * @see java.util.Collections#synchronizedList(List)
-     */
-    public static <T> List<T> asSynchronizedList(final List<T> list) {
-        return Collections.synchronizedList(list);
-    }
-
-    /**
-     * Wrap the specified set with a synchronized set.
-     *
-     * @param set
-     * @return
-     * @see java.util.Collections#synchronizedSet(Set)
-     */
-    public static <T> Set<T> asSynchronizedSet(final Set<T> set) {
-        return Collections.synchronizedSet(set);
-    }
-
-    /**
-     * Wrap the specified set with a synchronized set.
-     *
-     * @param set
-     * @return
-     * @see java.util.Collections#synchronizedSortedSet(SortedSet)
-     */
-    public static <T> SortedSet<T> asSynchronizedSortedSet(final SortedSet<T> set) {
-        return Collections.synchronizedSortedSet(set);
-    }
-
-    /**
-     * Wrap the specified collection with synchronized collection.
-     *
-     * @param c
-     * @return
-     * @see java.util.Collections#synchronizedCollection(Collection)
-     */
-    public static <T> Collection<T> asSynchronizedCollection(final Collection<T> c) {
-        return Collections.synchronizedCollection(c);
-    }
-
-    /**
-     * Wrap the specified map with a synchronized map.
-     *
-     * @param m
-     * @return
-     * @see java.util.Collections#synchronizedMap(Map)
-     */
-    public static <K, V> Map<K, V> asSynchronizedMap(final Map<K, V> m) {
-        return Collections.synchronizedMap(m);
-    }
-
-    /**
-     * Wrap the specified map with a synchronized map.
-     *
-     * @param m
-     * @return
-     * @see java.util.Collections#synchronizedSortedMap(SortedMap)
-     */
-    public static <K, V> SortedMap<K, V> asSynchronizedSortedMap(final SortedMap<K, V> m) {
-        return Collections.synchronizedSortedMap(m);
-    }
-
-    /**
-     * Wrap the specified list with a checked list.
-     *
-     * @param c
-     * @param type
-     * @return
-     * @see java.util.Collections#checkedList(List, Class)
-     */
-    public static <E> List<E> asCheckedList(final List<E> c, final Class<E> type) {
-        return Collections.checkedList(c, type);
-    }
-
-    /**
-     * Wrap the specified set with a checked set.
-     *
-     * @param c
-     * @param type
-     * @return
-     * @see java.util.Collections#checkedSet(Set, Class)
-     */
-    public static <E> Set<E> asCheckedSet(final Set<E> c, final Class<E> type) {
-        return Collections.checkedSet(c, type);
-    }
-
-    /**
-     * Wrap the specified sorted set with a checked sorted set.
-     *
-     * @param c
-     * @param type
-     * @return
-     * @see java.util.Collections#checkedSortedSet(SortedSet, Class)
-     */
-    public static <E> SortedSet<E> asCheckedSortedSet(final SortedSet<E> c, final Class<E> type) {
-        return Collections.checkedSortedSet(c, type);
-    }
-
-    /**
-     * Wrap the specified collection with a checked collection.
-     *
-     * @param c
-     * @param type
-     * @return
-     * @see java.util.Collections#checkedCollection(Collection, Class)
-     */
-    public static <E> Collection<E> asCheckedCollection(final Collection<E> c, final Class<E> type) {
-        return Collections.checkedCollection(c, type);
-    }
-
-    /**
-     * Wrap the specified map with a Checked map.
-     *
-     * @param m
-     * @param keyType
-     * @param valueType
-     * @return
-     * @see java.util.Collections#checkedMap(Map, Class, Class)
-     */
-    public static <K, V> Map<K, V> asCheckedMap(final Map<K, V> m, final Class<K> keyType, final Class<V> valueType) {
-        return Collections.checkedMap(m, keyType, valueType);
-    }
-
-    /**
-     * Wrap the specified sorted map with a checked sorted map.
-     *
-     * @param m
-     * @param keyType
-     * @param valueType
-     * @return
-     * @see java.util.Collections#checkedSortedMap(SortedMap, Class, Class)
-     */
-    public static <K, V> SortedMap<K, V> asCheckedSortedMap(final SortedMap<K, V> m, final Class<K> keyType, final Class<V> valueType) {
-        return Collections.checkedSortedMap(m, keyType, valueType);
-    }
-
-    /**
-     *
-     * @param deque
-     * @return
-     * @see java.util.Collections#asLifoQueue(Deque)
-     */
-    public static <T> Queue<T> asLifoQueue(final Deque<T> deque) {
-        return Collections.asLifoQueue(deque);
     }
 
     /**

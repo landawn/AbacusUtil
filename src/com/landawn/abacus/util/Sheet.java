@@ -365,7 +365,7 @@ public final class Sheet<R, C, E> {
             N.fill(row, 0, columnLength, null);
         }
 
-        return N.asImmutableList(row);
+        return ImmutableList.of(row);
     }
 
     public void setRow(R rowKey, Collection<? extends E> row) {
@@ -651,7 +651,7 @@ public final class Sheet<R, C, E> {
             N.fill(column, 0, rowLength, null);
         }
 
-        return N.asImmutableList(column);
+        return ImmutableList.of(column);
     }
 
     public void setColumn(C columnKey, Collection<? extends E> column) {

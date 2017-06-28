@@ -14,6 +14,7 @@
 
 package com.landawn.abacus.util;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -36,6 +37,11 @@ public final class ImmutableList<E> extends ImmutableCollection<E> implements Li
         this.list = (List<E>) coll;
     }
 
+    /**
+     * 
+     * @param a the elements in this <code>array</code> are shared by the returned ImmutableList.
+     * @return
+     */
     @SafeVarargs
     public static <E> ImmutableList<E> of(E... a) {
         return new ImmutableList<>(Arrays.asList(a));
@@ -48,6 +54,14 @@ public final class ImmutableList<E> extends ImmutableCollection<E> implements Li
      */
     public static <E> ImmutableList<E> of(List<? extends E> list) {
         return new ImmutableList<>(list);
+    }
+
+    public static <E> ImmutableList<E> copyOf(E... a) {
+        return new ImmutableList<>(Arrays.asList(N.clone(a)));
+    }
+
+    public static <E> ImmutableList<E> copyOf(List<? extends E> list) {
+        return new ImmutableList<>(new ArrayList<>(list));
     }
 
     @Override

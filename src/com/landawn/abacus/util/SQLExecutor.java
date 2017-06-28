@@ -3109,7 +3109,7 @@ public final class SQLExecutor implements Closeable {
             Connection conn = getConnection();
 
             try {
-                columnNameList = N.asImmutableList(JdbcUtil.getColumnNameList(conn, tableName));
+                columnNameList = ImmutableList.of(JdbcUtil.getColumnNameList(conn, tableName));
                 _tableColumnNamePool.put(tableName, columnNameList);
             } finally {
                 closeQuietly(conn);
@@ -3464,7 +3464,7 @@ public final class SQLExecutor implements Closeable {
             //
             //            if (isCachable) {
             if (sql.length() < 4098) {
-                labelList = N.asImmutableList(labelList);
+                labelList = ImmutableList.of(labelList);
 
                 if (_sqlColumnLabelPool.size() >= SQL_CACHE_SIZE) {
                     _sqlColumnLabelPool.remove(_sqlColumnLabelPool.keySet().iterator().next());

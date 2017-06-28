@@ -16,6 +16,8 @@ package com.landawn.abacus.util;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -80,6 +82,10 @@ public final class ImmutableMap<K, V> implements Map<K, V> {
      */
     public static <K, V> ImmutableMap<K, V> of(Map<? extends K, ? extends V> map) {
         return new ImmutableMap<>(map);
+    }
+
+    public static <K, V> ImmutableMap<K, V> copyOf(Map<? extends K, ? extends V> map) {
+        return new ImmutableMap<>(map instanceof IdentityHashMap ? new IdentityHashMap<>(map) : new HashMap<>(map));
     }
 
     /**

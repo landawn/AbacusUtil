@@ -15,6 +15,7 @@
 package com.landawn.abacus.util;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -41,5 +42,14 @@ public final class ImmutableSet<E> extends ImmutableCollection<E> implements Set
      */
     public static <E> ImmutableSet<E> of(Set<? extends E> set) {
         return new ImmutableSet<>(set);
+    }
+
+    /**
+     * 
+     * @param set
+     * @return
+     */
+    public static <E> ImmutableSet<E> copyOf(Set<? extends E> set) {
+        return new ImmutableSet<>(new HashSet<>(set));
     }
 }
