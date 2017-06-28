@@ -9,13 +9,11 @@
 
 4, Add Stream.unzip
 
-5, Add XHashSet/XHashMap
+5*, Remove asImmutable*/asSynchronized*/asChecked*/asLifoQueue from N.
 
-6*, Remove asImmutable*/asSynchronized*/asChecked*/asLifoQueue from N.
+6, Add copyOf to ImmutableMap/ImmutableList/ImmutableSet
 
-7, Add copyOf to ImmutableMap/ImmutableList/ImmutableSet
-
-8, Improvements and bug fix.
+7, Improvements and bug fix.
 
 
 ========Changes in 0.9.73=========================================================================
