@@ -189,7 +189,7 @@ public final class CharList extends PrimitiveList<CharConsumer, CharPredicate, C
     }
 
     public static CharList rangeClosed(char startInclusive, final char endInclusive, final int by) {
-        return of(Array.range(startInclusive, endInclusive, by));
+        return of(Array.rangeClosed(startInclusive, endInclusive, by));
     }
 
     public static CharList repeat(char element, final int len) {

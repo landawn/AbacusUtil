@@ -57,6 +57,7 @@ import com.landawn.abacus.util.function.ToFloatFunction;
 import com.landawn.abacus.util.function.ToIntFunction;
 import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.function.ToShortFunction;
+import com.landawn.abacus.util.function.TriConsumer;
 import com.landawn.abacus.util.function.TriFunction;
 import com.landawn.abacus.util.stream.Collector;
 import com.landawn.abacus.util.stream.Collectors;
@@ -492,6 +493,42 @@ public final class Seq<T> extends ImmutableCollection<T> {
      */
     public <R> R forEach(final R seed, final IndexedBiFunction<R, ? super T, R> accumulator, final BiPredicate<? super R, ? super T> conditionToBreak) {
         return N.forEach(coll, seed, accumulator, conditionToBreak);
+    }
+
+    public <U> void forEach(final Function<? super T, ? extends Collection<U>> mapper, final BiConsumer<? super T, ? super U> action) {
+        if (N.isNullOrEmpty(coll)) {
+            return;
+        }
+
+        for (T e : coll) {
+            final Collection<U> c = mapper.apply(e);
+            if (N.notNullOrEmpty(c)) {
+                for (U u : c) {
+                    action.accept(e, u);
+                }
+            }
+        }
+    }
+
+    public <T2, T3> void forEach(final Function<? super T, ? extends Collection<T2>> mapper2, final Function<? super T2, ? extends Collection<T3>> mapper3,
+            final TriConsumer<? super T, ? super T2, ? super T3> action) {
+        if (N.isNullOrEmpty(coll)) {
+            return;
+        }
+
+        for (T e : coll) {
+            final Collection<T2> c2 = mapper2.apply(e);
+            if (N.notNullOrEmpty(c2)) {
+                for (T2 t2 : c2) {
+                    final Collection<T3> c3 = mapper3.apply(t2);
+                    if (N.notNullOrEmpty(c3)) {
+                        for (T3 t3 : c3) {
+                            action.accept(e, t2, t3);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     //    /**
@@ -1093,7 +1130,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public <R> List<R> flatMap(final Function<? super T, ? extends Collection<R>> func) {
-        final List<R> result = new ArrayList<>(size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : size() * 2);
+        final List<R> result = new ArrayList<>(size() > N.MAX_ARRAY_SIZE / 2 ? N.MAX_ARRAY_SIZE : size() * 2);
 
         if (N.isNullOrEmpty(coll)) {
             return result;
@@ -1107,7 +1144,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public <R> List<R> flatMap2(final Function<? super T, ? extends R[]> func) {
-        final List<R> result = new ArrayList<>(size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : size() * 2);
+        final List<R> result = new ArrayList<>(size() > N.MAX_ARRAY_SIZE / 2 ? N.MAX_ARRAY_SIZE : size() * 2);
 
         if (N.isNullOrEmpty(coll)) {
             return result;
@@ -1132,7 +1169,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public BooleanList flatMapToBoolean(final Function<? super T, ? extends Collection<Boolean>> func) {
-        final BooleanList result = new BooleanList(size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : size() * 2);
+        final BooleanList result = new BooleanList(size() > N.MAX_ARRAY_SIZE / 2 ? N.MAX_ARRAY_SIZE : size() * 2);
 
         if (N.isNullOrEmpty(coll)) {
             return result;
@@ -1148,7 +1185,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public BooleanList flatMapToBoolean2(final Function<? super T, boolean[]> func) {
-        final BooleanList result = new BooleanList(size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : size() * 2);
+        final BooleanList result = new BooleanList(size() > N.MAX_ARRAY_SIZE / 2 ? N.MAX_ARRAY_SIZE : size() * 2);
 
         if (N.isNullOrEmpty(coll)) {
             return result;
@@ -1162,7 +1199,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public CharList flatMapToChar(final Function<? super T, ? extends Collection<Character>> func) {
-        final CharList result = new CharList(size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : size() * 2);
+        final CharList result = new CharList(size() > N.MAX_ARRAY_SIZE / 2 ? N.MAX_ARRAY_SIZE : size() * 2);
 
         if (N.isNullOrEmpty(coll)) {
             return result;
@@ -1178,7 +1215,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public CharList flatMapToChar2(final Function<? super T, char[]> func) {
-        final CharList result = new CharList(size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : size() * 2);
+        final CharList result = new CharList(size() > N.MAX_ARRAY_SIZE / 2 ? N.MAX_ARRAY_SIZE : size() * 2);
 
         if (N.isNullOrEmpty(coll)) {
             return result;
@@ -1192,7 +1229,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public ByteList flatMapToByte(final Function<? super T, ? extends Collection<Byte>> func) {
-        final ByteList result = new ByteList(size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : size() * 2);
+        final ByteList result = new ByteList(size() > N.MAX_ARRAY_SIZE / 2 ? N.MAX_ARRAY_SIZE : size() * 2);
 
         if (N.isNullOrEmpty(coll)) {
             return result;
@@ -1208,7 +1245,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public ByteList flatMapToByte2(final Function<? super T, byte[]> func) {
-        final ByteList result = new ByteList(size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : size() * 2);
+        final ByteList result = new ByteList(size() > N.MAX_ARRAY_SIZE / 2 ? N.MAX_ARRAY_SIZE : size() * 2);
 
         if (N.isNullOrEmpty(coll)) {
             return result;
@@ -1222,7 +1259,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public ShortList flatMapToShort(final Function<? super T, ? extends Collection<Short>> func) {
-        final ShortList result = new ShortList(size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : size() * 2);
+        final ShortList result = new ShortList(size() > N.MAX_ARRAY_SIZE / 2 ? N.MAX_ARRAY_SIZE : size() * 2);
 
         if (N.isNullOrEmpty(coll)) {
             return result;
@@ -1238,7 +1275,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public ShortList flatMapToShort2(final Function<? super T, short[]> func) {
-        final ShortList result = new ShortList(size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : size() * 2);
+        final ShortList result = new ShortList(size() > N.MAX_ARRAY_SIZE / 2 ? N.MAX_ARRAY_SIZE : size() * 2);
 
         if (N.isNullOrEmpty(coll)) {
             return result;
@@ -1252,7 +1289,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public IntList flatMapToInt(final Function<? super T, ? extends Collection<Integer>> func) {
-        final IntList result = new IntList(size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : size() * 2);
+        final IntList result = new IntList(size() > N.MAX_ARRAY_SIZE / 2 ? N.MAX_ARRAY_SIZE : size() * 2);
 
         if (N.isNullOrEmpty(coll)) {
             return result;
@@ -1268,7 +1305,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public IntList flatMapToInt2(final Function<? super T, int[]> func) {
-        final IntList result = new IntList(size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : size() * 2);
+        final IntList result = new IntList(size() > N.MAX_ARRAY_SIZE / 2 ? N.MAX_ARRAY_SIZE : size() * 2);
 
         if (N.isNullOrEmpty(coll)) {
             return result;
@@ -1282,7 +1319,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public LongList flatMapToLong(final Function<? super T, ? extends Collection<Long>> func) {
-        final LongList result = new LongList(size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : size() * 2);
+        final LongList result = new LongList(size() > N.MAX_ARRAY_SIZE / 2 ? N.MAX_ARRAY_SIZE : size() * 2);
 
         if (N.isNullOrEmpty(coll)) {
             return result;
@@ -1298,7 +1335,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public LongList flatMapToLong2(final Function<? super T, long[]> func) {
-        final LongList result = new LongList(size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : size() * 2);
+        final LongList result = new LongList(size() > N.MAX_ARRAY_SIZE / 2 ? N.MAX_ARRAY_SIZE : size() * 2);
 
         if (N.isNullOrEmpty(coll)) {
             return result;
@@ -1312,7 +1349,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public FloatList flatMapToFloat(final Function<? super T, ? extends Collection<Float>> func) {
-        final FloatList result = new FloatList(size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : size() * 2);
+        final FloatList result = new FloatList(size() > N.MAX_ARRAY_SIZE / 2 ? N.MAX_ARRAY_SIZE : size() * 2);
 
         if (N.isNullOrEmpty(coll)) {
             return result;
@@ -1328,7 +1365,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public FloatList flatMapToFloat2(final Function<? super T, float[]> func) {
-        final FloatList result = new FloatList(size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : size() * 2);
+        final FloatList result = new FloatList(size() > N.MAX_ARRAY_SIZE / 2 ? N.MAX_ARRAY_SIZE : size() * 2);
 
         if (N.isNullOrEmpty(coll)) {
             return result;
@@ -1342,7 +1379,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public DoubleList flatMapToDouble(final Function<? super T, ? extends Collection<Double>> func) {
-        final DoubleList result = new DoubleList(size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : size() * 2);
+        final DoubleList result = new DoubleList(size() > N.MAX_ARRAY_SIZE / 2 ? N.MAX_ARRAY_SIZE : size() * 2);
 
         if (N.isNullOrEmpty(coll)) {
             return result;
@@ -1358,7 +1395,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public DoubleList flatMapToDouble2(final Function<? super T, double[]> func) {
-        final DoubleList result = new DoubleList(size() > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : size() * 2);
+        final DoubleList result = new DoubleList(size() > N.MAX_ARRAY_SIZE / 2 ? N.MAX_ARRAY_SIZE : size() * 2);
 
         if (N.isNullOrEmpty(coll)) {
             return result;
@@ -1366,6 +1403,50 @@ public final class Seq<T> extends ImmutableCollection<T> {
 
         for (T e : coll) {
             result.addAll(func.apply(e));
+        }
+
+        return result;
+    }
+
+    public <U, R> List<R> flatMap(final Function<? super T, ? extends Collection<U>> mapper, final BiFunction<? super T, ? super U, ? extends R> func) {
+        if (N.isNullOrEmpty(coll)) {
+            return new ArrayList<R>();
+        }
+
+        final List<R> result = new ArrayList<R>(N.max(9, coll.size()));
+
+        for (T e : coll) {
+            final Collection<U> c = mapper.apply(e);
+            if (N.notNullOrEmpty(c)) {
+                for (U u : c) {
+                    result.add(func.apply(e, u));
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public <T2, T3, R> List<R> flatMap(final Function<? super T, ? extends Collection<T2>> mapper2,
+            final Function<? super T2, ? extends Collection<T3>> mapper3, final TriFunction<? super T, ? super T2, ? super T3, R> func) {
+        if (N.isNullOrEmpty(coll)) {
+            return new ArrayList<R>();
+        }
+
+        final List<R> result = new ArrayList<R>(N.max(9, coll.size()));
+
+        for (T e : coll) {
+            final Collection<T2> c2 = mapper2.apply(e);
+            if (N.notNullOrEmpty(c2)) {
+                for (T2 t2 : c2) {
+                    final Collection<T3> c3 = mapper3.apply(t2);
+                    if (N.notNullOrEmpty(c3)) {
+                        for (T3 t3 : c3) {
+                            result.add(func.apply(e, t2, t3));
+                        }
+                    }
+                }
+            }
         }
 
         return result;

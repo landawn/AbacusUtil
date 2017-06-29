@@ -194,7 +194,7 @@ public final class ShortList extends PrimitiveList<ShortConsumer, ShortPredicate
     }
 
     public static ShortList rangeClosed(short startInclusive, final short endInclusive, final short by) {
-        return of(Array.range(startInclusive, endInclusive, by));
+        return of(Array.rangeClosed(startInclusive, endInclusive, by));
     }
 
     public static ShortList repeat(short element, final int len) {

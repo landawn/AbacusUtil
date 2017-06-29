@@ -1151,7 +1151,7 @@ public final class N {
     }
 
     public static int initHashCapacity(final int size) {
-        return size < MAX_HASH_LENGTH ? (int) (size * 1.25) + 1 : Integer.MAX_VALUE;
+        return size < MAX_HASH_LENGTH ? (int) (size * 1.25) + 1 : MAX_ARRAY_SIZE;
     }
 
     public static <T> ArrayList<T> newArrayList() {
@@ -1379,7 +1379,8 @@ public final class N {
         return multiMap;
     }
 
-    static final int MAX_HASH_LENGTH = (int) (Integer.MAX_VALUE / 1.25) - 1;
+    static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
+    static final int MAX_HASH_LENGTH = (int) (MAX_ARRAY_SIZE / 1.25) - 1;
 
     public static DataSet newDataSet(final String keyColumnName, final String valueColumnName, final Map<?, ?> m) {
         return newDataSet(null, null, keyColumnName, valueColumnName, m);

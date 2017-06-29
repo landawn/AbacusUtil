@@ -252,7 +252,7 @@ public final class LongList extends PrimitiveList<LongConsumer, LongPredicate, L
     }
 
     public static LongList rangeClosed(long startInclusive, final long endInclusive, final long by) {
-        return of(Array.range(startInclusive, endInclusive, by));
+        return of(Array.rangeClosed(startInclusive, endInclusive, by));
     }
 
     public static LongList repeat(long element, final int len) {

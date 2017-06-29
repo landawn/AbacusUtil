@@ -193,7 +193,7 @@ public final class ByteList extends PrimitiveList<ByteConsumer, BytePredicate, B
     }
 
     public static ByteList rangeClosed(byte startInclusive, final byte endInclusive, final byte by) {
-        return of(Array.range(startInclusive, endInclusive, by));
+        return of(Array.rangeClosed(startInclusive, endInclusive, by));
     }
 
     public static ByteList repeat(byte element, final int len) {

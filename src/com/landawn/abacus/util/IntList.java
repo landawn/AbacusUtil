@@ -356,7 +356,7 @@ public final class IntList extends PrimitiveList<IntConsumer, IntPredicate, Inte
     }
 
     public static IntList rangeClosed(int startInclusive, final int endInclusive, final int by) {
-        return of(Array.range(startInclusive, endInclusive, by));
+        return of(Array.rangeClosed(startInclusive, endInclusive, by));
     }
 
     public static IntList repeat(int element, final int len) {
