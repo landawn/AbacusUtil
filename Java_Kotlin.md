@@ -115,6 +115,50 @@ Map<Integer, List<String>> map = Stream.of(persons).toMap2(p -> p.age, p -> p.na
 ```
 
 
+* **Compute sum of salaries by department**
+```java
+// Java:
+Map<Department, Integer> totalByDept
+     = employees.stream()
+                .collect(Collectors.groupingBy(Employee::getDepartment,
+                     Collectors.summingInt(Employee::getSalary)));
+// Kotlin:
+val totalByDept = employees.groupBy { it.dept }.mapValues { it.value.sumBy { it.salary }}
+
+// Java by Abacus-Util
+Map<Department, Integer> totalByDept = Stream.of(employees).toMap(Employee::getDepartment, Collectors.summingInt(Employee::getSalary));
+
+```
+
+* **Convert elements to strings and concatenate them, separated by commas**
+```java
+// Java:
+String joined = things.stream()
+                       .map(Object::toString)
+                       .collect(Collectors.joining(", "));
+// Kotlin:
+val joined = things.joinToString() // ", " is used as separator, by default
+
+// Java by Abacus-Util
+String joined = Stream.of(things).join(", ");
+// Or:
+String joined = Joiner.defauLt().join(things);
+```
+
+* **Different Kinds of Streams #1 - eager using first item if it exists**
+```java
+// Java:
+Arrays.asList("a1", "a2", "a3")
+    .stream()
+    .findFirst()
+    .ifPresent(System.out::println);
+    
+// Kotlin:
+listOf("a1", "a2", "a3").firstOrNull()?.apply(::println)
+
+// Java by Abacus-Util
+Stream.of("a1", "a2", "a3").first().ifPresent(Fn.println());
+```
 
 
 
