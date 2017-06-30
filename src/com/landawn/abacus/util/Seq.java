@@ -63,8 +63,11 @@ import com.landawn.abacus.util.stream.Collector;
 import com.landawn.abacus.util.stream.Collectors;
 
 /**
- * It's an immutable wrapper for <code>Collection</code> to support more daily used/functional methods.
- * All the operations are null safety.
+ * It's an read-only wrapper for <code>Collection</code> to support more daily used/functional methods.
+ * All the operations are null safety. And an empty <code>String</code>/<code>Array</code>/<code>Collection</code>/<code>Optional</code>/<code>NullabLe</code> will be returned if possible, instead of null.
+ * 
+ * <br />
+ * <code>Seq</code> should not be passed as a parameter or returned as a result because it's a pure utility class for the operations/calculation based on Collection/Array
  * 
  * @since 0.8
  * 

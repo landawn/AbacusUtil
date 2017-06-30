@@ -39,6 +39,7 @@ import com.annimon.stream.function.ToDoubleFunction;
 import com.annimon.stream.function.ToIntFunction;
 import com.annimon.stream.function.ToLongFunction;
 import com.annimon.stream.function.UnaryOperator;
+import com.annimon.stream.operator.ObjConcat;
 import com.landawn.abacus.util.Indexed;
 import com.landawn.abacus.util.N;
 
@@ -127,6 +128,10 @@ public final class StreamEx<T> {
         return new StreamEx<>(Stream.rangeClosed(from, to));
     }
 
+    public static <T> StreamEx<T> generate(final Supplier<T> supplier) {
+        return new StreamEx<>(Stream.generate(supplier));
+    }
+
     public static <T> StreamEx<T> iterate(final T seed, final UnaryOperator<T> op) {
         return new StreamEx<>(Stream.iterate(seed, op));
     }
@@ -135,12 +140,8 @@ public final class StreamEx<T> {
         return new StreamEx<>(Stream.iterate(seed, predicate, op));
     }
 
-    public static <T> StreamEx<T> generate(final Supplier<T> supplier) {
-        return new StreamEx<>(Stream.generate(supplier));
-    }
-
     public static <T> StreamEx<T> concat(final Iterator<? extends T> iterator1, final Iterator<? extends T> iterator2) {
-        return new StreamEx<>(Stream.concat(Stream.of(iterator1), Stream.of(iterator2)));
+        return new StreamEx<>(Stream.of(new ObjConcat<T>(iterator1, iterator2)));
     }
 
     public static <T> StreamEx<T> concat(final Stream<? extends T> stream1, final Stream<? extends T> stream2) {
