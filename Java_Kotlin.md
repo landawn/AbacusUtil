@@ -160,6 +160,21 @@ listOf("a1", "a2", "a3").firstOrNull()?.apply(::println)
 Stream.of("a1", "a2", "a3").first().ifPresent(Fn.println());
 ```
 
+* **Group names of members in roster by gender**
+```java
+// Java:
+Map<Person.Sex, List<String>> namesByGender =
+      roster.stream().collect(
+        Collectors.groupingBy(
+            Person::getGender,                      
+            Collectors.mapping(
+                Person::getName,
+                Collectors.toList())));
+// Kotlin:
+val namesByGender = roster.groupBy { it.gender }.mapValues { it.value.map { it.name } } 
 
+// Java by Abacus-Util
+Map<Person.Sex, List<String>> namesByGender = Stream.of(roster).toMap2(Person::getGender, Person::getName);
+```
 
 [1]: https://stackoverflow.com/questions/34642254/what-java-8-stream-collect-equivalents-are-available-in-the-standard-kotlin-libr
