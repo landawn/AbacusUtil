@@ -34,8 +34,7 @@ val phrase = persons
         .joinToString(" and ", "In Germany ", " are of legal age.")
 
 // Java by Abacus-Util
-String phrase = persons
-        .stream()
+String phrase = Stream.of(persons)
         .filter(p -> p.age >= 18)
         .map(p -> p.name)
         .join(" and ", "In Germany ", " are of legal age.");
