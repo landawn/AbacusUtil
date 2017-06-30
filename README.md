@@ -195,6 +195,8 @@ collExecutor.delete(dbAccount.getId());
 assertFalse(collExecutor.exists(dbAccount.getId()));
 ```
 
+### [Kotlin vs Java 8 on Collection](./Java_Kotlin.md)
+
 [IOUtil]: http://www.landawn.com/IOUtil_view.html
 [Multiset]: http://www.landawn.com/Multiset_view.html
 [LongMultiset]: http://www.landawn.com/LongMultiset_view.html
