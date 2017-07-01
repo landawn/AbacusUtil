@@ -132,13 +132,29 @@ More see: [ParserFactory](http://www.landawn.com/api-docs/com/landawn/abacus/par
 ```java
 
 List<String> myList = N.asList("a1", "a2", "b1", "c2", "c1");
-myList.stream()
+Stream.of(myList) // very similiar to Java 8 myList.stream()
       .filter(s -> s.startsWith("c"))
       .map(N::toUpperCase)
       .sorted()
       .forEach(N::println);
 // C1
 // C2
+
+// Group by person by name and sorted by name
+// By Java 8
+Map<String, Person> = persons.stream()
+                             .collect(Collectors.groupingBy(Person::getName))
+                             .enrySet()
+                             .stream()
+                             .sorted((a, b) -> a.getKey().compareTo(b.getKey())) // compare by name;
+                             .collect(Collectors.toMap(e -> e.getKey(), e.getValue()));
+
+// AbacusUtil
+Map<String, Person> = Stream.of(persons)
+                             .groupByToEntry(Person::getName)
+                             .sortedBy(e -> e.getKey()) // compare by name;
+                             .toMap();
+
 ```
 
 ### The Best [SQLBuilder][]/[SQLExecutor][]/Mapper Ever
