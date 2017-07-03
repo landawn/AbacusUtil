@@ -1,4 +1,11 @@
 ﻿
+========Changes in 0.9.75=========================================================================
+
+1, Add forEachPair/forEachTriple to Seq.
+
+2, Improvements and bug fix.
+
+
 ========Changes in 0.9.74=========================================================================
 
 1*, Rename DataSet.getProperties() to DataSet.properties().

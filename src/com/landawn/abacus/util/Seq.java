@@ -534,6 +534,81 @@ public final class Seq<T> extends ImmutableCollection<T> {
         }
     }
 
+    public void forEachPair(final BiConsumer<? super T, ? super T> action) {
+        forEachPair(action, 1);
+    }
+
+    public void forEachPair(final BiConsumer<? super T, ? super T> action, final int increment) {
+        final int windowSize = 2;
+        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+
+        if (N.isNullOrEmpty(coll)) {
+            return;
+        }
+
+        final Iterator<T> iter = coll.iterator();
+        final T NONE = (T) N.NULL_MASK;
+        T prev = NONE;
+
+        while (iter.hasNext()) {
+            if (increment > windowSize && prev != NONE) {
+                int skipNum = increment - windowSize;
+
+                while (skipNum-- > 0 && iter.hasNext()) {
+                    iter.next();
+                }
+
+                prev = NONE;
+            }
+
+            if (increment == 1) {
+                action.accept(prev == NONE ? iter.next() : prev, (prev = (iter.hasNext() ? iter.next() : null)));
+            } else {
+                action.accept(iter.next(), (prev = (iter.hasNext() ? iter.next() : null)));
+            }
+        }
+    }
+
+    public void forEachTriple(final TriConsumer<? super T, ? super T, ? super T> action) {
+        forEachTriple(action, 1);
+    }
+
+    public void forEachTriple(final TriConsumer<? super T, ? super T, ? super T> action, final int increment) {
+        final int windowSize = 3;
+        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+
+        if (N.isNullOrEmpty(coll)) {
+            return;
+        }
+
+        final Iterator<T> iter = coll.iterator();
+        final T NONE = (T) N.NULL_MASK;
+        T prev = NONE;
+        T prev2 = NONE;
+
+        while (iter.hasNext()) {
+            if (increment > windowSize && prev != NONE) {
+                int skipNum = increment - windowSize;
+
+                while (skipNum-- > 0 && iter.hasNext()) {
+                    iter.next();
+                }
+
+                prev = NONE;
+            }
+
+            if (increment == 1) {
+                action.accept(prev2 == NONE ? iter.next() : prev2, (prev2 = (prev == NONE ? (iter.hasNext() ? iter.next() : null) : prev)),
+                        (prev = (iter.hasNext() ? iter.next() : null)));
+            } else if (increment == 2) {
+                action.accept(prev == NONE ? iter.next() : prev, (prev2 = (iter.hasNext() ? iter.next() : null)),
+                        (prev = (iter.hasNext() ? iter.next() : null)));
+            } else {
+                action.accept(iter.next(), (prev2 = (iter.hasNext() ? iter.next() : null)), (prev = (iter.hasNext() ? iter.next() : null)));
+            }
+        }
+    }
+
     //    /**
     //     * Execute <code>accumulator</code> on each element till <code>true</code> is returned by <code>conditionToBreak</code>
     //     * 
@@ -2526,7 +2601,19 @@ public final class Seq<T> extends ImmutableCollection<T> {
 
     @Override
     public Iterator<T> iterator() {
-        return coll == null ? ImmutableIterator.EMPTY : coll.iterator();
+        return coll == null ? ImmutableIterator.EMPTY : new ImmutableIterator<T>() {
+            private final Iterator<T> iter = coll.iterator();
+
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public T next() {
+                return iter.next();
+            }
+        };
     }
 
     //    public Stream<T> stream() {
@@ -3558,8 +3645,8 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return Triple.of(l, m, r);
     }
 
-    public static <T> Iterator<T> skipNull(final Iterator<T> iter) {
-        return new Iterator<T>() {
+    public static <T> ImmutableIterator<T> skipNull(final Iterator<T> iter) {
+        return new ImmutableIterator<T>() {
             private final Iterator<T> iterA = iter == null ? ImmutableIterator.EMPTY : iter;
 
             private T next;
@@ -3592,13 +3679,6 @@ public final class Seq<T> extends ImmutableCollection<T> {
                 final T result = next;
                 next = null;
                 return result;
-            }
-
-            @Override
-            public void remove() {
-                if (iter != null) {
-                    iter.remove();
-                }
             }
         };
     }

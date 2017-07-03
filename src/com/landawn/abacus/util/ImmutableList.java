@@ -44,6 +44,8 @@ public final class ImmutableList<E> extends ImmutableCollection<E> implements Li
      */
     @SafeVarargs
     public static <E> ImmutableList<E> of(E... a) {
+        N.requireNonNull(a);
+
         return new ImmutableList<>(Arrays.asList(a));
     }
 
@@ -53,14 +55,20 @@ public final class ImmutableList<E> extends ImmutableCollection<E> implements Li
      * @return
      */
     public static <E> ImmutableList<E> of(List<? extends E> list) {
+        N.requireNonNull(list);
+
         return new ImmutableList<>(list);
     }
 
     public static <E> ImmutableList<E> copyOf(E... a) {
+        N.requireNonNull(a);
+
         return new ImmutableList<>(Arrays.asList(N.clone(a)));
     }
 
     public static <E> ImmutableList<E> copyOf(List<? extends E> list) {
+        N.requireNonNull(list);
+
         return new ImmutableList<>(new ArrayList<>(list));
     }
 

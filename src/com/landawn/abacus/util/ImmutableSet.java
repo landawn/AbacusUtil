@@ -32,6 +32,8 @@ public final class ImmutableSet<E> extends ImmutableCollection<E> implements Set
 
     @SafeVarargs
     public static <E> ImmutableSet<E> of(E... a) {
+        N.requireNonNull(a);
+
         return new ImmutableSet<>(N.asLinkedHashSet(a));
     }
 
@@ -41,6 +43,8 @@ public final class ImmutableSet<E> extends ImmutableCollection<E> implements Set
      * @return
      */
     public static <E> ImmutableSet<E> of(Set<? extends E> set) {
+        N.requireNonNull(set);
+
         return new ImmutableSet<>(set);
     }
 
@@ -50,6 +54,8 @@ public final class ImmutableSet<E> extends ImmutableCollection<E> implements Set
      * @return
      */
     public static <E> ImmutableSet<E> copyOf(Set<? extends E> set) {
+        N.requireNonNull(set);
+
         return new ImmutableSet<>(new HashSet<>(set));
     }
 }
