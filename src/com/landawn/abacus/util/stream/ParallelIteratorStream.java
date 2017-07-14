@@ -1782,20 +1782,20 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                                         while (skipNum-- > 0 && elements.hasNext()) {
                                             elements.next();
                                         }
+
+                                        if (elements.hasNext() == false) {
+                                            break;
+                                        }
                                     }
 
-                                    if (elements.hasNext()) {
-                                        if (increment == 1) {
-                                            first = isFirst.isTrue() ? elements.next() : prev.value();
-                                            second = elements.hasNext() ? elements.next() : null;
+                                    if (increment == 1) {
+                                        first = isFirst.isTrue() ? elements.next() : prev.value();
+                                        second = elements.hasNext() ? elements.next() : null;
 
-                                            prev.setValue(second);
-                                        } else {
-                                            first = elements.next();
-                                            second = elements.hasNext() ? elements.next() : null;
-                                        }
+                                        prev.setValue(second);
                                     } else {
-                                        break;
+                                        first = elements.next();
+                                        second = elements.hasNext() ? elements.next() : null;
                                     }
 
                                     isFirst.setFalse();
@@ -1851,29 +1851,29 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                                         while (skipNum-- > 0 && elements.hasNext()) {
                                             elements.next();
                                         }
+
+                                        if (elements.hasNext() == false) {
+                                            break;
+                                        }
                                     }
 
-                                    if (elements.hasNext()) {
-                                        if (increment == 1) {
-                                            first = isFirst.isTrue() ? elements.next() : prev2.value();
-                                            second = isFirst.isTrue() ? (elements.hasNext() ? elements.next() : null) : prev.value();
-                                            third = elements.hasNext() ? elements.next() : null;
+                                    if (increment == 1) {
+                                        first = isFirst.isTrue() ? elements.next() : prev2.value();
+                                        second = isFirst.isTrue() ? (elements.hasNext() ? elements.next() : null) : prev.value();
+                                        third = elements.hasNext() ? elements.next() : null;
 
-                                            prev2.setValue(second);
-                                            prev.setValue(third);
-                                        } else if (increment == 2) {
-                                            first = isFirst.isTrue() ? elements.next() : prev.value();
-                                            second = elements.hasNext() ? elements.next() : null;
-                                            third = elements.hasNext() ? elements.next() : null;
+                                        prev2.setValue(second);
+                                        prev.setValue(third);
+                                    } else if (increment == 2) {
+                                        first = isFirst.isTrue() ? elements.next() : prev.value();
+                                        second = elements.hasNext() ? elements.next() : null;
+                                        third = elements.hasNext() ? elements.next() : null;
 
-                                            prev.setValue(third);
-                                        } else {
-                                            first = elements.next();
-                                            second = elements.hasNext() ? elements.next() : null;
-                                            third = elements.hasNext() ? elements.next() : null;
-                                        }
+                                        prev.setValue(third);
                                     } else {
-                                        break;
+                                        first = elements.next();
+                                        second = elements.hasNext() ? elements.next() : null;
+                                        third = elements.hasNext() ? elements.next() : null;
                                     }
 
                                     isFirst.setFalse();

@@ -4588,11 +4588,11 @@ public final class N {
     public static <T1 extends Comparable<T1>, T2 extends Comparable<T2>> int compare(T1 a1, T1 b1, T2 a2, T2 b2) {
         int res = N.compare(a1, b1);
 
-        if (res == 0) {
-            res = N.compare(a2, b2);
+        if (res != 0) {
+            return res;
         }
 
-        return res;
+        return N.compare(a2, b2);
     }
 
     /**
@@ -4610,15 +4610,17 @@ public final class N {
     public static <T1 extends Comparable<T1>, T2 extends Comparable<T2>, T3 extends Comparable<T3>> int compare(T1 a1, T1 b1, T2 a2, T2 b2, T3 a3, T3 b3) {
         int res = N.compare(a1, b1);
 
-        if (res == 0) {
-            res = N.compare(a2, b2);
+        if (res != 0) {
+            return res;
         }
 
-        if (res == 0) {
-            res = N.compare(a3, b3);
+        res = N.compare(a2, b2);
+
+        if (res != 0) {
+            return res;
         }
 
-        return res;
+        return N.compare(a3, b3);
     }
 
     /** 
@@ -4639,19 +4641,23 @@ public final class N {
             T2 b2, T3 a3, T3 b3, T4 a4, T4 b4) {
         int res = N.compare(a1, b1);
 
-        if (res == 0) {
-            res = N.compare(a2, b2);
+        if (res != 0) {
+            return res;
         }
 
-        if (res == 0) {
-            res = N.compare(a3, b3);
+        res = N.compare(a2, b2);
+
+        if (res != 0) {
+            return res;
         }
 
-        if (res == 0) {
-            res = N.compare(a4, b4);
+        res = N.compare(a3, b3);
+
+        if (res != 0) {
+            return res;
         }
 
-        return res;
+        return N.compare(a4, b4);
     }
 
     /**
@@ -4674,23 +4680,29 @@ public final class N {
             T1 a1, T1 b1, T2 a2, T2 b2, T3 a3, T3 b3, T4 a4, T4 b4, T5 a5, T5 b5) {
         int res = N.compare(a1, b1);
 
-        if (res == 0) {
-            res = N.compare(a2, b2);
+        if (res != 0) {
+            return res;
         }
 
-        if (res == 0) {
-            res = N.compare(a3, b3);
+        res = N.compare(a2, b2);
+
+        if (res != 0) {
+            return res;
         }
 
-        if (res == 0) {
-            res = N.compare(a4, b4);
+        res = N.compare(a3, b3);
+
+        if (res != 0) {
+            return res;
         }
 
-        if (res == 0) {
-            res = N.compare(a5, b5);
+        res = N.compare(a4, b4);
+
+        if (res != 0) {
+            return res;
         }
 
-        return res;
+        return N.compare(a5, b5);
     }
 
     public static int compare(final boolean[] a, final boolean[] b) {
@@ -30205,6 +30217,12 @@ public final class N {
      */
     public static <T> T println(final T obj) {
         final String str = N.deepToString(obj);
+        System.out.println(str);
+        return obj;
+    }
+
+    public static <T> T println(final T obj, final int repeat) {
+        final String str = N.repeat(N.deepToString(obj), repeat);
         System.out.println(str);
         return obj;
     }

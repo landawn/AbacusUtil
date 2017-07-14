@@ -1531,6 +1531,10 @@ class IteratorStream<T> extends AbstractStream<T> {
                     elements.next();
                 }
 
+                if (elements.hasNext() == false) {
+                    break;
+                }
+
                 prev = (T) NONE;
             }
 
@@ -1557,6 +1561,10 @@ class IteratorStream<T> extends AbstractStream<T> {
 
                 while (skipNum-- > 0 && elements.hasNext()) {
                     elements.next();
+                }
+
+                if (elements.hasNext() == false) {
+                    break;
                 }
 
                 prev = (T) NONE;
