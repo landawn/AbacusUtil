@@ -558,6 +558,10 @@ public final class Seq<T> extends ImmutableCollection<T> {
                     iter.next();
                 }
 
+                if (iter.hasNext() == false) {
+                    break;
+                }
+
                 prev = NONE;
             }
 
@@ -592,6 +596,10 @@ public final class Seq<T> extends ImmutableCollection<T> {
 
                 while (skipNum-- > 0 && iter.hasNext()) {
                     iter.next();
+                }
+
+                if (iter.hasNext() == false) {
+                    break;
                 }
 
                 prev = NONE;
