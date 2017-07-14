@@ -30221,11 +30221,11 @@ public final class N {
         return obj;
     }
 
-    public static <T> T println(final T obj, final int repeat) {
-        final String str = N.repeat(N.deepToString(obj), repeat);
-        System.out.println(str);
-        return obj;
-    }
+    //    public static <T> T println(final T obj, final int repeat) {
+    //        final String str = N.repeat(N.deepToString(obj), repeat);
+    //        System.out.println(str);
+    //        return obj;
+    //    }
 
     //    public static void println(final Object key, final Object value) {
     //        final StringBuilder sb = ObjectFactory.createStringBuilder();
