@@ -585,6 +585,77 @@ class ArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
+    public Stream<DoubleStream> split(final DoublePredicate predicate) {
+        return new IteratorStream<DoubleStream>(new ExIterator<DoubleStream>() {
+            private int cursor = fromIndex;
+            private boolean preCondition = false;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public DoubleStream next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final int from = cursor;
+
+                while (cursor < toIndex) {
+                    if (from == cursor) {
+                        preCondition = predicate.test(elements[from]);
+                        cursor++;
+                    } else if (predicate.test(elements[cursor]) == preCondition) {
+                        cursor++;
+                    } else {
+                        break;
+                    }
+                }
+
+                return new ArrayDoubleStream(elements, from, cursor, null, sorted);
+            }
+        }, closeHandlers);
+    }
+
+    @Override
+    public Stream<DoubleList> splitToList(final DoublePredicate predicate) {
+        return new IteratorStream<DoubleList>(new ExIterator<DoubleList>() {
+            private int cursor = fromIndex;
+            private boolean preCondition = false;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public DoubleList next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final int from = cursor;
+
+                while (cursor < toIndex) {
+                    if (from == cursor) {
+                        preCondition = predicate.test(elements[from]);
+                        cursor++;
+                    } else if (predicate.test(elements[cursor]) == preCondition) {
+                        cursor++;
+                    } else {
+
+                        break;
+                    }
+                }
+
+                return new DoubleList(N.copyOfRange(elements, from, cursor));
+            }
+        }, closeHandlers);
+    }
+
+    @Override
     public <U> Stream<DoubleStream> split(final U identity, final BiFunction<? super Double, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
         return new IteratorStream<DoubleStream>(new ExIterator<DoubleStream>() {

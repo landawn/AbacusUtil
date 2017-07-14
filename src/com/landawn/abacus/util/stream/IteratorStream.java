@@ -59,6 +59,7 @@ import com.landawn.abacus.util.function.ToFloatFunction;
 import com.landawn.abacus.util.function.ToIntFunction;
 import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.function.ToShortFunction;
+import com.landawn.abacus.util.function.TriConsumer;
 import com.landawn.abacus.util.function.TriFunction;
 import com.landawn.abacus.util.stream.ExIterator.QueuedIterator;
 
@@ -974,6 +975,49 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
+    public Stream<List<T>> splitToList(final Predicate<? super T> predicate) {
+        return new IteratorStream<>(new ExIterator<List<T>>() {
+            private T next = (T) NONE;
+            private boolean preCondition = false;
+
+            @Override
+            public boolean hasNext() {
+                return next != NONE || elements.hasNext();
+            }
+
+            @Override
+            public List<T> next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final List<T> result = new ArrayList<>();
+
+                if (next == NONE) {
+                    next = elements.next();
+                }
+
+                while (next != NONE) {
+                    if (result.size() == 0) {
+                        result.add(next);
+                        preCondition = predicate.test(next);
+                        next = elements.hasNext() ? elements.next() : (T) NONE;
+                    } else if (predicate.test(next) == preCondition) {
+                        result.add(next);
+                        next = elements.hasNext() ? elements.next() : (T) NONE;
+                    } else {
+
+                        break;
+                    }
+                }
+
+                return result;
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
     public <U> Stream<List<T>> splitToList(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
         return new IteratorStream<>(new ExIterator<List<T>>() {
@@ -1469,6 +1513,66 @@ class IteratorStream<T> extends AbstractStream<T> {
         }
 
         return result;
+    }
+
+    @Override
+    public void forEachPair(final BiConsumer<? super T, ? super T> action, final int increment) {
+        final int windowSize = 2;
+
+        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+
+        T prev = (T) NONE;
+
+        while (elements.hasNext()) {
+            if (increment > windowSize && prev != NONE) {
+                int skipNum = increment - windowSize;
+
+                while (skipNum-- > 0 && elements.hasNext()) {
+                    elements.next();
+                }
+
+                prev = (T) NONE;
+            }
+
+            if (increment == 1) {
+                action.accept(prev == NONE ? elements.next() : prev, (prev = (elements.hasNext() ? elements.next() : null)));
+            } else {
+                action.accept(elements.next(), (prev = (elements.hasNext() ? elements.next() : null)));
+            }
+        }
+    }
+
+    @Override
+    public void forEachTriple(final TriConsumer<? super T, ? super T, ? super T> action, final int increment) {
+        final int windowSize = 3;
+
+        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+
+        T prev = (T) NONE;
+        T prev2 = (T) NONE;
+
+        while (elements.hasNext()) {
+            if (increment > windowSize && prev != NONE) {
+                int skipNum = increment - windowSize;
+
+                while (skipNum-- > 0 && elements.hasNext()) {
+                    elements.next();
+                }
+
+                prev = (T) NONE;
+            }
+
+            if (increment == 1) {
+                action.accept(prev2 == NONE ? elements.next() : prev2, (prev2 = (prev == NONE ? (elements.hasNext() ? elements.next() : null) : prev)),
+                        (prev = (elements.hasNext() ? elements.next() : null)));
+
+            } else if (increment == 2) {
+                action.accept(prev == NONE ? elements.next() : prev, (prev2 = (elements.hasNext() ? elements.next() : null)),
+                        (prev = (elements.hasNext() ? elements.next() : null)));
+            } else {
+                action.accept(elements.next(), (prev2 = (elements.hasNext() ? elements.next() : null)), (prev = (elements.hasNext() ? elements.next() : null)));
+            }
+        }
     }
 
     @Override

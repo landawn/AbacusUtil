@@ -53,6 +53,7 @@ import com.landawn.abacus.util.function.ToFloatFunction;
 import com.landawn.abacus.util.function.ToIntFunction;
 import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.function.ToShortFunction;
+import com.landawn.abacus.util.function.TriConsumer;
 import com.landawn.abacus.util.function.TriFunction;
 
 /**
@@ -1193,6 +1194,81 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
+    public Stream<Stream<T>> split(final Predicate<? super T> predicate) {
+        return new IteratorStream<>(new ExIterator<Stream<T>>() {
+            private int cursor = fromIndex;
+            private boolean preCondition = false;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public Stream<T> next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final int from = cursor;
+
+                while (cursor < toIndex) {
+                    if (from == cursor) {
+                        preCondition = predicate.test(elements[from]);
+                        cursor++;
+                    } else if (predicate.test(elements[cursor]) == preCondition) {
+                        cursor++;
+                    } else {
+
+                        break;
+                    }
+                }
+
+                return new ArrayStream<>(elements, from, cursor, null, sorted, cmp);
+            }
+        }, closeHandlers);
+    }
+
+    @Override
+    public Stream<List<T>> splitToList(final Predicate<? super T> predicate) {
+        return new IteratorStream<>(new ExIterator<List<T>>() {
+            private int cursor = fromIndex;
+            private boolean preCondition = false;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public List<T> next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final List<T> result = new ArrayList<>();
+
+                while (cursor < toIndex) {
+                    if (result.size() == 0) {
+                        preCondition = predicate.test(elements[cursor]);
+                        result.add(elements[cursor]);
+                        cursor++;
+                    } else if (predicate.test(elements[cursor]) == preCondition) {
+                        result.add(elements[cursor]);
+                        cursor++;
+                    } else {
+
+                        break;
+                    }
+                }
+
+                return result;
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
     public <U> Stream<Stream<T>> split(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
         return new IteratorStream<>(new ExIterator<Stream<T>>() {
             private int cursor = fromIndex;
@@ -1520,6 +1596,36 @@ class ArrayStream<T> extends AbstractStream<T> {
         }
 
         return result;
+    }
+
+    @Override
+    public void forEachPair(final BiConsumer<? super T, ? super T> action, final int increment) {
+        final int windowSize = 2;
+
+        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+
+        int cursor = fromIndex;
+
+        while (cursor < toIndex) {
+            action.accept(elements[cursor], cursor < toIndex - 1 ? elements[cursor + 1] : null);
+
+            cursor = increment < toIndex - cursor && windowSize < toIndex - cursor ? cursor + increment : toIndex;
+        }
+    }
+
+    @Override
+    public void forEachTriple(final TriConsumer<? super T, ? super T, ? super T> action, final int increment) {
+        final int windowSize = 3;
+
+        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+
+        int cursor = fromIndex;
+
+        while (cursor < toIndex) {
+            action.accept(elements[cursor], cursor < toIndex - 1 ? elements[cursor + 1] : null, cursor < toIndex - 2 ? elements[cursor + 2] : null);
+
+            cursor = increment < toIndex - cursor && windowSize < toIndex - cursor ? cursor + increment : toIndex;
+        }
     }
 
     @Override

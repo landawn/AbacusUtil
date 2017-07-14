@@ -446,6 +446,77 @@ class ArrayShortStream extends AbstractShortStream {
     }
 
     @Override
+    public Stream<ShortStream> split(final ShortPredicate predicate) {
+        return new IteratorStream<ShortStream>(new ExIterator<ShortStream>() {
+            private int cursor = fromIndex;
+            private boolean preCondition = false;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public ShortStream next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final int from = cursor;
+
+                while (cursor < toIndex) {
+                    if (from == cursor) {
+                        preCondition = predicate.test(elements[from]);
+                        cursor++;
+                    } else if (predicate.test(elements[cursor]) == preCondition) {
+                        cursor++;
+                    } else {
+                        break;
+                    }
+                }
+
+                return new ArrayShortStream(elements, from, cursor, null, sorted);
+            }
+        }, closeHandlers);
+    }
+
+    @Override
+    public Stream<ShortList> splitToList(final ShortPredicate predicate) {
+        return new IteratorStream<ShortList>(new ExIterator<ShortList>() {
+            private int cursor = fromIndex;
+            private boolean preCondition = false;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public ShortList next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final int from = cursor;
+
+                while (cursor < toIndex) {
+                    if (from == cursor) {
+                        preCondition = predicate.test(elements[from]);
+                        cursor++;
+                    } else if (predicate.test(elements[cursor]) == preCondition) {
+                        cursor++;
+                    } else {
+
+                        break;
+                    }
+                }
+
+                return new ShortList(N.copyOfRange(elements, from, cursor));
+            }
+        }, closeHandlers);
+    }
+
+    @Override
     public <U> Stream<ShortStream> split(final U identity, final BiFunction<? super Short, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
         return new IteratorStream<ShortStream>(new ExIterator<ShortStream>() {

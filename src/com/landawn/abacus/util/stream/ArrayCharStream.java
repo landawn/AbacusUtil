@@ -445,6 +445,77 @@ class ArrayCharStream extends AbstractCharStream {
     }
 
     @Override
+    public Stream<CharStream> split(final CharPredicate predicate) {
+        return new IteratorStream<CharStream>(new ExIterator<CharStream>() {
+            private int cursor = fromIndex;
+            private boolean preCondition = false;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public CharStream next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final int from = cursor;
+
+                while (cursor < toIndex) {
+                    if (from == cursor) {
+                        preCondition = predicate.test(elements[from]);
+                        cursor++;
+                    } else if (predicate.test(elements[cursor]) == preCondition) {
+                        cursor++;
+                    } else {
+                        break;
+                    }
+                }
+
+                return new ArrayCharStream(elements, from, cursor, null, sorted);
+            }
+        }, closeHandlers);
+    }
+
+    @Override
+    public Stream<CharList> splitToList(final CharPredicate predicate) {
+        return new IteratorStream<CharList>(new ExIterator<CharList>() {
+            private int cursor = fromIndex;
+            private boolean preCondition = false;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public CharList next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final int from = cursor;
+
+                while (cursor < toIndex) {
+                    if (from == cursor) {
+                        preCondition = predicate.test(elements[from]);
+                        cursor++;
+                    } else if (predicate.test(elements[cursor]) == preCondition) {
+                        cursor++;
+                    } else {
+
+                        break;
+                    }
+                }
+
+                return new CharList(N.copyOfRange(elements, from, cursor));
+            }
+        }, closeHandlers);
+    }
+
+    @Override
     public <U> Stream<CharStream> split(final U identity, final BiFunction<? super Character, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
         return new IteratorStream<CharStream>(new ExIterator<CharStream>() {

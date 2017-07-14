@@ -34,6 +34,7 @@ import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.FloatIterator;
+import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.Indexed;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.LongIterator;
@@ -45,7 +46,6 @@ import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.NullabLe;
-import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.Try;
@@ -65,6 +65,7 @@ import com.landawn.abacus.util.function.ToFloatFunction;
 import com.landawn.abacus.util.function.ToIntFunction;
 import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.function.ToShortFunction;
+import com.landawn.abacus.util.function.TriConsumer;
 import com.landawn.abacus.util.function.TriFunction;
 
 /**
@@ -2111,6 +2112,95 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
         }
 
         return sequential().forEach(seed, accumulator, conditionToBreak);
+    }
+
+    @Override
+    public void forEachPair(final BiConsumer<? super T, ? super T> action, final int increment) {
+        if (maxThreadNum <= 1) {
+            sequential().forEachPair(action, increment);
+            return;
+        }
+
+        final int windowSize = 2;
+
+        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+
+        final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
+        final Holder<Throwable> eHolder = new Holder<>();
+        final MutableInt curIndex = MutableInt.of(fromIndex);
+
+        for (int i = 0; i < maxThreadNum; i++) {
+            futureList.add(asyncExecutor.execute(new Runnable() {
+                private int cursor = -1;
+
+                @Override
+                public void run() {
+                    try {
+                        while (curIndex.intValue() < toIndex && eHolder.value() == null) {
+                            synchronized (elements) {
+                                if (curIndex.intValue() < toIndex) {
+                                    cursor = curIndex.value();
+                                    curIndex.setValue(increment < toIndex - cursor && windowSize < toIndex - cursor ? cursor + increment : toIndex);
+                                } else {
+                                    break;
+                                }
+                            }
+
+                            action.accept(elements[cursor], cursor < toIndex - 1 ? elements[cursor + 1] : null);
+                        }
+                    } catch (Throwable e) {
+                        setError(eHolder, e);
+                    }
+                }
+            }));
+        }
+
+        complete(futureList, eHolder);
+    }
+
+    @Override
+    public void forEachTriple(final TriConsumer<? super T, ? super T, ? super T> action, final int increment) {
+        if (maxThreadNum <= 1) {
+            sequential().forEachTriple(action, increment);
+            return;
+        }
+
+        final int windowSize = 3;
+
+        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+
+        final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
+        final Holder<Throwable> eHolder = new Holder<>();
+        final MutableInt curIndex = MutableInt.of(fromIndex);
+
+        for (int i = 0; i < maxThreadNum; i++) {
+            futureList.add(asyncExecutor.execute(new Runnable() {
+                private int cursor = -1;
+
+                @Override
+                public void run() {
+                    try {
+                        while (curIndex.intValue() < toIndex && eHolder.value() == null) {
+                            synchronized (elements) {
+                                if (curIndex.intValue() < toIndex) {
+                                    cursor = curIndex.value();
+                                    curIndex.setValue(increment < toIndex - cursor && windowSize < toIndex - cursor ? cursor + increment : toIndex);
+                                } else {
+                                    break;
+                                }
+                            }
+
+                            action.accept(elements[cursor], cursor < toIndex - 1 ? elements[cursor + 1] : null,
+                                    cursor < toIndex - 2 ? elements[cursor + 2] : null);
+                        }
+                    } catch (Throwable e) {
+                        setError(eHolder, e);
+                    }
+                }
+            }));
+        }
+
+        complete(futureList, eHolder);
     }
 
     @Override

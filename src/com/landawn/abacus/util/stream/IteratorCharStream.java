@@ -411,6 +411,50 @@ class IteratorCharStream extends AbstractCharStream {
     }
 
     @Override
+    public Stream<CharList> splitToList(final CharPredicate predicate) {
+        return new IteratorStream<CharList>(new ExIterator<CharList>() {
+            private char next;
+            private boolean hasNext = false;
+            private boolean preCondition = false;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext == true || elements.hasNext();
+            }
+
+            @Override
+            public CharList next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final CharList result = new CharList();
+
+                if (hasNext == false) {
+                    next = elements.nextChar();
+                    hasNext = true;
+                }
+
+                while (hasNext) {
+                    if (result.size() == 0) {
+                        result.add(next);
+                        preCondition = predicate.test(next);
+                        next = (hasNext = elements.hasNext()) ? elements.nextChar() : 0;
+                    } else if (predicate.test(next) == preCondition) {
+                        result.add(next);
+                        next = (hasNext = elements.hasNext()) ? elements.nextChar() : 0;
+                    } else {
+                        break;
+                    }
+                }
+
+                return result;
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
     public <U> Stream<CharList> splitToList(final U identity, final BiFunction<? super Character, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
         return new IteratorStream<CharList>(new ExIterator<CharList>() {

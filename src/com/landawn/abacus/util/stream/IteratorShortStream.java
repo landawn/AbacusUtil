@@ -413,6 +413,50 @@ class IteratorShortStream extends AbstractShortStream {
     }
 
     @Override
+    public Stream<ShortList> splitToList(final ShortPredicate predicate) {
+        return new IteratorStream<ShortList>(new ExIterator<ShortList>() {
+            private short next;
+            private boolean hasNext = false;
+            private boolean preCondition = false;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext == true || elements.hasNext();
+            }
+
+            @Override
+            public ShortList next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final ShortList result = new ShortList();
+
+                if (hasNext == false) {
+                    next = elements.nextShort();
+                    hasNext = true;
+                }
+
+                while (hasNext) {
+                    if (result.size() == 0) {
+                        result.add(next);
+                        preCondition = predicate.test(next);
+                        next = (hasNext = elements.hasNext()) ? elements.nextShort() : 0;
+                    } else if (predicate.test(next) == preCondition) {
+                        result.add(next);
+                        next = (hasNext = elements.hasNext()) ? elements.nextShort() : 0;
+                    } else {
+                        break;
+                    }
+                }
+
+                return result;
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
     public <U> Stream<ShortList> splitToList(final U identity, final BiFunction<? super Short, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
         return new IteratorStream<ShortList>(new ExIterator<ShortList>() {

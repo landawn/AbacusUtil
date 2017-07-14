@@ -67,6 +67,7 @@ import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.DoubleSummaryStatistics;
 import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.FloatSummaryStatistics;
+import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.ImmutableIterator;
 import com.landawn.abacus.util.Indexed;
@@ -85,7 +86,6 @@ import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.NullabLe;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
-import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.RefUtil;
@@ -133,6 +133,7 @@ import com.landawn.abacus.util.function.ToFloatFunction;
 import com.landawn.abacus.util.function.ToIntFunction;
 import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.function.ToShortFunction;
+import com.landawn.abacus.util.function.TriConsumer;
 import com.landawn.abacus.util.function.TriFunction;
 import com.landawn.abacus.util.function.UnaryOperator;
 import com.landawn.abacus.util.stream.ExIterator.QueuedIterator;
@@ -922,6 +923,28 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public abstract <R> R forEach(final R seed, BiFunction<R, ? super T, R> accumulator, final BiPredicate<? super R, ? super T> conditionToBreak);
+
+    public abstract void forEachPair(final BiConsumer<? super T, ? super T> action);
+
+    /**
+     * Slide with <code>windowSize = 2</code> and the specified <code>increment</code>, then <code>consume</code> by the specified <code>mapper</code>.
+     * 
+     * @param mapper
+     * @param increment
+     * @return
+     */
+    public abstract void forEachPair(final BiConsumer<? super T, ? super T> action, final int increment);
+
+    public abstract void forEachTriple(final TriConsumer<? super T, ? super T, ? super T> action);
+
+    /**
+     * Slide with <code>windowSize = 3</code> and the specified <code>increment</code>, then <code>consume</code> by the specified <code>mapper</code>.
+     * 
+     * @param mapper
+     * @param increment
+     * @return
+     */
+    public abstract void forEachTriple(final TriConsumer<? super T, ? super T, ? super T> action, final int increment);
 
     /**
      * <br />
@@ -8136,7 +8159,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      *
      */
     public static enum SOO {
-        SPLIT, SPLIT_0, SPLIT_2, SPLIT_3, SPLIT_AT, SLIDING, SLIDING_0, SLIDING_2, //
+        SPLIT, SPLIT_AT, SLIDING, //
         INTERSECTION, DIFFERENCE, SYMMETRIC_DIFFERENCE, //
         REVERSED, SHUFFLED, ROTATED, DISTINCT, //
         APPEND, PREPEND, CACHED, INDEXED, SKIP, LIMIT, STEP, //
@@ -8166,7 +8189,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         GROUP_BY, GROUP_BY_2, TO_MAP, TO_MAP2, TO_MULTIMAP, //
         FILTER, TAKE_WHILE, DROP_WHILE, REMOVE, REMOVE_IF, REMOVE_WHILE, SKIP_NULL, //
         SPLIT_BY, SORTED, REVERSE_SORTED, DISTINCT_BY, JOIN, PEEK, //
-        FOR_EACH, ANY_MATCH, ALL_MATCH, NONE_MATCH, FIND_FIRST, FIND_LAST, //
+        FOR_EACH, FOR_EACH_PAIR, FOR_EACH_TRIPLE, ANY_MATCH, ALL_MATCH, NONE_MATCH, FIND_FIRST, FIND_LAST, //
         PERSIST_DB;
     }
 }

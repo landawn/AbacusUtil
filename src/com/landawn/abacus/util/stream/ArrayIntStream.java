@@ -796,6 +796,77 @@ class ArrayIntStream extends AbstractIntStream {
     }
 
     @Override
+    public Stream<IntStream> split(final IntPredicate predicate) {
+        return new IteratorStream<IntStream>(new ExIterator<IntStream>() {
+            private int cursor = fromIndex;
+            private boolean preCondition = false;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public IntStream next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final int from = cursor;
+
+                while (cursor < toIndex) {
+                    if (from == cursor) {
+                        preCondition = predicate.test(elements[from]);
+                        cursor++;
+                    } else if (predicate.test(elements[cursor]) == preCondition) {
+                        cursor++;
+                    } else {
+                        break;
+                    }
+                }
+
+                return new ArrayIntStream(elements, from, cursor, null, sorted);
+            }
+        }, closeHandlers);
+    }
+
+    @Override
+    public Stream<IntList> splitToList(final IntPredicate predicate) {
+        return new IteratorStream<IntList>(new ExIterator<IntList>() {
+            private int cursor = fromIndex;
+            private boolean preCondition = false;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public IntList next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final int from = cursor;
+
+                while (cursor < toIndex) {
+                    if (from == cursor) {
+                        preCondition = predicate.test(elements[from]);
+                        cursor++;
+                    } else if (predicate.test(elements[cursor]) == preCondition) {
+                        cursor++;
+                    } else {
+
+                        break;
+                    }
+                }
+
+                return new IntList(N.copyOfRange(elements, from, cursor));
+            }
+        }, closeHandlers);
+    }
+
+    @Override
     public <U> Stream<IntStream> split(final U identity, final BiFunction<? super Integer, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
         return new IteratorStream<IntStream>(new ExIterator<IntStream>() {

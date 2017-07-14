@@ -37,6 +37,7 @@ import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.FloatIterator;
+import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.Indexed;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.LongIterator;
@@ -48,7 +49,6 @@ import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.NullabLe;
-import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.Try;
@@ -68,6 +68,7 @@ import com.landawn.abacus.util.function.ToFloatFunction;
 import com.landawn.abacus.util.function.ToIntFunction;
 import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.function.ToShortFunction;
+import com.landawn.abacus.util.function.TriConsumer;
 import com.landawn.abacus.util.function.TriFunction;
 import com.landawn.abacus.util.stream.ExIterator.QueuedIterator;
 
@@ -1746,6 +1747,151 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
         }
 
         return sequential().forEach(seed, accumulator, conditionToBreak);
+    }
+
+    @Override
+    public void forEachPair(final BiConsumer<? super T, ? super T> action, final int increment) {
+        if (maxThreadNum <= 1) {
+            sequential().forEachPair(action, increment);
+            return;
+        }
+
+        final int windowSize = 2;
+
+        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+
+        final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
+        final Holder<Throwable> eHolder = new Holder<>();
+        final Holder<T> prev = new Holder<>();
+        final MutableBoolean isFirst = MutableBoolean.of(true);
+
+        for (int i = 0; i < maxThreadNum; i++) {
+            futureList.add(asyncExecutor.execute(new Runnable() {
+                private T first = null;
+                private T second = null;
+
+                @Override
+                public void run() {
+                    try {
+                        while (eHolder.value() == null) {
+                            synchronized (elements) {
+                                if (elements.hasNext()) {
+                                    if (increment > windowSize && isFirst.isFalse()) {
+                                        int skipNum = increment - windowSize;
+
+                                        while (skipNum-- > 0 && elements.hasNext()) {
+                                            elements.next();
+                                        }
+                                    }
+
+                                    if (elements.hasNext()) {
+                                        if (increment == 1) {
+                                            first = isFirst.isTrue() ? elements.next() : prev.value();
+                                            second = elements.hasNext() ? elements.next() : null;
+
+                                            prev.setValue(second);
+                                        } else {
+                                            first = elements.next();
+                                            second = elements.hasNext() ? elements.next() : null;
+                                        }
+                                    } else {
+                                        break;
+                                    }
+
+                                    isFirst.setFalse();
+                                } else {
+                                    break;
+                                }
+                            }
+
+                            action.accept(first, second);
+                        }
+                    } catch (Throwable e) {
+                        setError(eHolder, e);
+                    }
+                }
+            }));
+        }
+
+        complete(futureList, eHolder);
+    }
+
+    @Override
+    public void forEachTriple(final TriConsumer<? super T, ? super T, ? super T> action, final int increment) {
+        if (maxThreadNum <= 1) {
+            sequential().forEachTriple(action, increment);
+            return;
+        }
+
+        final int windowSize = 3;
+
+        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+
+        final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
+        final Holder<Throwable> eHolder = new Holder<>();
+        final Holder<T> prev = new Holder<>();
+        final Holder<T> prev2 = new Holder<>();
+        final MutableBoolean isFirst = MutableBoolean.of(true);
+
+        for (int i = 0; i < maxThreadNum; i++) {
+            futureList.add(asyncExecutor.execute(new Runnable() {
+                private T first = null;
+                private T second = null;
+                private T third = null;
+
+                @Override
+                public void run() {
+                    try {
+                        while (eHolder.value() == null) {
+                            synchronized (elements) {
+                                if (elements.hasNext()) {
+                                    if (increment > windowSize && isFirst.isFalse()) {
+                                        int skipNum = increment - windowSize;
+
+                                        while (skipNum-- > 0 && elements.hasNext()) {
+                                            elements.next();
+                                        }
+                                    }
+
+                                    if (elements.hasNext()) {
+                                        if (increment == 1) {
+                                            first = isFirst.isTrue() ? elements.next() : prev2.value();
+                                            second = isFirst.isTrue() ? (elements.hasNext() ? elements.next() : null) : prev.value();
+                                            third = elements.hasNext() ? elements.next() : null;
+
+                                            prev2.setValue(second);
+                                            prev.setValue(third);
+                                        } else if (increment == 2) {
+                                            first = isFirst.isTrue() ? elements.next() : prev.value();
+                                            second = elements.hasNext() ? elements.next() : null;
+                                            third = elements.hasNext() ? elements.next() : null;
+
+                                            prev.setValue(third);
+                                        } else {
+                                            first = elements.next();
+                                            second = elements.hasNext() ? elements.next() : null;
+                                            third = elements.hasNext() ? elements.next() : null;
+                                        }
+                                    } else {
+                                        break;
+                                    }
+
+                                    isFirst.setFalse();
+                                } else {
+                                    break;
+                                }
+                            }
+
+                            action.accept(first, second, third);
+                        }
+                    } catch (Throwable e) {
+                        setError(eHolder, e);
+                    }
+                }
+            }));
+        }
+
+        complete(futureList, eHolder);
     }
 
     @Override

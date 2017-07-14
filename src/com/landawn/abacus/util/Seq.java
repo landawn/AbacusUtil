@@ -1911,7 +1911,26 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return N.split(coll, size);
     }
 
+    public <U> List<List<T>> split(final Predicate<? super T> predicate) {
+        N.requireNonNull(predicate);
+
+        if (N.isNullOrEmpty(coll)) {
+            return new ArrayList<>();
+        }
+
+        final BiFunction<T, Object, Boolean> predicate2 = new BiFunction<T, Object, Boolean>() {
+            @Override
+            public Boolean apply(T t, Object u) {
+                return predicate.test(t);
+            }
+        };
+
+        return split(null, predicate2, null);
+    }
+
     public <U> List<List<T>> split(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
+        N.requireNonNull(predicate);
+
         if (N.isNullOrEmpty(coll)) {
             return new ArrayList<>();
         }

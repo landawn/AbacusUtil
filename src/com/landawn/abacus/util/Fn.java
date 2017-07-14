@@ -569,6 +569,38 @@ public final class Fn {
         return Collectors.toMap2();
     }
 
+    public static <T> Collector<T, ?, Long> counting() {
+        return Collectors.counting();
+    }
+
+    public static <T> Collector<T, ?, Integer> countingInt() {
+        return Collectors.countingInt();
+    }
+
+    public static <T> Collector<T, ?, Long> summingInt(final ToIntFunction<? super T> mapper) {
+        return Collectors.summingInt(mapper);
+    }
+
+    public static <T> Collector<T, ?, Long> summingLong(final ToLongFunction<? super T> mapper) {
+        return Collectors.summingLong(mapper);
+    }
+
+    public static <T> Collector<T, ?, Double> summingDouble(final ToDoubleFunction<? super T> mapper) {
+        return Collectors.summingDouble(mapper);
+    }
+
+    public static <T> Collector<T, ?, Double> averagingInt(final ToIntFunction<? super T> mapper) {
+        return Collectors.averagingInt(mapper);
+    }
+
+    public static <T> Collector<T, ?, Double> averagingLong(final ToLongFunction<? super T> mapper) {
+        return Collectors.averagingLong(mapper);
+    }
+
+    public static <T> Collector<T, ?, Double> averagingDouble(final ToDoubleFunction<? super T> mapper) {
+        return Collectors.averagingDouble(mapper);
+    }
+
     public static final class Factory {
 
         private static final IntFunction<boolean[]> BOOLEAN_ARRAY = new IntFunction<boolean[]>() {

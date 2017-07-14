@@ -516,6 +516,50 @@ class IteratorFloatStream extends AbstractFloatStream {
     }
 
     @Override
+    public Stream<FloatList> splitToList(final FloatPredicate predicate) {
+        return new IteratorStream<FloatList>(new ExIterator<FloatList>() {
+            private float next;
+            private boolean hasNext = false;
+            private boolean preCondition = false;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext == true || elements.hasNext();
+            }
+
+            @Override
+            public FloatList next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final FloatList result = new FloatList();
+
+                if (hasNext == false) {
+                    next = elements.nextFloat();
+                    hasNext = true;
+                }
+
+                while (hasNext) {
+                    if (result.size() == 0) {
+                        result.add(next);
+                        preCondition = predicate.test(next);
+                        next = (hasNext = elements.hasNext()) ? elements.nextFloat() : 0;
+                    } else if (predicate.test(next) == preCondition) {
+                        result.add(next);
+                        next = (hasNext = elements.hasNext()) ? elements.nextFloat() : 0;
+                    } else {
+                        break;
+                    }
+                }
+
+                return result;
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
     public <U> Stream<FloatList> splitToList(final U identity, final BiFunction<? super Float, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
         return new IteratorStream<FloatList>(new ExIterator<FloatList>() {

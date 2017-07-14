@@ -14,11 +14,13 @@
 
 package com.landawn.abacus.android.util;
 
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import com.annimon.stream.Collector;
@@ -40,8 +42,10 @@ import com.annimon.stream.function.ToIntFunction;
 import com.annimon.stream.function.ToLongFunction;
 import com.annimon.stream.function.UnaryOperator;
 import com.annimon.stream.operator.ObjConcat;
+import com.landawn.abacus.util.ImmutableIterator;
 import com.landawn.abacus.util.Indexed;
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.Nth;
 
 /**
  * A simple wrapper for <a href="https://github.com/aNNiMON/Lightweight-Stream-API">Lightweight-Stream-API</a>
@@ -52,6 +56,8 @@ import com.landawn.abacus.util.N;
  * 
  */
 public final class StreamEx<T> {
+    private static final Object NONE = new Object();
+
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private static final StreamEx EMPTY = new StreamEx(Stream.empty());
 
@@ -140,22 +146,75 @@ public final class StreamEx<T> {
         return new StreamEx<>(Stream.iterate(seed, predicate, op));
     }
 
-    public static <T> StreamEx<T> concat(final Iterator<? extends T> iterator1, final Iterator<? extends T> iterator2) {
-        return new StreamEx<>(Stream.of(new ObjConcat<T>(iterator1, iterator2)));
+    public static <T> StreamEx<T> concat(final Collection<? extends T> coll1, final Collection<? extends T> coll2) {
+        return concat(coll1 == null ? ImmutableIterator.EMPTY : coll1.iterator(), coll2 == null ? ImmutableIterator.EMPTY : coll2.iterator());
     }
 
-    public static <T> StreamEx<T> concat(final Stream<? extends T> stream1, final Stream<? extends T> stream2) {
-        return new StreamEx<>(Stream.concat(stream1, stream2));
+    public static <T> StreamEx<T> concat(final Iterator<? extends T> iter1, final Iterator<? extends T> iter2) {
+        return new StreamEx<>(Stream.of(new ObjConcat<T>(iter1 == null ? ImmutableIterator.EMPTY : iter1, iter2 == null ? ImmutableIterator.EMPTY : iter2)));
     }
 
-    public static <F, S, R> StreamEx<R> zip(final Iterator<? extends F> iterator1, final Iterator<? extends S> iterator2,
+    public static <F, S, R> StreamEx<R> zip(final Collection<? extends F> coll1, final Collection<? extends S> coll2,
             final BiFunction<? super F, ? super S, ? extends R> combiner) {
-        return new StreamEx<>(Stream.zip(iterator1, iterator2, combiner));
+        return zip(coll1 == null ? ImmutableIterator.EMPTY : coll1.iterator(), coll2 == null ? ImmutableIterator.EMPTY : coll2.iterator(), combiner);
     }
 
-    public static <F, S, R> StreamEx<R> zip(final Stream<? extends F> stream1, final Stream<? extends S> stream2,
+    public static <F, S, R> StreamEx<R> zip(final Iterator<? extends F> iter1, final Iterator<? extends S> iter2,
             final BiFunction<? super F, ? super S, ? extends R> combiner) {
-        return new StreamEx<>(Stream.zip(stream1, stream2, combiner));
+        return new StreamEx<>(Stream.zip(iter1 == null ? ImmutableIterator.EMPTY : iter1, iter2 == null ? ImmutableIterator.EMPTY : iter2, combiner));
+    }
+
+    public static <T> StreamEx<T> merge(final Collection<? extends T> coll1, final Collection<? extends T> coll2,
+            final BiFunction<? super T, ? super T, Nth> selector) {
+        return merge(coll1 == null ? ImmutableIterator.EMPTY : coll1.iterator(), coll2 == null ? ImmutableIterator.EMPTY : coll2.iterator(), selector);
+    }
+
+    public static <T> StreamEx<T> merge(final Iterator<? extends T> iter1, final Iterator<? extends T> iter2,
+            final BiFunction<? super T, ? super T, Nth> selector) {
+        N.requireNonNull(selector);
+
+        if (iter1 == null) {
+            return iter2 == null ? StreamEx.<T> empty() : of(iter2);
+        } else if (iter2 == null) {
+            return of(iter1);
+        }
+
+        return of(new ImmutableIterator<T>() {
+            private Object first = NONE;
+            private Object second = NONE;
+
+            @Override
+            public boolean hasNext() {
+                return first != NONE || second != NONE || iter1.hasNext() || iter2.hasNext();
+            }
+
+            @Override
+            public T next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                if (first == NONE && iter1.hasNext()) {
+                    first = iter1.next();
+                }
+
+                if (second == NONE && iter2.hasNext()) {
+                    second = iter2.next();
+                }
+
+                T result = null;
+
+                if (second == NONE || (first != NONE && selector.apply((T) first, (T) second) == Nth.FIRST)) {
+                    result = (T) first;
+                    first = NONE;
+                } else {
+                    result = (T) second;
+                    second = NONE;
+                }
+
+                return result;
+            }
+        });
     }
 
     public Iterator<? extends T> iterator() {
@@ -186,8 +245,37 @@ public final class StreamEx<T> {
         return s.mapToDouble(mapper);
     }
 
-    public <R> StreamEx<R> flatMap(final Function<? super T, ? extends Stream<? extends R>> mapper) {
-        return new StreamEx<>(s.flatMap(mapper));
+    public <R> StreamEx<R> flatMap(final Function<? super T, ? extends StreamEx<? extends R>> mapper) {
+        final Function<T, Stream<R>> mapper2 = new Function<T, Stream<R>>() {
+            @Override
+            public Stream<R> apply(T t) {
+                return Stream.of(mapper.apply(t).iterator());
+            }
+        };
+
+        return new StreamEx<>(s.flatMap(mapper2));
+    }
+
+    public <R> StreamEx<R> flatMap2(final Function<? super T, ? extends Collection<? extends R>> mapper) {
+        final Function<T, Stream<R>> mapper2 = new Function<T, Stream<R>>() {
+            @Override
+            public Stream<R> apply(T t) {
+                return Stream.of(mapper.apply(t));
+            }
+        };
+
+        return new StreamEx<>(s.flatMap(mapper2));
+    }
+
+    public <R> StreamEx<R> flatMap3(final Function<? super T, ? extends R[]> mapper) {
+        final Function<T, Stream<R>> mapper2 = new Function<T, Stream<R>>() {
+            @Override
+            public Stream<R> apply(T t) {
+                return Stream.of((R[]) mapper.apply(t));
+            }
+        };
+
+        return new StreamEx<>(s.flatMap(mapper2));
     }
 
     public IntStream flatMapToInt(final Function<? super T, ? extends IntStream> mapper) {
@@ -377,11 +465,11 @@ public final class StreamEx<T> {
         return s.max(comparator);
     }
 
-    public Optional<T> findFirst() {
+    public Optional<T> first() {
         return s.findFirst();
     }
 
-    public Optional<T> findLast() {
+    public Optional<T> last() {
         final Iterator<? extends T> iter = s.iterator();
 
         if (iter.hasNext() == false) {

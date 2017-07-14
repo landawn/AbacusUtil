@@ -186,6 +186,29 @@ abstract class AbstractFloatStream extends FloatStream {
     }
 
     @Override
+    public Stream<FloatStream> split(final FloatPredicate predicate) {
+        return splitToList(predicate).map(new Function<FloatList, FloatStream>() {
+            @Override
+            public FloatStream apply(FloatList t) {
+                return new ArrayFloatStream(t.array(), 0, t.size(), null, sorted);
+            }
+        });
+    }
+
+    @Override
+    public Stream<FloatList> splitToList(final FloatPredicate predicate) {
+        final BiFunction<Float, Object, Boolean> predicate2 = new BiFunction<Float, Object, Boolean>() {
+
+            @Override
+            public Boolean apply(Float t, Object u) {
+                return predicate.test(t);
+            }
+        };
+
+        return splitToList(null, predicate2, null);
+    }
+
+    @Override
     public <U> Stream<FloatStream> split(final U identity, final BiFunction<? super Float, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
         return splitToList(identity, predicate, identityUpdate).map(new Function<FloatList, FloatStream>() {

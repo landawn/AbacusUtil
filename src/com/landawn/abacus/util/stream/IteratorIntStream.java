@@ -673,6 +673,50 @@ class IteratorIntStream extends AbstractIntStream {
     }
 
     @Override
+    public Stream<IntList> splitToList(final IntPredicate predicate) {
+        return new IteratorStream<IntList>(new ExIterator<IntList>() {
+            private int next;
+            private boolean hasNext = false;
+            private boolean preCondition = false;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext == true || elements.hasNext();
+            }
+
+            @Override
+            public IntList next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final IntList result = new IntList();
+
+                if (hasNext == false) {
+                    next = elements.nextInt();
+                    hasNext = true;
+                }
+
+                while (hasNext) {
+                    if (result.size() == 0) {
+                        result.add(next);
+                        preCondition = predicate.test(next);
+                        next = (hasNext = elements.hasNext()) ? elements.nextInt() : 0;
+                    } else if (predicate.test(next) == preCondition) {
+                        result.add(next);
+                        next = (hasNext = elements.hasNext()) ? elements.nextInt() : 0;
+                    } else {
+                        break;
+                    }
+                }
+
+                return result;
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
     public <U> Stream<IntList> splitToList(final U identity, final BiFunction<? super Integer, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
         return new IteratorStream<IntList>(new ExIterator<IntList>() {

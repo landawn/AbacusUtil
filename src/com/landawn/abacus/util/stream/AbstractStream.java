@@ -92,6 +92,7 @@ import com.landawn.abacus.util.function.ToFloatFunction;
 import com.landawn.abacus.util.function.ToIntFunction;
 import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.function.ToShortFunction;
+import com.landawn.abacus.util.function.TriConsumer;
 import com.landawn.abacus.util.function.TriFunction;
 
 /**
@@ -793,6 +794,29 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
+    public Stream<Stream<T>> split(final Predicate<? super T> predicate) {
+        return splitToList(predicate).map(new Function<List<T>, Stream<T>>() {
+            @Override
+            public Stream<T> apply(List<T> t) {
+                return new ArrayStream<>(toArray(t), 0, t.size(), null, sorted, cmp);
+            }
+        });
+    }
+
+    @Override
+    public Stream<List<T>> splitToList(final Predicate<? super T> predicate) {
+        final BiFunction<T, Object, Boolean> predicate2 = new BiFunction<T, Object, Boolean>() {
+
+            @Override
+            public Boolean apply(T t, Object u) {
+                return predicate.test(t);
+            }
+        };
+
+        return splitToList(null, predicate2, null);
+    }
+
+    @Override
     public <U> Stream<Stream<T>> split(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
         return splitToList(identity, predicate, identityUpdate).map(new Function<List<T>, Stream<T>>() {
             @Override
@@ -954,6 +978,16 @@ abstract class AbstractStream<T> extends Stream<T> {
             }
 
         }, false, null);
+    }
+
+    @Override
+    public void forEachPair(final BiConsumer<? super T, ? super T> action) {
+        forEachPair(action, 1);
+    }
+
+    @Override
+    public void forEachTriple(final TriConsumer<? super T, ? super T, ? super T> action) {
+        forEachTriple(action, 1);
     }
 
     @Override

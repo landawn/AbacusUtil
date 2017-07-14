@@ -185,6 +185,29 @@ abstract class AbstractShortStream extends ShortStream {
     }
 
     @Override
+    public Stream<ShortStream> split(final ShortPredicate predicate) {
+        return splitToList(predicate).map(new Function<ShortList, ShortStream>() {
+            @Override
+            public ShortStream apply(ShortList t) {
+                return new ArrayShortStream(t.array(), 0, t.size(), null, sorted);
+            }
+        });
+    }
+
+    @Override
+    public Stream<ShortList> splitToList(final ShortPredicate predicate) {
+        final BiFunction<Short, Object, Boolean> predicate2 = new BiFunction<Short, Object, Boolean>() {
+
+            @Override
+            public Boolean apply(Short t, Object u) {
+                return predicate.test(t);
+            }
+        };
+
+        return splitToList(null, predicate2, null);
+    }
+
+    @Override
     public <U> Stream<ShortStream> split(final U identity, final BiFunction<? super Short, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
         return splitToList(identity, predicate, identityUpdate).map(new Function<ShortList, ShortStream>() {

@@ -185,6 +185,29 @@ abstract class AbstractCharStream extends CharStream {
     }
 
     @Override
+    public Stream<CharStream> split(final CharPredicate predicate) {
+        return splitToList(predicate).map(new Function<CharList, CharStream>() {
+            @Override
+            public CharStream apply(CharList t) {
+                return new ArrayCharStream(t.array(), 0, t.size(), null, sorted);
+            }
+        });
+    }
+
+    @Override
+    public Stream<CharList> splitToList(final CharPredicate predicate) {
+        final BiFunction<Character, Object, Boolean> predicate2 = new BiFunction<Character, Object, Boolean>() {
+
+            @Override
+            public Boolean apply(Character t, Object u) {
+                return predicate.test(t);
+            }
+        };
+
+        return splitToList(null, predicate2, null);
+    }
+
+    @Override
     public <U> Stream<CharStream> split(final U identity, final BiFunction<? super Character, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
         return splitToList(identity, predicate, identityUpdate).map(new Function<CharList, CharStream>() {

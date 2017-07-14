@@ -1,9 +1,11 @@
 ﻿
 ========Changes in 0.9.75=========================================================================
 
-1, Add forEachPair/forEachTriple to Seq.
+1, Add forEachPair/forEachTriple to Seq/Stream.
 
-2, Improvements and bug fix.
+2, Add split(Predicate<? super T> predicate) to Seq/Stream/IntStream/LongStream/DoubleStream/...
+
+3, Improvements and bug fix.
 
 
 ========Changes in 0.9.74=========================================================================

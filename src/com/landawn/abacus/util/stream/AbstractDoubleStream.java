@@ -185,6 +185,29 @@ abstract class AbstractDoubleStream extends DoubleStream {
     }
 
     @Override
+    public Stream<DoubleStream> split(final DoublePredicate predicate) {
+        return splitToList(predicate).map(new Function<DoubleList, DoubleStream>() {
+            @Override
+            public DoubleStream apply(DoubleList t) {
+                return new ArrayDoubleStream(t.array(), 0, t.size(), null, sorted);
+            }
+        });
+    }
+
+    @Override
+    public Stream<DoubleList> splitToList(final DoublePredicate predicate) {
+        final BiFunction<Double, Object, Boolean> predicate2 = new BiFunction<Double, Object, Boolean>() {
+
+            @Override
+            public Boolean apply(Double t, Object u) {
+                return predicate.test(t);
+            }
+        };
+
+        return splitToList(null, predicate2, null);
+    }
+
+    @Override
     public <U> Stream<DoubleStream> split(final U identity, final BiFunction<? super Double, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
         return splitToList(identity, predicate, identityUpdate).map(new Function<DoubleList, DoubleStream>() {

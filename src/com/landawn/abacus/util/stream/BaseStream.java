@@ -166,6 +166,31 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
     /**
      * Split the stream by the specified predicate.
      * 
+     * 
+     * This stream should be sorted by value which is used to verify the border.
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param predicate
+     * @return
+     */
+    Stream<S> split(final P predicate);
+
+    /**
+     * Split the stream by the specified predicate.
+     * 
+     * This stream should be sorted by value which is used to verify the border.
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param predicate
+     * @return
+     */
+    Stream<PL> splitToList(final P predicate);
+
+    /**
+     * Split the stream by the specified predicate.
+     * 
      * <pre>
      * <code>
      * // split the number sequence by window 5.

@@ -411,6 +411,50 @@ class IteratorByteStream extends AbstractByteStream {
     }
 
     @Override
+    public Stream<ByteList> splitToList(final BytePredicate predicate) {
+        return new IteratorStream<ByteList>(new ExIterator<ByteList>() {
+            private byte next;
+            private boolean hasNext = false;
+            private boolean preCondition = false;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext == true || elements.hasNext();
+            }
+
+            @Override
+            public ByteList next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final ByteList result = new ByteList();
+
+                if (hasNext == false) {
+                    next = elements.nextByte();
+                    hasNext = true;
+                }
+
+                while (hasNext) {
+                    if (result.size() == 0) {
+                        result.add(next);
+                        preCondition = predicate.test(next);
+                        next = (hasNext = elements.hasNext()) ? elements.nextByte() : 0;
+                    } else if (predicate.test(next) == preCondition) {
+                        result.add(next);
+                        next = (hasNext = elements.hasNext()) ? elements.nextByte() : 0;
+                    } else {
+                        break;
+                    }
+                }
+
+                return result;
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
     public <U> Stream<ByteList> splitToList(final U identity, final BiFunction<? super Byte, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
         return new IteratorStream<ByteList>(new ExIterator<ByteList>() {

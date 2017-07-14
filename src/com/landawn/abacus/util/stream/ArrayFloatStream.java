@@ -585,6 +585,77 @@ class ArrayFloatStream extends AbstractFloatStream {
     }
 
     @Override
+    public Stream<FloatStream> split(final FloatPredicate predicate) {
+        return new IteratorStream<FloatStream>(new ExIterator<FloatStream>() {
+            private int cursor = fromIndex;
+            private boolean preCondition = false;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public FloatStream next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final int from = cursor;
+
+                while (cursor < toIndex) {
+                    if (from == cursor) {
+                        preCondition = predicate.test(elements[from]);
+                        cursor++;
+                    } else if (predicate.test(elements[cursor]) == preCondition) {
+                        cursor++;
+                    } else {
+                        break;
+                    }
+                }
+
+                return new ArrayFloatStream(elements, from, cursor, null, sorted);
+            }
+        }, closeHandlers);
+    }
+
+    @Override
+    public Stream<FloatList> splitToList(final FloatPredicate predicate) {
+        return new IteratorStream<FloatList>(new ExIterator<FloatList>() {
+            private int cursor = fromIndex;
+            private boolean preCondition = false;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public FloatList next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final int from = cursor;
+
+                while (cursor < toIndex) {
+                    if (from == cursor) {
+                        preCondition = predicate.test(elements[from]);
+                        cursor++;
+                    } else if (predicate.test(elements[cursor]) == preCondition) {
+                        cursor++;
+                    } else {
+
+                        break;
+                    }
+                }
+
+                return new FloatList(N.copyOfRange(elements, from, cursor));
+            }
+        }, closeHandlers);
+    }
+
+    @Override
     public <U> Stream<FloatStream> split(final U identity, final BiFunction<? super Float, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
         return new IteratorStream<FloatStream>(new ExIterator<FloatStream>() {

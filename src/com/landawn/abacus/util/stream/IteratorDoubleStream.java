@@ -516,6 +516,50 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
+    public Stream<DoubleList> splitToList(final DoublePredicate predicate) {
+        return new IteratorStream<DoubleList>(new ExIterator<DoubleList>() {
+            private double next;
+            private boolean hasNext = false;
+            private boolean preCondition = false;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext == true || elements.hasNext();
+            }
+
+            @Override
+            public DoubleList next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final DoubleList result = new DoubleList();
+
+                if (hasNext == false) {
+                    next = elements.nextDouble();
+                    hasNext = true;
+                }
+
+                while (hasNext) {
+                    if (result.size() == 0) {
+                        result.add(next);
+                        preCondition = predicate.test(next);
+                        next = (hasNext = elements.hasNext()) ? elements.nextDouble() : 0;
+                    } else if (predicate.test(next) == preCondition) {
+                        result.add(next);
+                        next = (hasNext = elements.hasNext()) ? elements.nextDouble() : 0;
+                    } else {
+                        break;
+                    }
+                }
+
+                return result;
+            }
+
+        }, closeHandlers);
+    }
+
+    @Override
     public <U> Stream<DoubleList> splitToList(final U identity, final BiFunction<? super Double, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
         return new IteratorStream<DoubleList>(new ExIterator<DoubleList>() {
