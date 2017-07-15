@@ -14,6 +14,7 @@
 
 package com.landawn.abacus.android.util;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -46,6 +47,7 @@ import com.landawn.abacus.util.ImmutableIterator;
 import com.landawn.abacus.util.Indexed;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
+import com.landawn.abacus.util.Pair;
 
 /**
  * A simple wrapper for <a href="https://github.com/aNNiMON/Lightweight-Stream-API">Lightweight-Stream-API</a>
@@ -154,16 +156,6 @@ public final class StreamEx<T> {
         return new StreamEx<>(Stream.of(new ObjConcat<T>(iter1 == null ? ImmutableIterator.EMPTY : iter1, iter2 == null ? ImmutableIterator.EMPTY : iter2)));
     }
 
-    public static <F, S, R> StreamEx<R> zip(final Collection<? extends F> coll1, final Collection<? extends S> coll2,
-            final BiFunction<? super F, ? super S, ? extends R> combiner) {
-        return zip(coll1 == null ? ImmutableIterator.EMPTY : coll1.iterator(), coll2 == null ? ImmutableIterator.EMPTY : coll2.iterator(), combiner);
-    }
-
-    public static <F, S, R> StreamEx<R> zip(final Iterator<? extends F> iter1, final Iterator<? extends S> iter2,
-            final BiFunction<? super F, ? super S, ? extends R> combiner) {
-        return new StreamEx<>(Stream.zip(iter1 == null ? ImmutableIterator.EMPTY : iter1, iter2 == null ? ImmutableIterator.EMPTY : iter2, combiner));
-    }
-
     public static <T> StreamEx<T> merge(final Collection<? extends T> coll1, final Collection<? extends T> coll2,
             final BiFunction<? super T, ? super T, Nth> selector) {
         return merge(coll1 == null ? ImmutableIterator.EMPTY : coll1.iterator(), coll2 == null ? ImmutableIterator.EMPTY : coll2.iterator(), selector);
@@ -215,6 +207,69 @@ public final class StreamEx<T> {
                 return result;
             }
         });
+    }
+
+    public static <F, S, R> StreamEx<R> zip(final Collection<? extends F> coll1, final Collection<? extends S> coll2,
+            final BiFunction<? super F, ? super S, ? extends R> combiner) {
+        return zip(coll1 == null ? ImmutableIterator.EMPTY : coll1.iterator(), coll2 == null ? ImmutableIterator.EMPTY : coll2.iterator(), combiner);
+    }
+
+    public static <F, S, R> StreamEx<R> zip(final Iterator<? extends F> iter1, final Iterator<? extends S> iter2,
+            final BiFunction<? super F, ? super S, ? extends R> combiner) {
+        return new StreamEx<>(Stream.zip(iter1 == null ? ImmutableIterator.EMPTY : iter1, iter2 == null ? ImmutableIterator.EMPTY : iter2, combiner));
+    }
+
+    /**
+     * 
+     * @param c
+     * @param unzip the second parameter is an output parameter.
+     * @return
+     */
+    public static <T, L, R> Pair<StreamEx<L>, StreamEx<R>> unzip(final Collection<? extends T> c, final BiConsumer<? super T, Pair<L, R>> unzip) {
+        if (N.isNullOrEmpty(c)) {
+            return Pair.of(StreamEx.<L> empty(), StreamEx.<R> empty());
+        }
+
+        final int len = c.size();
+        final List<L> l = new ArrayList<L>(len);
+        final List<R> r = new ArrayList<R>(len);
+        final Pair<L, R> p = new Pair<>();
+
+        for (T e : c) {
+            unzip.accept(e, p);
+
+            l.add(p.left);
+            r.add(p.right);
+        }
+
+        return Pair.of(StreamEx.of(p.left), StreamEx.of(p.right));
+    }
+
+    /**
+     * 
+     * @param iter
+     * @param unzip the second parameter is an output parameter.
+     * @return
+     */
+    public static <T, L, R> Pair<StreamEx<L>, StreamEx<R>> unzip(final Iterator<? extends T> iter, final BiConsumer<? super T, Pair<L, R>> unzip) {
+        if (iter == null) {
+            return Pair.of(StreamEx.<L> empty(), StreamEx.<R> empty());
+        }
+
+        final List<L> l = new ArrayList<L>();
+        final List<R> r = new ArrayList<R>();
+        final Pair<L, R> p = new Pair<>();
+
+        if (iter != null) {
+            while (iter.hasNext()) {
+                unzip.accept(iter.next(), p);
+
+                l.add(p.left);
+                r.add(p.right);
+            }
+        }
+
+        return Pair.of(StreamEx.of(p.left), StreamEx.of(p.right));
     }
 
     public Iterator<? extends T> iterator() {
