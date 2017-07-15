@@ -18,7 +18,6 @@ package com.landawn.abacus.util;
 
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Map;
 
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
@@ -297,7 +296,7 @@ public abstract class Tuple {
         }
     }
 
-    public final static class Tuple2<T1, T2> extends Tuple implements Map.Entry<T1, T2> {
+    public final static class Tuple2<T1, T2> extends Tuple implements ImmutableEntry<T1, T2> {
         public final T1 _1;
         public final T2 _2;
 

@@ -5,7 +5,11 @@
 
 2, Add split(Predicate<? super T> predicate) to Seq/Stream/IntStream/LongStream/DoubleStream/...
 
-3, Improvements and bug fix.
+3, Add ImmutableEntry
+
+4*, Remove stream() from Splitter.
+
+5, Improvements and bug fix.
 
 
 ========Changes in 0.9.74=========================================================================
