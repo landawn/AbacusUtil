@@ -51,7 +51,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import com.landawn.abacus.exception.AbacusException;
-import com.landawn.abacus.exception.AbacusIOException;
+import com.landawn.abacus.exception.UncheckedIOException;
 import com.landawn.abacus.exception.ParseException;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
@@ -321,7 +321,7 @@ public final class PropertiesUtil {
 
             return properties;
         } catch (FileNotFoundException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             IOUtil.close(is);
         }
@@ -337,7 +337,7 @@ public final class PropertiesUtil {
         try {
             tmp.load(is);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         }
 
         return create(targetProperties, tmp);
@@ -349,7 +349,7 @@ public final class PropertiesUtil {
         try {
             tmp.load(reader);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         }
 
         return create(null, tmp);
@@ -474,7 +474,7 @@ public final class PropertiesUtil {
 
             return properties;
         } catch (FileNotFoundException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             IOUtil.close(is);
         }
@@ -522,7 +522,7 @@ public final class PropertiesUtil {
         } catch (SAXException e) {
             throw new ParseException(e);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         }
 
         Node node = doc.getFirstChild();
@@ -660,7 +660,7 @@ public final class PropertiesUtil {
 
             os.flush();
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             IOUtil.close(os);
         }
@@ -687,7 +687,7 @@ public final class PropertiesUtil {
             tmp.store(writer, comments);
 
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -705,7 +705,7 @@ public final class PropertiesUtil {
 
             os.flush();
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             IOUtil.close(os);
         }
@@ -715,7 +715,7 @@ public final class PropertiesUtil {
         try {
             storeToXML(properties, os, rootElementName, ignoreTypeInfo, true);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -817,7 +817,7 @@ public final class PropertiesUtil {
             bw.flush();
 
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             ObjectFactory.recycle(bw);
         }
@@ -853,7 +853,7 @@ public final class PropertiesUtil {
 
             xml2Java(is, srcPath, packageName, className, isPublicField);
         } catch (FileNotFoundException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             IOUtil.close(is);
         }

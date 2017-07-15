@@ -105,7 +105,7 @@ import com.landawn.abacus.core.EntityManagerUtil;
 import com.landawn.abacus.core.MapEntity;
 import com.landawn.abacus.core.RowDataSet;
 import com.landawn.abacus.exception.AbacusException;
-import com.landawn.abacus.exception.AbacusIOException;
+import com.landawn.abacus.exception.UncheckedIOException;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
 import com.landawn.abacus.parser.JSONDeserializationConfig;
@@ -3206,7 +3206,7 @@ public final class N {
             try {
                 writer.write(str);
             } catch (IOException e) {
-                throw new AbacusIOException();
+                throw new UncheckedIOException();
             }
         }
 
@@ -3362,7 +3362,7 @@ public final class N {
                 writer.write(utcTimestamp, 0, 20);
             }
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             utcCalendarPool.add(c);
             utcTimestampFormatCharsPool.add(utcTimestamp);

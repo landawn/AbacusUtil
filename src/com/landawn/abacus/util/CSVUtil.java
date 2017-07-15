@@ -45,8 +45,8 @@ import com.landawn.abacus.dataChannel.DataChannel;
 import com.landawn.abacus.dataChannel.ResultSetChannel;
 import com.landawn.abacus.dataChannel.StatementDataChannel;
 import com.landawn.abacus.exception.AbacusException;
-import com.landawn.abacus.exception.AbacusIOException;
-import com.landawn.abacus.exception.AbacusSQLException;
+import com.landawn.abacus.exception.UncheckedIOException;
+import com.landawn.abacus.exception.UncheckedSQLException;
 import com.landawn.abacus.parser.JSONParser;
 import com.landawn.abacus.parser.JSONSerializationConfig;
 import com.landawn.abacus.parser.JSONSerializationConfig.JSC;
@@ -99,7 +99,7 @@ public final class CSVUtil {
 
             return loadCSV(csvInputStream, selectColumnNames, offset, count, filter);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             IOUtil.closeQuietly(csvInputStream);
         }
@@ -209,7 +209,7 @@ public final class CSVUtil {
 
             return new RowDataSet(columnNameList, columnList);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             if (br != csvReader) {
                 ObjectFactory.recycle(br);
@@ -250,7 +250,7 @@ public final class CSVUtil {
 
             return loadCSV(entityClass, csvInputStream, selectColumnNames, offset, count, filter);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             IOUtil.closeQuietly(csvInputStream);
         }
@@ -371,7 +371,7 @@ public final class CSVUtil {
 
             return new RowDataSet(columnNameList, columnList);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             if (br != csvReader) {
                 ObjectFactory.recycle(br);
@@ -409,7 +409,7 @@ public final class CSVUtil {
 
             return loadCSV(csvInputStream, offset, count, filter, columnTypeMap);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             IOUtil.closeQuietly(csvInputStream);
         }
@@ -522,7 +522,7 @@ public final class CSVUtil {
 
             return new RowDataSet(columnNameList, columnList);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             if (br != csvReader) {
                 ObjectFactory.recycle(br);
@@ -560,7 +560,7 @@ public final class CSVUtil {
 
             return loadCSV(csvInputStream, offset, count, filter, columnTypeList);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             IOUtil.closeQuietly(csvInputStream);
         }
@@ -666,7 +666,7 @@ public final class CSVUtil {
 
             return new RowDataSet(columnNameList, columnList);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             if (br != csvReader) {
                 ObjectFactory.recycle(br);
@@ -727,7 +727,7 @@ public final class CSVUtil {
 
             return exportCSV(out, stmt, selectColumnNames, offset, count, writeTitle, quoted);
         } catch (SQLException e) {
-            throw new AbacusSQLException(e);
+            throw new UncheckedSQLException(e);
         } finally {
             JdbcUtil.closeQuietly(stmt);
         }
@@ -783,7 +783,7 @@ public final class CSVUtil {
 
             return exportCSV(out, rs, selectColumnNames, offset, count, writeTitle, quoted);
         } catch (SQLException e) {
-            throw new AbacusSQLException(e);
+            throw new UncheckedSQLException(e);
         } finally {
             JdbcUtil.closeQuietly(rs);
         }
@@ -843,7 +843,7 @@ public final class CSVUtil {
 
             return result;
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             IOUtil.close(os);
         }
@@ -901,7 +901,7 @@ public final class CSVUtil {
 
             return result;
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -1048,9 +1048,9 @@ public final class CSVUtil {
 
             bw.flush();
         } catch (SQLException e) {
-            throw new AbacusSQLException(e);
+            throw new UncheckedSQLException(e);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             if (bw != out) {
                 ObjectFactory.recycle(bw);
@@ -1096,7 +1096,7 @@ public final class CSVUtil {
 
             return importCSV(file, offset, count, skipTitle, filter, stmt, batchSize, batchInterval, columnTypeList);
         } catch (SQLException e) {
-            throw new AbacusSQLException(e);
+            throw new UncheckedSQLException(e);
         } finally {
             JdbcUtil.closeQuietly(stmt);
         }
@@ -1137,7 +1137,7 @@ public final class CSVUtil {
 
             return importCSV(reader, offset, count, skipTitle, filter, stmt, batchSize, batchInterval, columnTypeList);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             IOUtil.close(reader);
         }
@@ -1261,9 +1261,9 @@ public final class CSVUtil {
                 stmt.clearBatch();
             }
         } catch (SQLException e) {
-            throw new AbacusSQLException(e);
+            throw new UncheckedSQLException(e);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             ObjectFactory.recycle(br);
         }
@@ -1314,7 +1314,7 @@ public final class CSVUtil {
 
             return importCSV(file, offset, count, filter, stmt, batchSize, batchInterval, columnTypeMap);
         } catch (SQLException e) {
-            throw new AbacusSQLException(e);
+            throw new UncheckedSQLException(e);
         } finally {
             JdbcUtil.closeQuietly(stmt);
         }
@@ -1354,7 +1354,7 @@ public final class CSVUtil {
 
             return importCSV(reader, offset, count, filter, stmt, batchSize, batchInterval, columnTypeMap);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             IOUtil.close(reader);
         }
@@ -1497,9 +1497,9 @@ public final class CSVUtil {
                 stmt.clearBatch();
             }
         } catch (SQLException e) {
-            throw new AbacusSQLException(e);
+            throw new UncheckedSQLException(e);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             ObjectFactory.recycle(br);
         }
@@ -1549,7 +1549,7 @@ public final class CSVUtil {
 
             return importCSV(file, offset, count, filter, stmt, batchSize, batchInterval, stmtSetter);
         } catch (SQLException e) {
-            throw new AbacusSQLException(e);
+            throw new UncheckedSQLException(e);
         } finally {
             JdbcUtil.closeQuietly(stmt);
         }
@@ -1587,7 +1587,7 @@ public final class CSVUtil {
 
             return importCSV(reader, offset, count, filter, stmt, batchSize, batchInterval, stmtSetter);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             IOUtil.close(reader);
         }
@@ -1690,9 +1690,9 @@ public final class CSVUtil {
                 stmt.clearBatch();
             }
         } catch (SQLException e) {
-            throw new AbacusSQLException(e);
+            throw new UncheckedSQLException(e);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             ObjectFactory.recycle(br);
         }

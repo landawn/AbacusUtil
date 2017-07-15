@@ -242,7 +242,7 @@ public final class StreamEx<T> {
             r.add(p.right);
         }
 
-        return Pair.of(StreamEx.of(p.left), StreamEx.of(p.right));
+        return Pair.of(StreamEx.of(l), StreamEx.of(r));
     }
 
     /**
@@ -269,7 +269,7 @@ public final class StreamEx<T> {
             }
         }
 
-        return Pair.of(StreamEx.of(p.left), StreamEx.of(p.right));
+        return Pair.of(StreamEx.of(l), StreamEx.of(r));
     }
 
     public Iterator<? extends T> iterator() {

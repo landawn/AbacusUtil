@@ -56,7 +56,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
-import com.landawn.abacus.exception.AbacusIOException;
+import com.landawn.abacus.exception.UncheckedIOException;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
 import com.landawn.abacus.util.function.Consumer;
@@ -140,13 +140,13 @@ public final class IOUtil {
      * </pre>
      * @return the amount of free drive space on the drive or volume in kilobytes
      * @throws IllegalStateException if an error occurred in initialisation
-     * @throws AbacusIOException if an error occurs when finding the free space
+     * @throws UncheckedIOException if an error occurs when finding the free space
      */
     public static long freeDiskSpaceKb() {
         try {
             return FileSystemUtil.freeSpaceKb();
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -161,13 +161,13 @@ public final class IOUtil {
      *  is zero or less
      * @return the amount of free drive space on the drive or volume in kilobytes
      * @throws IllegalStateException if an error occurred in initialisation
-     * @throws AbacusIOException if an error occurs when finding the free space
+     * @throws UncheckedIOException if an error occurs when finding the free space
      */
     public static long freeDiskSpaceKb(final long timeout) {
         try {
             return FileSystemUtil.freeSpaceKb(timeout);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -193,13 +193,13 @@ public final class IOUtil {
      * @return the amount of free drive space on the drive or volume in kilobytes
      * @throws IllegalArgumentException if the path is invalid
      * @throws IllegalStateException if an error occurred in initialisation
-     * @throws AbacusIOException if an error occurs when finding the free space
+     * @throws UncheckedIOException if an error occurs when finding the free space
      */
     public static long freeDiskSpaceKb(final String path) {
         try {
             return FileSystemUtil.freeSpaceKb(path);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -226,13 +226,13 @@ public final class IOUtil {
      * @return the amount of free drive space on the drive or volume in kilobytes
      * @throws IllegalArgumentException if the path is invalid
      * @throws IllegalStateException if an error occurred in initialisation
-     * @throws AbacusIOException if an error occurs when finding the free space
+     * @throws UncheckedIOException if an error occurs when finding the free space
      */
     public static long freeDiskSpaceKb(final String path, final long timeout) {
         try {
             return FileSystemUtil.freeSpaceKb(path, timeout);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -538,7 +538,7 @@ public final class IOUtil {
 
             return readBytes(is, offset, maxLen);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             close(is);
             close(outputZipFile.value());
@@ -585,7 +585,7 @@ public final class IOUtil {
             return os == null ? (totalCount <= 0 ? N.EMPTY_BYTE_ARRAY : N.copyOfRange(buf, 0, totalCount)) : os.toByteArray();
 
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             ObjectFactory.recycle(buf);
             ObjectFactory.recycle(os);
@@ -609,7 +609,7 @@ public final class IOUtil {
 
             return readChars(is, offset, maxLen, encoding);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             close(is);
             close(outputZipFile.value());
@@ -685,7 +685,7 @@ public final class IOUtil {
                 return a;
             }
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             ObjectFactory.recycle(buf);
             ObjectFactory.recycle(sb);
@@ -747,7 +747,7 @@ public final class IOUtil {
 
             return readLine(is, lineIndex, encoding);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             close(is);
             close(outputZipFile.value());
@@ -783,7 +783,7 @@ public final class IOUtil {
                 return br.readLine();
             }
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             if (br != reader) {
                 ObjectFactory.recycle(br);
@@ -808,7 +808,7 @@ public final class IOUtil {
 
             return readLines(is, offset, count, encoding);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             close(is);
             close(outputZipFile.value());
@@ -850,7 +850,7 @@ public final class IOUtil {
             }
 
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             if (br != reader) {
                 ObjectFactory.recycle(br);
@@ -865,7 +865,7 @@ public final class IOUtil {
      *
      * @param file  the file to open for input, must not be {@code null}
      * @return an Iterator of the lines in the file, never {@code null}
-     * @throws AbacusIOException in case of an I/O error (file closed)
+     * @throws UncheckedIOException in case of an I/O error (file closed)
      * @see #lineIterator(File, Charset)
      */
     public static LineIterator lineIterator(final File file) {
@@ -900,7 +900,7 @@ public final class IOUtil {
      * @param file  the file to open for input, must not be {@code null}
      * @param encoding  the encoding to use, {@code null} means platform default
      * @return an Iterator of the lines in the file, never {@code null}
-     * @throws AbacusIOException in case of an I/O error (file closed)
+     * @throws UncheckedIOException in case of an I/O error (file closed)
      */
     public static LineIterator lineIterator(final File file, final Charset encoding) {
         InputStream in = null;
@@ -911,7 +911,7 @@ public final class IOUtil {
             return lineIterator(in, encoding);
         } catch (final IOException ex) {
             closeQuietly(in);
-            throw new AbacusIOException(ex);
+            throw new UncheckedIOException(ex);
         } catch (final RuntimeException ex) {
             closeQuietly(in);
             throw ex;
@@ -949,7 +949,7 @@ public final class IOUtil {
      * @param encoding  the encoding to use, null means platform default
      * @return an Iterator of the lines in the reader, never null
      * @throws IllegalArgumentException if the input is null
-     * @throws AbacusIOException if an I/O error occurs, such as if the encoding is invalid
+     * @throws UncheckedIOException if an I/O error occurs, such as if the encoding is invalid
      */
     public static LineIterator lineIterator(final InputStream input, final Charset encoding) {
         return new LineIterator(createReader(input, encoding));
@@ -1002,7 +1002,7 @@ public final class IOUtil {
             is = new FileInputStream(file);
             return read(is, buf, off, len);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             closeQuietly(is);
         }
@@ -1060,7 +1060,7 @@ public final class IOUtil {
             reader = new FileReader(file);
             return read(reader, buf, off, len);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             closeQuietly(reader);
         }
@@ -1113,7 +1113,7 @@ public final class IOUtil {
 
             writer.flush();
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             close(writer);
         }
@@ -1145,7 +1145,7 @@ public final class IOUtil {
                 writer.flush();
             }
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -1163,7 +1163,7 @@ public final class IOUtil {
 
             writer.flush();
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             close(writer);
         }
@@ -1226,7 +1226,7 @@ public final class IOUtil {
                 bw.flush();
             }
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             if (!isBufferedWriter) {
                 ObjectFactory.recycle((BufferedWriter) bw);
@@ -1248,7 +1248,7 @@ public final class IOUtil {
 
             writer.flush();
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             close(writer);
         }
@@ -1311,7 +1311,7 @@ public final class IOUtil {
                 bw.flush();
             }
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             if (!isBufferedWriter) {
                 ObjectFactory.recycle((BufferedWriter) bw);
@@ -1447,7 +1447,7 @@ public final class IOUtil {
                 out.flush();
             }
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -1515,7 +1515,7 @@ public final class IOUtil {
                 out.flush();
             }
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -1537,7 +1537,7 @@ public final class IOUtil {
 
             os.flush();
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             close(os);
         }
@@ -1563,7 +1563,7 @@ public final class IOUtil {
                 out.flush();
             }
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -1595,7 +1595,7 @@ public final class IOUtil {
 
             return result;
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             close(os);
         }
@@ -1650,7 +1650,7 @@ public final class IOUtil {
 
             return totalCount;
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             ObjectFactory.recycle(buf);
         }
@@ -1689,7 +1689,7 @@ public final class IOUtil {
 
             return result;
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             close(writer);
         }
@@ -1744,7 +1744,7 @@ public final class IOUtil {
 
             return totalCount;
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             ObjectFactory.recycle(buf);
         }
@@ -1781,7 +1781,7 @@ public final class IOUtil {
 
             return write(os, is, offset, len, true);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             closeQuietly(os);
             closeQuietly(is);
@@ -1816,7 +1816,7 @@ public final class IOUtil {
 
             return write(output, is, offset, len, flush);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             closeQuietly(is);
         }
@@ -1850,7 +1850,7 @@ public final class IOUtil {
 
             return write(output, reader, offset, len, flush);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             closeQuietly(reader);
         }
@@ -1874,7 +1874,7 @@ public final class IOUtil {
 
             os.flush();
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             close(os);
         }
@@ -1930,7 +1930,7 @@ public final class IOUtil {
 
             return result;
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             close(os);
         }
@@ -1969,7 +1969,7 @@ public final class IOUtil {
 
             return result;
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             close(writer);
         }
@@ -1989,7 +1989,7 @@ public final class IOUtil {
 
             return write(os, is, offset, len, true);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             closeQuietly(os);
             closeQuietly(is);
@@ -2027,7 +2027,7 @@ public final class IOUtil {
 
             return toSkip - remain;
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             ObjectFactory.recycle(buf);
         }
@@ -2064,7 +2064,7 @@ public final class IOUtil {
 
             return toSkip - remain;
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             ObjectFactory.recycle(buf);
         }
@@ -2074,9 +2074,9 @@ public final class IOUtil {
      *
      * @param input
      * @param toSkip
-     * @throws AbacusIOException if the remaining length of the specified <code>input</code> is less than the specified <code>toSkip</code>
+     * @throws UncheckedIOException if the remaining length of the specified <code>input</code> is less than the specified <code>toSkip</code>
      */
-    public static void skipFully(final InputStream input, final long toSkip) throws AbacusIOException {
+    public static void skipFully(final InputStream input, final long toSkip) throws UncheckedIOException {
         if (toSkip < 0) {
             throw new IllegalArgumentException("Bytes to skip must not be negative: " + toSkip);
         }
@@ -2084,7 +2084,7 @@ public final class IOUtil {
         long skipped = skip(input, toSkip);
 
         if (skipped != toSkip) {
-            throw new AbacusIOException("Bytes to skip: " + toSkip + " actual: " + skipped);
+            throw new UncheckedIOException("Bytes to skip: " + toSkip + " actual: " + skipped);
         }
     }
 
@@ -2092,13 +2092,13 @@ public final class IOUtil {
      *
      * @param input
      * @param toSkip
-     * @throws AbacusIOException if the remaining length of the specified <code>input</code> is less than the specified <code>toSkip</code>
+     * @throws UncheckedIOException if the remaining length of the specified <code>input</code> is less than the specified <code>toSkip</code>
      */
-    public static void skipFully(final Reader input, final long toSkip) throws AbacusIOException {
+    public static void skipFully(final Reader input, final long toSkip) throws UncheckedIOException {
         long skipped = skip(input, toSkip);
 
         if (skipped != toSkip) {
-            throw new AbacusIOException("Chars to skip: " + toSkip + " actual: " + skipped);
+            throw new UncheckedIOException("Chars to skip: " + toSkip + " actual: " + skipped);
         }
     }
 
@@ -2138,7 +2138,7 @@ public final class IOUtil {
         N.requireNonNull(mode);
 
         if (!file.exists()) {
-            throw new AbacusIOException(file.toString() + " is not found");
+            throw new UncheckedIOException(file.toString() + " is not found");
         }
 
         return map(file, mode, 0, file.length());
@@ -2178,7 +2178,7 @@ public final class IOUtil {
             raf = new RandomAccessFile(file, mode == MapMode.READ_ONLY ? "r" : "rw");
             return raf.getChannel().map(mode, offset, len);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             IOUtil.closeQuietly(raf);
         }
@@ -2298,7 +2298,7 @@ public final class IOUtil {
         try {
             return new java.io.BufferedReader(new FileReader(file));
         } catch (FileNotFoundException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -2306,7 +2306,7 @@ public final class IOUtil {
         try {
             return new java.io.BufferedReader(new InputStreamReader(new FileInputStream(file), charset == null ? Charsets.DEFAULT : charset));
         } catch (FileNotFoundException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -2314,7 +2314,7 @@ public final class IOUtil {
         try {
             return Files.newBufferedReader(path, Charsets.DEFAULT);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -2322,7 +2322,7 @@ public final class IOUtil {
         try {
             return Files.newBufferedReader(path, charset);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -2342,7 +2342,7 @@ public final class IOUtil {
         try {
             return new java.io.BufferedWriter(new FileWriter(file));
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -2350,7 +2350,7 @@ public final class IOUtil {
         try {
             return new java.io.BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), charset == null ? Charsets.DEFAULT : charset));
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -2366,7 +2366,7 @@ public final class IOUtil {
         try {
             return new LZ4BlockInputStream(is);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -2374,7 +2374,7 @@ public final class IOUtil {
         try {
             return new LZ4BlockOutputStream(os);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -2385,7 +2385,7 @@ public final class IOUtil {
         try {
             return new LZ4BlockOutputStream(os, blockSize);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -2393,7 +2393,7 @@ public final class IOUtil {
         try {
             return new SnappyInputStream(is);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -2401,7 +2401,7 @@ public final class IOUtil {
         try {
             return new SnappyOutputStream(os);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -2412,7 +2412,7 @@ public final class IOUtil {
         try {
             return new SnappyOutputStream(os, bufferSize);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -2420,7 +2420,7 @@ public final class IOUtil {
         try {
             return new GZIPInputStream(is);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -2431,7 +2431,7 @@ public final class IOUtil {
         try {
             return new GZIPInputStream(is, bufferSize);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -2439,7 +2439,7 @@ public final class IOUtil {
         try {
             return new GZIPOutputStream(os);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -2450,7 +2450,7 @@ public final class IOUtil {
         try {
             return new GZIPOutputStream(os, bufferSize);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -2459,7 +2459,7 @@ public final class IOUtil {
             try {
                 file.close();
             } catch (IOException e) {
-                throw new AbacusIOException(e);
+                throw new UncheckedIOException(e);
             }
         }
     }
@@ -2485,7 +2485,7 @@ public final class IOUtil {
             try {
                 closeable.close();
             } catch (Exception e) {
-                throw new AbacusIOException(e);
+                throw new UncheckedIOException(e);
             }
         }
     }
@@ -2598,21 +2598,21 @@ public final class IOUtil {
      */
     public static void copy(File srcFile, File destDir, final boolean preserveFileDate, final FileFilter filter) {
         if (!srcFile.exists()) {
-            throw new AbacusIOException("The source file doesn't exist: " + srcFile.getAbsolutePath());
+            throw new UncheckedIOException("The source file doesn't exist: " + srcFile.getAbsolutePath());
         }
 
         if (destDir.exists()) {
             if (destDir.isFile()) {
-                throw new AbacusIOException("The destination file must be directory: " + destDir.getAbsolutePath());
+                throw new UncheckedIOException("The destination file must be directory: " + destDir.getAbsolutePath());
             }
         } else {
             if (!destDir.mkdirs()) {
-                throw new AbacusIOException("Failed to create destination directory: " + destDir.getAbsolutePath());
+                throw new UncheckedIOException("Failed to create destination directory: " + destDir.getAbsolutePath());
             }
         }
 
         if (destDir.canWrite() == false) {
-            throw new AbacusIOException("Destination '" + destDir + "' cannot be written to");
+            throw new UncheckedIOException("Destination '" + destDir + "' cannot be written to");
         }
 
         String destCanonicalPath = null;
@@ -2623,20 +2623,20 @@ public final class IOUtil {
             destCanonicalPath = destDir.getCanonicalPath();
             srcCanonicalPath = srcFile.getCanonicalPath();
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         }
 
         if (srcFile.isDirectory()) {
             if (destCanonicalPath.startsWith(srcCanonicalPath) && (destCanonicalPath.length() == srcCanonicalPath.length()
                     || destCanonicalPath.charAt(srcCanonicalPath.length()) == '/' || destCanonicalPath.charAt(srcCanonicalPath.length()) == '\\')) {
-                throw new AbacusIOException(
+                throw new UncheckedIOException(
                         "Failed to copy due to the target directory: " + destCanonicalPath + " is in or same as the source directory: " + srcCanonicalPath);
             }
 
             try {
                 doCopyDirectory(srcFile, destDir, preserveFileDate, filter);
             } catch (IOException e) {
-                throw new AbacusIOException(e);
+                throw new UncheckedIOException(e);
             }
         } else {
             File destFile = null;
@@ -2648,7 +2648,7 @@ public final class IOUtil {
                     destFile = new File(destDir, srcFile.getName());
                 }
             } catch (IOException e) {
-                throw new AbacusIOException(e);
+                throw new UncheckedIOException(e);
             }
 
             doCopyFile(srcFile, destFile, preserveFileDate);
@@ -2726,7 +2726,7 @@ public final class IOUtil {
      */
     private static void doCopyFile(final File srcFile, final File destFile, final boolean preserveFileDate) {
         if (destFile.exists()) {
-            throw new AbacusIOException("The destination file already existed: " + destFile.getAbsolutePath());
+            throw new UncheckedIOException("The destination file already existed: " + destFile.getAbsolutePath());
         }
 
         FileInputStream fis = null;
@@ -2749,7 +2749,7 @@ public final class IOUtil {
                 pos += output.transferFrom(input, pos, count);
             }
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             close(output);
             close(fos);
@@ -2759,7 +2759,7 @@ public final class IOUtil {
 
         if (srcFile.length() != destFile.length()) {
             deleteAllIfExists(destFile);
-            throw new AbacusIOException("Failed to copy full contents from '" + srcFile + "' to '" + destFile + "'");
+            throw new UncheckedIOException("Failed to copy full contents from '" + srcFile + "' to '" + destFile + "'");
         }
 
         if (preserveFileDate) {
@@ -2780,7 +2780,7 @@ public final class IOUtil {
         try {
             return Files.copy(source, target, options);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -2797,7 +2797,7 @@ public final class IOUtil {
         try {
             return Files.copy(in, target, options);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -2812,7 +2812,7 @@ public final class IOUtil {
         try {
             return Files.copy(source, out);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -2830,11 +2830,11 @@ public final class IOUtil {
      * @param source  the <code>URL</code> to copy bytes from, must not be {@code null}
      * @param destination  the non-directory <code>File</code> to write bytes to
      *  (possibly overwriting), must not be {@code null}
-     * @throws AbacusIOException if <code>source</code> URL cannot be opened
-     * @throws AbacusIOException if <code>destination</code> is a directory
-     * @throws AbacusIOException if <code>destination</code> cannot be written
-     * @throws AbacusIOException if <code>destination</code> needs creating but can't be
-     * @throws AbacusIOException if an IO error occurs during copying
+     * @throws UncheckedIOException if <code>source</code> URL cannot be opened
+     * @throws UncheckedIOException if <code>destination</code> is a directory
+     * @throws UncheckedIOException if <code>destination</code> cannot be written
+     * @throws UncheckedIOException if <code>destination</code> needs creating but can't be
+     * @throws UncheckedIOException if an IO error occurs during copying
      */
     public static void copyURLToFile(final URL source, final File destination) {
         InputStream is = null;
@@ -2843,7 +2843,7 @@ public final class IOUtil {
 
             write(destination, is);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             close(is);
         }
@@ -2862,11 +2862,11 @@ public final class IOUtil {
      *  will timeout if no connection could be established to the <code>source</code>
      * @param readTimeout the number of milliseconds until this method will
      *  timeout if no data could be read from the <code>source</code>
-     * @throws AbacusIOException if <code>source</code> URL cannot be opened
-     * @throws AbacusIOException if <code>destination</code> is a directory
-     * @throws AbacusIOException if <code>destination</code> cannot be written
-     * @throws AbacusIOException if <code>destination</code> needs creating but can't be
-     * @throws AbacusIOException if an IO error occurs during copying
+     * @throws UncheckedIOException if <code>source</code> URL cannot be opened
+     * @throws UncheckedIOException if <code>destination</code> is a directory
+     * @throws UncheckedIOException if <code>destination</code> cannot be written
+     * @throws UncheckedIOException if <code>destination</code> needs creating but can't be
+     * @throws UncheckedIOException if an IO error occurs during copying
      */
     public static void copyURLToFile(final URL source, final File destination, final int connectionTimeout, final int readTimeout) {
         InputStream is = null;
@@ -2878,7 +2878,7 @@ public final class IOUtil {
 
             write(destination, is);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             close(is);
         }
@@ -2886,23 +2886,23 @@ public final class IOUtil {
 
     public static void move(final File srcFile, final File destDir) {
         if (!srcFile.exists()) {
-            throw new AbacusIOException("The source file doesn't exist: " + srcFile.getAbsolutePath());
+            throw new UncheckedIOException("The source file doesn't exist: " + srcFile.getAbsolutePath());
         }
 
         if (destDir.exists()) {
             if (destDir.isFile()) {
-                throw new AbacusIOException("The destination file must be directory: " + destDir.getAbsolutePath());
+                throw new UncheckedIOException("The destination file must be directory: " + destDir.getAbsolutePath());
             }
         } else {
             if (!destDir.mkdirs()) {
-                throw new AbacusIOException("Failed to create destination directory: " + destDir.getAbsolutePath());
+                throw new UncheckedIOException("Failed to create destination directory: " + destDir.getAbsolutePath());
             }
         }
 
         File destFile = new File(destDir, srcFile.getName());
 
         if (!srcFile.renameTo(destFile)) {
-            throw new AbacusIOException("Failed to move file from: " + srcFile.getAbsolutePath() + " to: " + destDir.getAbsolutePath());
+            throw new UncheckedIOException("Failed to move file from: " + srcFile.getAbsolutePath() + " to: " + destDir.getAbsolutePath());
         }
     }
 
@@ -3031,7 +3031,7 @@ public final class IOUtil {
         try {
             return file.exists() ? false : file.createNewFile();
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -3042,7 +3042,7 @@ public final class IOUtil {
             zos = new ZipOutputStream(new FileOutputStream(targetFile));
             zipFile(sourceFile, zos, targetFile);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             close(zos);
         }
@@ -3058,7 +3058,7 @@ public final class IOUtil {
                 zipFile(sourceFile, zos, targetFile);
             }
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             close(zos);
         }
@@ -3153,7 +3153,7 @@ public final class IOUtil {
                 os = null;
             }
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             ObjectFactory.recycle(buf);
 
@@ -3221,7 +3221,7 @@ public final class IOUtil {
                 }
             }
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             ObjectFactory.recycle(buf);
 
@@ -3287,7 +3287,7 @@ public final class IOUtil {
                 bw = null;
             }
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             if (bw != null) {
                 close(bw);
@@ -3329,7 +3329,7 @@ public final class IOUtil {
 
             return cnt == 0 ? 0 : (file.length() / (bytes / cnt == 0 ? 1 : bytes / cnt));
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             closeQuietly(is);
             closeQuietly(outputZipFile.value());
@@ -3376,7 +3376,7 @@ public final class IOUtil {
 
             output.flush();
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             ObjectFactory.recycle(buf);
 
@@ -3724,7 +3724,7 @@ public final class IOUtil {
         try {
             return file.toURI().toURL();
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -3740,7 +3740,7 @@ public final class IOUtil {
                 urls[i] = files[i].toURI().toURL();
             }
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         }
 
         return urls;
@@ -3758,7 +3758,7 @@ public final class IOUtil {
                 urls.add(file.toURI().toURL());
             }
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         }
 
         return urls;

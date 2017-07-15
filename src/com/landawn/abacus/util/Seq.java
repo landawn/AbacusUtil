@@ -3474,14 +3474,14 @@ public final class Seq<T> extends ImmutableCollection<T> {
 
         final List<L> l = new ArrayList<L>(len);
         final List<R> r = new ArrayList<R>(len);
-        final Pair<L, R> pair = new Pair<>();
+        final Pair<L, R> p = new Pair<>();
 
         if (N.notNullOrEmpty(c)) {
             for (T e : c) {
-                unzip.accept(e, pair);
+                unzip.accept(e, p);
 
-                l.add(pair.left);
-                r.add(pair.right);
+                l.add(p.left);
+                r.add(p.right);
             }
         }
 
@@ -3501,14 +3501,14 @@ public final class Seq<T> extends ImmutableCollection<T> {
 
         final LC l = (LC) supplier.apply(len);
         final RC r = (RC) supplier.apply(len);
-        final Pair<L, R> pair = new Pair<>();
+        final Pair<L, R> p = new Pair<>();
 
         if (N.notNullOrEmpty(c)) {
             for (T e : c) {
-                unzip.accept(e, pair);
+                unzip.accept(e, p);
 
-                l.add(pair.left);
-                r.add(pair.right);
+                l.add(p.left);
+                r.add(p.right);
             }
         }
 
@@ -3524,14 +3524,14 @@ public final class Seq<T> extends ImmutableCollection<T> {
     public static <T, L, R> Pair<List<L>, List<R>> unzip(final Iterator<? extends T> iter, final BiConsumer<? super T, Pair<L, R>> unzip) {
         final List<L> l = new ArrayList<L>();
         final List<R> r = new ArrayList<R>();
-        final Pair<L, R> pair = new Pair<>();
+        final Pair<L, R> p = new Pair<>();
 
         if (iter != null) {
             while (iter.hasNext()) {
-                unzip.accept(iter.next(), pair);
+                unzip.accept(iter.next(), p);
 
-                l.add(pair.left);
-                r.add(pair.right);
+                l.add(p.left);
+                r.add(p.right);
             }
         }
 
@@ -3550,14 +3550,14 @@ public final class Seq<T> extends ImmutableCollection<T> {
         final LC l = (LC) supplier.get();
         final RC r = (RC) supplier.get();
 
-        final Pair<L, R> pair = new Pair<>();
+        final Pair<L, R> p = new Pair<>();
 
         if (iter != null) {
             while (iter.hasNext()) {
-                unzip.accept(iter.next(), pair);
+                unzip.accept(iter.next(), p);
 
-                l.add(pair.left);
-                r.add(pair.right);
+                l.add(p.left);
+                r.add(p.right);
             }
         }
 
@@ -3576,15 +3576,15 @@ public final class Seq<T> extends ImmutableCollection<T> {
         final List<L> l = new ArrayList<L>(len);
         final List<M> m = new ArrayList<M>(len);
         final List<R> r = new ArrayList<R>(len);
-        final Triple<L, M, R> triple = new Triple<>();
+        final Triple<L, M, R> t = new Triple<>();
 
         if (N.notNullOrEmpty(c)) {
             for (T e : c) {
-                unzip.accept(e, triple);
+                unzip.accept(e, t);
 
-                l.add(triple.left);
-                m.add(triple.middle);
-                r.add(triple.right);
+                l.add(t.left);
+                m.add(t.middle);
+                r.add(t.right);
             }
         }
 
@@ -3605,15 +3605,15 @@ public final class Seq<T> extends ImmutableCollection<T> {
         final LC l = (LC) supplier.apply(len);
         final MC m = (MC) supplier.apply(len);
         final RC r = (RC) supplier.apply(len);
-        final Triple<L, M, R> triple = new Triple<>();
+        final Triple<L, M, R> t = new Triple<>();
 
         if (N.notNullOrEmpty(c)) {
             for (T e : c) {
-                unzip.accept(e, triple);
+                unzip.accept(e, t);
 
-                l.add(triple.left);
-                m.add(triple.middle);
-                r.add(triple.right);
+                l.add(t.left);
+                m.add(t.middle);
+                r.add(t.right);
             }
         }
 
@@ -3630,15 +3630,15 @@ public final class Seq<T> extends ImmutableCollection<T> {
         final List<L> l = new ArrayList<L>();
         final List<M> m = new ArrayList<M>();
         final List<R> r = new ArrayList<R>();
-        final Triple<L, M, R> triple = new Triple<>();
+        final Triple<L, M, R> t = new Triple<>();
 
         if (iter != null) {
             while (iter.hasNext()) {
-                unzip.accept(iter.next(), triple);
+                unzip.accept(iter.next(), t);
 
-                l.add(triple.left);
-                m.add(triple.middle);
-                r.add(triple.right);
+                l.add(t.left);
+                m.add(t.middle);
+                r.add(t.right);
             }
         }
 
@@ -3657,15 +3657,15 @@ public final class Seq<T> extends ImmutableCollection<T> {
         final LC l = (LC) supplier.get();
         final MC m = (MC) supplier.get();
         final RC r = (RC) supplier.get();
-        final Triple<L, M, R> triple = new Triple<>();
+        final Triple<L, M, R> t = new Triple<>();
 
         if (iter != null) {
             while (iter.hasNext()) {
-                unzip.accept(iter.next(), triple);
+                unzip.accept(iter.next(), t);
 
-                l.add(triple.left);
-                m.add(triple.middle);
-                r.add(triple.right);
+                l.add(t.left);
+                m.add(t.middle);
+                r.add(t.right);
             }
         }
 

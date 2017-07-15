@@ -84,7 +84,7 @@ import com.landawn.abacus.condition.Condition;
 import com.landawn.abacus.core.NameUtil;
 import com.landawn.abacus.core.RowDataSet;
 import com.landawn.abacus.exception.AbacusException;
-import com.landawn.abacus.exception.AbacusIOException;
+import com.landawn.abacus.exception.UncheckedIOException;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
 import com.landawn.abacus.parser.ParserUtil;
@@ -862,7 +862,7 @@ public final class RefUtil {
                         }
                     }
                 } catch (IOException e) {
-                    throw new AbacusIOException(pkgName + " (" + file + ") does not appear to be a valid package", e);
+                    throw new UncheckedIOException(pkgName + " (" + file + ") does not appear to be a valid package", e);
                 } finally {
                     IOUtil.close(jarFile);
                 }
@@ -917,7 +917,7 @@ public final class RefUtil {
             }
 
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         }
 
         if (logger.isInfoEnabled()) {

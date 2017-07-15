@@ -39,8 +39,8 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.landawn.abacus.DataSet;
-import com.landawn.abacus.exception.AbacusIOException;
-import com.landawn.abacus.exception.AbacusSQLException;
+import com.landawn.abacus.exception.UncheckedIOException;
+import com.landawn.abacus.exception.UncheckedSQLException;
 import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.BufferedWriter;
 import com.landawn.abacus.util.ByteIterator;
@@ -2374,7 +2374,7 @@ abstract class AbstractStream<T> extends Stream<T> {
             writer = new FileWriter(file);
             return persist(writer, toLine);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             IOUtil.close(writer);
         }
@@ -2404,7 +2404,7 @@ abstract class AbstractStream<T> extends Stream<T> {
                 cnt++;
             }
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             if (bw != writer) {
                 ObjectFactory.recycle(bw);
@@ -2423,7 +2423,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
             return persist(stmt, batchSize, batchInterval, stmtSetter);
         } catch (SQLException e) {
-            throw new AbacusSQLException(e);
+            throw new UncheckedSQLException(e);
         } finally {
             closeQuietly(stmt);
         }
@@ -2459,7 +2459,7 @@ abstract class AbstractStream<T> extends Stream<T> {
                 stmt.clearBatch();
             }
         } catch (SQLException e) {
-            throw new AbacusSQLException(e);
+            throw new UncheckedSQLException(e);
         }
 
         return cnt;

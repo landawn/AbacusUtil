@@ -49,7 +49,7 @@ import com.landawn.abacus.core.RowDataSet;
 import com.landawn.abacus.core.sql.dataSource.SQLDataSource;
 import com.landawn.abacus.dataChannel.StatementDataChannel;
 import com.landawn.abacus.exception.AbacusException;
-import com.landawn.abacus.exception.AbacusSQLException;
+import com.landawn.abacus.exception.UncheckedSQLException;
 import com.landawn.abacus.exception.NonUniqueResultException;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
@@ -473,7 +473,7 @@ public final class SQLExecutor implements Closeable {
             _dbProudctVersion = conn.getMetaData().getDatabaseProductVersion();
             _dbVersion = JdbcUtil.getDBVersion(conn);
         } catch (SQLException e) {
-            throw new AbacusSQLException(e);
+            throw new UncheckedSQLException(e);
         } finally {
             closeQuietly(conn);
         }
@@ -642,7 +642,7 @@ public final class SQLExecutor implements Closeable {
         } catch (SQLException e) {
             String msg = AbacusException.getErrorMsg(e) + ". [SQL] " + namedSQL.getNamedSQL();
             logger.error(msg);
-            throw new AbacusSQLException(e, msg);
+            throw new UncheckedSQLException(e, msg);
         } finally {
             closeQuietly(stmt, localConn, conn);
         }
@@ -806,7 +806,7 @@ public final class SQLExecutor implements Closeable {
                 autoCommit = localConn.getAutoCommit();
             } catch (SQLException e) {
                 closeQuietly(null, localConn, conn);
-                throw new AbacusSQLException(e, namedSQL.toString());
+                throw new UncheckedSQLException(e, namedSQL.toString());
             }
 
             if ((conn == null) && (len > batchSize)) {
@@ -863,7 +863,7 @@ public final class SQLExecutor implements Closeable {
 
             String msg = AbacusException.getErrorMsg(e) + ". [SQL] " + namedSQL.getNamedSQL();
             logger.error(msg);
-            throw new AbacusSQLException(e, msg);
+            throw new UncheckedSQLException(e, msg);
         } finally {
             if ((conn == null) && (len > batchSize)) {
                 try {
@@ -1015,7 +1015,7 @@ public final class SQLExecutor implements Closeable {
         } catch (SQLException e) {
             String msg = AbacusException.getErrorMsg(e) + ". [SQL] " + namedSQL.getNamedSQL();
             logger.error(msg);
-            throw new AbacusSQLException(e, msg);
+            throw new UncheckedSQLException(e, msg);
         } finally {
             closeQuietly(stmt, localConn, conn);
         }
@@ -1109,7 +1109,7 @@ public final class SQLExecutor implements Closeable {
                 autoCommit = localConn.getAutoCommit();
             } catch (SQLException e) {
                 closeQuietly(null, localConn, conn);
-                throw new AbacusSQLException(e, namedSQL.toString());
+                throw new UncheckedSQLException(e, namedSQL.toString());
             }
 
             if ((conn == null) && (len > batchSize)) {
@@ -1170,7 +1170,7 @@ public final class SQLExecutor implements Closeable {
 
             String msg = AbacusException.getErrorMsg(e) + ". [SQL] " + namedSQL.getNamedSQL();
             logger.error(msg);
-            throw new AbacusSQLException(e, msg);
+            throw new UncheckedSQLException(e, msg);
         } finally {
             if ((conn == null) && (len > batchSize)) {
                 try {
@@ -1529,7 +1529,7 @@ public final class SQLExecutor implements Closeable {
         } catch (
 
         SQLException e) {
-            throw new AbacusSQLException(e);
+            throw new UncheckedSQLException(e);
         } finally {
             IOUtil.closeQuietly(iterators);
         }
@@ -1619,7 +1619,7 @@ public final class SQLExecutor implements Closeable {
         } catch (
 
         SQLException e) {
-            throw new AbacusSQLException(e);
+            throw new UncheckedSQLException(e);
         } finally {
             IOUtil.closeQuietly(iterators);
         }
@@ -1959,7 +1959,7 @@ public final class SQLExecutor implements Closeable {
         } catch (SQLException e) {
             String msg = AbacusException.getErrorMsg(e) + ". [SQL] " + namedSQL.getNamedSQL();
             logger.error(msg);
-            throw new AbacusSQLException(e, msg);
+            throw new UncheckedSQLException(e, msg);
         } finally {
             if (result instanceof ResultSet || result instanceof RowIterator) {
                 // delay.
@@ -2030,7 +2030,7 @@ public final class SQLExecutor implements Closeable {
 
             return new RowDataSet(columnNameList, columnList);
         } catch (SQLException e) {
-            throw new AbacusSQLException(e);
+            throw new UncheckedSQLException(e);
         } finally {
             IOUtil.closeQuietly(iterators);
         }
@@ -2096,7 +2096,7 @@ public final class SQLExecutor implements Closeable {
 
             return new RowDataSet(columnNameList, columnList);
         } catch (SQLException e) {
-            throw new AbacusSQLException(e);
+            throw new UncheckedSQLException(e);
         } finally {
             IOUtil.closeQuietly(iterators);
         }
@@ -2675,7 +2675,7 @@ public final class SQLExecutor implements Closeable {
         } catch (SQLException e) {
             IOUtil.closeQuietly(iterator);
 
-            throw new AbacusSQLException(e);
+            throw new UncheckedSQLException(e);
         }
     }
 
@@ -2781,7 +2781,7 @@ public final class SQLExecutor implements Closeable {
         } catch (SQLException e) {
             IOUtil.closeQuietly(iterators);
 
-            throw new AbacusSQLException(e);
+            throw new UncheckedSQLException(e);
         }
     }
 
@@ -2888,7 +2888,7 @@ public final class SQLExecutor implements Closeable {
         } catch (SQLException e) {
             IOUtil.closeQuietly(iterators);
 
-            throw new AbacusSQLException(e);
+            throw new UncheckedSQLException(e);
         }
     }
 
@@ -2930,7 +2930,7 @@ public final class SQLExecutor implements Closeable {
         } catch (SQLException e) {
             String msg = AbacusException.getErrorMsg(e) + ". [SQL] " + namedSQL.getNamedSQL();
             logger.error(msg);
-            throw new AbacusSQLException(e, msg);
+            throw new UncheckedSQLException(e, msg);
         } finally {
             closeQuietly(stmt, conn);
         }
@@ -3314,7 +3314,7 @@ public final class SQLExecutor implements Closeable {
     protected DataSource getDataSource(final String sql, final Object[] parameters, final JdbcSettings jdbcSettings) {
         if (_dsm == null || _dss == null) {
             if ((jdbcSettings != null) && (jdbcSettings.getQueryWithDataSource() != null || N.notNullOrEmpty(jdbcSettings.getQueryWithDataSources()))) {
-                throw new AbacusSQLException("No data source is available with name: " + (jdbcSettings.getQueryWithDataSource() != null
+                throw new UncheckedSQLException("No data source is available with name: " + (jdbcSettings.getQueryWithDataSource() != null
                         ? jdbcSettings.getQueryWithDataSource() : N.toString(jdbcSettings.getQueryWithDataSources())));
             }
 
@@ -3331,7 +3331,7 @@ public final class SQLExecutor implements Closeable {
     protected DataSource getDataSource(final String sql, final List<?> batchParameters, final JdbcSettings jdbcSettings) {
         if (_dsm == null || _dss == null) {
             if ((jdbcSettings != null) && (jdbcSettings.getQueryWithDataSource() != null || N.notNullOrEmpty(jdbcSettings.getQueryWithDataSources()))) {
-                throw new AbacusSQLException("No data source is available with name: " + (jdbcSettings.getQueryWithDataSource() != null
+                throw new UncheckedSQLException("No data source is available with name: " + (jdbcSettings.getQueryWithDataSource() != null
                         ? jdbcSettings.getQueryWithDataSource() : N.toString(jdbcSettings.getQueryWithDataSources())));
             }
 

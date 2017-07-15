@@ -79,8 +79,8 @@ import com.landawn.abacus.core.sql.dataSource.SimpleSourceSelector;
 import com.landawn.abacus.dataChannel.DataChannel;
 import com.landawn.abacus.dataChannel.StatementDataChannel;
 import com.landawn.abacus.exception.AbacusException;
-import com.landawn.abacus.exception.AbacusIOException;
-import com.landawn.abacus.exception.AbacusSQLException;
+import com.landawn.abacus.exception.UncheckedIOException;
+import com.landawn.abacus.exception.UncheckedSQLException;
 import com.landawn.abacus.exception.ParseException;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
@@ -183,7 +183,7 @@ public final class JdbcUtil {
 
             return dbVersion;
         } catch (SQLException e) {
-            throw new AbacusSQLException(e);
+            throw new UncheckedSQLException(e);
         }
     }
 
@@ -200,7 +200,7 @@ public final class JdbcUtil {
             is = new FileInputStream(Configuration.findFile(dataSourceXmlFile));
             return createDataSourceManager(is, dataSourceXmlFile);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             IOUtil.close(is);
         }
@@ -268,7 +268,7 @@ public final class JdbcUtil {
         } catch (SAXException e) {
             throw new ParseException(e);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         }
     }
 
@@ -278,7 +278,7 @@ public final class JdbcUtil {
             is = new FileInputStream(Configuration.findFile(dataSourceFile));
             return createDataSource(is, dataSourceFile);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             IOUtil.close(is);
         }
@@ -296,7 +296,7 @@ public final class JdbcUtil {
                 return createDataSourceManager(new ByteArrayInputStream(dataSourceString.getBytes())).getPrimaryDataSource();
             } catch (ParseException e) {
                 // ignore.
-            } catch (AbacusIOException e) {
+            } catch (UncheckedIOException e) {
                 // ignore.
             }
         }
@@ -315,7 +315,7 @@ public final class JdbcUtil {
             }
 
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         }
 
         return new SQLDataSource(newProps);
@@ -416,7 +416,7 @@ public final class JdbcUtil {
 
             return DriverManager.getConnection(url, user, password);
         } catch (SQLException e) {
-            throw new AbacusSQLException("Failed to close create connection", e);
+            throw new UncheckedSQLException("Failed to close create connection", e);
         }
     }
 
@@ -425,7 +425,7 @@ public final class JdbcUtil {
             try {
                 rs.close();
             } catch (SQLException e) {
-                throw new AbacusSQLException(e);
+                throw new UncheckedSQLException(e);
             }
         }
     }
@@ -443,7 +443,7 @@ public final class JdbcUtil {
 
                 stmt.close();
             } catch (SQLException e) {
-                throw new AbacusSQLException(e);
+                throw new UncheckedSQLException(e);
             }
         }
     }
@@ -453,7 +453,7 @@ public final class JdbcUtil {
             try {
                 conn.close();
             } catch (SQLException e) {
-                throw new AbacusSQLException(e);
+                throw new UncheckedSQLException(e);
             }
         }
     }
@@ -464,7 +464,7 @@ public final class JdbcUtil {
                 rs.close();
             }
         } catch (SQLException e) {
-            throw new AbacusSQLException(e);
+            throw new UncheckedSQLException(e);
         } finally {
             try {
                 if (stmt != null) {
@@ -478,7 +478,7 @@ public final class JdbcUtil {
                     stmt.close();
                 }
             } catch (SQLException e) {
-                throw new AbacusSQLException(e);
+                throw new UncheckedSQLException(e);
             }
         }
     }
@@ -496,14 +496,14 @@ public final class JdbcUtil {
                 stmt.close();
             }
         } catch (SQLException e) {
-            throw new AbacusSQLException(e);
+            throw new UncheckedSQLException(e);
         } finally {
             try {
                 if (conn != null) {
                     conn.close();
                 }
             } catch (SQLException e) {
-                throw new AbacusSQLException(e);
+                throw new UncheckedSQLException(e);
             }
         }
     }
@@ -514,7 +514,7 @@ public final class JdbcUtil {
                 rs.close();
             }
         } catch (SQLException e) {
-            throw new AbacusSQLException(e);
+            throw new UncheckedSQLException(e);
         } finally {
             try {
                 if (stmt != null) {
@@ -528,14 +528,14 @@ public final class JdbcUtil {
                     stmt.close();
                 }
             } catch (SQLException e) {
-                throw new AbacusSQLException(e);
+                throw new UncheckedSQLException(e);
             } finally {
                 try {
                     if (conn != null) {
                         conn.close();
                     }
                 } catch (SQLException e) {
-                    throw new AbacusSQLException(e);
+                    throw new UncheckedSQLException(e);
                 }
             }
         }
@@ -736,7 +736,7 @@ public final class JdbcUtil {
 
             return extractData(rs);
         } catch (SQLException e) {
-            throw new AbacusSQLException(e);
+            throw new UncheckedSQLException(e);
         } finally {
             closeQuietly(rs, stmt);
         }
@@ -766,7 +766,7 @@ public final class JdbcUtil {
 
             return extractData(rs);
         } catch (SQLException e) {
-            throw new AbacusSQLException(e);
+            throw new UncheckedSQLException(e);
         } finally {
             closeQuietly(rs);
         }
@@ -781,7 +781,7 @@ public final class JdbcUtil {
 
             return stmt.executeUpdate();
         } catch (SQLException e) {
-            throw new AbacusSQLException(e);
+            throw new UncheckedSQLException(e);
         } finally {
             closeQuietly(stmt);
         }
@@ -805,7 +805,7 @@ public final class JdbcUtil {
         try {
             return stmt.executeUpdate();
         } catch (SQLException e) {
-            throw new AbacusSQLException(e);
+            throw new UncheckedSQLException(e);
         }
     }
 
@@ -818,7 +818,7 @@ public final class JdbcUtil {
 
             return stmt.execute();
         } catch (SQLException e) {
-            throw new AbacusSQLException(e);
+            throw new UncheckedSQLException(e);
         } finally {
             closeQuietly(stmt);
         }
@@ -842,7 +842,7 @@ public final class JdbcUtil {
         try {
             return stmt.execute();
         } catch (SQLException e) {
-            throw new AbacusSQLException(e);
+            throw new UncheckedSQLException(e);
         }
     }
 
@@ -906,7 +906,7 @@ public final class JdbcUtil {
             // return new RowDataSet(null, entityClass, columnNameList, columnList);
             return new RowDataSet(columnNameList, columnList);
         } catch (SQLException e) {
-            throw new AbacusSQLException(e);
+            throw new UncheckedSQLException(e);
         } finally {
             if (closeResultSet) {
                 closeQuietly(rs);
@@ -1021,7 +1021,7 @@ public final class JdbcUtil {
 
             return importData(dataset, selectColumnNames, offset, count, filter, stmt, batchSize, batchInterval);
         } catch (SQLException e) {
-            throw new AbacusSQLException(e);
+            throw new UncheckedSQLException(e);
         } finally {
             JdbcUtil.closeQuietly(stmt);
         }
@@ -1121,7 +1121,7 @@ public final class JdbcUtil {
 
             return importData(dataset, offset, count, filter, stmt, batchSize, batchInterval, columnTypeMap);
         } catch (SQLException e) {
-            throw new AbacusSQLException(e);
+            throw new UncheckedSQLException(e);
         } finally {
             JdbcUtil.closeQuietly(stmt);
         }
@@ -1219,7 +1219,7 @@ public final class JdbcUtil {
 
             return importData(dataset, offset, count, filter, stmt, batchSize, batchInterval, stmtSetter);
         } catch (SQLException e) {
-            throw new AbacusSQLException(e);
+            throw new UncheckedSQLException(e);
         } finally {
             JdbcUtil.closeQuietly(stmt);
         }
@@ -1433,7 +1433,7 @@ public final class JdbcUtil {
                 stmt.clearBatch();
             }
         } catch (SQLException e) {
-            throw new AbacusSQLException(e);
+            throw new UncheckedSQLException(e);
         }
 
         return result;
@@ -1530,7 +1530,7 @@ public final class JdbcUtil {
                 stmt.clearBatch();
             }
         } catch (SQLException e) {
-            throw new AbacusSQLException(e);
+            throw new UncheckedSQLException(e);
         }
 
         return result;
@@ -1549,7 +1549,7 @@ public final class JdbcUtil {
 
             return importData(file, offset, count, stmt, batchSize, batchInterval, func);
         } catch (SQLException e) {
-            throw new AbacusSQLException(e);
+            throw new UncheckedSQLException(e);
         } finally {
             JdbcUtil.closeQuietly(stmt);
         }
@@ -1580,7 +1580,7 @@ public final class JdbcUtil {
 
             return importData(reader, offset, count, stmt, batchSize, batchInterval, func);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             IOUtil.close(reader);
         }
@@ -1599,7 +1599,7 @@ public final class JdbcUtil {
 
             return importData(is, offset, count, stmt, batchSize, batchInterval, func);
         } catch (SQLException e) {
-            throw new AbacusSQLException(e);
+            throw new UncheckedSQLException(e);
         } finally {
             JdbcUtil.closeQuietly(stmt);
         }
@@ -1641,7 +1641,7 @@ public final class JdbcUtil {
 
             return importData(reader, offset, count, stmt, batchSize, batchInterval, func);
         } catch (SQLException e) {
-            throw new AbacusSQLException(e);
+            throw new UncheckedSQLException(e);
         } finally {
             JdbcUtil.closeQuietly(stmt);
         }
@@ -1707,9 +1707,9 @@ public final class JdbcUtil {
                 stmt.clearBatch();
             }
         } catch (SQLException e) {
-            throw new AbacusSQLException(e);
+            throw new UncheckedSQLException(e);
         } catch (IOException e) {
-            throw new AbacusIOException(e);
+            throw new UncheckedIOException(e);
         } finally {
             ObjectFactory.recycle(br);
         }
@@ -1730,7 +1730,7 @@ public final class JdbcUtil {
 
             return importData(iter, offset, count, stmt, batchSize, batchInterval, func);
         } catch (SQLException e) {
-            throw new AbacusSQLException(e);
+            throw new UncheckedSQLException(e);
         } finally {
             JdbcUtil.closeQuietly(stmt);
         }
@@ -1795,7 +1795,7 @@ public final class JdbcUtil {
                 stmt.clearBatch();
             }
         } catch (SQLException e) {
-            throw new AbacusSQLException(e);
+            throw new UncheckedSQLException(e);
         }
 
         return result;
@@ -1834,7 +1834,7 @@ public final class JdbcUtil {
 
             return importData(iter, offset, count, filter, stmt, batchSize, batchInterval, stmtSetter);
         } catch (SQLException e) {
-            throw new AbacusSQLException(e);
+            throw new UncheckedSQLException(e);
         } finally {
             JdbcUtil.closeQuietly(stmt);
         }
@@ -1901,7 +1901,7 @@ public final class JdbcUtil {
                 stmt.clearBatch();
             }
         } catch (SQLException e) {
-            throw new AbacusSQLException(e);
+            throw new UncheckedSQLException(e);
         }
 
         return result;
@@ -1970,7 +1970,7 @@ public final class JdbcUtil {
 
             parse(stmt, offset, count, processThreadNumber, queueSize, rowParser);
         } catch (SQLException e) {
-            throw new AbacusSQLException(e);
+            throw new UncheckedSQLException(e);
         } finally {
             closeQuietly(stmt);
         }
@@ -2110,7 +2110,7 @@ public final class JdbcUtil {
 
             parse(rs, offset, count, processThreadNumber, queueSize, rowParser);
         } catch (SQLException e) {
-            throw new AbacusSQLException(e);
+            throw new UncheckedSQLException(e);
         } finally {
             closeQuietly(rs);
         }
@@ -2279,7 +2279,7 @@ public final class JdbcUtil {
 
             copy(selectStmt, offset, count, insertStmt, stmtSetter, batchSize, batchInterval, inParallel);
         } catch (SQLException e) {
-            throw new AbacusSQLException(e);
+            throw new UncheckedSQLException(e);
         } finally {
             closeQuietly(selectStmt);
             closeQuietly(insertStmt);
@@ -2342,7 +2342,7 @@ public final class JdbcUtil {
                         }
                     }
                 } catch (SQLException e) {
-                    throw new AbacusSQLException(e);
+                    throw new UncheckedSQLException(e);
                 }
             }
         };
@@ -2357,7 +2357,7 @@ public final class JdbcUtil {
             executeQuery(conn, "SELECT 1 FROM " + tableName + " WHERE 1 > 2");
 
             return true;
-        } catch (AbacusSQLException e) {
+        } catch (UncheckedSQLException e) {
             if (isTableNotExistsException(e)) {
                 return false;
             }
@@ -2383,7 +2383,7 @@ public final class JdbcUtil {
             execute(conn, schema);
 
             return true;
-        } catch (AbacusSQLException e) {
+        } catch (UncheckedSQLException e) {
             return false;
         }
     }
@@ -2402,7 +2402,7 @@ public final class JdbcUtil {
 
                 return true;
             }
-        } catch (AbacusSQLException e) {
+        } catch (UncheckedSQLException e) {
             // ignore.
         }
 
@@ -2436,8 +2436,8 @@ public final class JdbcUtil {
 
             String msg = e.getMessage();
             return N.notNullOrEmpty(msg) && (msg.contains("not exist") || msg.contains("doesn't exist") || msg.contains("not found"));
-        } else if (e instanceof AbacusSQLException) {
-            AbacusSQLException sqlException = (AbacusSQLException) e;
+        } else if (e instanceof UncheckedSQLException) {
+            UncheckedSQLException sqlException = (UncheckedSQLException) e;
 
             if (sqlException.getSQLState() != null && sqlStateForTableNotExists.contains(sqlException.getSQLState())) {
                 return true;
@@ -2519,7 +2519,7 @@ public final class JdbcUtil {
             try {
                 return sqlDataSource.getConnection();
             } catch (SQLException e) {
-                throw new AbacusSQLException(e);
+                throw new UncheckedSQLException(e);
             }
         }
 
@@ -2528,7 +2528,7 @@ public final class JdbcUtil {
             try {
                 return sqlDataSource.getConnection();
             } catch (SQLException e) {
-                throw new AbacusSQLException(e);
+                throw new UncheckedSQLException(e);
             }
         }
 
