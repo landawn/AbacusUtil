@@ -752,7 +752,7 @@ public final class JdbcUtil {
     //
     //            return extractData(rs);
     //        } catch (SQLException e) {
-    //            throw new AbacusSQLException(e);
+    //            throw new UncheckedSQLException(e);
     //        } finally {
     //            closeQuietly(rs, stmt);
     //        }
@@ -795,7 +795,7 @@ public final class JdbcUtil {
     //
     //            return stmt.executeUpdate();
     //        } catch (SQLException e) {
-    //            throw new AbacusSQLException(e);
+    //            throw new UncheckedSQLException(e);
     //        } finally {
     //            closeQuietly(stmt);
     //        }
@@ -832,7 +832,7 @@ public final class JdbcUtil {
     //
     //            return stmt.execute();
     //        } catch (SQLException e) {
-    //            throw new AbacusSQLException(e);
+    //            throw new UncheckedSQLException(e);
     //        } finally {
     //            closeQuietly(stmt);
     //        }
@@ -2046,7 +2046,7 @@ public final class JdbcUtil {
     //
     //            parse(stmt, offset, count, processThreadNumber, queueSize, rowParser);
     //        } catch (SQLException e) {
-    //            throw new AbacusSQLException(e);
+    //            throw new UncheckedSQLException(e);
     //        } finally {
     //            closeQuietly(stmt);
     //        }

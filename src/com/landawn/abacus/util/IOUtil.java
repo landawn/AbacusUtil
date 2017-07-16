@@ -4239,7 +4239,7 @@ public final class IOUtil {
     //                msg = "### Failed to parse file: " + file + " at line: " + line + ". " + AbacusException.getErrorMsg(e);
     //            }
     //            logger.error(msg);
-    //            throw new AbacusIOException(msg, e);
+    //            throw new UncheckedIOException(msg, e);
     //        } finally {
     //            if (br != reader) {
     //                ObjectFactory.recycle(br);

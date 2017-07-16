@@ -2963,7 +2963,7 @@ public final class SQLExecutor implements Closeable {
     //        } catch (SQLException e) {
     //            String msg = AbacusException.getErrorMsg(e) + ". [SQL] " + namedSQL.getNamedSQL();
     //            logger.error(msg);
-    //            throw new AbacusSQLException(e, msg);
+    //            throw new UncheckedSQLException(e, msg);
     //        } finally {
     //            closeQuietly(stmt, conn);
     //        }
@@ -3003,7 +3003,7 @@ public final class SQLExecutor implements Closeable {
     //        } catch (SQLException e) {
     //            String msg = AbacusException.getErrorMsg(e) + ". [SQL] " + namedSQL.getNamedSQL();
     //            logger.error(msg);
-    //            throw new AbacusSQLException(e, msg);
+    //            throw new UncheckedSQLException(e, msg);
     //        } finally {
     //            closeQuietly(stmt, conn);
     //        }
