@@ -27,8 +27,11 @@ public abstract <R> Stream<R> slidingMap(TriFunction<? super T, ? super T, ? sup
 4, Add PartitionBy to Stream. ---Undecided.
 
 ```java
-Map<Boolean, List<T>> partitionBy(Predicate<? super T> predicate);
-Map<Boolean, D> partitionBy(Predicate<? super T> predicate, Collector<? super T, ?, D> downstream);
+Stream<Map.Entry<Boolean, List<T>>> partitionBy(Predicate<? super T> predicate);
+Stream<Map.Entry<Boolean, D>> partitionBy(Predicate<? super T> predicate, Collector<? super T, ?, D> downstream);
+
+EntryStream<Boolean, List<T>> partitionByToEntry(Predicate<? super T> predicate);
+EntryStream<Boolean, D> partitionByToEntry(Predicate<? super T> predicate, Collector<? super T, ?, D> downstream);
 ```
 
    [StreamEx]: https://github.com/amaembo/streamex
