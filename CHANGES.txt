@@ -1,4 +1,14 @@
 ﻿
+========Changes in 0.9.76=========================================================================
+
+1*, Refactoring: change the order of parameters from : 
+		DataSet.addColumn(String fromColumnName, String newColumnName, Function<?, ?> func) 
+	To:
+		DataSet.addColumn(String newColumnName, String fromColumnName, Function<?, ?> func)
+		 
+2, Improvements and bug fix.
+
+
 ========Changes in 0.9.75=========================================================================
 
 1, Add forEachPair/forEachTriple to Seq/Stream.

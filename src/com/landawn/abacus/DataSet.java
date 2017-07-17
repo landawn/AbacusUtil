@@ -445,41 +445,39 @@ public interface DataSet extends Iterable<Object[]> {
 
     /**
      * Generate the new column values from the specified column by the specified <code>Function</code>.
-     * 
-     * @param fromColumnName
      * @param newColumnName
+     * @param fromColumnName
      * @param func
      */
-    void addColumn(String fromColumnName, String newColumnName, Function<?, ?> func);
+    void addColumn(String newColumnName, String fromColumnName, Function<?, ?> func);
 
     /**
      * Generate the new column values from the specified column by the specified <code>Function</code>.
      * 
      * @param columnIndex
-     * @param fromColumnName
      * @param newColumnName
+     * @param fromColumnName
      * @param func
      */
-    void addColumn(int columnIndex, String fromColumnName, String newColumnName, Function<?, ?> func);
+    void addColumn(int columnIndex, String newColumnName, String fromColumnName, Function<?, ?> func);
 
     /**
      * Generate the new column values from the specified columns by the specified <code>Function</code>.
-     * 
-     * @param fromColumnNames
      * @param newColumnName
+     * @param fromColumnNames
      * @param func
      */
-    void addColumn(Collection<String> fromColumnNames, String newColumnName, Function<? super Object[], ?> func);
+    void addColumn(String newColumnName, Collection<String> fromColumnNames, Function<? super Object[], ?> func);
 
     /**
      * Generate the new column values from the specified columns by the specified <code>Function</code>.
      * 
      * @param columnIndex
-     * @param fromColumnNames
      * @param newColumnName
+     * @param fromColumnNames
      * @param func
      */
-    void addColumn(int columnIndex, Collection<String> fromColumnNames, String newColumnName, Function<? super Object[], ?> func);
+    void addColumn(int columnIndex, String newColumnName, Collection<String> fromColumnNames, Function<? super Object[], ?> func);
 
     /**
      * Remove the column with the specified columnName from this DataSet.
