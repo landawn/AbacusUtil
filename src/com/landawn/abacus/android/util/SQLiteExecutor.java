@@ -32,9 +32,11 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.landawn.abacus.DataSet;
 import com.landawn.abacus.DirtyMarker;
@@ -52,6 +54,7 @@ import com.landawn.abacus.util.D;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.NamedSQL;
 import com.landawn.abacus.util.NamingPolicy;
+import com.landawn.abacus.util.NullabLe;
 import com.landawn.abacus.util.ObjectFactory;
 import com.landawn.abacus.util.ObjectPool;
 import com.landawn.abacus.util.Optional;
@@ -62,14 +65,13 @@ import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalFloat;
 import com.landawn.abacus.util.OptionalInt;
 import com.landawn.abacus.util.OptionalLong;
-import com.landawn.abacus.util.NullabLe;
 import com.landawn.abacus.util.OptionalShort;
 import com.landawn.abacus.util.RefUtil;
 import com.landawn.abacus.util.SQLBuilder;
-import com.landawn.abacus.util.SQLBuilder.SP;
 import com.landawn.abacus.util.SQLBuilder.RE;
 import com.landawn.abacus.util.SQLBuilder.RE2;
 import com.landawn.abacus.util.SQLBuilder.RE3;
+import com.landawn.abacus.util.SQLBuilder.SP;
 import com.landawn.abacus.util.SQLParser;
 
 import android.content.ContentValues;
@@ -90,6 +92,9 @@ import android.database.sqlite.SQLiteDatabase;
 public final class SQLiteExecutor {
     public static final NamingPolicy DEFAULT_NAMING_POLICY = NamingPolicy.LOWER_CASE_WITH_UNDERSCORE;
 
+    private static final Map<Class<?>, Set<String>> readOnlyPropNamesMap = new ConcurrentHashMap<>();
+    private static final Map<Class<?>, Set<String>> readOrWriteOnlyPropNamesMap = new ConcurrentHashMap<>();
+
     private static final String ID = "id";
     private static final String _ID = "_id";
 
@@ -108,6 +113,54 @@ public final class SQLiteExecutor {
     public SQLiteExecutor(final SQLiteDatabase sqliteDatabase, final NamingPolicy columnNamingPolicy) {
         this.sqliteDB = sqliteDatabase;
         this.columnNamingPolicy = columnNamingPolicy == null ? DEFAULT_NAMING_POLICY : columnNamingPolicy;
+    }
+
+    /**
+     * The properties will be excluded by add/addAll/batchAdd and update/updateAll/batchUpdate operations if the input is an entity.
+     * 
+     * @param targetClass
+     * @param readOnlyPropNames
+     */
+    public static void registerReadOnlyProps(Class<?> targetClass, Collection<String> readOnlyPropNames) {
+        N.checkArgument(N.isEntity(targetClass), RefUtil.getCanonicalClassName(targetClass) + " is not an entity class with getter/setter methods");
+        N.checkNullOrEmpty(readOnlyPropNames, "'readOnlyPropNames'");
+
+        final Set<String> set = new HashSet<String>();
+
+        for (String propName : readOnlyPropNames) {
+            set.add(RefUtil.getPropNameByMethod(RefUtil.getPropGetMethod(targetClass, propName)));
+        }
+
+        readOnlyPropNamesMap.put(targetClass, set);
+
+        if (readOrWriteOnlyPropNamesMap.containsKey(targetClass)) {
+            readOrWriteOnlyPropNamesMap.get(targetClass).addAll(set);
+        } else {
+            readOrWriteOnlyPropNamesMap.put(targetClass, new HashSet<>(set));
+        }
+    }
+
+    /**
+     * The properties will be ignored by update/updateAll/batchUpdate operations if the input is an entity.
+     * 
+     * @param targetClass
+     * @param writeOnlyPropNames
+     */
+    public static void registerWriteOnlyProps(Class<?> targetClass, Collection<String> writeOnlyPropNames) {
+        N.checkArgument(N.isEntity(targetClass), RefUtil.getCanonicalClassName(targetClass) + " is not an entity class with getter/setter methods");
+        N.checkNullOrEmpty(writeOnlyPropNames, "'writeOnlyPropNames'");
+
+        final Set<String> set = new HashSet<String>();
+
+        for (String propName : writeOnlyPropNames) {
+            set.add(RefUtil.getPropNameByMethod(RefUtil.getPropGetMethod(targetClass, propName)));
+        }
+
+        if (readOrWriteOnlyPropNamesMap.containsKey(targetClass)) {
+            readOrWriteOnlyPropNamesMap.get(targetClass).addAll(set);
+        } else {
+            readOrWriteOnlyPropNamesMap.put(targetClass, set);
+        }
     }
 
     public SQLiteDatabase sqliteDB() {
@@ -328,8 +381,8 @@ public final class SQLiteExecutor {
      */
     static <T> T toEntity(final Class<T> targetClass, final ContentValues contentValues, NamingPolicy namingPolicy) {
         if (!(N.isEntity(targetClass) || targetClass.equals(Map.class))) {
-            throw new AbacusException(
-                    "The target class must be an entity class with getter/setter methods or Map.class. But it is: " + RefUtil.getCanonicalClassName(targetClass));
+            throw new AbacusException("The target class must be an entity class with getter/setter methods or Map.class. But it is: "
+                    + RefUtil.getCanonicalClassName(targetClass));
         }
 
         if (targetClass.isAssignableFrom(Map.class)) {
@@ -696,8 +749,8 @@ public final class SQLiteExecutor {
                 }
             }
         } else {
-            throw new IllegalArgumentException(
-                    "Only entity class with getter/setter methods or Map are supported. " + RefUtil.getCanonicalClassName(obj.getClass()) + " is not supported");
+            throw new IllegalArgumentException("Only entity class with getter/setter methods or Map are supported. "
+                    + RefUtil.getCanonicalClassName(obj.getClass()) + " is not supported");
         }
 
         return result;
@@ -771,7 +824,8 @@ public final class SQLiteExecutor {
      */
     public long insert(String table, Object record, int conflictAlgorithm) {
         table = formatName(table);
-        final ContentValues contentValues = record instanceof ContentValues ? (ContentValues) record : toContentValues(record, null, columnNamingPolicy, false);
+        final ContentValues contentValues = record instanceof ContentValues ? (ContentValues) record
+                : toContentValues(record, readOnlyPropNamesMap.get(record.getClass()), columnNamingPolicy, false);
 
         removeIdDefaultValue(contentValues);
 
@@ -967,7 +1021,8 @@ public final class SQLiteExecutor {
      */
     public int update(String table, Object record, Condition whereClause) {
         table = formatName(table);
-        final ContentValues contentValues = record instanceof ContentValues ? (ContentValues) record : toContentValues(record, null, columnNamingPolicy, true);
+        final ContentValues contentValues = record instanceof ContentValues ? (ContentValues) record
+                : toContentValues(record, readOrWriteOnlyPropNamesMap.get(record.getClass()), columnNamingPolicy, true);
         removeIdDefaultValue(contentValues);
 
         if (whereClause == null) {

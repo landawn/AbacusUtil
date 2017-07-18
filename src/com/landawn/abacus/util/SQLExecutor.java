@@ -49,8 +49,8 @@ import com.landawn.abacus.core.RowDataSet;
 import com.landawn.abacus.core.sql.dataSource.SQLDataSource;
 import com.landawn.abacus.dataChannel.StatementDataChannel;
 import com.landawn.abacus.exception.AbacusException;
-import com.landawn.abacus.exception.UncheckedSQLException;
 import com.landawn.abacus.exception.NonUniqueResultException;
+import com.landawn.abacus.exception.UncheckedSQLException;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
 import com.landawn.abacus.util.Options.Query;
@@ -3509,8 +3509,8 @@ public final class SQLExecutor implements Closeable {
         static final List<String> EXISTS_SELECT_PROP_NAMES = ImmutableList.of(NE._1);
         static final List<String> COUNT_SELECT_PROP_NAMES = ImmutableList.of(NE.COUNT_ALL);
         static final Map<Class<?>, String> entityIdMap = new ConcurrentHashMap<>();
-        static final Map<Class<?>, Set<String>> writeOnlyPropNamesMap = new ConcurrentHashMap<>();
         static final Map<Class<?>, Set<String>> readOnlyPropNamesMap = new ConcurrentHashMap<>();
+        static final Map<Class<?>, Set<String>> readOrWriteOnlyPropNamesMap = new ConcurrentHashMap<>();
 
         private final Class<T> targetClass;
         private final SQLExecutor sqlExecutor;
@@ -3538,7 +3538,7 @@ public final class SQLExecutor implements Closeable {
         }
 
         /**
-         * The properties will be ignored by add/addAll/batchAdd operations if the input is an entity.
+         * The properties will be excluded by add/addAll/batchAdd and update/updateAll/batchUpdate operations if the input is an entity.
          * 
          * @param targetClass
          * @param readOnlyPropNames
@@ -3553,7 +3553,13 @@ public final class SQLExecutor implements Closeable {
                 set.add(RefUtil.getPropNameByMethod(RefUtil.getPropGetMethod(targetClass, propName)));
             }
 
-            readOnlyPropNamesMap.put(targetClass, ImmutableSet.of(set));
+            readOnlyPropNamesMap.put(targetClass, set);
+
+            if (readOrWriteOnlyPropNamesMap.containsKey(targetClass)) {
+                readOrWriteOnlyPropNamesMap.get(targetClass).addAll(set);
+            } else {
+                readOrWriteOnlyPropNamesMap.put(targetClass, new HashSet<>(set));
+            }
         }
 
         /**
@@ -3572,7 +3578,11 @@ public final class SQLExecutor implements Closeable {
                 set.add(RefUtil.getPropNameByMethod(RefUtil.getPropGetMethod(targetClass, propName)));
             }
 
-            writeOnlyPropNamesMap.put(targetClass, ImmutableSet.of(set));
+            if (readOrWriteOnlyPropNamesMap.containsKey(targetClass)) {
+                readOrWriteOnlyPropNamesMap.get(targetClass).addAll(set);
+            } else {
+                readOrWriteOnlyPropNamesMap.put(targetClass, new HashSet<>(set));
+            }
         }
 
         public boolean exists(final Object id) {
@@ -3995,14 +4005,6 @@ public final class SQLExecutor implements Closeable {
             final Map<String, Object> props = entity instanceof Map ? (Map<String, Object>) entity
                     : (readOnlyPropNames == null ? Maps.entity2Map(entity) : Maps.entity2Map(entity, readOnlyPropNames));
 
-            if (isEntity && props.containsKey(idName)) {
-                final Object idPropVal = props.get(idName);
-
-                if (idPropVal == null || idPropVal.equals(N.defaultValueOf(idPropVal.getClass()))) {
-                    props.remove(idName);
-                }
-            }
-
             return prepareAdd(props);
         }
 
@@ -4169,7 +4171,7 @@ public final class SQLExecutor implements Closeable {
 
             final Class<?> cls = entity.getClass();
             final boolean isDirtyMarker = N.isDirtyMarker(cls);
-            final Set<String> writeOnlyPropNames = writeOnlyPropNamesMap.get(cls);
+            final Set<String> readOrWriteOnlyPropNames = readOrWriteOnlyPropNamesMap.get(cls);
             Map<String, Object> props = null;
 
             if (isDirtyMarker) {
@@ -4179,11 +4181,11 @@ public final class SQLExecutor implements Closeable {
                     props.put(propName, RefUtil.getPropValue(entity, propName));
                 }
 
-                if (N.notNullOrEmpty(writeOnlyPropNames)) {
-                    Maps.removeAll(props, writeOnlyPropNames);
+                if (N.notNullOrEmpty(readOrWriteOnlyPropNames)) {
+                    Maps.removeAll(props, readOrWriteOnlyPropNames);
                 }
             } else {
-                props = writeOnlyPropNames == null ? Maps.entity2Map(entity) : Maps.entity2Map(entity, writeOnlyPropNames);
+                props = readOrWriteOnlyPropNames == null ? Maps.entity2Map(entity) : Maps.entity2Map(entity, readOrWriteOnlyPropNames);
             }
 
             final Object idVal = props.containsKey(idName) ? props.remove(idName) : getId(entity);
