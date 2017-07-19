@@ -39,6 +39,7 @@ import java.net.InetAddress;
 import java.nio.charset.Charset;
 import java.security.SecureRandom;
 import java.sql.Date;
+import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.text.DateFormat;
@@ -106,6 +107,7 @@ import com.landawn.abacus.core.MapEntity;
 import com.landawn.abacus.core.RowDataSet;
 import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.exception.UncheckedIOException;
+import com.landawn.abacus.exception.UncheckedSQLException;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
 import com.landawn.abacus.parser.JSONDeserializationConfig;
@@ -30195,6 +30197,10 @@ public final class N {
             return (RuntimeException) e;
         } else if (e instanceof ExecutionException || e instanceof InvocationTargetException) {
             return e.getCause() == null ? new RuntimeException(e) : toRuntimeException(e.getCause());
+        } else if (e instanceof IOException) {
+            return new UncheckedIOException(e);
+        } else if (e instanceof SQLException) {
+            return new UncheckedSQLException(e);
         } else {
             return new RuntimeException(e);
         }

@@ -563,9 +563,9 @@ public final class Futures {
     }
 
     private static Iterator<Object> iterate02(final Collection<? extends CompletableFuture<?>> cfs, final long timeout, final TimeUnit unit) {
-        final Iterator<Pair<Object, Throwable>> iter = iterate22(cfs, timeout, unit);
-
         return new Iterator<Object>() {
+            private final Iterator<Pair<Object, Throwable>> iter = iterate22(cfs, timeout, unit);
+
             @Override
             public boolean hasNext() {
                 return iter.hasNext();
@@ -630,7 +630,6 @@ public final class Futures {
         }
 
         return new Iterator<Pair<Object, Throwable>>() {
-
             private final int end = cfs.size();
             private int cursor = 0;
 

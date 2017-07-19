@@ -3805,6 +3805,7 @@ public final class Array {
                 return N.compare(a.getKey().longValue(), a.getKey().longValue());
             }
         });
+
         int idx = fromIndex;
 
         for (Map.Entry<Long, Integer> entry : m.entrySet()) {
