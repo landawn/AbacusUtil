@@ -5,8 +5,10 @@
 		DataSet.addColumn(String fromColumnName, String newColumnName, Function<?, ?> func) 
 	To:
 		DataSet.addColumn(String newColumnName, String fromColumnName, Function<?, ?> func)
-		 
-2, Improvements and bug fix.
+
+2, 	Add partitionBy/partitionByToEntry to Stream	 
+
+3, Improvements and bug fix.
 
 
 ========Changes in 0.9.75=========================================================================

@@ -696,6 +696,14 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     public abstract <K, U> EntryStream<K, U> groupByToEntry2(final Function<? super T, ? extends K> classifier,
             final Function<? super T, ? extends U> valueMapper, final BinaryOperator<U> mergeFunction, final Supplier<Map<K, U>> mapFactory);
 
+    public abstract Stream<Map.Entry<Boolean, List<T>>> partitionBy(Predicate<? super T> predicate);
+
+    public abstract <D> Stream<Map.Entry<Boolean, D>> partitionBy(Predicate<? super T> predicate, Collector<? super T, ?, D> downstream);
+
+    public abstract EntryStream<Boolean, List<T>> partitionByToEntry(Predicate<? super T> predicate);
+
+    public abstract <D> EntryStream<Boolean, D> partitionByToEntry(Predicate<? super T> predicate, Collector<? super T, ?, D> downstream);
+
     /**
      * Returns Stream of Stream with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
      * 

@@ -1149,6 +1149,34 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
+    public Stream<Map.Entry<Boolean, List<T>>> partitionBy(Predicate<? super T> predicate) {
+        final Map<Boolean, List<T>> map = collect(Collectors.partitioningBy(predicate));
+
+        return newStream(map.entrySet().iterator(), false, null);
+    }
+
+    @Override
+    public <D> Stream<Map.Entry<Boolean, D>> partitionBy(Predicate<? super T> predicate, Collector<? super T, ?, D> downstream) {
+        final Map<Boolean, D> map = collect(Collectors.partitioningBy(predicate, downstream));
+
+        return newStream(map.entrySet().iterator(), false, null);
+    }
+
+    @Override
+    public EntryStream<Boolean, List<T>> partitionByToEntry(Predicate<? super T> predicate) {
+        final Function<Map.Entry<Boolean, List<T>>, Map.Entry<Boolean, List<T>>> mapper = Fn.identity();
+
+        return partitionBy(predicate).mapToEntry(mapper);
+    }
+
+    @Override
+    public <D> EntryStream<Boolean, D> partitionByToEntry(Predicate<? super T> predicate, Collector<? super T, ?, D> downstream) {
+        final Function<Map.Entry<Boolean, D>, Map.Entry<Boolean, D>> mapper = Fn.identity();
+
+        return partitionBy(predicate, downstream).mapToEntry(mapper);
+    }
+
+    @Override
     public <K, U> Map<K, U> toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper) {
         final Supplier<Map<K, U>> mapFactory = Fn.Suppliers.ofMap();
 
