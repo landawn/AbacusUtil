@@ -24,7 +24,7 @@ public abstract <R> Stream<R> slidingMap(TriFunction<? super T, ? super T, ? sup
 <K> Stream<Map.Entry<K, Long>> countBy(final Function<? super T, ? extends K> classifier) 
 ```
 
-4, Add PartitionBy to Stream. ---Undecided.
+4, Add PartitionBy to Stream. (Done on 7/19/2017).
 
 ```java
 Stream<Map.Entry<Boolean, List<T>>> partitionBy(Predicate<? super T> predicate);
