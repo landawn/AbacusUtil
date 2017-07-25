@@ -674,6 +674,35 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
         return new ByteMatrix(c);
     }
 
+    public void reverseH() {
+        for (int i = 0; i < rows; i++) {
+            N.reverse(a[i]);
+        }
+    }
+
+    public void reverseV() {
+        for (int j = 0; j < cols; j++) {
+            byte tmp = 0;
+            for (int l = 0, h = rows - 1; l < h;) {
+                tmp = a[l][j];
+                a[l++][j] = a[h][j];
+                a[h--][j] = tmp;
+            }
+        }
+    }
+
+    public ByteMatrix flipH() {
+        final ByteMatrix res = this.copy();
+        res.reverseH();
+        return res;
+    }
+
+    public ByteMatrix flipV() {
+        final ByteMatrix res = this.copy();
+        res.reverseV();
+        return res;
+    }
+
     @Override
     public ByteMatrix rotate90() {
         final byte[][] c = new byte[cols][rows];

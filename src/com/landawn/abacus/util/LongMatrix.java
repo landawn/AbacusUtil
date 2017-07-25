@@ -691,6 +691,35 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongStrea
         return new LongMatrix(c);
     }
 
+    public void reverseH() {
+        for (int i = 0; i < rows; i++) {
+            N.reverse(a[i]);
+        }
+    }
+
+    public void reverseV() {
+        for (int j = 0; j < cols; j++) {
+            long tmp = 0;
+            for (int l = 0, h = rows - 1; l < h;) {
+                tmp = a[l][j];
+                a[l++][j] = a[h][j];
+                a[h--][j] = tmp;
+            }
+        }
+    }
+
+    public LongMatrix flipH() {
+        final LongMatrix res = this.copy();
+        res.reverseH();
+        return res;
+    }
+
+    public LongMatrix flipV() {
+        final LongMatrix res = this.copy();
+        res.reverseV();
+        return res;
+    }
+
     @Override
     public LongMatrix rotate90() {
         final long[][] c = new long[cols][rows];

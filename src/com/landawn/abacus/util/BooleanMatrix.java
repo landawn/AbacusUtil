@@ -659,6 +659,35 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
         return new BooleanMatrix(c);
     }
 
+    public void reverseH() {
+        for (int i = 0; i < rows; i++) {
+            N.reverse(a[i]);
+        }
+    }
+
+    public void reverseV() {
+        for (int j = 0; j < cols; j++) {
+            boolean tmp = false;
+            for (int l = 0, h = rows - 1; l < h;) {
+                tmp = a[l][j];
+                a[l++][j] = a[h][j];
+                a[h--][j] = tmp;
+            }
+        }
+    }
+
+    public BooleanMatrix flipH() {
+        final BooleanMatrix res = this.copy();
+        res.reverseH();
+        return res;
+    }
+
+    public BooleanMatrix flipV() {
+        final BooleanMatrix res = this.copy();
+        res.reverseV();
+        return res;
+    }
+
     @Override
     public BooleanMatrix rotate90() {
         final boolean[][] c = new boolean[cols][rows];

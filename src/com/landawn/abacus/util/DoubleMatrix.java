@@ -709,6 +709,35 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
         return new DoubleMatrix(c);
     }
 
+    public void reverseH() {
+        for (int i = 0; i < rows; i++) {
+            N.reverse(a[i]);
+        }
+    }
+
+    public void reverseV() {
+        for (int j = 0; j < cols; j++) {
+            double tmp = 0;
+            for (int l = 0, h = rows - 1; l < h;) {
+                tmp = a[l][j];
+                a[l++][j] = a[h][j];
+                a[h--][j] = tmp;
+            }
+        }
+    }
+
+    public DoubleMatrix flipH() {
+        final DoubleMatrix res = this.copy();
+        res.reverseH();
+        return res;
+    }
+
+    public DoubleMatrix flipV() {
+        final DoubleMatrix res = this.copy();
+        res.reverseV();
+        return res;
+    }
+
     @Override
     public DoubleMatrix rotate90() {
         final double[][] c = new double[cols][rows];

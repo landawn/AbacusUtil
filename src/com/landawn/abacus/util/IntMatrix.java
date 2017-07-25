@@ -722,6 +722,35 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntStream, S
         return new IntMatrix(c);
     }
 
+    public void reverseH() {
+        for (int i = 0; i < rows; i++) {
+            N.reverse(a[i]);
+        }
+    }
+
+    public void reverseV() {
+        for (int j = 0; j < cols; j++) {
+            int tmp = 0;
+            for (int l = 0, h = rows - 1; l < h;) {
+                tmp = a[l][j];
+                a[l++][j] = a[h][j];
+                a[h--][j] = tmp;
+            }
+        }
+    }
+
+    public IntMatrix flipH() {
+        final IntMatrix res = this.copy();
+        res.reverseH();
+        return res;
+    }
+
+    public IntMatrix flipV() {
+        final IntMatrix res = this.copy();
+        res.reverseV();
+        return res;
+    }
+
     @Override
     public IntMatrix rotate90() {
         final int[][] c = new int[cols][rows];

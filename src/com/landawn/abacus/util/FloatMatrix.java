@@ -675,6 +675,35 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatS
         return new FloatMatrix(c);
     }
 
+    public void reverseH() {
+        for (int i = 0; i < rows; i++) {
+            N.reverse(a[i]);
+        }
+    }
+
+    public void reverseV() {
+        for (int j = 0; j < cols; j++) {
+            float tmp = 0;
+            for (int l = 0, h = rows - 1; l < h;) {
+                tmp = a[l][j];
+                a[l++][j] = a[h][j];
+                a[h--][j] = tmp;
+            }
+        }
+    }
+
+    public FloatMatrix flipH() {
+        final FloatMatrix res = this.copy();
+        res.reverseH();
+        return res;
+    }
+
+    public FloatMatrix flipV() {
+        final FloatMatrix res = this.copy();
+        res.reverseV();
+        return res;
+    }
+
     @Override
     public FloatMatrix rotate90() {
         final float[][] c = new float[cols][rows];

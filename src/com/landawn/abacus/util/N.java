@@ -4891,6 +4891,10 @@ public final class N {
         return a.size() - b.size();
     }
 
+    public static int compareIgnoreCase(final String a, final String b) {
+        return a == null ? (b == null ? 0 : -1) : (b == null ? 1 : a.compareToIgnoreCase(b));
+    }
+
     // Abbreviating
     // -----------------------------------------------------------------------
     /**

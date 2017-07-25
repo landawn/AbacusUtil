@@ -946,6 +946,35 @@ public final class Matrix<T> extends AbstractMatrix<T[], List<T>, Stream<T>, Str
         return new Matrix<>(c);
     }
 
+    public void reverseH() {
+        for (int i = 0; i < rows; i++) {
+            N.reverse(a[i]);
+        }
+    }
+
+    public void reverseV() {
+        for (int j = 0; j < cols; j++) {
+            T tmp = null;
+            for (int l = 0, h = rows - 1; l < h;) {
+                tmp = a[l][j];
+                a[l++][j] = a[h][j];
+                a[h--][j] = tmp;
+            }
+        }
+    }
+
+    public Matrix<T> flipH() {
+        final Matrix<T> res = this.copy();
+        res.reverseH();
+        return res;
+    }
+
+    public Matrix<T> flipV() {
+        final Matrix<T> res = this.copy();
+        res.reverseV();
+        return res;
+    }
+
     @Override
     public Matrix<T> rotate90() {
         final T[][] c = N.newArray(arrayType, cols);

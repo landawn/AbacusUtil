@@ -6,9 +6,13 @@
 	To:
 		DataSet.addColumn(String newColumnName, String fromColumnName, Function<?, ?> func)
 
-2, 	Add partitionBy/partitionByToEntry to Stream	 
+2, Add partitionBy/partitionByToEntry to Stream	 
 
-3, Improvements and bug fix.
+3, Add N.compareIgnoreCase
+
+4, Add reverseH/reverseV/flipH/flipV to Matrix/IntMatrix/...
+
+5, Improvements and bug fix.
 
 
 ========Changes in 0.9.75=========================================================================
