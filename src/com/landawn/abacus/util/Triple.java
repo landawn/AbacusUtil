@@ -225,7 +225,7 @@ public final class Triple<L, M, R> {
 
     @Override
     public String toString() {
-        return "{left=" + N.toString(left) + ", middle=" + N.toString(middle) + ", right=" + N.toString(right) + "}";
+        return "[" + N.toString(left) + ", " + N.toString(middle) + ", " + N.toString(right) + "]";
     }
 
     public static final class IntTriple {

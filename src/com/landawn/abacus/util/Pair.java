@@ -209,7 +209,7 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
 
     @Override
     public String toString() {
-        return "{left=" + N.toString(left) + ", right=" + N.toString(right) + "}";
+        return "[" + N.toString(left) + ", " + N.toString(right) + "]";
     }
 
     public static final class IntPair {
