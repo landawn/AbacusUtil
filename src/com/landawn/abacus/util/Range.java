@@ -49,10 +49,13 @@ public final class Range<T extends Comparable> implements Serializable {
      */
     private final UpperEndpoint<T> upperEndpoint;
 
+    private final BoundType boundType;
+
     @SuppressWarnings("unchecked")
-    private Range(final LowerEndpoint<T> lowerEndpoint, final UpperEndpoint<T> upperEndpoint) {
+    private Range(final LowerEndpoint<T> lowerEndpoint, final UpperEndpoint<T> upperEndpoint, final BoundType boundType) {
         this.lowerEndpoint = lowerEndpoint;
         this.upperEndpoint = upperEndpoint;
+        this.boundType = boundType;
     }
 
     /**
@@ -87,7 +90,7 @@ public final class Range<T extends Comparable> implements Serializable {
             throw new IllegalArgumentException("'fromInclusive' and 'toInclusive' can't be null, or min > max");
         }
 
-        return new Range<T>(new LowerEndpoint<T>(min, false), new UpperEndpoint<T>(max, false));
+        return new Range<T>(new LowerEndpoint<T>(min, false), new UpperEndpoint<T>(max, false), BoundType.OPEN_OPEN);
     }
 
     /**
@@ -102,7 +105,7 @@ public final class Range<T extends Comparable> implements Serializable {
             throw new IllegalArgumentException("'fromInclusive' and 'toInclusive' can't be null, or min > max");
         }
 
-        return new Range<T>(new LowerEndpoint<T>(min, false), new UpperEndpoint<T>(max, true));
+        return new Range<T>(new LowerEndpoint<T>(min, false), new UpperEndpoint<T>(max, true), BoundType.OPEN_CLOSED);
     }
 
     /**
@@ -117,7 +120,7 @@ public final class Range<T extends Comparable> implements Serializable {
             throw new IllegalArgumentException("'fromInclusive' and 'toInclusive' can't be null, or min > max");
         }
 
-        return new Range<T>(new LowerEndpoint<T>(min, true), new UpperEndpoint<T>(max, false));
+        return new Range<T>(new LowerEndpoint<T>(min, true), new UpperEndpoint<T>(max, false), BoundType.CLOSED_OPEN);
     }
 
     /**
@@ -132,7 +135,11 @@ public final class Range<T extends Comparable> implements Serializable {
             throw new IllegalArgumentException("'fromInclusive' and 'toInclusive' can't be null, or min > max");
         }
 
-        return new Range<T>(new LowerEndpoint<T>(min, true), new UpperEndpoint<T>(max, true));
+        return new Range<T>(new LowerEndpoint<T>(min, true), new UpperEndpoint<T>(max, true), BoundType.CLOSED_CLOSED);
+    }
+
+    public BoundType boundType() {
+        return boundType;
     }
 
     /**
@@ -394,7 +401,15 @@ public final class Range<T extends Comparable> implements Serializable {
         final LowerEndpoint<T> newLowerEndpoint = lowerEndpoint.includes(other.lowerEndpoint.value) ? other.lowerEndpoint : lowerEndpoint;
         final UpperEndpoint<T> newUpperEndpoint = upperEndpoint.includes(other.upperEndpoint.value) ? other.upperEndpoint : upperEndpoint;
 
-        return Optional.of(new Range<T>(newLowerEndpoint, newUpperEndpoint));
+        BoundType boundType = null;
+
+        if (newLowerEndpoint.isClosed) {
+            boundType = newUpperEndpoint.isClosed ? BoundType.CLOSED_CLOSED : BoundType.CLOSED_OPEN;
+        } else {
+            boundType = newUpperEndpoint.isClosed ? BoundType.OPEN_CLOSED : BoundType.OPEN_OPEN;
+        }
+
+        return Optional.of(new Range<T>(newLowerEndpoint, newUpperEndpoint, boundType));
     }
 
     public boolean isEmpty() {
@@ -457,6 +472,10 @@ public final class Range<T extends Comparable> implements Serializable {
     @Override
     public String toString() {
         return lowerEndpoint.toString() + ", " + upperEndpoint.toString();
+    }
+
+    public static enum BoundType {
+        OPEN_OPEN, OPEN_CLOSED, CLOSED_OPEN, CLOSED_CLOSED
     }
 
     static abstract class Endpoint<T extends Comparable> {
