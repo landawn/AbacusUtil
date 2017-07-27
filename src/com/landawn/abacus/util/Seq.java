@@ -2868,6 +2868,16 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return new ArrayList<>(Arrays.asList(Array.repeat(value, n)));
     }
 
+    /**
+     * <pre>
+     * <code>
+     * Seq.repeat(N.asList(1, 2, 3), 2) => [1, 2, 3, 1, 2, 3]
+     * </code>
+     * </pre>
+     * @param c
+     * @param n
+     * @return
+     */
     public static <T> List<T> repeat(final Collection<T> c, final int n) {
         if (n < 1) {
             throw new IllegalArgumentException("The specified count must be greater than 0");
@@ -2881,6 +2891,121 @@ public final class Seq<T> extends ImmutableCollection<T> {
 
         for (int i = 0; i < n; i++) {
             result.addAll(c);
+        }
+
+        return result;
+    }
+
+    /**
+     * Repeats the elements in the specified Collection one by one.
+     * 
+     * <pre>
+     * <code>
+     * Seq.nRepeat(N.asList(1, 2, 3), 2) => [1, 1, 2, 2, 3, 3]
+     * </code>
+     * </pre>
+     * 
+     * @param c
+     * @param n
+     * @return
+     */
+    public static <T> List<T> nRepeat(final Collection<T> c, final int n) {
+        if (n < 1) {
+            throw new IllegalArgumentException("The specified count must be greater than 0");
+        }
+
+        if (N.isNullOrEmpty(c)) {
+            return new ArrayList<T>();
+        }
+
+        final List<T> result = new ArrayList<>(c.size() * n);
+
+        for (T e : c) {
+            for (int i = 0; i < n; i++) {
+                result.add(e);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * 
+     * <pre>
+     * <code>
+     * Seq.repeatToSize(N.asList(1, 2, 3), 5) => [1, 2, 3, 1, 2]
+     * </code>
+     * </pre>
+     * 
+     * @param c
+     * @param size
+     * @return
+     */
+    public static <T> List<T> repeatToSize(final Collection<T> c, final int size) {
+        if (size < 1) {
+            throw new IllegalArgumentException("The specified size must be greater than 0");
+        } else if (N.isNullOrEmpty(c) && size > 0) {
+            throw new IllegalArgumentException("The specified collection can't be null or empty when size > 0");
+        }
+
+        if (N.isNullOrEmpty(c)) {
+            return new ArrayList<T>();
+        }
+
+        final List<T> result = new ArrayList<>(size);
+
+        while (result.size() < size) {
+            if (c.size() <= size - result.size()) {
+                result.addAll(c);
+            } else {
+                final Iterator<T> iter = c.iterator();
+
+                for (int i = 0, len = size - result.size(); i < len; i++) {
+                    result.add(iter.next());
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Repeats the elements in the specified Collection one by one till reach the specified size.
+     * 
+     * <pre>
+     * <code>
+     * Seq.nRepeatToSize(N.asList(1, 2, 3), 5) => [1, 1, 2, 2, 3]
+     * </code>
+     * </pre>
+     * 
+     * @param c
+     * @param size
+     * @return
+     */
+    public static <T> List<T> nRepeatToSize(final Collection<T> c, final int size) {
+        if (size < 1) {
+            throw new IllegalArgumentException("The specified size must be greater than 0");
+        } else if (N.isNullOrEmpty(c) && size > 0) {
+            throw new IllegalArgumentException("The specified collection can't be null or empty when size > 0");
+        }
+
+        if (N.isNullOrEmpty(c)) {
+            return new ArrayList<T>();
+        }
+
+        final int n = size / c.size();
+        int mod = size % c.size();
+
+        final List<T> result = new ArrayList<>(size);
+
+        for (T e : c) {
+            for (int i = 0, len = mod-- > 0 ? n + 1 : n; i < len; i++) {
+                result.add(e);
+            }
+
+            if (result.size() == size) {
+                break;
+            }
         }
 
         return result;
@@ -2993,7 +3118,53 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public static <T> List<T> concat(final T[] a, final T[] b) {
-        return N.asList(N.concat(a, b));
+        if (N.isNullOrEmpty(a)) {
+            if (N.isNullOrEmpty(b)) {
+                return new ArrayList<>();
+            } else {
+                final List<T> res = new ArrayList<>(b.length);
+                res.addAll(N.asList(b));
+                return res;
+            }
+        } else {
+            final List<T> res = new ArrayList<>(a.length + (b == null ? 0 : b.length));
+            res.addAll(N.asList(a));
+
+            if (N.notNullOrEmpty(b)) {
+                res.addAll(N.asList(b));
+            }
+            return res;
+        }
+    }
+
+    public static <T> List<T> concat(final T[]... a) {
+        if (N.isNullOrEmpty(a)) {
+            return new ArrayList<>();
+        }
+
+        int count = 0;
+
+        for (T[] e : a) {
+            if (N.notNullOrEmpty(e)) {
+                count += e.length;
+            }
+        }
+
+        final List<T> result = new ArrayList<>(count);
+
+        for (T[] e : a) {
+            if (N.notNullOrEmpty(e)) {
+                if (a.length < 9) {
+                    for (T t : e) {
+                        result.add(t);
+                    }
+                } else {
+                    result.addAll(Arrays.asList(e));
+                }
+            }
+        }
+
+        return result;
     }
 
     public static <T> List<T> concat(final Collection<? extends T> a, final Collection<? extends T> b) {
@@ -3009,7 +3180,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return concat(Arrays.asList(a));
     }
 
-    public static <T> List<T> concat(final List<? extends Collection<? extends T>> c) {
+    public static <T> List<T> concat(final Collection<? extends Collection<? extends T>> c) {
         if (N.isNullOrEmpty(c)) {
             return new ArrayList<>();
         }
@@ -3034,76 +3205,27 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public static <T> ImmutableIterator<T> concat(final Iterator<? extends T> a, final Iterator<? extends T> b) {
-        return concat(Arrays.asList(a, b));
+        return Iterators.concat(a, b);
     }
 
     @SafeVarargs
     public static <T> ImmutableIterator<T> concat(final Iterator<? extends T>... a) {
-        if (N.isNullOrEmpty(a)) {
-            return ImmutableIterator.EMPTY;
-        }
-
-        return concat(Arrays.asList(a));
-    }
-
-    public static <T> ImmutableIterator<T> concat(final Collection<? extends Iterator<? extends T>> c) {
-        if (N.isNullOrEmpty(c)) {
-            return ImmutableIterator.EMPTY;
-        }
-
-        return new ImmutableIterator<T>() {
-            private final Iterator<? extends Iterator<? extends T>> iter = c.iterator();
-            private Iterator<? extends T> cur;
-
-            @Override
-            public boolean hasNext() {
-                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
-                    cur = iter.next();
-                }
-
-                return cur != null && cur.hasNext();
-            }
-
-            @Override
-            public T next() {
-                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                return cur.next();
-            }
-        };
+        return Iterators.concat(a);
     }
 
     @SafeVarargs
     public static <T> ImmutableIterator<T> iterate(final T[]... a) {
-        if (N.isNullOrEmpty(a)) {
-            return ImmutableIterator.EMPTY;
-        }
-
-        final List<Iterator<T>> list = new ArrayList<>(a.length);
-
-        for (T[] e : a) {
-            if (N.notNullOrEmpty(e)) {
-                list.add(ImmutableIterator.of(e));
-            }
-        }
-
-        return concat(list);
+        return Iterators.concat(a);
     }
 
     @SafeVarargs
     public static <T> ImmutableIterator<T> iterate(final Collection<? extends T>... a) {
-        if (N.isNullOrEmpty(a)) {
-            return ImmutableIterator.EMPTY;
-        }
-
-        return iterate(Arrays.asList(a));
+        return Iterators.concat(a);
     }
 
     public static <T> ImmutableIterator<T> iterate(final Collection<? extends Collection<? extends T>> c) {
         if (N.isNullOrEmpty(c)) {
-            return ImmutableIterator.EMPTY;
+            return ImmutableIterator.empty();
         }
 
         final List<Iterator<? extends T>> list = new ArrayList<>(c.size());
@@ -3114,7 +3236,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
             }
         }
 
-        return concat(list);
+        return Iterators.concat(list);
     }
 
     public static <T> List<T> merge(final T[] a, final T[] b, final BiFunction<? super T, ? super T, Nth> nextSelector) {
@@ -3670,44 +3792,6 @@ public final class Seq<T> extends ImmutableCollection<T> {
         }
 
         return Triple.of(l, m, r);
-    }
-
-    public static <T> ImmutableIterator<T> skipNull(final Iterator<T> iter) {
-        return new ImmutableIterator<T>() {
-            private final Iterator<T> iterA = iter == null ? ImmutableIterator.EMPTY : iter;
-
-            private T next;
-
-            @Override
-            public boolean hasNext() {
-                if (next == null && iterA.hasNext()) {
-                    next = iterA.next();
-
-                    if (next == null) {
-                        while (iterA.hasNext()) {
-                            next = iterA.next();
-
-                            if (next != null) {
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                return next != null;
-            }
-
-            @Override
-            public T next() {
-                if (next == null && hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                final T result = next;
-                next = null;
-                return result;
-            }
-        };
     }
 
     /**
