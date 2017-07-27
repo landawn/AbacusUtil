@@ -18,11 +18,14 @@ package com.landawn.abacus.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.Supplier;
 
 /**
@@ -116,5 +119,17 @@ public abstract class ImmutableIterator<E> implements java.util.Iterator<E> {
         }
 
         return c;
+    }
+
+    public <K> Map<K, E> toMap(final Function<? super E, K> keyExactor) {
+        final Map<K, E> result = new HashMap<>();
+        E next = null;
+
+        while (hasNext()) {
+            next = next();
+            result.put(keyExactor.apply(next), next);
+        }
+
+        return result;
     }
 }

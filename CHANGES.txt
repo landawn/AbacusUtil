@@ -12,7 +12,13 @@
 
 4, Add reverseH/reverseV/flipH/flipV to Matrix/IntMatrix/...
 
-5, Improvements and bug fix.
+5, Add Iterators
+
+6, Add nRepeat/repeatToSize/nRepeatToSize to Seq/Iterators
+
+7*, Move skipNull/concat(Collection<? extends Iterator<? extends T>> c) from Seq to Iterators.
+
+8, Improvements and bug fix.
 
 
 ========Changes in 0.9.75=========================================================================

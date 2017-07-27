@@ -100,6 +100,33 @@ public final class Iterators {
         return result;
     }
 
+    public static <T> ImmutableIterator<T> repeat(final T e, final int n) {
+        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
+
+        if (n == 0) {
+            return ImmutableIterator.empty();
+        }
+
+        return new ImmutableIterator<T>() {
+            private int cnt = n;
+
+            @Override
+            public boolean hasNext() {
+                return cnt > 0;
+            }
+
+            @Override
+            public T next() {
+                if (cnt <= 0) {
+                    throw new NoSuchElementException();
+                }
+
+                cnt--;
+                return e;
+            }
+        };
+    };
+
     public static <T> ImmutableIterator<T> repeat(final Collection<T> c, final int n) {
         N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
 
