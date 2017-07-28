@@ -38,6 +38,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.util.CompletableFuture;
+import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedLong;
 import com.landawn.abacus.util.LongIterator;
 import com.landawn.abacus.util.LongList;
@@ -50,7 +51,6 @@ import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalLong;
-import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.function.BiConsumer;
@@ -692,6 +692,10 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
     }
 
     abstract ExLongIterator exIterator();
+
+    public <SS> SS __(Function<? super LongStream, SS> transfer) {
+        return transfer.apply(this);
+    }
 
     public static LongStream empty() {
         return EMPTY;

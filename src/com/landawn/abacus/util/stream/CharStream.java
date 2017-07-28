@@ -38,6 +38,7 @@ import com.landawn.abacus.util.CharList;
 import com.landawn.abacus.util.CharMatrix;
 import com.landawn.abacus.util.CharSummaryStatistics;
 import com.landawn.abacus.util.CompletableFuture;
+import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedChar;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.MutableInt;
@@ -46,7 +47,6 @@ import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalChar;
 import com.landawn.abacus.util.OptionalDouble;
-import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.function.BiConsumer;
@@ -608,6 +608,10 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
     }
 
     abstract ExCharIterator exIterator();
+
+    public <SS> SS __(Function<? super CharStream, SS> transfer) {
+        return transfer.apply(this);
+    }
 
     public static CharStream empty() {
         return EMPTY;

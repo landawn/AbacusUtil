@@ -40,6 +40,7 @@ import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.DoubleList;
 import com.landawn.abacus.util.DoubleMatrix;
 import com.landawn.abacus.util.DoubleSummaryStatistics;
+import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedDouble;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.MutableInt;
@@ -47,7 +48,6 @@ import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
-import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.function.BiConsumer;
@@ -727,6 +727,10 @@ public abstract class DoubleStream
     }
 
     abstract ExDoubleIterator exIterator();
+
+    public <SS> SS __(Function<? super DoubleStream, SS> transfer) {
+        return transfer.apply(this);
+    }
 
     public static DoubleStream empty() {
         return EMPTY;

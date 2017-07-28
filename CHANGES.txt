@@ -18,7 +18,9 @@
 
 7*, Move skipNull/concat(Collection<? extends Iterator<? extends T>> c) from Seq to Iterators.
 
-8, Improvements and bug fix.
+8, Add public <SS> SS __(Function<? super Stream<T>, SS> transfer) to Stream/IntStream/...
+
+9, Improvements and bug fix.
 
 
 ========Changes in 0.9.75=========================================================================

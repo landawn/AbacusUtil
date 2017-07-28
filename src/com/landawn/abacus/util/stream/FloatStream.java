@@ -39,6 +39,7 @@ import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.FloatList;
 import com.landawn.abacus.util.FloatMatrix;
 import com.landawn.abacus.util.FloatSummaryStatistics;
+import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedFloat;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.MutableInt;
@@ -47,7 +48,6 @@ import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalFloat;
-import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.function.BiConsumer;
@@ -739,6 +739,10 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
     }
 
     abstract ExFloatIterator exIterator();
+
+    public <SS> SS __(Function<? super FloatStream, SS> transfer) {
+        return transfer.apply(this);
+    }
 
     public static FloatStream empty() {
         return EMPTY;

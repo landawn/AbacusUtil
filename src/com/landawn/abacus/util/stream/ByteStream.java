@@ -38,6 +38,7 @@ import com.landawn.abacus.util.ByteList;
 import com.landawn.abacus.util.ByteMatrix;
 import com.landawn.abacus.util.ByteSummaryStatistics;
 import com.landawn.abacus.util.CompletableFuture;
+import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedByte;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.MutableInt;
@@ -46,7 +47,6 @@ import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalByte;
 import com.landawn.abacus.util.OptionalDouble;
-import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.function.BiConsumer;
@@ -612,6 +612,10 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
     }
 
     abstract ExByteIterator exIterator();
+
+    public <SS> SS __(Function<? super ByteStream, SS> transfer) {
+        return transfer.apply(this);
+    }
 
     public static ByteStream empty() {
         return EMPTY;

@@ -1885,6 +1885,10 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
 
     abstract ExIterator<T> exIterator();
 
+    public <SS> SS __(Function<? super Stream<T>, SS> transfer) {
+        return transfer.apply(this);
+    }
+
     public static <T> Stream<T> empty() {
         return EMPTY;
     }
