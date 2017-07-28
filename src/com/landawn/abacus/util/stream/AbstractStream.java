@@ -1011,8 +1011,8 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     @SuppressWarnings("rawtypes")
-    public <K, U, M extends Map<K, List<U>>> Stream<Map.Entry<K, List<U>>> groupBy(Function<? super T, ? extends K> classifier,
-            Function<? super T, ? extends U> valueMapper, Supplier<M> mapFactory) {
+    public <K, U> Stream<Map.Entry<K, List<U>>> groupBy(Function<? super T, ? extends K> classifier, Function<? super T, ? extends U> valueMapper,
+            Supplier<Map<K, List<U>>> mapFactory) {
         final Map<K, List<U>> map = collect(
                 Collectors.groupingBy(classifier, (Collector<T, ?, List<U>>) (Collector) Collectors.mapping(valueMapper, Collectors.toList()), mapFactory));
 
@@ -1090,8 +1090,8 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <K, U, M extends Map<K, List<U>>> EntryStream<K, List<U>> groupByToEntry(Function<? super T, ? extends K> classifier,
-            Function<? super T, ? extends U> valueMapper, Supplier<M> mapFactory) {
+    public <K, U> EntryStream<K, List<U>> groupByToEntry(Function<? super T, ? extends K> classifier, Function<? super T, ? extends U> valueMapper,
+            Supplier<Map<K, List<U>>> mapFactory) {
         final Function<Map.Entry<K, List<U>>, Map.Entry<K, List<U>>> mapper = Fn.identity();
 
         return groupBy(classifier, valueMapper, mapFactory).mapToEntry(mapper);

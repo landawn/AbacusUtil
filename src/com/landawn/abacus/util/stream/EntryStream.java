@@ -245,7 +245,10 @@ public final class EntryStream<K, V> {
      * @see Collectors#groupingBy(Function)
      */
     public EntryStream<K, List<V>> groupBy() {
-        return of(toMap2());
+        final Function<? super Map.Entry<K, V>, K> classifier = Fn.key();
+        final Function<? super Map.Entry<K, V>, V> valueMapper = Fn.value();
+
+        return of(s.groupBy(classifier, valueMapper));
     }
 
     /**
@@ -255,13 +258,17 @@ public final class EntryStream<K, V> {
      * @return
      * @see Collectors#groupingBy(Function, Supplier)
      */
-    public <M extends Map<K, List<V>>> EntryStream<K, List<V>> groupBy(final Supplier<M> mapFactory) {
-        return of(toMap2(mapFactory));
+    public EntryStream<K, List<V>> groupBy(final Supplier<Map<K, List<V>>> mapFactory) {
+        final Function<? super Map.Entry<K, V>, K> classifier = Fn.key();
+        final Function<? super Map.Entry<K, V>, V> valueMapper = Fn.value();
+
+        return of(s.groupBy(classifier, valueMapper, mapFactory));
     }
 
     public <KK, VV> EntryStream<KK, List<VV>> groupBy(final Function<? super Map.Entry<K, V>, ? extends KK> keyExtractor,
             final Function<? super Map.Entry<K, V>, ? extends VV> valueMapper) {
-        return of(toMap2(keyExtractor, valueMapper));
+
+        return of(s.groupBy(keyExtractor, valueMapper));
     }
 
     /**
@@ -272,9 +279,10 @@ public final class EntryStream<K, V> {
      * @return
      * @see Collectors#toMultimap(Function, Function, Supplier)
      */
-    public <KK, VV, M extends Map<KK, List<VV>>> EntryStream<KK, List<VV>> groupBy(final Function<? super Map.Entry<K, V>, ? extends KK> keyExtractor,
-            final Function<? super Map.Entry<K, V>, ? extends VV> valueMapper, final Supplier<M> mapFactory) {
-        return of(toMap2(keyExtractor, valueMapper, mapFactory));
+    public <KK, VV> EntryStream<KK, List<VV>> groupBy(final Function<? super Map.Entry<K, V>, ? extends KK> keyExtractor,
+            final Function<? super Map.Entry<K, V>, ? extends VV> valueMapper, final Supplier<Map<KK, List<VV>>> mapFactory) {
+
+        return of(s.groupBy(keyExtractor, valueMapper, mapFactory));
     }
 
     /**
@@ -284,7 +292,9 @@ public final class EntryStream<K, V> {
      * @see Collectors#groupingBy(Function, Collector)
      */
     public <A, D> EntryStream<K, D> groupBy(final Collector<? super Map.Entry<K, V>, A, D> downstream) {
-        return of(toMap(downstream));
+        final Function<? super Map.Entry<K, V>, K> classifier = Fn.key();
+
+        return of(s.groupBy(classifier, downstream));
     }
 
     /**
@@ -294,8 +304,10 @@ public final class EntryStream<K, V> {
      * @return
      * @see Collectors#groupingBy(Function, Collector)
      */
-    public <A, D, M extends Map<K, D>> EntryStream<K, D> groupBy(final Collector<? super Map.Entry<K, V>, A, D> downstream, final Supplier<M> mapFactory) {
-        return of(toMap(downstream, mapFactory));
+    public <A, D> EntryStream<K, D> groupBy(final Collector<? super Map.Entry<K, V>, A, D> downstream, final Supplier<Map<K, D>> mapFactory) {
+        final Function<? super Map.Entry<K, V>, K> classifier = Fn.key();
+
+        return of(s.groupBy(classifier, downstream, mapFactory));
     }
 
     /**
@@ -308,7 +320,8 @@ public final class EntryStream<K, V> {
      */
     public <KK, A, D> EntryStream<KK, D> groupBy(final Function<? super Map.Entry<K, V>, ? extends KK> classifier,
             final Collector<? super Map.Entry<K, V>, A, D> downstream) {
-        return of(toMap(classifier, downstream));
+
+        return of(s.groupBy(classifier, downstream));
     }
 
     /**
@@ -318,9 +331,10 @@ public final class EntryStream<K, V> {
      * @return
      * @see Collectors#groupingBy(Function, Collector)
      */
-    public <KK, A, D, M extends Map<KK, D>> EntryStream<KK, D> groupBy(final Function<? super Map.Entry<K, V>, ? extends KK> classifier,
-            final Collector<? super Map.Entry<K, V>, A, D> downstream, final Supplier<M> mapFactory) {
-        return of(toMap(classifier, downstream, mapFactory));
+    public <KK, A, D> EntryStream<KK, D> groupBy(final Function<? super Map.Entry<K, V>, ? extends KK> classifier,
+            final Collector<? super Map.Entry<K, V>, A, D> downstream, final Supplier<Map<KK, D>> mapFactory) {
+
+        return of(s.groupBy(classifier, downstream, mapFactory));
     }
 
     /**
@@ -328,7 +342,10 @@ public final class EntryStream<K, V> {
      * @return
      */
     public EntryStream<K, V> groupBy2() {
-        return of(toMap());
+        final Function<? super Map.Entry<K, V>, K> classifier = Fn.key();
+        final Function<? super Map.Entry<K, V>, V> valueMapper = Fn.value();
+
+        return of(s.groupBy2(classifier, valueMapper));
     }
 
     /**
@@ -337,7 +354,10 @@ public final class EntryStream<K, V> {
      * @return
      */
     public EntryStream<K, V> groupBy2(final BinaryOperator<V> mergeFunction) {
-        return of(toMap(mergeFunction));
+        final Function<? super Map.Entry<K, V>, K> classifier = Fn.key();
+        final Function<? super Map.Entry<K, V>, V> valueMapper = Fn.value();
+
+        return of(s.groupBy2(classifier, valueMapper, mergeFunction));
     }
 
     /**
@@ -345,8 +365,11 @@ public final class EntryStream<K, V> {
      * @param mapFactory
      * @return
      */
-    public <M extends Map<K, V>> EntryStream<K, V> groupBy2(final Supplier<M> mapFactory) {
-        return of(toMap(mapFactory));
+    public EntryStream<K, V> groupBy2(final Supplier<Map<K, V>> mapFactory) {
+        final Function<? super Map.Entry<K, V>, K> classifier = Fn.key();
+        final Function<? super Map.Entry<K, V>, V> valueMapper = Fn.value();
+
+        return of(s.groupBy2(classifier, valueMapper, mapFactory));
     }
 
     /**
@@ -355,8 +378,11 @@ public final class EntryStream<K, V> {
      * @param mapFactory
      * @return
      */
-    public <M extends Map<K, V>> EntryStream<K, V> groupBy2(final BinaryOperator<V> mergeFunction, final Supplier<M> mapFactory) {
-        return of(toMap(mergeFunction, mapFactory));
+    public EntryStream<K, V> groupBy2(final BinaryOperator<V> mergeFunction, final Supplier<Map<K, V>> mapFactory) {
+        final Function<? super Map.Entry<K, V>, K> classifier = Fn.key();
+        final Function<? super Map.Entry<K, V>, V> valueMapper = Fn.value();
+
+        return of(s.groupBy2(classifier, valueMapper, mergeFunction, mapFactory));
     }
 
     /**
@@ -368,7 +394,8 @@ public final class EntryStream<K, V> {
      */
     public <KK, VV> EntryStream<KK, VV> groupBy2(final Function<? super Map.Entry<K, V>, ? extends KK> keyExtractor,
             final Function<? super Map.Entry<K, V>, ? extends VV> valueMapper) {
-        return of(toMap(keyExtractor, valueMapper));
+
+        return of(s.groupBy2(keyExtractor, valueMapper));
     }
 
     /**
@@ -379,9 +406,10 @@ public final class EntryStream<K, V> {
      * @return
      * @see Collectors#groupBy(Function, Function, Supplier)
      */
-    public <KK, VV, M extends Map<KK, VV>> EntryStream<KK, VV> groupBy2(final Function<? super Map.Entry<K, V>, ? extends KK> keyExtractor,
-            final Function<? super Map.Entry<K, V>, ? extends VV> valueMapper, final Supplier<M> mapFactory) {
-        return of(toMap(keyExtractor, valueMapper, mapFactory));
+    public <KK, VV> EntryStream<KK, VV> groupBy2(final Function<? super Map.Entry<K, V>, ? extends KK> keyExtractor,
+            final Function<? super Map.Entry<K, V>, ? extends VV> valueMapper, final Supplier<Map<KK, VV>> mapFactory) {
+
+        return of(s.groupBy2(keyExtractor, valueMapper, mapFactory));
     }
 
     /**
@@ -394,7 +422,8 @@ public final class EntryStream<K, V> {
      */
     public <KK, VV> EntryStream<KK, VV> groupBy2(final Function<? super Map.Entry<K, V>, ? extends KK> keyExtractor,
             final Function<? super Map.Entry<K, V>, ? extends VV> valueMapper, final BinaryOperator<VV> mergeFunction) {
-        return of(toMap(keyExtractor, valueMapper, mergeFunction));
+
+        return of(s.groupBy2(keyExtractor, valueMapper, mergeFunction));
     }
 
     /**
@@ -406,9 +435,10 @@ public final class EntryStream<K, V> {
      * @return
      * @see Collectors#groupBy(Function, Function, BinaryOperator, Supplier)
      */
-    public <KK, VV, M extends Map<KK, VV>> EntryStream<KK, VV> groupBy2(final Function<? super Map.Entry<K, V>, ? extends KK> keyExtractor,
-            final Function<? super Map.Entry<K, V>, ? extends VV> valueMapper, final BinaryOperator<VV> mergeFunction, final Supplier<M> mapFactory) {
-        return of(toMap(keyExtractor, valueMapper, mergeFunction, mapFactory));
+    public <KK, VV> EntryStream<KK, VV> groupBy2(final Function<? super Map.Entry<K, V>, ? extends KK> keyExtractor,
+            final Function<? super Map.Entry<K, V>, ? extends VV> valueMapper, final BinaryOperator<VV> mergeFunction, final Supplier<Map<KK, VV>> mapFactory) {
+
+        return of(s.groupBy2(keyExtractor, valueMapper, mergeFunction, mapFactory));
     }
 
     public EntryStream<K, V> sorted(final Comparator<? super Map.Entry<K, V>> comparator) {
