@@ -112,6 +112,7 @@ public final class EntryStream<K, V> {
         return Stream.of(a).mapToEntry(keyExtractor, valueMapper);
     }
 
+    @SafeVarargs
     public static <K, V> EntryStream<K, V> concat(final Map<K, V>... maps) {
         final Function<Map<K, V>, Map<K, V>> mapper = Fn.identity();
 
