@@ -30,8 +30,10 @@ import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.NullabLe;
 import com.landawn.abacus.util.Pair;
+import com.landawn.abacus.util.Tuple;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
+import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
@@ -110,6 +112,70 @@ public final class EntryStream<K, V> {
         return Stream.of(a).mapToEntry(keyExtractor, valueMapper);
     }
 
+    public static <K, V> EntryStream<K, V> concat(final Map<K, V>... maps) {
+        final Function<Map<K, V>, Map<K, V>> mapper = Fn.identity();
+
+        return Stream.of(maps).flatMapToEntry2(mapper);
+    }
+
+    public static <K, V> EntryStream<K, V> concat(final Collection<? extends Map<K, V>> maps) {
+        final Function<Map<K, V>, Map<K, V>> mapper = Fn.identity();
+
+        return Stream.of(maps).flatMapToEntry2(mapper);
+    }
+
+    public static <K, V> EntryStream<K, V> zip(final K[] keys, final V[] values) {
+        final BiFunction<K, V, Map.Entry<K, V>> zipFunction = new BiFunction<K, V, Map.Entry<K, V>>() {
+            @Override
+            public Entry<K, V> apply(K k, V v) {
+                return Tuple.of(k, v);
+            }
+        };
+
+        final Function<Map.Entry<K, V>, Map.Entry<K, V>> mapper = Fn.identity();
+
+        return Stream.zip(keys, values, zipFunction).mapToEntry(mapper);
+    }
+
+    public static <K, V> EntryStream<K, V> zip(final K[] keys, final V[] values, K valueForNonKey, V valueForNonValue) {
+        final BiFunction<K, V, Map.Entry<K, V>> zipFunction = new BiFunction<K, V, Map.Entry<K, V>>() {
+            @Override
+            public Entry<K, V> apply(K k, V v) {
+                return Tuple.of(k, v);
+            }
+        };
+
+        final Function<Map.Entry<K, V>, Map.Entry<K, V>> mapper = Fn.identity();
+
+        return Stream.zip(keys, values, valueForNonKey, valueForNonValue, zipFunction).mapToEntry(mapper);
+    }
+
+    public static <K, V> EntryStream<K, V> zip(final Collection<? extends K> keys, final Collection<? extends V> values) {
+        final BiFunction<K, V, Map.Entry<K, V>> zipFunction = new BiFunction<K, V, Map.Entry<K, V>>() {
+            @Override
+            public Entry<K, V> apply(K k, V v) {
+                return Tuple.of(k, v);
+            }
+        };
+
+        final Function<Map.Entry<K, V>, Map.Entry<K, V>> mapper = Fn.identity();
+
+        return Stream.zip(keys, values, zipFunction).mapToEntry(mapper);
+    }
+
+    public static <K, V> EntryStream<K, V> zip(final Collection<? extends K> keys, final Collection<? extends V> values, K valueForNonKey, V valueForNonValue) {
+        final BiFunction<K, V, Map.Entry<K, V>> zipFunction = new BiFunction<K, V, Map.Entry<K, V>>() {
+            @Override
+            public Entry<K, V> apply(K k, V v) {
+                return Tuple.of(k, v);
+            }
+        };
+
+        final Function<Map.Entry<K, V>, Map.Entry<K, V>> mapper = Fn.identity();
+
+        return Stream.zip(keys, values, valueForNonKey, valueForNonValue, zipFunction).mapToEntry(mapper);
+    }
+
     public Stream<K> keys() {
         final Function<Map.Entry<K, V>, K> func = Fn.key();
 
@@ -141,6 +207,17 @@ public final class EntryStream<K, V> {
         return of(s.filter(predicate));
     }
 
+    public <KK> EntryStream<K, V> filter(final BiPredicate<? super K, ? super V> predicate) {
+        final Predicate<Map.Entry<K, V>> predicate2 = new Predicate<Map.Entry<K, V>>() {
+            @Override
+            public boolean test(Entry<K, V> entry) {
+                return predicate.test(entry.getKey(), entry.getValue());
+            }
+        };
+
+        return of(s.filter(predicate2));
+    }
+
     public <KK> EntryStream<K, V> filterByKey(final Predicate<? super K> keyPredicate) {
         final Predicate<Map.Entry<K, V>> predicate = Fn.testByKey(keyPredicate);
 
@@ -155,6 +232,17 @@ public final class EntryStream<K, V> {
 
     public <KK, VV> EntryStream<KK, VV> map(final Function<? super Map.Entry<K, V>, Map.Entry<KK, VV>> mapper) {
         return of(s.map(mapper));
+    }
+
+    public <KK, VV> EntryStream<KK, VV> map(final BiFunction<? super K, ? super V, Map.Entry<KK, VV>> mapper) {
+        final Function<Map.Entry<K, V>, Map.Entry<KK, VV>> mapper2 = new Function<Map.Entry<K, V>, Map.Entry<KK, VV>>() {
+            @Override
+            public Entry<KK, VV> apply(Map.Entry<K, V> entry) {
+                return mapper.apply(entry.getKey(), entry.getValue());
+            }
+        };
+
+        return of(s.map(mapper2));
     }
 
     public <KK, VV> EntryStream<KK, VV> map(final Function<? super K, KK> keyMapper, final Function<? super V, VV> valueMapper) {
@@ -510,8 +598,38 @@ public final class EntryStream<K, V> {
         return of(s.peek(action));
     }
 
+    public EntryStream<K, V> peek(final BiConsumer<? super K, ? super V> action) {
+        final Consumer<Map.Entry<K, V>> action2 = new Consumer<Map.Entry<K, V>>() {
+            @Override
+            public void accept(Entry<K, V> entry) {
+                action.accept(entry.getKey(), entry.getValue());
+            }
+        };
+
+        return of(s.peek(action2));
+    }
+
     public void forEach(final Consumer<? super Map.Entry<K, V>> action) {
         s.forEach(action);
+    }
+
+    public void forEach(final BiConsumer<? super K, ? super V> action) {
+        final Consumer<Map.Entry<K, V>> action2 = new Consumer<Map.Entry<K, V>>() {
+            @Override
+            public void accept(Entry<K, V> entry) {
+                action.accept(entry.getKey(), entry.getValue());
+            }
+        };
+
+        s.forEach(action2);
+    }
+
+    public void forEachKey(final Consumer<? super K> action) {
+        keys().forEach(action);
+    }
+
+    public void forEachValue(final Consumer<? super V> action) {
+        values().forEach(action);
     }
 
     public long count() {
