@@ -2965,6 +2965,95 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         });
     }
 
+    /**
+     * Splits the provided text into an array, separator specified, preserving all tokens, including empty tokens created by adjacent separators.
+     * 
+     * @param str
+     * @param delimiter
+     * @return
+     */
+    public static Stream<String> split(final String str, final String delimiter) {
+        return split(str, delimiter, false);
+    }
+
+    /**
+     * Splits the provided text into an array, separator specified, preserving all tokens, including empty tokens created by adjacent separators.
+     * 
+     * @param str
+     * @param delimiter
+     * @param trim
+     * @return
+     */
+    public static Stream<String> split(final String str, final String delimiter, final boolean trim) {
+        if (delimiter.length() == 1) {
+            return split(str, delimiter.charAt(0), trim);
+        } else {
+            return of(N.splitPreserveAllTokens(str, delimiter, trim));
+        }
+    }
+
+    /**
+     * Splits the provided text into an array, separator specified, preserving all tokens, including empty tokens created by adjacent separators.
+     * 
+     * @param str
+     * @param delimiter
+     * @return
+     */
+    public static Stream<String> split(final String str, final char delimiter) {
+        return split(str, delimiter, false);
+    }
+
+    /**
+     * Splits the provided text into an array, separator specified, preserving all tokens, including empty tokens created by adjacent separators.
+     * 
+     * @param str
+     * @param delimiter
+     * @param trim
+     * @return
+     */
+    public static Stream<String> split(final String str, final char delimiter, final boolean trim) {
+        if (str == null || str.length() == 0) {
+            return of("");
+        }
+
+        return of(new ImmutableIterator<String>() {
+            private final int len = str.length();
+            private boolean isLastDelimiter = str.charAt(len - 1) == delimiter;
+            private int prePos = 0;
+            private int curPos = 0;
+
+            @Override
+            public boolean hasNext() {
+                if (prePos == curPos) {
+                    while (curPos < len && str.charAt(curPos) != delimiter) {
+                        curPos++;
+                    }
+                }
+
+                return prePos < len || isLastDelimiter;
+            }
+
+            @Override
+            public String next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                if (prePos < len) {
+                    String res = str.subSequence(prePos, curPos).toString();
+                    curPos++;
+                    prePos = curPos;
+
+                    return trim ? res.trim() : str;
+                } else {
+                    isLastDelimiter = false;
+
+                    return N.EMPTY_STRING;
+                }
+            }
+        });
+    }
+
     //    /**
     //     * Generate the pushable Stream.
     //     * 

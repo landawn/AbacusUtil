@@ -625,14 +625,6 @@ public final class EntryStream<K, V> {
         s.forEach(action2);
     }
 
-    public void forEachKey(final Consumer<? super K> action) {
-        keys().forEach(action);
-    }
-
-    public void forEachValue(final Consumer<? super V> action) {
-        values().forEach(action);
-    }
-
     public long count() {
         return s.count();
     }
