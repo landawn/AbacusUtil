@@ -240,17 +240,19 @@ public final class BiMap<K, V> implements Map<K, V> {
 
                             @Override
                             public V setValue(V value) {
-                                if (N.equals(entry.getValue(), value)) {
-                                    return entry.getValue();
-                                }
-
-                                //    if (valueMap.containsKey(value)) {
-                                //        throw new IllegalStateException("Value: " + N.toString(value) + " already existed.");
+                                //    if (N.equals(entry.getValue(), value)) {
+                                //        return entry.getValue();
                                 //    }
+                                //
+                                //    //    if (valueMap.containsKey(value)) {
+                                //    //        throw new IllegalStateException("Value: " + N.toString(value) + " already existed.");
+                                //    //    }
+                                //
+                                //    valueMap.remove(entry.getValue());
+                                //    valueMap.put(value, entry.getKey());
+                                //    return entry.setValue(value);
 
-                                valueMap.remove(entry.getValue());
-                                valueMap.put(value, entry.getKey());
-                                return entry.setValue(value);
+                                throw new UnsupportedOperationException();
                             }
                         };
                     }

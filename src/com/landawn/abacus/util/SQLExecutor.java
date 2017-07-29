@@ -4240,7 +4240,8 @@ public final class SQLExecutor implements Closeable {
 
         public int delete(final Connection conn, final Condition whereCause) {
             if (whereCause instanceof Equal && ((Equal) whereCause).getPropName().equals(idName)) {
-                return sqlExecutor.update(conn, sql_delete_by_id, ((Equal) whereCause).getPropValue());
+                final Object id = ((Equal) whereCause).getPropValue();
+                return sqlExecutor.update(conn, sql_delete_by_id, id);
             }
 
             final SP pair = prepareDelete(whereCause);

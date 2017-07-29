@@ -456,10 +456,8 @@ public final class Sheet<R, C, E> {
         _rowKeySet.clear();
         _rowKeySet.addAll(tmp);
 
-        for (Map.Entry<R, Integer> entry : _rowKeyIndexMap.entrySet()) {
-            if (entry.getValue().intValue() >= rowIndex) {
-                entry.setValue(entry.getValue() + 1);
-            }
+        for (int i = _rowKeyIndexMap.size() - 1; i >= rowIndex; i--) {
+            _rowKeyIndexMap.put(_rowKeyIndexMap.getByValue(i), i + 1);
         }
 
         _rowKeyIndexMap.put(rowKey, rowIndex);
@@ -734,10 +732,8 @@ public final class Sheet<R, C, E> {
         _columnKeySet.clear();
         _columnKeySet.addAll(tmp);
 
-        for (Map.Entry<C, Integer> entry : _columnKeyIndexMap.entrySet()) {
-            if (entry.getValue().intValue() >= columnIndex) {
-                entry.setValue(entry.getValue() + 1);
-            }
+        for (int i = _columnKeyIndexMap.size() - 1; i >= columnIndex; i--) {
+            _columnKeyIndexMap.put(_columnKeyIndexMap.getByValue(i), i + 1);
         }
 
         _columnKeyIndexMap.put(columnKey, columnIndex);
