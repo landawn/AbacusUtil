@@ -1289,17 +1289,17 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public Long sumInt(ToIntFunction<? super T> mapper) {
+    public int sumInt(ToIntFunction<? super T> mapper) {
         return collect(Collectors.summingInt(mapper));
     }
 
     @Override
-    public Long sumLong(ToLongFunction<? super T> mapper) {
+    public long sumLong(ToLongFunction<? super T> mapper) {
         return collect(Collectors.summingLong(mapper));
     }
 
     @Override
-    public Double sumDouble(ToDoubleFunction<? super T> mapper) {
+    public double sumDouble(ToDoubleFunction<? super T> mapper) {
         return collect(Collectors.summingDouble(mapper));
     }
 

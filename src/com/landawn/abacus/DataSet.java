@@ -2756,7 +2756,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param columnName
      * @return
      */
-    Long sumInt(String columnName);
+    int sumInt(String columnName);
 
     /**
      * 
@@ -2765,7 +2765,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param toRowIndex
      * @return
      */
-    Long sumInt(String columnName, int fromRowIndex, int toRowIndex);
+    int sumInt(String columnName, int fromRowIndex, int toRowIndex);
 
     /**
      *
@@ -2773,7 +2773,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param mapper
      * @return
      */
-    Long sumInt(String columnName, ToIntFunction<?> mapper);
+    int sumInt(String columnName, ToIntFunction<?> mapper);
 
     /**
      * 
@@ -2783,13 +2783,13 @@ public interface DataSet extends Iterable<Object[]> {
      * @param mapper
      * @return
      */
-    Long sumInt(String columnName, int fromRowIndex, int toRowIndex, ToIntFunction<?> mapper);
+    int sumInt(String columnName, int fromRowIndex, int toRowIndex, ToIntFunction<?> mapper);
 
     /**
      * @param columnName
      * @return
      */
-    Long sumLong(String columnName);
+    long sumLong(String columnName);
 
     /**
      * 
@@ -2798,7 +2798,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param toRowIndex
      * @return
      */
-    Long sumLong(String columnName, int fromRowIndex, int toRowIndex);
+    long sumLong(String columnName, int fromRowIndex, int toRowIndex);
 
     /**
      *
@@ -2806,7 +2806,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param mapper
      * @return
      */
-    Long sumLong(String columnName, ToLongFunction<?> mapper);
+    long sumLong(String columnName, ToLongFunction<?> mapper);
 
     /**
      * 
@@ -2816,13 +2816,13 @@ public interface DataSet extends Iterable<Object[]> {
      * @param mapper
      * @return
      */
-    Long sumLong(String columnName, int fromRowIndex, int toRowIndex, ToLongFunction<?> mapper);
+    long sumLong(String columnName, int fromRowIndex, int toRowIndex, ToLongFunction<?> mapper);
 
     /**
      * @param columnName
      * @return
      */
-    Double sumDouble(String columnName);
+    double sumDouble(String columnName);
 
     /**
      * 
@@ -2831,7 +2831,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param toRowIndex
      * @return
      */
-    Double sumDouble(String columnName, int fromRowIndex, int toRowIndex);
+    double sumDouble(String columnName, int fromRowIndex, int toRowIndex);
 
     //    /**
     //     *
@@ -2839,7 +2839,7 @@ public interface DataSet extends Iterable<Object[]> {
     //     * @param mapper
     //     * @return
     //     */
-    //    Long sum(String columnName, ToLongFunction<?> mapper);
+    //    long sum(String columnName, ToLongFunction<?> mapper);
     //
     //    /**
     //     * 
@@ -2849,7 +2849,7 @@ public interface DataSet extends Iterable<Object[]> {
     //     * @param mapper
     //     * @return
     //     */
-    //    Long sum(String columnName, int fromRowIndex, int toRowIndex, ToLongFunction<?> mapper);
+    //    long sum(String columnName, int fromRowIndex, int toRowIndex, ToLongFunction<?> mapper);
 
     /**
      *
@@ -2857,7 +2857,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param mapper
      * @return
      */
-    Double sumDouble(String columnName, ToDoubleFunction<?> mapper);
+    double sumDouble(String columnName, ToDoubleFunction<?> mapper);
 
     /**
      * 
@@ -2867,7 +2867,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param mapper
      * @return
      */
-    Double sumDouble(String columnName, int fromRowIndex, int toRowIndex, ToDoubleFunction<?> mapper);
+    double sumDouble(String columnName, int fromRowIndex, int toRowIndex, ToDoubleFunction<?> mapper);
 
     /**
      * @param columnName

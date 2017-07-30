@@ -577,7 +577,7 @@ public final class Fn {
         return Collectors.countingInt();
     }
 
-    public static <T> Collector<T, ?, Long> summingInt(final ToIntFunction<? super T> mapper) {
+    public static <T> Collector<T, ?, Integer> summingInt(final ToIntFunction<? super T> mapper) {
         return Collectors.summingInt(mapper);
     }
 

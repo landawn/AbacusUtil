@@ -355,12 +355,12 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return size() < k ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(N.kthLargest(coll, k, cmp));
     }
 
-    public Long sumInt() {
+    public int sumInt() {
         if (N.isNullOrEmpty(coll)) {
-            return 0L;
+            return 0;
         }
 
-        long result = 0L;
+        int result = 0;
 
         for (T e : coll) {
             if (e != null) {
@@ -371,12 +371,12 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
-    public Long sumInt(final ToIntFunction<? super T> mapper) {
+    public int sumInt(final ToIntFunction<? super T> mapper) {
         if (N.isNullOrEmpty(coll)) {
-            return 0L;
+            return 0;
         }
 
-        long result = 0L;
+        int result = 0;
 
         for (T e : coll) {
             result += mapper.applyAsInt(e);
@@ -385,12 +385,12 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
-    public Long sumLong() {
+    public long sumLong() {
         if (N.isNullOrEmpty(coll)) {
             return 0L;
         }
 
-        long result = 0L;
+        long result = 0;
 
         for (T e : coll) {
             if (e != null) {
@@ -401,7 +401,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
-    public Long sumLong(final ToLongFunction<? super T> mapper) {
+    public long sumLong(final ToLongFunction<? super T> mapper) {
         if (N.isNullOrEmpty(coll)) {
             return 0L;
         }
@@ -415,7 +415,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
-    public Double sumDouble() {
+    public double sumDouble() {
         if (N.isNullOrEmpty(coll)) {
             return 0D;
         }
@@ -428,24 +428,24 @@ public final class Seq<T> extends ImmutableCollection<T> {
         });
     }
 
-    public Double sumDouble(final ToDoubleFunction<? super T> mapper) {
+    public double sumDouble(final ToDoubleFunction<? super T> mapper) {
         return size() == 0 ? 0d : N.sumDouble(coll, mapper);
     }
 
     public OptionalDouble averageInt() {
-        return size() == 0 ? OptionalDouble.empty() : OptionalDouble.of(sumInt().doubleValue() / size());
+        return size() == 0 ? OptionalDouble.empty() : OptionalDouble.of(((double) sumInt()) / size());
     }
 
     public OptionalDouble averageInt(final ToIntFunction<? super T> mapper) {
-        return size() == 0 ? OptionalDouble.empty() : OptionalDouble.of(sumInt(mapper).doubleValue() / size());
+        return size() == 0 ? OptionalDouble.empty() : OptionalDouble.of(((double) sumInt(mapper)) / size());
     }
 
     public OptionalDouble averageLong() {
-        return size() == 0 ? OptionalDouble.empty() : OptionalDouble.of(sumLong().doubleValue() / size());
+        return size() == 0 ? OptionalDouble.empty() : OptionalDouble.of(((double) sumLong()) / size());
     }
 
     public OptionalDouble averageLong(final ToLongFunction<? super T> mapper) {
-        return size() == 0 ? OptionalDouble.empty() : OptionalDouble.of(sumLong(mapper).doubleValue() / size());
+        return size() == 0 ? OptionalDouble.empty() : OptionalDouble.of(((double) sumLong(mapper)) / size());
     }
 
     public OptionalDouble averageDouble() {

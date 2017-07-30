@@ -1592,11 +1592,11 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public abstract NullabLe<T> kthLargest(int k, Comparator<? super T> comparator);
 
-    public abstract Long sumInt(ToIntFunction<? super T> mapper);
+    public abstract int sumInt(ToIntFunction<? super T> mapper);
 
-    public abstract Long sumLong(ToLongFunction<? super T> mapper);
+    public abstract long sumLong(ToLongFunction<? super T> mapper);
 
-    public abstract Double sumDouble(ToDoubleFunction<? super T> mapper);
+    public abstract double sumDouble(ToDoubleFunction<? super T> mapper);
 
     public abstract OptionalDouble averageInt(ToIntFunction<? super T> mapper);
 

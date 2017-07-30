@@ -19326,22 +19326,22 @@ public final class N {
         return result;
     }
 
-    public static <T> Long sumInt(final T[] a, final ToIntFunction<? super T> func) {
+    public static <T> int sumInt(final T[] a, final ToIntFunction<? super T> func) {
         if (N.isNullOrEmpty(a)) {
-            return 0L;
+            return 0;
         }
 
         return sumInt(a, 0, a.length, func);
     }
 
-    public static <T> Long sumInt(final T[] a, final int fromIndex, final int toIndex, final ToIntFunction<? super T> func) {
+    public static <T> int sumInt(final T[] a, final int fromIndex, final int toIndex, final ToIntFunction<? super T> func) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (fromIndex == toIndex) {
-            return 0L;
+            return 0;
         }
 
-        long result = 0;
+        int result = 0;
 
         for (int i = fromIndex; i < toIndex; i++) {
             result += func.applyAsInt(a[i]);
@@ -19350,22 +19350,22 @@ public final class N {
         return result;
     }
 
-    public static <T> Long sumInt(final Collection<? extends T> c, final ToIntFunction<? super T> func) {
+    public static <T> int sumInt(final Collection<? extends T> c, final ToIntFunction<? super T> func) {
         if (N.isNullOrEmpty(c)) {
-            return 0L;
+            return 0;
         }
 
         return sumInt(c, 0, c.size(), func);
     }
 
-    public static <T> Long sumInt(final Collection<? extends T> c, final int fromIndex, final int toIndex, final ToIntFunction<? super T> func) {
+    public static <T> int sumInt(final Collection<? extends T> c, final int fromIndex, final int toIndex, final ToIntFunction<? super T> func) {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if (fromIndex == toIndex) {
-            return 0L;
+            return 0;
         }
 
-        long result = 0;
+        int result = 0;
 
         if (c instanceof List && c instanceof RandomAccess) {
             final List<T> list = (List<T>) c;
@@ -19392,7 +19392,7 @@ public final class N {
         return result;
     }
 
-    public static <T> Long sumLong(final T[] a, final ToLongFunction<? super T> func) {
+    public static <T> long sumLong(final T[] a, final ToLongFunction<? super T> func) {
         if (N.isNullOrEmpty(a)) {
             return 0L;
         }
@@ -19400,7 +19400,7 @@ public final class N {
         return sumLong(a, 0, a.length, func);
     }
 
-    public static <T> Long sumLong(final T[] a, final int fromIndex, final int toIndex, final ToLongFunction<? super T> func) {
+    public static <T> long sumLong(final T[] a, final int fromIndex, final int toIndex, final ToLongFunction<? super T> func) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (fromIndex == toIndex) {
@@ -19416,7 +19416,7 @@ public final class N {
         return result;
     }
 
-    public static <T> Long sumLong(final Collection<? extends T> c, final ToLongFunction<? super T> func) {
+    public static <T> long sumLong(final Collection<? extends T> c, final ToLongFunction<? super T> func) {
         if (N.isNullOrEmpty(c)) {
             return 0L;
         }
@@ -19424,7 +19424,7 @@ public final class N {
         return sumLong(c, 0, c.size(), func);
     }
 
-    public static <T> Long sumLong(final Collection<? extends T> c, final int fromIndex, final int toIndex, final ToLongFunction<? super T> func) {
+    public static <T> long sumLong(final Collection<? extends T> c, final int fromIndex, final int toIndex, final ToLongFunction<? super T> func) {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if (fromIndex == toIndex) {
@@ -19458,7 +19458,7 @@ public final class N {
         return result;
     }
 
-    public static <T> Double sumDouble(final T[] a, final ToDoubleFunction<? super T> func) {
+    public static <T> double sumDouble(final T[] a, final ToDoubleFunction<? super T> func) {
         if (N.isNullOrEmpty(a)) {
             return 0D;
         }
@@ -19466,7 +19466,7 @@ public final class N {
         return sumDouble(a, 0, a.length, func);
     }
 
-    public static <T> Double sumDouble(final T[] a, final int fromIndex, final int toIndex, final ToDoubleFunction<? super T> func) {
+    public static <T> double sumDouble(final T[] a, final int fromIndex, final int toIndex, final ToDoubleFunction<? super T> func) {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (fromIndex == toIndex) {
@@ -19482,7 +19482,7 @@ public final class N {
         return result;
     }
 
-    public static <T> Double sumDouble(final Collection<? extends T> c, final ToDoubleFunction<? super T> func) {
+    public static <T> double sumDouble(final Collection<? extends T> c, final ToDoubleFunction<? super T> func) {
         if (N.isNullOrEmpty(c)) {
             return 0D;
         }
@@ -19490,7 +19490,7 @@ public final class N {
         return sumDouble(c, 0, c.size(), func);
     }
 
-    public static <T> Double sumDouble(final Collection<? extends T> c, final int fromIndex, final int toIndex, final ToDoubleFunction<? super T> func) {
+    public static <T> double sumDouble(final Collection<? extends T> c, final int fromIndex, final int toIndex, final ToDoubleFunction<? super T> func) {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if (fromIndex == toIndex) {

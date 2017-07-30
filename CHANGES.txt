@@ -1,4 +1,12 @@
 ﻿
+
+========Changes in 0.9.77=========================================================================
+
+1*, change the return types of sumInt/sumLong/sumDouble from Long/Long/Double/ to int/long/double.
+
+2, Improvements and bug fix.
+
+
 ========Changes in 0.9.76=========================================================================
 
 1*, Refactoring: change the order of parameters from : 

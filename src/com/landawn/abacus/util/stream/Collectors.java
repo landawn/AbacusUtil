@@ -78,6 +78,7 @@ import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.NullabLe;
 import com.landawn.abacus.util.OptionalDouble;
+import com.landawn.abacus.util.OptionalInt;
 import com.landawn.abacus.util.OptionalLong;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.ShortList;
@@ -2049,32 +2050,32 @@ public final class Collectors {
      * @param mapper a function extracting the property to be summed
      * @return a {@code Collector} that produces the sum of a derived property
      */
-    public static <T> Collector<T, ?, Long> summingInt(final ToIntFunction<? super T> mapper) {
-        final Supplier<long[]> supplier = new Supplier<long[]>() {
+    public static <T> Collector<T, ?, Integer> summingInt(final ToIntFunction<? super T> mapper) {
+        final Supplier<int[]> supplier = new Supplier<int[]>() {
             @Override
-            public long[] get() {
-                return new long[1];
+            public int[] get() {
+                return new int[1];
             }
         };
 
-        final BiConsumer<long[], T> accumulator = new BiConsumer<long[], T>() {
+        final BiConsumer<int[], T> accumulator = new BiConsumer<int[], T>() {
             @Override
-            public void accept(long[] a, T t) {
+            public void accept(int[] a, T t) {
                 a[0] += mapper.applyAsInt(t);
             }
         };
 
-        final BinaryOperator<long[]> combiner = new BinaryOperator<long[]>() {
+        final BinaryOperator<int[]> combiner = new BinaryOperator<int[]>() {
             @Override
-            public long[] apply(long[] a, long[] b) {
+            public int[] apply(int[] a, int[] b) {
                 a[0] += b[0];
                 return a;
             }
         };
 
-        final Function<long[], Long> finisher = new Function<long[], Long>() {
+        final Function<int[], Integer> finisher = new Function<int[], Integer>() {
             @Override
-            public Long apply(long[] a) {
+            public Integer apply(int[] a) {
                 return a[0];
             }
         };
@@ -2082,35 +2083,35 @@ public final class Collectors {
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
     }
 
-    public static <T> Collector<T, ?, OptionalLong> summingInt2(final ToIntFunction<? super T> mapper) {
-        final Supplier<long[]> supplier = new Supplier<long[]>() {
+    public static <T> Collector<T, ?, OptionalInt> summingInt2(final ToIntFunction<? super T> mapper) {
+        final Supplier<int[]> supplier = new Supplier<int[]>() {
             @Override
-            public long[] get() {
-                return new long[2];
+            public int[] get() {
+                return new int[2];
             }
         };
 
-        final BiConsumer<long[], T> accumulator = new BiConsumer<long[], T>() {
+        final BiConsumer<int[], T> accumulator = new BiConsumer<int[], T>() {
             @Override
-            public void accept(long[] a, T t) {
+            public void accept(int[] a, T t) {
                 a[0] += mapper.applyAsInt(t);
                 a[1]++;
             }
         };
 
-        final BinaryOperator<long[]> combiner = new BinaryOperator<long[]>() {
+        final BinaryOperator<int[]> combiner = new BinaryOperator<int[]>() {
             @Override
-            public long[] apply(long[] a, long[] b) {
+            public int[] apply(int[] a, int[] b) {
                 a[0] += b[0];
                 a[1] += b[1];
                 return a;
             }
         };
 
-        final Function<long[], OptionalLong> finisher = new Function<long[], OptionalLong>() {
+        final Function<int[], OptionalInt> finisher = new Function<int[], OptionalInt>() {
             @Override
-            public OptionalLong apply(long[] a) {
-                return a[1] == 0 ? OptionalLong.empty() : OptionalLong.of(a[0]);
+            public OptionalInt apply(int[] a) {
+                return a[1] == 0 ? OptionalInt.empty() : OptionalInt.of(a[0]);
             }
         };
 
