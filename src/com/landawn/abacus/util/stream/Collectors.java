@@ -88,7 +88,6 @@ import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Consumer;
-import com.landawn.abacus.util.function.DoubleSupplier;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
@@ -2418,32 +2417,32 @@ public final class Collectors {
         return new CollectorImpl<>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
     }
 
-    public static <T> Collector<T, ?, Double> averagingInt2OrGet(final ToIntFunction<? super T> mapper, final DoubleSupplier other) {
-        final Collector<T, long[], OptionalDouble> collector = (Collector<T, long[], OptionalDouble>) averagingInt2(mapper);
-
-        final Function<long[], Double> finisher = new Function<long[], Double>() {
-            @Override
-            public Double apply(long[] a) {
-                return collector.finisher().apply(a).orGet(other);
-            }
-        };
-
-        return new CollectorImpl<>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
-    }
-
-    public static <T, X extends RuntimeException> Collector<T, ?, Double> averagingInt2OrThrow(final ToIntFunction<? super T> mapper,
-            final Supplier<? extends X> exceptionSupplier) {
-        final Collector<T, long[], OptionalDouble> collector = (Collector<T, long[], OptionalDouble>) averagingInt2(mapper);
-
-        final Function<long[], Double> finisher = new Function<long[], Double>() {
-            @Override
-            public Double apply(long[] a) {
-                return collector.finisher().apply(a).orThrow(exceptionSupplier);
-            }
-        };
-
-        return new CollectorImpl<>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
-    }
+    //    public static <T> Collector<T, ?, Double> averagingInt2OrGet(final ToIntFunction<? super T> mapper, final DoubleSupplier other) {
+    //        final Collector<T, long[], OptionalDouble> collector = (Collector<T, long[], OptionalDouble>) averagingInt2(mapper);
+    //
+    //        final Function<long[], Double> finisher = new Function<long[], Double>() {
+    //            @Override
+    //            public Double apply(long[] a) {
+    //                return collector.finisher().apply(a).orGet(other);
+    //            }
+    //        };
+    //
+    //        return new CollectorImpl<>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
+    //    }
+    //
+    //    public static <T, X extends RuntimeException> Collector<T, ?, Double> averagingInt2OrThrow(final ToIntFunction<? super T> mapper,
+    //            final Supplier<? extends X> exceptionSupplier) {
+    //        final Collector<T, long[], OptionalDouble> collector = (Collector<T, long[], OptionalDouble>) averagingInt2(mapper);
+    //
+    //        final Function<long[], Double> finisher = new Function<long[], Double>() {
+    //            @Override
+    //            public Double apply(long[] a) {
+    //                return collector.finisher().apply(a).orThrow(exceptionSupplier);
+    //            }
+    //        };
+    //
+    //        return new CollectorImpl<>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
+    //    }
 
     /**
      * Returns a {@code Collector} that produces the arithmetic mean of a long-valued
@@ -2506,32 +2505,32 @@ public final class Collectors {
         return new CollectorImpl<>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
     }
 
-    public static <T> Collector<T, ?, Double> averagingLong2OrGet(final ToLongFunction<? super T> mapper, final DoubleSupplier other) {
-        final Collector<T, long[], OptionalDouble> collector = (Collector<T, long[], OptionalDouble>) averagingLong2(mapper);
-
-        final Function<long[], Double> finisher = new Function<long[], Double>() {
-            @Override
-            public Double apply(long[] a) {
-                return collector.finisher().apply(a).orGet(other);
-            }
-        };
-
-        return new CollectorImpl<>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
-    }
-
-    public static <T, X extends RuntimeException> Collector<T, ?, Double> averagingLong2OrThrow(final ToLongFunction<? super T> mapper,
-            final Supplier<? extends X> exceptionSupplier) {
-        final Collector<T, long[], OptionalDouble> collector = (Collector<T, long[], OptionalDouble>) averagingLong2(mapper);
-
-        final Function<long[], Double> finisher = new Function<long[], Double>() {
-            @Override
-            public Double apply(long[] a) {
-                return collector.finisher().apply(a).orThrow(exceptionSupplier);
-            }
-        };
-
-        return new CollectorImpl<>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
-    }
+    //    public static <T> Collector<T, ?, Double> averagingLong2OrGet(final ToLongFunction<? super T> mapper, final DoubleSupplier other) {
+    //        final Collector<T, long[], OptionalDouble> collector = (Collector<T, long[], OptionalDouble>) averagingLong2(mapper);
+    //
+    //        final Function<long[], Double> finisher = new Function<long[], Double>() {
+    //            @Override
+    //            public Double apply(long[] a) {
+    //                return collector.finisher().apply(a).orGet(other);
+    //            }
+    //        };
+    //
+    //        return new CollectorImpl<>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
+    //    }
+    //
+    //    public static <T, X extends RuntimeException> Collector<T, ?, Double> averagingLong2OrThrow(final ToLongFunction<? super T> mapper,
+    //            final Supplier<? extends X> exceptionSupplier) {
+    //        final Collector<T, long[], OptionalDouble> collector = (Collector<T, long[], OptionalDouble>) averagingLong2(mapper);
+    //
+    //        final Function<long[], Double> finisher = new Function<long[], Double>() {
+    //            @Override
+    //            public Double apply(long[] a) {
+    //                return collector.finisher().apply(a).orThrow(exceptionSupplier);
+    //            }
+    //        };
+    //
+    //        return new CollectorImpl<>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
+    //    }
 
     /**
      * Returns a {@code Collector} that produces the arithmetic mean of a double-valued
@@ -2624,32 +2623,32 @@ public final class Collectors {
         return new CollectorImpl<>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
     }
 
-    public static <T> Collector<T, ?, Double> averagingDouble2OrGet(final ToDoubleFunction<? super T> mapper, final DoubleSupplier other) {
-        final Collector<T, double[], OptionalDouble> collector = (Collector<T, double[], OptionalDouble>) averagingDouble2(mapper);
-
-        final Function<double[], Double> finisher = new Function<double[], Double>() {
-            @Override
-            public Double apply(double[] a) {
-                return collector.finisher().apply(a).orGet(other);
-            }
-        };
-
-        return new CollectorImpl<>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
-    }
-
-    public static <T, X extends RuntimeException> Collector<T, ?, Double> averagingDouble2OrThrow(final ToDoubleFunction<? super T> mapper,
-            final Supplier<? extends X> exceptionSupplier) {
-        final Collector<T, double[], OptionalDouble> collector = (Collector<T, double[], OptionalDouble>) averagingDouble2(mapper);
-
-        final Function<double[], Double> finisher = new Function<double[], Double>() {
-            @Override
-            public Double apply(double[] a) {
-                return collector.finisher().apply(a).orThrow(exceptionSupplier);
-            }
-        };
-
-        return new CollectorImpl<>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
-    }
+    //    public static <T> Collector<T, ?, Double> averagingDouble2OrGet(final ToDoubleFunction<? super T> mapper, final DoubleSupplier other) {
+    //        final Collector<T, double[], OptionalDouble> collector = (Collector<T, double[], OptionalDouble>) averagingDouble2(mapper);
+    //
+    //        final Function<double[], Double> finisher = new Function<double[], Double>() {
+    //            @Override
+    //            public Double apply(double[] a) {
+    //                return collector.finisher().apply(a).orGet(other);
+    //            }
+    //        };
+    //
+    //        return new CollectorImpl<>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
+    //    }
+    //
+    //    public static <T, X extends RuntimeException> Collector<T, ?, Double> averagingDouble2OrThrow(final ToDoubleFunction<? super T> mapper,
+    //            final Supplier<? extends X> exceptionSupplier) {
+    //        final Collector<T, double[], OptionalDouble> collector = (Collector<T, double[], OptionalDouble>) averagingDouble2(mapper);
+    //
+    //        final Function<double[], Double> finisher = new Function<double[], Double>() {
+    //            @Override
+    //            public Double apply(double[] a) {
+    //                return collector.finisher().apply(a).orThrow(exceptionSupplier);
+    //            }
+    //        };
+    //
+    //        return new CollectorImpl<>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
+    //    }
 
     //    public static <T> Collector<T, ?, DataSet> toDataSet(final String entityName, final Class<?> entityClass, final List<String> columnNames) {
     //        @SuppressWarnings("rawtypes")

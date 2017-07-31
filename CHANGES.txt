@@ -2,9 +2,11 @@
 
 ========Changes in 0.9.77=========================================================================
 
-1*, change the return types of sumInt/sumLong/sumDouble from Long/Long/Double/ to int/long/double.
+1*, Change the return types of sumInt/sumLong/sumDouble from Long/Long/Double/ to int/long/double.
 
-2, Improvements and bug fix.
+2*, Remove averagingInt2OrGet/averagingInt2OrThrow/averagingLong2OrGet/averagingLong2OrThrow/averagingDouble2OrGet/averagingDouble2OrThrow from Collectors.
+
+3, Improvements and bug fix.
 
 
 ========Changes in 0.9.76=========================================================================
