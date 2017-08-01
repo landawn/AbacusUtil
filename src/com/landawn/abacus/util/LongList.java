@@ -896,11 +896,11 @@ public final class LongList extends PrimitiveList<LongConsumer, LongPredicate, L
         return toIndex - fromIndex < k ? OptionalLong.empty() : OptionalLong.of(N.kthLargest(elementData, fromIndex, toIndex, k));
     }
 
-    public Long sum() {
+    public long sum() {
         return sum(0, size());
     }
 
-    public Long sum(final int fromIndex, final int toIndex) {
+    public long sum(final int fromIndex, final int toIndex) {
         checkFromToIndex(fromIndex, toIndex);
 
         return N.sum(elementData, fromIndex, toIndex);

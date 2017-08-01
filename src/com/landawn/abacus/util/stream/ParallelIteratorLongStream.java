@@ -1067,7 +1067,7 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
     }
 
     @Override
-    public Long sum() {
+    public long sum() {
         long result = 0;
 
         while (elements.hasNext()) {

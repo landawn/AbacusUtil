@@ -866,11 +866,11 @@ public final class CharList extends PrimitiveList<CharConsumer, CharPredicate, C
         return toIndex - fromIndex < k ? OptionalChar.empty() : OptionalChar.of(N.kthLargest(elementData, fromIndex, toIndex, k));
     }
 
-    public Long sum() {
+    public int sum() {
         return sum(0, size());
     }
 
-    public Long sum(final int fromIndex, final int toIndex) {
+    public int sum(final int fromIndex, final int toIndex) {
         checkFromToIndex(fromIndex, toIndex);
 
         return N.sum(elementData, fromIndex, toIndex);

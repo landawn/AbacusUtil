@@ -139,6 +139,31 @@ public final class Fn {
         }
     };
 
+    private static final Function<String, String> TRIM = new Function<String, String>() {
+        @Override
+        public String apply(String t) {
+            return t == null ? null : t.trim();
+        }
+    };
+
+    private static final Function<String, String> TRIM_TO_EMPTY = new Function<String, String>() {
+        @Override
+        public String apply(String t) {
+            return t == null ? "" : t.trim();
+        }
+    };
+
+    private static final Function<String, String> TRIM_TO_NULL = new Function<String, String>() {
+        @Override
+        public String apply(String t) {
+            if (t == null || (t = t.trim()).length() == 0) {
+                return null;
+            }
+
+            return t;
+        }
+    };
+
     private static final BiFunction<Object, Object, Pair<Object, Object>> PAIR = new BiFunction<Object, Object, Pair<Object, Object>>() {
         @Override
         public Pair<Object, Object> apply(Object key, Object value) {
@@ -250,6 +275,18 @@ public final class Fn {
     @SuppressWarnings("rawtypes")
     public static <K, V> Function<Entry<K, V>, V> value() {
         return (Function) VALUE;
+    }
+
+    public static Function<String, String> trim() {
+        return TRIM;
+    }
+
+    public static Function<String, String> trimToEmpty() {
+        return TRIM_TO_EMPTY;
+    }
+
+    public static Function<String, String> trimToNull() {
+        return TRIM_TO_NULL;
     }
 
     @SuppressWarnings("rawtypes")

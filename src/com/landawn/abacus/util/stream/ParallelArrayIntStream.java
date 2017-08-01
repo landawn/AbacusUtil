@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 
 import com.landawn.abacus.util.CompletableFuture;
+import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedInt;
 import com.landawn.abacus.util.IntList;
 import com.landawn.abacus.util.IntSummaryStatistics;
@@ -38,7 +39,6 @@ import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.NullabLe;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalInt;
-import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
@@ -449,7 +449,8 @@ final class ParallelArrayIntStream extends ArrayIntStream {
 
     @Override
     public Stream<IntList> slidingToList(final int windowSize, final int increment) {
-        return new ParallelIteratorStream<IntList>(sequential().slidingToList(windowSize, increment).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
+        return new ParallelIteratorStream<IntList>(sequential().slidingToList(windowSize, increment).iterator(), closeHandlers, false, null, maxThreadNum,
+                splitor);
     }
 
     @Override
@@ -1170,11 +1171,11 @@ final class ParallelArrayIntStream extends ArrayIntStream {
     }
 
     @Override
-    public Long sum() {
+    public long sum() {
         if (fromIndex == toIndex) {
             return 0L;
         } else if (maxThreadNum <= 1) {
-            return N.sum(elements, fromIndex, toIndex);
+            return sum(elements, fromIndex, toIndex);
         }
 
         final List<CompletableFuture<Long>> futureList = new ArrayList<>(maxThreadNum);
@@ -1189,7 +1190,7 @@ final class ParallelArrayIntStream extends ArrayIntStream {
                     int cursor = fromIndex + sliceIndex * sliceSize;
                     final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
 
-                    return cursor >= to ? null : N.sum(elements, cursor, to);
+                    return cursor >= to ? null : sum(elements, cursor, to);
                 }
             }));
         }

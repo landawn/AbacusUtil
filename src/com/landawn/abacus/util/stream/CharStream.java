@@ -553,7 +553,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
      */
     public abstract OptionalChar kthLargest(int k);
 
-    public abstract Long sum();
+    public abstract long sum();
 
     public abstract OptionalDouble average();
 

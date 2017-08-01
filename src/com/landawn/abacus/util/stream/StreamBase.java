@@ -44,6 +44,7 @@ import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.DoubleList;
 import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.FloatList;
+import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.Indexed;
 import com.landawn.abacus.util.IndexedByte;
 import com.landawn.abacus.util.IndexedChar;
@@ -61,7 +62,6 @@ import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.Sheet;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.ShortList;
@@ -82,6 +82,10 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
     static final Logger logger = LoggerFactory.getLogger(StreamBase.class);
 
     static final Object NONE = new Object();
+
+    // public static final int MAX_THREAD_POOL_SIZE = 8192;
+    static final int MAX_THREAD_POOL_SIZE = Integer.MAX_VALUE;
+    static final int MAX_THREAD_NUM_PER_OPERATION = 1024;
 
     static final int CORE_THREAD_POOL_SIZE = 64;
 
@@ -871,6 +875,120 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
         }
 
         return (T[]) c.toArray();
+    }
+
+    static long sum(final char[] a) {
+        if (a == null || a.length == 0) {
+            return 0L;
+        }
+
+        return sum(a, 0, a.length);
+    }
+
+    static long sum(final char[] a, final int from, final int to) {
+        long sum = 0;
+
+        for (int i = from; i < to; i++) {
+            sum += a[i];
+        }
+
+        return sum;
+    }
+
+    static long sum(final byte[] a) {
+        if (a == null || a.length == 0) {
+            return 0L;
+        }
+
+        return sum(a, 0, a.length);
+    }
+
+    static long sum(final byte[] a, final int from, final int to) {
+        long sum = 0;
+
+        for (int i = from; i < to; i++) {
+            sum += a[i];
+        }
+
+        return sum;
+    }
+
+    static long sum(final short[] a) {
+        if (a == null || a.length == 0) {
+            return 0L;
+        }
+
+        return sum(a, 0, a.length);
+    }
+
+    static long sum(final short[] a, final int from, final int to) {
+        long sum = 0;
+
+        for (int i = from; i < to; i++) {
+            sum += a[i];
+        }
+
+        return sum;
+    }
+
+    static long sum(final int[] a) {
+        if (a == null || a.length == 0) {
+            return 0L;
+        }
+
+        return sum(a, 0, a.length);
+    }
+
+    static long sum(final int[] a, final int from, final int to) {
+        long sum = 0;
+
+        for (int i = from; i < to; i++) {
+            sum += a[i];
+        }
+
+        return sum;
+    }
+
+    static long sum(final long[] a) {
+        if (a == null || a.length == 0) {
+            return 0L;
+        }
+
+        return sum(a, 0, a.length);
+    }
+
+    static long sum(final long[] a, final int from, final int to) {
+        long sum = 0;
+
+        for (int i = from; i < to; i++) {
+            sum += a[i];
+        }
+
+        return sum;
+    }
+
+    static double sum(final float[] a) {
+        if (a == null || a.length == 0) {
+            return 0d;
+        }
+
+        return sum(a, 0, a.length);
+    }
+
+    static double sum(final float[] a, final int from, final int to) {
+        return FloatStream.of(a, from, to).sum();
+    }
+
+    static double sum(final double[] a) {
+        if (a == null || a.length == 0) {
+            return 0d;
+        }
+
+        return sum(a, 0, a.length);
+    }
+
+    static double sum(final double[] a, final int from, final int to) {
+        return DoubleStream.of(a, from, to).sum();
     }
 
     static final class LocalLinkedHashSet<T> extends LinkedHashSet<T> {

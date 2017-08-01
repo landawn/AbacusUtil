@@ -657,7 +657,7 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
      *
      * @return the sum of elements in this stream
      */
-    public abstract Double sum();
+    public abstract double sum();
 
     /**
      * Returns an {@code OptionalFloat} describing the arithmetic

@@ -555,9 +555,9 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
 
     /**
      * 
-     * @return Long
+     * @return long
      */
-    public abstract Long sum();
+    public abstract long sum();
 
     public abstract OptionalDouble average();
 

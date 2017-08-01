@@ -562,7 +562,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
      */
     public abstract OptionalShort kthLargest(int k);
 
-    public abstract Long sum();
+    public abstract long sum();
 
     public abstract OptionalDouble average();
 

@@ -613,7 +613,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      *
      * @return the sum of elements in this stream
      */
-    public abstract Long sum();
+    public abstract long sum();
 
     /**
      * Returns an {@code OptionalDouble} describing the arithmetic mean of elements of

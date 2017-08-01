@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 
 import com.landawn.abacus.util.CompletableFuture;
+import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedShort;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
@@ -36,7 +37,6 @@ import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.NullabLe;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalShort;
-import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.ShortList;
 import com.landawn.abacus.util.ShortSummaryStatistics;
@@ -998,11 +998,11 @@ final class ParallelArrayShortStream extends ArrayShortStream {
     }
 
     @Override
-    public Long sum() {
+    public long sum() {
         if (fromIndex == toIndex) {
             return 0L;
         } else if (maxThreadNum <= 1) {
-            return N.sum(elements, fromIndex, toIndex);
+            return sum(elements, fromIndex, toIndex);
         }
 
         final List<CompletableFuture<Long>> futureList = new ArrayList<>(maxThreadNum);
@@ -1017,7 +1017,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
                     int cursor = fromIndex + sliceIndex * sliceSize;
                     final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
 
-                    return cursor >= to ? null : N.sum(elements, cursor, to);
+                    return cursor >= to ? null : sum(elements, cursor, to);
                 }
             }));
         }

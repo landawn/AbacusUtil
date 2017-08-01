@@ -1065,7 +1065,7 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
     }
 
     @Override
-    public Double sum() {
+    public double sum() {
         if (fromIndex == toIndex) {
             return 0d;
         } else if (maxThreadNum <= 1) {

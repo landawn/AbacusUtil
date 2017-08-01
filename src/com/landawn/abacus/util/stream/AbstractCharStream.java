@@ -602,7 +602,7 @@ abstract class AbstractCharStream extends CharStream {
         if (N.isNullOrEmpty(a)) {
             return Pair.of(new CharSummaryStatistics(), Optional.<Map<Percentage, Character>> empty());
         } else {
-            return Pair.of(new CharSummaryStatistics(a.length, N.sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
+            return Pair.of(new CharSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
         }
     }
 

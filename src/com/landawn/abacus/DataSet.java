@@ -2734,24 +2734,6 @@ public interface DataSet extends Iterable<Object[]> {
      */
     <T> NullabLe<T> kthLargest(String columnName, int fromRowIndex, int toRowIndex, int k, Comparator<? super T> comparator);
 
-    //    /**
-    //     *
-    //     * @param columnName
-    //     * @param mapper
-    //     * @return
-    //     */
-    //    Long sum(String columnName, ToLongFunction<?> mapper);
-    //
-    //    /**
-    //     * 
-    //     * @param columnName
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @param mapper
-    //     * @return
-    //     */
-    //    Long sum(String columnName, int fromRowIndex, int toRowIndex, ToLongFunction<?> mapper);
-
     /**
      * @param columnName
      * @return
@@ -2832,24 +2814,6 @@ public interface DataSet extends Iterable<Object[]> {
      * @return
      */
     double sumDouble(String columnName, int fromRowIndex, int toRowIndex);
-
-    //    /**
-    //     *
-    //     * @param columnName
-    //     * @param mapper
-    //     * @return
-    //     */
-    //    long sum(String columnName, ToLongFunction<?> mapper);
-    //
-    //    /**
-    //     * 
-    //     * @param columnName
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @param mapper
-    //     * @return
-    //     */
-    //    long sum(String columnName, int fromRowIndex, int toRowIndex, ToLongFunction<?> mapper);
 
     /**
      *

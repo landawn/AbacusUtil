@@ -1065,11 +1065,11 @@ final class ParallelArrayLongStream extends ArrayLongStream {
     }
 
     @Override
-    public Long sum() {
+    public long sum() {
         if (fromIndex == toIndex) {
             return 0L;
         } else if (maxThreadNum <= 1) {
-            return N.sum(elements, fromIndex, toIndex);
+            return sum(elements, fromIndex, toIndex);
         }
 
         final List<CompletableFuture<Long>> futureList = new ArrayList<>(maxThreadNum);
@@ -1084,7 +1084,7 @@ final class ParallelArrayLongStream extends ArrayLongStream {
                     int cursor = fromIndex + sliceIndex * sliceSize;
                     final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
 
-                    return cursor >= to ? null : N.sum(elements, cursor, to);
+                    return cursor >= to ? null : sum(elements, cursor, to);
                 }
             }));
         }

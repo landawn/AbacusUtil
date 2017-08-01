@@ -27109,15 +27109,15 @@ public final class N {
      * @return a long number
      */
     @SafeVarargs
-    public static Long sum(final char... a) {
+    public static int sum(final char... a) {
         if (N.isNullOrEmpty(a)) {
-            return 0L;
+            return 0;
         }
 
         return sum(a, 0, a.length);
     }
 
-    public static Long sum(final char[] a, final int from, final int to) {
+    public static int sum(final char[] a, final int from, final int to) {
         checkFromToIndex(from, to, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -27125,10 +27125,10 @@ public final class N {
                 throw new IndexOutOfBoundsException();
             }
 
-            return 0L;
+            return 0;
         }
 
-        long sum = 0;
+        int sum = 0;
 
         for (int i = from; i < to; i++) {
             sum += a[i];
@@ -27143,15 +27143,15 @@ public final class N {
      * @return a long number
      */
     @SafeVarargs
-    public static Long sum(final byte... a) {
+    public static int sum(final byte... a) {
         if (N.isNullOrEmpty(a)) {
-            return 0L;
+            return 0;
         }
 
         return sum(a, 0, a.length);
     }
 
-    public static Long sum(final byte[] a, final int from, final int to) {
+    public static int sum(final byte[] a, final int from, final int to) {
         checkFromToIndex(from, to, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -27159,10 +27159,10 @@ public final class N {
                 throw new IndexOutOfBoundsException();
             }
 
-            return 0L;
+            return 0;
         }
 
-        long sum = 0;
+        int sum = 0;
 
         for (int i = from; i < to; i++) {
             sum += a[i];
@@ -27177,15 +27177,15 @@ public final class N {
      * @return a long number
      */
     @SafeVarargs
-    public static Long sum(final short... a) {
+    public static int sum(final short... a) {
         if (N.isNullOrEmpty(a)) {
-            return 0L;
+            return 0;
         }
 
         return sum(a, 0, a.length);
     }
 
-    public static Long sum(final short[] a, final int from, final int to) {
+    public static int sum(final short[] a, final int from, final int to) {
         checkFromToIndex(from, to, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -27193,10 +27193,10 @@ public final class N {
                 throw new IndexOutOfBoundsException();
             }
 
-            return 0L;
+            return 0;
         }
 
-        long sum = 0;
+        int sum = 0;
 
         for (int i = from; i < to; i++) {
             sum += a[i];
@@ -27211,15 +27211,15 @@ public final class N {
      * @return a long number
      */
     @SafeVarargs
-    public static Long sum(final int... a) {
+    public static int sum(final int... a) {
         if (N.isNullOrEmpty(a)) {
-            return 0L;
+            return 0;
         }
 
         return sum(a, 0, a.length);
     }
 
-    public static Long sum(final int[] a, final int from, final int to) {
+    public static int sum(final int[] a, final int from, final int to) {
         checkFromToIndex(from, to, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -27227,10 +27227,10 @@ public final class N {
                 throw new IndexOutOfBoundsException();
             }
 
-            return 0L;
+            return 0;
         }
 
-        long sum = 0;
+        int sum = 0;
 
         for (int i = from; i < to; i++) {
             sum += a[i];
@@ -27245,7 +27245,7 @@ public final class N {
      * @return a long number
      */
     @SafeVarargs
-    public static Long sum(final long... a) {
+    public static long sum(final long... a) {
         if (N.isNullOrEmpty(a)) {
             return 0L;
         }
@@ -27253,7 +27253,7 @@ public final class N {
         return sum(a, 0, a.length);
     }
 
-    public static Long sum(final long[] a, final int from, final int to) {
+    public static long sum(final long[] a, final int from, final int to) {
         checkFromToIndex(from, to, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -27279,15 +27279,15 @@ public final class N {
      * @return a double number
      */
     @SafeVarargs
-    public static Double sum(final float... a) {
+    public static float sum(final float... a) {
         if (N.isNullOrEmpty(a)) {
-            return 0d;
+            return 0f;
         }
 
         return sum(a, 0, a.length);
     }
 
-    public static Double sum(final float[] a, final int from, final int to) {
+    public static float sum(final float[] a, final int from, final int to) {
         checkFromToIndex(from, to, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -27295,7 +27295,7 @@ public final class N {
                 throw new IndexOutOfBoundsException();
             }
 
-            return 0d;
+            return 0f;
         }
 
         //        double sum = 0;
@@ -27306,7 +27306,7 @@ public final class N {
         //
         //        return sum;
 
-        return FloatStream.of(a, from, to).sum();
+        return (float) FloatStream.of(a, from, to).sum();
     }
 
     /**
@@ -27315,7 +27315,7 @@ public final class N {
      * @return a double number
      */
     @SafeVarargs
-    public static Double sum(final double... a) {
+    public static double sum(final double... a) {
         if (N.isNullOrEmpty(a)) {
             return 0d;
         }
@@ -27323,7 +27323,7 @@ public final class N {
         return sum(a, 0, a.length);
     }
 
-    public static Double sum(final double[] a, final int from, final int to) {
+    public static double sum(final double[] a, final int from, final int to) {
         checkFromToIndex(from, to, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -27351,7 +27351,7 @@ public final class N {
      * @return a double number
      */
     @SafeVarargs
-    public static Double average(final char... a) {
+    public static double average(final char... a) {
         if (N.isNullOrEmpty(a)) {
             return 0d;
         }
@@ -27359,7 +27359,7 @@ public final class N {
         return average(a, 0, a.length);
     }
 
-    public static Double average(final char[] a, final int from, final int to) {
+    public static double average(final char[] a, final int from, final int to) {
         checkFromToIndex(from, to, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -27370,7 +27370,7 @@ public final class N {
             return 0d;
         }
 
-        return from == to ? 0d : sum(a, from, to).doubleValue() / (to - from);
+        return from == to ? 0d : ((double) sum(a, from, to)) / (to - from);
     }
 
     /**
@@ -27379,7 +27379,7 @@ public final class N {
     * @return a double number
     */
     @SafeVarargs
-    public static Double average(final byte... a) {
+    public static double average(final byte... a) {
         if (N.isNullOrEmpty(a)) {
             return 0d;
         }
@@ -27387,7 +27387,7 @@ public final class N {
         return average(a, 0, a.length);
     }
 
-    public static Double average(final byte[] a, final int from, final int to) {
+    public static double average(final byte[] a, final int from, final int to) {
         checkFromToIndex(from, to, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -27398,7 +27398,7 @@ public final class N {
             return 0d;
         }
 
-        return from == to ? 0d : sum(a, from, to).doubleValue() / (to - from);
+        return from == to ? 0d : ((double) sum(a, from, to)) / (to - from);
     }
 
     /**
@@ -27407,7 +27407,7 @@ public final class N {
      * @return a double number
      */
     @SafeVarargs
-    public static Double average(final short... a) {
+    public static double average(final short... a) {
         if (N.isNullOrEmpty(a)) {
             return 0d;
         }
@@ -27415,7 +27415,7 @@ public final class N {
         return average(a, 0, a.length);
     }
 
-    public static Double average(final short[] a, final int from, final int to) {
+    public static double average(final short[] a, final int from, final int to) {
         checkFromToIndex(from, to, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -27426,7 +27426,7 @@ public final class N {
             return 0d;
         }
 
-        return from == to ? 0d : sum(a, from, to).doubleValue() / (to - from);
+        return from == to ? 0d : ((double) sum(a, from, to)) / (to - from);
     }
 
     /**
@@ -27435,7 +27435,7 @@ public final class N {
      * @return a double number
      */
     @SafeVarargs
-    public static Double average(final int... a) {
+    public static double average(final int... a) {
         if (N.isNullOrEmpty(a)) {
             return 0d;
         }
@@ -27443,7 +27443,7 @@ public final class N {
         return average(a, 0, a.length);
     }
 
-    public static Double average(final int[] a, final int from, final int to) {
+    public static double average(final int[] a, final int from, final int to) {
         checkFromToIndex(from, to, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -27454,7 +27454,7 @@ public final class N {
             return 0d;
         }
 
-        return from == to ? 0d : sum(a, from, to).doubleValue() / (to - from);
+        return from == to ? 0d : ((double) sum(a, from, to)) / (to - from);
     }
 
     /**
@@ -27463,7 +27463,7 @@ public final class N {
      * @return a double number
      */
     @SafeVarargs
-    public static Double average(final long... a) {
+    public static double average(final long... a) {
         if (N.isNullOrEmpty(a)) {
             return 0d;
         }
@@ -27471,7 +27471,7 @@ public final class N {
         return average(a, 0, a.length);
     }
 
-    public static Double average(final long[] a, final int from, final int to) {
+    public static double average(final long[] a, final int from, final int to) {
         checkFromToIndex(from, to, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -27482,7 +27482,7 @@ public final class N {
             return 0d;
         }
 
-        return from == to ? 0d : sum(a, from, to).doubleValue() / (to - from);
+        return from == to ? 0d : ((double) sum(a, from, to)) / (to - from);
     }
 
     /**
@@ -27491,7 +27491,7 @@ public final class N {
      * @return a double number
      */
     @SafeVarargs
-    public static Double average(final float... a) {
+    public static double average(final float... a) {
         if (N.isNullOrEmpty(a)) {
             return 0d;
         }
@@ -27499,7 +27499,7 @@ public final class N {
         return average(a, 0, a.length);
     }
 
-    public static Double average(final float[] a, final int from, final int to) {
+    public static double average(final float[] a, final int from, final int to) {
         checkFromToIndex(from, to, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -27510,7 +27510,7 @@ public final class N {
             return 0d;
         }
 
-        // return from == to ? 0d : sum(a, from, to).doubleValue() / (to - from);
+        // return from == to ? 0d : ((double) sum(a, from, to)) / (to - from);
 
         return FloatStream.of(a, from, to).average().or(0);
     }
@@ -27521,7 +27521,7 @@ public final class N {
      * @return a double number
      */
     @SafeVarargs
-    public static Double average(final double... a) {
+    public static double average(final double... a) {
         if (N.isNullOrEmpty(a)) {
             return 0d;
         }
@@ -27529,7 +27529,7 @@ public final class N {
         return average(a, 0, a.length);
     }
 
-    public static Double average(final double[] a, final int from, final int to) {
+    public static double average(final double[] a, final int from, final int to) {
         checkFromToIndex(from, to, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -27540,7 +27540,7 @@ public final class N {
             return 0d;
         }
 
-        // return from == to ? 0d : sum(a, from, to).doubleValue() / (to - from);
+        // return from == to ? 0d : ((double) sum(a, from, to)) / (to - from);
 
         return DoubleStream.of(a, from, to).average().or(0);
     }

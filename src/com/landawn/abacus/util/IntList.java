@@ -1048,11 +1048,11 @@ public final class IntList extends PrimitiveList<IntConsumer, IntPredicate, Inte
         return toIndex - fromIndex < k ? OptionalInt.empty() : OptionalInt.of(N.kthLargest(elementData, fromIndex, toIndex, k));
     }
 
-    public Long sum() {
+    public int sum() {
         return sum(0, size());
     }
 
-    public Long sum(final int fromIndex, final int toIndex) {
+    public int sum(final int fromIndex, final int toIndex) {
         checkFromToIndex(fromIndex, toIndex);
 
         return N.sum(elementData, fromIndex, toIndex);

@@ -602,7 +602,7 @@ abstract class AbstractIntStream extends IntStream {
         if (N.isNullOrEmpty(a)) {
             return Pair.of(new IntSummaryStatistics(), Optional.<Map<Percentage, Integer>> empty());
         } else {
-            return Pair.of(new IntSummaryStatistics(a.length, N.sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
+            return Pair.of(new IntSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
         }
     }
 

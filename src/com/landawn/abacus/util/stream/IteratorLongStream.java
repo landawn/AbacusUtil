@@ -1173,7 +1173,7 @@ class IteratorLongStream extends AbstractLongStream {
     }
 
     @Override
-    public Long sum() {
+    public long sum() {
         long result = 0;
 
         while (elements.hasNext()) {

@@ -638,7 +638,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      *
      * @return the sum of elements in this stream
      */
-    public abstract Long sum();
+    public abstract long sum();
 
     /**
      * Returns an {@code OptionalDouble} describing the arithmetic mean of elements of

@@ -1030,8 +1030,8 @@ class ArrayByteStream extends AbstractByteStream {
     }
 
     @Override
-    public Long sum() {
-        return N.sum(elements, fromIndex, toIndex);
+    public long sum() {
+        return sum(elements, fromIndex, toIndex);
     }
 
     @Override

@@ -2050,7 +2050,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         if (N.isNullOrEmpty(a)) {
             return Pair.of(new CharSummaryStatistics(), Optional.<Map<Percentage, Character>> empty());
         } else {
-            return Pair.of(new CharSummaryStatistics(a.length, N.sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
+            return Pair.of(new CharSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
         }
     }
 
@@ -2061,7 +2061,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         if (N.isNullOrEmpty(a)) {
             return Pair.of(new ByteSummaryStatistics(), Optional.<Map<Percentage, Byte>> empty());
         } else {
-            return Pair.of(new ByteSummaryStatistics(a.length, N.sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
+            return Pair.of(new ByteSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
         }
     }
 
@@ -2072,7 +2072,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         if (N.isNullOrEmpty(a)) {
             return Pair.of(new ShortSummaryStatistics(), Optional.<Map<Percentage, Short>> empty());
         } else {
-            return Pair.of(new ShortSummaryStatistics(a.length, N.sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
+            return Pair.of(new ShortSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
         }
     }
 
@@ -2083,7 +2083,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         if (N.isNullOrEmpty(a)) {
             return Pair.of(new IntSummaryStatistics(), Optional.<Map<Percentage, Integer>> empty());
         } else {
-            return Pair.of(new IntSummaryStatistics(a.length, N.sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
+            return Pair.of(new IntSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
         }
     }
 
@@ -2094,7 +2094,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         if (N.isNullOrEmpty(a)) {
             return Pair.of(new LongSummaryStatistics(), Optional.<Map<Percentage, Long>> empty());
         } else {
-            return Pair.of(new LongSummaryStatistics(a.length, N.sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
+            return Pair.of(new LongSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
         }
     }
 
@@ -2105,7 +2105,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         if (N.isNullOrEmpty(a)) {
             return Pair.of(new FloatSummaryStatistics(), Optional.<Map<Percentage, Float>> empty());
         } else {
-            return Pair.of(new FloatSummaryStatistics(a.length, N.sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
+            return Pair.of(new FloatSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
         }
     }
 
@@ -2116,7 +2116,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         if (N.isNullOrEmpty(a)) {
             return Pair.of(new DoubleSummaryStatistics(), Optional.<Map<Percentage, Double>> empty());
         } else {
-            return Pair.of(new DoubleSummaryStatistics(a.length, N.sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
+            return Pair.of(new DoubleSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
         }
     }
 

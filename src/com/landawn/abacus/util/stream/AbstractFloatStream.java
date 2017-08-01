@@ -375,7 +375,7 @@ abstract class AbstractFloatStream extends FloatStream {
     }
 
     @Override
-    public Double sum() {
+    public double sum() {
         final Supplier<double[]> supplier = new Supplier<double[]>() {
             @Override
             public double[] get() {
@@ -667,7 +667,7 @@ abstract class AbstractFloatStream extends FloatStream {
         if (N.isNullOrEmpty(a)) {
             return Pair.of(new FloatSummaryStatistics(), Optional.<Map<Percentage, Float>> empty());
         } else {
-            return Pair.of(new FloatSummaryStatistics(a.length, N.sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
+            return Pair.of(new FloatSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
         }
     }
 

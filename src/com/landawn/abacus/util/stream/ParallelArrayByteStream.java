@@ -26,6 +26,7 @@ import java.util.concurrent.Callable;
 import com.landawn.abacus.util.ByteList;
 import com.landawn.abacus.util.ByteSummaryStatistics;
 import com.landawn.abacus.util.CompletableFuture;
+import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedByte;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
@@ -37,7 +38,6 @@ import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.NullabLe;
 import com.landawn.abacus.util.OptionalByte;
 import com.landawn.abacus.util.OptionalDouble;
-import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
@@ -279,7 +279,8 @@ final class ParallelArrayByteStream extends ArrayByteStream {
 
     @Override
     public Stream<ByteList> slidingToList(final int windowSize, final int increment) {
-        return new ParallelIteratorStream<ByteList>(sequential().slidingToList(windowSize, increment).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
+        return new ParallelIteratorStream<ByteList>(sequential().slidingToList(windowSize, increment).iterator(), closeHandlers, false, null, maxThreadNum,
+                splitor);
     }
 
     @Override
@@ -539,8 +540,8 @@ final class ParallelArrayByteStream extends ArrayByteStream {
     }
 
     @Override
-    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final ByteFunction<? extends K> keyExtractor, final ByteFunction<? extends U> valueMapper,
-            final Supplier<Multimap<K, U, V>> mapFactory) {
+    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final ByteFunction<? extends K> keyExtractor,
+            final ByteFunction<? extends U> valueMapper, final Supplier<Multimap<K, U, V>> mapFactory) {
         if (maxThreadNum <= 1) {
             return sequential().toMultimap(keyExtractor, valueMapper, mapFactory);
         }
@@ -976,11 +977,11 @@ final class ParallelArrayByteStream extends ArrayByteStream {
     }
 
     @Override
-    public Long sum() {
+    public long sum() {
         if (fromIndex == toIndex) {
             return 0L;
         } else if (maxThreadNum <= 1) {
-            return N.sum(elements, fromIndex, toIndex);
+            return sum(elements, fromIndex, toIndex);
         }
 
         final List<CompletableFuture<Long>> futureList = new ArrayList<>(maxThreadNum);
@@ -995,7 +996,7 @@ final class ParallelArrayByteStream extends ArrayByteStream {
                     int cursor = fromIndex + sliceIndex * sliceSize;
                     final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
 
-                    return cursor >= to ? null : N.sum(elements, cursor, to);
+                    return cursor >= to ? null : sum(elements, cursor, to);
                 }
             }));
         }

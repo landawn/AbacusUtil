@@ -864,11 +864,11 @@ public final class FloatList extends PrimitiveList<FloatConsumer, FloatPredicate
         return toIndex - fromIndex < k ? OptionalFloat.empty() : OptionalFloat.of(N.kthLargest(elementData, fromIndex, toIndex, k));
     }
 
-    public Double sum() {
+    public float sum() {
         return sum(0, size());
     }
 
-    public Double sum(final int fromIndex, final int toIndex) {
+    public float sum(final int fromIndex, final int toIndex) {
         checkFromToIndex(fromIndex, toIndex);
 
         return N.sum(elementData, fromIndex, toIndex);

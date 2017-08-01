@@ -838,11 +838,11 @@ public final class DoubleList extends PrimitiveList<DoubleConsumer, DoublePredic
         return toIndex - fromIndex < k ? OptionalDouble.empty() : OptionalDouble.of(N.kthLargest(elementData, fromIndex, toIndex, k));
     }
 
-    public Double sum() {
+    public double sum() {
         return sum(0, size());
     }
 
-    public Double sum(final int fromIndex, final int toIndex) {
+    public double sum(final int fromIndex, final int toIndex) {
         checkFromToIndex(fromIndex, toIndex);
 
         return N.sum(elementData, fromIndex, toIndex);

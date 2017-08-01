@@ -840,11 +840,11 @@ public final class ByteList extends PrimitiveList<ByteConsumer, BytePredicate, B
         return toIndex - fromIndex < k ? OptionalByte.empty() : OptionalByte.of(N.kthLargest(elementData, fromIndex, toIndex, k));
     }
 
-    public Long sum() {
+    public int sum() {
         return sum(0, size());
     }
 
-    public Long sum(final int fromIndex, final int toIndex) {
+    public int sum(final int fromIndex, final int toIndex) {
         checkFromToIndex(fromIndex, toIndex);
 
         return N.sum(elementData, fromIndex, toIndex);

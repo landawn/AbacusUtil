@@ -988,7 +988,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
     }
 
     @Override
-    public Long sum() {
+    public long sum() {
         long result = 0;
 
         while (elements.hasNext()) {

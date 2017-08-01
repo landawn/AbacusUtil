@@ -6,7 +6,9 @@
 
 2*, Remove averagingInt2OrGet/averagingInt2OrThrow/averagingLong2OrGet/averagingLong2OrThrow/averagingDouble2OrGet/averagingDouble2OrThrow from Collectors.
 
-3, Improvements and bug fix.
+3*, Change the result types of sum(byte[])/sum(short[])/sum(int[])/sum(char[]) from Long to int.
+
+4, Improvements and bug fix.
 
 
 ========Changes in 0.9.76=========================================================================

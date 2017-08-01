@@ -657,7 +657,7 @@ public abstract class DoubleStream
      *
      * @return the sum of elements in this stream
      */
-    public abstract Double sum();
+    public abstract double sum();
 
     /**
      * Returns an {@code OptionalDouble} describing the arithmetic

@@ -1066,7 +1066,7 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
     }
 
     @Override
-    public Double sum() {
+    public double sum() {
         return sequential().sum();
     }
 

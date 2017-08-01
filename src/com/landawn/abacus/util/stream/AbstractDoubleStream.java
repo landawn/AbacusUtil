@@ -374,7 +374,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
     }
 
     @Override
-    public Double sum() {
+    public double sum() {
         final Supplier<double[]> supplier = new Supplier<double[]>() {
             @Override
             public double[] get() {
@@ -666,7 +666,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
         if (N.isNullOrEmpty(a)) {
             return Pair.of(new DoubleSummaryStatistics(), Optional.<Map<Percentage, Double>> empty());
         } else {
-            return Pair.of(new DoubleSummaryStatistics(a.length, N.sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
+            return Pair.of(new DoubleSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
         }
     }
 

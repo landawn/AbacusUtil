@@ -600,7 +600,7 @@ abstract class AbstractLongStream extends LongStream {
         if (N.isNullOrEmpty(a)) {
             return Pair.of(new LongSummaryStatistics(), Optional.<Map<Percentage, Long>> empty());
         } else {
-            return Pair.of(new LongSummaryStatistics(a.length, N.sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
+            return Pair.of(new LongSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
         }
     }
 

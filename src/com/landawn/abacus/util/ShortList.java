@@ -838,11 +838,11 @@ public final class ShortList extends PrimitiveList<ShortConsumer, ShortPredicate
         return toIndex - fromIndex < k ? OptionalShort.empty() : OptionalShort.of(N.kthLargest(elementData, fromIndex, toIndex, k));
     }
 
-    public Long sum() {
+    public int sum() {
         return sum(0, size());
     }
 
-    public Long sum(final int fromIndex, final int toIndex) {
+    public int sum(final int fromIndex, final int toIndex) {
         checkFromToIndex(fromIndex, toIndex);
 
         return N.sum(elementData, fromIndex, toIndex);

@@ -603,7 +603,7 @@ abstract class AbstractByteStream extends ByteStream {
         if (N.isNullOrEmpty(a)) {
             return Pair.of(new ByteSummaryStatistics(), Optional.<Map<Percentage, Byte>> empty());
         } else {
-            return Pair.of(new ByteSummaryStatistics(a.length, N.sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
+            return Pair.of(new ByteSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
         }
     }
 

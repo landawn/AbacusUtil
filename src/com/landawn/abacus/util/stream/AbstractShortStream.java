@@ -602,7 +602,7 @@ abstract class AbstractShortStream extends ShortStream {
         if (N.isNullOrEmpty(a)) {
             return Pair.of(new ShortSummaryStatistics(), Optional.<Map<Percentage, Short>> empty());
         } else {
-            return Pair.of(new ShortSummaryStatistics(a.length, N.sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
+            return Pair.of(new ShortSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
         }
     }
 

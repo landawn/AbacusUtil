@@ -78,9 +78,6 @@ import com.landawn.abacus.util.function.Supplier;
  * @see <a href="package-summary.html">java.util.stream</a>
  */
 public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P, C, PL, OT, IT, S>> extends AutoCloseable {
-    // public static final int MAX_THREAD_POOL_SIZE = 8192;
-    public static final int MAX_THREAD_POOL_SIZE = Integer.MAX_VALUE;
-    public static final int MAX_THREAD_NUM_PER_OPERATION = 1024;
 
     /**
      * Returns a stream consisting of the elements of this stream that match
@@ -781,7 +778,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      *     final Function<String, Long> mapper = str -> {
      *         long result = 0;
      *         for (int i = 0; i < m; i++) {
-     *             result += N.sum(str.toCharArray()) + 1;
+     *             result += sum(str.toCharArray()) + 1;
      *         }
      *         return result;
      *     };
