@@ -88,134 +88,6 @@ public final class LongList extends PrimitiveList<LongConsumer, LongPredicate, L
         return a == null && size == 0 ? empty() : new LongList(a, size);
     }
 
-    @SafeVarargs
-    public static LongList from(int... a) {
-        return a == null ? empty() : from(a, 0, a.length);
-    }
-
-    public static LongList from(int[] a, int startIndex, int endIndex) {
-        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
-
-        if (a == null && (startIndex == 0 && endIndex == 0)) {
-            return empty();
-        }
-
-        final long[] elementData = new long[endIndex - startIndex];
-
-        for (int i = startIndex; i < endIndex; i++) {
-            elementData[i - startIndex] = a[i];
-        }
-
-        return of(elementData);
-    }
-
-    /**
-     * 
-     * @param a
-     * @return
-     * @throws ArithmeticException if any elements in the specified array is bigger than Long.MAX_VALUE or less than Long.MIN_VALUE
-     */
-    @SafeVarargs
-    public static LongList from(float... a) {
-        return a == null ? empty() : from(a, 0, a.length);
-    }
-
-    /**
-     * 
-     * @param a
-     * @return
-     * @throws ArithmeticException if any elements in the specified array is bigger than Long.MAX_VALUE or less than Long.MIN_VALUE
-     */
-    public static LongList from(float[] a, int startIndex, int endIndex) {
-        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
-
-        if (a == null && (startIndex == 0 && endIndex == 0)) {
-            return empty();
-        }
-
-        final long[] elementData = new long[endIndex - startIndex];
-
-        for (int i = startIndex; i < endIndex; i++) {
-            if (N.compare(a[i], Long.MIN_VALUE) < 0 || N.compare(a[i], Long.MAX_VALUE) > 0) {
-                throw new ArithmeticException("overflow");
-            }
-
-            elementData[i - startIndex] = (long) a[i];
-        }
-
-        return of(elementData);
-    }
-
-    /**
-     * 
-     * @param a
-     * @return
-     * @throws ArithmeticException if any elements in the specified array is bigger than Long.MAX_VALUE or less than Long.MIN_VALUE
-     */
-    @SafeVarargs
-    public static LongList from(double... a) {
-        return a == null ? empty() : from(a, 0, a.length);
-    }
-
-    /**
-     * 
-     * @param a
-     * @return
-     * @throws ArithmeticException if any elements in the specified array is bigger than Long.MAX_VALUE or less than Long.MIN_VALUE
-     */
-    public static LongList from(double[] a, int startIndex, int endIndex) {
-        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
-
-        if (a == null && (startIndex == 0 && endIndex == 0)) {
-            return empty();
-        }
-
-        final long[] elementData = new long[endIndex - startIndex];
-
-        for (int i = startIndex; i < endIndex; i++) {
-            if (N.compare(a[i], Long.MIN_VALUE) < 0 || N.compare(a[i], Long.MAX_VALUE) > 0) {
-                throw new ArithmeticException("overflow");
-            }
-
-            elementData[i - startIndex] = (long) a[i];
-        }
-
-        return of(elementData);
-    }
-
-    static LongList from(List<String> c) {
-        if (N.isNullOrEmpty(c)) {
-            return empty();
-        }
-
-        return from(c, 0);
-    }
-
-    static LongList from(List<String> c, long defaultValueForNull) {
-        if (N.isNullOrEmpty(c)) {
-            return empty();
-        }
-
-        final long[] a = new long[c.size()];
-        int idx = 0;
-
-        for (String e : c) {
-            if (e == null) {
-                a[idx++] = defaultValueForNull;
-            } else {
-                double val = N.asDouble(e);
-
-                if (N.compare(val, Long.MIN_VALUE) < 0 || N.compare(val, Long.MAX_VALUE) > 0) {
-                    throw new ArithmeticException("overflow");
-                }
-
-                a[idx++] = (long) val;
-            }
-        }
-
-        return of(a);
-    }
-
     public static LongList from(Collection<Long> c) {
         if (N.isNullOrEmpty(c)) {
             return empty();
@@ -1436,11 +1308,23 @@ public final class LongList extends PrimitiveList<LongConsumer, LongPredicate, L
     }
 
     public FloatList toFloatList() {
-        return FloatList.from(elementData, 0, size);
+        final float[] a = new float[size];
+
+        for (int i = 0; i < size; i++) {
+            a[i] = elementData[i];
+        }
+
+        return FloatList.of(a);
     }
 
     public DoubleList toDoubleList() {
-        return DoubleList.from(elementData, 0, size);
+        final double[] a = new double[size];
+
+        for (int i = 0; i < size; i++) {
+            a[i] = elementData[i];
+        }
+
+        return DoubleList.of(a);
     }
 
     @Override

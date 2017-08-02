@@ -87,186 +87,6 @@ public final class IntList extends PrimitiveList<IntConsumer, IntPredicate, Inte
         return a == null && size == 0 ? empty() : new IntList(a, size);
     }
 
-    @SafeVarargs
-    public static IntList from(char... a) {
-        return a == null ? empty() : from(a, 0, a.length);
-    }
-
-    public static IntList from(char[] a, int startIndex, int endIndex) {
-        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
-
-        if (a == null && (startIndex == 0 && endIndex == 0)) {
-            return empty();
-        }
-
-        final int[] elementData = new int[endIndex - startIndex];
-
-        for (int i = startIndex; i < endIndex; i++) {
-            elementData[i - startIndex] = a[i];
-        }
-
-        return of(elementData);
-    }
-
-    @SafeVarargs
-    public static IntList from(byte... a) {
-        return a == null ? empty() : from(a, 0, a.length);
-    }
-
-    public static IntList from(byte[] a, int startIndex, int endIndex) {
-        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
-
-        if (a == null && (startIndex == 0 && endIndex == 0)) {
-            return empty();
-        }
-
-        final int[] elementData = new int[endIndex - startIndex];
-
-        for (int i = startIndex; i < endIndex; i++) {
-            elementData[i - startIndex] = a[i];
-        }
-
-        return of(elementData);
-    }
-
-    @SafeVarargs
-    public static IntList from(short... a) {
-        return a == null ? empty() : from(a, 0, a.length);
-    }
-
-    public static IntList from(short[] a, int startIndex, int endIndex) {
-        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
-
-        if (a == null && (startIndex == 0 && endIndex == 0)) {
-            return empty();
-        }
-
-        final int[] elementData = new int[endIndex - startIndex];
-
-        for (int i = startIndex; i < endIndex; i++) {
-            elementData[i - startIndex] = a[i];
-        }
-
-        return of(elementData);
-    }
-
-    /**
-     * 
-     * @param a
-     * @return
-     * @throws ArithmeticException if any elements in the specified array is bigger than Integer.MAX_VALUE or less than Integer.MIN_VALUE
-     */
-    @SafeVarargs
-    public static IntList from(long... a) {
-        return a == null ? empty() : from(a, 0, a.length);
-    }
-
-    /**
-     * 
-     * @param a
-     * @param startIndex
-     * @param endIndex
-     * @return
-     * @throws ArithmeticException if any elements in the specified array is bigger than Integer.MAX_VALUE or less than Integer.MIN_VALUE
-     */
-    public static IntList from(long[] a, int startIndex, int endIndex) {
-        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
-
-        if (a == null && (startIndex == 0 && endIndex == 0)) {
-            return empty();
-        }
-
-        final int[] elementData = new int[endIndex - startIndex];
-
-        for (int i = startIndex; i < endIndex; i++) {
-            if (a[i] < Integer.MIN_VALUE || a[i] > Integer.MAX_VALUE) {
-                throw new ArithmeticException("overflow");
-            }
-
-            elementData[i - startIndex] = (int) a[i];
-        }
-
-        return of(elementData);
-    }
-
-    /**
-     * 
-     * @param a
-     * @return
-     * @throws ArithmeticException if any elements in the specified array is bigger than Integer.MAX_VALUE or less than Integer.MIN_VALUE
-     */
-    @SafeVarargs
-    public static IntList from(float... a) {
-        return a == null ? empty() : from(a, 0, a.length);
-    }
-
-    /**
-     * 
-     * @param a
-     * @param startIndex
-     * @param endIndex
-     * @return
-     * @throws ArithmeticException if any elements in the specified array is bigger than Integer.MAX_VALUE or less than Integer.MIN_VALUE
-     */
-    public static IntList from(float[] a, int startIndex, int endIndex) {
-        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
-
-        if (a == null && (startIndex == 0 && endIndex == 0)) {
-            return empty();
-        }
-
-        final int[] elementData = new int[endIndex - startIndex];
-
-        for (int i = startIndex; i < endIndex; i++) {
-            if (N.compare(a[i], Integer.MIN_VALUE) < 0 || N.compare(a[i], Integer.MAX_VALUE) > 0) {
-                throw new ArithmeticException("overflow");
-            }
-
-            elementData[i - startIndex] = (int) a[i];
-        }
-
-        return of(elementData);
-    }
-
-    /**
-     * 
-     * @param a
-     * @return
-     * @throws ArithmeticException if any elements in the specified array is bigger than Integer.MAX_VALUE or less than Integer.MIN_VALUE
-     */
-    @SafeVarargs
-    public static IntList from(double... a) {
-        return a == null ? empty() : from(a, 0, a.length);
-    }
-
-    /**
-     * 
-     * @param a
-     * @param startIndex
-     * @param endIndex
-     * @return
-     * @throws ArithmeticException if any elements in the specified array is bigger than Integer.MAX_VALUE or less than Integer.MIN_VALUE
-     */
-    public static IntList from(double[] a, int startIndex, int endIndex) {
-        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
-
-        if (a == null && (startIndex == 0 && endIndex == 0)) {
-            return empty();
-        }
-
-        final int[] elementData = new int[endIndex - startIndex];
-
-        for (int i = startIndex; i < endIndex; i++) {
-            if (N.compare(a[i], Integer.MIN_VALUE) < 0 || N.compare(a[i], Integer.MAX_VALUE) > 0) {
-                throw new ArithmeticException("overflow");
-            }
-
-            elementData[i - startIndex] = (int) a[i];
-        }
-
-        return of(elementData);
-    }
-
     //    public static IntList from(String... a) {
     //        return a == null ? empty() : from(a, 0, a.length);
     //    }
@@ -286,39 +106,6 @@ public final class IntList extends PrimitiveList<IntConsumer, IntPredicate, Inte
     //
     //        return of(elementData);
     //    }
-
-    static IntList from(List<String> c) {
-        if (N.isNullOrEmpty(c)) {
-            return empty();
-        }
-
-        return from(c, 0);
-    }
-
-    static IntList from(List<String> c, int defaultValueForNull) {
-        if (N.isNullOrEmpty(c)) {
-            return empty();
-        }
-
-        final int[] a = new int[c.size()];
-        int idx = 0;
-
-        for (String e : c) {
-            if (e == null) {
-                a[idx++] = defaultValueForNull;
-            } else {
-                double val = N.asDouble(e);
-
-                if (N.compare(val, Integer.MIN_VALUE) < 0 || N.compare(val, Integer.MAX_VALUE) > 0) {
-                    throw new ArithmeticException("overflow");
-                }
-
-                a[idx++] = (int) val;
-            }
-        }
-
-        return of(a);
-    }
 
     public static IntList from(Collection<Integer> c) {
         if (N.isNullOrEmpty(c)) {
@@ -1606,15 +1393,33 @@ public final class IntList extends PrimitiveList<IntConsumer, IntPredicate, Inte
     }
 
     public LongList toLongList() {
-        return LongList.from(elementData, 0, size);
+        final long[] a = new long[size];
+
+        for (int i = 0; i < size; i++) {
+            a[i] = elementData[i];
+        }
+
+        return LongList.of(a);
     }
 
     public FloatList toFloatList() {
-        return FloatList.from(elementData, 0, size);
+        final float[] a = new float[size];
+
+        for (int i = 0; i < size; i++) {
+            a[i] = elementData[i];
+        }
+
+        return FloatList.of(a);
     }
 
     public DoubleList toDoubleList() {
-        return DoubleList.from(elementData, 0, size);
+        final double[] a = new double[size];
+
+        for (int i = 0; i < size; i++) {
+            a[i] = elementData[i];
+        }
+
+        return DoubleList.of(a);
     }
 
     @Override

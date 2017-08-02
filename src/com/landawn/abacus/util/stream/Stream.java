@@ -2227,16 +2227,15 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         return t == null ? Stream.<T> empty() : of(t);
     }
 
-    @SafeVarargs
-    public static Stream<Boolean> from(final boolean... a) {
+    public static Stream<Boolean> of(final boolean[] a) {
         if (N.isNullOrEmpty(a)) {
             return empty();
         }
 
-        return from(a, 0, a.length);
+        return of(a, 0, a.length);
     }
 
-    public static Stream<Boolean> from(final boolean[] a, final int fromIndex, final int toIndex) {
+    public static Stream<Boolean> of(final boolean[] a, final int fromIndex, final int toIndex) {
         Stream.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -2282,16 +2281,15 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         });
     }
 
-    @SafeVarargs
-    public static Stream<Character> from(char... a) {
+    public static Stream<Character> of(char[] a) {
         if (N.isNullOrEmpty(a)) {
             return empty();
         }
 
-        return from(a, 0, a.length);
+        return of(a, 0, a.length);
     }
 
-    public static Stream<Character> from(final char[] a, final int fromIndex, final int toIndex) {
+    public static Stream<Character> of(final char[] a, final int fromIndex, final int toIndex) {
         Stream.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -2338,16 +2336,15 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         });
     }
 
-    @SafeVarargs
-    public static Stream<Byte> from(byte... a) {
+    public static Stream<Byte> of(byte[] a) {
         if (N.isNullOrEmpty(a)) {
             return empty();
         }
 
-        return from(a, 0, a.length);
+        return of(a, 0, a.length);
     }
 
-    public static Stream<Byte> from(final byte[] a, final int fromIndex, final int toIndex) {
+    public static Stream<Byte> of(final byte[] a, final int fromIndex, final int toIndex) {
         Stream.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -2394,16 +2391,15 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         });
     }
 
-    @SafeVarargs
-    public static Stream<Short> from(short... a) {
+    public static Stream<Short> of(short[] a) {
         if (N.isNullOrEmpty(a)) {
             return empty();
         }
 
-        return from(a, 0, a.length);
+        return of(a, 0, a.length);
     }
 
-    public static Stream<Short> from(final short[] a, final int fromIndex, final int toIndex) {
+    public static Stream<Short> of(final short[] a, final int fromIndex, final int toIndex) {
         Stream.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -2450,16 +2446,15 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         });
     }
 
-    @SafeVarargs
-    public static Stream<Integer> from(int... a) {
+    public static Stream<Integer> of(int[] a) {
         if (N.isNullOrEmpty(a)) {
             return empty();
         }
 
-        return from(a, 0, a.length);
+        return of(a, 0, a.length);
     }
 
-    public static Stream<Integer> from(final int[] a, final int fromIndex, final int toIndex) {
+    public static Stream<Integer> of(final int[] a, final int fromIndex, final int toIndex) {
         Stream.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -2506,16 +2501,15 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         });
     }
 
-    @SafeVarargs
-    public static Stream<Long> from(long... a) {
+    public static Stream<Long> of(long[] a) {
         if (N.isNullOrEmpty(a)) {
             return empty();
         }
 
-        return from(a, 0, a.length);
+        return of(a, 0, a.length);
     }
 
-    public static Stream<Long> from(final long[] a, final int fromIndex, final int toIndex) {
+    public static Stream<Long> of(final long[] a, final int fromIndex, final int toIndex) {
         Stream.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -2562,16 +2556,15 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         });
     }
 
-    @SafeVarargs
-    public static Stream<Float> from(float... a) {
+    public static Stream<Float> of(float[] a) {
         if (N.isNullOrEmpty(a)) {
             return empty();
         }
 
-        return from(a, 0, a.length);
+        return of(a, 0, a.length);
     }
 
-    public static Stream<Float> from(final float[] a, final int fromIndex, final int toIndex) {
+    public static Stream<Float> of(final float[] a, final int fromIndex, final int toIndex) {
         Stream.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -2618,16 +2611,15 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         });
     }
 
-    @SafeVarargs
-    public static Stream<Double> from(double... a) {
+    public static Stream<Double> of(double[] a) {
         if (N.isNullOrEmpty(a)) {
             return empty();
         }
 
-        return from(a, 0, a.length);
+        return of(a, 0, a.length);
     }
 
-    public static Stream<Double> from(final double[] a, final int fromIndex, final int toIndex) {
+    public static Stream<Double> of(final double[] a, final int fromIndex, final int toIndex) {
         Stream.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {

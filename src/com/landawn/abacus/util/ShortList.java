@@ -88,76 +88,6 @@ public final class ShortList extends PrimitiveList<ShortConsumer, ShortPredicate
         return a == null && size == 0 ? empty() : new ShortList(a, size);
     }
 
-    /**
-     * 
-     * @param a
-     * @return
-     * @throws ArithmeticException if any elements in the specified array is bigger than Short.MAX_VALUE or less than Short.MIN_VALUE
-     */
-    @SafeVarargs
-    public static ShortList from(int... a) {
-        return a == null ? empty() : from(a, 0, a.length);
-    }
-
-    /**
-     * 
-     * @param a
-     * @return
-     * @throws ArithmeticException if any elements in the specified array is bigger than Short.MAX_VALUE or less than Short.MIN_VALUE
-     */
-    public static ShortList from(int[] a, int startIndex, int endIndex) {
-        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
-
-        if (a == null && (startIndex == 0 && endIndex == 0)) {
-            return empty();
-        }
-
-        final short[] elementData = new short[endIndex - startIndex];
-
-        for (int i = startIndex; i < endIndex; i++) {
-            if (a[i] < Short.MIN_VALUE || a[i] > Short.MAX_VALUE) {
-                throw new ArithmeticException("overflow");
-            }
-
-            elementData[i - startIndex] = (short) a[i];
-        }
-
-        return of(elementData);
-    }
-
-    static ShortList from(List<String> c) {
-        if (N.isNullOrEmpty(c)) {
-            return empty();
-        }
-
-        return from(c, (short) 0);
-    }
-
-    static ShortList from(List<String> c, short defaultValueForNull) {
-        if (N.isNullOrEmpty(c)) {
-            return empty();
-        }
-
-        final short[] a = new short[c.size()];
-        int idx = 0;
-
-        for (String e : c) {
-            if (e == null) {
-                a[idx++] = defaultValueForNull;
-            } else {
-                double val = N.asDouble(e);
-
-                if (N.compare(val, Short.MIN_VALUE) < 0 || N.compare(val, Short.MAX_VALUE) > 0) {
-                    throw new ArithmeticException("overflow");
-                }
-
-                a[idx++] = (short) val;
-            }
-        }
-
-        return of(a);
-    }
-
     public static ShortList from(Collection<Short> c) {
         if (N.isNullOrEmpty(c)) {
             return empty();
@@ -1378,7 +1308,13 @@ public final class ShortList extends PrimitiveList<ShortConsumer, ShortPredicate
     }
 
     public IntList toIntList() {
-        return IntList.from(elementData, 0, size);
+        final int[] a = new int[size];
+
+        for (int i = 0; i < size; i++) {
+            a[i] = elementData[i];
+        }
+
+        return IntList.of(a);
     }
 
     @Override

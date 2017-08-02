@@ -1255,7 +1255,7 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
                     throw new NoSuchElementException();
                 }
 
-                return Stream.from(a[cursor++]);
+                return Stream.of(a[cursor++]);
             }
 
             @Override

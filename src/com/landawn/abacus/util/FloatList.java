@@ -88,118 +88,6 @@ public final class FloatList extends PrimitiveList<FloatConsumer, FloatPredicate
         return a == null && size == 0 ? empty() : new FloatList(a, size);
     }
 
-    @SafeVarargs
-    public static FloatList from(int... a) {
-        return a == null ? empty() : from(a, 0, a.length);
-    }
-
-    public static FloatList from(int[] a, int startIndex, int endIndex) {
-        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
-
-        if (a == null && (startIndex == 0 && endIndex == 0)) {
-            return empty();
-        }
-
-        final float[] elementData = new float[endIndex - startIndex];
-
-        for (int i = startIndex; i < endIndex; i++) {
-            elementData[i - startIndex] = a[i];
-        }
-
-        return of(elementData);
-    }
-
-    @SafeVarargs
-    public static FloatList from(long... a) {
-        return a == null ? empty() : from(a, 0, a.length);
-    }
-
-    public static FloatList from(long[] a, int startIndex, int endIndex) {
-        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
-
-        if (a == null && (startIndex == 0 && endIndex == 0)) {
-            return empty();
-        }
-
-        final float[] elementData = new float[endIndex - startIndex];
-
-        for (int i = startIndex; i < endIndex; i++) {
-            elementData[i - startIndex] = a[i];
-        }
-
-        return of(elementData);
-    }
-
-    /**
-     * 
-     * @param a
-     * @return
-     * @throws ArithmeticException if any elements in the specified array is bigger than Float.MAX_VALUE or less than Float.MIN_VALUE
-     */
-    @SafeVarargs
-    public static FloatList from(double... a) {
-        return a == null ? empty() : from(a, 0, a.length);
-    }
-
-    /**
-     * 
-     * @param a
-     * @return
-     * @throws ArithmeticException if any elements in the specified array is bigger than Float.MAX_VALUE or less than Float.MIN_VALUE
-     */
-    public static FloatList from(double[] a, int startIndex, int endIndex) {
-        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
-
-        if (a == null && (startIndex == 0 && endIndex == 0)) {
-            return empty();
-        }
-
-        final float[] elementData = new float[endIndex - startIndex];
-
-        for (int i = startIndex; i < endIndex; i++) {
-            if (N.compare(a[i], Float.MIN_VALUE) < 0 || N.compare(a[i], Float.MAX_VALUE) > 0) {
-                throw new ArithmeticException("overflow");
-            }
-
-            elementData[i - startIndex] = (float) a[i];
-        }
-
-        return of(elementData);
-    }
-
-    static FloatList from(List<String> c) {
-        if (N.isNullOrEmpty(c)) {
-            return empty();
-        }
-
-        return from(c, 0f);
-    }
-
-    static FloatList from(List<String> c, float defaultValueForNull) {
-        if (N.isNullOrEmpty(c)) {
-            return empty();
-        }
-
-        final float[] a = new float[c.size()];
-        int idx = 0;
-
-        for (String e : c) {
-            if (e == null) {
-                a[idx++] = defaultValueForNull;
-            } else {
-                double val = N.asDouble(e);
-
-                if (N.compare(val, Float.MIN_VALUE) < 0 || N.compare(val, Float.MAX_VALUE) > 0) {
-                    throw new ArithmeticException("overflow");
-                }
-
-                a[idx++] = (float) val;
-            }
-        }
-
-        return of(a);
-    }
-
     public static FloatList from(Collection<Float> c) {
         if (N.isNullOrEmpty(c)) {
             return empty();
@@ -1404,7 +1292,13 @@ public final class FloatList extends PrimitiveList<FloatConsumer, FloatPredicate
     }
 
     public DoubleList toDoubleList() {
-        return DoubleList.from(elementData, 0, size);
+        final double[] a = new double[size];
+
+        for (int i = 0; i < size; i++) {
+            a[i] = elementData[i];
+        }
+
+        return DoubleList.of(a);
     }
 
     @Override

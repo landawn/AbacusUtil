@@ -648,23 +648,14 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
         return iterator == null ? empty() : new IteratorCharStream(iterator);
     }
 
-    @SafeVarargs
-    public static CharStream from(final int... a) {
-        return N.isNullOrEmpty(a) ? empty() : of(CharList.from(a).trimToSize().array());
-    }
-
-    public static CharStream from(final int[] a, final int startIndex, final int endIndex) {
-        return N.isNullOrEmpty(a) && (startIndex == 0 && endIndex == 0) ? empty() : of(CharList.from(a, startIndex, endIndex).trimToSize().array());
-    }
-
     /**
      * Takes the chars in the specified String as the elements of the Stream
      * 
      * @param str
      * @return
      */
-    public static CharStream from(final CharSequence str) {
-        return N.isNullOrEmpty(str) ? empty() : from(str, 0, str.length());
+    public static CharStream of(final CharSequence str) {
+        return N.isNullOrEmpty(str) ? empty() : of(str, 0, str.length());
     }
 
     /**
@@ -676,7 +667,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
      * @return
      */
     @SuppressWarnings("deprecation")
-    public static CharStream from(final CharSequence str, final int startIndex, final int endIndex) {
+    public static CharStream of(final CharSequence str, final int startIndex, final int endIndex) {
         checkFromToIndex(startIndex, endIndex, str == null ? 0 : str.length());
 
         if (N.isNullOrEmpty(str)) {

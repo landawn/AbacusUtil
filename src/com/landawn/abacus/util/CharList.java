@@ -87,72 +87,6 @@ public final class CharList extends PrimitiveList<CharConsumer, CharPredicate, C
         return a == null && size == 0 ? empty() : new CharList(a, size);
     }
 
-    /**
-     * 
-     * @param a
-     * @return
-     * @throws ArithmeticException if any elements in the specified array is bigger than Character.MAX_VALUE or less than Character.MIN_VALUE
-     */
-    @SafeVarargs
-    public static CharList from(int... a) {
-        return a == null ? empty() : from(a, 0, a.length);
-    }
-
-    /**
-     * 
-     * @param a
-     * @return
-     * @throws ArithmeticException if any elements in the specified array is bigger than Character.MAX_VALUE or less than Character.MIN_VALUE
-     */
-    public static CharList from(int[] a, int startIndex, int endIndex) {
-        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
-
-        if (a == null && (startIndex == 0 && endIndex == 0)) {
-            return empty();
-        }
-
-        final char[] elementData = new char[endIndex - startIndex];
-
-        for (int i = startIndex; i < endIndex; i++) {
-            if (a[i] < Character.MIN_VALUE || a[i] > Character.MAX_VALUE) {
-                throw new ArithmeticException("overflow");
-            }
-
-            elementData[i - startIndex] = (char) a[i];
-        }
-
-        return of(elementData);
-    }
-
-    static CharList from(List<String> c) {
-        if (N.isNullOrEmpty(c)) {
-            return empty();
-        }
-
-        return from(c, (char) 0);
-    }
-
-    static CharList from(List<String> c, char defaultValueForNull) {
-        if (N.isNullOrEmpty(c)) {
-            return empty();
-        }
-
-        final char[] a = new char[c.size()];
-        int idx = 0;
-
-        for (String e : c) {
-            if (e == null) {
-                a[idx++] = defaultValueForNull;
-            } else if (e.length() == 1) {
-                a[idx++] = e.charAt(0);
-            } else {
-                throw new IllegalArgumentException("Invalid char: " + e);
-            }
-        }
-
-        return of(a);
-    }
-
     public static CharList from(Collection<Character> c) {
         if (N.isNullOrEmpty(c)) {
             return empty();
@@ -1386,7 +1320,13 @@ public final class CharList extends PrimitiveList<CharConsumer, CharPredicate, C
     }
 
     public IntList toIntList() {
-        return IntList.from(elementData, 0, size);
+        final int[] a = new int[size];
+
+        for (int i = 0; i < size; i++) {
+            a[i] = elementData[i];
+        }
+
+        return IntList.of(a);
     }
 
     @Override

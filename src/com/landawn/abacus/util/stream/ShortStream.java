@@ -657,15 +657,6 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
         return iterator == null ? empty() : new IteratorShortStream(iterator);
     }
 
-    @SafeVarargs
-    public static ShortStream from(final int... a) {
-        return N.isNullOrEmpty(a) ? empty() : of(ShortList.from(a).trimToSize().array());
-    }
-
-    public static ShortStream from(final int[] a, final int startIndex, final int endIndex) {
-        return N.isNullOrEmpty(a) && (startIndex == 0 && endIndex == 0) ? empty() : of(ShortList.from(a, startIndex, endIndex).trimToSize().array());
-    }
-
     public static ShortStream range(final short startInclusive, final short endExclusive) {
         if (startInclusive >= endExclusive) {
             return empty();

@@ -652,15 +652,6 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
         });
     }
 
-    @SafeVarargs
-    public static ByteStream from(final int... a) {
-        return N.isNullOrEmpty(a) ? empty() : of(ByteList.from(a).trimToSize().array());
-    }
-
-    public static ByteStream from(final int[] a, final int startIndex, final int endIndex) {
-        return N.isNullOrEmpty(a) && (startIndex == 0 && endIndex == 0) ? empty() : of(ByteList.from(a, startIndex, endIndex).trimToSize().array());
-    }
-
     public static ByteStream range(final byte startInclusive, final byte endExclusive) {
         if (startInclusive >= endExclusive) {
             return empty();

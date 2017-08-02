@@ -87,76 +87,6 @@ public final class ByteList extends PrimitiveList<ByteConsumer, BytePredicate, B
         return a == null && size == 0 ? empty() : new ByteList(a, size);
     }
 
-    /**
-     * 
-     * @param a
-     * @return
-     * @throws ArithmeticException if any elements in the specified array is bigger than Byte.MAX_VALUE or less than Byte.MIN_VALUE
-     */
-    @SafeVarargs
-    public static ByteList from(int... a) {
-        return a == null ? empty() : from(a, 0, a.length);
-    }
-
-    /**
-     * 
-     * @param a
-     * @return
-     * @throws ArithmeticException if any elements in the specified array is bigger than Byte.MAX_VALUE or less than Byte.MIN_VALUE
-     */
-    public static ByteList from(int[] a, final int startIndex, final int endIndex) {
-        N.checkFromToIndex(startIndex, endIndex, a == null ? 0 : a.length);
-
-        if (a == null && (startIndex == 0 && endIndex == 0)) {
-            return empty();
-        }
-
-        final byte[] elementData = new byte[endIndex - startIndex];
-
-        for (int i = startIndex; i < endIndex; i++) {
-            if (a[i] < Byte.MIN_VALUE || a[i] > Byte.MAX_VALUE) {
-                throw new ArithmeticException("overflow");
-            }
-
-            elementData[i - startIndex] = (byte) a[i];
-        }
-
-        return of(elementData);
-    }
-
-    static ByteList from(List<String> c) {
-        if (N.isNullOrEmpty(c)) {
-            return empty();
-        }
-
-        return from(c, (byte) 0);
-    }
-
-    static ByteList from(List<String> c, byte defaultValueForNull) {
-        if (N.isNullOrEmpty(c)) {
-            return empty();
-        }
-
-        final byte[] a = new byte[c.size()];
-        int idx = 0;
-
-        for (String e : c) {
-            if (e == null) {
-                a[idx++] = defaultValueForNull;
-            } else {
-                double val = N.asDouble(e);
-
-                if (N.compare(val, Byte.MIN_VALUE) < 0 || N.compare(val, Byte.MAX_VALUE) > 0) {
-                    throw new ArithmeticException("overflow");
-                }
-
-                a[idx++] = (byte) val;
-            }
-        }
-
-        return of(a);
-    }
-
     public static ByteList from(Collection<Byte> c) {
         if (N.isNullOrEmpty(c)) {
             return empty();
@@ -1360,7 +1290,13 @@ public final class ByteList extends PrimitiveList<ByteConsumer, BytePredicate, B
     }
 
     public IntList toIntList() {
-        return IntList.from(elementData, 0, size);
+        final int[] a = new int[size];
+
+        for (int i = 0; i < size; i++) {
+            a[i] = elementData[i];
+        }
+
+        return IntList.of(a);
     }
 
     @Override

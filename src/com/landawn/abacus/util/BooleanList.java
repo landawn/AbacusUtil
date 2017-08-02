@@ -87,29 +87,6 @@ public final class BooleanList extends PrimitiveList<BooleanConsumer, BooleanPre
         return a == null && size == 0 ? empty() : new BooleanList(a, size);
     }
 
-    static BooleanList from(List<String> c) {
-        if (N.isNullOrEmpty(c)) {
-            return empty();
-        }
-
-        return from(c, false);
-    }
-
-    static BooleanList from(List<String> c, boolean defaultValueForNull) {
-        if (N.isNullOrEmpty(c)) {
-            return empty();
-        }
-
-        final boolean[] a = new boolean[c.size()];
-        int idx = 0;
-
-        for (String e : c) {
-            a[idx++] = e == null ? defaultValueForNull : Boolean.valueOf(e);
-        }
-
-        return of(a);
-    }
-
     public static BooleanList from(Collection<Boolean> c) {
         if (N.isNullOrEmpty(c)) {
             return empty();
@@ -1342,13 +1319,13 @@ public final class BooleanList extends PrimitiveList<BooleanConsumer, BooleanPre
     }
 
     public Stream<Boolean> stream() {
-        return Stream.from(elementData, 0, size());
+        return Stream.of(elementData, 0, size());
     }
 
     public Stream<Boolean> stream(final int fromIndex, final int toIndex) {
         checkFromToIndex(fromIndex, toIndex);
 
-        return Stream.from(elementData, fromIndex, toIndex);
+        return Stream.of(elementData, fromIndex, toIndex);
     }
 
     @Override
