@@ -516,8 +516,32 @@ public final class StreamEx<T> {
         return s.min(comparator);
     }
 
+    @SuppressWarnings("rawtypes")
+    public Optional<T> minBy(final Function<? super T, ? extends Comparable> keyExtractor) {
+        final Comparator<? super T> comparator = new Comparator<T>() {
+            @Override
+            public int compare(T o1, T o2) {
+                return N.compare(keyExtractor.apply(o1), keyExtractor.apply(o2));
+            }
+        };
+
+        return min(comparator);
+    }
+
     public Optional<T> max(final Comparator<? super T> comparator) {
         return s.max(comparator);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public Optional<T> maxBy(final Function<? super T, ? extends Comparable> keyExtractor) {
+        final Comparator<? super T> comparator = new Comparator<T>() {
+            @Override
+            public int compare(T o1, T o2) {
+                return N.compare(keyExtractor.apply(o1), keyExtractor.apply(o2));
+            }
+        };
+
+        return max(comparator);
     }
 
     public Optional<T> first() {

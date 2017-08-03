@@ -67,6 +67,7 @@ import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.DoubleSummaryStatistics;
 import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.FloatSummaryStatistics;
+import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.ImmutableIterator;
@@ -1568,6 +1569,13 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public abstract NullabLe<T> min(Comparator<? super T> comparator);
 
+    @SuppressWarnings("rawtypes")
+    public NullabLe<T> minBy(final Function<? super T, ? extends Comparable> keyExtractor) {
+        final Comparator<? super T> comparator = Fn.comparingBy(keyExtractor);
+
+        return min(comparator);
+    }
+
     /**
      * Returns the maximum element of this stream according to the provided
      * {@code Comparator}.  This is a special case of a
@@ -1583,6 +1591,13 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * or an empty {@code Optional} if the stream is empty
      */
     public abstract NullabLe<T> max(Comparator<? super T> comparator);
+
+    @SuppressWarnings("rawtypes")
+    public NullabLe<T> maxBy(final Function<? super T, ? extends Comparable> keyExtractor) {
+        final Comparator<? super T> comparator = Fn.comparingBy(keyExtractor);
+
+        return max(comparator);
+    }
 
     /**
      * 
