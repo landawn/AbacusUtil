@@ -23,6 +23,7 @@ import java.util.Map;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.ToBooleanFunction;
 import com.landawn.abacus.util.function.ToByteFunction;
+import com.landawn.abacus.util.function.ToCharFunction;
 import com.landawn.abacus.util.function.ToDoubleFunction;
 import com.landawn.abacus.util.function.ToFloatFunction;
 import com.landawn.abacus.util.function.ToIntFunction;
@@ -159,6 +160,17 @@ public final class Comparators {
         };
     }
 
+    public static <T> Comparator<T> comparingChar(final ToCharFunction<? super T> keyExtractor) {
+        N.requireNonNull(keyExtractor);
+
+        return new Comparator<T>() {
+            @Override
+            public int compare(T a, T b) {
+                return Character.compare(keyExtractor.applyAsChar(a), keyExtractor.applyAsChar(b));
+            }
+        };
+    }
+
     public static <T> Comparator<T> comparingByte(final ToByteFunction<? super T> keyExtractor) {
         N.requireNonNull(keyExtractor);
 
@@ -203,7 +215,7 @@ public final class Comparators {
         };
     }
 
-    public static <T> Comparator<T> comparingDouble(final ToFloatFunction<? super T> keyExtractor) {
+    public static <T> Comparator<T> comparingFloat(final ToFloatFunction<? super T> keyExtractor) {
         N.requireNonNull(keyExtractor);
 
         return new Comparator<T>() {

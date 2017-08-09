@@ -5,7 +5,9 @@
 
 2, Add minBy/maxBy to Stream
 
-3, Improvements and bug fix.
+3*, Remove com.landawn.abacus.android.util.StreamEx. It's replaced by separated project at: https://github.com/landawn/Lightweight-Stream-API
+
+4, Improvements and bug fix.
 
 
 ========Changes in 0.9.77=========================================================================
