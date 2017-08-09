@@ -2,8 +2,8 @@
 
 A general programming library/framework in Java. It's simple, powerful and easy to use with concise APIs
 
-[![Javadocs](https://www.javadoc.io/badge/com.landawn/AbacusUtil.svg)](https://www.javadoc.io/doc/com.landawn/AbacusUtil)
-[![AbacusUtil](https://img.shields.io/maven-central/v/com.landawn/AbacusUtil.svg)](https://maven-badges.herokuapp.com/maven-central/com.landawn/AbacusUtil)
+[![Javadocs](https://www.javadoc.io/badge/com.landawn/abacus-util.svg)](https://www.javadoc.io/doc/com.landawn/abacus-util)
+[![abacus-util](https://img.shields.io/maven-central/v/com.landawn/abacus-util.svg)](https://maven-badges.herokuapp.com/maven-central/com.landawn/abacus-util)
 
 ## Features:
 
