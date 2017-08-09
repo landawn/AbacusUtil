@@ -2,7 +2,7 @@
 
 A general programming library/framework in Java. It's simple, powerful and easy to use with concise APIs
 
-Full API documentation is available [here](https://www.javadoc.io/doc/com.landawn/abacus-util).
+Full API documentation is available [here](https://www.javadoc.io/doc/com.landawn/abacus-android).
 
 ## Features:
 
