@@ -18,6 +18,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.sql.Connection;
+import java.sql.Driver;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -519,6 +520,18 @@ public final class SQLExecutor implements Closeable {
     //    public SQLMapper sqlMapper() {
     //        return _sqlMapper;
     //    }
+
+    public static SQLExecutor create(final String url, final String user, final String password) {
+        return new SQLExecutor(JdbcUtil.createDataSource(url, user, password));
+    }
+
+    public static SQLExecutor create(final String driver, final String url, final String user, final String password) {
+        return new SQLExecutor(JdbcUtil.createDataSource(driver, url, user, password));
+    }
+
+    public static SQLExecutor create(final Class<? extends Driver> driverClass, final String url, final String user, final String password) {
+        return new SQLExecutor(JdbcUtil.createDataSource(driverClass, url, user, password));
+    }
 
     public <T> Mapper<T> mapper(final Class<T> targetClass) {
         Mapper<T> mapper = (Mapper<T>) mapperPool.get(targetClass);

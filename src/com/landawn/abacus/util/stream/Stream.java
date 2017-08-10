@@ -309,6 +309,17 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public abstract <R> Stream<R> map(Function<? super T, ? extends R> mapper);
 
+    /**
+     * Returns a stream consisting of the elements in this stream which are
+     * instances of given class.
+     * 
+     * @param targetType
+     * @return
+     */
+    public <U> Stream<U> select(Class<U> targetType) {
+        return (Stream<U>) filter(Fn.instanceOf(targetType));
+    }
+
     public abstract <U, R> Stream<R> map(U seed, BiFunction<? super T, ? super U, ? extends R> mapper);
 
     public abstract <R> Stream<R> biMap(BiFunction<? super T, ? super T, ? extends R> mapper);

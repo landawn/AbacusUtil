@@ -1,4 +1,11 @@
 ﻿
+========Changes in 0.9.79=========================================================================
+
+1, Add select to Stream.
+
+2, Improvements and bug fix.
+
+
 ========Changes in 0.9.78=========================================================================
 
 1*, Remove from methods from IntList/ByteList/.../IntStream/Stream/...
