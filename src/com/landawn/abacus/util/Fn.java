@@ -15,6 +15,7 @@
  */
 package com.landawn.abacus.util;
 
+import java.util.AbstractMap;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -67,7 +68,8 @@ import com.landawn.abacus.util.stream.Collector;
 import com.landawn.abacus.util.stream.Collectors;
 
 /**
- * Utility class for function creation and Stream&lt;Entry&lt;K, V&gt;&gt;
+ * Factory utility class for functional interfaces.
+ * 
  * <pre>
  * <code>
  * 
@@ -136,6 +138,13 @@ public final class Fn {
         @Override
         public Object apply(Map.Entry<Object, Object> t) {
             return t.getValue();
+        }
+    };
+
+    private static final BiFunction<Object, Object, Map.Entry<Object, Object>> ENTRY = new BiFunction<Object, Object, Map.Entry<Object, Object>>() {
+        @Override
+        public Map.Entry<Object, Object> apply(Object key, Object value) {
+            return new AbstractMap.SimpleImmutableEntry<>(key, value);
         }
     };
 
@@ -277,16 +286,9 @@ public final class Fn {
         return (Function) VALUE;
     }
 
-    public static Function<String, String> trim() {
-        return TRIM;
-    }
-
-    public static Function<String, String> trimToEmpty() {
-        return TRIM_TO_EMPTY;
-    }
-
-    public static Function<String, String> trimToNull() {
-        return TRIM_TO_NULL;
+    @SuppressWarnings("rawtypes")
+    public static <K, V> BiFunction<K, V, Map.Entry<K, V>> entry() {
+        return (BiFunction) ENTRY;
     }
 
     @SuppressWarnings("rawtypes")
@@ -297,6 +299,18 @@ public final class Fn {
     @SuppressWarnings("rawtypes")
     public static <A, B, C> TriFunction<A, B, C, Triple<A, B, C>> triple() {
         return (TriFunction) TRIPLE;
+    }
+
+    public static Function<String, String> trim() {
+        return TRIM;
+    }
+
+    public static Function<String, String> trimToEmpty() {
+        return TRIM_TO_EMPTY;
+    }
+
+    public static Function<String, String> trimToNull() {
+        return TRIM_TO_NULL;
     }
 
     public static <T, U> Function<T, U> cast(final Class<U> clazz) {
@@ -2213,7 +2227,7 @@ public final class Fn {
         private static final BinaryOperator THROWING_MERGER = new BinaryOperator() {
             @Override
             public Object apply(Object t, Object u) {
-                throw new IllegalStateException(String.format("Duplicate key %s", u));
+                throw new IllegalStateException(String.format("Duplicate key (attempted merging values %s and %s)", t, u));
             }
         };
 

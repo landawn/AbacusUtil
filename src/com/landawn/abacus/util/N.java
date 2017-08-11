@@ -9386,18 +9386,6 @@ public final class N {
         return parameter;
     }
 
-    public static <T> List<T> checkNullOrEmpty(final List<T> parameter, final String msg) {
-        if (parameter == null || parameter.isEmpty()) {
-            if (isErrorMsg(msg)) {
-                throw new IllegalArgumentException(msg);
-            } else {
-                throw new IllegalArgumentException(msg + " can not be null or empty");
-            }
-        }
-
-        return parameter;
-    }
-
     @SuppressWarnings("rawtypes")
     public static <T extends PrimitiveList> T checkNullOrEmpty(final T parameter, final String msg) {
         if (parameter == null || parameter.isEmpty()) {

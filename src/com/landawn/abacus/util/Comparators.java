@@ -30,6 +30,13 @@ import com.landawn.abacus.util.function.ToIntFunction;
 import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.function.ToShortFunction;
 
+/**
+ * 
+ * Factory utility class for Comparator.
+ * 
+ * @author haiyangl
+ *
+ */
 public final class Comparators {
     @SuppressWarnings("rawtypes")
     private static final Comparator NULL_FIRST_COMPARATOR = new Comparator<Comparable>() {

@@ -875,10 +875,10 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * <br />
      * This method only run sequentially, even in parallel stream.
      * 
-     * @param value
+     * @param delimiter
      * @return
      */
-    public abstract Stream<T> intersperse(T value);
+    public abstract Stream<T> intersperse(T delimiter);
 
     /**
      * Distinct by the value mapped from <code>keyExtractor</code>
@@ -1025,6 +1025,10 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     public abstract <U> boolean allMatch(final U seed, final BiPredicate<? super T, ? super U> predicate);
 
     public abstract <U> boolean noneMatch(final U seed, final BiPredicate<? super T, ? super U> predicate);
+
+    public abstract boolean containsAll(T... a);
+
+    public abstract boolean containsAll(Collection<? extends T> c);
 
     /**
      * Returns an array containing the elements of this stream, using the

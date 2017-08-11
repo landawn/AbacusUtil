@@ -945,19 +945,14 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public Stream<T> intersperse(final T value) {
+    public Stream<T> intersperse(final T delimiter) {
         return newStream(new ExIterator<T>() {
-            private final ExIterator<T> iter = exIterator();
-            private T next = (T) Stream.NONE;
+            private final Iterator<T> iter = iterator();
             private boolean toInsert = false;
 
             @Override
             public boolean hasNext() {
-                if (next == Stream.NONE && iter.hasNext()) {
-                    next = iter.next();
-                }
-
-                return next != Stream.NONE;
+                return iter.hasNext();
             }
 
             @Override
@@ -968,15 +963,13 @@ abstract class AbstractStream<T> extends Stream<T> {
 
                 if (toInsert) {
                     toInsert = false;
-                    return value;
+                    return delimiter;
                 } else {
-                    final T res = next;
-                    next = (T) Stream.NONE;
+                    final T res = iter.next();
                     toInsert = true;
                     return res;
                 }
             }
-
         }, false, null);
     }
 
@@ -1768,6 +1761,45 @@ abstract class AbstractStream<T> extends Stream<T> {
                 return predicate.test(t, seed);
             }
         });
+    }
+
+    @Override
+    public boolean containsAll(final T... a) {
+        if (N.isNullOrEmpty(a)) {
+            return true;
+        } else if (a.length == 1) {
+            return anyMatch(Fn.equal(a[0]));
+        } else if (a.length == 2) {
+            return filter(new Predicate<T>() {
+                private final T val1 = a[0];
+                private final T val2 = a[1];
+
+                @Override
+                public boolean test(T t) {
+                    return N.equals(t, val1) || N.equals(t, val2);
+                }
+            }).distinct().limit(2).count() == 2;
+        } else {
+            return containsAll(N.asSet(a));
+        }
+    }
+
+    @Override
+    public boolean containsAll(final Collection<? extends T> c) {
+        if (N.isNullOrEmpty(c)) {
+            return true;
+        } else if (c.size() == 1) {
+            final T val = c instanceof List ? ((List<T>) c).get(0) : c.iterator().next();
+            return anyMatch(Fn.equal(val));
+        } else {
+            final Set<T> set = c instanceof Set ? (Set<T>) c : N.newHashSet(c);
+            return filter(new Predicate<T>() {
+                @Override
+                public boolean test(T t) {
+                    return set.contains(t);
+                }
+            }).distinct().limit(set.size()).count() == set.size();
+        }
     }
 
     @Override
