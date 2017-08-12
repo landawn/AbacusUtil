@@ -2196,38 +2196,24 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
-    @SuppressWarnings("hiding")
-    public <K, A, D> Map<K, D> toMap(Function<? super T, ? extends K> classifier, java.util.stream.Collector<? super T, A, D> downstream) {
-        final Supplier<Map<K, D>> mapFactory = Fn.Suppliers.ofMap();
-
-        return toMap(classifier, downstream, mapFactory);
-    }
-
-    @SuppressWarnings("hiding")
-    public <K, A, D, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> classifier,
-            final java.util.stream.Collector<? super T, A, D> downstream, final Supplier<M> mapFactory) {
-
-        return toMap(classifier, Collector.of(downstream), mapFactory);
-    }
-
-    public <K> Map<K, List<T>> toMap2(Function<? super T, ? extends K> classifier) {
+    public <K> Map<K, List<T>> groupTo(Function<? super T, ? extends K> classifier) {
         final Supplier<Map<K, List<T>>> mapFactory = Fn.Suppliers.ofMap();
 
-        return toMap2(classifier, mapFactory);
+        return groupTo(classifier, mapFactory);
     }
 
-    public <K, M extends Map<K, List<T>>> M toMap2(Function<? super T, ? extends K> classifier, Supplier<M> mapFactory) {
+    public <K, M extends Map<K, List<T>>> M groupTo(Function<? super T, ? extends K> classifier, Supplier<M> mapFactory) {
         final Collector<? super T, ?, List<T>> downstream = Collectors.toList();
 
         return toMap(classifier, downstream, mapFactory);
     }
 
-    public <K, U> Map<K, List<U>> toMap2(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper) {
+    public <K, U> Map<K, List<U>> groupTo(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper) {
         return toMap(keyExtractor, (Collector<T, ?, List<U>>) (Collector<?, ?, ?>) Collectors.mapping(valueMapper, Collectors.toList()));
     }
 
     @SuppressWarnings("rawtypes")
-    public <K, U, M extends Map<K, List<U>>> M toMap2(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
+    public <K, U, M extends Map<K, List<U>>> M groupTo(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
             Supplier<M> mapFactory) {
         return toMap(keyExtractor, (Collector<T, ?, List<U>>) (Collector) Collectors.mapping(valueMapper, Collectors.toList()), mapFactory);
     }

@@ -159,15 +159,6 @@ public final class Collectors {
     static final Set<Collector.Characteristics> CH_UNORDERED = Collections.unmodifiableSet(EnumSet.of(Collector.Characteristics.UNORDERED));
     static final Set<Collector.Characteristics> CH_NOID = Collections.emptySet();
 
-    @SuppressWarnings("rawtypes")
-    private static final BinaryOperator<Collection> ADD_ALL_MERGER = new BinaryOperator<Collection>() {
-        @Override
-        public Collection apply(Collection t, Collection u) {
-            t.addAll(u);
-            return t;
-        }
-    };
-
     private Collectors() {
     }
 
@@ -1899,9 +1890,84 @@ public final class Collectors {
      * @see #maxAll()
      */
     public static <T> Collector<T, ?, List<T>> maxAll(Comparator<? super T> comparator) {
-        final Collector<? super T, ?, List<T>> downstream = Collectors.toList();
+        return maxAll(comparator, Integer.MAX_VALUE);
+    }
 
-        return maxAll(comparator, downstream);
+    /**
+     * 
+     * @param comparator
+     * @param atMostSize
+     * @return
+     */
+    public static <T> Collector<T, ?, List<T>> maxAll(Comparator<? super T> comparator, int atMostSize) {
+        final Supplier<Pair<List<T>, T>> supplier = new Supplier<Pair<List<T>, T>>() {
+            @Override
+            public Pair<List<T>, T> get() {
+                return Pair.of(new ArrayList<>(Math.min(16, atMostSize)), (T) NONE);
+            }
+        };
+
+        final BiConsumer<Pair<List<T>, T>, T> accumulator = new BiConsumer<Pair<List<T>, T>, T>() {
+            @Override
+            public void accept(Pair<List<T>, T> acc, T t) {
+                if (acc.right == NONE) {
+                    if (acc.left.size() < atMostSize) {
+                        acc.left.add(t);
+                    }
+                    acc.right = t;
+                } else {
+                    int cmp = comparator.compare(t, acc.right);
+                    if (cmp < 0) {
+                        acc.left.clear();
+                        acc.right = t;
+                    }
+
+                    if (cmp <= 0) {
+                        if (acc.left.size() < atMostSize) {
+                            acc.left.add(t);
+                        }
+                    }
+                }
+            }
+        };
+
+        final BinaryOperator<Pair<List<T>, T>> combiner = new BinaryOperator<Pair<List<T>, T>>() {
+            @Override
+            public Pair<List<T>, T> apply(Pair<List<T>, T> acc1, Pair<List<T>, T> acc2) {
+                if (acc2.right == NONE) {
+                    return acc1;
+                } else if (acc1.right == NONE) {
+                    return acc2;
+                }
+
+                int cmp = comparator.compare(acc1.right, acc2.right);
+
+                if (cmp < 0) {
+                    return acc1;
+                } else if (cmp > 0) {
+                    return acc2;
+                }
+
+                if (acc1.left.size() < atMostSize) {
+                    if (acc2.left.size() <= atMostSize - acc1.left.size()) {
+                        acc1.left.addAll(acc2.left);
+                    } else {
+                        acc1.left.addAll(acc2.left.subList(0, atMostSize - acc1.left.size()));
+                    }
+                }
+
+                return acc1;
+            }
+        };
+
+        final Function<Pair<List<T>, T>, List<T>> finisher = new Function<Pair<List<T>, T>, List<T>>() {
+            @Override
+            public List<T> apply(Pair<List<T>, T> acc) {
+                return acc.left;
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
     }
 
     /**
@@ -1944,9 +2010,7 @@ public final class Collectors {
      */
     @SuppressWarnings("rawtypes")
     public static <T extends Comparable> Collector<T, ?, List<T>> maxAll() {
-        final Collector<? super T, ?, List<T>> downstream = Collectors.toList();
-
-        return maxAll(Fn.naturalOrder(), downstream);
+        return maxAll(Fn.naturalOrder());
     }
 
     /**
@@ -1990,9 +2054,17 @@ public final class Collectors {
      * @see #minAll()
      */
     public static <T> Collector<T, ?, List<T>> minAll(Comparator<? super T> comparator) {
-        final Collector<? super T, ?, List<T>> downstream = Collectors.toList();
+        return maxAll(Fn.reversedOrder(comparator));
+    }
 
-        return maxAll(Fn.reversedOrder(comparator), downstream);
+    /**
+     * 
+     * @param comparator
+     * @param atMostSize
+     * @return
+     */
+    public static <T> Collector<T, ?, List<T>> minAll(Comparator<? super T> comparator, int atMostSize) {
+        return maxAll(Fn.reversedOrder(comparator), atMostSize);
     }
 
     /**
@@ -2016,7 +2088,7 @@ public final class Collectors {
      */
     @SuppressWarnings("rawtypes")
     public static <T extends Comparable, A, D> Collector<T, ?, D> minAll(Collector<T, A, D> downstream) {
-        return maxAll(Fn.reversedOrder(), downstream);
+        return minAll(Fn.naturalOrder(), downstream);
     }
 
     /**
@@ -2035,9 +2107,7 @@ public final class Collectors {
      */
     @SuppressWarnings("rawtypes")
     public static <T extends Comparable> Collector<T, ?, List<T>> minAll() {
-        final Collector<? super T, ?, List<T>> downstream = Collectors.toList();
-
-        return maxAll(Fn.reversedOrder(), downstream);
+        return minAll(Fn.naturalOrder());
     }
 
     /**
@@ -4224,76 +4294,6 @@ public final class Collectors {
         return new CollectorImpl<>(mapFactory, accumulator, combiner, CH_ID);
     }
 
-    public static <K, V> Collector<Map.Entry<K, V>, ?, Map<K, List<V>>> toMap2() {
-        @SuppressWarnings("rawtypes")
-        final BinaryOperator<List<V>> mergeFunction = (BinaryOperator) ADD_ALL_MERGER;
-
-        return Collectors.toMap(new Function<Map.Entry<K, V>, K>() {
-            @Override
-            public K apply(Map.Entry<K, V> entry) {
-                return entry.getKey();
-            }
-        }, new Function<Map.Entry<K, V>, List<V>>() {
-            @Override
-            public List<V> apply(Map.Entry<K, V> entry) {
-                return N.asList(entry.getValue());
-            }
-        }, mergeFunction);
-    }
-
-    public static <K, V, M extends Map<K, List<V>>> Collector<Map.Entry<K, V>, ?, M> toMap2(final Supplier<M> mapFactory) {
-        @SuppressWarnings("rawtypes")
-        final BinaryOperator<List<V>> mergeFunction = (BinaryOperator) ADD_ALL_MERGER;
-
-        return Collectors.toMap(new Function<Map.Entry<K, V>, K>() {
-            @Override
-            public K apply(Entry<K, V> entry) {
-                return entry.getKey();
-            }
-        }, new Function<Map.Entry<K, V>, List<V>>() {
-            @Override
-            public List<V> apply(Entry<K, V> entry) {
-                return N.asList(entry.getValue());
-            }
-        }, mergeFunction, mapFactory);
-    }
-
-    public static <T, K, V> Collector<T, ?, Map<K, List<V>>> toMap2(final Function<? super T, ? extends K> keyExtractor,
-            final Function<? super T, ? extends V> valueMapper) {
-        @SuppressWarnings("rawtypes")
-        final BinaryOperator<List<V>> mergeFunction = (BinaryOperator) ADD_ALL_MERGER;
-
-        return Collectors.toMap(new Function<T, K>() {
-            @Override
-            public K apply(T t) {
-                return keyExtractor.apply(t);
-            }
-        }, new Function<T, List<V>>() {
-            @Override
-            public List<V> apply(T t) {
-                return N.asList(valueMapper.apply(t));
-            }
-        }, mergeFunction);
-    }
-
-    public static <T, K, V, M extends Map<K, List<V>>> Collector<T, ?, M> toMap2(final Function<? super T, ? extends K> keyExtractor,
-            final Function<? super T, ? extends V> valueMapper, final Supplier<M> mapFactory) {
-        @SuppressWarnings("rawtypes")
-        final BinaryOperator<List<V>> mergeFunction = (BinaryOperator) ADD_ALL_MERGER;
-
-        return Collectors.toMap(new Function<T, K>() {
-            @Override
-            public K apply(T t) {
-                return keyExtractor.apply(t);
-            }
-        }, new Function<T, List<V>>() {
-            @Override
-            public List<V> apply(T t) {
-                return N.asList(valueMapper.apply(t));
-            }
-        }, mergeFunction, mapFactory);
-    }
-
     public static <K, V> Collector<Map.Entry<K, V>, ?, ImmutableMap<K, V>> toImmutableMap() {
         final Collector<Map.Entry<K, V>, ?, Map<K, V>> downstream = toMap();
 
@@ -4341,33 +4341,6 @@ public final class Collectors {
         final Function<Map<K, U>, ImmutableMap<K, U>> finisher = new Function<Map<K, U>, ImmutableMap<K, U>>() {
             @Override
             public ImmutableMap<K, U> apply(Map<K, U> t) {
-                return ImmutableMap.of(t);
-            }
-        };
-
-        return collectingAndThen(downstream, finisher);
-    }
-
-    public static <K, V> Collector<Map.Entry<K, V>, ?, ImmutableMap<K, List<V>>> toImmutableMap2() {
-        final Collector<Map.Entry<K, V>, ?, Map<K, List<V>>> downstream = toMap2();
-
-        final Function<Map<K, List<V>>, ImmutableMap<K, List<V>>> finisher = new Function<Map<K, List<V>>, ImmutableMap<K, List<V>>>() {
-            @Override
-            public ImmutableMap<K, List<V>> apply(Map<K, List<V>> t) {
-                return ImmutableMap.of(t);
-            }
-        };
-
-        return collectingAndThen(downstream, finisher);
-    }
-
-    public static <T, K, V> Collector<T, ?, ImmutableMap<K, List<V>>> toImmutableMap2(final Function<? super T, ? extends K> keyExtractor,
-            final Function<? super T, ? extends V> valueMapper) {
-        final Collector<T, ?, Map<K, List<V>>> downstream = toMap2(keyExtractor, valueMapper);
-
-        final Function<Map<K, List<V>>, ImmutableMap<K, List<V>>> finisher = new Function<Map<K, List<V>>, ImmutableMap<K, List<V>>>() {
-            @Override
-            public ImmutableMap<K, List<V>> apply(Map<K, List<V>> t) {
                 return ImmutableMap.of(t);
             }
         };

@@ -608,18 +608,6 @@ public final class Fn {
         return Collectors.toSet();
     }
 
-    public static <T> Collector<T, ?, Multiset<T>> toMultiset() {
-        return Collectors.toMultiset();
-    }
-
-    public static <K, V> Collector<Map.Entry<K, V>, ?, Map<K, V>> toMap() {
-        return Collectors.toMap();
-    }
-
-    public static <K, V> Collector<Map.Entry<K, V>, ?, Map<K, List<V>>> toMap2() {
-        return Collectors.toMap2();
-    }
-
     public static <T> Collector<T, ?, Long> counting() {
         return Collectors.counting();
     }

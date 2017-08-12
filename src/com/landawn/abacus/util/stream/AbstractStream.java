@@ -406,7 +406,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <R> Stream<R> flatMap2(final Function<? super T, ? extends Collection<? extends R>> mapper) {
+    public <R> Stream<R> flatCollection(final Function<? super T, ? extends Collection<? extends R>> mapper) {
         return flatMap0(new Function<T, Iterator<? extends R>>() {
             @Override
             public Iterator<? extends R> apply(T t) {
@@ -416,8 +416,8 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <U, R> Stream<R> flatMap2(final U seed, final BiFunction<? super T, ? super U, ? extends Collection<? extends R>> mapper) {
-        return flatMap2(new Function<T, Collection<? extends R>>() {
+    public <U, R> Stream<R> flatCollection(final U seed, final BiFunction<? super T, ? super U, ? extends Collection<? extends R>> mapper) {
+        return flatCollection(new Function<T, Collection<? extends R>>() {
             @Override
             public Collection<? extends R> apply(T t) {
                 return mapper.apply(t, seed);
@@ -426,7 +426,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <R> Stream<R> flatMap3(final Function<? super T, ? extends R[]> mapper) {
+    public <R> Stream<R> flatArray(final Function<? super T, ? extends R[]> mapper) {
         return flatMap0(new Function<T, Iterator<? extends R>>() {
             @Override
             public Iterator<? extends R> apply(T t) {
@@ -436,8 +436,8 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <U, R> Stream<R> flatMap3(final U seed, final BiFunction<? super T, ? super U, ? extends R[]> mapper) {
-        return flatMap3(new Function<T, R[]>() {
+    public <U, R> Stream<R> flatArray(final U seed, final BiFunction<? super T, ? super U, ? extends R[]> mapper) {
+        return flatArray(new Function<T, R[]>() {
             @Override
             public R[] apply(T t) {
                 return mapper.apply(t, seed);
@@ -458,38 +458,6 @@ abstract class AbstractStream<T> extends Stream<T> {
     abstract CharStream flatMapToChar0(Function<? super T, CharIterator> function);
 
     @Override
-    public CharStream flatMapToChar2(final Function<? super T, ? extends Collection<Character>> mapper) {
-        return flatMapToChar0(new Function<T, CharIterator>() {
-            @Override
-            public CharIterator apply(T t) {
-                final Iterator<Character> iter = mapper.apply(t).iterator();
-
-                return new ExCharIterator() {
-                    @Override
-                    public boolean hasNext() {
-                        return iter.hasNext();
-                    }
-
-                    @Override
-                    public char nextChar() {
-                        return iter.next();
-                    }
-                };
-            }
-        });
-    }
-
-    @Override
-    public CharStream flatMapToChar3(final Function<? super T, char[]> mapper) {
-        return flatMapToChar0(new Function<T, CharIterator>() {
-            @Override
-            public CharIterator apply(T t) {
-                return ExCharIterator.of(mapper.apply(t));
-            }
-        });
-    }
-
-    @Override
     public ByteStream flatMapToByte(final Function<? super T, ? extends ByteStream> mapper) {
         return flatMapToByte0(new Function<T, ByteIterator>() {
             @Override
@@ -500,38 +468,6 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     abstract ByteStream flatMapToByte0(Function<? super T, ByteIterator> function);
-
-    @Override
-    public ByteStream flatMapToByte2(final Function<? super T, ? extends Collection<Byte>> mapper) {
-        return flatMapToByte0(new Function<T, ByteIterator>() {
-            @Override
-            public ByteIterator apply(T t) {
-                final Iterator<Byte> iter = mapper.apply(t).iterator();
-
-                return new ExByteIterator() {
-                    @Override
-                    public boolean hasNext() {
-                        return iter.hasNext();
-                    }
-
-                    @Override
-                    public byte nextByte() {
-                        return iter.next();
-                    }
-                };
-            }
-        });
-    }
-
-    @Override
-    public ByteStream flatMapToByte3(final Function<? super T, byte[]> mapper) {
-        return flatMapToByte0(new Function<T, ByteIterator>() {
-            @Override
-            public ByteIterator apply(T t) {
-                return ExByteIterator.of(mapper.apply(t));
-            }
-        });
-    }
 
     @Override
     public ShortStream flatMapToShort(final Function<? super T, ? extends ShortStream> mapper) {
@@ -546,38 +482,6 @@ abstract class AbstractStream<T> extends Stream<T> {
     abstract ShortStream flatMapToShort0(Function<? super T, ShortIterator> function);
 
     @Override
-    public ShortStream flatMapToShort2(final Function<? super T, ? extends Collection<Short>> mapper) {
-        return flatMapToShort0(new Function<T, ShortIterator>() {
-            @Override
-            public ShortIterator apply(T t) {
-                final Iterator<Short> iter = mapper.apply(t).iterator();
-
-                return new ExShortIterator() {
-                    @Override
-                    public boolean hasNext() {
-                        return iter.hasNext();
-                    }
-
-                    @Override
-                    public short nextShort() {
-                        return iter.next();
-                    }
-                };
-            }
-        });
-    }
-
-    @Override
-    public ShortStream flatMapToShort3(final Function<? super T, short[]> mapper) {
-        return flatMapToShort0(new Function<T, ShortIterator>() {
-            @Override
-            public ShortIterator apply(T t) {
-                return ExShortIterator.of(mapper.apply(t));
-            }
-        });
-    }
-
-    @Override
     public IntStream flatMapToInt(final Function<? super T, ? extends IntStream> mapper) {
         return flatMapToInt0(new Function<T, IntIterator>() {
             @Override
@@ -588,38 +492,6 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     abstract IntStream flatMapToInt0(Function<? super T, IntIterator> function);
-
-    @Override
-    public IntStream flatMapToInt2(final Function<? super T, ? extends Collection<Integer>> mapper) {
-        return flatMapToInt0(new Function<T, IntIterator>() {
-            @Override
-            public IntIterator apply(T t) {
-                final Iterator<Integer> iter = mapper.apply(t).iterator();
-
-                return new ExIntIterator() {
-                    @Override
-                    public boolean hasNext() {
-                        return iter.hasNext();
-                    }
-
-                    @Override
-                    public int nextInt() {
-                        return iter.next();
-                    }
-                };
-            }
-        });
-    }
-
-    @Override
-    public IntStream flatMapToInt3(final Function<? super T, int[]> mapper) {
-        return flatMapToInt0(new Function<T, IntIterator>() {
-            @Override
-            public IntIterator apply(T t) {
-                return ExIntIterator.of(mapper.apply(t));
-            }
-        });
-    }
 
     @Override
     public LongStream flatMapToLong(final Function<? super T, ? extends LongStream> mapper) {
@@ -634,38 +506,6 @@ abstract class AbstractStream<T> extends Stream<T> {
     abstract LongStream flatMapToLong0(Function<? super T, LongIterator> function);
 
     @Override
-    public LongStream flatMapToLong2(final Function<? super T, ? extends Collection<Long>> mapper) {
-        return flatMapToLong0(new Function<T, LongIterator>() {
-            @Override
-            public LongIterator apply(T t) {
-                final Iterator<Long> iter = mapper.apply(t).iterator();
-
-                return new ExLongIterator() {
-                    @Override
-                    public boolean hasNext() {
-                        return iter.hasNext();
-                    }
-
-                    @Override
-                    public long nextLong() {
-                        return iter.next();
-                    }
-                };
-            }
-        });
-    }
-
-    @Override
-    public LongStream flatMapToLong3(final Function<? super T, long[]> mapper) {
-        return flatMapToLong0(new Function<T, LongIterator>() {
-            @Override
-            public LongIterator apply(T t) {
-                return ExLongIterator.of(mapper.apply(t));
-            }
-        });
-    }
-
-    @Override
     public FloatStream flatMapToFloat(final Function<? super T, ? extends FloatStream> mapper) {
         return flatMapToFloat0(new Function<T, FloatIterator>() {
             @Override
@@ -676,38 +516,6 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     abstract FloatStream flatMapToFloat0(Function<? super T, FloatIterator> function);
-
-    @Override
-    public FloatStream flatMapToFloat2(final Function<? super T, ? extends Collection<Float>> mapper) {
-        return flatMapToFloat0(new Function<T, FloatIterator>() {
-            @Override
-            public FloatIterator apply(T t) {
-                final Iterator<Float> iter = mapper.apply(t).iterator();
-
-                return new ExFloatIterator() {
-                    @Override
-                    public boolean hasNext() {
-                        return iter.hasNext();
-                    }
-
-                    @Override
-                    public float nextFloat() {
-                        return iter.next();
-                    }
-                };
-            }
-        });
-    }
-
-    @Override
-    public FloatStream flatMapToFloa3(final Function<? super T, float[]> mapper) {
-        return flatMapToFloat0(new Function<T, FloatIterator>() {
-            @Override
-            public FloatIterator apply(T t) {
-                return ExFloatIterator.of(mapper.apply(t));
-            }
-        });
-    }
 
     @Override
     public DoubleStream flatMapToDouble(final Function<? super T, ? extends DoubleStream> mapper) {
@@ -722,52 +530,8 @@ abstract class AbstractStream<T> extends Stream<T> {
     abstract DoubleStream flatMapToDouble0(Function<? super T, DoubleIterator> function);
 
     @Override
-    public DoubleStream flatMapToDouble2(final Function<? super T, ? extends Collection<Double>> mapper) {
-        return flatMapToDouble0(new Function<T, DoubleIterator>() {
-            @Override
-            public DoubleIterator apply(T t) {
-                final Iterator<Double> iter = mapper.apply(t).iterator();
-
-                return new ExDoubleIterator() {
-                    @Override
-                    public boolean hasNext() {
-                        return iter.hasNext();
-                    }
-
-                    @Override
-                    public double nextDouble() {
-                        return iter.next();
-                    }
-                };
-            }
-        });
-    }
-
-    @Override
-    public DoubleStream flatMapToDouble3(final Function<? super T, double[]> mapper) {
-        return flatMapToDouble0(new Function<T, DoubleIterator>() {
-            @Override
-            public DoubleIterator apply(T t) {
-                return ExDoubleIterator.of(mapper.apply(t));
-            }
-        });
-    }
-
-    @Override
     public <K, V> EntryStream<K, V> flatMapToEntry(final Function<? super T, ? extends Stream<? extends Map.Entry<K, V>>> mapper) {
         return EntryStream.of(flatMap(mapper));
-    }
-
-    @Override
-    public <K, V> EntryStream<K, V> flatMapToEntry2(final Function<? super T, ? extends Map<K, V>> mapper) {
-        final Function<T, Stream<Map.Entry<K, V>>> mapper2 = new Function<T, Stream<Map.Entry<K, V>>>() {
-            @Override
-            public Stream<Entry<K, V>> apply(T t) {
-                return Stream.of(mapper.apply(t));
-            }
-        };
-
-        return EntryStream.of(flatMap(mapper2));
     }
 
     @Override
@@ -1028,22 +792,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <K, U> Stream<Entry<K, U>> groupBy2(final Function<? super T, ? extends K> classifier, final Function<? super T, ? extends U> valueMapper) {
-        final Map<K, U> map = collect(Collectors.toMap(classifier, valueMapper));
-
-        return newStream(map.entrySet().iterator(), false, null);
-    }
-
-    @Override
-    public <K, U> Stream<Entry<K, U>> groupBy2(final Function<? super T, ? extends K> classifier, final Function<? super T, ? extends U> valueMapper,
-            Supplier<Map<K, U>> mapFactory) {
-        final Map<K, U> map = collect(Collectors.toMap(classifier, valueMapper, mapFactory));
-
-        return newStream(map.entrySet().iterator(), false, null);
-    }
-
-    @Override
-    public <K, U> Stream<Entry<K, U>> groupBy2(final Function<? super T, ? extends K> classifier, final Function<? super T, ? extends U> valueMapper,
+    public <K, U> Stream<Entry<K, U>> groupBy(final Function<? super T, ? extends K> classifier, final Function<? super T, ? extends U> valueMapper,
             BinaryOperator<U> mergeFunction) {
         final Map<K, U> map = collect(Collectors.toMap(classifier, valueMapper, mergeFunction));
 
@@ -1051,7 +800,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <K, U> Stream<Entry<K, U>> groupBy2(final Function<? super T, ? extends K> classifier, final Function<? super T, ? extends U> valueMapper,
+    public <K, U> Stream<Entry<K, U>> groupBy(final Function<? super T, ? extends K> classifier, final Function<? super T, ? extends U> valueMapper,
             BinaryOperator<U> mergeFunction, Supplier<Map<K, U>> mapFactory) {
         final Map<K, U> map = collect(Collectors.toMap(classifier, valueMapper, mergeFunction, mapFactory));
 
@@ -1107,38 +856,21 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <K, U> EntryStream<K, U> groupByToEntry2(Function<? super T, ? extends K> classifier, Function<? super T, ? extends U> valueMapper) {
-        final Function<Map.Entry<K, U>, Map.Entry<K, U>> mapper = Fn.identity();
-        final Function<T, K> classifier2 = (Function<T, K>) classifier;
-        final Function<T, U> valueMapper2 = (Function<T, U>) valueMapper;
-
-        return groupBy2(classifier2, valueMapper2).mapToEntry(mapper);
-    }
-
-    @Override
-    public <K, U> EntryStream<K, U> groupByToEntry2(Function<? super T, ? extends K> classifier, Function<? super T, ? extends U> valueMapper,
-            Supplier<Map<K, U>> mapFactory) {
-        final Function<Map.Entry<K, U>, Map.Entry<K, U>> mapper = Fn.identity();
-
-        return groupBy2(classifier, valueMapper, mapFactory).mapToEntry(mapper);
-    }
-
-    @Override
-    public <K, U> EntryStream<K, U> groupByToEntry2(Function<? super T, ? extends K> classifier, Function<? super T, ? extends U> valueMapper,
+    public <K, U> EntryStream<K, U> groupByToEntry(Function<? super T, ? extends K> classifier, Function<? super T, ? extends U> valueMapper,
             BinaryOperator<U> mergeFunction) {
         final Function<Map.Entry<K, U>, Map.Entry<K, U>> mapper = Fn.identity();
         final Function<T, K> classifier2 = (Function<T, K>) classifier;
         final Function<T, U> valueMapper2 = (Function<T, U>) valueMapper;
 
-        return groupBy2(classifier2, valueMapper2, mergeFunction).mapToEntry(mapper);
+        return groupBy(classifier2, valueMapper2, mergeFunction).mapToEntry(mapper);
     }
 
     @Override
-    public <K, U> EntryStream<K, U> groupByToEntry2(Function<? super T, ? extends K> classifier, Function<? super T, ? extends U> valueMapper,
+    public <K, U> EntryStream<K, U> groupByToEntry(Function<? super T, ? extends K> classifier, Function<? super T, ? extends U> valueMapper,
             BinaryOperator<U> mergeFunction, Supplier<Map<K, U>> mapFactory) {
         final Function<Map.Entry<K, U>, Map.Entry<K, U>> mapper = Fn.identity();
 
-        return groupBy2(classifier, valueMapper, mergeFunction, mapFactory).mapToEntry(mapper);
+        return groupBy(classifier, valueMapper, mergeFunction, mapFactory).mapToEntry(mapper);
     }
 
     @Override
@@ -1200,41 +932,27 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <K, A, D> Map<K, D> toMap(Function<? super T, ? extends K> classifier, java.util.stream.Collector<? super T, A, D> downstream) {
-        final Supplier<Map<K, D>> mapFactory = Fn.Suppliers.ofMap();
-
-        return toMap(classifier, downstream, mapFactory);
-    }
-
-    @Override
-    public <K, A, D, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> classifier,
-            final java.util.stream.Collector<? super T, A, D> downstream, final Supplier<M> mapFactory) {
-
-        return toMap(classifier, Collector.of(downstream), mapFactory);
-    }
-
-    @Override
-    public <K> Map<K, List<T>> toMap2(Function<? super T, ? extends K> classifier) {
+    public <K> Map<K, List<T>> groupTo(Function<? super T, ? extends K> classifier) {
         final Supplier<Map<K, List<T>>> mapFactory = Fn.Suppliers.ofMap();
 
-        return toMap2(classifier, mapFactory);
+        return groupTo(classifier, mapFactory);
     }
 
     @Override
-    public <K, M extends Map<K, List<T>>> M toMap2(Function<? super T, ? extends K> classifier, Supplier<M> mapFactory) {
+    public <K, M extends Map<K, List<T>>> M groupTo(Function<? super T, ? extends K> classifier, Supplier<M> mapFactory) {
         final Collector<? super T, ?, List<T>> downstream = Collectors.toList();
 
         return toMap(classifier, downstream, mapFactory);
     }
 
     @Override
-    public <K, U> Map<K, List<U>> toMap2(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper) {
+    public <K, U> Map<K, List<U>> groupTo(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper) {
         return toMap(keyExtractor, (Collector<T, ?, List<U>>) (Collector<?, ?, ?>) Collectors.mapping(valueMapper, Collectors.toList()));
     }
 
     @SuppressWarnings("rawtypes")
     @Override
-    public <K, U, M extends Map<K, List<U>>> M toMap2(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
+    public <K, U, M extends Map<K, List<U>>> M groupTo(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
             Supplier<M> mapFactory) {
         return toMap(keyExtractor, (Collector<T, ?, List<U>>) (Collector) Collectors.mapping(valueMapper, Collectors.toList()), mapFactory);
     }

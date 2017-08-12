@@ -518,31 +518,19 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
 
     public abstract <U, R> Stream<R> flatMap(U seed, BiFunction<? super T, ? super U, ? extends Stream<? extends R>> mapper);
 
-    public abstract <R> Stream<R> flatMap2(Function<? super T, ? extends Collection<? extends R>> mapper);
+    public abstract <R> Stream<R> flatCollection(Function<? super T, ? extends Collection<? extends R>> mapper);
 
-    public abstract <U, R> Stream<R> flatMap2(U seed, BiFunction<? super T, ? super U, ? extends Collection<? extends R>> mapper);
+    public abstract <U, R> Stream<R> flatCollection(U seed, BiFunction<? super T, ? super U, ? extends Collection<? extends R>> mapper);
 
-    public abstract <R> Stream<R> flatMap3(Function<? super T, ? extends R[]> mapper);
+    public abstract <R> Stream<R> flatArray(Function<? super T, ? extends R[]> mapper);
 
-    public abstract <U, R> Stream<R> flatMap3(U seed, BiFunction<? super T, ? super U, ? extends R[]> mapper);
+    public abstract <U, R> Stream<R> flatArray(U seed, BiFunction<? super T, ? super U, ? extends R[]> mapper);
 
     public abstract CharStream flatMapToChar(Function<? super T, ? extends CharStream> mapper);
 
-    public abstract CharStream flatMapToChar2(Function<? super T, ? extends Collection<Character>> mapper);
-
-    public abstract CharStream flatMapToChar3(Function<? super T, char[]> mapper);
-
     public abstract ByteStream flatMapToByte(Function<? super T, ? extends ByteStream> mapper);
 
-    public abstract ByteStream flatMapToByte2(Function<? super T, ? extends Collection<Byte>> mapper);
-
-    public abstract ByteStream flatMapToByte3(Function<? super T, byte[]> mapper);
-
     public abstract ShortStream flatMapToShort(Function<? super T, ? extends ShortStream> mapper);
-
-    public abstract ShortStream flatMapToShort2(Function<? super T, ? extends Collection<Short>> mapper);
-
-    public abstract ShortStream flatMapToShort3(Function<? super T, short[]> mapper);
 
     /**
      * Returns an {@code IntStream} consisting of the results of replacing each
@@ -564,10 +552,6 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public abstract IntStream flatMapToInt(Function<? super T, ? extends IntStream> mapper);
 
-    public abstract IntStream flatMapToInt2(Function<? super T, ? extends Collection<Integer>> mapper);
-
-    public abstract IntStream flatMapToInt3(Function<? super T, int[]> mapper);
-
     /**
      * Returns an {@code LongStream} consisting of the results of replacing each
      * element of this stream with the contents of a mapped stream produced by
@@ -588,15 +572,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public abstract LongStream flatMapToLong(Function<? super T, ? extends LongStream> mapper);
 
-    public abstract LongStream flatMapToLong2(Function<? super T, ? extends Collection<Long>> mapper);
-
-    public abstract LongStream flatMapToLong3(Function<? super T, long[]> mapper);
-
     public abstract FloatStream flatMapToFloat(Function<? super T, ? extends FloatStream> mapper);
-
-    public abstract FloatStream flatMapToFloat2(Function<? super T, ? extends Collection<Float>> mapper);
-
-    public abstract FloatStream flatMapToFloa3(Function<? super T, float[]> mapper);
 
     /**
      * Returns an {@code DoubleStream} consisting of the results of replacing
@@ -618,13 +594,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public abstract DoubleStream flatMapToDouble(Function<? super T, ? extends DoubleStream> mapper);
 
-    public abstract DoubleStream flatMapToDouble2(Function<? super T, ? extends Collection<Double>> mapper);
-
-    public abstract DoubleStream flatMapToDouble3(Function<? super T, double[]> mapper);
-
     public abstract <K, V> EntryStream<K, V> flatMapToEntry(Function<? super T, ? extends Stream<? extends Map.Entry<K, V>>> mapper);
-
-    public abstract <K, V> EntryStream<K, V> flatMapToEntry2(Function<? super T, ? extends Map<K, V>> mapper);
 
     public abstract <K> Stream<Map.Entry<K, List<T>>> groupBy(final Function<? super T, ? extends K> classifier);
 
@@ -655,16 +625,10 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     public abstract <K, A, D> Stream<Map.Entry<K, D>> groupBy(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream,
             final Supplier<Map<K, D>> mapFactory);
 
-    public abstract <K, U> Stream<Map.Entry<K, U>> groupBy2(final Function<? super T, ? extends K> keyExtractor,
-            final Function<? super T, ? extends U> valueMapper);
-
-    public abstract <K, U> Stream<Map.Entry<K, U>> groupBy2(final Function<? super T, ? extends K> classifier,
-            final Function<? super T, ? extends U> valueMapper, final Supplier<Map<K, U>> mapFactory);
-
-    public abstract <K, U> Stream<Map.Entry<K, U>> groupBy2(final Function<? super T, ? extends K> classifier,
+    public abstract <K, U> Stream<Map.Entry<K, U>> groupBy(final Function<? super T, ? extends K> classifier,
             final Function<? super T, ? extends U> valueMapper, BinaryOperator<U> mergeFunction);
 
-    public abstract <K, U> Stream<Map.Entry<K, U>> groupBy2(final Function<? super T, ? extends K> classifier,
+    public abstract <K, U> Stream<Map.Entry<K, U>> groupBy(final Function<? super T, ? extends K> classifier,
             final Function<? super T, ? extends U> valueMapper, final BinaryOperator<U> mergeFunction, final Supplier<Map<K, U>> mapFactory);
 
     public abstract <K> EntryStream<K, List<T>> groupByToEntry(final Function<? super T, ? extends K> classifier);
@@ -696,16 +660,10 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     public abstract <K, A, D> EntryStream<K, D> groupByToEntry(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream,
             final Supplier<Map<K, D>> mapFactory);
 
-    public abstract <K, U> EntryStream<K, U> groupByToEntry2(final Function<? super T, ? extends K> classifier,
-            final Function<? super T, ? extends U> valueMapper);
-
-    public abstract <K, U> EntryStream<K, U> groupByToEntry2(final Function<? super T, ? extends K> classifier,
-            final Function<? super T, ? extends U> valueMapper, final Supplier<Map<K, U>> mapFactory);
-
-    public abstract <K, U> EntryStream<K, U> groupByToEntry2(final Function<? super T, ? extends K> classifier,
+    public abstract <K, U> EntryStream<K, U> groupByToEntry(final Function<? super T, ? extends K> classifier,
             final Function<? super T, ? extends U> valueMapper, BinaryOperator<U> mergeFunction);
 
-    public abstract <K, U> EntryStream<K, U> groupByToEntry2(final Function<? super T, ? extends K> classifier,
+    public abstract <K, U> EntryStream<K, U> groupByToEntry(final Function<? super T, ? extends K> classifier,
             final Function<? super T, ? extends U> valueMapper, final BinaryOperator<U> mergeFunction, final Supplier<Map<K, U>> mapFactory);
 
     public abstract Stream<Map.Entry<Boolean, List<T>>> partitionBy(Predicate<? super T> predicate);
@@ -1125,30 +1083,10 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     /**
      * 
      * @param classifier
-     * @param downstream
-     * @return
-     * @see Collectors#groupingBy(Function, Collector)
-     */
-    public abstract <K, A, D> Map<K, D> toMap(final Function<? super T, ? extends K> classifier, final java.util.stream.Collector<? super T, A, D> downstream);
-
-    /**
-     * 
-     * @param classifier
-     * @param downstream
-     * @param mapFactory
-     * @return
-     * @see Collectors#groupingBy(Function, Collector, Supplier)
-     */
-    public abstract <K, A, D, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> classifier,
-            final java.util.stream.Collector<? super T, A, D> downstream, final Supplier<M> mapFactory);
-
-    /**
-     * 
-     * @param classifier
      * @return
      * @see Collectors#groupingBy(Function)
      */
-    public abstract <K> Map<K, List<T>> toMap2(Function<? super T, ? extends K> classifier);
+    public abstract <K> Map<K, List<T>> groupTo(Function<? super T, ? extends K> classifier);
 
     /**
      * 
@@ -1157,9 +1095,9 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      * @see Collectors#groupingBy(Function, Supplier)
      */
-    public abstract <K, M extends Map<K, List<T>>> M toMap2(final Function<? super T, ? extends K> classifier, final Supplier<M> mapFactory);
+    public abstract <K, M extends Map<K, List<T>>> M groupTo(final Function<? super T, ? extends K> classifier, final Supplier<M> mapFactory);
 
-    public abstract <K, U> Map<K, List<U>> toMap2(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper);
+    public abstract <K, U> Map<K, List<U>> groupTo(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper);
 
     /**
      * 
@@ -1169,7 +1107,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      * @see Collectors#toMultimap(Function, Function, Supplier)
      */
-    public abstract <K, U, M extends Map<K, List<U>>> M toMap2(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
+    public abstract <K, U, M extends Map<K, List<U>>> M groupTo(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
             Supplier<M> mapFactory);
 
     /**
