@@ -234,8 +234,6 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      */
     public abstract ByteStream scan(final byte seed, final ByteBiFunction<Byte> accumulator);
 
-    public abstract ByteStream reverseSorted();
-
     public abstract ByteList toByteList();
 
     /**

@@ -395,6 +395,8 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      */
     S sorted();
 
+    S reverseSorted();
+
     S append(S s);
 
     S prepend(S stream);

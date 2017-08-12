@@ -269,8 +269,6 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
      */
     public abstract FloatStream scan(final float seed, final FloatBiFunction<Float> accumulator);
 
-    public abstract FloatStream reverseSorted();
-
     /**
      * <br />
      * This method only run sequentially, even in parallel stream.

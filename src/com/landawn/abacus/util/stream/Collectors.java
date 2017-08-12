@@ -1899,11 +1899,12 @@ public final class Collectors {
      * @param atMostSize
      * @return
      */
-    public static <T> Collector<T, ?, List<T>> maxAll(Comparator<? super T> comparator, int atMostSize) {
+    public static <T> Collector<T, ?, List<T>> maxAll(final Comparator<? super T> comparator, final int atMostSize) {
         final Supplier<Pair<List<T>, T>> supplier = new Supplier<Pair<List<T>, T>>() {
             @Override
             public Pair<List<T>, T> get() {
-                return Pair.of(new ArrayList<>(Math.min(16, atMostSize)), (T) NONE);
+                final List<T> list = new ArrayList<T>(Math.min(16, atMostSize));
+                return Pair.of(list, (T) NONE);
             }
         };
 

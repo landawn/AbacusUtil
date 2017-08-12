@@ -224,8 +224,6 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
      */
     public abstract ShortStream scan(final short seed, final ShortBiFunction<Short> accumulator);
 
-    public abstract ShortStream reverseSorted();
-
     /**
      * <br />
      * This method only run sequentially, even in parallel stream.

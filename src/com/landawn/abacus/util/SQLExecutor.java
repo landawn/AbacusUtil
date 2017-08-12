@@ -521,15 +521,15 @@ public final class SQLExecutor implements Closeable {
     //        return _sqlMapper;
     //    }
 
-    public static SQLExecutor create(final String url, final String user, final String password) {
+    public static SQLExecutor w(final String url, final String user, final String password) {
         return new SQLExecutor(JdbcUtil.createDataSource(url, user, password));
     }
 
-    public static SQLExecutor create(final String driver, final String url, final String user, final String password) {
+    public static SQLExecutor w(final String driver, final String url, final String user, final String password) {
         return new SQLExecutor(JdbcUtil.createDataSource(driver, url, user, password));
     }
 
-    public static SQLExecutor create(final Class<? extends Driver> driverClass, final String url, final String user, final String password) {
+    public static SQLExecutor w(final Class<? extends Driver> driverClass, final String url, final String user, final String password) {
         return new SQLExecutor(JdbcUtil.createDataSource(driverClass, url, user, password));
     }
 

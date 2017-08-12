@@ -1748,6 +1748,11 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
+    public Stream<T> reverseSorted() {
+        return sorted(Fn.reversedOrder());
+    }
+
+    @Override
     public Stream<T> distinct() {
         final Set<Object> set = new HashSet<>();
 

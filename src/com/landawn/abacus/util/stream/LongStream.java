@@ -261,8 +261,6 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      */
     public abstract LongStream scan(final long seed, final LongBiFunction<Long> accumulator);
 
-    public abstract LongStream reverseSorted();
-
     /**
      * <br />
      * This method only run sequentially, even in parallel stream.

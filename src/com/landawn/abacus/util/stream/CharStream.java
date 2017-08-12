@@ -234,8 +234,6 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
      */
     public abstract CharStream scan(final char seed, final CharBiFunction<Character> accumulator);
 
-    public abstract CharStream reverseSorted();
-
     public abstract CharList toCharList();
 
     /**

@@ -270,8 +270,6 @@ public abstract class DoubleStream
      */
     public abstract DoubleStream scan(final double seed, final DoubleBiFunction<Double> accumulator);
 
-    public abstract DoubleStream reverseSorted();
-
     /**
      * <br />
      * This method only run sequentially, even in parallel stream.

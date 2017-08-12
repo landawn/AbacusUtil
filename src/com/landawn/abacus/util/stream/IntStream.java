@@ -285,8 +285,6 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      */
     public abstract IntStream scan(final int seed, final IntBiFunction<Integer> accumulator);
 
-    public abstract IntStream reverseSorted();
-
     /**
      * 
      * <br />
