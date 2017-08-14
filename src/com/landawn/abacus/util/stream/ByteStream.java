@@ -611,7 +611,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
 
     abstract ExByteIterator exIterator();
 
-    public <SS> SS __(Function<? super ByteStream, SS> transfer) {
+    public <R> R __(Function<? super ByteStream, R> transfer) {
         return transfer.apply(this);
     }
 

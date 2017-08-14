@@ -738,7 +738,7 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
 
     abstract ExFloatIterator exIterator();
 
-    public <SS> SS __(Function<? super FloatStream, SS> transfer) {
+    public <R> R __(Function<? super FloatStream, R> transfer) {
         return transfer.apply(this);
     }
 

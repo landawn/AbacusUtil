@@ -616,7 +616,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
 
     abstract ExShortIterator exIterator();
 
-    public <SS> SS __(Function<? super ShortStream, SS> transfer) {
+    public <R> R __(Function<? super ShortStream, R> transfer) {
         return transfer.apply(this);
     }
 

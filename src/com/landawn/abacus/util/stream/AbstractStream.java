@@ -2067,6 +2067,16 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
+    public <R> R toListAndThen(final Function<? super List<T>, R> func) {
+        return func.apply(toList());
+    }
+
+    @Override
+    public <R> R toSetAndThen(final Function<? super Set<T>, R> func) {
+        return func.apply(toSet());
+    }
+
+    @Override
     public Pair<NullabLe<T>, Stream<T>> headAndTail() {
         return Pair.of(head(), tail());
     }

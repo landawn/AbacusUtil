@@ -727,7 +727,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
 
     abstract ExIntIterator exIterator();
 
-    public <SS> SS __(Function<? super IntStream, SS> transfer) {
+    public <R> R __(Function<? super IntStream, R> transfer) {
         return transfer.apply(this);
     }
 

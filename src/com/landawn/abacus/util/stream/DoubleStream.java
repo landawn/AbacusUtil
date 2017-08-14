@@ -726,7 +726,7 @@ public abstract class DoubleStream
 
     abstract ExDoubleIterator exIterator();
 
-    public <SS> SS __(Function<? super DoubleStream, SS> transfer) {
+    public <R> R __(Function<? super DoubleStream, R> transfer) {
         return transfer.apply(this);
     }
 

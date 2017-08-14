@@ -39,6 +39,7 @@ import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.Consumer;
+import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.Supplier;
 
 /**
@@ -949,6 +950,8 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
     S splitor(Splitor splitor);
 
     Try<S> tried();
+
+    <R> R __(Function<? super S, R> transfer);
 
     /**
      * Returns an equivalent stream with an additional close handler.  Close

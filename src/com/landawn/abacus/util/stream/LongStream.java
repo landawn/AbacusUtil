@@ -691,7 +691,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
 
     abstract ExLongIterator exIterator();
 
-    public <SS> SS __(Function<? super LongStream, SS> transfer) {
+    public <R> R __(Function<? super LongStream, R> transfer) {
         return transfer.apply(this);
     }
 

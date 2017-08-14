@@ -800,7 +800,7 @@ public final class Fn {
      * @param action
      * @return
      */
-    public static <T> Consumer<T> indeXed(final IndexedConsumer<T> action) {
+    public static <T> Consumer<T> indexeed(final IndexedConsumer<T> action) {
         N.requireNonNull(action);
 
         return new Consumer<T>() {
@@ -819,7 +819,7 @@ public final class Fn {
      * @param action
      * @return
      */
-    public static <U, T> BiConsumer<U, T> indeXed(final IndexedBiConsumer<U, T> action) {
+    public static <U, T> BiConsumer<U, T> indexeed(final IndexedBiConsumer<U, T> action) {
         N.requireNonNull(action);
 
         return new BiConsumer<U, T>() {
@@ -1855,7 +1855,7 @@ public final class Fn {
         }
 
         public static <T> Consumer<T> indexed(final IndexedConsumer<T> action) {
-            return Fn.indeXed(action);
+            return Fn.indexeed(action);
         }
     }
 
@@ -2018,7 +2018,7 @@ public final class Fn {
         }
 
         public static <U, T> BiConsumer<U, T> indexed(final IndexedBiConsumer<U, T> action) {
-            return Fn.indeXed(action);
+            return Fn.indexeed(action);
         }
     }
 

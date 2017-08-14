@@ -607,7 +607,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
 
     abstract ExCharIterator exIterator();
 
-    public <SS> SS __(Function<? super CharStream, SS> transfer) {
+    public <R> R __(Function<? super CharStream, R> transfer) {
         return transfer.apply(this);
     }
 
