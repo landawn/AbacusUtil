@@ -743,6 +743,10 @@ public final class EntryStream<K, V> {
         return s.toMap(classifier, downstream, mapFactory);
     }
 
+    public <R> R toMapAndThen(Function<? super Map<K, V>, R> func) {
+        return func.apply(toMap());
+    }
+
     /**
      * 
      * @param classifier
@@ -787,6 +791,10 @@ public final class EntryStream<K, V> {
             final Function<? super Map.Entry<K, V>, ? extends VV> valueMapper, final Supplier<M> mapFactory) {
 
         return s.groupTo(keyExtractor, valueMapper, mapFactory);
+    }
+
+    public <R> R groupToAndThen(Function<? super Map<K, List<V>>, R> func) {
+        return func.apply(groupTo());
     }
 
     /**

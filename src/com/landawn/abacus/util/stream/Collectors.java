@@ -368,6 +368,66 @@ public final class Collectors {
         return toCollection(supplier);
     }
 
+    public static <T, C extends Collection<T>> Collector<T, ?, C> toCollection(final Supplier<C> collectionFactory, final int atMostSize) {
+        final BiConsumer<C, T> accumulator = new BiConsumer<C, T>() {
+            @Override
+            public void accept(C c, T t) {
+                if (c.size() < atMostSize) {
+                    c.add(t);
+                }
+            }
+        };
+
+        final BinaryOperator<C> combiner = new BinaryOperator<C>() {
+            @Override
+            public C apply(C a, C b) {
+                if (a.size() < atMostSize) {
+                    final int n = atMostSize - a.size();
+
+                    if (b.size() <= n) {
+                        a.addAll(b);
+                    } else {
+                        if (b instanceof List) {
+                            a.addAll(((List<T>) b).subList(0, n));
+                        } else {
+                            final Iterator<T> iter = b.iterator();
+
+                            for (int i = 0; i < n; i++) {
+                                a.add(iter.next());
+                            }
+                        }
+                    }
+                }
+
+                return a;
+            }
+        };
+
+        return new CollectorImpl<>(collectionFactory, accumulator, combiner, collectionFactory.get() instanceof Set ? CH_UNORDERED_ID : CH_ID);
+    }
+
+    public static <T> Collector<T, ?, List<T>> toList(final int atMostSize) {
+        final Supplier<List<T>> supplier = new Supplier<List<T>>() {
+            @Override
+            public List<T> get() {
+                return new ArrayList<T>(N.min(256, atMostSize));
+            }
+        };
+
+        return toCollection(supplier, atMostSize);
+    }
+
+    public static <T> Collector<T, ?, Set<T>> toSet(final int atMostSize) {
+        final Supplier<Set<T>> supplier = new Supplier<Set<T>>() {
+            @Override
+            public Set<T> get() {
+                return new HashSet<T>(N.initHashCapacity(N.min(256, atMostSize)));
+            }
+        };
+
+        return toCollection(supplier, atMostSize);
+    }
+
     public static <T> Collector<T, ?, Multiset<T>> toMultiset() {
         final Supplier<Multiset<T>> supplier = new Supplier<Multiset<T>>() {
             @Override
