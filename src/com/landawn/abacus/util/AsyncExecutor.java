@@ -176,7 +176,7 @@ public class AsyncExecutor {
     }
 
     public CompletableFuture<Void> execute(final Runnable action, final int retryTimes, final long retryInterval,
-            final Function<? super Throwable, Boolean> retryCondition) {
+            final Function<? super Exception, Boolean> retryCondition) {
         return execute(new Runnable() {
             @Override
             public void run() {
@@ -186,7 +186,7 @@ public class AsyncExecutor {
     }
 
     public <T> CompletableFuture<T> execute(final Callable<T> action, final int retryTimes, final long retryInterval,
-            final BiFunction<? super T, ? super Throwable, Boolean> retryCondition) {
+            final BiFunction<? super T, ? super Exception, Boolean> retryCondition) {
         return execute(new Callable<T>() {
             @Override
             public T call() throws Exception {
@@ -212,7 +212,7 @@ public class AsyncExecutor {
                     try {
                         final CompletableFuture<T> resFuture = scheduledFuture.get();
                         return resFuture == null || resFuture.cancel(mayInterruptIfRunning);
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         return false;
                     }
                 }
@@ -226,7 +226,7 @@ public class AsyncExecutor {
                     try {
                         final CompletableFuture<T> resFuture = scheduledFuture.get();
                         return resFuture == null || resFuture.isCancelled();
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         return false;
                     }
                 }
@@ -240,7 +240,7 @@ public class AsyncExecutor {
                     try {
                         final CompletableFuture<T> resFuture = scheduledFuture.get();
                         return resFuture == null || resFuture.isDone();
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         return false;
                     }
                 }

@@ -33,11 +33,11 @@ public final class Retry<T> {
 
     private final int retryTimes;
     private final long retryInterval;
-    private final Function<? super Throwable, Boolean> retryCondition;
-    private final BiFunction<? super T, ? super Throwable, Boolean> retryCondition2;
+    private final Function<? super Exception, Boolean> retryCondition;
+    private final BiFunction<? super T, ? super Exception, Boolean> retryCondition2;
 
-    Retry(final int retryTimes, final long retryInterval, final Function<? super Throwable, Boolean> retryCondition,
-            final BiFunction<? super T, ? super Throwable, Boolean> retryCondition2) {
+    Retry(final int retryTimes, final long retryInterval, final Function<? super Exception, Boolean> retryCondition,
+            final BiFunction<? super T, ? super Exception, Boolean> retryCondition2) {
 
         this.retryTimes = retryTimes;
         this.retryInterval = retryInterval;
@@ -45,7 +45,7 @@ public final class Retry<T> {
         this.retryCondition2 = retryCondition2;
     }
 
-    public static Retry<Void> of(final int retryTimes, final long retryInterval, final Function<? super Throwable, Boolean> retryCondition) {
+    public static Retry<Void> of(final int retryTimes, final long retryInterval, final Function<? super Exception, Boolean> retryCondition) {
         if (retryTimes < 0 || retryInterval < 0) {
             throw new IllegalArgumentException("'retryTimes' and 'retryInterval' can't be negative");
         }
@@ -55,7 +55,7 @@ public final class Retry<T> {
         return new Retry<Void>(retryTimes, retryInterval, retryCondition, null);
     }
 
-    public static <R> Retry<R> of(final int retryTimes, final long retryInterval, final BiFunction<? super R, ? super Throwable, Boolean> retryCondition) {
+    public static <R> Retry<R> of(final int retryTimes, final long retryInterval, final BiFunction<? super R, ? super Exception, Boolean> retryCondition) {
         if (retryTimes < 0 || retryInterval < 0) {
             throw new IllegalArgumentException("'retryTimes' and 'retryInterval' can't be negative");
         }
@@ -73,7 +73,7 @@ public final class Retry<T> {
     //     * @param retryCondition
     //     * @return
     //     */
-    //    public static Runnable of(final Runnable runnable, final int retryTimes, final long retryInterval, final Function<Throwable, Boolean> retryCondition) {
+    //    public static Runnable of(final Runnable runnable, final int retryTimes, final long retryInterval, final Function<Exception, Boolean> retryCondition) {
     //        if (retryTimes < 0 || retryInterval < 0) {
     //            throw new IllegalArgumentException("'retryTimes' and 'retryInterval' can't be negative");
     //        }
@@ -83,11 +83,11 @@ public final class Retry<T> {
     //            public void run() {
     //                try {
     //                    runnable.run();
-    //                } catch (Throwable e) {
+    //                } catch (Exception e) {
     //                    logger.error("AutoRetry", e);
     //
     //                    int retriedTimes = 0;
-    //                    Throwable throwable = e;
+    //                    Exception throwable = e;
     //
     //                    while (retriedTimes++ < retryTimes && retryCondition.apply(throwable)) {
     //                        try {
@@ -97,7 +97,7 @@ public final class Retry<T> {
     //
     //                            runnable.run();
     //                            return;
-    //                        } catch (Throwable e2) {
+    //                        } catch (Exception e2) {
     //                            logger.error("AutoRetry", e2);
     //
     //                            throwable = e2;
@@ -119,7 +119,7 @@ public final class Retry<T> {
     //     * @return
     //     */
     //    public static <T> Try.Callable<T> of(final Try.Callable<T> callable, final int retryTimes, final long retryInterval,
-    //            final BiFunction<Throwable, ? super T, Boolean> retryCondition) {
+    //            final BiFunction<Exception, ? super T, Boolean> retryCondition) {
     //        if (retryTimes < 0 || retryInterval < 0) {
     //            throw new IllegalArgumentException("'retryTimes' and 'retryInterval' can't be negative");
     //        }
@@ -144,10 +144,10 @@ public final class Retry<T> {
     //                            return result;
     //                        }
     //                    }
-    //                } catch (Throwable e) {
+    //                } catch (Exception e) {
     //                    logger.error("AutoRetry", e);
     //
-    //                    Throwable throwable = e;
+    //                    Exception throwable = e;
     //
     //                    while (retriedTimes++ < retryTimes && retryCondition.apply(throwable, result)) {
     //                        try {
@@ -160,7 +160,7 @@ public final class Retry<T> {
     //                            if (retryCondition.apply(null, result) == false) {
     //                                return result;
     //                            }
-    //                        } catch (Throwable e2) {
+    //                        } catch (Exception e2) {
     //                            logger.error("AutoRetry", e2);
     //
     //                            throwable = e2;
@@ -180,17 +180,17 @@ public final class Retry<T> {
     //    }
 
     //    public static <T> Iterator<T> of(final Iterator<T> iter, final int retryTimes, final long retryInterval,
-    //            final Function<Throwable, Boolean> retryCondition) {
+    //            final Function<Exception, Boolean> retryCondition) {
     //        return new Iterator<T>() {
     //            @Override
     //            public boolean hasNext() {
     //                try {
     //                    return iter.hasNext();
-    //                } catch (Throwable e) {
+    //                } catch (Exception e) {
     //                    logger.error("hasNext", e);
     //
     //                    int retriedTimes = 0;
-    //                    Throwable throwable = e;
+    //                    Exception throwable = e;
     //
     //                    while (retriedTimes++ < retryTimes && retryCondition.apply(throwable)) {
     //                        try {
@@ -199,7 +199,7 @@ public final class Retry<T> {
     //                            }
     //
     //                            return iter.hasNext();
-    //                        } catch (Throwable e2) {
+    //                        } catch (Exception e2) {
     //                            logger.error("hasNext", e2);
     //
     //                            throwable = e2;
@@ -214,11 +214,11 @@ public final class Retry<T> {
     //            public T next() {
     //                try {
     //                    return iter.next();
-    //                } catch (Throwable e) {
+    //                } catch (Exception e) {
     //                    logger.error("next", e);
     //
     //                    int retriedTimes = 0;
-    //                    Throwable throwable = e;
+    //                    Exception throwable = e;
     //
     //                    while (retriedTimes++ < retryTimes && retryCondition.apply(throwable)) {
     //                        try {
@@ -227,7 +227,7 @@ public final class Retry<T> {
     //                            }
     //
     //                            return iter.next();
-    //                        } catch (Throwable e2) {
+    //                        } catch (Exception e2) {
     //                            logger.error("next", e2);
     //
     //                            throwable = e2;
@@ -242,11 +242,11 @@ public final class Retry<T> {
     //            public void remove() {
     //                try {
     //                    iter.remove();
-    //                } catch (Throwable e) {
+    //                } catch (Exception e) {
     //                    logger.error("remove", e);
     //
     //                    int retriedTimes = 0;
-    //                    Throwable throwable = e;
+    //                    Exception throwable = e;
     //
     //                    while (retriedTimes++ < retryTimes && retryCondition.apply(throwable)) {
     //                        try {
@@ -255,7 +255,7 @@ public final class Retry<T> {
     //                            }
     //
     //                            iter.remove();
-    //                        } catch (Throwable e2) {
+    //                        } catch (Exception e2) {
     //                            logger.error("remove", e2);
     //
     //                            throwable = e2;
@@ -443,11 +443,11 @@ public final class Retry<T> {
     public static final class Retry0<T> {
         private final int retryTimes;
         private final long retryInterval;
-        private final Function<? super Throwable, Boolean> retryCondition;
-        private final BiFunction<? super T, ? super Throwable, Boolean> retryCondition2;
+        private final Function<? super Exception, Boolean> retryCondition;
+        private final BiFunction<? super T, ? super Exception, Boolean> retryCondition2;
 
-        Retry0(final int retryTimes, final long retryInterval, final Function<? super Throwable, Boolean> retryCondition,
-                final BiFunction<? super T, ? super Throwable, Boolean> retryCondition2) {
+        Retry0(final int retryTimes, final long retryInterval, final Function<? super Exception, Boolean> retryCondition,
+                final BiFunction<? super T, ? super Exception, Boolean> retryCondition2) {
 
             this.retryTimes = retryTimes;
             this.retryInterval = retryInterval;
@@ -455,7 +455,7 @@ public final class Retry<T> {
             this.retryCondition2 = retryCondition2;
         }
 
-        public static Retry0<Void> of(final int retryTimes, final long retryInterval, final Function<? super Throwable, Boolean> retryCondition) {
+        public static Retry0<Void> of(final int retryTimes, final long retryInterval, final Function<? super Exception, Boolean> retryCondition) {
             if (retryTimes < 0 || retryInterval < 0) {
                 throw new IllegalArgumentException("'retryTimes' and 'retryInterval' can't be negative");
             }
@@ -465,7 +465,7 @@ public final class Retry<T> {
             return new Retry0<Void>(retryTimes, retryInterval, retryCondition, null);
         }
 
-        public static <R> Retry0<R> of(final int retryTimes, final long retryInterval, final BiFunction<? super R, ? super Throwable, Boolean> retryCondition) {
+        public static <R> Retry0<R> of(final int retryTimes, final long retryInterval, final BiFunction<? super R, ? super Exception, Boolean> retryCondition) {
             if (retryTimes < 0 || retryInterval < 0) {
                 throw new IllegalArgumentException("'retryTimes' and 'retryInterval' can't be negative");
             }
