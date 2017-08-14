@@ -7,9 +7,9 @@
 
 3, Add BiFunction<K, V, Map.Entry<K, V>> entry() to Fn
 
-4, Rename toMap2 to groupTo
+4, Rename toMap2 to groupTo, groupBy2 to groupBy
 
-5, groupBy2 to groupBy
+5, Rename flatMap2 to flatCollection and flatMap3 to flatArray.
 
 6, Improvements and bug fix.
 

@@ -48,7 +48,11 @@ import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
+import com.landawn.abacus.util.function.IndexedBiConsumer;
+import com.landawn.abacus.util.function.IndexedBiFunction;
 import com.landawn.abacus.util.function.IndexedBiPredicate;
+import com.landawn.abacus.util.function.IndexedConsumer;
+import com.landawn.abacus.util.function.IndexedFunction;
 import com.landawn.abacus.util.function.IndexedPredicate;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Predicate;
@@ -598,6 +602,234 @@ public final class Fn {
 
     public static ToDoubleFunction<Double> unboxD() {
         return ToDoubleFunction.UNBOX;
+    }
+
+    /**
+     * 
+     * @param predicate
+     * @param limit
+     * @return
+     */
+    public static <T> Predicate<T> limited(final Predicate<T> predicate, final int limit) {
+        N.requireNonNull(predicate);
+
+        return new Predicate<T>() {
+            private final AtomicInteger counter = new AtomicInteger(limit);
+
+            @Override
+            public boolean test(T t) {
+                return predicate.test(t) && counter.decrementAndGet() >= 0;
+            }
+        };
+    }
+
+    /**
+     * 
+     * @param predicate
+     * @param limit
+     * @return
+     */
+    public static <T> Predicate<T> limited(final Predicate<T> predicate, final long limit) {
+        N.requireNonNull(predicate);
+
+        return new Predicate<T>() {
+            private final AtomicLong counter = new AtomicLong(limit);
+
+            @Override
+            public boolean test(T t) {
+                return predicate.test(t) && counter.decrementAndGet() >= 0;
+            }
+        };
+    }
+
+    /** 
+     * 
+     * @param predicate
+     * @param limit
+     * @return
+     */
+    public static <T, U> BiPredicate<T, U> limited(final BiPredicate<T, U> predicate, final int limit) {
+        N.requireNonNull(predicate);
+
+        return new BiPredicate<T, U>() {
+            private final AtomicInteger counter = new AtomicInteger(limit);
+
+            @Override
+            public boolean test(T t, U u) {
+                return predicate.test(t, u) && counter.decrementAndGet() >= 0;
+            }
+        };
+    }
+
+    /**
+     * 
+     * @param predicate
+     * @param limit
+     * @return
+     */
+    public static <T, U> BiPredicate<T, U> limited(final BiPredicate<T, U> predicate, final long limit) {
+        N.requireNonNull(predicate);
+
+        return new BiPredicate<T, U>() {
+            private final AtomicLong counter = new AtomicLong(limit);
+
+            @Override
+            public boolean test(T t, U u) {
+                return predicate.test(t, u) && counter.decrementAndGet() >= 0;
+            }
+        };
+    }
+
+    /**
+     * 
+     * @param predicate
+     * @param limit
+     * @return
+     */
+    public static <A, B, C> TriPredicate<A, B, C> limited(final TriPredicate<A, B, C> predicate, final int limit) {
+        N.requireNonNull(predicate);
+
+        return new TriPredicate<A, B, C>() {
+            private final AtomicInteger counter = new AtomicInteger(limit);
+
+            @Override
+            public boolean test(A a, B b, C c) {
+                return predicate.test(a, b, c) && counter.decrementAndGet() >= 0;
+            }
+        };
+    }
+
+    /**
+     * 
+     * @param predicate
+     * @param limit
+     * @return
+     */
+    public static <A, B, C> TriPredicate<A, B, C> limited(final TriPredicate<A, B, C> predicate, final long limit) {
+        N.requireNonNull(predicate);
+
+        return new TriPredicate<A, B, C>() {
+            private final AtomicLong counter = new AtomicLong(limit);
+
+            @Override
+            public boolean test(A a, B b, C c) {
+                return predicate.test(a, b, c) && counter.decrementAndGet() >= 0;
+            }
+        };
+    }
+
+    /**
+     * Returns a stateful <code>Predicate</code> which should not be used in parallel stream.
+     * 
+     * @param predicate
+     * @return
+     */
+    public static <T> Predicate<T> indexed(final IndexedPredicate<T> predicate) {
+        N.requireNonNull(predicate);
+
+        return new Predicate<T>() {
+            private final AtomicInteger idx = new AtomicInteger(0);
+
+            @Override
+            public boolean test(T t) {
+                return predicate.test(idx.getAndIncrement(), t);
+            }
+        };
+    }
+
+    /**
+     * Returns a stateful <code>BiPredicate</code> which should not be used in parallel stream.
+     * 
+     * @param predicate
+     * @return
+     */
+    public static <U, T> BiPredicate<U, T> indexed(final IndexedBiPredicate<U, T> predicate) {
+        N.requireNonNull(predicate);
+
+        return new BiPredicate<U, T>() {
+            private final AtomicInteger idx = new AtomicInteger(0);
+
+            @Override
+            public boolean test(U u, T t) {
+                return predicate.test(u, idx.getAndIncrement(), t);
+            }
+        };
+    }
+
+    /**
+     * Returns a stateful <code>Function</code> which should not be used in parallel stream.
+     * 
+     * @param func
+     * @return
+     */
+    public static <T, R> Function<T, R> indexed(final IndexedFunction<T, R> func) {
+        N.requireNonNull(func);
+
+        return new Function<T, R>() {
+            private final AtomicInteger idx = new AtomicInteger(0);
+
+            @Override
+            public R apply(T t) {
+                return func.apply(idx.getAndIncrement(), t);
+            }
+        };
+    }
+
+    /**
+     * Returns a stateful <code>BiFunction</code> which should not be used in parallel stream.
+     * 
+     * @param func
+     * @return
+     */
+    public static <U, T, R> BiFunction<U, T, R> indexed(final IndexedBiFunction<U, T, R> func) {
+        N.requireNonNull(func);
+
+        return new BiFunction<U, T, R>() {
+            private final AtomicInteger idx = new AtomicInteger(0);
+
+            @Override
+            public R apply(U u, T t) {
+                return func.apply(u, idx.getAndIncrement(), t);
+            }
+        };
+    }
+
+    /**
+     * Returns a stateful <code>Consumer</code> which should not be used in parallel stream.
+     * 
+     * @param action
+     * @return
+     */
+    public static <T> Consumer<T> indexed(final IndexedConsumer<T> action) {
+        N.requireNonNull(action);
+
+        return new Consumer<T>() {
+            private final AtomicInteger idx = new AtomicInteger(0);
+
+            @Override
+            public void accept(T t) {
+                action.accept(idx.getAndIncrement(), t);
+            }
+        };
+    }
+
+    /**
+     * Returns a stateful <code>BiConsumer</code> which should not be used in parallel stream.
+     * 
+     * @param action
+     * @return
+     */
+    public static <U, T> BiConsumer<U, T> indexed(final IndexedBiConsumer<U, T> action) {
+        N.requireNonNull(action);
+
+        return new BiConsumer<U, T>() {
+            private final AtomicInteger idx = new AtomicInteger(0);
+
+            @Override
+            public void accept(U u, T t) {
+                action.accept(u, idx.getAndIncrement(), t);
+            }
+        };
     }
 
     public static <T> Collector<T, ?, List<T>> toList() {
@@ -1470,61 +1702,8 @@ public final class Fn {
             };
         }
 
-        /**
-         * 
-         * @param predicate
-         * @param limit
-         * @return
-         */
-        public static <T> Predicate<T> limited(final Predicate<T> predicate, final int limit) {
-            N.requireNonNull(predicate);
-
-            return new Predicate<T>() {
-                private final AtomicInteger counter = new AtomicInteger(limit);
-
-                @Override
-                public boolean test(T t) {
-                    return predicate.test(t) && counter.decrementAndGet() >= 0;
-                }
-            };
-        }
-
-        /**
-         * 
-         * @param predicate
-         * @param limit
-         * @return
-         */
-        public static <T> Predicate<T> limited(final Predicate<T> predicate, final long limit) {
-            N.requireNonNull(predicate);
-
-            return new Predicate<T>() {
-                private final AtomicLong counter = new AtomicLong(limit);
-
-                @Override
-                public boolean test(T t) {
-                    return predicate.test(t) && counter.decrementAndGet() >= 0;
-                }
-            };
-        }
-
-        /**
-         * Returns a stateful predicate which should not be used in parallel stream.
-         * 
-         * @param predicate
-         * @return
-         */
-        public static <T> Predicate<T> _indexed(final IndexedPredicate<T> predicate) {
-            N.requireNonNull(predicate);
-
-            return new Predicate<T>() {
-                private final AtomicInteger idx = new AtomicInteger(0);
-
-                @Override
-                public boolean test(T t) {
-                    return predicate.test(idx.getAndIncrement(), t);
-                }
-            };
+        public static <T> Predicate<T> indexed(final IndexedPredicate<T> predicate) {
+            return Fn.indexed(predicate);
         }
     }
 
@@ -1606,61 +1785,8 @@ public final class Fn {
             return ALWAYS_FALSE;
         }
 
-        /** 
-         * 
-         * @param predicate
-         * @param limit
-         * @return
-         */
-        public static <T, U> BiPredicate<T, U> limited(final BiPredicate<T, U> predicate, final int limit) {
-            N.requireNonNull(predicate);
-
-            return new BiPredicate<T, U>() {
-                private final AtomicInteger counter = new AtomicInteger(limit);
-
-                @Override
-                public boolean test(T t, U u) {
-                    return predicate.test(t, u) && counter.decrementAndGet() >= 0;
-                }
-            };
-        }
-
-        /**
-         * 
-         * @param predicate
-         * @param limit
-         * @return
-         */
-        public static <T, U> BiPredicate<T, U> limited(final BiPredicate<T, U> predicate, final long limit) {
-            N.requireNonNull(predicate);
-
-            return new BiPredicate<T, U>() {
-                private final AtomicLong counter = new AtomicLong(limit);
-
-                @Override
-                public boolean test(T t, U u) {
-                    return predicate.test(t, u) && counter.decrementAndGet() >= 0;
-                }
-            };
-        }
-
-        /**
-         * Returns a stateful predicate which should not be used in parallel stream.
-         * 
-         * @param predicate
-         * @return
-         */
-        public static <U, T> BiPredicate<U, T> _indexed(final IndexedBiPredicate<U, T> predicate) {
-            N.requireNonNull(predicate);
-
-            return new BiPredicate<U, T>() {
-                private final AtomicInteger idx = new AtomicInteger(0);
-
-                @Override
-                public boolean test(U u, T t) {
-                    return predicate.test(u, idx.getAndIncrement(), t);
-                }
-            };
+        public static <U, T> BiPredicate<U, T> indexed(final IndexedBiPredicate<U, T> predicate) {
+            return Fn.indexed(predicate);
         }
     }
 
@@ -1692,44 +1818,6 @@ public final class Fn {
 
         public static <A, B, C> TriPredicate<A, B, C> alwaysFalse() {
             return ALWAYS_FALSE;
-        }
-
-        /**
-         * 
-         * @param predicate
-         * @param limit
-         * @return
-         */
-        public static <A, B, C> TriPredicate<A, B, C> limited(final TriPredicate<A, B, C> predicate, final int limit) {
-            N.requireNonNull(predicate);
-
-            return new TriPredicate<A, B, C>() {
-                private final AtomicInteger counter = new AtomicInteger(limit);
-
-                @Override
-                public boolean test(A a, B b, C c) {
-                    return predicate.test(a, b, c) && counter.decrementAndGet() >= 0;
-                }
-            };
-        }
-
-        /**
-         * 
-         * @param predicate
-         * @param limit
-         * @return
-         */
-        public static <A, B, C> TriPredicate<A, B, C> limited(final TriPredicate<A, B, C> predicate, final long limit) {
-            N.requireNonNull(predicate);
-
-            return new TriPredicate<A, B, C>() {
-                private final AtomicLong counter = new AtomicLong(limit);
-
-                @Override
-                public boolean test(A a, B b, C c) {
-                    return predicate.test(a, b, c) && counter.decrementAndGet() >= 0;
-                }
-            };
         }
 
     }
@@ -1764,6 +1852,10 @@ public final class Fn {
                     func.apply(t);
                 }
             };
+        }
+
+        public static <T> Consumer<T> indexed(final IndexedConsumer<T> action) {
+            return Fn.indexed(action);
         }
     }
 
@@ -1924,6 +2016,10 @@ public final class Fn {
                 }
             };
         }
+
+        public static <U, T> BiConsumer<U, T> indexed(final IndexedBiConsumer<U, T> action) {
+            return Fn.indexed(action);
+        }
     }
 
     public static final class TriConsumers {
@@ -1980,6 +2076,9 @@ public final class Fn {
             };
         }
 
+        public static <T, R> Function<T, R> indexed(final IndexedFunction<T, R> func) {
+            return Fn.indexed(func);
+        }
     }
 
     public static final class BiFunctions {
@@ -2171,6 +2270,10 @@ public final class Fn {
                     return Optional.empty();
                 }
             };
+        }
+
+        public static <U, T, R> BiFunction<U, T, R> indexed(final IndexedBiFunction<U, T, R> func) {
+            return Fn.indexed(func);
         }
     }
 

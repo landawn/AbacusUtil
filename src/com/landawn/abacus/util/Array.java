@@ -4940,7 +4940,7 @@ public final class Array {
                 if (queue.size() < k) {
                     queue.add(a[i]);
                 } else {
-                    if (N.compare(a[i], queue.peek(), comparator) > 0) {
+                    if (comparator.compare(a[i], queue.peek()) > 0) {
                         queue.remove();
                         queue.add(a[i]);
                     }
@@ -4960,7 +4960,7 @@ public final class Array {
                 if (queue.size() < k) {
                     queue.add(a[i]);
                 } else {
-                    if (N.compare(a[i], queue.peek(), comparator) < 0) {
+                    if (comparator.compare(a[i], queue.peek()) < 0) {
                         queue.remove();
                         queue.add(a[i]);
                     }
@@ -5015,7 +5015,7 @@ public final class Array {
                 if (queue.size() < k) {
                     queue.add(e);
                 } else {
-                    if (N.compare(e, queue.peek(), comparator) > 0) {
+                    if (comparator.compare(e, queue.peek()) > 0) {
                         queue.remove();
                         queue.add(e);
                     }
@@ -5047,7 +5047,7 @@ public final class Array {
                 if (queue.size() < k) {
                     queue.add(e);
                 } else {
-                    if (N.compare(e, queue.peek(), comparator) < 0) {
+                    if (comparator.compare(e, queue.peek()) < 0) {
                         queue.remove();
                         queue.add(e);
                     }

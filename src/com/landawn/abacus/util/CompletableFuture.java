@@ -75,7 +75,7 @@ public class CompletableFuture<T> implements Future<T> {
         return run(action, commonPool);
     }
 
-    public static <T> CompletableFuture<T> run(final Try.Callable<T> action) {
+    public static <T> CompletableFuture<T> run(final Try.Callable<T, RuntimeException> action) {
         return run(action, commonPool);
     }
 
@@ -87,7 +87,7 @@ public class CompletableFuture<T> implements Future<T> {
         return new CompletableFuture<>(futureTask, null, executor);
     }
 
-    public static <T> CompletableFuture<T> run(final Try.Callable<T> action, final Executor executor) {
+    public static <T> CompletableFuture<T> run(final Try.Callable<T, RuntimeException> action, final Executor executor) {
         final FutureTask<T> futureTask = new FutureTask<>(action);
 
         executor.execute(futureTask);
@@ -503,7 +503,7 @@ public class CompletableFuture<T> implements Future<T> {
         });
     }
 
-    public <U> CompletableFuture<U> thenCall(final Try.Callable<U> action) {
+    public <U> CompletableFuture<U> thenCall(final Try.Callable<U, RuntimeException> action) {
         return execute(new Callable<U>() {
             @Override
             public U call() throws Exception {
@@ -566,7 +566,7 @@ public class CompletableFuture<T> implements Future<T> {
         }, other);
     }
 
-    public <U> CompletableFuture<U> callAfterBoth(final CompletableFuture<?> other, final Try.Callable<U> action) {
+    public <U> CompletableFuture<U> callAfterBoth(final CompletableFuture<?> other, final Try.Callable<U, RuntimeException> action) {
         return execute(new Callable<U>() {
             @Override
             public U call() throws Exception {
@@ -633,7 +633,7 @@ public class CompletableFuture<T> implements Future<T> {
         }, other);
     }
 
-    public <U> CompletableFuture<U> callAfterEither(final CompletableFuture<?> other, final Try.Callable<U> action) {
+    public <U> CompletableFuture<U> callAfterEither(final CompletableFuture<?> other, final Try.Callable<U, RuntimeException> action) {
         return execute(new Callable<U>() {
             @Override
             public U call() throws Exception {

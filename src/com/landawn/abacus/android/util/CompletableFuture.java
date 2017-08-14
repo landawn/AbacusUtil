@@ -491,7 +491,7 @@ public class CompletableFuture<T> implements Future<T> {
         });
     }
 
-    public <U> CompletableFuture<U> thenCall(final Try.Callable<U> action) {
+    public <U> CompletableFuture<U> thenCall(final Try.Callable<U, RuntimeException> action) {
         return execute(new Callable<U>() {
             @Override
             public U call() throws Exception {
@@ -533,7 +533,7 @@ public class CompletableFuture<T> implements Future<T> {
         return withUIExecutor().thenRun(action);
     }
 
-    public <U> CompletableFuture<U> thenCallOnUI(final Try.Callable<U> action) {
+    public <U> CompletableFuture<U> thenCallOnUI(final Try.Callable<U, RuntimeException> action) {
         return withUIExecutor().thenCall(action);
     }
 
@@ -557,7 +557,7 @@ public class CompletableFuture<T> implements Future<T> {
         return withTPExecutor().thenRun(action);
     }
 
-    public <U> CompletableFuture<U> thenCallByTP(final Try.Callable<U> action) {
+    public <U> CompletableFuture<U> thenCallByTP(final Try.Callable<U, RuntimeException> action) {
         return withTPExecutor().thenCall(action);
     }
 
@@ -603,7 +603,7 @@ public class CompletableFuture<T> implements Future<T> {
         }, other);
     }
 
-    public <U> CompletableFuture<U> callAfterBoth(final CompletableFuture<?> other, final Try.Callable<U> action) {
+    public <U> CompletableFuture<U> callAfterBoth(final CompletableFuture<?> other, final Try.Callable<U, RuntimeException> action) {
         return execute(new Callable<U>() {
             @Override
             public U call() throws Exception {
@@ -647,7 +647,7 @@ public class CompletableFuture<T> implements Future<T> {
         return withUIExecutor().runAfterBoth(other, action);
     }
 
-    public <U> CompletableFuture<U> callOnUIAfterBoth(final CompletableFuture<?> other, final Try.Callable<U> action) {
+    public <U> CompletableFuture<U> callOnUIAfterBoth(final CompletableFuture<?> other, final Try.Callable<U, RuntimeException> action) {
         return withUIExecutor().callAfterBoth(other, action);
     }
 
@@ -671,7 +671,7 @@ public class CompletableFuture<T> implements Future<T> {
         return withTPExecutor().runAfterBoth(other, action);
     }
 
-    public <U> CompletableFuture<U> callByTPAfterBoth(final CompletableFuture<?> other, final Try.Callable<U> action) {
+    public <U> CompletableFuture<U> callByTPAfterBoth(final CompletableFuture<?> other, final Try.Callable<U, RuntimeException> action) {
         return withTPExecutor().callAfterBoth(other, action);
     }
 
@@ -716,7 +716,7 @@ public class CompletableFuture<T> implements Future<T> {
         }, other);
     }
 
-    public <U> CompletableFuture<U> callAfterEither(final CompletableFuture<?> other, final Try.Callable<U> action) {
+    public <U> CompletableFuture<U> callAfterEither(final CompletableFuture<?> other, final Try.Callable<U, RuntimeException> action) {
         return execute(new Callable<U>() {
             @Override
             public U call() throws Exception {
@@ -761,7 +761,7 @@ public class CompletableFuture<T> implements Future<T> {
         return withUIExecutor().runAfterEither(other, action);
     }
 
-    public <U> CompletableFuture<U> callOnUIAfterEither(final CompletableFuture<?> other, final Try.Callable<U> action) {
+    public <U> CompletableFuture<U> callOnUIAfterEither(final CompletableFuture<?> other, final Try.Callable<U, RuntimeException> action) {
         return withUIExecutor().callAfterEither(other, action);
     }
 
@@ -785,7 +785,7 @@ public class CompletableFuture<T> implements Future<T> {
         return withTPExecutor().runAfterEither(other, action);
     }
 
-    public <U> CompletableFuture<U> callByTPAfterEither(final CompletableFuture<?> other, final Try.Callable<U> action) {
+    public <U> CompletableFuture<U> callByTPAfterEither(final CompletableFuture<?> other, final Try.Callable<U, RuntimeException> action) {
         return withTPExecutor().callAfterEither(other, action);
     }
 

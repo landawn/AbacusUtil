@@ -121,7 +121,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public <U> Stream<T> takeWhile(final U seed, final BiPredicate<? super T, ? super U> predicate) {
-        return filter(new Predicate<T>() {
+        return takeWhile(new Predicate<T>() {
             @Override
             public boolean test(T value) {
                 return predicate.test(value, seed);
@@ -131,7 +131,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public <U> Stream<T> dropWhile(final U seed, final BiPredicate<? super T, ? super U> predicate) {
-        return filter(new Predicate<T>() {
+        return dropWhile(new Predicate<T>() {
             @Override
             public boolean test(T value) {
                 return predicate.test(value, seed);

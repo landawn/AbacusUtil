@@ -1247,7 +1247,7 @@ class IteratorStream<T> extends AbstractStream<T> {
                     final Comparator<Indexed<T>> pairCmp = new Comparator<Indexed<T>>() {
                         @Override
                         public int compare(final Indexed<T> o1, final Indexed<T> o2) {
-                            return N.compare(o1.value(), o2.value(), comparator);
+                            return comparator.compare(o1.value(), o2.value());
                         }
                     };
 
@@ -1990,7 +1990,7 @@ class IteratorStream<T> extends AbstractStream<T> {
             if (queue.size() < k) {
                 queue.offer(e);
             } else {
-                if (N.compare(e, queue.peek(), comparator) > 0) {
+                if (comparator.compare(e, queue.peek()) > 0) {
                     queue.poll();
                     queue.offer(e);
                 }

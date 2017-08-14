@@ -50,7 +50,7 @@ public final class Synchronized<T> {
         }
     }
 
-    public <R> R call(final Try.Callable<R> cmd) {
+    public <R> R call(final Try.Callable<R, RuntimeException> cmd) {
         synchronized (target) {
             return cmd.call();
         }

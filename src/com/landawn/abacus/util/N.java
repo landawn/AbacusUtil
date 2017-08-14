@@ -20149,7 +20149,7 @@ public final class N {
         } : new Comparator<IndexedShort>() {
             @Override
             public int compare(final IndexedShort o1, final IndexedShort o2) {
-                return N.compare(o1.value(), o2.value(), cmp);
+                return cmp.compare(o1.value(), o2.value());
             }
         };
 
@@ -20216,7 +20216,7 @@ public final class N {
         } : new Comparator<IndexedInt>() {
             @Override
             public int compare(final IndexedInt o1, final IndexedInt o2) {
-                return N.compare(o1.value(), o2.value(), cmp);
+                return cmp.compare(o1.value(), o2.value());
             }
         };
 
@@ -20283,7 +20283,7 @@ public final class N {
         } : new Comparator<IndexedLong>() {
             @Override
             public int compare(final IndexedLong o1, final IndexedLong o2) {
-                return N.compare(o1.value(), o2.value(), cmp);
+                return cmp.compare(o1.value(), o2.value());
             }
         };
 
@@ -20350,7 +20350,7 @@ public final class N {
         } : new Comparator<IndexedFloat>() {
             @Override
             public int compare(final IndexedFloat o1, final IndexedFloat o2) {
-                return N.compare(o1.value(), o2.value(), cmp);
+                return cmp.compare(o1.value(), o2.value());
             }
         };
 
@@ -20417,7 +20417,7 @@ public final class N {
         } : new Comparator<IndexedDouble>() {
             @Override
             public int compare(final IndexedDouble o1, final IndexedDouble o2) {
-                return N.compare(o1.value(), o2.value(), cmp);
+                return cmp.compare(o1.value(), o2.value());
             }
         };
 
@@ -20485,7 +20485,7 @@ public final class N {
         } : new Comparator<Indexed<T>>() {
             @Override
             public int compare(final Indexed<T> o1, final Indexed<T> o2) {
-                return N.compare(o1.value(), o2.value(), cmp);
+                return cmp.compare(o1.value(), o2.value());
             }
         };
 
@@ -20567,7 +20567,7 @@ public final class N {
         } : new Comparator<Indexed<T>>() {
             @Override
             public int compare(final Indexed<T> o1, final Indexed<T> o2) {
-                return N.compare(o1.value(), o2.value(), cmp);
+                return cmp.compare(o1.value(), o2.value());
             }
         };
 

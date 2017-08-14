@@ -297,7 +297,7 @@ public final class Retry<T> {
         }
     }
 
-    public T call(final Try.Callable<T> callable) {
+    public T call(final Try.Callable<T, RuntimeException> callable) {
         T result = null;
         int retriedTimes = 0;
 

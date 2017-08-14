@@ -42,10 +42,10 @@ public final class Try<T extends AutoCloseable> {
         return new Try<>(t);
     }
 
-    public static <T extends AutoCloseable> Try<T> of(final Supplier<T, ? extends Throwable> supplier) {
+    public static <T extends AutoCloseable> Try<T> of(final Supplier<T, ? extends Exception> supplier) {
         try {
             return new Try<>(supplier.get());
-        } catch (Throwable e) {
+        } catch (Exception e) {
             throw N.toRuntimeException(e);
         }
     }
@@ -103,190 +103,234 @@ public final class Try<T extends AutoCloseable> {
     //        };
     //    }
 
-    public static void run(final Try.Runnable<? extends Throwable> cmd) {
-        run(cmd, null);
-    }
-
-    public static void run(final Try.Runnable<? extends Throwable> cmd, final com.landawn.abacus.util.function.Consumer<? super Throwable> actionOnError) {
+    /**
+     * 
+     * @param cmd
+     * @throws RuntimeException if some error happens
+     */
+    public static void run(final Try.Runnable<? extends Exception> cmd) {
         try {
             cmd.run();
-        } catch (Throwable e) {
-            if (actionOnError == null) {
-                throw N.toRuntimeException(e);
-            } else {
-                actionOnError.accept(e);
-            }
+        } catch (Exception e) {
+            throw N.toRuntimeException(e);
         }
     }
 
-    public static <R> R call(final java.util.concurrent.Callable<R> cmd) {
-        return call(cmd, null);
+    public static void run(final Try.Runnable<? extends Exception> cmd, final com.landawn.abacus.util.function.Consumer<? super Exception> actionOnError) {
+        N.requireNonNull(actionOnError);
+
+        try {
+            cmd.run();
+        } catch (Exception e) {
+            actionOnError.accept(e);
+        }
     }
 
-    public static <R> R call(final java.util.concurrent.Callable<R> cmd, final com.landawn.abacus.util.function.Function<? super Throwable, R> actionOnError) {
+    /**
+     * 
+     * @param cmd
+     * @return
+     * @throws RuntimeException if some error happens
+     */
+    public static <R> R call(final java.util.concurrent.Callable<R> cmd) {
         try {
             return cmd.call();
-        } catch (Throwable e) {
-            if (actionOnError == null) {
-                throw N.toRuntimeException(e);
+        } catch (Exception e) {
+            throw N.toRuntimeException(e);
+        }
+    }
+
+    public static <R> R call(final java.util.concurrent.Callable<R> cmd, final com.landawn.abacus.util.function.Function<? super Exception, R> actionOnError) {
+        N.requireNonNull(actionOnError);
+
+        try {
+            return cmd.call();
+        } catch (Exception e) {
+            return actionOnError.apply(e);
+        }
+    }
+
+    public static <R> R call(final java.util.concurrent.Callable<R> cmd, final com.landawn.abacus.util.function.Supplier<R> supplier) {
+        N.requireNonNull(supplier);
+
+        try {
+            return cmd.call();
+        } catch (Exception e) {
+            return supplier.get();
+        }
+    }
+
+    public static <R> R call(final java.util.concurrent.Callable<R> cmd, final R defaultValue) {
+        try {
+            return cmd.call();
+        } catch (Exception e) {
+            return defaultValue;
+        }
+    }
+
+    /**
+     * 
+     * @param cmd
+     * @param predicate
+     * @param supplier
+     * @return the value returned <code>Supplier.get()</code> if some error happens and <code>predicate</code> return true.
+     * @throws RuntimeException if some error happens and <code>predicate</code> return false.
+     */
+    public static <R> R call(final java.util.concurrent.Callable<R> cmd, final com.landawn.abacus.util.function.Predicate<? super Exception> predicate,
+            final com.landawn.abacus.util.function.Supplier<R> supplier) {
+        N.requireNonNull(predicate);
+        N.requireNonNull(supplier);
+
+        try {
+            return cmd.call();
+        } catch (Exception e) {
+            if (predicate.test(e)) {
+                return supplier.get();
             } else {
-                return actionOnError.apply(e);
+                throw N.toRuntimeException(e);
             }
         }
     }
 
-    public void run(final Try.Consumer<? super T, ? extends Throwable> cmd) {
-        run(cmd, null);
+    /**
+     * 
+     * @param cmd
+     * @param predicate
+     * @param defaultValue
+     * @return the <code>defaultValue()</code> if some error happens and <code>predicate</code> return true.
+     * @throws RuntimeException if some error happens and <code>predicate</code> return false.
+     */
+    public static <R> R call(final java.util.concurrent.Callable<R> cmd, final com.landawn.abacus.util.function.Predicate<? super Exception> predicate,
+            final R defaultValue) {
+        N.requireNonNull(predicate);
+
+        try {
+            return cmd.call();
+        } catch (Exception e) {
+            if (predicate.test(e)) {
+                return defaultValue;
+            } else {
+                throw N.toRuntimeException(e);
+            }
+        }
     }
 
-    public void run(final Try.Consumer<? super T, ? extends Throwable> cmd, final com.landawn.abacus.util.function.Consumer<? super Throwable> actionOnError) {
+    public void run(final Try.Consumer<? super T, ? extends Exception> cmd) {
         try {
             cmd.accept(t);
-        } catch (Throwable e) {
-            if (actionOnError == null) {
-                throw N.toRuntimeException(e);
-            } else {
-                actionOnError.accept(e);
-            }
+        } catch (Exception e) {
+            throw N.toRuntimeException(e);
         } finally {
             IOUtil.close(t);
         }
     }
 
-    public <R> R call(final Try.Function<? super T, R, ? extends Throwable> cmd) {
-        return call(cmd, null);
+    public void run(final Try.Consumer<? super T, ? extends Exception> cmd, final com.landawn.abacus.util.function.Consumer<? super Exception> actionOnError) {
+        N.requireNonNull(actionOnError);
+
+        try {
+            cmd.accept(t);
+        } catch (Exception e) {
+            actionOnError.accept(e);
+        } finally {
+            IOUtil.close(t);
+        }
     }
 
-    public <R> R call(final Try.Function<? super T, R, ? extends Throwable> cmd,
-            final com.landawn.abacus.util.function.Function<? super Throwable, R> actionOnError) {
+    public <R> R call(final Try.Function<? super T, R, ? extends Exception> cmd) {
         try {
             return cmd.apply(t);
-        } catch (Throwable e) {
-            if (actionOnError == null) {
-                throw N.toRuntimeException(e);
+        } catch (Exception e) {
+            throw N.toRuntimeException(e);
+        } finally {
+            IOUtil.close(t);
+        }
+    }
+
+    public <R> R call(final Try.Function<? super T, R, ? extends Exception> cmd,
+            final com.landawn.abacus.util.function.Function<? super Exception, R> actionOnError) {
+        N.requireNonNull(actionOnError);
+
+        try {
+            return cmd.apply(t);
+        } catch (Exception e) {
+            return actionOnError.apply(e);
+        } finally {
+            IOUtil.close(t);
+        }
+    }
+
+    public <R> R call(final Try.Function<? super T, R, ? extends Exception> cmd, final com.landawn.abacus.util.function.Supplier<R> supplier) {
+        N.requireNonNull(supplier);
+
+        try {
+            return cmd.apply(t);
+        } catch (Exception e) {
+            return supplier.get();
+        } finally {
+            IOUtil.close(t);
+        }
+    }
+
+    public <R> R call(final Try.Function<? super T, R, ? extends Exception> cmd, final R defaultValue) {
+        try {
+            return cmd.apply(t);
+        } catch (Exception e) {
+            return defaultValue;
+        } finally {
+            IOUtil.close(t);
+        }
+    }
+
+    public <R> R call(final Try.Function<? super T, R, ? extends Exception> cmd, final com.landawn.abacus.util.function.Predicate<? super Exception> predicate,
+            final com.landawn.abacus.util.function.Supplier<R> supplier) {
+        N.requireNonNull(predicate);
+        N.requireNonNull(supplier);
+
+        try {
+            return cmd.apply(t);
+        } catch (Exception e) {
+            if (predicate.test(e)) {
+                return supplier.get();
             } else {
-                return actionOnError.apply(e);
+                throw N.toRuntimeException(e);
             }
         } finally {
             IOUtil.close(t);
         }
     }
 
-    public static final class Try0<T extends AutoCloseable> {
-        private final T t;
+    public <R> R call(final Try.Function<? super T, R, ? extends Exception> cmd, final com.landawn.abacus.util.function.Predicate<? super Exception> predicate,
+            final R defaultValue) {
+        N.requireNonNull(predicate);
 
-        Try0(final T t) {
-            this.t = t;
-        }
-
-        public static <T extends AutoCloseable> Try0<T> of(final T t) {
-            return new Try0<>(t);
-        }
-
-        public static <T extends AutoCloseable> Try0<T> of(final Supplier<T, ? extends Throwable> supplier) {
-            try {
-                return new Try0<>(supplier.get());
-            } catch (Throwable e) {
+        try {
+            return cmd.apply(t);
+        } catch (Exception e) {
+            if (predicate.test(e)) {
+                return defaultValue;
+            } else {
                 throw N.toRuntimeException(e);
             }
-        }
-
-        //    public static Try<Reader> reader(final File file) {
-        //        return of((Reader) IOUtil.createBufferedReader(file));
-        //    }
-        //
-        //    public static Try<Writer> writer(final File file) {
-        //        return of((Writer) IOUtil.createBufferedWriter(file));
-        //    }
-        //
-        //    public static Try<Stream<String>> stream(final File file) {
-        //        final Reader reader = IOUtil.createBufferedReader(file);
-        //
-        //        return new Try<Stream<String>>(Stream.of(reader).onClose(new java.lang.Runnable() {
-        //            @Override
-        //            public void run() {
-        //                IOUtil.close(reader);
-        //            }
-        //        }));
-        //    }
-
-        //    public static java.lang.Runnable of(final Try.Runnable run) {
-        //        return new java.lang.Runnable() {
-        //            @Override
-        //            public void run() {
-        //                try {
-        //                    run.run();
-        //                } catch (Exception e) {
-        //                    throw N.toRuntimeException(e);
-        //                }
-        //            }
-        //        };
-        //    }
-        //
-        //    public static <R> Try.Callable<R> of(final java.util.concurrent.Callable<R> call) {
-        //        return new Try.Callable<R>() {
-        //            @Override
-        //            public R call() {
-        //                try {
-        //                    return call.call();
-        //                } catch (Exception e) {
-        //                    throw N.toRuntimeException(e);
-        //                }
-        //            }
-        //        };
-        //    }
-
-        public void run(final Try.Runnable<? extends Throwable> cmd) {
-            run(cmd, null);
-        }
-
-        public void run(final Try.Runnable<? extends Throwable> cmd, final com.landawn.abacus.util.function.Consumer<? super Throwable> actionOnError) {
-            try {
-                cmd.run();
-            } catch (Throwable e) {
-                if (actionOnError == null) {
-                    throw N.toRuntimeException(e);
-                } else {
-                    actionOnError.accept(e);
-                }
-            } finally {
-                IOUtil.close(t);
-            }
-        }
-
-        public <R> R call(final java.util.concurrent.Callable<R> cmd) {
-            return call(cmd, null);
-        }
-
-        public <R> R call(final java.util.concurrent.Callable<R> cmd, final com.landawn.abacus.util.function.Function<? super Throwable, R> actionOnError) {
-            try {
-                return cmd.call();
-            } catch (Exception e) {
-                if (actionOnError == null) {
-                    throw N.toRuntimeException(e);
-                } else {
-                    return actionOnError.apply(e);
-                }
-            } finally {
-                IOUtil.close(t);
-            }
+        } finally {
+            IOUtil.close(t);
         }
     }
 
-    public static interface Callable<R> extends java.util.concurrent.Callable<R> {
+    public static interface Callable<R, E extends Exception> extends java.util.concurrent.Callable<R> {
         @Override
-        R call();
+        R call() throws E;
     }
 
-    public static interface Runnable<E extends Throwable> {
+    public static interface Runnable<E extends Exception> {
         void run() throws E;
     }
 
-    public static interface Supplier<T, E extends Throwable> {
+    public static interface Supplier<T, E extends Exception> {
         T get() throws E;
     }
 
-    public static interface Predicate<T, E extends Throwable> {
+    public static interface Predicate<T, E extends Exception> {
         boolean test(T t) throws E;
 
         default Predicate<T, E> negate() throws E {
@@ -294,7 +338,7 @@ public final class Try<T extends AutoCloseable> {
         }
     }
 
-    public static interface BiPredicate<T, U, E extends Throwable> {
+    public static interface BiPredicate<T, U, E extends Exception> {
         boolean test(T t, U u) throws E;
 
         default BiPredicate<T, U, E> negate() throws E {
@@ -302,31 +346,31 @@ public final class Try<T extends AutoCloseable> {
         }
     }
 
-    public static interface TriPredicate<A, B, C, E extends Throwable> {
+    public static interface TriPredicate<A, B, C, E extends Exception> {
         boolean test(A a, B b, C c) throws E;
     }
 
-    public static interface Function<T, R, E extends Throwable> {
+    public static interface Function<T, R, E extends Exception> {
         R apply(T t) throws E;
     }
 
-    public static interface BiFunction<T, U, R, E extends Throwable> {
+    public static interface BiFunction<T, U, R, E extends Exception> {
         R apply(T t, U u) throws E;
     }
 
-    public static interface TriFunction<A, B, C, R, E extends Throwable> {
+    public static interface TriFunction<A, B, C, R, E extends Exception> {
         R apply(A a, B b, C c) throws E;
     }
 
-    public static interface Consumer<T, E extends Throwable> {
+    public static interface Consumer<T, E extends Exception> {
         void accept(T t) throws E;
     }
 
-    public static interface BiConsumer<T, U, E extends Throwable> {
+    public static interface BiConsumer<T, U, E extends Exception> {
         void accept(T t, U u) throws E;
     }
 
-    public static interface TriConsumer<A, B, C, E extends Throwable> {
+    public static interface TriConsumer<A, B, C, E extends Exception> {
         void accept(A a, B b, C c) throws E;
     }
 }

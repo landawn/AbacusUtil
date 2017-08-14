@@ -305,4 +305,26 @@ public final class Comparators {
             }
         };
     }
+
+    public static <K, V> Comparator<Map.Entry<K, V>> reversedComparingByKey(final Comparator<? super K> cmp) {
+        N.requireNonNull(cmp);
+
+        return new Comparator<Map.Entry<K, V>>() {
+            @Override
+            public int compare(Map.Entry<K, V> a, Map.Entry<K, V> b) {
+                return cmp.compare(b.getKey(), a.getKey());
+            }
+        };
+    }
+
+    public static <K, V> Comparator<Map.Entry<K, V>> reversedComparingByValue(final Comparator<? super V> cmp) {
+        N.requireNonNull(cmp);
+
+        return new Comparator<Map.Entry<K, V>>() {
+            @Override
+            public int compare(Map.Entry<K, V> a, Map.Entry<K, V> b) {
+                return cmp.compare(b.getValue(), a.getValue());
+            }
+        };
+    }
 }
