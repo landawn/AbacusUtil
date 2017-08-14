@@ -69,6 +69,7 @@ import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.Wrapper;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
+import com.landawn.abacus.util.function.Function;
 
 /**
  * This class is a sequential, stateful and immutable stream implementation.
@@ -550,6 +551,18 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
 
         // ignore, do nothing if it's sequential stream.
         return (S) this;
+    }
+
+    @Override
+    @SuppressWarnings("rawtypes")
+    public <SS extends BaseStream> SS ps(Function<? super S, SS> op) {
+        return (SS) this.parallel().__(op).sequential();
+    }
+
+    @Override
+    @SuppressWarnings("rawtypes")
+    public <SS extends BaseStream> SS ps(int maxThreadNum, Function<? super S, SS> op) {
+        return (SS) this.parallel(maxThreadNum).__(op).sequential();
     }
 
     @Override
