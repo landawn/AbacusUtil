@@ -2303,7 +2303,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
             return result;
         }
 
-        final Multimap<Object, U, List<U>> rightKeyMap = Multimap.from(b, rightKeyMapper);
+        final ListMultimap<Object, U> rightKeyMap = ListMultimap.from(b, rightKeyMapper);
 
         for (T left : coll) {
             final List<U> rights = rightKeyMap.get(leftKeyMapper.apply(left));
@@ -2367,7 +2367,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
                 result.add(Pair.of((T) null, right));
             }
         } else {
-            final Multimap<Object, U, List<U>> rightKeyMap = Multimap.from(b, rightKeyMapper);
+            final ListMultimap<Object, U> rightKeyMap = ListMultimap.from(b, rightKeyMapper);
             final Map<U, U> joinedRights = new IdentityHashMap<>();
 
             for (T left : coll) {
@@ -2461,7 +2461,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
                 result.add(Pair.of(left, (U) null));
             }
         } else {
-            final Multimap<Object, U, List<U>> rightKeyMap = Multimap.from(b, rightKeyMapper);
+            final ListMultimap<Object, U> rightKeyMap = ListMultimap.from(b, rightKeyMapper);
 
             for (T left : coll) {
                 final List<U> rights = rightKeyMap.get(leftKeyMapper.apply(left));
@@ -2536,7 +2536,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
                 result.add(Pair.of((T) null, right));
             }
         } else {
-            final Multimap<Object, T, List<T>> leftKeyMap = Multimap.from(coll, leftKeyMapper);
+            final ListMultimap<Object, T> leftKeyMap = ListMultimap.from(coll, leftKeyMapper);
 
             for (U right : b) {
                 final List<T> lefts = leftKeyMap.get(rightKeyMapper.apply(right));

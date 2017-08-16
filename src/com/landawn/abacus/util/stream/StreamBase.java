@@ -555,13 +555,13 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
 
     @Override
     @SuppressWarnings("rawtypes")
-    public <SS extends BaseStream> SS ps(Function<? super S, SS> op) {
+    public <SS extends BaseStream> SS p_s(Function<? super S, SS> op) {
         return (SS) this.parallel().__(op).sequential();
     }
 
     @Override
     @SuppressWarnings("rawtypes")
-    public <SS extends BaseStream> SS ps(int maxThreadNum, Function<? super S, SS> op) {
+    public <SS extends BaseStream> SS p_s(int maxThreadNum, Function<? super S, SS> op) {
         return (SS) this.parallel(maxThreadNum).__(op).sequential();
     }
 

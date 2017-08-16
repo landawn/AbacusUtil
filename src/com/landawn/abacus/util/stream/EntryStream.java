@@ -46,7 +46,7 @@ import com.landawn.abacus.util.function.Supplier;
  * 
  * @author Haiyang Li
  */
-public final class EntryStream<K, V> {
+public final class EntryStream<K, V> implements AutoCloseable {
 
     private static final Function<Map<Object, Object>, Stream<Map.Entry<Object, Object>>> mapper_func = new Function<Map<Object, Object>, Stream<Map.Entry<Object, Object>>>() {
         @Override
@@ -889,10 +889,117 @@ public final class EntryStream<K, V> {
         return transfer.apply(this);
     }
 
+    /**
+     * @return
+     * @see #mapER(Function, Function)
+     * @deprecated
+     */
+    @Deprecated
+    public EntryStream<V, K> inversedER() {
+        final Function<Map.Entry<K, V>, Map.Entry<V, K>> mapper = new Function<Map.Entry<K, V>, Map.Entry<V, K>>() {
+            private final Pair<V, K> entry = new Pair<>();
+
+            @Override
+            public Entry<V, K> apply(Entry<K, V> e) {
+                entry.set(e.getValue(), e.getKey());
+
+                return entry;
+            }
+        };
+
+        return map(mapper);
+    }
+
+    /**
+     * To reduce the memory footprint, Only one instance of <code>Map.Entry</code> is created, and the same instance is returned and set with different keys/values for iteration of the returned stream.
+     * The elements only can be retrieved one by one, can't be modified or saved.
+     * The returned Stream doesn't support the operations which require two or more elements at the same time: (e.g. sort/distinct/pairMap/slidingMap/sliding/split/toList/toSet/...).
+     * Operations: filter/map/toMap/groupBy/groupTo/... are supported.
+     * 
+     * <br />
+     * <code>ER</code> = <code>Entry Reusable</code>
+     * 
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @return
+     * @deprecated
+     */
+    @Deprecated
+    public <KK, VV> EntryStream<KK, VV> mapER(final Function<? super K, KK> keyMapper, final Function<? super V, VV> valueMapper) {
+        final Function<Map.Entry<K, V>, Map.Entry<KK, VV>> mapper = new Function<Map.Entry<K, V>, Map.Entry<KK, VV>>() {
+            private final Pair<KK, VV> entry = new Pair<>();
+
+            @Override
+            public Entry<KK, VV> apply(Entry<K, V> t) {
+                entry.set(keyMapper.apply(t.getKey()), valueMapper.apply(t.getValue()));
+
+                return entry;
+            }
+        };
+
+        return map(mapper);
+    }
+
+    /**
+     * 
+     * @param keyMapper
+     * @return
+     * @see #mapER(Function, Function)
+     * @deprecated
+     */
+    @Deprecated
+    public <KK> EntryStream<KK, V> flatMapKeyER(final Function<? super K, Stream<KK>> keyMapper) {
+        final Function<Map.Entry<K, V>, Stream<Map.Entry<KK, V>>> mapper2 = new Function<Map.Entry<K, V>, Stream<Map.Entry<KK, V>>>() {
+            @Override
+            public Stream<Entry<KK, V>> apply(final Map.Entry<K, V> e) {
+                return keyMapper.apply(e.getKey()).map(new Function<KK, Map.Entry<KK, V>>() {
+                    private final Pair<KK, V> entry = new Pair<>();
+
+                    @Override
+                    public Map.Entry<KK, V> apply(KK kk) {
+                        entry.set(kk, e.getValue());
+                        return entry;
+                    }
+                });
+            }
+        };
+
+        return flatMap(mapper2);
+    }
+
+    /**
+     * 
+     * @param valueMapper
+     * @return
+     * @see #mapER(Function, Function)
+     * @deprecated
+     */
+    @Deprecated
+    public <VV> EntryStream<K, VV> flatMapValueER(final Function<? super V, Stream<VV>> valueMapper) {
+        final Function<Map.Entry<K, V>, Stream<Map.Entry<K, VV>>> mapper2 = new Function<Map.Entry<K, V>, Stream<Map.Entry<K, VV>>>() {
+            @Override
+            public Stream<Entry<K, VV>> apply(final Entry<K, V> e) {
+                return valueMapper.apply(e.getValue()).map(new Function<VV, Map.Entry<K, VV>>() {
+                    private final Pair<K, VV> entry = new Pair<>();
+
+                    @Override
+                    public Map.Entry<K, VV> apply(VV vv) {
+                        entry.set(e.getKey(), vv);
+                        return entry;
+                    }
+                });
+            }
+        };
+
+        return flatMap(mapper2);
+    }
+
     public EntryStream<K, V> onClose(Runnable closeHandler) {
         return of(s.onClose(closeHandler));
     }
 
+    @Override
     public void close() {
         s.close();
     }

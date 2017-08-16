@@ -999,11 +999,12 @@ public final class Maps {
     }
 
     public static <K, V> Map<K, V> filterByKey(final Map<K, V> map, final Predicate<? super K> predicate) {
-        if (N.isNullOrEmpty(map)) {
-            return new LinkedHashMap<>();
+        if (map == null) {
+            return new HashMap<K, V>();
         }
 
-        final Map<K, V> result = map instanceof IdentityHashMap ? new IdentityHashMap<K, V>() : new LinkedHashMap<K, V>();
+        final Map<K, V> result = createResultMap(map.getClass());
+
         for (Map.Entry<K, V> entry : map.entrySet()) {
             if (predicate.test(entry.getKey())) {
                 result.put(entry.getKey(), entry.getValue());
@@ -1013,12 +1014,25 @@ public final class Maps {
         return result;
     }
 
-    public static <K, V> Map<K, V> filterByValue(final Map<K, V> map, final Predicate<? super V> predicate) {
-        if (N.isNullOrEmpty(map)) {
-            return new LinkedHashMap<>();
+    @SuppressWarnings("rawtypes")
+    private static <K, V> Map<K, V> createResultMap(final Class<? extends Map> mapClass) {
+        if (mapClass.equals(HashMap.class)) {
+            return new HashMap<K, V>();
         }
 
-        final Map<K, V> result = map instanceof IdentityHashMap ? new IdentityHashMap<K, V>() : new LinkedHashMap<K, V>();
+        try {
+            return N.newInstance(mapClass);
+        } catch (Exception e) {
+            return new HashMap<K, V>();
+        }
+    }
+
+    public static <K, V> Map<K, V> filterByValue(final Map<K, V> map, final Predicate<? super V> predicate) {
+        if (map == null) {
+            return new HashMap<K, V>();
+        }
+
+        final Map<K, V> result = createResultMap(map.getClass());
 
         for (Map.Entry<K, V> entry : map.entrySet()) {
             if (predicate.test(entry.getValue())) {
@@ -1030,15 +1044,56 @@ public final class Maps {
     }
 
     public static <K, V> Map<K, V> filter(final Map<K, V> map, final BiPredicate<? super K, ? super V> predicate) {
-        if (N.isNullOrEmpty(map)) {
-            return new LinkedHashMap<>();
+        if (map == null) {
+            return new HashMap<K, V>();
         }
 
-        final Map<K, V> result = map instanceof IdentityHashMap ? new IdentityHashMap<K, V>() : new LinkedHashMap<K, V>();
+        final Map<K, V> result = createResultMap(map.getClass());
 
         for (Map.Entry<K, V> entry : map.entrySet()) {
             if (predicate.test(entry.getKey(), entry.getValue())) {
                 result.put(entry.getKey(), entry.getValue());
+            }
+        }
+
+        return result;
+    }
+
+    public static <K, V> Map<V, K> invert(final Map<K, V> map) {
+        if (map == null) {
+            return new HashMap<V, K>();
+        }
+
+        final Map<V, K> result = createResultMap(map.getClass());
+
+        for (Map.Entry<K, V> entry : map.entrySet()) {
+            result.put(entry.getValue(), entry.getKey());
+        }
+
+        return result;
+    }
+
+    public static <K, V> Map<V, List<K>> inverse(final Map<K, ? extends Collection<V>> map) {
+        if (map == null) {
+            return new HashMap<V, List<K>>();
+        }
+
+        final Map<V, List<K>> result = createResultMap(map.getClass());
+
+        for (Map.Entry<K, ? extends Collection<V>> entry : map.entrySet()) {
+            final Collection<V> c = entry.getValue();
+
+            if (N.notNullOrEmpty(c)) {
+                for (V v : c) {
+                    List<K> list = result.get(v);
+
+                    if (list == null) {
+                        list = new ArrayList<>();
+                        result.put(v, list);
+                    }
+
+                    list.add(entry.getKey());
+                }
             }
         }
 

@@ -56,6 +56,7 @@ import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.Indexed;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.IntSummaryStatistics;
+import com.landawn.abacus.util.ListMultimap;
 import com.landawn.abacus.util.LongIterator;
 import com.landawn.abacus.util.LongSummaryStatistics;
 import com.landawn.abacus.util.Matrix;
@@ -1031,7 +1032,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public <U> Stream<Pair<T, U>> innerJoin(final Collection<U> b, final Function<? super T, ?> leftKeyMapper, final Function<? super U, ?> rightKeyMapper) {
-        final Multimap<Object, U, List<U>> rightKeyMap = Multimap.from(b, rightKeyMapper);
+        final ListMultimap<Object, U> rightKeyMap = ListMultimap.from(b, rightKeyMapper);
         final Map<Object, Stream<U>> rightKeyStreamMap = new HashMap<>(N.initHashCapacity(rightKeyMap.size()));
 
         for (Map.Entry<Object, List<U>> entry : rightKeyMap.entrySet()) {
@@ -1077,7 +1078,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public <U> Stream<Pair<T, U>> fullJoin(final Collection<U> b, final Function<? super T, ?> leftKeyMapper, final Function<? super U, ?> rightKeyMapper) {
-        final Multimap<Object, U, List<U>> rightKeyMap = Multimap.from(b, rightKeyMapper);
+        final ListMultimap<Object, U> rightKeyMap = ListMultimap.from(b, rightKeyMapper);
         final Map<Object, Stream<U>> rightKeyStreamMap = new HashMap<>(N.initHashCapacity(rightKeyMap.size()));
         final Map<U, U> joinedRights = new IdentityHashMap<>();
         final boolean isParallelStream = this.isParallel();
@@ -1178,7 +1179,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public <U> Stream<Pair<T, U>> leftJoin(final Collection<U> b, final Function<? super T, ?> leftKeyMapper, final Function<? super U, ?> rightKeyMapper) {
-        final Multimap<Object, U, List<U>> rightKeyMap = Multimap.from(b, rightKeyMapper);
+        final ListMultimap<Object, U> rightKeyMap = ListMultimap.from(b, rightKeyMapper);
         final Map<Object, Stream<U>> rightKeyStreamMap = new HashMap<>(N.initHashCapacity(rightKeyMap.size()));
 
         for (Map.Entry<Object, List<U>> entry : rightKeyMap.entrySet()) {
@@ -1239,7 +1240,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public <U> Stream<Pair<T, U>> rightJoin(final Collection<U> b, final Function<? super T, ?> leftKeyMapper, final Function<? super U, ?> rightKeyMapper) {
-        final Multimap<Object, U, List<U>> rightKeyMap = Multimap.from(b, rightKeyMapper);
+        final ListMultimap<Object, U> rightKeyMap = ListMultimap.from(b, rightKeyMapper);
         final Map<Object, Stream<U>> rightKeyStreamMap = new HashMap<>(N.initHashCapacity(rightKeyMap.size()));
         final Map<U, U> joinedRights = new IdentityHashMap<>();
         final boolean isParallelStream = this.isParallel();

@@ -1293,88 +1293,88 @@ public final class N {
         return new ConcurrentHashMap<>(m);
     }
 
-    public static <K, E> Multimap<K, E, List<E>> newListMultimap() {
-        return new Multimap<>(new HashMap<K, List<E>>(), ArrayList.class);
+    public static <K, E> ListMultimap<K, E> newListMultimap() {
+        return new ListMultimap<>();
     }
 
-    public static <K, E> Multimap<K, E, List<E>> newListMultimap(final int initialCapacity) {
-        return new Multimap<>(new HashMap<K, List<E>>(initialCapacity < 0 ? 9 : initialCapacity), ArrayList.class);
+    public static <K, E> ListMultimap<K, E> newListMultimap(final int initialCapacity) {
+        return new ListMultimap<>(initialCapacity);
     }
 
-    public static <K, E> Multimap<K, E, List<E>> newListMultimap(final Map<? extends K, ? extends E> m) {
-        final Multimap<K, E, List<E>> multiMap = new Multimap<>(new HashMap<K, List<E>>(), ArrayList.class);
+    public static <K, E> ListMultimap<K, E> newListMultimap(final Map<? extends K, ? extends E> m) {
+        final ListMultimap<K, E> multiMap = newListMultimap();
 
         multiMap.putAll(m);
 
         return multiMap;
     }
 
-    public static <K, E> Multimap<K, E, List<E>> newListLinkedMultimap() {
-        return new Multimap<>(new LinkedHashMap<K, List<E>>(), ArrayList.class);
+    public static <K, E> ListMultimap<K, E> newListLinkedMultimap() {
+        return new ListMultimap<>(LinkedHashMap.class, ArrayList.class);
     }
 
-    public static <K, E> Multimap<K, E, List<E>> newListLinkedMultimap(final int initialCapacity) {
-        return new Multimap<>(new LinkedHashMap<K, List<E>>(initialCapacity < 0 ? 9 : initialCapacity), ArrayList.class);
+    public static <K, E> ListMultimap<K, E> newListLinkedMultimap(final int initialCapacity) {
+        return new ListMultimap<>(new LinkedHashMap<K, List<E>>(initialCapacity < 0 ? 9 : initialCapacity), ArrayList.class);
     }
 
-    public static <K, E> Multimap<K, E, List<E>> newListLinkedMultimap(final Map<? extends K, ? extends E> m) {
-        final Multimap<K, E, List<E>> multiMap = new Multimap<>(new LinkedHashMap<K, List<E>>(), ArrayList.class);
+    public static <K, E> ListMultimap<K, E> newListLinkedMultimap(final Map<? extends K, ? extends E> m) {
+        final ListMultimap<K, E> multiMap = new ListMultimap<>(new LinkedHashMap<K, List<E>>(), ArrayList.class);
 
         multiMap.putAll(m);
 
         return multiMap;
     }
 
-    public static <K, E> Multimap<K, E, List<E>> newListSortedMultimap() {
-        return new Multimap<>(new TreeMap<K, List<E>>(), ArrayList.class);
+    public static <K, E> ListMultimap<K, E> newListSortedMultimap() {
+        return new ListMultimap<>(new TreeMap<K, List<E>>(), ArrayList.class);
     }
 
-    public static <K, E> Multimap<K, E, List<E>> newListSortedMultimap(final Map<? extends K, ? extends E> m) {
-        final Multimap<K, E, List<E>> multiMap = new Multimap<>(new TreeMap<K, List<E>>(), ArrayList.class);
+    public static <K, E> ListMultimap<K, E> newListSortedMultimap(final Map<? extends K, ? extends E> m) {
+        final ListMultimap<K, E> multiMap = new ListMultimap<>(new TreeMap<K, List<E>>(), ArrayList.class);
 
         multiMap.putAll(m);
 
         return multiMap;
     }
 
-    public static <K, E> Multimap<K, E, Set<E>> newSetMultimap() {
-        return new Multimap<>(new HashMap<K, Set<E>>(), HashSet.class);
+    public static <K, E> SetMultimap<K, E> newSetMultimap() {
+        return new SetMultimap<>();
     }
 
-    public static <K, E> Multimap<K, E, Set<E>> newSetMultimap(final int initialCapacity) {
-        return new Multimap<>(new HashMap<K, Set<E>>(initialCapacity < 0 ? 9 : initialCapacity), HashSet.class);
+    public static <K, E> SetMultimap<K, E> newSetMultimap(final int initialCapacity) {
+        return new SetMultimap<>(initialCapacity);
     }
 
-    public static <K, E> Multimap<K, E, Set<E>> newSetMultimap(final Map<? extends K, ? extends E> m) {
-        final Multimap<K, E, Set<E>> multiMap = new Multimap<>(new HashMap<K, Set<E>>(), HashSet.class);
+    public static <K, E> SetMultimap<K, E> newSetMultimap(final Map<? extends K, ? extends E> m) {
+        final SetMultimap<K, E> multiMap = newSetMultimap();
 
         multiMap.putAll(m);
 
         return multiMap;
     }
 
-    public static <K, E> Multimap<K, E, Set<E>> newSetLinkedMultimap() {
-        return new Multimap<>(new LinkedHashMap<K, Set<E>>(), HashSet.class);
+    public static <K, E> SetMultimap<K, E> newSetLinkedMultimap() {
+        return new SetMultimap<>(LinkedHashMap.class, HashSet.class);
     }
 
-    public static <K, E> Multimap<K, E, Set<E>> newSetLinkedMultimap(final int initialCapacity) {
-        return new Multimap<>(new LinkedHashMap<K, Set<E>>(initialCapacity < 0 ? 9 : initialCapacity), HashSet.class);
+    public static <K, E> SetMultimap<K, E> newSetLinkedMultimap(final int initialCapacity) {
+        return new SetMultimap<>(new LinkedHashMap<K, Set<E>>(initialCapacity < 0 ? 9 : initialCapacity), HashSet.class);
     }
 
-    public static <K, E> Multimap<K, E, Set<E>> newSetLinkedMultimap(final Map<? extends K, ? extends E> m) {
-        final Multimap<K, E, Set<E>> multiMap = new Multimap<>(new LinkedHashMap<K, Set<E>>(), HashSet.class);
+    public static <K, E> SetMultimap<K, E> newSetLinkedMultimap(final Map<? extends K, ? extends E> m) {
+        final SetMultimap<K, E> multiMap = new SetMultimap<>(new LinkedHashMap<K, Set<E>>(), HashSet.class);
 
         multiMap.putAll(m);
 
         return multiMap;
     }
 
-    public static <K, E> Multimap<K, E, Set<E>> newSetSortedMultimap() {
-        return new Multimap<>(new TreeMap<K, Set<E>>(), HashSet.class);
+    public static <K, E> SetMultimap<K, E> newSetSortedMultimap() {
+        return new SetMultimap<>(new TreeMap<K, Set<E>>(), HashSet.class);
     }
 
-    public static <K, E> Multimap<K, E, Set<E>> newSetSortedMultimap(final Map<? extends K, ? extends E> m) {
-        final Multimap<K, E, Set<E>> multiMap = new Multimap<>(new TreeMap<K, Set<E>>(), HashSet.class);
+    public static <K, E> SetMultimap<K, E> newSetSortedMultimap(final Map<? extends K, ? extends E> m) {
+        final SetMultimap<K, E> multiMap = new SetMultimap<>(new TreeMap<K, Set<E>>(), HashSet.class);
 
         multiMap.putAll(m);
 
@@ -1849,112 +1849,7 @@ public final class N {
         return newMap(new BiMap<K, V>(initHashCapacity(a.length / 2)), a);
     }
 
-    public static <K, V, k extends K, v extends V> Multimap<K, V, List<V>> asListMultimap(final k k1, final v v1) {
-        final Multimap<K, V, List<V>> map = new Multimap<>();
-        map.put(k1, v1);
-        return map;
-    }
-
-    public static <K, V, k extends K, v extends V> Multimap<K, V, List<V>> asListMultimap(final k k1, final v v1, final k k2, final v v2) {
-        final Multimap<K, V, List<V>> map = new Multimap<>();
-        map.put(k1, v1);
-        map.put(k2, v2);
-        return map;
-    }
-
-    public static <K, V, k extends K, v extends V> Multimap<K, V, List<V>> asListMultimap(final k k1, final v v1, final k k2, final v v2, final k k3,
-            final v v3) {
-        final Multimap<K, V, List<V>> map = new Multimap<>();
-        map.put(k1, v1);
-        map.put(k2, v2);
-        map.put(k3, v3);
-        return map;
-    }
-
-    @SafeVarargs
-    public static <K, E> Multimap<K, E, List<E>> asListMultimap(final Object... a) {
-        return newMultimap(new Multimap<>(new HashMap<K, List<E>>(initHashCapacity(a.length / 2)), ArrayList.class), a);
-    }
-
-    public static <K, V, k extends K, v extends V> Multimap<K, V, Set<V>> asSetMultimap(final k k1, final v v1) {
-        final Multimap<K, V, Set<V>> map = new Multimap<>(HashSet.class);
-        map.put(k1, v1);
-        return map;
-    }
-
-    public static <K, V, k extends K, v extends V> Multimap<K, V, Set<V>> asSetMultimap(final k k1, final v v1, final k k2, final v v2) {
-        final Multimap<K, V, Set<V>> map = new Multimap<>(HashSet.class);
-        map.put(k1, v1);
-        map.put(k2, v2);
-        return map;
-    }
-
-    public static <K, V, k extends K, v extends V> Multimap<K, V, Set<V>> asSetMultimap(final k k1, final v v1, final k k2, final v v2, final k k3,
-            final v v3) {
-        final Multimap<K, V, Set<V>> map = new Multimap<>(HashSet.class);
-        map.put(k1, v1);
-        map.put(k2, v2);
-        map.put(k3, v3);
-        return map;
-    }
-
-    @SafeVarargs
-    public static <K, E> Multimap<K, E, Set<E>> asSetMultimap(final Object... a) {
-        return newMultimap(new Multimap<>(new HashMap<K, Set<E>>(initHashCapacity(a.length / 2)), HashSet.class), a);
-    }
-
     // <===
-
-    @SuppressWarnings({ "unchecked", "deprecation" })
-    static <K, E, V extends Collection<E>> Multimap<K, E, V> newMultimap(final Multimap<K, E, V> m, final Object... a) {
-        if (isNullOrEmpty(a)) {
-            return m;
-        }
-
-        if (a.length == 1) {
-            if (a[0] instanceof Map) {
-                Map<K, E> map = (Map<K, E>) a[0];
-                for (K k : map.keySet()) {
-                    m.put(k, map.get(k));
-                }
-
-                return m;
-            } else if (N.isEntity(a[0].getClass())) {
-                Object anEntity = a[0];
-                if (anEntity instanceof DirtyMarker) {
-                    Class<?> entityClass = anEntity.getClass();
-                    Method propGetMethod = null;
-                    for (String propName : ((DirtyMarker) anEntity).signedPropNames()) {
-                        propGetMethod = RefUtil.getPropGetMethod(entityClass, propName);
-                        propName = RefUtil.getPropNameByMethod(propGetMethod);
-                        m.put((K) propName, (E) RefUtil.getPropValue(anEntity, propGetMethod));
-                    }
-                } else {
-                    final Map<String, Method> getterMethodList = RefUtil.checkPropGetMethodList(anEntity.getClass());
-
-                    for (Map.Entry<String, Method> entry : getterMethodList.entrySet()) {
-                        m.put((K) entry.getKey(), (E) RefUtil.getPropValue(anEntity, entry.getValue()));
-                    }
-                }
-
-                return m;
-            } else {
-                throw new IllegalArgumentException(
-                        "The parameters must be the pairs of property name and value, or Map, or an entity class with getter/setter methods.");
-            }
-        } else {
-            if (0 != (a.length % 2)) {
-                throw new IllegalArgumentException(
-                        "The parameters must be the pairs of property name and value, or Map, or an entity class with getter/setter methods.");
-            }
-
-            for (int i = 0; i < a.length; i++) {
-                m.put((K) a[i], (E) a[++i]);
-            }
-
-            return m;
-        }
-    }
 
     /**
      * @param a
@@ -2136,33 +2031,6 @@ public final class N {
 
         return multiset;
     }
-
-    // ===> since it should be rare case to create Multimap by array. the below methods are hidden from public.
-    static <K, E> Multimap<K, E, List<E>> asListLinkedMultimap(final Object... a) {
-        return newMultimap(new Multimap<>(new LinkedHashMap<K, List<E>>(initHashCapacity(a.length / 2)), ArrayList.class), a);
-    }
-
-    static <K, E> Multimap<K, E, Set<E>> asSetLinkedMultimap(final Object... a) {
-        return newMultimap(new Multimap<>(new LinkedHashMap<K, Set<E>>(initHashCapacity(a.length / 2)), HashSet.class), a);
-    }
-
-    static <K, E> Multimap<K, E, Queue<E>> asQueueLinkedMultimap(final Object... a) {
-        return newMultimap(new Multimap<>(new LinkedHashMap<K, Queue<E>>(initHashCapacity(a.length / 2)), ArrayDeque.class), a);
-    }
-
-    static <K, E> Multimap<K, E, List<E>> asListSortedMultimap(final Object... a) {
-        return newMultimap(new Multimap<>(new TreeMap<K, List<E>>(), ArrayList.class), a);
-    }
-
-    static <K, E> Multimap<K, E, Set<E>> asSetSortedMultimap(final Object... a) {
-        return newMultimap(new Multimap<>(new TreeMap<K, Set<E>>(), HashSet.class), a);
-    }
-
-    static <K, E> Multimap<K, E, Queue<E>> asQueueSortedMultimap(final Object... a) {
-        return newMultimap(new Multimap<>(new TreeMap<K, Queue<E>>(), ArrayDeque.class), a);
-    }
-
-    // <===
 
     /**
      * Wrap the specified value with a singleton list.

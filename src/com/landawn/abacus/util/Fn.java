@@ -564,6 +564,33 @@ public final class Fn {
         };
     }
 
+    public static <K, V> Predicate<Map.Entry<K, V>> testKeyVal(final BiPredicate<? super K, ? super V> predicate) {
+        return new Predicate<Map.Entry<K, V>>() {
+            @Override
+            public boolean test(Entry<K, V> entry) {
+                return predicate.test(entry.getKey(), entry.getValue());
+            }
+        };
+    }
+
+    public static <K, V> Consumer<Map.Entry<K, V>> acceptKeyVal(final BiConsumer<? super K, ? super V> consumer) {
+        return new Consumer<Map.Entry<K, V>>() {
+            @Override
+            public void accept(Entry<K, V> entry) {
+                consumer.accept(entry.getKey(), entry.getValue());
+            }
+        };
+    }
+
+    public static <K, V, R> Function<Map.Entry<K, V>, R> applyKeyVal(final BiFunction<? super K, ? super V, R> func) {
+        return new Function<Map.Entry<K, V>, R>() {
+            @Override
+            public R apply(Entry<K, V> entry) {
+                return func.apply(entry.getKey(), entry.getValue());
+            }
+        };
+    }
+
     public static <T> BinaryOperator<T> throwingMerger() {
         return BinaryOperators.THROWING_MERGER;
     }

@@ -949,6 +949,8 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      */
     S splitor(Splitor splitor);
 
+    <R> R __(Function<? super S, R> transfer);
+
     /**
      * Short-cut for s.parallel().__(op).sequential().
      * 
@@ -956,7 +958,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * @return
      */
     @SuppressWarnings("rawtypes")
-    <SS extends BaseStream> SS ps(Function<? super S, SS> op);
+    <SS extends BaseStream> SS p_s(Function<? super S, SS> op);
 
     /**
      * 
@@ -967,11 +969,9 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * @return
      */
     @SuppressWarnings("rawtypes")
-    <SS extends BaseStream> SS ps(int maxThreadNum, Function<? super S, SS> op);
+    <SS extends BaseStream> SS p_s(int maxThreadNum, Function<? super S, SS> op);
 
     Try<S> tried();
-
-    <R> R __(Function<? super S, R> transfer);
 
     /**
      * Returns an equivalent stream with an additional close handler.  Close
