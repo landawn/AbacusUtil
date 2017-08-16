@@ -2276,4 +2276,23 @@ abstract class AbstractStream<T> extends Stream<T> {
             }
         }
     }
+
+    @Override
+    @Deprecated
+    public <K, V> EntryStream<K, V> mapToEntryER(Function<? super T, K> keyMapper, Function<? super T, V> valueMapper) {
+        N.checkState(isParallel() == false, "mapToEntryER can't be applied to parallel stream");
+
+        final Function<T, Map.Entry<K, V>> mapper = new Function<T, Map.Entry<K, V>>() {
+            private final EntryStream.ReusableEntry<K, V> entry = new EntryStream.ReusableEntry<>();
+
+            @Override
+            public Entry<K, V> apply(T t) {
+                entry.set(keyMapper.apply(t), valueMapper.apply(t));
+
+                return entry;
+            }
+        };
+
+        return mapToEntry(mapper);
+    }
 }

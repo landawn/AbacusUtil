@@ -54,6 +54,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.landawn.abacus.DataSet;
 import com.landawn.abacus.DirtyMarker;
+import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.type.Type;
 import com.landawn.abacus.util.AsyncExecutor;
@@ -1861,6 +1862,27 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     public <R> R __(Function<? super Stream<T>, R> transfer) {
         return transfer.apply(this);
     }
+
+    /**
+     * To reduce the memory footprint, Only one instance of <code>Map.Entry</code> is created, 
+     * and the same entry instance is returned and set with different keys/values during iteration of the returned stream.
+     * The elements only can be retrieved one by one, can't be modified or saved.
+     * The returned Stream doesn't support the operations which require two or more elements at the same time: (e.g. sort/distinct/pairMap/slidingMap/sliding/split/toList/toSet/...).
+     * , and can't be parallel stream.
+     * Operations: filter/map/toMap/groupBy/groupTo/... are supported.
+     * 
+     * <br />
+     * <code>ER</code> = <code>Entry Reusable</code>
+     * 
+     * 
+     * @param keyMapper
+     * @param valueMapper
+     * @return
+     * @deprecated
+     */
+    @Deprecated
+    @Beta
+    public abstract <K, V> EntryStream<K, V> mapToEntryER(Function<? super T, K> keyMapper, Function<? super T, V> valueMapper);
 
     public static <T> Stream<T> empty() {
         return EMPTY;

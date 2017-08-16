@@ -22,12 +22,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 
+import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.util.Comparators;
 import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.ImmutableIterator;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.NullabLe;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Tuple;
@@ -890,30 +892,11 @@ public final class EntryStream<K, V> implements AutoCloseable {
     }
 
     /**
-     * @return
-     * @see #mapER(Function, Function)
-     * @deprecated
-     */
-    @Deprecated
-    public EntryStream<V, K> inversedER() {
-        final Function<Map.Entry<K, V>, Map.Entry<V, K>> mapper = new Function<Map.Entry<K, V>, Map.Entry<V, K>>() {
-            private final Pair<V, K> entry = new Pair<>();
-
-            @Override
-            public Entry<V, K> apply(Entry<K, V> e) {
-                entry.set(e.getValue(), e.getKey());
-
-                return entry;
-            }
-        };
-
-        return map(mapper);
-    }
-
-    /**
-     * To reduce the memory footprint, Only one instance of <code>Map.Entry</code> is created, and the same instance is returned and set with different keys/values for iteration of the returned stream.
+     * To reduce the memory footprint, Only one instance of <code>Map.Entry</code> is created, 
+     * and the same entry instance is returned and set with different keys/values during iteration of the returned stream.
      * The elements only can be retrieved one by one, can't be modified or saved.
      * The returned Stream doesn't support the operations which require two or more elements at the same time: (e.g. sort/distinct/pairMap/slidingMap/sliding/split/toList/toSet/...).
+     * , and can't be parallel stream.
      * Operations: filter/map/toMap/groupBy/groupTo/... are supported.
      * 
      * <br />
@@ -926,9 +909,12 @@ public final class EntryStream<K, V> implements AutoCloseable {
      * @deprecated
      */
     @Deprecated
+    @Beta
     public <KK, VV> EntryStream<KK, VV> mapER(final Function<? super K, KK> keyMapper, final Function<? super V, VV> valueMapper) {
+        N.checkState(s.isParallel() == false, "mapER can't be applied to parallel stream");
+
         final Function<Map.Entry<K, V>, Map.Entry<KK, VV>> mapper = new Function<Map.Entry<K, V>, Map.Entry<KK, VV>>() {
-            private final Pair<KK, VV> entry = new Pair<>();
+            private final ReusableEntry<KK, VV> entry = new ReusableEntry<>();
 
             @Override
             public Entry<KK, VV> apply(Entry<K, V> t) {
@@ -949,12 +935,15 @@ public final class EntryStream<K, V> implements AutoCloseable {
      * @deprecated
      */
     @Deprecated
+    @Beta
     public <KK> EntryStream<KK, V> flatMapKeyER(final Function<? super K, Stream<KK>> keyMapper) {
+        N.checkState(s.isParallel() == false, "flatMapKeyER can't be applied to parallel stream");
+
         final Function<Map.Entry<K, V>, Stream<Map.Entry<KK, V>>> mapper2 = new Function<Map.Entry<K, V>, Stream<Map.Entry<KK, V>>>() {
             @Override
             public Stream<Entry<KK, V>> apply(final Map.Entry<K, V> e) {
                 return keyMapper.apply(e.getKey()).map(new Function<KK, Map.Entry<KK, V>>() {
-                    private final Pair<KK, V> entry = new Pair<>();
+                    private final ReusableEntry<KK, V> entry = new ReusableEntry<>();
 
                     @Override
                     public Map.Entry<KK, V> apply(KK kk) {
@@ -976,12 +965,15 @@ public final class EntryStream<K, V> implements AutoCloseable {
      * @deprecated
      */
     @Deprecated
+    @Beta
     public <VV> EntryStream<K, VV> flatMapValueER(final Function<? super V, Stream<VV>> valueMapper) {
+        N.checkState(s.isParallel() == false, "flatMapValueER can't be applied to parallel stream");
+
         final Function<Map.Entry<K, V>, Stream<Map.Entry<K, VV>>> mapper2 = new Function<Map.Entry<K, V>, Stream<Map.Entry<K, VV>>>() {
             @Override
             public Stream<Entry<K, VV>> apply(final Entry<K, V> e) {
                 return valueMapper.apply(e.getValue()).map(new Function<VV, Map.Entry<K, VV>>() {
-                    private final Pair<K, VV> entry = new Pair<>();
+                    private final ReusableEntry<K, VV> entry = new ReusableEntry<>();
 
                     @Override
                     public Map.Entry<K, VV> apply(VV vv) {
@@ -995,6 +987,30 @@ public final class EntryStream<K, V> implements AutoCloseable {
         return flatMap(mapper2);
     }
 
+    /**
+     * @return
+     * @see #mapER(Function, Function)
+     * @deprecated
+     */
+    @Deprecated
+    @Beta
+    public EntryStream<V, K> inversedER() {
+        N.checkState(s.isParallel() == false, "inversedER can't be applied to parallel stream");
+
+        final Function<Map.Entry<K, V>, Map.Entry<V, K>> mapper = new Function<Map.Entry<K, V>, Map.Entry<V, K>>() {
+            private final ReusableEntry<V, K> entry = new ReusableEntry<>();
+
+            @Override
+            public Entry<V, K> apply(Entry<K, V> e) {
+                entry.set(e.getValue(), e.getKey());
+
+                return entry;
+            }
+        };
+
+        return map(mapper);
+    }
+
     public EntryStream<K, V> onClose(Runnable closeHandler) {
         return of(s.onClose(closeHandler));
     }
@@ -1002,5 +1018,38 @@ public final class EntryStream<K, V> implements AutoCloseable {
     @Override
     public void close() {
         s.close();
+    }
+
+    static class ReusableEntry<K, V> implements Map.Entry<K, V> {
+        private K key = null;
+        private V value = null;
+        private boolean flag = false; //check if it's used/read.
+
+        @Override
+        public K getKey() {
+            flag = false;
+            return key;
+        }
+
+        @Override
+        public V getValue() {
+            flag = false;
+            return value;
+        }
+
+        @Override
+        public V setValue(V value) {
+            throw new UnsupportedOperationException();
+        }
+
+        public void set(K key, V value) {
+            if (flag) {
+                throw new IllegalStateException();
+            }
+
+            this.key = key;
+            this.value = value;
+            this.flag = true;
+        }
     }
 }
