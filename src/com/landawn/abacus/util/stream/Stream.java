@@ -1878,9 +1878,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param keyMapper
      * @param valueMapper
      * @return
-     * @deprecated
      */
-    @Deprecated
     @Beta
     public abstract <K, V> EntryStream<K, V> mapToEntryER(Function<? super T, K> keyMapper, Function<? super T, V> valueMapper);
 

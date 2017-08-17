@@ -23,6 +23,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -379,7 +380,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         final Function<T, Map.Entry<K, V>> mapper = new Function<T, Map.Entry<K, V>>() {
             @Override
             public Entry<K, V> apply(T t) {
-                return Pair.of(keyMapper.apply(t), valueMapper.apply(t));
+                return new AbstractMap.SimpleImmutableEntry<>(keyMapper.apply(t), valueMapper.apply(t));
             }
         };
 
@@ -2278,8 +2279,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    @Deprecated
-    public <K, V> EntryStream<K, V> mapToEntryER(Function<? super T, K> keyMapper, Function<? super T, V> valueMapper) {
+    public <K, V> EntryStream<K, V> mapToEntryER(final Function<? super T, K> keyMapper, final Function<? super T, V> valueMapper) {
         N.checkState(isParallel() == false, "mapToEntryER can't be applied to parallel stream");
 
         final Function<T, Map.Entry<K, V>> mapper = new Function<T, Map.Entry<K, V>>() {
