@@ -16,7 +16,6 @@ package com.landawn.abacus.util.stream;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Random;
@@ -30,7 +29,6 @@ import com.landawn.abacus.util.CharSummaryStatistics;
 import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.IndexedChar;
 import com.landawn.abacus.util.Joiner;
-import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableChar;
 import com.landawn.abacus.util.MutableLong;
@@ -67,6 +65,16 @@ abstract class AbstractCharStream extends CharStream {
 
     AbstractCharStream(final Collection<Runnable> closeHandlers, final boolean sorted) {
         super(closeHandlers, sorted);
+    }
+
+    @Override
+    public CharStream flatArray(final CharFunction<char[]> mapper) {
+        return flatMap(new CharFunction<CharStream>() {
+            @Override
+            public CharStream apply(char t) {
+                return CharStream.of(mapper.apply(t));
+            }
+        });
     }
 
     @Override
@@ -333,27 +341,6 @@ abstract class AbstractCharStream extends CharStream {
         final Supplier<Map<K, D>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(classifier, downstream, mapFactory);
-    }
-
-    @Override
-    public <K> Multimap<K, Character, List<Character>> toMultimap(CharFunction<? extends K> keyExtractor) {
-        return toMultimap(keyExtractor, CharFunction.BOX);
-    }
-
-    @Override
-    public <K, V extends Collection<Character>> Multimap<K, Character, V> toMultimap(CharFunction<? extends K> keyExtractor,
-            Supplier<Multimap<K, Character, V>> mapFactory) {
-        return toMultimap(keyExtractor, CharFunction.BOX, mapFactory);
-    }
-
-    @Override
-    public <K, U> Multimap<K, U, List<U>> toMultimap(CharFunction<? extends K> keyExtractor, CharFunction<? extends U> valueMapper) {
-        return toMultimap(keyExtractor, valueMapper, new Supplier<Multimap<K, U, List<U>>>() {
-            @Override
-            public Multimap<K, U, List<U>> get() {
-                return N.newListMultimap();
-            }
-        });
     }
 
     @Override

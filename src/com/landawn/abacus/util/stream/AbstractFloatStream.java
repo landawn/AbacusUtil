@@ -16,7 +16,6 @@ package com.landawn.abacus.util.stream;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Random;
@@ -30,7 +29,6 @@ import com.landawn.abacus.util.FloatSummaryStatistics;
 import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.IndexedFloat;
 import com.landawn.abacus.util.Joiner;
-import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableFloat;
 import com.landawn.abacus.util.MutableLong;
@@ -68,6 +66,16 @@ abstract class AbstractFloatStream extends FloatStream {
 
     AbstractFloatStream(final Collection<Runnable> closeHandlers, final boolean sorted) {
         super(closeHandlers, sorted);
+    }
+
+    @Override
+    public FloatStream flatArray(final FloatFunction<float[]> mapper) {
+        return flatMap(new FloatFunction<FloatStream>() {
+            @Override
+            public FloatStream apply(float t) {
+                return FloatStream.of(mapper.apply(t));
+            }
+        });
     }
 
     @Override
@@ -334,27 +342,6 @@ abstract class AbstractFloatStream extends FloatStream {
         final Supplier<Map<K, D>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(classifier, downstream, mapFactory);
-    }
-
-    @Override
-    public <K> Multimap<K, Float, List<Float>> toMultimap(FloatFunction<? extends K> keyExtractor) {
-        return toMultimap(keyExtractor, FloatFunction.BOX);
-    }
-
-    @Override
-    public <K, V extends Collection<Float>> Multimap<K, Float, V> toMultimap(FloatFunction<? extends K> keyExtractor,
-            Supplier<Multimap<K, Float, V>> mapFactory) {
-        return toMultimap(keyExtractor, FloatFunction.BOX, mapFactory);
-    }
-
-    @Override
-    public <K, U> Multimap<K, U, List<U>> toMultimap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends U> valueMapper) {
-        return toMultimap(keyExtractor, valueMapper, new Supplier<Multimap<K, U, List<U>>>() {
-            @Override
-            public Multimap<K, U, List<U>> get() {
-                return N.newListMultimap();
-            }
-        });
     }
 
     @Override

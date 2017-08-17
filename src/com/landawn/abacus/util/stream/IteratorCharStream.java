@@ -28,7 +28,6 @@ import com.landawn.abacus.util.CharList;
 import com.landawn.abacus.util.CharSummaryStatistics;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.LongMultiset;
-import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.NullabLe;
@@ -897,20 +896,6 @@ class IteratorCharStream extends AbstractCharStream {
         };
 
         Collectors.replaceAll(intermediate, function);
-
-        return result;
-    }
-
-    @Override
-    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(CharFunction<? extends K> keyExtractor, CharFunction<? extends U> valueMapper,
-            Supplier<Multimap<K, U, V>> mapFactory) {
-        final Multimap<K, U, V> result = mapFactory.get();
-        char element = 0;
-
-        while (elements.hasNext()) {
-            element = elements.nextChar();
-            result.put(keyExtractor.apply(element), valueMapper.apply(element));
-        }
 
         return result;
     }

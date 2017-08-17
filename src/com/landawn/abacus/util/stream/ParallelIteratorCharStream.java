@@ -27,9 +27,9 @@ import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.CharList;
 import com.landawn.abacus.util.CharSummaryStatistics;
 import com.landawn.abacus.util.CompletableFuture;
+import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedChar;
 import com.landawn.abacus.util.LongMultiset;
-import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableLong;
@@ -38,7 +38,6 @@ import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.NullabLe;
 import com.landawn.abacus.util.OptionalChar;
 import com.landawn.abacus.util.OptionalDouble;
-import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
@@ -669,30 +668,6 @@ final class ParallelIteratorCharStream extends IteratorCharStream {
         };
 
         return boxed().toMap(classifier2, downstream, mapFactory);
-    }
-
-    @Override
-    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final CharFunction<? extends K> keyExtractor, final CharFunction<? extends U> valueMapper,
-            final Supplier<Multimap<K, U, V>> mapFactory) {
-        if (maxThreadNum <= 1) {
-            return sequential().toMultimap(keyExtractor, valueMapper, mapFactory);
-        }
-
-        final Function<? super Character, ? extends K> keyExtractor2 = new Function<Character, K>() {
-            @Override
-            public K apply(Character value) {
-                return keyExtractor.apply(value);
-            }
-        };
-
-        final Function<? super Character, ? extends U> valueMapper2 = new Function<Character, U>() {
-            @Override
-            public U apply(Character value) {
-                return valueMapper.apply(value);
-            }
-        };
-
-        return boxed().toMultimap(keyExtractor2, valueMapper2, mapFactory);
     }
 
     @Override

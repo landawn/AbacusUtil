@@ -40,7 +40,6 @@ import com.landawn.abacus.util.CharSummaryStatistics;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedChar;
-import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
@@ -147,6 +146,8 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
     public abstract <U> Stream<U> mapToObj(CharFunction<? extends U> mapper);
 
     public abstract CharStream flatMap(CharFunction<? extends CharStream> mapper);
+
+    public abstract CharStream flatArray(CharFunction<char[]> mapper);
 
     public abstract IntStream flatMapToInt(CharFunction<? extends IntStream> mapper);
 
@@ -296,44 +297,6 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
      */
     public abstract <K, A, D, M extends Map<K, D>> M toMap(final CharFunction<? extends K> classifier, final Collector<Character, A, D> downstream,
             final Supplier<M> mapFactory);
-
-    /**
-     * 
-     * @param keyExtractor
-     * @return
-     * @see Collectors#toMultimap(Function)
-     */
-    public abstract <K> Multimap<K, Character, List<Character>> toMultimap(CharFunction<? extends K> keyExtractor);
-
-    /**
-     * 
-     * @param keyExtractor
-     * @param mapFactory
-     * @return
-     * @see Collectors#toMultimap(Function, Supplier)
-     */
-    public abstract <K, V extends Collection<Character>> Multimap<K, Character, V> toMultimap(CharFunction<? extends K> keyExtractor,
-            Supplier<Multimap<K, Character, V>> mapFactory);
-
-    /**
-     * 
-     * @param keyExtractor
-     * @param valueMapper
-     * @return
-     * @see Collectors#toMultimap(Function, Function)
-     */
-    public abstract <K, U> Multimap<K, U, List<U>> toMultimap(CharFunction<? extends K> keyExtractor, CharFunction<? extends U> valueMapper);
-
-    /**
-     * 
-     * @param keyExtractor
-     * @param valueMapper
-     * @param mapFactory
-     * @return
-     * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
-     */
-    public abstract <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(CharFunction<? extends K> keyExtractor, CharFunction<? extends U> valueMapper,
-            Supplier<Multimap<K, U, V>> mapFactory);
 
     public abstract CharMatrix toMatrix();
 
@@ -607,6 +570,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
 
     abstract ExCharIterator exIterator();
 
+    @Override
     public <R> R __(Function<? super CharStream, R> transfer) {
         return transfer.apply(this);
     }

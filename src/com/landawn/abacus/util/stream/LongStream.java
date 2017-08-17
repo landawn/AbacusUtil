@@ -44,7 +44,6 @@ import com.landawn.abacus.util.LongIterator;
 import com.landawn.abacus.util.LongList;
 import com.landawn.abacus.util.LongMatrix;
 import com.landawn.abacus.util.LongSummaryStatistics;
-import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
@@ -200,6 +199,8 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      */
     public abstract LongStream flatMap(LongFunction<? extends LongStream> mapper);
 
+    public abstract LongStream flatArray(LongFunction<long[]> mapper);
+
     public abstract IntStream flatMapToInt(LongFunction<? extends IntStream> mapper);
 
     public abstract FloatStream flatMapToFloat(LongFunction<? extends FloatStream> mapper);
@@ -343,44 +344,6 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      */
     public abstract <K, A, D, M extends Map<K, D>> M toMap(final LongFunction<? extends K> classifier, final Collector<Long, A, D> downstream,
             final Supplier<M> mapFactory);
-
-    /**
-     * 
-     * @param keyExtractor
-     * @return
-     * @see Collectors#toMultimap(Function)
-     */
-    public abstract <K> Multimap<K, Long, List<Long>> toMultimap(LongFunction<? extends K> keyExtractor);
-
-    /**
-     * 
-     * @param keyExtractor
-     * @param mapFactory
-     * @return
-     * @see Collectors#toMultimap(Function, Supplier)
-     */
-    public abstract <K, V extends Collection<Long>> Multimap<K, Long, V> toMultimap(LongFunction<? extends K> keyExtractor,
-            Supplier<Multimap<K, Long, V>> mapFactory);
-
-    /**
-     * 
-     * @param keyExtractor
-     * @param valueMapper
-     * @return
-     * @see Collectors#toMultimap(Function, Function)
-     */
-    public abstract <K, U> Multimap<K, U, List<U>> toMultimap(LongFunction<? extends K> keyExtractor, LongFunction<? extends U> valueMapper);
-
-    /**
-     * 
-     * @param keyExtractor
-     * @param valueMapper
-     * @param mapFactory
-     * @return
-     * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
-     */
-    public abstract <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(LongFunction<? extends K> keyExtractor, LongFunction<? extends U> valueMapper,
-            Supplier<Multimap<K, U, V>> mapFactory);
 
     public abstract LongMatrix toMatrix();
 
@@ -691,6 +654,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
 
     abstract ExLongIterator exIterator();
 
+    @Override
     public <R> R __(Function<? super LongStream, R> transfer) {
         return transfer.apply(this);
     }

@@ -77,6 +77,7 @@ import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.IntList;
 import com.landawn.abacus.util.IntSummaryStatistics;
 import com.landawn.abacus.util.LineIterator;
+import com.landawn.abacus.util.ListMultimap;
 import com.landawn.abacus.util.LongIterator;
 import com.landawn.abacus.util.LongSummaryStatistics;
 import com.landawn.abacus.util.Matrix;
@@ -1117,7 +1118,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      * @see Collectors#toMultimap(Function, Function)
      */
-    public abstract <K> Multimap<K, T, List<T>> toMultimap(Function<? super T, ? extends K> keyExtractor);
+    public abstract <K> ListMultimap<K, T> toMultimap(Function<? super T, ? extends K> keyExtractor);
 
     /**
      * 
@@ -1126,8 +1127,8 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      * @see Collectors#toMultimap(Function, Function, Supplier)
      */
-    public abstract <K, V extends Collection<T>> Multimap<K, T, V> toMultimap(Function<? super T, ? extends K> keyExtractor,
-            Supplier<Multimap<K, T, V>> mapFactory);
+    public abstract <K, V extends Collection<T>, M extends Multimap<K, T, V>> M toMultimap(Function<? super T, ? extends K> keyExtractor,
+            Supplier<M> mapFactory);
 
     /**
      * 
@@ -1136,7 +1137,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      * @see Collectors#toMultimap(Function, Function)
      */
-    public abstract <K, U> Multimap<K, U, List<U>> toMultimap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper);
+    public abstract <K, U> ListMultimap<K, U> toMultimap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper);
 
     /**
      * 
@@ -1146,8 +1147,8 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      * @see Collectors#toMultimap(Function, Function, Supplier)
      */
-    public abstract <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(Function<? super T, ? extends K> keyExtractor,
-            Function<? super T, ? extends U> valueMapper, Supplier<Multimap<K, U, V>> mapFactory);
+    public abstract <K, U, V extends Collection<U>, M extends Multimap<K, U, V>> M toMultimap(Function<? super T, ? extends K> keyExtractor,
+            Function<? super T, ? extends U> valueMapper, Supplier<M> mapFactory);
 
     public abstract Matrix<T> toMatrix(Class<T> type);
 

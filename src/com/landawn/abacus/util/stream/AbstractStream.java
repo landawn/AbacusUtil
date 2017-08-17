@@ -960,7 +960,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <K> Multimap<K, T, List<T>> toMultimap(Function<? super T, ? extends K> keyExtractor) {
+    public <K> ListMultimap<K, T> toMultimap(Function<? super T, ? extends K> keyExtractor) {
         return toMultimap(keyExtractor, new Function<T, T>() {
             @Override
             public T apply(T t) {
@@ -970,7 +970,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <K, V extends Collection<T>> Multimap<K, T, V> toMultimap(Function<? super T, ? extends K> keyExtractor, Supplier<Multimap<K, T, V>> mapFactory) {
+    public <K, V extends Collection<T>, M extends Multimap<K, T, V>> M toMultimap(Function<? super T, ? extends K> keyExtractor, Supplier<M> mapFactory) {
         return toMultimap(keyExtractor, new Function<T, T>() {
             @Override
             public T apply(T t) {
@@ -980,10 +980,10 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <K, U> Multimap<K, U, List<U>> toMultimap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper) {
-        return toMultimap(keyExtractor, valueMapper, new Supplier<Multimap<K, U, List<U>>>() {
+    public <K, U> ListMultimap<K, U> toMultimap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper) {
+        return toMultimap(keyExtractor, valueMapper, new Supplier<ListMultimap<K, U>>() {
             @Override
-            public Multimap<K, U, List<U>> get() {
+            public ListMultimap<K, U> get() {
                 return N.newListMultimap();
             }
         });

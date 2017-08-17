@@ -37,7 +37,6 @@ import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedShort;
-import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
@@ -166,6 +165,8 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
      * @see Stream#flatMap(Function)
      */
     public abstract ShortStream flatMap(ShortFunction<? extends ShortStream> mapper);
+
+    public abstract ShortStream flatArray(ShortFunction<short[]> mapper);
 
     public abstract IntStream flatMapToInt(ShortFunction<? extends IntStream> mapper);
 
@@ -305,44 +306,6 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
      */
     public abstract <K, A, D, M extends Map<K, D>> M toMap(final ShortFunction<? extends K> classifier, final Collector<Short, A, D> downstream,
             final Supplier<M> mapFactory);
-
-    /**
-     * 
-     * @param keyExtractor
-     * @return
-     * @see Collectors#toMultimap(Function)
-     */
-    public abstract <K> Multimap<K, Short, List<Short>> toMultimap(ShortFunction<? extends K> keyExtractor);
-
-    /**
-     * 
-     * @param keyExtractor
-     * @param mapFactory
-     * @return
-     * @see Collectors#toMultimap(Function, Supplier)
-     */
-    public abstract <K, V extends Collection<Short>> Multimap<K, Short, V> toMultimap(ShortFunction<? extends K> keyExtractor,
-            Supplier<Multimap<K, Short, V>> mapFactory);
-
-    /**
-     * 
-     * @param keyExtractor
-     * @param valueMapper
-     * @return
-     * @see Collectors#toMultimap(Function, Function)
-     */
-    public abstract <K, U> Multimap<K, U, List<U>> toMultimap(ShortFunction<? extends K> keyExtractor, ShortFunction<? extends U> valueMapper);
-
-    /**
-     * 
-     * @param keyExtractor
-     * @param valueMapper
-     * @param mapFactory
-     * @return
-     * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
-     */
-    public abstract <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(ShortFunction<? extends K> keyExtractor,
-            ShortFunction<? extends U> valueMapper, Supplier<Multimap<K, U, V>> mapFactory);
 
     public abstract ShortMatrix toMatrix();
 
@@ -616,6 +579,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
 
     abstract ExShortIterator exIterator();
 
+    @Override
     public <R> R __(Function<? super ShortStream, R> transfer) {
         return transfer.apply(this);
     }

@@ -41,7 +41,6 @@ import com.landawn.abacus.util.FloatMatrix;
 import com.landawn.abacus.util.FloatSummaryStatistics;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedFloat;
-import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
@@ -196,6 +195,8 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
      * @see Stream#flatMap(Function)
      */
     public abstract FloatStream flatMap(FloatFunction<? extends FloatStream> mapper);
+
+    public abstract FloatStream flatArray(FloatFunction<float[]> mapper);
 
     public abstract IntStream flatMapToInt(FloatFunction<? extends IntStream> mapper);
 
@@ -352,44 +353,6 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
      */
     public abstract <K, A, D, M extends Map<K, D>> M toMap(final FloatFunction<? extends K> classifier, final Collector<Float, A, D> downstream,
             final Supplier<M> mapFactory);
-
-    /**
-     * 
-     * @param keyExtractor
-     * @return
-     * @see Collectors#toMultimap(Function)
-     */
-    public abstract <K> Multimap<K, Float, List<Float>> toMultimap(FloatFunction<? extends K> keyExtractor);
-
-    /**
-     * 
-     * @param keyExtractor
-     * @param mapFactory
-     * @return
-     * @see Collectors#toMultimap(Function, Supplier)
-     */
-    public abstract <K, V extends Collection<Float>> Multimap<K, Float, V> toMultimap(FloatFunction<? extends K> keyExtractor,
-            Supplier<Multimap<K, Float, V>> mapFactory);
-
-    /**
-     * 
-     * @param keyExtractor
-     * @param valueMapper
-     * @return
-     * @see Collectors#toMultimap(Function, Function)
-     */
-    public abstract <K, U> Multimap<K, U, List<U>> toMultimap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends U> valueMapper);
-
-    /**
-     * 
-     * @param keyExtractor
-     * @param valueMapper
-     * @param mapFactory
-     * @return
-     * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
-     */
-    public abstract <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(FloatFunction<? extends K> keyExtractor,
-            FloatFunction<? extends U> valueMapper, Supplier<Multimap<K, U, V>> mapFactory);
 
     public abstract FloatMatrix toMatrix();
 
@@ -738,6 +701,7 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
 
     abstract ExFloatIterator exIterator();
 
+    @Override
     public <R> R __(Function<? super FloatStream, R> transfer) {
         return transfer.apply(this);
     }

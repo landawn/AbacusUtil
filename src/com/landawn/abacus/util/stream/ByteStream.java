@@ -40,7 +40,6 @@ import com.landawn.abacus.util.ByteSummaryStatistics;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedByte;
-import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
@@ -165,6 +164,8 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * @see Stream#flatMap(Function)
      */
     public abstract ByteStream flatMap(ByteFunction<? extends ByteStream> mapper);
+
+    public abstract ByteStream flatArray(ByteFunction<byte[]> mapper);
 
     public abstract IntStream flatMapToInt(ByteFunction<? extends IntStream> mapper);
 
@@ -296,44 +297,6 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      */
     public abstract <K, A, D, M extends Map<K, D>> M toMap(final ByteFunction<? extends K> classifier, final Collector<Byte, A, D> downstream,
             final Supplier<M> mapFactory);
-
-    /**
-     * 
-     * @param keyExtractor
-     * @return
-     * @see Collectors#toMultimap(Function)
-     */
-    public abstract <K> Multimap<K, Byte, List<Byte>> toMultimap(ByteFunction<? extends K> keyExtractor);
-
-    /**
-     * 
-     * @param keyExtractor
-     * @param mapFactory
-     * @return
-     * @see Collectors#toMultimap(Function, Supplier)
-     */
-    public abstract <K, V extends Collection<Byte>> Multimap<K, Byte, V> toMultimap(ByteFunction<? extends K> keyExtractor,
-            Supplier<Multimap<K, Byte, V>> mapFactory);
-
-    /**
-     * 
-     * @param keyExtractor
-     * @param valueMapper
-     * @return
-     * @see Collectors#toMultimap(Function, Function)
-     */
-    public abstract <K, U> Multimap<K, U, List<U>> toMultimap(ByteFunction<? extends K> keyExtractor, ByteFunction<? extends U> valueMapper);
-
-    /**
-     * 
-     * @param keyExtractor
-     * @param valueMapper
-     * @param mapFactory
-     * @return
-     * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
-     */
-    public abstract <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(ByteFunction<? extends K> keyExtractor, ByteFunction<? extends U> valueMapper,
-            Supplier<Multimap<K, U, V>> mapFactory);
 
     public abstract ByteMatrix toMatrix();
 
@@ -611,6 +574,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
 
     abstract ExByteIterator exIterator();
 
+    @Override
     public <R> R __(Function<? super ByteStream, R> transfer) {
         return transfer.apply(this);
     }

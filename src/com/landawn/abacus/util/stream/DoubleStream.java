@@ -42,7 +42,6 @@ import com.landawn.abacus.util.DoubleMatrix;
 import com.landawn.abacus.util.DoubleSummaryStatistics;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedDouble;
-import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
@@ -198,6 +197,8 @@ public abstract class DoubleStream
      */
     public abstract DoubleStream flatMap(DoubleFunction<? extends DoubleStream> mapper);
 
+    public abstract DoubleStream flatArray(DoubleFunction<double[]> mapper);
+
     public abstract IntStream flatMapToInt(DoubleFunction<? extends IntStream> mapper);
 
     public abstract LongStream flatMapToLong(DoubleFunction<? extends LongStream> mapper);
@@ -352,44 +353,6 @@ public abstract class DoubleStream
      */
     public abstract <K, A, D, M extends Map<K, D>> M toMap(final DoubleFunction<? extends K> classifier, final Collector<Double, A, D> downstream,
             final Supplier<M> mapFactory);
-
-    /**
-     * 
-     * @param keyExtractor
-     * @return
-     * @see Collectors#toMultimap(Function)
-     */
-    public abstract <K> Multimap<K, Double, List<Double>> toMultimap(DoubleFunction<? extends K> keyExtractor);
-
-    /**
-     * 
-     * @param keyExtractor
-     * @param mapFactory
-     * @return
-     * @see Collectors#toMultimap(Function, Supplier)
-     */
-    public abstract <K, V extends Collection<Double>> Multimap<K, Double, V> toMultimap(DoubleFunction<? extends K> keyExtractor,
-            Supplier<Multimap<K, Double, V>> mapFactory);
-
-    /**
-     * 
-     * @param keyExtractor
-     * @param valueMapper
-     * @return
-     * @see Collectors#toMultimap(Function, Function)
-     */
-    public abstract <K, U> Multimap<K, U, List<U>> toMultimap(DoubleFunction<? extends K> keyExtractor, DoubleFunction<? extends U> valueMapper);
-
-    /**
-     * 
-     * @param keyExtractor
-     * @param valueMapper
-     * @param mapFactory
-     * @return
-     * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
-     */
-    public abstract <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(DoubleFunction<? extends K> keyExtractor,
-            DoubleFunction<? extends U> valueMapper, Supplier<Multimap<K, U, V>> mapFactory);
 
     public abstract DoubleMatrix toMatrix();
 
@@ -726,6 +689,7 @@ public abstract class DoubleStream
 
     abstract ExDoubleIterator exIterator();
 
+    @Override
     public <R> R __(Function<? super DoubleStream, R> transfer) {
         return transfer.apply(this);
     }

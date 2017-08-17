@@ -2223,8 +2223,8 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @param keyExtractor
      * @return
      */
-    public <K> Multimap<K, T, List<T>> toMultimap(Function<? super T, ? extends K> keyExtractor) {
-        final Multimap<K, T, List<T>> result = N.newListMultimap();
+    public <K> ListMultimap<K, T> toMultimap(Function<? super T, ? extends K> keyExtractor) {
+        final ListMultimap<K, T> result = N.newListMultimap();
 
         if (N.isNullOrEmpty(coll)) {
             return result;
@@ -2237,8 +2237,8 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
-    public <K, V extends Collection<T>> Multimap<K, T, V> toMultimap(Function<? super T, ? extends K> keyExtractor, Supplier<Multimap<K, T, V>> mapFactory) {
-        final Multimap<K, T, V> result = mapFactory.get();
+    public <K, V extends Collection<T>, M extends Multimap<K, T, V>> M toMultimap(Function<? super T, ? extends K> keyExtractor, Supplier<M> mapFactory) {
+        final M result = mapFactory.get();
 
         if (N.isNullOrEmpty(coll)) {
             return result;
@@ -2257,8 +2257,8 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @param valueMapper
      * @return
      */
-    public <K, V> Multimap<K, V, List<V>> toMultimap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends V> valueMapper) {
-        final Multimap<K, V, List<V>> result = N.newListMultimap();
+    public <K, V> ListMultimap<K, V> toMultimap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends V> valueMapper) {
+        final ListMultimap<K, V> result = N.newListMultimap();
 
         if (N.isNullOrEmpty(coll)) {
             return result;
@@ -2271,9 +2271,9 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
-    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(Function<? super T, ? extends K> keyExtractor,
-            Function<? super T, ? extends U> valueMapper, Supplier<Multimap<K, U, V>> mapFactory) {
-        final Multimap<K, U, V> result = mapFactory.get();
+    public <K, U, V extends Collection<U>, M extends Multimap<K, U, V>> M toMultimap(Function<? super T, ? extends K> keyExtractor,
+            Function<? super T, ? extends U> valueMapper, Supplier<M> mapFactory) {
+        final M result = mapFactory.get();
 
         if (N.isNullOrEmpty(coll)) {
             return result;

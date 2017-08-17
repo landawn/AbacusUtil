@@ -42,7 +42,6 @@ import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.IntList;
 import com.landawn.abacus.util.IntMatrix;
 import com.landawn.abacus.util.IntSummaryStatistics;
-import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
@@ -207,6 +206,8 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      */
     public abstract IntStream flatMap(IntFunction<? extends IntStream> mapper);
 
+    public abstract IntStream flatArray(IntFunction<int[]> mapper);
+
     public abstract CharStream flatMapToChar(IntFunction<? extends CharStream> mapper);
 
     public abstract ByteStream flatMapToByte(IntFunction<? extends ByteStream> mapper);
@@ -368,44 +369,6 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      */
     public abstract <K, A, D, M extends Map<K, D>> M toMap(final IntFunction<? extends K> classifier, final Collector<Integer, A, D> downstream,
             final Supplier<M> mapFactory);
-
-    /**
-     * 
-     * @param keyExtractor
-     * @return
-     * @see Collectors#toMultimap(Function)
-     */
-    public abstract <K> Multimap<K, Integer, List<Integer>> toMultimap(IntFunction<? extends K> keyExtractor);
-
-    /**
-     * 
-     * @param keyExtractor
-     * @param mapFactory
-     * @return
-     * @see Collectors#toMultimap(Function, Supplier)
-     */
-    public abstract <K, V extends Collection<Integer>> Multimap<K, Integer, V> toMultimap(IntFunction<? extends K> keyExtractor,
-            Supplier<Multimap<K, Integer, V>> mapFactory);
-
-    /**
-     * 
-     * @param keyExtractor
-     * @param valueMapper
-     * @return
-     * @see Collectors#toMultimap(Function, Function)
-     */
-    public abstract <K, U> Multimap<K, U, List<U>> toMultimap(IntFunction<? extends K> keyExtractor, IntFunction<? extends U> valueMapper);
-
-    /**
-     * 
-     * @param keyExtractor
-     * @param valueMapper
-     * @param mapFactory
-     * @return
-     * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
-     */
-    public abstract <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(IntFunction<? extends K> keyExtractor, IntFunction<? extends U> valueMapper,
-            Supplier<Multimap<K, U, V>> mapFactory);
 
     public abstract IntMatrix toMatrix();
 
@@ -727,6 +690,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
 
     abstract ExIntIterator exIterator();
 
+    @Override
     public <R> R __(Function<? super IntStream, R> transfer) {
         return transfer.apply(this);
     }

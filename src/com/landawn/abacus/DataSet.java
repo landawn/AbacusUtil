@@ -24,6 +24,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
+import com.landawn.abacus.util.ListMultimap;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.NullabLe;
@@ -1137,7 +1138,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param valueColumnName
      * @return
      */
-    <K, E, V extends List<E>> Multimap<K, E, V> toMultimap(String keyColumnName, String valueColumnName);
+    <K, E> ListMultimap<K, E> toMultimap(String keyColumnName, String valueColumnName);
 
     /**
      *
@@ -1147,7 +1148,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param toRowIndex
      * @return
      */
-    <K, E, V extends List<E>> Multimap<K, E, V> toMultimap(String keyColumnName, String valueColumnName, int fromRowIndex, int toRowIndex);
+    <K, E> ListMultimap<K, E> toMultimap(String keyColumnName, String valueColumnName, int fromRowIndex, int toRowIndex);
 
     /**
      * 
@@ -1158,8 +1159,8 @@ public interface DataSet extends Iterable<Object[]> {
      * @param supplier
      * @return
      */
-    <K, E, V extends Collection<E>> Multimap<K, E, V> toMultimap(String keyColumnName, String valueColumnName, int fromRowIndex, int toRowIndex,
-            IntFunction<Multimap<K, E, V>> supplier);
+    <K, E, V extends Collection<E>, M extends Multimap<K, E, V>> M toMultimap(String keyColumnName, String valueColumnName, int fromRowIndex, int toRowIndex,
+            IntFunction<M> supplier);
 
     /**
      *
@@ -1168,7 +1169,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param valueColumnNames
      * @return
      */
-    <K, E, V extends List<E>> Multimap<K, E, V> toMultimap(Class<? extends E> rowClass, String keyColumnName, Collection<String> valueColumnNames);
+    <K, E> ListMultimap<K, E> toMultimap(Class<? extends E> rowClass, String keyColumnName, Collection<String> valueColumnNames);
 
     /**
      *
@@ -1179,8 +1180,8 @@ public interface DataSet extends Iterable<Object[]> {
      * @param toRowIndex
      * @return
      */
-    <K, E, V extends List<E>> Multimap<K, E, V> toMultimap(Class<? extends E> rowClass, String keyColumnName, Collection<String> valueColumnNames,
-            int fromRowIndex, int toRowIndex);
+    <K, E> ListMultimap<K, E> toMultimap(Class<? extends E> rowClass, String keyColumnName, Collection<String> valueColumnNames, int fromRowIndex,
+            int toRowIndex);
 
     /**
      * 
@@ -1192,8 +1193,8 @@ public interface DataSet extends Iterable<Object[]> {
      * @param supplier
      * @return
      */
-    <K, E, V extends Collection<E>> Multimap<K, E, V> toMultimap(Class<? extends E> rowClass, String keyColumnName, Collection<String> valueColumnNames,
-            int fromRowIndex, int toRowIndex, IntFunction<Multimap<K, E, V>> supplier);
+    <K, E, V extends Collection<E>, M extends Multimap<K, E, V>> M toMultimap(Class<? extends E> rowClass, String keyColumnName,
+            Collection<String> valueColumnNames, int fromRowIndex, int toRowIndex, IntFunction<M> supplier);
 
     /**
      *
@@ -1202,7 +1203,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param valueColumnNames
      * @return
      */
-    <K, E, V extends List<E>> Multimap<K, E, V> toMultimap(IntFunction<? extends E> rowSupplier, String keyColumnName, Collection<String> valueColumnNames);
+    <K, E> ListMultimap<K, E> toMultimap(IntFunction<? extends E> rowSupplier, String keyColumnName, Collection<String> valueColumnNames);
 
     /**
      *
@@ -1213,8 +1214,8 @@ public interface DataSet extends Iterable<Object[]> {
      * @param toRowIndex
      * @return
      */
-    <K, E, V extends List<E>> Multimap<K, E, V> toMultimap(IntFunction<? extends E> rowSupplier, String keyColumnName, Collection<String> valueColumnNames,
-            int fromRowIndex, int toRowIndex);
+    <K, E> ListMultimap<K, E> toMultimap(IntFunction<? extends E> rowSupplier, String keyColumnName, Collection<String> valueColumnNames, int fromRowIndex,
+            int toRowIndex);
 
     /**
      * 
@@ -1226,8 +1227,8 @@ public interface DataSet extends Iterable<Object[]> {
      * @param supplier
      * @return
      */
-    <K, E, V extends Collection<E>> Multimap<K, E, V> toMultimap(IntFunction<? extends E> rowSupplier, String keyColumnName,
-            Collection<String> valueColumnNames, int fromRowIndex, int toRowIndex, IntFunction<Multimap<K, E, V>> supplier);
+    <K, E, V extends Collection<E>, M extends Multimap<K, E, V>> M toMultimap(IntFunction<? extends E> rowSupplier, String keyColumnName,
+            Collection<String> valueColumnNames, int fromRowIndex, int toRowIndex, IntFunction<M> supplier);
 
     /**
      *
@@ -3754,8 +3755,7 @@ public interface DataSet extends Iterable<Object[]> {
         * @param valueColumnName
         * @return
         */
-        <K, E, V extends List<E>> Multimap<K, E, V> toMultimap(Class<? extends K> keyType, Class<? extends E> valueType, String keyColumnName,
-                String valueColumnName);
+        <K, E> ListMultimap<K, E> toMultimap(Class<? extends K> keyType, Class<? extends E> valueType, String keyColumnName, String valueColumnName);
 
         /**
         *
@@ -3765,8 +3765,8 @@ public interface DataSet extends Iterable<Object[]> {
         * @param toRowIndex
         * @return
         */
-        <K, E, V extends List<E>> Multimap<K, E, V> toMultimap(Class<? extends K> keyType, Class<? extends E> valueType, String keyColumnName,
-                String valueColumnName, int fromRowIndex, int toRowIndex);
+        <K, E> ListMultimap<K, E> toMultimap(Class<? extends K> keyType, Class<? extends E> valueType, String keyColumnName, String valueColumnName,
+                int fromRowIndex, int toRowIndex);
 
         /**
         * 
@@ -3777,8 +3777,8 @@ public interface DataSet extends Iterable<Object[]> {
         * @param supplier
         * @return
         */
-        <K, E, V extends Collection<E>> Multimap<K, E, V> toMultimap(Class<? extends K> keyType, Class<? extends E> valueType, String keyColumnName,
-                String valueColumnName, int fromRowIndex, int toRowIndex, IntFunction<Multimap<K, E, V>> supplier);
+        <K, E, V extends Collection<E>, M extends Multimap<K, E, V>> M toMultimap(Class<? extends K> keyType, Class<? extends E> valueType,
+                String keyColumnName, String valueColumnName, int fromRowIndex, int toRowIndex, IntFunction<M> supplier);
 
         /**
          *
@@ -3787,7 +3787,7 @@ public interface DataSet extends Iterable<Object[]> {
          * @param valueColumnNames
          * @return
          */
-        <K> Multimap<K, T, List<T>> toMultimap(Class<? extends K> keyType, String keyColumnName, Collection<String> valueColumnNames);
+        <K> ListMultimap<K, T> toMultimap(Class<? extends K> keyType, String keyColumnName, Collection<String> valueColumnNames);
 
         /**
          *
@@ -3798,7 +3798,7 @@ public interface DataSet extends Iterable<Object[]> {
          * @param toRowIndex
          * @return
          */
-        <K> Multimap<K, T, List<T>> toMultimap(Class<? extends K> keyType, String keyColumnName, Collection<String> valueColumnNames, int fromRowIndex,
+        <K> ListMultimap<K, T> toMultimap(Class<? extends K> keyType, String keyColumnName, Collection<String> valueColumnNames, int fromRowIndex,
                 int toRowIndex);
 
         /**
@@ -3811,8 +3811,8 @@ public interface DataSet extends Iterable<Object[]> {
          * @param supplier
          * @return
          */
-        <K, V extends Collection<T>> Multimap<K, T, V> toMultimap(Class<? extends K> keyType, String keyColumnName, Collection<String> valueColumnNames,
-                int fromRowIndex, int toRowIndex, IntFunction<Multimap<K, T, V>> supplier);
+        <K, V extends Collection<T>, M extends Multimap<K, T, V>> M toMultimap(Class<? extends K> keyType, String keyColumnName,
+                Collection<String> valueColumnNames, int fromRowIndex, int toRowIndex, IntFunction<M> supplier);
 
         /**
          * @param columnType it's only used to identify the type.

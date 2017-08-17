@@ -26,7 +26,6 @@ import java.util.Set;
 
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.LongMultiset;
-import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.NullabLe;
@@ -909,20 +908,6 @@ class IteratorShortStream extends AbstractShortStream {
         };
 
         Collectors.replaceAll(intermediate, function);
-
-        return result;
-    }
-
-    @Override
-    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(ShortFunction<? extends K> keyExtractor, ShortFunction<? extends U> valueMapper,
-            Supplier<Multimap<K, U, V>> mapFactory) {
-        final Multimap<K, U, V> result = mapFactory.get();
-        short element = 0;
-
-        while (elements.hasNext()) {
-            element = elements.nextShort();
-            result.put(keyExtractor.apply(element), valueMapper.apply(element));
-        }
 
         return result;
     }

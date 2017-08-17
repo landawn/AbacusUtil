@@ -28,7 +28,6 @@ import com.landawn.abacus.util.ByteList;
 import com.landawn.abacus.util.ByteSummaryStatistics;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.LongMultiset;
-import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.OptionalByte;
@@ -903,18 +902,6 @@ class ArrayByteStream extends AbstractByteStream {
         };
 
         Collectors.replaceAll(intermediate, function);
-
-        return result;
-    }
-
-    @Override
-    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(ByteFunction<? extends K> keyExtractor, ByteFunction<? extends U> valueMapper,
-            Supplier<Multimap<K, U, V>> mapFactory) {
-        final Multimap<K, U, V> result = mapFactory.get();
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.put(keyExtractor.apply(elements[i]), valueMapper.apply(elements[i]));
-        }
 
         return result;
     }

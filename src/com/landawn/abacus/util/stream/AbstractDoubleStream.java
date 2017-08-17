@@ -16,7 +16,6 @@ package com.landawn.abacus.util.stream;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Random;
@@ -30,7 +29,6 @@ import com.landawn.abacus.util.DoubleSummaryStatistics;
 import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.IndexedDouble;
 import com.landawn.abacus.util.Joiner;
-import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableDouble;
 import com.landawn.abacus.util.MutableLong;
@@ -67,6 +65,16 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
     AbstractDoubleStream(final Collection<Runnable> closeHandlers, final boolean sorted) {
         super(closeHandlers, sorted);
+    }
+
+    @Override
+    public DoubleStream flatArray(final DoubleFunction<double[]> mapper) {
+        return flatMap(new DoubleFunction<DoubleStream>() {
+            @Override
+            public DoubleStream apply(double t) {
+                return DoubleStream.of(mapper.apply(t));
+            }
+        });
     }
 
     @Override
@@ -333,27 +341,6 @@ abstract class AbstractDoubleStream extends DoubleStream {
         final Supplier<Map<K, D>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(classifier, downstream, mapFactory);
-    }
-
-    @Override
-    public <K> Multimap<K, Double, List<Double>> toMultimap(DoubleFunction<? extends K> keyExtractor) {
-        return toMultimap(keyExtractor, DoubleFunction.BOX);
-    }
-
-    @Override
-    public <K, V extends Collection<Double>> Multimap<K, Double, V> toMultimap(DoubleFunction<? extends K> keyExtractor,
-            Supplier<Multimap<K, Double, V>> mapFactory) {
-        return toMultimap(keyExtractor, DoubleFunction.BOX, mapFactory);
-    }
-
-    @Override
-    public <K, U> Multimap<K, U, List<U>> toMultimap(DoubleFunction<? extends K> keyExtractor, DoubleFunction<? extends U> valueMapper) {
-        return toMultimap(keyExtractor, valueMapper, new Supplier<Multimap<K, U, List<U>>>() {
-            @Override
-            public Multimap<K, U, List<U>> get() {
-                return N.newListMultimap();
-            }
-        });
     }
 
     @Override

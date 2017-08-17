@@ -86,7 +86,7 @@ public class Builder<T> {
         return new LongMultisetBuilder<>(val);
     }
 
-    public static final <K, E, V extends Collection<E>> MultimapBuilder<K, E, V> of(Multimap<K, E, V> val) {
+    public static final <K, E, V extends Collection<E>, M extends Multimap<K, E, V>> MultimapBuilder<K, E, V> of(M val) {
         return new MultimapBuilder<>(val);
     }
 

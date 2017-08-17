@@ -30,7 +30,6 @@ import com.landawn.abacus.util.IndexedInt;
 import com.landawn.abacus.util.IntList;
 import com.landawn.abacus.util.IntSummaryStatistics;
 import com.landawn.abacus.util.LongMultiset;
-import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableInt;
@@ -728,30 +727,6 @@ final class ParallelArrayIntStream extends ArrayIntStream {
         };
 
         return boxed().toMap(classifier2, downstream, mapFactory);
-    }
-
-    @Override
-    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final IntFunction<? extends K> keyExtractor, final IntFunction<? extends U> valueMapper,
-            final Supplier<Multimap<K, U, V>> mapFactory) {
-        if (maxThreadNum <= 1) {
-            return sequential().toMultimap(keyExtractor, valueMapper, mapFactory);
-        }
-
-        final Function<? super Integer, ? extends K> keyExtractor2 = new Function<Integer, K>() {
-            @Override
-            public K apply(Integer value) {
-                return keyExtractor.apply(value);
-            }
-        };
-
-        final Function<? super Integer, ? extends U> valueMapper2 = new Function<Integer, U>() {
-            @Override
-            public U apply(Integer value) {
-                return valueMapper.apply(value);
-            }
-        };
-
-        return boxed().toMultimap(keyExtractor2, valueMapper2, mapFactory);
     }
 
     @Override

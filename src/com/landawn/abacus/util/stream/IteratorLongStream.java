@@ -31,7 +31,6 @@ import com.landawn.abacus.util.LongIterator;
 import com.landawn.abacus.util.LongList;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.LongSummaryStatistics;
-import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.NullabLe;
@@ -1012,20 +1011,6 @@ class IteratorLongStream extends AbstractLongStream {
         };
 
         Collectors.replaceAll(intermediate, function);
-
-        return result;
-    }
-
-    @Override
-    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(LongFunction<? extends K> keyExtractor, LongFunction<? extends U> valueMapper,
-            Supplier<Multimap<K, U, V>> mapFactory) {
-        final Multimap<K, U, V> result = mapFactory.get();
-        long element = 0;
-
-        while (elements.hasNext()) {
-            element = elements.nextLong();
-            result.put(keyExtractor.apply(element), valueMapper.apply(element));
-        }
 
         return result;
     }

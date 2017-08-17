@@ -26,9 +26,9 @@ import java.util.concurrent.Callable;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.DoubleList;
 import com.landawn.abacus.util.DoubleSummaryStatistics;
+import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedDouble;
 import com.landawn.abacus.util.LongMultiset;
-import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableInt;
@@ -36,7 +36,6 @@ import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.NullabLe;
 import com.landawn.abacus.util.OptionalDouble;
-import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
@@ -623,30 +622,6 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
         };
 
         return boxed().toMap(classifier2, downstream, mapFactory);
-    }
-
-    @Override
-    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final DoubleFunction<? extends K> keyExtractor,
-            final DoubleFunction<? extends U> valueMapper, final Supplier<Multimap<K, U, V>> mapFactory) {
-        if (maxThreadNum <= 1) {
-            return sequential().toMultimap(keyExtractor, valueMapper, mapFactory);
-        }
-
-        final Function<? super Double, ? extends K> keyExtractor2 = new Function<Double, K>() {
-            @Override
-            public K apply(Double value) {
-                return keyExtractor.apply(value);
-            }
-        };
-
-        final Function<? super Double, ? extends U> valueMapper2 = new Function<Double, U>() {
-            @Override
-            public U apply(Double value) {
-                return valueMapper.apply(value);
-            }
-        };
-
-        return boxed().toMultimap(keyExtractor2, valueMapper2, mapFactory);
     }
 
     @Override

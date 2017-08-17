@@ -69,6 +69,7 @@ import com.landawn.abacus.util.ImmutableSet;
 import com.landawn.abacus.util.IntList;
 import com.landawn.abacus.util.IntSummaryStatistics;
 import com.landawn.abacus.util.Joiner;
+import com.landawn.abacus.util.ListMultimap;
 import com.landawn.abacus.util.LongList;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.LongSummaryStatistics;
@@ -4641,7 +4642,7 @@ public final class Collectors {
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
-    public static <K, E> Collector<Map.Entry<? extends K, ? extends E>, ?, Multimap<K, E, List<E>>> toMultimap() {
+    public static <K, E> Collector<Map.Entry<? extends K, ? extends E>, ?, ListMultimap<K, E>> toMultimap() {
         final Function<Map.Entry<? extends K, ? extends E>, ? extends K> keyExtractor = new Function<Map.Entry<? extends K, ? extends E>, K>() {
             @Override
             public K apply(Entry<? extends K, ? extends E> t) {
@@ -4659,8 +4660,8 @@ public final class Collectors {
         return toMultimap(keyExtractor, valueMapper);
     }
 
-    public static <K, E, V extends Collection<E>> Collector<Map.Entry<? extends K, ? extends E>, ?, Multimap<K, E, V>> toMultimap(
-            final Supplier<Multimap<K, E, V>> mapFactory) {
+    public static <K, E, V extends Collection<E>, M extends Multimap<K, E, V>> Collector<Map.Entry<? extends K, ? extends E>, ?, M> toMultimap(
+            final Supplier<M> mapFactory) {
         final Function<Map.Entry<? extends K, ? extends E>, ? extends K> keyExtractor = new Function<Map.Entry<? extends K, ? extends E>, K>() {
             @Override
             public K apply(Entry<? extends K, ? extends E> t) {
@@ -4678,7 +4679,7 @@ public final class Collectors {
         return toMultimap(keyExtractor, valueMapper, mapFactory);
     }
 
-    public static <T, K> Collector<T, ?, Multimap<K, T, List<T>>> toMultimap(Function<? super T, ? extends K> keyExtractor) {
+    public static <T, K> Collector<T, ?, ListMultimap<K, T>> toMultimap(Function<? super T, ? extends K> keyExtractor) {
         final Function<? super T, ? extends T> valueMapper = new Function<T, T>() {
             @Override
             public T apply(T t) {
@@ -4689,8 +4690,8 @@ public final class Collectors {
         return toMultimap(keyExtractor, valueMapper);
     }
 
-    public static <T, K, V extends Collection<T>> Collector<T, ?, Multimap<K, T, V>> toMultimap(final Function<? super T, ? extends K> keyExtractor,
-            final Supplier<Multimap<K, T, V>> mapFactory) {
+    public static <T, K, V extends Collection<T>, M extends Multimap<K, T, V>> Collector<T, ?, M> toMultimap(
+            final Function<? super T, ? extends K> keyExtractor, final Supplier<M> mapFactory) {
         final Function<? super T, ? extends T> valueMapper = new Function<T, T>() {
             @Override
             public T apply(T t) {
@@ -4701,11 +4702,11 @@ public final class Collectors {
         return toMultimap(keyExtractor, valueMapper, mapFactory);
     }
 
-    public static <T, K, U> Collector<T, ?, Multimap<K, U, List<U>>> toMultimap(Function<? super T, ? extends K> keyExtractor,
+    public static <T, K, U> Collector<T, ?, ListMultimap<K, U>> toMultimap(Function<? super T, ? extends K> keyExtractor,
             Function<? super T, ? extends U> valueMapper) {
-        final Supplier<Multimap<K, U, List<U>>> mapFactory = new Supplier<Multimap<K, U, List<U>>>() {
+        final Supplier<ListMultimap<K, U>> mapFactory = new Supplier<ListMultimap<K, U>>() {
             @Override
-            public Multimap<K, U, List<U>> get() {
+            public ListMultimap<K, U> get() {
                 return N.newListMultimap();
             }
         };
@@ -4713,16 +4714,16 @@ public final class Collectors {
         return toMultimap(keyExtractor, valueMapper, mapFactory);
     }
 
-    public static <T, K, U, V extends Collection<U>> Collector<T, ?, Multimap<K, U, V>> toMultimap(final Function<? super T, ? extends K> keyExtractor,
-            final Function<? super T, ? extends U> valueMapper, final Supplier<Multimap<K, U, V>> mapFactory) {
-        final BiConsumer<Multimap<K, U, V>, T> accumulator = new BiConsumer<Multimap<K, U, V>, T>() {
+    public static <T, K, U, V extends Collection<U>, M extends Multimap<K, U, V>> Collector<T, ?, M> toMultimap(
+            final Function<? super T, ? extends K> keyExtractor, final Function<? super T, ? extends U> valueMapper, final Supplier<M> mapFactory) {
+        final BiConsumer<M, T> accumulator = new BiConsumer<M, T>() {
             @Override
-            public void accept(Multimap<K, U, V> map, T element) {
+            public void accept(M map, T element) {
                 map.put(keyExtractor.apply(element), valueMapper.apply(element));
             }
         };
 
-        final BinaryOperator<Multimap<K, U, V>> combiner = multimapMerger();
+        final BinaryOperator<M> combiner = multimapMerger();
 
         return new CollectorImpl<>(mapFactory, accumulator, combiner, CH_ID);
     }
@@ -4868,10 +4869,10 @@ public final class Collectors {
         };
     }
 
-    private static <K, U, V extends Collection<U>> BinaryOperator<Multimap<K, U, V>> multimapMerger() {
-        return new BinaryOperator<Multimap<K, U, V>>() {
+    private static <K, U, V extends Collection<U>, M extends Multimap<K, U, V>> BinaryOperator<M> multimapMerger() {
+        return new BinaryOperator<M>() {
             @Override
-            public Multimap<K, U, V> apply(Multimap<K, U, V> m1, Multimap<K, U, V> m2) {
+            public M apply(M m1, M m2) {
                 K key = null;
                 V value = null;
                 for (Map.Entry<K, V> e : m2.entrySet()) {

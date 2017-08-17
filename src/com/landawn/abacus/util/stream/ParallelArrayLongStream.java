@@ -25,11 +25,11 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 
 import com.landawn.abacus.util.CompletableFuture;
+import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedLong;
 import com.landawn.abacus.util.LongList;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.LongSummaryStatistics;
-import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableInt;
@@ -38,7 +38,6 @@ import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.NullabLe;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalLong;
-import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
@@ -348,7 +347,8 @@ final class ParallelArrayLongStream extends ArrayLongStream {
 
     @Override
     public Stream<LongList> slidingToList(final int windowSize, final int increment) {
-        return new ParallelIteratorStream<LongList>(sequential().slidingToList(windowSize, increment).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
+        return new ParallelIteratorStream<LongList>(sequential().slidingToList(windowSize, increment).iterator(), closeHandlers, false, null, maxThreadNum,
+                splitor);
     }
 
     @Override
@@ -625,30 +625,6 @@ final class ParallelArrayLongStream extends ArrayLongStream {
         };
 
         return boxed().toMap(classifier2, downstream, mapFactory);
-    }
-
-    @Override
-    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final LongFunction<? extends K> keyExtractor, final LongFunction<? extends U> valueMapper,
-            final Supplier<Multimap<K, U, V>> mapFactory) {
-        if (maxThreadNum <= 1) {
-            return sequential().toMultimap(keyExtractor, valueMapper, mapFactory);
-        }
-
-        final Function<? super Long, ? extends K> keyExtractor2 = new Function<Long, K>() {
-            @Override
-            public K apply(Long value) {
-                return keyExtractor.apply(value);
-            }
-        };
-
-        final Function<? super Long, ? extends U> valueMapper2 = new Function<Long, U>() {
-            @Override
-            public U apply(Long value) {
-                return valueMapper.apply(value);
-            }
-        };
-
-        return boxed().toMultimap(keyExtractor2, valueMapper2, mapFactory);
     }
 
     @Override

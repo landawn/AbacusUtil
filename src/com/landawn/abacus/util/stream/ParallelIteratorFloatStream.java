@@ -28,9 +28,9 @@ import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.FloatList;
 import com.landawn.abacus.util.FloatSummaryStatistics;
+import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IndexedFloat;
 import com.landawn.abacus.util.LongMultiset;
-import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableLong;
@@ -39,7 +39,6 @@ import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.NullabLe;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalFloat;
-import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
@@ -748,30 +747,6 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
         };
 
         return boxed().toMap(classifier2, downstream, mapFactory);
-    }
-
-    @Override
-    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(final FloatFunction<? extends K> keyExtractor,
-            final FloatFunction<? extends U> valueMapper, final Supplier<Multimap<K, U, V>> mapFactory) {
-        if (maxThreadNum <= 1) {
-            return sequential().toMultimap(keyExtractor, valueMapper, mapFactory);
-        }
-
-        final Function<? super Float, ? extends K> keyExtractor2 = new Function<Float, K>() {
-            @Override
-            public K apply(Float value) {
-                return keyExtractor.apply(value);
-            }
-        };
-
-        final Function<? super Float, ? extends U> valueMapper2 = new Function<Float, U>() {
-            @Override
-            public U apply(Float value) {
-                return valueMapper.apply(value);
-            }
-        };
-
-        return boxed().toMultimap(keyExtractor2, valueMapper2, mapFactory);
     }
 
     @Override

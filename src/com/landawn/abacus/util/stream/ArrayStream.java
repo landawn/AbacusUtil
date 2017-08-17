@@ -1789,9 +1789,9 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(Function<? super T, ? extends K> keyExtractor,
-            Function<? super T, ? extends U> valueMapper, Supplier<Multimap<K, U, V>> mapFactory) {
-        final Multimap<K, U, V> result = mapFactory.get();
+    public <K, U, V extends Collection<U>, M extends Multimap<K, U, V>> M toMultimap(Function<? super T, ? extends K> keyExtractor,
+            Function<? super T, ? extends U> valueMapper, Supplier<M> mapFactory) {
+        final M result = mapFactory.get();
 
         for (int i = fromIndex; i < toIndex; i++) {
             result.put(keyExtractor.apply(elements[i]), valueMapper.apply(elements[i]));

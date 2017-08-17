@@ -33,7 +33,6 @@ import com.landawn.abacus.util.IntList;
 import com.landawn.abacus.util.IntSummaryStatistics;
 import com.landawn.abacus.util.LongIterator;
 import com.landawn.abacus.util.LongMultiset;
-import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.OptionalDouble;
@@ -1271,18 +1270,6 @@ class ArrayIntStream extends AbstractIntStream {
         };
 
         Collectors.replaceAll(intermediate, function);
-
-        return result;
-    }
-
-    @Override
-    public <K, U, V extends Collection<U>> Multimap<K, U, V> toMultimap(IntFunction<? extends K> keyExtractor, IntFunction<? extends U> valueMapper,
-            Supplier<Multimap<K, U, V>> mapFactory) {
-        final Multimap<K, U, V> result = mapFactory.get();
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result.put(keyExtractor.apply(elements[i]), valueMapper.apply(elements[i]));
-        }
 
         return result;
     }
