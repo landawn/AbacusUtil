@@ -98,6 +98,102 @@ public final class Multiset<E> implements Iterable<E> {
         this.valueMap = valueMap;
     }
 
+    public static Multiset<Boolean> of(final boolean[] a) {
+        final Multiset<Boolean> res = new Multiset<>();
+
+        if (N.notNullOrEmpty(a)) {
+            for (boolean b : a) {
+                res.add(b);
+            }
+        }
+
+        return res;
+    }
+
+    public static Multiset<Character> of(final char[] a) {
+        final Multiset<Character> res = new Multiset<>();
+
+        if (N.notNullOrEmpty(a)) {
+            for (char b : a) {
+                res.add(b);
+            }
+        }
+
+        return res;
+    }
+
+    public static Multiset<Byte> of(final byte[] a) {
+        final Multiset<Byte> res = new Multiset<>();
+
+        if (N.notNullOrEmpty(a)) {
+            for (byte b : a) {
+                res.add(b);
+            }
+        }
+
+        return res;
+    }
+
+    public static Multiset<Short> of(final short[] a) {
+        final Multiset<Short> res = new Multiset<>();
+
+        if (N.notNullOrEmpty(a)) {
+            for (short b : a) {
+                res.add(b);
+            }
+        }
+
+        return res;
+    }
+
+    public static Multiset<Integer> of(final int[] a) {
+        final Multiset<Integer> res = new Multiset<>();
+
+        if (N.notNullOrEmpty(a)) {
+            for (int b : a) {
+                res.add(b);
+            }
+        }
+
+        return res;
+    }
+
+    public static Multiset<Long> of(final long[] a) {
+        final Multiset<Long> res = new Multiset<>();
+
+        if (N.notNullOrEmpty(a)) {
+            for (long b : a) {
+                res.add(b);
+            }
+        }
+
+        return res;
+    }
+
+    public static Multiset<Float> of(final float[] a) {
+        final Multiset<Float> res = new Multiset<>();
+
+        if (N.notNullOrEmpty(a)) {
+            for (float b : a) {
+                res.add(b);
+            }
+        }
+
+        return res;
+    }
+
+    public static Multiset<Double> of(final double[] a) {
+        final Multiset<Double> res = new Multiset<>();
+
+        if (N.notNullOrEmpty(a)) {
+            for (double b : a) {
+                res.add(b);
+            }
+        }
+
+        return res;
+    }
+
     @SafeVarargs
     public static <T> Multiset<T> of(final T... a) {
         return N.asMultiset(a);
@@ -271,6 +367,10 @@ public final class Multiset<E> implements Iterable<E> {
         return this;
     }
 
+    public int occurrencesOf(final Object e) {
+        return get(e);
+    }
+
     public Optional<Pair<E, Integer>> minOccurrences() {
         if (size() == 0) {
             return Optional.empty();
@@ -320,7 +420,7 @@ public final class Multiset<E> implements Iterable<E> {
      * @return
      * @throws ArithmeticException if total occurrences overflows the maximum value of long.
      */
-    public Long sumOfOccurrences() {
+    public long sumOfOccurrences() {
         long sum = 0;
 
         for (MutableInt count : valueMap.values()) {
@@ -1025,13 +1125,13 @@ public final class Multiset<E> implements Iterable<E> {
      * @return a list with all elements, each of them is repeated with the occurrences in this <code>Multiset</code>   
      */
     public List<E> flatten() {
-        final long totalOccurrences = sumOfOccurrences().longValue();
+        final long totalOccurrences = sumOfOccurrences();
 
         if (totalOccurrences > Integer.MAX_VALUE) {
             throw new RuntimeException("The total occurrences(" + totalOccurrences + ") is bigger than the max value of int.");
         }
 
-        final Object[] a = new Object[sumOfOccurrences().intValue()];
+        final Object[] a = new Object[(int) totalOccurrences];
 
         int fromIndex = 0;
         int toIndex = 0;

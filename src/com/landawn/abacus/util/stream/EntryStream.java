@@ -27,6 +27,7 @@ import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.util.Comparators;
 import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.ImmutableIterator;
+import com.landawn.abacus.util.ListMultimap;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
@@ -804,7 +805,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
      * @return
      * @see Collectors#toMultimap(Function, Function)
      */
-    public Multimap<K, V, List<V>> toMultimap() {
+    public ListMultimap<K, V> toMultimap() {
         final Function<Map.Entry<K, V>, K> keyExtractor = Fn.key();
         final Function<Map.Entry<K, V>, V> valueMapper = Fn.value();
 
@@ -818,7 +819,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
      * @return
      * @see Collectors#toMultimap(Function, Function, Supplier)
      */
-    public <C extends Collection<V>> Multimap<K, V, C> toMultimap(final Supplier<Multimap<K, V, C>> mapFactory) {
+    public <C extends Collection<V>, M extends Multimap<K, V, C>> M toMultimap(final Supplier<M> mapFactory) {
         final Function<Map.Entry<K, V>, K> keyExtractor = Fn.key();
         final Function<Map.Entry<K, V>, V> valueMapper = Fn.value();
 
@@ -832,7 +833,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
      * @return
      * @see Collectors#toMultimap(Function, Function)
      */
-    public <KK, VV> Multimap<KK, VV, List<VV>> toMultimap(final Function<? super Map.Entry<K, V>, ? extends KK> keyExtractor,
+    public <KK, VV> ListMultimap<KK, VV> toMultimap(final Function<? super Map.Entry<K, V>, ? extends KK> keyExtractor,
             final Function<? super Map.Entry<K, V>, ? extends VV> valueMapper) {
         return s.toMultimap(keyExtractor, valueMapper);
     }
@@ -845,8 +846,8 @@ public final class EntryStream<K, V> implements AutoCloseable {
      * @return
      * @see Collectors#toMultimap(Function, Function, Supplier)
      */
-    public <KK, VV, C extends Collection<VV>> Multimap<KK, VV, C> toMultimap(final Function<? super Map.Entry<K, V>, ? extends KK> keyExtractor,
-            final Function<? super Map.Entry<K, V>, ? extends VV> valueMapper, final Supplier<Multimap<KK, VV, C>> mapFactory) {
+    public <KK, VV, C extends Collection<VV>, M extends Multimap<KK, VV, C>> M toMultimap(final Function<? super Map.Entry<K, V>, ? extends KK> keyExtractor,
+            final Function<? super Map.Entry<K, V>, ? extends VV> valueMapper, final Supplier<M> mapFactory) {
         return s.toMultimap(keyExtractor, valueMapper, mapFactory);
     }
 
