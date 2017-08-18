@@ -16,6 +16,7 @@
 
 package com.landawn.abacus.util;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -1373,13 +1374,13 @@ public final class Multiset<E> implements Iterable<E> {
         return Stream.of(valueMap.entrySet()).map(new Function<Map.Entry<E, MutableInt>, Map.Entry<E, Integer>>() {
             @Override
             public Entry<E, Integer> apply(Entry<E, MutableInt> t) {
-                return Pair.of(t.getKey(), t.getValue().value());
+                return new AbstractMap.SimpleImmutableEntry<>(t.getKey(), t.getValue().value());
             }
         });
     }
 
     public EntryStream<E, Integer> entryStream() {
-        return EntryStream.of(this);
+        return EntryStream.of(stream());
     }
 
     @Override
