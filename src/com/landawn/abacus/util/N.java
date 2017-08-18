@@ -9355,7 +9355,7 @@ public final class N {
      * @return the input parameter
      * @throws IllegalArgumentException if the specified parameter is null or empty.
      */
-    public static <K, E, V extends Collection<E>> Multimap<K, E, V> checkNullOrEmpty(final Multimap<K, E, V> parameter, final String msg) {
+    public static <K, E, V extends Collection<E>, T extends Multimap<K, E, V>> T checkNullOrEmpty(final T parameter, final String msg) {
         if (parameter == null || parameter.isEmpty()) {
             if (isErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);

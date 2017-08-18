@@ -270,6 +270,8 @@ public final class RefUtil {
         BUILT_IN_TYPE.put(ArrayHashMap.class.getCanonicalName(), ArrayHashMap.class);
         BUILT_IN_TYPE.put(ArrayHashSet.class.getCanonicalName(), ArrayHashSet.class);
         BUILT_IN_TYPE.put(BiMap.class.getCanonicalName(), BiMap.class);
+        BUILT_IN_TYPE.put(ListMultimap.class.getCanonicalName(), ListMultimap.class);
+        BUILT_IN_TYPE.put(SetMultimap.class.getCanonicalName(), SetMultimap.class);
         BUILT_IN_TYPE.put(Multimap.class.getCanonicalName(), Multimap.class);
         BUILT_IN_TYPE.put(Multiset.class.getCanonicalName(), Multiset.class);
         BUILT_IN_TYPE.put(LongMultiset.class.getCanonicalName(), LongMultiset.class);

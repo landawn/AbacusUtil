@@ -17,7 +17,6 @@
 package com.landawn.abacus.util;
 
 import java.security.SecureRandom;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -39,13 +38,6 @@ public abstract class PrimitiveList<C, P, E, A, L extends PrimitiveList<C, P, E,
         @Override
         public Multiset<Object> apply(int len) {
             return new Multiset<>(N.initHashCapacity(len));
-        }
-    };
-
-    static final IntFunction<Multimap<Object, Object, List<Object>>> MULTIMAP_FACTORY = new IntFunction<Multimap<Object, Object, List<Object>>>() {
-        @Override
-        public Multimap<Object, Object, List<Object>> apply(int len) {
-            return new Multimap<Object, Object, List<Object>>(N.initHashCapacity(len));
         }
     };
 
@@ -459,10 +451,5 @@ public abstract class PrimitiveList<C, P, E, A, L extends PrimitiveList<C, P, E,
     @SuppressWarnings("rawtypes")
     protected <T> IntFunction<Multiset<T>> createMultisetSupplier() {
         return (IntFunction) MULTISET_FACTORY;
-    }
-
-    @SuppressWarnings("rawtypes")
-    protected <K, U, V extends Collection<U>> IntFunction<Multimap<K, U, V>> createMultimapFactory() {
-        return (IntFunction) MULTIMAP_FACTORY;
     }
 }
