@@ -88,7 +88,12 @@ public class CompletableFuture<T> implements Future<T> {
     }
 
     public static <T> CompletableFuture<T> run(final Try.Callable<T, RuntimeException> action, final Executor executor) {
-        final FutureTask<T> futureTask = new FutureTask<>(action);
+        final FutureTask<T> futureTask = new FutureTask<>(new Callable<T>() {
+            @Override
+            public T call() throws Exception {
+                return action.call();
+            }
+        });
 
         executor.execute(futureTask);
 
