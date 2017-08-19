@@ -26,8 +26,9 @@ import com.landawn.abacus.util.function.Function;
  * @since 0.9
  * 
  * @author Haiyang Li
+ * @see N#newSetMultimap()
  */
-public class SetMultimap<K, E> extends Multimap<K, E, Set<E>> {
+public final class SetMultimap<K, E> extends Multimap<K, E, Set<E>> {
     SetMultimap() {
         this(HashMap.class, HashSet.class);
     }
@@ -37,18 +38,13 @@ public class SetMultimap<K, E> extends Multimap<K, E, Set<E>> {
     }
 
     @SuppressWarnings("rawtypes")
-    SetMultimap(final Class<? extends Set> valueType) {
-        this(HashMap.class, valueType);
-    }
-
-    @SuppressWarnings("rawtypes")
     SetMultimap(final Class<? extends Map> mapType, final Class<? extends Set> valueType) {
         super(mapType, valueType);
     }
 
     @SuppressWarnings("rawtypes")
-    SetMultimap(final Map<K, Set<E>> valueMap, final Class<? extends Set> collectionType) {
-        super(valueMap, collectionType);
+    SetMultimap(final Map<K, Set<E>> valueMap, final Class<? extends Set> valueType) {
+        super(valueMap, valueType);
     }
 
     public static <K, E> SetMultimap<K, E> from(final Map<? extends K, ? extends E> map) {
@@ -83,6 +79,19 @@ public class SetMultimap<K, E> extends Multimap<K, E, Set<E>> {
         }
 
         return multimap;
+    }
 
+    @SuppressWarnings("rawtypes")
+    public static <K, E, V extends Set<E>> SetMultimap<K, E> wrap(final Map<K, V> map) {
+        Class<? extends Set> valueType = HashSet.class;
+
+        for (V v : map.values()) {
+            if (v != null) {
+                valueType = v.getClass();
+                break;
+            }
+        }
+
+        return new SetMultimap<K, E>((Map<K, Set<E>>) map, valueType);
     }
 }

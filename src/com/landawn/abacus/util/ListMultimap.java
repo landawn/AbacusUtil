@@ -27,8 +27,9 @@ import com.landawn.abacus.util.function.Function;
  * @since 0.9
  * 
  * @author Haiyang Li
+ * @see N#newListMultimap()
  */
-public class ListMultimap<K, E> extends Multimap<K, E, List<E>> {
+public final class ListMultimap<K, E> extends Multimap<K, E, List<E>> {
     ListMultimap() {
         this(HashMap.class, ArrayList.class);
     }
@@ -38,18 +39,13 @@ public class ListMultimap<K, E> extends Multimap<K, E, List<E>> {
     }
 
     @SuppressWarnings("rawtypes")
-    ListMultimap(final Class<? extends List> valueType) {
-        this(HashMap.class, valueType);
-    }
-
-    @SuppressWarnings("rawtypes")
     ListMultimap(final Class<? extends Map> mapType, final Class<? extends List> valueType) {
         super(mapType, valueType);
     }
 
     @SuppressWarnings("rawtypes")
-    ListMultimap(final Map<K, List<E>> valueMap, final Class<? extends List> collectionType) {
-        super(valueMap, collectionType);
+    ListMultimap(final Map<K, List<E>> valueMap, final Class<? extends List> valueType) {
+        super(valueMap, valueType);
     }
 
     public static <K, E> ListMultimap<K, E> from(final Map<? extends K, ? extends E> map) {
@@ -84,5 +80,19 @@ public class ListMultimap<K, E> extends Multimap<K, E, List<E>> {
         }
 
         return multimap;
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static <K, E, V extends List<E>> ListMultimap<K, E> wrap(final Map<K, V> map) {
+        Class<? extends List> valueType = ArrayList.class;
+
+        for (V v : map.values()) {
+            if (v != null) {
+                valueType = v.getClass();
+                break;
+            }
+        }
+
+        return new ListMultimap<K, E>((Map<K, List<E>>) map, valueType);
     }
 }

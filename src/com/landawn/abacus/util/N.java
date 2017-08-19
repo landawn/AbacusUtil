@@ -1337,6 +1337,16 @@ public final class N {
         return multiMap;
     }
 
+    @SuppressWarnings("rawtypes")
+    public static <K, E> ListMultimap<K, E> newListMultimap(final Class<? extends Map> mapType) {
+        return new ListMultimap<>(mapType, ArrayList.class);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static <K, E> ListMultimap<K, E> newListMultimap(final Class<? extends Map> mapType, final Class<? extends List> valueType) {
+        return new ListMultimap<>(mapType, valueType);
+    }
+
     public static <K, E> SetMultimap<K, E> newSetMultimap() {
         return new SetMultimap<>();
     }
@@ -1379,6 +1389,16 @@ public final class N {
         multiMap.putAll(m);
 
         return multiMap;
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static <K, E> SetMultimap<K, E> newSetMultimap(final Class<? extends Map> mapType) {
+        return new SetMultimap<>(mapType, HashSet.class);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static <K, E> SetMultimap<K, E> newSetMultimap(final Class<? extends Map> mapType, final Class<? extends Set> valueType) {
+        return new SetMultimap<>(mapType, valueType);
     }
 
     static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;

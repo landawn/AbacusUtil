@@ -19,7 +19,6 @@ package com.landawn.abacus.util;
 import java.lang.reflect.Modifier;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
@@ -77,11 +76,6 @@ public class Multimap<K, E, V extends Collection<E>> {
     }
 
     @SuppressWarnings("rawtypes")
-    Multimap(final Class<? extends Collection> valueType) {
-        this(HashMap.class, valueType);
-    }
-
-    @SuppressWarnings("rawtypes")
     Multimap(final Class<? extends Map> mapType, final Class<? extends Collection> valueType) {
         this(N.newInstance(mapType), valueType);
     }
@@ -89,33 +83,27 @@ public class Multimap<K, E, V extends Collection<E>> {
     /**
      *
      * @param valueMap The valueMap and this Multimap share same data; any changes to one will appear in the other.
-     * @param collectionType
+     * @param valueType
      */
     @SuppressWarnings("rawtypes")
     @Internal
-    Multimap(final Map<K, V> valueMap, final Class<? extends Collection> collectionType) {
+    Multimap(final Map<K, V> valueMap, final Class<? extends Collection> valueType) {
         this.valueMap = valueMap;
-        this.valueType = (Class) collectionType;
+        this.valueType = (Class) valueType;
 
-        if (Modifier.isAbstract(collectionType.getModifiers())) {
-            if (List.class.isAssignableFrom(collectionType)) {
+        if (Modifier.isAbstract(valueType.getModifiers())) {
+            if (List.class.isAssignableFrom(valueType)) {
                 concreteValueType = (Class) ArrayList.class;
-            } else if (Set.class.isAssignableFrom(collectionType)) {
+            } else if (Set.class.isAssignableFrom(valueType)) {
                 concreteValueType = (Class) HashSet.class;
-            } else if (Queue.class.isAssignableFrom(collectionType)) {
+            } else if (Queue.class.isAssignableFrom(valueType)) {
                 concreteValueType = (Class) ArrayDeque.class;
             } else {
-                throw new IllegalArgumentException("Unsupported collection type: " + collectionType.getCanonicalName());
+                throw new IllegalArgumentException("Unsupported collection type: " + valueType.getCanonicalName());
             }
         } else {
-            concreteValueType = (Class) collectionType;
+            concreteValueType = (Class) valueType;
         }
-    }
-
-    Multimap(final Map<? extends K, ? extends E> m) {
-        this();
-
-        putAll(m);
     }
 
     public V get(final Object key) {
@@ -663,7 +651,7 @@ public class Multimap<K, E, V extends Collection<E>> {
      * @param newValue
      * @return <code>true</code> if this Multimap is modified by this operation, otherwise <code>false</code>.
      */
-    public boolean replace(final K key, final E oldValue, final E newValue) {
+    public boolean replace(final K key, final Object oldValue, final E newValue) {
         V val = valueMap.get(key);
 
         if (val.remove(oldValue)) {
@@ -679,14 +667,14 @@ public class Multimap<K, E, V extends Collection<E>> {
      * <code>False</code> is returned if no <code>oldValue</code> is found.
      *
      * @param key
-     * @param oldValue
+     * @param oldValues
      * @param newValue
      * @return <code>true</code> if this Multimap is modified by this operation, otherwise <code>false</code>.
      */
-    public boolean replaceAll(final K key, final E oldValue, final E newValue) {
+    public boolean replaceAll(final K key, final Collection<?> oldValues, final E newValue) {
         V val = valueMap.get(key);
 
-        if (val.removeAll(Arrays.asList(oldValue))) {
+        if (val.removeAll(oldValues)) {
             val.add(newValue);
             return true;
         }
@@ -697,11 +685,12 @@ public class Multimap<K, E, V extends Collection<E>> {
     /**
      * Replace the specified value (one occurrence) from the value set associated with keys which satisfy the specified <code>predicate</code>.
      * 
-     * @param value
+     * @param oldValue
+     * @param newValue
      * @param predicate
      * @return <code>true</code> if this Multimap is modified by this operation, otherwise <code>false</code>.
      */
-    public boolean replaceIf(E oldValue, E newValue, Predicate<? super K> predicate) {
+    public boolean replaceIf(Object oldValue, E newValue, Predicate<? super K> predicate) {
         boolean modified = false;
 
         for (Map.Entry<K, V> entry : this.valueMap.entrySet()) {
@@ -719,11 +708,12 @@ public class Multimap<K, E, V extends Collection<E>> {
     /**
      * Replace the specified value (one occurrence) from the value set associated with keys which satisfy the specified <code>predicate</code>.
      * 
-     * @param value
+     * @param oldValue
+     * @param newValue
      * @param predicate
      * @return <code>true</code> if this Multimap is modified by this operation, otherwise <code>false</code>.
      */
-    public boolean replaceIf(E oldValue, E newValue, BiPredicate<? super K, ? super V> predicate) {
+    public boolean replaceIf(Object oldValue, E newValue, BiPredicate<? super K, ? super V> predicate) {
         boolean modified = false;
 
         for (Map.Entry<K, V> entry : this.valueMap.entrySet()) {
@@ -741,16 +731,17 @@ public class Multimap<K, E, V extends Collection<E>> {
     /**
      * Replace the specified value (one occurrence) from the value set associated with keys which satisfy the specified <code>predicate</code>.
      * 
-     * @param value
+     * @param oldValues
+     * @param newValue
      * @param predicate
      * @return <code>true</code> if this Multimap is modified by this operation, otherwise <code>false</code>.
      */
-    public boolean replaceAllIf(E oldValue, E newValue, Predicate<? super K> predicate) {
+    public boolean replaceAllIf(Collection<?> oldValues, E newValue, Predicate<? super K> predicate) {
         boolean modified = false;
 
         for (Map.Entry<K, V> entry : this.valueMap.entrySet()) {
             if (predicate.test(entry.getKey())) {
-                if (entry.getValue().removeAll(Arrays.asList(oldValue))) {
+                if (entry.getValue().removeAll(oldValues)) {
                     entry.getValue().add(newValue);
                     modified = true;
                 }
@@ -763,16 +754,17 @@ public class Multimap<K, E, V extends Collection<E>> {
     /**
      * Replace the specified value (one occurrence) from the value set associated with keys which satisfy the specified <code>predicate</code>.
      * 
-     * @param value
+     * @param oldValues
+     * @param newValue
      * @param predicate
      * @return <code>true</code> if this Multimap is modified by this operation, otherwise <code>false</code>.
      */
-    public boolean replaceAllIf(E oldValue, E newValue, BiPredicate<? super K, ? super V> predicate) {
+    public boolean replaceAllIf(Collection<?> oldValues, E newValue, BiPredicate<? super K, ? super V> predicate) {
         boolean modified = false;
 
         for (Map.Entry<K, V> entry : this.valueMap.entrySet()) {
             if (predicate.test(entry.getKey(), entry.getValue())) {
-                if (entry.getValue().removeAll(Arrays.asList(oldValue))) {
+                if (entry.getValue().removeAll(oldValues)) {
                     entry.getValue().add(newValue);
                     modified = true;
                 }
@@ -1157,6 +1149,17 @@ public class Multimap<K, E, V extends Collection<E>> {
         final M map = supplier.apply(size());
         map.putAll(valueMap);
         return map;
+    }
+
+    /**
+     * Returns a view of this multimap as a {@code Map} from each distinct key
+     * to the nonempty collection of that key's associated values.
+     *
+     * <p>Changes to the returned map or the collections that serve as its values
+     * will update the underlying multimap, and vice versa.
+     */
+    public Map<K, V> unwrap() {
+        return valueMap;
     }
 
     public Stream<Map.Entry<K, V>> stream() {
