@@ -74,6 +74,10 @@ import com.landawn.abacus.util.stream.Collectors;
  * @author Haiyang Li
  */
 public final class Seq<T> extends ImmutableCollection<T> {
+
+    @SuppressWarnings("rawtypes")
+    private static final Seq EMPTY = Seq.of(Collections.EMPTY_LIST);
+
     /**
      * The returned <code>Seq</code> and the specified <code>Collection</code> are backed by the same data.
      * Any changes to one will appear in the other.
@@ -90,6 +94,10 @@ public final class Seq<T> extends ImmutableCollection<T> {
 
     @SafeVarargs
     public static <T> Seq<T> of(final T... a) {
+        if (N.isNullOrEmpty(a)) {
+            return EMPTY;
+        }
+
         return of(Arrays.asList(a));
     }
 
@@ -1810,6 +1818,10 @@ public final class Seq<T> extends ImmutableCollection<T> {
 
     @SafeVarargs
     public final List<T> append(T... a) {
+        if (N.isNullOrEmpty(a)) {
+            return toList();
+        }
+
         return append(Arrays.asList(a));
     }
 
@@ -1819,6 +1831,10 @@ public final class Seq<T> extends ImmutableCollection<T> {
 
     @SafeVarargs
     public final List<T> prepend(T... a) {
+        if (N.isNullOrEmpty(a)) {
+            return toList();
+        }
+
         return prepend(Arrays.asList(a));
     }
 
@@ -4268,6 +4284,10 @@ public final class Seq<T> extends ImmutableCollection<T> {
      */
     @SafeVarargs
     public static <E> List<List<E>> cartesianProduct(final Collection<? extends E>... cs) {
+        if (N.isNullOrEmpty(cs)) {
+            return new ArrayList<>();
+        }
+
         return cartesianProduct(Arrays.asList(cs));
     }
 

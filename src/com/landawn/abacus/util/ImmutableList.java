@@ -30,11 +30,19 @@ import java.util.function.UnaryOperator;
  * @author Haiyang Li
  */
 public final class ImmutableList<E> extends ImmutableCollection<E> implements List<E> {
+
+    @SuppressWarnings("rawtypes")
+    private static final ImmutableList EMPTY = of(Collections.EMPTY_LIST);
+
     private final List<E> list;
 
     ImmutableList(List<? extends E> list) {
         super(Collections.unmodifiableList(list));
         this.list = (List<E>) coll;
+    }
+
+    public static <E> ImmutableList<E> empty() {
+        return EMPTY;
     }
 
     /**
@@ -44,7 +52,9 @@ public final class ImmutableList<E> extends ImmutableCollection<E> implements Li
      */
     @SafeVarargs
     public static <E> ImmutableList<E> of(E... a) {
-        N.requireNonNull(a);
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        }
 
         return new ImmutableList<>(Arrays.asList(a));
     }
@@ -55,19 +65,25 @@ public final class ImmutableList<E> extends ImmutableCollection<E> implements Li
      * @return
      */
     public static <E> ImmutableList<E> of(List<? extends E> list) {
-        N.requireNonNull(list);
+        if (N.isNullOrEmpty(list)) {
+            return empty();
+        }
 
         return new ImmutableList<>(list);
     }
 
     public static <E> ImmutableList<E> copyOf(E... a) {
-        N.requireNonNull(a);
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        }
 
         return new ImmutableList<>(Arrays.asList(N.clone(a)));
     }
 
     public static <E> ImmutableList<E> copyOf(List<? extends E> list) {
-        N.requireNonNull(list);
+        if (N.isNullOrEmpty(list)) {
+            return empty();
+        }
 
         return new ImmutableList<>(new ArrayList<>(list));
     }

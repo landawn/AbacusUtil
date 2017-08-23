@@ -517,7 +517,7 @@ public final class Iterators {
     @SafeVarargs
     public static <T> ImmutableIterator<T> concat(final Collection<? extends T>... a) {
         if (N.isNullOrEmpty(a)) {
-            return ImmutableIterator.empty();
+            return ImmutableIterator.EMPTY;
         }
 
         final List<Iterator<? extends T>> list = new ArrayList<>(a.length);
@@ -533,6 +533,10 @@ public final class Iterators {
 
     @SafeVarargs
     public static <T> ImmutableIterator<T> concat(final Iterator<? extends T>... a) {
+        if (N.isNullOrEmpty(a)) {
+            return ImmutableIterator.EMPTY;
+        }
+
         return concat(N.asList(a));
     }
 

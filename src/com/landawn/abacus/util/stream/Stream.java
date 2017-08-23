@@ -72,6 +72,9 @@ import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.ImmutableIterator;
+import com.landawn.abacus.util.ImmutableList;
+import com.landawn.abacus.util.ImmutableMap;
+import com.landawn.abacus.util.ImmutableSet;
 import com.landawn.abacus.util.Indexed;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.IntList;
@@ -1019,6 +1022,38 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public abstract <A> A[] toArray(IntFunction<A[]> generator);
 
+    public ImmutableList<T> toImmutableList() {
+        return ImmutableList.of(toList());
+    }
+
+    public ImmutableSet<T> toImmutableSet() {
+        return ImmutableSet.of(toSet());
+    }
+
+    /**
+     * 
+     * @param keyExtractor
+     * @param valueMapper
+     * @return
+     * @see Collectors#toMap(Function, Function)
+     */
+    public <K, U> ImmutableMap<K, U> toImmutableMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper) {
+        return ImmutableMap.of(toMap(keyExtractor, valueMapper));
+    }
+
+    /**
+     * 
+     * @param keyExtractor
+     * @param valueMapper
+     * @param mergeFunction
+     * @return
+     * @see Collectors#toMap(Function, Function)
+     */
+    public <K, U> ImmutableMap<K, U> toImmutableMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
+            BinaryOperator<U> mergeFunction) {
+        return ImmutableMap.of(toMap(keyExtractor, valueMapper, mergeFunction));
+    }
+
     /**
      * 
      * @param keyExtractor
@@ -1032,23 +1067,23 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * 
      * @param keyExtractor
      * @param valueMapper
-     * @param mapFactory
-     * @return
-     * @see Collectors#toMap(Function, Function, Supplier)
-     */
-    public abstract <K, U, M extends Map<K, U>> M toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
-            Supplier<M> mapFactory);
-
-    /**
-     * 
-     * @param keyExtractor
-     * @param valueMapper
      * @param mergeFunction
      * @return
      * @see Collectors#toMap(Function, Function, BinaryOperator)
      */
     public abstract <K, U> Map<K, U> toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
             BinaryOperator<U> mergeFunction);
+
+    /**
+     * 
+     * @param keyExtractor
+     * @param valueMapper
+     * @param mapFactory
+     * @return
+     * @see Collectors#toMap(Function, Function, Supplier)
+     */
+    public abstract <K, U, M extends Map<K, U>> M toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
+            Supplier<M> mapFactory);
 
     /**
      * 
@@ -1789,6 +1824,10 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
 
     @SafeVarargs
     public final Stream<T> append(T... a) {
+        if (N.isNullOrEmpty(a)) {
+            return this;
+        }
+
         return append(Arrays.asList(a));
     }
 
@@ -1796,6 +1835,10 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
 
     @SafeVarargs
     public final Stream<T> prepend(T... a) {
+        if (N.isNullOrEmpty(a)) {
+            return this;
+        }
+
         return prepend(Arrays.asList(a));
     }
 

@@ -1,4 +1,13 @@
 ﻿
+========Changes in 0.9.81=========================================================================
+
+1, Add toImmutableList/toImmutableSet/toImmutableMap to Stream
+
+2, Remove Array.of(final BigInteger... a) and Array.of(final BigDecimal... a), replaced with N.asArray(T... a)
+
+3, Improvements and bug fix.
+
+
 ========Changes in 0.9.80=========================================================================
 
 1, Improvements and bug fix.

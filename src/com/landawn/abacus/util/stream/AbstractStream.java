@@ -2112,6 +2112,10 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<T> append(Collection<? extends T> c) {
+        if (N.isNullOrEmpty(c)) {
+            return this;
+        }
+
         return append(Stream.of(c));
     }
 
@@ -2122,6 +2126,10 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<T> prepend(Collection<? extends T> c) {
+        if (N.isNullOrEmpty(c)) {
+            return this;
+        }
+
         return prepend(Stream.of(c));
     }
 

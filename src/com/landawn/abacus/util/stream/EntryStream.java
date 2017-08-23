@@ -27,6 +27,7 @@ import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.util.Comparators;
 import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.ImmutableIterator;
+import com.landawn.abacus.util.ImmutableMap;
 import com.landawn.abacus.util.ListMultimap;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
@@ -595,6 +596,22 @@ public final class EntryStream<K, V> implements AutoCloseable {
      * 
      * @return
      */
+    public ImmutableMap<K, V> toImmutableMap() {
+        return ImmutableMap.of(toMap());
+    }
+
+    /**
+     * 
+     * @return
+     */
+    public ImmutableMap<K, V> toImmutableMap(final BinaryOperator<V> mergeFunction) {
+        return ImmutableMap.of(toMap(mergeFunction));
+    }
+
+    /**
+     * 
+     * @return
+     */
     public Map<K, V> toMap() {
         final Collector<Map.Entry<K, V>, ?, Map<K, V>> collector = Collectors.toMap();
 
@@ -845,6 +862,65 @@ public final class EntryStream<K, V> implements AutoCloseable {
         return s.toMultimap(keyExtractor, valueMapper, mapFactory);
     }
 
+    /**
+     * 
+     * @param collapsible
+     * @param mergeFunction
+     * @return
+     * @see Stream#collapse(BiPredicate, BiFunction)
+     */
+    public Stream<Entry<K, V>> collapseByKey(final BiPredicate<? super K, ? super K> collapsible,
+            final BiFunction<? super Entry<K, V>, ? super Entry<K, V>, Entry<K, V>> mergeFunction) {
+
+        final BiPredicate<? super Entry<K, V>, ? super Entry<K, V>> collapsible2 = new BiPredicate<Entry<K, V>, Entry<K, V>>() {
+            @Override
+            public boolean test(Entry<K, V> t, Entry<K, V> u) {
+                return collapsible.test(t.getKey(), u.getKey());
+            }
+        };
+
+        return s.collapse(collapsible2, mergeFunction);
+    }
+
+    /**
+     * 
+     * @param collapsible
+     * @return
+     * @see Stream#collapse(BiPredicate, Collector)
+     */
+    public Stream<List<V>> collapseByKey(final BiPredicate<? super K, ? super K> collapsible) {
+        final BiPredicate<? super Entry<K, V>, ? super Entry<K, V>> collapsible2 = new BiPredicate<Entry<K, V>, Entry<K, V>>() {
+            @Override
+            public boolean test(Entry<K, V> t, Entry<K, V> u) {
+                return collapsible.test(t.getKey(), u.getKey());
+            }
+        };
+
+        return s.collapse(collapsible2, Collectors.mapping(Fn.value(), Collectors.toList()));
+    }
+
+    /**
+     * Merge series of adjacent elements which satisfy the given predicate using
+     * the merger function and return a new stream.
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param collapsible
+     * @param collector
+     * @return
+     */
+    public <R, A> Stream<R> collapseByKey(final BiPredicate<? super K, ? super K> collapsible, final Collector<? super Entry<K, V>, A, R> collector) {
+        final BiPredicate<? super Entry<K, V>, ? super Entry<K, V>> collapsible2 = new BiPredicate<Entry<K, V>, Entry<K, V>>() {
+            @Override
+            public boolean test(Entry<K, V> t, Entry<K, V> u) {
+                return collapsible.test(t.getKey(), u.getKey());
+            }
+        };
+
+        return s.collapse(collapsible2, collector);
+    }
+
     public Map.Entry<K, V> reduce(final Map.Entry<K, V> identity, final BinaryOperator<Map.Entry<K, V>> accumulator) {
         return s.reduce(identity, accumulator);
     }
@@ -883,6 +959,22 @@ public final class EntryStream<K, V> implements AutoCloseable {
 
     public <R> R __(Function<? super EntryStream<K, V>, R> transfer) {
         return transfer.apply(this);
+    }
+
+    public EntryStream<K, V> sequential() {
+        return s.isParallel() ? of(s.sequential()) : this;
+    }
+
+    public EntryStream<K, V> parallel() {
+        return of(s.parallel());
+    }
+
+    public EntryStream<K, V> parallel(int threadNum) {
+        return of(s.parallel(threadNum));
+    }
+
+    public boolean isParallel() {
+        return s.isParallel();
     }
 
     /**

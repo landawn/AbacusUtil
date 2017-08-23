@@ -1014,7 +1014,7 @@ public abstract class SQLBuilder {
     }
 
     public SQLBuilder union(final String query) {
-        return union(Array.of(query));
+        return union(N.asArray(query));
     }
 
     @SafeVarargs
@@ -1060,7 +1060,7 @@ public abstract class SQLBuilder {
     }
 
     public SQLBuilder unionAll(final String query) {
-        return unionAll(Array.of(query));
+        return unionAll(N.asArray(query));
     }
 
     @SafeVarargs
@@ -1106,7 +1106,7 @@ public abstract class SQLBuilder {
     }
 
     public SQLBuilder intersect(final String query) {
-        return intersect(Array.of(query));
+        return intersect(N.asArray(query));
     }
 
     @SafeVarargs
@@ -1152,7 +1152,7 @@ public abstract class SQLBuilder {
     }
 
     public SQLBuilder except(final String query) {
-        return except(Array.of(query));
+        return except(N.asArray(query));
     }
 
     @SafeVarargs
@@ -1198,7 +1198,7 @@ public abstract class SQLBuilder {
     }
 
     public SQLBuilder minus(final String query) {
-        return minus(Array.of(query));
+        return minus(N.asArray(query));
     }
 
     @SafeVarargs
@@ -1242,7 +1242,7 @@ public abstract class SQLBuilder {
     }
 
     public SQLBuilder set(final String expr) {
-        return set(Array.of(expr));
+        return set(N.asArray(expr));
     }
 
     @SafeVarargs
@@ -1479,7 +1479,7 @@ public abstract class SQLBuilder {
     @SuppressWarnings("deprecation")
     public SQLBuilder set(final Object entity) {
         if (entity instanceof String) {
-            return set(Array.of((String) entity));
+            return set(N.asArray((String) entity));
         } else if (entity instanceof Map) {
             return set((Map<String, Object>) entity);
         } else {
@@ -1507,7 +1507,7 @@ public abstract class SQLBuilder {
     @SuppressWarnings("deprecation")
     public SQLBuilder set(final Object entity, final Set<String> excludedPropNames) {
         if (entity instanceof String) {
-            return set(Array.of((String) entity));
+            return set(N.asArray((String) entity));
         } else if (entity instanceof Map) {
             if (N.isNullOrEmpty(excludedPropNames)) {
                 return set((Map<String, Object>) entity);
@@ -2148,7 +2148,7 @@ public abstract class SQLBuilder {
 
     private static void parseInsertEntity(final SQLBuilder instance, final Object entity, final Set<String> excludedPropNames) {
         if (entity instanceof String) {
-            instance.columnNames = Array.of((String) entity);
+            instance.columnNames = N.asArray((String) entity);
         } else if (entity instanceof Map) {
             if (N.isNullOrEmpty(excludedPropNames)) {
                 instance.props = (Map<String, Object>) entity;
@@ -2243,7 +2243,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder insert(final String expr) {
-            return insert(Array.of(expr));
+            return insert(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -2322,7 +2322,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder select(final String expr) {
-            return select(Array.of(expr));
+            return select(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -2454,7 +2454,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder insert(final String expr) {
-            return insert(Array.of(expr));
+            return insert(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -2533,7 +2533,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder select(final String expr) {
-            return select(Array.of(expr));
+            return select(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -2664,7 +2664,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder insert(final String expr) {
-            return insert(Array.of(expr));
+            return insert(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -2743,7 +2743,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder select(final String expr) {
-            return select(Array.of(expr));
+            return select(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -2875,7 +2875,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder insert(final String expr) {
-            return insert(Array.of(expr));
+            return insert(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -2954,7 +2954,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder select(final String expr) {
-            return select(Array.of(expr));
+            return select(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -3086,7 +3086,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder insert(final String expr) {
-            return insert(Array.of(expr));
+            return insert(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -3165,7 +3165,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder select(final String expr) {
-            return select(Array.of(expr));
+            return select(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -3297,7 +3297,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder insert(final String expr) {
-            return insert(Array.of(expr));
+            return insert(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -3376,7 +3376,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder select(final String expr) {
-            return select(Array.of(expr));
+            return select(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -3508,7 +3508,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder insert(final String expr) {
-            return insert(Array.of(expr));
+            return insert(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -3587,7 +3587,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder select(final String expr) {
-            return select(Array.of(expr));
+            return select(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -3719,7 +3719,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder insert(final String expr) {
-            return insert(Array.of(expr));
+            return insert(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -3798,7 +3798,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder select(final String expr) {
-            return select(Array.of(expr));
+            return select(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -3930,7 +3930,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder insert(final String expr) {
-            return insert(Array.of(expr));
+            return insert(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -4009,7 +4009,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder select(final String expr) {
-            return select(Array.of(expr));
+            return select(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -4141,7 +4141,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder insert(final String expr) {
-            return insert(Array.of(expr));
+            return insert(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -4220,7 +4220,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder select(final String expr) {
-            return select(Array.of(expr));
+            return select(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -4352,7 +4352,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder insert(final String expr) {
-            return insert(Array.of(expr));
+            return insert(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -4431,7 +4431,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder select(final String expr) {
-            return select(Array.of(expr));
+            return select(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -4563,7 +4563,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder insert(final String expr) {
-            return insert(Array.of(expr));
+            return insert(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -4642,7 +4642,7 @@ public abstract class SQLBuilder {
         }
 
         public static SQLBuilder select(final String expr) {
-            return select(Array.of(expr));
+            return select(N.asArray(expr));
         }
 
         @SafeVarargs

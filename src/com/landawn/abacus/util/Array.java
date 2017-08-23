@@ -15,7 +15,6 @@
  */
 package com.landawn.abacus.util;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -271,28 +270,28 @@ public final class Array {
         return a;
     }
 
-    /**
-     * Returns the input array
-     *
-     * @param a
-     * @return
-     */
-    @SafeVarargs
-    public static BigInteger[] of(final BigInteger... a) {
-        return a;
-    }
-
-    /**
-     * Returns the input array
-     *
-     * @param a
-     * @return
-     */
-    @SafeVarargs
-    public static BigDecimal[] of(final BigDecimal... a) {
-        return a;
-    }
-
+    //    /**
+    //     * Returns the input array
+    //     *
+    //     * @param a
+    //     * @return
+    //     */
+    //    @SafeVarargs
+    //    public static BigInteger[] of(final BigInteger... a) {
+    //        return a;
+    //    }
+    //
+    //    /**
+    //     * Returns the input array
+    //     *
+    //     * @param a
+    //     * @return
+    //     */
+    //    @SafeVarargs
+    //    public static BigDecimal[] of(final BigDecimal... a) {
+    //        return a;
+    //    }
+    //
     //    /**
     //     * Returns the input array
     //     *
@@ -5080,7 +5079,7 @@ public final class Array {
      */
     @SafeVarargs
     public static <T> List<T> asList(final T... a) {
-        if (a.length == 0) {
+        if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
         }
 

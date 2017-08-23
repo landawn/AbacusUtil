@@ -857,6 +857,10 @@ public final class N {
     @SuppressWarnings("unchecked")
     @SafeVarargs
     public static <T> List<Type<T>> typeOf(final Class<?>... classes) {
+        if (N.isNullOrEmpty(classes)) {
+            return new ArrayList<>();
+        }
+
         final List<Type<T>> result = new ArrayList<>(classes.length);
 
         for (int i = 0, len = classes.length; i < len; i++) {
@@ -1720,6 +1724,10 @@ public final class N {
      */
     @SafeVarargs
     public static Map<String, Object> asOptions(final Object... a) {
+        if (N.isNullOrEmpty(a)) {
+            return new HashMap<>();
+        }
+
         return newMap(new HashMap<String, Object>(initHashCapacity(a.length / 2)), a);
     }
 
@@ -1732,6 +1740,10 @@ public final class N {
      */
     @SafeVarargs
     public static Map<String, Object> asProps(final Object... a) {
+        if (N.isNullOrEmpty(a)) {
+            return new LinkedHashMap<>();
+        }
+
         return newMap(new LinkedHashMap<String, Object>(initHashCapacity(a.length / 2)), a);
     }
 
@@ -1787,6 +1799,10 @@ public final class N {
 
     @SafeVarargs
     public static <K, V> Map<K, V> asMap(final Object... a) {
+        if (N.isNullOrEmpty(a)) {
+            return new HashMap<>();
+        }
+
         return newMap(new HashMap<K, V>(initHashCapacity(a.length / 2)), a);
     }
 
@@ -1813,6 +1829,10 @@ public final class N {
 
     @SafeVarargs
     public static <K, V> LinkedHashMap<K, V> asLinkedHashMap(final Object... a) {
+        if (N.isNullOrEmpty(a)) {
+            return new LinkedHashMap<>();
+        }
+
         return newMap(new LinkedHashMap<K, V>(initHashCapacity(a.length / 2)), a);
     }
 
@@ -1840,6 +1860,10 @@ public final class N {
 
     @SafeVarargs
     public static <K, V> ConcurrentHashMap<K, V> asConcurrentHashMap(final Object... a) {
+        if (N.isNullOrEmpty(a)) {
+            return new ConcurrentHashMap<>();
+        }
+
         return newMap(new ConcurrentHashMap<K, V>(initHashCapacity(a.length / 2)), a);
     }
 
@@ -1866,10 +1890,12 @@ public final class N {
 
     @SafeVarargs
     public static <K, V> BiMap<K, V> asBiMap(final Object... a) {
+        if (N.isNullOrEmpty(a)) {
+            return new BiMap<>();
+        }
+
         return newMap(new BiMap<K, V>(initHashCapacity(a.length / 2)), a);
     }
-
-    // <===
 
     /**
      * @param a
@@ -1877,7 +1903,7 @@ public final class N {
      */
     @SafeVarargs
     public static <T> List<T> asList(final T... a) {
-        if (a.length == 0) {
+        if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
         }
 
@@ -1896,7 +1922,7 @@ public final class N {
 
     @SafeVarargs
     public static <T> LinkedList<T> asLinkedList(final T... a) {
-        if (a.length == 0) {
+        if (N.isNullOrEmpty(a)) {
             return new LinkedList<>();
         }
 
@@ -1911,6 +1937,10 @@ public final class N {
 
     @SafeVarargs
     public static <T> Set<T> asSet(final T... a) {
+        if (N.isNullOrEmpty(a)) {
+            return new HashSet<>();
+        }
+
         final Set<T> set = new HashSet<>(initHashCapacity(a.length));
 
         for (T e : a) {
@@ -1922,6 +1952,10 @@ public final class N {
 
     @SafeVarargs
     public static <T> LinkedHashSet<T> asLinkedHashSet(final T... a) {
+        if (N.isNullOrEmpty(a)) {
+            return new LinkedHashSet<>();
+        }
+
         final LinkedHashSet<T> set = new LinkedHashSet<>(initHashCapacity(a.length));
 
         for (T e : a) {
@@ -1933,6 +1967,10 @@ public final class N {
 
     @SafeVarargs
     public static <T> SortedSet<T> asSortedSet(final T... a) {
+        if (N.isNullOrEmpty(a)) {
+            return new TreeSet<>();
+        }
+
         final SortedSet<T> set = new TreeSet<>();
 
         for (T e : a) {
@@ -1944,6 +1982,10 @@ public final class N {
 
     @SafeVarargs
     public static <T> Queue<T> asQueue(final T... a) {
+        if (N.isNullOrEmpty(a)) {
+            return new ArrayDeque<>();
+        }
+
         final Queue<T> queue = new ArrayDeque<>(a.length);
 
         for (T e : a) {
@@ -1955,6 +1997,10 @@ public final class N {
 
     @SafeVarargs
     public static <T> ArrayBlockingQueue<T> asArrayBlockingQueue(final T... a) {
+        if (N.isNullOrEmpty(a)) {
+            return new ArrayBlockingQueue<>(0);
+        }
+
         final ArrayBlockingQueue<T> queue = new ArrayBlockingQueue<>(a.length);
 
         for (T e : a) {
@@ -1966,6 +2012,10 @@ public final class N {
 
     @SafeVarargs
     public static <T> LinkedBlockingQueue<T> asLinkedBlockingQueue(final T... a) {
+        if (N.isNullOrEmpty(a)) {
+            return new LinkedBlockingQueue<>();
+        }
+
         final LinkedBlockingQueue<T> queue = new LinkedBlockingQueue<>(a.length);
 
         for (T e : a) {
@@ -1977,6 +2027,10 @@ public final class N {
 
     @SafeVarargs
     public static <T> ConcurrentLinkedQueue<T> asConcurrentLinkedQueue(final T... a) {
+        if (N.isNullOrEmpty(a)) {
+            return new ConcurrentLinkedQueue<>();
+        }
+
         final ConcurrentLinkedQueue<T> queue = new ConcurrentLinkedQueue<>();
 
         for (T e : a) {
@@ -1988,6 +2042,10 @@ public final class N {
 
     @SafeVarargs
     public static <T extends Delayed> DelayQueue<T> asDelayQueue(final T... a) {
+        if (N.isNullOrEmpty(a)) {
+            return new DelayQueue<>();
+        }
+
         final DelayQueue<T> queue = new DelayQueue<>();
 
         for (T e : a) {
@@ -1999,6 +2057,10 @@ public final class N {
 
     @SafeVarargs
     public static <T> PriorityQueue<T> asPriorityQueue(final T... a) {
+        if (N.isNullOrEmpty(a)) {
+            return new PriorityQueue<>();
+        }
+
         final PriorityQueue<T> queue = new PriorityQueue<>(a.length);
 
         for (T e : a) {
@@ -2010,6 +2072,10 @@ public final class N {
 
     @SafeVarargs
     public static <T> Deque<T> asDeque(final T... a) {
+        if (N.isNullOrEmpty(a)) {
+            return new ArrayDeque<>();
+        }
+
         final Deque<T> deque = new ArrayDeque<>(a.length);
 
         for (T e : a) {
@@ -2021,6 +2087,10 @@ public final class N {
 
     @SafeVarargs
     public static <T> LinkedBlockingDeque<T> asLinkedBlockingDeque(final T... a) {
+        if (N.isNullOrEmpty(a)) {
+            return new LinkedBlockingDeque<>();
+        }
+
         final LinkedBlockingDeque<T> deque = new LinkedBlockingDeque<>(a.length);
 
         for (T e : a) {
@@ -2032,6 +2102,10 @@ public final class N {
 
     @SafeVarargs
     public static <T> ConcurrentLinkedDeque<T> asConcurrentLinkedDeque(final T... a) {
+        if (N.isNullOrEmpty(a)) {
+            return new ConcurrentLinkedDeque<>();
+        }
+
         final ConcurrentLinkedDeque<T> deque = new ConcurrentLinkedDeque<>();
 
         for (T e : a) {
@@ -2043,6 +2117,10 @@ public final class N {
 
     @SafeVarargs
     public static <T> Multiset<T> asMultiset(final T... a) {
+        if (N.isNullOrEmpty(a)) {
+            return new Multiset<>();
+        }
+
         final Multiset<T> multiset = new Multiset<>(new HashMap<T, MutableInt>(initHashCapacity(a.length)));
 
         for (T e : a) {
@@ -22203,6 +22281,10 @@ public final class N {
 
     @SafeVarargs
     public static String concat(final String... a) {
+        if (N.isNullOrEmpty(a)) {
+            return EMPTY_STRING;
+        }
+
         final StringBuilder sb = ObjectFactory.createStringBuilder();
 
         try {
@@ -22721,6 +22803,7 @@ public final class N {
      * 
      * @param aa 
      * @return
+     * @throws NullPointerException if the specified <code>aa</code> is <code>null</code>.
      */
     @SafeVarargs
     public static <T> T[] concat(final T[]... aa) {
@@ -23182,7 +23265,7 @@ public final class N {
      */
     public static String[] add(final String[] a, final String element) {
         if (N.isNullOrEmpty(a)) {
-            return Array.of(element);
+            return N.asArray(element);
         }
 
         final String[] newArray = new String[a.length + 1];
@@ -23793,7 +23876,7 @@ public final class N {
 
     public static String[] insert(final String[] a, final int index, final String element) {
         if (N.isNullOrEmpty(a) && index == 0) {
-            return Array.of(element);
+            return N.asArray(element);
         }
 
         final String[] newArray = new String[a.length + 1];
@@ -25130,10 +25213,12 @@ public final class N {
      *            the positions of the elements to be removed
      * @return A new array containing the existing elements except those at the
      *         specified positions.
-     *
+     * @throws NullPointerException if the specified <code>a</code> is <code>null</code>.
      */
     @SafeVarargs
     public static <T> T[] deleteAll(final T[] a, int... indices) {
+        N.requireNonNull(a, "a");
+
         if (N.isNullOrEmpty(indices)) {
             return a.clone();
         } else if (indices.length == 1) {
@@ -27647,6 +27732,8 @@ public final class N {
      */
     @SafeVarargs
     public static char min(final char... a) {
+        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
+
         if (N.isNullOrEmpty(a)) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
         }
@@ -27681,9 +27768,7 @@ public final class N {
      */
     @SafeVarargs
     public static byte min(final byte... a) {
-        if (N.isNullOrEmpty(a)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
-        }
+        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
 
         return min(a, 0, a.length);
     }
@@ -27715,9 +27800,7 @@ public final class N {
      */
     @SafeVarargs
     public static short min(final short... a) {
-        if (N.isNullOrEmpty(a)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
-        }
+        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
 
         return min(a, 0, a.length);
     }
@@ -27749,9 +27832,7 @@ public final class N {
      */
     @SafeVarargs
     public static int min(final int... a) {
-        if (N.isNullOrEmpty(a)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
-        }
+        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
 
         return min(a, 0, a.length);
     }
@@ -27785,9 +27866,7 @@ public final class N {
      */
     @SafeVarargs
     public static long min(final long... a) {
-        if (N.isNullOrEmpty(a)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
-        }
+        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
 
         return min(a, 0, a.length);
     }
@@ -27821,9 +27900,7 @@ public final class N {
      */
     @SafeVarargs
     public static float min(final float... a) {
-        if (N.isNullOrEmpty(a)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
-        }
+        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
 
         return min(a, 0, a.length);
     }
@@ -27859,9 +27936,7 @@ public final class N {
      */
     @SafeVarargs
     public static double min(final double... a) {
-        if (N.isNullOrEmpty(a)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
-        }
+        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
 
         return min(a, 0, a.length);
     }
@@ -27892,9 +27967,7 @@ public final class N {
      * @return the minimum value in the array
      */
     public static <T extends Comparable<? super T>> T min(final T[] a) {
-        if (N.isNullOrEmpty(a)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
-        }
+        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
 
         return min(a, 0, a.length);
     }
@@ -27912,9 +27985,7 @@ public final class N {
      * @return the minimum value in the array
      */
     public static <T> T min(final T[] a, final Comparator<? super T> cmp) {
-        if (N.isNullOrEmpty(a)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
-        }
+        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
 
         return min(a, 0, a.length, cmp);
     }
@@ -27941,25 +28012,19 @@ public final class N {
     }
 
     public static <T extends Comparable<? super T>> T min(final Collection<? extends T> c) {
-        if (N.isNullOrEmpty(c)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
-        }
+        N.checkNullOrEmpty(c, "The spcified collection 'c' can't be null or empty");
 
         return min(c, 0, c.size());
     }
 
     public static <T extends Comparable<? super T>> T min(final Collection<? extends T> c, final int from, final int to) {
-        if (N.isNullOrEmpty(c)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
-        }
+        N.checkNullOrEmpty(c, "The spcified collection 'c' can't be null or empty");
 
         return (T) min(c, from, to, NULL_MAX_COMPARATOR);
     }
 
     public static <T> T min(final Collection<? extends T> c, Comparator<? super T> cmp) {
-        if (N.isNullOrEmpty(c)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
-        }
+        N.checkNullOrEmpty(c, "The spcified collection 'c' can't be null or empty");
 
         return min(c, 0, c.size(), cmp);
     }
@@ -28238,9 +28303,7 @@ public final class N {
      */
     @SafeVarargs
     public static char max(final char... a) {
-        if (N.isNullOrEmpty(a)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
-        }
+        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
 
         return max(a, 0, a.length);
     }
@@ -28272,9 +28335,7 @@ public final class N {
      */
     @SafeVarargs
     public static byte max(final byte... a) {
-        if (N.isNullOrEmpty(a)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
-        }
+        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
 
         return max(a, 0, a.length);
     }
@@ -28306,9 +28367,7 @@ public final class N {
      */
     @SafeVarargs
     public static short max(final short... a) {
-        if (N.isNullOrEmpty(a)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
-        }
+        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
 
         return max(a, 0, a.length);
     }
@@ -28340,9 +28399,7 @@ public final class N {
      */
     @SafeVarargs
     public static int max(final int... a) {
-        if (N.isNullOrEmpty(a)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
-        }
+        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
 
         return max(a, 0, a.length);
     }
@@ -28374,9 +28431,7 @@ public final class N {
      */
     @SafeVarargs
     public static long max(final long... a) {
-        if (N.isNullOrEmpty(a)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
-        }
+        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
 
         return max(a, 0, a.length);
     }
@@ -28410,9 +28465,7 @@ public final class N {
      */
     @SafeVarargs
     public static float max(final float... a) {
-        if (N.isNullOrEmpty(a)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
-        }
+        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
 
         return max(a, 0, a.length);
     }
@@ -28448,9 +28501,7 @@ public final class N {
      */
     @SafeVarargs
     public static double max(final double... a) {
-        if (N.isNullOrEmpty(a)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
-        }
+        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
 
         return max(a, 0, a.length);
     }
@@ -28483,9 +28534,7 @@ public final class N {
      *             if <code>a</code> is <code>null</code> or empty.
      */
     public static <T extends Comparable<? super T>> T max(final T[] a) {
-        if (N.isNullOrEmpty(a)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
-        }
+        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
 
         return max(a, 0, a.length);
     }
@@ -28503,9 +28552,7 @@ public final class N {
      * @return the maximum value in the array
      */
     public static <T> T max(final T[] a, final Comparator<? super T> cmp) {
-        if (N.isNullOrEmpty(a)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
-        }
+        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
 
         return max(a, 0, a.length, cmp);
     }
@@ -28532,25 +28579,19 @@ public final class N {
     }
 
     public static <T extends Comparable<? super T>> T max(final Collection<? extends T> c) {
-        if (N.isNullOrEmpty(c)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
-        }
+        N.checkNullOrEmpty(c, "The spcified collection 'c' can't be null or empty");
 
         return max(c, 0, c.size());
     }
 
     public static <T extends Comparable<? super T>> T max(final Collection<? extends T> c, final int from, final int to) {
-        if (N.isNullOrEmpty(c)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
-        }
+        N.checkNullOrEmpty(c, "The spcified collection 'c' can't be null or empty");
 
         return (T) max(c, from, to, NULL_MIN_COMPARATOR);
     }
 
     public static <T> T max(final Collection<? extends T> c, Comparator<? super T> cmp) {
-        if (N.isNullOrEmpty(c)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
-        }
+        N.checkNullOrEmpty(c, "The spcified collection 'c' can't be null or empty");
 
         return max(c, 0, c.size(), cmp);
     }
@@ -28823,9 +28864,7 @@ public final class N {
      */
     @SafeVarargs
     public static char median(final char... a) {
-        if (N.isNullOrEmpty(a)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
-        }
+        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
 
         return median(a, 0, a.length);
     }
@@ -28859,9 +28898,7 @@ public final class N {
      */
     @SafeVarargs
     public static byte median(final byte... a) {
-        if (N.isNullOrEmpty(a)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
-        }
+        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
 
         return median(a, 0, a.length);
     }
@@ -28895,9 +28932,7 @@ public final class N {
      */
     @SafeVarargs
     public static short median(final short... a) {
-        if (N.isNullOrEmpty(a)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
-        }
+        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
 
         return median(a, 0, a.length);
     }
@@ -28931,9 +28966,7 @@ public final class N {
      */
     @SafeVarargs
     public static int median(final int... a) {
-        if (N.isNullOrEmpty(a)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
-        }
+        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
 
         return median(a, 0, a.length);
     }
@@ -28967,9 +29000,7 @@ public final class N {
      */
     @SafeVarargs
     public static long median(final long... a) {
-        if (N.isNullOrEmpty(a)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
-        }
+        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
 
         return median(a, 0, a.length);
     }
@@ -29003,9 +29034,7 @@ public final class N {
      */
     @SafeVarargs
     public static float median(final float... a) {
-        if (N.isNullOrEmpty(a)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
-        }
+        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
 
         return median(a, 0, a.length);
     }
@@ -29039,9 +29068,7 @@ public final class N {
      */
     @SafeVarargs
     public static double median(final double... a) {
-        if (N.isNullOrEmpty(a)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
-        }
+        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
 
         return median(a, 0, a.length);
     }
@@ -29073,9 +29100,7 @@ public final class N {
      * @return the median value in the array
      */
     public static <T extends Comparable<? super T>> T median(final T[] a) {
-        if (N.isNullOrEmpty(a)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
-        }
+        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
 
         return median(a, 0, a.length);
     }
@@ -29089,9 +29114,7 @@ public final class N {
     }
 
     public static <T> T median(final T[] a, Comparator<? super T> cmp) {
-        if (N.isNullOrEmpty(a)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
-        }
+        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
 
         return median(a, 0, a.length, cmp);
     }
@@ -29124,9 +29147,7 @@ public final class N {
      * @return the median value in the collection
      */
     public static <T extends Comparable<? super T>> T median(final Collection<? extends T> c) {
-        if (N.isNullOrEmpty(c)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
-        }
+        N.checkNullOrEmpty(c, "The spcified collection 'c' can't be null or empty");
 
         return median(c, 0, c.size());
     }
@@ -29136,9 +29157,7 @@ public final class N {
     }
 
     public static <T> T median(final Collection<? extends T> c, Comparator<? super T> cmp) {
-        if (N.isNullOrEmpty(c)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
-        }
+        N.checkNullOrEmpty(c, "The spcified collection 'c' can't be null or empty");
 
         return median(c, 0, c.size(), cmp);
     }
@@ -29171,9 +29190,7 @@ public final class N {
      * @return the kth largest element.
      */
     public static char kthLargest(final char[] a, final int k) {
-        if (N.isNullOrEmpty(a)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
-        }
+        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
 
         return Array.kthLargest(a, k);
     }
@@ -29193,9 +29210,7 @@ public final class N {
      * @return the kth largest element.
      */
     public static byte kthLargest(final byte[] a, final int k) {
-        if (N.isNullOrEmpty(a)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
-        }
+        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
 
         return Array.kthLargest(a, k);
     }
@@ -29215,9 +29230,7 @@ public final class N {
      * @return the kth largest element.
      */
     public static short kthLargest(final short[] a, final int k) {
-        if (N.isNullOrEmpty(a)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
-        }
+        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
 
         return Array.kthLargest(a, k);
     }
@@ -29237,9 +29250,7 @@ public final class N {
      * @return the kth largest element.
      */
     public static int kthLargest(final int[] a, final int k) {
-        if (N.isNullOrEmpty(a)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
-        }
+        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
 
         return Array.kthLargest(a, k);
     }
@@ -29267,9 +29278,7 @@ public final class N {
      * @return the kth largest element.
      */
     public static long kthLargest(final long[] a, final int k) {
-        if (N.isNullOrEmpty(a)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
-        }
+        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
 
         return Array.kthLargest(a, k);
     }
@@ -29297,9 +29306,7 @@ public final class N {
      * @return the kth largest element.
      */
     public static float kthLargest(final float[] a, final int k) {
-        if (N.isNullOrEmpty(a)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
-        }
+        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
 
         return Array.kthLargest(a, k);
     }
@@ -29327,9 +29334,7 @@ public final class N {
      * @return the kth largest element.
      */
     public static double kthLargest(final double[] a, final int k) {
-        if (N.isNullOrEmpty(a)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
-        }
+        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
 
         return Array.kthLargest(a, k);
     }
@@ -29357,9 +29362,7 @@ public final class N {
      * @return the kth largest element.
      */
     public static <T extends Comparable<T>> T kthLargest(final T[] a, final int k) {
-        if (N.isNullOrEmpty(a)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
-        }
+        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
 
         return Array.kthLargest(a, k);
     }
@@ -29388,9 +29391,7 @@ public final class N {
      * @return the kth largest element.
      */
     public static <T> T kthLargest(final T[] a, final int k, final Comparator<? super T> cmp) {
-        if (N.isNullOrEmpty(a)) {
-            throw new IllegalArgumentException("The length of array can't be null or empty");
-        }
+        N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
 
         return Array.kthLargest(a, k, cmp);
     }
@@ -29419,9 +29420,7 @@ public final class N {
      * @return the kth largest element.
      */
     public static <T extends Comparable<T>> T kthLargest(final Collection<? extends T> c, final int k) {
-        if (N.isNullOrEmpty(c)) {
-            throw new IllegalArgumentException("The length of collection can't be null or empty");
-        }
+        N.checkNullOrEmpty(c, "The spcified collection 'c' can't be null or empty");
 
         return Array.kthLargest(c, k);
     }
@@ -29450,9 +29449,7 @@ public final class N {
      * @return the kth largest element.
      */
     public static <T> T kthLargest(final Collection<? extends T> c, final int k, final Comparator<? super T> cmp) {
-        if (N.isNullOrEmpty(c)) {
-            throw new IllegalArgumentException("The length of collection can't be null or empty");
-        }
+        N.checkNullOrEmpty(c, "The spcified collection 'c' can't be null or empty");
 
         return Array.kthLargest(c, k, cmp);
     }
@@ -29481,9 +29478,7 @@ public final class N {
      * @return
      */
     public static Map<Percentage, Character> distribution(final char[] sortedArray) {
-        if (N.isNullOrEmpty(sortedArray)) {
-            throw new IllegalArgumentException("The specified array is null or empty.");
-        }
+        N.checkNullOrEmpty(sortedArray, "The spcified 'sortedArray' can't be null or empty");
 
         final int len = sortedArray.length;
         final Map<Percentage, Character> m = new LinkedHashMap<>(32);
@@ -29502,9 +29497,7 @@ public final class N {
      * @return
      */
     public static Map<Percentage, Byte> distribution(final byte[] sortedArray) {
-        if (N.isNullOrEmpty(sortedArray)) {
-            throw new IllegalArgumentException("The specified array is null or empty.");
-        }
+        N.checkNullOrEmpty(sortedArray, "The spcified 'sortedArray' can't be null or empty");
 
         final int len = sortedArray.length;
         final Map<Percentage, Byte> m = new LinkedHashMap<>(32);
@@ -29523,9 +29516,7 @@ public final class N {
      * @return
      */
     public static Map<Percentage, Short> distribution(final short[] sortedArray) {
-        if (N.isNullOrEmpty(sortedArray)) {
-            throw new IllegalArgumentException("The specified array is null or empty.");
-        }
+        N.checkNullOrEmpty(sortedArray, "The spcified 'sortedArray' can't be null or empty");
 
         final int len = sortedArray.length;
         final Map<Percentage, Short> m = new LinkedHashMap<>(32);
@@ -29544,9 +29535,7 @@ public final class N {
      * @return
      */
     public static Map<Percentage, Integer> distribution(final int[] sortedArray) {
-        if (N.isNullOrEmpty(sortedArray)) {
-            throw new IllegalArgumentException("The specified array is null or empty.");
-        }
+        N.checkNullOrEmpty(sortedArray, "The spcified 'sortedArray' can't be null or empty");
 
         final int len = sortedArray.length;
         final Map<Percentage, Integer> m = new LinkedHashMap<>(32);
@@ -29565,9 +29554,7 @@ public final class N {
      * @return
      */
     public static Map<Percentage, Long> distribution(final long[] sortedArray) {
-        if (N.isNullOrEmpty(sortedArray)) {
-            throw new IllegalArgumentException("The specified array is null or empty.");
-        }
+        N.checkNullOrEmpty(sortedArray, "The spcified 'sortedArray' can't be null or empty");
 
         final int len = sortedArray.length;
         final Map<Percentage, Long> m = new LinkedHashMap<>(32);
@@ -29586,9 +29573,7 @@ public final class N {
      * @return
      */
     public static Map<Percentage, Float> distribution(final float[] sortedArray) {
-        if (N.isNullOrEmpty(sortedArray)) {
-            throw new IllegalArgumentException("The specified array is null or empty.");
-        }
+        N.checkNullOrEmpty(sortedArray, "The spcified 'sortedArray' can't be null or empty");
 
         final int len = sortedArray.length;
         final Map<Percentage, Float> m = new LinkedHashMap<>(32);
@@ -29607,9 +29592,7 @@ public final class N {
      * @return
      */
     public static Map<Percentage, Double> distribution(final double[] sortedArray) {
-        if (N.isNullOrEmpty(sortedArray)) {
-            throw new IllegalArgumentException("The specified array is null or empty.");
-        }
+        N.checkNullOrEmpty(sortedArray, "The spcified 'sortedArray' can't be null or empty");
 
         final int len = sortedArray.length;
         final Map<Percentage, Double> m = new LinkedHashMap<>(32);
@@ -29628,9 +29611,7 @@ public final class N {
      * @return
      */
     public static <T> Map<Percentage, T> distribution(final T[] sortedArray) {
-        if (N.isNullOrEmpty(sortedArray)) {
-            throw new IllegalArgumentException("The specified array is null or empty.");
-        }
+        N.checkNullOrEmpty(sortedArray, "The spcified 'sortedArray' can't be null or empty");
 
         final int len = sortedArray.length;
         final Map<Percentage, T> m = new LinkedHashMap<>(32);
@@ -29649,9 +29630,7 @@ public final class N {
      * @return
      */
     public static <T> Map<Percentage, T> distribution(final List<T> sortedList) {
-        if (N.isNullOrEmpty(sortedList)) {
-            throw new IllegalArgumentException("The specified array is null or empty.");
-        }
+        N.checkNullOrEmpty(sortedList, "The spcified 'sortedList' can't be null or empty");
 
         final int size = sortedList.size();
         final Map<Percentage, T> m = new LinkedHashMap<>(32);

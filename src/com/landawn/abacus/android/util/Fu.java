@@ -25,7 +25,6 @@ import com.landawn.abacus.android.util.Async.UIExecutor;
 import com.landawn.abacus.android.util.SQLiteExecutor.Type;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
-import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.NamingPolicy;
@@ -505,6 +504,10 @@ public class Fu {
 
     @SafeVarargs
     public static final ContentValues asContentValues(final Object... a) {
+        if (N.isNullOrEmpty(a)) {
+            return new ContentValues();
+        }
+
         final ContentValues result = new ContentValues();
 
         if ((a.length % 2) != 0) {
@@ -598,7 +601,7 @@ public class Fu {
      */
     public static <T> List<T> query(Class<T> targetClass, final Uri uri, String projection, String selection, String[] selectionArgs, String sortOrder,
             CancellationSignal cancellationSignal) {
-        final Cursor cursor = getContentResolver().query(uri, Array.of(projection), selection, selectionArgs, sortOrder, cancellationSignal);
+        final Cursor cursor = getContentResolver().query(uri, N.asArray(projection), selection, selectionArgs, sortOrder, cancellationSignal);
 
         try {
             return toList(targetClass, cursor);

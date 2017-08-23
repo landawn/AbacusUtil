@@ -696,7 +696,7 @@ public abstract class CQLBuilder {
     }
 
     public CQLBuilder set(final String expr) {
-        return set(Array.of(expr));
+        return set(N.asArray(expr));
     }
 
     @SafeVarargs
@@ -939,7 +939,7 @@ public abstract class CQLBuilder {
     @SuppressWarnings("deprecation")
     public CQLBuilder set(final Object entity) {
         if (entity instanceof String) {
-            return set(Array.of((String) entity));
+            return set(N.asArray((String) entity));
         } else if (entity instanceof Map) {
             return set((Map<String, Object>) entity);
         } else {
@@ -969,7 +969,7 @@ public abstract class CQLBuilder {
     @SuppressWarnings("deprecation")
     public CQLBuilder set(final Object entity, final Set<String> excludedPropNames) {
         if (entity instanceof String) {
-            return set(Array.of((String) entity));
+            return set(N.asArray((String) entity));
         } else if (entity instanceof Map) {
             if (N.isNullOrEmpty(excludedPropNames)) {
                 return set((Map<String, Object>) entity);
@@ -1683,7 +1683,7 @@ public abstract class CQLBuilder {
 
     private static void parseInsertEntity(final CQLBuilder instance, final Object entity, final Set<String> excludedPropNames) {
         if (entity instanceof String) {
-            instance.columnNames = Array.of((String) entity);
+            instance.columnNames = N.asArray((String) entity);
         } else if (entity instanceof Map) {
             if (N.isNullOrEmpty(excludedPropNames)) {
                 instance.props = (Map<String, Object>) entity;
@@ -1763,7 +1763,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder insert(final String expr) {
-            return insert(Array.of(expr));
+            return insert(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -1825,7 +1825,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder select(final String expr) {
-            return select(Array.of(expr));
+            return select(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -1928,7 +1928,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder delete(final String expr) {
-            return delete(Array.of(expr));
+            return delete(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -1992,7 +1992,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder insert(final String expr) {
-            return insert(Array.of(expr));
+            return insert(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -2054,7 +2054,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder select(final String expr) {
-            return select(Array.of(expr));
+            return select(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -2157,7 +2157,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder delete(final String expr) {
-            return delete(Array.of(expr));
+            return delete(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -2220,7 +2220,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder insert(final String expr) {
-            return insert(Array.of(expr));
+            return insert(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -2282,7 +2282,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder select(final String expr) {
-            return select(Array.of(expr));
+            return select(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -2385,7 +2385,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder delete(final String expr) {
-            return delete(Array.of(expr));
+            return delete(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -2449,7 +2449,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder insert(final String expr) {
-            return insert(Array.of(expr));
+            return insert(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -2511,7 +2511,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder select(final String expr) {
-            return select(Array.of(expr));
+            return select(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -2604,7 +2604,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder delete(final String expr) {
-            return delete(Array.of(expr));
+            return delete(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -2668,7 +2668,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder insert(final String expr) {
-            return insert(Array.of(expr));
+            return insert(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -2730,7 +2730,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder select(final String expr) {
-            return select(Array.of(expr));
+            return select(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -2833,7 +2833,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder delete(final String expr) {
-            return delete(Array.of(expr));
+            return delete(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -2897,7 +2897,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder insert(final String expr) {
-            return insert(Array.of(expr));
+            return insert(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -2959,7 +2959,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder select(final String expr) {
-            return select(Array.of(expr));
+            return select(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -3062,7 +3062,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder delete(final String expr) {
-            return delete(Array.of(expr));
+            return delete(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -3126,7 +3126,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder insert(final String expr) {
-            return insert(Array.of(expr));
+            return insert(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -3188,7 +3188,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder select(final String expr) {
-            return select(Array.of(expr));
+            return select(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -3291,7 +3291,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder delete(final String expr) {
-            return delete(Array.of(expr));
+            return delete(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -3355,7 +3355,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder insert(final String expr) {
-            return insert(Array.of(expr));
+            return insert(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -3417,7 +3417,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder select(final String expr) {
-            return select(Array.of(expr));
+            return select(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -3510,7 +3510,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder delete(final String expr) {
-            return delete(Array.of(expr));
+            return delete(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -3574,7 +3574,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder insert(final String expr) {
-            return insert(Array.of(expr));
+            return insert(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -3636,7 +3636,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder select(final String expr) {
-            return select(Array.of(expr));
+            return select(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -3739,7 +3739,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder delete(final String expr) {
-            return delete(Array.of(expr));
+            return delete(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -3803,7 +3803,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder insert(final String expr) {
-            return insert(Array.of(expr));
+            return insert(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -3865,7 +3865,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder select(final String expr) {
-            return select(Array.of(expr));
+            return select(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -3968,7 +3968,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder delete(final String expr) {
-            return delete(Array.of(expr));
+            return delete(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -4032,7 +4032,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder insert(final String expr) {
-            return insert(Array.of(expr));
+            return insert(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -4094,7 +4094,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder select(final String expr) {
-            return select(Array.of(expr));
+            return select(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -4197,7 +4197,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder delete(final String expr) {
-            return delete(Array.of(expr));
+            return delete(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -4261,7 +4261,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder insert(final String expr) {
-            return insert(Array.of(expr));
+            return insert(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -4323,7 +4323,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder select(final String expr) {
-            return select(Array.of(expr));
+            return select(N.asArray(expr));
         }
 
         @SafeVarargs
@@ -4416,7 +4416,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder delete(final String expr) {
-            return delete(Array.of(expr));
+            return delete(N.asArray(expr));
         }
 
         @SafeVarargs

@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -654,12 +655,58 @@ public class Multimap<K, E, V extends Collection<E>> {
     public boolean replace(final K key, final Object oldValue, final E newValue) {
         V val = valueMap.get(key);
 
-        if (val.remove(oldValue)) {
-            val.add(newValue);
-            return true;
-        }
+        return replace(val, oldValue, newValue);
+    }
 
-        return false;
+    private boolean replace(final V val, final Object oldValue, final E newValue) {
+        if (val instanceof List) {
+            final List<E> list = (List<E>) val;
+
+            if (list instanceof ArrayList) {
+                if (oldValue == null) {
+                    for (int i = 0, len = list.size(); i < len; i++) {
+                        if (list.get(i) == null) {
+                            list.set(i, newValue);
+                            return true;
+                        }
+                    }
+                } else {
+                    for (int i = 0, len = list.size(); i < len; i++) {
+                        if (oldValue.equals(list.get(i))) {
+                            list.set(i, newValue);
+                            return true;
+                        }
+                    }
+                }
+            } else {
+                final ListIterator<E> iter = list.listIterator();
+
+                if (oldValue == null) {
+                    while (iter.hasNext()) {
+                        if (iter.next() == null) {
+                            iter.set(newValue);
+                            return true;
+                        }
+                    }
+                } else {
+                    while (iter.hasNext()) {
+                        if (oldValue.equals(iter.next())) {
+                            iter.set(newValue);
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false;
+        } else {
+            if (val.remove(oldValue)) {
+                val.add(newValue);
+                return true;
+            }
+
+            return false;
+        }
     }
 
     /**
@@ -695,10 +742,7 @@ public class Multimap<K, E, V extends Collection<E>> {
 
         for (Map.Entry<K, V> entry : this.valueMap.entrySet()) {
             if (predicate.test(entry.getKey())) {
-                if (entry.getValue().remove(oldValue)) {
-                    entry.getValue().add(newValue);
-                    modified = true;
-                }
+                modified = modified | replace(entry.getValue(), oldValue, newValue);
             }
         }
 
@@ -718,10 +762,7 @@ public class Multimap<K, E, V extends Collection<E>> {
 
         for (Map.Entry<K, V> entry : this.valueMap.entrySet()) {
             if (predicate.test(entry.getKey(), entry.getValue())) {
-                if (entry.getValue().remove(oldValue)) {
-                    entry.getValue().add(newValue);
-                    modified = true;
-                }
+                modified = modified | replace(entry.getValue(), oldValue, newValue);
             }
         }
 

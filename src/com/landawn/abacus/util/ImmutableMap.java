@@ -30,10 +30,18 @@ import java.util.function.Function;
  * @author Haiyang Li
  */
 public final class ImmutableMap<K, V> implements Map<K, V> {
+
+    @SuppressWarnings("rawtypes")
+    private static final ImmutableMap EMPTY = of(Collections.EMPTY_MAP);
+
     private final Map<K, V> map;
 
     ImmutableMap(final Map<? extends K, ? extends V> map) {
         this.map = Collections.unmodifiableMap(map);
+    }
+
+    public static <K, V> ImmutableMap<K, V> empty() {
+        return EMPTY;
     }
 
     public static <K, V, k extends K, v extends V> ImmutableMap<K, V> of(final k k1, final v v1) {
@@ -81,13 +89,17 @@ public final class ImmutableMap<K, V> implements Map<K, V> {
      * @return
      */
     public static <K, V> ImmutableMap<K, V> of(Map<? extends K, ? extends V> map) {
-        N.requireNonNull(map);
+        if (N.isNullOrEmpty(map)) {
+            return empty();
+        }
 
         return new ImmutableMap<>(map);
     }
 
     public static <K, V> ImmutableMap<K, V> copyOf(Map<? extends K, ? extends V> map) {
-        N.requireNonNull(map);
+        if (N.isNullOrEmpty(map)) {
+            return empty();
+        }
 
         return new ImmutableMap<>(map instanceof IdentityHashMap ? new IdentityHashMap<>(map) : new HashMap<>(map));
     }

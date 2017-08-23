@@ -101,6 +101,10 @@ public final class LongMultiset<E> implements Iterable<E> {
 
     @SafeVarargs
     public static <T> LongMultiset<T> of(final T... a) {
+        if (N.isNullOrEmpty(a)) {
+            return new LongMultiset<>();
+        }
+
         final LongMultiset<T> multiset = new LongMultiset<>(new HashMap<T, MutableLong>(N.initHashCapacity(a.length)));
 
         for (T e : a) {

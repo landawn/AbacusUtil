@@ -116,6 +116,10 @@ public class AsyncExecutor {
 
     @SafeVarargs
     public final List<CompletableFuture<Void>> execute(final Runnable... commands) {
+        if (N.isNullOrEmpty(commands)) {
+            return new ArrayList<>();
+        }
+
         final List<CompletableFuture<Void>> results = new ArrayList<>(commands.length);
 
         for (int i = 0, len = commands.length; i < len; i++) {
@@ -126,6 +130,10 @@ public class AsyncExecutor {
     }
 
     public List<CompletableFuture<Void>> execute(final List<? extends Runnable> commands) {
+        if (N.isNullOrEmpty(commands)) {
+            return new ArrayList<>();
+        }
+
         final List<CompletableFuture<Void>> results = new ArrayList<>(commands.size());
 
         for (Runnable cmd : commands) {
@@ -156,6 +164,10 @@ public class AsyncExecutor {
 
     @SafeVarargs
     public final <T> List<CompletableFuture<T>> execute(final Callable<T>... commands) {
+        if (N.isNullOrEmpty(commands)) {
+            return new ArrayList<>();
+        }
+
         final List<CompletableFuture<T>> results = new ArrayList<>(commands.length);
 
         for (int i = 0, len = commands.length; i < len; i++) {
@@ -166,6 +178,10 @@ public class AsyncExecutor {
     }
 
     public <T> List<CompletableFuture<T>> execute(final Collection<? extends Callable<T>> commands) {
+        if (N.isNullOrEmpty(commands)) {
+            return new ArrayList<>();
+        }
+
         final List<CompletableFuture<T>> results = new ArrayList<>(commands.size());
 
         for (Callable<T> cmd : commands) {

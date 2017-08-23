@@ -15,6 +15,7 @@
 package com.landawn.abacus.util;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import com.landawn.abacus.util.function.Consumer;
@@ -70,6 +71,10 @@ public class Builder<T> {
         return new DoubleListBuilder(val);
     }
 
+    public static final <T, L extends List<T>> ListBuilder<T, L> of(L val) {
+        return new ListBuilder<>(val);
+    }
+
     public static final <T, C extends Collection<T>> CollectionBuilder<T, C> of(C val) {
         return new CollectionBuilder<>(val);
     }
@@ -86,7 +91,7 @@ public class Builder<T> {
         return new LongMultisetBuilder<>(val);
     }
 
-    public static final <K, E, V extends Collection<E>, M extends Multimap<K, E, V>> MultimapBuilder<K, E, V> of(M val) {
+    public static final <K, E, V extends Collection<E>, M extends Multimap<K, E, V>> MultimapBuilder<K, E, V, M> of(M val) {
         return new MultimapBuilder<>(val);
     }
 
@@ -554,7 +559,31 @@ public class Builder<T> {
         }
     }
 
-    public static final class CollectionBuilder<T, C extends Collection<T>> extends Builder<C> {
+    public static final class ListBuilder<T, L extends List<T>> extends CollectionBuilder<T, L> {
+        ListBuilder(L c) {
+            super(c);
+        }
+
+        public ListBuilder<T, L> add(int index, T e) {
+            val.add(index, e);
+
+            return this;
+        }
+
+        public ListBuilder<T, L> addAll(int index, Collection<? extends T> c) {
+            val.addAll(index, c);
+
+            return this;
+        }
+
+        public ListBuilder<T, L> remove(int index) {
+            val.remove(index);
+
+            return this;
+        }
+    }
+
+    public static class CollectionBuilder<T, C extends Collection<T>> extends Builder<C> {
         CollectionBuilder(C c) {
             super(c);
         }
@@ -733,48 +762,48 @@ public class Builder<T> {
         }
     }
 
-    public static final class MultimapBuilder<K, E, V extends Collection<E>> extends Builder<Multimap<K, E, V>> {
-        MultimapBuilder(Multimap<K, E, V> m) {
+    public static final class MultimapBuilder<K, E, V extends Collection<E>, M extends Multimap<K, E, V>> extends Builder<M> {
+        MultimapBuilder(M m) {
             super(m);
         }
 
-        public MultimapBuilder<K, E, V> put(K key, E e) {
+        public MultimapBuilder<K, E, V, M> put(K key, E e) {
             val.put(key, e);
 
             return this;
         }
 
-        public MultimapBuilder<K, E, V> putAll(final K k, final Collection<? extends E> c) {
+        public MultimapBuilder<K, E, V, M> putAll(final K k, final Collection<? extends E> c) {
             val.putAll(k, c);
 
             return this;
         }
 
-        public MultimapBuilder<K, E, V> putAll(Map<? extends K, ? extends E> m) {
+        public MultimapBuilder<K, E, V, M> putAll(Map<? extends K, ? extends E> m) {
             val.putAll(m);
 
             return this;
         }
 
-        public MultimapBuilder<K, E, V> putAll(Multimap<? extends K, ? extends E, ? extends V> m) {
+        public MultimapBuilder<K, E, V, M> putAll(Multimap<? extends K, ? extends E, ? extends V> m) {
             val.putAll(m);
 
             return this;
         }
 
-        public MultimapBuilder<K, E, V> remove(Object k, Object e) {
+        public MultimapBuilder<K, E, V, M> remove(Object k, Object e) {
             val.remove(k, e);
 
             return this;
         }
 
-        public MultimapBuilder<K, E, V> removeAll(K k) {
+        public MultimapBuilder<K, E, V, M> removeAll(K k) {
             val.removeAll(k);
 
             return this;
         }
 
-        public MultimapBuilder<K, E, V> removeAll(Collection<? extends K> c) {
+        public MultimapBuilder<K, E, V, M> removeAll(Collection<? extends K> c) {
             for (Object k : c) {
                 val.removeAll(k);
             }
@@ -782,13 +811,13 @@ public class Builder<T> {
             return this;
         }
 
-        public MultimapBuilder<K, E, V> removeAll(Map<? extends K, ? extends E> m) {
+        public MultimapBuilder<K, E, V, M> removeAll(Map<? extends K, ? extends E> m) {
             val.removeAll(m);
 
             return this;
         }
 
-        public MultimapBuilder<K, E, V> removeAll(Multimap<? extends K, ? extends E, ? extends V> m) {
+        public MultimapBuilder<K, E, V, M> removeAll(Multimap<? extends K, ? extends E, ? extends V> m) {
             val.removeAll(m);
 
             return this;

@@ -49,7 +49,6 @@ import com.landawn.abacus.condition.Junction;
 import com.landawn.abacus.core.RowDataSet;
 import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.exception.NonUniqueResultException;
-import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.D;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.NamedSQL;
@@ -1392,7 +1391,7 @@ public final class SQLiteExecutor {
 
     @Deprecated
     <T> NullabLe<T> queryForSingleResult(final Class<T> targetClass, final String tableName, final String columnName, Condition whereClause) {
-        final DataSet rs = query(tableName, Array.of(columnName), N.asArray(targetClass), whereClause, null, null, null, 0, 1);
+        final DataSet rs = query(tableName, N.asArray(columnName), N.asArray(targetClass), whereClause, null, null, null, 0, 1);
 
         if (N.isNullOrEmpty(rs)) {
             return NullabLe.empty();
@@ -2106,7 +2105,7 @@ public final class SQLiteExecutor {
         final Command cmd = new Command();
 
         cmd.setSql(formatName(binary.getPropName()) + D.SPACE + binary.getOperator() + " ?");
-        cmd.setArgs(Array.of(N.stringOf(binary.getPropValue())));
+        cmd.setArgs(N.asArray(N.stringOf(binary.getPropValue())));
 
         return cmd;
     }
@@ -2115,7 +2114,7 @@ public final class SQLiteExecutor {
         final Command cmd = new Command();
 
         cmd.setSql(formatName(bt.getPropName()) + D.SPACE + bt.getOperator() + " (?, ?)");
-        cmd.setArgs(Array.of(N.stringOf(bt.getMinValue()), N.stringOf(bt.getMaxValue())));
+        cmd.setArgs(N.asArray(N.stringOf(bt.getMinValue()), N.stringOf(bt.getMaxValue())));
 
         return cmd;
     }

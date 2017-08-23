@@ -26,13 +26,22 @@ import java.util.Set;
  */
 public final class ImmutableSet<E> extends ImmutableCollection<E> implements Set<E> {
 
+    @SuppressWarnings("rawtypes")
+    private static final ImmutableSet EMPTY = of(Collections.EMPTY_SET);
+
     ImmutableSet(Set<? extends E> set) {
         super(Collections.unmodifiableSet(set));
     }
 
+    public static <E> ImmutableSet<E> empty() {
+        return EMPTY;
+    }
+
     @SafeVarargs
     public static <E> ImmutableSet<E> of(E... a) {
-        N.requireNonNull(a);
+        if (N.isNullOrEmpty(a)) {
+            return empty();
+        }
 
         return new ImmutableSet<>(N.asLinkedHashSet(a));
     }
@@ -43,7 +52,9 @@ public final class ImmutableSet<E> extends ImmutableCollection<E> implements Set
      * @return
      */
     public static <E> ImmutableSet<E> of(Set<? extends E> set) {
-        N.requireNonNull(set);
+        if (N.isNullOrEmpty(set)) {
+            return empty();
+        }
 
         return new ImmutableSet<>(set);
     }
@@ -54,7 +65,9 @@ public final class ImmutableSet<E> extends ImmutableCollection<E> implements Set
      * @return
      */
     public static <E> ImmutableSet<E> copyOf(Set<? extends E> set) {
-        N.requireNonNull(set);
+        if (N.isNullOrEmpty(set)) {
+            return empty();
+        }
 
         return new ImmutableSet<>(new HashSet<>(set));
     }
