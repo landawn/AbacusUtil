@@ -45,21 +45,15 @@ import com.landawn.abacus.exception.UncheckedSQLException;
 import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.BufferedWriter;
 import com.landawn.abacus.util.ByteIterator;
-import com.landawn.abacus.util.ByteSummaryStatistics;
 import com.landawn.abacus.util.CharIterator;
-import com.landawn.abacus.util.CharSummaryStatistics;
 import com.landawn.abacus.util.DoubleIterator;
-import com.landawn.abacus.util.DoubleSummaryStatistics;
 import com.landawn.abacus.util.FloatIterator;
-import com.landawn.abacus.util.FloatSummaryStatistics;
 import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.Indexed;
 import com.landawn.abacus.util.IntIterator;
-import com.landawn.abacus.util.IntSummaryStatistics;
 import com.landawn.abacus.util.ListMultimap;
 import com.landawn.abacus.util.LongIterator;
-import com.landawn.abacus.util.LongSummaryStatistics;
 import com.landawn.abacus.util.Matrix;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
@@ -76,7 +70,6 @@ import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.PermutationIterator;
 import com.landawn.abacus.util.Seq;
 import com.landawn.abacus.util.ShortIterator;
-import com.landawn.abacus.util.ShortSummaryStatistics;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
@@ -87,13 +80,9 @@ import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
-import com.landawn.abacus.util.function.ToByteFunction;
-import com.landawn.abacus.util.function.ToCharFunction;
 import com.landawn.abacus.util.function.ToDoubleFunction;
-import com.landawn.abacus.util.function.ToFloatFunction;
 import com.landawn.abacus.util.function.ToIntFunction;
 import com.landawn.abacus.util.function.ToLongFunction;
-import com.landawn.abacus.util.function.ToShortFunction;
 import com.landawn.abacus.util.function.TriConsumer;
 import com.landawn.abacus.util.function.TriFunction;
 
@@ -1328,41 +1317,6 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public CharSummaryStatistics summarizeChar(ToCharFunction<? super T> mapper) {
-        return collect(Collectors.summarizingChar(mapper));
-    }
-
-    @Override
-    public ByteSummaryStatistics summarizeByte(ToByteFunction<? super T> mapper) {
-        return collect(Collectors.summarizingByte(mapper));
-    }
-
-    @Override
-    public ShortSummaryStatistics summarizeShort(ToShortFunction<? super T> mapper) {
-        return collect(Collectors.summarizingShort(mapper));
-    }
-
-    @Override
-    public IntSummaryStatistics summarizeInt(ToIntFunction<? super T> mapper) {
-        return collect(Collectors.summarizingInt(mapper));
-    }
-
-    @Override
-    public LongSummaryStatistics summarizeLong(ToLongFunction<? super T> mapper) {
-        return collect(Collectors.summarizingLong(mapper));
-    }
-
-    @Override
-    public FloatSummaryStatistics summarizeFloat(ToFloatFunction<? super T> mapper) {
-        return collect(Collectors.summarizingFloat(mapper));
-    }
-
-    @Override
-    public DoubleSummaryStatistics summarizeDouble(ToDoubleFunction<? super T> mapper) {
-        return collect(Collectors.summarizingDouble(mapper));
-    }
-
-    @Override
     public <U> NullabLe<T> findFirst(final U seed, final BiPredicate<? super T, ? super U> predicate) {
         return findFirst(new Predicate<T>() {
             @Override
@@ -1798,83 +1752,6 @@ abstract class AbstractStream<T> extends Stream<T> {
         }
 
         return Optional.of((Map<Percentage, T>) N.distribution(a));
-    }
-
-    @Override
-    public Pair<CharSummaryStatistics, Optional<Map<Percentage, Character>>> summarizeChar2(ToCharFunction<? super T> mapper) {
-        final char[] a = mapToChar(mapper).sorted().toArray();
-
-        if (N.isNullOrEmpty(a)) {
-            return Pair.of(new CharSummaryStatistics(), Optional.<Map<Percentage, Character>> empty());
-        } else {
-            return Pair.of(new CharSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
-        }
-    }
-
-    @Override
-    public Pair<ByteSummaryStatistics, Optional<Map<Percentage, Byte>>> summarizeByte2(ToByteFunction<? super T> mapper) {
-        final byte[] a = mapToByte(mapper).sorted().toArray();
-
-        if (N.isNullOrEmpty(a)) {
-            return Pair.of(new ByteSummaryStatistics(), Optional.<Map<Percentage, Byte>> empty());
-        } else {
-            return Pair.of(new ByteSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
-        }
-    }
-
-    @Override
-    public Pair<ShortSummaryStatistics, Optional<Map<Percentage, Short>>> summarizeShort2(ToShortFunction<? super T> mapper) {
-        final short[] a = mapToShort(mapper).sorted().toArray();
-
-        if (N.isNullOrEmpty(a)) {
-            return Pair.of(new ShortSummaryStatistics(), Optional.<Map<Percentage, Short>> empty());
-        } else {
-            return Pair.of(new ShortSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
-        }
-    }
-
-    @Override
-    public Pair<IntSummaryStatistics, Optional<Map<Percentage, Integer>>> summarizeInt2(ToIntFunction<? super T> mapper) {
-        final int[] a = mapToInt(mapper).sorted().toArray();
-
-        if (N.isNullOrEmpty(a)) {
-            return Pair.of(new IntSummaryStatistics(), Optional.<Map<Percentage, Integer>> empty());
-        } else {
-            return Pair.of(new IntSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
-        }
-    }
-
-    @Override
-    public Pair<LongSummaryStatistics, Optional<Map<Percentage, Long>>> summarizeLong2(ToLongFunction<? super T> mapper) {
-        final long[] a = mapToLong(mapper).sorted().toArray();
-
-        if (N.isNullOrEmpty(a)) {
-            return Pair.of(new LongSummaryStatistics(), Optional.<Map<Percentage, Long>> empty());
-        } else {
-            return Pair.of(new LongSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
-        }
-    }
-
-    @Override
-    public Pair<FloatSummaryStatistics, Optional<Map<Percentage, Float>>> summarizeFloat2(ToFloatFunction<? super T> mapper) {
-        final float[] a = mapToFloat(mapper).sorted().toArray();
-
-        if (N.isNullOrEmpty(a)) {
-            return Pair.of(new FloatSummaryStatistics(), Optional.<Map<Percentage, Float>> empty());
-        } else {
-            return Pair.of(new FloatSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
-        }
-    }
-
-    @Override
-    public Pair<DoubleSummaryStatistics, Optional<Map<Percentage, Double>>> summarizeDouble2(ToDoubleFunction<? super T> mapper) {
-        final double[] a = mapToDouble(mapper).sorted().toArray();
-
-        if (N.isNullOrEmpty(a)) {
-            return Pair.of(new DoubleSummaryStatistics(), Optional.<Map<Percentage, Double>> empty());
-        } else {
-            return Pair.of(new DoubleSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
-        }
     }
 
     //    @Override

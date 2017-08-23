@@ -59,15 +59,11 @@ import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.type.Type;
 import com.landawn.abacus.util.AsyncExecutor;
 import com.landawn.abacus.util.ByteIterator;
-import com.landawn.abacus.util.ByteSummaryStatistics;
 import com.landawn.abacus.util.CharIterator;
-import com.landawn.abacus.util.CharSummaryStatistics;
 import com.landawn.abacus.util.Charsets;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.DoubleIterator;
-import com.landawn.abacus.util.DoubleSummaryStatistics;
 import com.landawn.abacus.util.FloatIterator;
-import com.landawn.abacus.util.FloatSummaryStatistics;
 import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IOUtil;
@@ -78,11 +74,9 @@ import com.landawn.abacus.util.ImmutableSet;
 import com.landawn.abacus.util.Indexed;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.IntList;
-import com.landawn.abacus.util.IntSummaryStatistics;
 import com.landawn.abacus.util.LineIterator;
 import com.landawn.abacus.util.ListMultimap;
 import com.landawn.abacus.util.LongIterator;
-import com.landawn.abacus.util.LongSummaryStatistics;
 import com.landawn.abacus.util.Matrix;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.MutableBoolean;
@@ -98,7 +92,6 @@ import com.landawn.abacus.util.RefUtil;
 import com.landawn.abacus.util.RowIterator;
 import com.landawn.abacus.util.Seq;
 import com.landawn.abacus.util.ShortIterator;
-import com.landawn.abacus.util.ShortSummaryStatistics;
 import com.landawn.abacus.util.Triple;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
@@ -1720,83 +1713,6 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @see <a href="http://stackoverflow.com/questions/5706437/whats-the-difference-between-inner-join-left-join-right-join-and-ful
      */
     public abstract <U> Stream<Pair<T, U>> rightJoin(Collection<U> b, BiPredicate<? super T, ? super U> predicate);
-
-    public abstract CharSummaryStatistics summarizeChar(ToCharFunction<? super T> mapper);
-
-    public abstract ByteSummaryStatistics summarizeByte(ToByteFunction<? super T> mapper);
-
-    public abstract ShortSummaryStatistics summarizeShort(ToShortFunction<? super T> mapper);
-
-    public abstract IntSummaryStatistics summarizeInt(ToIntFunction<? super T> mapper);
-
-    public abstract LongSummaryStatistics summarizeLong(ToLongFunction<? super T> mapper);
-
-    public abstract FloatSummaryStatistics summarizeFloat(ToFloatFunction<? super T> mapper);
-
-    public abstract DoubleSummaryStatistics summarizeDouble(ToDoubleFunction<? super T> mapper);
-
-    /**
-     * <br />
-     * All elements will be loaded to memory and sorted if not yet.
-     * 
-     * @param mapper
-     * @return
-     */
-    public abstract Pair<CharSummaryStatistics, Optional<Map<Percentage, Character>>> summarizeChar2(ToCharFunction<? super T> mapper);
-
-    /**
-     * <br />
-     * All elements will be loaded to memory and sorted if not yet.
-     * 
-     * @param mapper
-     * @return
-     */
-    public abstract Pair<ByteSummaryStatistics, Optional<Map<Percentage, Byte>>> summarizeByte2(ToByteFunction<? super T> mapper);
-
-    /**
-     * <br />
-     * All elements will be loaded to memory and sorted if not yet.
-     * 
-     * @param mapper
-     * @return
-     */
-    public abstract Pair<ShortSummaryStatistics, Optional<Map<Percentage, Short>>> summarizeShort2(ToShortFunction<? super T> mapper);
-
-    /**
-     * <br />
-     * All elements will be loaded to memory and sorted if not yet.
-     * 
-     * @param mapper
-     * @return
-     */
-    public abstract Pair<IntSummaryStatistics, Optional<Map<Percentage, Integer>>> summarizeInt2(ToIntFunction<? super T> mapper);
-
-    /**
-     * <br />
-     * All elements will be loaded to memory and sorted if not yet.
-     * 
-     * @param mapper
-     * @return
-     */
-    public abstract Pair<LongSummaryStatistics, Optional<Map<Percentage, Long>>> summarizeLong2(ToLongFunction<? super T> mapper);
-
-    /**
-     * <br />
-     * All elements will be loaded to memory and sorted if not yet.
-     * 
-     * @param mapper
-     * @return
-     */
-    public abstract Pair<FloatSummaryStatistics, Optional<Map<Percentage, Float>>> summarizeFloat2(ToFloatFunction<? super T> mapper);
-
-    /**
-     * <br />
-     * All elements will be loaded to memory and sorted if not yet.
-     * 
-     * @param mapper
-     * @return
-     */
-    public abstract Pair<DoubleSummaryStatistics, Optional<Map<Percentage, Double>>> summarizeDouble2(ToDoubleFunction<? super T> mapper);
 
     public abstract boolean hasDuplicates();
 

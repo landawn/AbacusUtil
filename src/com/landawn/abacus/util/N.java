@@ -29487,7 +29487,7 @@ public final class N {
             m.put(p, sortedArray[(int) (len * p.doubleValue())]);
         }
 
-        return m;
+        return ImmutableMap.of(m);
     }
 
     /**
@@ -29506,7 +29506,7 @@ public final class N {
             m.put(p, sortedArray[(int) (len * p.doubleValue())]);
         }
 
-        return m;
+        return ImmutableMap.of(m);
     }
 
     /**
@@ -29525,7 +29525,7 @@ public final class N {
             m.put(p, sortedArray[(int) (len * p.doubleValue())]);
         }
 
-        return m;
+        return ImmutableMap.of(m);
     }
 
     /**
@@ -29544,7 +29544,7 @@ public final class N {
             m.put(p, sortedArray[(int) (len * p.doubleValue())]);
         }
 
-        return m;
+        return ImmutableMap.of(m);
     }
 
     /**
@@ -29563,7 +29563,7 @@ public final class N {
             m.put(p, sortedArray[(int) (len * p.doubleValue())]);
         }
 
-        return m;
+        return ImmutableMap.of(m);
     }
 
     /**
@@ -29582,7 +29582,7 @@ public final class N {
             m.put(p, sortedArray[(int) (len * p.doubleValue())]);
         }
 
-        return m;
+        return ImmutableMap.of(m);
     }
 
     /**
@@ -29601,7 +29601,7 @@ public final class N {
             m.put(p, sortedArray[(int) (len * p.doubleValue())]);
         }
 
-        return m;
+        return ImmutableMap.of(m);
     }
 
     /**
@@ -29620,7 +29620,7 @@ public final class N {
             m.put(p, sortedArray[(int) (len * p.doubleValue())]);
         }
 
-        return m;
+        return ImmutableMap.of(m);
     }
 
     /**
@@ -29639,7 +29639,7 @@ public final class N {
             m.put(p, sortedList.get((int) (size * p.doubleValue())));
         }
 
-        return m;
+        return ImmutableMap.of(m);
     }
 
     public static String toJSON(final Object obj) {

@@ -896,7 +896,10 @@ public final class EntryStream<K, V> implements AutoCloseable {
             }
         };
 
-        return s.collapse(collapsible2, Collectors.mapping(Fn.value(), Collectors.toList()));
+        final Function<Entry<K, V>, V> mapper = Fn.value();
+        final Collector<V, ?, List<V>> collector = Collectors.toList();
+
+        return s.collapse(collapsible2, Collectors.mapping(mapper, collector));
     }
 
     /**
