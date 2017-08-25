@@ -124,7 +124,7 @@ public abstract class ExDoubleIterator extends DoubleIterator implements Skippab
         };
     }
 
-    public static ExDoubleIterator of(final Iterator<Double> iter) {
+    public static ExDoubleIterator oF(final Iterator<Double> iter) {
         if (iter instanceof ExIterator) {
             final ExIterator<Double> exIterator = ((ExIterator<Double>) iter);
 

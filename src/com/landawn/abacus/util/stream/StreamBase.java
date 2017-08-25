@@ -795,31 +795,31 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
     }
 
     static ExCharIterator charIterator(final ExIterator<Character> iter) {
-        return ExCharIterator.of(iter);
+        return ExCharIterator.oF(iter);
     }
 
     static ExByteIterator byteIterator(final ExIterator<Byte> iter) {
-        return ExByteIterator.of(iter);
+        return ExByteIterator.oF(iter);
     }
 
     static ExShortIterator shortIterator(final ExIterator<Short> iter) {
-        return ExShortIterator.of(iter);
+        return ExShortIterator.oF(iter);
     }
 
     static ExIntIterator intIterator(final ExIterator<Integer> iter) {
-        return ExIntIterator.of(iter);
+        return ExIntIterator.oF(iter);
     }
 
     static ExLongIterator longIterator(final ExIterator<Long> iter) {
-        return ExLongIterator.of(iter);
+        return ExLongIterator.oF(iter);
     }
 
     static ExFloatIterator floatIterator(final ExIterator<Float> iter) {
-        return ExFloatIterator.of(iter);
+        return ExFloatIterator.oF(iter);
     }
 
     static ExDoubleIterator doubleIterator(final ExIterator<Double> iter) {
-        return ExDoubleIterator.of(iter);
+        return ExDoubleIterator.oF(iter);
     }
 
     static Runnable newCloseHandler(final Collection<? extends StreamBase<?, ?, ?, ?, ?, ?, ?, ?>> c) {

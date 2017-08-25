@@ -124,7 +124,7 @@ public abstract class ExFloatIterator extends FloatIterator implements Skippable
         };
     }
 
-    public static ExFloatIterator of(final Iterator<Float> iter) {
+    public static ExFloatIterator oF(final Iterator<Float> iter) {
         if (iter instanceof ExIterator) {
             final ExIterator<Float> exIterator = ((ExIterator<Float>) iter);
 

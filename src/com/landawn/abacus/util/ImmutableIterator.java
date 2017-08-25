@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -82,6 +83,26 @@ public abstract class ImmutableIterator<E> implements java.util.Iterator<E> {
         };
     }
 
+    public static <T> ImmutableIterator<T> of(final Iterator<T> iterA) {
+        if (iterA == null) {
+            return empty();
+        } else if (iterA instanceof ImmutableIterator) {
+            return (ImmutableIterator<T>) iterA;
+        }
+
+        return new ImmutableIterator<T>() {
+            @Override
+            public boolean hasNext() {
+                return iterA.hasNext();
+            }
+
+            @Override
+            public T next() {
+                return iterA.next();
+            }
+        };
+    }
+
     /**
      * @deprecated - UnsupportedOperationException
      */
@@ -89,6 +110,18 @@ public abstract class ImmutableIterator<E> implements java.util.Iterator<E> {
     @Override
     public void remove() {
         throw new UnsupportedOperationException();
+    }
+
+    public int size() {
+        int cnt = 0;
+
+        while (hasNext()) {
+            next();
+
+            cnt++;
+        }
+
+        return cnt;
     }
 
     public List<E> toList() {

@@ -506,40 +506,26 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return N.forEach(coll, seed, accumulator, conditionToBreak);
     }
 
-    public <U> void forEach(final Function<? super T, ? extends Collection<U>> mapper, final BiConsumer<? super T, ? super U> action) {
-        if (N.isNullOrEmpty(coll)) {
-            return;
-        }
-
-        for (T e : coll) {
-            final Collection<U> c = mapper.apply(e);
-            if (N.notNullOrEmpty(c)) {
-                for (U u : c) {
-                    action.accept(e, u);
-                }
-            }
-        }
+    public <U> void forEach(final Function<? super T, ? extends Collection<U>> flatMapper, final BiConsumer<? super T, ? super U> action) {
+        N.forEach(coll, flatMapper, action);
     }
 
-    public <T2, T3> void forEach(final Function<? super T, ? extends Collection<T2>> mapper2, final Function<? super T2, ? extends Collection<T3>> mapper3,
-            final TriConsumer<? super T, ? super T2, ? super T3> action) {
-        if (N.isNullOrEmpty(coll)) {
-            return;
-        }
+    public <T2, T3> void forEach(final Function<? super T, ? extends Collection<T2>> flatMapper,
+            final Function<? super T2, ? extends Collection<T3>> flatMapper2, final TriConsumer<? super T, ? super T2, ? super T3> action) {
+        N.forEach(coll, flatMapper, flatMapper2, action);
+    }
 
-        for (T e : coll) {
-            final Collection<T2> c2 = mapper2.apply(e);
-            if (N.notNullOrEmpty(c2)) {
-                for (T2 t2 : c2) {
-                    final Collection<T3> c3 = mapper3.apply(t2);
-                    if (N.notNullOrEmpty(c3)) {
-                        for (T3 t3 : c3) {
-                            action.accept(e, t2, t3);
-                        }
-                    }
-                }
-            }
-        }
+    public void forEachNonNull(final Consumer<? super T> action) {
+        N.forEachNonNull(coll, action);
+    }
+
+    public <U> void forEachNonNull(final Function<? super T, ? extends Collection<U>> flatMapper, final BiConsumer<? super T, ? super U> action) {
+        N.forEachNonNull(coll, flatMapper, action);
+    }
+
+    public <T2, T3> void forEachNonNull(final Function<? super T, ? extends Collection<T2>> flatMapper,
+            final Function<? super T2, ? extends Collection<T3>> flatMapper2, final TriConsumer<? super T, ? super T2, ? super T3> action) {
+        N.forEachNonNull(coll, flatMapper, flatMapper2, action);
     }
 
     public void forEachPair(final BiConsumer<? super T, ? super T> action) {
@@ -2054,6 +2040,59 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return Pair.of(left, right);
     }
 
+    public List<List<T>> sliding(final int windowSize) {
+        return sliding(windowSize, 1);
+    }
+
+    public List<List<T>> sliding(final int windowSize, final int increment) {
+        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+
+        if (N.isNullOrEmpty(coll)) {
+            return new ArrayList<>();
+        }
+
+        final Iterator<T> iter = coll.iterator();
+        final List<List<T>> result = new ArrayList<>(coll.size() <= windowSize ? 1 : (1 + (coll.size() - windowSize)) / increment);
+
+        while (iter.hasNext()) {
+            if (increment > windowSize && result.size() > 0) {
+                int skipNum = increment - windowSize;
+
+                while (skipNum-- > 0 && iter.hasNext()) {
+                    iter.next();
+                }
+
+                if (iter.hasNext() == false) {
+                    break;
+                }
+            }
+
+            final List<T> window = new ArrayList<>(windowSize);
+            int cnt = 0;
+
+            if (increment < windowSize && result.size() > 0) {
+                final List<T> prev = result.get(result.size() - 1);
+                cnt = windowSize - increment;
+
+                if (cnt <= 8) {
+                    for (int i = windowSize - cnt; i < windowSize; i++) {
+                        window.add(prev.get(i));
+                    }
+                } else {
+                    window.addAll(prev.subList(windowSize - cnt, windowSize));
+                }
+            }
+
+            while (cnt++ < windowSize && iter.hasNext()) {
+                window.add(iter.next());
+            }
+
+            result.add(window);
+        }
+
+        return result;
+    }
+
     public String join() {
         return join(N.ELEMENT_SEPARATOR);
     }
@@ -2685,6 +2724,17 @@ public final class Seq<T> extends ImmutableCollection<T> {
     public void println() {
         N.println(toString());
     }
+
+    //    /**
+    //     * It's the short-cut for <code>Seq.of(seq.xxx())</code>.
+    //     * <code>Stream</code> is recommended for lazy evaluation and skip/limit/… operations
+    //     * 
+    //     * @param transfer
+    //     * @return
+    //     */
+    //    public <U> Seq<U> __(Function<? super Seq<T>, ? extends Collection<U>> transfer) {
+    //        return Seq.of(transfer.apply(this));
+    //    }
 
     static <K, V> void replaceAll(Map<K, V> map, BiFunction<? super K, ? super V, ? extends V> function) {
         Objects.requireNonNull(function);
@@ -3405,7 +3455,14 @@ public final class Seq<T> extends ImmutableCollection<T> {
             return new ArrayList<>();
         }
 
-        return zip(Arrays.asList(a), Arrays.asList(b), zipFunction);
+        final int minLen = N.min(a.length, b.length);
+        final List<R> result = new ArrayList<>(minLen);
+
+        for (int i = 0; i < minLen; i++) {
+            result.add(zipFunction.apply(a[i], b[i]));
+        }
+
+        return result;
     }
 
     public static <A, B, R> List<R> zip(final Collection<A> a, final Collection<B> b, final BiFunction<? super A, ? super B, R> zipFunction) {
@@ -3413,19 +3470,13 @@ public final class Seq<T> extends ImmutableCollection<T> {
             return new ArrayList<>();
         }
 
-        final List<R> result = new ArrayList<>(N.min(a.size(), b.size()));
-
         final Iterator<A> iterA = a.iterator();
         final Iterator<B> iterB = b.iterator();
+        final int minLen = N.min(a.size(), b.size());
+        final List<R> result = new ArrayList<>(minLen);
 
-        if (a.size() <= b.size()) {
-            while (iterA.hasNext()) {
-                result.add(zipFunction.apply(iterA.next(), iterB.next()));
-            }
-        } else {
-            while (iterB.hasNext()) {
-                result.add(zipFunction.apply(iterA.next(), iterB.next()));
-            }
+        for (int i = 0; i < minLen; i++) {
+            result.add(zipFunction.apply(iterA.next(), iterB.next()));
         }
 
         return result;
@@ -3433,8 +3484,8 @@ public final class Seq<T> extends ImmutableCollection<T> {
 
     public static <A, B, R> ImmutableIterator<R> zip(final Iterator<A> a, final Iterator<B> b, final BiFunction<? super A, ? super B, R> zipFunction) {
         return new ImmutableIterator<R>() {
-            private final Iterator<A> iterA = a == null ? ImmutableIterator.EMPTY : a;
-            private final Iterator<B> iterB = b == null ? ImmutableIterator.EMPTY : b;
+            private final Iterator<A> iterA = a == null ? ImmutableIterator.<A> empty() : a;
+            private final Iterator<B> iterB = b == null ? ImmutableIterator.<B> empty() : b;
 
             @Override
             public boolean hasNext() {
@@ -3453,7 +3504,14 @@ public final class Seq<T> extends ImmutableCollection<T> {
             return new ArrayList<>();
         }
 
-        return zip(Arrays.asList(a), Arrays.asList(b), Arrays.asList(c), zipFunction);
+        final int minLen = N.min(a.length, b.length, c.length);
+        final List<R> result = new ArrayList<>(minLen);
+
+        for (int i = 0; i < minLen; i++) {
+            result.add(zipFunction.apply(a[i], b[i], c[i]));
+        }
+
+        return result;
     }
 
     public static <A, B, C, R> List<R> zip(final Collection<A> a, final Collection<B> b, final Collection<C> c,
@@ -3462,13 +3520,13 @@ public final class Seq<T> extends ImmutableCollection<T> {
             return new ArrayList<>();
         }
 
-        final List<R> result = new ArrayList<>(N.min(a.size(), b.size(), c.size()));
-
         final Iterator<A> iterA = a.iterator();
         final Iterator<B> iterB = b.iterator();
         final Iterator<C> iterC = c.iterator();
+        final int minLen = N.min(a.size(), b.size(), c.size());
+        final List<R> result = new ArrayList<>(minLen);
 
-        while (iterA.hasNext() && iterB.hasNext() && iterC.hasNext()) {
+        for (int i = 0; i < minLen; i++) {
             result.add(zipFunction.apply(iterA.next(), iterB.next(), iterC.next()));
         }
 
@@ -3478,9 +3536,9 @@ public final class Seq<T> extends ImmutableCollection<T> {
     public static <A, B, C, R> ImmutableIterator<R> zip(final Iterator<A> a, final Iterator<B> b, final Iterator<C> c,
             final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
         return new ImmutableIterator<R>() {
-            private final Iterator<A> iterA = a == null ? ImmutableIterator.EMPTY : a;
-            private final Iterator<B> iterB = b == null ? ImmutableIterator.EMPTY : b;
-            private final Iterator<C> iterC = c == null ? ImmutableIterator.EMPTY : c;
+            private final Iterator<A> iterA = a == null ? ImmutableIterator.<A> empty() : a;
+            private final Iterator<B> iterB = b == null ? ImmutableIterator.<B> empty() : b;
+            private final Iterator<C> iterC = c == null ? ImmutableIterator.<C> empty() : c;
 
             @Override
             public boolean hasNext() {
@@ -3496,28 +3554,29 @@ public final class Seq<T> extends ImmutableCollection<T> {
 
     public static <A, B, R> List<R> zip(final A[] a, final B[] b, final A valueForNoneA, final B valueForNoneB,
             final BiFunction<? super A, ? super B, R> zipFunction) {
-        return zip(N.isNullOrEmpty(a) ? N.EMPTY_LIST : Arrays.asList(a), N.isNullOrEmpty(b) ? N.EMPTY_LIST : Arrays.asList(b), valueForNoneA, valueForNoneB,
-                zipFunction);
+        final int lenA = a == null ? 0 : a.length;
+        final int lenB = b == null ? 0 : b.length;
+        final int maxLen = N.max(lenA, lenB);
+        final List<R> result = new ArrayList<>(maxLen);
+
+        for (int i = 0; i < maxLen; i++) {
+            result.add(zipFunction.apply(i < lenA ? a[i] : valueForNoneA, i < lenB ? b[i] : valueForNoneB));
+        }
+
+        return result;
     }
 
     public static <A, B, R> List<R> zip(final Collection<A> a, final Collection<B> b, final A valueForNoneA, final B valueForNoneB,
             final BiFunction<? super A, ? super B, R> zipFunction) {
-        final int aLen = a == null ? 0 : a.size();
-        final int bLen = b == null ? 0 : b.size();
+        final Iterator<A> iterA = a == null ? ImmutableIterator.<A> empty() : a.iterator();
+        final Iterator<B> iterB = b == null ? ImmutableIterator.<B> empty() : b.iterator();
+        final int lenA = a == null ? 0 : a.size();
+        final int lenB = b == null ? 0 : b.size();
+        final int maxLen = N.max(lenA, lenB);
+        final List<R> result = new ArrayList<>(maxLen);
 
-        final List<R> result = new ArrayList<>(N.max(aLen, bLen));
-
-        final Iterator<A> iterA = a == null ? ImmutableIterator.EMPTY : a.iterator();
-        final Iterator<B> iterB = b == null ? ImmutableIterator.EMPTY : b.iterator();
-
-        if (aLen > bLen) {
-            while (iterA.hasNext()) {
-                result.add(zipFunction.apply(iterA.next(), iterB.hasNext() ? iterB.next() : valueForNoneB));
-            }
-        } else {
-            while (iterB.hasNext()) {
-                result.add(zipFunction.apply(iterA.hasNext() ? iterA.next() : valueForNoneA, iterB.next()));
-            }
+        for (int i = 0; i < maxLen; i++) {
+            result.add(zipFunction.apply(i < lenA ? iterA.next() : valueForNoneA, i < lenB ? iterB.next() : valueForNoneB));
         }
 
         return result;
@@ -3526,8 +3585,8 @@ public final class Seq<T> extends ImmutableCollection<T> {
     public static <A, B, R> ImmutableIterator<R> zip(final Iterator<A> a, final Iterator<B> b, final A valueForNoneA, final B valueForNoneB,
             final BiFunction<? super A, ? super B, R> zipFunction) {
         return new ImmutableIterator<R>() {
-            private final Iterator<A> iterA = a == null ? ImmutableIterator.EMPTY : a;
-            private final Iterator<B> iterB = b == null ? ImmutableIterator.EMPTY : b;
+            private final Iterator<A> iterA = a == null ? ImmutableIterator.<A> empty() : a;
+            private final Iterator<B> iterB = b == null ? ImmutableIterator.<B> empty() : b;
 
             @Override
             public boolean hasNext() {
@@ -3543,25 +3602,33 @@ public final class Seq<T> extends ImmutableCollection<T> {
 
     public static <A, B, C, R> List<R> zip(final A[] a, final B[] b, final C[] c, final A valueForNoneA, final B valueForNoneB, final C valueForNoneC,
             final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
-        return zip(N.isNullOrEmpty(a) ? N.EMPTY_LIST : Arrays.asList(a), N.isNullOrEmpty(b) ? N.EMPTY_LIST : Arrays.asList(b),
-                N.isNullOrEmpty(c) ? N.EMPTY_LIST : Arrays.asList(c), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
+        final int lenA = a == null ? 0 : a.length;
+        final int lenB = b == null ? 0 : b.length;
+        final int lenC = c == null ? 0 : c.length;
+        final int maxLen = N.max(lenA, lenB, lenC);
+        final List<R> result = new ArrayList<>(maxLen);
+
+        for (int i = 0; i < maxLen; i++) {
+            result.add(zipFunction.apply(i < lenA ? a[i] : valueForNoneA, i < lenB ? b[i] : valueForNoneB, i < lenC ? c[i] : valueForNoneC));
+        }
+
+        return result;
     }
 
     public static <A, B, C, R> List<R> zip(final Collection<A> a, final Collection<B> b, final Collection<C> c, final A valueForNoneA, final B valueForNoneB,
             final C valueForNoneC, final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
-        final int aLen = a == null ? 0 : a.size();
-        final int bLen = b == null ? 0 : b.size();
-        final int cLen = c == null ? 0 : c.size();
+        final Iterator<A> iterA = a == null ? ImmutableIterator.<A> empty() : a.iterator();
+        final Iterator<B> iterB = b == null ? ImmutableIterator.<B> empty() : b.iterator();
+        final Iterator<C> iterC = c == null ? ImmutableIterator.<C> empty() : c.iterator();
+        final int lenA = a == null ? 0 : a.size();
+        final int lenB = b == null ? 0 : b.size();
+        final int lenC = c == null ? 0 : c.size();
+        final int maxLen = N.max(lenA, lenB, lenC);
+        final List<R> result = new ArrayList<>(maxLen);
 
-        final List<R> result = new ArrayList<>(N.max(aLen, bLen, cLen));
-
-        final Iterator<A> iterA = a == null ? ImmutableIterator.EMPTY : a.iterator();
-        final Iterator<B> iterB = b == null ? ImmutableIterator.EMPTY : b.iterator();
-        final Iterator<C> iterC = c == null ? ImmutableIterator.EMPTY : c.iterator();
-
-        while (iterA.hasNext() || iterB.hasNext() || iterC.hasNext()) {
-            result.add(zipFunction.apply(iterA.hasNext() ? iterA.next() : valueForNoneA, iterB.hasNext() ? iterB.next() : valueForNoneB,
-                    iterC.hasNext() ? iterC.next() : valueForNoneC));
+        for (int i = 0; i < maxLen; i++) {
+            result.add(zipFunction.apply(i < lenA ? iterA.next() : valueForNoneA, i < lenB ? iterB.next() : valueForNoneB,
+                    i < lenC ? iterC.next() : valueForNoneC));
         }
 
         return result;
@@ -3570,9 +3637,9 @@ public final class Seq<T> extends ImmutableCollection<T> {
     public static <A, B, C, R> ImmutableIterator<R> zip(final Iterator<A> a, final Iterator<B> b, final Iterator<C> c, final A valueForNoneA,
             final B valueForNoneB, final C valueForNoneC, final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
         return new ImmutableIterator<R>() {
-            private final Iterator<A> iterA = a == null ? ImmutableIterator.EMPTY : a;
-            private final Iterator<B> iterB = b == null ? ImmutableIterator.EMPTY : b;
-            private final Iterator<C> iterC = c == null ? ImmutableIterator.EMPTY : c;
+            private final Iterator<A> iterA = a == null ? ImmutableIterator.<A> empty() : a;
+            private final Iterator<B> iterB = b == null ? ImmutableIterator.<B> empty() : b;
+            private final Iterator<C> iterC = c == null ? ImmutableIterator.<C> empty() : c;
 
             @Override
             public boolean hasNext() {

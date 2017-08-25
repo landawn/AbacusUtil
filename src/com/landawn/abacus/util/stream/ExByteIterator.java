@@ -124,7 +124,7 @@ public abstract class ExByteIterator extends ByteIterator implements SkippableIt
         };
     }
 
-    public static ExByteIterator of(final Iterator<Byte> iter) {
+    public static ExByteIterator oF(final Iterator<Byte> iter) {
         if (iter instanceof ExIterator) {
             final ExIterator<Byte> exIterator = ((ExIterator<Byte>) iter);
 

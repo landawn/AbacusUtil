@@ -124,7 +124,7 @@ public abstract class ExCharIterator extends CharIterator implements SkippableIt
         };
     }
 
-    public static ExCharIterator of(final Iterator<Character> iter) {
+    public static ExCharIterator oF(final Iterator<Character> iter) {
         if (iter instanceof ExIterator) {
             final ExIterator<Character> exIterator = ((ExIterator<Character>) iter);
 

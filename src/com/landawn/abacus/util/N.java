@@ -67,6 +67,8 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
+import java.util.NavigableMap;
+import java.util.NavigableSet;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Random;
@@ -125,6 +127,7 @@ import com.landawn.abacus.type.Type;
 import com.landawn.abacus.type.TypeFactory;
 import com.landawn.abacus.util.Pair.IntPair;
 import com.landawn.abacus.util.Retry.Retry0;
+import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BooleanPredicate;
@@ -149,6 +152,7 @@ import com.landawn.abacus.util.function.ToFloatFunction;
 import com.landawn.abacus.util.function.ToIntFunction;
 import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.function.ToShortFunction;
+import com.landawn.abacus.util.function.TriConsumer;
 import com.landawn.abacus.util.stream.DoubleStream;
 import com.landawn.abacus.util.stream.FloatStream;
 import com.landawn.abacus.util.stream.Stream;
@@ -8887,6 +8891,186 @@ public final class N {
         }
     }
 
+    /**
+     * Returns an immutable list that is empty.
+     * 
+     * @return
+     * @see Collections#emptyList()
+     */
+    public static <T> List<T> emptyList() {
+        return Collections.<T> emptyList();
+    }
+
+    /**
+     * Returns an immutable set that is empty.
+     * 
+     * @return
+     * @see Collections#emptySet()
+     */
+    public static <T> Set<T> emptySet() {
+        return Collections.<T> emptySet();
+    }
+
+    /**
+     * Returns an immutable <code>SortedSet</code> that is empty.
+     * 
+     * @return
+     * @see Collections#emptySortedSet()
+     */
+    public static <T> SortedSet<T> emptySortedSet() {
+        return Collections.<T> emptySortedSet();
+    }
+
+    /**
+     * Returns an immutable <code>NavigableSet</code> that is empty.
+     * 
+     * @return
+     * @see Collections#emptyNavigableSet()
+     */
+    public static <T> NavigableSet<T> emptyNavigableSet() {
+        return Collections.<T> emptyNavigableSet();
+    }
+
+    /**
+     * Returns an immutable map that is empty.
+     * 
+     * @return
+     * @see Collections#emptyMap()
+     */
+    public static <K, V> Map<K, V> emptyMap() {
+        return Collections.<K, V> emptyMap();
+    }
+
+    /**
+     * Returns an immutable <code>SortedMap</code> that is empty.
+     * 
+     * @return
+     * @see Collections#emptySortedMap()
+     */
+    public static <K, V> SortedMap<K, V> emptySortedMap() {
+        return Collections.<K, V> emptySortedMap();
+    }
+
+    /**
+     * Returns an immutable <code>NavigableMap</code> that is empty.
+     * 
+     * @return
+     * @see Collections#emptyNavigableMap()
+     */
+    public static <K, V> NavigableMap<K, V> emptyNavigableMap() {
+        return Collections.<K, V> emptyNavigableMap();
+    }
+
+    /**
+     * Returns an immutable iterator that has no elements
+     * 
+     * @return
+     * @see Collections#emptyIterator()
+     */
+    public static <T> Iterator<T> emptyIterator() {
+        return Collections.<T> emptyIterator();
+    }
+
+    /**
+     * Returns an immutable list iterator that has no elements
+     * 
+     * @return
+     * @see Collections#emptyListIterator()
+     */
+    public static <T> ListIterator<T> emptyListIterator() {
+        return Collections.<T> emptyListIterator();
+    }
+
+    /**
+     * Returns an immutable empty list if the specified List is <code>null</code>, otherwise itself is returned.
+     * 
+     * @param list
+     * @return
+     */
+    public static <T> List<T> nullToEmpty(final List<T> list) {
+        return list == null ? N.<T> emptyList() : list;
+    }
+
+    /**
+     * Returns an immutable empty set if the specified Set is <code>null</code>, otherwise itself is returned.
+     * 
+     * @param set
+     * @return
+     */
+    public static <T> Set<T> nullToEmpty(final Set<T> set) {
+        return set == null ? N.<T> emptySet() : set;
+    }
+
+    /**
+     * Returns an immutable empty <code>SortedSet</code> if the specified SortedSet is <code>null</code>, otherwise itself is returned.
+     * 
+     * @param set
+     * @return
+     */
+    public static <T> SortedSet<T> nullToEmpty(final SortedSet<T> set) {
+        return set == null ? N.<T> emptySortedSet() : set;
+    }
+
+    /**
+     * Returns an immutable empty <code>NavigableSet</code> if the specified NavigableSet is <code>null</code>, otherwise itself is returned.
+     * 
+     * @param set
+     * @return
+     */
+    public static <T> NavigableSet<T> nullToEmpty(final NavigableSet<T> set) {
+        return set == null ? N.<T> emptyNavigableSet() : set;
+    }
+
+    /**
+     * Returns an immutable empty map if the specified Map is <code>null</code>, otherwise itself is returned.
+     * 
+     * @param map
+     * @return
+     */
+    public static <K, V> Map<K, V> nullToEmpty(final Map<K, V> map) {
+        return map == null ? N.<K, V> emptyMap() : map;
+    }
+
+    /**
+     * Returns an immutable empty <code>SortedMap</code> if the specified SortedMap is <code>null</code>, otherwise itself is returned.
+     * 
+     * @param map
+     * @return
+     */
+    public static <K, V> SortedMap<K, V> nullToEmpty(final SortedMap<K, V> map) {
+        return map == null ? N.<K, V> emptySortedMap() : map;
+    }
+
+    /**
+     * Returns an immutable empty <code>NavigableMap</code> if the specified NavigableMap is <code>null</code>, otherwise itself is returned.
+     * 
+     * @param map
+     * @return
+     */
+    public static <K, V> NavigableMap<K, V> nullToEmpty(final NavigableMap<K, V> map) {
+        return map == null ? N.<K, V> emptyNavigableMap() : map;
+    }
+
+    /**
+     * Returns an immutable empty <code>Iterator</code> if the specified Iterator is <code>null</code>, otherwise itself is returned.
+     * 
+     * @param iter
+     * @return
+     */
+    public static <T> Iterator<T> nullToEmpty(final Iterator<T> iter) {
+        return iter == null ? N.<T> emptyIterator() : iter;
+    }
+
+    /**
+     * Returns an immutable empty <code>ListIterator</code> if the specified ListIterator is <code>null</code>, otherwise itself is returned.
+     * 
+     * @param iter
+     * @return
+     */
+    public static <T> ListIterator<T> nullToEmpty(final ListIterator<T> iter) {
+        return iter == null ? N.<T> emptyListIterator() : iter;
+    }
+
     public static String nullToEmpty(final String str) {
         return str == null ? EMPTY_STRING : str;
     }
@@ -8933,18 +9117,6 @@ public final class N {
 
     public static <T> T[] nullToEmpty(final Class<T[]> arrayType, final T[] a) {
         return a == null ? (T[]) N.newArray(arrayType.getComponentType(), 0) : a;
-    }
-
-    public static <T> List<T> nullToEmpty(final List<T> list) {
-        return list == null ? new ArrayList<T>() : list;
-    }
-
-    public static <T> Set<T> nullToEmpty(final Set<T> set) {
-        return set == null ? new HashSet<T>() : set;
-    }
-
-    public static <K, V> Map<K, V> nullToEmpty(final Map<K, V> map) {
-        return map == null ? new HashMap<K, V>() : map;
     }
 
     public static boolean isNullOrEmpty(final CharSequence s) {
@@ -17757,6 +17929,306 @@ public final class N {
         }
 
         return result;
+    }
+
+    public static <T, U> void forEach(final T[] a, final Function<? super T, ? extends Collection<U>> flatMapper,
+            final BiConsumer<? super T, ? super U> action) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        for (T e : a) {
+            final Collection<U> c2 = flatMapper.apply(e);
+
+            if (N.notNullOrEmpty(c2)) {
+                for (U u : c2) {
+                    action.accept(e, u);
+                }
+            }
+        }
+    }
+
+    public static <T, U> void forEach(final Collection<T> c, final Function<? super T, ? extends Collection<U>> flatMapper,
+            final BiConsumer<? super T, ? super U> action) {
+        if (N.isNullOrEmpty(c)) {
+            return;
+        }
+
+        for (T e : c) {
+            final Collection<U> c2 = flatMapper.apply(e);
+
+            if (N.notNullOrEmpty(c2)) {
+                for (U u : c2) {
+                    action.accept(e, u);
+                }
+            }
+        }
+    }
+
+    public static <T, T2, T3> void forEach(final T[] a, final Function<? super T, ? extends Collection<T2>> flatMapper,
+            final Function<? super T2, ? extends Collection<T3>> flatMapper2, final TriConsumer<? super T, ? super T2, ? super T3> action) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        for (T e : a) {
+            final Collection<T2> c2 = flatMapper.apply(e);
+
+            if (N.notNullOrEmpty(c2)) {
+                for (T2 t2 : c2) {
+                    final Collection<T3> c3 = flatMapper2.apply(t2);
+
+                    if (N.notNullOrEmpty(c3)) {
+                        for (T3 t3 : c3) {
+                            action.accept(e, t2, t3);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public static <T, T2, T3> void forEach(final Collection<T> c, final Function<? super T, ? extends Collection<T2>> flatMapper,
+            final Function<? super T2, ? extends Collection<T3>> flatMapper2, final TriConsumer<? super T, ? super T2, ? super T3> action) {
+        if (N.isNullOrEmpty(c)) {
+            return;
+        }
+
+        for (T e : c) {
+            final Collection<T2> c2 = flatMapper.apply(e);
+
+            if (N.notNullOrEmpty(c2)) {
+                for (T2 t2 : c2) {
+                    final Collection<T3> c3 = flatMapper2.apply(t2);
+
+                    if (N.notNullOrEmpty(c3)) {
+                        for (T3 t3 : c3) {
+                            action.accept(e, t2, t3);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public static <A, B> void forEach(final A[] a, final B[] b, final BiConsumer<? super A, ? super B> action) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+            return;
+        }
+
+        for (int i = 0, minLen = N.min(a.length, b.length); i < minLen; i++) {
+            action.accept(a[i], b[i]);
+        }
+    }
+
+    public static <A, B> void forEach(final Collection<A> a, final Collection<B> b, final BiConsumer<? super A, ? super B> action) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
+            return;
+        }
+
+        final Iterator<A> iterA = a.iterator();
+        final Iterator<B> iterB = b.iterator();
+
+        for (int i = 0, minLen = N.min(a.size(), b.size()); i < minLen; i++) {
+            action.accept(iterA.next(), iterB.next());
+        }
+    }
+
+    public static <A, B, C> void forEach(final A[] a, final B[] b, final C[] c, final TriConsumer<? super A, ? super B, ? super C> action) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b) || N.isNullOrEmpty(c)) {
+            return;
+        }
+
+        for (int i = 0, minLen = N.min(a.length, b.length, c.length); i < minLen; i++) {
+            action.accept(a[i], b[i], c[i]);
+        }
+    }
+
+    public static <A, B, C> void forEach(final Collection<A> a, final Collection<B> b, final Collection<C> c,
+            final TriConsumer<? super A, ? super B, ? super C> action) {
+        if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b) || N.isNullOrEmpty(c)) {
+            return;
+        }
+
+        final Iterator<A> iterA = a.iterator();
+        final Iterator<B> iterB = b.iterator();
+        final Iterator<C> iterC = c.iterator();
+
+        for (int i = 0, minLen = N.min(a.size(), b.size(), c.size()); i < minLen; i++) {
+            action.accept(iterA.next(), iterB.next(), iterC.next());
+        }
+    }
+
+    public static <A, B> void forEach(final A[] a, final B[] b, final A valueForNoneA, final B valueForNoneB, final BiConsumer<? super A, ? super B> action) {
+        final int lenA = a == null ? 0 : a.length;
+        final int lenB = b == null ? 0 : b.length;
+
+        for (int i = 0, maxLen = N.max(lenA, lenB); i < maxLen; i++) {
+            action.accept(i < lenA ? a[i] : valueForNoneA, i < lenB ? b[i] : valueForNoneB);
+        }
+    }
+
+    public static <A, B> void forEach(final Collection<A> a, final Collection<B> b, final A valueForNoneA, final B valueForNoneB,
+            final BiConsumer<? super A, ? super B> action) {
+
+        final Iterator<A> iterA = a == null ? ImmutableIterator.<A> empty() : a.iterator();
+        final Iterator<B> iterB = b == null ? ImmutableIterator.<B> empty() : b.iterator();
+        final int lenA = a == null ? 0 : a.size();
+        final int lenB = b == null ? 0 : b.size();
+
+        for (int i = 0, maxLen = N.max(lenA, lenB); i < maxLen; i++) {
+            action.accept(i < lenA ? iterA.next() : valueForNoneA, i < lenB ? iterB.next() : valueForNoneB);
+        }
+    }
+
+    public static <A, B, C> void forEach(final A[] a, final B[] b, final C[] c, final A valueForNoneA, final B valueForNoneB, final C valueForNoneC,
+            final TriConsumer<? super A, ? super B, ? super C> action) {
+        final int lenA = a == null ? 0 : a.length;
+        final int lenB = b == null ? 0 : b.length;
+        final int lenC = c == null ? 0 : c.length;
+
+        for (int i = 0, maxLen = N.max(lenA, lenB, lenC); i < maxLen; i++) {
+            action.accept(i < lenA ? a[i] : valueForNoneA, i < lenB ? b[i] : valueForNoneB, i < lenC ? c[i] : valueForNoneC);
+        }
+    }
+
+    public static <A, B, C> void forEach(final Collection<A> a, final Collection<B> b, final Collection<C> c, final A valueForNoneA, final B valueForNoneB,
+            final C valueForNoneC, final TriConsumer<? super A, ? super B, ? super C> action) {
+
+        final Iterator<A> iterA = a == null ? ImmutableIterator.<A> empty() : a.iterator();
+        final Iterator<B> iterB = b == null ? ImmutableIterator.<B> empty() : b.iterator();
+        final Iterator<C> iterC = c == null ? ImmutableIterator.<C> empty() : c.iterator();
+        final int lenA = a == null ? 0 : a.size();
+        final int lenB = b == null ? 0 : b.size();
+        final int lenC = c == null ? 0 : c.size();
+
+        for (int i = 0, maxLen = N.max(lenA, lenB, lenC); i < maxLen; i++) {
+            action.accept(i < lenA ? iterA.next() : valueForNoneA, i < lenB ? iterB.next() : valueForNoneB, i < lenC ? iterC.next() : valueForNoneC);
+        }
+    }
+
+    public static <T> void forEachNonNull(final T[] a, final Consumer<? super T> action) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        for (T e : a) {
+            if (e != null) {
+                action.accept(e);
+            }
+        }
+    }
+
+    public static <T, C extends Collection<? extends T>> void forEachNonNull(final C c, final Consumer<? super T> action) {
+        if (N.isNullOrEmpty(c)) {
+            return;
+        }
+
+        for (T e : c) {
+            if (e != null) {
+                action.accept(e);
+            }
+        }
+    }
+
+    public static <T, U> void forEachNonNull(final T[] a, final Function<? super T, ? extends Collection<U>> flatMapper,
+            final BiConsumer<? super T, ? super U> action) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        for (T e : a) {
+            if (e != null) {
+                final Collection<U> c2 = flatMapper.apply(e);
+
+                if (N.notNullOrEmpty(c2)) {
+                    for (U u : c2) {
+                        if (u != null) {
+                            action.accept(e, u);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public static <T, U> void forEachNonNull(final Collection<T> c, final Function<? super T, ? extends Collection<U>> flatMapper,
+            final BiConsumer<? super T, ? super U> action) {
+        if (N.isNullOrEmpty(c)) {
+            return;
+        }
+
+        for (T e : c) {
+            if (e != null) {
+                final Collection<U> c2 = flatMapper.apply(e);
+
+                if (N.notNullOrEmpty(c2)) {
+                    for (U u : c2) {
+                        if (u != null) {
+                            action.accept(e, u);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public static <T, T2, T3> void forEachNonNull(final T[] a, final Function<? super T, ? extends Collection<T2>> flatMapper,
+            final Function<? super T2, ? extends Collection<T3>> flatMapper2, final TriConsumer<? super T, ? super T2, ? super T3> action) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        for (T e : a) {
+            if (e != null) {
+                final Collection<T2> c2 = flatMapper.apply(e);
+
+                if (N.notNullOrEmpty(c2)) {
+                    for (T2 t2 : c2) {
+                        if (t2 != null) {
+                            final Collection<T3> c3 = flatMapper2.apply(t2);
+
+                            if (N.notNullOrEmpty(c3)) {
+                                for (T3 t3 : c3) {
+                                    if (t3 != null) {
+                                        action.accept(e, t2, t3);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public static <T, T2, T3> void forEachNonNull(final Collection<T> c, final Function<? super T, ? extends Collection<T2>> flatMapper,
+            final Function<? super T2, ? extends Collection<T3>> flatMapper2, final TriConsumer<? super T, ? super T2, ? super T3> action) {
+        if (N.isNullOrEmpty(c)) {
+            return;
+        }
+
+        for (T e : c) {
+            if (e != null) {
+                final Collection<T2> c2 = flatMapper.apply(e);
+
+                if (N.notNullOrEmpty(c2)) {
+                    for (T2 t2 : c2) {
+                        if (t2 != null) {
+                            final Collection<T3> c3 = flatMapper2.apply(t2);
+
+                            if (N.notNullOrEmpty(c3)) {
+                                for (T3 t3 : c3) {
+                                    if (t3 != null) {
+                                        action.accept(e, t2, t3);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     public static BooleanList filter(final boolean[] a, final BooleanPredicate filter) {
@@ -29188,6 +29660,7 @@ public final class N {
      * @param a
      * @param k
      * @return the kth largest element.
+     * @throws IllegalArgumentException if the length of the specified array is less than <code>k</code>.
      */
     public static char kthLargest(final char[] a, final int k) {
         N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
@@ -29195,6 +29668,15 @@ public final class N {
         return Array.kthLargest(a, k);
     }
 
+    /**
+     * 
+     * @param a
+     * @param from
+     * @param to
+     * @param k
+     * @return the kth largest element from <code>a[from]</code> to <code>a[to]</code>
+     * @throws IllegalArgumentException if <code>to - from</code> is less than <code>k</code>.
+     */
     public static char kthLargest(final char[] a, final int from, final int to, final int k) {
         if (N.isNullOrEmpty(a) || to - from < 1) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
@@ -29208,6 +29690,7 @@ public final class N {
      * @param a
      * @param k
      * @return the kth largest element.
+     * @throws IllegalArgumentException if the length of the specified array is less than <code>k</code>.
      */
     public static byte kthLargest(final byte[] a, final int k) {
         N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
@@ -29215,6 +29698,15 @@ public final class N {
         return Array.kthLargest(a, k);
     }
 
+    /**
+     * 
+     * @param a
+     * @param from
+     * @param to
+     * @param k
+     * @return the kth largest element from <code>a[from]</code> to <code>a[to]</code>
+     * @throws IllegalArgumentException if <code>to - from</code> is less than <code>k</code>.
+     */
     public static byte kthLargest(final byte[] a, final int from, final int to, final int k) {
         if (N.isNullOrEmpty(a) || to - from < 1) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
@@ -29228,6 +29720,7 @@ public final class N {
      * @param a
      * @param k
      * @return the kth largest element.
+     * @throws IllegalArgumentException if the length of the specified array is less than <code>k</code>.
      */
     public static short kthLargest(final short[] a, final int k) {
         N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
@@ -29235,6 +29728,15 @@ public final class N {
         return Array.kthLargest(a, k);
     }
 
+    /**
+     * 
+     * @param a
+     * @param from
+     * @param to
+     * @param k
+     * @return the kth largest element from <code>a[from]</code> to <code>a[to]</code>
+     * @throws IllegalArgumentException if <code>to - from</code> is less than <code>k</code>.
+     */
     public static short kthLargest(final short[] a, final int from, final int to, final int k) {
         if (N.isNullOrEmpty(a) || to - from < 1) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
@@ -29248,6 +29750,7 @@ public final class N {
      * @param a
      * @param k
      * @return the kth largest element.
+     * @throws IllegalArgumentException if the length of the specified array is less than <code>k</code>.
      */
     public static int kthLargest(final int[] a, final int k) {
         N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
@@ -29261,7 +29764,8 @@ public final class N {
      * @param from
      * @param to
      * @param k
-     * @return the min(k, to - from) largest element.
+     * @return the kth largest element from <code>a[from]</code> to <code>a[to]</code>
+     * @throws IllegalArgumentException if <code>to - from</code> is less than <code>k</code>.
      */
     public static int kthLargest(final int[] a, final int from, final int to, final int k) {
         if (N.isNullOrEmpty(a) || to - from < 1) {
@@ -29276,6 +29780,7 @@ public final class N {
      * @param a
      * @param k
      * @return the kth largest element.
+     * @throws IllegalArgumentException if the length of the specified array is less than <code>k</code>.
      */
     public static long kthLargest(final long[] a, final int k) {
         N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
@@ -29289,7 +29794,8 @@ public final class N {
      * @param from
      * @param to
      * @param k
-     * @return the min(k, to - from) largest element.
+     * @return the kth largest element from <code>a[from]</code> to <code>a[to]</code>
+     * @throws IllegalArgumentException if <code>to - from</code> is less than <code>k</code>.
      */
     public static long kthLargest(final long[] a, final int from, final int to, final int k) {
         if (N.isNullOrEmpty(a) || to - from < 1) {
@@ -29304,6 +29810,7 @@ public final class N {
      * @param a
      * @param k
      * @return the kth largest element.
+     * @throws IllegalArgumentException if the length of the specified array is less than <code>k</code>.
      */
     public static float kthLargest(final float[] a, final int k) {
         N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
@@ -29317,7 +29824,8 @@ public final class N {
      * @param from
      * @param to
      * @param k
-     * @return the min(k, to - from) largest element.
+     * @return the kth largest element from <code>a[from]</code> to <code>a[to]</code>
+     * @throws IllegalArgumentException if <code>to - from</code> is less than <code>k</code>.
      */
     public static float kthLargest(final float[] a, final int from, final int to, final int k) {
         if (N.isNullOrEmpty(a) || to - from < 1) {
@@ -29332,6 +29840,7 @@ public final class N {
      * @param a
      * @param k
      * @return the kth largest element.
+     * @throws IllegalArgumentException if the length of the specified array is less than <code>k</code>.
      */
     public static double kthLargest(final double[] a, final int k) {
         N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
@@ -29345,7 +29854,8 @@ public final class N {
      * @param from
      * @param to
      * @param k
-     * @return the min(k, to - from) largest element.
+     * @return the kth largest element from <code>a[from]</code> to <code>a[to]</code>
+     * @throws IllegalArgumentException if <code>to - from</code> is less than <code>k</code>.
      */
     public static double kthLargest(final double[] a, final int from, final int to, final int k) {
         if (N.isNullOrEmpty(a) || to - from < 1) {
@@ -29360,6 +29870,7 @@ public final class N {
      * @param a
      * @param k
      * @return the kth largest element.
+     * @throws IllegalArgumentException if the length of the specified array is less than <code>k</code>.
      */
     public static <T extends Comparable<T>> T kthLargest(final T[] a, final int k) {
         N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
@@ -29373,7 +29884,8 @@ public final class N {
      * @param from
      * @param to
      * @param k
-     * @return the min(k, to - from) largest element.
+     * @return the kth largest element from <code>a[from]</code> to <code>a[to]</code>
+     * @throws IllegalArgumentException if <code>to - from</code> is less than <code>k</code>.
      */
     public static <T extends Comparable<T>> T kthLargest(final T[] a, final int from, final int to, final int k) {
         if (N.isNullOrEmpty(a) || to - from < 1) {
@@ -29389,6 +29901,7 @@ public final class N {
      * @param k
      * @param cmp
      * @return the kth largest element.
+     * @throws IllegalArgumentException if the length of the specified array is less than <code>k</code>.
      */
     public static <T> T kthLargest(final T[] a, final int k, final Comparator<? super T> cmp) {
         N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
@@ -29403,7 +29916,8 @@ public final class N {
      * @param to
      * @param k
      * @param cmp
-     * @return the min(k, to - from) largest element.
+     * @return the kth largest element from <code>a[from]</code> to <code>a[to]</code>
+     * @throws IllegalArgumentException if <code>to - from</code> is less than <code>k</code>.
      */
     public static <T> T kthLargest(final T[] a, final int from, final int to, final int k, final Comparator<? super T> cmp) {
         if (N.isNullOrEmpty(a) || to - from < 1) {
@@ -29418,6 +29932,7 @@ public final class N {
      * @param c
      * @param k
      * @return the kth largest element.
+     * @throws IllegalArgumentException if the length of the specified array is less than <code>k</code>.
      */
     public static <T extends Comparable<T>> T kthLargest(final Collection<? extends T> c, final int k) {
         N.checkNullOrEmpty(c, "The spcified collection 'c' can't be null or empty");
@@ -29431,7 +29946,8 @@ public final class N {
      * @param from
      * @param to
      * @param k
-     * @return the kth largest element.
+     * @return the kth largest element from <code>a[from]</code> to <code>a[to]</code>
+     * @throws IllegalArgumentException if <code>to - from</code> is less than <code>k</code>.
      */
     public static <T extends Comparable<T>> T kthLargest(final Collection<? extends T> c, final int from, final int to, final int k) {
         if (N.isNullOrEmpty(c) || to - from < 1) {
@@ -29447,6 +29963,7 @@ public final class N {
      * @param k
      * @param cmp
      * @return the kth largest element.
+     * @throws IllegalArgumentException if the length of the specified array is less than <code>k</code>.
      */
     public static <T> T kthLargest(final Collection<? extends T> c, final int k, final Comparator<? super T> cmp) {
         N.checkNullOrEmpty(c, "The spcified collection 'c' can't be null or empty");
@@ -29461,7 +29978,8 @@ public final class N {
      * @param to
      * @param k
      * @param cmp
-     * @return the kth largest element.
+     * @return the kth largest element from <code>a[from]</code> to <code>a[to]</code>
+     * @throws IllegalArgumentException if <code>to - from</code> is less than <code>k</code>.
      */
     public static <T> T kthLargest(final Collection<? extends T> c, final int from, final int to, final int k, final Comparator<? super T> cmp) {
         if (N.isNullOrEmpty(c) || to - from < 1) {
@@ -29476,6 +29994,7 @@ public final class N {
      * 
      * @param sortedArray
      * @return
+     * @throws IllegalArgumentException if the specified <code>sortedArray</code> is null or empty.
      */
     public static Map<Percentage, Character> distribution(final char[] sortedArray) {
         N.checkNullOrEmpty(sortedArray, "The spcified 'sortedArray' can't be null or empty");
@@ -29495,6 +30014,7 @@ public final class N {
      * 
      * @param sortedArray
      * @return
+     * @throws IllegalArgumentException if the specified <code>sortedArray</code> is null or empty.
      */
     public static Map<Percentage, Byte> distribution(final byte[] sortedArray) {
         N.checkNullOrEmpty(sortedArray, "The spcified 'sortedArray' can't be null or empty");
@@ -29514,6 +30034,7 @@ public final class N {
      * 
      * @param sortedArray
      * @return
+     * @throws IllegalArgumentException if the specified <code>sortedArray</code> is null or empty.
      */
     public static Map<Percentage, Short> distribution(final short[] sortedArray) {
         N.checkNullOrEmpty(sortedArray, "The spcified 'sortedArray' can't be null or empty");
@@ -29533,6 +30054,7 @@ public final class N {
      * 
      * @param sortedArray
      * @return
+     * @throws IllegalArgumentException if the specified <code>sortedArray</code> is null or empty.
      */
     public static Map<Percentage, Integer> distribution(final int[] sortedArray) {
         N.checkNullOrEmpty(sortedArray, "The spcified 'sortedArray' can't be null or empty");
@@ -29552,6 +30074,7 @@ public final class N {
      * 
      * @param sortedArray
      * @return
+     * @throws IllegalArgumentException if the specified <code>sortedArray</code> is null or empty.
      */
     public static Map<Percentage, Long> distribution(final long[] sortedArray) {
         N.checkNullOrEmpty(sortedArray, "The spcified 'sortedArray' can't be null or empty");
@@ -29571,6 +30094,7 @@ public final class N {
      * 
      * @param sortedArray
      * @return
+     * @throws IllegalArgumentException if the specified <code>sortedArray</code> is null or empty.
      */
     public static Map<Percentage, Float> distribution(final float[] sortedArray) {
         N.checkNullOrEmpty(sortedArray, "The spcified 'sortedArray' can't be null or empty");
@@ -29590,6 +30114,7 @@ public final class N {
      * 
      * @param sortedArray
      * @return
+     * @throws IllegalArgumentException if the specified <code>sortedArray</code> is null or empty.
      */
     public static Map<Percentage, Double> distribution(final double[] sortedArray) {
         N.checkNullOrEmpty(sortedArray, "The spcified 'sortedArray' can't be null or empty");
@@ -29609,6 +30134,7 @@ public final class N {
      * 
      * @param sortedArray
      * @return
+     * @throws IllegalArgumentException if the specified <code>sortedArray</code> is null or empty.
      */
     public static <T> Map<Percentage, T> distribution(final T[] sortedArray) {
         N.checkNullOrEmpty(sortedArray, "The spcified 'sortedArray' can't be null or empty");
@@ -29628,6 +30154,7 @@ public final class N {
      * 
      * @param sortedArray
      * @return
+     * @throws IllegalArgumentException if the specified <code>sortedArray</code> is null or empty.
      */
     public static <T> Map<Percentage, T> distribution(final List<T> sortedList) {
         N.checkNullOrEmpty(sortedList, "The spcified 'sortedList' can't be null or empty");

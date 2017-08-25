@@ -124,7 +124,7 @@ public abstract class ExIntIterator extends IntIterator implements SkippableIter
         };
     }
 
-    public static ExIntIterator of(final Iterator<Integer> iter) {
+    public static ExIntIterator oF(final Iterator<Integer> iter) {
         if (iter instanceof ExIterator) {
             final ExIterator<Integer> exIterator = ((ExIterator<Integer>) iter);
 

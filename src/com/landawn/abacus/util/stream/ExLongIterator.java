@@ -124,7 +124,7 @@ public abstract class ExLongIterator extends LongIterator implements SkippableIt
         };
     }
 
-    public static ExLongIterator of(final Iterator<Long> iter) {
+    public static ExLongIterator oF(final Iterator<Long> iter) {
         if (iter instanceof ExIterator) {
             final ExIterator<Long> exIterator = ((ExIterator<Long>) iter);
 

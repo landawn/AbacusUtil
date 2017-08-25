@@ -124,7 +124,7 @@ public abstract class ExShortIterator extends ShortIterator implements Skippable
         };
     }
 
-    public static ExShortIterator of(final Iterator<Short> iter) {
+    public static ExShortIterator oF(final Iterator<Short> iter) {
         if (iter instanceof ExIterator) {
             final ExIterator<Short> exIterator = ((ExIterator<Short>) iter);
 

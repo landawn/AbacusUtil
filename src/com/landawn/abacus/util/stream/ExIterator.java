@@ -108,7 +108,7 @@ public abstract class ExIterator<T> extends com.landawn.abacus.util.ImmutableIte
         };
     }
 
-    public static <T> ExIterator<T> of(final Iterator<? extends T> iter) {
+    public static <T> ExIterator<T> oF(final Iterator<? extends T> iter) {
         if (iter instanceof ExIterator) {
             return ((ExIterator<T>) iter);
         }
