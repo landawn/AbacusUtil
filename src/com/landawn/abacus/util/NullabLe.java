@@ -496,6 +496,16 @@ public final class NullabLe<T> {
     }
 
     /**
+     * @return <code>java.util.Optional.empty()</code> if the value is not present or {@code null}.
+     * 
+     * @return
+     * @see java.util.Optional
+     */
+    public java.util.Optional<T> jdkOptional() {
+        return value == null ? java.util.Optional.<T> empty() : java.util.Optional.of(value);
+    }
+
+    /**
      * Indicates whether some other object is "equal to" this Optional. The other object is considered equal if:
      * <ul>
      * <li>it is also an {@code NullabLe} and;

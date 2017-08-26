@@ -123,36 +123,36 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return of(map == null ? null : map.entrySet());
     }
 
-    /**
-     * Returns the <code>Collection</code> the <code>Seq</code> is backed with recursively.
-     * 
-     * @return
-     */
-    public Collection<T> interior() {
-        if (coll == null) {
-            return coll;
-        }
-
-        Collection<T> tmp = coll;
-
-        if (tmp instanceof Seq) {
-            while (tmp instanceof Seq) {
-                tmp = ((Seq<T>) tmp).coll;
-            }
-        }
-
-        if (tmp instanceof SubCollection) {
-            while (tmp instanceof SubCollection) {
-                tmp = ((SubCollection<T>) tmp).c;
-            }
-        }
-
-        if (tmp instanceof Seq) {
-            return ((Seq<T>) tmp).interior();
-        } else {
-            return tmp;
-        }
-    }
+    //    /**
+    //     * Returns the <code>Collection</code> the <code>Seq</code> is backed with recursively.
+    //     * 
+    //     * @return
+    //     */
+    //    public Collection<T> interior() {
+    //        if (coll == null) {
+    //            return coll;
+    //        }
+    //
+    //        Collection<T> tmp = coll;
+    //
+    //        if (tmp instanceof Seq) {
+    //            while (tmp instanceof Seq) {
+    //                tmp = ((Seq<T>) tmp).coll;
+    //            }
+    //        }
+    //
+    //        if (tmp instanceof SubCollection) {
+    //            while (tmp instanceof SubCollection) {
+    //                tmp = ((SubCollection<T>) tmp).c;
+    //            }
+    //        }
+    //
+    //        if (tmp instanceof Seq) {
+    //            return ((Seq<T>) tmp).interior();
+    //        } else {
+    //            return tmp;
+    //        }
+    //    }
 
     @Override
     public boolean contains(Object e) {
@@ -165,20 +165,20 @@ public final class Seq<T> extends ImmutableCollection<T> {
 
     @Override
     public boolean containsAll(Collection<?> c) {
-        if (N.isNullOrEmpty(coll)) {
-            return false;
-        } else if (N.isNullOrEmpty(c)) {
+        if (N.isNullOrEmpty(c)) {
             return true;
+        } else if (N.isNullOrEmpty(coll)) {
+            return false;
         }
 
         return coll.containsAll(c);
     }
 
     public boolean containsAll(Object[] a) {
-        if (N.isNullOrEmpty(coll)) {
-            return false;
-        } else if (N.isNullOrEmpty(a)) {
+        if (N.isNullOrEmpty(a)) {
             return true;
+        } else if (N.isNullOrEmpty(coll)) {
+            return false;
         }
 
         return containsAll(Arrays.asList(a));
@@ -205,7 +205,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public boolean disjoint(final Object[] a) {
-        if (N.isNullOrEmpty(a)) {
+        if (N.isNullOrEmpty(coll) || N.isNullOrEmpty(a)) {
             return true;
         }
 
@@ -515,9 +515,9 @@ public final class Seq<T> extends ImmutableCollection<T> {
         N.forEach(coll, flatMapper, flatMapper2, action);
     }
 
-    public void forEachNonNull(final Consumer<? super T> action) {
-        N.forEachNonNull(coll, action);
-    }
+    //    public void forEachNonNull(final Consumer<? super T> action) {
+    //        N.forEachNonNull(coll, action);
+    //    }
 
     public <U> void forEachNonNull(final Function<? super T, ? extends Collection<U>> flatMapper, final BiConsumer<? super T, ? super U> action) {
         N.forEachNonNull(coll, flatMapper, action);

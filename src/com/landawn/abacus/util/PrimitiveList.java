@@ -452,4 +452,8 @@ public abstract class PrimitiveList<C, P, E, A, L extends PrimitiveList<C, P, E,
     protected <T> IntFunction<Multiset<T>> createMultisetSupplier() {
         return (IntFunction) MULTISET_FACTORY;
     }
+
+    protected boolean needToSet(int lenA, int lenB) {
+        return Math.min(lenA, lenB) > 3 && Math.max(lenA, lenB) > 9;
+    }
 }

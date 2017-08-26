@@ -18107,29 +18107,29 @@ public final class N {
         }
     }
 
-    public static <T> void forEachNonNull(final T[] a, final Consumer<? super T> action) {
-        if (N.isNullOrEmpty(a)) {
-            return;
-        }
-
-        for (T e : a) {
-            if (e != null) {
-                action.accept(e);
-            }
-        }
-    }
-
-    public static <T, C extends Collection<? extends T>> void forEachNonNull(final C c, final Consumer<? super T> action) {
-        if (N.isNullOrEmpty(c)) {
-            return;
-        }
-
-        for (T e : c) {
-            if (e != null) {
-                action.accept(e);
-            }
-        }
-    }
+    //    public static <T> void forEachNonNull(final T[] a, final Consumer<? super T> action) {
+    //        if (N.isNullOrEmpty(a)) {
+    //            return;
+    //        }
+    //
+    //        for (T e : a) {
+    //            if (e != null) {
+    //                action.accept(e);
+    //            }
+    //        }
+    //    }
+    //
+    //    public static <T, C extends Collection<? extends T>> void forEachNonNull(final C c, final Consumer<? super T> action) {
+    //        if (N.isNullOrEmpty(c)) {
+    //            return;
+    //        }
+    //
+    //        for (T e : c) {
+    //            if (e != null) {
+    //                action.accept(e);
+    //            }
+    //        }
+    //    }
 
     public static <T, U> void forEachNonNull(final T[] a, final Function<? super T, ? extends Collection<U>> flatMapper,
             final BiConsumer<? super T, ? super U> action) {

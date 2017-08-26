@@ -130,7 +130,7 @@ public class ArrayHashSet<E> implements Set<E> {
     @Override
     public boolean containsAll(Collection<?> c) {
         if (N.isNullOrEmpty(c)) {
-            return false;
+            return true;
         }
 
         for (Object e : c) {

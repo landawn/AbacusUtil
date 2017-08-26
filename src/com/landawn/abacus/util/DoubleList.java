@@ -476,21 +476,25 @@ public final class DoubleList extends PrimitiveList<DoubleConsumer, DoublePredic
     public boolean containsAll(DoubleList c) {
         if (N.isNullOrEmpty(c)) {
             return true;
+        } else if (isEmpty()) {
+            return false;
         }
 
-        final double[] srcElementData = c.array();
+        final boolean isThisContainer = size() >= c.size();
+        final DoubleList container = isThisContainer ? this : c;
+        final double[] iterElements = isThisContainer ? c.array() : this.array();
 
-        if (c.size() > 3 && size() > 9) {
-            final Set<Double> set = c.toSet();
+        if (needToSet(size(), c.size())) {
+            final Set<Double> set = container.toSet();
 
-            for (int i = 0, srcSize = c.size(); i < srcSize; i++) {
-                if (set.contains(srcElementData[i]) == false) {
+            for (int i = 0, iterLen = isThisContainer ? c.size() : this.size(); i < iterLen; i++) {
+                if (set.contains(iterElements[i]) == false) {
                     return false;
                 }
             }
         } else {
-            for (int i = 0, srcSize = c.size(); i < srcSize; i++) {
-                if (contains(srcElementData[i]) == false) {
+            for (int i = 0, iterLen = isThisContainer ? c.size() : this.size(); i < iterLen; i++) {
+                if (container.contains(iterElements[i]) == false) {
                     return false;
                 }
             }
@@ -503,6 +507,8 @@ public final class DoubleList extends PrimitiveList<DoubleConsumer, DoublePredic
     public boolean containsAll(double[] a) {
         if (N.isNullOrEmpty(a)) {
             return true;
+        } else if (isEmpty()) {
+            return false;
         }
 
         return containsAll(of(a));
@@ -526,23 +532,24 @@ public final class DoubleList extends PrimitiveList<DoubleConsumer, DoublePredic
     }
 
     public boolean disjoint(final DoubleList c) {
-        if (N.isNullOrEmpty(c)) {
+        if (isEmpty() || N.isNullOrEmpty(c)) {
             return true;
         }
 
-        final DoubleList container = size() >= c.size() ? this : c;
-        final double[] iterElements = size() >= c.size() ? c.array() : this.array();
+        final boolean isThisContainer = size() >= c.size();
+        final DoubleList container = isThisContainer ? this : c;
+        final double[] iterElements = isThisContainer ? c.array() : this.array();
 
-        if (iterElements.length > 3 && container.size() > 9) {
+        if (needToSet(size(), c.size())) {
             final Set<Double> set = container.toSet();
 
-            for (int i = 0, srcSize = size() >= c.size() ? c.size() : this.size(); i < srcSize; i++) {
+            for (int i = 0, iterLen = isThisContainer ? c.size() : this.size(); i < iterLen; i++) {
                 if (set.contains(iterElements[i])) {
                     return false;
                 }
             }
         } else {
-            for (int i = 0, srcSize = size() >= c.size() ? c.size() : this.size(); i < srcSize; i++) {
+            for (int i = 0, iterLen = isThisContainer ? c.size() : this.size(); i < iterLen; i++) {
                 if (container.contains(iterElements[i])) {
                     return false;
                 }
@@ -554,7 +561,7 @@ public final class DoubleList extends PrimitiveList<DoubleConsumer, DoublePredic
 
     @Override
     public boolean disjoint(final double[] b) {
-        if (N.isNullOrEmpty(b)) {
+        if (isEmpty() || N.isNullOrEmpty(b)) {
             return true;
         }
 
