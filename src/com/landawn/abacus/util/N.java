@@ -14158,10 +14158,41 @@ public final class N {
             }
         } else {
             final T[] a = (T[]) c.toArray();
-            result = Array.asList(N.copyOfRange(a, from, to, step));
+            result = createList(N.copyOfRange(a, from, to, step));
         }
 
         return result;
+    }
+
+    /**
+     * Create an array list by initializing its elements data with the specified array <code>a</code>.
+     * The returned list may share the same elements with the specified array <code>a</code>.
+     * That's to say any change on the List/Array will affect the Array/List.
+     * 
+     * @param a
+     * @return
+     */
+    @SafeVarargs
+    private static <T> List<T> createList(final T... a) {
+        if (N.isNullOrEmpty(a)) {
+            return new ArrayList<>();
+        }
+
+        if (N.isListElementDataFieldSettable && N.listElementDataField != null && N.listSizeField != null) {
+            final List<T> list = new ArrayList<>();
+
+            try {
+                N.listElementDataField.set(list, a);
+                N.listSizeField.set(list, a.length);
+
+                return list;
+            } catch (Throwable e) {
+                // ignore;
+                N.isListElementDataFieldSettable = false;
+            }
+        }
+
+        return N.asList(a);
     }
 
     /**

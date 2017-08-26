@@ -337,12 +337,8 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     @SuppressWarnings("rawtypes")
-    public NullabLe<T> median() {
-        return size() == 0 ? (NullabLe<T>) NullabLe.empty() : NullabLe.of((T) N.median((Collection) coll));
-    }
-
-    public NullabLe<T> median(Comparator<? super T> cmp) {
-        return size() == 0 ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(N.median(coll, cmp));
+    public NullabLe<T> minBy(final Function<? super T, ? extends Comparable> keyExtractor) {
+        return min(Fn.comparingBy(keyExtractor));
     }
 
     @SuppressWarnings("rawtypes")
@@ -352,6 +348,20 @@ public final class Seq<T> extends ImmutableCollection<T> {
 
     public NullabLe<T> max(Comparator<? super T> cmp) {
         return size() == 0 ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(N.max(coll, cmp));
+    }
+
+    @SuppressWarnings("rawtypes")
+    public NullabLe<T> maxBy(final Function<? super T, ? extends Comparable> keyExtractor) {
+        return max(Fn.comparingBy(keyExtractor));
+    }
+
+    @SuppressWarnings("rawtypes")
+    public NullabLe<T> median() {
+        return size() == 0 ? (NullabLe<T>) NullabLe.empty() : NullabLe.of((T) N.median((Collection) coll));
+    }
+
+    public NullabLe<T> median(Comparator<? super T> cmp) {
+        return size() == 0 ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(N.median(coll, cmp));
     }
 
     @SuppressWarnings("rawtypes")

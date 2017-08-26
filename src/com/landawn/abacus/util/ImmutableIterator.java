@@ -53,7 +53,30 @@ public abstract class ImmutableIterator<E> implements java.util.Iterator<E> {
         return EMPTY;
     }
 
-    public static <T> ImmutableIterator<T> of(final T[] a) {
+    public static <T> ImmutableIterator<T> just(final T val) {
+        return new ImmutableIterator<T>() {
+            private boolean done = false;
+
+            @Override
+            public boolean hasNext() {
+                return done == false;
+            }
+
+            @Override
+            public T next() {
+                if (done) {
+                    throw new NoSuchElementException();
+                }
+
+                done = true;
+
+                return val;
+            }
+        };
+    }
+
+    @SafeVarargs
+    public static <T> ImmutableIterator<T> of(final T... a) {
         return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);
     }
 

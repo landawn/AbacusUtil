@@ -498,6 +498,246 @@ public final class Iterators {
     }
 
     @SafeVarargs
+    public static BooleanIterator concat(final BooleanIterator... a) {
+        if (N.isNullOrEmpty(a)) {
+            return BooleanIterator.EMPTY;
+        }
+
+        return new BooleanIterator() {
+            private final Iterator<BooleanIterator> iter = Arrays.asList(a).iterator();
+            private BooleanIterator cur;
+
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
+                    cur = iter.next();
+                }
+
+                return cur != null && cur.hasNext();
+            }
+
+            @Override
+            public boolean nextBoolean() {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return cur.nextBoolean();
+            }
+        };
+    }
+
+    @SafeVarargs
+    public static CharIterator concat(final CharIterator... a) {
+        if (N.isNullOrEmpty(a)) {
+            return CharIterator.EMPTY;
+        }
+
+        return new CharIterator() {
+            private final Iterator<CharIterator> iter = Arrays.asList(a).iterator();
+            private CharIterator cur;
+
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
+                    cur = iter.next();
+                }
+
+                return cur != null && cur.hasNext();
+            }
+
+            @Override
+            public char nextChar() {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return cur.nextChar();
+            }
+        };
+    }
+
+    @SafeVarargs
+    public static ByteIterator concat(final ByteIterator... a) {
+        if (N.isNullOrEmpty(a)) {
+            return ByteIterator.EMPTY;
+        }
+
+        return new ByteIterator() {
+            private final Iterator<ByteIterator> iter = Arrays.asList(a).iterator();
+            private ByteIterator cur;
+
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
+                    cur = iter.next();
+                }
+
+                return cur != null && cur.hasNext();
+            }
+
+            @Override
+            public byte nextByte() {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return cur.nextByte();
+            }
+        };
+    }
+
+    @SafeVarargs
+    public static ShortIterator concat(final ShortIterator... a) {
+        if (N.isNullOrEmpty(a)) {
+            return ShortIterator.EMPTY;
+        }
+
+        return new ShortIterator() {
+            private final Iterator<ShortIterator> iter = Arrays.asList(a).iterator();
+            private ShortIterator cur;
+
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
+                    cur = iter.next();
+                }
+
+                return cur != null && cur.hasNext();
+            }
+
+            @Override
+            public short nextShort() {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return cur.nextShort();
+            }
+        };
+    }
+
+    @SafeVarargs
+    public static IntIterator concat(final IntIterator... a) {
+        if (N.isNullOrEmpty(a)) {
+            return IntIterator.EMPTY;
+        }
+
+        return new IntIterator() {
+            private final Iterator<IntIterator> iter = Arrays.asList(a).iterator();
+            private IntIterator cur;
+
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
+                    cur = iter.next();
+                }
+
+                return cur != null && cur.hasNext();
+            }
+
+            @Override
+            public int nextInt() {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return cur.nextInt();
+            }
+        };
+    }
+
+    @SafeVarargs
+    public static LongIterator concat(final LongIterator... a) {
+        if (N.isNullOrEmpty(a)) {
+            return LongIterator.EMPTY;
+        }
+
+        return new LongIterator() {
+            private final Iterator<LongIterator> iter = Arrays.asList(a).iterator();
+            private LongIterator cur;
+
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
+                    cur = iter.next();
+                }
+
+                return cur != null && cur.hasNext();
+            }
+
+            @Override
+            public long nextLong() {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return cur.nextLong();
+            }
+        };
+    }
+
+    @SafeVarargs
+    public static FloatIterator concat(final FloatIterator... a) {
+        if (N.isNullOrEmpty(a)) {
+            return FloatIterator.EMPTY;
+        }
+
+        return new FloatIterator() {
+            private final Iterator<FloatIterator> iter = Arrays.asList(a).iterator();
+            private FloatIterator cur;
+
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
+                    cur = iter.next();
+                }
+
+                return cur != null && cur.hasNext();
+            }
+
+            @Override
+            public float nextFloat() {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return cur.nextFloat();
+            }
+        };
+    }
+
+    @SafeVarargs
+    public static DoubleIterator concat(final DoubleIterator... a) {
+        if (N.isNullOrEmpty(a)) {
+            return DoubleIterator.EMPTY;
+        }
+
+        return new DoubleIterator() {
+            private final Iterator<DoubleIterator> iter = Arrays.asList(a).iterator();
+            private DoubleIterator cur;
+
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
+                    cur = iter.next();
+                }
+
+                return cur != null && cur.hasNext();
+            }
+
+            @Override
+            public double nextDouble() {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return cur.nextDouble();
+            }
+        };
+    }
+
+    @SafeVarargs
     public static <T> ImmutableIterator<T> concat(final T[]... a) {
         if (N.isNullOrEmpty(a)) {
             return ImmutableIterator.empty();
