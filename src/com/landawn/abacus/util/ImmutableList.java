@@ -32,7 +32,7 @@ import java.util.function.UnaryOperator;
 public final class ImmutableList<E> extends ImmutableCollection<E> implements List<E> {
 
     @SuppressWarnings("rawtypes")
-    private static final ImmutableList EMPTY = of(Collections.EMPTY_LIST);
+    private static final ImmutableList EMPTY = new ImmutableList(Collections.EMPTY_LIST);
 
     private final List<E> list;
 

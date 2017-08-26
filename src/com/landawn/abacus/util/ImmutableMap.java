@@ -32,7 +32,7 @@ import java.util.function.Function;
 public final class ImmutableMap<K, V> implements Map<K, V> {
 
     @SuppressWarnings("rawtypes")
-    private static final ImmutableMap EMPTY = of(Collections.EMPTY_MAP);
+    private static final ImmutableMap EMPTY = new ImmutableMap(Collections.EMPTY_MAP);
 
     private final Map<K, V> map;
 

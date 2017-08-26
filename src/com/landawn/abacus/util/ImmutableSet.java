@@ -27,7 +27,7 @@ import java.util.Set;
 public final class ImmutableSet<E> extends ImmutableCollection<E> implements Set<E> {
 
     @SuppressWarnings("rawtypes")
-    private static final ImmutableSet EMPTY = of(Collections.EMPTY_SET);
+    private static final ImmutableSet EMPTY = new ImmutableSet(Collections.EMPTY_SET);
 
     ImmutableSet(Set<? extends E> set) {
         super(Collections.unmodifiableSet(set));
