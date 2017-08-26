@@ -128,57 +128,6 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
     }
 
     /**
-     *
-     * @return
-     * @throws NoSuchElementException if the value is not present, or ArithmeticException if the value is present but bigger than Integer.MAX_VALUE or less than Integer.MIN_VALUE
-     */
-    public int getAsInt() {
-        if (isPresent()) {
-            if (value < Integer.MIN_VALUE || value > Integer.MAX_VALUE) {
-                throw new ArithmeticException("overflow");
-            }
-
-            return (int) value;
-        } else {
-            throw new NoSuchElementException("No value present");
-        }
-    }
-
-    /**
-     *
-     * @return
-     * @throws NoSuchElementException if the value is not present, or ArithmeticException if the value is present but bigger than Long.MAX_VALUE or less than Long.MIN_VALUE
-     */
-    public long getAsLong() {
-        if (isPresent()) {
-            if (value < Long.MIN_VALUE || value > Long.MAX_VALUE) {
-                throw new ArithmeticException("overflow");
-            }
-
-            return (long) value;
-        } else {
-            throw new NoSuchElementException("No value present");
-        }
-    }
-
-    /**
-     *
-     * @return
-     * @throws NoSuchElementException if the value is not present, or ArithmeticException if the value is present but bigger than Float.MAX_VALUE or less than Float.MIN_VALUE
-     */
-    public float getAsFloat() {
-        if (isPresent()) {
-            if (value < Float.MIN_VALUE || value > Float.MAX_VALUE) {
-                throw new ArithmeticException("overflow");
-            }
-
-            return (float) value;
-        } else {
-            throw new NoSuchElementException("No value present");
-        }
-    }
-
-    /**
      * Return {@code true} if there is a value present, otherwise {@code false}.
      *
      * @return {@code true} if there is a value present, otherwise {@code false}
@@ -221,35 +170,8 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
      * @param other the value to be returned if there is no value present
      * @return the value, if present, otherwise {@code other}
      */
-    public double or(double other) {
+    public double orElse(double other) {
         return isPresent() ? value : other;
-    }
-
-    /**
-     *
-     * @return
-     * @throws ArithmeticException if the value is present but bigger than Integer.MAX_VALUE or less than Integer.MIN_VALUE
-     */
-    public int orInt(int other) {
-        return isPresent() ? getAsInt() : other;
-    }
-
-    /**
-     *
-     * @return
-     * @throws ArithmeticException if the value is present but bigger than Long.MAX_VALUE or less than Long.MIN_VALUE
-     */
-    public long orLong(long other) {
-        return isPresent() ? getAsLong() : other;
-    }
-
-    /**
-     *
-     * @return
-     * @throws ArithmeticException if the value is present but bigger than Float.MAX_VALUE or less than Float.MIN_VALUE
-     */
-    public float orFloat(float other) {
-        return isPresent() ? getAsFloat() : other;
     }
 
     /**
@@ -262,7 +184,7 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
      * @throws NullPointerException if value is not present and {@code other} is
      * null
      */
-    public double orGet(DoubleSupplier other) {
+    public double orElseGet(DoubleSupplier other) {
         return isPresent() ? value : other.getAsDouble();
     }
 
@@ -282,21 +204,12 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
      * @throws NullPointerException if no value is present and
      * {@code exceptionSupplier} is null
      */
-    public <X extends Throwable> double orThrow(Supplier<X> exceptionSupplier) throws X {
+    public <X extends Throwable> double orElseThrow(Supplier<X> exceptionSupplier) throws X {
         if (isPresent()) {
             return value;
         } else {
             throw exceptionSupplier.get();
         }
-    }
-
-    /**
-     * Return the value if present, otherwise return {@code 0}.
-     *
-     * @return the value, if present, otherwise {@code 0}
-     */
-    public double orZero() {
-        return isPresent() ? value : 0d;
     }
 
     @Override

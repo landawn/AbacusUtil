@@ -27976,7 +27976,7 @@ public final class N {
 
         // return from == to ? 0d : ((double) sum(a, from, to)) / (to - from);
 
-        return FloatStream.of(a, from, to).average().or(0);
+        return FloatStream.of(a, from, to).average().orElse(0);
     }
 
     /**
@@ -28006,7 +28006,7 @@ public final class N {
 
         // return from == to ? 0d : ((double) sum(a, from, to)) / (to - from);
 
-        return DoubleStream.of(a, from, to).average().or(0);
+        return DoubleStream.of(a, from, to).average().orElse(0);
     }
 
     /**

@@ -128,23 +128,6 @@ public final class OptionalLong implements Comparable<OptionalLong> {
     }
 
     /**
-     *
-     * @return
-     * @throws NoSuchElementException if the value is not present, or ArithmeticException if the value is present but bigger than Integer.MAX_VALUE or less than Integer.MIN_VALUE
-     */
-    public int getAsInt() {
-        if (isPresent()) {
-            if (value < Integer.MIN_VALUE || value > Integer.MAX_VALUE) {
-                throw new ArithmeticException("overflow");
-            }
-
-            return (int) value;
-        } else {
-            throw new NoSuchElementException("No value present");
-        }
-    }
-
-    /**
      * Return {@code true} if there is a value present, otherwise {@code false}.
      *
      * @return {@code true} if there is a value present, otherwise {@code false}
@@ -187,17 +170,8 @@ public final class OptionalLong implements Comparable<OptionalLong> {
      * @param other the value to be returned if there is no value present
      * @return the value, if present, otherwise {@code other}
      */
-    public long or(long other) {
+    public long orElse(long other) {
         return isPresent() ? value : other;
-    }
-
-    /**
-     *
-     * @return
-     * @throws ArithmeticException if the value is present but bigger than Integer.MAX_VALUE or less than Integer.MIN_VALUE
-     */
-    public int orInt(int other) {
-        return isPresent() ? getAsInt() : other;
     }
 
     /**
@@ -210,7 +184,7 @@ public final class OptionalLong implements Comparable<OptionalLong> {
      * @throws NullPointerException if value is not present and {@code other} is
      * null
      */
-    public long orGet(LongSupplier other) {
+    public long orElseGet(LongSupplier other) {
         return isPresent() ? value : other.getAsLong();
     }
 
@@ -230,21 +204,12 @@ public final class OptionalLong implements Comparable<OptionalLong> {
      * @throws NullPointerException if no value is present and
      * {@code exceptionSupplier} is null
      */
-    public <X extends Throwable> long orThrow(Supplier<X> exceptionSupplier) throws X {
+    public <X extends Throwable> long orElseThrow(Supplier<X> exceptionSupplier) throws X {
         if (isPresent()) {
             return value;
         } else {
             throw exceptionSupplier.get();
         }
-    }
-
-    /**
-     * Return the value if present, otherwise return {@code 0}.
-     *
-     * @return the value, if present, otherwise {@code 0}
-     */
-    public long orZero() {
-        return isPresent() ? value : 0L;
     }
 
     @Override

@@ -275,7 +275,7 @@ public final class Optional<T> {
      * be null
      * @return the value, if present, otherwise {@code other}
      */
-    public T or(T other) {
+    public T orElse(T other) {
         return isPresent() ? value : other;
     }
 
@@ -289,7 +289,7 @@ public final class Optional<T> {
      * @throws NullPointerException if value is not present and {@code other} is
      * null
      */
-    public T orGet(Supplier<? extends T> other) {
+    public T orElseGet(Supplier<? extends T> other) {
         return isPresent() ? value : other.get();
     }
 
@@ -309,21 +309,12 @@ public final class Optional<T> {
      * @throws NullPointerException if no value is present and
      * {@code exceptionSupplier} is null
      */
-    public <X extends Throwable> T orThrow(Supplier<? extends X> exceptionSupplier) throws X {
+    public <X extends Throwable> T orElseThrow(Supplier<? extends X> exceptionSupplier) throws X {
         if (isPresent()) {
             return value;
         } else {
             throw exceptionSupplier.get();
         }
-    }
-
-    /**
-     * Return the value if present, otherwise return {@code null}.
-     *
-     * @return the value, if present, otherwise {@code null}
-     */
-    public T orNull() {
-        return isPresent() ? value : null;
     }
 
     public Stream<T> stream() {

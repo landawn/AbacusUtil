@@ -1323,7 +1323,7 @@ public final class SQLExecutor implements Closeable {
 
     @SafeVarargs
     public final int count(final Connection conn, final String sql, final Object... parameters) {
-        return queryForSingleResult(int.class, conn, sql, parameters).or(0);
+        return queryForSingleResult(int.class, conn, sql, parameters).orElse(0);
     }
 
     //    // mess up. To uncomment this method, also need to modify getNamingPolicy/setNamingPolicy in JdbcSettings.

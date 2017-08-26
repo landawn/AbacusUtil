@@ -3158,7 +3158,7 @@ public final class Collectors {
         final Function<OptionalBox<T>, T> finisher = new Function<OptionalBox<T>, T>() {
             @Override
             public T apply(OptionalBox<T> a) {
-                return collector.finisher().apply(a).orGet(other);
+                return collector.finisher().apply(a).orElseGet(other);
             }
         };
 
@@ -3172,7 +3172,7 @@ public final class Collectors {
         final Function<OptionalBox<T>, T> finisher = new Function<OptionalBox<T>, T>() {
             @Override
             public T apply(OptionalBox<T> a) {
-                return collector.finisher().apply(a).orThrow(exceptionSupplier);
+                return collector.finisher().apply(a).orElseThrow(exceptionSupplier);
             }
         };
 
@@ -3306,7 +3306,7 @@ public final class Collectors {
         final Function<OptionalBox2<T, U>, U> finisher = new Function<OptionalBox2<T, U>, U>() {
             @Override
             public U apply(OptionalBox2<T, U> a) {
-                return collector.finisher().apply(a).orGet(other);
+                return collector.finisher().apply(a).orElseGet(other);
             }
         };
 
@@ -3320,7 +3320,7 @@ public final class Collectors {
         final Function<OptionalBox2<T, U>, U> finisher = new Function<OptionalBox2<T, U>, U>() {
             @Override
             public U apply(OptionalBox2<T, U> a) {
-                return collector.finisher().apply(a).orThrow(exceptionSupplier);
+                return collector.finisher().apply(a).orElseThrow(exceptionSupplier);
             }
         };
 

@@ -170,7 +170,7 @@ public final class OptionalBoolean implements Comparable<OptionalBoolean> {
      * @param other the value to be returned if there is no value present
      * @return the value, if present, otherwise {@code other}
      */
-    public boolean or(boolean other) {
+    public boolean orElse(boolean other) {
         return isPresent() ? value : other;
     }
 
@@ -184,7 +184,7 @@ public final class OptionalBoolean implements Comparable<OptionalBoolean> {
      * @throws NullPobooleanerException if value is not present and {@code other} is
      * null
      */
-    public boolean orGet(BooleanSupplier other) {
+    public boolean orElseGet(BooleanSupplier other) {
         return isPresent() ? value : other.getAsBoolean();
     }
 
@@ -204,7 +204,7 @@ public final class OptionalBoolean implements Comparable<OptionalBoolean> {
      * @throws NullPobooleanerException if no value is present and
      * {@code exceptionSupplier} is null
      */
-    public <X extends Throwable> boolean orThrow(Supplier<X> exceptionSupplier) throws X {
+    public <X extends Throwable> boolean orElseThrow(Supplier<X> exceptionSupplier) throws X {
         if (isPresent()) {
             return value;
         } else {

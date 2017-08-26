@@ -170,7 +170,7 @@ public final class OptionalChar implements Comparable<OptionalChar> {
      * @param other the value to be returned if there is no value present
      * @return the value, if present, otherwise {@code other}
      */
-    public char or(char other) {
+    public char orElse(char other) {
         return isPresent() ? value : other;
     }
 
@@ -184,7 +184,7 @@ public final class OptionalChar implements Comparable<OptionalChar> {
      * @throws NullPocharerException if value is not present and {@code other} is
      * null
      */
-    public char orGet(CharSupplier other) {
+    public char orElseGet(CharSupplier other) {
         return isPresent() ? value : other.getAsChar();
     }
 
@@ -204,21 +204,12 @@ public final class OptionalChar implements Comparable<OptionalChar> {
      * @throws NullPocharerException if no value is present and
      * {@code exceptionSupplier} is null
      */
-    public <X extends Throwable> char orThrow(Supplier<X> exceptionSupplier) throws X {
+    public <X extends Throwable> char orElseThrow(Supplier<X> exceptionSupplier) throws X {
         if (isPresent()) {
             return value;
         } else {
             throw exceptionSupplier.get();
         }
-    }
-
-    /**
-     * Return the value if present, otherwise return {@code 0}.
-     *
-     * @return the value, if present, otherwise {@code 0}
-     */
-    public char orZero() {
-        return isPresent() ? value : 0;
     }
 
     @Override

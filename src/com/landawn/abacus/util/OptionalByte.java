@@ -170,7 +170,7 @@ public final class OptionalByte implements Comparable<OptionalByte> {
      * @param other the value to be returned if there is no value present
      * @return the value, if present, otherwise {@code other}
      */
-    public byte or(byte other) {
+    public byte orElse(byte other) {
         return isPresent() ? value : other;
     }
 
@@ -184,7 +184,7 @@ public final class OptionalByte implements Comparable<OptionalByte> {
      * @throws NullPobyteerException if value is not present and {@code other} is
      * null
      */
-    public byte orGet(ByteSupplier other) {
+    public byte orElseGet(ByteSupplier other) {
         return isPresent() ? value : other.getAsByte();
     }
 
@@ -204,21 +204,12 @@ public final class OptionalByte implements Comparable<OptionalByte> {
      * @throws NullPobyteerException if no value is present and
      * {@code exceptionSupplier} is null
      */
-    public <X extends Throwable> byte orThrow(Supplier<X> exceptionSupplier) throws X {
+    public <X extends Throwable> byte orElseThrow(Supplier<X> exceptionSupplier) throws X {
         if (isPresent()) {
             return value;
         } else {
             throw exceptionSupplier.get();
         }
-    }
-
-    /**
-     * Return the value if present, otherwise return {@code 0}.
-     *
-     * @return the value, if present, otherwise {@code 0}
-     */
-    public byte orZero() {
-        return isPresent() ? value : 0;
     }
 
     @Override

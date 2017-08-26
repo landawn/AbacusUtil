@@ -1213,7 +1213,7 @@ public final class SQLiteExecutor {
 
     @SafeVarargs
     public final int count(String sql, Object... parameters) {
-        return queryForSingleResult(int.class, sql, parameters).or(0);
+        return queryForSingleResult(int.class, sql, parameters).orElse(0);
     }
 
     private SP select(String tableName, String selectColumnName, Condition whereClause) {

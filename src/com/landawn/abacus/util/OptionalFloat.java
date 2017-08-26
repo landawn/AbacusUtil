@@ -128,40 +128,6 @@ public final class OptionalFloat implements Comparable<OptionalFloat> {
     }
 
     /**
-     *
-     * @return
-     * @throws NoSuchElementException if the value is not present, or ArithmeticException if the value is present but bigger than Integer.MAX_VALUE or less than Integer.MIN_VALUE
-     */
-    public int getAsInt() {
-        if (isPresent()) {
-            if (value < Integer.MIN_VALUE || value > Integer.MAX_VALUE) {
-                throw new ArithmeticException("overflow");
-            }
-
-            return (int) value;
-        } else {
-            throw new NoSuchElementException("No value present");
-        }
-    }
-
-    /**
-     *
-     * @return
-     * @throws NoSuchElementException if the value is not present, or ArithmeticException if the value is present but bigger than Long.MAX_VALUE or less than Long.MIN_VALUE
-     */
-    public long getAsLong() {
-        if (isPresent()) {
-            if (value < Long.MIN_VALUE || value > Long.MAX_VALUE) {
-                throw new ArithmeticException("overflow");
-            }
-
-            return (long) value;
-        } else {
-            throw new NoSuchElementException("No value present");
-        }
-    }
-
-    /**
      * Return {@code true} if there is a value present, otherwise {@code false}.
      *
      * @return {@code true} if there is a value present, otherwise {@code false}
@@ -204,26 +170,8 @@ public final class OptionalFloat implements Comparable<OptionalFloat> {
      * @param other the value to be returned if there is no value present
      * @return the value, if present, otherwise {@code other}
      */
-    public float or(float other) {
+    public float orElse(float other) {
         return isPresent() ? value : other;
-    }
-
-    /**
-     *
-     * @return
-     * @throws ArithmeticException if the value is present but bigger than Integer.MAX_VALUE or less than Integer.MIN_VALUE
-     */
-    public int orInt(int other) {
-        return isPresent() ? getAsInt() : other;
-    }
-
-    /**
-     *
-     * @return
-     * @throws ArithmeticException if the value is present but bigger than Long.MAX_VALUE or less than Long.MIN_VALUE
-     */
-    public long orLong(long other) {
-        return isPresent() ? getAsLong() : other;
     }
 
     /**
@@ -236,7 +184,7 @@ public final class OptionalFloat implements Comparable<OptionalFloat> {
      * @throws NullPointerException if value is not present and {@code other} is
      * null
      */
-    public float orGet(FloatSupplier other) {
+    public float orElseGet(FloatSupplier other) {
         return isPresent() ? value : other.getAsFloat();
     }
 
@@ -256,21 +204,12 @@ public final class OptionalFloat implements Comparable<OptionalFloat> {
      * @throws NullPointerException if no value is present and
      * {@code exceptionSupplier} is null
      */
-    public <X extends Throwable> float orThrow(Supplier<X> exceptionSupplier) throws X {
+    public <X extends Throwable> float orElseThrow(Supplier<X> exceptionSupplier) throws X {
         if (isPresent()) {
             return value;
         } else {
             throw exceptionSupplier.get();
         }
-    }
-
-    /**
-     * Return the value if present, otherwise return {@code 0}.
-     *
-     * @return the value, if present, otherwise {@code 0}
-     */
-    public float orZero() {
-        return isPresent() ? value : 0f;
     }
 
     @Override
