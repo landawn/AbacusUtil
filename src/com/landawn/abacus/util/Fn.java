@@ -20,6 +20,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -35,6 +36,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -827,7 +829,7 @@ public final class Fn {
      * @param action
      * @return
      */
-    public static <T> Consumer<T> indexeed(final IndexedConsumer<T> action) {
+    public static <T> Consumer<T> indeXed(final IndexedConsumer<T> action) {
         N.requireNonNull(action);
 
         return new Consumer<T>() {
@@ -846,7 +848,7 @@ public final class Fn {
      * @param action
      * @return
      */
-    public static <U, T> BiConsumer<U, T> indexeed(final IndexedBiConsumer<U, T> action) {
+    public static <U, T> BiConsumer<U, T> indeXed(final IndexedBiConsumer<U, T> action) {
         N.requireNonNull(action);
 
         return new BiConsumer<U, T>() {
@@ -857,6 +859,49 @@ public final class Fn {
                 action.accept(u, idx.getAndIncrement(), t);
             }
         };
+    }
+
+    public static <T, C extends Collection<T>> BiConsumer<C, C> addAll() {
+        return BiConsumers.ofAddAll();
+    }
+
+    public static <K, V, M extends Map<K, V>> BiConsumer<M, M> putAll() {
+        return BiConsumers.ofPutAll();
+    }
+
+    public static <K, V> Collector<Map.Entry<K, V>, ?, Map<K, V>> toMap() {
+        return Collectors.toMap();
+    }
+
+    public static <K, V> Collector<Map.Entry<K, V>, ?, Map<K, V>> toMap(final BinaryOperator<V> mergeFunction) {
+        return Collectors.toMap(mergeFunction);
+    }
+
+    public static <K, V, M extends Map<K, V>> Collector<Map.Entry<K, V>, ?, M> toMap(final Supplier<M> mapFactory) {
+        return Collectors.toMap(mapFactory);
+    }
+
+    public static <K, V, M extends Map<K, V>> Collector<Map.Entry<K, V>, ?, M> toMap(final BinaryOperator<V> mergeFunction, final Supplier<M> mapFactory) {
+        return Collectors.toMap(mergeFunction, mapFactory);
+    }
+
+    public static <T, K, U> Collector<T, ?, Map<K, U>> toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper) {
+        return Collectors.toMap(keyExtractor, valueMapper);
+    }
+
+    public static <T, K, U, M extends Map<K, U>> Collector<T, ?, M> toMap(final Function<? super T, ? extends K> keyExtractor,
+            final Function<? super T, ? extends U> valueMapper, final Supplier<M> mapFactory) {
+        return Collectors.toMap(keyExtractor, valueMapper, mapFactory);
+    }
+
+    public static <T, K, U> Collector<T, ?, Map<K, U>> toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
+            BinaryOperator<U> mergeFunction) {
+        return Collectors.toMap(keyExtractor, valueMapper, mergeFunction);
+    }
+
+    public static <T, K, U, M extends Map<K, U>> Collector<T, ?, M> toMap(final Function<? super T, ? extends K> keyExtractor,
+            final Function<? super T, ? extends U> valueMapper, final BinaryOperator<U> mergeFunction, final Supplier<M> mapFactory) {
+        return Collectors.toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
     public static <T> Collector<T, ?, List<T>> toList() {
@@ -1538,6 +1583,45 @@ public final class Fn {
             }
         };
 
+        @SuppressWarnings("rawtypes")
+        private static final Supplier<? super Multiset> MULTISET = new Supplier<Multiset>() {
+            @Override
+            public Multiset get() {
+                return new Multiset();
+            }
+        };
+
+        @SuppressWarnings("rawtypes")
+        private static final Supplier<? super LongMultiset> LONG_MULTISET = new Supplier<LongMultiset>() {
+            @Override
+            public LongMultiset get() {
+                return new LongMultiset();
+            }
+        };
+
+        @SuppressWarnings("rawtypes")
+        private static final Supplier<? super ListMultimap> MULTIMAP = new Supplier<ListMultimap>() {
+            @Override
+            public ListMultimap get() {
+                return N.newListMultimap();
+            }
+        };
+
+        @SuppressWarnings("rawtypes")
+        private static final Supplier<? super BiMap> BI_MAP = new Supplier<BiMap>() {
+            @Override
+            public BiMap get() {
+                return new BiMap();
+            }
+        };
+
+        private static final Supplier<StringBuilder> STRING_BUILDER = new Supplier<StringBuilder>() {
+            @Override
+            public StringBuilder get() {
+                return new StringBuilder();
+            }
+        };
+
         private Suppliers() {
             // singleton.
         }
@@ -1663,6 +1747,11 @@ public final class Fn {
         }
 
         @SuppressWarnings("rawtypes")
+        public static <K, V> Supplier<ConcurrentMap<K, V>> ofConcurrentMap() {
+            return (Supplier) CONCURRENT_HASH_MAP;
+        }
+
+        @SuppressWarnings("rawtypes")
         public static <K, V> Supplier<ConcurrentHashMap<K, V>> ofConcurrentHashMap() {
             return (Supplier) CONCURRENT_HASH_MAP;
         }
@@ -1670,6 +1759,11 @@ public final class Fn {
         @SuppressWarnings("rawtypes")
         public static <T> Supplier<Queue<T>> ofQueue() {
             return (Supplier) QUEUE;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <T> Supplier<Deque<T>> ofDeque() {
+            return (Supplier) ARRAY_DEQUE;
         }
 
         @SuppressWarnings("rawtypes")
@@ -1690,6 +1784,30 @@ public final class Fn {
         @SuppressWarnings("rawtypes")
         public static <T> Supplier<PriorityQueue<T>> ofPriorityQueue() {
             return (Supplier) PRIORITY_QUEUE;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <T> Supplier<Multiset<T>> ofMultiset() {
+            return (Supplier) MULTISET;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <T> Supplier<LongMultiset<T>> ofLongMultiset() {
+            return (Supplier) LONG_MULTISET;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <K, v> Supplier<ListMultimap<K, v>> ofMultimap() {
+            return (Supplier) MULTIMAP;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <K, V> Supplier<BiMap<K, V>> ofBiMap() {
+            return (Supplier) BI_MAP;
+        }
+
+        public static Supplier<StringBuilder> ofStringBuilder() {
+            return STRING_BUILDER;
         }
     }
 
@@ -1882,7 +2000,7 @@ public final class Fn {
         }
 
         public static <T> Consumer<T> indexed(final IndexedConsumer<T> action) {
-            return Fn.indexeed(action);
+            return Fn.indeXed(action);
         }
     }
 
@@ -2045,7 +2163,7 @@ public final class Fn {
         }
 
         public static <U, T> BiConsumer<U, T> indexed(final IndexedBiConsumer<U, T> action) {
-            return Fn.indexeed(action);
+            return Fn.indeXed(action);
         }
     }
 

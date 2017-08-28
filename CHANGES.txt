@@ -1,4 +1,13 @@
 ﻿
+========Changes in 0.9.82=========================================================================
+
+1, Rename getCollExecutor/getCollection to collExecutor/collection in MongoDBExecutor.
+
+2, Rename Fn.indexeed to Fn.indeXed.
+
+3, Improvements and bug fix.
+
+
 ========Changes in 0.9.81=========================================================================
 
 1, Add toImmutableList/toImmutableSet/toImmutableMap to Stream

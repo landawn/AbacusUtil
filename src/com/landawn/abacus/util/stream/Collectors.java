@@ -35,7 +35,6 @@ import java.util.Comparator;
 import java.util.ConcurrentModificationException;
 import java.util.Deque;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -43,11 +42,9 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import com.landawn.abacus.DataSet;
@@ -63,6 +60,9 @@ import com.landawn.abacus.util.DoubleSummaryStatistics;
 import com.landawn.abacus.util.FloatList;
 import com.landawn.abacus.util.FloatSummaryStatistics;
 import com.landawn.abacus.util.Fn;
+import com.landawn.abacus.util.Fn.BiConsumers;
+import com.landawn.abacus.util.Fn.BinaryOperators;
+import com.landawn.abacus.util.Fn.Suppliers;
 import com.landawn.abacus.util.ImmutableList;
 import com.landawn.abacus.util.ImmutableMap;
 import com.landawn.abacus.util.ImmutableSet;
@@ -160,6 +160,716 @@ public final class Collectors {
     static final Set<Collector.Characteristics> CH_UNORDERED = Collections.unmodifiableSet(EnumSet.of(Collector.Characteristics.UNORDERED));
     static final Set<Collector.Characteristics> CH_NOID = Collections.emptySet();
 
+    // ==============================================================
+    static final Function<List<Object>, ImmutableList<Object>> ImmutableList_Finisher = new Function<List<Object>, ImmutableList<Object>>() {
+        @Override
+        public ImmutableList<Object> apply(List<Object> t) {
+            return ImmutableList.of(t);
+        }
+    };
+
+    static final Function<Set<Object>, ImmutableSet<Object>> ImmutableSet_Finisher = new Function<Set<Object>, ImmutableSet<Object>>() {
+        @Override
+        public ImmutableSet<Object> apply(Set<Object> t) {
+            return ImmutableSet.of(t);
+        }
+    };
+
+    static final Function<Map<Object, Object>, ImmutableMap<Object, Object>> ImmutableMap_Finisher = new Function<Map<Object, Object>, ImmutableMap<Object, Object>>() {
+        @Override
+        public ImmutableMap<Object, Object> apply(Map<Object, Object> t) {
+            return ImmutableMap.of(t);
+        }
+    };
+
+    static final BiConsumer<Multiset<Object>, Object> Multiset_Accumulator = new BiConsumer<Multiset<Object>, Object>() {
+        @Override
+        public void accept(Multiset<Object> c, Object t) {
+            c.add(t);
+        }
+    };
+
+    static final BinaryOperator<Multiset<Object>> Multiset_Combiner = new BinaryOperator<Multiset<Object>>() {
+        @Override
+        public Multiset<Object> apply(Multiset<Object> a, Multiset<Object> b) {
+            a.addAll(b);
+            return a;
+        }
+    };
+
+    static final BiConsumer<LongMultiset<Object>, Object> LongMultiset_Accumulator = new BiConsumer<LongMultiset<Object>, Object>() {
+        @Override
+        public void accept(LongMultiset<Object> c, Object t) {
+            c.add(t);
+        }
+    };
+
+    static final BinaryOperator<LongMultiset<Object>> LongMultiset_Combiner = new BinaryOperator<LongMultiset<Object>>() {
+        @Override
+        public LongMultiset<Object> apply(LongMultiset<Object> a, LongMultiset<Object> b) {
+            a.addAll(b);
+            return a;
+        }
+    };
+
+    static final BiConsumer<BooleanList, Boolean> BooleanList_Accumulator = new BiConsumer<BooleanList, Boolean>() {
+        @Override
+        public void accept(BooleanList c, Boolean t) {
+            c.add(t.booleanValue());
+        }
+    };
+
+    static final BinaryOperator<BooleanList> BooleanList_Combiner = new BinaryOperator<BooleanList>() {
+        @Override
+        public BooleanList apply(BooleanList a, BooleanList b) {
+            a.addAll(b);
+            return a;
+        }
+    };
+
+    static final Function<BooleanList, boolean[]> BooleanArray_Finisher = new Function<BooleanList, boolean[]>() {
+        @Override
+        public boolean[] apply(BooleanList t) {
+            return t.trimToSize().array();
+        }
+    };
+
+    static final BiConsumer<CharList, Character> CharList_Accumulator = new BiConsumer<CharList, Character>() {
+        @Override
+        public void accept(CharList c, Character t) {
+            c.add(t.charValue());
+        }
+    };
+
+    static final BinaryOperator<CharList> CharList_Combiner = new BinaryOperator<CharList>() {
+        @Override
+        public CharList apply(CharList a, CharList b) {
+            a.addAll(b);
+            return a;
+        }
+    };
+
+    static final Function<CharList, char[]> CharArray_Finisher = new Function<CharList, char[]>() {
+        @Override
+        public char[] apply(CharList t) {
+            return t.trimToSize().array();
+        }
+    };
+
+    static final BiConsumer<ByteList, Byte> ByteList_Accumulator = new BiConsumer<ByteList, Byte>() {
+        @Override
+        public void accept(ByteList c, Byte t) {
+            c.add(t.byteValue());
+        }
+    };
+
+    static final BinaryOperator<ByteList> ByteList_Combiner = new BinaryOperator<ByteList>() {
+        @Override
+        public ByteList apply(ByteList a, ByteList b) {
+            a.addAll(b);
+            return a;
+        }
+    };
+
+    static final Function<ByteList, byte[]> ByteArray_Finisher = new Function<ByteList, byte[]>() {
+        @Override
+        public byte[] apply(ByteList t) {
+            return t.trimToSize().array();
+        }
+    };
+
+    static final BiConsumer<ShortList, Short> ShortList_Accumulator = new BiConsumer<ShortList, Short>() {
+        @Override
+        public void accept(ShortList c, Short t) {
+            c.add(t.shortValue());
+        }
+    };
+
+    static final BinaryOperator<ShortList> ShortList_Combiner = new BinaryOperator<ShortList>() {
+        @Override
+        public ShortList apply(ShortList a, ShortList b) {
+            a.addAll(b);
+            return a;
+        }
+    };
+
+    static final Function<ShortList, short[]> ShortArray_Finisher = new Function<ShortList, short[]>() {
+        @Override
+        public short[] apply(ShortList t) {
+            return t.trimToSize().array();
+        }
+    };
+
+    static final BiConsumer<IntList, Integer> IntList_Accumulator = new BiConsumer<IntList, Integer>() {
+        @Override
+        public void accept(IntList c, Integer t) {
+            c.add(t.intValue());
+        }
+    };
+
+    static final BinaryOperator<IntList> IntList_Combiner = new BinaryOperator<IntList>() {
+        @Override
+        public IntList apply(IntList a, IntList b) {
+            a.addAll(b);
+            return a;
+        }
+    };
+
+    static final Function<IntList, int[]> IntArray_Finisher = new Function<IntList, int[]>() {
+        @Override
+        public int[] apply(IntList t) {
+            return t.trimToSize().array();
+        }
+    };
+
+    static final BiConsumer<LongList, Long> LongList_Accumulator = new BiConsumer<LongList, Long>() {
+        @Override
+        public void accept(LongList c, Long t) {
+            c.add(t.longValue());
+        }
+    };
+
+    static final BinaryOperator<LongList> LongList_Combiner = new BinaryOperator<LongList>() {
+        @Override
+        public LongList apply(LongList a, LongList b) {
+            a.addAll(b);
+            return a;
+        }
+    };
+
+    static final Function<LongList, long[]> LongArray_Finisher = new Function<LongList, long[]>() {
+        @Override
+        public long[] apply(LongList t) {
+            return t.trimToSize().array();
+        }
+    };
+
+    static final BiConsumer<FloatList, Float> FloatList_Accumulator = new BiConsumer<FloatList, Float>() {
+        @Override
+        public void accept(FloatList c, Float t) {
+            c.add(t.floatValue());
+        }
+    };
+
+    static final BinaryOperator<FloatList> FloatList_Combiner = new BinaryOperator<FloatList>() {
+        @Override
+        public FloatList apply(FloatList a, FloatList b) {
+            a.addAll(b);
+            return a;
+        }
+    };
+
+    static final Function<FloatList, float[]> FloatArray_Finisher = new Function<FloatList, float[]>() {
+        @Override
+        public float[] apply(FloatList t) {
+            return t.trimToSize().array();
+        }
+    };
+
+    static final BiConsumer<DoubleList, Double> DoubleList_Accumulator = new BiConsumer<DoubleList, Double>() {
+        @Override
+        public void accept(DoubleList c, Double t) {
+            c.add(t.doubleValue());
+        }
+    };
+
+    static final BinaryOperator<DoubleList> DoubleList_Combiner = new BinaryOperator<DoubleList>() {
+        @Override
+        public DoubleList apply(DoubleList a, DoubleList b) {
+            a.addAll(b);
+            return a;
+        }
+    };
+
+    static final Function<DoubleList, double[]> DoubleArray_Finisher = new Function<DoubleList, double[]>() {
+        @Override
+        public double[] apply(DoubleList t) {
+            return t.trimToSize().array();
+        }
+    };
+
+    static final BiConsumer<StringBuilder, CharSequence> StringBuilder_Accumulator = new BiConsumer<StringBuilder, CharSequence>() {
+        @Override
+        public void accept(StringBuilder a, CharSequence t) {
+            a.append(t);
+        }
+    };
+
+    static final BinaryOperator<StringBuilder> StringBuilder_Combiner = new BinaryOperator<StringBuilder>() {
+        @Override
+        public StringBuilder apply(StringBuilder a, StringBuilder b) {
+            a.append(b);
+            return a;
+        }
+    };
+
+    static final Function<StringBuilder, String> StringBuilder_Finisher = new Function<StringBuilder, String>() {
+        @Override
+        public String apply(StringBuilder a) {
+            return a.toString();
+        }
+    };
+
+    static final BiConsumer<Joiner, CharSequence> Joiner_Accumulator = new BiConsumer<Joiner, CharSequence>() {
+        @Override
+        public void accept(Joiner a, CharSequence t) {
+            a.add(t);
+        }
+    };
+
+    static final BinaryOperator<Joiner> Joiner_Combiner = new BinaryOperator<Joiner>() {
+        @Override
+        public Joiner apply(Joiner a, Joiner b) {
+            a.merge(b);
+            return a;
+        }
+    };
+
+    static final Function<Joiner, String> Joiner_Finisher = new Function<Joiner, String>() {
+        @Override
+        public String apply(Joiner a) {
+            return a.toString();
+        }
+    };
+
+    static final Function<Object, ? extends Long> Counting_Accumulator = new Function<Object, Long>() {
+        @Override
+        public Long apply(Object t) {
+            return 1L;
+        }
+    };
+
+    static final BinaryOperator<Long> Counting_Combiner = new BinaryOperator<Long>() {
+        @Override
+        public Long apply(Long a, Long b) {
+            return a.longValue() + b.longValue();
+        }
+    };
+
+    static final Function<Object, ? extends Integer> CountingInt_Accumulator = new Function<Object, Integer>() {
+        @Override
+        public Integer apply(Object t) {
+            return 1;
+        }
+    };
+
+    static final BinaryOperator<Integer> CountingInt_Combiner = new BinaryOperator<Integer>() {
+        @Override
+        public Integer apply(Integer a, Integer b) {
+            return a.intValue() + b.intValue();
+        }
+    };
+
+    static final Supplier<int[]> SummingInt_Supplier = new Supplier<int[]>() {
+        @Override
+        public int[] get() {
+            return new int[1];
+        }
+    };
+
+    static final BinaryOperator<int[]> SummingInt_Combiner = new BinaryOperator<int[]>() {
+        @Override
+        public int[] apply(int[] a, int[] b) {
+            a[0] += b[0];
+            return a;
+        }
+    };
+
+    static final Function<int[], Integer> SummingInt_Finisher = new Function<int[], Integer>() {
+        @Override
+        public Integer apply(int[] a) {
+            return a[0];
+        }
+    };
+
+    static final Supplier<int[]> SummingInt_Supplier_2 = new Supplier<int[]>() {
+        @Override
+        public int[] get() {
+            return new int[2];
+        }
+    };
+
+    static final BinaryOperator<int[]> SummingInt_Combiner_2 = new BinaryOperator<int[]>() {
+        @Override
+        public int[] apply(int[] a, int[] b) {
+            a[0] += b[0];
+            a[1] += b[1];
+            return a;
+        }
+    };
+
+    static final Function<int[], OptionalInt> SummingInt_Finisher_2 = new Function<int[], OptionalInt>() {
+        @Override
+        public OptionalInt apply(int[] a) {
+            return a[1] == 0 ? OptionalInt.empty() : OptionalInt.of(a[0]);
+        }
+    };
+
+    static final Supplier<long[]> SummingLong_Supplier = new Supplier<long[]>() {
+        @Override
+        public long[] get() {
+            return new long[1];
+        }
+    };
+
+    static final BinaryOperator<long[]> SummingLong_Combiner = new BinaryOperator<long[]>() {
+        @Override
+        public long[] apply(long[] a, long[] b) {
+            a[0] += b[0];
+            return a;
+        }
+    };
+
+    static final Function<long[], Long> SummingLong_Finisher = new Function<long[], Long>() {
+        @Override
+        public Long apply(long[] a) {
+            return a[0];
+        }
+    };
+
+    static final Supplier<long[]> SummingLong_Supplier_2 = new Supplier<long[]>() {
+        @Override
+        public long[] get() {
+            return new long[2];
+        }
+    };
+
+    static final BinaryOperator<long[]> SummingLong_Combiner_2 = new BinaryOperator<long[]>() {
+        @Override
+        public long[] apply(long[] a, long[] b) {
+            a[0] += b[0];
+            a[1] += b[1];
+            return a;
+        }
+    };
+
+    static final Function<long[], OptionalLong> SummingLong_Finisher_2 = new Function<long[], OptionalLong>() {
+        @Override
+        public OptionalLong apply(long[] a) {
+            return a[1] == 0 ? OptionalLong.empty() : OptionalLong.of(a[0]);
+        }
+    };
+
+    static final Supplier<double[]> SummingDouble_Supplier = new Supplier<double[]>() {
+        @Override
+        public double[] get() {
+            return new double[3];
+        }
+    };
+
+    static final BinaryOperator<double[]> SummingDouble_Combiner = new BinaryOperator<double[]>() {
+        @Override
+        public double[] apply(double[] a, double[] b) {
+            sumWithCompensation(a, b[0]);
+            a[2] += b[2];
+            return sumWithCompensation(a, b[1]);
+        }
+    };
+
+    static final Function<double[], Double> SummingDouble_Finisher = new Function<double[], Double>() {
+        @Override
+        public Double apply(double[] a) {
+            return computeFinalSum(a);
+        }
+    };
+
+    static final Supplier<double[]> SummingDouble_Supplier_2 = new Supplier<double[]>() {
+        @Override
+        public double[] get() {
+            return new double[4];
+        }
+    };
+
+    static final BinaryOperator<double[]> SummingDouble_Combiner_2 = new BinaryOperator<double[]>() {
+        @Override
+        public double[] apply(double[] a, double[] b) {
+            sumWithCompensation(a, b[0]);
+            a[2] += b[2];
+            a[3] += b[3];
+            return sumWithCompensation(a, b[1]);
+        }
+    };
+
+    static final Function<double[], OptionalDouble> SummingDouble_Finisher_2 = new Function<double[], OptionalDouble>() {
+        @Override
+        public OptionalDouble apply(double[] a) {
+            return a[3] == 0 ? OptionalDouble.empty() : OptionalDouble.of(computeFinalSum(a));
+        }
+    };
+
+    static final Supplier<long[]> AveragingInt_Supplier = new Supplier<long[]>() {
+        @Override
+        public long[] get() {
+            return new long[2];
+        }
+    };
+
+    static final BinaryOperator<long[]> AveragingInt_Combiner = new BinaryOperator<long[]>() {
+        @Override
+        public long[] apply(long[] a, long[] b) {
+            a[0] += b[0];
+            a[1] += b[1];
+            return a;
+        }
+    };
+
+    static final Function<long[], Double> AveragingInt_Finisher = new Function<long[], Double>() {
+        @Override
+        public Double apply(long[] a) {
+            return a[1] == 0 ? 0d : (double) a[0] / a[1];
+        }
+    };
+
+    static final Function<long[], OptionalDouble> AveragingInt_Finisher_2 = new Function<long[], OptionalDouble>() {
+        @Override
+        public OptionalDouble apply(long[] a) {
+            if (a[1] == 0) {
+                return OptionalDouble.empty();
+            } else {
+                return OptionalDouble.of((double) a[0] / a[1]);
+            }
+        }
+    };
+
+    static final Supplier<long[]> AveragingLong_Supplier = new Supplier<long[]>() {
+        @Override
+        public long[] get() {
+            return new long[2];
+        }
+    };
+
+    static final BinaryOperator<long[]> AveragingLong_Combiner = new BinaryOperator<long[]>() {
+        @Override
+        public long[] apply(long[] a, long[] b) {
+            a[0] += b[0];
+            a[1] += b[1];
+            return a;
+        }
+    };
+
+    static final Function<long[], Double> AveragingLong_Finisher = new Function<long[], Double>() {
+        @Override
+        public Double apply(long[] a) {
+            return a[1] == 0 ? 0d : (double) a[0] / a[1];
+        }
+    };
+
+    static final Function<long[], OptionalDouble> AveragingLong_Finisher_2 = new Function<long[], OptionalDouble>() {
+        @Override
+        public OptionalDouble apply(long[] a) {
+            if (a[1] == 0) {
+                return OptionalDouble.empty();
+            } else {
+                return OptionalDouble.of((double) a[0] / a[1]);
+            }
+        }
+    };
+
+    static final Supplier<double[]> AveragingDouble_Supplier = new Supplier<double[]>() {
+        @Override
+        public double[] get() {
+            return new double[4];
+        }
+    };
+
+    static final BinaryOperator<double[]> AveragingDouble_Combiner = new BinaryOperator<double[]>() {
+        @Override
+        public double[] apply(double[] a, double[] b) {
+            sumWithCompensation(a, b[0]);
+            sumWithCompensation(a, b[1]);
+            a[2] += b[2];
+            a[3] += b[3];
+            return a;
+        }
+    };
+
+    static final Function<double[], Double> AveragingDouble_Finisher = new Function<double[], Double>() {
+        @Override
+        public Double apply(double[] a) {
+            return a[2] == 0 ? 0d : computeFinalSum(a) / a[2];
+        }
+    };
+
+    static final Function<double[], OptionalDouble> AveragingDouble_Finisher_2 = new Function<double[], OptionalDouble>() {
+        @Override
+        public OptionalDouble apply(double[] a) {
+            if (a[2] == 0) {
+                return OptionalDouble.empty();
+            } else {
+                return OptionalDouble.of(computeFinalSum(a) / a[2]);
+            }
+        }
+    };
+
+    static final Supplier<CharSummaryStatistics> SummarizingChar_Supplier = new Supplier<CharSummaryStatistics>() {
+        @Override
+        public CharSummaryStatistics get() {
+            return new CharSummaryStatistics();
+        }
+    };
+
+    static final BinaryOperator<CharSummaryStatistics> SummarizingChar_Combiner = new BinaryOperator<CharSummaryStatistics>() {
+        @Override
+        public CharSummaryStatistics apply(CharSummaryStatistics a, CharSummaryStatistics b) {
+            a.combine(b);
+            return a;
+        }
+    };
+
+    static final Supplier<ByteSummaryStatistics> SummarizingByte_Supplier = new Supplier<ByteSummaryStatistics>() {
+        @Override
+        public ByteSummaryStatistics get() {
+            return new ByteSummaryStatistics();
+        }
+    };
+
+    static final BinaryOperator<ByteSummaryStatistics> SummarizingByte_Combiner = new BinaryOperator<ByteSummaryStatistics>() {
+        @Override
+        public ByteSummaryStatistics apply(ByteSummaryStatistics a, ByteSummaryStatistics b) {
+            a.combine(b);
+            return a;
+        }
+    };
+
+    static final Supplier<ShortSummaryStatistics> SummarizingShort_Supplier = new Supplier<ShortSummaryStatistics>() {
+        @Override
+        public ShortSummaryStatistics get() {
+            return new ShortSummaryStatistics();
+        }
+    };
+
+    static final BinaryOperator<ShortSummaryStatistics> SummarizingShort_Combiner = new BinaryOperator<ShortSummaryStatistics>() {
+        @Override
+        public ShortSummaryStatistics apply(ShortSummaryStatistics a, ShortSummaryStatistics b) {
+            a.combine(b);
+            return a;
+        }
+    };
+
+    static final Supplier<IntSummaryStatistics> SummarizingInt_Supplier = new Supplier<IntSummaryStatistics>() {
+        @Override
+        public IntSummaryStatistics get() {
+            return new IntSummaryStatistics();
+        }
+    };
+
+    static final BinaryOperator<IntSummaryStatistics> SummarizingInt_Combiner = new BinaryOperator<IntSummaryStatistics>() {
+        @Override
+        public IntSummaryStatistics apply(IntSummaryStatistics a, IntSummaryStatistics b) {
+            a.combine(b);
+            return a;
+        }
+    };
+
+    static final Supplier<LongSummaryStatistics> SummarizingLong_Supplier = new Supplier<LongSummaryStatistics>() {
+        @Override
+        public LongSummaryStatistics get() {
+            return new LongSummaryStatistics();
+        }
+    };
+
+    static final BinaryOperator<LongSummaryStatistics> SummarizingLong_Combiner = new BinaryOperator<LongSummaryStatistics>() {
+        @Override
+        public LongSummaryStatistics apply(LongSummaryStatistics a, LongSummaryStatistics b) {
+            a.combine(b);
+            return a;
+        }
+    };
+
+    static final Supplier<FloatSummaryStatistics> SummarizingFloat_Supplier = new Supplier<FloatSummaryStatistics>() {
+        @Override
+        public FloatSummaryStatistics get() {
+            return new FloatSummaryStatistics();
+        }
+    };
+
+    static final BinaryOperator<FloatSummaryStatistics> SummarizingFloat_Combiner = new BinaryOperator<FloatSummaryStatistics>() {
+        @Override
+        public FloatSummaryStatistics apply(FloatSummaryStatistics a, FloatSummaryStatistics b) {
+            a.combine(b);
+            return a;
+        }
+    };
+
+    static final Supplier<DoubleSummaryStatistics> SummarizingDouble_Supplier = new Supplier<DoubleSummaryStatistics>() {
+        @Override
+        public DoubleSummaryStatistics get() {
+            return new DoubleSummaryStatistics();
+        }
+    };
+
+    static final BinaryOperator<DoubleSummaryStatistics> SummarizingDouble_Combiner = new BinaryOperator<DoubleSummaryStatistics>() {
+        @Override
+        public DoubleSummaryStatistics apply(DoubleSummaryStatistics a, DoubleSummaryStatistics b) {
+            a.combine(b);
+            return a;
+        }
+    };
+
+    static final Function<Object[], Object> Reducing_Finisher_0 = new Function<Object[], Object>() {
+        @Override
+        public Object apply(Object[] a) {
+            return a[0];
+        }
+    };
+
+    static final BiConsumer<OptionalBox<Object>, Object> Reducing_Accumulator = new BiConsumer<OptionalBox<Object>, Object>() {
+        @Override
+        public void accept(OptionalBox<Object> a, Object t) {
+            a.accept(t);
+        }
+    };
+
+    static final BinaryOperator<OptionalBox<Object>> Reducing_Combiner = new BinaryOperator<OptionalBox<Object>>() {
+        @Override
+        public OptionalBox<Object> apply(OptionalBox<Object> a, OptionalBox<Object> b) {
+            if (b.present) {
+                a.accept(b.value);
+            }
+
+            return a;
+        }
+    };
+
+    static final Function<OptionalBox<Object>, NullabLe<Object>> Reducing_Finisher = new Function<OptionalBox<Object>, NullabLe<Object>>() {
+        @Override
+        public NullabLe<Object> apply(OptionalBox<Object> a) {
+            return a.present ? NullabLe.of(a.value) : (NullabLe<Object>) NullabLe.empty();
+        }
+    };
+
+    static final BiConsumer<OptionalBox2<Object, Object>, Object> Reducing_Accumulator_2 = new BiConsumer<OptionalBox2<Object, Object>, Object>() {
+        @Override
+        public void accept(OptionalBox2<Object, Object> a, Object t) {
+            a.accept(t);
+        }
+    };
+
+    static final BinaryOperator<OptionalBox2<Object, Object>> Reducing_Combiner_2 = new BinaryOperator<OptionalBox2<Object, Object>>() {
+        @Override
+        public OptionalBox2<Object, Object> apply(OptionalBox2<Object, Object> a, OptionalBox2<Object, Object> b) {
+            if (b.present) {
+                if (a.present) {
+                    a.value = a.op.apply(a.value, b.value);
+                } else {
+                    a.value = b.value;
+                    a.present = true;
+                }
+            }
+
+            return a;
+        }
+    };
+
+    static final Function<OptionalBox2<Object, Object>, NullabLe<Object>> Reducing_Finisher_2 = new Function<OptionalBox2<Object, Object>, NullabLe<Object>>() {
+        @Override
+        public NullabLe<Object> apply(OptionalBox2<Object, Object> a) {
+            return a.present ? NullabLe.of(a.value) : (NullabLe<Object>) NullabLe.empty();
+        }
+    };
+
+    // ==============================================================
+
     private Collectors() {
     }
 
@@ -235,20 +945,8 @@ public final class Collectors {
      * {@code Collection}, in encounter order
      */
     public static <T, C extends Collection<T>> Collector<T, ?, C> toCollection(Supplier<C> collectionFactory) {
-        final BiConsumer<C, T> accumulator = new BiConsumer<C, T>() {
-            @Override
-            public void accept(C c, T t) {
-                c.add(t);
-            }
-        };
-
-        final BinaryOperator<C> combiner = new BinaryOperator<C>() {
-            @Override
-            public C apply(C a, C b) {
-                a.addAll(b);
-                return a;
-            }
-        };
+        final BiConsumer<C, T> accumulator = BiConsumers.ofAdd();
+        final BinaryOperator<C> combiner = BinaryOperators.<T, C> ofAddAll();
 
         return new CollectorImpl<>(collectionFactory, accumulator, combiner, collectionFactory.get() instanceof Set ? CH_UNORDERED_ID : CH_ID);
     }
@@ -264,36 +962,21 @@ public final class Collectors {
      * {@code List}, in encounter order
      */
     public static <T> Collector<T, ?, List<T>> toList() {
-        final Supplier<List<T>> supplier = new Supplier<List<T>>() {
-            @Override
-            public List<T> get() {
-                return new ArrayList<T>();
-            }
-        };
+        final Supplier<List<T>> supplier = Suppliers.<T> ofList();
 
         return toCollection(supplier);
     }
 
     public static <T> Collector<T, ?, LinkedList<T>> toLinkedList() {
-        final Supplier<LinkedList<T>> supplier = new Supplier<LinkedList<T>>() {
-            @Override
-            public LinkedList<T> get() {
-                return new LinkedList<T>();
-            }
-        };
+        final Supplier<LinkedList<T>> supplier = Suppliers.<T> ofLinkedList();
 
         return toCollection(supplier);
     }
 
     public static <T> Collector<T, ?, ImmutableList<T>> toImmutableList() {
         final Collector<T, ?, List<T>> downstream = toList();
-
-        final Function<List<T>, ImmutableList<T>> finisher = new Function<List<T>, ImmutableList<T>>() {
-            @Override
-            public ImmutableList<T> apply(List<T> t) {
-                return ImmutableList.of(t);
-            }
-        };
+        @SuppressWarnings("rawtypes")
+        final Function<List<T>, ImmutableList<T>> finisher = (Function) ImmutableList_Finisher;
 
         return collectingAndThen(downstream, finisher);
     }
@@ -313,58 +996,33 @@ public final class Collectors {
      * {@code Set}
      */
     public static <T> Collector<T, ?, Set<T>> toSet() {
-        final Supplier<Set<T>> supplier = new Supplier<Set<T>>() {
-            @Override
-            public Set<T> get() {
-                return new HashSet<T>();
-            }
-        };
+        final Supplier<Set<T>> supplier = Suppliers.<T> ofSet();
 
         return toCollection(supplier);
     }
 
     public static <T> Collector<T, ?, LinkedHashSet<T>> toLinkedHashSet() {
-        final Supplier<LinkedHashSet<T>> supplier = new Supplier<LinkedHashSet<T>>() {
-            @Override
-            public LinkedHashSet<T> get() {
-                return new LinkedHashSet<T>();
-            }
-        };
+        final Supplier<LinkedHashSet<T>> supplier = Suppliers.<T> ofLinkedHashSet();
 
         return toCollection(supplier);
     }
 
     public static <T> Collector<T, ?, ImmutableSet<T>> toImmutableSet() {
         final Collector<T, ?, Set<T>> downstream = toSet();
-
-        final Function<Set<T>, ImmutableSet<T>> finisher = new Function<Set<T>, ImmutableSet<T>>() {
-            @Override
-            public ImmutableSet<T> apply(Set<T> t) {
-                return ImmutableSet.of(t);
-            }
-        };
+        @SuppressWarnings("rawtypes")
+        final Function<Set<T>, ImmutableSet<T>> finisher = (Function) ImmutableSet_Finisher;
 
         return collectingAndThen(downstream, finisher);
     }
 
     public static <T> Collector<T, ?, Queue<T>> toQueue() {
-        final Supplier<Queue<T>> supplier = new Supplier<Queue<T>>() {
-            @Override
-            public Queue<T> get() {
-                return new LinkedList<T>();
-            }
-        };
+        final Supplier<Queue<T>> supplier = Suppliers.<T> ofQueue();
 
         return toCollection(supplier);
     }
 
     public static <T> Collector<T, ?, Deque<T>> toDeque() {
-        final Supplier<Deque<T>> supplier = new Supplier<Deque<T>>() {
-            @Override
-            public Deque<T> get() {
-                return new ArrayDeque<T>();
-            }
-        };
+        final Supplier<Deque<T>> supplier = Suppliers.<T> ofDeque();
 
         return toCollection(supplier);
     }
@@ -430,61 +1088,29 @@ public final class Collectors {
     }
 
     public static <T> Collector<T, ?, Multiset<T>> toMultiset() {
-        final Supplier<Multiset<T>> supplier = new Supplier<Multiset<T>>() {
-            @Override
-            public Multiset<T> get() {
-                return new Multiset<T>();
-            }
-        };
+        final Supplier<Multiset<T>> supplier = Suppliers.ofMultiset();
 
         return toMultiset(supplier);
     }
 
+    @SuppressWarnings("rawtypes")
     public static <T> Collector<T, ?, Multiset<T>> toMultiset(Supplier<Multiset<T>> supplier) {
-        final BiConsumer<Multiset<T>, T> accumulator = new BiConsumer<Multiset<T>, T>() {
-            @Override
-            public void accept(Multiset<T> c, T t) {
-                c.add(t);
-            }
-        };
-
-        final BinaryOperator<Multiset<T>> combiner = new BinaryOperator<Multiset<T>>() {
-            @Override
-            public Multiset<T> apply(Multiset<T> a, Multiset<T> b) {
-                a.addAll(b);
-                return a;
-            }
-        };
+        final BiConsumer<Multiset<T>, T> accumulator = (BiConsumer) Multiset_Accumulator;
+        final BinaryOperator<Multiset<T>> combiner = (BinaryOperator) Multiset_Combiner;
 
         return new CollectorImpl<>(supplier, accumulator, combiner, CH_UNORDERED_ID);
     }
 
     public static <T> Collector<T, ?, LongMultiset<T>> toLongMultiset() {
-        final Supplier<LongMultiset<T>> supplier = new Supplier<LongMultiset<T>>() {
-            @Override
-            public LongMultiset<T> get() {
-                return new LongMultiset<T>();
-            }
-        };
+        final Supplier<LongMultiset<T>> supplier = Suppliers.ofLongMultiset();
 
         return toLongMultiset(supplier);
     }
 
+    @SuppressWarnings("rawtypes")
     public static <T> Collector<T, ?, LongMultiset<T>> toLongMultiset(Supplier<LongMultiset<T>> supplier) {
-        final BiConsumer<LongMultiset<T>, T> accumulator = new BiConsumer<LongMultiset<T>, T>() {
-            @Override
-            public void accept(LongMultiset<T> c, T t) {
-                c.add(t);
-            }
-        };
-
-        final BinaryOperator<LongMultiset<T>> combiner = new BinaryOperator<LongMultiset<T>>() {
-            @Override
-            public LongMultiset<T> apply(LongMultiset<T> a, LongMultiset<T> b) {
-                a.addAll(b);
-                return a;
-            }
-        };
+        final BiConsumer<LongMultiset<T>, T> accumulator = (BiConsumer) LongMultiset_Accumulator;
+        final BinaryOperator<LongMultiset<T>> combiner = (BinaryOperator) LongMultiset_Combiner;
 
         return new CollectorImpl<>(supplier, accumulator, combiner, CH_UNORDERED_ID);
     }
@@ -494,28 +1120,10 @@ public final class Collectors {
     }
 
     public static <T, A> Collector<T, ?, A[]> toArray(final Supplier<A[]> arraySupplier) {
-        final Supplier<List<A>> supplier = new Supplier<List<A>>() {
-            @Override
-            public List<A> get() {
-                return new ArrayList<A>();
-            }
-        };
-
-        final BiConsumer<List<A>, T> accumulator = new BiConsumer<List<A>, T>() {
-            @Override
-            public void accept(List<A> c, T t) {
-                c.add((A) t);
-            }
-        };
-
-        final BinaryOperator<List<A>> combiner = new BinaryOperator<List<A>>() {
-            @Override
-            public List<A> apply(List<A> a, List<A> b) {
-                a.addAll(b);
-                return a;
-            }
-        };
-
+        final Supplier<List<A>> supplier = Suppliers.<A> ofList();
+        @SuppressWarnings("rawtypes")
+        final BiConsumer<List<A>, T> accumulator = (BiConsumer) BiConsumers.ofAdd();
+        final BinaryOperator<List<A>> combiner = BinaryOperators.ofAddAll();
         final Function<List<A>, A[]> finisher = new Function<List<A>, A[]>() {
             @Override
             public A[] apply(List<A> t) {
@@ -533,569 +1141,137 @@ public final class Collectors {
     }
 
     public static Collector<Boolean, ?, BooleanList> toBooleanList() {
-        final Supplier<BooleanList> supplier = new Supplier<BooleanList>() {
-            @Override
-            public BooleanList get() {
-                return new BooleanList();
-            }
-        };
-
-        final BiConsumer<BooleanList, Boolean> accumulator = new BiConsumer<BooleanList, Boolean>() {
-            @Override
-            public void accept(BooleanList c, Boolean t) {
-                c.add(t);
-            }
-        };
-
-        final BinaryOperator<BooleanList> combiner = new BinaryOperator<BooleanList>() {
-            @Override
-            public BooleanList apply(BooleanList a, BooleanList b) {
-                a.addAll(b);
-                return a;
-            }
-        };
+        final Supplier<BooleanList> supplier = Suppliers.ofBooleanList();
+        final BiConsumer<BooleanList, Boolean> accumulator = BooleanList_Accumulator;
+        final BinaryOperator<BooleanList> combiner = BooleanList_Combiner;
 
         return new CollectorImpl<>(supplier, accumulator, combiner, CH_ID);
     }
 
     public static Collector<Boolean, ?, boolean[]> toBooleanArray() {
-        return toBooleanArray(N.EMPTY_BOOLEAN_ARRAY, 0);
-    }
-
-    public static Collector<Boolean, ?, boolean[]> toBooleanArray(final Supplier<boolean[]> supplier) {
-        return toBooleanArray(supplier.get(), 0);
-    }
-
-    static Collector<Boolean, ?, boolean[]> toBooleanArray(final boolean[] array, final int fromIndex) {
-        if (fromIndex < 0 || fromIndex > array.length) {
-            throw new IllegalArgumentException("'fromIndex' can't be negative or bigger than array's length");
-        }
-
-        final Supplier<BooleanList> supplier = new Supplier<BooleanList>() {
-            @Override
-            public BooleanList get() {
-                return new BooleanList(array, fromIndex);
-            }
-        };
-
-        final BiConsumer<BooleanList, Boolean> accumulator = new BiConsumer<BooleanList, Boolean>() {
-            @Override
-            public void accept(BooleanList c, Boolean t) {
-                c.add(t);
-            }
-        };
-
-        final BinaryOperator<BooleanList> combiner = new BinaryOperator<BooleanList>() {
-            @Override
-            public BooleanList apply(BooleanList a, BooleanList b) {
-                a.addAll(b);
-                return a;
-            }
-        };
-
-        final Function<BooleanList, boolean[]> finisher = new Function<BooleanList, boolean[]>() {
-            @Override
-            public boolean[] apply(BooleanList t) {
-                return t.array() == array ? array : t.trimToSize().array();
-            }
-        };
+        final Supplier<BooleanList> supplier = Suppliers.ofBooleanList();
+        final BiConsumer<BooleanList, Boolean> accumulator = BooleanList_Accumulator;
+        final BinaryOperator<BooleanList> combiner = BooleanList_Combiner;
+        final Function<BooleanList, boolean[]> finisher = BooleanArray_Finisher;
 
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
     }
 
     public static Collector<Character, ?, CharList> toCharList() {
-        final Supplier<CharList> supplier = new Supplier<CharList>() {
-            @Override
-            public CharList get() {
-                return new CharList();
-            }
-        };
-
-        final BiConsumer<CharList, Character> accumulator = new BiConsumer<CharList, Character>() {
-            @Override
-            public void accept(CharList c, Character t) {
-                c.add(t);
-            }
-        };
-
-        final BinaryOperator<CharList> combiner = new BinaryOperator<CharList>() {
-            @Override
-            public CharList apply(CharList a, CharList b) {
-                a.addAll(b);
-                return a;
-            }
-        };
+        final Supplier<CharList> supplier = Suppliers.ofCharList();
+        final BiConsumer<CharList, Character> accumulator = CharList_Accumulator;
+        final BinaryOperator<CharList> combiner = CharList_Combiner;
 
         return new CollectorImpl<>(supplier, accumulator, combiner, CH_ID);
     }
 
     public static Collector<Character, ?, char[]> toCharArray() {
-        return toCharArray(N.EMPTY_CHAR_ARRAY, 0);
-    }
-
-    public static Collector<Character, ?, char[]> toCharArray(final Supplier<char[]> supplier) {
-        return toCharArray(supplier.get(), 0);
-    }
-
-    static Collector<Character, ?, char[]> toCharArray(final char[] array, final int fromIndex) {
-        if (fromIndex < 0 || fromIndex > array.length) {
-            throw new IllegalArgumentException("'fromIndex' can't be negative or bigger than array's length");
-        }
-
-        final Supplier<CharList> supplier = new Supplier<CharList>() {
-            @Override
-            public CharList get() {
-                return new CharList(array, fromIndex);
-            }
-        };
-
-        final BiConsumer<CharList, Character> accumulator = new BiConsumer<CharList, Character>() {
-            @Override
-            public void accept(CharList c, Character t) {
-                c.add(t);
-            }
-        };
-
-        final BinaryOperator<CharList> combiner = new BinaryOperator<CharList>() {
-            @Override
-            public CharList apply(CharList a, CharList b) {
-                a.addAll(b);
-                return a;
-            }
-        };
-
-        final Function<CharList, char[]> finisher = new Function<CharList, char[]>() {
-            @Override
-            public char[] apply(CharList t) {
-                return t.array() == array ? array : t.trimToSize().array();
-            }
-        };
+        final Supplier<CharList> supplier = Suppliers.ofCharList();
+        final BiConsumer<CharList, Character> accumulator = CharList_Accumulator;
+        final BinaryOperator<CharList> combiner = CharList_Combiner;
+        final Function<CharList, char[]> finisher = CharArray_Finisher;
 
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
     }
 
-    public static <T extends Number> Collector<T, ?, ByteList> toByteList() {
-        final Supplier<ByteList> supplier = new Supplier<ByteList>() {
-            @Override
-            public ByteList get() {
-                return new ByteList();
-            }
-        };
-
-        final BiConsumer<ByteList, T> accumulator = new BiConsumer<ByteList, T>() {
-            @Override
-            public void accept(ByteList c, T t) {
-                c.add(t.byteValue());
-            }
-        };
-
-        final BinaryOperator<ByteList> combiner = new BinaryOperator<ByteList>() {
-            @Override
-            public ByteList apply(ByteList a, ByteList b) {
-                a.addAll(b);
-                return a;
-            }
-        };
+    public static Collector<Byte, ?, ByteList> toByteList() {
+        final Supplier<ByteList> supplier = Suppliers.ofByteList();
+        final BiConsumer<ByteList, Byte> accumulator = ByteList_Accumulator;
+        final BinaryOperator<ByteList> combiner = ByteList_Combiner;
 
         return new CollectorImpl<>(supplier, accumulator, combiner, CH_ID);
     }
 
-    public static <T extends Number> Collector<T, ?, byte[]> toByteArray() {
-        return toByteArray(N.EMPTY_BYTE_ARRAY, 0);
-    }
-
-    public static <T extends Number> Collector<T, ?, byte[]> toByteArray(final Supplier<byte[]> supplier) {
-        return toByteArray(supplier.get(), 0);
-    }
-
-    static <T extends Number> Collector<T, ?, byte[]> toByteArray(final byte[] array, final int fromIndex) {
-        if (fromIndex < 0 || fromIndex > array.length) {
-            throw new IllegalArgumentException("'fromIndex' can't be negative or bigger than array's length");
-        }
-
-        final Supplier<ByteList> supplier = new Supplier<ByteList>() {
-            @Override
-            public ByteList get() {
-                return new ByteList(array, fromIndex);
-            }
-        };
-
-        final BiConsumer<ByteList, T> accumulator = new BiConsumer<ByteList, T>() {
-            @Override
-            public void accept(ByteList c, T t) {
-                c.add(t.byteValue());
-            }
-        };
-
-        final BinaryOperator<ByteList> combiner = new BinaryOperator<ByteList>() {
-            @Override
-            public ByteList apply(ByteList a, ByteList b) {
-                a.addAll(b);
-                return a;
-            }
-        };
-
-        final Function<ByteList, byte[]> finisher = new Function<ByteList, byte[]>() {
-            @Override
-            public byte[] apply(ByteList t) {
-                return t.array() == array ? array : t.trimToSize().array();
-            }
-        };
+    public static Collector<Byte, ?, byte[]> toByteArray() {
+        final Supplier<ByteList> supplier = Suppliers.ofByteList();
+        final BiConsumer<ByteList, Byte> accumulator = ByteList_Accumulator;
+        final BinaryOperator<ByteList> combiner = ByteList_Combiner;
+        final Function<ByteList, byte[]> finisher = ByteArray_Finisher;
 
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
     }
 
-    public static <T extends Number> Collector<T, ?, ShortList> toShortList() {
-        final Supplier<ShortList> supplier = new Supplier<ShortList>() {
-            @Override
-            public ShortList get() {
-                return new ShortList();
-            }
-        };
-
-        final BiConsumer<ShortList, T> accumulator = new BiConsumer<ShortList, T>() {
-            @Override
-            public void accept(ShortList c, T t) {
-                c.add(t.shortValue());
-            }
-        };
-
-        final BinaryOperator<ShortList> combiner = new BinaryOperator<ShortList>() {
-            @Override
-            public ShortList apply(ShortList a, ShortList b) {
-                a.addAll(b);
-                return a;
-            }
-        };
+    public static Collector<Short, ?, ShortList> toShortList() {
+        final Supplier<ShortList> supplier = Suppliers.ofShortList();
+        final BiConsumer<ShortList, Short> accumulator = ShortList_Accumulator;
+        final BinaryOperator<ShortList> combiner = ShortList_Combiner;
 
         return new CollectorImpl<>(supplier, accumulator, combiner, CH_ID);
     }
 
-    public static <T extends Number> Collector<T, ?, short[]> toShortArray() {
-        return toShortArray(N.EMPTY_SHORT_ARRAY, 0);
-    }
-
-    public static <T extends Number> Collector<T, ?, short[]> toShortArray(final Supplier<short[]> supplier) {
-        return toShortArray(supplier.get(), 0);
-    }
-
-    static <T extends Number> Collector<T, ?, short[]> toShortArray(final short[] array, final int fromIndex) {
-        if (fromIndex < 0 || fromIndex > array.length) {
-            throw new IllegalArgumentException("'fromIndex' can't be negative or bigger than array's length");
-        }
-
-        final Supplier<ShortList> supplier = new Supplier<ShortList>() {
-            @Override
-            public ShortList get() {
-                return new ShortList(array, fromIndex);
-            }
-        };
-
-        final BiConsumer<ShortList, T> accumulator = new BiConsumer<ShortList, T>() {
-            @Override
-            public void accept(ShortList c, T t) {
-                c.add(t.shortValue());
-            }
-        };
-
-        final BinaryOperator<ShortList> combiner = new BinaryOperator<ShortList>() {
-            @Override
-            public ShortList apply(ShortList a, ShortList b) {
-                a.addAll(b);
-                return a;
-            }
-        };
-
-        final Function<ShortList, short[]> finisher = new Function<ShortList, short[]>() {
-            @Override
-            public short[] apply(ShortList t) {
-                return t.array() == array ? array : t.trimToSize().array();
-            }
-        };
+    public static Collector<Short, ?, short[]> toShortArray() {
+        final Supplier<ShortList> supplier = Suppliers.ofShortList();
+        final BiConsumer<ShortList, Short> accumulator = ShortList_Accumulator;
+        final BinaryOperator<ShortList> combiner = ShortList_Combiner;
+        final Function<ShortList, short[]> finisher = ShortArray_Finisher;
 
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
     }
 
-    public static <T extends Number> Collector<T, ?, IntList> toIntList() {
-        final Supplier<IntList> supplier = new Supplier<IntList>() {
-            @Override
-            public IntList get() {
-                return new IntList();
-            }
-        };
-
-        final BiConsumer<IntList, T> accumulator = new BiConsumer<IntList, T>() {
-            @Override
-            public void accept(IntList c, T t) {
-                c.add(t.intValue());
-            }
-        };
-
-        final BinaryOperator<IntList> combiner = new BinaryOperator<IntList>() {
-            @Override
-            public IntList apply(IntList a, IntList b) {
-                a.addAll(b);
-                return a;
-            }
-        };
+    public static Collector<Integer, ?, IntList> toIntList() {
+        final Supplier<IntList> supplier = Suppliers.ofIntList();
+        final BiConsumer<IntList, Integer> accumulator = IntList_Accumulator;
+        final BinaryOperator<IntList> combiner = IntList_Combiner;
 
         return new CollectorImpl<>(supplier, accumulator, combiner, CH_ID);
     }
 
-    public static <T extends Number> Collector<T, ?, int[]> toIntArray() {
-        return toIntArray(N.EMPTY_INT_ARRAY, 0);
-    }
-
-    public static <T extends Number> Collector<T, ?, int[]> toIntArray(final Supplier<int[]> supplier) {
-        return toIntArray(supplier.get(), 0);
-    }
-
-    static <T extends Number> Collector<T, ?, int[]> toIntArray(final int[] array, final int fromIndex) {
-        if (fromIndex < 0 || fromIndex > array.length) {
-            throw new IllegalArgumentException("'fromIndex' can't be negative or bigger than array's length");
-        }
-
-        final Supplier<IntList> supplier = new Supplier<IntList>() {
-            @Override
-            public IntList get() {
-                return new IntList(array, fromIndex);
-            }
-        };
-
-        final BiConsumer<IntList, T> accumulator = new BiConsumer<IntList, T>() {
-            @Override
-            public void accept(IntList c, T t) {
-                c.add(t.intValue());
-            }
-        };
-
-        final BinaryOperator<IntList> combiner = new BinaryOperator<IntList>() {
-            @Override
-            public IntList apply(IntList a, IntList b) {
-                a.addAll(b);
-                return a;
-            }
-        };
-
-        final Function<IntList, int[]> finisher = new Function<IntList, int[]>() {
-            @Override
-            public int[] apply(IntList t) {
-                return t.array() == array ? array : t.trimToSize().array();
-            }
-        };
+    public static Collector<Integer, ?, int[]> toIntArray() {
+        final Supplier<IntList> supplier = Suppliers.ofIntList();
+        final BiConsumer<IntList, Integer> accumulator = IntList_Accumulator;
+        final BinaryOperator<IntList> combiner = IntList_Combiner;
+        final Function<IntList, int[]> finisher = IntArray_Finisher;
 
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
     }
 
-    public static <T extends Number> Collector<T, ?, LongList> toLongList() {
-        final Supplier<LongList> supplier = new Supplier<LongList>() {
-            @Override
-            public LongList get() {
-                return new LongList();
-            }
-        };
-
-        final BiConsumer<LongList, T> accumulator = new BiConsumer<LongList, T>() {
-            @Override
-            public void accept(LongList c, T t) {
-                c.add(t.longValue());
-            }
-        };
-
-        final BinaryOperator<LongList> combiner = new BinaryOperator<LongList>() {
-            @Override
-            public LongList apply(LongList a, LongList b) {
-                a.addAll(b);
-                return a;
-            }
-        };
+    public static Collector<Long, ?, LongList> toLongList() {
+        final Supplier<LongList> supplier = Suppliers.ofLongList();
+        final BiConsumer<LongList, Long> accumulator = LongList_Accumulator;
+        final BinaryOperator<LongList> combiner = LongList_Combiner;
 
         return new CollectorImpl<>(supplier, accumulator, combiner, CH_ID);
     }
 
-    public static <T extends Number> Collector<T, ?, long[]> toLongArray() {
-        return toLongArray(N.EMPTY_LONG_ARRAY, 0);
-    }
-
-    public static <T extends Number> Collector<T, ?, long[]> toLongArray(final Supplier<long[]> supplier) {
-        return toLongArray(supplier.get(), 0);
-    }
-
-    static <T extends Number> Collector<T, ?, long[]> toLongArray(final long[] array, final int fromIndex) {
-        if (fromIndex < 0 || fromIndex > array.length) {
-            throw new IllegalArgumentException("'fromIndex' can't be negative or bigger than array's length");
-        }
-
-        final Supplier<LongList> supplier = new Supplier<LongList>() {
-            @Override
-            public LongList get() {
-                return new LongList(array, fromIndex);
-            }
-        };
-
-        final BiConsumer<LongList, T> accumulator = new BiConsumer<LongList, T>() {
-            @Override
-            public void accept(LongList c, T t) {
-                c.add(t.longValue());
-            }
-        };
-
-        final BinaryOperator<LongList> combiner = new BinaryOperator<LongList>() {
-            @Override
-            public LongList apply(LongList a, LongList b) {
-                a.addAll(b);
-                return a;
-            }
-        };
-
-        final Function<LongList, long[]> finisher = new Function<LongList, long[]>() {
-            @Override
-            public long[] apply(LongList t) {
-                return t.array() == array ? array : t.trimToSize().array();
-            }
-        };
+    public static Collector<Long, ?, long[]> toLongArray() {
+        final Supplier<LongList> supplier = Suppliers.ofLongList();
+        final BiConsumer<LongList, Long> accumulator = LongList_Accumulator;
+        final BinaryOperator<LongList> combiner = LongList_Combiner;
+        final Function<LongList, long[]> finisher = LongArray_Finisher;
 
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
     }
 
-    public static <T extends Number> Collector<T, ?, FloatList> toFloatList() {
-        final Supplier<FloatList> supplier = new Supplier<FloatList>() {
-            @Override
-            public FloatList get() {
-                return new FloatList();
-            }
-        };
-
-        final BiConsumer<FloatList, T> accumulator = new BiConsumer<FloatList, T>() {
-            @Override
-            public void accept(FloatList c, T t) {
-                c.add(t.floatValue());
-            }
-        };
-
-        final BinaryOperator<FloatList> combiner = new BinaryOperator<FloatList>() {
-            @Override
-            public FloatList apply(FloatList a, FloatList b) {
-                a.addAll(b);
-                return a;
-            }
-        };
+    public static Collector<Float, ?, FloatList> toFloatList() {
+        final Supplier<FloatList> supplier = Suppliers.ofFloatList();
+        final BiConsumer<FloatList, Float> accumulator = FloatList_Accumulator;
+        final BinaryOperator<FloatList> combiner = FloatList_Combiner;
 
         return new CollectorImpl<>(supplier, accumulator, combiner, CH_ID);
     }
 
-    public static <T extends Number> Collector<T, ?, float[]> toFloatArray() {
-        return toFloatArray(N.EMPTY_FLOAT_ARRAY, 0);
-    }
-
-    public static <T extends Number> Collector<T, ?, float[]> toFloatArray(final Supplier<float[]> supplier) {
-        return toFloatArray(supplier.get(), 0);
-    }
-
-    static <T extends Number> Collector<T, ?, float[]> toFloatArray(final float[] array, final int fromIndex) {
-        if (fromIndex < 0 || fromIndex > array.length) {
-            throw new IllegalArgumentException("'fromIndex' can't be negative or bigger than array's length");
-        }
-
-        final Supplier<FloatList> supplier = new Supplier<FloatList>() {
-            @Override
-            public FloatList get() {
-                return new FloatList(array, fromIndex);
-            }
-        };
-
-        final BiConsumer<FloatList, T> accumulator = new BiConsumer<FloatList, T>() {
-            @Override
-            public void accept(FloatList c, T t) {
-                c.add(t.floatValue());
-            }
-        };
-
-        final BinaryOperator<FloatList> combiner = new BinaryOperator<FloatList>() {
-            @Override
-            public FloatList apply(FloatList a, FloatList b) {
-                a.addAll(b);
-                return a;
-            }
-        };
-
-        final Function<FloatList, float[]> finisher = new Function<FloatList, float[]>() {
-            @Override
-            public float[] apply(FloatList t) {
-                return t.array() == array ? array : t.trimToSize().array();
-            }
-        };
+    public static Collector<Float, ?, float[]> toFloatArray() {
+        final Supplier<FloatList> supplier = Suppliers.ofFloatList();
+        final BiConsumer<FloatList, Float> accumulator = FloatList_Accumulator;
+        final BinaryOperator<FloatList> combiner = FloatList_Combiner;
+        final Function<FloatList, float[]> finisher = FloatArray_Finisher;
 
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
     }
 
-    public static <T extends Number> Collector<T, ?, DoubleList> toDoubleList() {
-        final Supplier<DoubleList> supplier = new Supplier<DoubleList>() {
-            @Override
-            public DoubleList get() {
-                return new DoubleList();
-            }
-        };
-
-        final BiConsumer<DoubleList, T> accumulator = new BiConsumer<DoubleList, T>() {
-            @Override
-            public void accept(DoubleList c, T t) {
-                c.add(t.doubleValue());
-            }
-        };
-
-        final BinaryOperator<DoubleList> combiner = new BinaryOperator<DoubleList>() {
-            @Override
-            public DoubleList apply(DoubleList a, DoubleList b) {
-                a.addAll(b);
-                return a;
-            }
-        };
+    public static Collector<Double, ?, DoubleList> toDoubleList() {
+        final Supplier<DoubleList> supplier = Suppliers.ofDoubleList();
+        final BiConsumer<DoubleList, Double> accumulator = DoubleList_Accumulator;
+        final BinaryOperator<DoubleList> combiner = DoubleList_Combiner;
 
         return new CollectorImpl<>(supplier, accumulator, combiner, CH_ID);
     }
 
-    public static <T extends Number> Collector<T, ?, double[]> toDoubleArray() {
-        return toDoubleArray(N.EMPTY_DOUBLE_ARRAY, 0);
-    }
-
-    public static <T extends Number> Collector<T, ?, double[]> toDoubleArray(final Supplier<double[]> supplier) {
-        return toDoubleArray(supplier.get(), 0);
-    }
-
-    static <T extends Number> Collector<T, ?, double[]> toDoubleArray(final double[] array, final int fromIndex) {
-        if (fromIndex < 0 || fromIndex > array.length) {
-            throw new IllegalArgumentException("'fromIndex' can't be negative or bigger than array's length");
-        }
-
-        final Supplier<DoubleList> supplier = new Supplier<DoubleList>() {
-            @Override
-            public DoubleList get() {
-                return new DoubleList(array, fromIndex);
-            }
-        };
-
-        final BiConsumer<DoubleList, T> accumulator = new BiConsumer<DoubleList, T>() {
-            @Override
-            public void accept(DoubleList c, T t) {
-                c.add(t.doubleValue());
-            }
-        };
-
-        final BinaryOperator<DoubleList> combiner = new BinaryOperator<DoubleList>() {
-            @Override
-            public DoubleList apply(DoubleList a, DoubleList b) {
-                a.addAll(b);
-                return a;
-            }
-        };
-
-        final Function<DoubleList, double[]> finisher = new Function<DoubleList, double[]>() {
-            @Override
-            public double[] apply(DoubleList t) {
-                return t.array() == array ? array : t.trimToSize().array();
-            }
-        };
+    public static Collector<Double, ?, double[]> toDoubleArray() {
+        final Supplier<DoubleList> supplier = Suppliers.ofDoubleList();
+        final BiConsumer<DoubleList, Double> accumulator = DoubleList_Accumulator;
+        final BinaryOperator<DoubleList> combiner = DoubleList_Combiner;
+        final Function<DoubleList, double[]> finisher = DoubleArray_Finisher;
 
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
     }
@@ -1170,34 +1346,10 @@ public final class Collectors {
      * {@code String}, in encounter order
      */
     public static Collector<CharSequence, ?, String> joining() {
-        final Supplier<StringBuilder> supplier = new Supplier<StringBuilder>() {
-            @Override
-            public StringBuilder get() {
-                return new StringBuilder();
-            }
-        };
-
-        final BiConsumer<StringBuilder, CharSequence> accumulator = new BiConsumer<StringBuilder, CharSequence>() {
-            @Override
-            public void accept(StringBuilder a, CharSequence t) {
-                a.append(t);
-            }
-        };
-
-        final BinaryOperator<StringBuilder> combiner = new BinaryOperator<StringBuilder>() {
-            @Override
-            public StringBuilder apply(StringBuilder a, StringBuilder b) {
-                a.append(b);
-                return a;
-            }
-        };
-
-        final Function<StringBuilder, String> finisher = new Function<StringBuilder, String>() {
-            @Override
-            public String apply(StringBuilder a) {
-                return a.toString();
-            }
-        };
+        final Supplier<StringBuilder> supplier = Suppliers.ofStringBuilder();
+        final BiConsumer<StringBuilder, CharSequence> accumulator = StringBuilder_Accumulator;
+        final BinaryOperator<StringBuilder> combiner = StringBuilder_Combiner;
+        final Function<StringBuilder, String> finisher = StringBuilder_Finisher;
 
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
     }
@@ -1235,27 +1387,9 @@ public final class Collectors {
             }
         };
 
-        final BiConsumer<Joiner, CharSequence> accumulator = new BiConsumer<Joiner, CharSequence>() {
-            @Override
-            public void accept(Joiner a, CharSequence t) {
-                a.add(t);
-            }
-        };
-
-        final BinaryOperator<Joiner> combiner = new BinaryOperator<Joiner>() {
-            @Override
-            public Joiner apply(Joiner a, Joiner b) {
-                a.merge(b);
-                return a;
-            }
-        };
-
-        final Function<Joiner, String> finisher = new Function<Joiner, String>() {
-            @Override
-            public String apply(Joiner a) {
-                return a.toString();
-            }
-        };
+        final BiConsumer<Joiner, CharSequence> accumulator = Joiner_Accumulator;
+        final BinaryOperator<Joiner> combiner = Joiner_Combiner;
+        final Function<Joiner, String> finisher = Joiner_Finisher;
 
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
     }
@@ -1478,12 +1612,8 @@ public final class Collectors {
      * @since 0.3.8
      */
     public static <T> Collector<T, ?, List<T>> distinctBy(final Function<? super T, ?> mapper) {
-        final Supplier<Map<Object, T>> supplier = new Supplier<Map<Object, T>>() {
-            @Override
-            public Map<Object, T> get() {
-                return new LinkedHashMap<>();
-            }
-        };
+        @SuppressWarnings("rawtypes")
+        final Supplier<Map<Object, T>> supplier = (Supplier) Suppliers.<Object, T> ofLinkedHashMap();
 
         final BiConsumer<Map<Object, T>, T> accumulator = new BiConsumer<Map<Object, T>, T>() {
             @Override
@@ -1565,39 +1695,17 @@ public final class Collectors {
      * @return a {@code Collector} that counts the input elements
      */
     public static <T> Collector<T, ?, Long> counting() {
-        final Function<? super T, ? extends Long> mapper = new Function<T, Long>() {
-            @Override
-            public Long apply(T t) {
-                return 1L;
-            }
-        };
+        final Function<? super T, ? extends Long> accumulator = Counting_Accumulator;
+        final BinaryOperator<Long> combiner = Counting_Combiner;
 
-        final BinaryOperator<Long> op = new BinaryOperator<Long>() {
-            @Override
-            public Long apply(Long a, Long b) {
-                return a.longValue() + b.longValue();
-            }
-        };
-
-        return reducing(0L, mapper, op);
+        return reducing(0L, accumulator, combiner);
     }
 
     public static <T> Collector<T, ?, Integer> countingInt() {
-        final Function<? super T, ? extends Integer> mapper = new Function<T, Integer>() {
-            @Override
-            public Integer apply(T t) {
-                return 1;
-            }
-        };
+        final Function<? super T, ? extends Integer> accumulator = CountingInt_Accumulator;
+        final BinaryOperator<Integer> combiner = CountingInt_Combiner;
 
-        final BinaryOperator<Integer> op = new BinaryOperator<Integer>() {
-            @Override
-            public Integer apply(Integer a, Integer b) {
-                return a + b;
-            }
-        };
-
-        return reducing(0, mapper, op);
+        return reducing(0, accumulator, combiner);
     }
 
     @SuppressWarnings("rawtypes")
@@ -2182,12 +2290,7 @@ public final class Collectors {
      * @return a {@code Collector} that produces the sum of a derived property
      */
     public static <T> Collector<T, ?, Integer> summingInt(final ToIntFunction<? super T> mapper) {
-        final Supplier<int[]> supplier = new Supplier<int[]>() {
-            @Override
-            public int[] get() {
-                return new int[1];
-            }
-        };
+        final Supplier<int[]> supplier = SummingInt_Supplier;
 
         final BiConsumer<int[], T> accumulator = new BiConsumer<int[], T>() {
             @Override
@@ -2196,55 +2299,24 @@ public final class Collectors {
             }
         };
 
-        final BinaryOperator<int[]> combiner = new BinaryOperator<int[]>() {
-            @Override
-            public int[] apply(int[] a, int[] b) {
-                a[0] += b[0];
-                return a;
-            }
-        };
-
-        final Function<int[], Integer> finisher = new Function<int[], Integer>() {
-            @Override
-            public Integer apply(int[] a) {
-                return a[0];
-            }
-        };
+        final BinaryOperator<int[]> combiner = SummingInt_Combiner;
+        final Function<int[], Integer> finisher = SummingInt_Finisher;
 
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
     }
 
     public static <T> Collector<T, ?, OptionalInt> summingInt2(final ToIntFunction<? super T> mapper) {
-        final Supplier<int[]> supplier = new Supplier<int[]>() {
-            @Override
-            public int[] get() {
-                return new int[2];
-            }
-        };
+        final Supplier<int[]> supplier = SummingInt_Supplier_2;
 
         final BiConsumer<int[], T> accumulator = new BiConsumer<int[], T>() {
             @Override
             public void accept(int[] a, T t) {
                 a[0] += mapper.applyAsInt(t);
-                a[1]++;
             }
         };
 
-        final BinaryOperator<int[]> combiner = new BinaryOperator<int[]>() {
-            @Override
-            public int[] apply(int[] a, int[] b) {
-                a[0] += b[0];
-                a[1] += b[1];
-                return a;
-            }
-        };
-
-        final Function<int[], OptionalInt> finisher = new Function<int[], OptionalInt>() {
-            @Override
-            public OptionalInt apply(int[] a) {
-                return a[1] == 0 ? OptionalInt.empty() : OptionalInt.of(a[0]);
-            }
-        };
+        final BinaryOperator<int[]> combiner = SummingInt_Combiner_2;
+        final Function<int[], OptionalInt> finisher = SummingInt_Finisher_2;
 
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
     }
@@ -2259,12 +2331,7 @@ public final class Collectors {
      * @return a {@code Collector} that produces the sum of a derived property
      */
     public static <T> Collector<T, ?, Long> summingLong(final ToLongFunction<? super T> mapper) {
-        final Supplier<long[]> supplier = new Supplier<long[]>() {
-            @Override
-            public long[] get() {
-                return new long[1];
-            }
-        };
+        final Supplier<long[]> supplier = SummingLong_Supplier;
 
         final BiConsumer<long[], T> accumulator = new BiConsumer<long[], T>() {
             @Override
@@ -2273,55 +2340,24 @@ public final class Collectors {
             }
         };
 
-        final BinaryOperator<long[]> combiner = new BinaryOperator<long[]>() {
-            @Override
-            public long[] apply(long[] a, long[] b) {
-                a[0] += b[0];
-                return a;
-            }
-        };
-
-        final Function<long[], Long> finisher = new Function<long[], Long>() {
-            @Override
-            public Long apply(long[] a) {
-                return a[0];
-            }
-        };
+        final BinaryOperator<long[]> combiner = SummingLong_Combiner;
+        final Function<long[], Long> finisher = SummingLong_Finisher;
 
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
     }
 
     public static <T> Collector<T, ?, OptionalLong> summingLong2(final ToLongFunction<? super T> mapper) {
-        final Supplier<long[]> supplier = new Supplier<long[]>() {
-            @Override
-            public long[] get() {
-                return new long[2];
-            }
-        };
+        final Supplier<long[]> supplier = SummingLong_Supplier_2;
 
         final BiConsumer<long[], T> accumulator = new BiConsumer<long[], T>() {
             @Override
             public void accept(long[] a, T t) {
                 a[0] += mapper.applyAsLong(t);
-                a[1]++;
             }
         };
 
-        final BinaryOperator<long[]> combiner = new BinaryOperator<long[]>() {
-            @Override
-            public long[] apply(long[] a, long[] b) {
-                a[0] += b[0];
-                a[1] += b[1];
-                return a;
-            }
-        };
-
-        final Function<long[], OptionalLong> finisher = new Function<long[], OptionalLong>() {
-            @Override
-            public OptionalLong apply(long[] a) {
-                return a[1] == 0 ? OptionalLong.empty() : OptionalLong.of(a[0]);
-            }
-        };
+        final BinaryOperator<long[]> combiner = SummingLong_Combiner_2;
+        final Function<long[], OptionalLong> finisher = SummingLong_Finisher_2;
 
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
     }
@@ -2361,12 +2397,7 @@ public final class Collectors {
         //                a -> computeFinalSum(a),
         //                CH_NOID);
 
-        final Supplier<double[]> supplier = new Supplier<double[]>() {
-            @Override
-            public double[] get() {
-                return new double[3];
-            }
-        };
+        final Supplier<double[]> supplier = SummingDouble_Supplier;
 
         final BiConsumer<double[], T> accumulator = new BiConsumer<double[], T>() {
             @Override
@@ -2377,21 +2408,8 @@ public final class Collectors {
             }
         };
 
-        final BinaryOperator<double[]> combiner = new BinaryOperator<double[]>() {
-            @Override
-            public double[] apply(double[] a, double[] b) {
-                sumWithCompensation(a, b[0]);
-                a[2] += b[2];
-                return sumWithCompensation(a, b[1]);
-            }
-        };
-
-        final Function<double[], Double> finisher = new Function<double[], Double>() {
-            @Override
-            public Double apply(double[] a) {
-                return computeFinalSum(a);
-            }
-        };
+        final BinaryOperator<double[]> combiner = SummingDouble_Combiner;
+        final Function<double[], Double> finisher = SummingDouble_Finisher;
 
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
     }
@@ -2415,12 +2433,7 @@ public final class Collectors {
         //                a -> computeFinalSum(a),
         //                CH_NOID);
 
-        final Supplier<double[]> supplier = new Supplier<double[]>() {
-            @Override
-            public double[] get() {
-                return new double[4];
-            }
-        };
+        final Supplier<double[]> supplier = SummingDouble_Supplier_2;
 
         final BiConsumer<double[], T> accumulator = new BiConsumer<double[], T>() {
             @Override
@@ -2433,22 +2446,8 @@ public final class Collectors {
             }
         };
 
-        final BinaryOperator<double[]> combiner = new BinaryOperator<double[]>() {
-            @Override
-            public double[] apply(double[] a, double[] b) {
-                sumWithCompensation(a, b[0]);
-                a[2] += b[2];
-                a[3] += b[3];
-                return sumWithCompensation(a, b[1]);
-            }
-        };
-
-        final Function<double[], OptionalDouble> finisher = new Function<double[], OptionalDouble>() {
-            @Override
-            public OptionalDouble apply(double[] a) {
-                return a[3] == 0 ? OptionalDouble.empty() : OptionalDouble.of(computeFinalSum(a));
-            }
-        };
+        final BinaryOperator<double[]> combiner = SummingDouble_Combiner_2;
+        final Function<double[], OptionalDouble> finisher = SummingDouble_Finisher_2;
 
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
     }
@@ -2498,12 +2497,7 @@ public final class Collectors {
      * @return a {@code Collector} that produces the sum of a derived property
      */
     public static <T> Collector<T, ?, Double> averagingInt(final ToIntFunction<? super T> mapper) {
-        final Supplier<long[]> supplier = new Supplier<long[]>() {
-            @Override
-            public long[] get() {
-                return new long[2];
-            }
-        };
+        final Supplier<long[]> supplier = AveragingInt_Supplier;
 
         final BiConsumer<long[], T> accumulator = new BiConsumer<long[], T>() {
             @Override
@@ -2513,68 +2507,28 @@ public final class Collectors {
             }
         };
 
-        final BinaryOperator<long[]> combiner = new BinaryOperator<long[]>() {
-            @Override
-            public long[] apply(long[] a, long[] b) {
-                a[0] += b[0];
-                a[1] += b[1];
-                return a;
-            }
-        };
-
-        final Function<long[], Double> finisher = new Function<long[], Double>() {
-            @Override
-            public Double apply(long[] a) {
-                return (a[1] == 0) ? 0d : (double) a[0] / a[1];
-            }
-        };
+        final BinaryOperator<long[]> combiner = AveragingInt_Combiner;
+        final Function<long[], Double> finisher = AveragingInt_Finisher;
 
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
     }
 
     public static <T> Collector<T, ?, OptionalDouble> averagingInt2(final ToIntFunction<? super T> mapper) {
-        final Collector<T, long[], Double> collector = (Collector<T, long[], Double>) averagingInt(mapper);
+        final Supplier<long[]> supplier = AveragingInt_Supplier;
 
-        final Function<long[], OptionalDouble> finisher = new Function<long[], OptionalDouble>() {
+        final BiConsumer<long[], T> accumulator = new BiConsumer<long[], T>() {
             @Override
-            public OptionalDouble apply(long[] a) {
-                if (a[1] == 0) {
-                    return OptionalDouble.empty();
-                } else {
-                    return OptionalDouble.of((double) a[0] / a[1]);
-                }
+            public void accept(long[] a, T t) {
+                a[0] += mapper.applyAsInt(t);
+                a[1]++;
             }
         };
 
-        return new CollectorImpl<>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
-    }
+        final BinaryOperator<long[]> combiner = AveragingInt_Combiner;
+        final Function<long[], OptionalDouble> finisher = AveragingInt_Finisher_2;
 
-    //    public static <T> Collector<T, ?, Double> averagingInt2OrGet(final ToIntFunction<? super T> mapper, final DoubleSupplier other) {
-    //        final Collector<T, long[], OptionalDouble> collector = (Collector<T, long[], OptionalDouble>) averagingInt2(mapper);
-    //
-    //        final Function<long[], Double> finisher = new Function<long[], Double>() {
-    //            @Override
-    //            public Double apply(long[] a) {
-    //                return collector.finisher().apply(a).orGet(other);
-    //            }
-    //        };
-    //
-    //        return new CollectorImpl<>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
-    //    }
-    //
-    //    public static <T, X extends RuntimeException> Collector<T, ?, Double> averagingInt2OrThrow(final ToIntFunction<? super T> mapper,
-    //            final Supplier<? extends X> exceptionSupplier) {
-    //        final Collector<T, long[], OptionalDouble> collector = (Collector<T, long[], OptionalDouble>) averagingInt2(mapper);
-    //
-    //        final Function<long[], Double> finisher = new Function<long[], Double>() {
-    //            @Override
-    //            public Double apply(long[] a) {
-    //                return collector.finisher().apply(a).orThrow(exceptionSupplier);
-    //            }
-    //        };
-    //
-    //        return new CollectorImpl<>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
-    //    }
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
+    }
 
     /**
      * Returns a {@code Collector} that produces the arithmetic mean of a long-valued
@@ -2586,12 +2540,7 @@ public final class Collectors {
      * @return a {@code Collector} that produces the sum of a derived property
      */
     public static <T> Collector<T, ?, Double> averagingLong(final ToLongFunction<? super T> mapper) {
-        final Supplier<long[]> supplier = new Supplier<long[]>() {
-            @Override
-            public long[] get() {
-                return new long[2];
-            }
-        };
+        final Supplier<long[]> supplier = AveragingLong_Supplier;
 
         final BiConsumer<long[], T> accumulator = new BiConsumer<long[], T>() {
             @Override
@@ -2601,68 +2550,28 @@ public final class Collectors {
             }
         };
 
-        final BinaryOperator<long[]> combiner = new BinaryOperator<long[]>() {
-            @Override
-            public long[] apply(long[] a, long[] b) {
-                a[0] += b[0];
-                a[1] += b[1];
-                return a;
-            }
-        };
-
-        final Function<long[], Double> finisher = new Function<long[], Double>() {
-            @Override
-            public Double apply(long[] a) {
-                return a[1] == 0 ? 0d : (double) a[0] / a[1];
-            }
-        };
+        final BinaryOperator<long[]> combiner = AveragingLong_Combiner;
+        final Function<long[], Double> finisher = AveragingLong_Finisher;
 
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
     }
 
     public static <T> Collector<T, ?, OptionalDouble> averagingLong2(final ToLongFunction<? super T> mapper) {
-        final Collector<T, long[], Double> collector = (Collector<T, long[], Double>) averagingLong(mapper);
+        final Supplier<long[]> supplier = AveragingLong_Supplier;
 
-        final Function<long[], OptionalDouble> finisher = new Function<long[], OptionalDouble>() {
+        final BiConsumer<long[], T> accumulator = new BiConsumer<long[], T>() {
             @Override
-            public OptionalDouble apply(long[] a) {
-                if (a[1] == 0) {
-                    return OptionalDouble.empty();
-                } else {
-                    return OptionalDouble.of((double) a[0] / a[1]);
-                }
+            public void accept(long[] a, T t) {
+                a[0] += mapper.applyAsLong(t);
+                a[1]++;
             }
         };
 
-        return new CollectorImpl<>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
-    }
+        final BinaryOperator<long[]> combiner = AveragingLong_Combiner;
+        final Function<long[], OptionalDouble> finisher = AveragingLong_Finisher_2;
 
-    //    public static <T> Collector<T, ?, Double> averagingLong2OrGet(final ToLongFunction<? super T> mapper, final DoubleSupplier other) {
-    //        final Collector<T, long[], OptionalDouble> collector = (Collector<T, long[], OptionalDouble>) averagingLong2(mapper);
-    //
-    //        final Function<long[], Double> finisher = new Function<long[], Double>() {
-    //            @Override
-    //            public Double apply(long[] a) {
-    //                return collector.finisher().apply(a).orGet(other);
-    //            }
-    //        };
-    //
-    //        return new CollectorImpl<>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
-    //    }
-    //
-    //    public static <T, X extends RuntimeException> Collector<T, ?, Double> averagingLong2OrThrow(final ToLongFunction<? super T> mapper,
-    //            final Supplier<? extends X> exceptionSupplier) {
-    //        final Collector<T, long[], OptionalDouble> collector = (Collector<T, long[], OptionalDouble>) averagingLong2(mapper);
-    //
-    //        final Function<long[], Double> finisher = new Function<long[], Double>() {
-    //            @Override
-    //            public Double apply(long[] a) {
-    //                return collector.finisher().apply(a).orThrow(exceptionSupplier);
-    //            }
-    //        };
-    //
-    //        return new CollectorImpl<>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
-    //    }
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
+    }
 
     /**
      * Returns a {@code Collector} that produces the arithmetic mean of a double-valued
@@ -2700,12 +2609,7 @@ public final class Collectors {
         //                a -> (a[2] == 0) ? 0.0d : (computeFinalSum(a) / a[2]),
         //                CH_NOID);
 
-        final Supplier<double[]> supplier = new Supplier<double[]>() {
-            @Override
-            public double[] get() {
-                return new double[4];
-            }
-        };
+        final Supplier<double[]> supplier = AveragingDouble_Supplier;
 
         final BiConsumer<double[], T> accumulator = new BiConsumer<double[], T>() {
             @Override
@@ -2717,92 +2621,33 @@ public final class Collectors {
             }
         };
 
-        final BinaryOperator<double[]> combiner = new BinaryOperator<double[]>() {
-            @Override
-            public double[] apply(double[] a, double[] b) {
-                sumWithCompensation(a, b[0]);
-                sumWithCompensation(a, b[1]);
-                a[2] += b[2];
-                a[3] += b[3];
-                return a;
-            }
-        };
-
-        final Function<double[], Double> finisher = new Function<double[], Double>() {
-            @Override
-            public Double apply(double[] a) {
-                return a[2] == 0 ? 0d : computeFinalSum(a) / a[2];
-            }
-        };
+        final BinaryOperator<double[]> combiner = AveragingDouble_Combiner;
+        final Function<double[], Double> finisher = AveragingDouble_Finisher;
 
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
     }
 
     public static <T> Collector<T, ?, OptionalDouble> averagingDouble2(final ToDoubleFunction<? super T> mapper) {
-        final Collector<T, double[], Double> collector = (Collector<T, double[], Double>) averagingDouble(mapper);
+        final Supplier<double[]> supplier = AveragingDouble_Supplier;
 
-        final Function<double[], OptionalDouble> finisher = new Function<double[], OptionalDouble>() {
+        final BiConsumer<double[], T> accumulator = new BiConsumer<double[], T>() {
             @Override
-            public OptionalDouble apply(double[] a) {
-                if (a[2] == 0) {
-                    return OptionalDouble.empty();
-                } else {
-                    return OptionalDouble.of(computeFinalSum(a) / a[2]);
-                }
+            public void accept(double[] a, T t) {
+                final double d = mapper.applyAsDouble(t);
+                sumWithCompensation(a, d);
+                a[2]++;
+                a[3] += d;
             }
         };
 
-        return new CollectorImpl<>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
+        final BinaryOperator<double[]> combiner = AveragingDouble_Combiner;
+        final Function<double[], OptionalDouble> finisher = AveragingDouble_Finisher_2;
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
     }
 
-    //    public static <T> Collector<T, ?, Double> averagingDouble2OrGet(final ToDoubleFunction<? super T> mapper, final DoubleSupplier other) {
-    //        final Collector<T, double[], OptionalDouble> collector = (Collector<T, double[], OptionalDouble>) averagingDouble2(mapper);
-    //
-    //        final Function<double[], Double> finisher = new Function<double[], Double>() {
-    //            @Override
-    //            public Double apply(double[] a) {
-    //                return collector.finisher().apply(a).orGet(other);
-    //            }
-    //        };
-    //
-    //        return new CollectorImpl<>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
-    //    }
-    //
-    //    public static <T, X extends RuntimeException> Collector<T, ?, Double> averagingDouble2OrThrow(final ToDoubleFunction<? super T> mapper,
-    //            final Supplier<? extends X> exceptionSupplier) {
-    //        final Collector<T, double[], OptionalDouble> collector = (Collector<T, double[], OptionalDouble>) averagingDouble2(mapper);
-    //
-    //        final Function<double[], Double> finisher = new Function<double[], Double>() {
-    //            @Override
-    //            public Double apply(double[] a) {
-    //                return collector.finisher().apply(a).orThrow(exceptionSupplier);
-    //            }
-    //        };
-    //
-    //        return new CollectorImpl<>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
-    //    }
-
-    //    public static <T> Collector<T, ?, DataSet> toDataSet(final String entityName, final Class<?> entityClass, final List<String> columnNames) {
-    //        @SuppressWarnings("rawtypes")
-    //        final Collector<T, List<T>, List<T>> collector = (Collector) toList();
-    //
-    //        final Function<List<T>, DataSet> finisher = new Function<List<T>, DataSet>() {
-    //            @Override
-    //            public DataSet apply(List<T> t) {
-    //                return N.newDataSet(entityName, entityClass, columnNames, t);
-    //            }
-    //        };
-    //
-    //        return new CollectorImpl<T, List<T>, DataSet>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher);
-    //    }
-
     public static <T> Collector<T, ?, CharSummaryStatistics> summarizingChar(final ToCharFunction<? super T> mapper) {
-        final Supplier<CharSummaryStatistics> supplier = new Supplier<CharSummaryStatistics>() {
-            @Override
-            public CharSummaryStatistics get() {
-                return new CharSummaryStatistics();
-            }
-        };
+        final Supplier<CharSummaryStatistics> supplier = SummarizingChar_Supplier;
 
         final BiConsumer<CharSummaryStatistics, T> accumulator = new BiConsumer<CharSummaryStatistics, T>() {
             @Override
@@ -2811,24 +2656,13 @@ public final class Collectors {
             }
         };
 
-        final BinaryOperator<CharSummaryStatistics> combiner = new BinaryOperator<CharSummaryStatistics>() {
-            @Override
-            public CharSummaryStatistics apply(CharSummaryStatistics a, CharSummaryStatistics b) {
-                a.combine(b);
-                return a;
-            }
-        };
+        final BinaryOperator<CharSummaryStatistics> combiner = SummarizingChar_Combiner;
 
         return new CollectorImpl<T, CharSummaryStatistics, CharSummaryStatistics>(supplier, accumulator, combiner, CH_ID);
     }
 
     public static <T> Collector<T, ?, ByteSummaryStatistics> summarizingByte(final ToByteFunction<? super T> mapper) {
-        final Supplier<ByteSummaryStatistics> supplier = new Supplier<ByteSummaryStatistics>() {
-            @Override
-            public ByteSummaryStatistics get() {
-                return new ByteSummaryStatistics();
-            }
-        };
+        final Supplier<ByteSummaryStatistics> supplier = SummarizingByte_Supplier;
 
         final BiConsumer<ByteSummaryStatistics, T> accumulator = new BiConsumer<ByteSummaryStatistics, T>() {
             @Override
@@ -2837,24 +2671,13 @@ public final class Collectors {
             }
         };
 
-        final BinaryOperator<ByteSummaryStatistics> combiner = new BinaryOperator<ByteSummaryStatistics>() {
-            @Override
-            public ByteSummaryStatistics apply(ByteSummaryStatistics a, ByteSummaryStatistics b) {
-                a.combine(b);
-                return a;
-            }
-        };
+        final BinaryOperator<ByteSummaryStatistics> combiner = SummarizingByte_Combiner;
 
         return new CollectorImpl<T, ByteSummaryStatistics, ByteSummaryStatistics>(supplier, accumulator, combiner, CH_ID);
     }
 
     public static <T> Collector<T, ?, ShortSummaryStatistics> summarizingShort(final ToShortFunction<? super T> mapper) {
-        final Supplier<ShortSummaryStatistics> supplier = new Supplier<ShortSummaryStatistics>() {
-            @Override
-            public ShortSummaryStatistics get() {
-                return new ShortSummaryStatistics();
-            }
-        };
+        final Supplier<ShortSummaryStatistics> supplier = SummarizingShort_Supplier;
 
         final BiConsumer<ShortSummaryStatistics, T> accumulator = new BiConsumer<ShortSummaryStatistics, T>() {
             @Override
@@ -2863,13 +2686,7 @@ public final class Collectors {
             }
         };
 
-        final BinaryOperator<ShortSummaryStatistics> combiner = new BinaryOperator<ShortSummaryStatistics>() {
-            @Override
-            public ShortSummaryStatistics apply(ShortSummaryStatistics a, ShortSummaryStatistics b) {
-                a.combine(b);
-                return a;
-            }
-        };
+        final BinaryOperator<ShortSummaryStatistics> combiner = SummarizingShort_Combiner;
 
         return new CollectorImpl<T, ShortSummaryStatistics, ShortSummaryStatistics>(supplier, accumulator, combiner, CH_ID);
     }
@@ -2887,12 +2704,7 @@ public final class Collectors {
      * @see #summarizingLong(ToLongFunction)
      */
     public static <T> Collector<T, ?, IntSummaryStatistics> summarizingInt(final ToIntFunction<? super T> mapper) {
-        final Supplier<IntSummaryStatistics> supplier = new Supplier<IntSummaryStatistics>() {
-            @Override
-            public IntSummaryStatistics get() {
-                return new IntSummaryStatistics();
-            }
-        };
+        final Supplier<IntSummaryStatistics> supplier = SummarizingInt_Supplier;
 
         final BiConsumer<IntSummaryStatistics, T> accumulator = new BiConsumer<IntSummaryStatistics, T>() {
             @Override
@@ -2901,13 +2713,7 @@ public final class Collectors {
             }
         };
 
-        final BinaryOperator<IntSummaryStatistics> combiner = new BinaryOperator<IntSummaryStatistics>() {
-            @Override
-            public IntSummaryStatistics apply(IntSummaryStatistics a, IntSummaryStatistics b) {
-                a.combine(b);
-                return a;
-            }
-        };
+        final BinaryOperator<IntSummaryStatistics> combiner = SummarizingInt_Combiner;
 
         return new CollectorImpl<T, IntSummaryStatistics, IntSummaryStatistics>(supplier, accumulator, combiner, CH_ID);
     }
@@ -2925,12 +2731,7 @@ public final class Collectors {
      * @see #summarizingInt(ToIntFunction)
      */
     public static <T> Collector<T, ?, LongSummaryStatistics> summarizingLong(final ToLongFunction<? super T> mapper) {
-        final Supplier<LongSummaryStatistics> supplier = new Supplier<LongSummaryStatistics>() {
-            @Override
-            public LongSummaryStatistics get() {
-                return new LongSummaryStatistics();
-            }
-        };
+        final Supplier<LongSummaryStatistics> supplier = SummarizingLong_Supplier;
 
         final BiConsumer<LongSummaryStatistics, T> accumulator = new BiConsumer<LongSummaryStatistics, T>() {
             @Override
@@ -2939,24 +2740,13 @@ public final class Collectors {
             }
         };
 
-        final BinaryOperator<LongSummaryStatistics> combiner = new BinaryOperator<LongSummaryStatistics>() {
-            @Override
-            public LongSummaryStatistics apply(LongSummaryStatistics a, LongSummaryStatistics b) {
-                a.combine(b);
-                return a;
-            }
-        };
+        final BinaryOperator<LongSummaryStatistics> combiner = SummarizingLong_Combiner;
 
         return new CollectorImpl<T, LongSummaryStatistics, LongSummaryStatistics>(supplier, accumulator, combiner, CH_ID);
     }
 
     public static <T> Collector<T, ?, FloatSummaryStatistics> summarizingFloat(final ToFloatFunction<? super T> mapper) {
-        final Supplier<FloatSummaryStatistics> supplier = new Supplier<FloatSummaryStatistics>() {
-            @Override
-            public FloatSummaryStatistics get() {
-                return new FloatSummaryStatistics();
-            }
-        };
+        final Supplier<FloatSummaryStatistics> supplier = SummarizingFloat_Supplier;
 
         final BiConsumer<FloatSummaryStatistics, T> accumulator = new BiConsumer<FloatSummaryStatistics, T>() {
             @Override
@@ -2965,13 +2755,7 @@ public final class Collectors {
             }
         };
 
-        final BinaryOperator<FloatSummaryStatistics> combiner = new BinaryOperator<FloatSummaryStatistics>() {
-            @Override
-            public FloatSummaryStatistics apply(FloatSummaryStatistics a, FloatSummaryStatistics b) {
-                a.combine(b);
-                return a;
-            }
-        };
+        final BinaryOperator<FloatSummaryStatistics> combiner = SummarizingFloat_Combiner;
 
         return new CollectorImpl<T, FloatSummaryStatistics, FloatSummaryStatistics>(supplier, accumulator, combiner, CH_ID);
     }
@@ -2989,12 +2773,7 @@ public final class Collectors {
      * @see #summarizingInt(ToIntFunction)
      */
     public static <T> Collector<T, ?, DoubleSummaryStatistics> summarizingDouble(final ToDoubleFunction<? super T> mapper) {
-        final Supplier<DoubleSummaryStatistics> supplier = new Supplier<DoubleSummaryStatistics>() {
-            @Override
-            public DoubleSummaryStatistics get() {
-                return new DoubleSummaryStatistics();
-            }
-        };
+        final Supplier<DoubleSummaryStatistics> supplier = SummarizingDouble_Supplier;
 
         final BiConsumer<DoubleSummaryStatistics, T> accumulator = new BiConsumer<DoubleSummaryStatistics, T>() {
             @Override
@@ -3003,13 +2782,7 @@ public final class Collectors {
             }
         };
 
-        final BinaryOperator<DoubleSummaryStatistics> combiner = new BinaryOperator<DoubleSummaryStatistics>() {
-            @Override
-            public DoubleSummaryStatistics apply(DoubleSummaryStatistics a, DoubleSummaryStatistics b) {
-                a.combine(b);
-                return a;
-            }
-        };
+        final BinaryOperator<DoubleSummaryStatistics> combiner = SummarizingDouble_Combiner;
 
         return new CollectorImpl<T, DoubleSummaryStatistics, DoubleSummaryStatistics>(supplier, accumulator, combiner, CH_ID);
     }
@@ -3050,12 +2823,8 @@ public final class Collectors {
             }
         };
 
-        final Function<T[], T> finisher = new Function<T[], T>() {
-            @Override
-            public T apply(T[] a) {
-                return a[0];
-            }
-        };
+        @SuppressWarnings("rawtypes")
+        final Function<T[], T> finisher = (Function) Reducing_Finisher_0;
 
         return new CollectorImpl<>(boxSupplier(identity), accumulator, combiner, finisher, CH_NOID);
     }
@@ -3096,6 +2865,7 @@ public final class Collectors {
      * @see #reducing(Object, BinaryOperator)
      * @see #reducing(Object, Function, BinaryOperator)
      */
+    @SuppressWarnings("rawtypes")
     public static <T> Collector<T, ?, NullabLe<T>> reducing(final BinaryOperator<T> op) {
         final Supplier<OptionalBox<T>> supplier = new Supplier<OptionalBox<T>>() {
             @Override
@@ -3104,30 +2874,9 @@ public final class Collectors {
             }
         };
 
-        final BiConsumer<OptionalBox<T>, T> accumulator = new BiConsumer<OptionalBox<T>, T>() {
-            @Override
-            public void accept(OptionalBox<T> a, T t) {
-                a.accept(t);
-            }
-        };
-
-        final BinaryOperator<OptionalBox<T>> combiner = new BinaryOperator<OptionalBox<T>>() {
-            @Override
-            public OptionalBox<T> apply(OptionalBox<T> a, OptionalBox<T> b) {
-                if (b.present) {
-                    a.accept(b.value);
-                }
-
-                return a;
-            }
-        };
-
-        final Function<OptionalBox<T>, NullabLe<T>> finisher = new Function<OptionalBox<T>, NullabLe<T>>() {
-            @Override
-            public NullabLe<T> apply(OptionalBox<T> a) {
-                return a.present ? NullabLe.of(a.value) : (NullabLe<T>) NullabLe.empty();
-            }
-        };
+        final BiConsumer<OptionalBox<T>, T> accumulator = (BiConsumer) Reducing_Accumulator;
+        final BinaryOperator<OptionalBox<T>> combiner = (BinaryOperator) Reducing_Combiner;
+        final Function<OptionalBox<T>, NullabLe<T>> finisher = (Function) Reducing_Finisher;
 
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
     }
@@ -3152,31 +2901,53 @@ public final class Collectors {
         }
     }
 
+    @SuppressWarnings("rawtypes")
     public static <T> Collector<T, ?, T> reducingOrGet(final BinaryOperator<T> op, final Supplier<? extends T> other) {
-        final Collector<T, OptionalBox<T>, NullabLe<T>> collector = (Collector<T, OptionalBox<T>, NullabLe<T>>) reducing(op);
+        final Supplier<OptionalBox<T>> supplier = new Supplier<OptionalBox<T>>() {
+            @Override
+            public OptionalBox<T> get() {
+                return new OptionalBox<T>(op);
+            }
+        };
+
+        final BiConsumer<OptionalBox<T>, T> accumulator = (BiConsumer) Reducing_Accumulator;
+        final BinaryOperator<OptionalBox<T>> combiner = (BinaryOperator) Reducing_Combiner;
 
         final Function<OptionalBox<T>, T> finisher = new Function<OptionalBox<T>, T>() {
             @Override
             public T apply(OptionalBox<T> a) {
-                return collector.finisher().apply(a).orElseGet(other);
+                return a.present ? a.value : other.get();
             }
         };
 
-        return new CollectorImpl<>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
     }
 
+    @SuppressWarnings("rawtypes")
     public static <T, X extends RuntimeException> Collector<T, ?, T> reducingOrThrow(final BinaryOperator<T> op,
             final Supplier<? extends X> exceptionSupplier) {
-        final Collector<T, OptionalBox<T>, NullabLe<T>> collector = (Collector<T, OptionalBox<T>, NullabLe<T>>) reducing(op);
+        final Supplier<OptionalBox<T>> supplier = new Supplier<OptionalBox<T>>() {
+            @Override
+            public OptionalBox<T> get() {
+                return new OptionalBox<T>(op);
+            }
+        };
+
+        final BiConsumer<OptionalBox<T>, T> accumulator = (BiConsumer) Reducing_Accumulator;
+        final BinaryOperator<OptionalBox<T>> combiner = (BinaryOperator) Reducing_Combiner;
 
         final Function<OptionalBox<T>, T> finisher = new Function<OptionalBox<T>, T>() {
             @Override
             public T apply(OptionalBox<T> a) {
-                return collector.finisher().apply(a).orElseThrow(exceptionSupplier);
+                if (a.present) {
+                    return a.value;
+                } else {
+                    throw exceptionSupplier.get();
+                }
             }
         };
 
-        return new CollectorImpl<>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
     }
 
     /**
@@ -3230,16 +3001,13 @@ public final class Collectors {
             }
         };
 
-        final Function<U[], U> finisher = new Function<U[], U>() {
-            @Override
-            public U apply(U[] a) {
-                return a[0];
-            }
-        };
+        @SuppressWarnings("rawtypes")
+        final Function<U[], U> finisher = (Function) Reducing_Finisher_0;
 
         return new CollectorImpl<>(boxSupplier(identity), accumulator, combiner, finisher, CH_NOID);
     }
 
+    @SuppressWarnings("rawtypes")
     public static <T, U> Collector<T, ?, NullabLe<U>> reducing(final Function<? super T, ? extends U> mapper, final BinaryOperator<U> op) {
         final Supplier<OptionalBox2<T, U>> supplier = new Supplier<OptionalBox2<T, U>>() {
             @Override
@@ -3248,31 +3016,9 @@ public final class Collectors {
             }
         };
 
-        final BiConsumer<OptionalBox2<T, U>, T> accumulator = new BiConsumer<OptionalBox2<T, U>, T>() {
-            @Override
-            public void accept(OptionalBox2<T, U> a, T t) {
-                a.accept(t);
-            }
-        };
-
-        final BinaryOperator<OptionalBox2<T, U>> combiner = new BinaryOperator<OptionalBox2<T, U>>() {
-            @Override
-            public OptionalBox2<T, U> apply(OptionalBox2<T, U> a, OptionalBox2<T, U> b) {
-                if (b.present) {
-                    a.value = b.value;
-                    a.present = true;
-                }
-
-                return a;
-            }
-        };
-
-        final Function<OptionalBox2<T, U>, NullabLe<U>> finisher = new Function<OptionalBox2<T, U>, NullabLe<U>>() {
-            @Override
-            public NullabLe<U> apply(OptionalBox2<T, U> a) {
-                return a.present ? NullabLe.of(a.value) : (NullabLe<U>) NullabLe.empty();
-            }
-        };
+        final BiConsumer<OptionalBox2<T, U>, T> accumulator = (BiConsumer) Reducing_Accumulator_2;
+        final BinaryOperator<OptionalBox2<T, U>> combiner = (BinaryOperator) Reducing_Combiner_2;
+        final Function<OptionalBox2<T, U>, NullabLe<U>> finisher = (Function) Reducing_Finisher_2;
 
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
     }
@@ -3299,32 +3045,52 @@ public final class Collectors {
         }
     }
 
+    @SuppressWarnings("rawtypes")
     public static <T, U> Collector<T, ?, U> reducingOrGet(final Function<? super T, ? extends U> mapper, final BinaryOperator<U> op,
             final Supplier<? extends U> other) {
-        final Collector<T, OptionalBox2<T, U>, NullabLe<U>> collector = (Collector<T, OptionalBox2<T, U>, NullabLe<U>>) reducing(mapper, op);
-
-        final Function<OptionalBox2<T, U>, U> finisher = new Function<OptionalBox2<T, U>, U>() {
+        final Supplier<OptionalBox2<T, U>> supplier = new Supplier<OptionalBox2<T, U>>() {
             @Override
-            public U apply(OptionalBox2<T, U> a) {
-                return collector.finisher().apply(a).orElseGet(other);
+            public OptionalBox2<T, U> get() {
+                return new OptionalBox2<T, U>(mapper, op);
             }
         };
 
-        return new CollectorImpl<>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
+        final BiConsumer<OptionalBox2<T, U>, T> accumulator = (BiConsumer) Reducing_Accumulator_2;
+        final BinaryOperator<OptionalBox2<T, U>> combiner = (BinaryOperator) Reducing_Combiner_2;
+        final Function<OptionalBox2<T, U>, U> finisher = new Function<OptionalBox2<T, U>, U>() {
+            @Override
+            public U apply(OptionalBox2<T, U> a) {
+                return a.present ? a.value : other.get();
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
     }
 
+    @SuppressWarnings("rawtypes")
     public static <T, U, X extends RuntimeException> Collector<T, ?, U> reducingOrThrow(final Function<? super T, ? extends U> mapper,
             final BinaryOperator<U> op, final Supplier<? extends X> exceptionSupplier) {
-        final Collector<T, OptionalBox2<T, U>, NullabLe<U>> collector = (Collector<T, OptionalBox2<T, U>, NullabLe<U>>) reducing(mapper, op);
-
-        final Function<OptionalBox2<T, U>, U> finisher = new Function<OptionalBox2<T, U>, U>() {
+        final Supplier<OptionalBox2<T, U>> supplier = new Supplier<OptionalBox2<T, U>>() {
             @Override
-            public U apply(OptionalBox2<T, U> a) {
-                return collector.finisher().apply(a).orElseThrow(exceptionSupplier);
+            public OptionalBox2<T, U> get() {
+                return new OptionalBox2<T, U>(mapper, op);
             }
         };
 
-        return new CollectorImpl<>(collector.supplier(), collector.accumulator(), collector.combiner(), finisher, CH_NOID);
+        final BiConsumer<OptionalBox2<T, U>, T> accumulator = (BiConsumer) Reducing_Accumulator_2;
+        final BinaryOperator<OptionalBox2<T, U>> combiner = (BinaryOperator) Reducing_Combiner_2;
+        final Function<OptionalBox2<T, U>, U> finisher = new Function<OptionalBox2<T, U>, U>() {
+            @Override
+            public U apply(OptionalBox2<T, U> a) {
+                if (a.present) {
+                    return a.value;
+                } else {
+                    throw exceptionSupplier.get();
+                }
+            }
+        };
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
     }
 
     /**
@@ -3690,12 +3456,7 @@ public final class Collectors {
      */
     public static <T, K, A, D> Collector<T, ?, Map<K, D>> groupingBy(final Function<? super T, ? extends K> classifier,
             final Collector<? super T, A, D> downstream) {
-        final Supplier<Map<K, D>> mapFactory = new Supplier<Map<K, D>>() {
-            @Override
-            public Map<K, D> get() {
-                return new HashMap<>();
-            }
-        };
+        final Supplier<Map<K, D>> mapFactory = Suppliers.ofMap();
 
         return groupingBy(classifier, downstream, mapFactory);
     }
@@ -3902,12 +3663,7 @@ public final class Collectors {
      */
     public static <T, K, A, D> Collector<T, ?, ConcurrentMap<K, D>> groupingByConcurrent(Function<? super T, ? extends K> classifier,
             Collector<? super T, A, D> downstream) {
-        final Supplier<ConcurrentMap<K, D>> mapFactory = new Supplier<ConcurrentMap<K, D>>() {
-            @Override
-            public ConcurrentMap<K, D> get() {
-                return new ConcurrentHashMap<>();
-            }
-        };
+        final Supplier<ConcurrentMap<K, D>> mapFactory = Suppliers.ofConcurrentMap();
 
         return groupingByConcurrent(classifier, downstream, mapFactory);
     }
@@ -4125,53 +3881,31 @@ public final class Collectors {
     }
 
     public static <K, V> Collector<Map.Entry<K, V>, ?, Map<K, V>> toMap() {
-        final Function<Map.Entry<K, V>, ? extends K> keyExtractor = new Function<Map.Entry<K, V>, K>() {
-            @Override
-            public K apply(Map.Entry<K, V> t) {
-                return t.getKey();
-            }
-        };
-
-        final Function<Map.Entry<K, V>, ? extends V> valueMapper = new Function<Map.Entry<K, V>, V>() {
-            @Override
-            public V apply(Map.Entry<K, V> t) {
-                return t.getValue();
-            }
-        };
+        final Function<Map.Entry<K, V>, ? extends K> keyExtractor = Fn.<K, V> key();
+        final Function<Map.Entry<K, V>, ? extends V> valueMapper = Fn.<K, V> value();
 
         return toMap(keyExtractor, valueMapper);
     }
 
     public static <K, V> Collector<Map.Entry<K, V>, ?, Map<K, V>> toMap(final BinaryOperator<V> mergeFunction) {
-        return Collectors.toMap(new Function<Map.Entry<K, V>, K>() {
-            @Override
-            public K apply(Map.Entry<K, V> entry) {
-                return entry.getKey();
-            }
-        }, new Function<Map.Entry<K, V>, V>() {
-            @Override
-            public V apply(Map.Entry<K, V> entry) {
-                return entry.getValue();
-            }
-        }, mergeFunction);
+        final Function<Map.Entry<K, V>, ? extends K> keyExtractor = Fn.<K, V> key();
+        final Function<Map.Entry<K, V>, ? extends V> valueMapper = Fn.<K, V> value();
+
+        return toMap(keyExtractor, valueMapper, mergeFunction);
     }
 
     public static <K, V, M extends Map<K, V>> Collector<Map.Entry<K, V>, ?, M> toMap(final Supplier<M> mapFactory) {
-        final Function<Map.Entry<K, V>, ? extends K> keyExtractor = new Function<Map.Entry<K, V>, K>() {
-            @Override
-            public K apply(Map.Entry<K, V> t) {
-                return t.getKey();
-            }
-        };
-
-        final Function<Map.Entry<K, V>, ? extends V> valueMapper = new Function<Map.Entry<K, V>, V>() {
-            @Override
-            public V apply(Map.Entry<K, V> t) {
-                return t.getValue();
-            }
-        };
+        final Function<Map.Entry<K, V>, ? extends K> keyExtractor = Fn.<K, V> key();
+        final Function<Map.Entry<K, V>, ? extends V> valueMapper = Fn.<K, V> value();
 
         return toMap(keyExtractor, valueMapper, mapFactory);
+    }
+
+    public static <K, V, M extends Map<K, V>> Collector<Map.Entry<K, V>, ?, M> toMap(final BinaryOperator<V> mergeFunction, final Supplier<M> mapFactory) {
+        final Function<Map.Entry<K, V>, ? extends K> keyExtractor = Fn.<K, V> key();
+        final Function<Map.Entry<K, V>, ? extends V> valueMapper = Fn.<K, V> value();
+
+        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
     /**
@@ -4231,13 +3965,6 @@ public final class Collectors {
         return toMap(keyExtractor, valueMapper, mergeFunction);
     }
 
-    public static <T, K, U, M extends Map<K, U>> Collector<T, ?, M> toMap(final Function<? super T, ? extends K> keyExtractor,
-            final Function<? super T, ? extends U> valueMapper, final Supplier<M> mapFactory) {
-        final BinaryOperator<U> mergeFunction = Fn.throwingMerger();
-
-        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
-    }
-
     /**
      * Returns a {@code Collector} that accumulates elements into a
      * {@code Map} whose keys and values are the result of applying the provided
@@ -4292,12 +4019,14 @@ public final class Collectors {
      */
     public static <T, K, U> Collector<T, ?, Map<K, U>> toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
             BinaryOperator<U> mergeFunction) {
-        final Supplier<Map<K, U>> mapFactory = new Supplier<Map<K, U>>() {
-            @Override
-            public Map<K, U> get() {
-                return new HashMap<>();
-            }
-        };
+        final Supplier<Map<K, U>> mapFactory = Suppliers.<K, U> ofMap();
+
+        return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
+    }
+
+    public static <T, K, U, M extends Map<K, U>> Collector<T, ?, M> toMap(final Function<? super T, ? extends K> keyExtractor,
+            final Function<? super T, ? extends U> valueMapper, final Supplier<M> mapFactory) {
+        final BinaryOperator<U> mergeFunction = Fn.throwingMerger();
 
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
@@ -4358,26 +4087,16 @@ public final class Collectors {
 
     public static <K, V> Collector<Map.Entry<K, V>, ?, ImmutableMap<K, V>> toImmutableMap() {
         final Collector<Map.Entry<K, V>, ?, Map<K, V>> downstream = toMap();
-
-        final Function<Map<K, V>, ImmutableMap<K, V>> finisher = new Function<Map<K, V>, ImmutableMap<K, V>>() {
-            @Override
-            public ImmutableMap<K, V> apply(Map<K, V> t) {
-                return ImmutableMap.of(t);
-            }
-        };
+        @SuppressWarnings("rawtypes")
+        final Function<Map<K, V>, ImmutableMap<K, V>> finisher = (Function) ImmutableMap_Finisher;
 
         return collectingAndThen(downstream, finisher);
     }
 
     public static <K, V> Collector<Map.Entry<K, V>, ?, ImmutableMap<K, V>> toImmutableMap(final BinaryOperator<V> mergeFunction) {
         final Collector<Map.Entry<K, V>, ?, Map<K, V>> downstream = toMap(mergeFunction);
-
-        final Function<Map<K, V>, ImmutableMap<K, V>> finisher = new Function<Map<K, V>, ImmutableMap<K, V>>() {
-            @Override
-            public ImmutableMap<K, V> apply(Map<K, V> t) {
-                return ImmutableMap.of(t);
-            }
-        };
+        @SuppressWarnings("rawtypes")
+        final Function<Map<K, V>, ImmutableMap<K, V>> finisher = (Function) ImmutableMap_Finisher;
 
         return collectingAndThen(downstream, finisher);
     }
@@ -4385,13 +4104,8 @@ public final class Collectors {
     public static <T, K, U> Collector<T, ?, ImmutableMap<K, U>> toImmutableMap(Function<? super T, ? extends K> keyExtractor,
             Function<? super T, ? extends U> valueMapper) {
         final Collector<T, ?, Map<K, U>> downstream = toMap(keyExtractor, valueMapper);
-
-        final Function<Map<K, U>, ImmutableMap<K, U>> finisher = new Function<Map<K, U>, ImmutableMap<K, U>>() {
-            @Override
-            public ImmutableMap<K, U> apply(Map<K, U> t) {
-                return ImmutableMap.of(t);
-            }
-        };
+        @SuppressWarnings("rawtypes")
+        final Function<Map<K, U>, ImmutableMap<K, U>> finisher = (Function) ImmutableMap_Finisher;
 
         return collectingAndThen(downstream, finisher);
     }
@@ -4399,13 +4113,8 @@ public final class Collectors {
     public static <T, K, U> Collector<T, ?, ImmutableMap<K, U>> toImmutableMap(Function<? super T, ? extends K> keyExtractor,
             Function<? super T, ? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
         final Collector<T, ?, Map<K, U>> downstream = toMap(keyExtractor, valueMapper, mergeFunction);
-
-        final Function<Map<K, U>, ImmutableMap<K, U>> finisher = new Function<Map<K, U>, ImmutableMap<K, U>>() {
-            @Override
-            public ImmutableMap<K, U> apply(Map<K, U> t) {
-                return ImmutableMap.of(t);
-            }
-        };
+        @SuppressWarnings("rawtypes")
+        final Function<Map<K, U>, ImmutableMap<K, U>> finisher = (Function) ImmutableMap_Finisher;
 
         return collectingAndThen(downstream, finisher);
     }
@@ -4434,12 +4143,7 @@ public final class Collectors {
      */
     public static <T, K, U> Collector<T, ?, LinkedHashMap<K, U>> toLinkedHashMap(Function<? super T, ? extends K> keyExtractor,
             Function<? super T, ? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
-        final Supplier<LinkedHashMap<K, U>> mapFactory = new Supplier<LinkedHashMap<K, U>>() {
-            @Override
-            public LinkedHashMap<K, U> get() {
-                return new LinkedHashMap<>();
-            }
-        };
+        final Supplier<LinkedHashMap<K, U>> mapFactory = Suppliers.ofLinkedHashMap();
 
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
@@ -4553,12 +4257,7 @@ public final class Collectors {
      */
     public static <T, K, U> Collector<T, ?, ConcurrentMap<K, U>> toConcurrentMap(Function<? super T, ? extends K> keyExtractor,
             Function<? super T, ? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
-        final Supplier<ConcurrentMap<K, U>> mapFactory = new Supplier<ConcurrentMap<K, U>>() {
-            @Override
-            public ConcurrentMap<K, U> get() {
-                return new ConcurrentHashMap<>();
-            }
-        };
+        final Supplier<ConcurrentMap<K, U>> mapFactory = Suppliers.ofConcurrentMap();
 
         return toConcurrentMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
@@ -4627,12 +4326,7 @@ public final class Collectors {
 
     public static <T, K, U> Collector<T, ?, BiMap<K, U>> toBiMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
             BinaryOperator<U> mergeFunction) {
-        final Supplier<BiMap<K, U>> mapFactory = new Supplier<BiMap<K, U>>() {
-            @Override
-            public BiMap<K, U> get() {
-                return new BiMap<>();
-            }
-        };
+        final Supplier<BiMap<K, U>> mapFactory = Suppliers.ofBiMap();
 
         return toBiMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
@@ -4642,74 +4336,39 @@ public final class Collectors {
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
+    @SuppressWarnings("rawtypes")
     public static <K, E> Collector<Map.Entry<? extends K, ? extends E>, ?, ListMultimap<K, E>> toMultimap() {
-        final Function<Map.Entry<? extends K, ? extends E>, ? extends K> keyExtractor = new Function<Map.Entry<? extends K, ? extends E>, K>() {
-            @Override
-            public K apply(Entry<? extends K, ? extends E> t) {
-                return t.getKey();
-            }
-        };
-
-        final Function<Map.Entry<? extends K, ? extends E>, ? extends E> valueMapper = new Function<Map.Entry<? extends K, ? extends E>, E>() {
-            @Override
-            public E apply(Entry<? extends K, ? extends E> t) {
-                return t.getValue();
-            }
-        };
+        final Function<Map.Entry<? extends K, ? extends E>, ? extends K> keyExtractor = (Function) Fn.key();
+        final Function<Map.Entry<? extends K, ? extends E>, ? extends E> valueMapper = (Function) Fn.value();
 
         return toMultimap(keyExtractor, valueMapper);
     }
 
+    @SuppressWarnings("rawtypes")
     public static <K, E, V extends Collection<E>, M extends Multimap<K, E, V>> Collector<Map.Entry<? extends K, ? extends E>, ?, M> toMultimap(
             final Supplier<M> mapFactory) {
-        final Function<Map.Entry<? extends K, ? extends E>, ? extends K> keyExtractor = new Function<Map.Entry<? extends K, ? extends E>, K>() {
-            @Override
-            public K apply(Entry<? extends K, ? extends E> t) {
-                return t.getKey();
-            }
-        };
-
-        final Function<Map.Entry<? extends K, ? extends E>, ? extends E> valueMapper = new Function<Map.Entry<? extends K, ? extends E>, E>() {
-            @Override
-            public E apply(Entry<? extends K, ? extends E> t) {
-                return t.getValue();
-            }
-        };
+        final Function<Map.Entry<? extends K, ? extends E>, ? extends K> keyExtractor = (Function) Fn.key();
+        final Function<Map.Entry<? extends K, ? extends E>, ? extends E> valueMapper = (Function) Fn.value();
 
         return toMultimap(keyExtractor, valueMapper, mapFactory);
     }
 
     public static <T, K> Collector<T, ?, ListMultimap<K, T>> toMultimap(Function<? super T, ? extends K> keyExtractor) {
-        final Function<? super T, ? extends T> valueMapper = new Function<T, T>() {
-            @Override
-            public T apply(T t) {
-                return t;
-            }
-        };
+        final Function<? super T, ? extends T> valueMapper = Fn.identity();
 
         return toMultimap(keyExtractor, valueMapper);
     }
 
     public static <T, K, V extends Collection<T>, M extends Multimap<K, T, V>> Collector<T, ?, M> toMultimap(
             final Function<? super T, ? extends K> keyExtractor, final Supplier<M> mapFactory) {
-        final Function<? super T, ? extends T> valueMapper = new Function<T, T>() {
-            @Override
-            public T apply(T t) {
-                return t;
-            }
-        };
+        final Function<? super T, ? extends T> valueMapper = Fn.identity();
 
         return toMultimap(keyExtractor, valueMapper, mapFactory);
     }
 
     public static <T, K, U> Collector<T, ?, ListMultimap<K, U>> toMultimap(Function<? super T, ? extends K> keyExtractor,
             Function<? super T, ? extends U> valueMapper) {
-        final Supplier<ListMultimap<K, U>> mapFactory = new Supplier<ListMultimap<K, U>>() {
-            @Override
-            public ListMultimap<K, U> get() {
-                return N.newListMultimap();
-            }
-        };
+        final Supplier<ListMultimap<K, U>> mapFactory = Suppliers.ofMultimap();
 
         return toMultimap(keyExtractor, valueMapper, mapFactory);
     }
