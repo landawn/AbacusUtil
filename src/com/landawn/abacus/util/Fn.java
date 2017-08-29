@@ -231,9 +231,9 @@ public final class Fn {
         // Singleton.
     }
 
-    public static <T> T get(final Supplier<T> supplier) {
-        return supplier.get();
-    }
+    //    public static <T> T get(final Supplier<T> supplier) {
+    //        return supplier.get();
+    //    }
 
     public static <T> Comparator<T> naturalOrder() {
         return Comparators.naturalOrder();
@@ -869,77 +869,256 @@ public final class Fn {
         return BiConsumers.ofPutAll();
     }
 
+    /**
+     * 
+     * @return
+     * @see Collectors#toList()
+     */
+    public static <T> Collector<T, ?, List<T>> toList() {
+        return Collectors.toList();
+    }
+
+    /**
+     * 
+     * @return
+     * @see Collectors#toImmutableList()
+     */
+    public static <T> Collector<T, ?, ImmutableList<T>> toImmutableList() {
+        return Collectors.toImmutableList();
+    }
+
+    /**
+     * 
+     * @return
+     * @see Collectors#toSet()
+     */
+    public static <T> Collector<T, ?, Set<T>> toSet() {
+        return Collectors.toSet();
+    }
+
+    /**
+     * 
+     * @return
+     * @see Collectors#toImmutableSet()
+     */
+    public static <T> Collector<T, ?, ImmutableSet<T>> toImmutableSet() {
+        return Collectors.toImmutableSet();
+    }
+
+    /**
+     * 
+     * @return
+     * @see Collectors#toMap()
+     */
     public static <K, V> Collector<Map.Entry<K, V>, ?, Map<K, V>> toMap() {
         return Collectors.toMap();
     }
 
+    /**
+     * 
+     * @param mergeFunction
+     * @return
+     * @see Collectors#toMap(BinaryOperator)
+     */
     public static <K, V> Collector<Map.Entry<K, V>, ?, Map<K, V>> toMap(final BinaryOperator<V> mergeFunction) {
         return Collectors.toMap(mergeFunction);
     }
 
+    /**
+     * 
+     * @param mapFactory
+     * @return
+     * @see Collectors#toMap(Supplier)
+     */
     public static <K, V, M extends Map<K, V>> Collector<Map.Entry<K, V>, ?, M> toMap(final Supplier<M> mapFactory) {
         return Collectors.toMap(mapFactory);
     }
 
+    /**
+     * 
+     * @param mergeFunction
+     * @param mapFactory
+     * @return
+     * @see Collectors#toMap(BinaryOperator, Supplier)
+     */
     public static <K, V, M extends Map<K, V>> Collector<Map.Entry<K, V>, ?, M> toMap(final BinaryOperator<V> mergeFunction, final Supplier<M> mapFactory) {
         return Collectors.toMap(mergeFunction, mapFactory);
     }
 
+    /**
+     * 
+     * @param keyExtractor
+     * @param valueMapper
+     * @return
+     * @see Collectors#toMap(Function, Function)
+     */
     public static <T, K, U> Collector<T, ?, Map<K, U>> toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper) {
         return Collectors.toMap(keyExtractor, valueMapper);
     }
 
-    public static <T, K, U, M extends Map<K, U>> Collector<T, ?, M> toMap(final Function<? super T, ? extends K> keyExtractor,
-            final Function<? super T, ? extends U> valueMapper, final Supplier<M> mapFactory) {
-        return Collectors.toMap(keyExtractor, valueMapper, mapFactory);
-    }
-
+    /**
+     * 
+     * @param keyExtractor
+     * @param valueMapper
+     * @param mergeFunction
+     * @return
+     * @see Collectors#toMap(Function, Function, BinaryOperator)
+     */
     public static <T, K, U> Collector<T, ?, Map<K, U>> toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
             BinaryOperator<U> mergeFunction) {
         return Collectors.toMap(keyExtractor, valueMapper, mergeFunction);
     }
 
+    /**
+     * 
+     * @param keyExtractor
+     * @param valueMapper
+     * @param mapFactory
+     * @return
+     * @see Collectors#toMap(Function, Function, Supplier)
+     */
+    public static <T, K, U, M extends Map<K, U>> Collector<T, ?, M> toMap(final Function<? super T, ? extends K> keyExtractor,
+            final Function<? super T, ? extends U> valueMapper, final Supplier<M> mapFactory) {
+        return Collectors.toMap(keyExtractor, valueMapper, mapFactory);
+    }
+
+    /**
+     * 
+     * @param keyExtractor
+     * @param valueMapper
+     * @param mergeFunction
+     * @param mapFactory
+     * @return
+     * @see Collectors#toMap(Function, Function, BinaryOperator, Supplier)
+     */
     public static <T, K, U, M extends Map<K, U>> Collector<T, ?, M> toMap(final Function<? super T, ? extends K> keyExtractor,
             final Function<? super T, ? extends U> valueMapper, final BinaryOperator<U> mergeFunction, final Supplier<M> mapFactory) {
         return Collectors.toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
-    public static <T> Collector<T, ?, List<T>> toList() {
-        return Collectors.toList();
+    /**
+     * 
+     * @param classifier
+     * @return
+     * @see Collectors#groupingBy(Function)
+     */
+    public static <T, K> Collector<T, ?, Map<K, List<T>>> groupingBy(Function<? super T, ? extends K> classifier) {
+        return Collectors.groupingBy(classifier);
     }
 
-    public static <T> Collector<T, ?, Set<T>> toSet() {
-        return Collectors.toSet();
+    /**
+     * 
+     * @param classifier
+     * @param mapFactory
+     * @return
+     * @see Collectors#groupingBy(Function, Supplier)
+     */
+    public static <T, K, M extends Map<K, List<T>>> Collector<T, ?, M> groupingBy(final Function<? super T, ? extends K> classifier,
+            final Supplier<M> mapFactory) {
+        return Collectors.groupingBy(classifier, mapFactory);
     }
 
+    /**
+     * 
+     * @param classifier
+     * @param downstream
+     * @return
+     * @see Collectors#groupingBy(Function, Collector)
+     */
+    @SuppressWarnings("hiding")
+    public static <T, K, A, D> Collector<T, ?, Map<K, D>> groupingBy(final Function<? super T, ? extends K> classifier,
+            final Collector<? super T, A, D> downstream) {
+        return Collectors.groupingBy(classifier, downstream);
+    }
+
+    /**
+     * 
+     * @param classifier
+     * @param downstream
+     * @param mapFactory
+     * @return
+     * @see Collectors#groupingBy(Function, Collector, Supplier)
+     */
+    @SuppressWarnings("hiding")
+    public static <T, K, A, D, M extends Map<K, D>> Collector<T, ?, M> groupingBy(final Function<? super T, ? extends K> classifier,
+            final Collector<? super T, A, D> downstream, final Supplier<M> mapFactory) {
+        return Collectors.groupingBy(classifier, downstream, mapFactory);
+    }
+
+    /**
+     * 
+     * @return
+     * @see Collectors#counting()
+     */
     public static <T> Collector<T, ?, Long> counting() {
         return Collectors.counting();
     }
 
+    /**
+     * 
+     * @return
+     * @see Collectors#countingInt()
+     */
     public static <T> Collector<T, ?, Integer> countingInt() {
         return Collectors.countingInt();
     }
 
+    /**
+     * 
+     * @param mapper
+     * @return
+     * @see Collectors#summingInt(ToIntFunction)
+     */
     public static <T> Collector<T, ?, Integer> summingInt(final ToIntFunction<? super T> mapper) {
         return Collectors.summingInt(mapper);
     }
 
+    /**
+     * 
+     * @param mapper
+     * @return
+     * @see Collectors#summingLong(ToLongFunction)
+     */
     public static <T> Collector<T, ?, Long> summingLong(final ToLongFunction<? super T> mapper) {
         return Collectors.summingLong(mapper);
     }
 
+    /**
+     * 
+     * @param mapper
+     * @return
+     * @see Collectors#summarizingDouble(ToDoubleFunction)
+     */
     public static <T> Collector<T, ?, Double> summingDouble(final ToDoubleFunction<? super T> mapper) {
         return Collectors.summingDouble(mapper);
     }
 
+    /**
+     * 
+     * @param mapper
+     * @return
+     * @see Collectors#averagingInt(ToIntFunction)
+     */
     public static <T> Collector<T, ?, Double> averagingInt(final ToIntFunction<? super T> mapper) {
         return Collectors.averagingInt(mapper);
     }
 
+    /**
+     * 
+     * @param mapper
+     * @return
+     * @see Collectors#averagingLong(ToLongFunction)
+     */
     public static <T> Collector<T, ?, Double> averagingLong(final ToLongFunction<? super T> mapper) {
         return Collectors.averagingLong(mapper);
     }
 
+    /**
+     * 
+     * @param mapper
+     * @return
+     * @see Collectors#averagingDouble(ToDoubleFunction)
+     */
     public static <T> Collector<T, ?, Double> averagingDouble(final ToDoubleFunction<? super T> mapper) {
         return Collectors.averagingDouble(mapper);
     }

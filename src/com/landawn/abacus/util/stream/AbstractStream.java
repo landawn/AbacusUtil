@@ -1867,6 +1867,14 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
+    public <A> A[] toArray(IntFunction<A[]> generator) {
+        final Object[] src = toArray();
+        final A[] res = generator.apply(src.length);
+        System.arraycopy(src, 0, res, 0, src.length);
+        return res;
+    }
+
+    @Override
     public DataSet toDataSet() {
         return toDataSet(null);
     }

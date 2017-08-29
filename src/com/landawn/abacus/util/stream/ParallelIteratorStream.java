@@ -58,7 +58,6 @@ import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
-import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.function.ToByteFunction;
@@ -1902,11 +1901,6 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     @Override
     <A> A[] toArray(A[] a) {
         return elements.toArray(a);
-    }
-
-    @Override
-    public <A> A[] toArray(IntFunction<A[]> generator) {
-        return toArray(generator.apply(0));
     }
 
     @Override
