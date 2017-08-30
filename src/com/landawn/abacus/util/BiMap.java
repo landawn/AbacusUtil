@@ -286,7 +286,7 @@ public final class BiMap<K, V> implements Map<K, V> {
      * 
      * @return
      */
-    public BiMap<V, K> inverse() {
+    public BiMap<V, K> inversed() {
         return (inverse == null) ? inverse = new BiMap<>(valueMap, keyMap) : inverse;
     }
 
