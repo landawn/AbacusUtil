@@ -909,7 +909,7 @@ public final class LongMultiset<E> implements Iterable<E> {
         }
     }
 
-    public boolean replaceIf(final long newOccurrences, Predicate<? super E> predicate) {
+    public boolean replaceIf(Predicate<? super E> predicate, final long newOccurrences) {
         checkNewOccurrences(newOccurrences);
 
         boolean modified = false;
@@ -925,7 +925,7 @@ public final class LongMultiset<E> implements Iterable<E> {
         return modified;
     }
 
-    public boolean replaceIf(final long newOccurrences, BiPredicate<? super E, ? super Long> predicate) {
+    public boolean replaceIf(BiPredicate<? super E, ? super Long> predicate, final long newOccurrences) {
         checkNewOccurrences(newOccurrences);
 
         boolean modified = false;

@@ -503,7 +503,7 @@ public final class IntList extends PrimitiveList<IntConsumer, IntPredicate, Inte
         }
     }
 
-    public boolean replaceIf(int newValue, IntPredicate predicate) {
+    public boolean replaceIf(IntPredicate predicate, int newValue) {
         boolean result = false;
 
         for (int i = 0, len = size(); i < len; i++) {

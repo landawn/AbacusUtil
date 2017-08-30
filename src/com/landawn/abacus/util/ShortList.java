@@ -461,7 +461,7 @@ public final class ShortList extends PrimitiveList<ShortConsumer, ShortPredicate
         }
     }
 
-    public boolean replaceIf(short newValue, ShortPredicate predicate) {
+    public boolean replaceIf(ShortPredicate predicate, short newValue) {
         boolean result = false;
 
         for (int i = 0, len = size(); i < len; i++) {

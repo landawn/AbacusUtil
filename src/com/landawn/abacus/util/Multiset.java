@@ -964,7 +964,7 @@ public final class Multiset<E> implements Iterable<E> {
         }
     }
 
-    public boolean replaceIf(final int newOccurrences, Predicate<? super E> predicate) {
+    public boolean replaceIf(Predicate<? super E> predicate, final int newOccurrences) {
         checkNewOccurrences(newOccurrences);
 
         boolean modified = false;
@@ -980,7 +980,7 @@ public final class Multiset<E> implements Iterable<E> {
         return modified;
     }
 
-    public boolean replaceIf(final int newOccurrences, BiPredicate<? super E, ? super Integer> predicate) {
+    public boolean replaceIf(BiPredicate<? super E, ? super Integer> predicate, final int newOccurrences) {
         checkNewOccurrences(newOccurrences);
 
         boolean modified = false;

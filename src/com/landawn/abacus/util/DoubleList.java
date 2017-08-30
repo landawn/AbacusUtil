@@ -445,7 +445,7 @@ public final class DoubleList extends PrimitiveList<DoubleConsumer, DoublePredic
         }
     }
 
-    public boolean replaceIf(double newValue, DoublePredicate predicate) {
+    public boolean replaceIf(DoublePredicate predicate, double newValue) {
         boolean result = false;
 
         for (int i = 0, len = size(); i < len; i++) {

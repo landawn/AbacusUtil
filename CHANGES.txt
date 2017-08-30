@@ -5,7 +5,11 @@
 
 2, Rename Fn.indexeed to Fn.indeXed.
 
-3, Improvements and bug fix.
+3, Remove Splitter0/MapSplitter, replaced with Splitter.defauLt()/MapSplitter.defauLt().
+
+4, Refactoring: change replaceIf(newValue, predicate) to replaceIf(predicate, newValue) in IntList/LongList/.../Multiset/LongMultiset/Multimap.
+
+5, Improvements and bug fix.
 
 
 ========Changes in 0.9.81=========================================================================

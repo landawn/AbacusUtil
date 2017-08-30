@@ -731,13 +731,13 @@ public class Multimap<K, E, V extends Collection<E>> {
 
     /**
      * Replace the specified value (one occurrence) from the value set associated with keys which satisfy the specified <code>predicate</code>.
-     * 
+     * @param predicate
      * @param oldValue
      * @param newValue
-     * @param predicate
+     * 
      * @return <code>true</code> if this Multimap is modified by this operation, otherwise <code>false</code>.
      */
-    public boolean replaceIf(Object oldValue, E newValue, Predicate<? super K> predicate) {
+    public boolean replaceIf(Predicate<? super K> predicate, Object oldValue, E newValue) {
         boolean modified = false;
 
         for (Map.Entry<K, V> entry : this.valueMap.entrySet()) {
@@ -751,13 +751,13 @@ public class Multimap<K, E, V extends Collection<E>> {
 
     /**
      * Replace the specified value (one occurrence) from the value set associated with keys which satisfy the specified <code>predicate</code>.
-     * 
+     * @param predicate
      * @param oldValue
      * @param newValue
-     * @param predicate
+     * 
      * @return <code>true</code> if this Multimap is modified by this operation, otherwise <code>false</code>.
      */
-    public boolean replaceIf(Object oldValue, E newValue, BiPredicate<? super K, ? super V> predicate) {
+    public boolean replaceIf(BiPredicate<? super K, ? super V> predicate, Object oldValue, E newValue) {
         boolean modified = false;
 
         for (Map.Entry<K, V> entry : this.valueMap.entrySet()) {
@@ -771,13 +771,13 @@ public class Multimap<K, E, V extends Collection<E>> {
 
     /**
      * Replace the specified value (one occurrence) from the value set associated with keys which satisfy the specified <code>predicate</code>.
-     * 
+     * @param predicate
      * @param oldValues
      * @param newValue
-     * @param predicate
+     * 
      * @return <code>true</code> if this Multimap is modified by this operation, otherwise <code>false</code>.
      */
-    public boolean replaceAllIf(Collection<?> oldValues, E newValue, Predicate<? super K> predicate) {
+    public boolean replaceAllIf(Predicate<? super K> predicate, Collection<?> oldValues, E newValue) {
         boolean modified = false;
 
         for (Map.Entry<K, V> entry : this.valueMap.entrySet()) {
@@ -794,13 +794,13 @@ public class Multimap<K, E, V extends Collection<E>> {
 
     /**
      * Replace the specified value (one occurrence) from the value set associated with keys which satisfy the specified <code>predicate</code>.
-     * 
+     * @param predicate
      * @param oldValues
      * @param newValue
-     * @param predicate
+     * 
      * @return <code>true</code> if this Multimap is modified by this operation, otherwise <code>false</code>.
      */
-    public boolean replaceAllIf(Collection<?> oldValues, E newValue, BiPredicate<? super K, ? super V> predicate) {
+    public boolean replaceAllIf(BiPredicate<? super K, ? super V> predicate, Collection<?> oldValues, E newValue) {
         boolean modified = false;
 
         for (Map.Entry<K, V> entry : this.valueMap.entrySet()) {

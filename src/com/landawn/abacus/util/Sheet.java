@@ -100,11 +100,11 @@ public final class Sheet<R, C, E> {
         }
     }
 
-    public static <R, C, E> Sheet<R, C, E> of(Collection<R> rowKeySet, Collection<C> columnKeySet, Object[][] rows) {
+    public static <R, C, E> Sheet<R, C, E> rows(Collection<R> rowKeySet, Collection<C> columnKeySet, Object[][] rows) {
         return new Sheet<>(rowKeySet, columnKeySet, rows);
     }
 
-    public static <R, C, E> Sheet<R, C, E> of(Collection<R> rowKeySet, Collection<C> columnKeySet, Collection<? extends Collection<? extends E>> rows) {
+    public static <R, C, E> Sheet<R, C, E> rows(Collection<R> rowKeySet, Collection<C> columnKeySet, Collection<? extends Collection<? extends E>> rows) {
         final Sheet<R, C, E> instance = new Sheet<>(rowKeySet, columnKeySet);
 
         final int rowLength = instance.rowLength();
@@ -140,7 +140,7 @@ public final class Sheet<R, C, E> {
 
     }
 
-    public static <R, C, E> Sheet<R, C, E> from(Collection<R> rowKeySet, Collection<C> columnKeySet, Object[][] columns) {
+    public static <R, C, E> Sheet<R, C, E> columns(Collection<R> rowKeySet, Collection<C> columnKeySet, Object[][] columns) {
         final Sheet<R, C, E> instance = new Sheet<>(rowKeySet, columnKeySet);
 
         final int rowLength = instance.rowLength();
@@ -167,7 +167,7 @@ public final class Sheet<R, C, E> {
         return instance;
     }
 
-    public static <R, C, E> Sheet<R, C, E> from(Collection<R> rowKeySet, Collection<C> columnKeySet, Collection<? extends Collection<? extends E>> columns) {
+    public static <R, C, E> Sheet<R, C, E> columns(Collection<R> rowKeySet, Collection<C> columnKeySet, Collection<? extends Collection<? extends E>> columns) {
         final Sheet<R, C, E> instance = new Sheet<>(rowKeySet, columnKeySet);
 
         final int rowLength = instance.rowLength();

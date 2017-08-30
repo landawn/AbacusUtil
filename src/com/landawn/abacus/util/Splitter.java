@@ -31,6 +31,7 @@ import com.landawn.abacus.util.function.Function;
  * @author Haiyang Li
  */
 public final class Splitter {
+    private static final Splitter DEFAULT = new Splitter(Joiner.DEFAULT_DELIMITER, null);
     private final String delimiter;
     private final String delimiterRegex;
     private int max = Integer.MAX_VALUE;
@@ -47,7 +48,7 @@ public final class Splitter {
      * @return
      */
     public static Splitter defauLt() {
-        return with(Joiner.DEFAULT_DELIMITER);
+        return DEFAULT;
     }
 
     public static Splitter with(CharSequence delimiter) {
@@ -236,74 +237,9 @@ public final class Splitter {
         return strs;
     }
 
-    public static final class Splitter0 {
-
-        private Splitter0() {
-            // singleton
-        }
-
-        public static List<String> split(CharSequence source) {
-            return Splitter.defauLt().split(source);
-        }
-
-        public static <T> List<T> split(Class<T> targetType, CharSequence source) {
-            return Splitter.defauLt().split(targetType, source);
-        }
-
-        public static <T> List<T> split(Type<T> type, CharSequence source) {
-            return Splitter.defauLt().split(type, source);
-        }
-
-        public static <T> List<T> split(String typeName, CharSequence source) {
-            return Splitter.defauLt().split(typeName, source);
-        }
-
-        public static <C extends Collection<String>> C split(final C output, CharSequence source) {
-            return Splitter.defauLt().split(output, source);
-        }
-
-        public static <T, C extends Collection<T>> C split(final C output, Class<T> targetType, CharSequence source) {
-            return Splitter.defauLt().split(output, targetType, source);
-        }
-
-        public static <T, C extends Collection<T>> C split(final C output, Type<T> type, CharSequence source) {
-            return Splitter.defauLt().split(output, type, source);
-        }
-
-        public static <T, C extends Collection<T>> C split(final C output, String typeName, CharSequence source) {
-            return Splitter.defauLt().split(output, typeName, source);
-        }
-
-        //        public static <C extends Collection<String>> C split(final Supplier<C> supplier, CharSequence source) {
-        //            return Splitter.defauLt().split(supplier, source);
-        //        }
-        //
-        //        public static <T, C extends Collection<T>> C split(final Supplier<C> supplier, Class<T> targetType, CharSequence source) {
-        //            return Splitter.defauLt().split(supplier, targetType, source);
-        //        }
-        //
-        //        public static <T, C extends Collection<T>> C split(final Supplier<C> supplier, Type<T> type, CharSequence source) {
-        //            return Splitter.defauLt().split(supplier, type, source);
-        //        }
-        //
-        //        public static <T, C extends Collection<T>> C split(final Supplier<C> supplier, String typeName, CharSequence source) {
-        //            return Splitter.defauLt().split(supplier, typeName, source);
-        //        }
-
-        public static <T> T split(CharSequence source, Function<? super String[], T> converter) {
-            return converter.apply(Splitter.defauLt().splitToArray(source));
-        }
-
-        public static String[] splitToArray(CharSequence source) {
-            return Splitter.defauLt().splitToArray(source);
-        }
-
-        public static <T> T splitToArray(Class<T> arrayType, CharSequence source) {
-            return Splitter.defauLt().splitToArray(arrayType, source);
-        }
-    }
-
     public static final class MapSplitter {
+        private static final MapSplitter DEFAULT = new MapSplitter(Joiner.DEFAULT_DELIMITER, Joiner.DEFAULT_KEY_VALUE_DELIMITER, null, null);
+
         private final String entryDelimiter;
         private final String keyValueDelimiter;
         private final String entryDelimiterRegex;
@@ -324,7 +260,7 @@ public final class Splitter {
          * @return
          */
         public static MapSplitter defauLt() {
-            return with(Joiner.DEFAULT_DELIMITER, Joiner.DEFAULT_KEY_VALUE_DELIMITER);
+            return DEFAULT;
         }
 
         public static MapSplitter with(CharSequence entryDelimiter, CharSequence keyValueDelimiter) {
@@ -563,64 +499,6 @@ public final class Splitter {
 
         public <T> T split(CharSequence source, Function<? super Map<String, String>, T> converter) {
             return converter.apply(this.split(source));
-        }
-
-        public static final class MapSplitter0 {
-            private MapSplitter0() {
-                // singleton
-            }
-
-            public static Map<String, String> split(CharSequence source) {
-                return MapSplitter.defauLt().split(source);
-            }
-
-            public static <K, V> Map<K, V> split(Class<K> keyType, Class<V> valueType, CharSequence source) {
-                return MapSplitter.defauLt().split(keyType, valueType, source);
-            }
-
-            public static <K, V> Map<K, V> split(Type<K> keyType, Type<V> valueType, CharSequence source) {
-                return MapSplitter.defauLt().split(keyType, valueType, source);
-            }
-
-            public static <K, V> Map<K, V> split(String keyTypeName, String valueTypeName, CharSequence source) {
-                return MapSplitter.defauLt().split(keyTypeName, valueTypeName, source);
-            }
-
-            public static <M extends Map<String, String>> M split(final M output, CharSequence source) {
-                return MapSplitter.defauLt().split(output, source);
-            }
-
-            public static <K, V, M extends Map<K, V>> M split(final M output, Class<K> keyType, Class<V> valueType, CharSequence source) {
-                return MapSplitter.defauLt().split(output, keyType, valueType, source);
-            }
-
-            public static <K, V, M extends Map<K, V>> M split(final M output, Type<K> keyType, Type<V> valueType, CharSequence source) {
-                return MapSplitter.defauLt().split(output, keyType, valueType, source);
-            }
-
-            public static <K, V, M extends Map<K, V>> M split(final M output, String keyTypeName, String valueTypeName, CharSequence source) {
-                return MapSplitter.defauLt().split(output, keyTypeName, valueTypeName, source);
-            }
-
-            //            public static <M extends Map<String, String>> M split(final Supplier<M> supplier, CharSequence source) {
-            //                return MapSplitter.defauLt().split(supplier, source);
-            //            }
-            //
-            //            public static <K, V, M extends Map<K, V>> M split(final Supplier<M> supplier, Class<K> keyType, Class<V> valueType, CharSequence source) {
-            //                return MapSplitter.defauLt().split(supplier, keyType, valueType, source);
-            //            }
-            //
-            //            public static <K, V, M extends Map<K, V>> M split(final Supplier<M> supplier, Type<K> keyType, Type<V> valueType, CharSequence source) {
-            //                return MapSplitter.defauLt().split(supplier, keyType, valueType, source);
-            //            }
-            //
-            //            public static <K, V, M extends Map<K, V>> M split(final Supplier<M> supplier, String keyTypeName, String valueTypeName, CharSequence source) {
-            //                return MapSplitter.defauLt().split(supplier, keyTypeName, valueTypeName, source);
-            //            }
-
-            public static <T> T split(CharSequence source, Function<? super Map<String, String>, T> converter) {
-                return converter.apply(MapSplitter.defauLt().split(source));
-            }
         }
     }
 }

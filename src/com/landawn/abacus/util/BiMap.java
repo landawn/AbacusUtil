@@ -210,6 +210,9 @@ public final class BiMap<K, V> implements Map<K, V> {
         return ImmutableSet.of(valueMap.keySet());
     }
 
+    /**
+     * Returns a Set of Immutable entry.
+     */
     @Override
     public Set<Map.Entry<K, V>> entrySet() {
         return new AbstractSet<Map.Entry<K, V>>() {

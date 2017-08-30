@@ -445,7 +445,7 @@ public final class FloatList extends PrimitiveList<FloatConsumer, FloatPredicate
         }
     }
 
-    public boolean replaceIf(float newValue, FloatPredicate predicate) {
+    public boolean replaceIf(FloatPredicate predicate, float newValue) {
         boolean result = false;
 
         for (int i = 0, len = size(); i < len; i++) {

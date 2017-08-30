@@ -445,7 +445,7 @@ public final class BooleanList extends PrimitiveList<BooleanConsumer, BooleanPre
         }
     }
 
-    public boolean replaceIf(boolean newValue, BooleanPredicate predicate) {
+    public boolean replaceIf(BooleanPredicate predicate, boolean newValue) {
         boolean result = false;
 
         for (int i = 0, len = size(); i < len; i++) {

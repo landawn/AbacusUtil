@@ -461,7 +461,7 @@ public final class LongList extends PrimitiveList<LongConsumer, LongPredicate, L
         }
     }
 
-    public boolean replaceIf(long newValue, LongPredicate predicate) {
+    public boolean replaceIf(LongPredicate predicate, long newValue) {
         boolean result = false;
 
         for (int i = 0, len = size(); i < len; i++) {

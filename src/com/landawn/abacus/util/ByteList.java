@@ -463,7 +463,7 @@ public final class ByteList extends PrimitiveList<ByteConsumer, BytePredicate, B
         }
     }
 
-    public boolean replaceIf(byte newValue, BytePredicate predicate) {
+    public boolean replaceIf(BytePredicate predicate, byte newValue) {
         boolean result = false;
 
         for (int i = 0, len = size(); i < len; i++) {

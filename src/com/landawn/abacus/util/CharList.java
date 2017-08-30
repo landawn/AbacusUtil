@@ -493,7 +493,7 @@ public final class CharList extends PrimitiveList<CharConsumer, CharPredicate, C
         }
     }
 
-    public boolean replaceIf(char newValue, CharPredicate predicate) {
+    public boolean replaceIf(CharPredicate predicate, char newValue) {
         boolean result = false;
 
         for (int i = 0, len = size(); i < len; i++) {

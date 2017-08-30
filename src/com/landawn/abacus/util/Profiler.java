@@ -88,20 +88,19 @@ public final class Profiler {
         return run(command, label, getMethod(command, "run"), null, null, null, null, null, threadNum, threadDelay, loopNum, loopDelay, roundNum);
     }
 
-    public static MultiLoopsStatistics run(final Object instance, final String method, final int threadNum, final int loopNum, final int roundNum) {
+    static MultiLoopsStatistics run(final Object instance, final String method, final int threadNum, final int loopNum, final int roundNum) {
         return run(instance, getMethod(instance, method), threadNum, loopNum, roundNum);
     }
 
-    public static MultiLoopsStatistics run(final Object instance, final Method method, final int threadNum, final int loopNum, final int roundNum) {
+    static MultiLoopsStatistics run(final Object instance, final Method method, final int threadNum, final int loopNum, final int roundNum) {
         return run(instance, method, (Object) null, threadNum, loopNum, roundNum);
     }
 
-    public static MultiLoopsStatistics run(final Object instance, final Method method, final Object arg, final int threadNum, final int loopNum,
-            final int roundNum) {
+    static MultiLoopsStatistics run(final Object instance, final Method method, final Object arg, final int threadNum, final int loopNum, final int roundNum) {
         return run(instance, method, arg, threadNum, 0, loopNum, 0, roundNum);
     }
 
-    public static MultiLoopsStatistics run(final Object instance, final Method method, final Object arg, final int threadNum, final long threadDelay,
+    static MultiLoopsStatistics run(final Object instance, final Method method, final Object arg, final int threadNum, final long threadDelay,
             final int loopNum, final long loopDelay, final int roundNum) {
         return run(instance, method, ((arg == null) ? null : N.asList(arg)), null, null, null, null, threadNum, threadDelay, loopNum, loopDelay, roundNum);
     }
@@ -116,7 +115,7 @@ public final class Profiler {
      * @param roundNum
      * @return
      */
-    public static MultiLoopsStatistics run(final Object instance, final Method method, final List<?> args, final int threadNum, final int loopNum,
+    static MultiLoopsStatistics run(final Object instance, final Method method, final List<?> args, final int threadNum, final int loopNum,
             final int roundNum) {
         return run(instance, method, args, null, null, null, null, threadNum, 0, loopNum, 0, roundNum);
     }
@@ -139,9 +138,9 @@ public final class Profiler {
      * @param roundNum
      * @return
      */
-    public static MultiLoopsStatistics run(final Object instance, final Method method, final List<?> args, final Method setUpForMethod,
-            final Method tearDownForMethod, final Method setUpForLoop, final Method tearDownForLoop, final int threadNum, final long threadDelay,
-            final int loopNum, final long loopDelay, final int roundNum) {
+    static MultiLoopsStatistics run(final Object instance, final Method method, final List<?> args, final Method setUpForMethod, final Method tearDownForMethod,
+            final Method setUpForLoop, final Method tearDownForLoop, final int threadNum, final long threadDelay, final int loopNum, final long loopDelay,
+            final int roundNum) {
         return run(instance, method.getName(), method, args, setUpForMethod, tearDownForMethod, setUpForLoop, tearDownForLoop, threadNum, threadDelay, loopNum,
                 loopDelay, roundNum);
     }
