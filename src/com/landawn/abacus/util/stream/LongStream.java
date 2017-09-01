@@ -221,10 +221,9 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
      *
      * <p>Example:
      * <pre>
-     * identity: 0
      * accumulator: (a, b) -&gt; a + b
      * stream: [1, 2, 3, 4, 5]
-     * result: [0, 1, 3, 6, 10, 15]
+     * result: [1, 3, 6, 10, 15]
      * </pre>
      * 
      * <br />

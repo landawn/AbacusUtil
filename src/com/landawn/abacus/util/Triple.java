@@ -18,7 +18,9 @@ package com.landawn.abacus.util;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
+import com.landawn.abacus.util.function.CharConsumer;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.DoubleConsumer;
 import com.landawn.abacus.util.function.FloatConsumer;
@@ -72,14 +74,30 @@ public final class Triple<L, M, R> {
     public static <T> Triple<T, T, T> from(Collection<? extends T> c) {
         if (N.isNullOrEmpty(c)) {
             return new Triple<>(null, null, null);
-        } else if (c.size() == 1) {
-            return new Triple<T, T, T>(c.iterator().next(), null, null);
+        }
+
+        final List<T> list = c instanceof List ? (List<T>) c : null;
+
+        if (c.size() == 1) {
+            if (list != null) {
+                return new Triple<T, T, T>(list.get(0), null, null);
+            } else {
+                return new Triple<T, T, T>(c.iterator().next(), null, null);
+            }
         } else if (c.size() == 2) {
-            final Iterator<? extends T> iter = c.iterator();
-            return new Triple<T, T, T>(iter.next(), iter.next(), null);
+            if (list != null) {
+                return new Triple<T, T, T>(list.get(0), list.get(1), null);
+            } else {
+                final Iterator<? extends T> iter = c.iterator();
+                return new Triple<T, T, T>(iter.next(), iter.next(), null);
+            }
         } else {
-            final Iterator<? extends T> iter = c.iterator();
-            return new Triple<T, T, T>(iter.next(), iter.next(), iter.next());
+            if (list != null) {
+                return new Triple<T, T, T>(list.get(0), list.get(1), list.get(2));
+            } else {
+                final Iterator<? extends T> iter = c.iterator();
+                return new Triple<T, T, T>(iter.next(), iter.next(), iter.next());
+            }
         }
     }
 
@@ -226,6 +244,82 @@ public final class Triple<L, M, R> {
     @Override
     public String toString() {
         return "[" + N.toString(left) + ", " + N.toString(middle) + ", " + N.toString(right) + "]";
+    }
+
+    public static final class CharTriple {
+        public final char _1;
+        public final char _2;
+        public final char _3;
+
+        private CharTriple(char _1, char _2, char _3) {
+            this._1 = _1;
+            this._2 = _2;
+            this._3 = _3;
+        }
+
+        public static CharTriple of(char _1, char _2, char _3) {
+            return new CharTriple(_1, _2, _3);
+        }
+
+        public char min() {
+            return N.min(_1, _2, _3);
+        }
+
+        public char max() {
+            return N.max(_1, _2, _3);
+        }
+
+        public char median() {
+            return N.median(_1, _2, _3);
+        }
+
+        public CharTriple reversed() {
+            return new CharTriple(_3, _2, _1);
+        }
+
+        public char[] toArray() {
+            return new char[] { _1, _2, _3 };
+        }
+
+        public void forEach(CharConsumer comsumer) {
+            comsumer.accept(this._1);
+            comsumer.accept(this._2);
+            comsumer.accept(this._3);
+        }
+
+        public void accept(Consumer<CharTriple> action) {
+            action.accept(this);
+        }
+
+        public <U> U apply(Function<CharTriple, U> action) {
+            return action.apply(this);
+        }
+
+        public Stream<CharTriple> stream() {
+            return Stream.of(this);
+        }
+
+        @Override
+        public int hashCode() {
+            return (31 * (31 * _1 + this._2)) + _3;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            } else if (!(obj instanceof CharTriple)) {
+                return false;
+            } else {
+                CharTriple other = (CharTriple) obj;
+                return this._1 == other._1 && this._2 == other._2 && this._3 == other._3;
+            }
+        }
+
+        @Override
+        public String toString() {
+            return "[" + this._1 + ", " + this._2 + ", " + this._3 + "]";
+        }
     }
 
     public static final class IntTriple {

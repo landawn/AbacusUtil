@@ -1117,10 +1117,10 @@ abstract class AbstractStream<T> extends Stream<T> {
         final boolean isParallelStream = this.isParallel();
 
         return flatMap(new Function<T, Stream<Pair<T, U>>>() {
-            private final MutableBoolean joined = MutableBoolean.of(false);
-
             @Override
             public Stream<Pair<T, U>> apply(final T t) {
+                final MutableBoolean joined = MutableBoolean.of(false);
+
                 return s.filter(new Predicate<U>() {
                     @Override
                     public boolean test(final U u) {
@@ -1196,10 +1196,10 @@ abstract class AbstractStream<T> extends Stream<T> {
         final Stream<U> s = Stream.of(b).cached();
 
         return flatMap(new Function<T, Stream<Pair<T, U>>>() {
-            private final MutableBoolean joined = MutableBoolean.of(false);
-
             @Override
             public Stream<Pair<T, U>> apply(final T t) {
+                final MutableBoolean joined = MutableBoolean.of(false);
+
                 return s.filter(new Predicate<U>() {
                     @Override
                     public boolean test(final U u) {
@@ -1279,7 +1279,6 @@ abstract class AbstractStream<T> extends Stream<T> {
         final boolean isParallelStream = this.isParallel();
 
         return flatMap(new Function<T, Stream<Pair<T, U>>>() {
-
             @Override
             public Stream<Pair<T, U>> apply(final T t) {
                 return s.filter(new Predicate<U>() {

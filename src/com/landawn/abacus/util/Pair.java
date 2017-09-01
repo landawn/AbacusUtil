@@ -18,10 +18,12 @@ package com.landawn.abacus.util;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
+import com.landawn.abacus.util.function.CharConsumer;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.DoubleConsumer;
 import com.landawn.abacus.util.function.FloatConsumer;
@@ -68,11 +70,23 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
     public static <T> Pair<T, T> from(Collection<? extends T> c) {
         if (N.isNullOrEmpty(c)) {
             return new Pair<>(null, null);
-        } else if (c.size() == 1) {
-            return new Pair<T, T>(c.iterator().next(), null);
+        }
+
+        final List<T> list = c instanceof List ? (List<T>) c : null;
+
+        if (c.size() == 1) {
+            if (list != null) {
+                return new Pair<T, T>(list.get(0), null);
+            } else {
+                return new Pair<T, T>(c.iterator().next(), null);
+            }
         } else {
-            final Iterator<? extends T> iter = c.iterator();
-            return new Pair<T, T>(iter.next(), iter.next());
+            if (list != null) {
+                return new Pair<T, T>(list.get(0), list.get(1));
+            } else {
+                final Iterator<? extends T> iter = c.iterator();
+                return new Pair<T, T>(iter.next(), iter.next());
+            }
         }
     }
 
@@ -210,6 +224,75 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
     @Override
     public String toString() {
         return "[" + N.toString(left) + ", " + N.toString(right) + "]";
+    }
+
+    public static final class CharPair {
+        public final char _1;
+        public final char _2;
+
+        private CharPair(char _1, char _2) {
+            this._1 = _1;
+            this._2 = _2;
+        }
+
+        public static CharPair of(char _1, char _2) {
+            return new CharPair(_1, _2);
+        }
+
+        public char min() {
+            return N.min(_1, _2);
+        }
+
+        public char max() {
+            return N.max(_1, _2);
+        }
+
+        public CharPair reversed() {
+            return new CharPair(_2, _1);
+        }
+
+        public char[] toArray() {
+            return new char[] { _1, _2 };
+        }
+
+        public void forEach(CharConsumer comsumer) {
+            comsumer.accept(this._1);
+            comsumer.accept(this._2);
+        }
+
+        public void accept(Consumer<CharPair> action) {
+            action.accept(this);
+        }
+
+        public <U> U apply(Function<CharPair, U> action) {
+            return action.apply(this);
+        }
+
+        public Stream<CharPair> stream() {
+            return Stream.of(this);
+        }
+
+        @Override
+        public int hashCode() {
+            return 31 * _1 + this._2;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            } else if (!(obj instanceof CharPair)) {
+                return false;
+            } else {
+                CharPair other = (CharPair) obj;
+                return this._1 == other._1 && this._2 == other._2;
+            }
+        }
+
+        @Override
+        public String toString() {
+            return "[" + this._1 + ", " + this._2 + "]";
+        }
     }
 
     public static final class IntPair {
