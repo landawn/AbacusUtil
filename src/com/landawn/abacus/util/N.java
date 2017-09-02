@@ -27197,7 +27197,7 @@ public final class N {
             return false;
         } else if (toIndex - fromIndex == 2) {
             return a[fromIndex] == a[fromIndex + 1];
-        } else if (toIndex - fromIndex == 2) {
+        } else if (toIndex - fromIndex == 3) {
             return a[fromIndex] == a[fromIndex + 1] || a[fromIndex] == a[fromIndex + 2] || a[fromIndex + 1] == a[fromIndex + 2];
         }
 
@@ -27241,7 +27241,7 @@ public final class N {
             return false;
         } else if (toIndex - fromIndex == 2) {
             return a[fromIndex] == a[fromIndex + 1];
-        } else if (toIndex - fromIndex == 2) {
+        } else if (toIndex - fromIndex == 3) {
             return a[fromIndex] == a[fromIndex + 1] || a[fromIndex] == a[fromIndex + 2] || a[fromIndex + 1] == a[fromIndex + 2];
         }
 
@@ -27285,7 +27285,7 @@ public final class N {
             return false;
         } else if (toIndex - fromIndex == 2) {
             return a[fromIndex] == a[fromIndex + 1];
-        } else if (toIndex - fromIndex == 2) {
+        } else if (toIndex - fromIndex == 3) {
             return a[fromIndex] == a[fromIndex + 1] || a[fromIndex] == a[fromIndex + 2] || a[fromIndex + 1] == a[fromIndex + 2];
         }
 
@@ -27329,7 +27329,7 @@ public final class N {
             return false;
         } else if (toIndex - fromIndex == 2) {
             return a[fromIndex] == a[fromIndex + 1];
-        } else if (toIndex - fromIndex == 2) {
+        } else if (toIndex - fromIndex == 3) {
             return a[fromIndex] == a[fromIndex + 1] || a[fromIndex] == a[fromIndex + 2] || a[fromIndex + 1] == a[fromIndex + 2];
         }
 
@@ -27373,7 +27373,7 @@ public final class N {
             return false;
         } else if (toIndex - fromIndex == 2) {
             return a[fromIndex] == a[fromIndex + 1];
-        } else if (toIndex - fromIndex == 2) {
+        } else if (toIndex - fromIndex == 3) {
             return a[fromIndex] == a[fromIndex + 1] || a[fromIndex] == a[fromIndex + 2] || a[fromIndex + 1] == a[fromIndex + 2];
         }
 
@@ -27417,7 +27417,7 @@ public final class N {
             return false;
         } else if (toIndex - fromIndex == 2) {
             return N.equals(a[fromIndex], a[fromIndex + 1]);
-        } else if (toIndex - fromIndex == 2) {
+        } else if (toIndex - fromIndex == 3) {
             return N.equals(a[fromIndex], a[fromIndex + 1]) || N.equals(a[fromIndex], a[fromIndex + 2]) || N.equals(a[fromIndex + 1], a[fromIndex + 2]);
         }
 
@@ -27461,7 +27461,7 @@ public final class N {
             return false;
         } else if (toIndex - fromIndex == 2) {
             return N.equals(a[fromIndex], a[fromIndex + 1]);
-        } else if (toIndex - fromIndex == 2) {
+        } else if (toIndex - fromIndex == 3) {
             return N.equals(a[fromIndex], a[fromIndex + 1]) || N.equals(a[fromIndex], a[fromIndex + 2]) || N.equals(a[fromIndex + 1], a[fromIndex + 2]);
         }
 
@@ -27505,7 +27505,7 @@ public final class N {
             return false;
         } else if (toIndex - fromIndex == 2) {
             return N.equals(a[fromIndex], a[fromIndex + 1]);
-        } else if (toIndex - fromIndex == 2) {
+        } else if (toIndex - fromIndex == 3) {
             return N.equals(a[fromIndex], a[fromIndex + 1]) || N.equals(a[fromIndex], a[fromIndex + 2]) || N.equals(a[fromIndex + 1], a[fromIndex + 2]);
         }
 
