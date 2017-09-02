@@ -477,14 +477,25 @@ public final class N {
     static final String LOCAL_DATETIME_FORMAT_SLASH = "yyyy/MM/dd HH:mm:ss";
     public static final String LOCAL_TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
     static final String LOCAL_TIMESTAMP_FORMAT_SLASH = "yyyy/MM/dd HH:mm:ss.SSS";
+
     /**
      * It's default date/time format.
      */
     public static final String ISO_8601_DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
+    static final String ISO_8601_DATETIME_FORMAT_SLASH = "yyyy/MM/dd'T'HH:mm:ss'Z'";
     /**
      * It's default timestamp format.
      */
     public static final String ISO_8601_TIMESTAMP_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
+    static final String ISO_8601_TIMESTAMP_FORMAT_SLASH = "yyyy/MM/dd'T'HH:mm:ss.SSS'Z'";
+
+    /**
+     * This constant defines the date format specified by
+     * RFC 1123 / RFC 822. Used for parsing via `SimpleDateFormat` as well as
+     * error messages.
+     */
+    public final static String RFC1123_DATE_FORMAT = "EEE, dd MMM yyyy HH:mm:ss zzz";
+
     private static final Map<String, Queue<DateFormat>> dfPool = new ObjectPool<>(64);
     private static final Map<TimeZone, Queue<Calendar>> calendarPool = new ObjectPool<>(64);
     private static final Queue<DateFormat> utcTimestampDFPool = new ArrayBlockingQueue<>(POOL_SIZE);
@@ -2471,6 +2482,15 @@ public final class N {
         }
 
         format = checkDateFormat(date, format);
+
+        if (N.isNullOrEmpty(format)) {
+            if (timeZone == null) {
+                return ISO8601Util.parse(date).getTime();
+            } else {
+                throw new RuntimeException("Unsupported date format: " + format + " with time zone: " + timeZone);
+            }
+        }
+
         timeZone = checkTimeZone(format, timeZone);
 
         long timeInMillis = fastDateParse(date, format, timeZone);
@@ -2579,9 +2599,6 @@ public final class N {
                         return LOCAL_DATETIME_FORMAT;
                     }
 
-                case 20:
-                    return ISO_8601_DATETIME_FORMAT;
-
                 case 23:
                     if (str.charAt(4) == '/') {
                         return LOCAL_TIMESTAMP_FORMAT_SLASH;
@@ -2590,10 +2607,27 @@ public final class N {
                     }
 
                 case 24:
-                    return ISO_8601_TIMESTAMP_FORMAT;
+                    if (str.charAt(4) == '/') {
+                        return ISO_8601_DATETIME_FORMAT_SLASH;
+                    } else {
+                        return ISO_8601_DATETIME_FORMAT;
+                    }
+
+                case 28:
+                    if (str.charAt(4) == '/') {
+                        return ISO_8601_TIMESTAMP_FORMAT_SLASH;
+                    } else {
+                        return ISO_8601_TIMESTAMP_FORMAT;
+                    }
+
+                case 29:
+                    if (str.charAt(3) == ',') {
+                        return RFC1123_DATE_FORMAT;
+                    }
 
                 default:
-                    throw new AbacusException("No valid date format found for: " + str);
+                    // throw new AbacusException("No valid date format found for: " + str);
+                    return null;
             }
         }
 
@@ -2609,11 +2643,11 @@ public final class N {
     }
 
     private static long fastDateParse(final String str, final String format, final TimeZone timeZone) {
-        if (!((str.length() == 20) || (str.length() == 24) || (str.length() == 19) || (str.length() == 23))) {
+        if (!((str.length() == 24) || (str.length() == 20) || (str.length() == 19) || (str.length() == 23))) {
             return 0;
         }
 
-        if (!(format.equals(ISO_8601_DATETIME_FORMAT) || format.equals(ISO_8601_TIMESTAMP_FORMAT) || format.equals(LOCAL_DATETIME_FORMAT)
+        if (!(format.equals(ISO_8601_TIMESTAMP_FORMAT) || format.equals(ISO_8601_DATETIME_FORMAT) || format.equals(LOCAL_DATETIME_FORMAT)
                 || format.equals(LOCAL_TIMESTAMP_FORMAT))) {
             return 0;
         }
