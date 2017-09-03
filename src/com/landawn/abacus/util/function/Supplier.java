@@ -29,7 +29,19 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import com.landawn.abacus.util.Fn;
+import com.landawn.abacus.util.BiMap;
+import com.landawn.abacus.util.BooleanList;
+import com.landawn.abacus.util.ByteList;
+import com.landawn.abacus.util.CharList;
+import com.landawn.abacus.util.DoubleList;
+import com.landawn.abacus.util.FloatList;
+import com.landawn.abacus.util.Fn.Suppliers;
+import com.landawn.abacus.util.IntList;
+import com.landawn.abacus.util.ListMultimap;
+import com.landawn.abacus.util.LongList;
+import com.landawn.abacus.util.LongMultiset;
+import com.landawn.abacus.util.Multiset;
+import com.landawn.abacus.util.ShortList;
 
 /**
  * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
@@ -42,59 +54,111 @@ public interface Supplier<T> extends java.util.function.Supplier<T> {
     @Override
     T get();
 
+    public static Supplier<BooleanList> ofBooleanList() {
+        return Suppliers.ofBooleanList();
+    }
+
+    public static Supplier<CharList> ofCharList() {
+        return Suppliers.ofCharList();
+    }
+
+    public static Supplier<ByteList> ofByteList() {
+        return Suppliers.ofByteList();
+    }
+
+    public static Supplier<ShortList> ofShortList() {
+        return Suppliers.ofShortList();
+    }
+
+    public static Supplier<IntList> ofIntList() {
+        return Suppliers.ofIntList();
+    }
+
+    public static Supplier<LongList> ofLongList() {
+        return Suppliers.ofLongList();
+    }
+
+    public static Supplier<FloatList> ofFloatList() {
+        return Suppliers.ofFloatList();
+    }
+
+    public static Supplier<DoubleList> ofDoubleList() {
+        return Suppliers.ofDoubleList();
+    }
+
     static <T> Supplier<List<T>> ofList() {
-        return Fn.Suppliers.ofList();
+        return Suppliers.ofList();
     }
 
     static <T> Supplier<LinkedList<T>> ofLinkedList() {
-        return Fn.Suppliers.ofLinkedList();
+        return Suppliers.ofLinkedList();
     }
 
     static <T> Supplier<Set<T>> ofSet() {
-        return Fn.Suppliers.ofSet();
+        return Suppliers.ofSet();
     }
 
     static <T> Supplier<LinkedHashSet<T>> ofLinkedHashSet() {
-        return Fn.Suppliers.ofLinkedHashSet();
+        return Suppliers.ofLinkedHashSet();
     }
 
     static <T> Supplier<TreeSet<T>> ofTreeSet() {
-        return Fn.Suppliers.ofTreeSet();
+        return Suppliers.ofTreeSet();
     }
 
     static <K, V> Supplier<Map<K, V>> ofMap() {
-        return Fn.Suppliers.ofMap();
+        return Suppliers.ofMap();
     }
 
     static <K, V> Supplier<LinkedHashMap<K, V>> ofLinkedHashMap() {
-        return Fn.Suppliers.ofLinkedHashMap();
+        return Suppliers.ofLinkedHashMap();
     }
 
     static <K, V> Supplier<TreeMap<K, V>> ofTreeMap() {
-        return Fn.Suppliers.ofTreeMap();
+        return Suppliers.ofTreeMap();
     }
 
     static <K, V> Supplier<ConcurrentHashMap<K, V>> ofConcurrentHashMap() {
-        return Fn.Suppliers.ofConcurrentHashMap();
+        return Suppliers.ofConcurrentHashMap();
     }
 
     static <T> Supplier<Queue<T>> ofQueue() {
-        return Fn.Suppliers.ofQueue();
+        return Suppliers.ofQueue();
     }
 
     static <T> Supplier<ArrayDeque<T>> ofArrayDeque() {
-        return Fn.Suppliers.ofArrayDeque();
+        return Suppliers.ofArrayDeque();
     }
 
     static <T> Supplier<LinkedBlockingQueue<T>> ofLinkedBlockingQueue() {
-        return Fn.Suppliers.ofLinkedBlockingQueue();
+        return Suppliers.ofLinkedBlockingQueue();
     }
 
     static <T> Supplier<ConcurrentLinkedQueue<T>> ofConcurrentLinkedQueue() {
-        return Fn.Suppliers.ofConcurrentLinkedQueue();
+        return Suppliers.ofConcurrentLinkedQueue();
     }
 
     static <T> Supplier<PriorityQueue<T>> ofPriorityQueue() {
-        return Fn.Suppliers.ofPriorityQueue();
+        return Suppliers.ofPriorityQueue();
+    }
+
+    public static <T> Supplier<Multiset<T>> ofMultiset() {
+        return Suppliers.ofMultiset();
+    }
+
+    public static <T> Supplier<LongMultiset<T>> ofLongMultiset() {
+        return Suppliers.ofLongMultiset();
+    }
+
+    public static <K, v> Supplier<ListMultimap<K, v>> ofMultimap() {
+        return Suppliers.ofMultimap();
+    }
+
+    public static <K, V> Supplier<BiMap<K, V>> ofBiMap() {
+        return Suppliers.ofBiMap();
+    }
+
+    public static Supplier<StringBuilder> ofStringBuilder() {
+        return Suppliers.ofStringBuilder();
     }
 }
