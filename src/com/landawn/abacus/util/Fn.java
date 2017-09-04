@@ -998,6 +998,50 @@ public final class Fn {
 
     /**
      * 
+     * @return
+     * @see Collectors#toImmutableMap()
+     */
+    public static <K, V> Collector<Map.Entry<K, V>, ?, ImmutableMap<K, V>> toImmutableMap() {
+        return Collectors.toImmutableMap(Fn.IDENTITY, Fn.IDENTITY);
+    }
+
+    /**
+     * 
+     * @param mergeFunction
+     * @return
+     * @see Collectors#toImmutableMap(BinaryOperator)
+     */
+    public static <K, V> Collector<Map.Entry<K, V>, ?, ImmutableMap<K, V>> toImmutableMap(final BinaryOperator<V> mergeFunction) {
+        return Collectors.toImmutableMap(Fn.IDENTITY, Fn.IDENTITY, mergeFunction);
+    }
+
+    /**
+     * 
+     * @param keyExtractor
+     * @param valueMapper
+     * @return
+     * @see Collectors#toImmutableMap(Function, Function)
+     */
+    public static <T, K, U> Collector<T, ?, ImmutableMap<K, U>> toImmutableMap(Function<? super T, ? extends K> keyExtractor,
+            Function<? super T, ? extends U> valueMapper) {
+        return Collectors.toImmutableMap(keyExtractor, valueMapper);
+    }
+
+    /**
+     * 
+     * @param keyExtractor
+     * @param valueMapper
+     * @param mergeFunction
+     * @return
+     * @see Collectors#toImmutableMap(Function, Function, BinaryOperator)
+     */
+    public static <T, K, U> Collector<T, ?, ImmutableMap<K, U>> toImmutableMap(Function<? super T, ? extends K> keyExtractor,
+            Function<? super T, ? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
+        return Collectors.toImmutableMap(keyExtractor, valueMapper, mergeFunction);
+    }
+
+    /**
+     * 
      * @param classifier
      * @return
      * @see Collectors#groupingBy(Function)
@@ -1043,6 +1087,50 @@ public final class Fn {
     public static <T, K, A, D, M extends Map<K, D>> Collector<T, ?, M> groupingBy(final Function<? super T, ? extends K> classifier,
             final Collector<? super T, A, D> downstream, final Supplier<M> mapFactory) {
         return Collectors.groupingBy(classifier, downstream, mapFactory);
+    }
+
+    /**
+     * 
+     * @param classifier
+     * @return
+     * @see Collectors#groupingBy(Function)
+     */
+    public static <T, K> Collector<T, ?, Map<K, Long>> countingBy(Function<? super T, ? extends K> classifier) {
+        return countingBy(classifier, Suppliers.ofMap());
+    }
+
+    /**
+     * 
+     * @param classifier
+     * @param mapFactory
+     * @return
+     * @see Collectors#groupingBy(Function, Supplier)
+     */
+    public static <T, K, M extends Map<K, Long>> Collector<T, ?, M> countingBy(final Function<? super T, ? extends K> classifier,
+            final Supplier<M> mapFactory) {
+        return groupingBy(classifier, Collectors.counting(), mapFactory);
+    }
+
+    /**
+     * 
+     * @param classifier
+     * @return
+     * @see Collectors#groupingBy(Function)
+     */
+    public static <T, K> Collector<T, ?, Map<K, Integer>> countingIntBy(Function<? super T, ? extends K> classifier) {
+        return countingIntBy(classifier, Suppliers.ofMap());
+    }
+
+    /**
+     * 
+     * @param classifier
+     * @param mapFactory
+     * @return
+     * @see Collectors#groupingBy(Function, Supplier)
+     */
+    public static <T, K, M extends Map<K, Integer>> Collector<T, ?, M> countingIntBy(final Function<? super T, ? extends K> classifier,
+            final Supplier<M> mapFactory) {
+        return groupingBy(classifier, Collectors.countingInt(), mapFactory);
     }
 
     /**

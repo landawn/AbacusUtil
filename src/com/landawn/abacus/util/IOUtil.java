@@ -868,7 +868,7 @@ public final class IOUtil {
      * @throws UncheckedIOException in case of an I/O error (file closed)
      * @see #lineIterator(File, Charset)
      */
-    public static LineIterator lineIterator(final File file) {
+    static LineIterator lineIterator(final File file) {
         return lineIterator(file, Charsets.DEFAULT);
     }
 
@@ -902,7 +902,7 @@ public final class IOUtil {
      * @return an Iterator of the lines in the file, never {@code null}
      * @throws UncheckedIOException in case of an I/O error (file closed)
      */
-    public static LineIterator lineIterator(final File file, final Charset encoding) {
+    static LineIterator lineIterator(final File file, final Charset encoding) {
         InputStream in = null;
 
         try {
@@ -918,7 +918,7 @@ public final class IOUtil {
         }
     }
 
-    public static LineIterator lineIterator(final InputStream input) {
+    static LineIterator lineIterator(final InputStream input) {
         return lineIterator(input, null);
     }
 
@@ -951,7 +951,7 @@ public final class IOUtil {
      * @throws IllegalArgumentException if the input is null
      * @throws UncheckedIOException if an I/O error occurs, such as if the encoding is invalid
      */
-    public static LineIterator lineIterator(final InputStream input, final Charset encoding) {
+    static LineIterator lineIterator(final InputStream input, final Charset encoding) {
         return new LineIterator(createReader(input, encoding));
     }
 
@@ -983,7 +983,7 @@ public final class IOUtil {
      * @return an Iterator of the lines in the reader, never null
      * @throws IllegalArgumentException if the reader is null
      */
-    public static LineIterator lineIterator(final Reader reader) {
+    static LineIterator lineIterator(final Reader reader) {
         return new LineIterator(reader);
     }
 
