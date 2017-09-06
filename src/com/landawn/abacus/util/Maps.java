@@ -1124,18 +1124,18 @@ public final class Maps {
                 continue;
             }
 
-            propSetMethod = RefUtil.getPropSetMethod(targetClass, propName);
+            propSetMethod = ClassUtil.getPropSetMethod(targetClass, propName);
 
             if (propSetMethod == null) {
-                RefUtil.setPropValue(entity, propName, propValue, ignoreUnknownProperty);
+                ClassUtil.setPropValue(entity, propName, propValue, ignoreUnknownProperty);
             } else {
                 paramClass = propSetMethod.getParameterTypes()[0];
 
                 if (propValue != null && N.typeOf(propValue.getClass()).isMap() && N.isEntity(paramClass)) {
-                    RefUtil.setPropValue(entity, propSetMethod,
+                    ClassUtil.setPropValue(entity, propSetMethod,
                             map2Entity(paramClass, (Map<String, Object>) propValue, ignoreNullProperty, ignoreUnknownProperty));
                 } else {
-                    RefUtil.setPropValue(entity, propSetMethod, propValue);
+                    ClassUtil.setPropValue(entity, propSetMethod, propValue);
                 }
             }
         }
@@ -1162,7 +1162,7 @@ public final class Maps {
 
     private static <T> void checkEntityClass(final Class<T> cls) {
         if (!N.isEntity(cls)) {
-            throw new IllegalArgumentException("No property getter/setter method is found in the specified class: " + RefUtil.getCanonicalClassName(cls));
+            throw new IllegalArgumentException("No property getter/setter method is found in the specified class: " + ClassUtil.getCanonicalClassName(cls));
         }
     }
 
@@ -1186,7 +1186,7 @@ public final class Maps {
     public static Map<String, Object> entity2Map(final Object entity, final boolean ignoreNullProperty, final Collection<String> ignoredPropNames,
             final NamingPolicy keyNamingPolicy) {
         final int initCapacity = (entity instanceof DirtyMarker ? ((DirtyMarker) entity).signedPropNames().size()
-                : N.initHashCapacity(RefUtil.getPropGetMethodList(entity.getClass()).size()));
+                : N.initHashCapacity(ClassUtil.getPropGetMethodList(entity.getClass()).size()));
         final Map<String, Object> resultMap = new LinkedHashMap<>(initCapacity);
 
         entity2Map(resultMap, entity, ignoreNullProperty, ignoredPropNames, keyNamingPolicy);
@@ -1269,14 +1269,14 @@ public final class Maps {
                 final Set<String> tmp = new HashSet<>(N.initHashCapacity(signedPropNames.size()));
 
                 for (String propName : signedPropNames) {
-                    tmp.add(RefUtil.getPropNameByMethod(RefUtil.getPropGetMethod(entityClass, propName)));
+                    tmp.add(ClassUtil.getPropNameByMethod(ClassUtil.getPropGetMethod(entityClass, propName)));
                 }
 
                 signedPropNames = tmp;
             }
         }
 
-        final Map<String, Method> getterMethodList = RefUtil.checkPropGetMethodList(entity.getClass());
+        final Map<String, Method> getterMethodList = ClassUtil.checkPropGetMethodList(entity.getClass());
         String propName = null;
         Object propValue = null;
 
@@ -1324,7 +1324,7 @@ public final class Maps {
                             continue;
                         }
 
-                        resultMap.put(RefUtil.toLowerCaseWithUnderscore(propName), propValue);
+                        resultMap.put(ClassUtil.toLowerCaseWithUnderscore(propName), propValue);
                     }
 
                     break;
@@ -1348,7 +1348,7 @@ public final class Maps {
                             continue;
                         }
 
-                        resultMap.put(RefUtil.toUpperCaseWithUnderscore(propName), propValue);
+                        resultMap.put(ClassUtil.toUpperCaseWithUnderscore(propName), propValue);
                     }
 
                     break;
@@ -1415,7 +1415,7 @@ public final class Maps {
     public static Map<String, Object> deepEntity2Map(final Object entity, final boolean ignoreNullProperty, final Collection<String> ignoredPropNames,
             final NamingPolicy keyNamingPolicy) {
         final int initCapacity = entity instanceof DirtyMarker ? ((DirtyMarker) entity).signedPropNames().size()
-                : N.initHashCapacity(RefUtil.getPropGetMethodList(entity.getClass()).size());
+                : N.initHashCapacity(ClassUtil.getPropGetMethodList(entity.getClass()).size());
         final Map<String, Object> resultMap = new LinkedHashMap<>(initCapacity);
 
         deepEntity2Map(resultMap, entity, ignoreNullProperty, ignoredPropNames, keyNamingPolicy);
@@ -1498,14 +1498,14 @@ public final class Maps {
                 final Set<String> tmp = new HashSet<>(N.initHashCapacity(signedPropNames.size()));
 
                 for (String propName : signedPropNames) {
-                    tmp.add(RefUtil.getPropNameByMethod(RefUtil.getPropGetMethod(entityClass, propName)));
+                    tmp.add(ClassUtil.getPropNameByMethod(ClassUtil.getPropGetMethod(entityClass, propName)));
                 }
 
                 signedPropNames = tmp;
             }
         }
 
-        final Map<String, Method> getterMethodList = RefUtil.checkPropGetMethodList(entity.getClass());
+        final Map<String, Method> getterMethodList = ClassUtil.checkPropGetMethodList(entity.getClass());
         String propName = null;
         Object propValue = null;
 
@@ -1558,9 +1558,9 @@ public final class Maps {
                         }
 
                         if ((propValue == null) || !N.isEntity(propValue.getClass())) {
-                            resultMap.put(RefUtil.toLowerCaseWithUnderscore(propName), propValue);
+                            resultMap.put(ClassUtil.toLowerCaseWithUnderscore(propName), propValue);
                         } else {
-                            resultMap.put(RefUtil.toLowerCaseWithUnderscore(propName), deepEntity2Map(propValue, ignoreNullProperty, null, keyNamingPolicy));
+                            resultMap.put(ClassUtil.toLowerCaseWithUnderscore(propName), deepEntity2Map(propValue, ignoreNullProperty, null, keyNamingPolicy));
                         }
                     }
 
@@ -1586,9 +1586,9 @@ public final class Maps {
                         }
 
                         if ((propValue == null) || !N.isEntity(propValue.getClass())) {
-                            resultMap.put(RefUtil.toUpperCaseWithUnderscore(propName), propValue);
+                            resultMap.put(ClassUtil.toUpperCaseWithUnderscore(propName), propValue);
                         } else {
-                            resultMap.put(RefUtil.toUpperCaseWithUnderscore(propName), deepEntity2Map(propValue, ignoreNullProperty, null, keyNamingPolicy));
+                            resultMap.put(ClassUtil.toUpperCaseWithUnderscore(propName), deepEntity2Map(propValue, ignoreNullProperty, null, keyNamingPolicy));
                         }
                     }
 
@@ -1656,7 +1656,7 @@ public final class Maps {
     public static Map<String, Object> entity2FlatMap(final Object entity, final boolean ignoreNullProperty, final Collection<String> ignoredPropNames,
             final NamingPolicy keyNamingPolicy) {
         final int initCapacity = entity instanceof DirtyMarker ? ((DirtyMarker) entity).signedPropNames().size()
-                : N.initHashCapacity(RefUtil.getPropGetMethodList(entity.getClass()).size());
+                : N.initHashCapacity(ClassUtil.getPropGetMethodList(entity.getClass()).size());
         final Map<String, Object> resultMap = new LinkedHashMap<>(initCapacity);
 
         entity2FlatMap(resultMap, entity, ignoreNullProperty, ignoredPropNames, keyNamingPolicy);
@@ -1754,8 +1754,8 @@ public final class Maps {
                     switch (keyNamingPolicy) {
                         case CAMEL_CASE: {
                             for (String propName : signedPropNames) {
-                                propGetMethod = RefUtil.getPropGetMethod(entityClass, propName);
-                                propName = RefUtil.getPropNameByMethod(propGetMethod);
+                                propGetMethod = ClassUtil.getPropGetMethod(entityClass, propName);
+                                propName = ClassUtil.getPropNameByMethod(propGetMethod);
 
                                 if (hasIgnoredPropNames && ignoredPropNames.contains(propName)) {
                                     continue;
@@ -1787,14 +1787,14 @@ public final class Maps {
 
                         case LOWER_CASE_WITH_UNDERSCORE: {
                             for (String propName : signedPropNames) {
-                                propGetMethod = RefUtil.getPropGetMethod(entityClass, propName);
-                                propName = RefUtil.getPropNameByMethod(propGetMethod);
+                                propGetMethod = ClassUtil.getPropGetMethod(entityClass, propName);
+                                propName = ClassUtil.getPropNameByMethod(propGetMethod);
 
                                 if (hasIgnoredPropNames && ignoredPropNames.contains(propName)) {
                                     continue;
                                 }
 
-                                propName = RefUtil.toLowerCaseWithUnderscore(propName);
+                                propName = ClassUtil.toLowerCaseWithUnderscore(propName);
                                 propValue = propGetMethod.invoke(entity);
 
                                 if (ignoreNullProperty && (propValue == null)) {
@@ -1821,14 +1821,14 @@ public final class Maps {
 
                         case UPPER_CASE_WITH_UNDERSCORE: {
                             for (String propName : signedPropNames) {
-                                propGetMethod = RefUtil.getPropGetMethod(entityClass, propName);
-                                propName = RefUtil.getPropNameByMethod(propGetMethod);
+                                propGetMethod = ClassUtil.getPropGetMethod(entityClass, propName);
+                                propName = ClassUtil.getPropNameByMethod(propGetMethod);
 
                                 if (hasIgnoredPropNames && ignoredPropNames.contains(propName)) {
                                     continue;
                                 }
 
-                                propName = RefUtil.toUpperCaseWithUnderscore(propName);
+                                propName = ClassUtil.toUpperCaseWithUnderscore(propName);
                                 propValue = propGetMethod.invoke(entity);
 
                                 if (ignoreNullProperty && (propValue == null)) {
@@ -1862,7 +1862,7 @@ public final class Maps {
                 }
             }
         } else {
-            final Map<String, Method> getterMethodList = RefUtil.checkPropGetMethodList(entity.getClass());
+            final Map<String, Method> getterMethodList = ClassUtil.checkPropGetMethodList(entity.getClass());
             String propName = null;
             Object propValue = null;
 
@@ -1908,7 +1908,7 @@ public final class Maps {
                                 continue;
                             }
 
-                            propName = RefUtil.toLowerCaseWithUnderscore(propName);
+                            propName = ClassUtil.toLowerCaseWithUnderscore(propName);
                             propValue = entry.getValue().invoke(entity);
 
                             if (ignoreNullProperty && (propValue == null)) {
@@ -1941,7 +1941,7 @@ public final class Maps {
                                 continue;
                             }
 
-                            propName = RefUtil.toUpperCaseWithUnderscore(propName);
+                            propName = ClassUtil.toUpperCaseWithUnderscore(propName);
                             propValue = entry.getValue().invoke(entity);
 
                             if (ignoreNullProperty && (propValue == null)) {

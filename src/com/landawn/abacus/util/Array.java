@@ -42,28 +42,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @see java.lang.reflect.Array
  */
 public final class Array {
-    // ...
-    static final BiMap<Class<?>, Class<?>> PRIMITIVE_2_WRAPPER = new BiMap<>();
-
-    static {
-        PRIMITIVE_2_WRAPPER.put(boolean.class, Boolean.class);
-        PRIMITIVE_2_WRAPPER.put(char.class, Character.class);
-        PRIMITIVE_2_WRAPPER.put(byte.class, Byte.class);
-        PRIMITIVE_2_WRAPPER.put(short.class, Short.class);
-        PRIMITIVE_2_WRAPPER.put(int.class, Integer.class);
-        PRIMITIVE_2_WRAPPER.put(long.class, Long.class);
-        PRIMITIVE_2_WRAPPER.put(float.class, Float.class);
-        PRIMITIVE_2_WRAPPER.put(double.class, Double.class);
-
-        PRIMITIVE_2_WRAPPER.put(boolean[].class, Boolean[].class);
-        PRIMITIVE_2_WRAPPER.put(char[].class, Character[].class);
-        PRIMITIVE_2_WRAPPER.put(byte[].class, Byte[].class);
-        PRIMITIVE_2_WRAPPER.put(short[].class, Short[].class);
-        PRIMITIVE_2_WRAPPER.put(int[].class, Integer[].class);
-        PRIMITIVE_2_WRAPPER.put(long[].class, Long[].class);
-        PRIMITIVE_2_WRAPPER.put(float[].class, Float[].class);
-        PRIMITIVE_2_WRAPPER.put(double[].class, Double[].class);
-    }
 
     static final AsyncExecutor parallelSortExecutor = new AsyncExecutor(64, 300L, TimeUnit.SECONDS);
 
@@ -1123,16 +1101,6 @@ public final class Array {
         return a;
     }
 
-    public static Class<?> box(final Class<?> cls) {
-        final Class<?> result = PRIMITIVE_2_WRAPPER.get(cls);
-
-        if (result == null) {
-            throw new IllegalArgumentException(RefUtil.getCanonicalClassName(cls) + " is not a primitive (array) type");
-        }
-
-        return result;
-    }
-
     /**
      * <p>
      * Converts an array of primitive booleans to objects.
@@ -1454,7 +1422,7 @@ public final class Array {
         final Integer enumInt = N.CLASS_TYPE_ENUM.get(cls);
 
         if (enumInt == null) {
-            throw new IllegalArgumentException(RefUtil.getCanonicalClassName(cls) + " is not a primitive array");
+            throw new IllegalArgumentException(ClassUtil.getCanonicalClassName(cls) + " is not a primitive array");
         }
 
         switch (enumInt) {
@@ -1483,7 +1451,7 @@ public final class Array {
                 return (T) box((double[]) a, fromIndex, toIndex);
 
             default:
-                throw new IllegalArgumentException(RefUtil.getCanonicalClassName(cls) + " is not a primitive array");
+                throw new IllegalArgumentException(ClassUtil.getCanonicalClassName(cls) + " is not a primitive array");
         }
     }
 
@@ -1594,16 +1562,6 @@ public final class Array {
 
         for (int i = 0, len = a.length; i < len; i++) {
             result[i] = box(a[i]);
-        }
-
-        return result;
-    }
-
-    public static Class<?> unbox(final Class<?> cls) {
-        Class<?> result = PRIMITIVE_2_WRAPPER.getByValue(cls);
-
-        if (result == null) {
-            throw new IllegalArgumentException(RefUtil.getCanonicalClassName(cls) + " is not a wrapper of primitive (array) type");
         }
 
         return result;
@@ -2247,12 +2205,12 @@ public final class Array {
             return null;
         }
 
-        final Class<?> cls = unbox(a.getClass());
+        final Class<?> cls = N.primitiveOf(a.getClass());
         final Object defaultValue = valueForNull == null ? N.defaultValueOf(cls.getComponentType()) : valueForNull;
         final Integer enumInt = N.CLASS_TYPE_ENUM.get(cls);
 
         if (enumInt == null) {
-            throw new IllegalArgumentException(RefUtil.getCanonicalClassName(a.getClass()) + " is not a wrapper of primitive array");
+            throw new IllegalArgumentException(ClassUtil.getCanonicalClassName(a.getClass()) + " is not a wrapper of primitive array");
         }
 
         switch (enumInt) {
@@ -2281,7 +2239,7 @@ public final class Array {
                 return (T) unbox((Double[]) a, fromIndex, toIndex, ((Number) defaultValue).doubleValue());
 
             default:
-                throw new IllegalArgumentException(RefUtil.getCanonicalClassName(a.getClass()) + " is not a wrapper of primitive array");
+                throw new IllegalArgumentException(ClassUtil.getCanonicalClassName(a.getClass()) + " is not a wrapper of primitive array");
         }
     }
 

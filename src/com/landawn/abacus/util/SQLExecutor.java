@@ -230,7 +230,7 @@ public final class SQLExecutor implements Closeable {
                     //    }
 
                     for (int i = 0; i < columnCount; i++) {
-                        RefUtil.setPropValue(entity, columnLabelList.get(i), rs.getObject(i + 1), true);
+                        ClassUtil.setPropValue(entity, columnLabelList.get(i), rs.getObject(i + 1), true);
                     }
 
                     if (N.isDirtyMarker(cls)) {
@@ -284,7 +284,7 @@ public final class SQLExecutor implements Closeable {
                         //    }
 
                         for (int i = 0; i < columnCount; i++) {
-                            RefUtil.setPropValue(entity, columnLabelList.get(i), rs.getObject(i + 1), true);
+                            ClassUtil.setPropValue(entity, columnLabelList.get(i), rs.getObject(i + 1), true);
                         }
 
                         if (isDirtyMarker) {
@@ -537,7 +537,7 @@ public final class SQLExecutor implements Closeable {
         Mapper<T> mapper = (Mapper<T>) mapperPool.get(targetClass);
 
         if (mapper == null) {
-            N.checkArgument(N.isEntity(targetClass), RefUtil.getCanonicalClassName(targetClass) + " is not an entity class with getter/setter methods");
+            N.checkArgument(N.isEntity(targetClass), ClassUtil.getCanonicalClassName(targetClass) + " is not an entity class with getter/setter methods");
 
             mapper = new Mapper<T>(targetClass, this, this._namingPolicy);
             mapperPool.put(targetClass, mapper);
@@ -677,14 +677,14 @@ public final class SQLExecutor implements Closeable {
                 final Object entity = parameter_0;
 
                 try {
-                    Method idGetMethod = RefUtil.getPropGetMethod(entity.getClass(), idPropName);
-                    Method idSetMethod = RefUtil.getPropSetMethod(entity.getClass(), idPropName);
+                    Method idGetMethod = ClassUtil.getPropGetMethod(entity.getClass(), idPropName);
+                    Method idSetMethod = ClassUtil.getPropSetMethod(entity.getClass(), idPropName);
 
                     if ((idGetMethod != null) && (idSetMethod != null)) {
-                        Object idPropValue = RefUtil.getPropValue(entity, idGetMethod);
+                        Object idPropValue = ClassUtil.getPropValue(entity, idGetMethod);
 
                         if ((idPropValue == null) || (idPropValue instanceof Number && (((Number) idPropValue).longValue() == 0))) {
-                            RefUtil.setPropValue(entity, idSetMethod, result);
+                            ClassUtil.setPropValue(entity, idSetMethod, result);
                         }
                     } else {
                         if (logger.isWarnEnabled()) {
@@ -914,8 +914,8 @@ public final class SQLExecutor implements Closeable {
                         // }
                     } else {
                         try {
-                            Method idGetMethod = RefUtil.getPropGetMethod(parameter_0.getClass(), idPropName);
-                            Method idSetMethod = RefUtil.getPropSetMethod(parameter_0.getClass(), idPropName);
+                            Method idGetMethod = ClassUtil.getPropGetMethod(parameter_0.getClass(), idPropName);
+                            Method idSetMethod = ClassUtil.getPropSetMethod(parameter_0.getClass(), idPropName);
 
                             if ((idGetMethod != null) && (idSetMethod != null)) {
                                 Object entity = null;
@@ -923,10 +923,10 @@ public final class SQLExecutor implements Closeable {
 
                                 for (int i = 0; i < len; i++) {
                                     entity = (isTypedParameter ? ((TypedParameters) batchParameters.get(i)).parameters[0] : batchParameters.get(i));
-                                    idPropValue = RefUtil.invokeMethod(entity, idGetMethod);
+                                    idPropValue = ClassUtil.invokeMethod(entity, idGetMethod);
 
                                     if ((idPropValue == null) || (idPropValue instanceof Number && (((Number) idPropValue).longValue() == 0))) {
-                                        RefUtil.setPropValue(entity, idSetMethod, resultIdList.get(i));
+                                        ClassUtil.setPropValue(entity, idSetMethod, resultIdList.get(i));
                                     }
 
                                     if (entity instanceof DirtyMarker) {
@@ -1524,7 +1524,7 @@ public final class SQLExecutor implements Closeable {
                                 continue;
                             }
 
-                            if (RefUtil.setPropValue(entity, columnLabels[i], a[i], true) == false) {
+                            if (ClassUtil.setPropValue(entity, columnLabels[i], a[i], true) == false) {
                                 columnLabels[i] = null;
                             }
                         }
@@ -1614,7 +1614,7 @@ public final class SQLExecutor implements Closeable {
                                 continue;
                             }
 
-                            if (RefUtil.setPropValue(entity, columnLabels[i], a[i], true) == false) {
+                            if (ClassUtil.setPropValue(entity, columnLabels[i], a[i], true) == false) {
                                 columnLabels[i] = null;
                             }
                         }
@@ -2660,7 +2660,7 @@ public final class SQLExecutor implements Closeable {
                                 continue;
                             }
 
-                            if (RefUtil.setPropValue(entity, columnLabels[i], a[i], true) == false) {
+                            if (ClassUtil.setPropValue(entity, columnLabels[i], a[i], true) == false) {
                                 columnLabels[i] = null;
                             }
                         }
@@ -2766,7 +2766,7 @@ public final class SQLExecutor implements Closeable {
                                         continue;
                                     }
 
-                                    if (RefUtil.setPropValue(entity, columnLabels[i], a[i], true) == false) {
+                                    if (ClassUtil.setPropValue(entity, columnLabels[i], a[i], true) == false) {
                                         columnLabels[i] = null;
                                     }
                                 }
@@ -2873,7 +2873,7 @@ public final class SQLExecutor implements Closeable {
                                         continue;
                                     }
 
-                                    if (RefUtil.setPropValue(entity, columnLabels[i], a[i], true) == false) {
+                                    if (ClassUtil.setPropValue(entity, columnLabels[i], a[i], true) == false) {
                                         columnLabels[i] = null;
                                     }
                                 }
@@ -3545,9 +3545,9 @@ public final class SQLExecutor implements Closeable {
         }
 
         public static void registerEntityId(Class<?> targetClass, String idName) {
-            N.checkArgument(N.isEntity(targetClass), RefUtil.getCanonicalClassName(targetClass) + " is not an entity class with getter/setter methods");
+            N.checkArgument(N.isEntity(targetClass), ClassUtil.getCanonicalClassName(targetClass) + " is not an entity class with getter/setter methods");
 
-            entityIdMap.put(targetClass, RefUtil.getPropNameByMethod(RefUtil.getPropGetMethod(targetClass, idName)));
+            entityIdMap.put(targetClass, ClassUtil.getPropNameByMethod(ClassUtil.getPropGetMethod(targetClass, idName)));
         }
 
         /**
@@ -3557,13 +3557,13 @@ public final class SQLExecutor implements Closeable {
          * @param readOnlyPropNames
          */
         public static void registerReadOnlyProps(Class<?> targetClass, Collection<String> readOnlyPropNames) {
-            N.checkArgument(N.isEntity(targetClass), RefUtil.getCanonicalClassName(targetClass) + " is not an entity class with getter/setter methods");
+            N.checkArgument(N.isEntity(targetClass), ClassUtil.getCanonicalClassName(targetClass) + " is not an entity class with getter/setter methods");
             N.checkNullOrEmpty(readOnlyPropNames, "'readOnlyPropNames'");
 
             final Set<String> set = new HashSet<String>();
 
             for (String propName : readOnlyPropNames) {
-                set.add(RefUtil.getPropNameByMethod(RefUtil.getPropGetMethod(targetClass, propName)));
+                set.add(ClassUtil.getPropNameByMethod(ClassUtil.getPropGetMethod(targetClass, propName)));
             }
 
             readOnlyPropNamesMap.put(targetClass, set);
@@ -3582,13 +3582,13 @@ public final class SQLExecutor implements Closeable {
          * @param writeOnlyPropNames
          */
         public static void registerWriteOnlyProps(Class<?> targetClass, Collection<String> writeOnlyPropNames) {
-            N.checkArgument(N.isEntity(targetClass), RefUtil.getCanonicalClassName(targetClass) + " is not an entity class with getter/setter methods");
+            N.checkArgument(N.isEntity(targetClass), ClassUtil.getCanonicalClassName(targetClass) + " is not an entity class with getter/setter methods");
             N.checkNullOrEmpty(writeOnlyPropNames, "'writeOnlyPropNames'");
 
             final Set<String> set = new HashSet<String>();
 
             for (String propName : writeOnlyPropNames) {
-                set.add(RefUtil.getPropNameByMethod(RefUtil.getPropGetMethod(targetClass, propName)));
+                set.add(ClassUtil.getPropNameByMethod(ClassUtil.getPropGetMethod(targetClass, propName)));
             }
 
             if (readOrWriteOnlyPropNamesMap.containsKey(targetClass)) {
@@ -4040,7 +4040,7 @@ public final class SQLExecutor implements Closeable {
         @SuppressWarnings("deprecation")
         private <E> void postAdd(final Object entity, final E idVal) {
             if (idVal != null && N.isEntity(entity.getClass())) {
-                RefUtil.setPropValue(entity, idName, idVal);
+                ClassUtil.setPropValue(entity, idName, idVal);
             }
 
             if (entity instanceof DirtyMarker) {
@@ -4191,7 +4191,7 @@ public final class SQLExecutor implements Closeable {
                 props = new HashMap<>();
 
                 for (String propName : ((DirtyMarker) entity).dirtyPropNames()) {
-                    props.put(propName, RefUtil.getPropValue(entity, propName));
+                    props.put(propName, ClassUtil.getPropValue(entity, propName));
                 }
 
                 if (N.notNullOrEmpty(readOrWriteOnlyPropNames)) {
@@ -4204,7 +4204,7 @@ public final class SQLExecutor implements Closeable {
             final Object idVal = props.containsKey(idName) ? props.remove(idName) : getId(entity);
 
             if (idVal == null) {
-                throw new IllegalArgumentException("No id property found in Class: " + RefUtil.getCanonicalClassName(entity.getClass()) + " with name: "
+                throw new IllegalArgumentException("No id property found in Class: " + ClassUtil.getCanonicalClassName(entity.getClass()) + " with name: "
                         + idName + ". Please register the id property first by calling 'registerEntityId'");
             }
 
@@ -4344,20 +4344,20 @@ public final class SQLExecutor implements Closeable {
             final Class<?> cls = entity.getClass();
 
             if (N.isEntity(cls)) {
-                N.checkArgument(targetClass.isAssignableFrom(cls), "Dlete wrong type: " + RefUtil.getCanonicalClassName(cls) + " in " + toString());
+                N.checkArgument(targetClass.isAssignableFrom(cls), "Dlete wrong type: " + ClassUtil.getCanonicalClassName(cls) + " in " + toString());
             }
         }
 
         private Object getId(final Object entity) {
             final Class<?> cls = entity.getClass();
-            final Method getMethod = RefUtil.getPropGetMethod(cls, idName);
+            final Method getMethod = ClassUtil.getPropGetMethod(cls, idName);
 
             if (getMethod == null) {
-                throw new IllegalArgumentException("No id property found in Class: " + RefUtil.getCanonicalClassName(cls) + " with name: " + idName
+                throw new IllegalArgumentException("No id property found in Class: " + ClassUtil.getCanonicalClassName(cls) + " with name: " + idName
                         + ". Please register the id property first by calling 'registerEntityId'");
             }
 
-            return RefUtil.getPropValue(entity, getMethod);
+            return ClassUtil.getPropValue(entity, getMethod);
         }
 
         public CompletableFuture<Boolean> asyncExists(final Object id) {
@@ -5020,7 +5020,7 @@ public final class SQLExecutor implements Closeable {
         }
 
         public String toStirng() {
-            return "Mapper: " + RefUtil.getCanonicalClassName(targetClass);
+            return "Mapper: " + ClassUtil.getCanonicalClassName(targetClass);
         }
     }
 
@@ -5090,13 +5090,13 @@ public final class SQLExecutor implements Closeable {
                     Method propGetMethod = null;
 
                     for (int i = 0; i < parameterCount; i++) {
-                        propGetMethod = RefUtil.getPropGetMethod(clazz, namedParameters.get(i));
+                        propGetMethod = ClassUtil.getPropGetMethod(clazz, namedParameters.get(i));
 
                         if (propGetMethod == null) {
                             throw new IllegalArgumentException("Parameter for property '" + namedParameters.get(i) + "' is missed");
                         }
 
-                        a[i] = RefUtil.invokeMethod(entity, propGetMethod);
+                        a[i] = ClassUtil.invokeMethod(entity, propGetMethod);
                     }
                 }
             } else {

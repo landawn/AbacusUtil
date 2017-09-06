@@ -333,7 +333,7 @@ public final class CSVUtil {
                     PropInfo propInfo = entityInfo.getPropInfo(titles[i]);
 
                     if (propInfo == null && selectPropNameSet != null) {
-                        throw new AbacusException(titles[i] + " is not defined in entity class: " + RefUtil.getCanonicalClassName(entityClass));
+                        throw new AbacusException(titles[i] + " is not defined in entity class: " + ClassUtil.getCanonicalClassName(entityClass));
                     }
 
                     if (propInfo != null) {

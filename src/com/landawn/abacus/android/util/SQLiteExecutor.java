@@ -65,7 +65,7 @@ import com.landawn.abacus.util.OptionalFloat;
 import com.landawn.abacus.util.OptionalInt;
 import com.landawn.abacus.util.OptionalLong;
 import com.landawn.abacus.util.OptionalShort;
-import com.landawn.abacus.util.RefUtil;
+import com.landawn.abacus.util.ClassUtil;
 import com.landawn.abacus.util.SQLBuilder;
 import com.landawn.abacus.util.SQLBuilder.RE;
 import com.landawn.abacus.util.SQLBuilder.RE2;
@@ -121,13 +121,13 @@ public final class SQLiteExecutor {
      * @param readOnlyPropNames
      */
     public static void registerReadOnlyProps(Class<?> targetClass, Collection<String> readOnlyPropNames) {
-        N.checkArgument(N.isEntity(targetClass), RefUtil.getCanonicalClassName(targetClass) + " is not an entity class with getter/setter methods");
+        N.checkArgument(N.isEntity(targetClass), ClassUtil.getCanonicalClassName(targetClass) + " is not an entity class with getter/setter methods");
         N.checkNullOrEmpty(readOnlyPropNames, "'readOnlyPropNames'");
 
         final Set<String> set = new HashSet<String>();
 
         for (String propName : readOnlyPropNames) {
-            set.add(RefUtil.getPropNameByMethod(RefUtil.getPropGetMethod(targetClass, propName)));
+            set.add(ClassUtil.getPropNameByMethod(ClassUtil.getPropGetMethod(targetClass, propName)));
         }
 
         readOnlyPropNamesMap.put(targetClass, set);
@@ -146,13 +146,13 @@ public final class SQLiteExecutor {
      * @param writeOnlyPropNames
      */
     public static void registerWriteOnlyProps(Class<?> targetClass, Collection<String> writeOnlyPropNames) {
-        N.checkArgument(N.isEntity(targetClass), RefUtil.getCanonicalClassName(targetClass) + " is not an entity class with getter/setter methods");
+        N.checkArgument(N.isEntity(targetClass), ClassUtil.getCanonicalClassName(targetClass) + " is not an entity class with getter/setter methods");
         N.checkNullOrEmpty(writeOnlyPropNames, "'writeOnlyPropNames'");
 
         final Set<String> set = new HashSet<String>();
 
         for (String propName : writeOnlyPropNames) {
-            set.add(RefUtil.getPropNameByMethod(RefUtil.getPropGetMethod(targetClass, propName)));
+            set.add(ClassUtil.getPropNameByMethod(ClassUtil.getPropGetMethod(targetClass, propName)));
         }
 
         if (readOrWriteOnlyPropNamesMap.containsKey(targetClass)) {
@@ -190,7 +190,7 @@ public final class SQLiteExecutor {
         final Type<Object>[] selectColumnTypes = new Type[columnCount];
 
         for (int i = 0; i < columnCount; i++) {
-            selectColumnTypes[i] = Type.valueOf(RefUtil.getPropGetMethod(targetClass, columnNameList.get(i)).getReturnType());
+            selectColumnTypes[i] = Type.valueOf(ClassUtil.getPropGetMethod(targetClass, columnNameList.get(i)).getReturnType());
         }
 
         if (offset > 0) {
@@ -324,12 +324,12 @@ public final class SQLiteExecutor {
         final List<T> resultList = new ArrayList<>();
 
         if (N.isEntity(targetClass)) {
-            final Method propSetMethod = RefUtil.getPropSetMethod(targetClass, cursor.getColumnName(columnIndex));
+            final Method propSetMethod = ClassUtil.getPropSetMethod(targetClass, cursor.getColumnName(columnIndex));
             final Type<T> selectColumnType = Type.valueOf(propSetMethod.getParameterTypes()[0]);
 
             while (count-- > 0 && cursor.moveToNext()) {
                 T entity = N.newEntity(targetClass);
-                RefUtil.setPropValue(entity, propSetMethod, selectColumnType.get(cursor, columnIndex));
+                ClassUtil.setPropValue(entity, propSetMethod, selectColumnType.get(cursor, columnIndex));
                 resultList.add(entity);
             }
 
@@ -381,7 +381,7 @@ public final class SQLiteExecutor {
     static <T> T toEntity(final Class<T> targetClass, final ContentValues contentValues, NamingPolicy namingPolicy) {
         if (!(N.isEntity(targetClass) || targetClass.equals(Map.class))) {
             throw new AbacusException("The target class must be an entity class with getter/setter methods or Map.class. But it is: "
-                    + RefUtil.getCanonicalClassName(targetClass));
+                    + ClassUtil.getCanonicalClassName(targetClass));
         }
 
         if (targetClass.isAssignableFrom(Map.class)) {
@@ -396,9 +396,9 @@ public final class SQLiteExecutor {
                         propValue = contentValues.get(propName);
 
                         if (propValue instanceof ContentValues) {
-                            map.put(RefUtil.formalizePropName(propName), toEntity(targetClass, (ContentValues) propValue, namingPolicy));
+                            map.put(ClassUtil.formalizePropName(propName), toEntity(targetClass, (ContentValues) propValue, namingPolicy));
                         } else {
-                            map.put(RefUtil.formalizePropName(propName), propValue);
+                            map.put(ClassUtil.formalizePropName(propName), propValue);
                         }
                     }
 
@@ -410,9 +410,9 @@ public final class SQLiteExecutor {
                         propValue = contentValues.get(propName);
 
                         if (propValue instanceof ContentValues) {
-                            map.put(RefUtil.toLowerCaseWithUnderscore(propName), toEntity(targetClass, (ContentValues) propValue, namingPolicy));
+                            map.put(ClassUtil.toLowerCaseWithUnderscore(propName), toEntity(targetClass, (ContentValues) propValue, namingPolicy));
                         } else {
-                            map.put(RefUtil.toLowerCaseWithUnderscore(propName), propValue);
+                            map.put(ClassUtil.toLowerCaseWithUnderscore(propName), propValue);
                         }
                     }
 
@@ -424,9 +424,9 @@ public final class SQLiteExecutor {
                         propValue = contentValues.get(propName);
 
                         if (propValue instanceof ContentValues) {
-                            map.put(RefUtil.toUpperCaseWithUnderscore(propName), toEntity(targetClass, (ContentValues) propValue, namingPolicy));
+                            map.put(ClassUtil.toUpperCaseWithUnderscore(propName), toEntity(targetClass, (ContentValues) propValue, namingPolicy));
                         } else {
-                            map.put(RefUtil.toUpperCaseWithUnderscore(propName), propValue);
+                            map.put(ClassUtil.toUpperCaseWithUnderscore(propName), propValue);
                         }
                     }
 
@@ -446,7 +446,7 @@ public final class SQLiteExecutor {
             Class<?> parameterType = null;
 
             for (String propName : contentValues.keySet()) {
-                propSetMethod = RefUtil.getPropSetMethod(targetClass, propName);
+                propSetMethod = ClassUtil.getPropSetMethod(targetClass, propName);
 
                 if (propSetMethod == null) {
                     continue;
@@ -458,16 +458,16 @@ public final class SQLiteExecutor {
                 if (propValue != null && !parameterType.isAssignableFrom(propValue.getClass())) {
                     if (propValue instanceof ContentValues) {
                         if (parameterType.isAssignableFrom(Map.class) || N.isEntity(parameterType)) {
-                            RefUtil.setPropValue(entity, propSetMethod, toEntity(parameterType, (ContentValues) propValue, namingPolicy));
+                            ClassUtil.setPropValue(entity, propSetMethod, toEntity(parameterType, (ContentValues) propValue, namingPolicy));
                         } else {
-                            RefUtil.setPropValue(entity, propSetMethod,
+                            ClassUtil.setPropValue(entity, propSetMethod,
                                     N.valueOf(parameterType, N.stringOf(toEntity(Map.class, (ContentValues) propValue, namingPolicy))));
                         }
                     } else {
-                        RefUtil.setPropValue(entity, propSetMethod, propValue);
+                        ClassUtil.setPropValue(entity, propSetMethod, propValue);
                     }
                 } else {
-                    RefUtil.setPropValue(entity, propSetMethod, propValue);
+                    ClassUtil.setPropValue(entity, propSetMethod, propValue);
                 }
             }
 
@@ -550,7 +550,7 @@ public final class SQLiteExecutor {
                     String propName = null;
 
                     for (Map.Entry<String, Object> entry : props.entrySet()) {
-                        propName = RefUtil.toLowerCaseWithUnderscore(entry.getKey());
+                        propName = ClassUtil.toLowerCaseWithUnderscore(entry.getKey());
 
                         if (notNullOrEmptyIgnorePropNames && (ignoredPropNames.contains(entry.getKey()) || ignoredPropNames.contains(propName))) {
                             continue;
@@ -571,7 +571,7 @@ public final class SQLiteExecutor {
                     String propName = null;
 
                     for (Map.Entry<String, Object> entry : props.entrySet()) {
-                        propName = RefUtil.toUpperCaseWithUnderscore(entry.getKey());
+                        propName = ClassUtil.toUpperCaseWithUnderscore(entry.getKey());
 
                         if (notNullOrEmptyIgnorePropNames && (ignoredPropNames.contains(entry.getKey()) || ignoredPropNames.contains(propName))) {
                             continue;
@@ -606,14 +606,14 @@ public final class SQLiteExecutor {
                     switch (namingPolicy) {
                         case CAMEL_CASE: {
                             for (String propName : updatePropNames) {
-                                propGetMethod = RefUtil.getPropGetMethod(srCls, propName);
-                                propName = RefUtil.getPropNameByMethod(propGetMethod);
+                                propGetMethod = ClassUtil.getPropGetMethod(srCls, propName);
+                                propName = ClassUtil.getPropNameByMethod(propGetMethod);
 
                                 if (notNullOrEmptyIgnorePropNames && ignoredPropNames.contains(propName)) {
                                     continue;
                                 }
 
-                                propValue = RefUtil.getPropValue(obj, propGetMethod);
+                                propValue = ClassUtil.getPropValue(obj, propGetMethod);
 
                                 if (propValue == null) {
                                     result.putNull(propName);
@@ -628,20 +628,20 @@ public final class SQLiteExecutor {
 
                         case LOWER_CASE_WITH_UNDERSCORE: {
                             for (String propName : updatePropNames) {
-                                propGetMethod = RefUtil.getPropGetMethod(srCls, propName);
-                                propName = RefUtil.getPropNameByMethod(propGetMethod);
+                                propGetMethod = ClassUtil.getPropGetMethod(srCls, propName);
+                                propName = ClassUtil.getPropNameByMethod(propGetMethod);
 
                                 if (notNullOrEmptyIgnorePropNames && ignoredPropNames.contains(propName)) {
                                     continue;
                                 }
 
-                                propValue = RefUtil.getPropValue(obj, propGetMethod);
+                                propValue = ClassUtil.getPropValue(obj, propGetMethod);
 
                                 if (propValue == null) {
-                                    result.putNull(RefUtil.toLowerCaseWithUnderscore(propName));
+                                    result.putNull(ClassUtil.toLowerCaseWithUnderscore(propName));
                                 } else {
                                     type = Type.valueOf(propValue.getClass());
-                                    type.set(result, RefUtil.toLowerCaseWithUnderscore(propName), propValue);
+                                    type.set(result, ClassUtil.toLowerCaseWithUnderscore(propName), propValue);
                                 }
                             }
 
@@ -650,20 +650,20 @@ public final class SQLiteExecutor {
 
                         case UPPER_CASE_WITH_UNDERSCORE: {
                             for (String propName : updatePropNames) {
-                                propGetMethod = RefUtil.getPropGetMethod(srCls, propName);
-                                propName = RefUtil.getPropNameByMethod(propGetMethod);
+                                propGetMethod = ClassUtil.getPropGetMethod(srCls, propName);
+                                propName = ClassUtil.getPropNameByMethod(propGetMethod);
 
                                 if (notNullOrEmptyIgnorePropNames && ignoredPropNames.contains(propName)) {
                                     continue;
                                 }
 
-                                propValue = RefUtil.getPropValue(obj, propGetMethod);
+                                propValue = ClassUtil.getPropValue(obj, propGetMethod);
 
                                 if (propValue == null) {
-                                    result.putNull(RefUtil.toUpperCaseWithUnderscore(propName));
+                                    result.putNull(ClassUtil.toUpperCaseWithUnderscore(propName));
                                 } else {
                                     type = Type.valueOf(propValue.getClass());
-                                    type.set(result, RefUtil.toUpperCaseWithUnderscore(propName), propValue);
+                                    type.set(result, ClassUtil.toUpperCaseWithUnderscore(propName), propValue);
                                 }
                             }
 
@@ -675,7 +675,7 @@ public final class SQLiteExecutor {
                     }
                 }
             } else {
-                final Map<String, Method> getterMethodList = RefUtil.getPropGetMethodList(obj.getClass());
+                final Map<String, Method> getterMethodList = ClassUtil.getPropGetMethodList(obj.getClass());
                 String propName = null;
                 Object propValue = null;
 
@@ -688,7 +688,7 @@ public final class SQLiteExecutor {
                                 continue;
                             }
 
-                            propValue = RefUtil.getPropValue(obj, entry.getValue());
+                            propValue = ClassUtil.getPropValue(obj, entry.getValue());
 
                             if (propValue == null) {
                                 continue;
@@ -709,14 +709,14 @@ public final class SQLiteExecutor {
                                 continue;
                             }
 
-                            propValue = RefUtil.getPropValue(obj, entry.getValue());
+                            propValue = ClassUtil.getPropValue(obj, entry.getValue());
 
                             if (propValue == null) {
                                 continue;
                             }
 
                             type = Type.valueOf(propValue.getClass());
-                            type.set(result, RefUtil.toLowerCaseWithUnderscore(propName), propValue);
+                            type.set(result, ClassUtil.toLowerCaseWithUnderscore(propName), propValue);
                         }
 
                         break;
@@ -730,14 +730,14 @@ public final class SQLiteExecutor {
                                 continue;
                             }
 
-                            propValue = RefUtil.getPropValue(obj, entry.getValue());
+                            propValue = ClassUtil.getPropValue(obj, entry.getValue());
 
                             if (propValue == null) {
                                 continue;
                             }
 
                             type = Type.valueOf(propValue.getClass());
-                            type.set(result, RefUtil.toUpperCaseWithUnderscore(propName), propValue);
+                            type.set(result, ClassUtil.toUpperCaseWithUnderscore(propName), propValue);
                         }
 
                         break;
@@ -749,7 +749,7 @@ public final class SQLiteExecutor {
             }
         } else {
             throw new IllegalArgumentException("Only entity class with getter/setter methods or Map are supported. "
-                    + RefUtil.getCanonicalClassName(obj.getClass()) + " is not supported");
+                    + ClassUtil.getCanonicalClassName(obj.getClass()) + " is not supported");
         }
 
         return result;
@@ -968,7 +968,7 @@ public final class SQLiteExecutor {
             throw new IllegalArgumentException("The specified parameter must be an entity with getter/setter methods");
         }
 
-        Number id = RefUtil.getPropValue(entity, ID);
+        Number id = ClassUtil.getPropValue(entity, ID);
 
         if (id.longValue() == 0) {
             throw new IllegalArgumentException("Please specify value for the id property");
@@ -1003,7 +1003,7 @@ public final class SQLiteExecutor {
     }
 
     private String getTableNameByEntity(Class<?> entityClass) {
-        return RefUtil.getSimpleClassName(entityClass);
+        return ClassUtil.getSimpleClassName(entityClass);
     }
 
     /**
@@ -1049,7 +1049,7 @@ public final class SQLiteExecutor {
             throw new IllegalArgumentException("The specified parameter must be an entity with getter/setter methods");
         }
 
-        Number id = RefUtil.getPropValue(entity, ID);
+        Number id = ClassUtil.getPropValue(entity, ID);
 
         if (id.longValue() == 0) {
             throw new IllegalArgumentException("Please specify value for the id property");
@@ -1412,7 +1412,7 @@ public final class SQLiteExecutor {
         //            return N.as(targetClass, rs.absolute(0).get(0));
         //        }
 
-        return queryForSingleResult((Class<T>) RefUtil.getPropGetMethod(entityClass, columnName).getReturnType(), getTableNameByEntity(entityClass), columnName,
+        return queryForSingleResult((Class<T>) ClassUtil.getPropGetMethod(entityClass, columnName).getReturnType(), getTableNameByEntity(entityClass), columnName,
                 whereClause);
     }
 
@@ -1623,17 +1623,17 @@ public final class SQLiteExecutor {
     public DataSet query(final Class<?> targetClass, Collection<String> selectColumnNames, Condition whereClause, String groupBy, String having, String orderBy,
             int offset, int count) {
         if (N.isNullOrEmpty(selectColumnNames)) {
-            selectColumnNames = RefUtil.getPropGetMethodList(targetClass).keySet();
+            selectColumnNames = ClassUtil.getPropGetMethodList(targetClass).keySet();
         }
 
         final String[] columns = selectColumnNames.toArray(new String[selectColumnNames.size()]);
         final Type<Object>[] selectColumnTypes = new Type[columns.length];
 
         for (int i = 0, len = columns.length; i < len; i++) {
-            selectColumnTypes[i] = Type.valueOf(RefUtil.getPropGetMethod(targetClass, columns[i]).getReturnType());
+            selectColumnTypes[i] = Type.valueOf(ClassUtil.getPropGetMethod(targetClass, columns[i]).getReturnType());
         }
 
-        return query(RefUtil.getSimpleClassName(targetClass), columns, selectColumnTypes, whereClause, groupBy, having, orderBy, offset, count);
+        return query(ClassUtil.getSimpleClassName(targetClass), columns, selectColumnTypes, whereClause, groupBy, having, orderBy, offset, count);
     }
 
     /**
@@ -1989,9 +1989,9 @@ public final class SQLiteExecutor {
             case CAMEL_CASE:
                 return tableName;
             case LOWER_CASE_WITH_UNDERSCORE:
-                return RefUtil.toLowerCaseWithUnderscore(tableName);
+                return ClassUtil.toLowerCaseWithUnderscore(tableName);
             case UPPER_CASE_WITH_UNDERSCORE:
-                return RefUtil.toUpperCaseWithUnderscore(tableName);
+                return ClassUtil.toUpperCaseWithUnderscore(tableName);
             default:
                 throw new IllegalArgumentException("Unsupported NamingPolicy: " + columnNamingPolicy);
         }
@@ -2063,13 +2063,13 @@ public final class SQLiteExecutor {
                 Method propGetMethod = null;
 
                 for (int i = 0; i < parameterCount; i++) {
-                    propGetMethod = RefUtil.getPropGetMethod(clazz, namedParameters.get(i));
+                    propGetMethod = ClassUtil.getPropGetMethod(clazz, namedParameters.get(i));
 
                     if (propGetMethod == null) {
                         throw new IllegalArgumentException("Parameter for property '" + namedParameters.get(i) + "' is missed");
                     }
 
-                    result[i] = RefUtil.invokeMethod(entity, propGetMethod);
+                    result[i] = ClassUtil.invokeMethod(entity, propGetMethod);
                 }
             }
         } else {

@@ -1096,7 +1096,7 @@ public final class Fn {
      * @see Collectors#groupingBy(Function)
      */
     public static <T, K> Collector<T, ?, Map<K, Long>> countingBy(Function<? super T, ? extends K> classifier) {
-        return countingBy(classifier, Suppliers.ofMap());
+        return groupingBy(classifier, Collectors.counting());
     }
 
     /**
@@ -1118,7 +1118,7 @@ public final class Fn {
      * @see Collectors#groupingBy(Function)
      */
     public static <T, K> Collector<T, ?, Map<K, Integer>> countingIntBy(Function<? super T, ? extends K> classifier) {
-        return countingIntBy(classifier, Suppliers.ofMap());
+        return groupingBy(classifier, Collectors.countingInt());
     }
 
     /**

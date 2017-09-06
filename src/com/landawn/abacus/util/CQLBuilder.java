@@ -133,8 +133,8 @@ public abstract class CQLBuilder {
         entityTablePropColumnNameMap.put(entityTableName, m);
         entityTablePropColumnNameMap.put(entityTableName.toLowerCase(), m);
         entityTablePropColumnNameMap.put(entityTableName.toUpperCase(), m);
-        entityTablePropColumnNameMap.put(RefUtil.toLowerCaseWithUnderscore(entityTableName), m);
-        entityTablePropColumnNameMap.put(RefUtil.toUpperCaseWithUnderscore(entityTableName), m);
+        entityTablePropColumnNameMap.put(ClassUtil.toLowerCaseWithUnderscore(entityTableName), m);
+        entityTablePropColumnNameMap.put(ClassUtil.toUpperCaseWithUnderscore(entityTableName), m);
     }
 
     //    /**
@@ -404,7 +404,7 @@ public abstract class CQLBuilder {
     }
 
     public CQLBuilder into(final Class<?> entityClass) {
-        return into(RefUtil.getSimpleClassName(entityClass));
+        return into(ClassUtil.getSimpleClassName(entityClass));
     }
 
     public CQLBuilder from(String expr) {
@@ -549,7 +549,7 @@ public abstract class CQLBuilder {
     }
 
     public CQLBuilder from(final Class<?> entityClass) {
-        return from(RefUtil.getSimpleClassName(entityClass));
+        return from(ClassUtil.getSimpleClassName(entityClass));
     }
 
     public CQLBuilder where(final String expr) {
@@ -949,7 +949,7 @@ public abstract class CQLBuilder {
                 final Map<String, Object> updateProps = new HashMap<>();
 
                 for (String propName : updatedPropNames) {
-                    updateProps.put(propName, RefUtil.getPropValue(dirtyMarkerEntity, propName));
+                    updateProps.put(propName, ClassUtil.getPropValue(dirtyMarkerEntity, propName));
                 }
 
                 return set(updateProps);
@@ -983,7 +983,7 @@ public abstract class CQLBuilder {
                 final Map<String, Object> props = new HashMap<>();
 
                 for (String propName : ((DirtyMarker) entity).dirtyPropNames()) {
-                    props.put(propName, RefUtil.getPropValue(entity, propName));
+                    props.put(propName, ClassUtil.getPropValue(entity, propName));
                 }
 
                 Maps.removeAll(props, excludedPropNames);
@@ -1619,10 +1619,10 @@ public abstract class CQLBuilder {
     private String formalizeName(final String entityPropName) {
         switch (namingPolicy) {
             case LOWER_CASE_WITH_UNDERSCORE:
-                return RefUtil.toLowerCaseWithUnderscore(entityPropName);
+                return ClassUtil.toLowerCaseWithUnderscore(entityPropName);
 
             case UPPER_CASE_WITH_UNDERSCORE:
-                return RefUtil.toUpperCaseWithUnderscore(entityPropName);
+                return ClassUtil.toUpperCaseWithUnderscore(entityPropName);
 
             default:
                 return entityPropName;
@@ -1646,10 +1646,10 @@ public abstract class CQLBuilder {
 
         switch (namingPolicy) {
             case LOWER_CASE_WITH_UNDERSCORE:
-                return RefUtil.toLowerCaseWithUnderscore(propName);
+                return ClassUtil.toLowerCaseWithUnderscore(propName);
 
             case UPPER_CASE_WITH_UNDERSCORE:
-                return RefUtil.toUpperCaseWithUnderscore(propName);
+                return ClassUtil.toUpperCaseWithUnderscore(propName);
 
             default:
                 return propName;
@@ -1703,15 +1703,15 @@ public abstract class CQLBuilder {
         if (N.isNullOrEmpty(excludedPropNames)) {
             return propNameList(entityClass);
         } else {
-            final Set<String> entityPropNameSet = new LinkedHashSet<>(RefUtil.getPropGetMethodList(entityClass).keySet());
+            final Set<String> entityPropNameSet = new LinkedHashSet<>(ClassUtil.getPropGetMethodList(entityClass).keySet());
 
             Method propGetMethod = null;
             for (String propName : excludedPropNames) {
                 if (!entityPropNameSet.remove(propName)) {
-                    propGetMethod = RefUtil.getPropGetMethod(entityClass, propName);
+                    propGetMethod = ClassUtil.getPropGetMethod(entityClass, propName);
 
                     if (propGetMethod != null) {
-                        entityPropNameSet.remove(RefUtil.getPropNameByMethod(propGetMethod));
+                        entityPropNameSet.remove(ClassUtil.getPropNameByMethod(propGetMethod));
                     }
                 }
             }
@@ -1734,7 +1734,7 @@ public abstract class CQLBuilder {
                 propNameList = classPropNameListPool.get(entityClass);
 
                 if (propNameList == null) {
-                    propNameList = ImmutableList.of(new ArrayList<>(RefUtil.getPropGetMethodList(entityClass).keySet()));
+                    propNameList = ImmutableList.of(new ArrayList<>(ClassUtil.getPropGetMethodList(entityClass).keySet()));
                     classPropNameListPool.put(entityClass, propNameList);
                 }
             }
@@ -1921,7 +1921,7 @@ public abstract class CQLBuilder {
             final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.UPDATE;
-            instance.tableName = RefUtil.getSimpleClassName(entityClass);
+            instance.tableName = ClassUtil.getSimpleClassName(entityClass);
             instance.columnNameList = getPropNamesByClass(entityClass, excludedPropNames);
 
             return instance;
@@ -1968,7 +1968,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder deleteFrom(final Class<?> entityClass) {
-            return deleteFrom(RefUtil.getSimpleClassName(entityClass));
+            return deleteFrom(ClassUtil.getSimpleClassName(entityClass));
         }
 
         public static CQLBuilder deleteFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
@@ -2150,7 +2150,7 @@ public abstract class CQLBuilder {
             final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.UPDATE;
-            instance.tableName = RefUtil.getSimpleClassName(entityClass);
+            instance.tableName = ClassUtil.getSimpleClassName(entityClass);
             instance.columnNameList = getPropNamesByClass(entityClass, excludedPropNames);
 
             return instance;
@@ -2197,7 +2197,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder deleteFrom(final Class<?> entityClass) {
-            return deleteFrom(RefUtil.getSimpleClassName(entityClass));
+            return deleteFrom(ClassUtil.getSimpleClassName(entityClass));
         }
 
         public static CQLBuilder deleteFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
@@ -2378,7 +2378,7 @@ public abstract class CQLBuilder {
             final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.UPDATE;
-            instance.tableName = RefUtil.getSimpleClassName(entityClass);
+            instance.tableName = ClassUtil.getSimpleClassName(entityClass);
             instance.columnNameList = getPropNamesByClass(entityClass, excludedPropNames);
 
             return instance;
@@ -2425,7 +2425,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder deleteFrom(final Class<?> entityClass) {
-            return deleteFrom(RefUtil.getSimpleClassName(entityClass));
+            return deleteFrom(ClassUtil.getSimpleClassName(entityClass));
         }
 
         public static CQLBuilder deleteFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
@@ -2600,7 +2600,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder update(final Class<?> entityClass) {
-            return update(RefUtil.getSimpleClassName(entityClass));
+            return update(ClassUtil.getSimpleClassName(entityClass));
         }
 
         public static CQLBuilder delete(final String expr) {
@@ -2644,7 +2644,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder deleteFrom(final Class<?> entityClass) {
-            return deleteFrom(RefUtil.getSimpleClassName(entityClass));
+            return deleteFrom(ClassUtil.getSimpleClassName(entityClass));
         }
 
         public static CQLBuilder deleteFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
@@ -2826,7 +2826,7 @@ public abstract class CQLBuilder {
             final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.UPDATE;
-            instance.tableName = RefUtil.getSimpleClassName(entityClass);
+            instance.tableName = ClassUtil.getSimpleClassName(entityClass);
             instance.columnNameList = getPropNamesByClass(entityClass, excludedPropNames);
 
             return instance;
@@ -2873,7 +2873,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder deleteFrom(final Class<?> entityClass) {
-            return deleteFrom(RefUtil.getSimpleClassName(entityClass));
+            return deleteFrom(ClassUtil.getSimpleClassName(entityClass));
         }
 
         public static CQLBuilder deleteFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
@@ -3055,7 +3055,7 @@ public abstract class CQLBuilder {
             final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.UPDATE;
-            instance.tableName = RefUtil.getSimpleClassName(entityClass);
+            instance.tableName = ClassUtil.getSimpleClassName(entityClass);
             instance.columnNameList = getPropNamesByClass(entityClass, excludedPropNames);
 
             return instance;
@@ -3102,7 +3102,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder deleteFrom(final Class<?> entityClass) {
-            return deleteFrom(RefUtil.getSimpleClassName(entityClass));
+            return deleteFrom(ClassUtil.getSimpleClassName(entityClass));
         }
 
         public static CQLBuilder deleteFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
@@ -3284,7 +3284,7 @@ public abstract class CQLBuilder {
             final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.UPDATE;
-            instance.tableName = RefUtil.getSimpleClassName(entityClass);
+            instance.tableName = ClassUtil.getSimpleClassName(entityClass);
             instance.columnNameList = getPropNamesByClass(entityClass, excludedPropNames);
 
             return instance;
@@ -3331,7 +3331,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder deleteFrom(final Class<?> entityClass) {
-            return deleteFrom(RefUtil.getSimpleClassName(entityClass));
+            return deleteFrom(ClassUtil.getSimpleClassName(entityClass));
         }
 
         public static CQLBuilder deleteFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
@@ -3506,7 +3506,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder update(final Class<?> entityClass) {
-            return update(RefUtil.getSimpleClassName(entityClass));
+            return update(ClassUtil.getSimpleClassName(entityClass));
         }
 
         public static CQLBuilder delete(final String expr) {
@@ -3550,7 +3550,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder deleteFrom(final Class<?> entityClass) {
-            return deleteFrom(RefUtil.getSimpleClassName(entityClass));
+            return deleteFrom(ClassUtil.getSimpleClassName(entityClass));
         }
 
         public static CQLBuilder deleteFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
@@ -3732,7 +3732,7 @@ public abstract class CQLBuilder {
             final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.UPDATE;
-            instance.tableName = RefUtil.getSimpleClassName(entityClass);
+            instance.tableName = ClassUtil.getSimpleClassName(entityClass);
             instance.columnNameList = getPropNamesByClass(entityClass, excludedPropNames);
 
             return instance;
@@ -3779,7 +3779,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder deleteFrom(final Class<?> entityClass) {
-            return deleteFrom(RefUtil.getSimpleClassName(entityClass));
+            return deleteFrom(ClassUtil.getSimpleClassName(entityClass));
         }
 
         public static CQLBuilder deleteFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
@@ -3961,7 +3961,7 @@ public abstract class CQLBuilder {
             final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.UPDATE;
-            instance.tableName = RefUtil.getSimpleClassName(entityClass);
+            instance.tableName = ClassUtil.getSimpleClassName(entityClass);
             instance.columnNameList = getPropNamesByClass(entityClass, excludedPropNames);
 
             return instance;
@@ -4008,7 +4008,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder deleteFrom(final Class<?> entityClass) {
-            return deleteFrom(RefUtil.getSimpleClassName(entityClass));
+            return deleteFrom(ClassUtil.getSimpleClassName(entityClass));
         }
 
         public static CQLBuilder deleteFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
@@ -4190,7 +4190,7 @@ public abstract class CQLBuilder {
             final CQLBuilder instance = createInstance();
 
             instance.op = OperationType.UPDATE;
-            instance.tableName = RefUtil.getSimpleClassName(entityClass);
+            instance.tableName = ClassUtil.getSimpleClassName(entityClass);
             instance.columnNameList = getPropNamesByClass(entityClass, excludedPropNames);
 
             return instance;
@@ -4237,7 +4237,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder deleteFrom(final Class<?> entityClass) {
-            return deleteFrom(RefUtil.getSimpleClassName(entityClass));
+            return deleteFrom(ClassUtil.getSimpleClassName(entityClass));
         }
 
         public static CQLBuilder deleteFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {
@@ -4412,7 +4412,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder update(final Class<?> entityClass) {
-            return update(RefUtil.getSimpleClassName(entityClass));
+            return update(ClassUtil.getSimpleClassName(entityClass));
         }
 
         public static CQLBuilder delete(final String expr) {
@@ -4456,7 +4456,7 @@ public abstract class CQLBuilder {
         }
 
         public static CQLBuilder deleteFrom(final Class<?> entityClass) {
-            return deleteFrom(RefUtil.getSimpleClassName(entityClass));
+            return deleteFrom(ClassUtil.getSimpleClassName(entityClass));
         }
 
         public static CQLBuilder deleteFrom(final Class<?> entityClass, final Set<String> excludedPropNames) {

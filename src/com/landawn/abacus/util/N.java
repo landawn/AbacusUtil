@@ -630,6 +630,29 @@ public final class N {
     private static final Comparator OBJ_COMPARATOR = Comparators.OBJ_COMPARATOR;
 
     // ...
+    static final BiMap<Class<?>, Class<?>> PRIMITIVE_2_WRAPPER = new BiMap<>();
+
+    static {
+        PRIMITIVE_2_WRAPPER.put(boolean.class, Boolean.class);
+        PRIMITIVE_2_WRAPPER.put(char.class, Character.class);
+        PRIMITIVE_2_WRAPPER.put(byte.class, Byte.class);
+        PRIMITIVE_2_WRAPPER.put(short.class, Short.class);
+        PRIMITIVE_2_WRAPPER.put(int.class, Integer.class);
+        PRIMITIVE_2_WRAPPER.put(long.class, Long.class);
+        PRIMITIVE_2_WRAPPER.put(float.class, Float.class);
+        PRIMITIVE_2_WRAPPER.put(double.class, Double.class);
+
+        PRIMITIVE_2_WRAPPER.put(boolean[].class, Boolean[].class);
+        PRIMITIVE_2_WRAPPER.put(char[].class, Character[].class);
+        PRIMITIVE_2_WRAPPER.put(byte[].class, Byte[].class);
+        PRIMITIVE_2_WRAPPER.put(short[].class, Short[].class);
+        PRIMITIVE_2_WRAPPER.put(int[].class, Integer[].class);
+        PRIMITIVE_2_WRAPPER.put(long[].class, Long[].class);
+        PRIMITIVE_2_WRAPPER.put(float[].class, Float[].class);
+        PRIMITIVE_2_WRAPPER.put(double[].class, Double[].class);
+    }
+
+    // ...
     static final Map<Class<?>, Object> CLASS_EMPTY_ARRAY = new ConcurrentHashMap<>();
 
     static {
@@ -661,7 +684,7 @@ public final class N {
         CLASS_EMPTY_ARRAY.put(Object.class, N.EMPTY_OBJECT_ARRAY);
     }
 
-    // ...
+    // ...    
     static final Map<Class<?>, Integer> CLASS_TYPE_ENUM = new HashMap<>();
 
     static {
@@ -1060,13 +1083,13 @@ public final class N {
 
                 Object instance = null;
                 for (Class<?> current : toInstantiate) {
-                    instance = instance == null ? invoke(RefUtil.getDeclaredConstructor(current))
-                            : invoke(RefUtil.getDeclaredConstructor(current, instance.getClass()), instance);
+                    instance = instance == null ? invoke(ClassUtil.getDeclaredConstructor(current))
+                            : invoke(ClassUtil.getDeclaredConstructor(current, instance.getClass()), instance);
                 }
 
-                return invoke(RefUtil.getDeclaredConstructor(cls, instance.getClass()), instance);
+                return invoke(ClassUtil.getDeclaredConstructor(cls, instance.getClass()), instance);
             } else {
-                return invoke(RefUtil.getDeclaredConstructor(cls));
+                return invoke(ClassUtil.getDeclaredConstructor(cls));
             }
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
             throw N.toRuntimeException(e);
@@ -1128,12 +1151,12 @@ public final class N {
             return (T) asMapEntity(entityName);
         }
 
-        final Class<?> enclosingClass = RefUtil.getEnclosingClass(cls);
+        final Class<?> enclosingClass = ClassUtil.getEnclosingClass(cls);
 
         if (enclosingClass == null || Modifier.isStatic(cls.getModifiers())) {
             return newInstance(cls);
         } else {
-            return RefUtil.invokeConstructor(RefUtil.getDeclaredConstructor(cls, enclosingClass), newInstance(enclosingClass));
+            return ClassUtil.invokeConstructor(ClassUtil.getDeclaredConstructor(cls, enclosingClass), newInstance(enclosingClass));
         }
     }
 
@@ -1514,10 +1537,10 @@ public final class N {
                                 continue;
                             }
 
-                            method = RefUtil.getPropGetMethod(cls, signedPropName);
+                            method = ClassUtil.getPropGetMethod(cls, signedPropName);
 
                             if (method != null) {
-                                columnNameSet.add(RefUtil.getPropNameByMethod(method));
+                                columnNameSet.add(ClassUtil.getPropNameByMethod(method));
                             }
                         }
                     } else {
@@ -1529,7 +1552,7 @@ public final class N {
                             continue;
                         }
 
-                        columnNameSet.addAll(RefUtil.checkPropGetMethodList(cls).keySet());
+                        columnNameSet.addAll(ClassUtil.checkPropGetMethodList(cls).keySet());
                         clsSet.add(cls);
                     }
                 } else {
@@ -1539,7 +1562,7 @@ public final class N {
 
             // re-order column.
             for (Map.Entry<Class<?>, Set<String>> entry : clsSignedPropNameSetMap.entrySet()) {
-                final List<String> intersecion = N.intersection(RefUtil.getPropGetMethodList(entry.getKey()).keySet(), columnNameSet);
+                final List<String> intersecion = N.intersection(ClassUtil.getPropGetMethodList(entry.getKey()).keySet(), columnNameSet);
                 columnNameSet.removeAll(intersecion);
                 columnNameSet.addAll(intersecion);
             }
@@ -1580,12 +1603,12 @@ public final class N {
 
                 Method method = null;
                 for (int i = 0; i < columnCount; i++) {
-                    method = RefUtil.getPropGetMethod(cls, columnNameList.get(i));
+                    method = ClassUtil.getPropGetMethod(cls, columnNameList.get(i));
 
                     if (method == null) {
                         columnList.get(i).add(null);
                     } else {
-                        columnList.get(i).add(RefUtil.getPropValue(e, method));
+                        columnList.get(i).add(ClassUtil.getPropValue(e, method));
                     }
                 }
             } else if (type.isArray()) {
@@ -1608,7 +1631,7 @@ public final class N {
                 }
             } else {
                 throw new IllegalArgumentException(
-                        "Unsupported row type: " + RefUtil.getCanonicalClassName(e.getClass()) + ". Only array, collection, map and entity are supported");
+                        "Unsupported row type: " + ClassUtil.getCanonicalClassName(e.getClass()) + ". Only array, collection, map and entity are supported");
             }
         }
 
@@ -1635,15 +1658,15 @@ public final class N {
                     Class<?> entityClass = anEntity.getClass();
                     Method propGetMethod = null;
                     for (String propName : ((DirtyMarker) anEntity).signedPropNames()) {
-                        propGetMethod = RefUtil.getPropGetMethod(entityClass, propName);
-                        propName = RefUtil.getPropNameByMethod(propGetMethod);
-                        mapEntity.set(propName, RefUtil.getPropValue(anEntity, propGetMethod));
+                        propGetMethod = ClassUtil.getPropGetMethod(entityClass, propName);
+                        propName = ClassUtil.getPropNameByMethod(propGetMethod);
+                        mapEntity.set(propName, ClassUtil.getPropValue(anEntity, propGetMethod));
                     }
                 } else {
-                    final Map<String, Method> getterMethodList = RefUtil.checkPropGetMethodList(anEntity.getClass());
+                    final Map<String, Method> getterMethodList = ClassUtil.checkPropGetMethodList(anEntity.getClass());
 
                     for (Map.Entry<String, Method> entry : getterMethodList.entrySet()) {
-                        mapEntity.set(entry.getKey(), RefUtil.getPropValue(anEntity, entry.getValue()));
+                        mapEntity.set(entry.getKey(), ClassUtil.getPropValue(anEntity, entry.getValue()));
                     }
                 }
             } else {
@@ -3089,7 +3112,7 @@ public final class N {
         } else if (cls.equals(Timestamp.class)) {
             result = new Timestamp(millis);
         } else {
-            result = RefUtil.invokeConstructor(RefUtil.getDeclaredConstructor(cls, long.class), millis);
+            result = ClassUtil.invokeConstructor(ClassUtil.getDeclaredConstructor(cls, long.class), millis);
         }
 
         return (T) result;
@@ -3145,7 +3168,7 @@ public final class N {
         } else if (cls.equals(GregorianCalendar.class)) {
             result = GregorianCalendar.getInstance();
         } else {
-            result = RefUtil.invokeConstructor(RefUtil.getDeclaredConstructor(cls, long.class), millis);
+            result = ClassUtil.invokeConstructor(ClassUtil.getDeclaredConstructor(cls, long.class), millis);
         }
 
         result.setTimeInMillis(millis);
@@ -4225,9 +4248,9 @@ public final class N {
 
                         for (String propName : signedPropNames) {
                             if (selectPropNames == null || selectPropNames.contains(propName)) {
-                                srcPropGetMethod = RefUtil.getPropGetMethod(srcCls, propName);
+                                srcPropGetMethod = ClassUtil.getPropGetMethod(srcCls, propName);
 
-                                RefUtil.setPropValue(copy, propName, srcPropGetMethod.invoke(entity), ignoreUnknownProperty);
+                                ClassUtil.setPropValue(copy, propName, srcPropGetMethod.invoke(entity), ignoreUnknownProperty);
                             }
                         }
                     } catch (Exception e) {
@@ -4235,12 +4258,12 @@ public final class N {
                     }
                 }
             } else {
-                Map<String, Method> srcGetterMethodList = RefUtil.checkPropGetMethodList(srcCls);
+                Map<String, Method> srcGetterMethodList = ClassUtil.checkPropGetMethodList(srcCls);
 
                 try {
                     for (Map.Entry<String, Method> entry : srcGetterMethodList.entrySet()) {
                         if (selectPropNames == null || selectPropNames.contains(entry.getKey())) {
-                            RefUtil.setPropValue(copy, entry.getKey(), entry.getValue().invoke(entity), ignoreUnknownProperty);
+                            ClassUtil.setPropValue(copy, entry.getKey(), entry.getValue().invoke(entity), ignoreUnknownProperty);
                         }
                     }
                 } catch (Exception e) {
@@ -4286,9 +4309,9 @@ public final class N {
 
                         for (String propName : signedPropNames) {
                             if (ignorePropNames == null || ignorePropNames.contains(propName) == false) {
-                                srcPropGetMethod = RefUtil.getPropGetMethod(srcCls, propName);
+                                srcPropGetMethod = ClassUtil.getPropGetMethod(srcCls, propName);
 
-                                RefUtil.setPropValue(copy, propName, srcPropGetMethod.invoke(entity), ignoreUnknownProperty);
+                                ClassUtil.setPropValue(copy, propName, srcPropGetMethod.invoke(entity), ignoreUnknownProperty);
                             }
                         }
                     } catch (Exception e) {
@@ -4296,12 +4319,12 @@ public final class N {
                     }
                 }
             } else {
-                Map<String, Method> srcGetterMethodList = RefUtil.checkPropGetMethodList(srcCls);
+                Map<String, Method> srcGetterMethodList = ClassUtil.checkPropGetMethodList(srcCls);
 
                 try {
                     for (Map.Entry<String, Method> entry : srcGetterMethodList.entrySet()) {
                         if (ignorePropNames == null || ignorePropNames.contains(entry.getKey()) == false) {
-                            RefUtil.setPropValue(copy, entry.getKey(), entry.getValue().invoke(entity), ignoreUnknownProperty);
+                            ClassUtil.setPropValue(copy, entry.getKey(), entry.getValue().invoke(entity), ignoreUnknownProperty);
                         }
                     }
                 } catch (Exception e) {
@@ -4396,7 +4419,7 @@ public final class N {
 
             for (Map.Entry<String, Object> entry : m.entrySet()) {
                 if (selectPropNames == null || selectPropNames.contains(entry.getKey())) {
-                    RefUtil.setPropValue(targetEntity, entry.getKey(), entry.getValue(), ignoreUnknownProperty);
+                    ClassUtil.setPropValue(targetEntity, entry.getKey(), entry.getValue(), ignoreUnknownProperty);
                 }
             }
         } else if (sourceEntity instanceof DirtyMarker) {
@@ -4413,16 +4436,16 @@ public final class N {
             try {
                 for (String propName : signedPropNames) {
                     if (selectPropNames == null || selectPropNames.contains(propName)) {
-                        srcPropGetMethod = RefUtil.getPropGetMethod(sourceEntityClass, propName);
+                        srcPropGetMethod = ClassUtil.getPropGetMethod(sourceEntityClass, propName);
                         propValue = srcPropGetMethod.invoke(sourceEntity);
-                        RefUtil.setPropValue(targetEntity, propName, propValue, ignoreUnknownProperty);
+                        ClassUtil.setPropValue(targetEntity, propName, propValue, ignoreUnknownProperty);
                     }
                 }
             } catch (Exception e) {
                 throw new AbacusException(e);
             }
         } else {
-            final Map<String, Method> getterMethodList = RefUtil.checkPropGetMethodList(sourceEntity.getClass());
+            final Map<String, Method> getterMethodList = ClassUtil.checkPropGetMethodList(sourceEntity.getClass());
 
             String propName = null;
             Object propValue = null;
@@ -4438,7 +4461,7 @@ public final class N {
                             continue;
                         }
 
-                        RefUtil.setPropValue(targetEntity, propName, propValue, ignoreUnknownProperty);
+                        ClassUtil.setPropValue(targetEntity, propName, propValue, ignoreUnknownProperty);
                     }
                 }
             } catch (Exception e) {
@@ -4455,7 +4478,7 @@ public final class N {
         }
 
         for (String propName : propNames) {
-            RefUtil.setPropValue(entity, propName, null);
+            ClassUtil.setPropValue(entity, propName, null);
         }
 
         if (entity instanceof DirtyMarker) {
@@ -4475,7 +4498,7 @@ public final class N {
         }
 
         for (String propName : propNames) {
-            RefUtil.setPropValue(entity, propName, null);
+            ClassUtil.setPropValue(entity, propName, null);
         }
 
         if (entity instanceof DirtyMarker) {
@@ -4502,21 +4525,21 @@ public final class N {
             }
 
             for (String propName : signedPropNames) {
-                RefUtil.setPropValue(entity, propName, null);
+                ClassUtil.setPropValue(entity, propName, null);
             }
 
             dirtyMarkerEntity.signedPropNames().clear();
             dirtyMarkerEntity.dirtyPropNames().clear();
         } else {
             Class<?> cls = entity.getClass();
-            Map<String, Method> setterMethodList = RefUtil.getPropSetMethodList(cls);
+            Map<String, Method> setterMethodList = ClassUtil.getPropSetMethodList(cls);
 
             if (setterMethodList.size() == 0) {
-                throw new IllegalArgumentException("No property getter/setter method found in the specified entity: " + RefUtil.getCanonicalClassName(cls));
+                throw new IllegalArgumentException("No property getter/setter method found in the specified entity: " + ClassUtil.getCanonicalClassName(cls));
             }
 
             for (Method propSetMethod : setterMethodList.values()) {
-                RefUtil.setPropValue(entity, propSetMethod, null);
+                ClassUtil.setPropValue(entity, propSetMethod, null);
             }
         }
     }
@@ -8080,6 +8103,26 @@ public final class N {
 
     public static boolean isPrimitiveArray(final Class<?> cls) {
         return typeOf(cls).isPrimitiveArray();
+    }
+
+    public static Class<?> wrapperOf(final Class<?> primitiveClass) {
+        final Class<?> result = PRIMITIVE_2_WRAPPER.get(primitiveClass);
+
+        if (result == null) {
+            throw new IllegalArgumentException(ClassUtil.getCanonicalClassName(primitiveClass) + " is not a primitive (array) type");
+        }
+
+        return result;
+    }
+
+    public static Class<?> primitiveOf(final Class<?> primitiveWrapperClass) {
+        Class<?> result = PRIMITIVE_2_WRAPPER.getByValue(primitiveWrapperClass);
+
+        if (result == null) {
+            throw new IllegalArgumentException(ClassUtil.getCanonicalClassName(primitiveWrapperClass) + " is not a wrapper of primitive (array) type");
+        }
+
+        return result;
     }
 
     public static <T> T collection2Array(final Class<T> arrayClass, final Collection<?> c) {
@@ -13026,7 +13069,7 @@ public final class N {
         Class<?> parameterClass = null;
         Object propValue = null;
 
-        for (Method method : RefUtil.getPropSetMethodList(entityClass).values()) {
+        for (Method method : ClassUtil.getPropSetMethodList(entityClass).values()) {
             parameterClass = method.getParameterTypes()[0];
             type = N.typeOf(parameterClass);
 
@@ -13058,7 +13101,7 @@ public final class N {
                 propValue = type.defaultValue();
             }
 
-            RefUtil.setPropValue(entity, method, propValue);
+            ClassUtil.setPropValue(entity, method, propValue);
         }
     }
 

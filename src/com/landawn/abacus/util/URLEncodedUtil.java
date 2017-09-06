@@ -260,7 +260,7 @@ public final class URLEncodedUtil {
                     propValue = propType.valueOf(value);
                 }
 
-                RefUtil.setPropValue(result, name, propValue);
+                ClassUtil.setPropValue(result, name, propValue);
             }
 
         } finally {

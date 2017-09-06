@@ -326,7 +326,7 @@ public final class JdbcUtil {
     }
 
     public static DataSource createDataSource(final String driver, final String url, final String user, final String password) {
-        final Class<? extends Driver> driverClass = RefUtil.forClass(driver);
+        final Class<? extends Driver> driverClass = ClassUtil.forClass(driver);
 
         return createDataSource(driverClass, url, user, password);
     }
@@ -379,25 +379,25 @@ public final class JdbcUtil {
         Class<? extends Driver> driverClass = null;
         // jdbc:mysql://localhost:3306/abacustest
         if (url.indexOf("mysql") > 0 || N.indexOfIgnoreCase(url, "mysql") > 0) {
-            driverClass = RefUtil.forClass("com.mysql.jdbc.Driver");
+            driverClass = ClassUtil.forClass("com.mysql.jdbc.Driver");
             // jdbc:postgresql://localhost:5432/abacustest
         } else if (url.indexOf("postgresql") > 0 || N.indexOfIgnoreCase(url, "postgresql") > 0) {
-            driverClass = RefUtil.forClass("org.postgresql.Driver");
+            driverClass = ClassUtil.forClass("org.postgresql.Driver");
             // jdbc:h2:hsql://<host>:<port>/<database>
         } else if (url.indexOf("h2") > 0 || N.indexOfIgnoreCase(url, "h2") > 0) {
-            driverClass = RefUtil.forClass("org.h2.Driver");
+            driverClass = ClassUtil.forClass("org.h2.Driver");
             // jdbc:hsqldb:hsql://localhost/abacustest
         } else if (url.indexOf("hsqldb") > 0 || N.indexOfIgnoreCase(url, "hsqldb") > 0) {
-            driverClass = RefUtil.forClass("org.hsqldb.jdbc.JDBCDriver");
+            driverClass = ClassUtil.forClass("org.hsqldb.jdbc.JDBCDriver");
             // jdbc.url=jdbc:oracle:thin:@localhost:1521:abacustest
         } else if (url.indexOf("oracle") > 0 || N.indexOfIgnoreCase(url, "oracle") > 0) {
-            driverClass = RefUtil.forClass("oracle.jdbc.driver.OracleDriver");
+            driverClass = ClassUtil.forClass("oracle.jdbc.driver.OracleDriver");
             // jdbc.url=jdbc:sqlserver://localhost:1433;Database=abacustest
         } else if (url.indexOf("sqlserver") > 0 || N.indexOfIgnoreCase(url, "sqlserver") > 0) {
-            driverClass = RefUtil.forClass("com.microsoft.sqlserver.jdbc.SQLServerDrive");
+            driverClass = ClassUtil.forClass("com.microsoft.sqlserver.jdbc.SQLServerDrive");
             // jdbc:db2://localhost:50000/abacustest
         } else if (url.indexOf("db2") > 0 || N.indexOfIgnoreCase(url, "db2") > 0) {
-            driverClass = RefUtil.forClass("com.ibm.db2.jcc.DB2Driver");
+            driverClass = ClassUtil.forClass("com.ibm.db2.jcc.DB2Driver");
         } else {
             throw new AbacusException(
                     "Can not identity the driver class by url: " + url + ". Only mysql, postgresql, hsqldb, sqlserver, oracle and db2 are supported currently");
@@ -406,7 +406,7 @@ public final class JdbcUtil {
     }
 
     public static Connection createConnection(final String driverClass, final String url, final String user, final String password) {
-        Class<? extends Driver> cls = RefUtil.forClass(driverClass);
+        Class<? extends Driver> cls = ClassUtil.forClass(driverClass);
         return createConnection(cls, url, user, password);
     }
 
@@ -2466,7 +2466,7 @@ public final class JdbcUtil {
             Method method = null;
 
             try {
-                method = RefUtil.getDeclaredMethod(sqlDataSource.getClass(), "close");
+                method = ClassUtil.getDeclaredMethod(sqlDataSource.getClass(), "close");
             } catch (Throwable e) {
 
             }
@@ -2565,7 +2565,7 @@ public final class JdbcUtil {
 
             if (closeMethod != null) {
                 try {
-                    RefUtil.invokeMethod(sqlDataSource, closeMethod);
+                    ClassUtil.invokeMethod(sqlDataSource, closeMethod);
                 } catch (Throwable e) {
                     // ignore.
                 }

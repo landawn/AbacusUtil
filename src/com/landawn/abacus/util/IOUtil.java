@@ -97,17 +97,17 @@ public final class IOUtil {
         Method decodeMethod = null;
 
         try {
-            Class<?> cls = RefUtil.forClass("java.lang.StringCoding");
-            Method enMethod = RefUtil.getDeclaredMethod(cls, "encode", Charset.class, char[].class, int.class, int.class);
-            Method deMethod = RefUtil.getDeclaredMethod(cls, "decode", Charset.class, byte[].class, int.class, int.class);
+            Class<?> cls = ClassUtil.forClass("java.lang.StringCoding");
+            Method enMethod = ClassUtil.getDeclaredMethod(cls, "encode", Charset.class, char[].class, int.class, int.class);
+            Method deMethod = ClassUtil.getDeclaredMethod(cls, "decode", Charset.class, byte[].class, int.class, int.class);
 
             if (enMethod != null && deMethod != null) {
                 enMethod.setAccessible(true);
                 deMethod.setAccessible(true);
 
                 char[] chars = "abc".toCharArray();
-                byte[] bytes = RefUtil.invokeMethod(enMethod, Charsets.DEFAULT, chars, 1, 1);
-                char[] chars2 = RefUtil.invokeMethod(deMethod, Charsets.DEFAULT, bytes, 0, bytes.length);
+                byte[] bytes = ClassUtil.invokeMethod(enMethod, Charsets.DEFAULT, chars, 1, 1);
+                char[] chars2 = ClassUtil.invokeMethod(deMethod, Charsets.DEFAULT, bytes, 0, bytes.length);
 
                 if (chars2.length == 1 && chars2[0] == 'b') {
                     encodeMethod = enMethod;
@@ -473,7 +473,7 @@ public final class IOUtil {
         if (stringEncodeMethod == null) {
             return new String(chars, offset, len).getBytes(charset);
         } else {
-            return RefUtil.invokeMethod(stringEncodeMethod, charset, chars, offset, len);
+            return ClassUtil.invokeMethod(stringEncodeMethod, charset, chars, offset, len);
         }
     }
 
@@ -491,7 +491,7 @@ public final class IOUtil {
         if (stringDecodeMethod == null) {
             return new String(bytes, offset, len, charset).toCharArray();
         } else {
-            return RefUtil.invokeMethod(stringDecodeMethod, charset, bytes, offset, len);
+            return ClassUtil.invokeMethod(stringDecodeMethod, charset, bytes, offset, len);
         }
     }
 

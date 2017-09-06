@@ -36,8 +36,8 @@ public abstract class AbstractMatrix<A, PL, HS, RS, X extends AbstractMatrix<A, 
         boolean tmp = false;
 
         try {
-            if (RefUtil.forClass("com.landawn.abacus.util.stream.ParallelArrayIntStream") != null
-                    && RefUtil.forClass("com.landawn.abacus.util.stream.ParallelIteratorIntStream") != null) {
+            if (ClassUtil.forClass("com.landawn.abacus.util.stream.ParallelArrayIntStream") != null
+                    && ClassUtil.forClass("com.landawn.abacus.util.stream.ParallelIteratorIntStream") != null) {
                 tmp = true;
             }
         } catch (Throwable e) {

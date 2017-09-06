@@ -97,6 +97,7 @@ import com.landawn.abacus.util.Tuple.Tuple4;
 import com.landawn.abacus.util.Tuple.Tuple5;
 import com.landawn.abacus.util.Tuple.Tuple6;
 import com.landawn.abacus.util.Tuple.Tuple7;
+import com.landawn.abacus.util.function.Predicate;
 
 /**
  * 
@@ -104,12 +105,12 @@ import com.landawn.abacus.util.Tuple.Tuple7;
  * 
  * @author Haiyang Li
  */
-public final class RefUtil {
-    private RefUtil() {
+public final class ClassUtil {
+    private ClassUtil() {
         // singleton
     }
 
-    private static final Logger logger = LoggerFactory.getLogger(RefUtil.class);
+    private static final Logger logger = LoggerFactory.getLogger(ClassUtil.class);
 
     private static final String JAR_POSTFIX = ".jar";
 
@@ -372,7 +373,7 @@ public final class RefUtil {
     private static final Map<Class<?>, Map<String, Map<Class<?>[], Method>>> classDeclaredMethodPool = new ObjectPool<>(POOL_SIZE);
 
     public static final Class<?> CLASS_MASK = ClassMask.class;
-    public static final Method METHOD_MASK = RefUtil.internalGetDeclaredMethod(ClassMask.class, "methodMask");
+    public static final Method METHOD_MASK = ClassUtil.internalGetDeclaredMethod(ClassMask.class, "methodMask");
     public static final Field FIELD_MASK;
 
     static {
@@ -589,21 +590,96 @@ public final class RefUtil {
         return (Class<T>) cls;
     }
 
+    // Superclasses/Superinterfaces. Copied from Apache Commons Lang under Apache License v2.
+    // ----------------------------------------------------------------------
+
+    /**
+     * Copied from Apache Commons Lang under Apache License v2.
+     * 
+     * <p>Gets a {@code List} of super classes for the given class, excluding {@code Object.class}.</p>
+     *
+     * @param cls  the class to look up.
+     * @return the {@code List} of super classes in order going up from this one.
+     */
+    public static List<Class<?>> getAllSuperclasses(final Class<?> cls) {
+        final List<Class<?>> classes = new ArrayList<>();
+        Class<?> superclass = cls.getSuperclass();
+
+        while (superclass != null && !superclass.equals(Object.class)) {
+            classes.add(superclass);
+            superclass = superclass.getSuperclass();
+        }
+
+        return classes;
+    }
+
+    /**
+     * Copied from Apache Commons Lang under Apache License v2.
+     * 
+     * <p>Gets a {@code List} of all interfaces implemented by the given
+     * class and its super classes.</p>
+     *
+     * <p>The order is determined by looking through each interface in turn as
+     * declared in the source file and following its hierarchy up. Then each
+     * superclass is considered in the same way. Later duplicates are ignored,
+     * so the order is maintained.</p>
+     *
+     * @param cls  the class to look up.
+     * @return the {@code List} of interfaces in order
+     */
+    public static Set<Class<?>> getAllInterfaces(final Class<?> cls) {
+        final Set<Class<?>> interfacesFound = new LinkedHashSet<>();
+
+        getAllInterfaces(cls, interfacesFound);
+
+        return interfacesFound;
+    }
+
+    private static void getAllInterfaces(Class<?> cls, final Set<Class<?>> interfacesFound) {
+        while (cls != null) {
+            final Class<?>[] interfaces = cls.getInterfaces();
+
+            for (final Class<?> i : interfaces) {
+                if (interfacesFound.add(i)) {
+                    getAllInterfaces(i, interfacesFound);
+                }
+            }
+
+            cls = cls.getSuperclass();
+        }
+    }
+
     /**
      * Returns all the interfaces and super classes the specified class implements or extends, excluding {@code Object.class}.
      * @param cls
      * @return
      */
-    public static Set<Class<?>> getSuperTypes(final Class<?> cls) {
-        final Set<Class<?>> superTypes = N.asSet(cls.getInterfaces());
-        final Class<?> superClass = cls.getSuperclass();
+    public static Set<Class<?>> getAllSuperTypes(final Class<?> cls) {
+        final Set<Class<?>> superTypesFound = new LinkedHashSet<>();
 
-        if (superClass.equals(Object.class) == false) {
-            superTypes.add(superClass);
-            superTypes.addAll(getSuperTypes(superClass));
+        getAllSuperTypes(cls, superTypesFound);
+
+        return superTypesFound;
+    }
+
+    private static void getAllSuperTypes(Class<?> cls, final Set<Class<?>> superTypesFound) {
+        while (cls != null) {
+            final Class<?>[] interfaces = cls.getInterfaces();
+
+            for (final Class<?> i : interfaces) {
+                if (superTypesFound.add(i)) {
+                    getAllInterfaces(i, superTypesFound);
+                }
+            }
+
+            Class<?> superclass = cls.getSuperclass();
+
+            if (superclass != null && !superclass.equals(Object.class) && superTypesFound.add(superclass)) {
+                getAllSuperTypes(superclass, superTypesFound);
+            }
+
+            cls = cls.getSuperclass();
         }
-
-        return superTypes;
     }
 
     public static Class<?>[] getTypeArgumentsByMethod(final Method method) {
@@ -675,7 +751,7 @@ public final class RefUtil {
         String pkgName = packageNamePool.get(cls);
 
         if (pkgName == null) {
-            Package pkg = RefUtil.getPackage(cls);
+            Package pkg = ClassUtil.getPackage(cls);
 
             if (pkg == null) {
                 return null;
@@ -760,6 +836,11 @@ public final class RefUtil {
     //    }
 
     public static List<Class<?>> getClassesByPackage(String pkgName, boolean isRecursive, boolean skipClassLoaddingException) {
+        return getClassesByPackage(pkgName, isRecursive, skipClassLoaddingException, Fn.alwaysTrue());
+    }
+
+    public static List<Class<?>> getClassesByPackage(String pkgName, boolean isRecursive, boolean skipClassLoaddingException,
+            Predicate<? super Class<?>> predicate) {
         if (logger.isInfoEnabled()) {
             logger.info("Looking for classes in package: " + pkgName);
         }
@@ -802,9 +883,9 @@ public final class RefUtil {
                         String className = pkgName + '.' + files[i].getName().substring(0, files[i].getName().length() - CLASS_POSTFIX.length());
 
                         try {
-                            Class<?> clazz = RefUtil.forClass(className, false);
+                            Class<?> clazz = ClassUtil.forClass(className, false);
 
-                            if (clazz.getCanonicalName() != null) {
+                            if (clazz.getCanonicalName() != null && predicate.test(clazz)) {
                                 classes.add(clazz);
                             }
                         } catch (Throwable e) {
@@ -818,7 +899,7 @@ public final class RefUtil {
                         }
                     } else if (files[i].isDirectory() && isRecursive) {
                         String subPkgName = pkgName + D._PERIOD + files[i].getName();
-                        classes.addAll(getClassesByPackage(subPkgName, isRecursive, skipClassLoaddingException));
+                        classes.addAll(getClassesByPackage(subPkgName, isRecursive, skipClassLoaddingException, predicate));
                     }
                 }
             } else if (file.exists() && file.getName().endsWith(JAR_POSTFIX)) {
@@ -840,10 +921,10 @@ public final class RefUtil {
                                 String className = filePath2PackageName(entryName).replace(CLASS_POSTFIX, "");
 
                                 try {
-                                    Class<?> clazz = RefUtil.forClass(className, false);
+                                    Class<?> clazz = ClassUtil.forClass(className, false);
 
                                     if ((clazz.getCanonicalName() != null) && (clazz.getPackage().getName().equals(pkgName)
-                                            || (clazz.getPackage().getName().startsWith(pkgName) && isRecursive))) {
+                                            || (clazz.getPackage().getName().startsWith(pkgName) && isRecursive)) && predicate.test(clazz)) {
                                         classes.add(clazz);
                                     }
                                 } catch (Throwable e) {
@@ -859,7 +940,7 @@ public final class RefUtil {
                                 }
                             } else if (entry.isDirectory() && (entryName.length() > (pkgPath.length() + 1)) && isRecursive) {
                                 String subPkgName = filePath2PackageName(entryName);
-                                classes.addAll(getClassesByPackage(subPkgName, isRecursive, skipClassLoaddingException));
+                                classes.addAll(getClassesByPackage(subPkgName, isRecursive, skipClassLoaddingException, predicate));
                             }
                         }
                     }
@@ -871,6 +952,7 @@ public final class RefUtil {
             }
 
         }
+
         return classes;
     }
 
@@ -884,7 +966,7 @@ public final class RefUtil {
     private static List<URL> getResources(String pkgName) {
         List<URL> resourceList = new ArrayList<>();
         String pkgPath = packageName2FilePath(pkgName);
-        ClassLoader localClassLoader = RefUtil.class.getClassLoader();
+        ClassLoader localClassLoader = ClassUtil.class.getClassLoader();
         ClassLoader sysClassLoader = ClassLoader.getSystemClassLoader();
 
         try {
@@ -1492,7 +1574,7 @@ public final class RefUtil {
 
         if (field == null) {
             synchronized (entityDeclaredPropGetMethodList) {
-                Map<String, Method> getterMethodList = RefUtil.checkPropGetMethodList(cls);
+                Map<String, Method> getterMethodList = ClassUtil.checkPropGetMethodList(cls);
 
                 for (String key : getterMethodList.keySet()) {
                     if (isPropName(cls, propName, key)) {
@@ -1612,7 +1694,7 @@ public final class RefUtil {
             List<Method> inlinePropGetMethodQueue = null;
 
             if (inlinePropGetMethodMap == null) {
-                inlinePropGetMethodMap = new ObjectPool<>(N.initHashCapacity(RefUtil.getPropGetMethodList(cls).size()));
+                inlinePropGetMethodMap = new ObjectPool<>(N.initHashCapacity(ClassUtil.getPropGetMethodList(cls).size()));
                 entityInlinePropGetMethodPool.put(cls, inlinePropGetMethodMap);
             } else {
                 inlinePropGetMethodQueue = inlinePropGetMethodMap.get(propName);
@@ -1648,13 +1730,13 @@ public final class RefUtil {
                 if (ignoreUnknownProperty) {
                     return null;
                 } else {
-                    throw new AbacusException("No property method found with property name: " + propName + " in class " + RefUtil.getCanonicalClassName(cls));
+                    throw new AbacusException("No property method found with property name: " + propName + " in class " + ClassUtil.getCanonicalClassName(cls));
                 }
             } else {
                 Object propEntity = entity;
 
                 for (int i = 0, len = inlinePropGetMethodQueue.size(); i < len; i++) {
-                    propEntity = RefUtil.getPropValue(propEntity, inlinePropGetMethodQueue.get(i));
+                    propEntity = ClassUtil.getPropValue(propEntity, inlinePropGetMethodQueue.get(i));
 
                     if (propEntity == null) {
                         return (T) N.defaultValueOf(inlinePropGetMethodQueue.get(len - 1).getReturnType());
@@ -1702,7 +1784,7 @@ public final class RefUtil {
                 List<Method> inlinePropSetMethodQueue = null;
 
                 if (inlinePropSetMethodMap == null) {
-                    inlinePropSetMethodMap = new ObjectPool<>(N.initHashCapacity(RefUtil.getPropGetMethodList(cls).size()));
+                    inlinePropSetMethodMap = new ObjectPool<>(N.initHashCapacity(ClassUtil.getPropGetMethodList(cls).size()));
                     entityInlinePropSetMethodPool.put(cls, inlinePropSetMethodMap);
                 } else {
                     inlinePropSetMethodQueue = inlinePropSetMethodMap.get(propName);
@@ -1771,11 +1853,11 @@ public final class RefUtil {
                                 setPropValue(propEntity, method, propValue);
                             }
                         } else {
-                            Object tmp = RefUtil.getPropValue(propEntity, method);
+                            Object tmp = ClassUtil.getPropValue(propEntity, method);
 
                             if (tmp == null) {
                                 tmp = N.newInstance(method.getReturnType());
-                                RefUtil.setPropValue(propEntity, RefUtil.getPropNameByMethod(method), tmp);
+                                ClassUtil.setPropValue(propEntity, ClassUtil.getPropNameByMethod(method), tmp);
                             }
 
                             propEntity = tmp;
@@ -1891,7 +1973,7 @@ public final class RefUtil {
         final Map<String, Object> tmp = ObjectFactory.createLinkedHashMap();
 
         for (Map.Entry<String, Object> entry : props.entrySet()) {
-            tmp.put(RefUtil.toLowerCaseWithUnderscore(entry.getKey()), entry.getValue());
+            tmp.put(ClassUtil.toLowerCaseWithUnderscore(entry.getKey()), entry.getValue());
         }
 
         props.clear();
@@ -1919,7 +2001,7 @@ public final class RefUtil {
         final Map<String, Object> tmp = ObjectFactory.createLinkedHashMap();
 
         for (Map.Entry<String, Object> entry : props.entrySet()) {
-            tmp.put(RefUtil.toUpperCaseWithUnderscore(entry.getKey()), entry.getValue());
+            tmp.put(ClassUtil.toUpperCaseWithUnderscore(entry.getKey()), entry.getValue());
         }
 
         props.clear();

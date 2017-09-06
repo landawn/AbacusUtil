@@ -34,9 +34,8 @@ import java.util.concurrent.TimeUnit;
 
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
-import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.RefUtil;
+import com.landawn.abacus.util.ClassUtil;
 import com.landawn.abacus.util.ThreadMode;
 
 /**
@@ -233,7 +232,7 @@ public class EventBus {
         final List<SubIdentifier> subList = getClassSubList(cls);
 
         if (N.isNullOrEmpty(subList)) {
-            throw new RuntimeException("No subscriber method found in class: " + RefUtil.getCanonicalClassName(cls));
+            throw new RuntimeException("No subscriber method found in class: " + ClassUtil.getCanonicalClassName(cls));
         }
 
         final List<SubIdentifier> eventSubList = new ArrayList<>(subList.size());
@@ -318,7 +317,7 @@ public class EventBus {
                 subs = new ArrayList<>();
                 final Set<Method> added = new HashSet<>();
 
-                final Set<Class<?>> allTypes = RefUtil.getSuperTypes(cls);
+                final Set<Class<?>> allTypes = ClassUtil.getAllSuperTypes(cls);
                 allTypes.add(cls);
 
                 for (Class<?> supertype : allTypes) {
@@ -704,7 +703,7 @@ public class EventBus {
             final Subscribe subscribe = method.getAnnotation(Subscribe.class);
             this.obj = null;
             this.method = method;
-            this.parameterType = N.isPrimitive(method.getParameterTypes()[0]) ? Array.box(method.getParameterTypes()[0]) : method.getParameterTypes()[0];
+            this.parameterType = N.isPrimitive(method.getParameterTypes()[0]) ? N.wrapperOf(method.getParameterTypes()[0]) : method.getParameterTypes()[0];
             this.eventId = subscribe == null || N.isNullOrEmpty(subscribe.eventId()) ? null : subscribe.eventId();
             this.threadMode = subscribe == null ? ThreadMode.DEFAULT : subscribe.threadMode();
             this.strictEventType = subscribe == null ? false : subscribe.strictEventType();

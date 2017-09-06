@@ -44,7 +44,7 @@ final class ReflectASM<T> {
     }
 
     public static <T> ReflectASM<T> on(String clsName) {
-        return on((Class<T>) RefUtil.forClass(clsName));
+        return on((Class<T>) ClassUtil.forClass(clsName));
     }
 
     public static <T> ReflectASM<T> on(Class<T> cls) {

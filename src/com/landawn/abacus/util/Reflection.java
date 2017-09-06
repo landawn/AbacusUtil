@@ -40,9 +40,9 @@ public final class Reflection<T> {
         boolean tmp = true;
 
         try {
-            RefUtil.forClass("com.esotericsoftware.reflectasm.ConstructorAccess");
-            RefUtil.forClass("com.esotericsoftware.reflectasm.FieldAccess");
-            RefUtil.forClass("com.esotericsoftware.reflectasm.MethodAccess");
+            ClassUtil.forClass("com.esotericsoftware.reflectasm.ConstructorAccess");
+            ClassUtil.forClass("com.esotericsoftware.reflectasm.FieldAccess");
+            ClassUtil.forClass("com.esotericsoftware.reflectasm.MethodAccess");
         } catch (Throwable e) {
             tmp = false;
         }
@@ -65,7 +65,7 @@ public final class Reflection<T> {
     }
 
     public static <T> Reflection<T> on(String clsName) {
-        return on((Class<T>) RefUtil.forClass(clsName));
+        return on((Class<T>) ClassUtil.forClass(clsName));
     }
 
     public static <T> Reflection<T> on(Class<T> cls) {
@@ -92,7 +92,7 @@ public final class Reflection<T> {
             constructor.setAccessible(true);
         }
 
-        return new Reflection<>(cls, RefUtil.invokeConstructor(constructor, args));
+        return new Reflection<>(cls, ClassUtil.invokeConstructor(constructor, args));
     }
 
     public T instance() {
@@ -295,6 +295,6 @@ public final class Reflection<T> {
     }
 
     private Class<?> wrap(final Class<?> cls) {
-        return N.isPrimitive(cls) ? Array.box(cls) : cls;
+        return N.isPrimitive(cls) ? N.wrapperOf(cls) : cls;
     }
 }

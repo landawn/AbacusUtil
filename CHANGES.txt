@@ -19,7 +19,11 @@
 
 9, Move IOUtil.lineIterator to LineIterator.
 
-10, Improvements and bug fix.
+10, Remove Array.box(Class)/unbox(Class), replaced by N.wrapperOf(Class)/primitiveOf(Class).
+
+11, Rename RefUtil to ClassUtil
+
+12, Improvements and bug fix.
 
 
 ========Changes in 0.9.81=========================================================================
