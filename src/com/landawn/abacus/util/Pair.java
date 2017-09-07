@@ -23,6 +23,7 @@ import java.util.Map;
 
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
+import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.CharConsumer;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.DoubleConsumer;
@@ -30,6 +31,7 @@ import com.landawn.abacus.util.function.FloatConsumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.function.LongConsumer;
+import com.landawn.abacus.util.function.TriPredicate;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -125,6 +127,33 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
         return this;
     }
 
+    public boolean setLeftIf(L newLeft, BiPredicate<? super Pair<L, R>, ? super L> predicate) {
+        if (predicate.test(this, newLeft)) {
+            setLeft(newLeft);
+            return true;
+        }
+
+        return false;
+    }
+
+    public boolean setRightIf(R newRight, BiPredicate<? super Pair<L, R>, ? super R> predicate) {
+        if (predicate.test(this, newRight)) {
+            setRight(newRight);
+            return true;
+        }
+
+        return false;
+    }
+
+    public boolean setIf(L newLeft, R newRight, TriPredicate<? super Pair<L, R>, ? super L, ? super R> predicate) {
+        if (predicate.test(this, newLeft, newRight)) {
+            set(newLeft, newRight);
+            return true;
+        }
+
+        return false;
+    }
+
     @Override
     public L getKey() {
         return left;
@@ -141,6 +170,10 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
         this.right = value;
 
         return oldValue;
+    }
+
+    public boolean setValueIf(R newRight, BiPredicate<? super Pair<L, R>, ? super R> predicate) {
+        return setRightIf(newRight, predicate);
     }
 
     /**

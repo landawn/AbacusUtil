@@ -16,6 +16,9 @@
  */
 package com.landawn.abacus.util;
 
+import com.landawn.abacus.util.function.FloatBiPredicate;
+import com.landawn.abacus.util.function.FloatPredicate;
+
 /**
  * <p>
  * Note: it's copied from Apache Commons Lang developed at The Apache Software Foundation (http://www.apache.org/), or
@@ -97,6 +100,40 @@ public final class MutableFloat extends Number implements Comparable<MutableFloa
     public float setAndGet(final float value) {
         this.value = value;
         return this.value;
+    }
+
+    /**
+    * Set with the specified new value and returns <code>true</code> if <code>predicate</code> returns true.
+    * Otherwise just return <code>false</code> without setting the value to new value.
+    * 
+    * @param newValue
+     * @param predicate - test the current value.
+    * @return
+    */
+    public boolean setIf(float newValue, FloatPredicate predicate) {
+        if (predicate.test(this.value)) {
+            this.value = newValue;
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Set with the specified new value and returns <code>true</code> if <code>predicate</code> returns true.
+     * Otherwise just return <code>false</code> without setting the value to new value.
+     * 
+     * @param newValue
+     * @param predicate the first parameter is the current value, the second parameter is the new value.
+     * @return
+     */
+    public boolean setIf(float newValue, FloatBiPredicate predicate) {
+        if (predicate.test(this.value, newValue)) {
+            this.value = newValue;
+            return true;
+        }
+
+        return false;
     }
 
     //-----------------------------------------------------------------------

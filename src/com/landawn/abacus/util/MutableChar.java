@@ -16,6 +16,9 @@
  */
 package com.landawn.abacus.util;
 
+import com.landawn.abacus.util.function.CharBiPredicate;
+import com.landawn.abacus.util.function.CharPredicate;
+
 /**
  * <p>
  * Note: it's copied from Apache Commons Lang developed at The Apache Software Foundation (http://www.apache.org/), or
@@ -89,6 +92,40 @@ public final class MutableChar implements Comparable<MutableChar>, Mutable {
     public char setAndGet(final char value) {
         this.value = value;
         return this.value;
+    }
+
+    /**
+     * Set with the specified new value and returns <code>true</code> if <code>predicate</code> returns true.
+     * Otherwise just return <code>false</code> without setting the value to new value.
+     * 
+     * @param newValue
+     * @param predicate - test the current value.
+     * @return
+     */
+    public boolean setIf(char newValue, CharPredicate predicate) {
+        if (predicate.test(this.value)) {
+            this.value = newValue;
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Set with the specified new value and returns <code>true</code> if <code>predicate</code> returns true.
+     * Otherwise just return <code>false</code> without setting the value to new value.
+     * 
+     * @param newValue
+     * @param predicate the first parameter is the current value, the second parameter is the new value.
+     * @return
+     */
+    public boolean setIf(char newValue, CharBiPredicate predicate) {
+        if (predicate.test(this.value, newValue)) {
+            this.value = newValue;
+            return true;
+        }
+
+        return false;
     }
 
     //-----------------------------------------------------------------------

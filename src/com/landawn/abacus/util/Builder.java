@@ -30,12 +30,12 @@ import com.landawn.abacus.util.function.Predicate;
  * @author haiyangl
  */
 public class Builder<T> {
-    final T val;
+    final T value;
 
     Builder(T val) {
         N.requireNonNull(val);
 
-        this.val = val;
+        this.value = val;
     }
 
     public static final BooleanListBuilder of(BooleanList val) {
@@ -103,13 +103,13 @@ public class Builder<T> {
     //    }
 
     public Builder<T> accept(final Consumer<? super T> consumer) {
-        consumer.accept(val);
+        consumer.accept(value);
 
         return this;
     }
 
     public <R> Builder<R> apply(final Function<? super T, R> func) {
-        return of(func.apply(val));
+        return of(func.apply(value));
     }
 
     /**
@@ -119,11 +119,11 @@ public class Builder<T> {
      * otherwise, return an empty <code>Optional</code>
      */
     public Optional<T> filter(final Predicate<? super T> predicate) {
-        return predicate.test(val) ? Optional.of(val) : Optional.<T> empty();
+        return predicate.test(value) ? Optional.of(value) : Optional.<T> empty();
     }
 
-    public T val() {
-        return val;
+    public T value() {
+        return value;
     }
 
     public static final class BooleanListBuilder extends Builder<BooleanList> {
@@ -132,37 +132,37 @@ public class Builder<T> {
         }
 
         public BooleanListBuilder set(int index, boolean e) {
-            val.set(index, e);
+            value.set(index, e);
 
             return this;
         }
 
         public BooleanListBuilder add(boolean e) {
-            val.add(e);
+            value.add(e);
 
             return this;
         }
 
         public BooleanListBuilder add(int index, boolean e) {
-            val.add(index, e);
+            value.add(index, e);
 
             return this;
         }
 
         public BooleanListBuilder addAll(BooleanList c) {
-            val.addAll(c);
+            value.addAll(c);
 
             return this;
         }
 
         public BooleanListBuilder addAll(int index, BooleanList c) {
-            val.addAll(index, c);
+            value.addAll(index, c);
 
             return this;
         }
 
         public BooleanListBuilder remove(boolean e) {
-            val.remove(e);
+            value.remove(e);
 
             return this;
         }
@@ -174,7 +174,7 @@ public class Builder<T> {
         //        }
 
         public BooleanListBuilder removeAll(BooleanList c) {
-            val.removeAll(c);
+            value.removeAll(c);
 
             return this;
         }
@@ -186,37 +186,37 @@ public class Builder<T> {
         }
 
         public CharListBuilder set(int index, char e) {
-            val.set(index, e);
+            value.set(index, e);
 
             return this;
         }
 
         public CharListBuilder add(char e) {
-            val.add(e);
+            value.add(e);
 
             return this;
         }
 
         public CharListBuilder add(int index, char e) {
-            val.add(index, e);
+            value.add(index, e);
 
             return this;
         }
 
         public CharListBuilder addAll(CharList c) {
-            val.addAll(c);
+            value.addAll(c);
 
             return this;
         }
 
         public CharListBuilder addAll(int index, CharList c) {
-            val.addAll(index, c);
+            value.addAll(index, c);
 
             return this;
         }
 
         public CharListBuilder remove(char e) {
-            val.remove(e);
+            value.remove(e);
 
             return this;
         }
@@ -228,7 +228,7 @@ public class Builder<T> {
         //        }
 
         public CharListBuilder removeAll(CharList c) {
-            val.removeAll(c);
+            value.removeAll(c);
 
             return this;
         }
@@ -240,37 +240,37 @@ public class Builder<T> {
         }
 
         public ByteListBuilder set(int index, byte e) {
-            val.set(index, e);
+            value.set(index, e);
 
             return this;
         }
 
         public ByteListBuilder add(byte e) {
-            val.add(e);
+            value.add(e);
 
             return this;
         }
 
         public ByteListBuilder add(int index, byte e) {
-            val.add(index, e);
+            value.add(index, e);
 
             return this;
         }
 
         public ByteListBuilder addAll(ByteList c) {
-            val.addAll(c);
+            value.addAll(c);
 
             return this;
         }
 
         public ByteListBuilder addAll(int index, ByteList c) {
-            val.addAll(index, c);
+            value.addAll(index, c);
 
             return this;
         }
 
         public ByteListBuilder remove(byte e) {
-            val.remove(e);
+            value.remove(e);
 
             return this;
         }
@@ -282,7 +282,7 @@ public class Builder<T> {
         //        }
 
         public ByteListBuilder removeAll(ByteList c) {
-            val.removeAll(c);
+            value.removeAll(c);
 
             return this;
         }
@@ -294,37 +294,37 @@ public class Builder<T> {
         }
 
         public ShortListBuilder set(int index, short e) {
-            val.set(index, e);
+            value.set(index, e);
 
             return this;
         }
 
         public ShortListBuilder add(short e) {
-            val.add(e);
+            value.add(e);
 
             return this;
         }
 
         public ShortListBuilder add(int index, short e) {
-            val.add(index, e);
+            value.add(index, e);
 
             return this;
         }
 
         public ShortListBuilder addAll(ShortList c) {
-            val.addAll(c);
+            value.addAll(c);
 
             return this;
         }
 
         public ShortListBuilder addAll(int index, ShortList c) {
-            val.addAll(index, c);
+            value.addAll(index, c);
 
             return this;
         }
 
         public ShortListBuilder remove(short e) {
-            val.remove(e);
+            value.remove(e);
 
             return this;
         }
@@ -336,7 +336,7 @@ public class Builder<T> {
         //        }
 
         public ShortListBuilder removeAll(ShortList c) {
-            val.removeAll(c);
+            value.removeAll(c);
 
             return this;
         }
@@ -348,37 +348,37 @@ public class Builder<T> {
         }
 
         public IntListBuilder set(int index, int e) {
-            val.set(index, e);
+            value.set(index, e);
 
             return this;
         }
 
         public IntListBuilder add(int e) {
-            val.add(e);
+            value.add(e);
 
             return this;
         }
 
         public IntListBuilder add(int index, int e) {
-            val.add(index, e);
+            value.add(index, e);
 
             return this;
         }
 
         public IntListBuilder addAll(IntList c) {
-            val.addAll(c);
+            value.addAll(c);
 
             return this;
         }
 
         public IntListBuilder addAll(int index, IntList c) {
-            val.addAll(index, c);
+            value.addAll(index, c);
 
             return this;
         }
 
         public IntListBuilder remove(int e) {
-            val.remove(e);
+            value.remove(e);
 
             return this;
         }
@@ -390,7 +390,7 @@ public class Builder<T> {
         //        }
 
         public IntListBuilder removeAll(IntList c) {
-            val.removeAll(c);
+            value.removeAll(c);
 
             return this;
         }
@@ -402,37 +402,37 @@ public class Builder<T> {
         }
 
         public LongListBuilder set(int index, long e) {
-            val.set(index, e);
+            value.set(index, e);
 
             return this;
         }
 
         public LongListBuilder add(long e) {
-            val.add(e);
+            value.add(e);
 
             return this;
         }
 
         public LongListBuilder add(int index, long e) {
-            val.add(index, e);
+            value.add(index, e);
 
             return this;
         }
 
         public LongListBuilder addAll(LongList c) {
-            val.addAll(c);
+            value.addAll(c);
 
             return this;
         }
 
         public LongListBuilder addAll(int index, LongList c) {
-            val.addAll(index, c);
+            value.addAll(index, c);
 
             return this;
         }
 
         public LongListBuilder remove(long e) {
-            val.remove(e);
+            value.remove(e);
 
             return this;
         }
@@ -444,7 +444,7 @@ public class Builder<T> {
         //        }
 
         public LongListBuilder removeAll(LongList c) {
-            val.removeAll(c);
+            value.removeAll(c);
 
             return this;
         }
@@ -456,37 +456,37 @@ public class Builder<T> {
         }
 
         public FloatListBuilder set(int index, float e) {
-            val.set(index, e);
+            value.set(index, e);
 
             return this;
         }
 
         public FloatListBuilder add(float e) {
-            val.add(e);
+            value.add(e);
 
             return this;
         }
 
         public FloatListBuilder add(int index, float e) {
-            val.add(index, e);
+            value.add(index, e);
 
             return this;
         }
 
         public FloatListBuilder addAll(FloatList c) {
-            val.addAll(c);
+            value.addAll(c);
 
             return this;
         }
 
         public FloatListBuilder addAll(int index, FloatList c) {
-            val.addAll(index, c);
+            value.addAll(index, c);
 
             return this;
         }
 
         public FloatListBuilder remove(float e) {
-            val.remove(e);
+            value.remove(e);
 
             return this;
         }
@@ -498,7 +498,7 @@ public class Builder<T> {
         //        }
 
         public FloatListBuilder removeAll(FloatList c) {
-            val.removeAll(c);
+            value.removeAll(c);
 
             return this;
         }
@@ -510,37 +510,37 @@ public class Builder<T> {
         }
 
         public DoubleListBuilder set(int index, double e) {
-            val.set(index, e);
+            value.set(index, e);
 
             return this;
         }
 
         public DoubleListBuilder add(double e) {
-            val.add(e);
+            value.add(e);
 
             return this;
         }
 
         public DoubleListBuilder add(int index, double e) {
-            val.add(index, e);
+            value.add(index, e);
 
             return this;
         }
 
         public DoubleListBuilder addAll(DoubleList c) {
-            val.addAll(c);
+            value.addAll(c);
 
             return this;
         }
 
         public DoubleListBuilder addAll(int index, DoubleList c) {
-            val.addAll(index, c);
+            value.addAll(index, c);
 
             return this;
         }
 
         public DoubleListBuilder remove(double e) {
-            val.remove(e);
+            value.remove(e);
 
             return this;
         }
@@ -552,7 +552,7 @@ public class Builder<T> {
         //        }
 
         public DoubleListBuilder removeAll(DoubleList c) {
-            val.removeAll(c);
+            value.removeAll(c);
 
             return this;
         }
@@ -564,19 +564,19 @@ public class Builder<T> {
         }
 
         public ListBuilder<T, L> add(int index, T e) {
-            val.add(index, e);
+            value.add(index, e);
 
             return this;
         }
 
         public ListBuilder<T, L> addAll(int index, Collection<? extends T> c) {
-            val.addAll(index, c);
+            value.addAll(index, c);
 
             return this;
         }
 
         public ListBuilder<T, L> remove(int index) {
-            val.remove(index);
+            value.remove(index);
 
             return this;
         }
@@ -588,7 +588,7 @@ public class Builder<T> {
         }
 
         public CollectionBuilder<T, C> add(T e) {
-            val.add(e);
+            value.add(e);
 
             return this;
         }
@@ -597,19 +597,19 @@ public class Builder<T> {
             @SuppressWarnings("rawtypes")
             final Collection tmp = c;
 
-            val.addAll(tmp);
+            value.addAll(tmp);
 
             return this;
         }
 
         public CollectionBuilder<T, C> remove(Object e) {
-            val.remove(e);
+            value.remove(e);
 
             return this;
         }
 
         public CollectionBuilder<T, C> removeAll(Collection<?> c) {
-            val.removeAll(c);
+            value.removeAll(c);
 
             return this;
         }
@@ -621,7 +621,7 @@ public class Builder<T> {
         }
 
         public MultisetBuilder<T> add(T e) {
-            val.add(e);
+            value.add(e);
 
             return this;
         }
@@ -630,43 +630,43 @@ public class Builder<T> {
             @SuppressWarnings("rawtypes")
             final Collection tmp = c;
 
-            val.addAll(tmp);
+            value.addAll(tmp);
 
             return this;
         }
 
         public MultisetBuilder<T> addAll(final Map<? extends T, Integer> m) {
-            val.addAll(m);
+            value.addAll(m);
 
             return this;
         }
 
         public MultisetBuilder<T> addAll(Multiset<? extends T> multiset) {
-            val.addAll(multiset);
+            value.addAll(multiset);
 
             return this;
         }
 
         public MultisetBuilder<T> remove(Object e) {
-            val.remove(e);
+            value.remove(e);
 
             return this;
         }
 
         public MultisetBuilder<T> removeAll(Collection<?> c) {
-            val.removeAll(c);
+            value.removeAll(c);
 
             return this;
         }
 
         public MultisetBuilder<T> removeAll(final Map<? extends T, Integer> m) {
-            val.removeAll(m);
+            value.removeAll(m);
 
             return this;
         }
 
         public MultisetBuilder<T> removeAll(Multiset<? extends T> multiset) {
-            val.removeAll(multiset);
+            value.removeAll(multiset);
 
             return this;
         }
@@ -678,7 +678,7 @@ public class Builder<T> {
         }
 
         public LongMultisetBuilder<T> add(T e) {
-            val.add(e);
+            value.add(e);
 
             return this;
         }
@@ -687,43 +687,43 @@ public class Builder<T> {
             @SuppressWarnings("rawtypes")
             final Collection tmp = c;
 
-            val.addAll(tmp);
+            value.addAll(tmp);
 
             return this;
         }
 
         public LongMultisetBuilder<T> addAll(final Map<? extends T, Long> m) {
-            val.addAll(m);
+            value.addAll(m);
 
             return this;
         }
 
         public LongMultisetBuilder<T> addAll(LongMultiset<? extends T> multiset) {
-            val.addAll(multiset);
+            value.addAll(multiset);
 
             return this;
         }
 
         public LongMultisetBuilder<T> remove(Object e) {
-            val.remove(e);
+            value.remove(e);
 
             return this;
         }
 
         public LongMultisetBuilder<T> removeAll(Collection<?> c) {
-            val.removeAll(c);
+            value.removeAll(c);
 
             return this;
         }
 
         public LongMultisetBuilder<T> removeAll(final Map<? extends T, Long> m) {
-            val.removeAll(m);
+            value.removeAll(m);
 
             return this;
         }
 
         public LongMultisetBuilder<T> removeAll(LongMultiset<? extends T> multiset) {
-            val.removeAll(multiset);
+            value.removeAll(multiset);
 
             return this;
         }
@@ -735,26 +735,26 @@ public class Builder<T> {
         }
 
         public MapBuilder<K, V, M> put(K k, V v) {
-            val.put(k, v);
+            value.put(k, v);
 
             return this;
         }
 
         public MapBuilder<K, V, M> putAll(Map<? extends K, ? extends V> m) {
-            val.putAll(m);
+            value.putAll(m);
 
             return this;
         }
 
         public MapBuilder<K, V, M> remove(Object k) {
-            val.remove(k);
+            value.remove(k);
 
             return this;
         }
 
         public MapBuilder<K, V, M> removeAll(Collection<?> c) {
             for (Object k : c) {
-                val.remove(k);
+                value.remove(k);
             }
 
             return this;
@@ -767,57 +767,57 @@ public class Builder<T> {
         }
 
         public MultimapBuilder<K, E, V, M> put(K key, E e) {
-            val.put(key, e);
+            value.put(key, e);
 
             return this;
         }
 
         public MultimapBuilder<K, E, V, M> putAll(final K k, final Collection<? extends E> c) {
-            val.putAll(k, c);
+            value.putAll(k, c);
 
             return this;
         }
 
         public MultimapBuilder<K, E, V, M> putAll(Map<? extends K, ? extends E> m) {
-            val.putAll(m);
+            value.putAll(m);
 
             return this;
         }
 
         public MultimapBuilder<K, E, V, M> putAll(Multimap<? extends K, ? extends E, ? extends V> m) {
-            val.putAll(m);
+            value.putAll(m);
 
             return this;
         }
 
         public MultimapBuilder<K, E, V, M> remove(Object k, Object e) {
-            val.remove(k, e);
+            value.remove(k, e);
 
             return this;
         }
 
         public MultimapBuilder<K, E, V, M> removeAll(K k) {
-            val.removeAll(k);
+            value.removeAll(k);
 
             return this;
         }
 
         public MultimapBuilder<K, E, V, M> removeAll(Collection<? extends K> c) {
             for (Object k : c) {
-                val.removeAll(k);
+                value.removeAll(k);
             }
 
             return this;
         }
 
         public MultimapBuilder<K, E, V, M> removeAll(Map<? extends K, ? extends E> m) {
-            val.removeAll(m);
+            value.removeAll(m);
 
             return this;
         }
 
         public MultimapBuilder<K, E, V, M> removeAll(Multimap<? extends K, ? extends E, ? extends V> m) {
-            val.removeAll(m);
+            value.removeAll(m);
 
             return this;
         }

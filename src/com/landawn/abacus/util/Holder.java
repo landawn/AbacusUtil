@@ -14,8 +14,10 @@
 
 package com.landawn.abacus.util;
 
+import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
+import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.Stream;
 
@@ -62,6 +64,40 @@ public final class Holder<T> {
     public T setAndGet(final T value) {
         this.value = value;
         return this.value;
+    }
+
+    /**
+     * Set with the specified new value and returns <code>true</code> if <code>predicate</code> returns true.
+     * Otherwise just return <code>false</code> without setting the value to new value.
+     * 
+     * @param newValue
+     * @param predicate - test the current value.
+     * @return
+     */
+    public boolean setIf(final T newValue, final Predicate<? super T> predicate) {
+        if (predicate.test(value)) {
+            this.value = newValue;
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Set with the specified new value and returns <code>true</code> if <code>predicate</code> returns true.
+     * Otherwise just return <code>false</code> without setting the value to new value.
+     * 
+     * @param newValue
+     * @param predicate the first parameter is the current value, the second parameter is the new value.
+     * @return
+     */
+    public boolean setIf(final T newValue, final BiPredicate<? super T, ? super T> predicate) {
+        if (predicate.test(value, newValue)) {
+            this.value = newValue;
+            return true;
+        }
+
+        return false;
     }
 
     public boolean isNotNull() {

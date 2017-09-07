@@ -61,6 +61,7 @@ import com.landawn.abacus.util.AsyncExecutor;
 import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.CharIterator;
 import com.landawn.abacus.util.Charsets;
+import com.landawn.abacus.util.ClassUtil;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.DoubleIterator;
 import com.landawn.abacus.util.FloatIterator;
@@ -88,7 +89,6 @@ import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
-import com.landawn.abacus.util.ClassUtil;
 import com.landawn.abacus.util.RowIterator;
 import com.landawn.abacus.util.Seq;
 import com.landawn.abacus.util.ShortIterator;
@@ -2989,7 +2989,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
                     curPos++;
                     prePos = curPos;
 
-                    return trim ? res.trim() : str;
+                    return trim ? res.trim() : res;
                 } else {
                     isLastDelimiter = false;
 
