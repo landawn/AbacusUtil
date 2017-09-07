@@ -1102,6 +1102,13 @@ public final class FloatList extends PrimitiveList<FloatConsumer, FloatPredicate
         }
     }
 
+    public void reverseSort() {
+        if (size > 1) {
+            sort();
+            reverse();
+        }
+    }
+
     /**
      * This List should be sorted first.
      * 

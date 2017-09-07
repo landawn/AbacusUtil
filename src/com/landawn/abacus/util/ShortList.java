@@ -1118,6 +1118,13 @@ public final class ShortList extends PrimitiveList<ShortConsumer, ShortPredicate
         }
     }
 
+    public void reverseSort() {
+        if (size > 1) {
+            sort();
+            reverse();
+        }
+    }
+
     /**
      * This List should be sorted first.
      * 

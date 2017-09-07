@@ -1036,6 +1036,13 @@ public final class BooleanList extends PrimitiveList<BooleanConsumer, BooleanPre
         }
     }
 
+    public void reverseSort() {
+        if (size > 1) {
+            sort();
+            reverse();
+        }
+    }
+
     @Override
     public void reverse() {
         if (size > 1) {

@@ -1130,6 +1130,13 @@ public final class CharList extends PrimitiveList<CharConsumer, CharPredicate, C
         }
     }
 
+    public void reverseSort() {
+        if (size > 1) {
+            sort();
+            reverse();
+        }
+    }
+
     /**
      * This List should be sorted first.
      * 

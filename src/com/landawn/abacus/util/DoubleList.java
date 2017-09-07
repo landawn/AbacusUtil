@@ -1102,6 +1102,13 @@ public final class DoubleList extends PrimitiveList<DoubleConsumer, DoublePredic
         }
     }
 
+    public void reverseSort() {
+        if (size > 1) {
+            sort();
+            reverse();
+        }
+    }
+
     /**
      * This List should be sorted first.
      * 

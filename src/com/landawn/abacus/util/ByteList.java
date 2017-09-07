@@ -1100,6 +1100,13 @@ public final class ByteList extends PrimitiveList<ByteConsumer, BytePredicate, B
         }
     }
 
+    public void reverseSort() {
+        if (size > 1) {
+            sort();
+            reverse();
+        }
+    }
+
     /**
      * This List should be sorted first.
      * 

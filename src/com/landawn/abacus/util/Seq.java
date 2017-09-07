@@ -2926,6 +2926,14 @@ public final class Seq<T> extends ImmutableCollection<T> {
         }
     }
 
+    public static <T extends Comparable<? super T>> void reverseSort(List<T> c) {
+        N.sort(c, Fn.reversedOrder());
+    }
+
+    public static <T extends Comparable<? super T>> void reverseSort(Object[] a) {
+        N.sort(a, Fn.reversedOrder());
+    }
+
     public static <T> List<T> repeat(final T value, final int n) {
         return new ArrayList<>(Arrays.asList(Array.repeat(value, n)));
     }

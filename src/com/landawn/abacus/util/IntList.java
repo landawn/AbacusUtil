@@ -1203,6 +1203,13 @@ public final class IntList extends PrimitiveList<IntConsumer, IntPredicate, Inte
         }
     }
 
+    public void reverseSort() {
+        if (size > 1) {
+            sort();
+            reverse();
+        }
+    }
+
     /**
      * This List should be sorted first.
      * 
