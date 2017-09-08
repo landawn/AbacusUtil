@@ -28,7 +28,7 @@ import com.landawn.abacus.util.stream.Stream;
  * 
  * @author Haiyang Li
  */
-public final class Holder<T> {
+public class Holder<T> {
     private volatile T value;
 
     public Holder() {
@@ -208,5 +208,12 @@ public final class Holder<T> {
     @Override
     public String toString() {
         return N.toString(value);
+    }
+
+    public static final class V<T> extends Holder<T> {
+
+        private V() {
+            // singleton
+        }
     }
 }

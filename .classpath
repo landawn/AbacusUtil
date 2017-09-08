@@ -19,5 +19,23 @@
 	<classpathentry kind="lib" path="lib/reflectasm-1.11.4-all.jar"/>
 	<classpathentry kind="lib" path="lib/mysql-connector-java-5.1.37-bin.jar"/>
 	<classpathentry kind="lib" path="lib/stream-1.1.7.jar"/>
+	<classpathentry kind="lib" path="lib/aws-java-sdk-dynamodb-1.10.6.jar"/>
+	<classpathentry kind="lib" path="lib/hbase-annotations-1.1.2.jar"/>
+	<classpathentry kind="lib" path="lib/hbase-client-1.1.2.jar"/>
+	<classpathentry kind="lib" path="lib/hbase-common-1.1.2.jar"/>
+	<classpathentry kind="lib" path="lib/hbase-protocol-1.1.2.jar"/>
+	<classpathentry kind="lib" path="lib/protobuf-java-2.6.1.jar"/>
+	<classpathentry kind="lib" path="lib/cassandra-driver-extras-3.0.2.jar"/>
+	<classpathentry kind="lib" path="lib/cassandra-driver-mapping-3.0.2.jar"/>
+	<classpathentry kind="lib" path="lib/guava-16.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/guava-18.0.jar"/>
+	<classpathentry kind="lib" path="lib/mongo-java-driver-3.2.1.jar"/>
+	<classpathentry kind="lib" path="lib/couchbase-core-io-1.1.0.jar"/>
+	<classpathentry kind="lib" path="lib/couchbase-java-client-2.1.0.jar"/>
+	<classpathentry kind="lib" path="lib/neo4j-ogm-api-2.0.0-M03.jar"/>
+	<classpathentry kind="lib" path="lib/neo4j-ogm-bolt-driver-2.0.0-M03.jar"/>
+	<classpathentry kind="lib" path="lib/neo4j-ogm-compiler-2.0.0-M03.jar"/>
+	<classpathentry kind="lib" path="lib/neo4j-ogm-core-2.0.0-M03.jar"/>
+	<classpathentry kind="lib" path="lib/neo4j-ogm-http-driver-2.0.0-M03.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
