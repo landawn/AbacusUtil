@@ -154,6 +154,28 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
         return false;
     }
 
+    public L getAndSetLeft(L newLeft) {
+        final L res = left;
+        left = newLeft;
+        return res;
+    }
+
+    public L setAndGetLeft(L newLeft) {
+        left = newLeft;
+        return left;
+    }
+
+    public R getAndSetRight(R newRight) {
+        final R res = newRight;
+        right = newRight;
+        return res;
+    }
+
+    public R setAndGetRight(R newRight) {
+        right = newRight;
+        return right;
+    }
+
     @Override
     public L getKey() {
         return left;

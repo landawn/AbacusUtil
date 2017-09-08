@@ -151,6 +151,39 @@ public final class Triple<L, M, R> {
         return this;
     }
 
+    public L getAndSetLeft(L newLeft) {
+        final L res = left;
+        left = newLeft;
+        return res;
+    }
+
+    public L setAndGetLeft(L newLeft) {
+        left = newLeft;
+        return left;
+    }
+
+    public M getAndSetMiddle(M newMiddle) {
+        final M res = middle;
+        middle = newMiddle;
+        return res;
+    }
+
+    public M setAndGetMiddle(M newMiddle) {
+        middle = newMiddle;
+        return middle;
+    }
+
+    public R getAndSetRight(R newRight) {
+        final R res = newRight;
+        right = newRight;
+        return res;
+    }
+
+    public R setAndGetRight(R newRight) {
+        right = newRight;
+        return right;
+    }
+
     //    /**
     //     * Swap the left and right value. they must be same type.
     //     */

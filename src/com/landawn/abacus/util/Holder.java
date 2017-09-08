@@ -19,6 +19,7 @@ import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
+import com.landawn.abacus.util.function.UnaryOperator;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -98,6 +99,17 @@ public final class Holder<T> {
         }
 
         return false;
+    }
+
+    public final T getAndUpdate(UnaryOperator<T> updateFunction) {
+        final T res = value;
+        this.value = updateFunction.apply(value);
+        return res;
+    }
+
+    public final T updateAndGet(UnaryOperator<T> updateFunction) {
+        this.value = updateFunction.apply(value);
+        return value;
     }
 
     public boolean isNotNull() {
