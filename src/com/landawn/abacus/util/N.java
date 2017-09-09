@@ -141,6 +141,7 @@ import com.landawn.abacus.util.function.IndexedBiFunction;
 import com.landawn.abacus.util.function.IndexedConsumer;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.IntPredicate;
+import com.landawn.abacus.util.function.IntUnaryOperator;
 import com.landawn.abacus.util.function.LongPredicate;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.ShortPredicate;
@@ -15374,160 +15375,437 @@ public final class N {
         return Array.binarySearch(c, fromIndex, toIndex, key, cmp);
     }
 
+    //    /**
+    //     * 
+    //     * <code>findFirst("3[a2[c]]2[a]", "[", "]") = "a2[c"</code>
+    //     * 
+    //     * @param str
+    //     * @param prefix
+    //     * @param postfix
+    //     * @return
+    //     */
+    //    public static Optional<String> findFirst(String str, String prefix, String postfix) {
+    //        return findFirst(String.class, str, prefix, postfix);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * <code>findFirst("3[a2[c]]2[a]", "[", "]") = "a2[c"</code>
+    //     * 
+    //     * @param str
+    //     * @param fromIndex
+    //     * @param prefix
+    //     * @param postfix
+    //     * @return
+    //     */
+    //    public static Optional<String> findFirst(String str, int fromIndex, String prefix, String postfix) {
+    //        return findFirst(String.class, str, fromIndex, prefix, postfix);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * <code>findFirst("3[a2[c]]2[a]", "[", "]") = "a2[c"</code>
+    //     * 
+    //     * @param targetClass
+    //     * @param str
+    //     * @param prefix
+    //     * @param postfix
+    //     * @return
+    //     */
+    //    public static <T> Optional<T> findFirst(Class<T> targetClass, String str, String prefix, String postfix) {
+    //        return findFirst(targetClass, str, 0, prefix, postfix);
+    //    }
+    //
+    //    /**
+    //     * Returns first substring between the specified <code>prefix</code> and </code>postfix</code>, or default value if there is no substring found.
+    //     * 
+    //     * <code>findFirst("3[a2[c]]2[a]", "[", "]") = "a2[c"</code>
+    //     * 
+    //     * @param targetClass
+    //     * @param str
+    //     * @param fromIndex
+    //     * @param prefix
+    //     * @param postfix
+    //     * @return
+    //     * @see String#indexOf(String, int)
+    //     */
+    //    public static <T> Optional<T> findFirst(Class<T> targetClass, String str, int fromIndex, String prefix, String postfix) {
+    //        final Type<T> type = typeOf(targetClass);
+    //
+    //        if (N.isNullOrEmpty(str)) {
+    //            return Optional.empty();
+    //        }
+    //
+    //        int beginIndex = N.isNullOrEmpty(prefix) ? 0 : str.indexOf(prefix, fromIndex);
+    //
+    //        if (beginIndex < 0) {
+    //            return Optional.empty();
+    //        }
+    //
+    //        beginIndex += N.isNullOrEmpty(prefix) ? 0 : prefix.length();
+    //
+    //        int endIndex = N.isNullOrEmpty(postfix) ? str.length() : str.indexOf(postfix, beginIndex);
+    //
+    //        if (endIndex < 0) {
+    //            return Optional.empty();
+    //        }
+    //
+    //        return Optional.of(N.as(type, str.subSequence(beginIndex, endIndex)));
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * <code>findLast("3[a2[c]]2a]", "[", "]") = "c]]2a"</code>
+    //     * 
+    //     * @param str
+    //     * @param prefix
+    //     * @param postfix
+    //     * @return
+    //     */
+    //    public static Optional<String> findLast(String str, String prefix, String postfix) {
+    //        return findLast(String.class, str, prefix, postfix);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * <code>findLast("3[a2[c]]2a]", "[", "]") = "c]]2a"</code>
+    //     * 
+    //     * @param str
+    //     * @param fromIndex
+    //     * @param prefix
+    //     * @param postfix
+    //     * @return
+    //     */
+    //    public static Optional<String> findLast(String str, int fromIndex, String prefix, String postfix) {
+    //        return findLast(String.class, str, fromIndex, prefix, postfix);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * <code>findLast("3[a2[c]]2a]", "[", "]") = "c]]2a"</code>
+    //     * 
+    //     * @param targetClass
+    //     * @param str
+    //     * @param prefix
+    //     * @param postfix
+    //     * @return
+    //     */
+    //    public static <T> Optional<T> findLast(Class<T> targetClass, String str, String prefix, String postfix) {
+    //        return findLast(targetClass, str, N.isNullOrEmpty(str) ? 0 : str.length(), prefix, postfix);
+    //    }
+    //
+    //    /**
+    //     * Returns last substring between the specified <code>prefix</code> and </code>postfix</code>, or default value if there is no substring found.
+    //     * 
+    //     * <code>findLast("3[a2[c]]2a]", "[", "]") = "c]]2a"</code>
+    //     * 
+    //     * @param targetClass
+    //     * @param str
+    //     * @param fromIndex
+    //     * @param prefix
+    //     * @param postfix
+    //     * @return
+    //     * @see String#lastIndexOf(String, int)
+    //     */
+    //    public static <T> Optional<T> findLast(Class<T> targetClass, String str, int fromIndex, String prefix, String postfix) {
+    //        final Type<T> type = typeOf(targetClass);
+    //
+    //        if (N.isNullOrEmpty(str)) {
+    //            return Optional.empty();
+    //        }
+    //
+    //        int endIndex = N.isNullOrEmpty(postfix) ? str.length() : str.lastIndexOf(postfix, fromIndex);
+    //
+    //        if (endIndex < 0 || (N.notNullOrEmpty(prefix) && endIndex < prefix.length())) {
+    //            return Optional.empty();
+    //        }
+    //
+    //        int beginIndex = N.isNullOrEmpty(prefix) ? 0 : str.lastIndexOf(prefix, endIndex - prefix.length());
+    //
+    //        if (beginIndex < 0) {
+    //            return Optional.empty();
+    //        }
+    //
+    //        beginIndex += N.isNullOrEmpty(prefix) ? 0 : prefix.length();
+    //
+    //        return Optional.of(N.as(type, str.subSequence(beginIndex, endIndex)));
+    //    }
+
     /**
-     * 
-     * <code>findFirst("3[a2[c]]2[a]", "[", "]") = "a2[c"</code>
+     * Returns an empty <code>Optional</code> if {@code inclusiveBeginIndex < 0 || exclusiveEndIndex < 0 || inclusiveBeginIndex > exclusiveEndIndex}, 
+     * otherwise an {@code Optional} with String value: {@code str.substring(exclusiveBeginIndex, exclusiveEndIndex)} is returned.
      * 
      * @param str
-     * @param prefix
-     * @param postfix
+     * @param inclusiveBeginIndex
+     * @param exclusiveEndIndex
      * @return
      */
-    public static Optional<String> findFirst(String str, String prefix, String postfix) {
-        return findFirst(String.class, str, prefix, postfix);
+    public static Optional<String> substring(String str, int inclusiveBeginIndex, int exclusiveEndIndex) {
+        if (inclusiveBeginIndex < 0 || exclusiveEndIndex < 0 || inclusiveBeginIndex > exclusiveEndIndex) {
+            return Optional.<String> empty();
+        }
+
+        return Optional.of(str.substring(inclusiveBeginIndex, exclusiveEndIndex));
     }
 
     /**
-     * 
-     * <code>findFirst("3[a2[c]]2[a]", "[", "]") = "a2[c"</code>
+     * Returns an empty <code>Optional</code> if {@code inclusiveBeginIndex < 0}, 
+     * otherwise an {@code Optional} with String value: {@code str.substring(inclusiveBeginIndex)} is returned.
      * 
      * @param str
-     * @param fromIndex
-     * @param prefix
-     * @param postfix
+     * @param inclusiveBeginIndex
      * @return
+     * @see #substring(String, int, int)
      */
-    public static Optional<String> findFirst(String str, int fromIndex, String prefix, String postfix) {
-        return findFirst(String.class, str, fromIndex, prefix, postfix);
+    public static Optional<String> substring(String str, int inclusiveBeginIndex) {
+        if (inclusiveBeginIndex < 0) {
+            return Optional.<String> empty();
+        }
+
+        return Optional.of(str.substring(inclusiveBeginIndex));
     }
 
     /**
+     * Returns an empty <code>Optional</code> if {@code N.isNullOrEmpty(str) || str.indexOf(delimiterOfInclusiveBeginIndex) < 0}, 
+     * otherwise an {@code Optional} with String value: {@code str.substring(str.indexOf(delimiterOfInclusiveBeginIndex))} is returned.
      * 
-     * <code>findFirst("3[a2[c]]2[a]", "[", "]") = "a2[c"</code>
-     * 
-     * @param targetClass
      * @param str
-     * @param prefix
-     * @param postfix
+     * @param delimiterOfInclusiveBeginIndex {@code inclusiveBeginIndex <- str.indexOf(delimiterOfInclusiveBeginIndex)}
      * @return
+     * @see #substring(String, int)
      */
-    public static <T> Optional<T> findFirst(Class<T> targetClass, String str, String prefix, String postfix) {
-        return findFirst(targetClass, str, 0, prefix, postfix);
-    }
-
-    /**
-     * Returns first substring between the specified <code>prefix</code> and </code>postfix</code>, or default value if there is no substring found.
-     * 
-     * <code>findFirst("3[a2[c]]2[a]", "[", "]") = "a2[c"</code>
-     * 
-     * @param targetClass
-     * @param str
-     * @param fromIndex
-     * @param prefix
-     * @param postfix
-     * @return
-     * @see String#indexOf(String, int)
-     */
-    public static <T> Optional<T> findFirst(Class<T> targetClass, String str, int fromIndex, String prefix, String postfix) {
-        final Type<T> type = typeOf(targetClass);
-
+    public static Optional<String> substring(String str, char delimiterOfInclusiveBeginIndex) {
         if (N.isNullOrEmpty(str)) {
-            return Optional.empty();
+            return Optional.<String> empty();
         }
 
-        int beginIndex = N.isNullOrEmpty(prefix) ? 0 : str.indexOf(prefix, fromIndex);
-
-        if (beginIndex < 0) {
-            return Optional.empty();
-        }
-
-        beginIndex += N.isNullOrEmpty(prefix) ? 0 : prefix.length();
-
-        int endIndex = N.isNullOrEmpty(postfix) ? str.length() : str.indexOf(postfix, beginIndex);
-
-        if (endIndex < 0) {
-            return Optional.empty();
-        }
-
-        return Optional.of(N.as(type, str.subSequence(beginIndex, endIndex)));
+        return substring(str, str.indexOf(delimiterOfInclusiveBeginIndex));
     }
 
     /**
-     * 
-     * <code>findLast("3[a2[c]]2a]", "[", "]") = "c]]2a"</code>
-     * 
-     * @param str
-     * @param prefix
-     * @param postfix
-     * @return
-     */
-    public static Optional<String> findLast(String str, String prefix, String postfix) {
-        return findLast(String.class, str, prefix, postfix);
-    }
-
-    /**
-     * 
-     * <code>findLast("3[a2[c]]2a]", "[", "]") = "c]]2a"</code>
+     * Returns an empty <code>Optional</code> if {@code N.isNullOrEmpty(str) || str.indexOf(delimiterOfInclusiveBeginIndex) < 0}, 
+     * otherwise an {@code Optional} with String value: {@code str.substring(str.indexOf(delimiterOfInclusiveBeginIndex))} is returned.
      * 
      * @param str
-     * @param fromIndex
-     * @param prefix
-     * @param postfix
+     * @param delimiterOfInclusiveBeginIndex {@code inclusiveBeginIndex <- str.indexOf(delimiterOfInclusiveBeginIndex)}
      * @return
+     * @see #substring(String, int)
      */
-    public static Optional<String> findLast(String str, int fromIndex, String prefix, String postfix) {
-        return findLast(String.class, str, fromIndex, prefix, postfix);
-    }
-
-    /**
-     * 
-     * <code>findLast("3[a2[c]]2a]", "[", "]") = "c]]2a"</code>
-     * 
-     * @param targetClass
-     * @param str
-     * @param prefix
-     * @param postfix
-     * @return
-     */
-    public static <T> Optional<T> findLast(Class<T> targetClass, String str, String prefix, String postfix) {
-        return findLast(targetClass, str, N.isNullOrEmpty(str) ? 0 : str.length(), prefix, postfix);
-    }
-
-    /**
-     * Returns last substring between the specified <code>prefix</code> and </code>postfix</code>, or default value if there is no substring found.
-     * 
-     * <code>findLast("3[a2[c]]2a]", "[", "]") = "c]]2a"</code>
-     * 
-     * @param targetClass
-     * @param str
-     * @param fromIndex
-     * @param prefix
-     * @param postfix
-     * @return
-     * @see String#lastIndexOf(String, int)
-     */
-    public static <T> Optional<T> findLast(Class<T> targetClass, String str, int fromIndex, String prefix, String postfix) {
-        final Type<T> type = typeOf(targetClass);
-
+    public static Optional<String> substring(String str, String delimiterOfInclusiveBeginIndex) {
         if (N.isNullOrEmpty(str)) {
-            return Optional.empty();
+            return Optional.<String> empty();
         }
 
-        int endIndex = N.isNullOrEmpty(postfix) ? str.length() : str.lastIndexOf(postfix, fromIndex);
+        return substring(str, str.indexOf(delimiterOfInclusiveBeginIndex));
+    }
 
-        if (endIndex < 0 || (N.notNullOrEmpty(prefix) && endIndex < prefix.length())) {
-            return Optional.empty();
+    /**
+     * 
+     * @param str
+     * @param inclusiveBeginIndex
+     * @param delimiterOfExclusiveEndIndex {@code exclusiveEndIndex <- str.indexOf(delimiterOfExclusiveEndIndex, inclusiveBeginIndex + 1) if inclusiveBeginIndex >= 0}
+     * @return
+     * @see #substring(String, int, int)
+     */
+    public static Optional<String> substring(String str, int inclusiveBeginIndex, char delimiterOfExclusiveEndIndex) {
+        if (inclusiveBeginIndex < 0) {
+            return Optional.<String> empty();
         }
 
-        int beginIndex = N.isNullOrEmpty(prefix) ? 0 : str.lastIndexOf(prefix, endIndex - prefix.length());
+        return substring(str, inclusiveBeginIndex, str.indexOf(delimiterOfExclusiveEndIndex, inclusiveBeginIndex + 1));
+    }
 
-        if (beginIndex < 0) {
-            return Optional.empty();
+    /**
+     * 
+     * @param str
+     * @param inclusiveBeginIndex
+     * @param delimiterOfExclusiveEndIndex {@code exclusiveEndIndex <- str.indexOf(delimiterOfExclusiveEndIndex, inclusiveBeginIndex + 1) if inclusiveBeginIndex >= 0}
+     * @return
+     * @see #substring(String, int, int)
+     */
+    public static Optional<String> substring(String str, int inclusiveBeginIndex, String delimiterOfExclusiveEndIndex) {
+        if (inclusiveBeginIndex < 0) {
+            return Optional.<String> empty();
         }
 
-        beginIndex += N.isNullOrEmpty(prefix) ? 0 : prefix.length();
+        return substring(str, inclusiveBeginIndex, str.indexOf(delimiterOfExclusiveEndIndex, inclusiveBeginIndex + 1));
+    }
 
-        return Optional.of(N.as(type, str.subSequence(beginIndex, endIndex)));
+    /**
+     * 
+     * @param str
+     * @param inclusiveBeginIndex
+     * @param funcOfExclusiveEndIndex {@code exclusiveEndIndex <- funcOfExclusiveEndIndex.applyAsInt(inclusiveBeginIndex) if inclusiveBeginIndex >= 0}
+     * @return
+     * @see #substring(String, int, int)
+     */
+    public static Optional<String> substring(String str, int inclusiveBeginIndex, IntUnaryOperator funcOfExclusiveEndIndex) {
+        if (inclusiveBeginIndex < 0) {
+            return Optional.<String> empty();
+        }
+
+        return substring(str, inclusiveBeginIndex, funcOfExclusiveEndIndex.applyAsInt(inclusiveBeginIndex));
+    }
+
+    /**
+     * 
+     * @param str
+     * @param delimiterOfInclusiveBeginIndex {@code inclusiveBeginIndex <- str.lastIndexOf(delimiterOfInclusiveBeginIndex, exclusiveEndIndex - 1) if exclusiveEndIndex > 0}
+     * @param exclusiveEndIndex
+     * @return
+     * @see #substring(String, int, int)
+     */
+    public static Optional<String> substring(String str, char delimiterOfInclusiveBeginIndex, int exclusiveEndIndex) {
+        if (exclusiveEndIndex <= 0) {
+            return Optional.<String> empty();
+        }
+
+        return substring(str, str.lastIndexOf(delimiterOfInclusiveBeginIndex, exclusiveEndIndex - 1), exclusiveEndIndex);
+    }
+
+    /**
+     * 
+     * @param str
+     * @param delimiterOfInclusiveBeginIndex {@code inclusiveBeginIndex <- str.lastIndexOf(delimiterOfInclusiveBeginIndex, exclusiveEndIndex - 1) if exclusiveEndIndex > 0}
+     * @param exclusiveEndIndex
+     * @return
+     * @see #substring(String, int, int)
+     */
+    public static Optional<String> substring(String str, String delimiterOfInclusiveBeginIndex, int exclusiveEndIndex) {
+        if (exclusiveEndIndex <= 0) {
+            return Optional.<String> empty();
+        }
+
+        return substring(str, str.lastIndexOf(delimiterOfInclusiveBeginIndex, exclusiveEndIndex - 1), exclusiveEndIndex);
+    }
+
+    /**
+     * 
+     * @param str
+     * @param funcOfInclusiveBeginIndex {@code inclusiveBeginIndex <- funcOfInclusiveBeginIndex.applyAsInt(exclusiveEndIndex)) if exclusiveEndIndex > 0}
+     * @param exclusiveEndIndex
+     * @return
+     * @see #substring(String, int, int)
+     */
+    public static Optional<String> substring(String str, IntUnaryOperator funcOfInclusiveBeginIndex, int exclusiveEndIndex) {
+        if (exclusiveEndIndex <= 0) {
+            return Optional.<String> empty();
+        }
+
+        return substring(str, funcOfInclusiveBeginIndex.applyAsInt(exclusiveEndIndex), exclusiveEndIndex);
+    }
+
+    /**
+     * Returns an empty <code>Optional</code> if {@code exclusiveBeginIndex < 0 || exclusiveEndIndex < 0 || exclusiveBeginIndex >= exclusiveEndIndex}, 
+     * otherwise an {@code Optional} with String value: {@code str.substring(exclusiveBeginIndex + 1, exclusiveEndIndex)} is returned.
+     * 
+     * @param str
+     * @param exclusiveBeginIndex
+     * @param exclusiveEndIndex
+     * @return
+     */
+    public static Optional<String> between(String str, int exclusiveBeginIndex, int exclusiveEndIndex) {
+        if (exclusiveBeginIndex < 0 || exclusiveEndIndex < 0 || exclusiveBeginIndex >= exclusiveEndIndex) {
+            return Optional.<String> empty();
+        }
+
+        return Optional.of(str.substring(exclusiveBeginIndex + 1, exclusiveEndIndex));
+    }
+
+    /**
+     * 
+     * @param str
+     * @param exclusiveBeginIndex
+     * @param delimiterOfExclusiveEndIndex {@code exclusiveEndIndex <- str.indexOf(delimiterOfExclusiveEndIndex, beginIndex + 1) if exclusiveBeginIndex >= 0}
+     * @return
+     * @see #between(String, int, int)
+     */
+    public static Optional<String> between(String str, int exclusiveBeginIndex, char delimiterOfExclusiveEndIndex) {
+        if (exclusiveBeginIndex < 0) {
+            return Optional.<String> empty();
+        }
+
+        return between(str, exclusiveBeginIndex, str.indexOf(delimiterOfExclusiveEndIndex, exclusiveBeginIndex + 1));
+    }
+
+    /**
+     * 
+     * @param str
+     * @param exclusiveBeginIndex
+     * @param delimiterOfExclusiveEndIndex {@code exclusiveEndIndex <- str.indexOf(delimiterOfExclusiveEndIndex, beginIndex + 1) if exclusiveBeginIndex >= 0}
+     * @return
+     * @see #between(String, int, int)
+     */
+    public static Optional<String> between(String str, int exclusiveBeginIndex, String delimiterOfExclusiveEndIndex) {
+        if (exclusiveBeginIndex < 0) {
+            return Optional.<String> empty();
+        }
+
+        return between(str, exclusiveBeginIndex, str.indexOf(delimiterOfExclusiveEndIndex, exclusiveBeginIndex + 1));
+    }
+
+    /**
+     * 
+     * @param str
+     * @param exclusiveBeginIndex
+     * @param funcOfExclusiveEndIndex {@code exclusiveEndIndex <- funcOfExclusiveEndIndex.applyAsInt(inclusiveBeginIndex) if inclusiveBeginIndex >= 0}
+     * @return
+     * @see #between(String, int, int)
+     */
+    public static Optional<String> between(String str, int exclusiveBeginIndex, IntUnaryOperator funcOfExclusiveEndIndex) {
+        if (exclusiveBeginIndex < 0) {
+            return Optional.<String> empty();
+        }
+
+        return between(str, exclusiveBeginIndex, funcOfExclusiveEndIndex.applyAsInt(exclusiveBeginIndex));
+    }
+
+    /**
+     * 
+     * @param str
+     * @param delimiterOfExclusiveBeginIndex {@code exclusiveBeginIndex <- str.lastIndexOf(delimiterOfExclusiveBeginIndex, exclusiveEndIndex - 1) if exclusiveEndIndex > 0}
+     * @param exclusiveEndIndex
+     * @return
+     * @see #between(String, int, int)
+     */
+    public static Optional<String> between(String str, char delimiterOfExclusiveBeginIndex, int exclusiveEndIndex) {
+        if (exclusiveEndIndex <= 0) {
+            return Optional.<String> empty();
+        }
+
+        return between(str, str.lastIndexOf(delimiterOfExclusiveBeginIndex, exclusiveEndIndex - 1), exclusiveEndIndex);
+    }
+
+    /**
+     * 
+     * @param str
+     * @param delimiterOfExclusiveBeginIndex {@code exclusiveBeginIndex <- str.lastIndexOf(delimiterOfExclusiveBeginIndex, exclusiveEndIndex - 1) if exclusiveEndIndex > 0}
+     * @param exclusiveEndIndex
+     * @return
+     * @see #between(String, int, int)
+     */
+    public static Optional<String> between(String str, String delimiterOfExclusiveBeginIndex, int exclusiveEndIndex) {
+        if (exclusiveEndIndex <= 0) {
+            return Optional.<String> empty();
+        }
+
+        return between(str, str.lastIndexOf(delimiterOfExclusiveBeginIndex, exclusiveEndIndex - 1), exclusiveEndIndex);
+    }
+
+    /**
+     * 
+     * @param str
+     * @param funcOfExclusiveBeginIndex {@code exclusiveBeginIndex <- funcOfExclusiveBeginIndex.applyAsInt(exclusiveEndIndex)) if exclusiveEndIndex > 0}
+     * @param exclusiveEndIndex
+     * @return
+     * @see #between(String, int, int)
+     */
+    public static Optional<String> between(String str, IntUnaryOperator funcOfExclusiveBeginIndex, int exclusiveEndIndex) {
+        if (exclusiveEndIndex <= 0) {
+            return Optional.<String> empty();
+        }
+
+        return between(str, funcOfExclusiveBeginIndex.applyAsInt(exclusiveEndIndex), exclusiveEndIndex);
     }
 
     /**

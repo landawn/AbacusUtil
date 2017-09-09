@@ -25,7 +25,9 @@
 
 12, Improve DynamoDBExecutor.
 
-13, Improvements and bug fix.
+13, Remove findFirst and findLast from N, replaced by between.
+
+14, Improvements and bug fix.
 
 
 ========Changes in 0.9.81=========================================================================
