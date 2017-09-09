@@ -29,6 +29,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
@@ -640,7 +641,7 @@ public final class Fn {
      * @return
      */
     public static <T> Predicate<T> limited(final Predicate<T> predicate, final int limit) {
-        N.requireNonNull(predicate);
+        Objects.requireNonNull(predicate);
 
         return new Predicate<T>() {
             private final AtomicInteger counter = new AtomicInteger(limit);
@@ -659,7 +660,7 @@ public final class Fn {
      * @return
      */
     public static <T> Predicate<T> limited(final Predicate<T> predicate, final long limit) {
-        N.requireNonNull(predicate);
+        Objects.requireNonNull(predicate);
 
         return new Predicate<T>() {
             private final AtomicLong counter = new AtomicLong(limit);
@@ -678,7 +679,7 @@ public final class Fn {
      * @return
      */
     public static <T, U> BiPredicate<T, U> limited(final BiPredicate<T, U> predicate, final int limit) {
-        N.requireNonNull(predicate);
+        Objects.requireNonNull(predicate);
 
         return new BiPredicate<T, U>() {
             private final AtomicInteger counter = new AtomicInteger(limit);
@@ -697,7 +698,7 @@ public final class Fn {
      * @return
      */
     public static <T, U> BiPredicate<T, U> limited(final BiPredicate<T, U> predicate, final long limit) {
-        N.requireNonNull(predicate);
+        Objects.requireNonNull(predicate);
 
         return new BiPredicate<T, U>() {
             private final AtomicLong counter = new AtomicLong(limit);
@@ -716,7 +717,7 @@ public final class Fn {
      * @return
      */
     public static <A, B, C> TriPredicate<A, B, C> limited(final TriPredicate<A, B, C> predicate, final int limit) {
-        N.requireNonNull(predicate);
+        Objects.requireNonNull(predicate);
 
         return new TriPredicate<A, B, C>() {
             private final AtomicInteger counter = new AtomicInteger(limit);
@@ -735,7 +736,7 @@ public final class Fn {
      * @return
      */
     public static <A, B, C> TriPredicate<A, B, C> limited(final TriPredicate<A, B, C> predicate, final long limit) {
-        N.requireNonNull(predicate);
+        Objects.requireNonNull(predicate);
 
         return new TriPredicate<A, B, C>() {
             private final AtomicLong counter = new AtomicLong(limit);
@@ -754,7 +755,7 @@ public final class Fn {
      * @return
      */
     public static <T> Predicate<T> indexed(final IndexedPredicate<T> predicate) {
-        N.requireNonNull(predicate);
+        Objects.requireNonNull(predicate);
 
         return new Predicate<T>() {
             private final AtomicInteger idx = new AtomicInteger(0);
@@ -773,7 +774,7 @@ public final class Fn {
      * @return
      */
     public static <U, T> BiPredicate<U, T> indexed(final IndexedBiPredicate<U, T> predicate) {
-        N.requireNonNull(predicate);
+        Objects.requireNonNull(predicate);
 
         return new BiPredicate<U, T>() {
             private final AtomicInteger idx = new AtomicInteger(0);
@@ -792,7 +793,7 @@ public final class Fn {
      * @return
      */
     public static <T, R> Function<T, R> indexeD(final IndexedFunction<T, R> func) {
-        N.requireNonNull(func);
+        Objects.requireNonNull(func);
 
         return new Function<T, R>() {
             private final AtomicInteger idx = new AtomicInteger(0);
@@ -811,7 +812,7 @@ public final class Fn {
      * @return
      */
     public static <U, T, R> BiFunction<U, T, R> indexeD(final IndexedBiFunction<U, T, R> func) {
-        N.requireNonNull(func);
+        Objects.requireNonNull(func);
 
         return new BiFunction<U, T, R>() {
             private final AtomicInteger idx = new AtomicInteger(0);
@@ -830,7 +831,7 @@ public final class Fn {
      * @return
      */
     public static <T> Consumer<T> indeXed(final IndexedConsumer<T> action) {
-        N.requireNonNull(action);
+        Objects.requireNonNull(action);
 
         return new Consumer<T>() {
             private final AtomicInteger idx = new AtomicInteger(0);
@@ -849,7 +850,7 @@ public final class Fn {
      * @return
      */
     public static <U, T> BiConsumer<U, T> indeXed(final IndexedBiConsumer<U, T> action) {
-        N.requireNonNull(action);
+        Objects.requireNonNull(action);
 
         return new BiConsumer<U, T>() {
             private final AtomicInteger idx = new AtomicInteger(0);
@@ -2085,7 +2086,7 @@ public final class Fn {
         }
 
         public static <T, U> Predicate<T> of(final U u, final BiPredicate<? super T, ? super U> predicate) {
-            N.requireNonNull(predicate);
+            Objects.requireNonNull(predicate);
 
             return new Predicate<T>() {
                 @Override
@@ -2241,7 +2242,7 @@ public final class Fn {
         }
 
         public static <T, U> Consumer<T> of(final U u, final BiConsumer<? super T, ? super U> action) {
-            N.requireNonNull(action);
+            Objects.requireNonNull(action);
 
             return new Consumer<T>() {
                 @Override
@@ -2462,7 +2463,7 @@ public final class Fn {
         }
 
         public static <T, U, R> Function<T, R> of(final U u, final BiFunction<? super T, ? super U, R> func) {
-            N.requireNonNull(func);
+            Objects.requireNonNull(func);
 
             return new Function<T, R>() {
                 @Override
@@ -2818,7 +2819,7 @@ public final class Fn {
         }
 
         public static <T> BinaryOperator<T> minBy(final Comparator<? super T> comparator) {
-            N.requireNonNull(comparator);
+            Objects.requireNonNull(comparator);
 
             return new BinaryOperator<T>() {
                 @Override
@@ -2829,7 +2830,7 @@ public final class Fn {
         }
 
         public static <T> BinaryOperator<T> maxBy(final Comparator<? super T> comparator) {
-            N.requireNonNull(comparator);
+            Objects.requireNonNull(comparator);
 
             return new BinaryOperator<T>() {
                 @Override

@@ -14,7 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
-import com.landawn.abacus.util.N;
+import java.util.Objects;
 
 /**
  * 
@@ -73,13 +73,13 @@ public interface BooleanBiPredicate {
     }
 
     default BooleanBiPredicate and(BooleanBiPredicate other) {
-        N.requireNonNull(other);
+        Objects.requireNonNull(other);
 
         return (t, u) -> test(t, u) && other.test(t, u);
     }
 
     default BooleanBiPredicate or(BooleanBiPredicate other) {
-        N.requireNonNull(other);
+        Objects.requireNonNull(other);
 
         return (t, u) -> test(t, u) || other.test(t, u);
     }

@@ -14,7 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
-import com.landawn.abacus.util.N;
+import java.util.Objects;
 
 /**
  * 
@@ -27,7 +27,7 @@ public interface IntBiConsumer {
     void accept(int t, int u);
 
     default IntBiConsumer andThen(IntBiConsumer after) {
-        N.requireNonNull(after);
+        Objects.requireNonNull(after);
 
         return (t, u) -> {
             accept(t, u);

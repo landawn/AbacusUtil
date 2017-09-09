@@ -14,9 +14,8 @@
 
 package com.landawn.abacus.util.function;
 
+import java.util.Objects;
 import java.util.function.Function;
-
-import com.landawn.abacus.util.N;
 
 /**
  * 
@@ -25,7 +24,7 @@ import com.landawn.abacus.util.N;
  * @author Haiyang Li
  */
 public interface FloatFunction<R> {
-   static final FloatFunction<Float> BOX = new FloatFunction<Float>() {
+    static final FloatFunction<Float> BOX = new FloatFunction<Float>() {
         @Override
         public Float apply(float value) {
             return value;
@@ -35,7 +34,7 @@ public interface FloatFunction<R> {
     R apply(float value);
 
     default <V> FloatFunction<V> andThen(Function<? super R, ? extends V> after) {
-        N.requireNonNull(after);
+        Objects.requireNonNull(after);
 
         return t -> after.apply(apply(t));
     }

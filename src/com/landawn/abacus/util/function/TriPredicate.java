@@ -14,8 +14,9 @@
 
 package com.landawn.abacus.util.function;
 
+import java.util.Objects;
+
 import com.landawn.abacus.util.Fn;
-import com.landawn.abacus.util.N;
 
 /**
  * @since 0.8
@@ -27,7 +28,7 @@ public interface TriPredicate<A, B, C> {
     boolean test(A a, B b, C c);
 
     default TriPredicate<A, B, C> and(TriPredicate<A, B, C> other) {
-        N.requireNonNull(other);
+        Objects.requireNonNull(other);
 
         return (a, b, c) -> test(a, b, c) && other.test(a, b, c);
     }
@@ -37,7 +38,7 @@ public interface TriPredicate<A, B, C> {
     }
 
     default TriPredicate<A, B, C> or(TriPredicate<A, B, C> other) {
-        N.requireNonNull(other);
+        Objects.requireNonNull(other);
 
         return (a, b, c) -> test(a, b, c) || other.test(a, b, c);
     }

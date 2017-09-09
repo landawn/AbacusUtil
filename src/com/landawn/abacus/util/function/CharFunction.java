@@ -14,9 +14,8 @@
 
 package com.landawn.abacus.util.function;
 
+import java.util.Objects;
 import java.util.function.Function;
-
-import com.landawn.abacus.util.N;
 
 /**
  * 
@@ -25,7 +24,7 @@ import com.landawn.abacus.util.N;
  * @author Haiyang Li
  */
 public interface CharFunction<R> {
-   static final CharFunction<Character> BOX = new CharFunction<Character>() {
+    static final CharFunction<Character> BOX = new CharFunction<Character>() {
         @Override
         public Character apply(char value) {
             return value;
@@ -35,7 +34,7 @@ public interface CharFunction<R> {
     R apply(char value);
 
     default <V> CharFunction<V> andThen(Function<? super R, ? extends V> after) {
-        N.requireNonNull(after);
+        Objects.requireNonNull(after);
 
         return t -> after.apply(apply(t));
     }

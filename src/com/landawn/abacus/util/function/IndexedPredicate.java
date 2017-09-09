@@ -14,7 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
-import com.landawn.abacus.util.N;
+import java.util.Objects;
 
 /**
  * 
@@ -31,13 +31,13 @@ public interface IndexedPredicate<T> {
     }
 
     default IndexedPredicate<T> and(IndexedPredicate<? super T> other) {
-        N.requireNonNull(other);
+        Objects.requireNonNull(other);
 
         return (idx, e) -> test(idx, e) && other.test(idx, e);
     }
 
     default IndexedPredicate<T> or(IndexedPredicate<? super T> other) {
-        N.requireNonNull(other);
+        Objects.requireNonNull(other);
 
         return (idx, e) -> test(idx, e) || other.test(idx, e);
     }

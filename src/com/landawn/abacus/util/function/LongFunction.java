@@ -14,9 +14,8 @@
 
 package com.landawn.abacus.util.function;
 
+import java.util.Objects;
 import java.util.function.Function;
-
-import com.landawn.abacus.util.N;
 
 /**
  * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
@@ -25,7 +24,7 @@ import com.landawn.abacus.util.N;
  * @author Haiyang Li
  */
 public interface LongFunction<R> extends java.util.function.LongFunction<R> {
-   static final LongFunction<Long> BOX = new LongFunction<Long>() {
+    static final LongFunction<Long> BOX = new LongFunction<Long>() {
         @Override
         public Long apply(long value) {
             return value;
@@ -36,7 +35,7 @@ public interface LongFunction<R> extends java.util.function.LongFunction<R> {
     R apply(long value);
 
     default <V> LongFunction<V> andThen(Function<? super R, ? extends V> after) {
-        N.requireNonNull(after);
+        Objects.requireNonNull(after);
 
         return t -> after.apply(apply(t));
     }

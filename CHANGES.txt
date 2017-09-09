@@ -23,7 +23,9 @@
 
 11, Rename RefUtil to ClassUtil
 
-12, Improvements and bug fix.
+12, Improve DynamoDBExecutor.
+
+13, Improvements and bug fix.
 
 
 ========Changes in 0.9.81=========================================================================

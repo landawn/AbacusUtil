@@ -14,7 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
-import com.landawn.abacus.util.N;
+import java.util.Objects;
 
 /**
  * 
@@ -27,7 +27,7 @@ public interface IndexedByteConsumer {
     void accept(int idx, byte e);
 
     default IndexedByteConsumer andThen(IndexedByteConsumer after) {
-        N.requireNonNull(after);
+        Objects.requireNonNull(after);
 
         return (idx, e) -> {
             accept(idx, e);

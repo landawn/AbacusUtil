@@ -14,6 +14,8 @@
 
 package com.landawn.abacus.util.function;
 
+import java.util.Objects;
+
 import com.landawn.abacus.util.N;
 
 /**
@@ -24,28 +26,28 @@ import com.landawn.abacus.util.N;
  */
 public interface CharPredicate {
 
-   static final CharPredicate ALWAYS_TRUE = new CharPredicate() {
+    static final CharPredicate ALWAYS_TRUE = new CharPredicate() {
         @Override
         public boolean test(char value) {
             return true;
         }
     };
 
-   static final CharPredicate ALWAYS_FALSE = new CharPredicate() {
+    static final CharPredicate ALWAYS_FALSE = new CharPredicate() {
         @Override
         public boolean test(char value) {
             return false;
         }
     };
 
-   static final CharPredicate IS_ZERO = new CharPredicate() {
+    static final CharPredicate IS_ZERO = new CharPredicate() {
         @Override
         public boolean test(char value) {
             return value == 0;
         }
     };
 
-   static final CharPredicate NOT_ZERO = new CharPredicate() {
+    static final CharPredicate NOT_ZERO = new CharPredicate() {
         @Override
         public boolean test(char value) {
             return value != 0;
@@ -59,13 +61,13 @@ public interface CharPredicate {
     }
 
     default CharPredicate and(CharPredicate other) {
-        N.requireNonNull(other);
+        Objects.requireNonNull(other);
 
         return (t) -> test(t) && other.test(t);
     }
 
     default CharPredicate or(CharPredicate other) {
-        N.requireNonNull(other);
+        Objects.requireNonNull(other);
 
         return (t) -> test(t) || other.test(t);
     }

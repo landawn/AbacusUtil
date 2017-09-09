@@ -67,6 +67,17 @@ public class Holder<T> {
         return this.value;
     }
 
+    public final T getAndUpdate(UnaryOperator<T> updateFunction) {
+        final T res = value;
+        this.value = updateFunction.apply(value);
+        return res;
+    }
+
+    public final T updateAndGet(UnaryOperator<T> updateFunction) {
+        this.value = updateFunction.apply(value);
+        return value;
+    }
+
     /**
      * Set with the specified new value and returns <code>true</code> if <code>predicate</code> returns true.
      * Otherwise just return <code>false</code> without setting the value to new value.
@@ -99,17 +110,6 @@ public class Holder<T> {
         }
 
         return false;
-    }
-
-    public final T getAndUpdate(UnaryOperator<T> updateFunction) {
-        final T res = value;
-        this.value = updateFunction.apply(value);
-        return res;
-    }
-
-    public final T updateAndGet(UnaryOperator<T> updateFunction) {
-        this.value = updateFunction.apply(value);
-        return value;
     }
 
     public boolean isNotNull() {

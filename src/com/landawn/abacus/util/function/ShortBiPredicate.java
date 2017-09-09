@@ -14,7 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
-import com.landawn.abacus.util.N;
+import java.util.Objects;
 
 /**
  * 
@@ -24,56 +24,56 @@ import com.landawn.abacus.util.N;
  */
 public interface ShortBiPredicate {
 
-   static final ShortBiPredicate ALWAYS_TRUE = new ShortBiPredicate() {
+    static final ShortBiPredicate ALWAYS_TRUE = new ShortBiPredicate() {
         @Override
         public boolean test(short t, short u) {
             return true;
         }
     };
 
-   static final ShortBiPredicate ALWAYS_FALSE = new ShortBiPredicate() {
+    static final ShortBiPredicate ALWAYS_FALSE = new ShortBiPredicate() {
         @Override
         public boolean test(short t, short u) {
             return false;
         }
     };
 
-   static final ShortBiPredicate EQUAL = new ShortBiPredicate() {
+    static final ShortBiPredicate EQUAL = new ShortBiPredicate() {
         @Override
         public boolean test(short t, short u) {
             return t == u;
         }
     };
 
-   static final ShortBiPredicate NOT_EQUAL = new ShortBiPredicate() {
+    static final ShortBiPredicate NOT_EQUAL = new ShortBiPredicate() {
         @Override
         public boolean test(short t, short u) {
             return t != u;
         }
     };
 
-   static final ShortBiPredicate GREATER_THAN = new ShortBiPredicate() {
+    static final ShortBiPredicate GREATER_THAN = new ShortBiPredicate() {
         @Override
         public boolean test(short t, short u) {
             return t > u;
         }
     };
 
-   static final ShortBiPredicate GREATER_EQUAL = new ShortBiPredicate() {
+    static final ShortBiPredicate GREATER_EQUAL = new ShortBiPredicate() {
         @Override
         public boolean test(short t, short u) {
             return t >= u;
         }
     };
 
-   static final ShortBiPredicate LESS_THAN = new ShortBiPredicate() {
+    static final ShortBiPredicate LESS_THAN = new ShortBiPredicate() {
         @Override
         public boolean test(short t, short u) {
             return t < u;
         }
     };
 
-   static final ShortBiPredicate LESS_EQUAL = new ShortBiPredicate() {
+    static final ShortBiPredicate LESS_EQUAL = new ShortBiPredicate() {
         @Override
         public boolean test(short t, short u) {
             return t <= u;
@@ -87,13 +87,13 @@ public interface ShortBiPredicate {
     }
 
     default ShortBiPredicate and(ShortBiPredicate other) {
-        N.requireNonNull(other);
+        Objects.requireNonNull(other);
 
         return (t, u) -> test(t, u) && other.test(t, u);
     }
 
     default ShortBiPredicate or(ShortBiPredicate other) {
-        N.requireNonNull(other);
+        Objects.requireNonNull(other);
 
         return (t, u) -> test(t, u) || other.test(t, u);
     }

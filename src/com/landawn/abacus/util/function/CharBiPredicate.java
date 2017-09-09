@@ -14,7 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
-import com.landawn.abacus.util.N;
+import java.util.Objects;
 
 /**
  * 
@@ -24,56 +24,56 @@ import com.landawn.abacus.util.N;
  */
 public interface CharBiPredicate {
 
-   static final CharBiPredicate ALWAYS_TRUE = new CharBiPredicate() {
+    static final CharBiPredicate ALWAYS_TRUE = new CharBiPredicate() {
         @Override
         public boolean test(char t, char u) {
             return true;
         }
     };
 
-   static final CharBiPredicate ALWAYS_FALSE = new CharBiPredicate() {
+    static final CharBiPredicate ALWAYS_FALSE = new CharBiPredicate() {
         @Override
         public boolean test(char t, char u) {
             return false;
         }
     };
 
-   static final CharBiPredicate EQUAL = new CharBiPredicate() {
+    static final CharBiPredicate EQUAL = new CharBiPredicate() {
         @Override
         public boolean test(char t, char u) {
             return t == u;
         }
     };
 
-   static final CharBiPredicate NOT_EQUAL = new CharBiPredicate() {
+    static final CharBiPredicate NOT_EQUAL = new CharBiPredicate() {
         @Override
         public boolean test(char t, char u) {
             return t != u;
         }
     };
 
-   static final CharBiPredicate GREATER_THAN = new CharBiPredicate() {
+    static final CharBiPredicate GREATER_THAN = new CharBiPredicate() {
         @Override
         public boolean test(char t, char u) {
             return t > u;
         }
     };
 
-   static final CharBiPredicate GREATER_EQUAL = new CharBiPredicate() {
+    static final CharBiPredicate GREATER_EQUAL = new CharBiPredicate() {
         @Override
         public boolean test(char t, char u) {
             return t >= u;
         }
     };
 
-   static final CharBiPredicate LESS_THAN = new CharBiPredicate() {
+    static final CharBiPredicate LESS_THAN = new CharBiPredicate() {
         @Override
         public boolean test(char t, char u) {
             return t < u;
         }
     };
 
-   static final CharBiPredicate LESS_EQUAL = new CharBiPredicate() {
+    static final CharBiPredicate LESS_EQUAL = new CharBiPredicate() {
         @Override
         public boolean test(char t, char u) {
             return t <= u;
@@ -87,13 +87,13 @@ public interface CharBiPredicate {
     }
 
     default CharBiPredicate and(CharBiPredicate other) {
-        N.requireNonNull(other);
+        Objects.requireNonNull(other);
 
         return (t, u) -> test(t, u) && other.test(t, u);
     }
 
     default CharBiPredicate or(CharBiPredicate other) {
-        N.requireNonNull(other);
+        Objects.requireNonNull(other);
 
         return (t, u) -> test(t, u) || other.test(t, u);
     }

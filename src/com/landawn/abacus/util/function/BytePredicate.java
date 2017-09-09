@@ -3,60 +3,62 @@
  */
 package com.landawn.abacus.util.function;
 
+import java.util.Objects;
+
 import com.landawn.abacus.util.N;
 
 public interface BytePredicate {
 
-   static final BytePredicate ALWAYS_TRUE = new BytePredicate() {
+    static final BytePredicate ALWAYS_TRUE = new BytePredicate() {
         @Override
         public boolean test(byte value) {
             return true;
         }
     };
 
-   static final BytePredicate ALWAYS_FALSE = new BytePredicate() {
+    static final BytePredicate ALWAYS_FALSE = new BytePredicate() {
         @Override
         public boolean test(byte value) {
             return false;
         }
     };
 
-   static final BytePredicate IS_ZERO = new BytePredicate() {
+    static final BytePredicate IS_ZERO = new BytePredicate() {
         @Override
         public boolean test(byte value) {
             return value == 0;
         }
     };
 
-   static final BytePredicate NOT_ZERO = new BytePredicate() {
+    static final BytePredicate NOT_ZERO = new BytePredicate() {
         @Override
         public boolean test(byte value) {
             return value != 0;
         }
     };
 
-   static final BytePredicate IS_POSITIVE = new BytePredicate() {
+    static final BytePredicate IS_POSITIVE = new BytePredicate() {
         @Override
         public boolean test(byte value) {
             return value > 0;
         }
     };
 
-   static final BytePredicate NOT_POSITIVE = new BytePredicate() {
+    static final BytePredicate NOT_POSITIVE = new BytePredicate() {
         @Override
         public boolean test(byte value) {
             return value <= 0;
         }
     };
 
-   static final BytePredicate IS_NEGATIVE = new BytePredicate() {
+    static final BytePredicate IS_NEGATIVE = new BytePredicate() {
         @Override
         public boolean test(byte value) {
             return value < 0;
         }
     };
 
-   static final BytePredicate NOT_NEGATIVE = new BytePredicate() {
+    static final BytePredicate NOT_NEGATIVE = new BytePredicate() {
         @Override
         public boolean test(byte value) {
             return value >= 0;
@@ -70,13 +72,13 @@ public interface BytePredicate {
     }
 
     default BytePredicate and(BytePredicate other) {
-        N.requireNonNull(other);
+        Objects.requireNonNull(other);
 
         return (t) -> test(t) && other.test(t);
     }
 
     default BytePredicate or(BytePredicate other) {
-        N.requireNonNull(other);
+        Objects.requireNonNull(other);
 
         return (t) -> test(t) || other.test(t);
     }

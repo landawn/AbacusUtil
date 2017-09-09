@@ -14,9 +14,8 @@
 
 package com.landawn.abacus.util.function;
 
+import java.util.Objects;
 import java.util.function.Function;
-
-import com.landawn.abacus.util.N;
 
 /**
  * 
@@ -25,7 +24,7 @@ import com.landawn.abacus.util.N;
  * @author Haiyang Li
  */
 public interface ByteFunction<R> {
-   static final ByteFunction<Byte> BOX = new ByteFunction<Byte>() {
+    static final ByteFunction<Byte> BOX = new ByteFunction<Byte>() {
         @Override
         public Byte apply(byte value) {
             return value;
@@ -35,7 +34,7 @@ public interface ByteFunction<R> {
     R apply(byte value);
 
     default <V> ByteFunction<V> andThen(Function<? super R, ? extends V> after) {
-        N.requireNonNull(after);
+        Objects.requireNonNull(after);
 
         return t -> after.apply(apply(t));
     }

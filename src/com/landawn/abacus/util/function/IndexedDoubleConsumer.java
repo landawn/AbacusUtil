@@ -14,7 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
-import com.landawn.abacus.util.N;
+import java.util.Objects;
 
 /**
  * 
@@ -27,7 +27,7 @@ public interface IndexedDoubleConsumer {
     void accept(int idx, double e);
 
     default IndexedDoubleConsumer andThen(IndexedDoubleConsumer after) {
-        N.requireNonNull(after);
+        Objects.requireNonNull(after);
 
         return (idx, e) -> {
             accept(idx, e);

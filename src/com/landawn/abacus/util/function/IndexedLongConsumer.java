@@ -14,7 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
-import com.landawn.abacus.util.N;
+import java.util.Objects;
 
 /**
  * 
@@ -27,7 +27,7 @@ public interface IndexedLongConsumer {
     void accept(int idx, long e);
 
     default IndexedLongConsumer andThen(IndexedLongConsumer after) {
-        N.requireNonNull(after);
+        Objects.requireNonNull(after);
 
         return (idx, e) -> {
             accept(idx, e);

@@ -14,7 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
-import com.landawn.abacus.util.N;
+import java.util.Objects;
 
 /**
  * 
@@ -27,7 +27,7 @@ public interface IndexedBiConsumer<U, T> {
     void accept(U u, int idx, T e);
 
     default IndexedBiConsumer<U, T> andThen(IndexedBiConsumer<? super U, ? super T> after) {
-        N.requireNonNull(after);
+        Objects.requireNonNull(after);
 
         return (u, idx, e) -> {
             accept(u, idx, e);

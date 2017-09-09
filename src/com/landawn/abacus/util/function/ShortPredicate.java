@@ -14,6 +14,8 @@
 
 package com.landawn.abacus.util.function;
 
+import java.util.Objects;
+
 import com.landawn.abacus.util.N;
 
 /**
@@ -24,56 +26,56 @@ import com.landawn.abacus.util.N;
  */
 public interface ShortPredicate {
 
-   static final ShortPredicate ALWAYS_TRUE = new ShortPredicate() {
+    static final ShortPredicate ALWAYS_TRUE = new ShortPredicate() {
         @Override
         public boolean test(short value) {
             return true;
         }
     };
 
-   static final ShortPredicate ALWAYS_FALSE = new ShortPredicate() {
+    static final ShortPredicate ALWAYS_FALSE = new ShortPredicate() {
         @Override
         public boolean test(short value) {
             return false;
         }
     };
 
-   static final ShortPredicate IS_ZERO = new ShortPredicate() {
+    static final ShortPredicate IS_ZERO = new ShortPredicate() {
         @Override
         public boolean test(short value) {
             return value == 0;
         }
     };
 
-   static final ShortPredicate NOT_ZERO = new ShortPredicate() {
+    static final ShortPredicate NOT_ZERO = new ShortPredicate() {
         @Override
         public boolean test(short value) {
             return value != 0;
         }
     };
 
-   static final ShortPredicate IS_POSITIVE = new ShortPredicate() {
+    static final ShortPredicate IS_POSITIVE = new ShortPredicate() {
         @Override
         public boolean test(short value) {
             return value > 0;
         }
     };
 
-   static final ShortPredicate NOT_POSITIVE = new ShortPredicate() {
+    static final ShortPredicate NOT_POSITIVE = new ShortPredicate() {
         @Override
         public boolean test(short value) {
             return value <= 0;
         }
     };
 
-   static final ShortPredicate IS_NEGATIVE = new ShortPredicate() {
+    static final ShortPredicate IS_NEGATIVE = new ShortPredicate() {
         @Override
         public boolean test(short value) {
             return value < 0;
         }
     };
 
-   static final ShortPredicate NOT_NEGATIVE = new ShortPredicate() {
+    static final ShortPredicate NOT_NEGATIVE = new ShortPredicate() {
         @Override
         public boolean test(short value) {
             return value >= 0;
@@ -87,13 +89,13 @@ public interface ShortPredicate {
     }
 
     default ShortPredicate and(ShortPredicate other) {
-        N.requireNonNull(other);
+        Objects.requireNonNull(other);
 
         return (t) -> test(t) && other.test(t);
     }
 
     default ShortPredicate or(ShortPredicate other) {
-        N.requireNonNull(other);
+        Objects.requireNonNull(other);
 
         return (t) -> test(t) || other.test(t);
     }

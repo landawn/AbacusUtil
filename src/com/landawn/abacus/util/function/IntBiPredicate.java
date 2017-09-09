@@ -14,7 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
-import com.landawn.abacus.util.N;
+import java.util.Objects;
 
 /**
  * 
@@ -24,56 +24,56 @@ import com.landawn.abacus.util.N;
  */
 public interface IntBiPredicate {
 
-   static final IntBiPredicate ALWAYS_TRUE = new IntBiPredicate() {
+    static final IntBiPredicate ALWAYS_TRUE = new IntBiPredicate() {
         @Override
         public boolean test(int t, int u) {
             return true;
         }
     };
 
-   static final IntBiPredicate ALWAYS_FALSE = new IntBiPredicate() {
+    static final IntBiPredicate ALWAYS_FALSE = new IntBiPredicate() {
         @Override
         public boolean test(int t, int u) {
             return false;
         }
     };
 
-   static final IntBiPredicate EQUAL = new IntBiPredicate() {
+    static final IntBiPredicate EQUAL = new IntBiPredicate() {
         @Override
         public boolean test(int t, int u) {
             return t == u;
         }
     };
 
-   static final IntBiPredicate NOT_EQUAL = new IntBiPredicate() {
+    static final IntBiPredicate NOT_EQUAL = new IntBiPredicate() {
         @Override
         public boolean test(int t, int u) {
             return t != u;
         }
     };
 
-   static final IntBiPredicate GREATER_THAN = new IntBiPredicate() {
+    static final IntBiPredicate GREATER_THAN = new IntBiPredicate() {
         @Override
         public boolean test(int t, int u) {
             return t > u;
         }
     };
 
-   static final IntBiPredicate GREATER_EQUAL = new IntBiPredicate() {
+    static final IntBiPredicate GREATER_EQUAL = new IntBiPredicate() {
         @Override
         public boolean test(int t, int u) {
             return t >= u;
         }
     };
 
-   static final IntBiPredicate LESS_THAN = new IntBiPredicate() {
+    static final IntBiPredicate LESS_THAN = new IntBiPredicate() {
         @Override
         public boolean test(int t, int u) {
             return t < u;
         }
     };
 
-   static final IntBiPredicate LESS_EQUAL = new IntBiPredicate() {
+    static final IntBiPredicate LESS_EQUAL = new IntBiPredicate() {
         @Override
         public boolean test(int t, int u) {
             return t <= u;
@@ -87,13 +87,13 @@ public interface IntBiPredicate {
     }
 
     default IntBiPredicate and(IntBiPredicate other) {
-        N.requireNonNull(other);
+        Objects.requireNonNull(other);
 
         return (t, u) -> test(t, u) && other.test(t, u);
     }
 
     default IntBiPredicate or(IntBiPredicate other) {
-        N.requireNonNull(other);
+        Objects.requireNonNull(other);
 
         return (t, u) -> test(t, u) || other.test(t, u);
     }

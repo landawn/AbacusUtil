@@ -14,6 +14,8 @@
 
 package com.landawn.abacus.util.function;
 
+import java.util.Objects;
+
 import com.landawn.abacus.util.N;
 
 /**
@@ -24,56 +26,56 @@ import com.landawn.abacus.util.N;
  */
 public interface FloatPredicate {
 
-   static final FloatPredicate ALWAYS_TRUE = new FloatPredicate() {
+    static final FloatPredicate ALWAYS_TRUE = new FloatPredicate() {
         @Override
         public boolean test(float value) {
             return true;
         }
     };
 
-   static final FloatPredicate ALWAYS_FALSE = new FloatPredicate() {
+    static final FloatPredicate ALWAYS_FALSE = new FloatPredicate() {
         @Override
         public boolean test(float value) {
             return false;
         }
     };
 
-   static final FloatPredicate IS_ZERO = new FloatPredicate() {
+    static final FloatPredicate IS_ZERO = new FloatPredicate() {
         @Override
         public boolean test(float value) {
             return value == 0;
         }
     };
 
-   static final FloatPredicate NOT_ZERO = new FloatPredicate() {
+    static final FloatPredicate NOT_ZERO = new FloatPredicate() {
         @Override
         public boolean test(float value) {
             return value != 0;
         }
     };
 
-   static final FloatPredicate IS_POSITIVE = new FloatPredicate() {
+    static final FloatPredicate IS_POSITIVE = new FloatPredicate() {
         @Override
         public boolean test(float value) {
             return value > 0;
         }
     };
 
-   static final FloatPredicate NOT_POSITIVE = new FloatPredicate() {
+    static final FloatPredicate NOT_POSITIVE = new FloatPredicate() {
         @Override
         public boolean test(float value) {
             return value <= 0;
         }
     };
 
-   static final FloatPredicate IS_NEGATIVE = new FloatPredicate() {
+    static final FloatPredicate IS_NEGATIVE = new FloatPredicate() {
         @Override
         public boolean test(float value) {
             return value < 0;
         }
     };
 
-   static final FloatPredicate NOT_NEGATIVE = new FloatPredicate() {
+    static final FloatPredicate NOT_NEGATIVE = new FloatPredicate() {
         @Override
         public boolean test(float value) {
             return value >= 0;
@@ -87,13 +89,13 @@ public interface FloatPredicate {
     }
 
     default FloatPredicate and(FloatPredicate other) {
-        N.requireNonNull(other);
+        Objects.requireNonNull(other);
 
         return (t) -> test(t) && other.test(t);
     }
 
     default FloatPredicate or(FloatPredicate other) {
-        N.requireNonNull(other);
+        Objects.requireNonNull(other);
 
         return (t) -> test(t) || other.test(t);
     }

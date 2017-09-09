@@ -14,7 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
-import com.landawn.abacus.util.N;
+import java.util.Objects;
 
 /**
  * 
@@ -24,28 +24,28 @@ import com.landawn.abacus.util.N;
  */
 public interface BooleanPredicate {
 
-   static final BooleanPredicate ALWAYS_TRUE = new BooleanPredicate() {
+    static final BooleanPredicate ALWAYS_TRUE = new BooleanPredicate() {
         @Override
         public boolean test(boolean value) {
             return true;
         }
     };
 
-   static final BooleanPredicate ALWAYS_FALSE = new BooleanPredicate() {
+    static final BooleanPredicate ALWAYS_FALSE = new BooleanPredicate() {
         @Override
         public boolean test(boolean value) {
             return false;
         }
     };
 
-   static final BooleanPredicate IS_TRUE = new BooleanPredicate() {
+    static final BooleanPredicate IS_TRUE = new BooleanPredicate() {
         @Override
         public boolean test(boolean value) {
             return value == true;
         }
     };
 
-   static final BooleanPredicate IS_FALSE = new BooleanPredicate() {
+    static final BooleanPredicate IS_FALSE = new BooleanPredicate() {
         @Override
         public boolean test(boolean value) {
             return value == false;
@@ -59,13 +59,13 @@ public interface BooleanPredicate {
     }
 
     default BooleanPredicate and(BooleanPredicate other) {
-        N.requireNonNull(other);
+        Objects.requireNonNull(other);
 
         return (t) -> test(t) && other.test(t);
     }
 
     default BooleanPredicate or(BooleanPredicate other) {
-        N.requireNonNull(other);
+        Objects.requireNonNull(other);
 
         return (t) -> test(t) || other.test(t);
     }

@@ -14,9 +14,8 @@
 
 package com.landawn.abacus.util.function;
 
+import java.util.Objects;
 import java.util.function.Function;
-
-import com.landawn.abacus.util.N;
 
 /**
  * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
@@ -25,7 +24,7 @@ import com.landawn.abacus.util.N;
  * @author Haiyang Li
  */
 public interface DoubleFunction<R> extends java.util.function.DoubleFunction<R> {
-   static final DoubleFunction<Double> BOX = new DoubleFunction<Double>() {
+    static final DoubleFunction<Double> BOX = new DoubleFunction<Double>() {
         @Override
         public Double apply(double value) {
             return value;
@@ -36,7 +35,7 @@ public interface DoubleFunction<R> extends java.util.function.DoubleFunction<R> 
     R apply(double value);
 
     default <V> DoubleFunction<V> andThen(Function<? super R, ? extends V> after) {
-        N.requireNonNull(after);
+        Objects.requireNonNull(after);
 
         return t -> after.apply(apply(t));
     }

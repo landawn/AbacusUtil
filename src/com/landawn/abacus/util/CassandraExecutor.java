@@ -66,10 +66,10 @@ import com.landawn.abacus.pool.KeyedObjectPool;
 import com.landawn.abacus.pool.PoolFactory;
 import com.landawn.abacus.pool.Wrapper;
 import com.landawn.abacus.type.Type;
+import com.landawn.abacus.util.CQLBuilder.CP;
 import com.landawn.abacus.util.CQLBuilder.NE;
 import com.landawn.abacus.util.CQLBuilder.NE2;
 import com.landawn.abacus.util.CQLBuilder.NE3;
-import com.landawn.abacus.util.CQLBuilder.CP;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.stream.Stream;
 
@@ -252,38 +252,28 @@ public final class CassandraExecutor implements Closeable {
      * @return
      */
     public static <T> List<T> toList(final Class<T> targetClass, final ResultSet resultSet) {
+        if (targetClass.isAssignableFrom(Row.class)) {
+            return (List<T>) resultSet.all();
+        }
+
         final Type<T> type = N.typeOf(targetClass);
         final ColumnDefinitions columnDefinitions = resultSet.getColumnDefinitions();
+        final List<Row> rowList = resultSet.all();
         final List<Object> resultList = new ArrayList<>();
 
-        if (targetClass.isAssignableFrom(Row.class)) {
-            for (Row row : resultSet) {
-                resultList.add(row);
-            }
-        } else if (type.isEntity() || type.isMap()) {
-            for (Row row : resultSet) {
+        if (type.isEntity() || type.isMap()) {
+            for (Row row : rowList) {
                 resultList.add(toEntity(targetClass, row, columnDefinitions));
             }
         } else if (columnDefinitions.size() == 1) {
-            final Iterator<Row> it = resultSet.iterator();
-            Row first = null;
-
-            if (it.hasNext()) {
-                first = it.next();
-            }
-
-            if (first != null) {
-                if (first.getObject(0) != null && targetClass.isAssignableFrom(first.getObject(0).getClass())) {
-                    resultList.add(first.getObject(0));
-
-                    while (it.hasNext()) {
-                        resultList.add(it.next().getObject(0));
+            if (rowList.size() > 0) {
+                if (rowList.get(0).getObject(0) != null && targetClass.isAssignableFrom(rowList.get(0).getObject(0).getClass())) {
+                    for (Row row : rowList) {
+                        resultList.add(row.getObject(0));
                     }
                 } else {
-                    resultList.add(N.as(targetClass, first.getObject(0)));
-
-                    while (it.hasNext()) {
-                        resultList.add(N.as(targetClass, it.next().getObject(0)));
+                    for (Row row : rowList) {
+                        resultList.add(N.as(targetClass, row.getObject(0)));
                     }
                 }
             }

@@ -407,6 +407,10 @@ public final class DynamoDBExecutor implements Closeable {
     }
 
     private static <T> T toValue(final Type<T> type, final Class<T> targetClass, final Map<String, AttributeValue> item) {
+        if (item == null) {
+            return null;
+        }
+
         if (type.isMap()) {
             final Map<String, Object> map = (Map<String, Object>) N.newInstance(targetClass);
 
@@ -453,7 +457,7 @@ public final class DynamoDBExecutor implements Closeable {
     }
 
     static <T> T toValue(AttributeValue x) {
-        if (x == null || x.isNULL()) {
+        if (x == null || (x.getNULL() != null && x.isNULL())) {
             return null;
         }
 
@@ -472,9 +476,40 @@ public final class DynamoDBExecutor implements Closeable {
         } else if (N.notNullOrEmpty(x.getBS())) {
             return (T) x.getBS();
         } else if (N.notNullOrEmpty(x.getL())) {
-            return (T) x.getL();
+            final List<AttributeValue> attrVals = x.getL();
+            final List<Object> tmp = new ArrayList<>(attrVals.size());
+
+            for (AttributeValue attrVal : attrVals) {
+                tmp.add(toValue(attrVal));
+            }
+
+            return (T) tmp;
         } else if (N.notNullOrEmpty(x.getM())) {
+            final Map<String, AttributeValue> attrMap = x.getM();
+            final Map<String, Object> tmp = attrMap instanceof HashMap ? new HashMap<>(N.initHashCapacity(attrMap.size()))
+                    : new LinkedHashMap<>(N.initHashCapacity(attrMap.size()));
+
+            for (Map.Entry<String, AttributeValue> entry : attrMap.entrySet()) {
+                tmp.put(entry.getKey(), toValue(entry.getValue()));
+            }
+
+            return (T) tmp;
+        } else if (x.getS() != null) {
+            return (T) x.getS();
+        } else if (x.getN() != null) {
+            return (T) x.getN();
+        } else if (x.getSS() != null) {
+            return (T) x.getSS();
+        } else if (x.getNS() != null) {
+            return (T) x.getNS();
+        } else if (x.getBS() != null) {
+            return (T) x.getBS();
+        } else if (x.getL() != null) {
+            return (T) x.getL();
+        } else if (x.getM() != null) {
             return (T) x.getM();
+        } else if (x.getNULL() != null) {
+            return (T) x.getNULL();
         } else {
             throw new AbacusException("Unsupported Attribute type: " + x.toString());
         }
@@ -939,48 +974,169 @@ public final class DynamoDBExecutor implements Closeable {
         return (List) find(Map.class, queryRequest);
     }
 
+    /**
+     * 
+     * @param targetClass <code>Map</code> or entity class with getter/setter method.
+     * @param queryRequest
+     * @return
+     */
     public <T> List<T> find(final Class<T> targetClass, final QueryRequest queryRequest) {
-        return toList(targetClass, dynamoDB.query(queryRequest));
+        return find(targetClass, queryRequest, 0, Integer.MAX_VALUE);
     }
 
+    /**
+     * 
+     * @param targetClass <code>Map</code> or entity class with getter/setter method.
+     * @param queryRequest
+     * @param pageOffset
+     * @param pageCount
+     * @return
+     * @see <a href="http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.html#Query.Pagination">Query.Pagination</a>
+     */
+    public <T> List<T> find(final Class<T> targetClass, final QueryRequest queryRequest, int pageOffset, int pageCount) {
+        N.checkArgument(pageOffset >= 0 && pageCount >= 0, "'pageOffset' and 'pageCount' can't be negative");
+
+        final List<T> res = new ArrayList<>();
+        QueryRequest newQueryRequest = queryRequest;
+        QueryResult queryResult = null;
+
+        do {
+            if (queryResult != null && N.notNullOrEmpty(queryResult.getLastEvaluatedKey())) {
+                if (newQueryRequest == queryRequest) {
+                    newQueryRequest = queryRequest.clone();
+                }
+
+                newQueryRequest.setExclusiveStartKey(queryResult.getLastEvaluatedKey());
+            }
+
+            queryResult = dynamoDB.query(newQueryRequest);
+        } while (pageOffset-- > 0 && N.notNullOrEmpty(queryResult.getItems()) && N.notNullOrEmpty(queryResult.getLastEvaluatedKey()));
+
+        if (pageOffset >= 0 || pageCount-- <= 0) {
+            return res;
+        } else {
+            res.addAll(toList(targetClass, queryResult));
+        }
+
+        while (pageCount-- > 0 && N.notNullOrEmpty(queryResult.getLastEvaluatedKey())) {
+            if (newQueryRequest == queryRequest) {
+                newQueryRequest = queryRequest.clone();
+            }
+
+            newQueryRequest.setExclusiveStartKey(queryResult.getLastEvaluatedKey());
+            queryResult = dynamoDB.query(newQueryRequest);
+            res.addAll(toList(targetClass, queryResult));
+        }
+
+        return res;
+    }
+
+    /**
+     * 
+     * @param queryRequest
+     * @return
+     * @see #find(QueryRequest)
+     */
     public DataSet query(final QueryRequest queryRequest) {
         return query(Map.class, queryRequest);
     }
 
+    /**
+     * 
+     * @param targetClass
+     * @param queryRequest
+     * @return
+     * @see #find(Class, QueryRequest)
+     */
     public DataSet query(final Class<?> targetClass, final QueryRequest queryRequest) {
-        return N.newDataSet(find(targetClass, queryRequest));
+        return query(targetClass, queryRequest, 0, Integer.MAX_VALUE);
+    }
+
+    /**
+     * 
+     * @param targetClass
+     * @param queryRequest
+     * @param pageOffset
+     * @param pageCount
+     * @return
+     * @see #find(Class, QueryRequest, int, int)
+     */
+    public DataSet query(final Class<?> targetClass, final QueryRequest queryRequest, int pageOffset, int pageCount) {
+        return N.newDataSet(find(targetClass, queryRequest, pageOffset, pageCount));
     }
 
     public DataSet scan(final String tableName, final List<String> attributesToGet) {
-        return extractData(dynamoDB.scan(tableName, attributesToGet));
+        return scan(new ScanRequest().withTableName(tableName).withAttributesToGet(attributesToGet));
     }
 
     public DataSet scan(final String tableName, final Map<String, Condition> scanFilter) {
-        return extractData(dynamoDB.scan(tableName, scanFilter));
+        return scan(new ScanRequest().withTableName(tableName).withScanFilter(scanFilter));
     }
 
     public DataSet scan(final String tableName, final List<String> attributesToGet, final Map<String, Condition> scanFilter) {
-        return extractData(dynamoDB.scan(tableName, attributesToGet, scanFilter));
+        return scan(new ScanRequest().withTableName(tableName).withAttributesToGet(attributesToGet).withScanFilter(scanFilter));
     }
 
     public DataSet scan(final ScanRequest scanRequest) {
-        return extractData(dynamoDB.scan(scanRequest));
+        return scan(scanRequest, 0, Integer.MAX_VALUE);
+    }
+
+    public DataSet scan(final ScanRequest scanRequest, int pageOffset, int pageCount) {
+        return N.newDataSet(scan(Map.class, scanRequest, pageOffset, pageCount));
     }
 
     public <T> List<T> scan(final Class<T> targetClass, final String tableName, final List<String> attributesToGet) {
-        return toList(targetClass, dynamoDB.scan(tableName, attributesToGet).getItems());
+        return scan(targetClass, new ScanRequest().withTableName(tableName).withAttributesToGet(attributesToGet));
     }
 
     public <T> List<T> scan(final Class<T> targetClass, final String tableName, final Map<String, Condition> scanFilter) {
-        return toList(targetClass, dynamoDB.scan(tableName, scanFilter).getItems());
+        return scan(targetClass, new ScanRequest().withTableName(tableName).withScanFilter(scanFilter));
     }
 
     public <T> List<T> scan(final Class<T> targetClass, final String tableName, final List<String> attributesToGet, final Map<String, Condition> scanFilter) {
-        return toList(targetClass, dynamoDB.scan(tableName, attributesToGet, scanFilter).getItems());
+        return scan(targetClass, new ScanRequest().withTableName(tableName).withAttributesToGet(attributesToGet).withScanFilter(scanFilter));
     }
 
     public <T> List<T> scan(final Class<T> targetClass, final ScanRequest scanRequest) {
-        return toList(targetClass, dynamoDB.scan(scanRequest).getItems());
+        return scan(targetClass, scanRequest, 0, Integer.MAX_VALUE);
+    }
+
+    public <T> List<T> scan(final Class<T> targetClass, final ScanRequest scanRequest, int pageOffset, int pageCount) {
+        N.checkArgument(pageOffset >= 0 && pageCount >= 0, "'pageOffset' and 'pageCount' can't be negative");
+
+        final List<T> res = new ArrayList<>();
+        ScanRequest newQueryRequest = scanRequest;
+        ScanResult queryResult = null;
+
+        do {
+            if (queryResult != null && N.notNullOrEmpty(queryResult.getLastEvaluatedKey())) {
+                if (newQueryRequest == scanRequest) {
+                    newQueryRequest = scanRequest.clone();
+                }
+
+                newQueryRequest.setExclusiveStartKey(queryResult.getLastEvaluatedKey());
+            }
+
+            queryResult = dynamoDB.scan(newQueryRequest);
+        } while (pageOffset-- > 0 && N.notNullOrEmpty(queryResult.getItems()) && N.notNullOrEmpty(queryResult.getLastEvaluatedKey()));
+
+        if (pageOffset >= 0 || pageCount-- <= 0) {
+            return res;
+        } else {
+            res.addAll(toList(targetClass, queryResult));
+        }
+
+        while (pageCount-- > 0 && N.notNullOrEmpty(queryResult.getLastEvaluatedKey())) {
+            if (newQueryRequest == scanRequest) {
+                newQueryRequest = scanRequest.clone();
+            }
+
+            newQueryRequest.setExclusiveStartKey(queryResult.getLastEvaluatedKey());
+            queryResult = dynamoDB.scan(newQueryRequest);
+            res.addAll(toList(targetClass, queryResult));
+        }
+
+        return res;
     }
 
     @Override

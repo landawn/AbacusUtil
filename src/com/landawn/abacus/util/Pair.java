@@ -127,33 +127,6 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
         return this;
     }
 
-    public boolean setLeftIf(L newLeft, BiPredicate<? super Pair<L, R>, ? super L> predicate) {
-        if (predicate.test(this, newLeft)) {
-            setLeft(newLeft);
-            return true;
-        }
-
-        return false;
-    }
-
-    public boolean setRightIf(R newRight, BiPredicate<? super Pair<L, R>, ? super R> predicate) {
-        if (predicate.test(this, newRight)) {
-            setRight(newRight);
-            return true;
-        }
-
-        return false;
-    }
-
-    public boolean setIf(L newLeft, R newRight, TriPredicate<? super Pair<L, R>, ? super L, ? super R> predicate) {
-        if (predicate.test(this, newLeft, newRight)) {
-            set(newLeft, newRight);
-            return true;
-        }
-
-        return false;
-    }
-
     public L getAndSetLeft(L newLeft) {
         final L res = left;
         left = newLeft;
@@ -176,6 +149,65 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
         return right;
     }
 
+    /**
+     * Set to the specified <code>newLeft</code> and returns <code>true</code>
+     * if <code>predicate</code> returns true. Otherwise returns
+     * <code>false</code> without setting the value to new value.
+     * 
+     * @param newLeft
+     * @param predicate - the first parameter is current pair, the second
+     *        parameter is the <code>newLeft</code>
+     * @return
+     */
+    public boolean setLeftIf(final L newLeft, BiPredicate<? super Pair<L, R>, ? super L> predicate) {
+        if (predicate.test(this, newLeft)) {
+            this.left = newLeft;
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Set to the specified <code>newRight</code> and returns <code>true</code>
+     * if <code>predicate</code> returns true. Otherwise returns
+     * <code>false</code> without setting the value to new value.
+     * 
+     * @param newRight
+     * @param predicate - the first parameter is current pair, the second
+     *        parameter is the <code>newRight</code>
+     * @return
+     */
+    public boolean setRightIf(final R newRight, BiPredicate<? super Pair<L, R>, ? super R> predicate) {
+        if (predicate.test(this, newRight)) {
+            this.right = newRight;
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Set to the specified <code>newLeft</code> and <code>newRight</code> and returns <code>true</code>
+     * if <code>predicate</code> returns true. Otherwise returns
+     * <code>false</code> without setting the left/right to new values.
+     * 
+     * @param newLeft
+     * @param newRight
+     * @param predicate - the first parameter is current pair, the second
+     *        parameter is the <code>newLeft</code>, the third parameter is the <code>newRight</code>.
+     * @return
+     */
+    public boolean setIf(final L newLeft, final R newRight, TriPredicate<? super Pair<L, R>, ? super L, ? super R> predicate) {
+        if (predicate.test(this, newLeft, newRight)) {
+            this.left = newLeft;
+            this.right = newRight;
+            return true;
+        }
+
+        return false;
+    }
+
     @Override
     public L getKey() {
         return left;
@@ -194,9 +226,24 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
         return oldValue;
     }
 
-    public boolean setValueIf(R newRight, BiPredicate<? super Pair<L, R>, ? super R> predicate) {
-        return setRightIf(newRight, predicate);
-    }
+    //    public R getAndSetValue(R newRight) {
+    //        return getAndSetRight(newRight);
+    //    }
+    //
+    //    public R setAndGetValue(R newRight) {
+    //        return setAndGetRight(newRight);
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * @param newRight
+    //     * @param predicate
+    //     * @return
+    //     * @see #setRightIf(Object, BiPredicate)
+    //     */
+    //    public boolean setValueIf(final R newRight, BiPredicate<? super Pair<L, R>, ? super R> predicate) {
+    //        return setRightIf(newRight, predicate);
+    //    }
 
     /**
      * 

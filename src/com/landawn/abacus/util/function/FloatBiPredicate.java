@@ -14,7 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
-import com.landawn.abacus.util.N;
+import java.util.Objects;
 
 /**
  * 
@@ -24,56 +24,56 @@ import com.landawn.abacus.util.N;
  */
 public interface FloatBiPredicate {
 
-   static final FloatBiPredicate ALWAYS_TRUE = new FloatBiPredicate() {
+    static final FloatBiPredicate ALWAYS_TRUE = new FloatBiPredicate() {
         @Override
         public boolean test(float t, float u) {
             return true;
         }
     };
 
-   static final FloatBiPredicate ALWAYS_FALSE = new FloatBiPredicate() {
+    static final FloatBiPredicate ALWAYS_FALSE = new FloatBiPredicate() {
         @Override
         public boolean test(float t, float u) {
             return false;
         }
     };
 
-   static final FloatBiPredicate EQUAL = new FloatBiPredicate() {
+    static final FloatBiPredicate EQUAL = new FloatBiPredicate() {
         @Override
         public boolean test(float t, float u) {
             return Float.compare(t, u) == 0;
         }
     };
 
-   static final FloatBiPredicate NOT_EQUAL = new FloatBiPredicate() {
+    static final FloatBiPredicate NOT_EQUAL = new FloatBiPredicate() {
         @Override
         public boolean test(float t, float u) {
             return Float.compare(t, u) != 0;
         }
     };
 
-   static final FloatBiPredicate GREATER_THAN = new FloatBiPredicate() {
+    static final FloatBiPredicate GREATER_THAN = new FloatBiPredicate() {
         @Override
         public boolean test(float t, float u) {
             return Float.compare(t, u) > 0;
         }
     };
 
-   static final FloatBiPredicate GREATER_EQUAL = new FloatBiPredicate() {
+    static final FloatBiPredicate GREATER_EQUAL = new FloatBiPredicate() {
         @Override
         public boolean test(float t, float u) {
             return Float.compare(t, u) >= 0;
         }
     };
 
-   static final FloatBiPredicate LESS_THAN = new FloatBiPredicate() {
+    static final FloatBiPredicate LESS_THAN = new FloatBiPredicate() {
         @Override
         public boolean test(float t, float u) {
             return Float.compare(t, u) < 0;
         }
     };
 
-   static final FloatBiPredicate LESS_EQUAL = new FloatBiPredicate() {
+    static final FloatBiPredicate LESS_EQUAL = new FloatBiPredicate() {
         @Override
         public boolean test(float t, float u) {
             return Float.compare(t, u) <= 0;
@@ -87,13 +87,13 @@ public interface FloatBiPredicate {
     }
 
     default FloatBiPredicate and(FloatBiPredicate other) {
-        N.requireNonNull(other);
+        Objects.requireNonNull(other);
 
         return (t, u) -> test(t, u) && other.test(t, u);
     }
 
     default FloatBiPredicate or(FloatBiPredicate other) {
-        N.requireNonNull(other);
+        Objects.requireNonNull(other);
 
         return (t, u) -> test(t, u) || other.test(t, u);
     }

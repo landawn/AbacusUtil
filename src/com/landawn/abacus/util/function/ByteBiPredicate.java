@@ -14,7 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
-import com.landawn.abacus.util.N;
+import java.util.Objects;
 
 /**
  * 
@@ -24,56 +24,56 @@ import com.landawn.abacus.util.N;
  */
 public interface ByteBiPredicate {
 
-   static final ByteBiPredicate ALWAYS_TRUE = new ByteBiPredicate() {
+    static final ByteBiPredicate ALWAYS_TRUE = new ByteBiPredicate() {
         @Override
         public boolean test(byte t, byte u) {
             return true;
         }
     };
 
-   static final ByteBiPredicate ALWAYS_FALSE = new ByteBiPredicate() {
+    static final ByteBiPredicate ALWAYS_FALSE = new ByteBiPredicate() {
         @Override
         public boolean test(byte t, byte u) {
             return false;
         }
     };
 
-   static final ByteBiPredicate EQUAL = new ByteBiPredicate() {
+    static final ByteBiPredicate EQUAL = new ByteBiPredicate() {
         @Override
         public boolean test(byte t, byte u) {
             return t == u;
         }
     };
 
-   static final ByteBiPredicate NOT_EQUAL = new ByteBiPredicate() {
+    static final ByteBiPredicate NOT_EQUAL = new ByteBiPredicate() {
         @Override
         public boolean test(byte t, byte u) {
             return t != u;
         }
     };
 
-   static final ByteBiPredicate GREATER_THAN = new ByteBiPredicate() {
+    static final ByteBiPredicate GREATER_THAN = new ByteBiPredicate() {
         @Override
         public boolean test(byte t, byte u) {
             return t > u;
         }
     };
 
-   static final ByteBiPredicate GREATER_EQUAL = new ByteBiPredicate() {
+    static final ByteBiPredicate GREATER_EQUAL = new ByteBiPredicate() {
         @Override
         public boolean test(byte t, byte u) {
             return t >= u;
         }
     };
 
-   static final ByteBiPredicate LESS_THAN = new ByteBiPredicate() {
+    static final ByteBiPredicate LESS_THAN = new ByteBiPredicate() {
         @Override
         public boolean test(byte t, byte u) {
             return t < u;
         }
     };
 
-   static final ByteBiPredicate LESS_EQUAL = new ByteBiPredicate() {
+    static final ByteBiPredicate LESS_EQUAL = new ByteBiPredicate() {
         @Override
         public boolean test(byte t, byte u) {
             return t <= u;
@@ -87,13 +87,13 @@ public interface ByteBiPredicate {
     }
 
     default ByteBiPredicate and(ByteBiPredicate other) {
-        N.requireNonNull(other);
+        Objects.requireNonNull(other);
 
         return (t, u) -> test(t, u) && other.test(t, u);
     }
 
     default ByteBiPredicate or(ByteBiPredicate other) {
-        N.requireNonNull(other);
+        Objects.requireNonNull(other);
 
         return (t, u) -> test(t, u) || other.test(t, u);
     }

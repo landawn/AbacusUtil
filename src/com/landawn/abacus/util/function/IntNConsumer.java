@@ -14,7 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
-import com.landawn.abacus.util.N;
+import java.util.Objects;
 
 /**
  * 
@@ -27,7 +27,7 @@ public interface IntNConsumer {
     void accept(int... args);
 
     default IntNConsumer andThen(IntNConsumer after) {
-        N.requireNonNull(after);
+        Objects.requireNonNull(after);
 
         return args -> {
             accept(args);

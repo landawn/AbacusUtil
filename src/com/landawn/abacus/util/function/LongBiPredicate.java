@@ -14,7 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
-import com.landawn.abacus.util.N;
+import java.util.Objects;
 
 /**
  * 
@@ -24,56 +24,56 @@ import com.landawn.abacus.util.N;
  */
 public interface LongBiPredicate {
 
-   static final LongBiPredicate ALWAYS_TRUE = new LongBiPredicate() {
+    static final LongBiPredicate ALWAYS_TRUE = new LongBiPredicate() {
         @Override
         public boolean test(long t, long u) {
             return true;
         }
     };
 
-   static final LongBiPredicate ALWAYS_FALSE = new LongBiPredicate() {
+    static final LongBiPredicate ALWAYS_FALSE = new LongBiPredicate() {
         @Override
         public boolean test(long t, long u) {
             return false;
         }
     };
 
-   static final LongBiPredicate EQUAL = new LongBiPredicate() {
+    static final LongBiPredicate EQUAL = new LongBiPredicate() {
         @Override
         public boolean test(long t, long u) {
             return t == u;
         }
     };
 
-   static final LongBiPredicate NOT_EQUAL = new LongBiPredicate() {
+    static final LongBiPredicate NOT_EQUAL = new LongBiPredicate() {
         @Override
         public boolean test(long t, long u) {
             return t != u;
         }
     };
 
-   static final LongBiPredicate GREATER_THAN = new LongBiPredicate() {
+    static final LongBiPredicate GREATER_THAN = new LongBiPredicate() {
         @Override
         public boolean test(long t, long u) {
             return t > u;
         }
     };
 
-   static final LongBiPredicate GREATER_EQUAL = new LongBiPredicate() {
+    static final LongBiPredicate GREATER_EQUAL = new LongBiPredicate() {
         @Override
         public boolean test(long t, long u) {
             return t >= u;
         }
     };
 
-   static final LongBiPredicate LESS_THAN = new LongBiPredicate() {
+    static final LongBiPredicate LESS_THAN = new LongBiPredicate() {
         @Override
         public boolean test(long t, long u) {
             return t < u;
         }
     };
 
-   static final LongBiPredicate LESS_EQUAL = new LongBiPredicate() {
+    static final LongBiPredicate LESS_EQUAL = new LongBiPredicate() {
         @Override
         public boolean test(long t, long u) {
             return t <= u;
@@ -87,13 +87,13 @@ public interface LongBiPredicate {
     }
 
     default LongBiPredicate and(LongBiPredicate other) {
-        N.requireNonNull(other);
+        Objects.requireNonNull(other);
 
         return (t, u) -> test(t, u) && other.test(t, u);
     }
 
     default LongBiPredicate or(LongBiPredicate other) {
-        N.requireNonNull(other);
+        Objects.requireNonNull(other);
 
         return (t, u) -> test(t, u) || other.test(t, u);
     }

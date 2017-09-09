@@ -20,6 +20,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
@@ -38,7 +39,6 @@ import com.landawn.abacus.util.FloatList;
 import com.landawn.abacus.util.Fn.Factory;
 import com.landawn.abacus.util.IntList;
 import com.landawn.abacus.util.LongList;
-import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.ShortList;
 
 /**
@@ -59,7 +59,7 @@ public interface IntFunction<R> extends java.util.function.IntFunction<R> {
     R apply(int value);
 
     default <V> IntFunction<V> andThen(Function<? super R, ? extends V> after) {
-        N.requireNonNull(after);
+        Objects.requireNonNull(after);
 
         return t -> after.apply(apply(t));
     }
