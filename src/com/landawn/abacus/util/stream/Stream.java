@@ -8230,12 +8230,26 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      *
      */
     public static enum PSO {
-        MAP, BI_MAP, TRI_MAP, SLIDING_MAP, MAP_TO_, FLAT_MAP, FLAT_MAP_TO_, REDUCE, COLLECT, //
-        MIN, MAX, SUM_INT, SUM_LONG, SUM_DOUBLE, AVERAGE_INT, AVERAGE_LONG, AVERAGE_DOUBLE, SUMMARIZE_, //
-        GROUP_BY, GROUP_BY_2, GROUP_BY_TO_ENTRY, PARTITION_BY, PARTITION_BY_TO_ENTRY, TO_MAP, TO_MAP_2, TO_MULTIMAP, //
+        MAP, BI_MAP, TRI_MAP, SLIDING_MAP, MAP_TO_ENTRY, MAP_TO_, MAP_FIRST, MAP_FIRST_, MAP_LAST, MAP_LAST_, RANGE_MAP, //
+        FLAT_MAP, FLAT_MAP_TO_, FLAT_ARRAY, FLAT_COLLECION, //
         FILTER, TAKE_WHILE, DROP_WHILE, REMOVE, REMOVE_IF, REMOVE_WHILE, SKIP_NULL, //
         SPLIT_BY, SORTED, REVERSE_SORTED, DISTINCT_BY, JOIN, PEEK, //
+        GROUP_BY, GROUP_BY_TO_ENTRY, PARTITION_BY, PARTITION_BY_TO_ENTRY, GROUP_TO, TO_MAP, TO_MULTIMAP, //
+        MIN, MAX, SUM_INT, SUM_LONG, SUM_DOUBLE, AVERAGE_INT, AVERAGE_LONG, AVERAGE_DOUBLE, SUMMARIZE_, //
         FOR_EACH, FOR_EACH_PAIR, FOR_EACH_TRIPLE, ANY_MATCH, ALL_MATCH, NONE_MATCH, FIND_FIRST, FIND_LAST, //
-        PERSIST_DB;
+        REDUCE, COLLECT, PERSIST_DB;
+    }
+
+    /**
+     * LAIO = Loading All Intermediate Operations.
+     * 
+     * Intermediate operations which will load or go through all the elements in the stream.
+     * 
+     * @author haiyangl
+     *
+     */
+    public static enum LAIO {
+        SORTED, SORTED_BY, REVERSE_SORTED, CACHED, REVERSED, SHUFFLED, ROTATED, //
+        GROUP_BY, GROUP_BY_TO_ENTRY, PARTITION_BY, PARTITION_BY_TO_ENTRY;
     }
 }
