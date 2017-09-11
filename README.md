@@ -94,15 +94,6 @@ HttpClient.of("https://api.github.com/octocat").get()
 3. Bug free. No test is required for the auto-generated codes and no test coverage is counted. 
 
 ```java
-File srcDir = new File("./src");
-String packageName = "com.x.y";
-
-Map<String, Object> fields = N.asLinkedHashMap("firstName", String.class, "lastName", String.class, "birthdate", Date.class, "attrs", "Map<String, List<java.sql.Date>>");
-CodeGenerator.generateEntity(srcDir, packageName, "Account", fields);
-```
-OR:
-
-```java
 // Prepare the class with fields first:
 public class Account {
     private String firstName;
@@ -111,8 +102,17 @@ public class Account {
     private Map<String, List<Date>> attrs;
 }
 
-// Then generate the constructors/getter/setter methods by one line code:
+// Then just two lines to generate the mostly beautiful and well-formatted entity class:
+final File srcDir = new File("./src");
 CodeGenerator.writeClassMethod(srcDir, Account.class);
+```
+OR:
+
+```java
+String packageName = "com.x.y";
+
+Map<String, Object> fields = N.asLinkedHashMap("firstName", String.class, "lastName", String.class, "birthdate", Date.class, "attrs", "Map<String, List<java.sql.Date>>");
+CodeGenerator.generateEntity(srcDir, packageName, "Account", fields);
 ```
 
 ### A quick/fast way to/from JSON/XML.
