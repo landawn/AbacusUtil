@@ -153,7 +153,7 @@ Map<String, Person> = persons.stream()
 // AbacusUtil
 Map<String, Person> = Stream.of(persons)
                              .groupByToEntry(Person::getName)
-                             .sortedBy(e -> e.getKey()) // compare by name;
+                             .sortedBy(Fn.key()) // compare by name;
                              .toMap();
 
 ```
