@@ -266,7 +266,7 @@ assertFalse(collExecutor.exists(dbAccount.getId()));
 [Async]: http://www.landawn.com/api-docs/com/landawn/abacus/android/util/Async.html
 [CompletableFuture_Android]: http://www.landawn.com/api-docs/com/landawn/abacus/android/util/CompletableFuture.html
 [Futures]: http://www.landawn.com/api-docs/com/landawn/abacus/android/util/Futures.html
-[EventBus]: http://www.landawn.com/api-docs/com/landawn/abacus/android/eventBus/EventBus.html
+[EventBus]: http://www.landawn.com/api-docs/com/landawn/abacus/eventBus/EventBus.html
 [Observer]: http://www.landawn.com/api-docs/com/landawn/abacus/android/util/Observer.html
 [ObserverX]: http://www.landawn.com/api-docs/com/landawn/abacus/android/util/ObserverX.html
 [Fu]: http://www.landawn.com/api-docs/com/landawn/abacus/android/util/Fu.html
