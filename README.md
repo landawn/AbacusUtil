@@ -236,7 +236,7 @@ assertFalse(collExecutor.exists(dbAccount.getId()));
 [CompletableFuture]: http://www.landawn.com/api-docs/com/landawn/abacus/util/CompletableFuture.html
 [Futures]: http://www.landawn.com/api-docs/com/landawn/abacus/util/Futures.html
 [CodeGenerator]: http://www.landawn.com/api-docs/com/landawn/abacus/util/CodeGenerator.html
-[HttpClient]: http://www.landawn.com/api-docs/com/landawn/abacus/util/http/HttpClient.html
+[HttpClient]: http://www.landawn.com/api-docs/com/landawn/abacus/http/HttpClient.html
 [N]:http://www.landawn.com/api-docs/com/landawn/abacus/util/N.html
 
 [BooleanList]: http://www.landawn.com/api-docs/com/landawn/abacus/util/BooleanList.html
@@ -263,17 +263,17 @@ assertFalse(collExecutor.exists(dbAccount.getId()));
 
 [SQLiteExecutor]: http://www.landawn.com/api-docs/com/landawn/abacus/android/util/SQLiteExecutor.html
 [SQLBuilder]: http://www.landawn.com/api-docs/com/landawn/abacus/util/SQLBuilder.html
-[Async]: http://www.landawn.com/api-docs/com/landawn/abacus/android/util/Async_Android.html
+[Async]: http://www.landawn.com/api-docs/com/landawn/abacus/android/util/Async.html
 [CompletableFuture_Android]: http://www.landawn.com/api-docs/com/landawn/abacus/android/util/CompletableFuture.html
 [Futures]: http://www.landawn.com/api-docs/com/landawn/abacus/android/util/Futures.html
-[EventBus]: http://www.landawn.com/api-docs/com/landawn/abacus/android/util/EventBus.html
+[EventBus]: http://www.landawn.com/api-docs/com/landawn/abacus/android/eventBus/EventBus.html
 [Observer]: http://www.landawn.com/api-docs/com/landawn/abacus/android/util/Observer.html
 [ObserverX]: http://www.landawn.com/api-docs/com/landawn/abacus/android/util/ObserverX.html
 [Fu]: http://www.landawn.com/api-docs/com/landawn/abacus/android/util/Fu.html
 
 [SQLExecutor]: http://www.landawn.com/api-docs/com/landawn/abacus/util/SQLExecutor.html
 [SQLBuilder]: http://www.landawn.com/api-docs/com/landawn/abacus/util/SQLBuilder.html
-[DataSet]: http://www.landawn.com/api-docs/com/landawn/abacus/util/DataSet.html
+[DataSet]: http://www.landawn.com/api-docs/com/landawn/abacus/DataSet.html
 [JdbcUtil]: http://www.landawn.com/api-docs/com/landawn/abacus/util/JdbcUtil.html
 [CSVUtil]: http://www.landawn.com/api-docs/com/landawn/abacus/util/CSVUtil.html
 
