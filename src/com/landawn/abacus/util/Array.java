@@ -2259,6 +2259,22 @@ public final class Array {
         N.fill(a, numOfFalse, a.length, true);
     }
 
+    static void reverseSort(final boolean[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        int numOfTrue = 0;
+        for (int i = 0, len = a.length; i < len; i++) {
+            if (a[i]) {
+                numOfTrue++;
+            }
+        }
+
+        N.fill(a, 0, numOfTrue, true);
+        N.fill(a, numOfTrue, a.length, false);
+    }
+
     static void sort(final char[] a) {
         if (N.isNullOrEmpty(a)) {
             return;

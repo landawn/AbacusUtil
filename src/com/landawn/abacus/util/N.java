@@ -14977,6 +14977,100 @@ public final class N {
         Array.parallelSort(c, fromIndex, toIndex, cmp);
     }
 
+    public static void reverseSort(final boolean[] a) {
+        Array.reverseSort(a);
+    }
+
+    public static void reverseSort(final char[] a) {
+        Array.sort(a);
+        reverse(a);
+    }
+
+    public static void reverseSort(final char[] a, final int fromIndex, final int toIndex) {
+        Array.sort(a, fromIndex, toIndex);
+        reverse(a, fromIndex, toIndex);
+    }
+
+    public static void reverseSort(final byte[] a) {
+        Array.sort(a);
+        reverse(a);
+    }
+
+    public static void reverseSort(final byte[] a, final int fromIndex, final int toIndex) {
+        Array.sort(a, fromIndex, toIndex);
+        reverse(a, fromIndex, toIndex);
+    }
+
+    public static void reverseSort(final short[] a) {
+        Array.sort(a);
+        reverse(a);
+    }
+
+    public static void reverseSort(final short[] a, final int fromIndex, final int toIndex) {
+        Array.sort(a, fromIndex, toIndex);
+        reverse(a, fromIndex, toIndex);
+    }
+
+    public static void reverseSort(final int[] a) {
+        Array.sort(a);
+        reverse(a);
+    }
+
+    public static void reverseSort(final int[] a, final int fromIndex, final int toIndex) {
+        Array.sort(a, fromIndex, toIndex);
+        reverse(a, fromIndex, toIndex);
+    }
+
+    public static void reverseSort(final long[] a) {
+        Array.sort(a);
+        reverse(a);
+    }
+
+    public static void reverseSort(final long[] a, final int fromIndex, final int toIndex) {
+        Array.sort(a, fromIndex, toIndex);
+        reverse(a, fromIndex, toIndex);
+    }
+
+    public static void reverseSort(final float[] a) {
+        Array.sort(a);
+        reverse(a);
+    }
+
+    public static void reverseSort(final float[] a, final int fromIndex, final int toIndex) {
+        Array.sort(a, fromIndex, toIndex);
+        reverse(a, fromIndex, toIndex);
+    }
+
+    public static void reverseSort(final double[] a) {
+        Array.sort(a);
+        reverse(a);
+    }
+
+    public static void reverseSort(final double[] a, final int fromIndex, final int toIndex) {
+        Array.sort(a, fromIndex, toIndex);
+        reverse(a, fromIndex, toIndex);
+    }
+
+    public static void reverseSort(final Object[] a) {
+        Array.sort(a);
+        reverse(a);
+    }
+
+    public static void reverseSort(final Object[] a, final int fromIndex, final int toIndex) {
+        Array.sort(a, fromIndex, toIndex);
+        reverse(a, fromIndex, toIndex);
+    }
+
+    public static <T extends Comparable<? super T>> void reverseSort(final List<? extends T> c) {
+        Array.sort(c);
+        reverse(c);
+    }
+
+    public static <T extends Comparable<? super T>> void reverseSort(final List<? extends T> c, final int fromIndex, final int toIndex) {
+        Array.sort(c, fromIndex, toIndex);
+        reverse(c, fromIndex, toIndex);
+    }
+
     /*
     public static void bucketSort(final char[] a) {
         M.bucketSort(a);
