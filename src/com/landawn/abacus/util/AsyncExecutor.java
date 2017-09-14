@@ -74,12 +74,15 @@ public class AsyncExecutor {
                     return;
                 }
 
-                executorService.shutdown();
+                logger.warn("Starting to shutdown task in AsyncExecutor");
 
                 try {
+                    executorService.shutdown();
                     executorService.awaitTermination(180, TimeUnit.SECONDS);
                 } catch (InterruptedException e) {
                     logger.error("Failed to commit the tasks in queue in ExecutorService before shutdown", e);
+                } finally {
+                    logger.warn("Completed to shutdown task in AsyncExecutor");
                 }
             }
         });

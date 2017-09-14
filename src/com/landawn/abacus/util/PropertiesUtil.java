@@ -51,8 +51,8 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import com.landawn.abacus.exception.AbacusException;
-import com.landawn.abacus.exception.UncheckedIOException;
 import com.landawn.abacus.exception.ParseException;
+import com.landawn.abacus.exception.UncheckedIOException;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
 import com.landawn.abacus.parser.Exclusion;
@@ -269,12 +269,15 @@ public final class PropertiesUtil {
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
-                scheduledExecutor.shutdown();
+                logger.warn("Starting to shutdown task in PropertiesUtil");
 
                 try {
+                    scheduledExecutor.shutdown();
                     scheduledExecutor.awaitTermination(180, TimeUnit.SECONDS);
                 } catch (InterruptedException e) {
                     logger.error("Failed to commit the tasks in queue in ExecutorService before shutdown", e);
+                } finally {
+                    logger.warn("Starting to shutdown task in PropertiesUtil");
                 }
             }
         });

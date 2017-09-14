@@ -34,8 +34,8 @@ import java.util.concurrent.TimeUnit;
 
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
-import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.ClassUtil;
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.ThreadMode;
 
 /**
@@ -104,12 +104,15 @@ public class EventBus {
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
-                asyncExecutor.shutdown();
+                logger.warn("Starting to shutdown task in EventBus");
 
                 try {
+                    asyncExecutor.shutdown();
                     asyncExecutor.awaitTermination(180, TimeUnit.SECONDS);
                 } catch (InterruptedException e) {
                     logger.error("Failed to commit the tasks in queue in ExecutorService before shutdown", e);
+                } finally {
+                    logger.warn("Completed to shutdown task in EventBus");
                 }
             }
         });
@@ -131,12 +134,15 @@ public class EventBus {
             Runtime.getRuntime().addShutdownHook(new Thread() {
                 @Override
                 public void run() {
-                    ((ExecutorService) executor).shutdown();
+                    logger.warn("Starting to shutdown task in EventBus");
 
                     try {
+                        ((ExecutorService) executor).shutdown();
                         ((ExecutorService) executor).awaitTermination(180, TimeUnit.SECONDS);
                     } catch (InterruptedException e) {
                         logger.error("Failed to commit the tasks in queue in ExecutorService before shutdown", e);
+                    } finally {
+                        logger.warn("Completed to shutdown task in EventBus");
                     }
                 }
             });
@@ -393,7 +399,7 @@ public class EventBus {
      * @return
      */
     public <T> EventBus register(final Subscriber<T> subscriber, final String eventId, ThreadMode threadMode) {
-        return register((Object) subscriber, eventId, threadMode);
+        return register(subscriber, eventId, threadMode);
     }
 
     public EventBus unregister(final Object subscriber) {

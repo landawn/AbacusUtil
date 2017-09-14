@@ -51,11 +51,15 @@ public class CompletableFuture<T> implements Future<T> {
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
+                logger.warn("Starting to shutdown task in CompletableFuture");
+
                 try {
                     commonPool.shutdown();
                     commonPool.awaitTermination(180, TimeUnit.SECONDS);
                 } catch (Throwable e) {
                     logger.error("Failed to commit the tasks in queue in ExecutorService before shutdown", e);
+                } finally {
+                    logger.warn("Completed to shutdown task in CompletableFuture");
                 }
             }
         });
