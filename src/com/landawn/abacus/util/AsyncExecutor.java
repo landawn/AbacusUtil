@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -47,7 +46,7 @@ import com.landawn.abacus.util.function.Function;
 public class AsyncExecutor {
     private static final Logger logger = LoggerFactory.getLogger(AsyncExecutor.class);
 
-    private static final ScheduledExecutorService SCHEDULED_EXECUTOR = Executors.newScheduledThreadPool(N.CPU_CORES);
+    private static final ScheduledExecutorService SCHEDULED_EXECUTOR = MoreExecutors.getExitingScheduledExecutorService(N.CPU_CORES);
 
     private final int maxConcurrentThreadNumber;
     private final long keepAliveTime;
@@ -78,7 +77,7 @@ public class AsyncExecutor {
 
                 try {
                     executorService.shutdown();
-                    executorService.awaitTermination(180, TimeUnit.SECONDS);
+                    executorService.awaitTermination(120, TimeUnit.SECONDS);
                 } catch (InterruptedException e) {
                     logger.error("Failed to commit the tasks in queue in ExecutorService before shutdown", e);
                 } finally {

@@ -26,8 +26,8 @@ import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -66,7 +66,11 @@ public abstract class Observer<T> {
 
     protected static final Executor asyncExecutor = Executors.newFixedThreadPool(N.IS_PLATFORM_ANDROID ? N.CPU_CORES : 32);
 
-    protected static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(N.IS_PLATFORM_ANDROID ? N.CPU_CORES : 32);
+    protected static final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(N.IS_PLATFORM_ANDROID ? N.CPU_CORES : 32);
+
+    static {
+        scheduler.setRemoveOnCancelPolicy(true);
+    }
 
     protected final Map<ScheduledFuture<?>, Long> scheduledFutures = new LinkedHashMap<>();
     protected final Dispatcher<Object> dispatcher;

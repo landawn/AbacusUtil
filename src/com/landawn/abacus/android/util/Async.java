@@ -19,7 +19,6 @@ package com.landawn.abacus.android.util;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.ScheduledExecutorService;
@@ -27,6 +26,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import com.landawn.abacus.util.MoreExecutors;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Retry;
 import com.landawn.abacus.util.Retry.Retry0;
@@ -45,7 +45,7 @@ import android.os.Looper;
  */
 public class Async {
 
-    static final ScheduledExecutorService SCHEDULED_EXECUTOR = Executors.newScheduledThreadPool(N.CPU_CORES);
+    static final ScheduledExecutorService SCHEDULED_EXECUTOR = MoreExecutors.getExitingScheduledExecutorService(N.CPU_CORES);
     static final _UIExecutor _UI_EXECUTOR = new _UIExecutor();
 
     public static final Executor SERIAL_EXECUTOR = AsyncTask.SERIAL_EXECUTOR;

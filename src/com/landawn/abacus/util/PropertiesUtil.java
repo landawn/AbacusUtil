@@ -39,7 +39,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -123,11 +122,11 @@ public final class PropertiesUtil {
         }
     };
 
-    private static final ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(64);
+    private static final ScheduledExecutorService scheduledExecutor = MoreExecutors.getExitingScheduledExecutorService(N.CPU_CORES);
     private static final Map<Resource, Properties<?, ?>> registeredAutoRefreshProperties = new ConcurrentHashMap<>(256);
 
     static {
-        TimerTask refreshTask = new TimerTask() {
+        final Runnable refreshTask = new TimerTask() {
             @Override
             public void run() {
                 synchronized (registeredAutoRefreshProperties) {
@@ -273,7 +272,7 @@ public final class PropertiesUtil {
 
                 try {
                     scheduledExecutor.shutdown();
-                    scheduledExecutor.awaitTermination(180, TimeUnit.SECONDS);
+                    scheduledExecutor.awaitTermination(120, TimeUnit.SECONDS);
                 } catch (InterruptedException e) {
                     logger.error("Failed to commit the tasks in queue in ExecutorService before shutdown", e);
                 } finally {
