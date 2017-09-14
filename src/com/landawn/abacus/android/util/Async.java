@@ -23,6 +23,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -45,7 +46,15 @@ import android.os.Looper;
  */
 public class Async {
 
-    static final ScheduledExecutorService SCHEDULED_EXECUTOR = MoreExecutors.getExitingScheduledExecutorService(N.CPU_CORES);
+    static final ScheduledExecutorService SCHEDULED_EXECUTOR;
+    static {
+        final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(8);
+        executor.setKeepAliveTime(180, TimeUnit.SECONDS);
+        executor.allowCoreThreadTimeOut(true);
+        executor.setRemoveOnCancelPolicy(true);
+        SCHEDULED_EXECUTOR = MoreExecutors.getExitingScheduledExecutorService(executor);
+    }
+
     static final _UIExecutor _UI_EXECUTOR = new _UIExecutor();
 
     public static final Executor SERIAL_EXECUTOR = AsyncTask.SERIAL_EXECUTOR;

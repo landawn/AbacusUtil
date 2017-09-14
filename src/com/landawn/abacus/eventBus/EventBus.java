@@ -108,7 +108,7 @@ public class EventBus {
 
                 try {
                     asyncExecutor.shutdown();
-                    asyncExecutor.awaitTermination(180, TimeUnit.SECONDS);
+                    asyncExecutor.awaitTermination(120, TimeUnit.SECONDS);
                 } catch (InterruptedException e) {
                     logger.error("Failed to commit the tasks in queue in ExecutorService before shutdown", e);
                 } finally {
@@ -138,7 +138,7 @@ public class EventBus {
 
                     try {
                         ((ExecutorService) executor).shutdown();
-                        ((ExecutorService) executor).awaitTermination(180, TimeUnit.SECONDS);
+                        ((ExecutorService) executor).awaitTermination(120, TimeUnit.SECONDS);
                     } catch (InterruptedException e) {
                         logger.error("Failed to commit the tasks in queue in ExecutorService before shutdown", e);
                     } finally {

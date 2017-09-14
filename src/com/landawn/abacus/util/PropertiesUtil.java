@@ -40,6 +40,7 @@ import java.util.Set;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -122,7 +123,13 @@ public final class PropertiesUtil {
         }
     };
 
-    private static final ScheduledExecutorService scheduledExecutor = MoreExecutors.getExitingScheduledExecutorService(N.CPU_CORES);
+    private static final ScheduledExecutorService scheduledExecutor;
+    static {
+        final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
+        executor.setRemoveOnCancelPolicy(true);
+        scheduledExecutor = MoreExecutors.getExitingScheduledExecutorService(executor);
+    }
+
     private static final Map<Resource, Properties<?, ?>> registeredAutoRefreshProperties = new ConcurrentHashMap<>(256);
 
     static {
@@ -264,22 +271,6 @@ public final class PropertiesUtil {
         };
 
         scheduledExecutor.scheduleWithFixedDelay(refreshTask, 1000, 1000, TimeUnit.MICROSECONDS);
-
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                logger.warn("Starting to shutdown task in PropertiesUtil");
-
-                try {
-                    scheduledExecutor.shutdown();
-                    scheduledExecutor.awaitTermination(120, TimeUnit.SECONDS);
-                } catch (InterruptedException e) {
-                    logger.error("Failed to commit the tasks in queue in ExecutorService before shutdown", e);
-                } finally {
-                    logger.warn("Starting to shutdown task in PropertiesUtil");
-                }
-            }
-        });
     }
 
     private PropertiesUtil() {
