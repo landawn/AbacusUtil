@@ -15052,23 +15052,31 @@ public final class N {
     }
 
     public static void reverseSort(final Object[] a) {
-        Array.sort(a);
-        reverse(a);
+        //        Array.sort(a);
+        //        reverse(a);
+
+        sort(a, Fn.reversedOrder());
     }
 
     public static void reverseSort(final Object[] a, final int fromIndex, final int toIndex) {
-        Array.sort(a, fromIndex, toIndex);
-        reverse(a, fromIndex, toIndex);
+        //        Array.sort(a, fromIndex, toIndex);
+        //        reverse(a, fromIndex, toIndex);
+
+        sort(a, fromIndex, toIndex, Fn.reversedOrder());
     }
 
     public static <T extends Comparable<? super T>> void reverseSort(final List<? extends T> c) {
-        Array.sort(c);
-        reverse(c);
+        //        Array.sort(c);
+        //        reverse(c);
+
+        sort(c, Fn.reversedOrder());
     }
 
     public static <T extends Comparable<? super T>> void reverseSort(final List<? extends T> c, final int fromIndex, final int toIndex) {
-        Array.sort(c, fromIndex, toIndex);
-        reverse(c, fromIndex, toIndex);
+        //        Array.sort(c, fromIndex, toIndex);
+        //        reverse(c, fromIndex, toIndex);
+
+        sort(c, fromIndex, toIndex, Fn.reversedOrder());
     }
 
     /*

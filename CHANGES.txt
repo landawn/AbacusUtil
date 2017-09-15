@@ -3,7 +3,11 @@
 
 1, Add reverseSort to N.
 
-2, Improvements and bug fix.
+2, Improve CodeGenerator.
+
+3, Remove reverseSort from Seq, replaced by the reverseSort in N.
+
+4, Improvements and bug fix.
 
 
 ========Changes in 0.9.82=========================================================================
