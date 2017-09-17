@@ -93,6 +93,7 @@ import com.landawn.abacus.exception.UncheckedIOException;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
 import com.landawn.abacus.parser.ParserUtil;
+import com.landawn.abacus.type.ObjectType;
 import com.landawn.abacus.type.Type;
 import com.landawn.abacus.type.TypeFactory;
 import com.landawn.abacus.util.Tuple.Tuple1;
@@ -355,6 +356,7 @@ public final class ClassUtil {
     private static final Map<String, String> formalizedPropNamePool = new ObjectPool<>(POOL_SIZE * 2);
     private static final Map<Method, String> methodPropNamePool = new ObjectPool<>(POOL_SIZE * 2);
     private static final Map<Method, Class<?>[]> methodTypeArgumentsPool = new ObjectPool<>(POOL_SIZE * 2);
+    private static final Map<Method, String> methodParameterizedTypeNamePool = new ObjectPool<>(POOL_SIZE * 2);
 
     // reserved words.
     private static final Map<String, String> keyWordMapper = new HashMap<>(16);
@@ -535,6 +537,7 @@ public final class ClassUtil {
                     }
 
                     if (cls == null) {
+                        newClassName = clsName;
                         int index = newClassName.indexOf("[]");
 
                         if (index > 0) {
@@ -542,14 +545,14 @@ public final class ClassUtil {
                             String temp = newClassName.replaceAll("\\[\\]", "");
 
                             if (componentTypeName.equals(temp)) {
-                                String symbolOfPrimitiveArraryClassName = SYMBOL_OF_PRIMITIVE_ARRAY_CLASS_NAME.get(componentTypeName);
-
                                 int dimensions = (newClassName.length() - temp.length()) / 2;
                                 String prefixOfArray = "";
 
                                 while (dimensions-- > 0) {
                                     prefixOfArray += "[";
                                 }
+
+                                String symbolOfPrimitiveArraryClassName = SYMBOL_OF_PRIMITIVE_ARRAY_CLASS_NAME.get(componentTypeName);
 
                                 if (symbolOfPrimitiveArraryClassName != null) {
                                     try {
@@ -561,7 +564,13 @@ public final class ClassUtil {
                                     }
                                 } else {
                                     try {
-                                        cls = Class.forName(prefixOfArray + "L" + componentTypeName + ";");
+                                        final Type<?> componentType = N.typeOf(componentTypeName);
+
+                                        if (componentType.getTypeClass().equals(Object.class) && !componentType.getName().equals(ObjectType.OBJECT)) {
+                                            throw new AbacusException("No Class found by name: " + clsName);
+                                        }
+
+                                        cls = Class.forName(prefixOfArray + "L" + componentType.getTypeClass().getCanonicalName() + ";");
                                     } catch (ClassNotFoundException e3) {
                                         // ignore.
                                     }
@@ -692,11 +701,50 @@ public final class ClassUtil {
         }
     }
 
-    public static Class<?>[] getTypeArgumentsByMethod(final Method method) {
-        if (method == null) {
-            return null;
+    public static String getParameterizedTypeNameByMethod(final Method method) {
+        String parameterizedTypeName = methodParameterizedTypeNamePool.get(method);
+
+        if (parameterizedTypeName == null) {
+            parameterizedTypeName = (N.isNullOrEmpty(method.getGenericParameterTypes()) ? method.getGenericReturnType() : method.getGenericParameterTypes()[0])
+                    .getTypeName().replaceAll("java.lang.", "");
+
+            final int idx = parameterizedTypeName.lastIndexOf('$');
+
+            if (idx > 0) {
+                final StringBuilder sb = new StringBuilder();
+
+                for (int len = parameterizedTypeName.length(), i = len - 1; i >= 0; i--) {
+                    char ch = parameterizedTypeName.charAt(i);
+                    sb.append(ch);
+
+                    if (ch == '$') {
+                        int j = i;
+                        char x = 0;
+                        while (--i >= 0 && (Character.isLetterOrDigit(x = parameterizedTypeName.charAt(i)) || x == '_' || x == '.')) {
+                        }
+
+                        final String tmp = parameterizedTypeName.substring(i + 1, j);
+
+                        if (tmp.substring(0, tmp.length() / 2).equals(tmp.substring(tmp.length() / 2 + 1))) {
+                            sb.append(N.reverse(tmp.substring(0, tmp.length() / 2)));
+                        } else {
+                            sb.append(tmp);
+                        }
+
+                        i++;
+                    }
+                }
+
+                parameterizedTypeName = sb.reverse().toString();
+            }
+
+            methodParameterizedTypeNamePool.put(method, parameterizedTypeName);
         }
 
+        return parameterizedTypeName;
+    }
+
+    public static Class<?>[] getTypeArgumentsByMethod(final Method method) {
         Class<?>[] typeParameterClasses = methodTypeArgumentsPool.get(method);
 
         if (typeParameterClasses == null) {
@@ -726,7 +774,7 @@ public final class ClassUtil {
             methodTypeArgumentsPool.put(method, typeParameterClasses);
         }
 
-        return typeParameterClasses;
+        return typeParameterClasses.length == 0 ? typeParameterClasses : typeParameterClasses.clone();
     }
 
     /**
@@ -762,16 +810,8 @@ public final class ClassUtil {
 
         if (pkgName == null) {
             Package pkg = ClassUtil.getPackage(cls);
-
-            if (pkg == null) {
-                return null;
-            }
-
-            pkgName = pkg.getName();
-
-            if (pkgName != null) {
-                packageNamePool.put(cls, pkgName);
-            }
+            pkgName = pkg == null ? "" : pkg.getName();
+            packageNamePool.put(cls, pkgName);
         }
 
         return pkgName;

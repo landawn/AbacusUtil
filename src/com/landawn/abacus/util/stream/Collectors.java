@@ -1123,7 +1123,7 @@ public final class Collectors {
         final Supplier<List<A>> supplier = Suppliers.<A> ofList();
         @SuppressWarnings("rawtypes")
         final BiConsumer<List<A>, T> accumulator = (BiConsumer) BiConsumers.ofAdd();
-        final BinaryOperator<List<A>> combiner = BinaryOperators.ofAddAll();
+        final BinaryOperator<List<A>> combiner = BinaryOperators.<A, List<A>> ofAddAll();
         final Function<List<A>, A[]> finisher = new Function<List<A>, A[]>() {
             @Override
             public A[] apply(List<A> t) {
@@ -4382,7 +4382,7 @@ public final class Collectors {
             }
         };
 
-        final BinaryOperator<M> combiner = multimapMerger();
+        final BinaryOperator<M> combiner = Collectors.<K, U, V, M> multimapMerger();
 
         return new CollectorImpl<>(mapFactory, accumulator, combiner, CH_ID);
     }

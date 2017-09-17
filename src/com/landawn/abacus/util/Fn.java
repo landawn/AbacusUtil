@@ -863,11 +863,11 @@ public final class Fn {
     }
 
     public static <T, C extends Collection<T>> BiConsumer<C, C> addAll() {
-        return BiConsumers.ofAddAll();
+        return BiConsumers.<T, C> ofAddAll();
     }
 
     public static <K, V, M extends Map<K, V>> BiConsumer<M, M> putAll() {
-        return BiConsumers.ofPutAll();
+        return BiConsumers.<K, V, M> ofPutAll();
     }
 
     /**
