@@ -3144,6 +3144,7 @@ public final class CodeGenerator {
         if ((IMPL_DIRTY_MARKER == entityMode)) {
             writeClassImport(fileWrite, DirtyMarkerImpl.class, importedClasses);
         } else if ((IMPL_ACTIVE_RECORD == entityMode)) {
+            // writeClassImport(fileWrite, EntityManager.class, importedClasses);
             writeClassImport(fileWrite, LockMode.class, importedClasses);
             writeClassImport(fileWrite, DataSet.class, importedClasses);
             writeClassImport(fileWrite, Condition.class, importedClasses);
@@ -5246,7 +5247,7 @@ public final class CodeGenerator {
             // fileWrite.write(headSpace + "    }" + N.LINE_SEPARATOR);
             if (IMPL_ACTIVE_RECORD == entityMode) {
                 fileWrite.write(N.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    protected static <T> EntityManager<T> getEntityManager() {" + N.LINE_SEPARATOR);
+                fileWrite.write(headSpace + "    protected static <T> com.landawn.abacus.EntityManager<T> getEntityManager() {" + N.LINE_SEPARATOR);
                 fileWrite.write(headSpace + "        return " + ClassUtil.getSimpleClassName(extendedClass) + ".getEntityManager(" + DOMAIN_NAME_VAR + ");"
                         + N.LINE_SEPARATOR);
                 fileWrite.write(headSpace + "    }" + N.LINE_SEPARATOR);
