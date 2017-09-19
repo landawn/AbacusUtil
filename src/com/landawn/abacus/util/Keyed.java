@@ -24,23 +24,23 @@ package com.landawn.abacus.util;
  */
 public class Keyed<K, T> {
     private final K key;
-    private final T src;
+    private final T val;
 
-    Keyed(K key, T src) {
+    Keyed(K key, T val) {
         this.key = key;
-        this.src = src;
+        this.val = val;
     }
 
-    public static <K, T> Keyed<K, T> of(final K key, final T src) {
-        return new Keyed<>(key, src);
+    public static <K, T> Keyed<K, T> of(final K key, final T val) {
+        return new Keyed<>(key, val);
     }
 
     public K key() {
         return key;
     }
 
-    public T src() {
-        return src;
+    public T val() {
+        return val;
     }
 
     @Override
@@ -49,13 +49,13 @@ public class Keyed<K, T> {
     }
 
     @Override
-    public boolean equals(Object src) {
-        if (src == this) {
+    public boolean equals(Object val) {
+        if (val == this) {
             return true;
         }
 
-        if (src instanceof Keyed) {
-            final Keyed<K, T> other = (Keyed<K, T>) src;
+        if (val instanceof Keyed) {
+            final Keyed<K, T> other = (Keyed<K, T>) val;
             return N.equals(key, other.key);
         }
 
@@ -64,6 +64,6 @@ public class Keyed<K, T> {
 
     @Override
     public String toString() {
-        return "{key=" + N.toString(key) + ", src=" + src + "}";
+        return "{key=" + N.toString(key) + ", val=" + val + "}";
     }
 }
