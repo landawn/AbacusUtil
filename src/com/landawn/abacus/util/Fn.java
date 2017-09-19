@@ -283,6 +283,15 @@ public final class Fn {
         return IDENTITY;
     }
 
+    public static <K, T> Function<T, Keyed<K, T>> keyed(final Function<? super T, K> keyExtractor) {
+        return new Function<T, Keyed<K, T>>() {
+            @Override
+            public Keyed<K, T> apply(T t) {
+                return Keyed.of(keyExtractor.apply(t), t);
+            }
+        };
+    }
+
     @SuppressWarnings("rawtypes")
     public static <K, V> Function<Entry<K, V>, K> key() {
         return (Function) KEY;
