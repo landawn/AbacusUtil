@@ -1,7 +1,7 @@
 ﻿
 ﻿========Changes in 1.0 =========================================================================
 
-1, Add Keyed/Fn.keyed().
+1, Add Keyed/Fn.keyed()/filtering/mapping/flatMapping.
 
 2, Rename Build.value() to Build.val()
 
@@ -9,7 +9,9 @@
 
 4, Add add/addAll/remove/removeAll/put/putAll to Build.X
 
-5, Improvements and bug fix.
+5, Rename Maps.asMap/asLinkedHashMap to Maps.newMap/newLinkedHashMap.
+
+6, Improvements and bug fix.
 
 
 ========Changes in 0.9.83=========================================================================

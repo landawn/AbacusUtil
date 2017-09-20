@@ -593,11 +593,8 @@ public class Builder<T> {
             return this;
         }
 
-        public CollectionBuilder<T, C> addAll(Collection<? extends T> c) {
-            @SuppressWarnings("rawtypes")
-            final Collection tmp = c;
-
-            value.addAll(tmp);
+        public CollectionBuilder<T, C> addAll(final Collection<? extends T> c) {
+            value.addAll(c);
 
             return this;
         }
@@ -626,11 +623,8 @@ public class Builder<T> {
             return this;
         }
 
-        public MultisetBuilder<T> addAll(Collection<? extends T> c) {
-            @SuppressWarnings("rawtypes")
-            final Collection tmp = c;
-
-            value.addAll(tmp);
+        public MultisetBuilder<T> addAll(final Collection<? extends T> c) {
+            value.addAll(c);
 
             return this;
         }
@@ -641,7 +635,7 @@ public class Builder<T> {
             return this;
         }
 
-        public MultisetBuilder<T> addAll(Multiset<? extends T> multiset) {
+        public MultisetBuilder<T> addAll(final Multiset<? extends T> multiset) {
             value.addAll(multiset);
 
             return this;
@@ -683,11 +677,8 @@ public class Builder<T> {
             return this;
         }
 
-        public LongMultisetBuilder<T> addAll(Collection<? extends T> c) {
-            @SuppressWarnings("rawtypes")
-            final Collection tmp = c;
-
-            value.addAll(tmp);
+        public LongMultisetBuilder<T> addAll(final Collection<? extends T> c) {
+            value.addAll(c);
 
             return this;
         }
@@ -698,7 +689,7 @@ public class Builder<T> {
             return this;
         }
 
-        public LongMultisetBuilder<T> addAll(LongMultiset<? extends T> multiset) {
+        public LongMultisetBuilder<T> addAll(final LongMultiset<? extends T> multiset) {
             value.addAll(multiset);
 
             return this;

@@ -58,7 +58,7 @@ public final class Maps {
         // singleton.
     }
 
-    public static <K, T> Map<K, T> asMap(Collection<? extends T> c, final Function<? super T, ? extends K> keyExtractor) {
+    public static <K, T> Map<K, T> newMap(Collection<? extends T> c, final Function<? super T, ? extends K> keyExtractor) {
         N.requireNonNull(keyExtractor);
 
         if (N.isNullOrEmpty(c)) {
@@ -74,7 +74,7 @@ public final class Maps {
         return result;
     }
 
-    public static <K, T> Map<K, T> asLinkedHashMap(Collection<? extends T> c, final Function<? super T, ? extends K> keyExtractor) {
+    public static <K, T> Map<K, T> newLinkedHashMap(Collection<? extends T> c, final Function<? super T, ? extends K> keyExtractor) {
         N.requireNonNull(keyExtractor);
 
         if (N.isNullOrEmpty(c)) {
