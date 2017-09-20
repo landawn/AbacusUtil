@@ -929,6 +929,72 @@ public class Builder<T> {
          * 
          * @param output
          * @param key
+         * @param value
+         * @return
+         * @return return the specified {@code output}
+         */
+        public static <K, V, M extends Map<K, V>> M putIfAbsent(final M output, K key, final V value) {
+            if (!output.containsKey(key)) {
+                output.put(key, value);
+            }
+
+            return output;
+        }
+
+        /**
+         * 
+         * @param output
+         * @param entryToAdd
+         * @return
+         * @return return the specified {@code output}
+         */
+        public static <K, V, M extends Map<K, V>> M putIfAbsent(final M output, final Map.Entry<? extends K, ? extends V> entryToAdd) {
+            if (!output.containsKey(entryToAdd.getKey())) {
+                output.put(entryToAdd.getKey(), entryToAdd.getValue());
+            }
+            return output;
+        }
+
+        /**
+         * 
+         * @param output
+         * @param key
+         * @param oldValue
+         * @param newValue
+         * @return return the specified {@code output}
+         */
+        public static <K, V, M extends Map<K, V>> M replace(final M output, final K key, final V newValue) {
+            final V curValue = output.get(key);
+
+            if ((curValue != null || output.containsKey(key))) {
+                output.put(key, newValue);
+            }
+
+            return output;
+        }
+
+        /**
+         * 
+         * @param output
+         * @param key
+         * @param oldValue
+         * @param newValue
+         * @return return the specified {@code output}
+         */
+        public static <K, V, M extends Map<K, V>> M replace(final M output, final K key, final V oldValue, final V newValue) {
+            final V curValue = output.get(key);
+
+            if ((curValue != null || output.containsKey(key)) && N.equals(curValue, oldValue)) {
+                output.put(key, newValue);
+            }
+
+            return output;
+        }
+
+        /**
+         * 
+         * @param output
+         * @param key
          * @return
          * @return return the specified {@code output}
          */

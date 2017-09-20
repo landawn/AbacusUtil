@@ -88,8 +88,6 @@ import com.landawn.abacus.metadata.Property;
 import com.landawn.abacus.metadata.Table;
 import com.landawn.abacus.metadata.sql.SQLEntityDefinition;
 import com.landawn.abacus.metadata.sql.SQLEntityDefinitionFactory;
-import com.landawn.abacus.parser.ParserUtil;
-import com.landawn.abacus.parser.ParserUtil.EntityInfo;
 import com.landawn.abacus.type.HBaseColumnType;
 import com.landawn.abacus.type.ObjectType;
 import com.landawn.abacus.type.Type;
@@ -2011,7 +2009,7 @@ public final class CodeGenerator {
                 IOUtil.writeLine(writer, iden + "private " + getSimpleType(entry.getValue(), null, packageName, importedClasses) + " " + entry.getKey() + ";");
             }
 
-            printClassMethod(null, className, parentClass, packageName, fieldTypes, constructor, copyMethod, fluentSetter, parentPropertyModeForHashEquals,
+            writeClassMethod(null, className, parentClass, packageName, fieldTypes, constructor, copyMethod, fluentSetter, parentPropertyModeForHashEquals,
                     parentPropertyModeForToString, fieldName2MethodName, importedClasses, utilClass, writer);
 
             IOUtil.writeLine(writer, "}");
@@ -2224,7 +2222,7 @@ public final class CodeGenerator {
         }
 
         try (StringWriter writer = new StringWriter()) {
-            printClassMethod(cls, ClassUtil.getSimpleClassName(cls), cls.getSuperclass(), packageName, fieldTypes, constructor, copyMethod, fluentSetter,
+            writeClassMethod(cls, ClassUtil.getSimpleClassName(cls), cls.getSuperclass(), packageName, fieldTypes, constructor, copyMethod, fluentSetter,
                     parentPropertyModeForHashEquals, parentPropertyModeForToString, fieldName2MethodName, importedClasses, utilClass, writer);
 
             int start = -1, end = -1;
@@ -2471,7 +2469,7 @@ public final class CodeGenerator {
     //        }
     //    }
 
-    private static void printClassMethod(Class<?> cls, final String className, final Class<?> parentClass, final String pkgName,
+    private static void writeClassMethod(Class<?> cls, final String className, final Class<?> parentClass, final String pkgName,
             final Map<String, Type<?>> fieldTypes, final boolean constructor, final boolean copyMethod, final boolean fluentSetter,
             ParentPropertyMode parentPropertyModeForHashEquals, ParentPropertyMode parentPropertyModeForToString, Map<String, String> fieldName2MethodName,
             final Map<String, Class<?>> importedClasses, final Class<?> utilClass, Writer writer) throws NoSuchFieldException, SecurityException {
@@ -2554,25 +2552,37 @@ public final class CodeGenerator {
         }
 
         if (fluentSetter && N.notNullOrEmpty(parentSettterMethods)) {
-            final EntityInfo entityInfo = ParserUtil.getEntityInfo(parentClass);
-
             for (Map.Entry<String, Method> entry : parentSettterMethods.entrySet()) {
-                if (entry.getValue().getReturnType().isAssignableFrom(parentClass) == false) {
+                if (parentClass.isAssignableFrom(entry.getValue().getReturnType()) == false) {
                     continue;
                 }
 
                 final String methodName = entry.getValue().getName();
-                final Type<Object> propType = entityInfo.getPropInfo(entry.getKey()).type;
-                String paraTypeName = null;
-                if (propType.getTypeClass().getPackage() == null || ClassUtil.getPackageName(propType.getTypeClass()).equals("java.lang")) {
-                    paraTypeName = propType.getName();
-                } else {
-                    if (propType.getName().startsWith(ClassUtil.getPackageName(propType.getTypeClass()))) {
-                        paraTypeName = propType.getName();
-                    } else {
-                        paraTypeName = ClassUtil.getPackageName(propType.getTypeClass()) + "." + propType.getName();
+                String paraTypeName = ClassUtil.getParameterizedTypeNameByMethod(entry.getValue());
+
+                if (N.notNullOrEmpty(pkgName)) {
+                    String tmp = pkgName + ".";
+                    int idx = 0;
+                    char ch = 0;
+
+                    while ((idx = paraTypeName.indexOf(tmp, idx)) >= 0) {
+                        for (int i = idx + tmp.length(), len = paraTypeName.length(); i < len; i++) {
+                            ch = paraTypeName.charAt(i);
+
+                            if ((Character.isLetterOrDigit(ch) || ch == '$' || ch == '_') && i != len - 1) {
+                                continue;
+                            } else if (ch == '.') {
+                                idx = i;
+                                break;
+                            } else {
+                                paraTypeName = paraTypeName.replace(paraTypeName.substring(idx, i), paraTypeName.substring(idx + tmp.length(), i));
+                                idx += (i - idx - tmp.length());
+                                break;
+                            }
+                        }
                     }
                 }
+
                 IOUtil.writeLine(writer, N.EMPTY_STRING);
                 IOUtil.writeLine(writer, iden + "public " + className + " " + methodName + "(" + paraTypeName + " " + entry.getKey() + ") {");
                 IOUtil.writeLine(writer, iden + iden + "super." + methodName + "(" + entry.getKey() + ");");

@@ -73,6 +73,7 @@ import com.landawn.abacus.util.function.TriPredicate;
 import com.landawn.abacus.util.function.UnaryOperator;
 import com.landawn.abacus.util.stream.Collector;
 import com.landawn.abacus.util.stream.Collectors;
+import com.landawn.abacus.util.stream.Stream;
 
 /**
  * Factory utility class for functional interfaces.
@@ -1219,6 +1220,31 @@ public final class Fn {
      */
     public static <T> Collector<T, ?, Double> averagingDouble(final ToDoubleFunction<? super T> mapper) {
         return Collectors.averagingDouble(mapper);
+    }
+
+    public static <T> Collector<T, ?, List<T>> filtering(final Predicate<? super T> predicate) {
+        return Collectors.filtering(predicate);
+    }
+
+    public static <T, A, R> Collector<T, ?, R> filtering(final Predicate<? super T> predicate, final Collector<? super T, A, R> downstream) {
+        return Collectors.filtering(predicate, downstream);
+    }
+
+    public static <T, U> Collector<T, ?, List<U>> mapping(final Function<? super T, ? extends U> mapper) {
+        return Collectors.mapping(mapper);
+    }
+
+    public static <T, U, A, R> Collector<T, ?, R> mapping(final Function<? super T, ? extends U> mapper, final Collector<? super U, A, R> downstream) {
+        return Collectors.mapping(mapper, downstream);
+    }
+
+    public static <T, U> Collector<T, ?, List<U>> flatMapping(final Function<? super T, ? extends Stream<? extends U>> mapper) {
+        return Collectors.flatMapping(mapper);
+    }
+
+    public static <T, U, A, R> Collector<T, ?, R> flatMapping(final Function<? super T, ? extends Stream<? extends U>> mapper,
+            Collector<? super U, A, R> downstream) {
+        return Collectors.flatMapping(mapper, downstream);
     }
 
     public static final class Factory {
