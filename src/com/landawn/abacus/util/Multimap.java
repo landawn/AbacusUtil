@@ -144,6 +144,25 @@ public class Multimap<K, E, V extends Collection<E>> {
     }
 
     /**
+     * Replace the value with the specified element. 
+     * 
+     * @param key
+     * @param e
+     * @return
+     */
+    public Multimap<K, E, V> setIfAbsent(final K key, final E e) {
+        V val = valueMap.get(key);
+
+        if (val == null) {
+            val = N.newInstance(concreteValueType);
+            val.add(e);
+            valueMap.put(key, val);
+        }
+
+        return this;
+    }
+
+    /**
      * Replace the value with the specified <code>Collection</code>. Remove the key and all values if the specified <code>Collection</code> is null or empty. 
      * 
      * @param key
@@ -164,6 +183,44 @@ public class Multimap<K, E, V extends Collection<E>> {
             }
 
             val.addAll(c);
+        }
+
+        return this;
+    }
+
+    /**
+     * Replace the value with the specified <code>Collection</code>. Remove the key and all values if the specified <code>Collection</code> is null or empty. 
+     * 
+     * @param key
+     * @param c
+     * @return
+     */
+    public Multimap<K, E, V> setAllIfAbsent(final K key, final Collection<? extends E> c) {
+        if (N.notNullOrEmpty(c)) {
+            V val = valueMap.get(key);
+
+            if (val == null) {
+                val = N.newInstance(concreteValueType);
+                val.addAll(c);
+                valueMap.put(key, val);
+            }
+        }
+
+        return this;
+    }
+
+    /**
+     * Replace the values for the keys calculated by the specified {@code keyExtractor}.
+     * 
+     * @param c
+     * @param keyExtractor
+     * @return
+     */
+    public Multimap<K, E, V> setAll(final Collection<? extends E> c, final Function<? super E, K> keyExtractor) {
+        if (N.notNullOrEmpty(c)) {
+            for (E e : c) {
+                set(keyExtractor.apply(e), e);
+            }
         }
 
         return this;
@@ -275,6 +332,23 @@ public class Multimap<K, E, V extends Collection<E>> {
         }
 
         return val.addAll(c);
+    }
+
+    public boolean putAllIfAbsent(final K key, final Collection<? extends E> c) {
+        if (N.isNullOrEmpty(c)) {
+            return false;
+        }
+
+        V val = valueMap.get(key);
+
+        if (val == null) {
+            val = N.newInstance(concreteValueType);
+            val.addAll(c);
+            valueMap.put(key, val);
+            return true;
+        }
+
+        return false;
     }
 
     public boolean putAll(final Collection<? extends E> c, final Function<? super E, K> keyExtractor) {

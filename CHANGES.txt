@@ -11,7 +11,9 @@
 
 5, Rename Maps.asMap/asLinkedHashMap to Maps.newMap/newLinkedHashMap.
 
-6, Improvements and bug fix.
+6, Add Chain
+
+7, Improvements and bug fix.
 
 
 ========Changes in 0.9.83=========================================================================

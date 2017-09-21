@@ -2153,6 +2153,42 @@ public final class Fn {
         public static <T> Predicate<T> indexed(final IndexedPredicate<T> predicate) {
             return Fn.indexed(predicate);
         }
+
+        public static <T> Predicate<T> and(final Predicate<? super T> first, final Predicate<? super T> second) {
+            return new Predicate<T>() {
+                @Override
+                public boolean test(T t) {
+                    return first.test(t) && second.test(t);
+                }
+            };
+        }
+
+        public static <T> Predicate<T> and(final Predicate<? super T> first, final Predicate<? super T> second, final Predicate<? super T> third) {
+            return new Predicate<T>() {
+                @Override
+                public boolean test(T t) {
+                    return first.test(t) && second.test(t) && third.test(t);
+                }
+            };
+        }
+
+        public static <T> Predicate<T> or(final Predicate<? super T> first, final Predicate<? super T> second) {
+            return new Predicate<T>() {
+                @Override
+                public boolean test(T t) {
+                    return first.test(t) || second.test(t);
+                }
+            };
+        }
+
+        public static <T> Predicate<T> or(final Predicate<? super T> first, final Predicate<? super T> second, final Predicate<? super T> third) {
+            return new Predicate<T>() {
+                @Override
+                public boolean test(T t) {
+                    return first.test(t) || second.test(t) || third.test(t);
+                }
+            };
+        }
     }
 
     public static final class BiPredicates {

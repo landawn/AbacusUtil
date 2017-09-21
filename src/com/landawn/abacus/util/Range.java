@@ -412,6 +412,34 @@ public final class Range<T extends Comparable> implements Serializable {
         return Optional.of(new Range<T>(newLowerEndpoint, newUpperEndpoint, boundType));
     }
 
+    /**
+     * Copied from Guava under Apache License v2.0
+     * <br />
+     * Returns the minimal range that {@linkplain #encloses encloses} both this range and {@code
+     * other}. For example, the span of {@code [1..3]} and {@code (5..7)} is {@code [1..7)}.
+     *
+     * <p><i>If</i> the input ranges are {@linkplain #isConnected connected}, the returned range can
+     * also be called their <i>union</i>. If they are not, note that the span might contain values
+     * that are not contained in either input range.
+     *
+     * <p>Like {@link #intersection(Range) intersection}, this operation is commutative, associative
+     * and idempotent. Unlike it, it is always well-defined for any two input ranges.
+     */
+    public Range<T> span(Range<T> other) {
+        final LowerEndpoint<T> newLowerEndpoint = lowerEndpoint.includes(other.lowerEndpoint.value) ? lowerEndpoint : other.lowerEndpoint;
+        final UpperEndpoint<T> newUpperEndpoint = upperEndpoint.includes(other.upperEndpoint.value) ? upperEndpoint : other.upperEndpoint;
+
+        BoundType boundType = null;
+
+        if (newLowerEndpoint.isClosed) {
+            boundType = newUpperEndpoint.isClosed ? BoundType.CLOSED_CLOSED : BoundType.CLOSED_OPEN;
+        } else {
+            boundType = newUpperEndpoint.isClosed ? BoundType.OPEN_CLOSED : BoundType.OPEN_OPEN;
+        }
+
+        return new Range<T>(newLowerEndpoint, newUpperEndpoint, boundType);
+    }
+
     public boolean isEmpty() {
         if (lowerEndpoint.isClosed || upperEndpoint.isClosed || lowerEndpoint.compareTo(upperEndpoint.value) != 0) {
             return false;
