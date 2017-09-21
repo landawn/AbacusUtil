@@ -34,6 +34,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
 import java.lang.reflect.Method;
+import java.net.InetAddress;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.ByteBuffer;
@@ -50,6 +51,7 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
@@ -71,14 +73,6 @@ public final class IOUtil {
     private static final Logger logger = LoggerFactory.getLogger(IOUtil.class);
 
     static final int DEFAULT_QUEUE_SIZE_FOR_ROW_PARSER = 1024;
-
-    // ...
-    public static final String PATH_SEPARATOR = N.PATH_SEPARATOR;
-    public static final String FILE_SEPARATOR = N.FILE_SEPARATOR;
-    public static final String LINE_SEPARATOR = N.LINE_SEPARATOR;
-
-    // ... 
-    public static final int EOF = -1;
 
     // ...
     private static final String ZIP = ".zip";
@@ -123,6 +117,135 @@ public final class IOUtil {
         stringEncodeMethod = encodeMethod;
         stringDecodeMethod = decodeMethod;
     }
+
+    static {
+        String hostName = null;
+        final boolean IS_PLATFORM_ANDROID = System.getProperty("java.vendor").toUpperCase().contains("ANDROID")
+                || System.getProperty("java.vm.vendor").toUpperCase().contains("ANDROID");
+
+        // implementation for android support
+        if (IS_PLATFORM_ANDROID) {
+            try {
+                hostName = com.landawn.abacus.android.util.Async.SerialExecutor.execute(new Callable<String>() {
+                    @Override
+                    public String call() throws Exception {
+                        return InetAddress.getLocalHost().getHostName();
+                    }
+                }).get();
+            } catch (Throwable e) {
+                logger.error("Failed to get host name");
+            }
+        } else {
+            try {
+                hostName = InetAddress.getLocalHost().getHostName();
+            } catch (Throwable e) {
+                logger.error("Failed to get host name");
+            }
+        }
+
+        HOST_NAME = hostName;
+    }
+
+    public static final int CPU_CORES = Runtime.getRuntime().availableProcessors();
+
+    public static final int MAX_MEMORY_IN_MB = (int) (Runtime.getRuntime().maxMemory() / (1024 * 1024));
+
+    public static final String HOST_NAME;
+
+    // ...
+    public static final String OS_NAME = System.getProperty("os.name");
+
+    public static final String OS_VERSION = System.getProperty("os.version");
+
+    public static final String OS_ARCH = System.getProperty("os.arch");
+
+    //...
+    public static final boolean IS_OS_WINDOWS = OS_NAME.toUpperCase().contains("WINDOWS");
+
+    public static final boolean IS_OS_MAC = OS_NAME.toUpperCase().contains("MAC");
+
+    public static final boolean IS_OS_MAC_OSX = OS_NAME.toUpperCase().contains("MAC OS X");
+
+    public static final boolean IS_OS_LINUX = OS_NAME.toUpperCase().contains("LINUX");
+
+    public static final boolean IS_PLATFORM_ANDROID = System.getProperty("java.vendor").toUpperCase().contains("ANDROID")
+            || System.getProperty("java.vm.vendor").toUpperCase().contains("ANDROID");
+
+    // ...
+    public static final String JAVA_HOME = System.getProperty("java.home");
+
+    public static final String JAVA_VERSION = System.getProperty("java.version");
+
+    public static final String JAVA_VENDOR = System.getProperty("java.vendor");
+
+    public static final String JAVA_CLASS_PATH = System.getProperty("java.class.path");
+
+    public static final String JAVA_CLASS_VERSION = System.getProperty("java.class.version");
+
+    public static final String JAVA_RUNTIME_NAME = System.getProperty("java.runtime.name");
+
+    public static final String JAVA_RUNTIME_VERSION = System.getProperty("java.runtime.version");
+
+    public static final String JAVA_SPECIFICATION_NAME = System.getProperty("java.specification.name");
+
+    public static final String JAVA_SPECIFICATION_VENDOR = System.getProperty("java.specification.vendor");
+
+    public static final String JAVA_SPECIFICATION_VERSION = System.getProperty("java.specification.version");
+
+    public static final String JAVA_VM_INFO = System.getProperty("java.vm.info");
+
+    public static final String JAVA_VM_NAME = System.getProperty("java.vm.name");
+
+    public static final String JAVA_VM_SPECIFICATION_NAME = System.getProperty("java.vm.specification.name");
+
+    public static final String JAVA_VM_SPECIFICATION_VENDOR = System.getProperty("java.vm.specification.vendor");
+
+    public static final String JAVA_VM_SPECIFICATION_VERSION = System.getProperty("java.vm.specification.version");
+
+    public static final String JAVA_VM_VENDOR = System.getProperty("java.vm.vendor");
+
+    public static final String JAVA_VM_VERSION = System.getProperty("java.vm.version");
+
+    public static final String JAVA_IO_TMPDIR = System.getProperty("java.io.tmpdir");
+
+    static final String JAVA_VENDOR_URL = System.getProperty("java.vendor.url");
+
+    static final String JAVA_LIBRARY_PATH = System.getProperty("java.library.path");
+    static final String JAVA_COMPILER = System.getProperty("java.compiler");
+    static final String JAVA_ENDORSED_DIRS = System.getProperty("java.endorsed.dirs");
+    static final String JAVA_EXT_DIRS = System.getProperty("java.ext.dirs");
+
+    // ...
+    static final String JAVA_AWT_FONTS = System.getProperty("java.awt.fonts");
+    static final String JAVA_AWT_GRAPHICSENV = System.getProperty("java.awt.graphicsenv");
+    static final String JAVA_AWT_HEADLESS = System.getProperty("java.awt.headless");
+    static final String JAVA_AWT_PRINTERJOB = System.getProperty("java.awt.printerjob");
+
+    static final String JAVA_UTIL_PREFS_PREFERENCES_FACTORY = System.getProperty("java.util.prefs.PreferencesFactory");
+
+    // ...
+    public static final String USER_DIR = System.getProperty("user.dir");
+
+    public static final String USER_HOME = System.getProperty("user.home");
+
+    public static final String USER_NAME = System.getProperty("user.name");
+
+    public static final String USER_TIMEZONE = System.getProperty("user.timezone");
+
+    public static final String USER_LANGUAGE = System.getProperty("user.language");
+
+    public static final String USER_COUNTRY = System.getProperty("user.country") == null ? System.getProperty("user.region")
+            : System.getProperty("user.country");
+
+    // ...
+    public static final String PATH_SEPARATOR = System.getProperty("path.separator");
+
+    public static final String FILE_SEPARATOR = System.getProperty("file.separator");
+
+    public static final String LINE_SEPARATOR = System.getProperty("line.separator");
+
+    // ... 
+    public static final int EOF = -1;
 
     /**
      * Constructor for FileUtil.
@@ -1139,7 +1262,7 @@ public final class IOUtil {
                 writer.write(obj.toString());
             }
 
-            writer.write(N.LINE_SEPARATOR);
+            writer.write(IOUtil.LINE_SEPARATOR);
 
             if (flush) {
                 writer.flush();
@@ -1212,7 +1335,7 @@ public final class IOUtil {
                         writer.write(line.toString());
                     }
 
-                    writer.write(N.LINE_SEPARATOR);
+                    writer.write(IOUtil.LINE_SEPARATOR);
 
                     count--;
                 }
@@ -1297,7 +1420,7 @@ public final class IOUtil {
                         writer.write(line.toString());
                     }
 
-                    writer.write(N.LINE_SEPARATOR);
+                    writer.write(IOUtil.LINE_SEPARATOR);
 
                     count--;
                 }
@@ -2914,7 +3037,7 @@ public final class IOUtil {
      *          <code>false</code> otherwise
      */
     public static boolean renameTo(final File srcFile, final String newFileName) {
-        return srcFile.renameTo(new File(srcFile.getParent() + N.FILE_SEPARATOR + newFileName));
+        return srcFile.renameTo(new File(srcFile.getParent() + IOUtil.FILE_SEPARATOR + newFileName));
     }
 
     /**
@@ -3198,7 +3321,7 @@ public final class IOUtil {
             input = new FileInputStream(file);
 
             for (int i = 0; i < numOfParts; i++) {
-                String subFileNmae = destDir.getAbsolutePath() + N.FILE_SEPARATOR + fileName + "_" + N.padStart(N.stringOf(fileSerNum++), 4, '0');
+                String subFileNmae = destDir.getAbsolutePath() + IOUtil.FILE_SEPARATOR + fileName + "_" + N.padStart(N.stringOf(fileSerNum++), 4, '0');
                 output = new FileOutputStream(new File(subFileNmae));
                 long partLength = sizeOfPart;
 
@@ -3259,14 +3382,14 @@ public final class IOUtil {
 
             br = ObjectFactory.createBufferedReader(is);
 
-            String subFileNmae = destDir.getAbsolutePath() + N.FILE_SEPARATOR + prefix + "_" + N.padStart(N.stringOf(fileSerNum++), 4, '0') + postfix;
+            String subFileNmae = destDir.getAbsolutePath() + IOUtil.FILE_SEPARATOR + prefix + "_" + N.padStart(N.stringOf(fileSerNum++), 4, '0') + postfix;
             bw = ObjectFactory.createBufferedWriter(new FileWriter(new File(subFileNmae)));
 
             int lineCounter = 0;
             String line = null;
             while ((line = br.readLine()) != null) {
                 bw.write(line);
-                bw.write(N.LINE_SEPARATOR);
+                bw.write(IOUtil.LINE_SEPARATOR);
                 lineCounter++;
 
                 if ((lineCounter % lineNumOfPart) == 0) {
@@ -3276,7 +3399,7 @@ public final class IOUtil {
                         bw = null;
                     }
 
-                    subFileNmae = destDir.getAbsolutePath() + N.FILE_SEPARATOR + prefix + "_" + N.padStart(N.stringOf(fileSerNum++), 4, '0') + postfix;
+                    subFileNmae = destDir.getAbsolutePath() + IOUtil.FILE_SEPARATOR + prefix + "_" + N.padStart(N.stringOf(fileSerNum++), 4, '0') + postfix;
                     bw = ObjectFactory.createBufferedWriter(new FileWriter(new File(subFileNmae)));
                 }
             }

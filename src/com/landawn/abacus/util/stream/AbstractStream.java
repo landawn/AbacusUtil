@@ -2087,7 +2087,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         try {
             while (iter.hasNext()) {
                 bw.write(toLine.apply(iter.next()));
-                bw.write(N.LINE_SEPARATOR);
+                bw.write(IOUtil.LINE_SEPARATOR);
                 cnt++;
             }
         } catch (IOException e) {

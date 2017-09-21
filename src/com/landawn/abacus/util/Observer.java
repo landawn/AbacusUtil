@@ -64,9 +64,9 @@ public abstract class Observer<T> {
         }
     };
 
-    protected static final Executor asyncExecutor = Executors.newFixedThreadPool(N.IS_PLATFORM_ANDROID ? N.CPU_CORES : 32);
+    protected static final Executor asyncExecutor = Executors.newFixedThreadPool(IOUtil.IS_PLATFORM_ANDROID ? IOUtil.CPU_CORES : 32);
 
-    protected static final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(N.IS_PLATFORM_ANDROID ? N.CPU_CORES : 32);
+    protected static final ScheduledThreadPoolExecutor scheduler = new ScheduledThreadPoolExecutor(IOUtil.IS_PLATFORM_ANDROID ? IOUtil.CPU_CORES : 32);
 
     static {
         scheduler.setRemoveOnCancelPolicy(true);

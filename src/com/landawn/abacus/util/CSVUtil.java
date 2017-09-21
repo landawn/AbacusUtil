@@ -994,7 +994,7 @@ public final class CSVUtil {
                     bw.write(columnNames[i]);
                 }
 
-                bw.write(N.LINE_SEPARATOR);
+                bw.write(IOUtil.LINE_SEPARATOR);
             }
 
             final DataChannel dc = new ResultSetChannel(rs);
@@ -1007,7 +1007,7 @@ public final class CSVUtil {
 
             while (result < count && rs.next()) {
                 if (result++ > 0) {
-                    bw.write(N.LINE_SEPARATOR);
+                    bw.write(IOUtil.LINE_SEPARATOR);
                 }
 
                 for (int i = 0, j = 0; i < columnCount; i++) {

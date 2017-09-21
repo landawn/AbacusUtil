@@ -45,6 +45,7 @@ import com.landawn.abacus.util.DoubleList;
 import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.FloatList;
 import com.landawn.abacus.util.Holder;
+import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.Indexed;
 import com.landawn.abacus.util.IndexedByte;
 import com.landawn.abacus.util.IndexedChar;
@@ -116,7 +117,7 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
         };
     }
 
-    static final int DEFAULT_MAX_THREAD_NUM = N.CPU_CORES;
+    static final int DEFAULT_MAX_THREAD_NUM = IOUtil.CPU_CORES;
     static final int DEFAULT_READING_THREAD_NUM = 8;
 
     static final int MAX_QUEUE_SIZE = 8192;

@@ -13,7 +13,9 @@
 
 6, Add Chain
 
-7, Improvements and bug fix.
+7, Move HOST_NAME/CPU_CORES/JAVA_HOME/... from N to IOUtil.
+
+8, Improvements and bug fix.
 
 
 ========Changes in 0.9.83=========================================================================

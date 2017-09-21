@@ -18,9 +18,6 @@ package com.landawn.abacus.util;
 
 import java.util.Comparator;
 
-import com.google.common.primitives.Ints;
-import com.google.common.primitives.Longs;
-
 /**
  * 
  * @author HaiYang Li
@@ -57,7 +54,7 @@ public final class Chain {
     }
 
     /**
-     * Compares two {@code int} values as specified by {@link Ints#compare},
+     * Compares two {@code int} values as specified by {@link N#compare},
      * <i>if</i> the result of this comparison chain has not already been
      * determined.
      * 
@@ -70,7 +67,7 @@ public final class Chain {
     }
 
     /**
-     * Compares two {@code long} values as specified by {@link Longs#compare},
+     * Compares two {@code long} values as specified by {@link N#compare},
      * <i>if</i> the result of this comparison chain has not already been
      * determined.
      * 
@@ -314,7 +311,7 @@ public final class Chain {
         }
 
         /**
-         * Compares two {@code int} values as specified by {@link Ints#compare},
+         * Compares two {@code int} values as specified by {@link N#compare},
          * <i>if</i> the result of this comparison chain has not already been
          * determined.
          * 
@@ -331,7 +328,7 @@ public final class Chain {
         }
 
         /**
-         * Compares two {@code long} values as specified by {@link Longs#compare},
+         * Compares two {@code long} values as specified by {@link N#compare},
          * <i>if</i> the result of this comparison chain has not already been
          * determined.
          * 

@@ -178,8 +178,8 @@ public final class Profiler {
         }
 
         // It takes about 250MB memory to save 1 million test result.
-        if (threadNum * loopNum > N.MAX_MEMORY_IN_MB * 1000) {
-            if (N.MAX_MEMORY_IN_MB < 1024) {
+        if (threadNum * loopNum > IOUtil.MAX_MEMORY_IN_MB * 1000) {
+            if (IOUtil.MAX_MEMORY_IN_MB < 1024) {
                 logger.warn(
                         "Saving big number loop result in small memory may slow down the performance of target method. Conside increasing the maximium JVM memory size.");
 

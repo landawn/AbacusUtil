@@ -45,7 +45,7 @@ public final class Array {
 
     static final AsyncExecutor parallelSortExecutor = new AsyncExecutor(64, 300L, TimeUnit.SECONDS);
 
-    static volatile int CPU_CORES = N.CPU_CORES;
+    static volatile int CPU_CORES = IOUtil.CPU_CORES;
 
     static final int MIN_ARRAY_SORT_GRAN = 8192;
     static final int BINARYSEARCH_THRESHOLD = 64;

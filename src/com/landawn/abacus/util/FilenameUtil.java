@@ -98,7 +98,7 @@ public final class FilenameUtil {
      * If you derialize this constant of Windows, and deserialize on Unix, or vice
      * versa, then the value of the case-sensitivity flag will change.
      */
-    public static final boolean IS_SYSTEM_PATH_CASE_SENSITIVE = !N.IS_OS_WINDOWS;
+    public static final boolean IS_SYSTEM_PATH_CASE_SENSITIVE = !IOUtil.IS_OS_WINDOWS;
 
     /**
      * The extension separator character.
@@ -132,7 +132,7 @@ public final class FilenameUtil {
      */
     private static final char OTHER_SEPARATOR;
     static {
-        if (N.IS_OS_WINDOWS) {
+        if (IOUtil.IS_OS_WINDOWS) {
             OTHER_SEPARATOR = UNIX_SEPARATOR;
         } else {
             OTHER_SEPARATOR = WINDOWS_SEPARATOR;
@@ -584,7 +584,7 @@ public final class FilenameUtil {
         if (path == null) {
             return null;
         }
-        if (N.IS_OS_WINDOWS) {
+        if (IOUtil.IS_OS_WINDOWS) {
             return separatorsToWindows(path);
         } else {
             return separatorsToUnix(path);
