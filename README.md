@@ -12,7 +12,7 @@ Full API documentation is available [here](https://www.javadoc.io/doc/com.landaw
 
 * Streams, both sequential and parallel, are supported for JDK7/Anrdoid and primitive types with more functions: [Stream][], [EntryStream][], [CharStream][], [ByteStream][], [ShortStream][], [IntStream][], [LongStream][], [FloatStream][], [DoubleStream][], [Fn][] and more [Collectors][].
 
-* Programming in Android: [SQLiteExecutor][], [SQLBuilder][], [Async][], [CompletableFuture][CompletableFuture_Android], [Futures_Android][], [EventBus][], [Observer][], [ObserverX][] and [Fu][]
+* Programming in Android: [SQLiteExecutor][], [SQLBuilder][], [Async][], [CompletableFuture][CompletableFuture_Android], [Futures][Futures_Android], [EventBus][], [Observer][], [ObserverX][] and [Fu][]
 
 * SQL Builder/ORM: [SQLExecutor][], [SQLBuilder][], [DataSet][], [JdbcUtil][], [CSVUtil][]...
 
