@@ -12,7 +12,7 @@ Full API documentation is available [here](https://www.javadoc.io/doc/com.landaw
 
 * Streams, both sequential and parallel, are supported for JDK7/Anrdoid and primitive types with more functions: [Stream][], [EntryStream][], [CharStream][], [ByteStream][], [ShortStream][], [IntStream][], [LongStream][], [FloatStream][], [DoubleStream][], [Fn][] and more [Collectors][].
 
-* Programming in Android: [SQLiteExecutor][], [SQLBuilder][], [Async][], [CompletableFuture][CompletableFuture_Android], [Futures][], [EventBus][], [Observer][], [ObserverX][] and [Fu][]
+* Programming in Android: [SQLiteExecutor][], [SQLBuilder][], [Async][], [CompletableFuture][CompletableFuture_Android], [Futures_Android][], [EventBus][], [Observer][], [ObserverX][] and [Fu][]
 
 * SQL Builder/ORM: [SQLExecutor][], [SQLBuilder][], [DataSet][], [JdbcUtil][], [CSVUtil][]...
 
@@ -26,7 +26,6 @@ Full API documentation is available [here](https://www.javadoc.io/doc/com.landaw
 [Retry](https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/Retry.html),
 [Try](https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/Try.html),
 [Synchronized](https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/Synchronized.html),
-[Wrapper](https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/Wrapper.html),
 [ObjectPool](https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/pool/ObjectPool.html),
 [KeyedObjectPool](https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/pool/KeyedObjectPool.html),
 [SpyMemcached](https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/cache/SpyMemcached.html),
@@ -38,6 +37,8 @@ Full API documentation is available [here](https://www.javadoc.io/doc/com.landaw
 [Ascii](https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/Ascii.html),
 [CalendarUnit](https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/CalendarUnit.html),
 [NamingPolicy](https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/NamingPolicy.html),
+[Array](https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/Array.html),
+[Wrapper](https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/Wrapper.html),
 [ArrayHashSet](https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/ArrayHashSet.html),
 [ArrayHashMap](https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/ArrayHashMap.html),
 [Holder](https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/Holder.html),
@@ -320,7 +321,7 @@ assertFalse(collExecutor.exists(dbAccount.getId()));
 [SQLBuilder]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/SQLBuilder.html
 [Async]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/android/util/Async.html
 [CompletableFuture_Android]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/android/util/CompletableFuture.html
-[Futures]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/android/util/Futures.html
+[Futures_Android]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/android/util/Futures.html
 [EventBus]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/eventBus/EventBus.html
 [Observer]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/android/util/Observer.html
 [ObserverX]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/android/util/ObserverX.html
