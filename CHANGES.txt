@@ -17,7 +17,11 @@
 
 8, Rename NullabLe.jdkOptional() to NullabLe.toJdkOptional().
 
-9, Improvements and bug fix.
+9, Move merge/zip/unzip(Iterator...) from Seq to Iterators.
+
+10, Refactoring Seq.unzip/Iterators.unzip
+
+11, Improvements and bug fix.
 
 
 ========Changes in 0.9.83=========================================================================

@@ -75,6 +75,7 @@ import com.landawn.abacus.util.ImmutableSet;
 import com.landawn.abacus.util.Indexed;
 import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.IntList;
+import com.landawn.abacus.util.Iterators;
 import com.landawn.abacus.util.LineIterator;
 import com.landawn.abacus.util.ListMultimap;
 import com.landawn.abacus.util.LongIterator;
@@ -7612,7 +7613,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <T, L, R> Pair<Stream<L>, Stream<R>> unzip(final Iterator<? extends T> iter, final BiConsumer<? super T, Pair<L, R>> unzip) {
-        final Pair<List<L>, List<R>> p = Seq.unzip(iter, unzip);
+        final Pair<List<L>, List<R>> p = Iterators.unzip(iter, unzip);
 
         return Pair.of(Stream.of(p.left), Stream.of(p.right));
     }
@@ -7638,7 +7639,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <T, L, M, R> Triple<Stream<L>, Stream<M>, Stream<R>> unzip3(final Iterator<? extends T> iter,
             final BiConsumer<? super T, Triple<L, M, R>> unzip) {
-        final Triple<List<L>, List<M>, List<R>> p = Seq.unzip3(iter, unzip);
+        final Triple<List<L>, List<M>, List<R>> p = Iterators.unzip3(iter, unzip);
 
         return Triple.of(Stream.of(p.left), Stream.of(p.middle), Stream.of(p.right));
     }
