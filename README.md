@@ -85,7 +85,7 @@ addByStream,    0.002,      0.001,      0.499,      0.104,      0.015,      0.00
 HttpClient.of("https://api.github.com/octocat").get()
 ```
 
-### [CodeGenerator](http://www.landawn.com/api-docs/com/landawn/abacus/util/CodeGenerator.html) for entity classes with getter/setter methods. Here are the at least benefits of generating code by tool:
+### [CodeGenerator](https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/CodeGenerator.html) for entity classes with getter/setter methods. Here are the at least benefits of generating code by tool:
 
 1. Productivity: generate tens, even hundreds of lines of code by couple of lines of codes in one minute.
 
@@ -127,7 +127,7 @@ Account account3 = N.fromXML(Account.class, xml);
 assertEquals(account, account3);
 ```
 
-More see: [ParserFactory](http://www.landawn.com/api-docs/com/landawn/abacus/parser/ParserFactory.html)
+More see: [ParserFactory](https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/parser/ParserFactory.html)
 
 ### Functional Programming
 ```java
@@ -215,82 +215,82 @@ assertFalse(collExecutor.exists(dbAccount.getId()));
 ### [Kotlin vs Java 8 on Collection](./Java_Kotlin.md)
 
 
-[IOUtil]: http://www.landawn.com/api-docs/com/landawn/abacus/util/IOUtil.html
-[Multiset]: http://www.landawn.com/api-docs/com/landawn/abacus/util/Multiset.html
-[LongMultiset]: http://www.landawn.com/api-docs/com/landawn/abacus/util/LongMultiset.html
-[BiMap]: http://www.landawn.com/api-docs/com/landawn/abacus/util/BiMap.html
-[Multimap]: http://www.landawn.com/api-docs/com/landawn/abacus/util/Multimap.html
-[ImmutableList]: http://www.landawn.com/api-docs/com/landawn/abacus/util/ImmutableList.html
-[ImmutableSet]: http://www.landawn.com/api-docs/com/landawn/abacus/util/ImmutableSet.html
-[ImmutableMap]: http://www.landawn.com/api-docs/com/landawn/abacus/util/ImmutableMap.html
-[Sheet]: http://www.landawn.com/api-docs/com/landawn/abacus/util/Sheet.html
-[Pair]: http://www.landawn.com/api-docs/com/landawn/abacus/util/Pair.html
-[Triple]: http://www.landawn.com/api-docs/com/landawn/abacus/util/Triple.html
-[Tuple]: http://www.landawn.com/api-docs/com/landawn/abacus/util/Tuple.html
-[Splitter]: http://www.landawn.com/api-docs/com/landawn/abacus/util/Splitter.html
-[Joiner]: http://www.landawn.com/api-docs/com/landawn/abacus/util/Joiner.html
-[Builder]: http://www.landawn.com/api-docs/com/landawn/abacus/util/Builder.html
-[Difference]: http://www.landawn.com/api-docs/com/landawn/abacus/util/Difference.html
-[Profiler]: http://www.landawn.com/api-docs/com/landawn/abacus/util/Profiler.html
-[AsyncExecutor]: http://www.landawn.com/api-docs/com/landawn/abacus/util/AsyncExecutor.html
-[CompletableFuture]: http://www.landawn.com/api-docs/com/landawn/abacus/util/CompletableFuture.html
-[Futures]: http://www.landawn.com/api-docs/com/landawn/abacus/util/Futures.html
-[CodeGenerator]: http://www.landawn.com/api-docs/com/landawn/abacus/util/CodeGenerator.html
-[HttpClient]: http://www.landawn.com/api-docs/com/landawn/abacus/http/HttpClient.html
-[N]:http://www.landawn.com/api-docs/com/landawn/abacus/util/N.html
+[IOUtil]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/IOUtil.html
+[Multiset]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/Multiset.html
+[LongMultiset]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/LongMultiset.html
+[BiMap]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/BiMap.html
+[Multimap]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/Multimap.html
+[ImmutableList]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/ImmutableList.html
+[ImmutableSet]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/ImmutableSet.html
+[ImmutableMap]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/ImmutableMap.html
+[Sheet]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/Sheet.html
+[Pair]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/Pair.html
+[Triple]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/Triple.html
+[Tuple]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/Tuple.html
+[Splitter]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/Splitter.html
+[Joiner]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/Joiner.html
+[Builder]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/Builder.html
+[Difference]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/Difference.html
+[Profiler]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/Profiler.html
+[AsyncExecutor]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/AsyncExecutor.html
+[CompletableFuture]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/CompletableFuture.html
+[Futures]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/Futures.html
+[CodeGenerator]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/CodeGenerator.html
+[HttpClient]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/http/HttpClient.html
+[N]:https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/N.html
 
-[BooleanList]: http://www.landawn.com/api-docs/com/landawn/abacus/util/BooleanList.html
-[CharList]: http://www.landawn.com/api-docs/com/landawn/abacus/util/CharList.html
-[ByteList]: http://www.landawn.com/api-docs/com/landawn/abacus/util/ByteList.html
-[ShortList]: http://www.landawn.com/api-docs/com/landawn/abacus/util/ShortList.html
-[IntList]: http://www.landawn.com/api-docs/com/landawn/abacus/util/IntList.html
-[LongList]: http://www.landawn.com/api-docs/com/landawn/abacus/util/LongList.html
-[FloatList]: http://www.landawn.com/api-docs/com/landawn/abacus/util/FloatList.html
-[DoubleList]: http://www.landawn.com/api-docs/com/landawn/abacus/util/DoubleList.html
-[Seq]: http://www.landawn.com/api-docs/com/landawn/abacus/util/Seq.html
+[BooleanList]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/BooleanList.html
+[CharList]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/CharList.html
+[ByteList]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/ByteList.html
+[ShortList]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/ShortList.html
+[IntList]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/IntList.html
+[LongList]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/LongList.html
+[FloatList]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/FloatList.html
+[DoubleList]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/DoubleList.html
+[Seq]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/Seq.html
 
-[Stream]: http://www.landawn.com/api-docs/com/landawn/abacus/util/stream/Stream.html
-[EntryStream]: http://www.landawn.com/api-docs/com/landawn/abacus/util/stream/EntryStream.html
-[CharStream]: http://www.landawn.com/api-docs/com/landawn/abacus/util/stream/CharStream.html
-[ByteStream]: http://www.landawn.com/api-docs/com/landawn/abacus/util/stream/ByteStream.html
-[ShortStream]: http://www.landawn.com/api-docs/com/landawn/abacus/util/stream/ShortStream.html
-[IntStream]: http://www.landawn.com/api-docs/com/landawn/abacus/util/stream/IntStream.html
-[LongStream]: http://www.landawn.com/api-docs/com/landawn/abacus/util/stream/LongStream.html
-[FloatStream]: http://www.landawn.com/api-docs/com/landawn/abacus/util/stream/FloatStream.html
-[DoubleStream]: http://www.landawn.com/api-docs/com/landawn/abacus/util/stream/DoubleStream.html
-[Fn]: http://www.landawn.com/api-docs/com/landawn/abacus/util/Fn.html
-[Collectors]: http://www.landawn.com/api-docs/com/landawn/abacus/util/stream/Collectors.html
+[Stream]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/stream/Stream.html
+[EntryStream]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/stream/EntryStream.html
+[CharStream]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/stream/CharStream.html
+[ByteStream]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/stream/ByteStream.html
+[ShortStream]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/stream/ShortStream.html
+[IntStream]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/stream/IntStream.html
+[LongStream]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/stream/LongStream.html
+[FloatStream]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/stream/FloatStream.html
+[DoubleStream]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/stream/DoubleStream.html
+[Fn]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/Fn.html
+[Collectors]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/stream/Collectors.html
 
-[SQLiteExecutor]: http://www.landawn.com/api-docs/com/landawn/abacus/android/util/SQLiteExecutor.html
-[SQLBuilder]: http://www.landawn.com/api-docs/com/landawn/abacus/util/SQLBuilder.html
-[Async]: http://www.landawn.com/api-docs/com/landawn/abacus/android/util/Async.html
-[CompletableFuture_Android]: http://www.landawn.com/api-docs/com/landawn/abacus/android/util/CompletableFuture.html
-[Futures]: http://www.landawn.com/api-docs/com/landawn/abacus/android/util/Futures.html
-[EventBus]: http://www.landawn.com/api-docs/com/landawn/abacus/eventBus/EventBus.html
-[Observer]: http://www.landawn.com/api-docs/com/landawn/abacus/android/util/Observer.html
-[ObserverX]: http://www.landawn.com/api-docs/com/landawn/abacus/android/util/ObserverX.html
-[Fu]: http://www.landawn.com/api-docs/com/landawn/abacus/android/util/Fu.html
+[SQLiteExecutor]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/android/util/SQLiteExecutor.html
+[SQLBuilder]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/SQLBuilder.html
+[Async]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/android/util/Async.html
+[CompletableFuture_Android]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/android/util/CompletableFuture.html
+[Futures]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/android/util/Futures.html
+[EventBus]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/eventBus/EventBus.html
+[Observer]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/android/util/Observer.html
+[ObserverX]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/android/util/ObserverX.html
+[Fu]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/android/util/Fu.html
 
-[SQLExecutor]: http://www.landawn.com/api-docs/com/landawn/abacus/util/SQLExecutor.html
-[SQLBuilder]: http://www.landawn.com/api-docs/com/landawn/abacus/util/SQLBuilder.html
-[DataSet]: http://www.landawn.com/api-docs/com/landawn/abacus/DataSet.html
-[JdbcUtil]: http://www.landawn.com/api-docs/com/landawn/abacus/util/JdbcUtil.html
-[CSVUtil]: http://www.landawn.com/api-docs/com/landawn/abacus/util/CSVUtil.html
+[SQLExecutor]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/SQLExecutor.html
+[SQLBuilder]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/SQLBuilder.html
+[DataSet]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/DataSet.html
+[JdbcUtil]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/JdbcUtil.html
+[CSVUtil]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/CSVUtil.html
 
-[MongoDBExecutor]: http://www.landawn.com/api-docs/com/landawn/abacus/util/MongoDBExecutor.html
-[CassandraExecutor]: http://www.landawn.com/api-docs/com/landawn/abacus/util/CassandraExecutor.html
-[CQLBuilder]: http://www.landawn.com/api-docs/com/landawn/abacus/util/CQLBuilder.html
-[CouchbaseExecutor]: http://www.landawn.com/api-docs/com/landawn/abacus/util/CouchbaseExecutor.html
-[HBaseExecutor]: http://www.landawn.com/api-docs/com/landawn/abacus/util/HBaseExecutor.html
-[DynamoDBExecutor]: http://www.landawn.com/api-docs/com/landawn/abacus/util/DynamoDBExecutor.html
-[Neo4jExecutor]: http://www.landawn.com/api-docs/com/landawn/abacus/util/Neo4jExecutor.html
+[MongoDBExecutor]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/MongoDBExecutor.html
+[CassandraExecutor]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/CassandraExecutor.html
+[CQLBuilder]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/CQLBuilder.html
+[CouchbaseExecutor]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/CouchbaseExecutor.html
+[HBaseExecutor]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/HBaseExecutor.html
+[DynamoDBExecutor]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/DynamoDBExecutor.html
+[Neo4jExecutor]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/Neo4jExecutor.html
 
-[Parser]: http://www.landawn.com/api-docs/com/landawn/abacus/parser/Parser.html
-[JSONParser]: http://www.landawn.com/api-docs/com/landawn/abacus/parser/JSONParser.html
-[XMLParser]: http://www.landawn.com/api-docs/com/landawn/abacus/parser/XMLParser.html
-[KryoParser]: http://www.landawn.com/api-docs/com/landawn/abacus/parser/KryoParser.html
+[Parser]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/parser/Parser.html
+[JSONParser]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/parser/JSONParser.html
+[XMLParser]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/parser/XMLParser.html
+[KryoParser]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/parser/KryoParser.html
 
-[Matrix]: http://www.landawn.com/api-docs/com/landawn/abacus/util/Matrix.html
-[IntMatrix]: http://www.landawn.com/api-docs/com/landawn/abacus/util/IntMatrix.html
-[LongMatrix]: http://www.landawn.com/api-docs/com/landawn/abacus/util/LongMatrix.html
-[DoubleMatrix]: http://www.landawn.com/api-docs/com/landawn/abacus/util/DoubleMatrix.html
+[Matrix]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/Matrix.html
+[IntMatrix]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/IntMatrix.html
+[LongMatrix]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/LongMatrix.html
+[DoubleMatrix]: https://static.javadoc.io/com.landawn/abacus-util/0.9.83/com/landawn/abacus/util/DoubleMatrix.html
