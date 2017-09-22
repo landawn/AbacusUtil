@@ -109,9 +109,9 @@ public final class NullabLe<T> {
         return new NullabLe<>(value);
     }
 
-    public static <T> NullabLe<T> from(Optional<T> optional) {
-        return optional.isPresent() ? new NullabLe<T>(optional.get()) : (NullabLe<T>) empty();
-    }
+    //    public static <T> NullabLe<T> from(Optional<T> optional) {
+    //        return optional.isPresent() ? new NullabLe<T>(optional.get()) : (NullabLe<T>) empty();
+    //    }
 
     /**
      * If a value is present in this {@code NullabLe}, returns the value,
@@ -492,7 +492,7 @@ public final class NullabLe<T> {
      * @return
      * @see java.util.Optional
      */
-    public java.util.Optional<T> jdkOptional() {
+    public java.util.Optional<T> toJdkOptional() {
         return value == null ? java.util.Optional.<T> empty() : java.util.Optional.of(value);
     }
 

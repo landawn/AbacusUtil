@@ -311,6 +311,10 @@ public final class Sheet<R, C, E> {
         }
     }
 
+    public E remove(IntPair point) {
+        return remove(point._1, point._2);
+    }
+
     public boolean contains(Object rowKey, Object columnKey) {
         return get(rowKey, columnKey) != null;
     }

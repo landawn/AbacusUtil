@@ -196,14 +196,12 @@ public class Multimap<K, E, V extends Collection<E>> {
      * @return
      */
     public Multimap<K, E, V> setAllIfAbsent(final K key, final Collection<? extends E> c) {
-        if (N.notNullOrEmpty(c)) {
-            V val = valueMap.get(key);
+        V val = valueMap.get(key);
 
-            if (val == null) {
-                val = N.newInstance(concreteValueType);
-                val.addAll(c);
-                valueMap.put(key, val);
-            }
+        if (val == null && N.notNullOrEmpty(c)) {
+            val = N.newInstance(concreteValueType);
+            val.addAll(c);
+            valueMap.put(key, val);
         }
 
         return this;

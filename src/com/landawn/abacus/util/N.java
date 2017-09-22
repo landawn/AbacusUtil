@@ -3374,83 +3374,8 @@ public final class N {
      *
      * @see UUID#randomUUID().
      */
-    // It's copied from OpenJDK 1.7 on 3/9/205
-    /*
-     * Copyright (c) 2003, 2011, Oracle and/or its affiliates. All rights reserved.
-     * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
-     *
-     * This code is free software; you can redistribute it and/or modify it
-     * under the terms of the GNU General Public License version 2 only, as
-     * published by the Free Software Foundation.  Oracle designates this
-     * particular file as subject to the "Classpath" exception as provided
-     * by Oracle in the LICENSE file that accompanied this code.
-     *
-     * This code is distributed in the hope that it will be useful, but WITHOUT
-     * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-     * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-     * version 2 for more details (a copy is included in the LICENSE file that
-     * accompanied this code).
-     *
-     * You should have received a copy of the GNU General Public License version
-     * 2 along with this work; if not, write to the Free Software Foundation,
-     * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
-     *
-     * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
-     * or visit www.oracle.com if you need additional information or have any
-     * questions.
-     */
     public static String guid() {
-        final byte[] randomBytes = new byte[16];
-        RAND.nextBytes(randomBytes);
-
-        randomBytes[6] &= 0x0f; /* clear version        */
-        randomBytes[6] |= 0x40; /* set to version 4     */
-        randomBytes[8] &= 0x3f; /* clear variant        */
-        randomBytes[8] |= 0x80; /* set to IETF variant  */
-
-        long msb = 0;
-        long lsb = 0;
-
-        for (int i = 0; i < 8; i++) {
-            msb = (msb << 8) | (randomBytes[i] & 0xff);
-        }
-
-        for (int i = 8; i < 16; i++) {
-            lsb = (lsb << 8) | (randomBytes[i] & 0xff);
-        }
-
-        return (digits(msb >> 32, 8) + digits(msb >> 16, 4) + digits(msb, 4) + digits(lsb >> 48, 4) + digits(lsb, 12));
-    }
-
-    // It's copied from OpenJDK 1.7 on 3/9/205
-    /*
-     * Copyright (c) 2003, 2011, Oracle and/or its affiliates. All rights reserved.
-     * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
-     *
-     * This code is free software; you can redistribute it and/or modify it
-     * under the terms of the GNU General Public License version 2 only, as
-     * published by the Free Software Foundation.  Oracle designates this
-     * particular file as subject to the "Classpath" exception as provided
-     * by Oracle in the LICENSE file that accompanied this code.
-     *
-     * This code is distributed in the hope that it will be useful, but WITHOUT
-     * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-     * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-     * version 2 for more details (a copy is included in the LICENSE file that
-     * accompanied this code).
-     *
-     * You should have received a copy of the GNU General Public License version
-     * 2 along with this work; if not, write to the Free Software Foundation,
-     * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
-     *
-     * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
-     * or visit www.oracle.com if you need additional information or have any
-     * questions.
-     */
-    private static String digits(final long val, final int digits) {
-        long hi = 1L << (digits * 4);
-
-        return Long.toHexString(hi | (val & (hi - 1))).substring(1);
+        return uuid().replace("-", "");
     }
 
     /**
