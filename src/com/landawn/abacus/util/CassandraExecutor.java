@@ -64,7 +64,7 @@ import com.landawn.abacus.condition.ConditionFactory.L;
 import com.landawn.abacus.exception.NonUniqueResultException;
 import com.landawn.abacus.pool.KeyedObjectPool;
 import com.landawn.abacus.pool.PoolFactory;
-import com.landawn.abacus.pool.Wrapper;
+import com.landawn.abacus.pool.PoolableWrapper;
 import com.landawn.abacus.type.Type;
 import com.landawn.abacus.util.CQLBuilder.CP;
 import com.landawn.abacus.util.CQLBuilder.NE;
@@ -139,8 +139,8 @@ public final class CassandraExecutor implements Closeable {
 
     private static final Map<Class<?>, Set<String>> entityKeyNamesMap = new ConcurrentHashMap<>();
 
-    private final KeyedObjectPool<String, Wrapper<Statement>> stmtPool = PoolFactory.createKeyedObjectPool(1024, 3000);
-    private final KeyedObjectPool<String, Wrapper<PreparedStatement>> preStmtPool = PoolFactory.createKeyedObjectPool(1024, 3000);
+    private final KeyedObjectPool<String, PoolableWrapper<Statement>> stmtPool = PoolFactory.createKeyedObjectPool(1024, 3000);
+    private final KeyedObjectPool<String, PoolableWrapper<PreparedStatement>> preStmtPool = PoolFactory.createKeyedObjectPool(1024, 3000);
 
     private final CQLMapper cqlMapper;
 
@@ -1431,7 +1431,7 @@ public final class CassandraExecutor implements Closeable {
         Statement stmt = null;
 
         if (query.length() <= POOLABLE_LENGTH) {
-            Wrapper<Statement> wrapper = stmtPool.get(query);
+            PoolableWrapper<Statement> wrapper = stmtPool.get(query);
 
             if (wrapper != null) {
                 stmt = wrapper.value();
@@ -1444,7 +1444,7 @@ public final class CassandraExecutor implements Closeable {
             stmt = bind(prepare(cql));
 
             if (query.length() <= POOLABLE_LENGTH) {
-                stmtPool.put(query, Wrapper.of(stmt));
+                stmtPool.put(query, PoolableWrapper.of(stmt));
             }
         }
 
@@ -1461,7 +1461,7 @@ public final class CassandraExecutor implements Closeable {
         PreparedStatement preStmt = null;
 
         if (query.length() <= POOLABLE_LENGTH) {
-            Wrapper<PreparedStatement> wrapper = preStmtPool.get(query);
+            PoolableWrapper<PreparedStatement> wrapper = preStmtPool.get(query);
             if (wrapper != null && wrapper.value() != null) {
                 preStmt = wrapper.value();
             }
@@ -1471,7 +1471,7 @@ public final class CassandraExecutor implements Closeable {
             preStmt = prepare(cql);
 
             if (query.length() <= POOLABLE_LENGTH) {
-                preStmtPool.put(query, Wrapper.of(preStmt));
+                preStmtPool.put(query, PoolableWrapper.of(preStmt));
             }
         }
 

@@ -76,7 +76,7 @@ import com.landawn.abacus.util.stream.Collectors;
 public final class Seq<T> extends ImmutableCollection<T> {
 
     @SuppressWarnings("rawtypes")
-    private static final Seq EMPTY = Seq.of(Collections.EMPTY_LIST);
+    private static final Seq EMPTY = new Seq<>(Collections.EMPTY_LIST);
 
     /**
      * The returned <code>Seq</code> and the specified <code>Collection</code> are backed by the same data.
@@ -107,9 +107,12 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * 
      * @param c
      * @return
-     * @throws NullPointerException if the specified <code>Collection</code> is null.
      */
     public static <T> Seq<T> of(Collection<T> c) {
+        if (N.isNullOrEmpty(c)) {
+            return EMPTY;
+        }
+
         return new Seq<>(c);
     }
 
@@ -117,10 +120,13 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * 
      * @param map
      * @return
-     * @throws NullPointerException if the specified <code>Map</code> is null.
      */
     public static <K, V> Seq<Map.Entry<K, V>> of(Map<K, V> map) {
-        return of(map == null ? null : map.entrySet());
+        if (N.isNullOrEmpty(map)) {
+            return EMPTY;
+        }
+
+        return of(map.entrySet());
     }
 
     //    /**

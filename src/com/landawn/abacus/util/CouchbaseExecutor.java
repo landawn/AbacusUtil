@@ -43,7 +43,7 @@ import com.landawn.abacus.core.RowDataSet;
 import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.pool.KeyedObjectPool;
 import com.landawn.abacus.pool.PoolFactory;
-import com.landawn.abacus.pool.Wrapper;
+import com.landawn.abacus.pool.PoolableWrapper;
 import com.landawn.abacus.type.Type;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.stream.Stream;
@@ -92,7 +92,7 @@ public final class CouchbaseExecutor implements Closeable {
 
     private static final Map<String, String> bucketIdNamePool = new ConcurrentHashMap<>();
 
-    private final KeyedObjectPool<String, Wrapper<Query>> stmtPool = PoolFactory.createKeyedObjectPool(1024, 3000);
+    private final KeyedObjectPool<String, PoolableWrapper<Query>> stmtPool = PoolFactory.createKeyedObjectPool(1024, 3000);
     // private final KeyedObjectPool<String, Wrapper<QueryPlan>> preStmtPool = PoolFactory.createKeyedObjectPool(1024, 3000);
 
     private final Cluster cluster;
@@ -1314,7 +1314,7 @@ public final class CouchbaseExecutor implements Closeable {
         Query result = null;
 
         if (query.length() <= POOLABLE_LENGTH) {
-            Wrapper<Query> wrapper = stmtPool.get(query);
+            PoolableWrapper<Query> wrapper = stmtPool.get(query);
 
             if (wrapper != null) {
                 result = wrapper.value();
@@ -1325,7 +1325,7 @@ public final class CouchbaseExecutor implements Closeable {
             result = Query.simple(query);
 
             if (query.length() <= POOLABLE_LENGTH) {
-                stmtPool.put(query, Wrapper.of(result));
+                stmtPool.put(query, PoolableWrapper.of(result));
             }
         }
 
