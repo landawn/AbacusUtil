@@ -15,13 +15,15 @@
 
 7, Move HOST_NAME/CPU_CORES/JAVA_HOME/... from N to IOUtil.
 
-8, Rename NullabLe.jdkOptional() to NullabLe.toJdkOptional().
+8, Rename NullabLe.__/jdkOptional() to NullabLe.toOptional/toJdkOptional().
 
 9, Move merge/zip/unzip(Iterator...) from Seq to Iterators.
 
 10, Refactoring Seq.unzip/Iterators.unzip
 
-11, Improvements and bug fix.
+11, Add Optional/NullabLe.tryOrEmpty
+
+12, Improvements and bug fix.
 
 
 ========Changes in 0.9.83=========================================================================

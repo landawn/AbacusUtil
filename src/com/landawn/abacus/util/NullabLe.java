@@ -51,7 +51,6 @@ import com.landawn.abacus.util.stream.Stream;
  * ({@code ==}), identity hash code, or synchronization) on instances of
  * {@code NullabLe} may have unpredictable results and should be avoided.
  *
- * @since 1.8
  */
 public final class NullabLe<T> {
     /**
@@ -496,7 +495,7 @@ public final class NullabLe<T> {
      * 
      * @return <code>Optional.empty()</code> if the value is not present or {@code null}.
      */
-    public Optional<T> __() {
+    public Optional<T> toOptional() {
         return value == null ? Optional.<T> empty() : Optional.of(value);
     }
 

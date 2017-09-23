@@ -30,6 +30,14 @@ import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
+import com.landawn.abacus.util.function.ToBooleanFunction;
+import com.landawn.abacus.util.function.ToByteFunction;
+import com.landawn.abacus.util.function.ToCharFunction;
+import com.landawn.abacus.util.function.ToDoubleFunction;
+import com.landawn.abacus.util.function.ToFloatFunction;
+import com.landawn.abacus.util.function.ToIntFunction;
+import com.landawn.abacus.util.function.ToLongFunction;
+import com.landawn.abacus.util.function.ToShortFunction;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -245,13 +253,93 @@ public final class Optional<T> {
      * otherwise an empty {@code Optional}
      * @throws NullPointerException if the mapping function is null
      */
-    public <U> Optional<U> map(Function<? super T, ? extends U> mapper) {
+    public <U> Optional<U> map(final Function<? super T, ? extends U> mapper) {
         N.requireNonNull(mapper);
 
         if (isPresent()) {
             return (Optional<U>) Optional.ofNullable(mapper.apply(value));
         } else {
             return empty();
+        }
+    }
+
+    public OptionalBoolean mapToBoolean(final ToBooleanFunction<? super T> mapper) {
+        N.requireNonNull(mapper);
+
+        if (isPresent()) {
+            return OptionalBoolean.of(mapper.applyAsBoolean(value));
+        } else {
+            return OptionalBoolean.empty();
+        }
+    }
+
+    public OptionalChar mapToChar(final ToCharFunction<? super T> mapper) {
+        N.requireNonNull(mapper);
+
+        if (isPresent()) {
+            return OptionalChar.of(mapper.applyAsChar(value));
+        } else {
+            return OptionalChar.empty();
+        }
+    }
+
+    public OptionalByte mapToByte(final ToByteFunction<? super T> mapper) {
+        N.requireNonNull(mapper);
+
+        if (isPresent()) {
+            return OptionalByte.of(mapper.applyAsByte(value));
+        } else {
+            return OptionalByte.empty();
+        }
+    }
+
+    public OptionalShort mapToShort(final ToShortFunction<? super T> mapper) {
+        N.requireNonNull(mapper);
+
+        if (isPresent()) {
+            return OptionalShort.of(mapper.applyAsShort(value));
+        } else {
+            return OptionalShort.empty();
+        }
+    }
+
+    public OptionalInt mapToInt(final ToIntFunction<? super T> mapper) {
+        N.requireNonNull(mapper);
+
+        if (isPresent()) {
+            return OptionalInt.of(mapper.applyAsInt(value));
+        } else {
+            return OptionalInt.empty();
+        }
+    }
+
+    public OptionalLong mapToLong(final ToLongFunction<? super T> mapper) {
+        N.requireNonNull(mapper);
+
+        if (isPresent()) {
+            return OptionalLong.of(mapper.applyAsLong(value));
+        } else {
+            return OptionalLong.empty();
+        }
+    }
+
+    public OptionalFloat mapToFloat(final ToFloatFunction<? super T> mapper) {
+        N.requireNonNull(mapper);
+
+        if (isPresent()) {
+            return OptionalFloat.of(mapper.applyAsFloat(value));
+        } else {
+            return OptionalFloat.empty();
+        }
+    }
+
+    public OptionalDouble mapToDouble(final ToDoubleFunction<? super T> mapper) {
+        N.requireNonNull(mapper);
+
+        if (isPresent()) {
+            return OptionalDouble.of(mapper.applyAsDouble(value));
+        } else {
+            return OptionalDouble.empty();
         }
     }
 
