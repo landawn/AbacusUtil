@@ -23,7 +23,9 @@
 
 11, Add Optional/NullabLe.tryOrEmpty
 
-12, Improvements and bug fix.
+12, Refactoring: change the returned type of N.createNumber/createInteger/... to Optional<Number>/OptionalInt/...
+
+13, Improvements and bug fix.
 
 
 ========Changes in 0.9.83=========================================================================

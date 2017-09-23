@@ -2178,6 +2178,33 @@ public final class N {
             }
         } else if (targetType.isEntity() && srcPropType.isEntity()) {
             return copy(targetType.getTypeClass(), obj);
+        } else if (targetType.isNumber() && srcPropType.isNumber() && CLASS_TYPE_ENUM.containsKey(targetType.getTypeClass())) {
+            switch (CLASS_TYPE_ENUM.get(targetType.getTypeClass())) {
+                case 3:
+                case 13:
+                    return (T) (Byte) ((Number) obj).byteValue();
+
+                case 4:
+                case 14:
+                    return (T) (Short) ((Number) obj).shortValue();
+
+                case 5:
+                case 15:
+                    return (T) (Integer) ((Number) obj).intValue();
+
+                case 6:
+                case 16:
+                    return (T) (Long) ((Number) obj).longValue();
+
+                case 7:
+                case 17:
+                    return (T) (Float) ((Number) obj).floatValue();
+
+                case 8:
+                case 18:
+                    return (T) (Double) ((Number) obj).doubleValue();
+
+            }
         }
 
         return targetType.valueOf(srcPropType.stringOf(obj));
@@ -3396,17 +3423,16 @@ public final class N {
      * </p>
      *
      * <p>
-     * Returns <code>null</code> if the string is <code>null</code>.
+     * Returns an empty {@code OptionalInt} if the string is {@code null} or can't be parsed as {@code Integer}.
      * </p>
      *
-     * @param str
-     *            a <code>String</code> to convert, may be null
-     * @return converted <code>Integer</code> (or null if the input is null)
-     * @throws NumberFormatException
-     *             if the value cannot be converted
+     * @param str a <code>String</code> to convert, may be null
+     * @return
      */
-    public static Integer createInteger(final String str) throws NumberFormatException {
-        return createInteger(str, false);
+    public static OptionalInt createInteger(final String str) {
+        final Integer val = createInteger(str, true);
+
+        return val == null ? OptionalInt.empty() : OptionalInt.of(val);
     }
 
     // It's copied from OpenJDK 1.7 on 3/9/205
@@ -3485,17 +3511,16 @@ public final class N {
      * </p>
      *
      * <p>
-     * Returns <code>null</code> if the string is <code>null</code>.
+     * Returns an empty {@code OptionalLong} if the string is {@code null} or can't be parsed as {@code Long}.
      * </p>
      *
-     * @param str
-     *            a <code>String</code> to convert, may be null
-     * @return converted <code>Long</code> (or null if the input is null)
-     * @throws NumberFormatException
-     *             if the value cannot be converted
+     * @param str a <code>String</code> to convert, may be null
+     * @return
      */
-    public static Long createLong(final String str) throws NumberFormatException {
-        return createLong(str, false);
+    public static OptionalLong createLong(final String str) {
+        final Long val = createLong(str, true);
+
+        return val == null ? OptionalLong.empty() : OptionalLong.of(val);
     }
 
     // It's copied from OpenJDK 1.7 on 3/9/205
@@ -3573,17 +3598,16 @@ public final class N {
      * </p>
      *
      * <p>
-     * Returns <code>null</code> if the string is <code>null</code>.
+     * Returns an empty {@code OptionalFloat} if the string is {@code null} or can't be parsed as {@code Float}.
      * </p>
      *
-     * @param str
-     *            a <code>String</code> to convert, may be null
-     * @return converted <code>Float</code> (or null if the input is null)
-     * @throws NumberFormatException
-     *             if the value cannot be converted
+     * @param str a <code>String</code> to convert, may be null
+     * @return
      */
-    public static Float createFloat(final String str) throws NumberFormatException {
-        return N.isNullOrEmpty(str) ? null : createNumber(str, false).floatValue();
+    public static OptionalFloat createFloat(final String str) {
+        final Float val = N.isNullOrEmpty(str) ? null : createNumber(str, true).floatValue();
+
+        return val == null ? OptionalFloat.empty() : OptionalFloat.of(val);
     }
 
     /**
@@ -3592,17 +3616,18 @@ public final class N {
      * </p>
      *
      * <p>
-     * Returns <code>null</code> if the string is <code>null</code>.
+     * <p>
+     * Returns an empty {@code OptionalDouble} if the string is {@code null} or can't be parsed as {@code Double}.
+     * </p>
      * </p>
      *
-     * @param str
-     *            a <code>String</code> to convert, may be null
-     * @return converted <code>Double</code> (or null if the input is null)
-     * @throws NumberFormatException
-     *             if the value cannot be converted
+     * @param str a <code>String</code> to convert, may be null
+     * @return
      */
-    public static Double createDouble(final String str) throws NumberFormatException {
-        return N.isNullOrEmpty(str) ? null : createNumber(str, false).doubleValue();
+    public static OptionalDouble createDouble(final String str) {
+        final Double val = N.isNullOrEmpty(str) ? null : createNumber(str, true).doubleValue();
+
+        return val == null ? OptionalDouble.empty() : OptionalDouble.of(val);
     }
 
     /**
@@ -3612,17 +3637,16 @@ public final class N {
      * </p>
      *
      * <p>
-     * Returns <code>null</code> if the string is <code>null</code>.
+     * Returns an empty {@code Optional} if the string is {@code null} or can't be parsed as {@code BigInteger}.
      * </p>
      *
-     * @param str
-     *            a <code>String</code> to convert, may be null
-     * @return converted <code>BigInteger</code> (or null if the input is null)
-     * @throws NumberFormatException
-     *             if the value cannot be converted
+     * @param str a <code>String</code> to convert, may be null
+     * @return
      */
-    public static BigInteger createBigInteger(final String str) throws NumberFormatException {
-        return createBigInteger(str, false);
+    public static Optional<BigInteger> createBigInteger(final String str) throws NumberFormatException {
+        final BigInteger val = createBigInteger(str, true);
+
+        return val == null ? Optional.<BigInteger> empty() : Optional.of(val);
     }
 
     private static BigInteger createBigInteger(final String str, final boolean isNumberCheck) {
@@ -3674,17 +3698,16 @@ public final class N {
      * </p>
      *
      * <p>
-     * Returns <code>null</code> if the string is <code>null</code>.
+     * Returns an empty {@code Optional} if the string is {@code null} or can't be parsed as {@code BigDecimal}.
      * </p>
      *
-     * @param str
-     *            a <code>String</code> to convert, may be null
-     * @return converted <code>BigDecimal</code> (or null if the input is null)
-     * @throws NumberFormatException
-     *             if the value cannot be converted
+     * @param str a <code>String</code> to convert, may be null
+     * @return
      */
-    public static BigDecimal createBigDecimal(final String str) throws NumberFormatException {
-        return createBigDecimal(str, false);
+    public static Optional<BigDecimal> createBigDecimal(final String str) throws NumberFormatException {
+        final BigDecimal val = createBigDecimal(str, true);
+
+        return val == null ? Optional.<BigDecimal> empty() : Optional.of(val);
     }
 
     private static BigDecimal createBigDecimal(final String str, final boolean isNumberCheck) {
@@ -3748,7 +3771,7 @@ public final class N {
      * </p>
      *
      * <p>
-     * Returns <code>null</code> if the string is <code>null</code>.
+     * Returns an empty {@code Optional} if the string is {@code null} or can't be parsed as {@code Number}.
      * </p>
      *
      * <p>
@@ -3756,14 +3779,13 @@ public final class N {
      * trailing spaces will generate NumberFormatExceptions.
      * </p>
      *
-     * @param str
-     *            String containing a number, may be null
-     * @return Number created from the string (or null if the input is null)
-     * @throws NumberFormatException
-     *             if the value cannot be converted
+     * @param str a String containing a number, may be null
+     * @return
      */
-    public static Number createNumber(final String str) throws NumberFormatException {
-        return createNumber(str, false);
+    public static Optional<Number> createNumber(final String str) {
+        final Number val = createNumber(str, true);
+
+        return val == null ? Optional.<Number> empty() : Optional.of(val);
     }
 
     private static Number createNumber(final String str, final boolean isNumberCheck) throws NumberFormatException {
