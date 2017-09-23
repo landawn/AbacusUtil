@@ -109,6 +109,20 @@ public final class NullabLe<T> {
         return new NullabLe<>(value);
     }
 
+    /**
+     * Returns a {@code NullabLe} with the value returned by {@code action} or an empty {@code NullabLe} if exception happens.
+     * 
+     * @param action
+     * @return
+     */
+    public static <R> NullabLe<R> tryOrEmpty(final Try.Callable<R, ? extends Throwable> action) {
+        try {
+            return NullabLe.of(action.call());
+        } catch (Throwable e) {
+            return NullabLe.<R> empty();
+        }
+    }
+
     //    public static <T> NullabLe<T> from(Optional<T> optional) {
     //        return optional.isPresent() ? new NullabLe<T>(optional.get()) : (NullabLe<T>) empty();
     //    }

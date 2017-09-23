@@ -128,6 +128,20 @@ public final class Optional<T> {
     }
 
     /**
+     * Returns an {@code Optional} with the value returned by {@code action} or an empty {@code Optional} if exception happens.
+     * 
+     * @param action
+     * @return
+     */
+    public static <R> Optional<R> tryOrEmpty(final Try.Callable<R, ? extends Throwable> action) {
+        try {
+            return Optional.of(action.call());
+        } catch (Throwable e) {
+            return Optional.<R> empty();
+        }
+    }
+
+    /**
      * If a value is present in this {@code Optional}, returns the value,
      * otherwise throws {@code NoSuchElementException}.
      *

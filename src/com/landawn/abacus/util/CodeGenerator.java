@@ -203,6 +203,7 @@ public final class CodeGenerator {
         USUAL_TYPES.add("java.lang");
         USUAL_TYPES.add("java.util");
         USUAL_TYPES.add("java.util.concurrent");
+        USUAL_TYPES.add("java.time");
         USUAL_TYPES.add("java.io");
         USUAL_TYPES.add("java.nio");
         USUAL_TYPES.add("java.sql");
@@ -1620,7 +1621,8 @@ public final class CodeGenerator {
         sb.append(headSpace + "    /**" + IOUtil.LINE_SEPARATOR);
         sb.append(headSpace + "     * Name of \"" + entityDef.getTableName() + "\" table. " + IOUtil.LINE_SEPARATOR);
         sb.append(headSpace + "     */" + IOUtil.LINE_SEPARATOR);
-        sb.append(headSpace + "    public static final String " + ENTITY_NAME_VAR + " = \"" + entityDef.getTableName() + "\".intern();" + IOUtil.LINE_SEPARATOR);
+        sb.append(
+                headSpace + "    public static final String " + ENTITY_NAME_VAR + " = \"" + entityDef.getTableName() + "\".intern();" + IOUtil.LINE_SEPARATOR);
 
         String _columnNameList = "";
         String _propNameList = "";
@@ -2109,8 +2111,9 @@ public final class CodeGenerator {
             final ParentPropertyMode parentPropertyModeForToString, final Class<?> utilClassForHashEqualsToString) {
 
         final Package pkg = cls.getPackage();
-        final String clsSourcePath = srcDir.getAbsolutePath() + (pkg == null ? "" : IOUtil.FILE_SEPARATOR + N.replaceAll(pkg.getName(), ".", IOUtil.FILE_SEPARATOR))
-                + IOUtil.FILE_SEPARATOR + cls.getSimpleName() + ".java";
+        final String clsSourcePath = srcDir.getAbsolutePath()
+                + (pkg == null ? "" : IOUtil.FILE_SEPARATOR + N.replaceAll(pkg.getName(), ".", IOUtil.FILE_SEPARATOR)) + IOUtil.FILE_SEPARATOR
+                + cls.getSimpleName() + ".java";
         final File clsSourceFile = new File(clsSourcePath);
 
         if (clsSourceFile.exists() == false) {
@@ -2722,8 +2725,8 @@ public final class CodeGenerator {
 
                 if (i++ == 0) {
                     if (i == fieldTypes.size() && (parentGetterMethods.size() == 0 || parentPropertyModeForHashEquals != ParentPropertyMode.LAST)) {
-                        IOUtil.writeLine(writer,
-                                IOUtil.LINE_SEPARATOR + iden + iden + iden + "return " + utilClassName + ".equals(" + fieldName + ", other." + fieldName + ");");
+                        IOUtil.writeLine(writer, IOUtil.LINE_SEPARATOR + iden + iden + iden + "return " + utilClassName + ".equals(" + fieldName + ", other."
+                                + fieldName + ");");
                     } else {
                         IOUtil.writeLine(writer,
                                 IOUtil.LINE_SEPARATOR + iden + iden + iden + "return " + utilClassName + ".equals(" + fieldName + ", other." + fieldName + ")");
@@ -2922,8 +2925,8 @@ public final class CodeGenerator {
      */
     public static void writeUtilClassForHashEqualsToString(final File srcDir, final String pkgName, final String utilClassName) {
         final String utilClassFilePath = srcDir.getAbsolutePath()
-                + (N.isNullOrEmpty(pkgName) ? "" : IOUtil.FILE_SEPARATOR + N.replaceAll(pkgName, ".", IOUtil.FILE_SEPARATOR)) + IOUtil.FILE_SEPARATOR + utilClassName
-                + ".java";
+                + (N.isNullOrEmpty(pkgName) ? "" : IOUtil.FILE_SEPARATOR + N.replaceAll(pkgName, ".", IOUtil.FILE_SEPARATOR)) + IOUtil.FILE_SEPARATOR
+                + utilClassName + ".java";
         final File utilClassFile = new File(utilClassFilePath);
 
         if (utilClassFile.exists() == false && IOUtil.createIfNotExists(utilClassFile) == false) {
@@ -3359,8 +3362,8 @@ public final class CodeGenerator {
         }
 
         fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "    public " + entityDef.getName() + " copy() {");
-        fileWrite
-                .write(IOUtil.LINE_SEPARATOR + headSpace + "        final " + entityDef.getName() + " copy = new " + entityDef.getName() + "();" + IOUtil.LINE_SEPARATOR);
+        fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "        final " + entityDef.getName() + " copy = new " + entityDef.getName() + "();"
+                + IOUtil.LINE_SEPARATOR);
 
         int counter = 0;
 
@@ -3560,7 +3563,8 @@ public final class CodeGenerator {
         }
 
         serialVersionUID = Long.valueOf(String.valueOf(hashCode) + entityDef.getPropertyList().size());
-        fileWrite.write(headSpace + "    private static final long serialVersionUID = " + serialVersionUID + "L;" + IOUtil.LINE_SEPARATOR + IOUtil.LINE_SEPARATOR);
+        fileWrite.write(
+                headSpace + "    private static final long serialVersionUID = " + serialVersionUID + "L;" + IOUtil.LINE_SEPARATOR + IOUtil.LINE_SEPARATOR);
     }
 
     private static void writeDefaultConstructor(final EntityDefinition entityDef, final EntityMode entityMode, final String headSpace, final Writer fileWrite)
@@ -3599,8 +3603,8 @@ public final class CodeGenerator {
 
             for (Property idProp : idPropList) {
                 String fieldName = propName2FieldName(idProp.getName());
-                fileWrite.write(
-                        headSpace + "        set" + ClassUtil.invokeMethod(propName2MethodName, idProp.getName()) + "(" + fieldName + ");" + IOUtil.LINE_SEPARATOR);
+                fileWrite.write(headSpace + "        set" + ClassUtil.invokeMethod(propName2MethodName, idProp.getName()) + "(" + fieldName + ");"
+                        + IOUtil.LINE_SEPARATOR);
             }
 
             fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
@@ -3804,8 +3808,8 @@ public final class CodeGenerator {
                 fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "    public " + entityDef.getName() + " set" + methodName + "(" + simpleTypeName + " "
                         + fieldName + ") {" + IOUtil.LINE_SEPARATOR);
             } else {
-                fileWrite.write(
-                        IOUtil.LINE_SEPARATOR + headSpace + "    public void set" + methodName + "(" + simpleTypeName + " " + fieldName + ") {" + IOUtil.LINE_SEPARATOR);
+                fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "    public void set" + methodName + "(" + simpleTypeName + " " + fieldName + ") {"
+                        + IOUtil.LINE_SEPARATOR);
             }
 
             if (EntityMode.POJO != entityMode && EntityMode.POJO_WITH_PROP_NAME_TABLE != entityMode) {
@@ -3837,17 +3841,19 @@ public final class CodeGenerator {
                 fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "    /**");
                 fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "     * Returns the (first) column or an empty column if it's null.");
                 fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "     */");
-                fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "    public " + hbaseColumnType.getName() + " " + fieldName + "() {" + IOUtil.LINE_SEPARATOR);
+                fileWrite.write(
+                        IOUtil.LINE_SEPARATOR + headSpace + "    public " + hbaseColumnType.getName() + " " + fieldName + "() {" + IOUtil.LINE_SEPARATOR);
                 fileWrite.write(headSpace + "        return (" + hbaseColumnType.getName() + ") (this." + fieldName + " == null ? "
                         + HBaseColumn.class.getSimpleName() + ".emptyOf(" + valueTypeName + ".class) : " + fieldName + ");" + IOUtil.LINE_SEPARATOR);
                 fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
 
                 // =========================
                 if (fluentSetMethod) {
-                    fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "    public " + entityDef.getName() + " set" + methodName + "(" + valueTypeName + " value) {"
-                            + IOUtil.LINE_SEPARATOR);
+                    fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "    public " + entityDef.getName() + " set" + methodName + "(" + valueTypeName
+                            + " value) {" + IOUtil.LINE_SEPARATOR);
                 } else {
-                    fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "    public void set" + methodName + "(" + valueTypeName + " value) {" + IOUtil.LINE_SEPARATOR);
+                    fileWrite.write(
+                            IOUtil.LINE_SEPARATOR + headSpace + "    public void set" + methodName + "(" + valueTypeName + " value) {" + IOUtil.LINE_SEPARATOR);
                 }
 
                 fileWrite.write(headSpace + "        set" + methodName + "(" + HBaseColumn.class.getSimpleName() + ".valueOf(value));" + IOUtil.LINE_SEPARATOR);
@@ -3868,8 +3874,8 @@ public final class CodeGenerator {
                             + IOUtil.LINE_SEPARATOR);
                 }
 
-                fileWrite.write(
-                        headSpace + "        set" + methodName + "(" + HBaseColumn.class.getSimpleName() + ".valueOf(value, version));" + IOUtil.LINE_SEPARATOR);
+                fileWrite.write(headSpace + "        set" + methodName + "(" + HBaseColumn.class.getSimpleName() + ".valueOf(value, version));"
+                        + IOUtil.LINE_SEPARATOR);
 
                 if (fluentSetMethod) {
                     fileWrite.write(IOUtil.LINE_SEPARATOR);
@@ -3901,7 +3907,8 @@ public final class CodeGenerator {
                 fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "    /**");
                 fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "     * Returns the (first) column or an empty column if it's null.");
                 fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "     */");
-                fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "    public " + hbaseColumnType.getName() + " " + fieldName + "() {" + IOUtil.LINE_SEPARATOR);
+                fileWrite.write(
+                        IOUtil.LINE_SEPARATOR + headSpace + "    public " + hbaseColumnType.getName() + " " + fieldName + "() {" + IOUtil.LINE_SEPARATOR);
 
                 if (Collection.class.isAssignableFrom(prop.getType().getTypeClass())) {
                     fileWrite.write(headSpace + "        return (" + hbaseColumnType.getName() + ") (N.isNullOrEmpty(" + fieldName + ") ? "
@@ -3916,10 +3923,11 @@ public final class CodeGenerator {
 
                 // =========================
                 if (fluentSetMethod) {
-                    fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "    public " + entityDef.getName() + " set" + methodName + "(" + valueTypeName + " value) {"
-                            + IOUtil.LINE_SEPARATOR);
+                    fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "    public " + entityDef.getName() + " set" + methodName + "(" + valueTypeName
+                            + " value) {" + IOUtil.LINE_SEPARATOR);
                 } else {
-                    fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "    public void set" + methodName + "(" + valueTypeName + " value) {" + IOUtil.LINE_SEPARATOR);
+                    fileWrite.write(
+                            IOUtil.LINE_SEPARATOR + headSpace + "    public void set" + methodName + "(" + valueTypeName + " value) {" + IOUtil.LINE_SEPARATOR);
                 }
 
                 fileWrite.write(headSpace + "        set" + methodName + "(" + HBaseColumn.class.getSimpleName() + ".valueOf(value));" + IOUtil.LINE_SEPARATOR);
@@ -3940,8 +3948,8 @@ public final class CodeGenerator {
                             + IOUtil.LINE_SEPARATOR);
                 }
 
-                fileWrite.write(
-                        headSpace + "        set" + methodName + "(" + HBaseColumn.class.getSimpleName() + ".valueOf(value, version));" + IOUtil.LINE_SEPARATOR);
+                fileWrite.write(headSpace + "        set" + methodName + "(" + HBaseColumn.class.getSimpleName() + ".valueOf(value, version));"
+                        + IOUtil.LINE_SEPARATOR);
 
                 if (fluentSetMethod) {
                     fileWrite.write(IOUtil.LINE_SEPARATOR);
@@ -3952,8 +3960,8 @@ public final class CodeGenerator {
 
                 // =========================
                 if (fluentSetMethod) {
-                    fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "    public " + entityDef.getName() + " set" + methodName + "(" + hbaseColumnType.getName()
-                            + " hbaseColumn) {" + IOUtil.LINE_SEPARATOR);
+                    fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "    public " + entityDef.getName() + " set" + methodName + "("
+                            + hbaseColumnType.getName() + " hbaseColumn) {" + IOUtil.LINE_SEPARATOR);
                 } else {
                     fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "    public void set" + methodName + "(" + hbaseColumnType.getName() + " hbaseColumn) {"
                             + IOUtil.LINE_SEPARATOR);
@@ -3985,7 +3993,8 @@ public final class CodeGenerator {
                 if (Collection.class.isAssignableFrom(prop.getType().getTypeClass())) {
                     fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "        " + fieldName + ".add(hbaseColumn);" + IOUtil.LINE_SEPARATOR);
                 } else {
-                    fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "        " + fieldName + ".put(hbaseColumn.version(), hbaseColumn);" + IOUtil.LINE_SEPARATOR);
+                    fileWrite.write(
+                            IOUtil.LINE_SEPARATOR + headSpace + "        " + fieldName + ".put(hbaseColumn.version(), hbaseColumn);" + IOUtil.LINE_SEPARATOR);
                 }
 
                 if (fluentSetMethod) {
@@ -3997,10 +4006,11 @@ public final class CodeGenerator {
 
                 // =========================
                 if (fluentSetMethod) {
-                    fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "    public " + entityDef.getName() + " add" + methodName + "(" + valueTypeName + " value) {"
-                            + IOUtil.LINE_SEPARATOR);
+                    fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "    public " + entityDef.getName() + " add" + methodName + "(" + valueTypeName
+                            + " value) {" + IOUtil.LINE_SEPARATOR);
                 } else {
-                    fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "    public void add" + methodName + "(" + valueTypeName + " value) {" + IOUtil.LINE_SEPARATOR);
+                    fileWrite.write(
+                            IOUtil.LINE_SEPARATOR + headSpace + "    public void add" + methodName + "(" + valueTypeName + " value) {" + IOUtil.LINE_SEPARATOR);
                 }
 
                 fileWrite.write(headSpace + "        add" + methodName + "(" + HBaseColumn.class.getSimpleName() + ".valueOf(value));" + IOUtil.LINE_SEPARATOR);
@@ -4021,8 +4031,8 @@ public final class CodeGenerator {
                             + IOUtil.LINE_SEPARATOR);
                 }
 
-                fileWrite.write(
-                        headSpace + "        add" + methodName + "(" + HBaseColumn.class.getSimpleName() + ".valueOf(value, version));" + IOUtil.LINE_SEPARATOR);
+                fileWrite.write(headSpace + "        add" + methodName + "(" + HBaseColumn.class.getSimpleName() + ".valueOf(value, version));"
+                        + IOUtil.LINE_SEPARATOR);
 
                 if (fluentSetMethod) {
                     fileWrite.write(IOUtil.LINE_SEPARATOR);
@@ -4033,8 +4043,8 @@ public final class CodeGenerator {
 
                 // =========================
                 if (fluentSetMethod) {
-                    fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "    public " + entityDef.getName() + " add" + methodName + "(" + hbaseColumnType.getName()
-                            + " hbaseColumn) {" + IOUtil.LINE_SEPARATOR);
+                    fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "    public " + entityDef.getName() + " add" + methodName + "("
+                            + hbaseColumnType.getName() + " hbaseColumn) {" + IOUtil.LINE_SEPARATOR);
                 } else {
                     fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "    public void add" + methodName + "(" + hbaseColumnType.getName() + " hbaseColumn) {"
                             + IOUtil.LINE_SEPARATOR);
@@ -4064,7 +4074,8 @@ public final class CodeGenerator {
                 if (Collection.class.isAssignableFrom(prop.getType().getTypeClass())) {
                     fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "        " + fieldName + ".add(hbaseColumn);" + IOUtil.LINE_SEPARATOR);
                 } else {
-                    fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "        " + fieldName + ".put(hbaseColumn.version(), hbaseColumn);" + IOUtil.LINE_SEPARATOR);
+                    fileWrite.write(
+                            IOUtil.LINE_SEPARATOR + headSpace + "        " + fieldName + ".put(hbaseColumn.version(), hbaseColumn);" + IOUtil.LINE_SEPARATOR);
                 }
 
                 if (fluentSetMethod) {
@@ -4350,14 +4361,16 @@ public final class CodeGenerator {
                 fileWrite.write(headSpace + "   }" + IOUtil.LINE_SEPARATOR);
 
                 fileWrite.write(IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    public void remove(ActiveRecord entity, boolean isDelete, Map<String, Object> options) {" + IOUtil.LINE_SEPARATOR);
+                fileWrite.write(
+                        headSpace + "    public void remove(ActiveRecord entity, boolean isDelete, Map<String, Object> options) {" + IOUtil.LINE_SEPARATOR);
                 fileWrite.write(headSpace + "        activeRecordImpl.remove(entity, isDelete, options);" + IOUtil.LINE_SEPARATOR);
                 fileWrite.write(headSpace + "   }" + IOUtil.LINE_SEPARATOR);
             }
 
             if (hasOutObjectCollProp) {
                 fileWrite.write(IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    public void removeAll(Collection<? extends ActiveRecord> entities, boolean isDelete) {" + IOUtil.LINE_SEPARATOR);
+                fileWrite.write(
+                        headSpace + "    public void removeAll(Collection<? extends ActiveRecord> entities, boolean isDelete) {" + IOUtil.LINE_SEPARATOR);
                 fileWrite.write(headSpace + "        activeRecordImpl.removeAll(entities, isDelete);" + IOUtil.LINE_SEPARATOR);
                 fileWrite.write(headSpace + "   }" + IOUtil.LINE_SEPARATOR);
 
@@ -5063,8 +5076,8 @@ public final class CodeGenerator {
 
                 // fetch method
                 fileWrite.write(IOUtil.LINE_SEPARATOR);
-                fileWrite.write(
-                        headSpace + "    public static <T> NullabLe<T> fetch(Class<T> targetClass, String propName, EntityId entityId) {" + IOUtil.LINE_SEPARATOR);
+                fileWrite.write(headSpace + "    public static <T> NullabLe<T> fetch(Class<T> targetClass, String propName, EntityId entityId) {"
+                        + IOUtil.LINE_SEPARATOR);
                 fileWrite.write(headSpace + "        return " + ClassUtil.getSimpleClassName(extendedClass) + ".fetch(" + DOMAIN_NAME_VAR
                         + ", targetClass, propName, entityId);" + IOUtil.LINE_SEPARATOR);
                 fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
@@ -5093,8 +5106,8 @@ public final class CodeGenerator {
 
             // fetch method
             fileWrite.write(IOUtil.LINE_SEPARATOR);
-            fileWrite.write(
-                    headSpace + "    public static <T> NullabLe<T> fetch(Class<T> targetClass, String propName, Condition condition) {" + IOUtil.LINE_SEPARATOR);
+            fileWrite.write(headSpace + "    public static <T> NullabLe<T> fetch(Class<T> targetClass, String propName, Condition condition) {"
+                    + IOUtil.LINE_SEPARATOR);
             fileWrite.write(headSpace + "        return " + ClassUtil.getSimpleClassName(extendedClass) + ".fetch(" + DOMAIN_NAME_VAR + ", " + ENTITY_NAME_VAR
                     + ", targetClass, propName, condition);" + IOUtil.LINE_SEPARATOR);
             fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
@@ -5183,7 +5196,8 @@ public final class CodeGenerator {
             fileWrite.write(headSpace + "    /**" + IOUtil.LINE_SEPARATOR);
             fileWrite.write(headSpace + "     * Big result(20~50 < size < 200~500), query  it." + IOUtil.LINE_SEPARATOR);
             fileWrite.write(headSpace + "     */" + IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    public static DataSet" + " query(Collection<String> selectPropNames, Condition condition) {" + IOUtil.LINE_SEPARATOR);
+            fileWrite.write(
+                    headSpace + "    public static DataSet" + " query(Collection<String> selectPropNames, Condition condition) {" + IOUtil.LINE_SEPARATOR);
             fileWrite.write(headSpace + "        return " + ClassUtil.getSimpleClassName(extendedClass) + ".query(" + DOMAIN_NAME_VAR + ", " + ENTITY_NAME_VAR
                     + ", selectPropNames, condition);" + IOUtil.LINE_SEPARATOR);
             fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);

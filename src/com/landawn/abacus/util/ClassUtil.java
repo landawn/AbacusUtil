@@ -705,43 +705,48 @@ public final class ClassUtil {
         String parameterizedTypeName = methodParameterizedTypeNamePool.get(method);
 
         if (parameterizedTypeName == null) {
-            parameterizedTypeName = (N.isNullOrEmpty(method.getGenericParameterTypes()) ? method.getGenericReturnType() : method.getGenericParameterTypes()[0])
-                    .getTypeName().replaceAll("java.lang.", "");
-
-            final int idx = parameterizedTypeName.lastIndexOf('$');
-
-            if (idx > 0) {
-                final StringBuilder sb = new StringBuilder();
-
-                for (int len = parameterizedTypeName.length(), i = len - 1; i >= 0; i--) {
-                    char ch = parameterizedTypeName.charAt(i);
-                    sb.append(ch);
-
-                    if (ch == '$') {
-                        int j = i;
-                        char x = 0;
-                        while (--i >= 0 && (Character.isLetterOrDigit(x = parameterizedTypeName.charAt(i)) || x == '_' || x == '.')) {
-                        }
-
-                        final String tmp = parameterizedTypeName.substring(i + 1, j);
-
-                        if (tmp.substring(0, tmp.length() / 2).equals(tmp.substring(tmp.length() / 2 + 1))) {
-                            sb.append(N.reverse(tmp.substring(0, tmp.length() / 2)));
-                        } else {
-                            sb.append(tmp);
-                        }
-
-                        i++;
-                    }
-                }
-
-                parameterizedTypeName = sb.reverse().toString();
-            }
+            parameterizedTypeName = formatParameterizedTypeName(
+                    (N.isNullOrEmpty(method.getGenericParameterTypes()) ? method.getGenericReturnType() : method.getGenericParameterTypes()[0]).getTypeName());
 
             methodParameterizedTypeNamePool.put(method, parameterizedTypeName);
         }
 
         return parameterizedTypeName;
+    }
+
+    static String formatParameterizedTypeName(final String parameterizedTypeName) {
+        String res = parameterizedTypeName.replaceAll("java.lang.", "").replaceAll("class ", "");
+        final int idx = res.lastIndexOf('$');
+
+        if (idx > 0) {
+            final StringBuilder sb = new StringBuilder();
+
+            for (int len = res.length(), i = len - 1; i >= 0; i--) {
+                char ch = res.charAt(i);
+                sb.append(ch);
+
+                if (ch == '$') {
+                    int j = i;
+                    char x = 0;
+                    while (--i >= 0 && (Character.isLetterOrDigit(x = res.charAt(i)) || x == '_' || x == '.')) {
+                    }
+
+                    final String tmp = res.substring(i + 1, j);
+
+                    if (tmp.substring(0, tmp.length() / 2).equals(tmp.substring(tmp.length() / 2 + 1))) {
+                        sb.append(N.reverse(tmp.substring(0, tmp.length() / 2)));
+                    } else {
+                        sb.append(tmp);
+                    }
+
+                    i++;
+                }
+            }
+
+            res = sb.reverse().toString();
+        }
+
+        return res;
     }
 
     public static Class<?>[] getTypeArgumentsByMethod(final Method method) {
