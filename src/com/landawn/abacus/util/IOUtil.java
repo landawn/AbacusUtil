@@ -359,13 +359,22 @@ public final class IOUtil {
         }
     }
 
-    public static int parseInt(final char[] cbuf, final int offset, final int len) {
+    /**
+     * Refer to Integer.parseInt(String);
+     *
+     * @param cbuf
+     * @param offset
+     * @param len
+     * @return
+     * @throws NumberFormatException
+     */
+    public static int parseInt(final char[] cbuf, final int offset, final int len) throws NumberFormatException {
         return parseInt(cbuf, offset, len, 10);
     }
 
     /**
      * Refer to Integer.parseInt(String);
-     *
+     * 
      * @param cbuf
      * @param offset
      * @param len
@@ -373,7 +382,7 @@ public final class IOUtil {
      * @return
      * @throws NumberFormatException
      */
-    // It's copied from OpenJDK 1.7 on 3/9/205
+    // It's copied from OpenJDK 1.7 on 3/9/2015
     /*
      * Copyright (c) 1994, 2009, Oracle and/or its affiliates. All rights reserved.
      * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
@@ -466,13 +475,22 @@ public final class IOUtil {
         return negative ? result : -result;
     }
 
-    public static long parseLong(final char[] cbuf, final int offset, final int len) {
+    /**
+     * Refer to Long.parseLong(String);
+     *
+     * @param cbuf
+     * @param offset
+     * @param len
+     * @return
+     * @throws NumberFormatException
+     */
+    public static long parseLong(final char[] cbuf, final int offset, final int len) throws NumberFormatException {
         return parseLong(cbuf, offset, len, 10);
     }
 
     /**
      * Refer to Long.parseLong(String);
-     *
+     * 
      * @param cbuf
      * @param offset
      * @param len
@@ -480,7 +498,7 @@ public final class IOUtil {
      * @return
      * @throws NumberFormatException
      */
-    // It's copied from OpenJDK 1.7 on 3/9/205
+    // It's copied from OpenJDK 1.7 on 3/9/2015
     /*
      * Copyright (c) 1994, 2009, Oracle and/or its affiliates. All rights reserved.
      * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
