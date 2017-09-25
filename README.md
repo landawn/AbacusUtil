@@ -1,5 +1,8 @@
 # [Abacus-Util](http://www.landawn.com)
 
+[![Maven Central](https://img.shields.io/maven-central/v/com.landawn/abacus-util.svg)](https://maven-badges.herokuapp.com/maven-central/com.landawn/abacus-util/)
+[![Javadocs](https://www.javadoc.io/badge/com.landawn/abacus-util.svg)](https://www.javadoc.io/doc/com.landawn/abacus-util)
+
 A general programming library/framework in Java. It's simple, powerful and easy to use with concise APIs
 
 Full API documentation is available [here](https://www.javadoc.io/doc/com.landawn/abacus-util).
