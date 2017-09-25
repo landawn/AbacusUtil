@@ -5,8 +5,6 @@
 
 A general programming library/framework in Java. It's simple, powerful and easy to use with concise APIs
 
-Full API documentation is available [here](https://www.javadoc.io/doc/com.landawn/abacus-util).
-
 ## Features:
 
 * Most daily used APIs: [IOUtil][], [Multiset][], [LongMultiset][], [BiMap][], [Multimap][], [ImmutableList][], [ImmutableSet][], [ImmutableMap][], [Sheet][], [Pair][], [Triple][], [Tuple][], [Splitter][], [Joiner][], [Builder][], [Difference][], [Profiler][], [AsyncExecutor][], [CompletableFuture][], [Futures][], [CodeGenerator][], [HttpClient][], [N][] ...
