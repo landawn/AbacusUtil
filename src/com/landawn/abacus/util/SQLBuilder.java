@@ -552,19 +552,38 @@ public abstract class SQLBuilder {
             if (columnNames.length == 1 && columnNames[0].indexOf(D._SPACE) > 0) {
                 sb.append(columnNames[0]);
             } else {
+                int idx = -1;
                 for (int i = 0, len = columnNames.length; i < len; i++) {
                     if (i > 0) {
                         sb.append(_COMMA_SPACE);
                     }
 
-                    sb.append(formalizeName(propColumnNameMap, columnNames[i]));
+                    idx = columnNames[i].indexOf(" AS ");
 
-                    if (namingPolicy != NamingPolicy.CAMEL_CASE && !D.ASTERISK.equals(columnNames[i])) {
-                        sb.append(_SPACE_AS_SPACE);
+                    if (idx < 0) {
+                        idx = columnNames[i].indexOf(" as ");
+                    }
 
-                        sb.append(D._QUOTATION_D);
-                        sb.append(columnNames[i]);
-                        sb.append(D._QUOTATION_D);
+                    if (idx < 0) {
+                        sb.append(formalizeName(propColumnNameMap, columnNames[i]));
+
+                        if (namingPolicy != NamingPolicy.CAMEL_CASE && !D.ASTERISK.equals(columnNames[i])) {
+                            sb.append(_SPACE_AS_SPACE);
+
+                            sb.append(D._QUOTATION_D);
+                            sb.append(columnNames[i]);
+                            sb.append(D._QUOTATION_D);
+                        }
+                    } else {
+                        sb.append(formalizeName(propColumnNameMap, columnNames[i].substring(0, idx).trim()));
+
+                        if (namingPolicy != NamingPolicy.CAMEL_CASE && !D.ASTERISK.equals(columnNames[i])) {
+                            sb.append(_SPACE_AS_SPACE);
+
+                            sb.append(D._QUOTATION_D);
+                            sb.append(columnNames[i].substring(idx + 4).trim());
+                            sb.append(D._QUOTATION_D);
+                        }
                     }
                 }
             }
@@ -4764,7 +4783,7 @@ public abstract class SQLBuilder {
 
         SP(final String sql, final List<Object> parameters) {
             this.sql = sql;
-            this.parameters = parameters;
+            this.parameters = ImmutableList.of(parameters);
         }
 
         public Pair<String, List<Object>> __() {

@@ -850,7 +850,7 @@ public final class JdbcUtil {
      * 
      * @param rs
      */
-    public static RowIterator rowIterator(final ResultSet rs) {
+    public static RowIterator iterate(final ResultSet rs) {
         return new RowIterator(rs);
     }
 

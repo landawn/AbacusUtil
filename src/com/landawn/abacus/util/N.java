@@ -1734,6 +1734,52 @@ public final class N {
         return map;
     }
 
+    public static <K, V, k extends K, v extends V> Map<K, V> asMap(final k k1, final v v1, final k k2, final v v2, final k k3, final v v3, final k k4,
+            final v v4) {
+        final Map<K, V> map = new HashMap<>();
+        map.put(k1, v1);
+        map.put(k2, v2);
+        map.put(k3, v3);
+        map.put(k4, v4);
+        return map;
+    }
+
+    public static <K, V, k extends K, v extends V> Map<K, V> asMap(final k k1, final v v1, final k k2, final v v2, final k k3, final v v3, final k k4,
+            final v v4, final k k5, final v v5) {
+        final Map<K, V> map = new HashMap<>();
+        map.put(k1, v1);
+        map.put(k2, v2);
+        map.put(k3, v3);
+        map.put(k4, v4);
+        map.put(k5, v5);
+        return map;
+    }
+
+    public static <K, V, k extends K, v extends V> Map<K, V> asMap(final k k1, final v v1, final k k2, final v v2, final k k3, final v v3, final k k4,
+            final v v4, final k k5, final v v5, final k k6, final v v6) {
+        final Map<K, V> map = new HashMap<>();
+        map.put(k1, v1);
+        map.put(k2, v2);
+        map.put(k3, v3);
+        map.put(k4, v4);
+        map.put(k5, v5);
+        map.put(k6, v6);
+        return map;
+    }
+
+    public static <K, V, k extends K, v extends V> Map<K, V> asMap(final k k1, final v v1, final k k2, final v v2, final k k3, final v v3, final k k4,
+            final v v4, final k k5, final v v5, final k k6, final v v6, final k k7, final v v7) {
+        final Map<K, V> map = new HashMap<>();
+        map.put(k1, v1);
+        map.put(k2, v2);
+        map.put(k3, v3);
+        map.put(k4, v4);
+        map.put(k5, v5);
+        map.put(k6, v6);
+        map.put(k7, v7);
+        return map;
+    }
+
     @SafeVarargs
     public static <K, V> Map<K, V> asMap(final Object... a) {
         if (N.isNullOrEmpty(a)) {
@@ -1761,6 +1807,52 @@ public final class N {
         map.put(k1, v1);
         map.put(k2, v2);
         map.put(k3, v3);
+        return map;
+    }
+
+    public static <K, V, k extends K, v extends V> LinkedHashMap<K, V> asLinkedHashMap(final k k1, final v v1, final k k2, final v v2, final k k3, final v v3,
+            final k k4, final v v4) {
+        final LinkedHashMap<K, V> map = new LinkedHashMap<>();
+        map.put(k1, v1);
+        map.put(k2, v2);
+        map.put(k3, v3);
+        map.put(k4, v4);
+        return map;
+    }
+
+    public static <K, V, k extends K, v extends V> LinkedHashMap<K, V> asLinkedHashMap(final k k1, final v v1, final k k2, final v v2, final k k3, final v v3,
+            final k k4, final v v4, final k k5, final v v5) {
+        final LinkedHashMap<K, V> map = new LinkedHashMap<>();
+        map.put(k1, v1);
+        map.put(k2, v2);
+        map.put(k3, v3);
+        map.put(k4, v4);
+        map.put(k5, v5);
+        return map;
+    }
+
+    public static <K, V, k extends K, v extends V> LinkedHashMap<K, V> asLinkedHashMap(final k k1, final v v1, final k k2, final v v2, final k k3, final v v3,
+            final k k4, final v v4, final k k5, final v v5, final k k6, final v v6) {
+        final LinkedHashMap<K, V> map = new LinkedHashMap<>();
+        map.put(k1, v1);
+        map.put(k2, v2);
+        map.put(k3, v3);
+        map.put(k4, v4);
+        map.put(k5, v5);
+        map.put(k6, v6);
+        return map;
+    }
+
+    public static <K, V, k extends K, v extends V> LinkedHashMap<K, V> asLinkedHashMap(final k k1, final v v1, final k k2, final v v2, final k k3, final v v3,
+            final k k4, final v v4, final k k5, final v v5, final k k6, final v v6, final k k7, final v v7) {
+        final LinkedHashMap<K, V> map = new LinkedHashMap<>();
+        map.put(k1, v1);
+        map.put(k2, v2);
+        map.put(k3, v3);
+        map.put(k4, v4);
+        map.put(k5, v5);
+        map.put(k6, v6);
+        map.put(k7, v7);
         return map;
     }
 
@@ -1795,6 +1887,52 @@ public final class N {
         return map;
     }
 
+    public static <K, V, k extends K, v extends V> ConcurrentHashMap<K, V> asConcurrentHashMap(final k k1, final v v1, final k k2, final v v2, final k k3,
+            final v v3, final k k4, final v v4) {
+        final ConcurrentHashMap<K, V> map = new ConcurrentHashMap<>();
+        map.put(k1, v1);
+        map.put(k2, v2);
+        map.put(k3, v3);
+        map.put(k4, v4);
+        return map;
+    }
+
+    public static <K, V, k extends K, v extends V> ConcurrentHashMap<K, V> asConcurrentHashMap(final k k1, final v v1, final k k2, final v v2, final k k3,
+            final v v3, final k k4, final v v4, final k k5, final v v5) {
+        final ConcurrentHashMap<K, V> map = new ConcurrentHashMap<>();
+        map.put(k1, v1);
+        map.put(k2, v2);
+        map.put(k3, v3);
+        map.put(k4, v4);
+        map.put(k5, v5);
+        return map;
+    }
+
+    public static <K, V, k extends K, v extends V> ConcurrentHashMap<K, V> asConcurrentHashMap(final k k1, final v v1, final k k2, final v v2, final k k3,
+            final v v3, final k k4, final v v4, final k k5, final v v5, final k k6, final v v6) {
+        final ConcurrentHashMap<K, V> map = new ConcurrentHashMap<>();
+        map.put(k1, v1);
+        map.put(k2, v2);
+        map.put(k3, v3);
+        map.put(k4, v4);
+        map.put(k5, v5);
+        map.put(k6, v6);
+        return map;
+    }
+
+    public static <K, V, k extends K, v extends V> ConcurrentHashMap<K, V> asConcurrentHashMap(final k k1, final v v1, final k k2, final v v2, final k k3,
+            final v v3, final k k4, final v v4, final k k5, final v v5, final k k6, final v v6, final k k7, final v v7) {
+        final ConcurrentHashMap<K, V> map = new ConcurrentHashMap<>();
+        map.put(k1, v1);
+        map.put(k2, v2);
+        map.put(k3, v3);
+        map.put(k4, v4);
+        map.put(k5, v5);
+        map.put(k6, v6);
+        map.put(k7, v7);
+        return map;
+    }
+
     @SafeVarargs
     public static <K, V> ConcurrentHashMap<K, V> asConcurrentHashMap(final Object... a) {
         if (N.isNullOrEmpty(a)) {
@@ -1822,6 +1960,52 @@ public final class N {
         map.put(k1, v1);
         map.put(k2, v2);
         map.put(k3, v3);
+        return map;
+    }
+
+    public static <K, V, k extends K, v extends V> BiMap<K, V> asBiMap(final k k1, final v v1, final k k2, final v v2, final k k3, final v v3, final k k4,
+            final v v4) {
+        final BiMap<K, V> map = new BiMap<>();
+        map.put(k1, v1);
+        map.put(k2, v2);
+        map.put(k3, v3);
+        map.put(k4, v4);
+        return map;
+    }
+
+    public static <K, V, k extends K, v extends V> BiMap<K, V> asBiMap(final k k1, final v v1, final k k2, final v v2, final k k3, final v v3, final k k4,
+            final v v4, final k k5, final v v5) {
+        final BiMap<K, V> map = new BiMap<>();
+        map.put(k1, v1);
+        map.put(k2, v2);
+        map.put(k3, v3);
+        map.put(k4, v4);
+        map.put(k5, v5);
+        return map;
+    }
+
+    public static <K, V, k extends K, v extends V> BiMap<K, V> asBiMap(final k k1, final v v1, final k k2, final v v2, final k k3, final v v3, final k k4,
+            final v v4, final k k5, final v v5, final k k6, final v v6) {
+        final BiMap<K, V> map = new BiMap<>();
+        map.put(k1, v1);
+        map.put(k2, v2);
+        map.put(k3, v3);
+        map.put(k4, v4);
+        map.put(k5, v5);
+        map.put(k6, v6);
+        return map;
+    }
+
+    public static <K, V, k extends K, v extends V> BiMap<K, V> asBiMap(final k k1, final v v1, final k k2, final v v2, final k k3, final v v3, final k k4,
+            final v v4, final k k5, final v v5, final k k6, final v v6, final k k7, final v v7) {
+        final BiMap<K, V> map = new BiMap<>();
+        map.put(k1, v1);
+        map.put(k2, v2);
+        map.put(k3, v3);
+        map.put(k4, v4);
+        map.put(k5, v5);
+        map.put(k6, v6);
+        map.put(k7, v7);
         return map;
     }
 

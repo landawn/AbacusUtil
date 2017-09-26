@@ -1007,10 +1007,10 @@ public final class IOUtil {
      * @param file  the file to open for input, must not be {@code null}
      * @return an Iterator of the lines in the file, never {@code null}
      * @throws UncheckedIOException in case of an I/O error (file closed)
-     * @see #lineIterator(File, Charset)
+     * @see #iterate(File, Charset)
      */
-    static LineIterator lineIterator(final File file) {
-        return lineIterator(file, Charsets.DEFAULT);
+    public static LineIterator iterate(final File file) {
+        return iterate(file, Charsets.DEFAULT);
     }
 
     /**
@@ -1024,7 +1024,7 @@ public final class IOUtil {
      * <p>
      * The recommended usage pattern is:
      * <pre>
-     * LineIterator it = FileUtils.lineIterator(file, "UTF-8");
+     * LineIterator it = FileUtils.iterate(file, "UTF-8");
      * try {
      *   while (it.hasNext()) {
      *     String line = it.nextLine();
@@ -1043,13 +1043,13 @@ public final class IOUtil {
      * @return an Iterator of the lines in the file, never {@code null}
      * @throws UncheckedIOException in case of an I/O error (file closed)
      */
-    static LineIterator lineIterator(final File file, final Charset encoding) {
+    public static LineIterator iterate(final File file, final Charset encoding) {
         InputStream in = null;
 
         try {
             in = new FileInputStream(file);
 
-            return lineIterator(in, encoding);
+            return iterate(in, encoding);
         } catch (final IOException ex) {
             closeQuietly(in);
             throw new UncheckedIOException(ex);
@@ -1059,8 +1059,8 @@ public final class IOUtil {
         }
     }
 
-    static LineIterator lineIterator(final InputStream input) {
-        return lineIterator(input, null);
+    public static LineIterator iterate(final InputStream input) {
+        return iterate(input, null);
     }
 
     /**
@@ -1076,7 +1076,7 @@ public final class IOUtil {
      * The recommended usage pattern is:
      * <pre>
      * try {
-     *   LineIterator it = lineIterator(stream, charset);
+     *   LineIterator it = iterate(stream, charset);
      *   while (it.hasNext()) {
      *     String line = it.nextLine();
      *     /// do something with line
@@ -1092,7 +1092,7 @@ public final class IOUtil {
      * @throws IllegalArgumentException if the input is null
      * @throws UncheckedIOException if an I/O error occurs, such as if the encoding is invalid
      */
-    static LineIterator lineIterator(final InputStream input, final Charset encoding) {
+    public static LineIterator iterate(final InputStream input, final Charset encoding) {
         return new LineIterator(createReader(input, encoding));
     }
 
@@ -1110,7 +1110,7 @@ public final class IOUtil {
      * The recommended usage pattern is:
      * <pre>
      * try {
-     *   LineIterator it = lineIterator(reader);
+     *   LineIterator it = iterate(reader);
      *   while (it.hasNext()) {
      *     String line = it.nextLine();
      *     /// do something with line
@@ -1124,7 +1124,7 @@ public final class IOUtil {
      * @return an Iterator of the lines in the reader, never null
      * @throws IllegalArgumentException if the reader is null
      */
-    static LineIterator lineIterator(final Reader reader) {
+    public static LineIterator iterate(final Reader reader) {
         return new LineIterator(reader);
     }
 
