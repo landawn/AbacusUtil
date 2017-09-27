@@ -3682,7 +3682,17 @@ public final class N {
             }
         }
 
-        final int value = IOUtil.parseInt(N.getCharsForReadOnly(str), index, str.length() - index, radix);
+        int value = 0;
+
+        if (isNumberCheck) {
+            try {
+                value = IOUtil.parseInt(N.getCharsForReadOnly(str), index, str.length() - index, radix);
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        } else {
+            value = IOUtil.parseInt(N.getCharsForReadOnly(str), index, str.length() - index, radix);
+        }
 
         return negative ? -value : value;
     }
@@ -3770,7 +3780,17 @@ public final class N {
             }
         }
 
-        final long value = IOUtil.parseLong(N.getCharsForReadOnly(str), index, str.length() - index, radix);
+        long value = 0;
+
+        if (isNumberCheck) {
+            try {
+                value = IOUtil.parseLong(N.getCharsForReadOnly(str), index, str.length() - index, radix);
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        } else {
+            value = IOUtil.parseLong(N.getCharsForReadOnly(str), index, str.length() - index, radix);
+        }
 
         return negative ? -value : value;
     }
