@@ -46,12 +46,12 @@ A general programming library in Java/Android. It's simple, powerful and easy to
 [LineIterator](https://static.javadoc.io/com.landawn/abacus-util/1.0/com/landawn/abacus/util/LineIterator.html),
 [RowIterator](https://static.javadoc.io/com.landawn/abacus-util/1.0/com/landawn/abacus/util/RowIterator.html),
 [BooleanIterator](https://static.javadoc.io/com.landawn/abacus-util/1.0/com/landawn/abacus/util/BooleanIterator.html),
-...,
+...
 [DoubleIterator](https://static.javadoc.io/com.landawn/abacus-util/1.0/com/landawn/abacus/util/DoubleIterator.html),
 [NullabLe](https://static.javadoc.io/com.landawn/abacus-util/1.0/com/landawn/abacus/util/NullabLe.html),
 [Optional](https://static.javadoc.io/com.landawn/abacus-util/1.0/com/landawn/abacus/util/Optional.html),
 [OptionalBoolean](https://static.javadoc.io/com.landawn/abacus-util/1.0/com/landawn/abacus/util/OptionalBoolean.html),
-...,
+...
 [OptionalDouble](https://static.javadoc.io/com.landawn/abacus-util/1.0/com/landawn/abacus/util/OptionalDouble.html),
 [Base64](https://static.javadoc.io/com.landawn/abacus-util/1.0/com/landawn/abacus/util/Base64.html),
 [ClassUtil](https://static.javadoc.io/com.landawn/abacus-util/1.0/com/landawn/abacus/util/ClassUtil.html),
@@ -70,7 +70,7 @@ A general programming library in Java/Android. It's simple, powerful and easy to
 [Range](https://static.javadoc.io/com.landawn/abacus-util/1.0/com/landawn/abacus/util/Range.html),
 [Fraction](https://static.javadoc.io/com.landawn/abacus-util/1.0/com/landawn/abacus/util/Fraction.html),
 [MutableBoolean](https://static.javadoc.io/com.landawn/abacus-util/1.0/com/landawn/abacus/util/MutableBoolean.html),
-...,
+...
 [MutableDouble](https://static.javadoc.io/com.landawn/abacus-util/1.0/com/landawn/abacus/util/MutableDouble.html),
 [f](https://static.javadoc.io/com.landawn/abacus-util/1.0/com/landawn/abacus/util/f.html),
 [Hashing](https://static.javadoc.io/com.landawn/abacus-util/1.0/com/landawn/abacus/hash/Hashing.html),
