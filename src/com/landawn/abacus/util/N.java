@@ -7960,11 +7960,7 @@ public final class N {
      *        validation
      */
     public static boolean isNumber(final String str) {
-        try {
-            return N.createNumber(str, true) != null;
-        } catch (NumberFormatException e) {
-            return false;
-        }
+        return N.createNumber(str, true) != null;
     }
 
     /**
