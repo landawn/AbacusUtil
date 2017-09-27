@@ -106,10 +106,10 @@ Map<Integer, String> map = Stream.of(persons).toMap(p -> p.age, p -> p.name, Fn.
 Map<Integer, String> map = Stream.of(persons).toMap(p -> p.age, p -> p.name, (a, b) -> a + ";" + b);
 // {18=Max, 23=Peter;Pamela, 12=David}
 
-Map<Integer, List<Person>> map = Stream.of(persons).toMap2(p -> p.age);
+Map<Integer, List<Person>> map = Stream.of(persons).groupTo(p -> p.age);
 // {18=[Person(name=Max, age=18)], 23=[Person(name=Peter, age=23), Person(name=Pamela, age=23)], 12=[Person(name=David, age=12)]}
 
-Map<Integer, List<String>> map = Stream.of(persons).toMap2(p -> p.age, p -> p.name);
+Map<Integer, List<String>> map = Stream.of(persons).groupTo(p -> p.age, p -> p.name);
 // {18=[Max], 23=[Peter, Pamela], 12=[David]}
 ```
 
