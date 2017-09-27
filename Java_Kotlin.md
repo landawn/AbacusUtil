@@ -125,7 +125,7 @@ Map<Department, Integer> totalByDept
 val totalByDept = employees.groupBy { it.dept }.mapValues { it.value.sumBy { it.salary }}
 
 // Java by Abacus-Util
-Map<Department, Integer> totalByDept = Stream.of(employees).toMap(Employee::getDepartment, Collectors.summingInt(Employee::getSalary));
+Map<Department, Integer> totalByDept = Stream.of(employees).toMap(Employee::getDepartment, Fn.summingInt(Employee::getSalary));
 
 ```
 
@@ -173,7 +173,7 @@ Map<Person.Sex, List<String>> namesByGender =
 val namesByGender = roster.groupBy { it.gender }.mapValues { it.value.map { it.name } } 
 
 // Java by Abacus-Util
-Map<Person.Sex, List<String>> namesByGender = Stream.of(roster).toMap2(Person::getGender, Person::getName);
+Map<Person.Sex, List<String>> namesByGender = Stream.of(roster).groupTo(Person::getGender, Person::getName);
 ```
 
 [1]: https://stackoverflow.com/questions/34642254/what-java-8-stream-collect-equivalents-are-available-in-the-standard-kotlin-libr
