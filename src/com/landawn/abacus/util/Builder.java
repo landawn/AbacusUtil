@@ -955,6 +955,10 @@ public class Builder<T> {
          * @return return the specified {@code output}
          */
         public static <K, V, M extends Map<K, V>> M replace(final M output, final K key, final V newValue) {
+            if (output == null || output.size() == 0) {
+                return output;
+            }
+
             final V curValue = output.get(key);
 
             if ((curValue != null || output.containsKey(key))) {
@@ -973,6 +977,10 @@ public class Builder<T> {
          * @return return the specified {@code output}
          */
         public static <K, V, M extends Map<K, V>> M replace(final M output, final K key, final V oldValue, final V newValue) {
+            if (output == null || output.size() == 0) {
+                return output;
+            }
+
             final V curValue = output.get(key);
 
             if ((curValue != null || output.containsKey(key)) && N.equals(curValue, oldValue)) {

@@ -506,7 +506,9 @@ public final class Range<T extends Comparable> implements Serializable {
         OPEN_OPEN, OPEN_CLOSED, CLOSED_OPEN, CLOSED_CLOSED
     }
 
-    static abstract class Endpoint<T extends Comparable> {
+    static abstract class Endpoint<T extends Comparable> implements Serializable {
+        private static final long serialVersionUID = -1404748904424344410L;
+
         final T value;
         final boolean isClosed;
 
@@ -523,7 +525,9 @@ public final class Range<T extends Comparable> implements Serializable {
 
     }
 
-    static class LowerEndpoint<T extends Comparable> extends Endpoint<T> {
+    static class LowerEndpoint<T extends Comparable> extends Endpoint<T> implements Serializable {
+        private static final long serialVersionUID = -1369183906861608859L;
+
         LowerEndpoint(final T value, boolean isClosed) {
             super(value, isClosed);
         }
@@ -582,7 +586,9 @@ public final class Range<T extends Comparable> implements Serializable {
         }
     }
 
-    static class UpperEndpoint<T extends Comparable> extends Endpoint<T> {
+    static class UpperEndpoint<T extends Comparable> extends Endpoint<T> implements Serializable {
+        private static final long serialVersionUID = 3180376045860768477L;
+
         UpperEndpoint(final T value, boolean isClosed) {
             super(value, isClosed);
         }

@@ -362,15 +362,15 @@ public class EventBus {
         }
     }
 
-    /**
-     * 
-     * @param subscriber General subscriber (type is {@code Subscriber} and parameter type is Object, mostly created by lambda) only can be registered with event id
-     * @param eventId
-     * @return
-     */
-    public <T> EventBus register(final Subscriber<T> subscriber) {
-        return register(subscriber, (ThreadMode) null);
-    }
+    //    /**
+    //     * 
+    //     * @param subscriber General subscriber (type is {@code Subscriber} and parameter type is Object, mostly created by lambda) only can be registered with event id
+    //     * @param eventId
+    //     * @return
+    //     */
+    //    public <T> EventBus register(final Subscriber<T> subscriber) {
+    //        return register(subscriber, (ThreadMode) null);
+    //    }
 
     /**
      * 
@@ -382,14 +382,14 @@ public class EventBus {
         return register(subscriber, eventId, (ThreadMode) null);
     }
 
-    /**
-     * @param subscriber General subscriber (type is {@code Subscriber} and parameter type is Object, mostly created by lambda) only can be registered with event id
-     * @param threadMode
-     * @return
-     */
-    public <T> EventBus register(final Subscriber<T> subscriber, ThreadMode threadMode) {
-        return register(subscriber, (String) null, threadMode);
-    }
+    //    /**
+    //     * @param subscriber General subscriber (type is {@code Subscriber} and parameter type is Object, mostly created by lambda) only can be registered with event id
+    //     * @param threadMode
+    //     * @return
+    //     */
+    //    public <T> EventBus register(final Subscriber<T> subscriber, ThreadMode threadMode) {
+    //        return register(subscriber, (String) null, threadMode);
+    //    }
 
     /**
      * 
@@ -399,7 +399,8 @@ public class EventBus {
      * @return
      */
     public <T> EventBus register(final Subscriber<T> subscriber, final String eventId, ThreadMode threadMode) {
-        return register(subscriber, eventId, threadMode);
+        final Object tmp = subscriber;
+        return register(tmp, eventId, threadMode);
     }
 
     public EventBus unregister(final Object subscriber) {

@@ -1,4 +1,13 @@
 ﻿
+﻿========Changes in 1.0.1 =========================================================================
+
+1, Remove EventBus.register(subscriber)/register(subscriber, threadMode).
+
+2, Add f.replaceIf(...).
+
+3, Improvements and bug fix.
+
+
 ﻿========Changes in 1.0 =========================================================================
 
 1, Add Keyed/Fn.keyed()/filtering/mapping/flatMapping.

@@ -2855,7 +2855,7 @@ public final class CodeGenerator {
         for (int i = 0, len = typeName.length(); i < len; i++) {
             char ch = typeName.charAt(i);
 
-            if (ch == '<' || ch == '>' || ch == '>' || ch == ' ' || ch == ',') {
+            if (ch == '<' || ch == '>' || ch == ' ' || ch == ',') {
                 String str = typeName.substring(start, i);
 
                 if (str.length() > 0 && N.typeOf(str).getTypeClass().equals(Object.class)) {

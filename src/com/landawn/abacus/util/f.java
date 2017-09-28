@@ -19,35 +19,44 @@ import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BooleanBiFunction;
 import com.landawn.abacus.util.function.BooleanFunction;
+import com.landawn.abacus.util.function.BooleanPredicate;
 import com.landawn.abacus.util.function.BooleanTriFunction;
 import com.landawn.abacus.util.function.BooleanUnaryOperator;
 import com.landawn.abacus.util.function.ByteBiFunction;
 import com.landawn.abacus.util.function.ByteFunction;
+import com.landawn.abacus.util.function.BytePredicate;
 import com.landawn.abacus.util.function.ByteTriFunction;
 import com.landawn.abacus.util.function.ByteUnaryOperator;
 import com.landawn.abacus.util.function.CharBiFunction;
 import com.landawn.abacus.util.function.CharFunction;
+import com.landawn.abacus.util.function.CharPredicate;
 import com.landawn.abacus.util.function.CharTriFunction;
 import com.landawn.abacus.util.function.CharUnaryOperator;
 import com.landawn.abacus.util.function.DoubleBiFunction;
 import com.landawn.abacus.util.function.DoubleFunction;
+import com.landawn.abacus.util.function.DoublePredicate;
 import com.landawn.abacus.util.function.DoubleTriFunction;
 import com.landawn.abacus.util.function.DoubleUnaryOperator;
 import com.landawn.abacus.util.function.FloatBiFunction;
 import com.landawn.abacus.util.function.FloatFunction;
+import com.landawn.abacus.util.function.FloatPredicate;
 import com.landawn.abacus.util.function.FloatTriFunction;
 import com.landawn.abacus.util.function.FloatUnaryOperator;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntBiFunction;
 import com.landawn.abacus.util.function.IntFunction;
+import com.landawn.abacus.util.function.IntPredicate;
 import com.landawn.abacus.util.function.IntTriFunction;
 import com.landawn.abacus.util.function.IntUnaryOperator;
 import com.landawn.abacus.util.function.LongBiFunction;
 import com.landawn.abacus.util.function.LongFunction;
+import com.landawn.abacus.util.function.LongPredicate;
 import com.landawn.abacus.util.function.LongTriFunction;
 import com.landawn.abacus.util.function.LongUnaryOperator;
+import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.ShortBiFunction;
 import com.landawn.abacus.util.function.ShortFunction;
+import com.landawn.abacus.util.function.ShortPredicate;
 import com.landawn.abacus.util.function.ShortTriFunction;
 import com.landawn.abacus.util.function.ShortUnaryOperator;
 import com.landawn.abacus.util.function.ToBooleanFunction;
@@ -72,7 +81,7 @@ public final class f {
     private static final short SHORT_0 = (short) 0;
 
     private f() {
-        // singleton.
+        // utility class.
     }
 
     public static <T> void replaceAll2(final T[] a, final UnaryOperator<T> operator) {
@@ -105,11 +114,39 @@ public final class f {
         }
     }
 
-    public static <T> T[] flatten2(final T[][] a) {
-        //        if (N.isNullOrEmpty(a)) {
-        //            return N.EMPTY_BOOLEAN_ARRAY;
-        //        }
+    public static <T> void replaceIf2(final T[] a, final Predicate<? super T> predicate, final T newValue) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
 
+        for (int i = 0, n = a.length; i < n; i++) {
+            if (predicate.test(a[i])) {
+                a[i] = newValue;
+            }
+        }
+    }
+
+    public static <T> void replaceIf2(final T[][] a, final Predicate<? super T> predicate, final T newValue) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        for (int i = 0, n = a.length; i < n; i++) {
+            replaceIf2(a[i], predicate, newValue);
+        }
+    }
+
+    public static <T> void replaceIf2(final T[][][] a, final Predicate<? super T> predicate, final T newValue) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        for (int i = 0, n = a.length; i < n; i++) {
+            replaceIf2(a[i], predicate, newValue);
+        }
+    }
+
+    public static <T> T[] flatten2(final T[][] a) {
         int count = 0;
 
         for (int i = 0, n = a.length; i < n; i++) {
@@ -133,10 +170,6 @@ public final class f {
     }
 
     public static <T> T[] flatten2(final T[][][] a) {
-        //        if (N.isNullOrEmpty(a)) {
-        //            return N.EMPTY_BOOLEAN_ARRAY;
-        //        }
-
         int count = 0;
 
         for (int i = 0, n = a.length; i < n; i++) {
@@ -1495,6 +1528,38 @@ public final class f {
         }
     }
 
+    public static void replaceIf(final boolean[] a, final BooleanPredicate predicate, final boolean newValue) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        for (int i = 0, n = a.length; i < n; i++) {
+            if (predicate.test(a[i])) {
+                a[i] = newValue;
+            }
+        }
+    }
+
+    public static void replaceIf(final boolean[][] a, final BooleanPredicate predicate, final boolean newValue) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        for (int i = 0, n = a.length; i < n; i++) {
+            replaceIf(a[i], predicate, newValue);
+        }
+    }
+
+    public static void replaceIf(final boolean[][][] a, final BooleanPredicate predicate, final boolean newValue) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        for (int i = 0, n = a.length; i < n; i++) {
+            replaceIf(a[i], predicate, newValue);
+        }
+    }
+
     public static boolean[] flatten(final boolean[][] a) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_BOOLEAN_ARRAY;
@@ -2215,6 +2280,38 @@ public final class f {
         }
     }
 
+    public static void replaceIf(final char[] a, final CharPredicate predicate, final char newValue) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        for (int i = 0, n = a.length; i < n; i++) {
+            if (predicate.test(a[i])) {
+                a[i] = newValue;
+            }
+        }
+    }
+
+    public static void replaceIf(final char[][] a, final CharPredicate predicate, final char newValue) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        for (int i = 0, n = a.length; i < n; i++) {
+            replaceIf(a[i], predicate, newValue);
+        }
+    }
+
+    public static void replaceIf(final char[][][] a, final CharPredicate predicate, final char newValue) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        for (int i = 0, n = a.length; i < n; i++) {
+            replaceIf(a[i], predicate, newValue);
+        }
+    }
+
     public static char[] flatten(final char[][] a) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_CHAR_ARRAY;
@@ -2931,6 +3028,38 @@ public final class f {
 
         for (int i = 0, n = a.length; i < n; i++) {
             replaceAll(a[i], operator);
+        }
+    }
+
+    public static void replaceIf(final byte[] a, final BytePredicate predicate, final byte newValue) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        for (int i = 0, n = a.length; i < n; i++) {
+            if (predicate.test(a[i])) {
+                a[i] = newValue;
+            }
+        }
+    }
+
+    public static void replaceIf(final byte[][] a, final BytePredicate predicate, final byte newValue) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        for (int i = 0, n = a.length; i < n; i++) {
+            replaceIf(a[i], predicate, newValue);
+        }
+    }
+
+    public static void replaceIf(final byte[][][] a, final BytePredicate predicate, final byte newValue) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        for (int i = 0, n = a.length; i < n; i++) {
+            replaceIf(a[i], predicate, newValue);
         }
     }
 
@@ -4899,6 +5028,38 @@ public final class f {
 
         for (int i = 0, n = a.length; i < n; i++) {
             replaceAll(a[i], operator);
+        }
+    }
+
+    public static void replaceIf(final short[] a, final ShortPredicate predicate, final short newValue) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        for (int i = 0, n = a.length; i < n; i++) {
+            if (predicate.test(a[i])) {
+                a[i] = newValue;
+            }
+        }
+    }
+
+    public static void replaceIf(final short[][] a, final ShortPredicate predicate, final short newValue) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        for (int i = 0, n = a.length; i < n; i++) {
+            replaceIf(a[i], predicate, newValue);
+        }
+    }
+
+    public static void replaceIf(final short[][][] a, final ShortPredicate predicate, final short newValue) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        for (int i = 0, n = a.length; i < n; i++) {
+            replaceIf(a[i], predicate, newValue);
         }
     }
 
@@ -6876,6 +7037,38 @@ public final class f {
         }
     }
 
+    public static void replaceIf(final int[] a, final IntPredicate predicate, final int newValue) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        for (int i = 0, n = a.length; i < n; i++) {
+            if (predicate.test(a[i])) {
+                a[i] = newValue;
+            }
+        }
+    }
+
+    public static void replaceIf(final int[][] a, final IntPredicate predicate, final int newValue) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        for (int i = 0, n = a.length; i < n; i++) {
+            replaceIf(a[i], predicate, newValue);
+        }
+    }
+
+    public static void replaceIf(final int[][][] a, final IntPredicate predicate, final int newValue) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        for (int i = 0, n = a.length; i < n; i++) {
+            replaceIf(a[i], predicate, newValue);
+        }
+    }
+
     public static int[] flatten(final int[][] a) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_INT_ARRAY;
@@ -8835,6 +9028,38 @@ public final class f {
 
         for (int i = 0, n = a.length; i < n; i++) {
             replaceAll(a[i], operator);
+        }
+    }
+
+    public static void replaceIf(final long[] a, final LongPredicate predicate, final long newValue) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        for (int i = 0, n = a.length; i < n; i++) {
+            if (predicate.test(a[i])) {
+                a[i] = newValue;
+            }
+        }
+    }
+
+    public static void replaceIf(final long[][] a, final LongPredicate predicate, final long newValue) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        for (int i = 0, n = a.length; i < n; i++) {
+            replaceIf(a[i], predicate, newValue);
+        }
+    }
+
+    public static void replaceIf(final long[][][] a, final LongPredicate predicate, final long newValue) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        for (int i = 0, n = a.length; i < n; i++) {
+            replaceIf(a[i], predicate, newValue);
         }
     }
 
@@ -10803,6 +11028,38 @@ public final class f {
 
         for (int i = 0, n = a.length; i < n; i++) {
             replaceAll(a[i], operator);
+        }
+    }
+
+    public static void replaceIf(final float[] a, final FloatPredicate predicate, final float newValue) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        for (int i = 0, n = a.length; i < n; i++) {
+            if (predicate.test(a[i])) {
+                a[i] = newValue;
+            }
+        }
+    }
+
+    public static void replaceIf(final float[][] a, final FloatPredicate predicate, final float newValue) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        for (int i = 0, n = a.length; i < n; i++) {
+            replaceIf(a[i], predicate, newValue);
+        }
+    }
+
+    public static void replaceIf(final float[][][] a, final FloatPredicate predicate, final float newValue) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        for (int i = 0, n = a.length; i < n; i++) {
+            replaceIf(a[i], predicate, newValue);
         }
     }
 
@@ -12777,6 +13034,38 @@ public final class f {
 
         for (int i = 0, n = a.length; i < n; i++) {
             replaceAll(a[i], operator);
+        }
+    }
+
+    public static void replaceIf(final double[] a, final DoublePredicate predicate, final double newValue) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        for (int i = 0, n = a.length; i < n; i++) {
+            if (predicate.test(a[i])) {
+                a[i] = newValue;
+            }
+        }
+    }
+
+    public static void replaceIf(final double[][] a, final DoublePredicate predicate, final double newValue) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        for (int i = 0, n = a.length; i < n; i++) {
+            replaceIf(a[i], predicate, newValue);
+        }
+    }
+
+    public static void replaceIf(final double[][][] a, final DoublePredicate predicate, final double newValue) {
+        if (N.isNullOrEmpty(a)) {
+            return;
+        }
+
+        for (int i = 0, n = a.length; i < n; i++) {
+            replaceIf(a[i], predicate, newValue);
         }
     }
 

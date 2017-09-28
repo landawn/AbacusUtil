@@ -69,7 +69,7 @@ import android.widget.TextView;
  */
 public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
     Observer() {
-
+        super();
     }
 
     public static <T extends View, O extends ViewObserver<T, O>> ViewObserver<T, O> of(final T view) {
