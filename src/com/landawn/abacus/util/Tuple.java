@@ -21,6 +21,7 @@ import java.util.Iterator;
 
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
+import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -262,6 +263,10 @@ public abstract class Tuple {
             return action.apply(this);
         }
 
+        public Optional<Tuple1<T1>> filter(final Predicate<? super Tuple1<T1>> predicate) {
+            return predicate.test(this) ? Optional.of(this) : Optional.<Tuple1<T1>> empty();
+        }
+
         @Override
         public Stream<Tuple1<T1>> stream() {
             return Stream.of(this);
@@ -350,6 +355,10 @@ public abstract class Tuple {
 
         public <U> U apply(final Function<? super Tuple2<T1, T2>, U> action) {
             return action.apply(this);
+        }
+
+        public Optional<Tuple2<T1, T2>> filter(final Predicate<? super Tuple2<T1, T2>> predicate) {
+            return predicate.test(this) ? Optional.of(this) : Optional.<Tuple2<T1, T2>> empty();
         }
 
         @Override
@@ -467,6 +476,10 @@ public abstract class Tuple {
             return action.apply(this);
         }
 
+        public Optional<Tuple3<T1, T2, T3>> filter(final Predicate<? super Tuple3<T1, T2, T3>> predicate) {
+            return predicate.test(this) ? Optional.of(this) : Optional.<Tuple3<T1, T2, T3>> empty();
+        }
+
         @Override
         public Stream<Tuple3<T1, T2, T3>> stream() {
             return Stream.of(this);
@@ -565,6 +578,10 @@ public abstract class Tuple {
 
         public <U> U apply(final Function<? super Tuple4<T1, T2, T3, T4>, U> action) {
             return action.apply(this);
+        }
+
+        public Optional<Tuple4<T1, T2, T3, T4>> filter(final Predicate<? super Tuple4<T1, T2, T3, T4>> predicate) {
+            return predicate.test(this) ? Optional.of(this) : Optional.<Tuple4<T1, T2, T3, T4>> empty();
         }
 
         @Override
@@ -670,6 +687,10 @@ public abstract class Tuple {
 
         public <U> U apply(final Function<? super Tuple5<T1, T2, T3, T4, T5>, U> action) {
             return action.apply(this);
+        }
+
+        public Optional<Tuple5<T1, T2, T3, T4, T5>> filter(final Predicate<? super Tuple5<T1, T2, T3, T4, T5>> predicate) {
+            return predicate.test(this) ? Optional.of(this) : Optional.<Tuple5<T1, T2, T3, T4, T5>> empty();
         }
 
         @Override
@@ -781,6 +802,10 @@ public abstract class Tuple {
 
         public <U> U apply(final Function<? super Tuple6<T1, T2, T3, T4, T5, T6>, U> action) {
             return action.apply(this);
+        }
+
+        public Optional<Tuple6<T1, T2, T3, T4, T5, T6>> filter(final Predicate<? super Tuple6<T1, T2, T3, T4, T5, T6>> predicate) {
+            return predicate.test(this) ? Optional.of(this) : Optional.<Tuple6<T1, T2, T3, T4, T5, T6>> empty();
         }
 
         @Override
@@ -898,6 +923,10 @@ public abstract class Tuple {
 
         public <U> U apply(final Function<? super Tuple7<T1, T2, T3, T4, T5, T6, T7>, U> action) {
             return action.apply(this);
+        }
+
+        public Optional<Tuple7<T1, T2, T3, T4, T5, T6, T7>> filter(final Predicate<? super Tuple7<T1, T2, T3, T4, T5, T6, T7>> predicate) {
+            return predicate.test(this) ? Optional.of(this) : Optional.<Tuple7<T1, T2, T3, T4, T5, T6, T7>> empty();
         }
 
         @Override
@@ -1020,6 +1049,10 @@ public abstract class Tuple {
 
         public <U> U apply(final Function<? super Tuple8<T1, T2, T3, T4, T5, T6, T7, T8>, U> action) {
             return action.apply(this);
+        }
+
+        public Optional<Tuple8<T1, T2, T3, T4, T5, T6, T7, T8>> filter(final Predicate<? super Tuple8<T1, T2, T3, T4, T5, T6, T7, T8>> predicate) {
+            return predicate.test(this) ? Optional.of(this) : Optional.<Tuple8<T1, T2, T3, T4, T5, T6, T7, T8>> empty();
         }
 
         @Override
@@ -1147,6 +1180,10 @@ public abstract class Tuple {
 
         public <U> U apply(final Function<? super Tuple9<T1, T2, T3, T4, T5, T6, T7, T8, T9>, U> action) {
             return action.apply(this);
+        }
+
+        public Optional<Tuple9<T1, T2, T3, T4, T5, T6, T7, T8, T9>> filter(final Predicate<? super Tuple9<T1, T2, T3, T4, T5, T6, T7, T8, T9>> predicate) {
+            return predicate.test(this) ? Optional.of(this) : Optional.<Tuple9<T1, T2, T3, T4, T5, T6, T7, T8, T9>> empty();
         }
 
         @Override

@@ -5,7 +5,13 @@
 
 2, Add f.replaceIf(...).
 
-3, Improvements and bug fix.
+3, Add Pair/Triple/Tuple.filter(...).
+
+4, Add CharPair/IntPair/.../toList().
+
+5, Rename Holder.V to Holder.R
+
+6, Improvements and bug fix.
 
 
 ﻿========Changes in 1.0 =========================================================================

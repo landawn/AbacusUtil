@@ -31,6 +31,7 @@ import com.landawn.abacus.util.function.FloatConsumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.function.LongConsumer;
+import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.TriPredicate;
 import com.landawn.abacus.util.stream.Stream;
 
@@ -295,6 +296,14 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
         return action.apply(this);
     }
 
+    public Optional<Pair<L, R>> filter(final BiPredicate<? super L, ? super R> predicate) {
+        return predicate.test(left, right) ? Optional.of(this) : Optional.<Pair<L, R>> empty();
+    }
+
+    public Optional<Pair<L, R>> filter(final Predicate<Pair<L, R>> predicate) {
+        return predicate.test(this) ? Optional.of(this) : Optional.<Pair<L, R>> empty();
+    }
+
     public Stream<Pair<L, R>> stream() {
         return Stream.of(this);
     }
@@ -349,12 +358,24 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
             return N.max(_1, _2);
         }
 
+        public int sum() {
+            return _1 + _2;
+        }
+
+        public double average() {
+            return sum() / 2d;
+        }
+
         public CharPair reversed() {
             return new CharPair(_2, _1);
         }
 
         public char[] toArray() {
             return new char[] { _1, _2 };
+        }
+
+        public CharList toList() {
+            return CharList.of(_1, _2);
         }
 
         public void forEach(CharConsumer comsumer) {
@@ -368,6 +389,10 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
 
         public <U> U apply(Function<CharPair, U> action) {
             return action.apply(this);
+        }
+
+        public Optional<CharPair> filter(final Predicate<CharPair> predicate) {
+            return predicate.test(this) ? Optional.of(this) : Optional.<CharPair> empty();
         }
 
         public Stream<CharPair> stream() {
@@ -423,7 +448,7 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
         }
 
         public double average() {
-            return sum() / 2;
+            return sum() / 2d;
         }
 
         public IntPair reversed() {
@@ -432,6 +457,10 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
 
         public int[] toArray() {
             return new int[] { _1, _2 };
+        }
+
+        public IntList toList() {
+            return IntList.of(_1, _2);
         }
 
         public void forEach(IntConsumer comsumer) {
@@ -445,6 +474,10 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
 
         public <U> U apply(Function<IntPair, U> action) {
             return action.apply(this);
+        }
+
+        public Optional<IntPair> filter(final Predicate<IntPair> predicate) {
+            return predicate.test(this) ? Optional.of(this) : Optional.<IntPair> empty();
         }
 
         public Stream<IntPair> stream() {
@@ -500,7 +533,7 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
         }
 
         public double average() {
-            return sum() / 2;
+            return sum() / 2d;
         }
 
         public LongPair reversed() {
@@ -509,6 +542,10 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
 
         public long[] toArray() {
             return new long[] { _1, _2 };
+        }
+
+        public LongList toList() {
+            return LongList.of(_1, _2);
         }
 
         public void forEach(LongConsumer comsumer) {
@@ -522,6 +559,10 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
 
         public <U> U apply(Function<LongPair, U> action) {
             return action.apply(this);
+        }
+
+        public Optional<LongPair> filter(final Predicate<LongPair> predicate) {
+            return predicate.test(this) ? Optional.of(this) : Optional.<LongPair> empty();
         }
 
         public Stream<LongPair> stream() {
@@ -577,7 +618,7 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
         }
 
         public double average() {
-            return sum() / 2;
+            return sum() / 2d;
         }
 
         public FloatPair reversed() {
@@ -586,6 +627,10 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
 
         public float[] toArray() {
             return new float[] { _1, _2 };
+        }
+
+        public FloatList toList() {
+            return FloatList.of(_1, _2);
         }
 
         public void forEach(FloatConsumer comsumer) {
@@ -599,6 +644,10 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
 
         public <U> U apply(Function<FloatPair, U> action) {
             return action.apply(this);
+        }
+
+        public Optional<FloatPair> filter(final Predicate<FloatPair> predicate) {
+            return predicate.test(this) ? Optional.of(this) : Optional.<FloatPair> empty();
         }
 
         public Stream<FloatPair> stream() {
@@ -654,7 +703,7 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
         }
 
         public double average() {
-            return sum() / 2;
+            return sum() / 2d;
         }
 
         public DoublePair reversed() {
@@ -663,6 +712,10 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
 
         public double[] toArray() {
             return new double[] { _1, _2 };
+        }
+
+        public DoubleList toList() {
+            return DoubleList.of(_1, _2);
         }
 
         public void forEach(DoubleConsumer comsumer) {
@@ -676,6 +729,10 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
 
         public <U> U apply(Function<DoublePair, U> action) {
             return action.apply(this);
+        }
+
+        public Optional<DoublePair> filter(final Predicate<DoublePair> predicate) {
+            return predicate.test(this) ? Optional.of(this) : Optional.<DoublePair> empty();
         }
 
         public Stream<DoublePair> stream() {

@@ -28,9 +28,11 @@ import com.landawn.abacus.util.function.FloatConsumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.function.LongConsumer;
+import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.QuadPredicate;
 import com.landawn.abacus.util.function.TriConsumer;
 import com.landawn.abacus.util.function.TriFunction;
+import com.landawn.abacus.util.function.TriPredicate;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -331,6 +333,14 @@ public final class Triple<L, M, R> {
         return action.apply(this);
     }
 
+    public Optional<Triple<L, M, R>> filter(final TriPredicate<? super L, ? super M, ? super R> predicate) {
+        return predicate.test(left, middle, right) ? Optional.of(this) : Optional.<Triple<L, M, R>> empty();
+    }
+
+    public Optional<Triple<L, M, R>> filter(final Predicate<Triple<L, M, R>> predicate) {
+        return predicate.test(this) ? Optional.of(this) : Optional.<Triple<L, M, R>> empty();
+    }
+
     public Stream<Triple<L, M, R>> stream() {
         return Stream.of(this);
     }
@@ -392,12 +402,24 @@ public final class Triple<L, M, R> {
             return N.median(_1, _2, _3);
         }
 
+        public int sum() {
+            return _1 + _2 + _3;
+        }
+
+        public double average() {
+            return sum() / 3d;
+        }
+
         public CharTriple reversed() {
             return new CharTriple(_3, _2, _1);
         }
 
         public char[] toArray() {
             return new char[] { _1, _2, _3 };
+        }
+
+        public CharList toList() {
+            return CharList.of(_1, _2, _3);
         }
 
         public void forEach(CharConsumer comsumer) {
@@ -412,6 +434,10 @@ public final class Triple<L, M, R> {
 
         public <U> U apply(Function<CharTriple, U> action) {
             return action.apply(this);
+        }
+
+        public Optional<CharTriple> filter(final Predicate<CharTriple> predicate) {
+            return predicate.test(this) ? Optional.of(this) : Optional.<CharTriple> empty();
         }
 
         public Stream<CharTriple> stream() {
@@ -473,7 +499,7 @@ public final class Triple<L, M, R> {
         }
 
         public double average() {
-            return sum() / 3;
+            return sum() / 3d;
         }
 
         public IntTriple reversed() {
@@ -482,6 +508,10 @@ public final class Triple<L, M, R> {
 
         public int[] toArray() {
             return new int[] { _1, _2, _3 };
+        }
+
+        public IntList toList() {
+            return IntList.of(_1, _2, _3);
         }
 
         public void forEach(IntConsumer comsumer) {
@@ -496,6 +526,10 @@ public final class Triple<L, M, R> {
 
         public <U> U apply(Function<IntTriple, U> action) {
             return action.apply(this);
+        }
+
+        public Optional<IntTriple> filter(final Predicate<IntTriple> predicate) {
+            return predicate.test(this) ? Optional.of(this) : Optional.<IntTriple> empty();
         }
 
         public Stream<IntTriple> stream() {
@@ -557,7 +591,7 @@ public final class Triple<L, M, R> {
         }
 
         public double average() {
-            return sum() / 3;
+            return sum() / 3d;
         }
 
         public LongTriple reversed() {
@@ -566,6 +600,10 @@ public final class Triple<L, M, R> {
 
         public long[] toArray() {
             return new long[] { _1, _2, _3 };
+        }
+
+        public LongList toList() {
+            return LongList.of(_1, _2, _3);
         }
 
         public void forEach(LongConsumer comsumer) {
@@ -580,6 +618,10 @@ public final class Triple<L, M, R> {
 
         public <U> U apply(Function<LongTriple, U> action) {
             return action.apply(this);
+        }
+
+        public Optional<LongTriple> filter(final Predicate<LongTriple> predicate) {
+            return predicate.test(this) ? Optional.of(this) : Optional.<LongTriple> empty();
         }
 
         public Stream<LongTriple> stream() {
@@ -641,7 +683,7 @@ public final class Triple<L, M, R> {
         }
 
         public double average() {
-            return sum() / 3;
+            return sum() / 3d;
         }
 
         public FloatTriple reversed() {
@@ -650,6 +692,10 @@ public final class Triple<L, M, R> {
 
         public float[] toArray() {
             return new float[] { _1, _2, _3 };
+        }
+
+        public FloatList toList() {
+            return FloatList.of(_1, _2, _3);
         }
 
         public void forEach(FloatConsumer comsumer) {
@@ -664,6 +710,10 @@ public final class Triple<L, M, R> {
 
         public <U> U apply(Function<FloatTriple, U> action) {
             return action.apply(this);
+        }
+
+        public Optional<FloatTriple> filter(final Predicate<FloatTriple> predicate) {
+            return predicate.test(this) ? Optional.of(this) : Optional.<FloatTriple> empty();
         }
 
         public Stream<FloatTriple> stream() {
@@ -725,7 +775,7 @@ public final class Triple<L, M, R> {
         }
 
         public double average() {
-            return sum() / 3;
+            return sum() / 3d;
         }
 
         public DoubleTriple reversed() {
@@ -734,6 +784,10 @@ public final class Triple<L, M, R> {
 
         public double[] toArray() {
             return new double[] { _1, _2, _3 };
+        }
+
+        public DoubleList toList() {
+            return DoubleList.of(_1, _2, _3);
         }
 
         public void forEach(DoubleConsumer comsumer) {
@@ -748,6 +802,10 @@ public final class Triple<L, M, R> {
 
         public <U> U apply(Function<DoubleTriple, U> action) {
             return action.apply(this);
+        }
+
+        public Optional<DoubleTriple> filter(final Predicate<DoubleTriple> predicate) {
+            return predicate.test(this) ? Optional.of(this) : Optional.<DoubleTriple> empty();
         }
 
         public Stream<DoubleTriple> stream() {
