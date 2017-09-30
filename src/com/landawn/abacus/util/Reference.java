@@ -119,18 +119,18 @@ abstract class Reference<T, R extends Reference<T, R>> {
         }
     }
 
-    public <U> U apply(final Function<? super T, U> action) {
-        return action.apply(value);
+    public <U> U map(final Function<? super T, U> mapper) {
+        return mapper.apply(value);
     }
 
     /**
      * Execute the specified action if value is not null, otherwise return null directly.
      * 
-     * @param action
+     * @param mapper
      * @return
      */
-    public <U> NullabLe<U> applyIfNotNull(final Function<? super T, U> action) {
-        return isNotNull() ? NullabLe.of(action.apply(value)) : NullabLe.<U> empty();
+    public <U> NullabLe<U> mapIfNotNull(final Function<? super T, U> mapper) {
+        return isNotNull() ? NullabLe.of(mapper.apply(value)) : NullabLe.<U> empty();
     }
 
     public NullabLe<T> filter(final Predicate<? super T> predicate) {

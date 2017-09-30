@@ -3,15 +3,17 @@
 
 1, Remove EventBus.register(subscriber)/register(subscriber, threadMode).
 
-2, Add f.replaceIf(...).
+2, Add Holder/Pair/Triple/Tuple.filter(...).
 
-3, Add Pair/Triple/Tuple.filter(...).
+3, Rename Holder/Pair/Triple/Tuple.apply(...) to map(...).
 
-4, Add CharPair/IntPair/.../toList().
+4, Add Char/Int/Long/Float/DoublePair/Triple.toList().
 
 5, Rename Holder.V to Holder.R
 
-6, Improvements and bug fix.
+6, Add f.replaceIf(...).
+
+7, Improvements and bug fix.
 
 
 ﻿========Changes in 1.0 =========================================================================

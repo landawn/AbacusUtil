@@ -259,8 +259,8 @@ public abstract class Tuple {
             action.accept(this);
         }
 
-        public <U> U apply(final Function<? super Tuple1<T1>, U> action) {
-            return action.apply(this);
+        public <U> U map(final Function<? super Tuple1<T1>, U> mapper) {
+            return mapper.apply(this);
         }
 
         public Optional<Tuple1<T1>> filter(final Predicate<? super Tuple1<T1>> predicate) {
@@ -353,8 +353,8 @@ public abstract class Tuple {
             action.accept(this);
         }
 
-        public <U> U apply(final Function<? super Tuple2<T1, T2>, U> action) {
-            return action.apply(this);
+        public <U> U map(final Function<? super Tuple2<T1, T2>, U> mapper) {
+            return mapper.apply(this);
         }
 
         public Optional<Tuple2<T1, T2>> filter(final Predicate<? super Tuple2<T1, T2>> predicate) {
@@ -472,8 +472,8 @@ public abstract class Tuple {
             action.accept(this);
         }
 
-        public <U> U apply(final Function<? super Tuple3<T1, T2, T3>, U> action) {
-            return action.apply(this);
+        public <U> U map(final Function<? super Tuple3<T1, T2, T3>, U> mapper) {
+            return mapper.apply(this);
         }
 
         public Optional<Tuple3<T1, T2, T3>> filter(final Predicate<? super Tuple3<T1, T2, T3>> predicate) {
@@ -576,8 +576,8 @@ public abstract class Tuple {
             action.accept(this);
         }
 
-        public <U> U apply(final Function<? super Tuple4<T1, T2, T3, T4>, U> action) {
-            return action.apply(this);
+        public <U> U map(final Function<? super Tuple4<T1, T2, T3, T4>, U> mapper) {
+            return mapper.apply(this);
         }
 
         public Optional<Tuple4<T1, T2, T3, T4>> filter(final Predicate<? super Tuple4<T1, T2, T3, T4>> predicate) {
@@ -685,8 +685,8 @@ public abstract class Tuple {
             action.accept(this);
         }
 
-        public <U> U apply(final Function<? super Tuple5<T1, T2, T3, T4, T5>, U> action) {
-            return action.apply(this);
+        public <U> U map(final Function<? super Tuple5<T1, T2, T3, T4, T5>, U> mapper) {
+            return mapper.apply(this);
         }
 
         public Optional<Tuple5<T1, T2, T3, T4, T5>> filter(final Predicate<? super Tuple5<T1, T2, T3, T4, T5>> predicate) {
@@ -800,8 +800,8 @@ public abstract class Tuple {
             action.accept(this);
         }
 
-        public <U> U apply(final Function<? super Tuple6<T1, T2, T3, T4, T5, T6>, U> action) {
-            return action.apply(this);
+        public <U> U map(final Function<? super Tuple6<T1, T2, T3, T4, T5, T6>, U> mapper) {
+            return mapper.apply(this);
         }
 
         public Optional<Tuple6<T1, T2, T3, T4, T5, T6>> filter(final Predicate<? super Tuple6<T1, T2, T3, T4, T5, T6>> predicate) {
@@ -921,8 +921,8 @@ public abstract class Tuple {
             action.accept(this);
         }
 
-        public <U> U apply(final Function<? super Tuple7<T1, T2, T3, T4, T5, T6, T7>, U> action) {
-            return action.apply(this);
+        public <U> U map(final Function<? super Tuple7<T1, T2, T3, T4, T5, T6, T7>, U> mapper) {
+            return mapper.apply(this);
         }
 
         public Optional<Tuple7<T1, T2, T3, T4, T5, T6, T7>> filter(final Predicate<? super Tuple7<T1, T2, T3, T4, T5, T6, T7>> predicate) {
@@ -1047,8 +1047,8 @@ public abstract class Tuple {
             action.accept(this);
         }
 
-        public <U> U apply(final Function<? super Tuple8<T1, T2, T3, T4, T5, T6, T7, T8>, U> action) {
-            return action.apply(this);
+        public <U> U map(final Function<? super Tuple8<T1, T2, T3, T4, T5, T6, T7, T8>, U> mapper) {
+            return mapper.apply(this);
         }
 
         public Optional<Tuple8<T1, T2, T3, T4, T5, T6, T7, T8>> filter(final Predicate<? super Tuple8<T1, T2, T3, T4, T5, T6, T7, T8>> predicate) {
@@ -1178,8 +1178,8 @@ public abstract class Tuple {
             action.accept(this);
         }
 
-        public <U> U apply(final Function<? super Tuple9<T1, T2, T3, T4, T5, T6, T7, T8, T9>, U> action) {
-            return action.apply(this);
+        public <U> U map(final Function<? super Tuple9<T1, T2, T3, T4, T5, T6, T7, T8, T9>, U> mapper) {
+            return mapper.apply(this);
         }
 
         public Optional<Tuple9<T1, T2, T3, T4, T5, T6, T7, T8, T9>> filter(final Predicate<? super Tuple9<T1, T2, T3, T4, T5, T6, T7, T8, T9>> predicate) {

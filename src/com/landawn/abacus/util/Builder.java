@@ -108,8 +108,8 @@ public class Builder<T> {
         return this;
     }
 
-    public <R> Builder<R> apply(final Function<? super T, R> func) {
-        return of(func.apply(value));
+    public <R> Builder<R> map(final Function<? super T, R> mapper) {
+        return of(mapper.apply(value));
     }
 
     /**

@@ -325,12 +325,12 @@ public final class Triple<L, M, R> {
         action.accept(this);
     }
 
-    public <U> U apply(final TriFunction<? super L, ? super M, ? super R, U> action) {
-        return action.apply(left, middle, right);
+    public <U> U map(final TriFunction<? super L, ? super M, ? super R, U> mapper) {
+        return mapper.apply(left, middle, right);
     }
 
-    public <U> U apply(final Function<Triple<L, M, R>, U> action) {
-        return action.apply(this);
+    public <U> U map(final Function<Triple<L, M, R>, U> mapper) {
+        return mapper.apply(this);
     }
 
     public Optional<Triple<L, M, R>> filter(final TriPredicate<? super L, ? super M, ? super R> predicate) {
@@ -432,8 +432,8 @@ public final class Triple<L, M, R> {
             action.accept(this);
         }
 
-        public <U> U apply(Function<CharTriple, U> action) {
-            return action.apply(this);
+        public <U> U map(Function<CharTriple, U> mapper) {
+            return mapper.apply(this);
         }
 
         public Optional<CharTriple> filter(final Predicate<CharTriple> predicate) {
@@ -524,8 +524,8 @@ public final class Triple<L, M, R> {
             action.accept(this);
         }
 
-        public <U> U apply(Function<IntTriple, U> action) {
-            return action.apply(this);
+        public <U> U map(Function<IntTriple, U> mapper) {
+            return mapper.apply(this);
         }
 
         public Optional<IntTriple> filter(final Predicate<IntTriple> predicate) {
@@ -616,8 +616,8 @@ public final class Triple<L, M, R> {
             action.accept(this);
         }
 
-        public <U> U apply(Function<LongTriple, U> action) {
-            return action.apply(this);
+        public <U> U map(Function<LongTriple, U> mapper) {
+            return mapper.apply(this);
         }
 
         public Optional<LongTriple> filter(final Predicate<LongTriple> predicate) {
@@ -708,8 +708,8 @@ public final class Triple<L, M, R> {
             action.accept(this);
         }
 
-        public <U> U apply(Function<FloatTriple, U> action) {
-            return action.apply(this);
+        public <U> U map(Function<FloatTriple, U> mapper) {
+            return mapper.apply(this);
         }
 
         public Optional<FloatTriple> filter(final Predicate<FloatTriple> predicate) {
@@ -800,8 +800,8 @@ public final class Triple<L, M, R> {
             action.accept(this);
         }
 
-        public <U> U apply(Function<DoubleTriple, U> action) {
-            return action.apply(this);
+        public <U> U map(Function<DoubleTriple, U> mapper) {
+            return mapper.apply(this);
         }
 
         public Optional<DoubleTriple> filter(final Predicate<DoubleTriple> predicate) {

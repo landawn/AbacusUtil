@@ -288,12 +288,12 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
         action.accept(this);
     }
 
-    public <U> U apply(final BiFunction<? super L, ? super R, U> action) {
-        return action.apply(left, right);
+    public <U> U map(final BiFunction<? super L, ? super R, U> mapper) {
+        return mapper.apply(left, right);
     }
 
-    public <U> U apply(final Function<Pair<L, R>, U> action) {
-        return action.apply(this);
+    public <U> U map(final Function<Pair<L, R>, U> mapper) {
+        return mapper.apply(this);
     }
 
     public Optional<Pair<L, R>> filter(final BiPredicate<? super L, ? super R> predicate) {
@@ -387,8 +387,8 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
             action.accept(this);
         }
 
-        public <U> U apply(Function<CharPair, U> action) {
-            return action.apply(this);
+        public <U> U map(Function<CharPair, U> mapper) {
+            return mapper.apply(this);
         }
 
         public Optional<CharPair> filter(final Predicate<CharPair> predicate) {
@@ -472,8 +472,8 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
             action.accept(this);
         }
 
-        public <U> U apply(Function<IntPair, U> action) {
-            return action.apply(this);
+        public <U> U map(Function<IntPair, U> mapper) {
+            return mapper.apply(this);
         }
 
         public Optional<IntPair> filter(final Predicate<IntPair> predicate) {
@@ -557,8 +557,8 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
             action.accept(this);
         }
 
-        public <U> U apply(Function<LongPair, U> action) {
-            return action.apply(this);
+        public <U> U map(Function<LongPair, U> mapper) {
+            return mapper.apply(this);
         }
 
         public Optional<LongPair> filter(final Predicate<LongPair> predicate) {
@@ -642,8 +642,8 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
             action.accept(this);
         }
 
-        public <U> U apply(Function<FloatPair, U> action) {
-            return action.apply(this);
+        public <U> U map(Function<FloatPair, U> mapper) {
+            return mapper.apply(this);
         }
 
         public Optional<FloatPair> filter(final Predicate<FloatPair> predicate) {
@@ -727,8 +727,8 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
             action.accept(this);
         }
 
-        public <U> U apply(Function<DoublePair, U> action) {
-            return action.apply(this);
+        public <U> U map(Function<DoublePair, U> mapper) {
+            return mapper.apply(this);
         }
 
         public Optional<DoublePair> filter(final Predicate<DoublePair> predicate) {
