@@ -380,7 +380,11 @@ public final class Triple<L, M, R> {
         public final char _2;
         public final char _3;
 
-        private CharTriple(char _1, char _2, char _3) {
+        CharTriple() {
+            this((char) 0, (char) 0, (char) 0);
+        }
+
+        CharTriple(char _1, char _2, char _3) {
             this._1 = _1;
             this._2 = _2;
             this._3 = _3;
@@ -472,7 +476,11 @@ public final class Triple<L, M, R> {
         public final int _2;
         public final int _3;
 
-        private IntTriple(int _1, int _2, int _3) {
+        IntTriple() {
+            this(0, 0, 0);
+        }
+
+        IntTriple(int _1, int _2, int _3) {
             this._1 = _1;
             this._2 = _2;
             this._3 = _3;
@@ -564,7 +572,11 @@ public final class Triple<L, M, R> {
         public final long _2;
         public final long _3;
 
-        private LongTriple(long _1, long _2, long _3) {
+        LongTriple() {
+            this(0, 0, 0);
+        }
+
+        LongTriple(long _1, long _2, long _3) {
             this._1 = _1;
             this._2 = _2;
             this._3 = _3;
@@ -656,7 +668,11 @@ public final class Triple<L, M, R> {
         public final float _2;
         public final float _3;
 
-        private FloatTriple(float _1, float _2, float _3) {
+        FloatTriple() {
+            this(0, 0, 0);
+        }
+
+        FloatTriple(float _1, float _2, float _3) {
             this._1 = _1;
             this._2 = _2;
             this._3 = _3;
@@ -748,7 +764,11 @@ public final class Triple<L, M, R> {
         public final double _2;
         public final double _3;
 
-        private DoubleTriple(double _1, double _2, double _3) {
+        DoubleTriple() {
+            this(0, 0, 0);
+        }
+
+        DoubleTriple(double _1, double _2, double _3) {
             this._1 = _1;
             this._2 = _2;
             this._3 = _3;

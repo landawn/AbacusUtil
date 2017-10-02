@@ -341,7 +341,11 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
         public final char _1;
         public final char _2;
 
-        private CharPair(char _1, char _2) {
+        CharPair() {
+            this((char) 0, (char) 0);
+        }
+
+        CharPair(char _1, char _2) {
             this._1 = _1;
             this._2 = _2;
         }
@@ -426,7 +430,11 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
         public final int _1;
         public final int _2;
 
-        private IntPair(int _1, int _2) {
+        IntPair() {
+            this(0, 0);
+        }
+
+        IntPair(int _1, int _2) {
             this._1 = _1;
             this._2 = _2;
         }
@@ -511,7 +519,11 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
         public final long _1;
         public final long _2;
 
-        private LongPair(long _1, long _2) {
+        LongPair() {
+            this(0, 0);
+        }
+
+        LongPair(long _1, long _2) {
             this._1 = _1;
             this._2 = _2;
         }
@@ -596,7 +608,11 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
         public final float _1;
         public final float _2;
 
-        private FloatPair(float _1, float _2) {
+        FloatPair() {
+            this(0, 0);
+        }
+
+        FloatPair(float _1, float _2) {
             this._1 = _1;
             this._2 = _2;
         }
@@ -681,7 +697,11 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
         public final double _1;
         public final double _2;
 
-        private DoublePair(double _1, double _2) {
+        DoublePair() {
+            this(0, 0);
+        }
+
+        DoublePair(double _1, double _2) {
             this._1 = _1;
             this._2 = _2;
         }

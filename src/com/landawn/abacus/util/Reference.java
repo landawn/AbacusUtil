@@ -31,6 +31,10 @@ import com.landawn.abacus.util.stream.Stream;
 abstract class Reference<T, R extends Reference<T, R>> {
     private volatile T value;
 
+    protected Reference() {
+        this(null);
+    }
+
     protected Reference(T value) {
         this.value = value;
     }
