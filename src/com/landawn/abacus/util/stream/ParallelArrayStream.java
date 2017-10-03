@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.landawn.abacus.util.ByteIterator;
@@ -2319,19 +2320,42 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     public <K, U, M extends Map<K, U>> M toMap(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
             BinaryOperator<U> mergeFunction, Supplier<M> mapFactory) {
-        return collect(Collectors.toMap(keyExtractor, valueMapper, mergeFunction, mapFactory));
+        if (maxThreadNum <= 1) {
+            return sequential().toMap(keyExtractor, valueMapper, mapFactory);
+        }
+
+        final M res = mapFactory.get();
+        res.putAll(collect(Collectors.toConcurrentMap(keyExtractor, valueMapper, mergeFunction)));
+        return res;
     }
 
     @Override
     public <K, A, D, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> classifier, final Collector<? super T, A, D> downstream,
             final Supplier<M> mapFactory) {
-        return collect(Collectors.groupingBy(classifier, downstream, mapFactory));
+        if (maxThreadNum <= 1) {
+            return sequential().toMap(classifier, downstream, mapFactory);
+        }
+
+        final M res = mapFactory.get();
+        res.putAll(collect(Collectors.groupingByConcurrent(classifier, downstream)));
+        return res;
     }
 
     @Override
     public <K, U, V extends Collection<U>, M extends Multimap<K, U, V>> M toMultimap(Function<? super T, ? extends K> keyExtractor,
             Function<? super T, ? extends U> valueMapper, Supplier<M> mapFactory) {
-        return collect(Collectors.toMultimap(keyExtractor, valueMapper, mapFactory));
+        if (maxThreadNum <= 1) {
+            return sequential().toMultimap(keyExtractor, valueMapper, mapFactory);
+        }
+
+        final M res = mapFactory.get();
+        final ConcurrentMap<K, List<U>> tmp = collect(Collectors.groupingByConcurrent(keyExtractor, Collectors.mapping(valueMapper, Collectors.<U> toList())));
+
+        for (Map.Entry<K, List<U>> entry : tmp.entrySet()) {
+            res.putAll(entry.getKey(), entry.getValue());
+        }
+
+        return res;
     }
 
     @Override
