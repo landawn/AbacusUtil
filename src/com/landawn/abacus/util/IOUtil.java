@@ -61,8 +61,8 @@ import java.util.zip.ZipOutputStream;
 import com.landawn.abacus.exception.UncheckedIOException;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
+import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.Consumer;
-import com.landawn.abacus.util.stream.Stream;
 
 /**
  *
@@ -248,23 +248,23 @@ public final class IOUtil {
     // ... 
     public static final int EOF = -1;
 
-    private static final FileFilter all_files_filter = new FileFilter() {
+    private static final BiPredicate<File, File> all_files_filter = new BiPredicate<File, File>() {
         @Override
-        public boolean accept(File parentDir, File file) {
+        public boolean test(File parentDir, File file) {
             return true;
         }
     };
 
-    private static final FileFilter directories_excluded_filter = new FileFilter() {
+    private static final BiPredicate<File, File> directories_excluded_filter = new BiPredicate<File, File>() {
         @Override
-        public boolean accept(File parentDir, File file) {
+        public boolean test(File parentDir, File file) {
             return !file.isDirectory();
         }
     };
 
-    private static final FileFilter directories_only_filter = new FileFilter() {
+    private static final BiPredicate<File, File> directories_only_filter = new BiPredicate<File, File>() {
         @Override
-        public boolean accept(File parentDir, File file) {
+        public boolean test(File parentDir, File file) {
             return file.isDirectory();
         }
     };
@@ -2759,7 +2759,7 @@ public final class IOUtil {
      * @param preserveFileDate
      * @param filter
      */
-    public static void copy(File srcFile, File destDir, final boolean preserveFileDate, final FileFilter filter) {
+    public static void copy(File srcFile, File destDir, final boolean preserveFileDate, final BiPredicate<? super File, ? super File> filter) {
         if (!srcFile.exists()) {
             throw new UncheckedIOException("The source file doesn't exist: " + srcFile.getAbsolutePath());
         }
@@ -2835,7 +2835,8 @@ public final class IOUtil {
      *             if an error occurs
      * @since 1.1
      */
-    private static void doCopyDirectory(final File srcDir, final File destDir, final boolean preserveFileDate, final FileFilter filter) throws IOException {
+    private static void doCopyDirectory(final File srcDir, final File destDir, final boolean preserveFileDate,
+            final BiPredicate<? super File, ? super File> filter) throws IOException {
         if (destDir.exists()) {
             if (destDir.isFile()) {
                 throw new IOException("Destination '" + destDir + "' exists but is not a directory");
@@ -2857,7 +2858,7 @@ public final class IOUtil {
                 continue;
             }
 
-            if (filter == null || filter.accept(srcDir, subFile)) {
+            if (filter == null || filter.test(srcDir, subFile)) {
                 final File dest = new File(destDir, subFile.getName());
 
                 if (subFile.isDirectory()) {
@@ -3141,7 +3142,7 @@ public final class IOUtil {
      * @param filter
      * @return
      */
-    public static boolean deleteFiles(final File dir, FileFilter filter) {
+    public static boolean deleteFiles(final File dir, BiPredicate<? super File, ? super File> filter) {
         if ((dir == null) || !dir.exists()) {
             return false;
         }
@@ -3158,7 +3159,7 @@ public final class IOUtil {
                     continue;
                 }
 
-                if (filter == null || filter.accept(dir, subFile)) {
+                if (filter == null || filter.test(dir, subFile)) {
                     if (subFile.isFile()) {
                         if (subFile.delete() == false) {
                             return false;
@@ -3177,7 +3178,7 @@ public final class IOUtil {
                 }
             }
         } else {
-            if (filter == null || filter.accept(dir.getParentFile(), dir)) {
+            if (filter == null || filter.test(dir.getParentFile(), dir)) {
                 return dir.delete();
             }
         }
@@ -3591,7 +3592,7 @@ public final class IOUtil {
         return list(parentPath, recursively, excludeDirectory ? directories_excluded_filter : all_files_filter);
     }
 
-    public static List<String> list(File parentPath, final boolean recursively, final FileFilter filter) {
+    public static List<String> list(File parentPath, final boolean recursively, final BiPredicate<? super File, ? super File> filter) {
         List<String> files = new ArrayList<>();
 
         if (!parentPath.exists()) {
@@ -3607,7 +3608,7 @@ public final class IOUtil {
         }
 
         for (File file : subFiles) {
-            if (filter.accept(parentPath, file)) {
+            if (filter.test(parentPath, file)) {
                 files.add(file.getAbsolutePath());
             }
 
@@ -3627,7 +3628,7 @@ public final class IOUtil {
         return listFiles(parentPath, recursively, excludeDirectory ? directories_excluded_filter : all_files_filter);
     }
 
-    public static List<File> listFiles(final File parentPath, final boolean recursively, final FileFilter filter) {
+    public static List<File> listFiles(final File parentPath, final boolean recursively, final BiPredicate<? super File, ? super File> filter) {
         final List<File> files = new ArrayList<>();
 
         if (!parentPath.exists()) {
@@ -3641,7 +3642,7 @@ public final class IOUtil {
         }
 
         for (File file : subFiles) {
-            if (filter.accept(parentPath, file)) {
+            if (filter.test(parentPath, file)) {
                 files.add(file);
             }
 
@@ -3659,18 +3660,6 @@ public final class IOUtil {
 
     public static List<File> listDirectories(final File parentPath, final boolean recursively) {
         return listFiles(parentPath, recursively, directories_only_filter);
-    }
-
-    public static Stream<File> files(final File parentPath) {
-        return files(parentPath, false, false);
-    }
-
-    public static Stream<File> files(final File parentPath, final boolean recursively, final boolean excludeDirectory) {
-        return files(parentPath, recursively, excludeDirectory ? directories_excluded_filter : all_files_filter);
-    }
-
-    public static Stream<File> files(final File parentPath, final boolean recursively, final FileFilter filter) {
-        return Stream.of(listFiles(parentPath, recursively, filter));
     }
 
     //-----------------------------------------------------------------------

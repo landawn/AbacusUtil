@@ -2992,6 +2992,61 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         });
     }
 
+    public static Stream<File> list(final File parentPath) {
+        if (!parentPath.exists()) {
+            return empty();
+        }
+
+        return of(parentPath.listFiles());
+    }
+
+    public static Stream<File> list(final File parentPath, final boolean recursively) {
+        if (!parentPath.exists()) {
+            return empty();
+        } else if (recursively == false) {
+            return of(parentPath.listFiles());
+        }
+
+        final ImmutableIterator<File> iter = new ImmutableIterator<File>() {
+            private final Queue<File> paths = N.asLinkedList(parentPath);
+            private File[] subFiles = null;
+            private int cursor = 0;
+
+            @Override
+            public boolean hasNext() {
+                if ((subFiles == null || cursor >= subFiles.length) && paths.size() > 0) {
+                    cursor = 0;
+                    subFiles = null;
+
+                    while (paths.size() > 0) {
+                        subFiles = paths.poll().listFiles();
+
+                        if (N.notNullOrEmpty(subFiles)) {
+                            break;
+                        }
+                    }
+                }
+
+                return subFiles != null && cursor < subFiles.length;
+            }
+
+            @Override
+            public File next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                if (subFiles[cursor].isDirectory()) {
+                    paths.offer(subFiles[cursor]);
+                }
+
+                return subFiles[cursor++];
+            }
+        };
+
+        return of(iter);
+    }
+
     //    /**
     //     * Generate the pushable Stream.
     //     * 

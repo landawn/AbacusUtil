@@ -5,15 +5,17 @@
 
 2*, Remove partitionBy/partitionByToEntry from Stream.
 
-3*, Remove IOUtil.listDirectories(parentPath, recursively, filter).
+3*, Replace FileFilter with BiPredicate<File, File>.
 
-4, Add Stream<File> IOUtil.files(...).
+4*, Remove IOUtil.listDirectories(parentPath, recursively, filter).
 
-5, Add Fn.wrap(...).
+5, Add Stream<File> Stream.list(...).
 
-6, Add SQLBuilder/CQLBuilder.apply(..).
+6, Add Fn.wrap(...).
 
-7, Improvements and bug fix.
+7, Add SQLBuilder/CQLBuilder.apply(..).
+
+8, Improvements and bug fix.
 
 
 ﻿========Changes in 1.0.1 =========================================================================
