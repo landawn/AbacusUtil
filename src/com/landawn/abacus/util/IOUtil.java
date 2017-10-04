@@ -62,6 +62,7 @@ import com.landawn.abacus.exception.UncheckedIOException;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
 import com.landawn.abacus.util.function.Consumer;
+import com.landawn.abacus.util.stream.Stream;
 
 /**
  *
@@ -246,6 +247,27 @@ public final class IOUtil {
 
     // ... 
     public static final int EOF = -1;
+
+    private static final FileFilter all_files_filter = new FileFilter() {
+        @Override
+        public boolean accept(File parentDir, File file) {
+            return true;
+        }
+    };
+
+    private static final FileFilter directories_excluded_filter = new FileFilter() {
+        @Override
+        public boolean accept(File parentDir, File file) {
+            return !file.isDirectory();
+        }
+    };
+
+    private static final FileFilter directories_only_filter = new FileFilter() {
+        @Override
+        public boolean accept(File parentDir, File file) {
+            return file.isDirectory();
+        }
+    };
 
     /**
      * Constructor for FileUtil.
@@ -3561,59 +3583,31 @@ public final class IOUtil {
         }
     }
 
-    public static List<String> list(final File path) {
-        return list(path, false, false);
+    public static List<String> list(final File parentPath) {
+        return list(parentPath, false, false);
     }
 
-    public static List<String> list(File path, final boolean recursively, final boolean excludeDirectory) {
+    public static List<String> list(File parentPath, final boolean recursively, final boolean excludeDirectory) {
+        return list(parentPath, recursively, excludeDirectory ? directories_excluded_filter : all_files_filter);
+    }
+
+    public static List<String> list(File parentPath, final boolean recursively, final FileFilter filter) {
         List<String> files = new ArrayList<>();
 
-        if (!path.exists()) {
+        if (!parentPath.exists()) {
             return files;
         }
 
-        path = new File(path.getAbsolutePath().replace(".\\", "\\").replace("./", "/"));
+        parentPath = new File(parentPath.getAbsolutePath().replace(".\\", "\\").replace("./", "/"));
 
-        File[] subFiles = path.listFiles();
+        File[] subFiles = parentPath.listFiles();
 
         if (N.isNullOrEmpty(subFiles)) {
             return files;
         }
 
         for (File file : subFiles) {
-            if (file.isFile()) {
-                files.add(file.getAbsolutePath());
-            } else {
-                if (!excludeDirectory) {
-                    files.add(file.getAbsolutePath());
-                }
-
-                if (recursively) {
-                    files.addAll(list(file, recursively, excludeDirectory));
-                }
-            }
-        }
-
-        return files;
-    }
-
-    public static List<String> list(File path, final boolean recursively, final FileFilter filter) {
-        List<String> files = new ArrayList<>();
-
-        if (!path.exists()) {
-            return files;
-        }
-
-        path = new File(path.getAbsolutePath().replace(".\\", "\\").replace("./", "/"));
-
-        File[] subFiles = path.listFiles();
-
-        if (N.isNullOrEmpty(subFiles)) {
-            return files;
-        }
-
-        for (File file : subFiles) {
-            if (filter.accept(path, file)) {
+            if (filter.accept(parentPath, file)) {
                 files.add(file.getAbsolutePath());
             }
 
@@ -3625,55 +3619,29 @@ public final class IOUtil {
         return files;
     }
 
-    public static List<File> listFiles(final File path) {
-        return listFiles(path, false, false);
+    public static List<File> listFiles(final File parentPath) {
+        return listFiles(parentPath, false, false);
     }
 
-    public static List<File> listFiles(final File path, final boolean recursively, final boolean excludeDirectory) {
-        List<File> files = new ArrayList<>();
+    public static List<File> listFiles(final File parentPath, final boolean recursively, final boolean excludeDirectory) {
+        return listFiles(parentPath, recursively, excludeDirectory ? directories_excluded_filter : all_files_filter);
+    }
 
-        if (!path.exists()) {
+    public static List<File> listFiles(final File parentPath, final boolean recursively, final FileFilter filter) {
+        final List<File> files = new ArrayList<>();
+
+        if (!parentPath.exists()) {
             return files;
         }
 
-        File[] subFiles = path.listFiles();
+        File[] subFiles = parentPath.listFiles();
 
         if (N.isNullOrEmpty(subFiles)) {
             return files;
         }
 
         for (File file : subFiles) {
-            if (file.isFile()) {
-                files.add(file);
-            } else {
-                if (!excludeDirectory) {
-                    files.add(file);
-                }
-
-                if (recursively) {
-                    files.addAll(listFiles(file, recursively, excludeDirectory));
-                }
-            }
-        }
-
-        return files;
-    }
-
-    public static List<File> listFiles(final File path, final boolean recursively, final FileFilter filter) {
-        List<File> files = new ArrayList<>();
-
-        if (!path.exists()) {
-            return files;
-        }
-
-        File[] subFiles = path.listFiles();
-
-        if (N.isNullOrEmpty(subFiles)) {
-            return files;
-        }
-
-        for (File file : subFiles) {
-            if (filter.accept(path, file)) {
+            if (filter.accept(parentPath, file)) {
                 files.add(file);
             }
 
@@ -3685,62 +3653,24 @@ public final class IOUtil {
         return files;
     }
 
-    public static List<File> listDirectories(final File path) {
-        return listDirectories(path, false);
+    public static List<File> listDirectories(final File parentPath) {
+        return listDirectories(parentPath, false);
     }
 
-    public static List<File> listDirectories(final File path, final boolean recursively) {
-        List<File> files = new ArrayList<>();
-
-        if (!path.exists()) {
-            return files;
-        }
-
-        File[] subFiles = path.listFiles();
-
-        if (N.isNullOrEmpty(subFiles)) {
-            return files;
-        }
-
-        for (File file : subFiles) {
-            if (file.isDirectory()) {
-                files.add(file);
-
-                if (recursively) {
-                    files.addAll(listDirectories(file, recursively));
-                }
-            }
-        }
-
-        return files;
+    public static List<File> listDirectories(final File parentPath, final boolean recursively) {
+        return listFiles(parentPath, recursively, directories_only_filter);
     }
 
-    public static List<File> listDirectories(final File path, final boolean recursively, final FileFilter filter) {
-        List<File> files = new ArrayList<>();
+    public static Stream<File> files(final File parentPath) {
+        return files(parentPath, false, false);
+    }
 
-        if (!path.exists()) {
-            return files;
-        }
+    public static Stream<File> files(final File parentPath, final boolean recursively, final boolean excludeDirectory) {
+        return files(parentPath, recursively, excludeDirectory ? directories_excluded_filter : all_files_filter);
+    }
 
-        File[] subFiles = path.listFiles();
-
-        if (N.isNullOrEmpty(subFiles)) {
-            return files;
-        }
-
-        for (File file : subFiles) {
-            if (file.isDirectory()) {
-                if (filter.accept(path, file)) {
-                    files.add(file);
-                }
-
-                if (recursively) {
-                    files.addAll(listDirectories(file, recursively, filter));
-                }
-            }
-        }
-
-        return files;
+    public static Stream<File> files(final File parentPath, final boolean recursively, final FileFilter filter) {
+        return Stream.of(listFiles(parentPath, recursively, filter));
     }
 
     //-----------------------------------------------------------------------
