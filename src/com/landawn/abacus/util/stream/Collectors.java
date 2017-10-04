@@ -147,7 +147,7 @@ import com.landawn.abacus.util.function.ToShortFunction;
  *
  * @since 1.8
  */
-public final class Collectors {
+public class Collectors {
     static final Object NONE = new Object();
 
     static final Set<Collector.Characteristics> CH_CONCURRENT_ID = Collections
@@ -870,7 +870,7 @@ public final class Collectors {
 
     // ==============================================================
 
-    private Collectors() {
+    Collectors() {
     }
 
     /**
@@ -4610,6 +4610,12 @@ public final class Collectors {
                     return 2;
                 }
             };
+        }
+    }
+
+    public static final class MoreCollectors extends Collectors {
+        private MoreCollectors() {
+            // singleton
         }
     }
 }

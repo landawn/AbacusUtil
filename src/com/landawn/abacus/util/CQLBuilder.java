@@ -62,6 +62,7 @@ import com.landawn.abacus.condition.SubQuery;
 import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
+import com.landawn.abacus.util.function.Function;
 
 /**
  * It's easier to write/maintain the CQL by <code>CQLBuilder</code> and more efficient, comparing to write Cassandra CQL in plain text. 
@@ -1115,6 +1116,10 @@ public abstract class CQLBuilder {
         sb.append(_SPACE_ALLOW_FILTERING);
 
         return this;
+    }
+
+    public <T> T apply(final Function<? super CP, T> func) {
+        return func.apply(this.pair());
     }
 
     /**

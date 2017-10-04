@@ -46,6 +46,7 @@ import com.landawn.abacus.condition.SubQuery;
 import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
+import com.landawn.abacus.util.function.Function;
 
 /**
  * It's easier to write/maintain the sql by <code>SQLBuilder</code> and more efficient, comparing to write sql in plain text. 
@@ -1025,11 +1026,13 @@ public abstract class SQLBuilder {
     }
 
     public SQLBuilder union(final SQLBuilder sqlBuilder) {
+        final String sql = sqlBuilder.sql();
+
         if (N.notNullOrEmpty(sqlBuilder.parameters())) {
             parameters.addAll(sqlBuilder.parameters());
         }
 
-        return union(sqlBuilder.sql());
+        return union(sql);
     }
 
     public SQLBuilder union(final String query) {
@@ -1071,11 +1074,13 @@ public abstract class SQLBuilder {
     }
 
     public SQLBuilder unionAll(final SQLBuilder sqlBuilder) {
+        final String sql = sqlBuilder.sql();
+
         if (N.notNullOrEmpty(sqlBuilder.parameters())) {
             parameters.addAll(sqlBuilder.parameters());
         }
 
-        return unionAll(sqlBuilder.sql());
+        return unionAll(sql);
     }
 
     public SQLBuilder unionAll(final String query) {
@@ -1117,11 +1122,13 @@ public abstract class SQLBuilder {
     }
 
     public SQLBuilder intersect(final SQLBuilder sqlBuilder) {
+        final String sql = sqlBuilder.sql();
+
         if (N.notNullOrEmpty(sqlBuilder.parameters())) {
             parameters.addAll(sqlBuilder.parameters());
         }
 
-        return intersect(sqlBuilder.sql());
+        return intersect(sql);
     }
 
     public SQLBuilder intersect(final String query) {
@@ -1163,11 +1170,13 @@ public abstract class SQLBuilder {
     }
 
     public SQLBuilder except(final SQLBuilder sqlBuilder) {
+        final String sql = sqlBuilder.sql();
+
         if (N.notNullOrEmpty(sqlBuilder.parameters())) {
             parameters.addAll(sqlBuilder.parameters());
         }
 
-        return except(sqlBuilder.sql());
+        return except(sql);
     }
 
     public SQLBuilder except(final String query) {
@@ -1209,11 +1218,13 @@ public abstract class SQLBuilder {
     }
 
     public SQLBuilder minus(final SQLBuilder sqlBuilder) {
+        final String sql = sqlBuilder.sql();
+
         if (N.notNullOrEmpty(sqlBuilder.parameters())) {
             parameters.addAll(sqlBuilder.parameters());
         }
 
-        return minus(sqlBuilder.sql());
+        return minus(sql);
     }
 
     public SQLBuilder minus(final String query) {
@@ -1560,39 +1571,8 @@ public abstract class SQLBuilder {
         return set(getPropNamesByClass(entityClass, excludedPropNames));
     }
 
-    /**
-     * This SQLBuilder will be closed after <code>sql()</code> is called.
-     * 
-     * @return
-     */
-    public String sql() {
-        if (sb == null) {
-            throw new AbacusException("This SQLBuilder has been closed after sql() was called previously");
-        }
-
-        init(true);
-
-        try {
-            return sb.toString();
-        } finally {
-            ObjectFactory.recycle(sb);
-            sb = null;
-
-            activeStringBuilderCounter.decrementAndGet();
-        }
-    }
-
-    public List<Object> parameters() {
-        return parameters;
-    }
-
-    /**
-     *  This SQLBuilder will be closed after <code>pair()</code> is called.
-     *  
-     * @return the pair of sql and parameters.
-     */
-    public SP pair() {
-        return new SP(sql(), parameters);
+    public <T> T apply(final Function<? super SP, T> func) {
+        return func.apply(this.pair());
     }
 
     //    /**
@@ -1778,6 +1758,40 @@ public abstract class SQLBuilder {
     //            }
     //        });
     //    }
+    /**
+     * This SQLBuilder will be closed after <code>sql()</code> is called.
+     * 
+     * @return
+     */
+    public String sql() {
+        if (sb == null) {
+            throw new AbacusException("This SQLBuilder has been closed after sql() was called previously");
+        }
+
+        init(true);
+
+        try {
+            return sb.toString();
+        } finally {
+            ObjectFactory.recycle(sb);
+            sb = null;
+
+            activeStringBuilderCounter.decrementAndGet();
+        }
+    }
+
+    public List<Object> parameters() {
+        return parameters;
+    }
+
+    /**
+     *  This SQLBuilder will be closed after <code>pair()</code> is called.
+     *  
+     * @return the pair of sql and parameters.
+     */
+    public SP pair() {
+        return new SP(sql(), parameters);
+    }
 
     void init(boolean setForUpdate) {
         if (sb.length() > 0) {
@@ -2050,7 +2064,6 @@ public abstract class SQLBuilder {
             if (N.notNullOrEmpty(subQuery.getSql())) {
                 sb.append(subQuery.getSql());
             } else {
-
                 if (this instanceof E) {
                     sb.append(E.select(subQuery.getSelectPropNames()).from(subQuery.getEntityName()).where(subQuery.getCondition()).sql());
                 } else if (this instanceof RE) {

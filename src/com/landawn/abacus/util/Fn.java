@@ -293,6 +293,25 @@ public final class Fn {
         };
     }
 
+    public static <T> Function<T, Wrapper<T>> wrap() {
+        return new Function<T, Wrapper<T>>() {
+            @Override
+            public Wrapper<T> apply(T t) {
+                return Wrapper.of(t);
+            }
+        };
+    }
+
+    public static <T> Function<T, Wrapper<T>> wrap(final ToIntFunction<? super T> hashFunction,
+            final BiFunction<? super T, ? super T, Boolean> equalsFunction) {
+        return new Function<T, Wrapper<T>>() {
+            @Override
+            public Wrapper<T> apply(T t) {
+                return Wrapper.of(t, hashFunction, equalsFunction);
+            }
+        };
+    }
+
     @SuppressWarnings("rawtypes")
     public static <K, V> Function<Entry<K, V>, K> key() {
         return (Function) KEY;
