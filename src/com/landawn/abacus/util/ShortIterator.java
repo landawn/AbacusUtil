@@ -68,6 +68,16 @@ public abstract class ShortIterator extends ImmutableIterator<Short> {
 
                 return a[cursor++];
             }
+
+            @Override
+            public short[] toArray() {
+                return N.copyOfRange(a, cursor, toIndex);
+            }
+
+            @Override
+            public ShortList toList() {
+                return ShortList.of(N.copyOfRange(a, cursor, toIndex));
+            }
         };
     }
 
@@ -82,6 +92,20 @@ public abstract class ShortIterator extends ImmutableIterator<Short> {
     }
 
     public abstract short nextShort();
+
+    public short[] toArray() {
+        return toList().trimToSize().array();
+    }
+
+    public ShortList toList() {
+        final ShortList list = new ShortList();
+
+        while (hasNext()) {
+            list.add(nextShort());
+        }
+
+        return list;
+    }
 
     public void forEachRemaining(ShortConsumer action) {
         N.requireNonNull(action);

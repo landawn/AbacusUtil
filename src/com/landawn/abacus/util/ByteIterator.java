@@ -68,6 +68,16 @@ public abstract class ByteIterator extends ImmutableIterator<Byte> {
 
                 return a[cursor++];
             }
+
+            @Override
+            public byte[] toArray() {
+                return N.copyOfRange(a, cursor, toIndex);
+            }
+
+            @Override
+            public ByteList toList() {
+                return ByteList.of(N.copyOfRange(a, cursor, toIndex));
+            }
         };
     }
 
@@ -82,6 +92,20 @@ public abstract class ByteIterator extends ImmutableIterator<Byte> {
     }
 
     public abstract byte nextByte();
+
+    public byte[] toArray() {
+        return toList().trimToSize().array();
+    }
+
+    public ByteList toList() {
+        final ByteList list = new ByteList();
+
+        while (hasNext()) {
+            list.add(nextByte());
+        }
+
+        return list;
+    }
 
     public void forEachRemaining(ByteConsumer action) {
         N.requireNonNull(action);

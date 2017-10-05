@@ -2685,7 +2685,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
 
     @Override
     public Iterator<T> iterator() {
-        return coll == null ? ImmutableIterator.EMPTY : new ImmutableIterator<T>() {
+        return coll == null ? ObjIterator.EMPTY : new ObjIterator<T>() {
             private final Iterator<T> iter = coll.iterator();
 
             @Override
@@ -2869,7 +2869,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
 
         @Override
         public Iterator<E> iterator() {
-            final Iterator<E> iter = c == null ? ImmutableIterator.EMPTY : c.iterator();
+            final Iterator<E> iter = c == null ? ObjIterator.EMPTY : c.iterator();
 
             if (fromIndex > 0) {
                 int offset = 0;
@@ -3273,21 +3273,21 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     @SafeVarargs
-    public static <T> ImmutableIterator<T> iterate(final T[]... a) {
+    public static <T> ObjIterator<T> iterate(final T[]... a) {
         return Iterators.concat(a);
     }
 
     @SafeVarargs
-    public static <T> ImmutableIterator<T> iterate(final Collection<? extends T>... a) {
+    public static <T> ObjIterator<T> iterate(final Collection<? extends T>... a) {
         return Iterators.concat(a);
     }
 
-    public static <T> ImmutableIterator<T> iterate(final Collection<? extends Collection<? extends T>> c) {
+    public static <T> ObjIterator<T> iterate(final Collection<? extends Collection<? extends T>> c) {
         if (N.isNullOrEmpty(c)) {
-            return ImmutableIterator.empty();
+            return ObjIterator.empty();
         }
 
-        return new ImmutableIterator<T>() {
+        return new ObjIterator<T>() {
             private final Iterator<? extends Collection<? extends T>> iter = c.iterator();
             private Iterator<? extends T> cur;
 
@@ -3490,8 +3490,8 @@ public final class Seq<T> extends ImmutableCollection<T> {
 
     public static <A, B, R> List<R> zip(final Collection<A> a, final Collection<B> b, final A valueForNoneA, final B valueForNoneB,
             final BiFunction<? super A, ? super B, R> zipFunction) {
-        final Iterator<A> iterA = a == null ? ImmutableIterator.<A> empty() : a.iterator();
-        final Iterator<B> iterB = b == null ? ImmutableIterator.<B> empty() : b.iterator();
+        final Iterator<A> iterA = a == null ? ObjIterator.<A> empty() : a.iterator();
+        final Iterator<B> iterB = b == null ? ObjIterator.<B> empty() : b.iterator();
         final int lenA = a == null ? 0 : a.size();
         final int lenB = b == null ? 0 : b.size();
         final int maxLen = N.max(lenA, lenB);
@@ -3521,9 +3521,9 @@ public final class Seq<T> extends ImmutableCollection<T> {
 
     public static <A, B, C, R> List<R> zip(final Collection<A> a, final Collection<B> b, final Collection<C> c, final A valueForNoneA, final B valueForNoneB,
             final C valueForNoneC, final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
-        final Iterator<A> iterA = a == null ? ImmutableIterator.<A> empty() : a.iterator();
-        final Iterator<B> iterB = b == null ? ImmutableIterator.<B> empty() : b.iterator();
-        final Iterator<C> iterC = c == null ? ImmutableIterator.<C> empty() : c.iterator();
+        final Iterator<A> iterA = a == null ? ObjIterator.<A> empty() : a.iterator();
+        final Iterator<B> iterB = b == null ? ObjIterator.<B> empty() : b.iterator();
+        final Iterator<C> iterC = c == null ? ObjIterator.<C> empty() : c.iterator();
         final int lenA = a == null ? 0 : a.size();
         final int lenB = b == null ? 0 : b.size();
         final int lenC = c == null ? 0 : c.size();

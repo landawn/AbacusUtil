@@ -163,9 +163,9 @@ abstract class AbstractIntStream extends IntStream {
         }
 
         final long skip = step - 1;
-        final ExIntIterator iter = this.exIterator();
+        final SkippableIntIterator iter = this.skippableIterator();
 
-        final IntIterator intIterator = new ExIntIterator() {
+        final IntIterator intIterator = new SkippableIntIterator() {
             @Override
             public boolean hasNext() {
                 return iter.hasNext();
@@ -238,9 +238,9 @@ abstract class AbstractIntStream extends IntStream {
 
     @Override
     public IntStream collapse(final IntBiPredicate collapsible, final IntBiFunction<Integer> mergeFunction) {
-        final ExIntIterator iter = exIterator();
+        final SkippableIntIterator iter = skippableIterator();
 
-        return this.newStream(new ExIntIterator() {
+        return this.newStream(new SkippableIntIterator() {
             private boolean hasNext = false;
             private int next = 0;
 
@@ -268,9 +268,9 @@ abstract class AbstractIntStream extends IntStream {
 
     @Override
     public IntStream scan(final IntBiFunction<Integer> accumulator) {
-        final ExIntIterator iter = exIterator();
+        final SkippableIntIterator iter = skippableIterator();
 
-        return this.newStream(new ExIntIterator() {
+        return this.newStream(new SkippableIntIterator() {
             private int res = 0;
             private boolean isFirst = true;
 
@@ -293,9 +293,9 @@ abstract class AbstractIntStream extends IntStream {
 
     @Override
     public IntStream scan(final int seed, final IntBiFunction<Integer> accumulator) {
-        final ExIntIterator iter = exIterator();
+        final SkippableIntIterator iter = skippableIterator();
 
-        return this.newStream(new ExIntIterator() {
+        return this.newStream(new SkippableIntIterator() {
             private int res = seed;
 
             @Override
@@ -357,19 +357,19 @@ abstract class AbstractIntStream extends IntStream {
             public boolean test(int value) {
                 return set.add(value);
             }
-        }).exIterator(), sorted);
+        }).skippableIterator(), sorted);
     }
 
     @Override
     public OptionalInt first() {
-        final IntIterator iter = this.exIterator();
+        final IntIterator iter = this.skippableIterator();
 
         return iter.hasNext() ? OptionalInt.of(iter.nextInt()) : OptionalInt.empty();
     }
 
     @Override
     public OptionalInt last() {
-        final IntIterator iter = this.exIterator();
+        final IntIterator iter = this.skippableIterator();
 
         if (iter.hasNext() == false) {
             return OptionalInt.empty();
@@ -386,7 +386,7 @@ abstract class AbstractIntStream extends IntStream {
 
     @Override
     public OptionalInt findFirstOrLast(IntPredicate predicateForFirst, IntPredicate predicateForLast) {
-        final ExIntIterator iter = exIterator();
+        final SkippableIntIterator iter = skippableIterator();
         MutableInt last = null;
         int next = 0;
 
@@ -416,7 +416,7 @@ abstract class AbstractIntStream extends IntStream {
             public boolean test(int value) {
                 return multiset.getAndRemove(value) > 0;
             }
-        }).exIterator(), sorted);
+        }).skippableIterator(), sorted);
     }
 
     @Override
@@ -428,7 +428,7 @@ abstract class AbstractIntStream extends IntStream {
             public boolean test(int value) {
                 return multiset.getAndRemove(value) < 1;
             }
-        }).exIterator(), sorted);
+        }).skippableIterator(), sorted);
     }
 
     @Override
@@ -445,7 +445,7 @@ abstract class AbstractIntStream extends IntStream {
             public boolean test(Integer value) {
                 return multiset.getAndRemove(value) > 0;
             }
-        }).mapToInt(ToIntFunction.UNBOX)).exIterator(), false);
+        }).mapToInt(ToIntFunction.UNBOX)).skippableIterator(), false);
     }
 
     @Override
@@ -454,7 +454,7 @@ abstract class AbstractIntStream extends IntStream {
             throw new IllegalArgumentException("'n' can't be negative");
         }
 
-        final IntIterator iter = this.exIterator();
+        final IntIterator iter = this.skippableIterator();
         final IntList list = new IntList();
 
         while (list.size() < n && iter.hasNext()) {
@@ -470,7 +470,7 @@ abstract class AbstractIntStream extends IntStream {
     public Stream<IntStream> splitBy(IntPredicate where) {
         N.requireNonNull(where);
 
-        final IntIterator iter = this.exIterator();
+        final IntIterator iter = this.skippableIterator();
         final IntList list = new IntList();
         int next = 0;
         IntStream s = null;
@@ -491,7 +491,7 @@ abstract class AbstractIntStream extends IntStream {
 
         if (s != null) {
             if (sorted) {
-                a[1] = new IteratorIntStream(a[1].prepend(s).exIterator(), null, sorted);
+                a[1] = new IteratorIntStream(a[1].prepend(s).skippableIterator(), null, sorted);
             } else {
                 a[1] = a[1].prepend(s);
             }
@@ -504,7 +504,7 @@ abstract class AbstractIntStream extends IntStream {
     public IntStream reversed() {
         final int[] tmp = toArray();
 
-        return newStream(new ExIntIterator() {
+        return newStream(new SkippableIntIterator() {
             private int cursor = tmp.length;
 
             @Override

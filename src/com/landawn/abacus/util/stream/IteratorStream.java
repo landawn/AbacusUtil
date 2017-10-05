@@ -60,7 +60,7 @@ import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.function.ToShortFunction;
 import com.landawn.abacus.util.function.TriConsumer;
 import com.landawn.abacus.util.function.TriFunction;
-import com.landawn.abacus.util.stream.ExIterator.QueuedIterator;
+import com.landawn.abacus.util.stream.SkippableObjIterator.QueuedIterator;
 
 /**
  * This class is a sequential, stateful and immutable stream implementation.
@@ -71,7 +71,7 @@ import com.landawn.abacus.util.stream.ExIterator.QueuedIterator;
  * @author Haiyang Li
  */
 class IteratorStream<T> extends AbstractStream<T> {
-    final ExIterator<T> elements;
+    final SkippableObjIterator<T> elements;
 
     NullabLe<T> head;
     Stream<T> tail;
@@ -92,12 +92,12 @@ class IteratorStream<T> extends AbstractStream<T> {
 
         N.requireNonNull(values);
 
-        ExIterator<T> tmp = null;
+        SkippableObjIterator<T> tmp = null;
 
-        if (values instanceof ExIterator) {
-            tmp = (ExIterator<T>) values;
-        } else if (values instanceof SkippableIterator) {
-            tmp = new ExIterator<T>() {
+        if (values instanceof SkippableObjIterator) {
+            tmp = (SkippableObjIterator<T>) values;
+        } else if (values instanceof Skippable) {
+            tmp = new SkippableObjIterator<T>() {
                 @Override
                 public boolean hasNext() {
                     return values.hasNext();
@@ -110,16 +110,16 @@ class IteratorStream<T> extends AbstractStream<T> {
 
                 @Override
                 public void skip(long n) {
-                    ((SkippableIterator) values).skip(n);
+                    ((Skippable) values).skip(n);
                 }
 
                 @Override
                 public long count() {
-                    return ((SkippableIterator) values).count();
+                    return ((Skippable) values).count();
                 }
             };
         } else {
-            tmp = new ExIterator<T>() {
+            tmp = new SkippableObjIterator<T>() {
                 @Override
                 public boolean hasNext() {
                     return values.hasNext();
@@ -141,7 +141,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> filter(final Predicate<? super T> predicate) {
-        return new IteratorStream<>(new ExIterator<T>() {
+        return new IteratorStream<>(new SkippableObjIterator<T>() {
             private boolean hasNext = false;
             private T next = null;
 
@@ -176,7 +176,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> takeWhile(final Predicate<? super T> predicate) {
-        return new IteratorStream<>(new ExIterator<T>() {
+        return new IteratorStream<>(new SkippableObjIterator<T>() {
             private boolean hasMore = true;
             private boolean hasNext = false;
             private T next = null;
@@ -212,7 +212,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> dropWhile(final Predicate<? super T> predicate) {
-        return new IteratorStream<>(new ExIterator<T>() {
+        return new IteratorStream<>(new SkippableObjIterator<T>() {
             private boolean hasNext = false;
             private T next = null;
             private boolean dropped = false;
@@ -256,7 +256,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public <R> Stream<R> map(final Function<? super T, ? extends R> mapper) {
-        return new IteratorStream<>(new ExIterator<R>() {
+        return new IteratorStream<>(new SkippableObjIterator<R>() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -281,7 +281,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public <R> Stream<R> biMap(final BiFunction<? super T, ? super T, ? extends R> mapper, final boolean ignoreNotPaired) {
-        return new IteratorStream<>(new ExIterator<R>() {
+        return new IteratorStream<>(new SkippableObjIterator<R>() {
             private T pre = (T) NONE;
 
             @Override
@@ -316,7 +316,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public <R> Stream<R> triMap(final TriFunction<? super T, ? super T, ? super T, ? extends R> mapper, final boolean ignoreNotPaired) {
-        return new IteratorStream<>(new ExIterator<R>() {
+        return new IteratorStream<>(new SkippableObjIterator<R>() {
             private T prepre = (T) NONE;
             private T pre = (T) NONE;
 
@@ -361,12 +361,40 @@ class IteratorStream<T> extends AbstractStream<T> {
     public Stream<T> mapFirst(final Function<? super T, ? extends T> mapperForFirst) {
         N.requireNonNull(mapperForFirst);
 
-        if (elements.hasNext()) {
-            T first = elements.next();
-            return prepend(Stream.of(first).map(mapperForFirst));
-        } else {
-            return this;
-        }
+        return new IteratorStream<>(new SkippableObjIterator<T>() {
+            private boolean isFirst = true;
+
+            @Override
+            public boolean hasNext() {
+                return elements.hasNext();
+            }
+
+            @Override
+            public T next() {
+                if (isFirst) {
+                    isFirst = false;
+                    return mapperForFirst.apply(elements.next());
+                } else {
+                    return elements.next();
+                }
+            }
+
+            @Override
+            public long count() {
+                isFirst = false;
+
+                return elements.count();
+            }
+
+            @Override
+            public void skip(long n) {
+                if (n > 0) {
+                    isFirst = false;
+                }
+
+                elements.skip(n);
+            }
+        }, closeHandlers);
     }
 
     @Override
@@ -374,48 +402,71 @@ class IteratorStream<T> extends AbstractStream<T> {
         N.requireNonNull(mapperForFirst);
         N.requireNonNull(mapperForElse);
 
-        if (elements.hasNext()) {
-            final Function<T, R> mapperForFirst2 = (Function<T, R>) mapperForFirst;
-            final Function<T, R> mapperForElse2 = (Function<T, R>) mapperForElse;
-            final T first = elements.next();
+        return new IteratorStream<>(new SkippableObjIterator<R>() {
+            private boolean isFirst = true;
 
-            return map(mapperForElse2).prepend(Stream.of(first).map(mapperForFirst2));
-        } else {
-            return (Stream<R>) this;
-        }
+            @Override
+            public boolean hasNext() {
+                return elements.hasNext();
+            }
+
+            @Override
+            public R next() {
+                if (isFirst) {
+                    isFirst = false;
+                    return mapperForFirst.apply(elements.next());
+                } else {
+                    return mapperForElse.apply(elements.next());
+                }
+            }
+
+            @Override
+            public long count() {
+                isFirst = false;
+
+                return elements.count();
+            }
+
+            @Override
+            public void skip(long n) {
+                if (n > 0) {
+                    isFirst = false;
+                }
+
+                elements.skip(n);
+            }
+        }, closeHandlers);
     }
 
     @Override
     public Stream<T> mapLast(final Function<? super T, ? extends T> mapperForLast) {
         N.requireNonNull(mapperForLast);
 
-        return new IteratorStream<>(new ExIterator<T>() {
-            private T last = (T) Stream.NONE;
-
+        return new IteratorStream<>(new SkippableObjIterator<T>() {
             @Override
             public boolean hasNext() {
-                return last != Stream.NONE || elements.hasNext();
+                return elements.hasNext();
             }
 
             @Override
             public T next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                if (last == Stream.NONE) {
-                    last = elements.next();
-                }
-
-                final T next = last;
+                final T next = elements.next();
 
                 if (elements.hasNext()) {
-                    last = elements.next();
                     return next;
                 } else {
-                    last = (T) Stream.NONE;
                     return mapperForLast.apply(next);
                 }
+            }
+
+            @Override
+            public long count() {
+                return elements.count();
+            }
+
+            @Override
+            public void skip(long n) {
+                elements.skip(n);
             }
         }, closeHandlers);
     }
@@ -425,40 +476,38 @@ class IteratorStream<T> extends AbstractStream<T> {
         N.requireNonNull(mapperForLast);
         N.requireNonNull(mapperForElse);
 
-        return new IteratorStream<>(new ExIterator<R>() {
-            private T last = (T) Stream.NONE;
-
+        return new IteratorStream<>(new SkippableObjIterator<R>() {
             @Override
             public boolean hasNext() {
-                return last != Stream.NONE || elements.hasNext();
+                return elements.hasNext();
             }
 
             @Override
             public R next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                if (last == Stream.NONE) {
-                    last = elements.next();
-                }
-
-                final T next = last;
+                final T next = elements.next();
 
                 if (elements.hasNext()) {
-                    last = elements.next();
                     return mapperForElse.apply(next);
                 } else {
-                    last = (T) Stream.NONE;
                     return mapperForLast.apply(next);
                 }
+            }
+
+            @Override
+            public long count() {
+                return elements.count();
+            }
+
+            @Override
+            public void skip(long n) {
+                elements.skip(n);
             }
         }, closeHandlers);
     }
 
     @Override
     public CharStream mapToChar(final ToCharFunction<? super T> mapper) {
-        return new IteratorCharStream(new ExCharIterator() {
+        return new IteratorCharStream(new SkippableCharIterator() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -483,7 +532,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public ByteStream mapToByte(final ToByteFunction<? super T> mapper) {
-        return new IteratorByteStream(new ExByteIterator() {
+        return new IteratorByteStream(new SkippableByteIterator() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -508,7 +557,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public ShortStream mapToShort(final ToShortFunction<? super T> mapper) {
-        return new IteratorShortStream(new ExShortIterator() {
+        return new IteratorShortStream(new SkippableShortIterator() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -533,7 +582,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public IntStream mapToInt(final ToIntFunction<? super T> mapper) {
-        return new IteratorIntStream(new ExIntIterator() {
+        return new IteratorIntStream(new SkippableIntIterator() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -558,7 +607,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public LongStream mapToLong(final ToLongFunction<? super T> mapper) {
-        return new IteratorLongStream(new ExLongIterator() {
+        return new IteratorLongStream(new SkippableLongIterator() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -583,7 +632,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public FloatStream mapToFloat(final ToFloatFunction<? super T> mapper) {
-        return new IteratorFloatStream(new ExFloatIterator() {
+        return new IteratorFloatStream(new SkippableFloatIterator() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -608,7 +657,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public DoubleStream mapToDouble(final ToDoubleFunction<? super T> mapper) {
-        return new IteratorDoubleStream(new ExDoubleIterator() {
+        return new IteratorDoubleStream(new SkippableDoubleIterator() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -633,7 +682,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     <R> Stream<R> flatMap0(final Function<? super T, ? extends Iterator<? extends R>> mapper) {
-        return new IteratorStream<>(new ExIterator<R>() {
+        return new IteratorStream<>(new SkippableObjIterator<R>() {
             private Iterator<? extends R> cur = null;
 
             @Override
@@ -658,7 +707,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     CharStream flatMapToChar0(final Function<? super T, CharIterator> mapper) {
-        return new IteratorCharStream(new ExCharIterator() {
+        return new IteratorCharStream(new SkippableCharIterator() {
             private CharIterator cur = null;
 
             @Override
@@ -683,7 +732,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     ByteStream flatMapToByte0(final Function<? super T, ByteIterator> mapper) {
-        return new IteratorByteStream(new ExByteIterator() {
+        return new IteratorByteStream(new SkippableByteIterator() {
             private ByteIterator cur = null;
 
             @Override
@@ -708,7 +757,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     ShortStream flatMapToShort0(final Function<? super T, ShortIterator> mapper) {
-        return new IteratorShortStream(new ExShortIterator() {
+        return new IteratorShortStream(new SkippableShortIterator() {
             private ShortIterator cur = null;
 
             @Override
@@ -733,7 +782,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     IntStream flatMapToInt0(final Function<? super T, IntIterator> mapper) {
-        return new IteratorIntStream(new ExIntIterator() {
+        return new IteratorIntStream(new SkippableIntIterator() {
             private IntIterator cur = null;
 
             @Override
@@ -758,7 +807,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     LongStream flatMapToLong0(final Function<? super T, LongIterator> mapper) {
-        return new IteratorLongStream(new ExLongIterator() {
+        return new IteratorLongStream(new SkippableLongIterator() {
             private LongIterator cur = null;
 
             @Override
@@ -783,7 +832,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     FloatStream flatMapToFloat0(final Function<? super T, FloatIterator> mapper) {
-        return new IteratorFloatStream(new ExFloatIterator() {
+        return new IteratorFloatStream(new SkippableFloatIterator() {
             private FloatIterator cur = null;
 
             @Override
@@ -808,7 +857,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     DoubleStream flatMapToDouble0(final Function<? super T, DoubleIterator> mapper) {
-        return new IteratorDoubleStream(new ExDoubleIterator() {
+        return new IteratorDoubleStream(new SkippableDoubleIterator() {
             private DoubleIterator cur = null;
 
             @Override
@@ -837,7 +886,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
-        return new IteratorStream<>(new ExIterator<R>() {
+        return new IteratorStream<>(new SkippableObjIterator<R>() {
             private T prev = (T) NONE;
 
             @Override
@@ -876,7 +925,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
-        return new IteratorStream<>(new ExIterator<R>() {
+        return new IteratorStream<>(new SkippableObjIterator<R>() {
             private T prev = (T) NONE;
             private T prev2 = (T) NONE;
 
@@ -919,7 +968,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<List<T>> splitToList(final int size) {
-        return new IteratorStream<>(new ExIterator<List<T>>() {
+        return new IteratorStream<>(new SkippableObjIterator<List<T>>() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -947,7 +996,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<Set<T>> splitToSet(final int size) {
-        return new IteratorStream<>(new ExIterator<Set<T>>() {
+        return new IteratorStream<>(new SkippableObjIterator<Set<T>>() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -975,7 +1024,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<List<T>> splitToList(final Predicate<? super T> predicate) {
-        return new IteratorStream<>(new ExIterator<List<T>>() {
+        return new IteratorStream<>(new SkippableObjIterator<List<T>>() {
             private T next = (T) NONE;
             private boolean preCondition = false;
 
@@ -1019,7 +1068,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     @Override
     public <U> Stream<List<T>> splitToList(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
-        return new IteratorStream<>(new ExIterator<List<T>>() {
+        return new IteratorStream<>(new SkippableObjIterator<List<T>>() {
             private T next = (T) NONE;
             private boolean preCondition = false;
 
@@ -1066,7 +1115,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     @Override
     public <U> Stream<Set<T>> splitToSet(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
-        return new IteratorStream<>(new ExIterator<Set<T>>() {
+        return new IteratorStream<>(new SkippableObjIterator<Set<T>>() {
             private T next = (T) NONE;
             private boolean preCondition = false;
 
@@ -1114,7 +1163,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     public Stream<List<T>> slidingToList(final int windowSize, final int increment) {
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
-        return new IteratorStream<>(new ExIterator<List<T>>() {
+        return new IteratorStream<>(new SkippableObjIterator<List<T>>() {
             private List<T> prev = null;
 
             @Override
@@ -1171,7 +1220,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     public Stream<T> top(final int n, final Comparator<? super T> comparator) {
         N.checkArgument(n > 0, "'n' must be bigger than 0");
 
-        return new IteratorStream<>(new ExIterator<T>() {
+        return new IteratorStream<>(new SkippableObjIterator<T>() {
             T[] a = null;
             int cursor = 0;
             int toIndex;
@@ -1298,7 +1347,7 @@ class IteratorStream<T> extends AbstractStream<T> {
             return this;
         }
 
-        return new IteratorStream<>(new ExIterator<T>() {
+        return new IteratorStream<>(new SkippableObjIterator<T>() {
             T[] a = null;
             int toIndex = 0;
             int cursor = 0;
@@ -1381,7 +1430,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> peek(final Consumer<? super T> action) {
-        return new IteratorStream<>(new ExIterator<T>() {
+        return new IteratorStream<>(new SkippableObjIterator<T>() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -1402,7 +1451,7 @@ class IteratorStream<T> extends AbstractStream<T> {
             throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
         }
 
-        return new IteratorStream<>(new ExIterator<T>() {
+        return new IteratorStream<>(new SkippableObjIterator<T>() {
             private long cnt = 0;
 
             @Override
@@ -1435,7 +1484,7 @@ class IteratorStream<T> extends AbstractStream<T> {
             return this;
         }
 
-        return new IteratorStream<>(new ExIterator<T>() {
+        return new IteratorStream<>(new SkippableObjIterator<T>() {
             private boolean skipped = false;
 
             @Override
@@ -1850,7 +1899,7 @@ class IteratorStream<T> extends AbstractStream<T> {
         N.checkArgument(n >= 0, "'n' can't be negative");
 
         if (n == 0) {
-            return new IteratorStream<>(ExIterator.EMPTY, closeHandlers, sorted, cmp);
+            return new IteratorStream<>(SkippableObjIterator.EMPTY, closeHandlers, sorted, cmp);
         }
 
         final Deque<T> dqueue = n <= 1024 ? new ArrayDeque<T>(n) : new LinkedList<T>();
@@ -1874,7 +1923,7 @@ class IteratorStream<T> extends AbstractStream<T> {
             return this;
         }
 
-        return new IteratorStream<>(new ExIterator<T>() {
+        return new IteratorStream<>(new SkippableObjIterator<T>() {
             private Deque<T> dqueue = null;
 
             @Override
@@ -2086,7 +2135,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    ExIterator<T> exIterator() {
+    SkippableObjIterator<T> skippableIterator() {
         return elements;
     }
 

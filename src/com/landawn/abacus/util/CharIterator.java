@@ -68,6 +68,16 @@ public abstract class CharIterator extends ImmutableIterator<Character> {
 
                 return a[cursor++];
             }
+
+            @Override
+            public char[] toArray() {
+                return N.copyOfRange(a, cursor, toIndex);
+            }
+
+            @Override
+            public CharList toList() {
+                return CharList.of(N.copyOfRange(a, cursor, toIndex));
+            }
         };
     }
 
@@ -82,6 +92,20 @@ public abstract class CharIterator extends ImmutableIterator<Character> {
     }
 
     public abstract char nextChar();
+
+    public char[] toArray() {
+        return toList().trimToSize().array();
+    }
+
+    public CharList toList() {
+        final CharList list = new CharList();
+
+        while (hasNext()) {
+            list.add(nextChar());
+        }
+
+        return list;
+    }
 
     public void forEachRemaining(CharConsumer action) {
         N.requireNonNull(action);

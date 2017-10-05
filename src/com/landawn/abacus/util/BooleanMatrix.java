@@ -27,7 +27,7 @@ import com.landawn.abacus.util.function.BooleanUnaryOperator;
 import com.landawn.abacus.util.function.IntBiFunction;
 import com.landawn.abacus.util.function.IntBiPredicate;
 import com.landawn.abacus.util.function.IntConsumer;
-import com.landawn.abacus.util.stream.ExIterator;
+import com.landawn.abacus.util.stream.SkippableObjIterator;
 import com.landawn.abacus.util.stream.IntStream;
 import com.landawn.abacus.util.stream.Stream;
 
@@ -961,7 +961,7 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
             return Stream.empty();
         }
 
-        return Stream.of(new ExIterator<Boolean>() {
+        return Stream.of(new SkippableObjIterator<Boolean>() {
             private final int toIndex = rows;
             private int cursor = 0;
 
@@ -1003,7 +1003,7 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
             return Stream.empty();
         }
 
-        return Stream.of(new ExIterator<Boolean>() {
+        return Stream.of(new SkippableObjIterator<Boolean>() {
             private final int toIndex = rows;
             private int cursor = 0;
 
@@ -1061,7 +1061,7 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
             return Stream.empty();
         }
 
-        return Stream.of(new ExIterator<Boolean>() {
+        return Stream.of(new SkippableObjIterator<Boolean>() {
             private int i = fromRowIndex;
             private int j = 0;
 
@@ -1154,7 +1154,7 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
             return Stream.empty();
         }
 
-        return Stream.of(new ExIterator<Boolean>() {
+        return Stream.of(new SkippableObjIterator<Boolean>() {
             private int i = 0;
             private int j = fromColumnIndex;
 
@@ -1240,7 +1240,7 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
             return Stream.empty();
         }
 
-        return Stream.of(new ExIterator<Stream<Boolean>>() {
+        return Stream.of(new SkippableObjIterator<Stream<Boolean>>() {
             private final int toIndex = toRowIndex;
             private int cursor = fromRowIndex;
 
@@ -1295,7 +1295,7 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
             return Stream.empty();
         }
 
-        return Stream.of(new ExIterator<Stream<Boolean>>() {
+        return Stream.of(new SkippableObjIterator<Stream<Boolean>>() {
             private final int toIndex = toColumnIndex;
             private volatile int cursor = fromColumnIndex;
 
@@ -1310,7 +1310,7 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
                     throw new NoSuchElementException();
                 }
 
-                return Stream.of(new ExIterator<Boolean>() {
+                return Stream.of(new SkippableObjIterator<Boolean>() {
                     private final int columnIndex = cursor++;
                     private final int toIndex2 = rows;
                     private int cursor2 = 0;

@@ -68,6 +68,16 @@ public abstract class FloatIterator extends ImmutableIterator<Float> {
 
                 return a[cursor++];
             }
+
+            @Override
+            public float[] toArray() {
+                return N.copyOfRange(a, cursor, toIndex);
+            }
+
+            @Override
+            public FloatList toList() {
+                return FloatList.of(N.copyOfRange(a, cursor, toIndex));
+            }
         };
     }
 
@@ -82,6 +92,20 @@ public abstract class FloatIterator extends ImmutableIterator<Float> {
     }
 
     public abstract float nextFloat();
+
+    public float[] toArray() {
+        return toList().trimToSize().array();
+    }
+
+    public FloatList toList() {
+        final FloatList list = new FloatList();
+
+        while (hasNext()) {
+            list.add(nextFloat());
+        }
+
+        return list;
+    }
 
     public void forEachRemaining(FloatConsumer action) {
         N.requireNonNull(action);

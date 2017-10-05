@@ -68,6 +68,16 @@ public abstract class IntIterator extends ImmutableIterator<Integer> {
 
                 return a[cursor++];
             }
+
+            @Override
+            public int[] toArray() {
+                return N.copyOfRange(a, cursor, toIndex);
+            }
+
+            @Override
+            public IntList toList() {
+                return IntList.of(N.copyOfRange(a, cursor, toIndex));
+            }
         };
     }
 
@@ -82,6 +92,20 @@ public abstract class IntIterator extends ImmutableIterator<Integer> {
     }
 
     public abstract int nextInt();
+
+    public int[] toArray() {
+        return toList().trimToSize().array();
+    }
+
+    public IntList toList() {
+        final IntList list = new IntList();
+
+        while (hasNext()) {
+            list.add(nextInt());
+        }
+
+        return list;
+    }
 
     public void forEachRemaining(IntConsumer action) {
         N.requireNonNull(action);

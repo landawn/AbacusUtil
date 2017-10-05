@@ -163,9 +163,9 @@ abstract class AbstractDoubleStream extends DoubleStream {
         }
 
         final long skip = step - 1;
-        final ExDoubleIterator iter = this.exIterator();
+        final SkippableDoubleIterator iter = this.skippableIterator();
 
-        final DoubleIterator doubleIterator = new ExDoubleIterator() {
+        final DoubleIterator doubleIterator = new SkippableDoubleIterator() {
             @Override
             public boolean hasNext() {
                 return iter.hasNext();
@@ -238,9 +238,9 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
     @Override
     public DoubleStream collapse(final DoubleBiPredicate collapsible, final DoubleBiFunction<Double> mergeFunction) {
-        final ExDoubleIterator iter = exIterator();
+        final SkippableDoubleIterator iter = skippableIterator();
 
-        return this.newStream(new ExDoubleIterator() {
+        return this.newStream(new SkippableDoubleIterator() {
             private boolean hasNext = false;
             private double next = 0;
 
@@ -268,9 +268,9 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
     @Override
     public DoubleStream scan(final DoubleBiFunction<Double> accumulator) {
-        final ExDoubleIterator iter = exIterator();
+        final SkippableDoubleIterator iter = skippableIterator();
 
-        return this.newStream(new ExDoubleIterator() {
+        return this.newStream(new SkippableDoubleIterator() {
             private double res = 0;
             private boolean isFirst = true;
 
@@ -293,9 +293,9 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
     @Override
     public DoubleStream scan(final double seed, final DoubleBiFunction<Double> accumulator) {
-        final ExDoubleIterator iter = exIterator();
+        final SkippableDoubleIterator iter = skippableIterator();
 
-        return this.newStream(new ExDoubleIterator() {
+        return this.newStream(new SkippableDoubleIterator() {
             private double res = seed;
 
             @Override
@@ -357,7 +357,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
             public boolean test(double value) {
                 return set.add(value);
             }
-        }).exIterator(), sorted);
+        }).skippableIterator(), sorted);
     }
 
     @Override
@@ -426,14 +426,14 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
     @Override
     public OptionalDouble first() {
-        final DoubleIterator iter = this.exIterator();
+        final DoubleIterator iter = this.skippableIterator();
 
         return iter.hasNext() ? OptionalDouble.of(iter.nextDouble()) : OptionalDouble.empty();
     }
 
     @Override
     public OptionalDouble last() {
-        final DoubleIterator iter = this.exIterator();
+        final DoubleIterator iter = this.skippableIterator();
 
         if (iter.hasNext() == false) {
             return OptionalDouble.empty();
@@ -450,7 +450,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
     @Override
     public OptionalDouble findFirstOrLast(DoublePredicate predicateForFirst, DoublePredicate predicateForLast) {
-        final ExDoubleIterator iter = exIterator();
+        final SkippableDoubleIterator iter = skippableIterator();
         MutableDouble last = null;
         double next = 0;
 
@@ -480,7 +480,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
             public boolean test(double value) {
                 return multiset.getAndRemove(value) > 0;
             }
-        }).exIterator(), sorted);
+        }).skippableIterator(), sorted);
     }
 
     @Override
@@ -492,7 +492,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
             public boolean test(double value) {
                 return multiset.getAndRemove(value) < 1;
             }
-        }).exIterator(), sorted);
+        }).skippableIterator(), sorted);
     }
 
     @Override
@@ -509,7 +509,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
             public boolean test(Double value) {
                 return multiset.getAndRemove(value) > 0;
             }
-        }).mapToDouble(ToDoubleFunction.UNBOX)).exIterator(), false);
+        }).mapToDouble(ToDoubleFunction.UNBOX)).skippableIterator(), false);
     }
 
     @Override
@@ -518,7 +518,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
             throw new IllegalArgumentException("'n' can't be negative");
         }
 
-        final DoubleIterator iter = this.exIterator();
+        final DoubleIterator iter = this.skippableIterator();
         final DoubleList list = new DoubleList();
 
         while (list.size() < n && iter.hasNext()) {
@@ -534,7 +534,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
     public Stream<DoubleStream> splitBy(DoublePredicate where) {
         N.requireNonNull(where);
 
-        final DoubleIterator iter = this.exIterator();
+        final DoubleIterator iter = this.skippableIterator();
         final DoubleList list = new DoubleList();
         double next = 0;
         DoubleStream s = null;
@@ -555,7 +555,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
         if (s != null) {
             if (sorted) {
-                a[1] = new IteratorDoubleStream(a[1].prepend(s).exIterator(), null, sorted);
+                a[1] = new IteratorDoubleStream(a[1].prepend(s).skippableIterator(), null, sorted);
             } else {
                 a[1] = a[1].prepend(s);
             }
@@ -568,7 +568,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
     public DoubleStream reversed() {
         final double[] tmp = toArray();
 
-        return newStream(new ExDoubleIterator() {
+        return newStream(new SkippableDoubleIterator() {
             private int cursor = tmp.length;
 
             @Override

@@ -26,7 +26,7 @@ import java.util.Random;
 import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.util.Comparators;
 import com.landawn.abacus.util.Fn;
-import com.landawn.abacus.util.ImmutableIterator;
+import com.landawn.abacus.util.ObjIterator;
 import com.landawn.abacus.util.ImmutableMap;
 import com.landawn.abacus.util.ListMultimap;
 import com.landawn.abacus.util.LongMultiset;
@@ -588,7 +588,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
         return s.count();
     }
 
-    public ImmutableIterator<Map.Entry<K, V>> iterator() {
+    public ObjIterator<Map.Entry<K, V>> iterator() {
         return s.iterator();
     }
 

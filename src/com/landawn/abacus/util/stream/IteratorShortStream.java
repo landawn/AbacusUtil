@@ -56,7 +56,7 @@ import com.landawn.abacus.util.function.ToShortFunction;
  * @author Haiyang Li
  */
 class IteratorShortStream extends AbstractShortStream {
-    final ExShortIterator elements;
+    final SkippableShortIterator elements;
 
     OptionalShort head;
     ShortStream tail;
@@ -75,12 +75,12 @@ class IteratorShortStream extends AbstractShortStream {
     IteratorShortStream(final ShortIterator values, final Collection<Runnable> closeHandlers, final boolean sorted) {
         super(closeHandlers, sorted);
 
-        ExShortIterator tmp = null;
+        SkippableShortIterator tmp = null;
 
-        if (values instanceof ExShortIterator) {
-            tmp = (ExShortIterator) values;
-        } else if (values instanceof SkippableIterator) {
-            tmp = new ExShortIterator() {
+        if (values instanceof SkippableShortIterator) {
+            tmp = (SkippableShortIterator) values;
+        } else if (values instanceof Skippable) {
+            tmp = new SkippableShortIterator() {
                 @Override
                 public boolean hasNext() {
                     return values.hasNext();
@@ -93,16 +93,16 @@ class IteratorShortStream extends AbstractShortStream {
 
                 @Override
                 public void skip(long n) {
-                    ((SkippableIterator) values).skip(n);
+                    ((Skippable) values).skip(n);
                 }
 
                 @Override
                 public long count() {
-                    return ((SkippableIterator) values).count();
+                    return ((Skippable) values).count();
                 }
             };
         } else {
-            tmp = new ExShortIterator() {
+            tmp = new SkippableShortIterator() {
                 @Override
                 public boolean hasNext() {
                     return values.hasNext();
@@ -120,7 +120,7 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public ShortStream filter(final ShortPredicate predicate) {
-        return new IteratorShortStream(new ExShortIterator() {
+        return new IteratorShortStream(new SkippableShortIterator() {
             private boolean hasNext = false;
             private short next = 0;
 
@@ -155,7 +155,7 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public ShortStream takeWhile(final ShortPredicate predicate) {
-        return new IteratorShortStream(new ExShortIterator() {
+        return new IteratorShortStream(new SkippableShortIterator() {
             private boolean hasMore = true;
             private boolean hasNext = false;
             private short next = 0;
@@ -191,7 +191,7 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public ShortStream dropWhile(final ShortPredicate predicate) {
-        return new IteratorShortStream(new ExShortIterator() {
+        return new IteratorShortStream(new SkippableShortIterator() {
             private boolean hasNext = false;
             private short next = 0;
             private boolean dropped = false;
@@ -235,7 +235,7 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public ShortStream map(final ShortUnaryOperator mapper) {
-        return new IteratorShortStream(new ExShortIterator() {
+        return new IteratorShortStream(new SkippableShortIterator() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -260,7 +260,7 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public IntStream mapToInt(final ShortToIntFunction mapper) {
-        return new IteratorIntStream(new ExIntIterator() {
+        return new IteratorIntStream(new SkippableIntIterator() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -285,7 +285,7 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public <U> Stream<U> mapToObj(final ShortFunction<? extends U> mapper) {
-        return new IteratorStream<U>(new ExIterator<U>() {
+        return new IteratorStream<U>(new SkippableObjIterator<U>() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -310,13 +310,13 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public ShortStream flatMap(final ShortFunction<? extends ShortStream> mapper) {
-        return new IteratorShortStream(new ExShortIterator() {
+        return new IteratorShortStream(new SkippableShortIterator() {
             private ShortIterator cur = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && elements.hasNext()) {
-                    cur = mapper.apply(elements.nextShort()).exIterator();
+                    cur = mapper.apply(elements.nextShort()).skippableIterator();
                 }
 
                 return cur != null && cur.hasNext();
@@ -335,13 +335,13 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public IntStream flatMapToInt(final ShortFunction<? extends IntStream> mapper) {
-        return new IteratorIntStream(new ExIntIterator() {
+        return new IteratorIntStream(new SkippableIntIterator() {
             private IntIterator cur = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && elements.hasNext()) {
-                    cur = mapper.apply(elements.nextShort()).exIterator();
+                    cur = mapper.apply(elements.nextShort()).skippableIterator();
                 }
 
                 return cur != null && cur.hasNext();
@@ -360,7 +360,7 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public <T> Stream<T> flatMapToObj(final ShortFunction<? extends Stream<T>> mapper) {
-        return new IteratorStream<T>(new ExIterator<T>() {
+        return new IteratorStream<T>(new SkippableObjIterator<T>() {
             private Iterator<? extends T> cur = null;
 
             @Override
@@ -387,7 +387,7 @@ class IteratorShortStream extends AbstractShortStream {
     public Stream<ShortList> splitToList(final int size) {
         N.checkArgument(size > 0, "'size' must be bigger than 0");
 
-        return new IteratorStream<ShortList>(new ExIterator<ShortList>() {
+        return new IteratorStream<ShortList>(new SkippableObjIterator<ShortList>() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -413,7 +413,7 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public Stream<ShortList> splitToList(final ShortPredicate predicate) {
-        return new IteratorStream<ShortList>(new ExIterator<ShortList>() {
+        return new IteratorStream<ShortList>(new SkippableObjIterator<ShortList>() {
             private short next;
             private boolean hasNext = false;
             private boolean preCondition = false;
@@ -458,7 +458,7 @@ class IteratorShortStream extends AbstractShortStream {
     @Override
     public <U> Stream<ShortList> splitToList(final U identity, final BiFunction<? super Short, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
-        return new IteratorStream<ShortList>(new ExIterator<ShortList>() {
+        return new IteratorStream<ShortList>(new SkippableObjIterator<ShortList>() {
             private short next;
             private boolean hasNext = false;
             private boolean preCondition = false;
@@ -508,7 +508,7 @@ class IteratorShortStream extends AbstractShortStream {
     public Stream<ShortList> slidingToList(final int windowSize, final int increment) {
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
-        return new IteratorStream<ShortList>(new ExIterator<ShortList>() {
+        return new IteratorStream<ShortList>(new SkippableObjIterator<ShortList>() {
             private ShortList prev = null;
 
             @Override
@@ -579,7 +579,7 @@ class IteratorShortStream extends AbstractShortStream {
             return this;
         }
 
-        return new IteratorShortStream(new ExShortIterator() {
+        return new IteratorShortStream(new SkippableShortIterator() {
             short[] a = null;
             int toIndex = 0;
             int cursor = 0;
@@ -648,7 +648,7 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public ShortStream peek(final ShortConsumer action) {
-        return new IteratorShortStream(new ExShortIterator() {
+        return new IteratorShortStream(new SkippableShortIterator() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -669,7 +669,7 @@ class IteratorShortStream extends AbstractShortStream {
             throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
         }
 
-        return new IteratorShortStream(new ExShortIterator() {
+        return new IteratorShortStream(new SkippableShortIterator() {
             private long cnt = 0;
 
             @Override
@@ -702,7 +702,7 @@ class IteratorShortStream extends AbstractShortStream {
             return this;
         }
 
-        return new IteratorShortStream(new ExShortIterator() {
+        return new IteratorShortStream(new SkippableShortIterator() {
             private boolean skipped = false;
 
             @Override
@@ -1168,7 +1168,7 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public IntStream asIntStream() {
-        return new IteratorIntStream(new ExIntIterator() {
+        return new IteratorIntStream(new SkippableIntIterator() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -1197,7 +1197,7 @@ class IteratorShortStream extends AbstractShortStream {
     }
 
     @Override
-    ExShortIterator exIterator() {
+    SkippableShortIterator skippableIterator() {
         return elements;
     }
 

@@ -18604,8 +18604,8 @@ public final class N {
     public static <A, B> void forEach(final Collection<A> a, final Collection<B> b, final A valueForNoneA, final B valueForNoneB,
             final BiConsumer<? super A, ? super B> action) {
 
-        final Iterator<A> iterA = a == null ? ImmutableIterator.<A> empty() : a.iterator();
-        final Iterator<B> iterB = b == null ? ImmutableIterator.<B> empty() : b.iterator();
+        final Iterator<A> iterA = a == null ? ObjIterator.<A> empty() : a.iterator();
+        final Iterator<B> iterB = b == null ? ObjIterator.<B> empty() : b.iterator();
         final int lenA = a == null ? 0 : a.size();
         final int lenB = b == null ? 0 : b.size();
 
@@ -18628,9 +18628,9 @@ public final class N {
     public static <A, B, C> void forEach(final Collection<A> a, final Collection<B> b, final Collection<C> c, final A valueForNoneA, final B valueForNoneB,
             final C valueForNoneC, final TriConsumer<? super A, ? super B, ? super C> action) {
 
-        final Iterator<A> iterA = a == null ? ImmutableIterator.<A> empty() : a.iterator();
-        final Iterator<B> iterB = b == null ? ImmutableIterator.<B> empty() : b.iterator();
-        final Iterator<C> iterC = c == null ? ImmutableIterator.<C> empty() : c.iterator();
+        final Iterator<A> iterA = a == null ? ObjIterator.<A> empty() : a.iterator();
+        final Iterator<B> iterB = b == null ? ObjIterator.<B> empty() : b.iterator();
+        final Iterator<C> iterC = c == null ? ObjIterator.<C> empty() : c.iterator();
         final int lenA = a == null ? 0 : a.size();
         final int lenB = b == null ? 0 : b.size();
         final int lenC = c == null ? 0 : c.size();

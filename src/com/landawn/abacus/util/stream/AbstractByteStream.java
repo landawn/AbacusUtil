@@ -165,9 +165,9 @@ abstract class AbstractByteStream extends ByteStream {
         }
 
         final long skip = step - 1;
-        final ExByteIterator iter = this.exIterator();
+        final SkippableByteIterator iter = this.skippableIterator();
 
-        final ByteIterator byteIterator = new ExByteIterator() {
+        final ByteIterator byteIterator = new SkippableByteIterator() {
             @Override
             public boolean hasNext() {
                 return iter.hasNext();
@@ -240,9 +240,9 @@ abstract class AbstractByteStream extends ByteStream {
 
     @Override
     public ByteStream collapse(final ByteBiPredicate collapsible, final ByteBiFunction<Byte> mergeFunction) {
-        final ExByteIterator iter = exIterator();
+        final SkippableByteIterator iter = skippableIterator();
 
-        return this.newStream(new ExByteIterator() {
+        return this.newStream(new SkippableByteIterator() {
             private boolean hasNext = false;
             private byte next = 0;
 
@@ -270,9 +270,9 @@ abstract class AbstractByteStream extends ByteStream {
 
     @Override
     public ByteStream scan(final ByteBiFunction<Byte> accumulator) {
-        final ExByteIterator iter = exIterator();
+        final SkippableByteIterator iter = skippableIterator();
 
-        return this.newStream(new ExByteIterator() {
+        return this.newStream(new SkippableByteIterator() {
             private byte res = 0;
             private boolean isFirst = true;
 
@@ -295,9 +295,9 @@ abstract class AbstractByteStream extends ByteStream {
 
     @Override
     public ByteStream scan(final byte seed, final ByteBiFunction<Byte> accumulator) {
-        final ExByteIterator iter = exIterator();
+        final SkippableByteIterator iter = skippableIterator();
 
-        return this.newStream(new ExByteIterator() {
+        return this.newStream(new SkippableByteIterator() {
             private byte res = seed;
 
             @Override
@@ -359,19 +359,19 @@ abstract class AbstractByteStream extends ByteStream {
             public boolean test(byte value) {
                 return set.add(value);
             }
-        }).exIterator(), sorted);
+        }).skippableIterator(), sorted);
     }
 
     @Override
     public OptionalByte first() {
-        final ByteIterator iter = this.exIterator();
+        final ByteIterator iter = this.skippableIterator();
 
         return iter.hasNext() ? OptionalByte.of(iter.nextByte()) : OptionalByte.empty();
     }
 
     @Override
     public OptionalByte last() {
-        final ByteIterator iter = this.exIterator();
+        final ByteIterator iter = this.skippableIterator();
 
         if (iter.hasNext() == false) {
             return OptionalByte.empty();
@@ -388,7 +388,7 @@ abstract class AbstractByteStream extends ByteStream {
 
     @Override
     public OptionalByte findFirstOrLast(BytePredicate predicateForFirst, BytePredicate predicateForLast) {
-        final ExByteIterator iter = exIterator();
+        final SkippableByteIterator iter = skippableIterator();
         MutableByte last = null;
         byte next = 0;
 
@@ -418,7 +418,7 @@ abstract class AbstractByteStream extends ByteStream {
             public boolean test(byte value) {
                 return multiset.getAndRemove(value) > 0;
             }
-        }).exIterator(), sorted);
+        }).skippableIterator(), sorted);
     }
 
     @Override
@@ -430,7 +430,7 @@ abstract class AbstractByteStream extends ByteStream {
             public boolean test(byte value) {
                 return multiset.getAndRemove(value) < 1;
             }
-        }).exIterator(), sorted);
+        }).skippableIterator(), sorted);
     }
 
     @Override
@@ -447,7 +447,7 @@ abstract class AbstractByteStream extends ByteStream {
             public boolean test(Byte value) {
                 return multiset.getAndRemove(value) > 0;
             }
-        }).mapToByte(ToByteFunction.UNBOX)).exIterator(), false);
+        }).mapToByte(ToByteFunction.UNBOX)).skippableIterator(), false);
     }
 
     @Override
@@ -456,7 +456,7 @@ abstract class AbstractByteStream extends ByteStream {
             throw new IllegalArgumentException("'n' can't be negative");
         }
 
-        final ByteIterator iter = this.exIterator();
+        final ByteIterator iter = this.skippableIterator();
         final ByteList list = new ByteList();
 
         while (list.size() < n && iter.hasNext()) {
@@ -472,7 +472,7 @@ abstract class AbstractByteStream extends ByteStream {
     public Stream<ByteStream> splitBy(BytePredicate where) {
         N.requireNonNull(where);
 
-        final ByteIterator iter = this.exIterator();
+        final ByteIterator iter = this.skippableIterator();
         final ByteList list = new ByteList();
         byte next = 0;
         ByteStream s = null;
@@ -493,7 +493,7 @@ abstract class AbstractByteStream extends ByteStream {
 
         if (s != null) {
             if (sorted) {
-                a[1] = new IteratorByteStream(a[1].prepend(s).exIterator(), null, sorted);
+                a[1] = new IteratorByteStream(a[1].prepend(s).skippableIterator(), null, sorted);
             } else {
                 a[1] = a[1].prepend(s);
             }
@@ -506,7 +506,7 @@ abstract class AbstractByteStream extends ByteStream {
     public ByteStream reversed() {
         final byte[] tmp = toArray();
 
-        return newStream(new ExByteIterator() {
+        return newStream(new SkippableByteIterator() {
             private int cursor = tmp.length;
 
             @Override

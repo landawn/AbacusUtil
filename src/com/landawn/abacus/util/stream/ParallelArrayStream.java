@@ -103,7 +103,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
-                iters.add(new ExIterator<T>() {
+                iters.add(new SkippableObjIterator<T>() {
                     private int cursor = fromIndex + sliceIndex * sliceSize;
                     private final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
                     private T next = null;
@@ -140,7 +140,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                iters.add(new ExIterator<T>() {
+                iters.add(new SkippableObjIterator<T>() {
                     private T next = null;
                     private boolean hasNext = false;
 
@@ -193,7 +193,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
         final MutableInt cursor = MutableInt.of(fromIndex);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            iters.add(new ExIterator<T>() {
+            iters.add(new SkippableObjIterator<T>() {
                 private T next = null;
                 private boolean hasNext = false;
 
@@ -244,7 +244,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
         final MutableInt cursor = MutableInt.of(fromIndex);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            iters.add(new ExIterator<T>() {
+            iters.add(new SkippableObjIterator<T>() {
                 private T next = null;
                 private boolean hasNext = false;
 
@@ -318,7 +318,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
-                iters.add(new ExIterator<R>() {
+                iters.add(new SkippableObjIterator<R>() {
                     private int cursor = fromIndex + sliceIndex * sliceSize;
                     private final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
 
@@ -341,7 +341,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                iters.add(new ExIterator<R>() {
+                iters.add(new SkippableObjIterator<R>() {
                     private Object next = NONE;
 
                     @Override
@@ -389,7 +389,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
-                iters.add(new ExIterator<R>() {
+                iters.add(new SkippableObjIterator<R>() {
                     private int cursor = fromIndex + sliceIndex * sliceSize * 2;
                     private final int to = toIndex - cursor > sliceSize * 2 ? cursor + sliceSize * 2 : toIndex;
 
@@ -412,7 +412,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                iters.add(new ExIterator<R>() {
+                iters.add(new SkippableObjIterator<R>() {
                     private Object pre = NONE;
                     private Object next = NONE;
 
@@ -463,7 +463,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
-                iters.add(new ExIterator<R>() {
+                iters.add(new SkippableObjIterator<R>() {
                     private int cursor = fromIndex + sliceIndex * sliceSize * 3;
                     private final int to = toIndex - cursor > sliceSize * 3 ? cursor + sliceSize * 3 : toIndex;
 
@@ -486,7 +486,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                iters.add(new ExIterator<R>() {
+                iters.add(new SkippableObjIterator<R>() {
                     private Object prepre = NONE;
                     private Object pre = NONE;
                     private Object next = NONE;
@@ -525,22 +525,63 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
         return new ParallelIteratorStream<>(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, null, maxThreadNum, splitor);
     }
 
-    @SuppressWarnings("resource")
     @Override
     public Stream<T> mapFirst(final Function<? super T, ? extends T> mapperForFirst) {
         N.requireNonNull(mapperForFirst);
-
-        if (maxThreadNum <= 1) {
-            return new ParallelIteratorStream<>(sequential().mapFirst(mapperForFirst).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
-        }
 
         if (fromIndex == toIndex) {
             return this;
         } else if (toIndex - fromIndex == 1) {
             return map(mapperForFirst);
         } else {
-            return new ParallelArrayStream<>(elements, fromIndex + 1, toIndex, closeHandlers, sorted, cmp, maxThreadNum, splitor)
-                    .prepend(new ArrayStream<>(elements, fromIndex, fromIndex + 1).map(mapperForFirst));
+            final Iterator<T> iter = new SkippableObjIterator<T>() {
+                private int cursor = fromIndex;
+
+                @Override
+                public boolean hasNext() {
+                    return cursor < toIndex;
+                }
+
+                @Override
+                public T next() {
+                    if (cursor >= toIndex) {
+                        throw new NoSuchElementException();
+                    }
+
+                    if (cursor == fromIndex) {
+                        return mapperForFirst.apply(elements[cursor++]);
+                    } else {
+                        return elements[cursor++];
+                    }
+                }
+
+                @Override
+                public long count() {
+                    return toIndex - cursor;
+                }
+
+                @Override
+                public void skip(long n) {
+                    cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+                }
+
+                @Override
+                public <A> A[] toArray(A[] a) {
+                    a = a.length >= toIndex - cursor ? a : (A[]) N.newArray(a.getClass().getComponentType(), toIndex - cursor);
+
+                    for (int i = 0, len = toIndex - cursor; i < len; i++) {
+                        if (cursor == fromIndex) {
+                            a[i] = (A) mapperForFirst.apply(elements[cursor++]);
+                        } else {
+                            a[i] = (A) elements[cursor++];
+                        }
+                    }
+
+                    return a;
+                }
+            };
+
+            return new ParallelIteratorStream<>(iter, closeHandlers, false, null, maxThreadNum, splitor);
         }
     }
 
@@ -568,22 +609,64 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
         }
     }
 
-    @SuppressWarnings("resource")
     @Override
     public Stream<T> mapLast(final Function<? super T, ? extends T> mapperForLast) {
         N.requireNonNull(mapperForLast);
-
-        if (maxThreadNum <= 1) {
-            return new ParallelIteratorStream<>(sequential().mapLast(mapperForLast).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
-        }
 
         if (fromIndex == toIndex) {
             return this;
         } else if (toIndex - fromIndex == 1) {
             return map(mapperForLast);
         } else {
-            return new ParallelArrayStream<>(elements, fromIndex, toIndex - 1, closeHandlers, sorted, cmp, maxThreadNum, splitor)
-                    .append(new ArrayStream<>(elements, toIndex - 1, toIndex).map(mapperForLast));
+            final Iterator<T> iter = new SkippableObjIterator<T>() {
+                private int last = toIndex - 1;
+                private int cursor = fromIndex;
+
+                @Override
+                public boolean hasNext() {
+                    return cursor < toIndex;
+                }
+
+                @Override
+                public T next() {
+                    if (cursor >= toIndex) {
+                        throw new NoSuchElementException();
+                    }
+
+                    if (cursor == last) {
+                        return mapperForLast.apply(elements[cursor++]);
+                    } else {
+                        return elements[cursor++];
+                    }
+                }
+
+                @Override
+                public long count() {
+                    return toIndex - cursor;
+                }
+
+                @Override
+                public void skip(long n) {
+                    cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+                }
+
+                @Override
+                public <A> A[] toArray(A[] a) {
+                    a = a.length >= toIndex - cursor ? a : (A[]) N.newArray(a.getClass().getComponentType(), toIndex - cursor);
+
+                    for (int i = 0, len = toIndex - cursor; i < len; i++) {
+                        if (cursor == last) {
+                            a[i] = (A) mapperForLast.apply(elements[cursor++]);
+                        } else {
+                            a[i] = (A) elements[cursor++];
+                        }
+                    }
+
+                    return a;
+                }
+            };
+
+            return new ParallelIteratorStream<>(iter, closeHandlers, false, null, maxThreadNum, splitor);
         }
     }
 
@@ -614,17 +697,17 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     public CharStream mapToChar(final ToCharFunction<? super T> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorCharStream(sequential().mapToChar(mapper).exIterator(), closeHandlers, false, maxThreadNum, splitor);
+            return new ParallelIteratorCharStream(sequential().mapToChar(mapper).skippableIterator(), closeHandlers, false, maxThreadNum, splitor);
         }
 
-        final List<ExIterator<Character>> iters = new ArrayList<>(maxThreadNum);
+        final List<SkippableObjIterator<Character>> iters = new ArrayList<>(maxThreadNum);
 
         if (splitor == Splitor.ARRAY) {
             final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
-                iters.add(new ExIterator<Character>() {
+                iters.add(new SkippableObjIterator<Character>() {
                     private int cursor = fromIndex + sliceIndex * sliceSize;
                     private final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
 
@@ -647,7 +730,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                iters.add(new ExIterator<Character>() {
+                iters.add(new SkippableObjIterator<Character>() {
                     private Object next = NONE;
 
                     @Override
@@ -683,17 +766,17 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     public ByteStream mapToByte(final ToByteFunction<? super T> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorByteStream(sequential().mapToByte(mapper).exIterator(), closeHandlers, false, maxThreadNum, splitor);
+            return new ParallelIteratorByteStream(sequential().mapToByte(mapper).skippableIterator(), closeHandlers, false, maxThreadNum, splitor);
         }
 
-        final List<ExIterator<Byte>> iters = new ArrayList<>(maxThreadNum);
+        final List<SkippableObjIterator<Byte>> iters = new ArrayList<>(maxThreadNum);
 
         if (splitor == Splitor.ARRAY) {
             final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
-                iters.add(new ExIterator<Byte>() {
+                iters.add(new SkippableObjIterator<Byte>() {
                     private int cursor = fromIndex + sliceIndex * sliceSize;
                     private final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
 
@@ -716,7 +799,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                iters.add(new ExIterator<Byte>() {
+                iters.add(new SkippableObjIterator<Byte>() {
                     private Object next = NONE;
 
                     @Override
@@ -752,17 +835,17 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     public ShortStream mapToShort(final ToShortFunction<? super T> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorShortStream(sequential().mapToShort(mapper).exIterator(), closeHandlers, false, maxThreadNum, splitor);
+            return new ParallelIteratorShortStream(sequential().mapToShort(mapper).skippableIterator(), closeHandlers, false, maxThreadNum, splitor);
         }
 
-        final List<ExIterator<Short>> iters = new ArrayList<>(maxThreadNum);
+        final List<SkippableObjIterator<Short>> iters = new ArrayList<>(maxThreadNum);
 
         if (splitor == Splitor.ARRAY) {
             final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
-                iters.add(new ExIterator<Short>() {
+                iters.add(new SkippableObjIterator<Short>() {
                     private int cursor = fromIndex + sliceIndex * sliceSize;
                     private final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
 
@@ -785,7 +868,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                iters.add(new ExIterator<Short>() {
+                iters.add(new SkippableObjIterator<Short>() {
                     private Object next = NONE;
 
                     @Override
@@ -821,17 +904,17 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     public IntStream mapToInt(final ToIntFunction<? super T> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorIntStream(sequential().mapToInt(mapper).exIterator(), closeHandlers, false, maxThreadNum, splitor);
+            return new ParallelIteratorIntStream(sequential().mapToInt(mapper).skippableIterator(), closeHandlers, false, maxThreadNum, splitor);
         }
 
-        final List<ExIterator<Integer>> iters = new ArrayList<>(maxThreadNum);
+        final List<SkippableObjIterator<Integer>> iters = new ArrayList<>(maxThreadNum);
 
         if (splitor == Splitor.ARRAY) {
             final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
-                iters.add(new ExIterator<Integer>() {
+                iters.add(new SkippableObjIterator<Integer>() {
                     private int cursor = fromIndex + sliceIndex * sliceSize;
                     private final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
 
@@ -854,7 +937,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                iters.add(new ExIterator<Integer>() {
+                iters.add(new SkippableObjIterator<Integer>() {
                     private Object next = NONE;
 
                     @Override
@@ -890,17 +973,17 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     public LongStream mapToLong(final ToLongFunction<? super T> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorLongStream(sequential().mapToLong(mapper).exIterator(), closeHandlers, false, maxThreadNum, splitor);
+            return new ParallelIteratorLongStream(sequential().mapToLong(mapper).skippableIterator(), closeHandlers, false, maxThreadNum, splitor);
         }
 
-        final List<ExIterator<Long>> iters = new ArrayList<>(maxThreadNum);
+        final List<SkippableObjIterator<Long>> iters = new ArrayList<>(maxThreadNum);
 
         if (splitor == Splitor.ARRAY) {
             final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
-                iters.add(new ExIterator<Long>() {
+                iters.add(new SkippableObjIterator<Long>() {
                     private int cursor = fromIndex + sliceIndex * sliceSize;
                     private final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
 
@@ -923,7 +1006,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                iters.add(new ExIterator<Long>() {
+                iters.add(new SkippableObjIterator<Long>() {
                     private Object next = NONE;
 
                     @Override
@@ -959,17 +1042,17 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     public FloatStream mapToFloat(final ToFloatFunction<? super T> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorFloatStream(sequential().mapToFloat(mapper).exIterator(), closeHandlers, false, maxThreadNum, splitor);
+            return new ParallelIteratorFloatStream(sequential().mapToFloat(mapper).skippableIterator(), closeHandlers, false, maxThreadNum, splitor);
         }
 
-        final List<ExIterator<Float>> iters = new ArrayList<>(maxThreadNum);
+        final List<SkippableObjIterator<Float>> iters = new ArrayList<>(maxThreadNum);
 
         if (splitor == Splitor.ARRAY) {
             final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
-                iters.add(new ExIterator<Float>() {
+                iters.add(new SkippableObjIterator<Float>() {
                     private int cursor = fromIndex + sliceIndex * sliceSize;
                     private final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
 
@@ -992,7 +1075,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                iters.add(new ExIterator<Float>() {
+                iters.add(new SkippableObjIterator<Float>() {
                     private Object next = NONE;
 
                     @Override
@@ -1028,17 +1111,17 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     public DoubleStream mapToDouble(final ToDoubleFunction<? super T> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorDoubleStream(sequential().mapToDouble(mapper).exIterator(), closeHandlers, false, maxThreadNum, splitor);
+            return new ParallelIteratorDoubleStream(sequential().mapToDouble(mapper).skippableIterator(), closeHandlers, false, maxThreadNum, splitor);
         }
 
-        final List<ExIterator<Double>> iters = new ArrayList<>(maxThreadNum);
+        final List<SkippableObjIterator<Double>> iters = new ArrayList<>(maxThreadNum);
 
         if (splitor == Splitor.ARRAY) {
             final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
-                iters.add(new ExIterator<Double>() {
+                iters.add(new SkippableObjIterator<Double>() {
                     private int cursor = fromIndex + sliceIndex * sliceSize;
                     private final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
 
@@ -1061,7 +1144,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                iters.add(new ExIterator<Double>() {
+                iters.add(new SkippableObjIterator<Double>() {
                     private Object next = NONE;
 
                     @Override
@@ -1107,7 +1190,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
-                iters.add(new ExIterator<R>() {
+                iters.add(new SkippableObjIterator<R>() {
                     private int cursor = fromIndex + sliceIndex * sliceSize;
                     private final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
                     private Iterator<? extends R> cur = null;
@@ -1135,7 +1218,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                iters.add(new ExIterator<R>() {
+                iters.add(new SkippableObjIterator<R>() {
                     private T next = null;
                     private Iterator<? extends R> cur = null;
 
@@ -1175,7 +1258,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     CharStream flatMapToChar0(final Function<? super T, CharIterator> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorCharStream(((ArrayStream<T>) sequential()).flatMapToChar0(mapper).exIterator(), closeHandlers, false, maxThreadNum,
+            return new ParallelIteratorCharStream(((ArrayStream<T>) sequential()).flatMapToChar0(mapper).skippableIterator(), closeHandlers, false, maxThreadNum,
                     splitor);
         }
 
@@ -1186,7 +1269,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
-                iters.add(new ExIterator<Character>() {
+                iters.add(new SkippableObjIterator<Character>() {
                     private int cursor = fromIndex + sliceIndex * sliceSize;
                     private final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
                     private CharIterator cur = null;
@@ -1214,7 +1297,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                iters.add(new ExIterator<Character>() {
+                iters.add(new SkippableObjIterator<Character>() {
                     private T next = null;
                     private CharIterator cur = null;
 
@@ -1254,7 +1337,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     ByteStream flatMapToByte0(final Function<? super T, ByteIterator> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorByteStream(((ArrayStream<T>) sequential()).flatMapToByte0(mapper).exIterator(), closeHandlers, false, maxThreadNum,
+            return new ParallelIteratorByteStream(((ArrayStream<T>) sequential()).flatMapToByte0(mapper).skippableIterator(), closeHandlers, false, maxThreadNum,
                     splitor);
         }
 
@@ -1265,7 +1348,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
-                iters.add(new ExIterator<Byte>() {
+                iters.add(new SkippableObjIterator<Byte>() {
                     private int cursor = fromIndex + sliceIndex * sliceSize;
                     private final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
                     private ByteIterator cur = null;
@@ -1293,7 +1376,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                iters.add(new ExIterator<Byte>() {
+                iters.add(new SkippableObjIterator<Byte>() {
                     private T next = null;
                     private ByteIterator cur = null;
 
@@ -1333,7 +1416,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     ShortStream flatMapToShort0(final Function<? super T, ShortIterator> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorShortStream(((ArrayStream<T>) sequential()).flatMapToShort0(mapper).exIterator(), closeHandlers, false, maxThreadNum,
+            return new ParallelIteratorShortStream(((ArrayStream<T>) sequential()).flatMapToShort0(mapper).skippableIterator(), closeHandlers, false, maxThreadNum,
                     splitor);
         }
 
@@ -1344,7 +1427,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
-                iters.add(new ExIterator<Short>() {
+                iters.add(new SkippableObjIterator<Short>() {
                     private int cursor = fromIndex + sliceIndex * sliceSize;
                     private final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
                     private ShortIterator cur = null;
@@ -1372,7 +1455,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                iters.add(new ExIterator<Short>() {
+                iters.add(new SkippableObjIterator<Short>() {
                     private T next = null;
                     private ShortIterator cur = null;
 
@@ -1412,7 +1495,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     IntStream flatMapToInt0(final Function<? super T, IntIterator> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorIntStream(((ArrayStream<T>) sequential()).flatMapToInt0(mapper).exIterator(), closeHandlers, false, maxThreadNum,
+            return new ParallelIteratorIntStream(((ArrayStream<T>) sequential()).flatMapToInt0(mapper).skippableIterator(), closeHandlers, false, maxThreadNum,
                     splitor);
         }
 
@@ -1423,7 +1506,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
-                iters.add(new ExIterator<Integer>() {
+                iters.add(new SkippableObjIterator<Integer>() {
                     private int cursor = fromIndex + sliceIndex * sliceSize;
                     private final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
                     private IntIterator cur = null;
@@ -1451,7 +1534,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                iters.add(new ExIterator<Integer>() {
+                iters.add(new SkippableObjIterator<Integer>() {
                     private T next = null;
                     private IntIterator cur = null;
 
@@ -1491,7 +1574,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     LongStream flatMapToLong0(final Function<? super T, LongIterator> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorLongStream(((ArrayStream<T>) sequential()).flatMapToLong0(mapper).exIterator(), closeHandlers, false, maxThreadNum,
+            return new ParallelIteratorLongStream(((ArrayStream<T>) sequential()).flatMapToLong0(mapper).skippableIterator(), closeHandlers, false, maxThreadNum,
                     splitor);
         }
 
@@ -1502,7 +1585,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
-                iters.add(new ExIterator<Long>() {
+                iters.add(new SkippableObjIterator<Long>() {
                     private int cursor = fromIndex + sliceIndex * sliceSize;
                     private final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
                     private LongIterator cur = null;
@@ -1530,7 +1613,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                iters.add(new ExIterator<Long>() {
+                iters.add(new SkippableObjIterator<Long>() {
                     private T next = null;
                     private LongIterator cur = null;
 
@@ -1570,7 +1653,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     FloatStream flatMapToFloat0(final Function<? super T, FloatIterator> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorFloatStream(((ArrayStream<T>) sequential()).flatMapToFloat0(mapper).exIterator(), closeHandlers, false, maxThreadNum,
+            return new ParallelIteratorFloatStream(((ArrayStream<T>) sequential()).flatMapToFloat0(mapper).skippableIterator(), closeHandlers, false, maxThreadNum,
                     splitor);
         }
 
@@ -1581,7 +1664,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
-                iters.add(new ExIterator<Float>() {
+                iters.add(new SkippableObjIterator<Float>() {
                     private int cursor = fromIndex + sliceIndex * sliceSize;
                     private final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
                     private FloatIterator cur = null;
@@ -1609,7 +1692,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                iters.add(new ExIterator<Float>() {
+                iters.add(new SkippableObjIterator<Float>() {
                     private T next = null;
                     private FloatIterator cur = null;
 
@@ -1649,7 +1732,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     DoubleStream flatMapToDouble0(final Function<? super T, DoubleIterator> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorDoubleStream(((ArrayStream<T>) sequential()).flatMapToDouble0(mapper).exIterator(), closeHandlers, false, maxThreadNum,
+            return new ParallelIteratorDoubleStream(((ArrayStream<T>) sequential()).flatMapToDouble0(mapper).skippableIterator(), closeHandlers, false, maxThreadNum,
                     splitor);
         }
 
@@ -1660,7 +1743,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
-                iters.add(new ExIterator<Double>() {
+                iters.add(new SkippableObjIterator<Double>() {
                     private int cursor = fromIndex + sliceIndex * sliceSize;
                     private final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
                     private DoubleIterator cur = null;
@@ -1688,7 +1771,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                iters.add(new ExIterator<Double>() {
+                iters.add(new SkippableObjIterator<Double>() {
                     private T next = null;
                     private DoubleIterator cur = null;
 
@@ -1739,7 +1822,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
         final MutableInt curIndex = MutableInt.of(fromIndex);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            iters.add(new ExIterator<R>() {
+            iters.add(new SkippableObjIterator<R>() {
                 private int cursor = -1;
 
                 @Override
@@ -1786,7 +1869,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
         final MutableInt curIndex = MutableInt.of(fromIndex);
 
         for (int i = 0; i < maxThreadNum; i++) {
-            iters.add(new ExIterator<R>() {
+            iters.add(new SkippableObjIterator<R>() {
                 private int cursor = -1;
 
                 @Override
@@ -1957,7 +2040,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 final int sliceIndex = i;
-                iters.add(new ExIterator<T>() {
+                iters.add(new SkippableObjIterator<T>() {
                     private int cursor = fromIndex + sliceIndex * sliceSize;
                     private final int to = toIndex - cursor > sliceSize ? cursor + sliceSize : toIndex;
 
@@ -1982,7 +2065,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
             for (int i = 0; i < maxThreadNum; i++) {
-                iters.add(new ExIterator<T>() {
+                iters.add(new SkippableObjIterator<T>() {
                     private Object next = NONE;
 
                     @Override

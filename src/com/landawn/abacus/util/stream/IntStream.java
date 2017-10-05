@@ -684,10 +684,10 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
 
     @Override
     public IntIterator iterator() {
-        return exIterator();
+        return skippableIterator();
     }
 
-    abstract ExIntIterator exIterator();
+    abstract SkippableIntIterator skippableIterator();
 
     @Override
     public <R> R __(Function<? super IntStream, R> transfer) {
@@ -729,8 +729,49 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
         return iterator == null ? empty() : new IteratorIntStream(iterator);
     }
 
+    /**
+     * Lazy evaluation.
+     * @param supplier
+     * @return
+     */
+    public static IntStream of(final Supplier<IntList> supplier) {
+        final IntIterator iter = new SkippableIntIterator() {
+            private IntIterator iterator = null;
+
+            @Override
+            public boolean hasNext() {
+                if (iterator == null) {
+                    init();
+                }
+
+                return iterator.hasNext();
+            }
+
+            @Override
+            public int nextInt() {
+                if (iterator == null) {
+                    init();
+                }
+
+                return iterator.nextInt();
+            }
+
+            private void init() {
+                final IntList c = supplier.get();
+
+                if (N.isNullOrEmpty(c)) {
+                    iterator = IntIterator.empty();
+                } else {
+                    iterator = c.iterator();
+                }
+            }
+        };
+
+        return of(iter);
+    }
+
     public static IntStream of(final java.util.stream.IntStream stream) {
-        return of(new ExIntIterator() {
+        return of(new SkippableIntIterator() {
             private PrimitiveIterator.OfInt iter = null;
 
             @Override
@@ -753,22 +794,21 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
 
             @Override
             public long count() {
-                final long result = stream.count();
-                iter = null;
-                return result;
+                return iter == null ? stream.count() : super.count();
             }
 
             @Override
             public void skip(long n) {
-                stream.skip(n);
-                iter = null;
+                if (iter == null) {
+                    iter = stream.skip(n).iterator();
+                } else {
+                    super.skip(n);
+                }
             }
 
             @Override
             public int[] toArray() {
-                final int[] result = stream.toArray();
-                iter = null;
-                return result;
+                return iter == null ? stream.toArray() : super.toArray();
             }
         });
     }
@@ -785,7 +825,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
             return empty();
         }
 
-        return new IteratorIntStream(new ExIntIterator() {
+        return new IteratorIntStream(new SkippableIntIterator() {
             private int cursor = fromIndex;
 
             @Override
@@ -837,7 +877,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
             return empty();
         }
 
-        return new IteratorIntStream(new ExIntIterator() {
+        return new IteratorIntStream(new SkippableIntIterator() {
             private int cursor = fromIndex;
 
             @Override
@@ -889,7 +929,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
             return empty();
         }
 
-        return new IteratorIntStream(new ExIntIterator() {
+        return new IteratorIntStream(new SkippableIntIterator() {
             private int cursor = fromIndex;
 
             @Override
@@ -934,7 +974,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
             return empty();
         }
 
-        return new IteratorIntStream(new ExIntIterator() {
+        return new IteratorIntStream(new SkippableIntIterator() {
             private int next = startInclusive;
             private long cnt = endExclusive * 1L - startInclusive;
 
@@ -987,7 +1027,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
             return empty();
         }
 
-        return new IteratorIntStream(new ExIntIterator() {
+        return new IteratorIntStream(new SkippableIntIterator() {
             private int next = startInclusive;
             private long cnt = (endExclusive * 1L - startInclusive) / by + ((endExclusive * 1L - startInclusive) % by == 0 ? 0 : 1);
 
@@ -1040,7 +1080,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
             return of(startInclusive);
         }
 
-        return new IteratorIntStream(new ExIntIterator() {
+        return new IteratorIntStream(new SkippableIntIterator() {
             private int next = startInclusive;
             private long cnt = endInclusive * 1L - startInclusive + 1;
 
@@ -1095,7 +1135,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
             return empty();
         }
 
-        return new IteratorIntStream(new ExIntIterator() {
+        return new IteratorIntStream(new SkippableIntIterator() {
             private int next = startInclusive;
             private long cnt = (endInclusive * 1L - startInclusive) / by + 1;
 
@@ -1148,7 +1188,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
             return empty();
         }
 
-        return new IteratorIntStream(new ExIntIterator() {
+        return new IteratorIntStream(new SkippableIntIterator() {
             private long cnt = n;
 
             @Override
@@ -1229,7 +1269,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
         N.requireNonNull(hasNext);
         N.requireNonNull(next);
 
-        return new IteratorIntStream(new ExIntIterator() {
+        return new IteratorIntStream(new SkippableIntIterator() {
             private boolean hasNextVal = false;
 
             @Override
@@ -1257,7 +1297,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
         N.requireNonNull(hasNext);
         N.requireNonNull(f);
 
-        return new IteratorIntStream(new ExIntIterator() {
+        return new IteratorIntStream(new SkippableIntIterator() {
             private int t = 0;
             private boolean isFirst = true;
             private boolean hasNextVal = false;
@@ -1302,7 +1342,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
         N.requireNonNull(hasNext);
         N.requireNonNull(f);
 
-        return new IteratorIntStream(new ExIntIterator() {
+        return new IteratorIntStream(new SkippableIntIterator() {
             private int t = 0;
             private int cur = 0;
             private boolean isFirst = true;
@@ -1343,7 +1383,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
     public static IntStream iterate(final int seed, final IntUnaryOperator f) {
         N.requireNonNull(f);
 
-        return new IteratorIntStream(new ExIntIterator() {
+        return new IteratorIntStream(new SkippableIntIterator() {
             private int t = 0;
             private boolean isFirst = true;
 
@@ -1369,7 +1409,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
     public static IntStream generate(final IntSupplier s) {
         N.requireNonNull(s);
 
-        return new IteratorIntStream(new ExIntIterator() {
+        return new IteratorIntStream(new SkippableIntIterator() {
             @Override
             public boolean hasNext() {
                 return true;
@@ -1384,14 +1424,14 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
 
     @SafeVarargs
     public static IntStream concat(final int[]... a) {
-        return N.isNullOrEmpty(a) ? empty() : new IteratorIntStream(new ExIntIterator() {
+        return N.isNullOrEmpty(a) ? empty() : new IteratorIntStream(new SkippableIntIterator() {
             private final Iterator<int[]> iter = N.asList(a).iterator();
             private IntIterator cur;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
-                    cur = ExIntIterator.of(iter.next());
+                    cur = SkippableIntIterator.of(iter.next());
                 }
 
                 return cur != null && cur.hasNext();
@@ -1410,7 +1450,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
 
     @SafeVarargs
     public static IntStream concat(final IntIterator... a) {
-        return N.isNullOrEmpty(a) ? empty() : new IteratorIntStream(new ExIntIterator() {
+        return N.isNullOrEmpty(a) ? empty() : new IteratorIntStream(new SkippableIntIterator() {
             private final Iterator<? extends IntIterator> iter = N.asList(a).iterator();
             private IntIterator cur;
 
@@ -1440,14 +1480,14 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
     }
 
     public static IntStream concat(final Collection<? extends IntStream> c) {
-        return N.isNullOrEmpty(c) ? empty() : new IteratorIntStream(new ExIntIterator() {
+        return N.isNullOrEmpty(c) ? empty() : new IteratorIntStream(new SkippableIntIterator() {
             private final Iterator<? extends IntStream> iter = c.iterator();
             private IntIterator cur;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
-                    cur = iter.next().exIterator();
+                    cur = iter.next().skippableIterator();
                 }
 
                 return cur != null && cur.hasNext();
@@ -1676,7 +1716,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
             return of(a);
         }
 
-        return new IteratorIntStream(new ExIntIterator() {
+        return new IteratorIntStream(new SkippableIntIterator() {
             private final int lenA = a.length;
             private final int lenB = b.length;
             private int cursorA = 0;
@@ -1717,7 +1757,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      * @return
      */
     public static IntStream merge(final int[] a, final int[] b, final int[] c, final IntBiFunction<Nth> nextSelector) {
-        return merge(merge(a, b, nextSelector).exIterator(), IntStream.of(c).exIterator(), nextSelector);
+        return merge(merge(a, b, nextSelector).skippableIterator(), IntStream.of(c).skippableIterator(), nextSelector);
     }
 
     /**
@@ -1734,7 +1774,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
             return of(a);
         }
 
-        return new IteratorIntStream(new ExIntIterator() {
+        return new IteratorIntStream(new SkippableIntIterator() {
             private int nextA = 0;
             private int nextB = 0;
             private boolean hasNextA = false;
@@ -1803,7 +1843,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      * @return
      */
     public static IntStream merge(final IntIterator a, final IntIterator b, final IntIterator c, final IntBiFunction<Nth> nextSelector) {
-        return merge(merge(a, b, nextSelector).exIterator(), c, nextSelector);
+        return merge(merge(a, b, nextSelector).skippableIterator(), c, nextSelector);
     }
 
     /**
@@ -1814,7 +1854,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      * @return
      */
     public static IntStream merge(final IntStream a, final IntStream b, final IntBiFunction<Nth> nextSelector) {
-        return merge(a.exIterator(), b.exIterator(), nextSelector).onClose(newCloseHandler(N.asList(a, b)));
+        return merge(a.skippableIterator(), b.skippableIterator(), nextSelector).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -1846,10 +1886,10 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
         }
 
         final Iterator<? extends IntStream> iter = c.iterator();
-        IntStream result = merge(iter.next().exIterator(), iter.next().exIterator(), nextSelector);
+        IntStream result = merge(iter.next().skippableIterator(), iter.next().skippableIterator(), nextSelector);
 
         while (iter.hasNext()) {
-            result = merge(result.exIterator(), iter.next().exIterator(), nextSelector);
+            result = merge(result.skippableIterator(), iter.next().skippableIterator(), nextSelector);
         }
 
         return result.onClose(newCloseHandler(c));
@@ -1891,7 +1931,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
         final Queue<IntIterator> queue = N.newLinkedList();
 
         for (IntStream e : c) {
-            queue.add(e.exIterator());
+            queue.add(e.skippableIterator());
         }
 
         final Holder<Throwable> eHolder = new Holder<>();
@@ -1919,7 +1959,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
                                 }
                             }
 
-                            c = ExIntIterator.of(merge(a, b, nextSelector).toArray());
+                            c = SkippableIntIterator.of(merge(a, b, nextSelector).toArray());
 
                             synchronized (queue) {
                                 queue.offer(c);

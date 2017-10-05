@@ -794,32 +794,32 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
         return max > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) max;
     }
 
-    static ExCharIterator charIterator(final ExIterator<Character> iter) {
-        return ExCharIterator.oF(iter);
+    static SkippableCharIterator charIterator(final SkippableObjIterator<Character> iter) {
+        return SkippableCharIterator.from(iter);
     }
 
-    static ExByteIterator byteIterator(final ExIterator<Byte> iter) {
-        return ExByteIterator.oF(iter);
+    static SkippableByteIterator byteIterator(final SkippableObjIterator<Byte> iter) {
+        return SkippableByteIterator.from(iter);
     }
 
-    static ExShortIterator shortIterator(final ExIterator<Short> iter) {
-        return ExShortIterator.oF(iter);
+    static SkippableShortIterator shortIterator(final SkippableObjIterator<Short> iter) {
+        return SkippableShortIterator.from(iter);
     }
 
-    static ExIntIterator intIterator(final ExIterator<Integer> iter) {
-        return ExIntIterator.oF(iter);
+    static SkippableIntIterator intIterator(final SkippableObjIterator<Integer> iter) {
+        return SkippableIntIterator.from(iter);
     }
 
-    static ExLongIterator longIterator(final ExIterator<Long> iter) {
-        return ExLongIterator.oF(iter);
+    static SkippableLongIterator longIterator(final SkippableObjIterator<Long> iter) {
+        return SkippableLongIterator.from(iter);
     }
 
-    static ExFloatIterator floatIterator(final ExIterator<Float> iter) {
-        return ExFloatIterator.oF(iter);
+    static SkippableFloatIterator floatIterator(final SkippableObjIterator<Float> iter) {
+        return SkippableFloatIterator.from(iter);
     }
 
-    static ExDoubleIterator doubleIterator(final ExIterator<Double> iter) {
-        return ExDoubleIterator.oF(iter);
+    static SkippableDoubleIterator doubleIterator(final SkippableObjIterator<Double> iter) {
+        return SkippableDoubleIterator.from(iter);
     }
 
     static Runnable newCloseHandler(final Collection<? extends StreamBase<?, ?, ?, ?, ?, ?, ?, ?>> c) {

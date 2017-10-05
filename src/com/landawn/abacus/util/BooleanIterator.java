@@ -68,6 +68,16 @@ public abstract class BooleanIterator extends ImmutableIterator<Boolean> {
 
                 return a[cursor++];
             }
+
+            @Override
+            public boolean[] toArray() {
+                return N.copyOfRange(a, cursor, toIndex);
+            }
+
+            @Override
+            public BooleanList toList() {
+                return BooleanList.of(N.copyOfRange(a, cursor, toIndex));
+            }
         };
     }
 
@@ -82,6 +92,20 @@ public abstract class BooleanIterator extends ImmutableIterator<Boolean> {
     }
 
     public abstract boolean nextBoolean();
+
+    public boolean[] toArray() {
+        return toList().trimToSize().array();
+    }
+
+    public BooleanList toList() {
+        final BooleanList list = new BooleanList();
+
+        while (hasNext()) {
+            list.add(nextBoolean());
+        }
+
+        return list;
+    }
 
     public void forEachRemaining(BooleanConsumer action) {
         N.requireNonNull(action);

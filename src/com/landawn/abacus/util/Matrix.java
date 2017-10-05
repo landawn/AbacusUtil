@@ -36,7 +36,7 @@ import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.function.ToShortFunction;
 import com.landawn.abacus.util.function.TriFunction;
 import com.landawn.abacus.util.function.UnaryOperator;
-import com.landawn.abacus.util.stream.ExIterator;
+import com.landawn.abacus.util.stream.SkippableObjIterator;
 import com.landawn.abacus.util.stream.IntStream;
 import com.landawn.abacus.util.stream.Stream;
 
@@ -1331,7 +1331,7 @@ public final class Matrix<T> extends AbstractMatrix<T[], List<T>, Stream<T>, Str
             return Stream.empty();
         }
 
-        return Stream.of(new ExIterator<T>() {
+        return Stream.of(new SkippableObjIterator<T>() {
             private final int toIndex = rows;
             private int cursor = 0;
 
@@ -1373,7 +1373,7 @@ public final class Matrix<T> extends AbstractMatrix<T[], List<T>, Stream<T>, Str
             return Stream.empty();
         }
 
-        return Stream.of(new ExIterator<T>() {
+        return Stream.of(new SkippableObjIterator<T>() {
             private final int toIndex = rows;
             private int cursor = 0;
 
@@ -1431,7 +1431,7 @@ public final class Matrix<T> extends AbstractMatrix<T[], List<T>, Stream<T>, Str
             return Stream.empty();
         }
 
-        return Stream.of(new ExIterator<T>() {
+        return Stream.of(new SkippableObjIterator<T>() {
             private int i = fromRowIndex;
             private int j = 0;
 
@@ -1524,7 +1524,7 @@ public final class Matrix<T> extends AbstractMatrix<T[], List<T>, Stream<T>, Str
             return Stream.empty();
         }
 
-        return Stream.of(new ExIterator<T>() {
+        return Stream.of(new SkippableObjIterator<T>() {
             private int i = 0;
             private int j = fromColumnIndex;
 
@@ -1610,7 +1610,7 @@ public final class Matrix<T> extends AbstractMatrix<T[], List<T>, Stream<T>, Str
             return Stream.empty();
         }
 
-        return Stream.of(new ExIterator<Stream<T>>() {
+        return Stream.of(new SkippableObjIterator<Stream<T>>() {
             private final int toIndex = toRowIndex;
             private int cursor = fromRowIndex;
 
@@ -1665,7 +1665,7 @@ public final class Matrix<T> extends AbstractMatrix<T[], List<T>, Stream<T>, Str
             return Stream.empty();
         }
 
-        return Stream.of(new ExIterator<Stream<T>>() {
+        return Stream.of(new SkippableObjIterator<Stream<T>>() {
             private final int toIndex = toColumnIndex;
             private volatile int cursor = fromColumnIndex;
 
@@ -1680,7 +1680,7 @@ public final class Matrix<T> extends AbstractMatrix<T[], List<T>, Stream<T>, Str
                     throw new NoSuchElementException();
                 }
 
-                return Stream.of(new ExIterator<T>() {
+                return Stream.of(new SkippableObjIterator<T>() {
                     private final int columnIndex = cursor++;
                     private final int toIndex2 = rows;
                     private int cursor2 = 0;

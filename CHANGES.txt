@@ -9,13 +9,15 @@
 
 4*, Remove IOUtil.listDirectories(parentPath, recursively, filter).
 
-5, Add Stream<File> Stream.list(...).
+5, Add IntStream/.../Stream.of(Supplier<Collection<? extends T>) for lazy evaluation.
 
-6, Add Fn.wrap(...).
+6, Add Stream<File> Stream.list(...).
 
-7, Add SQLBuilder/CQLBuilder.apply(..).
+7, Add Fn.wrap(...).
 
-8, Improvements and bug fix.
+8, Add SQLBuilder/CQLBuilder.apply(..).
+
+9, Improvements and bug fix.
 
 
 ﻿========Changes in 1.0.1 =========================================================================

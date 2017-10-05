@@ -89,7 +89,7 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public ByteStream filter(final BytePredicate predicate) {
-        return new IteratorByteStream(new ExByteIterator() {
+        return new IteratorByteStream(new SkippableByteIterator() {
             private boolean hasNext = false;
             private int cursor = fromIndex;
 
@@ -122,7 +122,7 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public ByteStream takeWhile(final BytePredicate predicate) {
-        return new IteratorByteStream(new ExByteIterator() {
+        return new IteratorByteStream(new SkippableByteIterator() {
             private boolean hasMore = true;
             private boolean hasNext = false;
             private int cursor = fromIndex;
@@ -155,7 +155,7 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public ByteStream dropWhile(final BytePredicate predicate) {
-        return new IteratorByteStream(new ExByteIterator() {
+        return new IteratorByteStream(new SkippableByteIterator() {
             private boolean hasNext = false;
             private int cursor = fromIndex;
             private boolean dropped = false;
@@ -195,7 +195,7 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public ByteStream map(final ByteUnaryOperator mapper) {
-        return new IteratorByteStream(new ExByteIterator() {
+        return new IteratorByteStream(new SkippableByteIterator() {
             int cursor = fromIndex;
 
             @Override
@@ -237,7 +237,7 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public IntStream mapToInt(final ByteToIntFunction mapper) {
-        return new IteratorIntStream(new ExIntIterator() {
+        return new IteratorIntStream(new SkippableIntIterator() {
             int cursor = fromIndex;
 
             @Override
@@ -279,7 +279,7 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public <U> Stream<U> mapToObj(final ByteFunction<? extends U> mapper) {
-        return new IteratorStream<U>(new ExIterator<U>() {
+        return new IteratorStream<U>(new SkippableObjIterator<U>() {
             int cursor = fromIndex;
 
             @Override
@@ -321,14 +321,14 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public ByteStream flatMap(final ByteFunction<? extends ByteStream> mapper) {
-        return new IteratorByteStream(new ExByteIterator() {
+        return new IteratorByteStream(new SkippableByteIterator() {
             private int cursor = fromIndex;
             private ByteIterator cur = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && cursor < toIndex) {
-                    cur = mapper.apply(elements[cursor++]).exIterator();
+                    cur = mapper.apply(elements[cursor++]).skippableIterator();
                 }
 
                 return cur != null && cur.hasNext();
@@ -347,14 +347,14 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public IntStream flatMapToInt(final ByteFunction<? extends IntStream> mapper) {
-        return new IteratorIntStream(new ExIntIterator() {
+        return new IteratorIntStream(new SkippableIntIterator() {
             private int cursor = fromIndex;
             private IntIterator cur = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && cursor < toIndex) {
-                    cur = mapper.apply(elements[cursor++]).exIterator();
+                    cur = mapper.apply(elements[cursor++]).skippableIterator();
                 }
 
                 return cur != null && cur.hasNext();
@@ -373,7 +373,7 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public <T> Stream<T> flatMapToObj(final ByteFunction<? extends Stream<T>> mapper) {
-        return new IteratorStream<T>(new ExIterator<T>() {
+        return new IteratorStream<T>(new SkippableObjIterator<T>() {
             private int cursor = fromIndex;
             private Iterator<? extends T> cur = null;
 
@@ -401,7 +401,7 @@ class ArrayByteStream extends AbstractByteStream {
     public Stream<ByteStream> split(final int size) {
         N.checkArgument(size > 0, "'size' must be bigger than 0");
 
-        return new IteratorStream<ByteStream>(new ExIterator<ByteStream>() {
+        return new IteratorStream<ByteStream>(new SkippableObjIterator<ByteStream>() {
             private int cursor = fromIndex;
 
             @Override
@@ -424,7 +424,7 @@ class ArrayByteStream extends AbstractByteStream {
     public Stream<ByteList> splitToList(final int size) {
         N.checkArgument(size > 0, "'size' must be bigger than 0");
 
-        return new IteratorStream<ByteList>(new ExIterator<ByteList>() {
+        return new IteratorStream<ByteList>(new SkippableObjIterator<ByteList>() {
             private int cursor = fromIndex;
 
             @Override
@@ -446,7 +446,7 @@ class ArrayByteStream extends AbstractByteStream {
     @Override
     public <U> Stream<ByteStream> split(final U identity, final BiFunction<? super Byte, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
-        return new IteratorStream<ByteStream>(new ExIterator<ByteStream>() {
+        return new IteratorStream<ByteStream>(new SkippableObjIterator<ByteStream>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
 
@@ -486,7 +486,7 @@ class ArrayByteStream extends AbstractByteStream {
     @Override
     public <U> Stream<ByteList> splitToList(final U identity, final BiFunction<? super Byte, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
-        return new IteratorStream<ByteList>(new ExIterator<ByteList>() {
+        return new IteratorStream<ByteList>(new SkippableObjIterator<ByteList>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
 
@@ -525,7 +525,7 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public Stream<ByteStream> split(final BytePredicate predicate) {
-        return new IteratorStream<ByteStream>(new ExIterator<ByteStream>() {
+        return new IteratorStream<ByteStream>(new SkippableObjIterator<ByteStream>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
 
@@ -560,7 +560,7 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public Stream<ByteList> splitToList(final BytePredicate predicate) {
-        return new IteratorStream<ByteList>(new ExIterator<ByteList>() {
+        return new IteratorStream<ByteList>(new SkippableObjIterator<ByteList>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
 
@@ -629,7 +629,7 @@ class ArrayByteStream extends AbstractByteStream {
     public Stream<ByteStream> sliding(final int windowSize, final int increment) {
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
-        return new IteratorStream<ByteStream>(new ExIterator<ByteStream>() {
+        return new IteratorStream<ByteStream>(new SkippableObjIterator<ByteStream>() {
             private int cursor = fromIndex;
 
             @Override
@@ -658,7 +658,7 @@ class ArrayByteStream extends AbstractByteStream {
     public Stream<ByteList> slidingToList(final int windowSize, final int increment) {
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
-        return new IteratorStream<ByteList>(new ExIterator<ByteList>() {
+        return new IteratorStream<ByteList>(new SkippableObjIterator<ByteList>() {
             private int cursor = fromIndex;
 
             @Override
@@ -695,7 +695,7 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public ByteStream peek(final ByteConsumer action) {
-        return new IteratorByteStream(new ExByteIterator() {
+        return new IteratorByteStream(new SkippableByteIterator() {
             int cursor = fromIndex;
 
             @Override
@@ -1037,7 +1037,7 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public ByteStream reversed() {
-        return new IteratorByteStream(new ExByteIterator() {
+        return new IteratorByteStream(new SkippableByteIterator() {
             private int cursor = toIndex;
 
             @Override
@@ -1144,7 +1144,7 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public IntStream asIntStream() {
-        return new IteratorIntStream(new ExIntIterator() {
+        return new IteratorIntStream(new SkippableIntIterator() {
             private int cursor = fromIndex;
 
             @Override
@@ -1195,8 +1195,8 @@ class ArrayByteStream extends AbstractByteStream {
     }
 
     @Override
-    ExByteIterator exIterator() {
-        return ExByteIterator.of(elements, fromIndex, toIndex);
+    SkippableByteIterator skippableIterator() {
+        return SkippableByteIterator.of(elements, fromIndex, toIndex);
     }
 
     @Override

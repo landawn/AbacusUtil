@@ -103,14 +103,14 @@ public final class Iterators {
         return result;
     }
 
-    public static <T> ImmutableIterator<T> repeat(final T e, final int n) {
+    public static <T> ObjIterator<T> repeat(final T e, final int n) {
         N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
 
         if (n == 0) {
-            return ImmutableIterator.empty();
+            return ObjIterator.empty();
         }
 
-        return new ImmutableIterator<T>() {
+        return new ObjIterator<T>() {
             private int cnt = n;
 
             @Override
@@ -130,14 +130,14 @@ public final class Iterators {
         };
     };
 
-    public static <T> ImmutableIterator<T> repeat(final Collection<T> c, final int n) {
+    public static <T> ObjIterator<T> repeat(final Collection<T> c, final int n) {
         N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
 
         if (N.isNullOrEmpty(c) || n == 0) {
-            return ImmutableIterator.empty();
+            return ObjIterator.empty();
         }
 
-        return new ImmutableIterator<T>() {
+        return new ObjIterator<T>() {
             private Iterator<T> iter = null;
             private int cnt = n;
 
@@ -162,15 +162,15 @@ public final class Iterators {
         };
     };
 
-    public static <T> ImmutableIterator<T> repeatToSize(final Collection<T> c, final int size) {
+    public static <T> ObjIterator<T> repeatToSize(final Collection<T> c, final int size) {
         N.checkArgument(size >= 0, "'size' can't be negative: %s", size);
         N.checkArgument(size == 0 || N.notNullOrEmpty(c), "Collection can't be empty or null when size > 0");
 
         if (N.isNullOrEmpty(c) || size == 0) {
-            return ImmutableIterator.empty();
+            return ObjIterator.empty();
         }
 
-        return new ImmutableIterator<T>() {
+        return new ObjIterator<T>() {
             private Iterator<T> iter = null;
             private int cnt = size;
 
@@ -196,14 +196,14 @@ public final class Iterators {
         };
     };
 
-    public static <T> ImmutableIterator<T> nRepeat(final Collection<T> c, final int n) {
+    public static <T> ObjIterator<T> nRepeat(final Collection<T> c, final int n) {
         N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
 
         if (N.isNullOrEmpty(c) || n == 0) {
-            return ImmutableIterator.empty();
+            return ObjIterator.empty();
         }
 
-        return new ImmutableIterator<T>() {
+        return new ObjIterator<T>() {
             private Iterator<T> iter = null;
             private T next = null;
             private int cnt = n;
@@ -234,15 +234,15 @@ public final class Iterators {
         };
     };
 
-    public static <T> ImmutableIterator<T> nRepeatToSize(final Collection<T> c, final int size) {
+    public static <T> ObjIterator<T> nRepeatToSize(final Collection<T> c, final int size) {
         N.checkArgument(size >= 0, "'size' can't be negative: %s", size);
         N.checkArgument(size == 0 || N.notNullOrEmpty(c), "Collection can't be empty or null when size > 0");
 
         if (N.isNullOrEmpty(c) || size == 0) {
-            return ImmutableIterator.empty();
+            return ObjIterator.empty();
         }
 
-        return new ImmutableIterator<T>() {
+        return new ObjIterator<T>() {
             private final int n = size / c.size();
             private int mod = size % c.size();
 
@@ -741,16 +741,16 @@ public final class Iterators {
     }
 
     @SafeVarargs
-    public static <T> ImmutableIterator<T> concat(final T[]... a) {
+    public static <T> ObjIterator<T> concat(final T[]... a) {
         if (N.isNullOrEmpty(a)) {
-            return ImmutableIterator.empty();
+            return ObjIterator.empty();
         }
 
         final List<Iterator<T>> list = new ArrayList<>(a.length);
 
         for (T[] e : a) {
             if (N.notNullOrEmpty(e)) {
-                list.add(ImmutableIterator.of(e));
+                list.add(ObjIterator.of(e));
             }
         }
 
@@ -758,9 +758,9 @@ public final class Iterators {
     }
 
     @SafeVarargs
-    public static <T> ImmutableIterator<T> concat(final Collection<? extends T>... a) {
+    public static <T> ObjIterator<T> concat(final Collection<? extends T>... a) {
         if (N.isNullOrEmpty(a)) {
-            return ImmutableIterator.EMPTY;
+            return ObjIterator.EMPTY;
         }
 
         final List<Iterator<? extends T>> list = new ArrayList<>(a.length);
@@ -775,20 +775,20 @@ public final class Iterators {
     }
 
     @SafeVarargs
-    public static <T> ImmutableIterator<T> concat(final Iterator<? extends T>... a) {
+    public static <T> ObjIterator<T> concat(final Iterator<? extends T>... a) {
         if (N.isNullOrEmpty(a)) {
-            return ImmutableIterator.EMPTY;
+            return ObjIterator.EMPTY;
         }
 
         return concat(N.asList(a));
     }
 
-    public static <T> ImmutableIterator<T> concat(final Collection<? extends Iterator<? extends T>> c) {
+    public static <T> ObjIterator<T> concat(final Collection<? extends Iterator<? extends T>> c) {
         if (N.isNullOrEmpty(c)) {
-            return ImmutableIterator.empty();
+            return ObjIterator.empty();
         }
 
-        return new ImmutableIterator<T>() {
+        return new ObjIterator<T>() {
             private final Iterator<? extends Iterator<? extends T>> iter = c.iterator();
             private Iterator<? extends T> cur;
 
@@ -812,12 +812,12 @@ public final class Iterators {
         };
     }
 
-    public static <T> ImmutableIterator<T> merge(final Iterator<? extends T> a, final Iterator<? extends T> b,
+    public static <T> ObjIterator<T> merge(final Iterator<? extends T> a, final Iterator<? extends T> b,
             final BiFunction<? super T, ? super T, Nth> nextSelector) {
 
-        return new ImmutableIterator<T>() {
-            private final Iterator<? extends T> iterA = a == null ? ImmutableIterator.EMPTY : a;
-            private final Iterator<? extends T> iterB = b == null ? ImmutableIterator.EMPTY : b;
+        return new ObjIterator<T>() {
+            private final Iterator<? extends T> iterA = a == null ? ObjIterator.EMPTY : a;
+            private final Iterator<? extends T> iterB = b == null ? ObjIterator.EMPTY : b;
             private T nextA = null;
             private T nextB = null;
             private boolean hasNextA = false;
@@ -875,10 +875,10 @@ public final class Iterators {
         };
     }
 
-    public static <A, B, R> ImmutableIterator<R> zip(final Iterator<A> a, final Iterator<B> b, final BiFunction<? super A, ? super B, R> zipFunction) {
-        return new ImmutableIterator<R>() {
-            private final Iterator<A> iterA = a == null ? ImmutableIterator.<A> empty() : a;
-            private final Iterator<B> iterB = b == null ? ImmutableIterator.<B> empty() : b;
+    public static <A, B, R> ObjIterator<R> zip(final Iterator<A> a, final Iterator<B> b, final BiFunction<? super A, ? super B, R> zipFunction) {
+        return new ObjIterator<R>() {
+            private final Iterator<A> iterA = a == null ? ObjIterator.<A> empty() : a;
+            private final Iterator<B> iterB = b == null ? ObjIterator.<B> empty() : b;
 
             @Override
             public boolean hasNext() {
@@ -892,12 +892,12 @@ public final class Iterators {
         };
     }
 
-    public static <A, B, C, R> ImmutableIterator<R> zip(final Iterator<A> a, final Iterator<B> b, final Iterator<C> c,
+    public static <A, B, C, R> ObjIterator<R> zip(final Iterator<A> a, final Iterator<B> b, final Iterator<C> c,
             final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
-        return new ImmutableIterator<R>() {
-            private final Iterator<A> iterA = a == null ? ImmutableIterator.<A> empty() : a;
-            private final Iterator<B> iterB = b == null ? ImmutableIterator.<B> empty() : b;
-            private final Iterator<C> iterC = c == null ? ImmutableIterator.<C> empty() : c;
+        return new ObjIterator<R>() {
+            private final Iterator<A> iterA = a == null ? ObjIterator.<A> empty() : a;
+            private final Iterator<B> iterB = b == null ? ObjIterator.<B> empty() : b;
+            private final Iterator<C> iterC = c == null ? ObjIterator.<C> empty() : c;
 
             @Override
             public boolean hasNext() {
@@ -911,11 +911,11 @@ public final class Iterators {
         };
     }
 
-    public static <A, B, R> ImmutableIterator<R> zip(final Iterator<A> a, final Iterator<B> b, final A valueForNoneA, final B valueForNoneB,
+    public static <A, B, R> ObjIterator<R> zip(final Iterator<A> a, final Iterator<B> b, final A valueForNoneA, final B valueForNoneB,
             final BiFunction<? super A, ? super B, R> zipFunction) {
-        return new ImmutableIterator<R>() {
-            private final Iterator<A> iterA = a == null ? ImmutableIterator.<A> empty() : a;
-            private final Iterator<B> iterB = b == null ? ImmutableIterator.<B> empty() : b;
+        return new ObjIterator<R>() {
+            private final Iterator<A> iterA = a == null ? ObjIterator.<A> empty() : a;
+            private final Iterator<B> iterB = b == null ? ObjIterator.<B> empty() : b;
 
             @Override
             public boolean hasNext() {
@@ -929,12 +929,12 @@ public final class Iterators {
         };
     }
 
-    public static <A, B, C, R> ImmutableIterator<R> zip(final Iterator<A> a, final Iterator<B> b, final Iterator<C> c, final A valueForNoneA,
+    public static <A, B, C, R> ObjIterator<R> zip(final Iterator<A> a, final Iterator<B> b, final Iterator<C> c, final A valueForNoneA,
             final B valueForNoneB, final C valueForNoneC, final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
-        return new ImmutableIterator<R>() {
-            private final Iterator<A> iterA = a == null ? ImmutableIterator.<A> empty() : a;
-            private final Iterator<B> iterB = b == null ? ImmutableIterator.<B> empty() : b;
-            private final Iterator<C> iterC = c == null ? ImmutableIterator.<C> empty() : c;
+        return new ObjIterator<R>() {
+            private final Iterator<A> iterA = a == null ? ObjIterator.<A> empty() : a;
+            private final Iterator<B> iterB = b == null ? ObjIterator.<B> empty() : b;
+            private final Iterator<C> iterC = c == null ? ObjIterator.<C> empty() : c;
 
             @Override
             public boolean hasNext() {
@@ -1050,14 +1050,14 @@ public final class Iterators {
         return Triple.of(l, m, r);
     }
 
-    public static <T> ImmutableIterator<List<T>> split(final Iterator<? extends T> iter, final int size) {
+    public static <T> ObjIterator<List<T>> split(final Iterator<? extends T> iter, final int size) {
         N.checkArgument(size > 0, "'size' must be greater than 0, can't be: %s", size);
 
         if (iter == null) {
-            return ImmutableIterator.empty();
+            return ObjIterator.empty();
         }
 
-        return new ImmutableIterator<List<T>>() {
+        return new ObjIterator<List<T>>() {
             private final Iterator<? extends T> iterator = iter;
 
             @Override
@@ -1082,12 +1082,12 @@ public final class Iterators {
         };
     }
 
-    public static <T> ImmutableIterator<T> skipNull(final Iterator<T> iter) {
+    public static <T> ObjIterator<T> skipNull(final Iterator<T> iter) {
         if (iter == null) {
-            return ImmutableIterator.empty();
+            return ObjIterator.empty();
         }
 
-        return new ImmutableIterator<T>() {
+        return new ObjIterator<T>() {
             private final Iterator<T> iterator = iter;
             private T next;
 

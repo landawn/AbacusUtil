@@ -102,7 +102,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> filter(final Predicate<? super T> predicate) {
-        return new IteratorStream<>(new ExIterator<T>() {
+        return new IteratorStream<>(new SkippableObjIterator<T>() {
             private boolean hasNext = false;
             private int cursor = fromIndex;
 
@@ -135,7 +135,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> takeWhile(final Predicate<? super T> predicate) {
-        return new IteratorStream<>(new ExIterator<T>() {
+        return new IteratorStream<>(new SkippableObjIterator<T>() {
             private boolean hasMore = true;
             private boolean hasNext = false;
             private int cursor = fromIndex;
@@ -168,7 +168,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> dropWhile(final Predicate<? super T> predicate) {
-        return new IteratorStream<>(new ExIterator<T>() {
+        return new IteratorStream<>(new SkippableObjIterator<T>() {
             private boolean hasNext = false;
             private int cursor = fromIndex;
             private boolean dropped = false;
@@ -208,7 +208,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public <R> Stream<R> map(final Function<? super T, ? extends R> mapper) {
-        return new IteratorStream<>(new ExIterator<R>() {
+        return new IteratorStream<>(new SkippableObjIterator<R>() {
             int cursor = fromIndex;
 
             @Override
@@ -250,7 +250,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public <R> Stream<R> biMap(final BiFunction<? super T, ? super T, ? extends R> mapper, final boolean ignoreNotPaired) {
-        return new IteratorStream<>(new ExIterator<R>() {
+        return new IteratorStream<>(new SkippableObjIterator<R>() {
             private final int atLeast = ignoreNotPaired ? 2 : 1;
             private int cursor = fromIndex;
 
@@ -298,7 +298,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public <R> Stream<R> triMap(final TriFunction<? super T, ? super T, ? super T, ? extends R> mapper, final boolean ignoreNotPaired) {
-        return new IteratorStream<>(new ExIterator<R>() {
+        return new IteratorStream<>(new SkippableObjIterator<R>() {
             private final int atLeast = ignoreNotPaired ? 3 : 1;
             private int cursor = fromIndex;
 
@@ -348,7 +348,7 @@ class ArrayStream<T> extends AbstractStream<T> {
     public Stream<T> mapFirst(final Function<? super T, ? extends T> mapperForFirst) {
         N.requireNonNull(mapperForFirst);
 
-        return new IteratorStream<>(new ExIterator<T>() {
+        return new IteratorStream<>(new SkippableObjIterator<T>() {
             private int cursor = fromIndex;
 
             @Override
@@ -401,7 +401,7 @@ class ArrayStream<T> extends AbstractStream<T> {
         N.requireNonNull(mapperForFirst);
         N.requireNonNull(mapperForElse);
 
-        return new IteratorStream<>(new ExIterator<R>() {
+        return new IteratorStream<>(new SkippableObjIterator<R>() {
             private int cursor = fromIndex;
 
             @Override
@@ -453,7 +453,7 @@ class ArrayStream<T> extends AbstractStream<T> {
     public Stream<T> mapLast(final Function<? super T, ? extends T> mapperForLast) {
         N.requireNonNull(mapperForLast);
 
-        return new IteratorStream<>(new ExIterator<T>() {
+        return new IteratorStream<>(new SkippableObjIterator<T>() {
             private int last = toIndex - 1;
             private int cursor = fromIndex;
 
@@ -507,7 +507,7 @@ class ArrayStream<T> extends AbstractStream<T> {
         N.requireNonNull(mapperForLast);
         N.requireNonNull(mapperForElse);
 
-        return new IteratorStream<>(new ExIterator<R>() {
+        return new IteratorStream<>(new SkippableObjIterator<R>() {
             private int last = toIndex - 1;
             private int cursor = fromIndex;
 
@@ -558,7 +558,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public CharStream mapToChar(final ToCharFunction<? super T> mapper) {
-        return new IteratorCharStream(new ExCharIterator() {
+        return new IteratorCharStream(new SkippableCharIterator() {
             int cursor = fromIndex;
 
             @Override
@@ -600,7 +600,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public ByteStream mapToByte(final ToByteFunction<? super T> mapper) {
-        return new IteratorByteStream(new ExByteIterator() {
+        return new IteratorByteStream(new SkippableByteIterator() {
             int cursor = fromIndex;
 
             @Override
@@ -642,7 +642,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public ShortStream mapToShort(final ToShortFunction<? super T> mapper) {
-        return new IteratorShortStream(new ExShortIterator() {
+        return new IteratorShortStream(new SkippableShortIterator() {
             int cursor = fromIndex;
 
             @Override
@@ -684,7 +684,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public IntStream mapToInt(final ToIntFunction<? super T> mapper) {
-        return new IteratorIntStream(new ExIntIterator() {
+        return new IteratorIntStream(new SkippableIntIterator() {
             int cursor = fromIndex;
 
             @Override
@@ -726,7 +726,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public LongStream mapToLong(final ToLongFunction<? super T> mapper) {
-        return new IteratorLongStream(new ExLongIterator() {
+        return new IteratorLongStream(new SkippableLongIterator() {
             int cursor = fromIndex;
 
             @Override
@@ -768,7 +768,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public FloatStream mapToFloat(final ToFloatFunction<? super T> mapper) {
-        return new IteratorFloatStream(new ExFloatIterator() {
+        return new IteratorFloatStream(new SkippableFloatIterator() {
             int cursor = fromIndex;
 
             @Override
@@ -810,7 +810,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public DoubleStream mapToDouble(final ToDoubleFunction<? super T> mapper) {
-        return new IteratorDoubleStream(new ExDoubleIterator() {
+        return new IteratorDoubleStream(new SkippableDoubleIterator() {
             int cursor = fromIndex;
 
             @Override
@@ -852,7 +852,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     <R> Stream<R> flatMap0(final Function<? super T, ? extends Iterator<? extends R>> mapper) {
-        return new IteratorStream<>(new ExIterator<R>() {
+        return new IteratorStream<>(new SkippableObjIterator<R>() {
             private int cursor = fromIndex;
             private Iterator<? extends R> cur = null;
 
@@ -878,7 +878,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     CharStream flatMapToChar0(final Function<? super T, CharIterator> mapper) {
-        return new IteratorCharStream(new ExCharIterator() {
+        return new IteratorCharStream(new SkippableCharIterator() {
             private int cursor = fromIndex;
             private CharIterator cur = null;
 
@@ -904,7 +904,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     ByteStream flatMapToByte0(final Function<? super T, ByteIterator> mapper) {
-        return new IteratorByteStream(new ExByteIterator() {
+        return new IteratorByteStream(new SkippableByteIterator() {
             private int cursor = fromIndex;
             private ByteIterator cur = null;
 
@@ -930,7 +930,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     ShortStream flatMapToShort0(final Function<? super T, ShortIterator> mapper) {
-        return new IteratorShortStream(new ExShortIterator() {
+        return new IteratorShortStream(new SkippableShortIterator() {
             private int cursor = fromIndex;
             private ShortIterator cur = null;
 
@@ -956,7 +956,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     IntStream flatMapToInt0(final Function<? super T, IntIterator> mapper) {
-        return new IteratorIntStream(new ExIntIterator() {
+        return new IteratorIntStream(new SkippableIntIterator() {
             private int cursor = fromIndex;
             private IntIterator cur = null;
 
@@ -982,7 +982,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     LongStream flatMapToLong0(final Function<? super T, LongIterator> mapper) {
-        return new IteratorLongStream(new ExLongIterator() {
+        return new IteratorLongStream(new SkippableLongIterator() {
             private int cursor = fromIndex;
             private LongIterator cur = null;
 
@@ -1008,7 +1008,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     FloatStream flatMapToFloat0(final Function<? super T, FloatIterator> mapper) {
-        return new IteratorFloatStream(new ExFloatIterator() {
+        return new IteratorFloatStream(new SkippableFloatIterator() {
             private int cursor = fromIndex;
             private FloatIterator cur = null;
 
@@ -1034,7 +1034,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     DoubleStream flatMapToDouble0(final Function<? super T, DoubleIterator> mapper) {
-        return new IteratorDoubleStream(new ExDoubleIterator() {
+        return new IteratorDoubleStream(new SkippableDoubleIterator() {
             private int cursor = fromIndex;
             private DoubleIterator cur = null;
 
@@ -1064,7 +1064,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
-        return new IteratorStream<>(new ExIterator<R>() {
+        return new IteratorStream<>(new SkippableObjIterator<R>() {
             private int cursor = fromIndex;
 
             @Override
@@ -1094,7 +1094,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
-        return new IteratorStream<>(new ExIterator<R>() {
+        return new IteratorStream<>(new SkippableObjIterator<R>() {
             private int cursor = fromIndex;
 
             @Override
@@ -1123,7 +1123,7 @@ class ArrayStream<T> extends AbstractStream<T> {
     public Stream<Stream<T>> split(final int size) {
         N.checkArgument(size > 0, "'size' must be bigger than 0");
 
-        return new IteratorStream<>(new ExIterator<Stream<T>>() {
+        return new IteratorStream<>(new SkippableObjIterator<Stream<T>>() {
             private int cursor = fromIndex;
 
             @Override
@@ -1145,7 +1145,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<List<T>> splitToList(final int size) {
-        return new IteratorStream<>(new ExIterator<List<T>>() {
+        return new IteratorStream<>(new SkippableObjIterator<List<T>>() {
             private int cursor = fromIndex;
 
             @Override
@@ -1167,7 +1167,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<Set<T>> splitToSet(final int size) {
-        return new IteratorStream<>(new ExIterator<Set<T>>() {
+        return new IteratorStream<>(new SkippableObjIterator<Set<T>>() {
             private int cursor = fromIndex;
 
             @Override
@@ -1195,7 +1195,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<Stream<T>> split(final Predicate<? super T> predicate) {
-        return new IteratorStream<>(new ExIterator<Stream<T>>() {
+        return new IteratorStream<>(new SkippableObjIterator<Stream<T>>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
 
@@ -1231,7 +1231,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<List<T>> splitToList(final Predicate<? super T> predicate) {
-        return new IteratorStream<>(new ExIterator<List<T>>() {
+        return new IteratorStream<>(new SkippableObjIterator<List<T>>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
 
@@ -1270,7 +1270,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public <U> Stream<Stream<T>> split(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
-        return new IteratorStream<>(new ExIterator<Stream<T>>() {
+        return new IteratorStream<>(new SkippableObjIterator<Stream<T>>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
 
@@ -1310,7 +1310,7 @@ class ArrayStream<T> extends AbstractStream<T> {
     @Override
     public <U> Stream<List<T>> splitToList(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
-        return new IteratorStream<>(new ExIterator<List<T>>() {
+        return new IteratorStream<>(new SkippableObjIterator<List<T>>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
 
@@ -1353,7 +1353,7 @@ class ArrayStream<T> extends AbstractStream<T> {
     @Override
     public <U> Stream<Set<T>> splitToSet(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
-        return new IteratorStream<>(new ExIterator<Set<T>>() {
+        return new IteratorStream<>(new SkippableObjIterator<Set<T>>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
 
@@ -1428,7 +1428,7 @@ class ArrayStream<T> extends AbstractStream<T> {
     public Stream<Stream<T>> sliding(final int windowSize, final int increment) {
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
-        return new IteratorStream<>(new ExIterator<Stream<T>>() {
+        return new IteratorStream<>(new SkippableObjIterator<Stream<T>>() {
             private int cursor = fromIndex;
 
             @Override
@@ -1456,7 +1456,7 @@ class ArrayStream<T> extends AbstractStream<T> {
     public Stream<List<T>> slidingToList(final int windowSize, final int increment) {
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
-        return new IteratorStream<>(new ExIterator<List<T>>() {
+        return new IteratorStream<>(new SkippableObjIterator<List<T>>() {
             private int cursor = fromIndex;
 
             @Override
@@ -1516,7 +1516,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> peek(final Consumer<? super T> action) {
-        return new IteratorStream<>(new ExIterator<T>() {
+        return new IteratorStream<>(new SkippableObjIterator<T>() {
             int cursor = fromIndex;
 
             @Override
@@ -1970,7 +1970,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> reversed() {
-        return new IteratorStream<>(new ExIterator<T>() {
+        return new IteratorStream<>(new SkippableObjIterator<T>() {
             private int cursor = toIndex;
 
             @Override
@@ -2083,8 +2083,8 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    ExIterator<T> exIterator() {
-        return ExIterator.of(elements, fromIndex, toIndex);
+    SkippableObjIterator<T> skippableIterator() {
+        return SkippableObjIterator.of(elements, fromIndex, toIndex);
     }
 
     @Override

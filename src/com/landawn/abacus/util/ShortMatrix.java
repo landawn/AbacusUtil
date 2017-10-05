@@ -27,8 +27,8 @@ import com.landawn.abacus.util.function.ShortFunction;
 import com.landawn.abacus.util.function.ShortPredicate;
 import com.landawn.abacus.util.function.ShortTriFunction;
 import com.landawn.abacus.util.function.ShortUnaryOperator;
-import com.landawn.abacus.util.stream.ExIterator;
-import com.landawn.abacus.util.stream.ExShortIterator;
+import com.landawn.abacus.util.stream.SkippableObjIterator;
+import com.landawn.abacus.util.stream.SkippableShortIterator;
 import com.landawn.abacus.util.stream.IntStream;
 import com.landawn.abacus.util.stream.ShortStream;
 import com.landawn.abacus.util.stream.Stream;
@@ -1288,7 +1288,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortS
             return ShortStream.empty();
         }
 
-        return ShortStream.of(new ExShortIterator() {
+        return ShortStream.of(new SkippableShortIterator() {
             private final int toIndex = rows;
             private int cursor = 0;
 
@@ -1330,7 +1330,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortS
             return ShortStream.empty();
         }
 
-        return ShortStream.of(new ExShortIterator() {
+        return ShortStream.of(new SkippableShortIterator() {
             private final int toIndex = rows;
             private int cursor = 0;
 
@@ -1388,7 +1388,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortS
             return ShortStream.empty();
         }
 
-        return ShortStream.of(new ExShortIterator() {
+        return ShortStream.of(new SkippableShortIterator() {
             private int i = fromRowIndex;
             private int j = 0;
 
@@ -1478,7 +1478,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortS
             return ShortStream.empty();
         }
 
-        return ShortStream.of(new ExShortIterator() {
+        return ShortStream.of(new SkippableShortIterator() {
             private int i = 0;
             private int j = fromColumnIndex;
 
@@ -1561,7 +1561,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortS
             return Stream.empty();
         }
 
-        return Stream.of(new ExIterator<ShortStream>() {
+        return Stream.of(new SkippableObjIterator<ShortStream>() {
             private final int toIndex = toRowIndex;
             private int cursor = fromRowIndex;
 
@@ -1616,7 +1616,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortS
             return Stream.empty();
         }
 
-        return Stream.of(new ExIterator<ShortStream>() {
+        return Stream.of(new SkippableObjIterator<ShortStream>() {
             private final int toIndex = toColumnIndex;
             private volatile int cursor = fromColumnIndex;
 
@@ -1631,7 +1631,7 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortS
                     throw new NoSuchElementException();
                 }
 
-                return ShortStream.of(new ExShortIterator() {
+                return ShortStream.of(new SkippableShortIterator() {
                     private final int columnIndex = cursor++;
                     private final int toIndex2 = rows;
                     private int cursor2 = 0;

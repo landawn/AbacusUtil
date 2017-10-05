@@ -68,6 +68,16 @@ public abstract class DoubleIterator extends ImmutableIterator<Double> {
 
                 return a[cursor++];
             }
+
+            @Override
+            public double[] toArray() {
+                return N.copyOfRange(a, cursor, toIndex);
+            }
+
+            @Override
+            public DoubleList toList() {
+                return DoubleList.of(N.copyOfRange(a, cursor, toIndex));
+            }
         };
     }
 
@@ -82,6 +92,20 @@ public abstract class DoubleIterator extends ImmutableIterator<Double> {
     }
 
     public abstract double nextDouble();
+
+    public double[] toArray() {
+        return toList().trimToSize().array();
+    }
+
+    public DoubleList toList() {
+        final DoubleList list = new DoubleList();
+
+        while (hasNext()) {
+            list.add(nextDouble());
+        }
+
+        return list;
+    }
 
     public void forEachRemaining(DoubleConsumer action) {
         N.requireNonNull(action);

@@ -94,7 +94,7 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public LongStream filter(final LongPredicate predicate) {
-        return new IteratorLongStream(new ExLongIterator() {
+        return new IteratorLongStream(new SkippableLongIterator() {
             private boolean hasNext = false;
             private int cursor = fromIndex;
 
@@ -127,7 +127,7 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public LongStream takeWhile(final LongPredicate predicate) {
-        return new IteratorLongStream(new ExLongIterator() {
+        return new IteratorLongStream(new SkippableLongIterator() {
             private boolean hasMore = true;
             private boolean hasNext = false;
             private int cursor = fromIndex;
@@ -160,7 +160,7 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public LongStream dropWhile(final LongPredicate predicate) {
-        return new IteratorLongStream(new ExLongIterator() {
+        return new IteratorLongStream(new SkippableLongIterator() {
             private boolean hasNext = false;
             private int cursor = fromIndex;
             private boolean dropped = false;
@@ -200,7 +200,7 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public LongStream map(final LongUnaryOperator mapper) {
-        return new IteratorLongStream(new ExLongIterator() {
+        return new IteratorLongStream(new SkippableLongIterator() {
             int cursor = fromIndex;
 
             @Override
@@ -242,7 +242,7 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public IntStream mapToInt(final LongToIntFunction mapper) {
-        return new IteratorIntStream(new ExIntIterator() {
+        return new IteratorIntStream(new SkippableIntIterator() {
             int cursor = fromIndex;
 
             @Override
@@ -284,7 +284,7 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public FloatStream mapToFloat(final LongToFloatFunction mapper) {
-        return new IteratorFloatStream(new ExFloatIterator() {
+        return new IteratorFloatStream(new SkippableFloatIterator() {
             int cursor = fromIndex;
 
             @Override
@@ -326,7 +326,7 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public DoubleStream mapToDouble(final LongToDoubleFunction mapper) {
-        return new IteratorDoubleStream(new ExDoubleIterator() {
+        return new IteratorDoubleStream(new SkippableDoubleIterator() {
             int cursor = fromIndex;
 
             @Override
@@ -368,7 +368,7 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public <U> Stream<U> mapToObj(final LongFunction<? extends U> mapper) {
-        return new IteratorStream<U>(new ExIterator<U>() {
+        return new IteratorStream<U>(new SkippableObjIterator<U>() {
             int cursor = fromIndex;
 
             @Override
@@ -410,14 +410,14 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public LongStream flatMap(final LongFunction<? extends LongStream> mapper) {
-        return new IteratorLongStream(new ExLongIterator() {
+        return new IteratorLongStream(new SkippableLongIterator() {
             private int cursor = fromIndex;
             private LongIterator cur = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && cursor < toIndex) {
-                    cur = mapper.apply(elements[cursor++]).exIterator();
+                    cur = mapper.apply(elements[cursor++]).skippableIterator();
                 }
 
                 return cur != null && cur.hasNext();
@@ -436,14 +436,14 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public IntStream flatMapToInt(final LongFunction<? extends IntStream> mapper) {
-        return new IteratorIntStream(new ExIntIterator() {
+        return new IteratorIntStream(new SkippableIntIterator() {
             private int cursor = fromIndex;
             private IntIterator cur = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && cursor < toIndex) {
-                    cur = mapper.apply(elements[cursor++]).exIterator();
+                    cur = mapper.apply(elements[cursor++]).skippableIterator();
                 }
 
                 return cur != null && cur.hasNext();
@@ -462,14 +462,14 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public FloatStream flatMapToFloat(final LongFunction<? extends FloatStream> mapper) {
-        return new IteratorFloatStream(new ExFloatIterator() {
+        return new IteratorFloatStream(new SkippableFloatIterator() {
             private int cursor = fromIndex;
             private FloatIterator cur = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && cursor < toIndex) {
-                    cur = mapper.apply(elements[cursor++]).exIterator();
+                    cur = mapper.apply(elements[cursor++]).skippableIterator();
                 }
 
                 return cur != null && cur.hasNext();
@@ -488,14 +488,14 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public DoubleStream flatMapToDouble(final LongFunction<? extends DoubleStream> mapper) {
-        return new IteratorDoubleStream(new ExDoubleIterator() {
+        return new IteratorDoubleStream(new SkippableDoubleIterator() {
             private int cursor = fromIndex;
             private DoubleIterator cur = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && cursor < toIndex) {
-                    cur = mapper.apply(elements[cursor++]).exIterator();
+                    cur = mapper.apply(elements[cursor++]).skippableIterator();
                 }
 
                 return cur != null && cur.hasNext();
@@ -514,7 +514,7 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public <T> Stream<T> flatMapToObj(final LongFunction<? extends Stream<T>> mapper) {
-        return new IteratorStream<T>(new ExIterator<T>() {
+        return new IteratorStream<T>(new SkippableObjIterator<T>() {
             private int cursor = fromIndex;
             private Iterator<? extends T> cur = null;
 
@@ -542,7 +542,7 @@ class ArrayLongStream extends AbstractLongStream {
     public Stream<LongStream> split(final int size) {
         N.checkArgument(size > 0, "'size' must be bigger than 0");
 
-        return new IteratorStream<LongStream>(new ExIterator<LongStream>() {
+        return new IteratorStream<LongStream>(new SkippableObjIterator<LongStream>() {
             private int cursor = fromIndex;
 
             @Override
@@ -565,7 +565,7 @@ class ArrayLongStream extends AbstractLongStream {
     public Stream<LongList> splitToList(final int size) {
         N.checkArgument(size > 0, "'size' must be bigger than 0");
 
-        return new IteratorStream<LongList>(new ExIterator<LongList>() {
+        return new IteratorStream<LongList>(new SkippableObjIterator<LongList>() {
             private int cursor = fromIndex;
 
             @Override
@@ -586,7 +586,7 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public Stream<LongStream> split(final LongPredicate predicate) {
-        return new IteratorStream<LongStream>(new ExIterator<LongStream>() {
+        return new IteratorStream<LongStream>(new SkippableObjIterator<LongStream>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
 
@@ -621,7 +621,7 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public Stream<LongList> splitToList(final LongPredicate predicate) {
-        return new IteratorStream<LongList>(new ExIterator<LongList>() {
+        return new IteratorStream<LongList>(new SkippableObjIterator<LongList>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
 
@@ -658,7 +658,7 @@ class ArrayLongStream extends AbstractLongStream {
     @Override
     public <U> Stream<LongStream> split(final U identity, final BiFunction<? super Long, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
-        return new IteratorStream<LongStream>(new ExIterator<LongStream>() {
+        return new IteratorStream<LongStream>(new SkippableObjIterator<LongStream>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
 
@@ -698,7 +698,7 @@ class ArrayLongStream extends AbstractLongStream {
     @Override
     public <U> Stream<LongList> splitToList(final U identity, final BiFunction<? super Long, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
-        return new IteratorStream<LongList>(new ExIterator<LongList>() {
+        return new IteratorStream<LongList>(new SkippableObjIterator<LongList>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
 
@@ -770,7 +770,7 @@ class ArrayLongStream extends AbstractLongStream {
     public Stream<LongStream> sliding(final int windowSize, final int increment) {
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
-        return new IteratorStream<LongStream>(new ExIterator<LongStream>() {
+        return new IteratorStream<LongStream>(new SkippableObjIterator<LongStream>() {
             private int cursor = fromIndex;
 
             @Override
@@ -799,7 +799,7 @@ class ArrayLongStream extends AbstractLongStream {
     public Stream<LongList> slidingToList(final int windowSize, final int increment) {
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
-        return new IteratorStream<LongList>(new ExIterator<LongList>() {
+        return new IteratorStream<LongList>(new SkippableObjIterator<LongList>() {
             private int cursor = fromIndex;
 
             @Override
@@ -854,7 +854,7 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public LongStream peek(final LongConsumer action) {
-        return new IteratorLongStream(new ExLongIterator() {
+        return new IteratorLongStream(new SkippableLongIterator() {
             int cursor = fromIndex;
 
             @Override
@@ -1196,7 +1196,7 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public LongStream reversed() {
-        return new IteratorLongStream(new ExLongIterator() {
+        return new IteratorLongStream(new SkippableLongIterator() {
             private int cursor = toIndex;
 
             @Override
@@ -1303,7 +1303,7 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public FloatStream asFloatStream() {
-        return new IteratorFloatStream(new ExFloatIterator() {
+        return new IteratorFloatStream(new SkippableFloatIterator() {
             private int cursor = fromIndex;
 
             @Override
@@ -1345,7 +1345,7 @@ class ArrayLongStream extends AbstractLongStream {
 
     @Override
     public DoubleStream asDoubleStream() {
-        return new IteratorDoubleStream(new ExDoubleIterator() {
+        return new IteratorDoubleStream(new SkippableDoubleIterator() {
             private int cursor = fromIndex;
 
             @Override
@@ -1396,8 +1396,8 @@ class ArrayLongStream extends AbstractLongStream {
     }
 
     @Override
-    ExLongIterator exIterator() {
-        return ExLongIterator.of(elements, fromIndex, toIndex);
+    SkippableLongIterator skippableIterator() {
+        return SkippableLongIterator.of(elements, fromIndex, toIndex);
     }
 
     @Override

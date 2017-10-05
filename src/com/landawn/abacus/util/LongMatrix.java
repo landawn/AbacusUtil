@@ -27,8 +27,8 @@ import com.landawn.abacus.util.function.LongFunction;
 import com.landawn.abacus.util.function.LongPredicate;
 import com.landawn.abacus.util.function.LongTriFunction;
 import com.landawn.abacus.util.function.LongUnaryOperator;
-import com.landawn.abacus.util.stream.ExIterator;
-import com.landawn.abacus.util.stream.ExLongIterator;
+import com.landawn.abacus.util.stream.SkippableObjIterator;
+import com.landawn.abacus.util.stream.SkippableLongIterator;
 import com.landawn.abacus.util.stream.IntStream;
 import com.landawn.abacus.util.stream.LongStream;
 import com.landawn.abacus.util.stream.Stream;
@@ -1240,7 +1240,7 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongStrea
             return LongStream.empty();
         }
 
-        return LongStream.of(new ExLongIterator() {
+        return LongStream.of(new SkippableLongIterator() {
             private final int toIndex = rows;
             private int cursor = 0;
 
@@ -1282,7 +1282,7 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongStrea
             return LongStream.empty();
         }
 
-        return LongStream.of(new ExLongIterator() {
+        return LongStream.of(new SkippableLongIterator() {
             private final int toIndex = rows;
             private int cursor = 0;
 
@@ -1340,7 +1340,7 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongStrea
             return LongStream.empty();
         }
 
-        return LongStream.of(new ExLongIterator() {
+        return LongStream.of(new SkippableLongIterator() {
             private int i = fromRowIndex;
             private int j = 0;
 
@@ -1430,7 +1430,7 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongStrea
             return LongStream.empty();
         }
 
-        return LongStream.of(new ExLongIterator() {
+        return LongStream.of(new SkippableLongIterator() {
             private int i = 0;
             private int j = fromColumnIndex;
 
@@ -1513,7 +1513,7 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongStrea
             return Stream.empty();
         }
 
-        return Stream.of(new ExIterator<LongStream>() {
+        return Stream.of(new SkippableObjIterator<LongStream>() {
             private final int toIndex = toRowIndex;
             private int cursor = fromRowIndex;
 
@@ -1568,7 +1568,7 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongStrea
             return Stream.empty();
         }
 
-        return Stream.of(new ExIterator<LongStream>() {
+        return Stream.of(new SkippableObjIterator<LongStream>() {
             private final int toIndex = toColumnIndex;
             private volatile int cursor = fromColumnIndex;
 
@@ -1583,7 +1583,7 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongStrea
                     throw new NoSuchElementException();
                 }
 
-                return LongStream.of(new ExLongIterator() {
+                return LongStream.of(new SkippableLongIterator() {
                     private final int columnIndex = cursor++;
                     private final int toIndex2 = rows;
                     private int cursor2 = 0;

@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+import com.landawn.abacus.util.ImmutableIterator;
 import com.landawn.abacus.util.IntList;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multiset;
@@ -701,7 +702,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * @return the element iterator for this stream
      */
 
-    com.landawn.abacus.util.ImmutableIterator<T> iterator();
+    ImmutableIterator<T> iterator();
 
     void println();
 

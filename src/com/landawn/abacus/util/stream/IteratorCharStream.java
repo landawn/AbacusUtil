@@ -54,7 +54,7 @@ import com.landawn.abacus.util.function.Supplier;
  * @author Haiyang Li
  */
 class IteratorCharStream extends AbstractCharStream {
-    final ExCharIterator elements;
+    final SkippableCharIterator elements;
 
     OptionalChar head;
     CharStream tail;
@@ -73,12 +73,12 @@ class IteratorCharStream extends AbstractCharStream {
     IteratorCharStream(final CharIterator values, final Collection<Runnable> closeHandlers, final boolean sorted) {
         super(closeHandlers, sorted);
 
-        ExCharIterator tmp = null;
+        SkippableCharIterator tmp = null;
 
-        if (values instanceof ExCharIterator) {
-            tmp = (ExCharIterator) values;
-        } else if (values instanceof SkippableIterator) {
-            tmp = new ExCharIterator() {
+        if (values instanceof SkippableCharIterator) {
+            tmp = (SkippableCharIterator) values;
+        } else if (values instanceof Skippable) {
+            tmp = new SkippableCharIterator() {
                 @Override
                 public boolean hasNext() {
                     return values.hasNext();
@@ -91,16 +91,16 @@ class IteratorCharStream extends AbstractCharStream {
 
                 @Override
                 public void skip(long n) {
-                    ((SkippableIterator) values).skip(n);
+                    ((Skippable) values).skip(n);
                 }
 
                 @Override
                 public long count() {
-                    return ((SkippableIterator) values).count();
+                    return ((Skippable) values).count();
                 }
             };
         } else {
-            tmp = new ExCharIterator() {
+            tmp = new SkippableCharIterator() {
                 @Override
                 public boolean hasNext() {
                     return values.hasNext();
@@ -118,7 +118,7 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public CharStream filter(final CharPredicate predicate) {
-        return new IteratorCharStream(new ExCharIterator() {
+        return new IteratorCharStream(new SkippableCharIterator() {
             private boolean hasNext = false;
             private char next = 0;
 
@@ -153,7 +153,7 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public CharStream takeWhile(final CharPredicate predicate) {
-        return new IteratorCharStream(new ExCharIterator() {
+        return new IteratorCharStream(new SkippableCharIterator() {
             private boolean hasMore = true;
             private boolean hasNext = false;
             private char next = 0;
@@ -189,7 +189,7 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public CharStream dropWhile(final CharPredicate predicate) {
-        return new IteratorCharStream(new ExCharIterator() {
+        return new IteratorCharStream(new SkippableCharIterator() {
             private boolean hasNext = false;
             private char next = 0;
             private boolean dropped = false;
@@ -233,7 +233,7 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public CharStream map(final CharUnaryOperator mapper) {
-        return new IteratorCharStream(new ExCharIterator() {
+        return new IteratorCharStream(new SkippableCharIterator() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -258,7 +258,7 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public IntStream mapToInt(final CharToIntFunction mapper) {
-        return new IteratorIntStream(new ExIntIterator() {
+        return new IteratorIntStream(new SkippableIntIterator() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -283,7 +283,7 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public <U> Stream<U> mapToObj(final CharFunction<? extends U> mapper) {
-        return new IteratorStream<U>(new ExIterator<U>() {
+        return new IteratorStream<U>(new SkippableObjIterator<U>() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -308,13 +308,13 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public CharStream flatMap(final CharFunction<? extends CharStream> mapper) {
-        return new IteratorCharStream(new ExCharIterator() {
+        return new IteratorCharStream(new SkippableCharIterator() {
             private CharIterator cur = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && elements.hasNext()) {
-                    cur = mapper.apply(elements.nextChar()).exIterator();
+                    cur = mapper.apply(elements.nextChar()).skippableIterator();
                 }
 
                 return cur != null && cur.hasNext();
@@ -333,13 +333,13 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public IntStream flatMapToInt(final CharFunction<? extends IntStream> mapper) {
-        return new IteratorIntStream(new ExIntIterator() {
+        return new IteratorIntStream(new SkippableIntIterator() {
             private IntIterator cur = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && elements.hasNext()) {
-                    cur = mapper.apply(elements.nextChar()).exIterator();
+                    cur = mapper.apply(elements.nextChar()).skippableIterator();
                 }
 
                 return cur != null && cur.hasNext();
@@ -358,7 +358,7 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public <T> Stream<T> flatMapToObj(final CharFunction<? extends Stream<T>> mapper) {
-        return new IteratorStream<T>(new ExIterator<T>() {
+        return new IteratorStream<T>(new SkippableObjIterator<T>() {
             private Iterator<? extends T> cur = null;
 
             @Override
@@ -385,7 +385,7 @@ class IteratorCharStream extends AbstractCharStream {
     public Stream<CharList> splitToList(final int size) {
         N.checkArgument(size > 0, "'size' must be bigger than 0");
 
-        return new IteratorStream<CharList>(new ExIterator<CharList>() {
+        return new IteratorStream<CharList>(new SkippableObjIterator<CharList>() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -411,7 +411,7 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public Stream<CharList> splitToList(final CharPredicate predicate) {
-        return new IteratorStream<CharList>(new ExIterator<CharList>() {
+        return new IteratorStream<CharList>(new SkippableObjIterator<CharList>() {
             private char next;
             private boolean hasNext = false;
             private boolean preCondition = false;
@@ -456,7 +456,7 @@ class IteratorCharStream extends AbstractCharStream {
     @Override
     public <U> Stream<CharList> splitToList(final U identity, final BiFunction<? super Character, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
-        return new IteratorStream<CharList>(new ExIterator<CharList>() {
+        return new IteratorStream<CharList>(new SkippableObjIterator<CharList>() {
             private char next;
             private boolean hasNext = false;
             private boolean preCondition = false;
@@ -506,7 +506,7 @@ class IteratorCharStream extends AbstractCharStream {
     public Stream<CharList> slidingToList(final int windowSize, final int increment) {
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
-        return new IteratorStream<CharList>(new ExIterator<CharList>() {
+        return new IteratorStream<CharList>(new SkippableObjIterator<CharList>() {
             private CharList prev = null;
 
             @Override
@@ -567,7 +567,7 @@ class IteratorCharStream extends AbstractCharStream {
             return this;
         }
 
-        return new IteratorCharStream(new ExCharIterator() {
+        return new IteratorCharStream(new SkippableCharIterator() {
             char[] a = null;
             int toIndex = 0;
             int cursor = 0;
@@ -636,7 +636,7 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public CharStream peek(final CharConsumer action) {
-        return new IteratorCharStream(new ExCharIterator() {
+        return new IteratorCharStream(new SkippableCharIterator() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -657,7 +657,7 @@ class IteratorCharStream extends AbstractCharStream {
             throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
         }
 
-        return new IteratorCharStream(new ExCharIterator() {
+        return new IteratorCharStream(new SkippableCharIterator() {
             private long cnt = 0;
 
             @Override
@@ -690,7 +690,7 @@ class IteratorCharStream extends AbstractCharStream {
             return this;
         }
 
-        return new IteratorCharStream(new ExCharIterator() {
+        return new IteratorCharStream(new SkippableCharIterator() {
             private boolean skipped = false;
 
             @Override
@@ -1156,7 +1156,7 @@ class IteratorCharStream extends AbstractCharStream {
 
     @Override
     public IntStream asIntStream() {
-        return new IteratorIntStream(new ExIntIterator() {
+        return new IteratorIntStream(new SkippableIntIterator() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -1185,7 +1185,7 @@ class IteratorCharStream extends AbstractCharStream {
     }
 
     @Override
-    ExCharIterator exIterator() {
+    SkippableCharIterator skippableIterator() {
         return elements;
     }
 

@@ -68,6 +68,16 @@ public abstract class LongIterator extends ImmutableIterator<Long> {
 
                 return a[cursor++];
             }
+
+            @Override
+            public long[] toArray() {
+                return N.copyOfRange(a, cursor, toIndex);
+            }
+
+            @Override
+            public LongList toList() {
+                return LongList.of(N.copyOfRange(a, cursor, toIndex));
+            }
         };
     }
 
@@ -82,6 +92,20 @@ public abstract class LongIterator extends ImmutableIterator<Long> {
     }
 
     public abstract long nextLong();
+
+    public long[] toArray() {
+        return toList().trimToSize().array();
+    }
+
+    public LongList toList() {
+        final LongList list = new LongList();
+
+        while (hasNext()) {
+            list.add(nextLong());
+        }
+
+        return list;
+    }
 
     public void forEachRemaining(LongConsumer action) {
         N.requireNonNull(action);

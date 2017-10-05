@@ -164,9 +164,9 @@ abstract class AbstractFloatStream extends FloatStream {
         }
 
         final long skip = step - 1;
-        final ExFloatIterator iter = this.exIterator();
+        final SkippableFloatIterator iter = this.skippableIterator();
 
-        final FloatIterator floatIterator = new ExFloatIterator() {
+        final FloatIterator floatIterator = new SkippableFloatIterator() {
             @Override
             public boolean hasNext() {
                 return iter.hasNext();
@@ -239,9 +239,9 @@ abstract class AbstractFloatStream extends FloatStream {
 
     @Override
     public FloatStream collapse(final FloatBiPredicate collapsible, final FloatBiFunction<Float> mergeFunction) {
-        final ExFloatIterator iter = exIterator();
+        final SkippableFloatIterator iter = skippableIterator();
 
-        return this.newStream(new ExFloatIterator() {
+        return this.newStream(new SkippableFloatIterator() {
             private boolean hasNext = false;
             private float next = 0;
 
@@ -269,9 +269,9 @@ abstract class AbstractFloatStream extends FloatStream {
 
     @Override
     public FloatStream scan(final FloatBiFunction<Float> accumulator) {
-        final ExFloatIterator iter = exIterator();
+        final SkippableFloatIterator iter = skippableIterator();
 
-        return this.newStream(new ExFloatIterator() {
+        return this.newStream(new SkippableFloatIterator() {
             private float res = 0;
             private boolean isFirst = true;
 
@@ -294,9 +294,9 @@ abstract class AbstractFloatStream extends FloatStream {
 
     @Override
     public FloatStream scan(final float seed, final FloatBiFunction<Float> accumulator) {
-        final ExFloatIterator iter = exIterator();
+        final SkippableFloatIterator iter = skippableIterator();
 
-        return this.newStream(new ExFloatIterator() {
+        return this.newStream(new SkippableFloatIterator() {
             private float res = seed;
 
             @Override
@@ -358,7 +358,7 @@ abstract class AbstractFloatStream extends FloatStream {
             public boolean test(float value) {
                 return set.add(value);
             }
-        }).exIterator(), sorted);
+        }).skippableIterator(), sorted);
     }
 
     @Override
@@ -427,14 +427,14 @@ abstract class AbstractFloatStream extends FloatStream {
 
     @Override
     public OptionalFloat first() {
-        final FloatIterator iter = this.exIterator();
+        final FloatIterator iter = this.skippableIterator();
 
         return iter.hasNext() ? OptionalFloat.of(iter.nextFloat()) : OptionalFloat.empty();
     }
 
     @Override
     public OptionalFloat last() {
-        final FloatIterator iter = this.exIterator();
+        final FloatIterator iter = this.skippableIterator();
 
         if (iter.hasNext() == false) {
             return OptionalFloat.empty();
@@ -451,7 +451,7 @@ abstract class AbstractFloatStream extends FloatStream {
 
     @Override
     public OptionalFloat findFirstOrLast(FloatPredicate predicateForFirst, FloatPredicate predicateForLast) {
-        final ExFloatIterator iter = exIterator();
+        final SkippableFloatIterator iter = skippableIterator();
         MutableFloat last = null;
         float next = 0;
 
@@ -481,7 +481,7 @@ abstract class AbstractFloatStream extends FloatStream {
             public boolean test(float value) {
                 return multiset.getAndRemove(value) > 0;
             }
-        }).exIterator(), sorted);
+        }).skippableIterator(), sorted);
     }
 
     @Override
@@ -493,7 +493,7 @@ abstract class AbstractFloatStream extends FloatStream {
             public boolean test(float value) {
                 return multiset.getAndRemove(value) < 1;
             }
-        }).exIterator(), sorted);
+        }).skippableIterator(), sorted);
     }
 
     @Override
@@ -510,7 +510,7 @@ abstract class AbstractFloatStream extends FloatStream {
             public boolean test(Float value) {
                 return multiset.getAndRemove(value) > 0;
             }
-        }).mapToFloat(ToFloatFunction.UNBOX)).exIterator(), false);
+        }).mapToFloat(ToFloatFunction.UNBOX)).skippableIterator(), false);
     }
 
     @Override
@@ -519,7 +519,7 @@ abstract class AbstractFloatStream extends FloatStream {
             throw new IllegalArgumentException("'n' can't be negative");
         }
 
-        final FloatIterator iter = this.exIterator();
+        final FloatIterator iter = this.skippableIterator();
         final FloatList list = new FloatList();
 
         while (list.size() < n && iter.hasNext()) {
@@ -535,7 +535,7 @@ abstract class AbstractFloatStream extends FloatStream {
     public Stream<FloatStream> splitBy(FloatPredicate where) {
         N.requireNonNull(where);
 
-        final FloatIterator iter = this.exIterator();
+        final FloatIterator iter = this.skippableIterator();
         final FloatList list = new FloatList();
         float next = 0;
         FloatStream s = null;
@@ -556,7 +556,7 @@ abstract class AbstractFloatStream extends FloatStream {
 
         if (s != null) {
             if (sorted) {
-                a[1] = new IteratorFloatStream(a[1].prepend(s).exIterator(), null, sorted);
+                a[1] = new IteratorFloatStream(a[1].prepend(s).skippableIterator(), null, sorted);
             } else {
                 a[1] = a[1].prepend(s);
             }
@@ -569,7 +569,7 @@ abstract class AbstractFloatStream extends FloatStream {
     public FloatStream reversed() {
         final float[] tmp = toArray();
 
-        return newStream(new ExFloatIterator() {
+        return newStream(new SkippableFloatIterator() {
             private int cursor = tmp.length;
 
             @Override

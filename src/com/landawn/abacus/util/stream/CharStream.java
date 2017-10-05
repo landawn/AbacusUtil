@@ -564,10 +564,10 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
 
     @Override
     public CharIterator iterator() {
-        return exIterator();
+        return skippableIterator();
     }
 
-    abstract ExCharIterator exIterator();
+    abstract SkippableCharIterator skippableIterator();
 
     @Override
     public <R> R __(Function<? super CharStream, R> transfer) {
@@ -639,7 +639,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
             return of(N.getCharsForReadOnly((String) str), startIndex, endIndex);
         }
 
-        final ExCharIterator iter = new ExCharIterator() {
+        final SkippableCharIterator iter = new SkippableCharIterator() {
             private int cursor = startIndex;
 
             @Override
@@ -661,12 +661,53 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
         return new IteratorCharStream(iter);
     }
 
+    /**
+     * Lazy evaluation.
+     * @param supplier
+     * @return
+     */
+    public static CharStream of(final Supplier<CharList> supplier) {
+        final CharIterator iter = new SkippableCharIterator() {
+            private CharIterator iterator = null;
+
+            @Override
+            public boolean hasNext() {
+                if (iterator == null) {
+                    init();
+                }
+
+                return iterator.hasNext();
+            }
+
+            @Override
+            public char nextChar() {
+                if (iterator == null) {
+                    init();
+                }
+
+                return iterator.nextChar();
+            }
+
+            private void init() {
+                final CharList c = supplier.get();
+
+                if (N.isNullOrEmpty(c)) {
+                    iterator = CharIterator.empty();
+                } else {
+                    iterator = c.iterator();
+                }
+            }
+        };
+
+        return of(iter);
+    }
+
     public static CharStream range(final char startInclusive, final char endExclusive) {
         if (startInclusive >= endExclusive) {
             return empty();
         }
 
-        return new IteratorCharStream(new ExCharIterator() {
+        return new IteratorCharStream(new SkippableCharIterator() {
             private char next = startInclusive;
             private int cnt = endExclusive * 1 - startInclusive;
 
@@ -719,7 +760,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
             return empty();
         }
 
-        return new IteratorCharStream(new ExCharIterator() {
+        return new IteratorCharStream(new SkippableCharIterator() {
             private char next = startInclusive;
             private int cnt = (endExclusive * 1 - startInclusive) / by + ((endExclusive * 1 - startInclusive) % by == 0 ? 0 : 1);
 
@@ -772,7 +813,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
             return of(startInclusive);
         }
 
-        return new IteratorCharStream(new ExCharIterator() {
+        return new IteratorCharStream(new SkippableCharIterator() {
             private char next = startInclusive;
             private int cnt = endInclusive * 1 - startInclusive + 1;
 
@@ -827,7 +868,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
             return empty();
         }
 
-        return new IteratorCharStream(new ExCharIterator() {
+        return new IteratorCharStream(new SkippableCharIterator() {
             private char next = startInclusive;
             private int cnt = (endInclusive * 1 - startInclusive) / by + 1;
 
@@ -880,7 +921,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
             return empty();
         }
 
-        return new IteratorCharStream(new ExCharIterator() {
+        return new IteratorCharStream(new SkippableCharIterator() {
             private long cnt = n;
 
             @Override
@@ -969,7 +1010,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
         N.requireNonNull(hasNext);
         N.requireNonNull(next);
 
-        return new IteratorCharStream(new ExCharIterator() {
+        return new IteratorCharStream(new SkippableCharIterator() {
             private boolean hasNextVal = false;
 
             @Override
@@ -997,7 +1038,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
         N.requireNonNull(hasNext);
         N.requireNonNull(f);
 
-        return new IteratorCharStream(new ExCharIterator() {
+        return new IteratorCharStream(new SkippableCharIterator() {
             private char t = 0;
             private boolean isFirst = true;
             private boolean hasNextVal = false;
@@ -1042,7 +1083,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
         N.requireNonNull(hasNext);
         N.requireNonNull(f);
 
-        return new IteratorCharStream(new ExCharIterator() {
+        return new IteratorCharStream(new SkippableCharIterator() {
             private char t = 0;
             private char cur = 0;
             private boolean isFirst = true;
@@ -1083,7 +1124,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
     public static CharStream iterate(final char seed, final CharUnaryOperator f) {
         N.requireNonNull(f);
 
-        return new IteratorCharStream(new ExCharIterator() {
+        return new IteratorCharStream(new SkippableCharIterator() {
             private char t = 0;
             private boolean isFirst = true;
 
@@ -1109,7 +1150,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
     public static CharStream generate(final CharSupplier s) {
         N.requireNonNull(s);
 
-        return new IteratorCharStream(new ExCharIterator() {
+        return new IteratorCharStream(new SkippableCharIterator() {
             @Override
             public boolean hasNext() {
                 return true;
@@ -1124,14 +1165,14 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
 
     @SafeVarargs
     public static CharStream concat(final char[]... a) {
-        return N.isNullOrEmpty(a) ? empty() : new IteratorCharStream(new ExCharIterator() {
+        return N.isNullOrEmpty(a) ? empty() : new IteratorCharStream(new SkippableCharIterator() {
             private final Iterator<char[]> iter = N.asList(a).iterator();
             private CharIterator cur;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
-                    cur = ExCharIterator.of(iter.next());
+                    cur = SkippableCharIterator.of(iter.next());
                 }
 
                 return cur != null && cur.hasNext();
@@ -1150,7 +1191,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
 
     @SafeVarargs
     public static CharStream concat(final CharIterator... a) {
-        return N.isNullOrEmpty(a) ? empty() : new IteratorCharStream(new ExCharIterator() {
+        return N.isNullOrEmpty(a) ? empty() : new IteratorCharStream(new SkippableCharIterator() {
             private final Iterator<? extends CharIterator> iter = N.asList(a).iterator();
             private CharIterator cur;
 
@@ -1180,14 +1221,14 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
     }
 
     public static CharStream concat(final Collection<? extends CharStream> c) {
-        return N.isNullOrEmpty(c) ? empty() : new IteratorCharStream(new ExCharIterator() {
+        return N.isNullOrEmpty(c) ? empty() : new IteratorCharStream(new SkippableCharIterator() {
             private final Iterator<? extends CharStream> iter = c.iterator();
             private CharIterator cur;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
-                    cur = iter.next().exIterator();
+                    cur = iter.next().skippableIterator();
                 }
 
                 return cur != null && cur.hasNext();
@@ -1417,7 +1458,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
             return of(a);
         }
 
-        return new IteratorCharStream(new ExCharIterator() {
+        return new IteratorCharStream(new SkippableCharIterator() {
             private final int lenA = a.length;
             private final int lenB = b.length;
             private int cursorA = 0;
@@ -1458,7 +1499,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
      * @return
      */
     public static CharStream merge(final char[] a, final char[] b, final char[] c, final CharBiFunction<Nth> nextSelector) {
-        return merge(merge(a, b, nextSelector).exIterator(), CharStream.of(c).exIterator(), nextSelector);
+        return merge(merge(a, b, nextSelector).skippableIterator(), CharStream.of(c).skippableIterator(), nextSelector);
     }
 
     /**
@@ -1475,7 +1516,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
             return of(a);
         }
 
-        return new IteratorCharStream(new ExCharIterator() {
+        return new IteratorCharStream(new SkippableCharIterator() {
             private char nextA = 0;
             private char nextB = 0;
             private boolean hasNextA = false;
@@ -1544,7 +1585,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
      * @return
      */
     public static CharStream merge(final CharIterator a, final CharIterator b, final CharIterator c, final CharBiFunction<Nth> nextSelector) {
-        return merge(merge(a, b, nextSelector).exIterator(), c, nextSelector);
+        return merge(merge(a, b, nextSelector).skippableIterator(), c, nextSelector);
     }
 
     /**
@@ -1555,7 +1596,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
      * @return
      */
     public static CharStream merge(final CharStream a, final CharStream b, final CharBiFunction<Nth> nextSelector) {
-        return merge(a.exIterator(), b.exIterator(), nextSelector).onClose(newCloseHandler(N.asList(a, b)));
+        return merge(a.skippableIterator(), b.skippableIterator(), nextSelector).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -1587,10 +1628,10 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
         }
 
         final Iterator<? extends CharStream> iter = c.iterator();
-        CharStream result = merge(iter.next().exIterator(), iter.next().exIterator(), nextSelector);
+        CharStream result = merge(iter.next().skippableIterator(), iter.next().skippableIterator(), nextSelector);
 
         while (iter.hasNext()) {
-            result = merge(result.exIterator(), iter.next().exIterator(), nextSelector);
+            result = merge(result.skippableIterator(), iter.next().skippableIterator(), nextSelector);
         }
 
         return result.onClose(newCloseHandler(c));
@@ -1632,7 +1673,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
         final Queue<CharIterator> queue = N.newLinkedList();
 
         for (CharStream e : c) {
-            queue.add(e.exIterator());
+            queue.add(e.skippableIterator());
         }
 
         final Holder<Throwable> eHolder = new Holder<>();
@@ -1660,7 +1701,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
                                 }
                             }
 
-                            c = ExCharIterator.of(merge(a, b, nextSelector).toArray());
+                            c = SkippableCharIterator.of(merge(a, b, nextSelector).toArray());
 
                             synchronized (queue) {
                                 queue.offer(c);
