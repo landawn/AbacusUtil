@@ -67,11 +67,11 @@ class IteratorCharStream extends AbstractCharStream {
     }
 
     IteratorCharStream(final CharIterator values, final Collection<Runnable> closeHandlers) {
-        this(values, closeHandlers, false);
+        this(values, false, closeHandlers);
     }
 
-    IteratorCharStream(final CharIterator values, final Collection<Runnable> closeHandlers, final boolean sorted) {
-        super(closeHandlers, sorted);
+    IteratorCharStream(final CharIterator values, final boolean sorted, final Collection<Runnable> closeHandlers) {
+        super(sorted, closeHandlers);
 
         SkippableCharIterator tmp = null;
 
@@ -148,7 +148,7 @@ class IteratorCharStream extends AbstractCharStream {
 
                 return next;
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -184,7 +184,7 @@ class IteratorCharStream extends AbstractCharStream {
                 return next;
             }
 
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -228,7 +228,7 @@ class IteratorCharStream extends AbstractCharStream {
                 return next;
             }
 
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -631,7 +631,7 @@ class IteratorCharStream extends AbstractCharStream {
 
                 N.sort(a);
             }
-        }, closeHandlers, true);
+        }, true, closeHandlers);
     }
 
     @Override
@@ -648,7 +648,7 @@ class IteratorCharStream extends AbstractCharStream {
                 action.accept(next);
                 return next;
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -679,7 +679,7 @@ class IteratorCharStream extends AbstractCharStream {
             public void skip(long n) {
                 elements.skip(n);
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -742,7 +742,7 @@ class IteratorCharStream extends AbstractCharStream {
 
                 return elements.toArray();
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -941,7 +941,7 @@ class IteratorCharStream extends AbstractCharStream {
     public OptionalChar head() {
         if (head == null) {
             head = elements.hasNext() ? OptionalChar.of(elements.nextChar()) : OptionalChar.empty();
-            tail = new IteratorCharStream(elements, closeHandlers, sorted);
+            tail = new IteratorCharStream(elements, sorted, closeHandlers);
         }
 
         return head;
@@ -951,7 +951,7 @@ class IteratorCharStream extends AbstractCharStream {
     public CharStream tail() {
         if (tail == null) {
             head = elements.hasNext() ? OptionalChar.of(elements.nextChar()) : OptionalChar.empty();
-            tail = new IteratorCharStream(elements, closeHandlers, sorted);
+            tail = new IteratorCharStream(elements, sorted, closeHandlers);
         }
 
         return tail;
@@ -961,7 +961,7 @@ class IteratorCharStream extends AbstractCharStream {
     public CharStream head2() {
         if (head2 == null) {
             final char[] a = elements.toArray();
-            head2 = new ArrayCharStream(a, 0, a.length == 0 ? 0 : a.length - 1, closeHandlers, sorted);
+            head2 = new ArrayCharStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, closeHandlers);
             tail2 = a.length == 0 ? OptionalChar.empty() : OptionalChar.of(a[a.length - 1]);
         }
 
@@ -972,7 +972,7 @@ class IteratorCharStream extends AbstractCharStream {
     public OptionalChar tail2() {
         if (tail2 == null) {
             final char[] a = elements.toArray();
-            head2 = new ArrayCharStream(a, 0, a.length == 0 ? 0 : a.length - 1, closeHandlers, sorted);
+            head2 = new ArrayCharStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, closeHandlers);
             tail2 = a.length == 0 ? OptionalChar.empty() : OptionalChar.of(a[a.length - 1]);
         }
 
@@ -1176,12 +1176,12 @@ class IteratorCharStream extends AbstractCharStream {
             public void skip(long n) {
                 elements.skip(n);
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
     public Stream<Character> boxed() {
-        return new IteratorStream<Character>(iterator(), closeHandlers, sorted, sorted ? CHAR_COMPARATOR : null);
+        return new IteratorStream<Character>(iterator(), sorted, sorted ? CHAR_COMPARATOR : null, closeHandlers);
     }
 
     @Override
@@ -1195,7 +1195,7 @@ class IteratorCharStream extends AbstractCharStream {
             throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
 
-        return new ParallelIteratorCharStream(elements, closeHandlers, sorted, maxThreadNum, splitor);
+        return new ParallelIteratorCharStream(elements, sorted, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -1208,6 +1208,6 @@ class IteratorCharStream extends AbstractCharStream {
 
         newCloseHandlers.add(closeHandler);
 
-        return new IteratorCharStream(elements, newCloseHandlers, sorted);
+        return new IteratorCharStream(elements, sorted, newCloseHandlers);
     }
 }

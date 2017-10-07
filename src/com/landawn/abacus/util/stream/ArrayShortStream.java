@@ -66,8 +66,8 @@ class ArrayShortStream extends AbstractShortStream {
         this(values, 0, values.length, closeHandlers);
     }
 
-    ArrayShortStream(short[] values, final Collection<Runnable> closeHandlers, final boolean sorted) {
-        this(values, 0, values.length, closeHandlers, sorted);
+    ArrayShortStream(short[] values, final boolean sorted, final Collection<Runnable> closeHandlers) {
+        this(values, 0, values.length, sorted, closeHandlers);
     }
 
     ArrayShortStream(short[] values, final int fromIndex, final int toIndex) {
@@ -75,11 +75,11 @@ class ArrayShortStream extends AbstractShortStream {
     }
 
     ArrayShortStream(short[] values, final int fromIndex, final int toIndex, final Collection<Runnable> closeHandlers) {
-        this(values, fromIndex, toIndex, closeHandlers, false);
+        this(values, fromIndex, toIndex, false, closeHandlers);
     }
 
-    ArrayShortStream(short[] values, final int fromIndex, final int toIndex, final Collection<Runnable> closeHandlers, final boolean sorted) {
-        super(closeHandlers, sorted);
+    ArrayShortStream(short[] values, final int fromIndex, final int toIndex, final boolean sorted, final Collection<Runnable> closeHandlers) {
+        super(sorted, closeHandlers);
 
         checkFromToIndex(fromIndex, toIndex, values.length);
 
@@ -118,7 +118,7 @@ class ArrayShortStream extends AbstractShortStream {
 
                 return elements[cursor++];
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -151,7 +151,7 @@ class ArrayShortStream extends AbstractShortStream {
 
                 return elements[cursor++];
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -191,7 +191,7 @@ class ArrayShortStream extends AbstractShortStream {
 
                 return elements[cursor++];
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -416,7 +416,7 @@ class ArrayShortStream extends AbstractShortStream {
                     throw new NoSuchElementException();
                 }
 
-                return new ArrayShortStream(elements, cursor, (cursor = size < toIndex - cursor ? cursor + size : toIndex), null, sorted);
+                return new ArrayShortStream(elements, cursor, (cursor = size < toIndex - cursor ? cursor + size : toIndex), sorted, null);
             }
         }, closeHandlers);
     }
@@ -474,7 +474,7 @@ class ArrayShortStream extends AbstractShortStream {
                     }
                 }
 
-                return new ArrayShortStream(elements, from, cursor, null, sorted);
+                return new ArrayShortStream(elements, from, cursor, sorted, null);
             }
         }, closeHandlers);
     }
@@ -550,7 +550,7 @@ class ArrayShortStream extends AbstractShortStream {
                     }
                 }
 
-                return new ArrayShortStream(elements, from, cursor, null, sorted);
+                return new ArrayShortStream(elements, from, cursor, sorted, null);
             }
         }, closeHandlers);
     }
@@ -603,8 +603,8 @@ class ArrayShortStream extends AbstractShortStream {
 
         final ShortStream[] a = new ShortStream[2];
         final int middleIndex = n < toIndex - fromIndex ? fromIndex + n : toIndex;
-        a[0] = middleIndex == fromIndex ? ShortStream.empty() : new ArrayShortStream(elements, fromIndex, middleIndex, null, sorted);
-        a[1] = middleIndex == toIndex ? ShortStream.empty() : new ArrayShortStream(elements, middleIndex, toIndex, null, sorted);
+        a[0] = middleIndex == fromIndex ? ShortStream.empty() : new ArrayShortStream(elements, fromIndex, middleIndex, sorted, null);
+        a[1] = middleIndex == toIndex ? ShortStream.empty() : new ArrayShortStream(elements, middleIndex, toIndex, sorted, null);
 
         return new ArrayStream<>(a, closeHandlers);
     }
@@ -644,8 +644,8 @@ class ArrayShortStream extends AbstractShortStream {
                     throw new NoSuchElementException();
                 }
 
-                final ArrayShortStream result = new ArrayShortStream(elements, cursor, windowSize < toIndex - cursor ? cursor + windowSize : toIndex, null,
-                        sorted);
+                final ArrayShortStream result = new ArrayShortStream(elements, cursor, windowSize < toIndex - cursor ? cursor + windowSize : toIndex, sorted,
+                        null);
 
                 cursor = increment < toIndex - cursor && windowSize < toIndex - cursor ? cursor + increment : toIndex;
 
@@ -695,9 +695,9 @@ class ArrayShortStream extends AbstractShortStream {
         if (n >= toIndex - fromIndex) {
             return this;
         } else if (sorted && isSameComparator(comparator, SHORT_COMPARATOR)) {
-            return new ArrayShortStream(elements, toIndex - n, toIndex, closeHandlers, sorted);
+            return new ArrayShortStream(elements, toIndex - n, toIndex, sorted, closeHandlers);
         } else {
-            return new ArrayShortStream(N.top(elements, fromIndex, toIndex, n, comparator), closeHandlers, sorted);
+            return new ArrayShortStream(N.top(elements, fromIndex, toIndex, n, comparator), sorted, closeHandlers);
         }
     }
 
@@ -709,7 +709,7 @@ class ArrayShortStream extends AbstractShortStream {
 
         final short[] a = N.copyOfRange(elements, fromIndex, toIndex);
         N.sort(a);
-        return new ArrayShortStream(a, closeHandlers, true);
+        return new ArrayShortStream(a, true, closeHandlers);
     }
 
     @Override
@@ -745,7 +745,7 @@ class ArrayShortStream extends AbstractShortStream {
 
                 return a;
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -756,7 +756,7 @@ class ArrayShortStream extends AbstractShortStream {
             return this;
         }
 
-        return new ArrayShortStream(elements, fromIndex, (int) (fromIndex + maxSize), closeHandlers, sorted);
+        return new ArrayShortStream(elements, fromIndex, (int) (fromIndex + maxSize), sorted, closeHandlers);
     }
 
     @Override
@@ -768,9 +768,9 @@ class ArrayShortStream extends AbstractShortStream {
         }
 
         if (n >= toIndex - fromIndex) {
-            return new ArrayShortStream(elements, toIndex, toIndex, closeHandlers, sorted);
+            return new ArrayShortStream(elements, toIndex, toIndex, sorted, closeHandlers);
         } else {
-            return new ArrayShortStream(elements, (int) (fromIndex + n), toIndex, closeHandlers, sorted);
+            return new ArrayShortStream(elements, (int) (fromIndex + n), toIndex, sorted, closeHandlers);
         }
     }
 
@@ -983,7 +983,7 @@ class ArrayShortStream extends AbstractShortStream {
             return this;
         }
 
-        return new ArrayShortStream(elements, fromIndex + 1, toIndex, closeHandlers, sorted);
+        return new ArrayShortStream(elements, fromIndex + 1, toIndex, sorted, closeHandlers);
     }
 
     @Override
@@ -992,7 +992,7 @@ class ArrayShortStream extends AbstractShortStream {
             return this;
         }
 
-        return new ArrayShortStream(elements, fromIndex, toIndex - 1, closeHandlers, sorted);
+        return new ArrayShortStream(elements, fromIndex, toIndex - 1, sorted, closeHandlers);
     }
 
     @Override
@@ -1200,12 +1200,12 @@ class ArrayShortStream extends AbstractShortStream {
 
                 return a;
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
     public Stream<Short> boxed() {
-        return new IteratorStream<Short>(iterator(), closeHandlers, sorted, sorted ? SHORT_COMPARATOR : null);
+        return new IteratorStream<Short>(iterator(), sorted, sorted ? SHORT_COMPARATOR : null, closeHandlers);
     }
 
     @Override
@@ -1224,7 +1224,7 @@ class ArrayShortStream extends AbstractShortStream {
             throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
 
-        return new ParallelArrayShortStream(elements, fromIndex, toIndex, closeHandlers, sorted, maxThreadNum, splitor);
+        return new ParallelArrayShortStream(elements, fromIndex, toIndex, sorted, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -1237,6 +1237,6 @@ class ArrayShortStream extends AbstractShortStream {
 
         newCloseHandlers.add(closeHandler);
 
-        return new ArrayShortStream(elements, fromIndex, toIndex, newCloseHandlers, sorted);
+        return new ArrayShortStream(elements, fromIndex, toIndex, sorted, newCloseHandlers);
     }
 }

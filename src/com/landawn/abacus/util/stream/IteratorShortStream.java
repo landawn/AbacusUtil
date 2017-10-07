@@ -69,11 +69,11 @@ class IteratorShortStream extends AbstractShortStream {
     }
 
     IteratorShortStream(final ShortIterator values, final Collection<Runnable> closeHandlers) {
-        this(values, closeHandlers, false);
+        this(values, false, closeHandlers);
     }
 
-    IteratorShortStream(final ShortIterator values, final Collection<Runnable> closeHandlers, final boolean sorted) {
-        super(closeHandlers, sorted);
+    IteratorShortStream(final ShortIterator values, final boolean sorted, final Collection<Runnable> closeHandlers) {
+        super(sorted, closeHandlers);
 
         SkippableShortIterator tmp = null;
 
@@ -150,7 +150,7 @@ class IteratorShortStream extends AbstractShortStream {
 
                 return next;
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -186,7 +186,7 @@ class IteratorShortStream extends AbstractShortStream {
                 return next;
             }
 
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -230,7 +230,7 @@ class IteratorShortStream extends AbstractShortStream {
                 return next;
             }
 
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -643,7 +643,7 @@ class IteratorShortStream extends AbstractShortStream {
 
                 N.sort(a);
             }
-        }, closeHandlers, true);
+        }, true, closeHandlers);
     }
 
     @Override
@@ -660,7 +660,7 @@ class IteratorShortStream extends AbstractShortStream {
                 action.accept(next);
                 return next;
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -691,7 +691,7 @@ class IteratorShortStream extends AbstractShortStream {
             public void skip(long n) {
                 elements.skip(n);
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -754,7 +754,7 @@ class IteratorShortStream extends AbstractShortStream {
 
                 return elements.toArray();
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -953,7 +953,7 @@ class IteratorShortStream extends AbstractShortStream {
     public OptionalShort head() {
         if (head == null) {
             head = elements.hasNext() ? OptionalShort.of(elements.nextShort()) : OptionalShort.empty();
-            tail = new IteratorShortStream(elements, closeHandlers, sorted);
+            tail = new IteratorShortStream(elements, sorted, closeHandlers);
         }
 
         return head;
@@ -963,7 +963,7 @@ class IteratorShortStream extends AbstractShortStream {
     public ShortStream tail() {
         if (tail == null) {
             head = elements.hasNext() ? OptionalShort.of(elements.nextShort()) : OptionalShort.empty();
-            tail = new IteratorShortStream(elements, closeHandlers, sorted);
+            tail = new IteratorShortStream(elements, sorted, closeHandlers);
         }
 
         return tail;
@@ -973,7 +973,7 @@ class IteratorShortStream extends AbstractShortStream {
     public ShortStream head2() {
         if (head2 == null) {
             final short[] a = elements.toArray();
-            head2 = new ArrayShortStream(a, 0, a.length == 0 ? 0 : a.length - 1, closeHandlers, sorted);
+            head2 = new ArrayShortStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, closeHandlers);
             tail2 = a.length == 0 ? OptionalShort.empty() : OptionalShort.of(a[a.length - 1]);
         }
 
@@ -984,7 +984,7 @@ class IteratorShortStream extends AbstractShortStream {
     public OptionalShort tail2() {
         if (tail2 == null) {
             final short[] a = elements.toArray();
-            head2 = new ArrayShortStream(a, 0, a.length == 0 ? 0 : a.length - 1, closeHandlers, sorted);
+            head2 = new ArrayShortStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, closeHandlers);
             tail2 = a.length == 0 ? OptionalShort.empty() : OptionalShort.of(a[a.length - 1]);
         }
 
@@ -1188,12 +1188,12 @@ class IteratorShortStream extends AbstractShortStream {
             public void skip(long n) {
                 elements.skip(n);
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
     public Stream<Short> boxed() {
-        return new IteratorStream<Short>(iterator(), closeHandlers, sorted, sorted ? SHORT_COMPARATOR : null);
+        return new IteratorStream<Short>(iterator(), sorted, sorted ? SHORT_COMPARATOR : null, closeHandlers);
     }
 
     @Override
@@ -1207,7 +1207,7 @@ class IteratorShortStream extends AbstractShortStream {
             throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
 
-        return new ParallelIteratorShortStream(elements, closeHandlers, sorted, maxThreadNum, splitor);
+        return new ParallelIteratorShortStream(elements, sorted, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -1220,6 +1220,6 @@ class IteratorShortStream extends AbstractShortStream {
 
         newCloseHandlers.add(closeHandler);
 
-        return new IteratorShortStream(elements, newCloseHandlers, sorted);
+        return new IteratorShortStream(elements, sorted, newCloseHandlers);
     }
 }

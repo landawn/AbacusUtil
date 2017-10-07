@@ -97,10 +97,10 @@ import com.landawn.abacus.util.function.ToShortFunction;
  */
 public abstract class ShortStream extends StreamBase<Short, short[], ShortPredicate, ShortConsumer, ShortList, OptionalShort, IndexedShort, ShortStream> {
 
-    private static final ShortStream EMPTY = new ArrayShortStream(N.EMPTY_SHORT_ARRAY, null, true);
+    private static final ShortStream EMPTY = new ArrayShortStream(N.EMPTY_SHORT_ARRAY, true, null);
 
-    ShortStream(final Collection<Runnable> closeHandlers, final boolean sorted) {
-        super(closeHandlers, sorted, null);
+    ShortStream(final boolean sorted, final Collection<Runnable> closeHandlers) {
+        super(sorted, null, closeHandlers);
     }
 
     /**

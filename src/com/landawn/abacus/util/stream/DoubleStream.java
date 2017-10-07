@@ -100,10 +100,10 @@ import com.landawn.abacus.util.function.ToDoubleFunction;
 public abstract class DoubleStream
         extends StreamBase<Double, double[], DoublePredicate, DoubleConsumer, DoubleList, OptionalDouble, IndexedDouble, DoubleStream> {
 
-    private static final DoubleStream EMPTY = new ArrayDoubleStream(N.EMPTY_DOUBLE_ARRAY, null, true);
+    private static final DoubleStream EMPTY = new ArrayDoubleStream(N.EMPTY_DOUBLE_ARRAY, true, null);
 
-    DoubleStream(final Collection<Runnable> closeHandlers, final boolean sorted) {
-        super(closeHandlers, sorted, null);
+    DoubleStream(final boolean sorted, final Collection<Runnable> closeHandlers) {
+        super(sorted, null, closeHandlers);
     }
 
     /**
@@ -1641,8 +1641,8 @@ public abstract class DoubleStream
     }
 
     public static abstract class DoubleStreamEx extends DoubleStream {
-        private DoubleStreamEx(Collection<Runnable> closeHandlers, boolean sorted) {
-            super(closeHandlers, sorted);
+        private DoubleStreamEx(boolean sorted, Collection<Runnable> closeHandlers) {
+            super(sorted, closeHandlers);
             // Factory class.
         }
     }

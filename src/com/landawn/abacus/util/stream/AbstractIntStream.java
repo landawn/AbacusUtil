@@ -63,8 +63,8 @@ import com.landawn.abacus.util.function.ToIntFunction;
  */
 abstract class AbstractIntStream extends IntStream {
 
-    AbstractIntStream(final Collection<Runnable> closeHandlers, final boolean sorted) {
-        super(closeHandlers, sorted);
+    AbstractIntStream(final boolean sorted, final Collection<Runnable> closeHandlers) {
+        super(sorted, closeHandlers);
     }
 
     @Override
@@ -187,7 +187,7 @@ abstract class AbstractIntStream extends IntStream {
         return splitToList(size).map(new Function<IntList, IntStream>() {
             @Override
             public IntStream apply(IntList t) {
-                return new ArrayIntStream(t.array(), 0, t.size(), null, sorted);
+                return new ArrayIntStream(t.array(), 0, t.size(), sorted, null);
             }
         });
     }
@@ -197,7 +197,7 @@ abstract class AbstractIntStream extends IntStream {
         return splitToList(predicate).map(new Function<IntList, IntStream>() {
             @Override
             public IntStream apply(IntList t) {
-                return new ArrayIntStream(t.array(), 0, t.size(), null, sorted);
+                return new ArrayIntStream(t.array(), 0, t.size(), sorted, null);
             }
         });
     }
@@ -221,7 +221,7 @@ abstract class AbstractIntStream extends IntStream {
         return splitToList(identity, predicate, identityUpdate).map(new Function<IntList, IntStream>() {
             @Override
             public IntStream apply(IntList t) {
-                return new ArrayIntStream(t.array(), 0, t.size(), null, sorted);
+                return new ArrayIntStream(t.array(), 0, t.size(), sorted, null);
             }
         });
     }
@@ -231,7 +231,7 @@ abstract class AbstractIntStream extends IntStream {
         return slidingToList(windowSize, increment).map(new Function<IntList, IntStream>() {
             @Override
             public IntStream apply(IntList t) {
-                return new ArrayIntStream(t.array(), 0, t.size(), null, sorted);
+                return new ArrayIntStream(t.array(), 0, t.size(), sorted, null);
             }
         });
     }
@@ -461,7 +461,7 @@ abstract class AbstractIntStream extends IntStream {
             list.add(iter.nextInt());
         }
 
-        final IntStream[] a = { new ArrayIntStream(list.array(), 0, list.size(), null, sorted), new IteratorIntStream(iter, null, sorted) };
+        final IntStream[] a = { new ArrayIntStream(list.array(), 0, list.size(), sorted, null), new IteratorIntStream(iter, sorted, null) };
 
         return this.newStream(a, false, null);
     }
@@ -487,11 +487,11 @@ abstract class AbstractIntStream extends IntStream {
             }
         }
 
-        final IntStream[] a = { new ArrayIntStream(list.array(), 0, list.size(), null, sorted), new IteratorIntStream(iter, null, sorted) };
+        final IntStream[] a = { new ArrayIntStream(list.array(), 0, list.size(), sorted, null), new IteratorIntStream(iter, sorted, null) };
 
         if (s != null) {
             if (sorted) {
-                a[1] = new IteratorIntStream(a[1].prepend(s).skippableIterator(), null, sorted);
+                a[1] = new IteratorIntStream(a[1].prepend(s).skippableIterator(), sorted, null);
             } else {
                 a[1] = a[1].prepend(s);
             }

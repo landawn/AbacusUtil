@@ -65,8 +65,8 @@ class ArrayCharStream extends AbstractCharStream {
         this(values, 0, values.length, closeHandlers);
     }
 
-    ArrayCharStream(final char[] values, final Collection<Runnable> closeHandlers, final boolean sorted) {
-        this(values, 0, values.length, closeHandlers, sorted);
+    ArrayCharStream(final char[] values, final boolean sorted, final Collection<Runnable> closeHandlers) {
+        this(values, 0, values.length, sorted, closeHandlers);
     }
 
     ArrayCharStream(final char[] values, final int fromIndex, final int toIndex) {
@@ -74,11 +74,11 @@ class ArrayCharStream extends AbstractCharStream {
     }
 
     ArrayCharStream(final char[] values, final int fromIndex, final int toIndex, final Collection<Runnable> closeHandlers) {
-        this(values, fromIndex, toIndex, closeHandlers, false);
+        this(values, fromIndex, toIndex, false, closeHandlers);
     }
 
-    ArrayCharStream(final char[] values, final int fromIndex, final int toIndex, final Collection<Runnable> closeHandlers, final boolean sorted) {
-        super(closeHandlers, sorted);
+    ArrayCharStream(final char[] values, final int fromIndex, final int toIndex, final boolean sorted, final Collection<Runnable> closeHandlers) {
+        super(sorted, closeHandlers);
 
         checkFromToIndex(fromIndex, toIndex, values.length);
 
@@ -117,7 +117,7 @@ class ArrayCharStream extends AbstractCharStream {
 
                 return elements[cursor++];
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -150,7 +150,7 @@ class ArrayCharStream extends AbstractCharStream {
 
                 return elements[cursor++];
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -190,7 +190,7 @@ class ArrayCharStream extends AbstractCharStream {
 
                 return elements[cursor++];
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -415,7 +415,7 @@ class ArrayCharStream extends AbstractCharStream {
                     throw new NoSuchElementException();
                 }
 
-                return new ArrayCharStream(elements, cursor, (cursor = size < toIndex - cursor ? cursor + size : toIndex), null, sorted);
+                return new ArrayCharStream(elements, cursor, (cursor = size < toIndex - cursor ? cursor + size : toIndex), sorted, null);
             }
         }, closeHandlers);
     }
@@ -473,7 +473,7 @@ class ArrayCharStream extends AbstractCharStream {
                     }
                 }
 
-                return new ArrayCharStream(elements, from, cursor, null, sorted);
+                return new ArrayCharStream(elements, from, cursor, sorted, null);
             }
         }, closeHandlers);
     }
@@ -549,7 +549,7 @@ class ArrayCharStream extends AbstractCharStream {
                     }
                 }
 
-                return new ArrayCharStream(elements, from, cursor, null, sorted);
+                return new ArrayCharStream(elements, from, cursor, sorted, null);
             }
         }, closeHandlers);
     }
@@ -602,8 +602,8 @@ class ArrayCharStream extends AbstractCharStream {
 
         final CharStream[] a = new CharStream[2];
         final int middleIndex = n < toIndex - fromIndex ? fromIndex + n : toIndex;
-        a[0] = middleIndex == fromIndex ? CharStream.empty() : new ArrayCharStream(elements, fromIndex, middleIndex, null, sorted);
-        a[1] = middleIndex == toIndex ? CharStream.empty() : new ArrayCharStream(elements, middleIndex, toIndex, null, sorted);
+        a[0] = middleIndex == fromIndex ? CharStream.empty() : new ArrayCharStream(elements, fromIndex, middleIndex, sorted, null);
+        a[1] = middleIndex == toIndex ? CharStream.empty() : new ArrayCharStream(elements, middleIndex, toIndex, sorted, null);
 
         return new ArrayStream<>(a, closeHandlers);
     }
@@ -643,8 +643,8 @@ class ArrayCharStream extends AbstractCharStream {
                     throw new NoSuchElementException();
                 }
 
-                final ArrayCharStream result = new ArrayCharStream(elements, cursor, windowSize < toIndex - cursor ? cursor + windowSize : toIndex, null,
-                        sorted);
+                final ArrayCharStream result = new ArrayCharStream(elements, cursor, windowSize < toIndex - cursor ? cursor + windowSize : toIndex, sorted,
+                        null);
 
                 cursor = increment < toIndex - cursor && windowSize < toIndex - cursor ? cursor + increment : toIndex;
 
@@ -690,7 +690,7 @@ class ArrayCharStream extends AbstractCharStream {
 
         final char[] a = N.copyOfRange(elements, fromIndex, toIndex);
         N.sort(a);
-        return new ArrayCharStream(a, closeHandlers, true);
+        return new ArrayCharStream(a, true, closeHandlers);
     }
 
     @Override
@@ -726,7 +726,7 @@ class ArrayCharStream extends AbstractCharStream {
 
                 return a;
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -737,7 +737,7 @@ class ArrayCharStream extends AbstractCharStream {
             return this;
         }
 
-        return new ArrayCharStream(elements, fromIndex, (int) (fromIndex + maxSize), closeHandlers, sorted);
+        return new ArrayCharStream(elements, fromIndex, (int) (fromIndex + maxSize), sorted, closeHandlers);
     }
 
     @Override
@@ -749,9 +749,9 @@ class ArrayCharStream extends AbstractCharStream {
         }
 
         if (n >= toIndex - fromIndex) {
-            return new ArrayCharStream(elements, toIndex, toIndex, closeHandlers, sorted);
+            return new ArrayCharStream(elements, toIndex, toIndex, sorted, closeHandlers);
         } else {
-            return new ArrayCharStream(elements, (int) (fromIndex + n), toIndex, closeHandlers, sorted);
+            return new ArrayCharStream(elements, (int) (fromIndex + n), toIndex, sorted, closeHandlers);
         }
     }
 
@@ -964,7 +964,7 @@ class ArrayCharStream extends AbstractCharStream {
             return this;
         }
 
-        return new ArrayCharStream(elements, fromIndex + 1, toIndex, closeHandlers, sorted);
+        return new ArrayCharStream(elements, fromIndex + 1, toIndex, sorted, closeHandlers);
     }
 
     @Override
@@ -973,7 +973,7 @@ class ArrayCharStream extends AbstractCharStream {
             return this;
         }
 
-        return new ArrayCharStream(elements, fromIndex, toIndex - 1, closeHandlers, sorted);
+        return new ArrayCharStream(elements, fromIndex, toIndex - 1, sorted, closeHandlers);
     }
 
     @Override
@@ -1181,12 +1181,12 @@ class ArrayCharStream extends AbstractCharStream {
 
                 return a;
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
     public Stream<Character> boxed() {
-        return new IteratorStream<Character>(iterator(), closeHandlers, sorted, sorted ? CHAR_COMPARATOR : null);
+        return new IteratorStream<Character>(iterator(), sorted, sorted ? CHAR_COMPARATOR : null, closeHandlers);
     }
 
     @Override
@@ -1205,7 +1205,7 @@ class ArrayCharStream extends AbstractCharStream {
             throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
 
-        return new ParallelArrayCharStream(elements, fromIndex, toIndex, closeHandlers, sorted, maxThreadNum, splitor);
+        return new ParallelArrayCharStream(elements, fromIndex, toIndex, sorted, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -1218,6 +1218,6 @@ class ArrayCharStream extends AbstractCharStream {
 
         newCloseHandlers.add(closeHandler);
 
-        return new ArrayCharStream(elements, fromIndex, toIndex, newCloseHandlers, sorted);
+        return new ArrayCharStream(elements, fromIndex, toIndex, sorted, newCloseHandlers);
     }
 }

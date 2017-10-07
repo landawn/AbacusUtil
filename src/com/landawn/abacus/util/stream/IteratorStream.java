@@ -84,11 +84,11 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     IteratorStream(final Iterator<? extends T> values, final Collection<Runnable> closeHandlers) {
-        this(values, closeHandlers, false, null);
+        this(values, false, null, closeHandlers);
     }
 
-    IteratorStream(final Iterator<? extends T> values, final Collection<Runnable> closeHandlers, final boolean sorted, final Comparator<? super T> comparator) {
-        super(closeHandlers, sorted, comparator);
+    IteratorStream(final Iterator<? extends T> values, final boolean sorted, final Comparator<? super T> comparator, final Collection<Runnable> closeHandlers) {
+        super(sorted, comparator, closeHandlers);
 
         N.requireNonNull(values);
 
@@ -135,8 +135,8 @@ class IteratorStream<T> extends AbstractStream<T> {
         this.elements = tmp;
     }
 
-    IteratorStream(final Stream<T> stream, final Set<Runnable> closeHandlers, final boolean sorted, final Comparator<? super T> comparator) {
-        this(stream.iterator(), mergeCloseHandlers(stream, closeHandlers), sorted, comparator);
+    IteratorStream(final Stream<T> stream, final boolean sorted, final Comparator<? super T> comparator, final Set<Runnable> closeHandlers) {
+        this(stream.iterator(), sorted, comparator, mergeCloseHandlers(stream, closeHandlers));
     }
 
     @Override
@@ -171,7 +171,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
                 return next;
             }
-        }, closeHandlers, sorted, cmp);
+        }, sorted, cmp, closeHandlers);
     }
 
     @Override
@@ -207,7 +207,7 @@ class IteratorStream<T> extends AbstractStream<T> {
                 return next;
             }
 
-        }, closeHandlers, sorted, cmp);
+        }, sorted, cmp, closeHandlers);
     }
 
     @Override
@@ -251,7 +251,7 @@ class IteratorStream<T> extends AbstractStream<T> {
                 return next;
             }
 
-        }, closeHandlers, sorted, cmp);
+        }, sorted, cmp, closeHandlers);
     }
 
     @Override
@@ -1333,7 +1333,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
                 toIndex = a.length;
             }
-        }, closeHandlers, sorted, cmp);
+        }, sorted, cmp, closeHandlers);
     }
 
     @Override
@@ -1425,7 +1425,7 @@ class IteratorStream<T> extends AbstractStream<T> {
                     N.sort(a, comparator);
                 }
             }
-        }, closeHandlers, true, comparator);
+        }, true, comparator, closeHandlers);
     }
 
     @Override
@@ -1442,7 +1442,7 @@ class IteratorStream<T> extends AbstractStream<T> {
                 action.accept(next);
                 return next;
             }
-        }, closeHandlers, sorted, cmp);
+        }, sorted, cmp, closeHandlers);
     }
 
     @Override
@@ -1473,7 +1473,7 @@ class IteratorStream<T> extends AbstractStream<T> {
             public void skip(long n) {
                 elements.skip(n);
             }
-        }, closeHandlers, sorted, cmp);
+        }, sorted, cmp, closeHandlers);
     }
 
     @Override
@@ -1536,7 +1536,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
                 return elements.toArray(a);
             }
-        }, closeHandlers, sorted, cmp);
+        }, sorted, cmp, closeHandlers);
     }
 
     @Override
@@ -1856,7 +1856,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     public NullabLe<T> head() {
         if (head == null) {
             head = elements.hasNext() ? NullabLe.of(elements.next()) : NullabLe.<T> empty();
-            tail = new IteratorStream<>(elements, closeHandlers, sorted, cmp);
+            tail = new IteratorStream<>(elements, sorted, cmp, closeHandlers);
         }
 
         return head;
@@ -1866,7 +1866,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     public Stream<T> tail() {
         if (tail == null) {
             head = elements.hasNext() ? NullabLe.of(elements.next()) : NullabLe.<T> empty();
-            tail = new IteratorStream<>(elements, closeHandlers, sorted, cmp);
+            tail = new IteratorStream<>(elements, sorted, cmp, closeHandlers);
         }
 
         return tail;
@@ -1876,7 +1876,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     public Stream<T> head2() {
         if (head2 == null) {
             final Object[] a = this.toArray();
-            head2 = new ArrayStream<>((T[]) a, 0, a.length == 0 ? 0 : a.length - 1, closeHandlers, sorted, cmp);
+            head2 = new ArrayStream<>((T[]) a, 0, a.length == 0 ? 0 : a.length - 1, sorted, cmp, closeHandlers);
             tail2 = a.length == 0 ? NullabLe.<T> empty() : NullabLe.of((T) a[a.length - 1]);
         }
 
@@ -1887,7 +1887,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     public NullabLe<T> tail2() {
         if (tail2 == null) {
             final Object[] a = this.toArray();
-            head2 = new ArrayStream<>((T[]) a, 0, a.length == 0 ? 0 : a.length - 1, closeHandlers, sorted, cmp);
+            head2 = new ArrayStream<>((T[]) a, 0, a.length == 0 ? 0 : a.length - 1, sorted, cmp, closeHandlers);
             tail2 = a.length == 0 ? NullabLe.<T> empty() : NullabLe.of((T) a[a.length - 1]);
         }
 
@@ -1899,7 +1899,7 @@ class IteratorStream<T> extends AbstractStream<T> {
         N.checkArgument(n >= 0, "'n' can't be negative");
 
         if (n == 0) {
-            return new IteratorStream<>(SkippableObjIterator.EMPTY, closeHandlers, sorted, cmp);
+            return new IteratorStream<>(SkippableObjIterator.EMPTY, sorted, cmp, closeHandlers);
         }
 
         final Deque<T> dqueue = n <= 1024 ? new ArrayDeque<T>(n) : new LinkedList<T>();
@@ -1912,7 +1912,7 @@ class IteratorStream<T> extends AbstractStream<T> {
             dqueue.offerLast(elements.next());
         }
 
-        return new IteratorStream<>(dqueue.iterator(), closeHandlers, sorted, cmp);
+        return new IteratorStream<>(dqueue.iterator(), sorted, cmp, closeHandlers);
     }
 
     @Override
@@ -1950,7 +1950,7 @@ class IteratorStream<T> extends AbstractStream<T> {
                 return dqueue.pollFirst();
             }
 
-        }, closeHandlers, sorted, cmp);
+        }, sorted, cmp, closeHandlers);
     }
 
     @Override
@@ -2130,7 +2130,7 @@ class IteratorStream<T> extends AbstractStream<T> {
         if (iter instanceof QueuedIterator && ((QueuedIterator<? extends T>) iter).max() >= queueSize) {
             return this;
         } else {
-            return new IteratorStream<>(Stream.parallelConcat(Arrays.asList(iter), queueSize, asyncExecutor), closeHandlers, sorted, cmp);
+            return new IteratorStream<>(Stream.parallelConcat(Arrays.asList(iter), queueSize, asyncExecutor), sorted, cmp, closeHandlers);
         }
     }
 
@@ -2145,7 +2145,7 @@ class IteratorStream<T> extends AbstractStream<T> {
             throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
 
-        return new ParallelIteratorStream<>(elements, closeHandlers, sorted, cmp, maxThreadNum, splitor);
+        return new ParallelIteratorStream<>(elements, sorted, cmp, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -2158,6 +2158,6 @@ class IteratorStream<T> extends AbstractStream<T> {
 
         newCloseHandlers.add(closeHandler);
 
-        return new IteratorStream<>(elements, newCloseHandlers, sorted, cmp);
+        return new IteratorStream<>(elements, sorted, cmp, newCloseHandlers);
     }
 }

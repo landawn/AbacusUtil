@@ -102,10 +102,10 @@ import com.landawn.abacus.util.function.ToLongFunction;
  */
 public abstract class LongStream extends StreamBase<Long, long[], LongPredicate, LongConsumer, LongList, OptionalLong, IndexedLong, LongStream> {
 
-    private static final LongStream EMPTY = new ArrayLongStream(N.EMPTY_LONG_ARRAY, null, true);
+    private static final LongStream EMPTY = new ArrayLongStream(N.EMPTY_LONG_ARRAY, true, null);
 
-    LongStream(final Collection<Runnable> closeHandlers, final boolean sorted) {
-        super(closeHandlers, sorted, null);
+    LongStream(final boolean sorted, final Collection<Runnable> closeHandlers) {
+        super(sorted, null, closeHandlers);
     }
 
     /**
@@ -1851,8 +1851,8 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
     }
 
     public static abstract class LongStreamEx extends LongStream {
-        private LongStreamEx(Collection<Runnable> closeHandlers, boolean sorted) {
-            super(closeHandlers, sorted);
+        private LongStreamEx(boolean sorted, Collection<Runnable> closeHandlers) {
+            super(sorted, closeHandlers);
             // Factory class.
         }
     }

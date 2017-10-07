@@ -9,15 +9,19 @@
 
 4*, Remove IOUtil.listDirectories(parentPath, recursively, filter).
 
-5, Add IntStream/.../Stream.of(Supplier<Collection<? extends T>) for lazy evaluation.
+5*, Refactoring: Change: Retry.of(...Function<...? super Exception, Boolean>) to Retry.of(...Predicate<...? super Exception>).
 
-6, Add Stream<File> Stream.list(...).
+6*, Refactoring N/IOUtil/JdbcUtil.parse(...), replace passing 'null' for ending with 'onComplete'.
 
-7, Add Fn.wrap(...).
+7, Add IntStream/.../Stream.of(Supplier<Collection<? extends T>) for lazy evaluation.
 
-8, Add SQLBuilder/CQLBuilder.apply(..).
+8, Add Stream<File> Stream.list(...).
 
-9, Improvements and bug fix.
+9, Add Fn.wrap(...).
+
+10, Add SQLBuilder/CQLBuilder.apply(..).
+
+11, Improvements and bug fix.
 
 
 ﻿========Changes in 1.0.1 =========================================================================

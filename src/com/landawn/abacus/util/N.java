@@ -30856,7 +30856,7 @@ public final class N {
     }
 
     public static void execute(final Try.Runnable<? extends Exception> cmd, final int retryTimes, final long retryInterval,
-            final Function<? super Throwable, Boolean> retryCondition) {
+            final Predicate<? super Exception> retryCondition) {
         try {
             Retry0.of(retryTimes, retryInterval, retryCondition).run(cmd);
         } catch (Exception e) {
@@ -30865,7 +30865,7 @@ public final class N {
     }
 
     public static <T> T execute(final Callable<T> cmd, final int retryTimes, final long retryInterval,
-            final BiFunction<? super T, ? super Throwable, Boolean> retryCondition) {
+            final BiPredicate<? super T, ? super Exception> retryCondition) {
         try {
             final Retry0<T> retry = Retry0.of(retryTimes, retryInterval, retryCondition);
             return retry.call(cmd);
@@ -30908,16 +30908,8 @@ public final class N {
         return asyncExecutor.execute(commands);
     }
 
-    //    public static <T> CompletableFuture<T> asyncInvoke(final Method method, final Object... args) {
-    //        return asyncExecutor.invoke(method, args);
-    //    }
-    //
-    //    public static <T> CompletableFuture<T> asyncInvoke(final Object instance, final Method method, final Object... args) {
-    //        return asyncExecutor.invoke(instance, method, args);
-    //    }
-
     public static CompletableFuture<Void> asyncExecute(final Try.Runnable<? extends Exception> cmd, final int retryTimes, final long retryInterval,
-            final Function<? super Throwable, Boolean> retryCondition) {
+            final Predicate<? super Exception> retryCondition) {
         return asyncExecutor.execute(new Runnable() {
             @Override
             public void run() {
@@ -30931,7 +30923,7 @@ public final class N {
     }
 
     public static <T> CompletableFuture<T> asyncExecute(final Callable<T> cmd, final int retryTimes, final long retryInterval,
-            final BiFunction<? super T, ? super Throwable, Boolean> retryCondition) {
+            final BiPredicate<? super T, ? super Exception> retryCondition) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
             public T call() {
@@ -30946,16 +30938,25 @@ public final class N {
     }
 
     public static <T> void parse(final Iterator<? extends T> iter, final Consumer<? super T> elementParser) {
-        parse(iter, 0, Long.MAX_VALUE, elementParser);
+        parse(iter, elementParser, null);
     }
 
-    @Deprecated
-    static <T> void parse(final Iterator<? extends T> iter, final int processThreadNumber, final int queueSize, final Consumer<? super T> elementParser) {
-        parse(iter, 0, Long.MAX_VALUE, processThreadNumber, queueSize, elementParser);
+    public static <T> void parse(final Iterator<? extends T> iter, final Consumer<? super T> elementParser, final Runnable onComplete) {
+        parse(iter, 0, Long.MAX_VALUE, elementParser, onComplete);
     }
 
     public static <T> void parse(final Iterator<? extends T> iter, final long offset, final long count, final Consumer<? super T> elementParser) {
-        parse(iter, offset, count, 0, 0, elementParser);
+        parse(iter, offset, count, elementParser, null);
+    }
+
+    public static <T> void parse(final Iterator<? extends T> iter, final long offset, final long count, final Consumer<? super T> elementParser,
+            final Runnable onComplete) {
+        parse(iter, offset, count, 0, 0, elementParser, onComplete);
+    }
+
+    public static <T> void parse(final Iterator<? extends T> iter, long offset, long count, final int processThreadNum, final int queueSize,
+            final Consumer<? super T> elementParser) {
+        parse(iter, offset, count, processThreadNum, queueSize, elementParser, null);
     }
 
     /**
@@ -30964,27 +30965,49 @@ public final class N {
      * @param iter
      * @param offset
      * @param count
-     * @param processThreadNumber thread number used to parse/process the lines/records
+     * @param processThreadNum new threads started to parse/process the lines/records
      * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-     * @param elementParser always remember to handle the ending element <code>null</code>
+     * @param elementParser.
+     * @param onComplete
+     * @param onError
      */
-    public static <T> void parse(final Iterator<? extends T> iter, long offset, long count, final int processThreadNumber, final int queueSize,
-            final Consumer<? super T> elementParser) {
-        parseII(N.asList(iter), offset, count, 1, processThreadNumber, queueSize, elementParser);
+    public static <T> void parse(final Iterator<? extends T> iter, long offset, long count, final int processThreadNum, final int queueSize,
+            final Consumer<? super T> elementParser, final Runnable onComplete) {
+        parse(N.asList(iter), offset, count, 0, processThreadNum, queueSize, elementParser, onComplete);
     }
 
     public static <T> void parse(final Collection<? extends Iterator<? extends T>> iterators, final Consumer<? super T> elementParser) {
-        parse(iterators, 0, Long.MAX_VALUE, elementParser);
+        parse(iterators, elementParser, null);
+    }
+
+    public static <T> void parse(final Collection<? extends Iterator<? extends T>> iterators, final Consumer<? super T> elementParser,
+            final Runnable onComplete) {
+        parse(iterators, 0, Long.MAX_VALUE, elementParser, onComplete);
     }
 
     public static <T> void parse(final Collection<? extends Iterator<? extends T>> iterators, final long offset, final long count,
             final Consumer<? super T> elementParser) {
-        parse(iterators, offset, count, 0, 0, 0, elementParser);
+        parse(iterators, offset, count, elementParser, null);
     }
 
-    public static <T> void parse(final Collection<? extends Iterator<? extends T>> iterators, final int readThreadNumber, final int processThreadNumber,
+    public static <T> void parse(final Collection<? extends Iterator<? extends T>> iterators, final long offset, final long count,
+            final Consumer<? super T> elementParser, final Runnable onComplete) {
+        parse(iterators, offset, count, 0, 0, 0, elementParser, onComplete);
+    }
+
+    public static <T> void parse(final Collection<? extends Iterator<? extends T>> iterators, final int readThreadNum, final int processThreadNum,
             final int queueSize, final Consumer<? super T> elementParser) {
-        parse(iterators, 0, Long.MAX_VALUE, readThreadNumber, processThreadNumber, queueSize, elementParser);
+        parse(iterators, readThreadNum, processThreadNum, queueSize, elementParser, null);
+    }
+
+    public static <T> void parse(final Collection<? extends Iterator<? extends T>> iterators, final int readThreadNum, final int processThreadNum,
+            final int queueSize, final Consumer<? super T> elementParser, final Runnable onComplete) {
+        parse(iterators, 0, Long.MAX_VALUE, readThreadNum, processThreadNum, queueSize, elementParser);
+    }
+
+    public static <T> void parse(final Collection<? extends Iterator<? extends T>> iterators, final long offset, final long count, final int readThreadNum,
+            final int processThreadNum, final int queueSize, final Consumer<? super T> elementParser) {
+        parse(iterators, offset, count, readThreadNum, processThreadNum, queueSize, elementParser, null);
     }
 
     /**
@@ -30993,45 +31016,44 @@ public final class N {
      * @param iterators
      * @param offset
      * @param count
-     * @param processThreadNumber thread number used to parse/process the lines/records
+     * @param readThreadNum new threads started to parse/process the lines/records
+     * @param processThreadNum new threads started to parse/process the lines/records
      * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-     * @param elementParser always remember to handle the ending element <code>null</code>
+     * @param elementParser.
+     * @param onComplete
      */
-    public static <T> void parse(final Collection<? extends Iterator<? extends T>> iterators, final long offset, final long count, final int readThreadNumber,
-            final int processThreadNumber, final int queueSize, final Consumer<? super T> elementParser) {
+    public static <T> void parse(final Collection<? extends Iterator<? extends T>> iterators, final long offset, final long count, final int readThreadNum,
+            final int processThreadNum, final int queueSize, final Consumer<? super T> elementParser, final Runnable onComplete) {
+        N.checkArgument(offset >= 0 && count >= 0, "'offset'=%s and 'count'=%s can't be negative", offset, count);
+
         if (N.isNullOrEmpty(iterators)) {
             return;
         }
-
-        parseII(iterators, offset, count, readThreadNumber, processThreadNumber, queueSize, elementParser);
-    }
-
-    private static <T> void parseII(final Collection<? extends Iterator<? extends T>> iterators, long offset, long count, final int readThreadNum,
-            final int processThreadNumber, final int queueSize, final Consumer<? super T> elementParser) {
-        N.checkArgument(offset >= 0 && count >= 0, "'offset'=%s and 'count'=%s can't be negative", offset, count);
 
         if (logger.isInfoEnabled()) {
             logger.info("### Start to parse");
         }
 
-        try (final Stream<T> stream = ((readThreadNum > 1 || processThreadNumber > 0)
+        try (final Stream<T> stream = ((readThreadNum > 0 || queueSize > 0)
                 ? Stream.parallelConcat2(iterators, (readThreadNum == 0 ? 1 : readThreadNum), (queueSize == 0 ? 1024 : queueSize))
                 : Stream.concat2(iterators))) {
 
             final Iterator<? extends T> iteratorII = stream.skip(offset).limit(count).iterator();
 
-            if (processThreadNumber == 0) {
+            if (processThreadNum == 0) {
                 while (iteratorII.hasNext()) {
                     elementParser.accept(iteratorII.next());
                 }
 
-                elementParser.accept(null);
+                if (onComplete != null) {
+                    onComplete.run();
+                }
             } else {
                 final AtomicInteger activeThreadNum = new AtomicInteger();
-                final ExecutorService executorService = Executors.newFixedThreadPool(processThreadNumber);
+                final ExecutorService executorService = Executors.newFixedThreadPool(processThreadNum);
                 final Holder<Throwable> errorHolder = new Holder<>();
 
-                for (int i = 0; i < processThreadNumber; i++) {
+                for (int i = 0; i < processThreadNum; i++) {
                     activeThreadNum.incrementAndGet();
 
                     executorService.execute(new Runnable() {
@@ -31069,9 +31091,9 @@ public final class N {
                     N.sleep(1);
                 }
 
-                if (errorHolder.value() == null) {
+                if (errorHolder.value() == null && onComplete != null) {
                     try {
-                        elementParser.accept(null);
+                        onComplete.run();
                     } catch (Throwable e) {
                         errorHolder.setValue(e);
                     }

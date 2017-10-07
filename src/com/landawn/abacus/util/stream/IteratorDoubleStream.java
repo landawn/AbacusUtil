@@ -72,11 +72,11 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     }
 
     IteratorDoubleStream(final DoubleIterator values, final Collection<Runnable> closeHandlers) {
-        this(values, closeHandlers, false);
+        this(values, false, closeHandlers);
     }
 
-    IteratorDoubleStream(final DoubleIterator values, final Collection<Runnable> closeHandlers, final boolean sorted) {
-        super(closeHandlers, sorted);
+    IteratorDoubleStream(final DoubleIterator values, final boolean sorted, final Collection<Runnable> closeHandlers) {
+        super(sorted, closeHandlers);
 
         SkippableDoubleIterator tmp = null;
 
@@ -153,7 +153,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
                 return next;
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -189,7 +189,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
                 return next;
             }
 
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -233,7 +233,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
                 return next;
             }
 
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -745,7 +745,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
                 N.sort(a);
             }
-        }, closeHandlers, true);
+        }, true, closeHandlers);
     }
 
     @Override
@@ -762,7 +762,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
                 action.accept(next);
                 return next;
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -793,7 +793,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
             public void skip(long n) {
                 elements.skip(n);
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -856,7 +856,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
                 return elements.toArray();
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -1055,7 +1055,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     public OptionalDouble head() {
         if (head == null) {
             head = elements.hasNext() ? OptionalDouble.of(elements.nextDouble()) : OptionalDouble.empty();
-            tail = new IteratorDoubleStream(elements, closeHandlers, sorted);
+            tail = new IteratorDoubleStream(elements, sorted, closeHandlers);
         }
 
         return head;
@@ -1065,7 +1065,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     public DoubleStream tail() {
         if (tail == null) {
             head = elements.hasNext() ? OptionalDouble.of(elements.nextDouble()) : OptionalDouble.empty();
-            tail = new IteratorDoubleStream(elements, closeHandlers, sorted);
+            tail = new IteratorDoubleStream(elements, sorted, closeHandlers);
         }
 
         return tail;
@@ -1075,7 +1075,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     public DoubleStream head2() {
         if (head2 == null) {
             final double[] a = elements.toArray();
-            head2 = new ArrayDoubleStream(a, 0, a.length == 0 ? 0 : a.length - 1, closeHandlers, sorted);
+            head2 = new ArrayDoubleStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, closeHandlers);
             tail2 = a.length == 0 ? OptionalDouble.empty() : OptionalDouble.of(a[a.length - 1]);
         }
 
@@ -1086,7 +1086,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     public OptionalDouble tail2() {
         if (tail2 == null) {
             final double[] a = elements.toArray();
-            head2 = new ArrayDoubleStream(a, 0, a.length == 0 ? 0 : a.length - 1, closeHandlers, sorted);
+            head2 = new ArrayDoubleStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, closeHandlers);
             tail2 = a.length == 0 ? OptionalDouble.empty() : OptionalDouble.of(a[a.length - 1]);
         }
 
@@ -1242,7 +1242,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public Stream<Double> boxed() {
-        return new IteratorStream<Double>(iterator(), closeHandlers, sorted, sorted ? DOUBLE_COMPARATOR : null);
+        return new IteratorStream<Double>(iterator(), sorted, sorted ? DOUBLE_COMPARATOR : null, closeHandlers);
     }
 
     @Override
@@ -1256,7 +1256,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
             throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
 
-        return new ParallelIteratorDoubleStream(elements, closeHandlers, sorted, maxThreadNum, splitor);
+        return new ParallelIteratorDoubleStream(elements, sorted, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -1269,6 +1269,6 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
         newCloseHandlers.add(closeHandler);
 
-        return new IteratorDoubleStream(elements, newCloseHandlers, sorted);
+        return new IteratorDoubleStream(elements, sorted, newCloseHandlers);
     }
 }

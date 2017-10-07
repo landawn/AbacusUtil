@@ -61,6 +61,7 @@ import java.util.zip.ZipOutputStream;
 import com.landawn.abacus.exception.UncheckedIOException;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
+import com.landawn.abacus.util.Fn.BiPredicates;
 import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.Consumer;
 
@@ -3132,7 +3133,7 @@ public final class IOUtil {
     }
 
     public static boolean deleteFiles(final File dir) {
-        return deleteFiles(dir, null);
+        return deleteFiles(dir, BiPredicates.alwaysTrue());
     }
 
     /**
@@ -3834,111 +3835,77 @@ public final class IOUtil {
         return file.exists() && file.setLastModified(System.currentTimeMillis());
     }
 
-    /**
-     * Parse the specified file/directory line by line.
-     * The last line will always be null to identity the ending of line reading even offset/count is specified.
-     * 
-     * @param file parse all the sub files recursively if it's a directory.
-     * @param lineParser always remember to handle the ending element <code>null</code>
-     */
     public static void parse(final File file, final Consumer<String> lineParser) {
-        parse(file, 0, Long.MAX_VALUE, lineParser);
+        parse(file, lineParser, null);
     }
 
-    /**
-     * Parse the specified file/directory line by line.
-     * The last line will always be null to identity the ending of line reading even offset/count is specified.
-     * 
-     * @param file parse all the sub files recursively if it's a directory.
-     * @param processThreadNumber thread number used to parse/process the lines/records
-     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-     * @param lineParser always remember to handle the ending element <code>null</code>
-     */
-    @Deprecated
-    static void parse(final File file, final int processThreadNumber, final int queueSize, final Consumer<String> lineParser) {
-        parse(file, 0, Long.MAX_VALUE, processThreadNumber, queueSize, lineParser);
+    public static void parse(final File file, final Consumer<String> lineParser, final Runnable onComplete) {
+        parse(file, 0, Long.MAX_VALUE, lineParser, onComplete);
     }
 
-    /**
-     * Parse the specified file/directory line by line.
-     * The last line will always be null to identity the ending of line reading even offset/count is specified.
-     * 
-     * @param file parse all the sub files recursively if it's a directory.
-     * @param lineOffset
-     * @param count
-     * @param lineParser always remember to handle the ending element <code>null</code>
-     */
     public static void parse(final File file, final long lineOffset, final long count, final Consumer<String> lineParser) {
-        parse(file, lineOffset, count, 0, 0, lineParser);
+        parse(file, lineOffset, count, lineParser, null);
     }
 
-    /**
-     * Parse the specified file/directory line by line.
-     * The last line will always be null to identity the ending of line reading even offset/count is specified.
-     * 
-     * @param file parse all the sub files recursively if it's a directory.
-     * @param lineOffset
-     * @param count
-     * @param processThreadNumber thread number used to parse/process the lines/records
-     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-     * @param lineParser always remember to handle the ending element <code>null</code>
-     */
-    public static void parse(final File file, final long lineOffset, final long count, final int processThreadNumber, final int queueSize,
+    public static void parse(final File file, final long lineOffset, final long count, final Consumer<String> lineParser, final Runnable onComplete) {
+        parse(file, lineOffset, count, 0, 0, lineParser, onComplete);
+    }
+
+    public static void parse(final File file, final long lineOffset, final long count, final int processThreadNum, final int queueSize,
             final Consumer<String> lineParser) {
-        parse(file.isDirectory() ? listFiles(file, true, true) : N.asList(file), lineOffset, count, processThreadNumber, queueSize, lineParser);
+        parse(file, lineOffset, count, processThreadNum, queueSize, lineParser, null);
     }
 
     /**
      * Parse the specified files/directory line by line.
-     * The last line will always be null to identity the ending of line reading even offset/count is specified.
      * 
-     * @param files parse all the sub files recursively if the element is a directory.
-     * @param lineParser always remember to handle the ending element <code>null</code>
+     * @param file parse all the sub files recursively if the element is a directory.
+     * @param lineOffset
+     * @param count
+     * @param processThreadNum new threads started to parse/process the lines/records
+     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
+     * @param queueSize
+     * @param lineParser
+     * @param onComplete
      */
+    public static void parse(final File file, final long lineOffset, final long count, final int processThreadNum, final int queueSize,
+            final Consumer<String> lineParser, final Runnable onComplete) {
+        parse(file.isDirectory() ? listFiles(file, true, true) : N.asList(file), lineOffset, count, processThreadNum, queueSize, lineParser, onComplete);
+    }
+
     public static void parse(final List<File> files, final Consumer<String> lineParser) {
-        parse(files, 0, Long.MAX_VALUE, lineParser);
+        parse(files, lineParser, null);
     }
 
-    /**
-     * Parse the specified files/directory line by line.
-     * The last line will always be null to identity the ending of line reading even offset/count is specified.
-     * 
-     * @param files parse all the sub files recursively if the element is a directory.
-     * @param processThreadNumber thread number used to parse/process the lines/records
-     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-     * @param lineParser always remember to handle the ending element <code>null</code>
-     */
-    @Deprecated
-    static void parse(final List<File> files, final int processThreadNumber, final int queueSize, final Consumer<String> lineParser) {
-        parse(files, 0, Long.MAX_VALUE, processThreadNumber, queueSize, lineParser);
+    public static void parse(final List<File> files, final Consumer<String> lineParser, final Runnable onComplete) {
+        parse(files, 0, Long.MAX_VALUE, lineParser, onComplete);
     }
 
-    /**
-     * Parse the specified files/directory line by line.
-     * The last line will always be null to identity the ending of line reading even offset/count is specified.
-     * 
-     * @param files parse all the sub files recursively if the element is a directory.
-     * @param lineOffset
-     * @param count
-     * @param lineParser always remember to handle the ending element <code>null</code>
-     */
     public static void parse(final List<File> files, final long lineOffset, final long count, final Consumer<String> lineParser) {
-        parse(files, lineOffset, count, 0, 0, lineParser);
+        parse(files, lineOffset, count, lineParser, null);
+    }
+
+    public static void parse(final List<File> files, final long lineOffset, final long count, final Consumer<String> lineParser, final Runnable onComplete) {
+        parse(files, lineOffset, count, 0, 0, lineParser, onComplete);
+    }
+
+    public static void parse(final List<File> files, final long lineOffset, final long count, final int processThreadNum, final int queueSize,
+            final Consumer<String> lineParser) {
+        parse(files, lineOffset, count, processThreadNum, queueSize, lineParser, null);
     }
 
     /**
      * Parse the specified files/directory line by line.
-     * The last line will always be null to identity the ending of line reading even offset/count is specified.
      * 
      * @param files parse all the sub files recursively if the element is a directory.
      * @param lineOffset
      * @param count
-     * @param processThreadNumber thread number used to parse/process the lines/records
+     * @param processThreadNum thread number used to parse/process the lines/records
      * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-     * @param lineParser always remember to handle the ending element <code>null</code>
+     * @param lineParser
      */
-    public static void parse(final List<File> files, final long lineOffset, final long count, final int processThreadNumber, final int queueSize,
-            final Consumer<String> lineParser) {
+    public static void parse(final List<File> files, final long lineOffset, final long count, final int processThreadNum, final int queueSize,
+            final Consumer<String> lineParser, final Runnable onComplete) {
         if (N.isNullOrEmpty(files)) {
             return;
         }
@@ -3962,7 +3929,7 @@ public final class IOUtil {
                 iterators.add(new LineIterator(reader));
             }
 
-            N.parse(iterators, lineOffset, count, 1, processThreadNumber, queueSize, lineParser);
+            N.parse(iterators, lineOffset, count, 0, processThreadNum, queueSize, lineParser, onComplete);
         } finally {
             for (Reader reader : readers) {
                 closeQuietly(reader);
@@ -3970,71 +3937,67 @@ public final class IOUtil {
         }
     }
 
-    /**
-     * Parse the specified file/directory line by line.
-     * The last line will always be null to identity the ending of line reading even offset/count is specified.
-     * 
-     * @param file parse all the sub files recursively if it's a directory.
-     * @param readThreadNumber
-     * @param lineParser always remember to handle the ending element <code>null</code>
-     */
-    @Deprecated
-    static void parse(final File file, final int readThreadNumber, final Consumer<String> lineParser) {
-        parse(file, readThreadNumber, 0, 0, lineParser);
+    public static void parse(final File file, final int readThreadNum, final int processThreadNum, final int queueSize, final Consumer<String> lineParser) {
+        parse(file, readThreadNum, processThreadNum, queueSize, lineParser, null);
     }
 
-    /**
-     * Parse the specified file/directory line by line.
-     * The last line will always be null to identity the ending of line reading even offset/count is specified.
-     * 
-     * @param file parse all the sub files recursively if it's a directory.
-     * @param readThreadNumber
-     * @param processThreadNumber thread number used to parse/process the lines/records
-     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-     * @param lineParser always remember to handle the ending element <code>null</code>
-     */
-    public static void parse(final File file, final int readThreadNumber, final int processThreadNumber, final int queueSize,
+    public static void parse(final File file, final int readThreadNum, final int processThreadNum, final int queueSize, final Consumer<String> lineParser,
+            final Runnable onComplete) {
+        parse(file, 0, Long.MAX_VALUE, readThreadNum, processThreadNum, queueSize, lineParser, onComplete);
+    }
+
+    public static void parse(final File file, final long lineOffset, final long count, final int readThreadNum, final int processThreadNum, final int queueSize,
             final Consumer<String> lineParser) {
-        parse(file, 0, Long.MAX_VALUE, readThreadNumber, processThreadNumber, queueSize, lineParser);
-    }
-
-    public static void parse(final File file, final long lineOffset, final long count, final int readThreadNumber, final int processThreadNumber,
-            final int queueSize, final Consumer<String> lineParser) {
-        parse(file.isDirectory() ? listFiles(file, true, true) : N.asList(file), lineOffset, count, readThreadNumber, processThreadNumber, queueSize,
-                lineParser);
+        parse(file, lineOffset, count, readThreadNum, processThreadNum, queueSize, lineParser, null);
     }
 
     /**
      * Parse the specified files/directory line by line.
-     * The last line will always be null to identity the ending of line reading even offset/count is specified.
      * 
-     * @param files parse all the sub files recursively if the element is a directory.
-     * @param readThreadNumber
-     * @param lineParser always remember to handle the ending element <code>null</code>
+     * @param file parse all the sub files recursively if the element is a directory.
+     * @param lineOffset
+     * @param count
+     * @param readThreadNum new threads started to parse/process the lines/records
+     * @param processThreadNum new threads started to parse/process the lines/records
+     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
+     * @param lineParser
+     * @param onComplete
      */
-    @Deprecated
-    static void parse(final List<File> files, final int readThreadNumber, final Consumer<String> lineParser) {
-        parse(files, readThreadNumber, 0, 0, lineParser);
+    public static void parse(final File file, final long lineOffset, final long count, final int readThreadNum, final int processThreadNum, final int queueSize,
+            final Consumer<String> lineParser, final Runnable onComplete) {
+        parse(file.isDirectory() ? listFiles(file, true, true) : N.asList(file), lineOffset, count, readThreadNum, processThreadNum, queueSize, lineParser,
+                onComplete);
+    }
+
+    public static void parse(final List<File> files, final int readThreadNum, final int processThreadNum, final int queueSize,
+            final Consumer<String> lineParser) {
+        parse(files, readThreadNum, processThreadNum, queueSize, lineParser, null);
+    }
+
+    public static void parse(final List<File> files, final int readThreadNum, final int processThreadNum, final int queueSize,
+            final Consumer<String> lineParser, final Runnable onComplete) {
+        parse(files, 0, Long.MAX_VALUE, readThreadNum, processThreadNum, queueSize, lineParser, onComplete);
+    }
+
+    public static void parse(final List<File> files, final long lineOffset, final long count, final int readThreadNum, final int processThreadNum,
+            final int queueSize, final Consumer<String> lineParser) {
+        parse(files, lineOffset, count, readThreadNum, processThreadNum, queueSize, lineParser, null);
     }
 
     /**
      * Parse the specified files/directory line by line.
-     * The last line will always be null to identity the ending of line reading even offset/count is specified.
      * 
      * @param files parse all the sub files recursively if the element is a directory.
-     * @param readThreadNumber
-     * @param processThreadNumber thread number used to parse/process the lines/records
+     * @param lineOffset
+     * @param count
+     * @param readThreadNum new threads started to parse/process the lines/records
+     * @param processThreadNum new threads started to parse/process the lines/records
      * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-     * @param lineParser always remember to handle the ending element <code>null</code>
+     * @param lineParser
+     * @param onComplete
      */
-
-    public static void parse(final List<File> files, final int readThreadNumber, final int processThreadNumber, final int queueSize,
-            final Consumer<String> lineParser) {
-        parse(files, 0, Long.MAX_VALUE, readThreadNumber, processThreadNumber, queueSize, lineParser);
-    }
-
-    public static void parse(final List<File> files, final long lineOffset, final long count, final int readThreadNumber, final int processThreadNumber,
-            final int queueSize, final Consumer<String> lineParser) {
+    public static void parse(final List<File> files, final long lineOffset, final long count, final int readThreadNum, final int processThreadNum,
+            final int queueSize, final Consumer<String> lineParser, final Runnable onComplete) {
         if (N.isNullOrEmpty(files)) {
             return;
         }
@@ -4058,7 +4021,7 @@ public final class IOUtil {
                 iterators.add(new LineIterator(reader));
             }
 
-            N.parse(iterators, lineOffset, count, readThreadNumber, processThreadNumber, queueSize, lineParser);
+            N.parse(iterators, lineOffset, count, readThreadNum, processThreadNum, queueSize, lineParser, onComplete);
         } finally {
             for (Reader reader : readers) {
                 closeQuietly(reader);
@@ -4066,248 +4029,85 @@ public final class IOUtil {
         }
     }
 
-    /**
-     * Parse the specified InputStream line by line.
-     * The last line will always be null to identity the ending of line reading even offset/count is specified.
-     * 
-     * @param is
-     * @param lineParser always remember to handle the ending element <code>null</code>
-     */
     public static void parse(final InputStream is, final Consumer<String> lineParser) {
-        parse(is, 0, Long.MAX_VALUE, lineParser);
+        parse(is, lineParser, null);
     }
 
-    /**
-     * Parse the specified InputStream line by line.
-     * The last line will always be null to identity the ending of line reading even offset/count is specified.
-     * 
-     * @param is
-     * @param processThreadNumber thread number used to parse/process the lines/records
-     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-     * @param lineParser always remember to handle the ending element <code>null</code>
-     */
-    @Deprecated
-    static void parse(final InputStream is, final int processThreadNumber, final int queueSize, final Consumer<String> lineParser) {
-        parse(is, 0, Long.MAX_VALUE, processThreadNumber, queueSize, lineParser);
+    public static void parse(final InputStream is, final Consumer<String> lineParser, final Runnable onComplete) {
+        parse(is, 0, Long.MAX_VALUE, lineParser, onComplete);
     }
 
-    /**
-     * Parse the specified InputStream line by line.
-     * The last line will always be null to identity the ending of line reading even offset/count is specified.
-     * 
-     * @param is
-     * @param lineOffset
-     * @param count
-     * @param lineParser always remember to handle the ending element <code>null</code>
-     */
     public static void parse(final InputStream is, final long lineOffset, final long count, final Consumer<String> lineParser) {
-        parse(is, lineOffset, count, 0, 0, lineParser);
+        parse(is, lineOffset, count, lineParser, null);
+    }
+
+    public static void parse(final InputStream is, final long lineOffset, final long count, final Consumer<String> lineParser, final Runnable onComplete) {
+        parse(is, lineOffset, count, 0, 0, lineParser, onComplete);
+    }
+
+    public static void parse(final InputStream is, final long lineOffset, final long count, final int processThreadNum, final int queueSize,
+            final Consumer<String> lineParser) {
+        parse(is, lineOffset, count, processThreadNum, queueSize, lineParser, null);
     }
 
     /**
-     * Parse the specified InputStream line by line.
-     * The last line will always be null to identity the ending of line reading even offset/count is specified.
+     * Parse the specified Reader line by line.
      * 
      * @param is
      * @param lineOffset
      * @param count
-     * @param processThreadNumber thread number used to parse/process the lines/records
+     * @param processThreadNum new threads started to parse/process the lines/records
      * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-     * @param lineParser always remember to handle the ending element <code>null</code>
+     * @param lineParser
+     * @param onComplete
      */
-    public static void parse(final InputStream is, final long lineOffset, final long count, final int processThreadNumber, final int queueSize,
-            final Consumer<String> lineParser) {
+    public static void parse(final InputStream is, final long lineOffset, final long count, final int processThreadNum, final int queueSize,
+            final Consumer<String> lineParser, final Runnable onComplete) {
         final BufferedReader br = ObjectFactory.createBufferedReader(is);
 
         try {
-            parse(br, lineOffset, count, processThreadNumber, queueSize, lineParser);
+            parse(br, lineOffset, count, processThreadNum, queueSize, lineParser, onComplete);
         } finally {
             ObjectFactory.recycle(br);
         }
     }
 
-    /**
-     * Parse the specified Reader line by line.
-     * The last line will always be null to identity the ending of line reading even offset/count is specified.
-     * 
-     * @param reader
-     * @param lineParser always remember to handle the ending element <code>null</code>
-     */
     public static void parse(final Reader reader, final Consumer<String> lineParser) {
-        parse(reader, 0, Long.MAX_VALUE, lineParser);
+        parse(reader, lineParser, null);
     }
 
-    /**
-     * Parse the specified Reader line by line.
-     * The last line will always be null to identity the ending of line reading even offset/count is specified.
-     * 
-     * @param reader
-     * @param processThreadNumber thread number used to parse/process the lines/records
-     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-     * @param lineParser always remember to handle the ending element <code>null</code>
-     */
-    @Deprecated
-    static void parse(final Reader reader, final int processThreadNumber, final int queueSize, final Consumer<String> lineParser) {
-        parse(reader, 0, Long.MAX_VALUE, processThreadNumber, queueSize, lineParser);
+    public static void parse(final Reader reader, final Consumer<String> lineParser, final Runnable onComplete) {
+        parse(reader, 0, Long.MAX_VALUE, lineParser, onComplete);
     }
 
-    /**
-     * Parse the specified Reader line by line.
-     * The last line will always be null to identity the ending of line reading even offset/count is specified.
-     * 
-     * @param reader
-     * @param lineOffset
-     * @param count
-     * @param lineParser always remember to handle the ending element <code>null</code>
-     */
     public static void parse(final Reader reader, final long lineOffset, final long count, final Consumer<String> lineParser) {
-        parse(reader, lineOffset, count, 0, 0, lineParser);
+        parse(reader, lineOffset, count, lineParser, null);
+    }
+
+    public static void parse(final Reader reader, final long lineOffset, final long count, final Consumer<String> lineParser, final Runnable onComplete) {
+        parse(reader, lineOffset, count, 0, 0, lineParser, onComplete);
+    }
+
+    public static void parse(final Reader reader, final long lineOffset, final long count, final int processThreadNum, final int queueSize,
+            final Consumer<String> lineParser) {
+        parse(reader, lineOffset, count, processThreadNum, queueSize, lineParser, null);
     }
 
     /**
      * Parse the specified Reader line by line.
-     * The last line will always be null to identity the ending of line reading even offset/count is specified.
      * 
      * @param reader
      * @param lineOffset
      * @param count
-     * @param processThreadNumber thread number used to parse/process the lines/records
+     * @param processThreadNum new threads started to parse/process the lines/records
      * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-     * @param lineParser always remember to handle the ending element <code>null</code>
+     * @param lineParser
+     * @param onComplete
      */
-    public static void parse(final Reader reader, final long lineOffset, final long count, final int processThreadNumber, final int queueSize,
-            final Consumer<String> lineParser) {
-        N.parse(new LineIterator(reader), lineOffset, count, processThreadNumber, queueSize, lineParser);
+    public static void parse(final Reader reader, final long lineOffset, final long count, final int processThreadNum, final int queueSize,
+            final Consumer<String> lineParser, final Runnable onComplete) {
+        N.parse(new LineIterator(reader), lineOffset, count, processThreadNum, queueSize, lineParser, onComplete);
     }
-
-    //    private static void parse(final Reader reader, final File file, final AtomicLong offset, final AtomicLong count, final int processThreadNumber,
-    //            final int queueSize, final Consumer<String> lineParser) {
-    //        logger.info(file == null ? "### Start to parse" : "### Start to parse file: " + file);
-    //
-    //        final BufferedReader br = reader instanceof BufferedReader ? ((BufferedReader) reader) : ObjectFactory.createBufferedReader(reader);
-    //        String line = null;
-    //
-    //        try {
-    //            while (offset.longValue() > 0 && br.readLine() != null) {
-    //                offset.decrementAndGet();
-    //            }
-    //
-    //            if (processThreadNumber == 0) {
-    //                while (count.longValue() > 0) {
-    //                    line = br.readLine();
-    //
-    //                    if (line == null) {
-    //                        break;
-    //                    }
-    //
-    //                    lineParser.accept(line);
-    //                    count.decrementAndGet();
-    //                }
-    //
-    //                lineParser.accept(null);
-    //            } else {
-    //                final AtomicInteger activeThreadNum = new AtomicInteger();
-    //                final ExecutorService executorService = Executors.newFixedThreadPool(processThreadNumber);
-    //                final Queue<String> lineQueue = new ConcurrentLinkedQueue<String>();
-    //                final MutableBoolean isReadDone = new MutableBoolean(false);
-    //                final Holder<Throwable> exceptionHandle = new Holder<Throwable>();
-    //                final Holder<String> errorMessageHandle = new Holder<String>();
-    //
-    //                for (int i = 0; i < processThreadNumber; i++) {
-    //                    activeThreadNum.incrementAndGet();
-    //
-    //                    executorService.execute(new Runnable() {
-    //                        @Override
-    //                        public void run() {
-    //                            String line = null;
-    //                            try {
-    //                                while (exceptionHandle.getValue() == null) {
-    //                                    line = lineQueue.poll();
-    //
-    //                                    if (line == null) {
-    //                                        if (isReadDone.booleanValue()) {
-    //                                            line = lineQueue.poll();
-    //                                            if (line == null) {
-    //                                                break;
-    //                                            } else {
-    //                                                lineParser.accept(line);
-    //                                            }
-    //                                        } else {
-    //                                            N.sleep(1);
-    //                                        }
-    //                                    } else {
-    //                                        lineParser.accept(line);
-    //                                    }
-    //                                }
-    //                            } catch (Throwable e) {
-    //                                if (file == null) {
-    //                                    errorMessageHandle.setValue("### Failed to parse at line: " + line + ". " + AbacusException.getErrorMsg(e));
-    //                                } else {
-    //                                    errorMessageHandle
-    //                                            .setValue("### Failed to parse file: " + file + " at line: " + line + ". " + AbacusException.getErrorMsg(e));
-    //                                }
-    //
-    //                                exceptionHandle.setValue(e);
-    //                            } finally {
-    //                                activeThreadNum.decrementAndGet();
-    //                            }
-    //                        }
-    //                    });
-    //                }
-    //
-    //                try {
-    //                    while (exceptionHandle.getValue() == null && count.getAndDecrement() > 0) {
-    //                        while (lineQueue.size() > queueSize) {
-    //                            N.sleep(1);
-    //                        }
-    //
-    //                        line = br.readLine();
-    //
-    //                        if (line == null) {
-    //                            break;
-    //                        }
-    //
-    //                        lineQueue.add(line);
-    //                    }
-    //                } finally {
-    //                    isReadDone.setTrue();
-    //
-    //                    while (activeThreadNum.get() > 0) {
-    //                        N.sleep(10);
-    //                    }
-    //                }
-    //
-    //                if (exceptionHandle.getValue() == null) {
-    //                    try {
-    //                        lineParser.accept(null);
-    //                    } catch (Throwable e) {
-    //                        errorMessageHandle.setValue("### Failed to parse null, the end of line. " + AbacusException.getErrorMsg(e));
-    //                        exceptionHandle.setValue(e);
-    //                    }
-    //                }
-    //
-    //                if (exceptionHandle.getValue() != null) {
-    //                    logger.error(errorMessageHandle.getValue());
-    //                    throw new AbacusException(errorMessageHandle.getValue(), exceptionHandle.getValue());
-    //                }
-    //            }
-    //        } catch (IOException e) {
-    //            String msg = null;
-    //            if (file == null) {
-    //                msg = "### Failed to parse at line: " + line + ". " + AbacusException.getErrorMsg(e);
-    //            } else {
-    //                msg = "### Failed to parse file: " + file + " at line: " + line + ". " + AbacusException.getErrorMsg(e);
-    //            }
-    //            logger.error(msg);
-    //            throw new UncheckedIOException(msg, e);
-    //        } finally {
-    //            if (br != reader) {
-    //                ObjectFactory.recycle(br);
-    //            }
-    //
-    //            logger.info(file == null ? "### ### End to parse" : "### End to parse file: " + file);
-    //        }
-    //    }
 
     private static InputStream openFile(final Holder<ZipFile> outputZipFile, final File file) throws IOException {
         InputStream is = null;

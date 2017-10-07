@@ -63,8 +63,8 @@ import com.landawn.abacus.util.function.ToDoubleFunction;
  */
 abstract class AbstractDoubleStream extends DoubleStream {
 
-    AbstractDoubleStream(final Collection<Runnable> closeHandlers, final boolean sorted) {
-        super(closeHandlers, sorted);
+    AbstractDoubleStream(final boolean sorted, final Collection<Runnable> closeHandlers) {
+        super(sorted, closeHandlers);
     }
 
     @Override
@@ -187,7 +187,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
         return splitToList(size).map(new Function<DoubleList, DoubleStream>() {
             @Override
             public DoubleStream apply(DoubleList t) {
-                return new ArrayDoubleStream(t.array(), 0, t.size(), null, sorted);
+                return new ArrayDoubleStream(t.array(), 0, t.size(), sorted, null);
             }
         });
     }
@@ -197,7 +197,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
         return splitToList(predicate).map(new Function<DoubleList, DoubleStream>() {
             @Override
             public DoubleStream apply(DoubleList t) {
-                return new ArrayDoubleStream(t.array(), 0, t.size(), null, sorted);
+                return new ArrayDoubleStream(t.array(), 0, t.size(), sorted, null);
             }
         });
     }
@@ -221,7 +221,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
         return splitToList(identity, predicate, identityUpdate).map(new Function<DoubleList, DoubleStream>() {
             @Override
             public DoubleStream apply(DoubleList t) {
-                return new ArrayDoubleStream(t.array(), 0, t.size(), null, sorted);
+                return new ArrayDoubleStream(t.array(), 0, t.size(), sorted, null);
             }
         });
     }
@@ -231,7 +231,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
         return slidingToList(windowSize, increment).map(new Function<DoubleList, DoubleStream>() {
             @Override
             public DoubleStream apply(DoubleList t) {
-                return new ArrayDoubleStream(t.array(), 0, t.size(), null, sorted);
+                return new ArrayDoubleStream(t.array(), 0, t.size(), sorted, null);
             }
         });
     }
@@ -525,7 +525,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
             list.add(iter.nextDouble());
         }
 
-        final DoubleStream[] a = { new ArrayDoubleStream(list.array(), 0, list.size(), null, sorted), new IteratorDoubleStream(iter, null, sorted) };
+        final DoubleStream[] a = { new ArrayDoubleStream(list.array(), 0, list.size(), sorted, null), new IteratorDoubleStream(iter, sorted, null) };
 
         return this.newStream(a, false, null);
     }
@@ -551,11 +551,11 @@ abstract class AbstractDoubleStream extends DoubleStream {
             }
         }
 
-        final DoubleStream[] a = { new ArrayDoubleStream(list.array(), 0, list.size(), null, sorted), new IteratorDoubleStream(iter, null, sorted) };
+        final DoubleStream[] a = { new ArrayDoubleStream(list.array(), 0, list.size(), sorted, null), new IteratorDoubleStream(iter, sorted, null) };
 
         if (s != null) {
             if (sorted) {
-                a[1] = new IteratorDoubleStream(a[1].prepend(s).skippableIterator(), null, sorted);
+                a[1] = new IteratorDoubleStream(a[1].prepend(s).skippableIterator(), sorted, null);
             } else {
                 a[1] = a[1].prepend(s);
             }

@@ -65,8 +65,8 @@ class ArrayByteStream extends AbstractByteStream {
         this(values, 0, values.length, closeHandlers);
     }
 
-    ArrayByteStream(final byte[] values, final Collection<Runnable> closeHandlers, final boolean sorted) {
-        this(values, 0, values.length, closeHandlers, sorted);
+    ArrayByteStream(final byte[] values, final boolean sorted, final Collection<Runnable> closeHandlers) {
+        this(values, 0, values.length, sorted, closeHandlers);
     }
 
     ArrayByteStream(final byte[] values, final int fromIndex, final int toIndex) {
@@ -74,11 +74,11 @@ class ArrayByteStream extends AbstractByteStream {
     }
 
     ArrayByteStream(final byte[] values, final int fromIndex, final int toIndex, final Collection<Runnable> closeHandlers) {
-        this(values, fromIndex, toIndex, closeHandlers, false);
+        this(values, fromIndex, toIndex, false, closeHandlers);
     }
 
-    ArrayByteStream(final byte[] values, final int fromIndex, final int toIndex, final Collection<Runnable> closeHandlers, final boolean sorted) {
-        super(closeHandlers, sorted);
+    ArrayByteStream(final byte[] values, final int fromIndex, final int toIndex, final boolean sorted, final Collection<Runnable> closeHandlers) {
+        super(sorted, closeHandlers);
 
         checkFromToIndex(fromIndex, toIndex, values.length);
 
@@ -117,7 +117,7 @@ class ArrayByteStream extends AbstractByteStream {
 
                 return elements[cursor++];
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -150,7 +150,7 @@ class ArrayByteStream extends AbstractByteStream {
 
                 return elements[cursor++];
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -190,7 +190,7 @@ class ArrayByteStream extends AbstractByteStream {
 
                 return elements[cursor++];
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -415,7 +415,7 @@ class ArrayByteStream extends AbstractByteStream {
                     throw new NoSuchElementException();
                 }
 
-                return new ArrayByteStream(elements, cursor, (cursor = size < toIndex - cursor ? cursor + size : toIndex), null, sorted);
+                return new ArrayByteStream(elements, cursor, (cursor = size < toIndex - cursor ? cursor + size : toIndex), sorted, null);
             }
         }, closeHandlers);
     }
@@ -478,7 +478,7 @@ class ArrayByteStream extends AbstractByteStream {
                     }
                 }
 
-                return new ArrayByteStream(elements, from, cursor, null, sorted);
+                return new ArrayByteStream(elements, from, cursor, sorted, null);
             }
         }, closeHandlers);
     }
@@ -553,7 +553,7 @@ class ArrayByteStream extends AbstractByteStream {
                     }
                 }
 
-                return new ArrayByteStream(elements, from, cursor, null, sorted);
+                return new ArrayByteStream(elements, from, cursor, sorted, null);
             }
         }, closeHandlers);
     }
@@ -602,8 +602,8 @@ class ArrayByteStream extends AbstractByteStream {
 
         final ByteStream[] a = new ByteStream[2];
         final int middleIndex = n < toIndex - fromIndex ? fromIndex + n : toIndex;
-        a[0] = middleIndex == fromIndex ? ByteStream.empty() : new ArrayByteStream(elements, fromIndex, middleIndex, null, sorted);
-        a[1] = middleIndex == toIndex ? ByteStream.empty() : new ArrayByteStream(elements, middleIndex, toIndex, null, sorted);
+        a[0] = middleIndex == fromIndex ? ByteStream.empty() : new ArrayByteStream(elements, fromIndex, middleIndex, sorted, null);
+        a[1] = middleIndex == toIndex ? ByteStream.empty() : new ArrayByteStream(elements, middleIndex, toIndex, sorted, null);
 
         return new ArrayStream<>(a, closeHandlers);
     }
@@ -643,8 +643,8 @@ class ArrayByteStream extends AbstractByteStream {
                     throw new NoSuchElementException();
                 }
 
-                final ArrayByteStream result = new ArrayByteStream(elements, cursor, windowSize < toIndex - cursor ? cursor + windowSize : toIndex, null,
-                        sorted);
+                final ArrayByteStream result = new ArrayByteStream(elements, cursor, windowSize < toIndex - cursor ? cursor + windowSize : toIndex, sorted,
+                        null);
 
                 cursor = increment < toIndex - cursor && windowSize < toIndex - cursor ? cursor + increment : toIndex;
 
@@ -690,7 +690,7 @@ class ArrayByteStream extends AbstractByteStream {
 
         final byte[] a = N.copyOfRange(elements, fromIndex, toIndex);
         N.sort(a);
-        return new ArrayByteStream(a, closeHandlers, true);
+        return new ArrayByteStream(a, true, closeHandlers);
     }
 
     @Override
@@ -726,7 +726,7 @@ class ArrayByteStream extends AbstractByteStream {
 
                 return a;
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -737,7 +737,7 @@ class ArrayByteStream extends AbstractByteStream {
             return this;
         }
 
-        return new ArrayByteStream(elements, fromIndex, (int) (fromIndex + maxSize), closeHandlers, sorted);
+        return new ArrayByteStream(elements, fromIndex, (int) (fromIndex + maxSize), sorted, closeHandlers);
     }
 
     @Override
@@ -749,9 +749,9 @@ class ArrayByteStream extends AbstractByteStream {
         }
 
         if (n >= toIndex - fromIndex) {
-            return new ArrayByteStream(elements, toIndex, toIndex, closeHandlers, sorted);
+            return new ArrayByteStream(elements, toIndex, toIndex, sorted, closeHandlers);
         } else {
-            return new ArrayByteStream(elements, (int) (fromIndex + n), toIndex, closeHandlers, sorted);
+            return new ArrayByteStream(elements, (int) (fromIndex + n), toIndex, sorted, closeHandlers);
         }
     }
 
@@ -964,7 +964,7 @@ class ArrayByteStream extends AbstractByteStream {
             return this;
         }
 
-        return new ArrayByteStream(elements, fromIndex + 1, toIndex, closeHandlers, sorted);
+        return new ArrayByteStream(elements, fromIndex + 1, toIndex, sorted, closeHandlers);
     }
 
     @Override
@@ -973,7 +973,7 @@ class ArrayByteStream extends AbstractByteStream {
             return this;
         }
 
-        return new ArrayByteStream(elements, fromIndex, toIndex - 1, closeHandlers, sorted);
+        return new ArrayByteStream(elements, fromIndex, toIndex - 1, sorted, closeHandlers);
     }
 
     @Override
@@ -1181,12 +1181,12 @@ class ArrayByteStream extends AbstractByteStream {
 
                 return a;
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
     public Stream<Byte> boxed() {
-        return new IteratorStream<Byte>(iterator(), closeHandlers, sorted, sorted ? BYTE_COMPARATOR : null);
+        return new IteratorStream<Byte>(iterator(), sorted, sorted ? BYTE_COMPARATOR : null, closeHandlers);
     }
 
     @Override
@@ -1205,7 +1205,7 @@ class ArrayByteStream extends AbstractByteStream {
             throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
 
-        return new ParallelArrayByteStream(elements, fromIndex, toIndex, closeHandlers, sorted, maxThreadNum, splitor);
+        return new ParallelArrayByteStream(elements, fromIndex, toIndex, sorted, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -1218,6 +1218,6 @@ class ArrayByteStream extends AbstractByteStream {
 
         newCloseHandlers.add(closeHandler);
 
-        return new ArrayByteStream(elements, fromIndex, toIndex, newCloseHandlers, sorted);
+        return new ArrayByteStream(elements, fromIndex, toIndex, sorted, newCloseHandlers);
     }
 }

@@ -469,7 +469,7 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
 
     private boolean isClosed = false;
 
-    StreamBase(final Collection<Runnable> closeHandlers, final boolean sorted, final Comparator<? super T> cmp) {
+    StreamBase(final boolean sorted, final Comparator<? super T> cmp, final Collection<Runnable> closeHandlers) {
         this.closeHandlers = N.isNullOrEmpty(closeHandlers) ? null
                 : (closeHandlers instanceof LocalLinkedHashSet ? (LocalLinkedHashSet<Runnable>) closeHandlers : new LocalLinkedHashSet<>(closeHandlers));
         this.sorted = sorted;
@@ -598,129 +598,129 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
 
     protected CharStream newStream(final char[] a, final boolean sorted) {
         if (this.isParallel()) {
-            return new ParallelArrayCharStream(a, 0, a.length, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
+            return new ParallelArrayCharStream(a, 0, a.length, sorted, this.maxThreadNum(), this.splitor(), closeHandlers);
         } else {
-            return new ArrayCharStream(a, closeHandlers, sorted);
+            return new ArrayCharStream(a, sorted, closeHandlers);
         }
     }
 
     protected CharStream newStream(final CharIterator iter, final boolean sorted) {
         if (this.isParallel()) {
-            return new ParallelIteratorCharStream(iter, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
+            return new ParallelIteratorCharStream(iter, sorted, this.maxThreadNum(), this.splitor(), closeHandlers);
         } else {
-            return new IteratorCharStream(iter, closeHandlers, sorted);
+            return new IteratorCharStream(iter, sorted, closeHandlers);
         }
     }
 
     protected ByteStream newStream(final byte[] a, final boolean sorted) {
         if (this.isParallel()) {
-            return new ParallelArrayByteStream(a, 0, a.length, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
+            return new ParallelArrayByteStream(a, 0, a.length, sorted, this.maxThreadNum(), this.splitor(), closeHandlers);
         } else {
-            return new ArrayByteStream(a, closeHandlers, sorted);
+            return new ArrayByteStream(a, sorted, closeHandlers);
         }
     }
 
     protected ByteStream newStream(final ByteIterator iter, final boolean sorted) {
         if (this.isParallel()) {
-            return new ParallelIteratorByteStream(iter, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
+            return new ParallelIteratorByteStream(iter, sorted, this.maxThreadNum(), this.splitor(), closeHandlers);
         } else {
-            return new IteratorByteStream(iter, closeHandlers, sorted);
+            return new IteratorByteStream(iter, sorted, closeHandlers);
         }
     }
 
     protected ShortStream newStream(final short[] a, final boolean sorted) {
         if (this.isParallel()) {
-            return new ParallelArrayShortStream(a, 0, a.length, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
+            return new ParallelArrayShortStream(a, 0, a.length, sorted, this.maxThreadNum(), this.splitor(), closeHandlers);
         } else {
-            return new ArrayShortStream(a, closeHandlers, sorted);
+            return new ArrayShortStream(a, sorted, closeHandlers);
         }
     }
 
     protected ShortStream newStream(final ShortIterator iter, final boolean sorted) {
         if (this.isParallel()) {
-            return new ParallelIteratorShortStream(iter, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
+            return new ParallelIteratorShortStream(iter, sorted, this.maxThreadNum(), this.splitor(), closeHandlers);
         } else {
-            return new IteratorShortStream(iter, closeHandlers, sorted);
+            return new IteratorShortStream(iter, sorted, closeHandlers);
         }
     }
 
     protected IntStream newStream(final int[] a, final boolean sorted) {
         if (this.isParallel()) {
-            return new ParallelArrayIntStream(a, 0, a.length, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
+            return new ParallelArrayIntStream(a, 0, a.length, sorted, this.maxThreadNum(), this.splitor(), closeHandlers);
         } else {
-            return new ArrayIntStream(a, closeHandlers, sorted);
+            return new ArrayIntStream(a, sorted, closeHandlers);
         }
     }
 
     protected IntStream newStream(final IntIterator iter, final boolean sorted) {
         if (this.isParallel()) {
-            return new ParallelIteratorIntStream(iter, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
+            return new ParallelIteratorIntStream(iter, sorted, this.maxThreadNum(), this.splitor(), closeHandlers);
         } else {
-            return new IteratorIntStream(iter, closeHandlers, sorted);
+            return new IteratorIntStream(iter, sorted, closeHandlers);
         }
     }
 
     protected LongStream newStream(final long[] a, final boolean sorted) {
         if (this.isParallel()) {
-            return new ParallelArrayLongStream(a, 0, a.length, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
+            return new ParallelArrayLongStream(a, 0, a.length, sorted, this.maxThreadNum(), this.splitor(), closeHandlers);
         } else {
-            return new ArrayLongStream(a, closeHandlers, sorted);
+            return new ArrayLongStream(a, sorted, closeHandlers);
         }
     }
 
     protected LongStream newStream(final LongIterator iter, final boolean sorted) {
         if (this.isParallel()) {
-            return new ParallelIteratorLongStream(iter, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
+            return new ParallelIteratorLongStream(iter, sorted, this.maxThreadNum(), this.splitor(), closeHandlers);
         } else {
-            return new IteratorLongStream(iter, closeHandlers, sorted);
+            return new IteratorLongStream(iter, sorted, closeHandlers);
         }
     }
 
     protected FloatStream newStream(final float[] a, final boolean sorted) {
         if (this.isParallel()) {
-            return new ParallelArrayFloatStream(a, 0, a.length, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
+            return new ParallelArrayFloatStream(a, 0, a.length, sorted, this.maxThreadNum(), this.splitor(), closeHandlers);
         } else {
-            return new ArrayFloatStream(a, closeHandlers, sorted);
+            return new ArrayFloatStream(a, sorted, closeHandlers);
         }
     }
 
     protected FloatStream newStream(final FloatIterator iter, final boolean sorted) {
         if (this.isParallel()) {
-            return new ParallelIteratorFloatStream(iter, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
+            return new ParallelIteratorFloatStream(iter, sorted, this.maxThreadNum(), this.splitor(), closeHandlers);
         } else {
-            return new IteratorFloatStream(iter, closeHandlers, sorted);
+            return new IteratorFloatStream(iter, sorted, closeHandlers);
         }
     }
 
     protected DoubleStream newStream(final double[] a, final boolean sorted) {
         if (this.isParallel()) {
-            return new ParallelArrayDoubleStream(a, 0, a.length, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
+            return new ParallelArrayDoubleStream(a, 0, a.length, sorted, this.maxThreadNum(), this.splitor(), closeHandlers);
         } else {
-            return new ArrayDoubleStream(a, closeHandlers, sorted);
+            return new ArrayDoubleStream(a, sorted, closeHandlers);
         }
     }
 
     protected DoubleStream newStream(final DoubleIterator iter, final boolean sorted) {
         if (this.isParallel()) {
-            return new ParallelIteratorDoubleStream(iter, closeHandlers, sorted, this.maxThreadNum(), this.splitor());
+            return new ParallelIteratorDoubleStream(iter, sorted, this.maxThreadNum(), this.splitor(), closeHandlers);
         } else {
-            return new IteratorDoubleStream(iter, closeHandlers, sorted);
+            return new IteratorDoubleStream(iter, sorted, closeHandlers);
         }
     }
 
     protected <E> Stream<E> newStream(final E[] a, final boolean sorted, final Comparator<? super E> comparator) {
         if (this.isParallel()) {
-            return new ParallelArrayStream<>(a, 0, a.length, closeHandlers, sorted, comparator, this.maxThreadNum(), this.splitor());
+            return new ParallelArrayStream<>(a, 0, a.length, sorted, comparator, this.maxThreadNum(), this.splitor(), closeHandlers);
         } else {
-            return new ArrayStream<>(a, closeHandlers, sorted, comparator);
+            return new ArrayStream<>(a, sorted, comparator, closeHandlers);
         }
     }
 
     protected <E> Stream<E> newStream(final Iterator<E> iter, final boolean sorted, final Comparator<? super E> comparator) {
         if (this.isParallel()) {
-            return new ParallelIteratorStream<>(iter, closeHandlers, sorted, comparator, this.maxThreadNum(), this.splitor());
+            return new ParallelIteratorStream<>(iter, sorted, comparator, this.maxThreadNum(), this.splitor(), closeHandlers);
         } else {
-            return new IteratorStream<>(iter, closeHandlers, sorted, comparator);
+            return new IteratorStream<>(iter, sorted, comparator, closeHandlers);
         }
     }
 

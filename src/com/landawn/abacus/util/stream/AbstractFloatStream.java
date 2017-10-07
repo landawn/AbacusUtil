@@ -64,8 +64,8 @@ import com.landawn.abacus.util.function.ToFloatFunction;
  */
 abstract class AbstractFloatStream extends FloatStream {
 
-    AbstractFloatStream(final Collection<Runnable> closeHandlers, final boolean sorted) {
-        super(closeHandlers, sorted);
+    AbstractFloatStream(final boolean sorted, final Collection<Runnable> closeHandlers) {
+        super(sorted, closeHandlers);
     }
 
     @Override
@@ -188,7 +188,7 @@ abstract class AbstractFloatStream extends FloatStream {
         return splitToList(size).map(new Function<FloatList, FloatStream>() {
             @Override
             public FloatStream apply(FloatList t) {
-                return new ArrayFloatStream(t.array(), 0, t.size(), null, sorted);
+                return new ArrayFloatStream(t.array(), 0, t.size(), sorted, null);
             }
         });
     }
@@ -198,7 +198,7 @@ abstract class AbstractFloatStream extends FloatStream {
         return splitToList(predicate).map(new Function<FloatList, FloatStream>() {
             @Override
             public FloatStream apply(FloatList t) {
-                return new ArrayFloatStream(t.array(), 0, t.size(), null, sorted);
+                return new ArrayFloatStream(t.array(), 0, t.size(), sorted, null);
             }
         });
     }
@@ -222,7 +222,7 @@ abstract class AbstractFloatStream extends FloatStream {
         return splitToList(identity, predicate, identityUpdate).map(new Function<FloatList, FloatStream>() {
             @Override
             public FloatStream apply(FloatList t) {
-                return new ArrayFloatStream(t.array(), 0, t.size(), null, sorted);
+                return new ArrayFloatStream(t.array(), 0, t.size(), sorted, null);
             }
         });
     }
@@ -232,7 +232,7 @@ abstract class AbstractFloatStream extends FloatStream {
         return slidingToList(windowSize, increment).map(new Function<FloatList, FloatStream>() {
             @Override
             public FloatStream apply(FloatList t) {
-                return new ArrayFloatStream(t.array(), 0, t.size(), null, sorted);
+                return new ArrayFloatStream(t.array(), 0, t.size(), sorted, null);
             }
         });
     }
@@ -526,7 +526,7 @@ abstract class AbstractFloatStream extends FloatStream {
             list.add(iter.nextFloat());
         }
 
-        final FloatStream[] a = { new ArrayFloatStream(list.array(), 0, list.size(), null, sorted), new IteratorFloatStream(iter, null, sorted) };
+        final FloatStream[] a = { new ArrayFloatStream(list.array(), 0, list.size(), sorted, null), new IteratorFloatStream(iter, sorted, null) };
 
         return this.newStream(a, false, null);
     }
@@ -552,11 +552,11 @@ abstract class AbstractFloatStream extends FloatStream {
             }
         }
 
-        final FloatStream[] a = { new ArrayFloatStream(list.array(), 0, list.size(), null, sorted), new IteratorFloatStream(iter, null, sorted) };
+        final FloatStream[] a = { new ArrayFloatStream(list.array(), 0, list.size(), sorted, null), new IteratorFloatStream(iter, sorted, null) };
 
         if (s != null) {
             if (sorted) {
-                a[1] = new IteratorFloatStream(a[1].prepend(s).skippableIterator(), null, sorted);
+                a[1] = new IteratorFloatStream(a[1].prepend(s).skippableIterator(), sorted, null);
             } else {
                 a[1] = a[1].prepend(s);
             }

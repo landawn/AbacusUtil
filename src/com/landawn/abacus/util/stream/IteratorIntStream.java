@@ -79,11 +79,11 @@ class IteratorIntStream extends AbstractIntStream {
     }
 
     IteratorIntStream(final IntIterator values, final Collection<Runnable> closeHandlers) {
-        this(values, closeHandlers, false);
+        this(values, false, closeHandlers);
     }
 
-    IteratorIntStream(final IntIterator values, final Collection<Runnable> closeHandlers, final boolean sorted) {
-        super(closeHandlers, sorted);
+    IteratorIntStream(final IntIterator values, final boolean sorted, final Collection<Runnable> closeHandlers) {
+        super(sorted, closeHandlers);
 
         SkippableIntIterator tmp = null;
 
@@ -160,7 +160,7 @@ class IteratorIntStream extends AbstractIntStream {
 
                 return next;
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -196,7 +196,7 @@ class IteratorIntStream extends AbstractIntStream {
                 return next;
             }
 
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -240,7 +240,7 @@ class IteratorIntStream extends AbstractIntStream {
                 return next;
             }
 
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -902,7 +902,7 @@ class IteratorIntStream extends AbstractIntStream {
 
                 N.sort(a);
             }
-        }, closeHandlers, true);
+        }, true, closeHandlers);
     }
 
     @Override
@@ -919,7 +919,7 @@ class IteratorIntStream extends AbstractIntStream {
                 action.accept(next);
                 return next;
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -950,7 +950,7 @@ class IteratorIntStream extends AbstractIntStream {
             public void skip(long n) {
                 elements.skip(n);
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -1013,7 +1013,7 @@ class IteratorIntStream extends AbstractIntStream {
 
                 return elements.toArray();
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -1212,7 +1212,7 @@ class IteratorIntStream extends AbstractIntStream {
     public OptionalInt head() {
         if (head == null) {
             head = elements.hasNext() ? OptionalInt.of(elements.nextInt()) : OptionalInt.empty();
-            tail = new IteratorIntStream(elements, closeHandlers, sorted);
+            tail = new IteratorIntStream(elements, sorted, closeHandlers);
         }
 
         return head;
@@ -1222,7 +1222,7 @@ class IteratorIntStream extends AbstractIntStream {
     public IntStream tail() {
         if (tail == null) {
             head = elements.hasNext() ? OptionalInt.of(elements.nextInt()) : OptionalInt.empty();
-            tail = new IteratorIntStream(elements, closeHandlers, sorted);
+            tail = new IteratorIntStream(elements, sorted, closeHandlers);
         }
 
         return tail;
@@ -1232,7 +1232,7 @@ class IteratorIntStream extends AbstractIntStream {
     public IntStream head2() {
         if (head2 == null) {
             final int[] a = elements.toArray();
-            head2 = new ArrayIntStream(a, 0, a.length == 0 ? 0 : a.length - 1, closeHandlers, sorted);
+            head2 = new ArrayIntStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, closeHandlers);
             tail2 = a.length == 0 ? OptionalInt.empty() : OptionalInt.of(a[a.length - 1]);
         }
 
@@ -1243,7 +1243,7 @@ class IteratorIntStream extends AbstractIntStream {
     public OptionalInt tail2() {
         if (tail2 == null) {
             final int[] a = elements.toArray();
-            head2 = new ArrayIntStream(a, 0, a.length == 0 ? 0 : a.length - 1, closeHandlers, sorted);
+            head2 = new ArrayIntStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, closeHandlers);
             tail2 = a.length == 0 ? OptionalInt.empty() : OptionalInt.of(a[a.length - 1]);
         }
 
@@ -1447,7 +1447,7 @@ class IteratorIntStream extends AbstractIntStream {
             public void skip(long n) {
                 elements.skip(n);
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -1472,7 +1472,7 @@ class IteratorIntStream extends AbstractIntStream {
             public void skip(long n) {
                 elements.skip(n);
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -1497,12 +1497,12 @@ class IteratorIntStream extends AbstractIntStream {
             public void skip(long n) {
                 elements.skip(n);
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
     public Stream<Integer> boxed() {
-        return new IteratorStream<Integer>(iterator(), closeHandlers, sorted, sorted ? INT_COMPARATOR : null);
+        return new IteratorStream<Integer>(iterator(), sorted, sorted ? INT_COMPARATOR : null, closeHandlers);
     }
 
     @Override
@@ -1516,7 +1516,7 @@ class IteratorIntStream extends AbstractIntStream {
             throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
 
-        return new ParallelIteratorIntStream(elements, closeHandlers, sorted, maxThreadNum, splitor);
+        return new ParallelIteratorIntStream(elements, sorted, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -1529,6 +1529,6 @@ class IteratorIntStream extends AbstractIntStream {
 
         newCloseHandlers.add(closeHandler);
 
-        return new IteratorIntStream(elements, newCloseHandlers, sorted);
+        return new IteratorIntStream(elements, sorted, newCloseHandlers);
     }
 }

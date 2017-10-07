@@ -103,10 +103,10 @@ import com.landawn.abacus.util.function.ToIntFunction;
  */
 public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate, IntConsumer, IntList, OptionalInt, IndexedInt, IntStream> {
 
-    private static final IntStream EMPTY = new ArrayIntStream(N.EMPTY_INT_ARRAY, null, true);
+    private static final IntStream EMPTY = new ArrayIntStream(N.EMPTY_INT_ARRAY, true, null);
 
-    IntStream(final Collection<Runnable> closeHandlers, final boolean sorted) {
-        super(closeHandlers, sorted, null);
+    IntStream(final boolean sorted, final Collection<Runnable> closeHandlers) {
+        super(sorted, null, closeHandlers);
     }
 
     /**
@@ -1983,8 +1983,8 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
     }
 
     public static abstract class IntStreamEx extends IntStream {
-        private IntStreamEx(Collection<Runnable> closeHandlers, boolean sorted) {
-            super(closeHandlers, sorted);
+        private IntStreamEx(boolean sorted, Collection<Runnable> closeHandlers) {
+            super(sorted, closeHandlers);
             // Factory class.
         }
     }

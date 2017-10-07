@@ -99,10 +99,10 @@ import com.landawn.abacus.util.function.ToFloatFunction;
  */
 public abstract class FloatStream extends StreamBase<Float, float[], FloatPredicate, FloatConsumer, FloatList, OptionalFloat, IndexedFloat, FloatStream> {
 
-    private static final FloatStream EMPTY = new ArrayFloatStream(N.EMPTY_FLOAT_ARRAY, null, true);
+    private static final FloatStream EMPTY = new ArrayFloatStream(N.EMPTY_FLOAT_ARRAY, true, null);
 
-    FloatStream(final Collection<Runnable> closeHandlers, final boolean sorted) {
-        super(closeHandlers, sorted, null);
+    FloatStream(final boolean sorted, final Collection<Runnable> closeHandlers) {
+        super(sorted, null, closeHandlers);
     }
 
     /**

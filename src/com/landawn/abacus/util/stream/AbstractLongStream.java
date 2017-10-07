@@ -62,8 +62,8 @@ import com.landawn.abacus.util.function.ToLongFunction;
  */
 abstract class AbstractLongStream extends LongStream {
 
-    AbstractLongStream(final Collection<Runnable> closeHandlers, final boolean sorted) {
-        super(closeHandlers, sorted);
+    AbstractLongStream(final boolean sorted, final Collection<Runnable> closeHandlers) {
+        super(sorted, closeHandlers);
     }
 
     @Override
@@ -186,7 +186,7 @@ abstract class AbstractLongStream extends LongStream {
         return splitToList(size).map(new Function<LongList, LongStream>() {
             @Override
             public LongStream apply(LongList t) {
-                return new ArrayLongStream(t.array(), 0, t.size(), null, sorted);
+                return new ArrayLongStream(t.array(), 0, t.size(), sorted, null);
             }
         });
     }
@@ -196,7 +196,7 @@ abstract class AbstractLongStream extends LongStream {
         return splitToList(predicate).map(new Function<LongList, LongStream>() {
             @Override
             public LongStream apply(LongList t) {
-                return new ArrayLongStream(t.array(), 0, t.size(), null, sorted);
+                return new ArrayLongStream(t.array(), 0, t.size(), sorted, null);
             }
         });
     }
@@ -220,7 +220,7 @@ abstract class AbstractLongStream extends LongStream {
         return splitToList(identity, predicate, identityUpdate).map(new Function<LongList, LongStream>() {
             @Override
             public LongStream apply(LongList t) {
-                return new ArrayLongStream(t.array(), 0, t.size(), null, sorted);
+                return new ArrayLongStream(t.array(), 0, t.size(), sorted, null);
             }
         });
     }
@@ -230,7 +230,7 @@ abstract class AbstractLongStream extends LongStream {
         return slidingToList(windowSize, increment).map(new Function<LongList, LongStream>() {
             @Override
             public LongStream apply(LongList t) {
-                return new ArrayLongStream(t.array(), 0, t.size(), null, sorted);
+                return new ArrayLongStream(t.array(), 0, t.size(), sorted, null);
             }
         });
     }
@@ -460,7 +460,7 @@ abstract class AbstractLongStream extends LongStream {
             list.add(iter.nextLong());
         }
 
-        final LongStream[] a = { new ArrayLongStream(list.array(), 0, list.size(), null, sorted), new IteratorLongStream(iter, null, sorted) };
+        final LongStream[] a = { new ArrayLongStream(list.array(), 0, list.size(), sorted, null), new IteratorLongStream(iter, sorted, null) };
 
         return this.newStream(a, false, null);
     }
@@ -486,11 +486,11 @@ abstract class AbstractLongStream extends LongStream {
             }
         }
 
-        final LongStream[] a = { new ArrayLongStream(list.array(), 0, list.size(), null, sorted), new IteratorLongStream(iter, null, sorted) };
+        final LongStream[] a = { new ArrayLongStream(list.array(), 0, list.size(), sorted, null), new IteratorLongStream(iter, sorted, null) };
 
         if (s != null) {
             if (sorted) {
-                a[1] = new IteratorLongStream(a[1].prepend(s).skippableIterator(), null, sorted);
+                a[1] = new IteratorLongStream(a[1].prepend(s).skippableIterator(), sorted, null);
             } else {
                 a[1] = a[1].prepend(s);
             }

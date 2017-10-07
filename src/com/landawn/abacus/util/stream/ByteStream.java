@@ -96,10 +96,10 @@ import com.landawn.abacus.util.function.ToByteFunction;
  */
 public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate, ByteConsumer, ByteList, OptionalByte, IndexedByte, ByteStream> {
 
-    private static final ByteStream EMPTY = new ArrayByteStream(N.EMPTY_BYTE_ARRAY, null, true);
+    private static final ByteStream EMPTY = new ArrayByteStream(N.EMPTY_BYTE_ARRAY, true, null);
 
-    ByteStream(final Collection<Runnable> closeHandlers, final boolean sorted) {
-        super(closeHandlers, sorted, null);
+    ByteStream(final boolean sorted, final Collection<Runnable> closeHandlers) {
+        super(sorted, null, closeHandlers);
     }
 
     /**

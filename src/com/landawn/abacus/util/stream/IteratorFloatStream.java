@@ -72,11 +72,11 @@ class IteratorFloatStream extends AbstractFloatStream {
     }
 
     IteratorFloatStream(final FloatIterator values, final Collection<Runnable> closeHandlers) {
-        this(values, closeHandlers, false);
+        this(values, false, closeHandlers);
     }
 
-    IteratorFloatStream(final FloatIterator values, final Collection<Runnable> closeHandlers, final boolean sorted) {
-        super(closeHandlers, sorted);
+    IteratorFloatStream(final FloatIterator values, final boolean sorted, final Collection<Runnable> closeHandlers) {
+        super(sorted, closeHandlers);
 
         SkippableFloatIterator tmp = null;
 
@@ -153,7 +153,7 @@ class IteratorFloatStream extends AbstractFloatStream {
 
                 return next;
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -189,7 +189,7 @@ class IteratorFloatStream extends AbstractFloatStream {
                 return next;
             }
 
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -233,7 +233,7 @@ class IteratorFloatStream extends AbstractFloatStream {
                 return next;
             }
 
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -745,7 +745,7 @@ class IteratorFloatStream extends AbstractFloatStream {
 
                 N.sort(a);
             }
-        }, closeHandlers, true);
+        }, true, closeHandlers);
     }
 
     @Override
@@ -762,7 +762,7 @@ class IteratorFloatStream extends AbstractFloatStream {
                 action.accept(next);
                 return next;
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -793,7 +793,7 @@ class IteratorFloatStream extends AbstractFloatStream {
             public void skip(long n) {
                 elements.skip(n);
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -856,7 +856,7 @@ class IteratorFloatStream extends AbstractFloatStream {
 
                 return elements.toArray();
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -1055,7 +1055,7 @@ class IteratorFloatStream extends AbstractFloatStream {
     public OptionalFloat head() {
         if (head == null) {
             head = elements.hasNext() ? OptionalFloat.of(elements.nextFloat()) : OptionalFloat.empty();
-            tail = new IteratorFloatStream(elements, closeHandlers, sorted);
+            tail = new IteratorFloatStream(elements, sorted, closeHandlers);
         }
 
         return head;
@@ -1065,7 +1065,7 @@ class IteratorFloatStream extends AbstractFloatStream {
     public FloatStream tail() {
         if (tail == null) {
             head = elements.hasNext() ? OptionalFloat.of(elements.nextFloat()) : OptionalFloat.empty();
-            tail = new IteratorFloatStream(elements, closeHandlers, sorted);
+            tail = new IteratorFloatStream(elements, sorted, closeHandlers);
         }
 
         return tail;
@@ -1075,7 +1075,7 @@ class IteratorFloatStream extends AbstractFloatStream {
     public FloatStream head2() {
         if (head2 == null) {
             final float[] a = elements.toArray();
-            head2 = new ArrayFloatStream(a, 0, a.length == 0 ? 0 : a.length - 1, closeHandlers, sorted);
+            head2 = new ArrayFloatStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, closeHandlers);
             tail2 = a.length == 0 ? OptionalFloat.empty() : OptionalFloat.of(a[a.length - 1]);
         }
 
@@ -1086,7 +1086,7 @@ class IteratorFloatStream extends AbstractFloatStream {
     public OptionalFloat tail2() {
         if (tail2 == null) {
             final float[] a = elements.toArray();
-            head2 = new ArrayFloatStream(a, 0, a.length == 0 ? 0 : a.length - 1, closeHandlers, sorted);
+            head2 = new ArrayFloatStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, closeHandlers);
             tail2 = a.length == 0 ? OptionalFloat.empty() : OptionalFloat.of(a[a.length - 1]);
         }
 
@@ -1262,12 +1262,12 @@ class IteratorFloatStream extends AbstractFloatStream {
             public void skip(long n) {
                 elements.skip(n);
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
     public Stream<Float> boxed() {
-        return new IteratorStream<Float>(iterator(), closeHandlers, sorted, sorted ? FLOAT_COMPARATOR : null);
+        return new IteratorStream<Float>(iterator(), sorted, sorted ? FLOAT_COMPARATOR : null, closeHandlers);
     }
 
     @Override
@@ -1281,7 +1281,7 @@ class IteratorFloatStream extends AbstractFloatStream {
             throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
 
-        return new ParallelIteratorFloatStream(elements, closeHandlers, sorted, maxThreadNum, splitor);
+        return new ParallelIteratorFloatStream(elements, sorted, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -1294,6 +1294,6 @@ class IteratorFloatStream extends AbstractFloatStream {
 
         newCloseHandlers.add(closeHandler);
 
-        return new IteratorFloatStream(elements, newCloseHandlers, sorted);
+        return new IteratorFloatStream(elements, sorted, newCloseHandlers);
     }
 }

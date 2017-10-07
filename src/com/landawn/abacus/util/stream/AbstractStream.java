@@ -96,8 +96,8 @@ import com.landawn.abacus.util.function.TriFunction;
  */
 abstract class AbstractStream<T> extends Stream<T> {
 
-    AbstractStream(final Collection<Runnable> closeHandlers, final boolean sorted, final Comparator<? super T> cmp) {
-        super(closeHandlers, sorted, cmp);
+    AbstractStream(final boolean sorted, final Comparator<? super T> cmp, final Collection<Runnable> closeHandlers) {
+        super(sorted, cmp, closeHandlers);
     }
 
     @Override
@@ -543,7 +543,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         return splitToList(size).map(new Function<List<T>, Stream<T>>() {
             @Override
             public Stream<T> apply(List<T> t) {
-                return new ArrayStream<>(toArray(t), 0, t.size(), null, sorted, cmp);
+                return new ArrayStream<>(toArray(t), 0, t.size(), sorted, cmp, null);
             }
         });
     }
@@ -553,7 +553,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         return splitToList(predicate).map(new Function<List<T>, Stream<T>>() {
             @Override
             public Stream<T> apply(List<T> t) {
-                return new ArrayStream<>(toArray(t), 0, t.size(), null, sorted, cmp);
+                return new ArrayStream<>(toArray(t), 0, t.size(), sorted, cmp, null);
             }
         });
     }
@@ -576,7 +576,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         return splitToList(identity, predicate, identityUpdate).map(new Function<List<T>, Stream<T>>() {
             @Override
             public Stream<T> apply(List<T> t) {
-                return new ArrayStream<>(toArray(t), 0, t.size(), null, sorted, cmp);
+                return new ArrayStream<>(toArray(t), 0, t.size(), sorted, cmp, null);
             }
         });
     }
@@ -586,7 +586,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         return slidingToList(windowSize, increment).map(new Function<List<T>, Stream<T>>() {
             @Override
             public Stream<T> apply(List<T> t) {
-                return new ArrayStream<>(toArray(t), 0, t.size(), null, sorted, cmp);
+                return new ArrayStream<>(toArray(t), 0, t.size(), sorted, cmp, null);
             }
         });
     }
@@ -1493,8 +1493,8 @@ abstract class AbstractStream<T> extends Stream<T> {
             list.add(iter.next());
         }
 
-        final Stream<T>[] a = new Stream[] { new ArrayStream<>(toArray(list), 0, list.size(), null, sorted, cmp),
-                new IteratorStream<>(iter, null, sorted, cmp) };
+        final Stream<T>[] a = new Stream[] { new ArrayStream<>(toArray(list), 0, list.size(), sorted, cmp, null),
+                new IteratorStream<>(iter, sorted, cmp, null) };
 
         return newStream(a, false, null);
     }
@@ -1520,11 +1520,11 @@ abstract class AbstractStream<T> extends Stream<T> {
             }
         }
 
-        final Stream<T>[] a = new Stream[] { new ArrayStream<>((T[]) list.toArray(), null, sorted, cmp), new IteratorStream<>(iter, null, sorted, cmp) };
+        final Stream<T>[] a = new Stream[] { new ArrayStream<>((T[]) list.toArray(), sorted, cmp, null), new IteratorStream<>(iter, sorted, cmp, null) };
 
         if (s != null) {
             if (sorted) {
-                a[1] = new IteratorStream<>(a[1].prepend(s).iterator(), null, sorted, cmp);
+                a[1] = new IteratorStream<>(a[1].prepend(s).iterator(), sorted, cmp, null);
             } else {
                 a[1] = a[1].prepend(s);
             }

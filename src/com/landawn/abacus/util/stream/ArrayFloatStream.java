@@ -69,8 +69,8 @@ class ArrayFloatStream extends AbstractFloatStream {
         this(values, 0, values.length, closeHandlers);
     }
 
-    ArrayFloatStream(final float[] values, final Collection<Runnable> closeHandlers, final boolean sorted) {
-        this(values, 0, values.length, closeHandlers, sorted);
+    ArrayFloatStream(final float[] values, final boolean sorted, final Collection<Runnable> closeHandlers) {
+        this(values, 0, values.length, sorted, closeHandlers);
     }
 
     ArrayFloatStream(final float[] values, final int fromIndex, final int toIndex) {
@@ -78,11 +78,11 @@ class ArrayFloatStream extends AbstractFloatStream {
     }
 
     ArrayFloatStream(final float[] values, final int fromIndex, final int toIndex, final Collection<Runnable> closeHandlers) {
-        this(values, fromIndex, toIndex, closeHandlers, false);
+        this(values, fromIndex, toIndex, false, closeHandlers);
     }
 
-    ArrayFloatStream(final float[] values, final int fromIndex, final int toIndex, final Collection<Runnable> closeHandlers, final boolean sorted) {
-        super(closeHandlers, sorted);
+    ArrayFloatStream(final float[] values, final int fromIndex, final int toIndex, final boolean sorted, final Collection<Runnable> closeHandlers) {
+        super(sorted, closeHandlers);
 
         checkFromToIndex(fromIndex, toIndex, values.length);
 
@@ -121,7 +121,7 @@ class ArrayFloatStream extends AbstractFloatStream {
 
                 return elements[cursor++];
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -154,7 +154,7 @@ class ArrayFloatStream extends AbstractFloatStream {
 
                 return elements[cursor++];
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -194,7 +194,7 @@ class ArrayFloatStream extends AbstractFloatStream {
 
                 return elements[cursor++];
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -555,7 +555,7 @@ class ArrayFloatStream extends AbstractFloatStream {
                     throw new NoSuchElementException();
                 }
 
-                return new ArrayFloatStream(elements, cursor, (cursor = size < toIndex - cursor ? cursor + size : toIndex), null, sorted);
+                return new ArrayFloatStream(elements, cursor, (cursor = size < toIndex - cursor ? cursor + size : toIndex), sorted, null);
             }
         }, closeHandlers);
     }
@@ -613,7 +613,7 @@ class ArrayFloatStream extends AbstractFloatStream {
                     }
                 }
 
-                return new ArrayFloatStream(elements, from, cursor, null, sorted);
+                return new ArrayFloatStream(elements, from, cursor, sorted, null);
             }
         }, closeHandlers);
     }
@@ -689,7 +689,7 @@ class ArrayFloatStream extends AbstractFloatStream {
                     }
                 }
 
-                return new ArrayFloatStream(elements, from, cursor, null, sorted);
+                return new ArrayFloatStream(elements, from, cursor, sorted, null);
             }
         }, closeHandlers);
     }
@@ -742,8 +742,8 @@ class ArrayFloatStream extends AbstractFloatStream {
 
         final FloatStream[] a = new FloatStream[2];
         final int middleIndex = n < toIndex - fromIndex ? fromIndex + n : toIndex;
-        a[0] = middleIndex == fromIndex ? FloatStream.empty() : new ArrayFloatStream(elements, fromIndex, middleIndex, null, sorted);
-        a[1] = middleIndex == toIndex ? FloatStream.empty() : new ArrayFloatStream(elements, middleIndex, toIndex, null, sorted);
+        a[0] = middleIndex == fromIndex ? FloatStream.empty() : new ArrayFloatStream(elements, fromIndex, middleIndex, sorted, null);
+        a[1] = middleIndex == toIndex ? FloatStream.empty() : new ArrayFloatStream(elements, middleIndex, toIndex, sorted, null);
 
         return new ArrayStream<>(a, closeHandlers);
     }
@@ -783,8 +783,8 @@ class ArrayFloatStream extends AbstractFloatStream {
                     throw new NoSuchElementException();
                 }
 
-                final ArrayFloatStream result = new ArrayFloatStream(elements, cursor, windowSize < toIndex - cursor ? cursor + windowSize : toIndex, null,
-                        sorted);
+                final ArrayFloatStream result = new ArrayFloatStream(elements, cursor, windowSize < toIndex - cursor ? cursor + windowSize : toIndex, sorted,
+                        null);
 
                 cursor = increment < toIndex - cursor && windowSize < toIndex - cursor ? cursor + increment : toIndex;
 
@@ -834,9 +834,9 @@ class ArrayFloatStream extends AbstractFloatStream {
         if (n >= toIndex - fromIndex) {
             return this;
         } else if (sorted && isSameComparator(comparator, FLOAT_COMPARATOR)) {
-            return new ArrayFloatStream(elements, toIndex - n, toIndex, closeHandlers, sorted);
+            return new ArrayFloatStream(elements, toIndex - n, toIndex, sorted, closeHandlers);
         } else {
-            return new ArrayFloatStream(N.top(elements, fromIndex, toIndex, n, comparator), closeHandlers, sorted);
+            return new ArrayFloatStream(N.top(elements, fromIndex, toIndex, n, comparator), sorted, closeHandlers);
         }
     }
 
@@ -848,7 +848,7 @@ class ArrayFloatStream extends AbstractFloatStream {
 
         final float[] a = N.copyOfRange(elements, fromIndex, toIndex);
         N.sort(a);
-        return new ArrayFloatStream(a, closeHandlers, true);
+        return new ArrayFloatStream(a, true, closeHandlers);
     }
 
     @Override
@@ -884,7 +884,7 @@ class ArrayFloatStream extends AbstractFloatStream {
 
                 return a;
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -895,7 +895,7 @@ class ArrayFloatStream extends AbstractFloatStream {
             return this;
         }
 
-        return new ArrayFloatStream(elements, fromIndex, (int) (fromIndex + maxSize), closeHandlers, sorted);
+        return new ArrayFloatStream(elements, fromIndex, (int) (fromIndex + maxSize), sorted, closeHandlers);
     }
 
     @Override
@@ -907,9 +907,9 @@ class ArrayFloatStream extends AbstractFloatStream {
         }
 
         if (n >= toIndex - fromIndex) {
-            return new ArrayFloatStream(elements, toIndex, toIndex, closeHandlers, sorted);
+            return new ArrayFloatStream(elements, toIndex, toIndex, sorted, closeHandlers);
         } else {
-            return new ArrayFloatStream(elements, (int) (fromIndex + n), toIndex, closeHandlers, sorted);
+            return new ArrayFloatStream(elements, (int) (fromIndex + n), toIndex, sorted, closeHandlers);
         }
     }
 
@@ -1122,7 +1122,7 @@ class ArrayFloatStream extends AbstractFloatStream {
             return this;
         }
 
-        return new ArrayFloatStream(elements, fromIndex + 1, toIndex, closeHandlers, sorted);
+        return new ArrayFloatStream(elements, fromIndex + 1, toIndex, sorted, closeHandlers);
     }
 
     @Override
@@ -1131,7 +1131,7 @@ class ArrayFloatStream extends AbstractFloatStream {
             return this;
         }
 
-        return new ArrayFloatStream(elements, fromIndex, toIndex - 1, closeHandlers, sorted);
+        return new ArrayFloatStream(elements, fromIndex, toIndex - 1, sorted, closeHandlers);
     }
 
     @Override
@@ -1325,12 +1325,12 @@ class ArrayFloatStream extends AbstractFloatStream {
 
                 return a;
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
     public Stream<Float> boxed() {
-        return new IteratorStream<Float>(iterator(), closeHandlers, sorted, sorted ? FLOAT_COMPARATOR : null);
+        return new IteratorStream<Float>(iterator(), sorted, sorted ? FLOAT_COMPARATOR : null, closeHandlers);
     }
 
     @Override
@@ -1349,7 +1349,7 @@ class ArrayFloatStream extends AbstractFloatStream {
             throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
 
-        return new ParallelArrayFloatStream(elements, fromIndex, toIndex, closeHandlers, sorted, maxThreadNum, splitor);
+        return new ParallelArrayFloatStream(elements, fromIndex, toIndex, sorted, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -1362,6 +1362,6 @@ class ArrayFloatStream extends AbstractFloatStream {
 
         newCloseHandlers.add(closeHandler);
 
-        return new ArrayFloatStream(elements, fromIndex, toIndex, newCloseHandlers, sorted);
+        return new ArrayFloatStream(elements, fromIndex, toIndex, sorted, newCloseHandlers);
     }
 }

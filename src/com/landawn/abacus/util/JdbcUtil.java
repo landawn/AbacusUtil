@@ -51,9 +51,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -79,9 +76,9 @@ import com.landawn.abacus.core.sql.dataSource.SimpleSourceSelector;
 import com.landawn.abacus.dataChannel.DataChannel;
 import com.landawn.abacus.dataChannel.StatementDataChannel;
 import com.landawn.abacus.exception.AbacusException;
+import com.landawn.abacus.exception.ParseException;
 import com.landawn.abacus.exception.UncheckedIOException;
 import com.landawn.abacus.exception.UncheckedSQLException;
-import com.landawn.abacus.exception.ParseException;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
 import com.landawn.abacus.type.Type;
@@ -89,7 +86,6 @@ import com.landawn.abacus.util.Try.BiConsumer;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.Predicate;
-import com.landawn.abacus.util.stream.Stream;
 
 /**
  *
@@ -1907,68 +1903,49 @@ public final class JdbcUtil {
         return result;
     }
 
-    /**
-     * Parse the ResultSet obtained by executing query with the specified Connection and sql.
-     * The last row will always be null to identity the ending of row set even offset/count is specified.
-     * 
-     * @param conn
-     * @param sql
-     * @param rowParser always remember to handle the ending element <code>null</code>
-     */
     public static void parse(final Connection conn, final String sql, final Consumer<Object[]> rowParser) {
-        parse(conn, sql, 0, Long.MAX_VALUE, rowParser);
+        parse(conn, sql, rowParser, null);
     }
 
-    /**
-     * Parse the ResultSet obtained by executing query with the specified Connection and sql.
-     * The last row will always be null to identity the ending of row set even offset/count is specified.
-     * 
-     * @param conn
-     * @param sql
-     * @param offset
-     * @param count
-     * @param rowParser always remember to handle the ending element <code>null</code>
-     */
+    public static void parse(final Connection conn, final String sql, final Consumer<Object[]> rowParser, final Runnable onComplete) {
+        parse(conn, sql, 0, Long.MAX_VALUE, rowParser, onComplete);
+    }
+
     public static void parse(final Connection conn, final String sql, final long offset, final long count, final Consumer<Object[]> rowParser) {
-        parse(conn, sql, offset, count, 0, 0, rowParser);
+        parse(conn, sql, offset, count, rowParser, null);
     }
 
-    //    /**
-    //     * Parse the ResultSet obtained by executing query with the specified Connection and sql.
-    //     * The last row will always be null to identity the ending of row set even offset/count is specified.
-    //     * 
-    //     * @param conn
-    //     * @param sql
-    //     * @param processThreadNumber thread number used to parse/process the lines/records
-    //     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-    //     * @param rowParser always remember to handle the ending element <code>null</code>
-    //     */
-    //    @Deprecated
-    //    static void parse(final Connection conn, final String sql, final int processThreadNumber, final int queueSize, final Consumer<Object[]> rowParser) {
-    //        parse(conn, sql, 0, Long.MAX_VALUE, processThreadNumber, queueSize, rowParser);
-    //    }
+    public static void parse(final Connection conn, final String sql, final long offset, final long count, final Consumer<Object[]> rowParser,
+            final Runnable onComplete) {
+        parse(conn, sql, offset, count, 0, 0, rowParser, onComplete);
+    }
+
+    public static void parse(final Connection conn, final String sql, final long offset, final long count, final int processThreadNum, final int queueSize,
+            final Consumer<Object[]> rowParser) {
+        parse(conn, sql, offset, count, processThreadNum, queueSize, rowParser, null);
+    }
 
     /**
      * Parse the ResultSet obtained by executing query with the specified Connection and sql.
-     * The last row will always be null to identity the ending of row set even offset/count is specified.
      * 
      * @param conn
      * @param sql
      * @param offset
      * @param count
-     * @param processThreadNumber thread number used to parse/process the lines/records
+     * @param processThreadNum new threads started to parse/process the lines/records
      * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-     * @param rowParser always remember to handle the ending element <code>null</code>
+     * @param rowParser
+     * @param onComplete
      */
-    public static void parse(final Connection conn, final String sql, final long offset, final long count, final int processThreadNumber, final int queueSize,
-            final Consumer<Object[]> rowParser) {
+    public static void parse(final Connection conn, final String sql, final long offset, final long count, final int processThreadNum, final int queueSize,
+            final Consumer<Object[]> rowParser, final Runnable onComplete) {
         PreparedStatement stmt = null;
         try {
             stmt = prepareStatement(conn, sql);
 
             stmt.setFetchSize(200);
 
-            parse(stmt, offset, count, processThreadNumber, queueSize, rowParser);
+            parse(stmt, offset, count, processThreadNum, queueSize, rowParser, onComplete);
         } catch (SQLException e) {
             throw new UncheckedSQLException(e);
         } finally {
@@ -1976,139 +1953,46 @@ public final class JdbcUtil {
         }
     }
 
-    //    /**
-    //     * Parse the ResultSet obtained by executing query with the specified Connection and sql.
-    //     * The last row will always be null to identity the ending of row set even offset/count is specified.
-    //     * 
-    //     * @param conn
-    //     * @param sql
-    //     * @param parameters
-    //     * @param rowParser always remember to handle the ending element <code>null</code>
-    //     */
-    //    static void parse(final Connection conn, final String sql, final List<?> parameters, final Consumer<Object[]> rowParser) {
-    //        parse(conn, sql, parameters, 0, Long.MAX_VALUE, rowParser);
-    //    }
-    //
-    //    /**
-    //     * Parse the ResultSet obtained by executing query with the specified Connection and sql.
-    //     * The last row will always be null to identity the ending of row set even offset/count is specified.
-    //     * 
-    //     * @param conn
-    //     * @param sql
-    //     * @param parameters
-    //     * @param offset
-    //     * @param count
-    //     * @param rowParser always remember to handle the ending element <code>null</code>
-    //     */
-    //    static void parse(final Connection conn, final String sql, final List<?> parameters, final long offset, final long count,
-    //            final Consumer<Object[]> rowParser) {
-    //        parse(conn, sql, parameters, offset, count, 0, 0, rowParser);
-    //    }
-    //
-    //    /**
-    //     * Parse the ResultSet obtained by executing query with the specified Connection and sql.
-    //     * The last row will always be null to identity the ending of row set even offset/count is specified.
-    //     * 
-    //     * @param conn
-    //     * @param sql
-    //     * @param parameters
-    //     * @param processThreadNumber thread number used to parse/process the lines/records
-    //     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-    //     * @param rowParser always remember to handle the ending element <code>null</code>
-    //     */
-    //    @Deprecated
-    //    static void parse(final Connection conn, final String sql, final List<?> parameters, final int processThreadNumber, final int queueSize,
-    //            final Consumer<Object[]> rowParser) {
-    //        parse(conn, sql, parameters, 0, Long.MAX_VALUE, processThreadNumber, queueSize, rowParser);
-    //    }
-    //
-    //    /**
-    //     * Parse the ResultSet obtained by executing query with the specified Connection and sql.
-    //     * The last row will always be null to identity the ending of row set even offset/count is specified.
-    //     * 
-    //     * @param conn
-    //     * @param sql
-    //     * @param parameters
-    //     * @param offset
-    //     * @param count
-    //     * @param processThreadNumber thread number used to parse/process the lines/records
-    //     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-    //     * @param rowParser always remember to handle the ending element <code>null</code>
-    //     */
-    //    static void parse(final Connection conn, final String sql, final List<?> parameters, final long offset, final long count, final int processThreadNumber,
-    //            final int queueSize, final Consumer<Object[]> rowParser) {
-    //        PreparedStatement stmt = null;
-    //
-    //        try {
-    //            stmt = prepareStatement(conn, sql, parameters);
-    //
-    //            stmt.setFetchSize(200);
-    //
-    //            parse(stmt, offset, count, processThreadNumber, queueSize, rowParser);
-    //        } catch (SQLException e) {
-    //            throw new UncheckedSQLException(e);
-    //        } finally {
-    //            closeQuietly(stmt);
-    //        }
-    //    }
-
-    /**
-     * Parse the ResultSet obtained by executing query with the specified PreparedStatement.
-     * The last row will always be null to identity the ending of row set even offset/count is specified.
-     * 
-     * @param stmt
-     * @param rowParser always remember to handle the ending element <code>null</code>
-     */
     public static void parse(final PreparedStatement stmt, final Consumer<Object[]> rowParser) {
-        parse(stmt, 0, Long.MAX_VALUE, rowParser);
+        parse(stmt, rowParser, null);
     }
 
-    /**
-     * Parse the ResultSet obtained by executing query with the specified PreparedStatement.
-     * The last row will always be null to identity the ending of row set even offset/count is specified.
-     * 
-     * @param stmt
-     * @param offset
-     * @param count
-     * @param rowParser always remember to handle the ending element <code>null</code>
-     */
+    public static void parse(final PreparedStatement stmt, final Consumer<Object[]> rowParser, final Runnable onComplete) {
+        parse(stmt, 0, Long.MAX_VALUE, rowParser, onComplete);
+    }
+
     public static void parse(final PreparedStatement stmt, final long offset, final long count, final Consumer<Object[]> rowParser) {
-        parse(stmt, offset, count, 0, 0, rowParser);
+        parse(stmt, offset, count, rowParser, null);
     }
 
-    //    /**
-    //     * Parse the ResultSet obtained by executing query with the specified PreparedStatement.
-    //     * The last row will always be null to identity the ending of row set even offset/count is specified.
-    //     * 
-    //     * @param stmt
-    //     * @param processThreadNumber thread number used to parse/process the lines/records
-    //     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-    //     * @param rowParser always remember to handle the ending element <code>null</code>
-    //     */
-    //    @Deprecated
-    //    static void parse(final PreparedStatement stmt, final int processThreadNumber, final int queueSize, final Consumer<Object[]> rowParser) {
-    //        parse(stmt, 0, Long.MAX_VALUE, processThreadNumber, queueSize, rowParser);
-    //    }
+    public static void parse(final PreparedStatement stmt, final long offset, final long count, final Consumer<Object[]> rowParser, final Runnable onComplete) {
+        parse(stmt, offset, count, 0, 0, rowParser, onComplete);
+    }
+
+    public static void parse(final PreparedStatement stmt, final long offset, final long count, final int processThreadNum, final int queueSize,
+            final Consumer<Object[]> rowParser) {
+        parse(stmt, offset, count, processThreadNum, queueSize, rowParser, null);
+    }
 
     /**
      * Parse the ResultSet obtained by executing query with the specified PreparedStatement.
-     * The last row will always be null to identity the ending of row set even offset/count is specified.
      * 
      * @param stmt
      * @param offset
      * @param count
-     * @param processThreadNumber thread number used to parse/process the lines/records
+     * @param processThreadNum new threads started to parse/process the lines/records
      * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-     * @param rowParser always remember to handle the ending element <code>null</code>
+     * @param rowParser
+     * @param onComplete
      */
-    public static void parse(final PreparedStatement stmt, final long offset, final long count, final int processThreadNumber, final int queueSize,
-            final Consumer<Object[]> rowParser) {
+    public static void parse(final PreparedStatement stmt, final long offset, final long count, final int processThreadNum, final int queueSize,
+            final Consumer<Object[]> rowParser, final Runnable onComplete) {
         ResultSet rs = null;
 
         try {
             rs = stmt.executeQuery();
 
-            parse(rs, offset, count, processThreadNumber, queueSize, rowParser);
+            parse(rs, offset, count, processThreadNum, queueSize, rowParser, onComplete);
         } catch (SQLException e) {
             throw new UncheckedSQLException(e);
         } finally {
@@ -2116,132 +2000,40 @@ public final class JdbcUtil {
         }
     }
 
-    /**
-     * Parse the specified ResultSet.
-     * The last row will always be null to identity the ending of row set even offset/count is specified.
-     * 
-     * @param rs
-     * @param rowParser always remember to handle the ending element <code>null</code>
-     */
     public static void parse(final ResultSet rs, final Consumer<Object[]> rowParser) {
-        parse(rs, 0, Long.MAX_VALUE, rowParser);
+        parse(rs, rowParser, null);
     }
 
-    /**
-     * Parse the specified ResultSet.
-     * The last row will always be null to identity the ending of row set even offset/count is specified.
-     * 
-     * @param rs
-     * @param offset
-     * @param count
-     * @param rowParser always remember to handle the ending element <code>null</code>
-     */
+    public static void parse(final ResultSet rs, final Consumer<Object[]> rowParser, final Runnable onComplete) {
+        parse(rs, 0, Long.MAX_VALUE, rowParser, onComplete);
+    }
+
     public static void parse(final ResultSet rs, long offset, long count, final Consumer<Object[]> rowParser) {
-        parse(rs, offset, count, 0, 0, rowParser);
+        parse(rs, offset, count, rowParser, null);
     }
 
-    //    /**
-    //     * Parse the specified ResultSet.
-    //     * The last row will always be null to identity the ending of row set even offset/count is specified.
-    //     * 
-    //     * @param rs
-    //     * @param processThreadNumber thread number used to parse/process the lines/records
-    //     * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-    //     * @param rowParser always remember to handle the ending element <code>null</code>
-    //     */
-    //    @Deprecated
-    //    static void parse(final ResultSet rs, final int processThreadNumber, final int queueSize, final Consumer<Object[]> rowParser) {
-    //        parse(rs, 0, Long.MAX_VALUE, processThreadNumber, queueSize, rowParser);
-    //    }
+    public static void parse(final ResultSet rs, long offset, long count, final Consumer<Object[]> rowParser, final Runnable onComplete) {
+        parse(rs, offset, count, 0, 0, rowParser, onComplete);
+    }
+
+    public static void parse(final ResultSet rs, long offset, long count, final int processThreadNum, final int queueSize, final Consumer<Object[]> rowParser) {
+        parse(rs, offset, count, processThreadNum, queueSize, rowParser, null);
+    }
 
     /**
-     * Parse the specified ResultSet.
-     * The last row will always be null to identity the ending of row set even offset/count is specified.
+     * Parse the ResultSet.
      * 
-     * @param rs
+     * @param stmt
      * @param offset
      * @param count
-     * @param processThreadNumber thread number used to parse/process the lines/records
+     * @param processThreadNum new threads started to parse/process the lines/records
      * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
-     * @param rowParser always remember to handle the ending element <code>null</code>
+     * @param rowParser
+     * @param onComplete
      */
-    public static void parse(final ResultSet rs, long offset, long count, final int processThreadNumber, final int queueSize,
-            final Consumer<Object[]> rowParser) {
-        parseII(new RowIterator(rs), offset, count, processThreadNumber, queueSize, rowParser);
-    }
-
-    private static void parseII(final RowIterator iter, long offset, long count, final int processThreadNumber, final int queueSize,
-            final Consumer<Object[]> rowParser) {
-        N.checkArgument(offset >= 0 && count >= 0, "'offset'=%s and 'count'=%s can't be negative", offset, count);
-
-        while (offset-- > 0 && iter.moveToNext()) {
-        }
-
-        if (processThreadNumber == 0) {
-            while (count-- > 0 && iter.hasNext()) {
-                rowParser.accept(iter.next());
-            }
-
-            rowParser.accept(null);
-        } else {
-            try (final Stream<Object[]> stream = Stream.parallelConcat2(N.asList(iter), 1, queueSize)) {
-                final Iterator<Object[]> iteratorII = stream.limit(count).iterator();
-                final ExecutorService executorService = Executors.newFixedThreadPool(processThreadNumber);
-                final AtomicInteger activeThreadNum = new AtomicInteger();
-                final Holder<Throwable> errorHolder = new Holder<>();
-
-                for (int i = 0; i < processThreadNumber; i++) {
-                    activeThreadNum.incrementAndGet();
-
-                    executorService.execute(new Runnable() {
-                        @Override
-                        public void run() {
-                            Object[] row = null;
-
-                            try {
-                                while (errorHolder.value() == null) {
-                                    synchronized (iteratorII) {
-                                        if (iteratorII.hasNext()) {
-                                            row = iteratorII.next();
-                                        } else {
-                                            break;
-                                        }
-                                    }
-
-                                    rowParser.accept(row);
-                                }
-                            } catch (Throwable e) {
-                                synchronized (errorHolder) {
-                                    if (errorHolder.value() == null) {
-                                        errorHolder.setValue(e);
-                                    } else {
-                                        errorHolder.value().addSuppressed(e);
-                                    }
-                                }
-                            } finally {
-                                activeThreadNum.decrementAndGet();
-                            }
-                        }
-                    });
-                }
-
-                while (activeThreadNum.get() > 0) {
-                    N.sleep(1);
-                }
-
-                if (errorHolder.value() == null) {
-                    try {
-                        rowParser.accept(null);
-                    } catch (Throwable e) {
-                        errorHolder.setValue(e);
-                    }
-                }
-
-                if (errorHolder.value() != null) {
-                    throw N.toRuntimeException(errorHolder.value());
-                }
-            }
-        }
+    public static void parse(final ResultSet rs, long offset, long count, final int processThreadNum, final int queueSize, final Consumer<Object[]> rowParser,
+            final Runnable onComplete) {
+        N.parse(new RowIterator(rs), offset, count, processThreadNum, queueSize, rowParser, onComplete);
     }
 
     public static long copy(final Connection sourceConn, final String selectSql, final Connection targetConn, final String insertSql) {
@@ -2321,24 +2113,17 @@ public final class JdbcUtil {
             @Override
             public void accept(Object[] row) {
                 try {
-                    if (row == null) {
-                        if ((result.longValue() % batchSize) > 0) {
-                            insertStmt.executeBatch();
-                            insertStmt.clearBatch();
-                        }
-                    } else {
-                        setter.accept(insertStmt, row);
+                    setter.accept(insertStmt, row);
 
-                        insertStmt.addBatch();
-                        result.incrementAndGet();
+                    insertStmt.addBatch();
+                    result.incrementAndGet();
 
-                        if ((result.longValue() % batchSize) == 0) {
-                            insertStmt.executeBatch();
-                            insertStmt.clearBatch();
+                    if ((result.longValue() % batchSize) == 0) {
+                        insertStmt.executeBatch();
+                        insertStmt.clearBatch();
 
-                            if (batchInterval > 0) {
-                                N.sleep(batchInterval);
-                            }
+                        if (batchInterval > 0) {
+                            N.sleep(batchInterval);
                         }
                     }
                 } catch (SQLException e) {
@@ -2347,7 +2132,21 @@ public final class JdbcUtil {
             }
         };
 
-        JdbcUtil.parse(selectStmt, offset, count, inParallel ? 1 : 0, DEFAULT_QUEUE_SIZE_FOR_ROW_PARSER, rowParser);
+        final Runnable onComplete = new Runnable() {
+            @Override
+            public void run() {
+                if ((result.longValue() % batchSize) > 0) {
+                    try {
+                        insertStmt.executeBatch();
+                        insertStmt.clearBatch();
+                    } catch (SQLException e) {
+                        throw new UncheckedSQLException(e);
+                    }
+                }
+            }
+        };
+
+        parse(selectStmt, offset, count, 0, inParallel ? DEFAULT_QUEUE_SIZE_FOR_ROW_PARSER : 0, rowParser, onComplete);
 
         return result.longValue();
     }

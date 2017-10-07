@@ -67,11 +67,11 @@ class IteratorByteStream extends AbstractByteStream {
     }
 
     IteratorByteStream(final ByteIterator values, final Collection<Runnable> closeHandlers) {
-        this(values, closeHandlers, false);
+        this(values, false, closeHandlers);
     }
 
-    IteratorByteStream(final ByteIterator values, final Collection<Runnable> closeHandlers, final boolean sorted) {
-        super(closeHandlers, sorted);
+    IteratorByteStream(final ByteIterator values, final boolean sorted, final Collection<Runnable> closeHandlers) {
+        super(sorted, closeHandlers);
 
         SkippableByteIterator tmp = null;
 
@@ -148,7 +148,7 @@ class IteratorByteStream extends AbstractByteStream {
 
                 return next;
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -184,7 +184,7 @@ class IteratorByteStream extends AbstractByteStream {
                 return next;
             }
 
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -228,7 +228,7 @@ class IteratorByteStream extends AbstractByteStream {
                 return next;
             }
 
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -631,7 +631,7 @@ class IteratorByteStream extends AbstractByteStream {
 
                 N.sort(a);
             }
-        }, closeHandlers, true);
+        }, true, closeHandlers);
     }
 
     @Override
@@ -649,7 +649,7 @@ class IteratorByteStream extends AbstractByteStream {
                 action.accept(next);
                 return next;
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -680,7 +680,7 @@ class IteratorByteStream extends AbstractByteStream {
             public void skip(long n) {
                 elements.skip(n);
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -743,7 +743,7 @@ class IteratorByteStream extends AbstractByteStream {
 
                 return elements.toArray();
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -942,7 +942,7 @@ class IteratorByteStream extends AbstractByteStream {
     public OptionalByte head() {
         if (head == null) {
             head = elements.hasNext() ? OptionalByte.of(elements.nextByte()) : OptionalByte.empty();
-            tail = new IteratorByteStream(elements, closeHandlers, sorted);
+            tail = new IteratorByteStream(elements, sorted, closeHandlers);
         }
 
         return head;
@@ -952,7 +952,7 @@ class IteratorByteStream extends AbstractByteStream {
     public ByteStream tail() {
         if (tail == null) {
             head = elements.hasNext() ? OptionalByte.of(elements.nextByte()) : OptionalByte.empty();
-            tail = new IteratorByteStream(elements, closeHandlers, sorted);
+            tail = new IteratorByteStream(elements, sorted, closeHandlers);
         }
 
         return tail;
@@ -962,7 +962,7 @@ class IteratorByteStream extends AbstractByteStream {
     public ByteStream head2() {
         if (head2 == null) {
             final byte[] a = elements.toArray();
-            head2 = new ArrayByteStream(a, 0, a.length == 0 ? 0 : a.length - 1, closeHandlers, sorted);
+            head2 = new ArrayByteStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, closeHandlers);
             tail2 = a.length == 0 ? OptionalByte.empty() : OptionalByte.of(a[a.length - 1]);
         }
 
@@ -973,7 +973,7 @@ class IteratorByteStream extends AbstractByteStream {
     public OptionalByte tail2() {
         if (tail2 == null) {
             final byte[] a = elements.toArray();
-            head2 = new ArrayByteStream(a, 0, a.length == 0 ? 0 : a.length - 1, closeHandlers, sorted);
+            head2 = new ArrayByteStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, closeHandlers);
             tail2 = a.length == 0 ? OptionalByte.empty() : OptionalByte.of(a[a.length - 1]);
         }
 
@@ -1177,12 +1177,12 @@ class IteratorByteStream extends AbstractByteStream {
             public void skip(long n) {
                 elements.skip(n);
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
     public Stream<Byte> boxed() {
-        return new IteratorStream<Byte>(iterator(), closeHandlers, sorted, sorted ? BYTE_COMPARATOR : null);
+        return new IteratorStream<Byte>(iterator(), sorted, sorted ? BYTE_COMPARATOR : null, closeHandlers);
     }
 
     @Override
@@ -1196,7 +1196,7 @@ class IteratorByteStream extends AbstractByteStream {
             throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
 
-        return new ParallelIteratorByteStream(elements, closeHandlers, sorted, maxThreadNum, splitor);
+        return new ParallelIteratorByteStream(elements, sorted, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -1209,6 +1209,6 @@ class IteratorByteStream extends AbstractByteStream {
 
         newCloseHandlers.add(closeHandler);
 
-        return new IteratorByteStream(elements, newCloseHandlers, sorted);
+        return new IteratorByteStream(elements, sorted, newCloseHandlers);
     }
 }

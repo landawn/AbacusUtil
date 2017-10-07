@@ -96,10 +96,10 @@ import com.landawn.abacus.util.function.ToCharFunction;
  */
 public abstract class CharStream extends StreamBase<Character, char[], CharPredicate, CharConsumer, CharList, OptionalChar, IndexedChar, CharStream> {
 
-    private static final CharStream EMPTY = new ArrayCharStream(N.EMPTY_CHAR_ARRAY, null, true);
+    private static final CharStream EMPTY = new ArrayCharStream(N.EMPTY_CHAR_ARRAY, true, null);
 
-    CharStream(final Collection<Runnable> closeHandlers, final boolean sorted) {
-        super(closeHandlers, sorted, null);
+    CharStream(final boolean sorted, final Collection<Runnable> closeHandlers) {
+        super(sorted, null, closeHandlers);
     }
 
     /**

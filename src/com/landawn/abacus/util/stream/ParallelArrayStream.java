@@ -82,9 +82,9 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     private final Splitor splitor;
     private volatile ArrayStream<T> sequential;
 
-    ParallelArrayStream(final T[] values, final int fromIndex, final int toIndex, final Collection<Runnable> closeHandlers, final boolean sorted,
-            Comparator<? super T> comparator, int maxThreadNum, Splitor splitor) {
-        super(values, fromIndex, toIndex, closeHandlers, sorted, comparator);
+    ParallelArrayStream(final T[] values, final int fromIndex, final int toIndex, final boolean sorted, Comparator<? super T> comparator,
+            int maxThreadNum, Splitor splitor, final Collection<Runnable> closeHandlers) {
+        super(values, fromIndex, toIndex, sorted, comparator, closeHandlers);
 
         this.maxThreadNum = fromIndex >= toIndex ? 1 : N.min(maxThreadNum, MAX_THREAD_NUM_PER_OPERATION, toIndex - fromIndex);
         this.splitor = splitor == null ? DEFAULT_SPLITOR : splitor;
@@ -93,7 +93,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     public Stream<T> filter(final Predicate<? super T> predicate) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorStream<>(sequential().filter(predicate).iterator(), closeHandlers, sorted, cmp, maxThreadNum, splitor);
+            return new ParallelIteratorStream<>(sequential().filter(predicate).iterator(), sorted, cmp, maxThreadNum, splitor, closeHandlers);
         }
 
         final List<Iterator<T>> iters = new ArrayList<>(maxThreadNum);
@@ -179,13 +179,13 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         }
 
-        return new ParallelIteratorStream<>(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, null, maxThreadNum, splitor);
+        return new ParallelIteratorStream<>(Stream.parallelConcat(iters, asyncExecutor), false, null, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
     public Stream<T> takeWhile(final Predicate<? super T> predicate) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorStream<>(sequential().takeWhile(predicate).iterator(), closeHandlers, sorted, cmp, maxThreadNum, splitor);
+            return new ParallelIteratorStream<>(sequential().takeWhile(predicate).iterator(), sorted, cmp, maxThreadNum, splitor, closeHandlers);
         }
 
         final List<Iterator<T>> iters = new ArrayList<>(maxThreadNum);
@@ -230,13 +230,13 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             });
         }
 
-        return new ParallelIteratorStream<>(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, null, maxThreadNum, splitor);
+        return new ParallelIteratorStream<>(Stream.parallelConcat(iters, asyncExecutor), false, null, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
     public Stream<T> dropWhile(final Predicate<? super T> predicate) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorStream<>(sequential().dropWhile(predicate).iterator(), closeHandlers, sorted, cmp, maxThreadNum, splitor);
+            return new ParallelIteratorStream<>(sequential().dropWhile(predicate).iterator(), sorted, cmp, maxThreadNum, splitor, closeHandlers);
         }
 
         final List<Iterator<T>> iters = new ArrayList<>(maxThreadNum);
@@ -302,13 +302,13 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             });
         }
 
-        return new ParallelIteratorStream<>(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, null, maxThreadNum, splitor);
+        return new ParallelIteratorStream<>(Stream.parallelConcat(iters, asyncExecutor), false, null, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
     public <R> Stream<R> map(final Function<? super T, ? extends R> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorStream<>(sequential().map(mapper).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
+            return new ParallelIteratorStream<>(sequential().map(mapper).iterator(), false, null, maxThreadNum, splitor, closeHandlers);
         }
 
         final List<Iterator<R>> iters = new ArrayList<>(maxThreadNum);
@@ -371,13 +371,13 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         }
 
-        return new ParallelIteratorStream<>(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, null, maxThreadNum, splitor);
+        return new ParallelIteratorStream<>(Stream.parallelConcat(iters, asyncExecutor), false, null, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
     public <R> Stream<R> biMap(final BiFunction<? super T, ? super T, ? extends R> mapper, final boolean ignoreNotPaired) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorStream<>(sequential().biMap(mapper, ignoreNotPaired).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
+            return new ParallelIteratorStream<>(sequential().biMap(mapper, ignoreNotPaired).iterator(), false, null, maxThreadNum, splitor, closeHandlers);
         }
 
         final int atLeast = ignoreNotPaired ? 2 : 1;
@@ -445,13 +445,13 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         }
 
-        return new ParallelIteratorStream<>(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, null, maxThreadNum, splitor);
+        return new ParallelIteratorStream<>(Stream.parallelConcat(iters, asyncExecutor), false, null, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
     public <R> Stream<R> triMap(final TriFunction<? super T, ? super T, ? super T, ? extends R> mapper, final boolean ignoreNotPaired) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorStream<>(sequential().triMap(mapper, ignoreNotPaired).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
+            return new ParallelIteratorStream<>(sequential().triMap(mapper, ignoreNotPaired).iterator(), false, null, maxThreadNum, splitor, closeHandlers);
         }
 
         final int atLeast = ignoreNotPaired ? 3 : 1;
@@ -522,7 +522,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         }
 
-        return new ParallelIteratorStream<>(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, null, maxThreadNum, splitor);
+        return new ParallelIteratorStream<>(Stream.parallelConcat(iters, asyncExecutor), false, null, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -581,7 +581,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                 }
             };
 
-            return new ParallelIteratorStream<>(iter, closeHandlers, false, null, maxThreadNum, splitor);
+            return new ParallelIteratorStream<>(iter, false, null, maxThreadNum, splitor, closeHandlers);
         }
     }
 
@@ -592,8 +592,8 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
         N.requireNonNull(mapperForElse);
 
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorStream<>(sequential().mapFirstOrElse(mapperForFirst, mapperForElse).iterator(), closeHandlers, false, null, maxThreadNum,
-                    splitor);
+            return new ParallelIteratorStream<>(sequential().mapFirstOrElse(mapperForFirst, mapperForElse).iterator(), false, null, maxThreadNum, splitor,
+                    closeHandlers);
         }
 
         if (fromIndex == toIndex) {
@@ -604,7 +604,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             final Function<T, R> mapperForFirst2 = (Function<T, R>) mapperForFirst;
             final Function<T, R> mapperForElse2 = (Function<T, R>) mapperForElse;
 
-            return new ParallelArrayStream<>(elements, fromIndex + 1, toIndex, closeHandlers, sorted, cmp, maxThreadNum, splitor).map(mapperForElse2)
+            return new ParallelArrayStream<>(elements, fromIndex + 1, toIndex, sorted, cmp, maxThreadNum, splitor, closeHandlers).map(mapperForElse2)
                     .prepend(new ArrayStream<>(elements, fromIndex, fromIndex + 1).map(mapperForFirst2));
         }
     }
@@ -666,7 +666,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                 }
             };
 
-            return new ParallelIteratorStream<>(iter, closeHandlers, false, null, maxThreadNum, splitor);
+            return new ParallelIteratorStream<>(iter, false, null, maxThreadNum, splitor, closeHandlers);
         }
     }
 
@@ -677,8 +677,8 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
         N.requireNonNull(mapperForElse);
 
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorStream<>(sequential().mapLastOrElse(mapperForLast, mapperForElse).iterator(), closeHandlers, false, null, maxThreadNum,
-                    splitor);
+            return new ParallelIteratorStream<>(sequential().mapLastOrElse(mapperForLast, mapperForElse).iterator(), false, null, maxThreadNum, splitor,
+                    closeHandlers);
         }
 
         if (fromIndex == toIndex) {
@@ -689,7 +689,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             final Function<T, R> mapperForLast2 = (Function<T, R>) mapperForLast;
             final Function<T, R> mapperForElse2 = (Function<T, R>) mapperForElse;
 
-            return new ParallelArrayStream<>(elements, fromIndex, toIndex - 1, closeHandlers, sorted, cmp, maxThreadNum, splitor).map(mapperForElse2)
+            return new ParallelArrayStream<>(elements, fromIndex, toIndex - 1, sorted, cmp, maxThreadNum, splitor, closeHandlers).map(mapperForElse2)
                     .append(new ArrayStream<>(elements, toIndex - 1, toIndex).map(mapperForLast2));
         }
     }
@@ -697,7 +697,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     public CharStream mapToChar(final ToCharFunction<? super T> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorCharStream(sequential().mapToChar(mapper).skippableIterator(), closeHandlers, false, maxThreadNum, splitor);
+            return new ParallelIteratorCharStream(sequential().mapToChar(mapper).skippableIterator(), false, maxThreadNum, splitor, closeHandlers);
         }
 
         final List<SkippableObjIterator<Character>> iters = new ArrayList<>(maxThreadNum);
@@ -760,13 +760,13 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         }
 
-        return new ParallelIteratorCharStream(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, maxThreadNum, splitor);
+        return new ParallelIteratorCharStream(Stream.parallelConcat(iters, asyncExecutor), false, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
     public ByteStream mapToByte(final ToByteFunction<? super T> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorByteStream(sequential().mapToByte(mapper).skippableIterator(), closeHandlers, false, maxThreadNum, splitor);
+            return new ParallelIteratorByteStream(sequential().mapToByte(mapper).skippableIterator(), false, maxThreadNum, splitor, closeHandlers);
         }
 
         final List<SkippableObjIterator<Byte>> iters = new ArrayList<>(maxThreadNum);
@@ -829,13 +829,13 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         }
 
-        return new ParallelIteratorByteStream(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, maxThreadNum, splitor);
+        return new ParallelIteratorByteStream(Stream.parallelConcat(iters, asyncExecutor), false, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
     public ShortStream mapToShort(final ToShortFunction<? super T> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorShortStream(sequential().mapToShort(mapper).skippableIterator(), closeHandlers, false, maxThreadNum, splitor);
+            return new ParallelIteratorShortStream(sequential().mapToShort(mapper).skippableIterator(), false, maxThreadNum, splitor, closeHandlers);
         }
 
         final List<SkippableObjIterator<Short>> iters = new ArrayList<>(maxThreadNum);
@@ -898,13 +898,13 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         }
 
-        return new ParallelIteratorShortStream(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, maxThreadNum, splitor);
+        return new ParallelIteratorShortStream(Stream.parallelConcat(iters, asyncExecutor), false, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
     public IntStream mapToInt(final ToIntFunction<? super T> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorIntStream(sequential().mapToInt(mapper).skippableIterator(), closeHandlers, false, maxThreadNum, splitor);
+            return new ParallelIteratorIntStream(sequential().mapToInt(mapper).skippableIterator(), false, maxThreadNum, splitor, closeHandlers);
         }
 
         final List<SkippableObjIterator<Integer>> iters = new ArrayList<>(maxThreadNum);
@@ -967,13 +967,13 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         }
 
-        return new ParallelIteratorIntStream(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, maxThreadNum, splitor);
+        return new ParallelIteratorIntStream(Stream.parallelConcat(iters, asyncExecutor), false, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
     public LongStream mapToLong(final ToLongFunction<? super T> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorLongStream(sequential().mapToLong(mapper).skippableIterator(), closeHandlers, false, maxThreadNum, splitor);
+            return new ParallelIteratorLongStream(sequential().mapToLong(mapper).skippableIterator(), false, maxThreadNum, splitor, closeHandlers);
         }
 
         final List<SkippableObjIterator<Long>> iters = new ArrayList<>(maxThreadNum);
@@ -1036,13 +1036,13 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         }
 
-        return new ParallelIteratorLongStream(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, maxThreadNum, splitor);
+        return new ParallelIteratorLongStream(Stream.parallelConcat(iters, asyncExecutor), false, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
     public FloatStream mapToFloat(final ToFloatFunction<? super T> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorFloatStream(sequential().mapToFloat(mapper).skippableIterator(), closeHandlers, false, maxThreadNum, splitor);
+            return new ParallelIteratorFloatStream(sequential().mapToFloat(mapper).skippableIterator(), false, maxThreadNum, splitor, closeHandlers);
         }
 
         final List<SkippableObjIterator<Float>> iters = new ArrayList<>(maxThreadNum);
@@ -1105,13 +1105,13 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         }
 
-        return new ParallelIteratorFloatStream(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, maxThreadNum, splitor);
+        return new ParallelIteratorFloatStream(Stream.parallelConcat(iters, asyncExecutor), false, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
     public DoubleStream mapToDouble(final ToDoubleFunction<? super T> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorDoubleStream(sequential().mapToDouble(mapper).skippableIterator(), closeHandlers, false, maxThreadNum, splitor);
+            return new ParallelIteratorDoubleStream(sequential().mapToDouble(mapper).skippableIterator(), false, maxThreadNum, splitor, closeHandlers);
         }
 
         final List<SkippableObjIterator<Double>> iters = new ArrayList<>(maxThreadNum);
@@ -1174,13 +1174,13 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         }
 
-        return new ParallelIteratorDoubleStream(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, maxThreadNum, splitor);
+        return new ParallelIteratorDoubleStream(Stream.parallelConcat(iters, asyncExecutor), false, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
     <R> Stream<R> flatMap0(final Function<? super T, ? extends Iterator<? extends R>> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorStream<>(((ArrayStream<T>) sequential()).flatMap0(mapper).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
+            return new ParallelIteratorStream<>(((ArrayStream<T>) sequential()).flatMap0(mapper).iterator(), false, null, maxThreadNum, splitor, closeHandlers);
         }
 
         final List<Iterator<R>> iters = new ArrayList<>(maxThreadNum);
@@ -1252,14 +1252,14 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         }
 
-        return new ParallelIteratorStream<>(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, null, maxThreadNum, splitor);
+        return new ParallelIteratorStream<>(Stream.parallelConcat(iters, asyncExecutor), false, null, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
     CharStream flatMapToChar0(final Function<? super T, CharIterator> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorCharStream(((ArrayStream<T>) sequential()).flatMapToChar0(mapper).skippableIterator(), closeHandlers, false, maxThreadNum,
-                    splitor);
+            return new ParallelIteratorCharStream(((ArrayStream<T>) sequential()).flatMapToChar0(mapper).skippableIterator(), false, maxThreadNum, splitor,
+                    closeHandlers);
         }
 
         final List<Iterator<Character>> iters = new ArrayList<>(maxThreadNum);
@@ -1331,14 +1331,14 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         }
 
-        return new ParallelIteratorCharStream(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, maxThreadNum, splitor);
+        return new ParallelIteratorCharStream(Stream.parallelConcat(iters, asyncExecutor), false, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
     ByteStream flatMapToByte0(final Function<? super T, ByteIterator> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorByteStream(((ArrayStream<T>) sequential()).flatMapToByte0(mapper).skippableIterator(), closeHandlers, false, maxThreadNum,
-                    splitor);
+            return new ParallelIteratorByteStream(((ArrayStream<T>) sequential()).flatMapToByte0(mapper).skippableIterator(), false, maxThreadNum, splitor,
+                    closeHandlers);
         }
 
         final List<Iterator<Byte>> iters = new ArrayList<>(maxThreadNum);
@@ -1410,14 +1410,14 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         }
 
-        return new ParallelIteratorByteStream(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, maxThreadNum, splitor);
+        return new ParallelIteratorByteStream(Stream.parallelConcat(iters, asyncExecutor), false, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
     ShortStream flatMapToShort0(final Function<? super T, ShortIterator> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorShortStream(((ArrayStream<T>) sequential()).flatMapToShort0(mapper).skippableIterator(), closeHandlers, false, maxThreadNum,
-                    splitor);
+            return new ParallelIteratorShortStream(((ArrayStream<T>) sequential()).flatMapToShort0(mapper).skippableIterator(), false, maxThreadNum, splitor,
+                    closeHandlers);
         }
 
         final List<Iterator<Short>> iters = new ArrayList<>(maxThreadNum);
@@ -1489,14 +1489,14 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         }
 
-        return new ParallelIteratorShortStream(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, maxThreadNum, splitor);
+        return new ParallelIteratorShortStream(Stream.parallelConcat(iters, asyncExecutor), false, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
     IntStream flatMapToInt0(final Function<? super T, IntIterator> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorIntStream(((ArrayStream<T>) sequential()).flatMapToInt0(mapper).skippableIterator(), closeHandlers, false, maxThreadNum,
-                    splitor);
+            return new ParallelIteratorIntStream(((ArrayStream<T>) sequential()).flatMapToInt0(mapper).skippableIterator(), false, maxThreadNum, splitor,
+                    closeHandlers);
         }
 
         final List<Iterator<Integer>> iters = new ArrayList<>(maxThreadNum);
@@ -1568,14 +1568,14 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         }
 
-        return new ParallelIteratorIntStream(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, maxThreadNum, splitor);
+        return new ParallelIteratorIntStream(Stream.parallelConcat(iters, asyncExecutor), false, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
     LongStream flatMapToLong0(final Function<? super T, LongIterator> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorLongStream(((ArrayStream<T>) sequential()).flatMapToLong0(mapper).skippableIterator(), closeHandlers, false, maxThreadNum,
-                    splitor);
+            return new ParallelIteratorLongStream(((ArrayStream<T>) sequential()).flatMapToLong0(mapper).skippableIterator(), false, maxThreadNum, splitor,
+                    closeHandlers);
         }
 
         final List<Iterator<Long>> iters = new ArrayList<>(maxThreadNum);
@@ -1647,14 +1647,14 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         }
 
-        return new ParallelIteratorLongStream(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, maxThreadNum, splitor);
+        return new ParallelIteratorLongStream(Stream.parallelConcat(iters, asyncExecutor), false, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
     FloatStream flatMapToFloat0(final Function<? super T, FloatIterator> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorFloatStream(((ArrayStream<T>) sequential()).flatMapToFloat0(mapper).skippableIterator(), closeHandlers, false, maxThreadNum,
-                    splitor);
+            return new ParallelIteratorFloatStream(((ArrayStream<T>) sequential()).flatMapToFloat0(mapper).skippableIterator(), false, maxThreadNum, splitor,
+                    closeHandlers);
         }
 
         final List<Iterator<Float>> iters = new ArrayList<>(maxThreadNum);
@@ -1726,14 +1726,14 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         }
 
-        return new ParallelIteratorFloatStream(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, maxThreadNum, splitor);
+        return new ParallelIteratorFloatStream(Stream.parallelConcat(iters, asyncExecutor), false, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
     DoubleStream flatMapToDouble0(final Function<? super T, DoubleIterator> mapper) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorDoubleStream(((ArrayStream<T>) sequential()).flatMapToDouble0(mapper).skippableIterator(), closeHandlers, false, maxThreadNum,
-                    splitor);
+            return new ParallelIteratorDoubleStream(((ArrayStream<T>) sequential()).flatMapToDouble0(mapper).skippableIterator(), false, maxThreadNum, splitor,
+                    closeHandlers);
         }
 
         final List<Iterator<Double>> iters = new ArrayList<>(maxThreadNum);
@@ -1805,13 +1805,13 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         }
 
-        return new ParallelIteratorDoubleStream(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, maxThreadNum, splitor);
+        return new ParallelIteratorDoubleStream(Stream.parallelConcat(iters, asyncExecutor), false, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
     public <R> Stream<R> slidingMap(final BiFunction<? super T, ? super T, R> mapper, final int increment) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorStream<>(sequential().slidingMap(mapper, increment).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
+            return new ParallelIteratorStream<>(sequential().slidingMap(mapper, increment).iterator(), false, null, maxThreadNum, splitor, closeHandlers);
         }
 
         final int windowSize = 2;
@@ -1852,13 +1852,13 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             });
         }
 
-        return new ParallelIteratorStream<>(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, null, maxThreadNum, splitor);
+        return new ParallelIteratorStream<>(Stream.parallelConcat(iters, asyncExecutor), false, null, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
     public <R> Stream<R> slidingMap(final TriFunction<? super T, ? super T, ? super T, R> mapper, final int increment) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorStream<>(sequential().slidingMap(mapper, increment).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
+            return new ParallelIteratorStream<>(sequential().slidingMap(mapper, increment).iterator(), false, null, maxThreadNum, splitor, closeHandlers);
         }
 
         final int windowSize = 3;
@@ -1900,42 +1900,42 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             });
         }
 
-        return new ParallelIteratorStream<>(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, null, maxThreadNum, splitor);
+        return new ParallelIteratorStream<>(Stream.parallelConcat(iters, asyncExecutor), false, null, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
     public Stream<Stream<T>> split(final int size) {
-        return new ParallelIteratorStream<>(sequential().split(size).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
+        return new ParallelIteratorStream<>(sequential().split(size).iterator(), false, null, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
     public Stream<List<T>> splitToList(final int size) {
-        return new ParallelIteratorStream<>(sequential().splitToList(size).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
+        return new ParallelIteratorStream<>(sequential().splitToList(size).iterator(), false, null, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
     public Stream<Set<T>> splitToSet(final int size) {
-        return new ParallelIteratorStream<>(sequential().splitToSet(size).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
+        return new ParallelIteratorStream<>(sequential().splitToSet(size).iterator(), false, null, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
     public <U> Stream<Stream<T>> split(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
-        return new ParallelIteratorStream<>(sequential().split(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null, maxThreadNum,
-                splitor);
+        return new ParallelIteratorStream<>(sequential().split(identity, predicate, identityUpdate).iterator(), false, null, maxThreadNum, splitor,
+                closeHandlers);
     }
 
     @Override
     public <U> Stream<List<T>> splitToList(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
-        return new ParallelIteratorStream<>(sequential().splitToList(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null, maxThreadNum,
-                splitor);
+        return new ParallelIteratorStream<>(sequential().splitToList(identity, predicate, identityUpdate).iterator(), false, null, maxThreadNum, splitor,
+                closeHandlers);
     }
 
     @Override
     public <U> Stream<Set<T>> splitToSet(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate,
             final Consumer<? super U> identityUpdate) {
-        return new ParallelIteratorStream<>(sequential().splitToSet(identity, predicate, identityUpdate).iterator(), closeHandlers, false, null, maxThreadNum,
-                splitor);
+        return new ParallelIteratorStream<>(sequential().splitToSet(identity, predicate, identityUpdate).iterator(), false, null, maxThreadNum, splitor,
+                closeHandlers);
     }
 
     @Override
@@ -1946,10 +1946,10 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
         final Stream<T>[] a = new Stream[2];
         final int middleIndex = n < toIndex - fromIndex ? fromIndex + n : toIndex;
-        a[0] = middleIndex == fromIndex ? (Stream<T>) Stream.empty() : new ArrayStream<>(elements, fromIndex, middleIndex, null, sorted, cmp);
-        a[1] = middleIndex == toIndex ? (Stream<T>) Stream.empty() : new ArrayStream<>(elements, middleIndex, toIndex, null, sorted, cmp);
+        a[0] = middleIndex == fromIndex ? (Stream<T>) Stream.empty() : new ArrayStream<>(elements, fromIndex, middleIndex, sorted, cmp, null);
+        a[1] = middleIndex == toIndex ? (Stream<T>) Stream.empty() : new ArrayStream<>(elements, middleIndex, toIndex, sorted, cmp, null);
 
-        return new ParallelArrayStream<>(a, 0, a.length, closeHandlers, false, null, maxThreadNum, splitor);
+        return new ParallelArrayStream<>(a, 0, a.length, false, null, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -1968,12 +1968,12 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public Stream<Stream<T>> sliding(final int windowSize, final int increment) {
-        return new ParallelIteratorStream<>(sequential().sliding(windowSize, increment).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
+        return new ParallelIteratorStream<>(sequential().sliding(windowSize, increment).iterator(), false, null, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
     public Stream<List<T>> slidingToList(final int windowSize, final int increment) {
-        return new ParallelIteratorStream<>(sequential().slidingToList(windowSize, increment).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
+        return new ParallelIteratorStream<>(sequential().slidingToList(windowSize, increment).iterator(), false, null, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -2004,10 +2004,10 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
         if (n >= toIndex - fromIndex) {
             return this;
         } else if (sorted && isSameComparator(comparator, cmp)) {
-            return new ParallelArrayStream<>(elements, toIndex - n, toIndex, closeHandlers, sorted, cmp, maxThreadNum, splitor);
+            return new ParallelArrayStream<>(elements, toIndex - n, toIndex, sorted, cmp, maxThreadNum, splitor, closeHandlers);
         } else {
             final T[] a = N.top(elements, fromIndex, toIndex, n, comparator);
-            return new ParallelArrayStream<>(a, 0, a.length, closeHandlers, sorted, cmp, maxThreadNum, splitor);
+            return new ParallelArrayStream<>(a, 0, a.length, sorted, cmp, maxThreadNum, splitor, closeHandlers);
         }
     }
 
@@ -2024,13 +2024,13 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
         final T[] a = N.copyOfRange(elements, fromIndex, toIndex);
         N.parallelSort(a, comparator);
-        return new ParallelArrayStream<>(a, 0, a.length, closeHandlers, true, comparator, maxThreadNum, splitor);
+        return new ParallelArrayStream<>(a, 0, a.length, true, comparator, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
     public Stream<T> peek(final Consumer<? super T> action) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorStream<>(sequential().peek(action).iterator(), closeHandlers, false, null, maxThreadNum, splitor);
+            return new ParallelIteratorStream<>(sequential().peek(action).iterator(), false, null, maxThreadNum, splitor, closeHandlers);
         }
 
         final List<Iterator<T>> iters = new ArrayList<>(maxThreadNum);
@@ -2096,7 +2096,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         }
 
-        return new ParallelIteratorStream<>(Stream.parallelConcat(iters, asyncExecutor), closeHandlers, false, null, maxThreadNum, splitor);
+        return new ParallelIteratorStream<>(Stream.parallelConcat(iters, asyncExecutor), false, null, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -2107,7 +2107,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             return this;
         }
 
-        return new ParallelArrayStream<>(elements, fromIndex, (int) (fromIndex + maxSize), closeHandlers, sorted, cmp, maxThreadNum, splitor);
+        return new ParallelArrayStream<>(elements, fromIndex, (int) (fromIndex + maxSize), sorted, cmp, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -2119,9 +2119,9 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
         }
 
         if (n >= toIndex - fromIndex) {
-            return new ParallelArrayStream<>(elements, toIndex, toIndex, closeHandlers, sorted, cmp, maxThreadNum, splitor);
+            return new ParallelArrayStream<>(elements, toIndex, toIndex, sorted, cmp, maxThreadNum, splitor, closeHandlers);
         } else {
-            return new ParallelArrayStream<>(elements, (int) (fromIndex + n), toIndex, closeHandlers, sorted, cmp, maxThreadNum, splitor);
+            return new ParallelArrayStream<>(elements, (int) (fromIndex + n), toIndex, sorted, cmp, maxThreadNum, splitor, closeHandlers);
         }
     }
 
@@ -2930,7 +2930,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             return this;
         }
 
-        return new ParallelArrayStream<>(elements, fromIndex + 1, toIndex, closeHandlers, sorted, cmp, maxThreadNum, splitor);
+        return new ParallelArrayStream<>(elements, fromIndex + 1, toIndex, sorted, cmp, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -2939,7 +2939,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             return this;
         }
 
-        return new ParallelArrayStream<>(elements, fromIndex, toIndex - 1, closeHandlers, sorted, cmp, maxThreadNum, splitor);
+        return new ParallelArrayStream<>(elements, fromIndex, toIndex - 1, sorted, cmp, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -2950,7 +2950,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             return this;
         }
 
-        return new ParallelArrayStream<>(elements, toIndex - n, toIndex, closeHandlers, sorted, cmp, maxThreadNum, splitor);
+        return new ParallelArrayStream<>(elements, toIndex - n, toIndex, sorted, cmp, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -2961,7 +2961,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             return this;
         }
 
-        return new ParallelArrayStream<>(elements, fromIndex, N.max(fromIndex, toIndex - n), closeHandlers, sorted, cmp, maxThreadNum, splitor);
+        return new ParallelArrayStream<>(elements, fromIndex, N.max(fromIndex, toIndex - n), sorted, cmp, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -3002,7 +3002,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public Stream<T> reversed() {
-        return new ParallelIteratorStream<>(sequential().reversed().iterator(), closeHandlers, false, null, maxThreadNum, splitor);
+        return new ParallelIteratorStream<>(sequential().reversed().iterator(), false, null, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -3483,7 +3483,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     public Stream<T> intersection(final Function<? super T, ?> mapper, final Collection<?> c) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorStream<>(sequential().intersection(mapper, c).iterator(), closeHandlers, sorted, cmp, maxThreadNum, splitor);
+            return new ParallelIteratorStream<>(sequential().intersection(mapper, c).iterator(), sorted, cmp, maxThreadNum, splitor, closeHandlers);
         }
 
         final Multiset<?> multiset = Multiset.from(c);
@@ -3503,7 +3503,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     @Override
     public Stream<T> difference(final Function<? super T, ?> mapper, final Collection<?> c) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorStream<>(sequential().intersection(mapper, c).iterator(), closeHandlers, sorted, cmp, maxThreadNum, splitor);
+            return new ParallelIteratorStream<>(sequential().intersection(mapper, c).iterator(), sorted, cmp, maxThreadNum, splitor, closeHandlers);
         }
 
         final Multiset<?> multiset = Multiset.from(c);
@@ -3532,39 +3532,39 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
     @Override
     public Stream<T> append(Stream<T> stream) {
-        return new ParallelIteratorStream<>(Stream.concat(this, stream), closeHandlers, false, null, maxThreadNum, splitor);
+        return new ParallelIteratorStream<>(Stream.concat(this, stream), false, null, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
     public Stream<T> prepend(Stream<T> stream) {
-        return new ParallelIteratorStream<>(Stream.concat(stream, this), closeHandlers, false, null, maxThreadNum, splitor);
+        return new ParallelIteratorStream<>(Stream.concat(stream, this), false, null, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
     public Stream<T> merge(final Stream<? extends T> b, final BiFunction<? super T, ? super T, Nth> nextSelector) {
-        return new ParallelIteratorStream<>(Stream.merge(this, b, nextSelector), closeHandlers, false, null, maxThreadNum, splitor);
+        return new ParallelIteratorStream<>(Stream.merge(this, b, nextSelector), false, null, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
     public <T2, R> Stream<R> zipWith(Stream<T2> b, BiFunction<? super T, ? super T2, R> zipFunction) {
-        return new ParallelIteratorStream<>(Stream.zip(this, b, zipFunction), closeHandlers, false, null, maxThreadNum, splitor);
+        return new ParallelIteratorStream<>(Stream.zip(this, b, zipFunction), false, null, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
     public <T2, T3, R> Stream<R> zipWith(Stream<T2> b, Stream<T3> c, TriFunction<? super T, ? super T2, ? super T3, R> zipFunction) {
-        return new ParallelIteratorStream<>(Stream.zip(this, b, c, zipFunction), closeHandlers, false, null, maxThreadNum, splitor);
+        return new ParallelIteratorStream<>(Stream.zip(this, b, c, zipFunction), false, null, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
     public <T2, R> Stream<R> zipWith(Stream<T2> b, T valueForNoneA, T2 valueForNoneB, BiFunction<? super T, ? super T2, R> zipFunction) {
-        return new ParallelIteratorStream<>(Stream.zip(this, b, valueForNoneA, valueForNoneB, zipFunction), closeHandlers, false, null, maxThreadNum, splitor);
+        return new ParallelIteratorStream<>(Stream.zip(this, b, valueForNoneA, valueForNoneB, zipFunction), false, null, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
     public <T2, T3, R> Stream<R> zipWith(Stream<T2> b, Stream<T3> c, T valueForNoneA, T2 valueForNoneB, T3 valueForNoneC,
             TriFunction<? super T, ? super T2, ? super T3, R> zipFunction) {
-        return new ParallelIteratorStream<>(Stream.zip(this, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction), closeHandlers, false, null,
-                maxThreadNum, splitor);
+        return new ParallelIteratorStream<>(Stream.zip(this, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction), false, null, maxThreadNum,
+                splitor, closeHandlers);
     }
 
     @Override
@@ -3683,7 +3683,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
         ArrayStream<T> tmp = sequential;
 
         if (tmp == null) {
-            tmp = new ArrayStream<>(elements, fromIndex, toIndex, closeHandlers, sorted, cmp);
+            tmp = new ArrayStream<>(elements, fromIndex, toIndex, sorted, cmp, closeHandlers);
             sequential = tmp;
         }
 
@@ -3700,7 +3700,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             return this;
         }
 
-        return new ParallelArrayStream<>(elements, fromIndex, toIndex, closeHandlers, sorted, cmp, maxThreadNum, splitor);
+        return new ParallelArrayStream<>(elements, fromIndex, toIndex, sorted, cmp, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -3718,7 +3718,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             return this;
         }
 
-        return new ParallelArrayStream<>(elements, fromIndex, toIndex, closeHandlers, sorted, cmp, maxThreadNum, splitor);
+        return new ParallelArrayStream<>(elements, fromIndex, toIndex, sorted, cmp, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -3732,7 +3732,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             return this;
         }
 
-        return new ParallelArrayStream<>(elements, fromIndex, toIndex, closeHandlers, sorted, cmp, maxThreadNum, splitor);
+        return new ParallelArrayStream<>(elements, fromIndex, toIndex, sorted, cmp, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -3745,6 +3745,6 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
         newCloseHandlers.add(closeHandler);
 
-        return new ParallelArrayStream<>(elements, fromIndex, toIndex, newCloseHandlers, sorted, cmp, maxThreadNum, splitor);
+        return new ParallelArrayStream<>(elements, fromIndex, toIndex, sorted, cmp, maxThreadNum, splitor, newCloseHandlers);
     }
 }

@@ -247,10 +247,10 @@ import com.landawn.abacus.util.stream.SkippableObjIterator.QueuedIterator;
 public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? super T>, Consumer<? super T>, List<T>, NullabLe<T>, Indexed<T>, Stream<T>> {
 
     @SuppressWarnings("rawtypes")
-    private static final Stream EMPTY = new ArrayStream(N.EMPTY_OBJECT_ARRAY, null, true, OBJECT_COMPARATOR);
+    private static final Stream EMPTY = new ArrayStream(N.EMPTY_OBJECT_ARRAY, true, OBJECT_COMPARATOR, null);
 
-    Stream(final Collection<Runnable> closeHandlers, final boolean sorted, final Comparator<? super T> cmp) {
-        super(closeHandlers, sorted, cmp);
+    Stream(final boolean sorted, final Comparator<? super T> cmp, final Collection<Runnable> closeHandlers) {
+        super(sorted, cmp, closeHandlers);
     }
 
     /**
@@ -8289,8 +8289,8 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     }
 
     public static abstract class StreamEx<T> extends Stream<T> {
-        private StreamEx(Collection<Runnable> closeHandlers, boolean sorted, Comparator<? super T> cmp) {
-            super(closeHandlers, sorted, cmp);
+        private StreamEx(boolean sorted, Comparator<? super T> cmp, Collection<Runnable> closeHandlers) {
+            super(sorted, cmp, closeHandlers);
             // Factory class.
         }
     }

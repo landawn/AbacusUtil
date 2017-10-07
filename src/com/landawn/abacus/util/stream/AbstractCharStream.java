@@ -63,8 +63,8 @@ import com.landawn.abacus.util.function.ToCharFunction;
  */
 abstract class AbstractCharStream extends CharStream {
 
-    AbstractCharStream(final Collection<Runnable> closeHandlers, final boolean sorted) {
-        super(closeHandlers, sorted);
+    AbstractCharStream(final boolean sorted, final Collection<Runnable> closeHandlers) {
+        super(sorted, closeHandlers);
     }
 
     @Override
@@ -187,7 +187,7 @@ abstract class AbstractCharStream extends CharStream {
         return splitToList(size).map(new Function<CharList, CharStream>() {
             @Override
             public CharStream apply(CharList t) {
-                return new ArrayCharStream(t.array(), 0, t.size(), null, sorted);
+                return new ArrayCharStream(t.array(), 0, t.size(), sorted, null);
             }
         });
     }
@@ -197,7 +197,7 @@ abstract class AbstractCharStream extends CharStream {
         return splitToList(predicate).map(new Function<CharList, CharStream>() {
             @Override
             public CharStream apply(CharList t) {
-                return new ArrayCharStream(t.array(), 0, t.size(), null, sorted);
+                return new ArrayCharStream(t.array(), 0, t.size(), sorted, null);
             }
         });
     }
@@ -221,7 +221,7 @@ abstract class AbstractCharStream extends CharStream {
         return splitToList(identity, predicate, identityUpdate).map(new Function<CharList, CharStream>() {
             @Override
             public CharStream apply(CharList t) {
-                return new ArrayCharStream(t.array(), 0, t.size(), null, sorted);
+                return new ArrayCharStream(t.array(), 0, t.size(), sorted, null);
             }
         });
     }
@@ -231,7 +231,7 @@ abstract class AbstractCharStream extends CharStream {
         return slidingToList(windowSize, increment).map(new Function<CharList, CharStream>() {
             @Override
             public CharStream apply(CharList t) {
-                return new ArrayCharStream(t.array(), 0, t.size(), null, sorted);
+                return new ArrayCharStream(t.array(), 0, t.size(), sorted, null);
             }
         });
     }
@@ -461,7 +461,7 @@ abstract class AbstractCharStream extends CharStream {
             list.add(iter.nextChar());
         }
 
-        final CharStream[] a = { new ArrayCharStream(list.array(), 0, list.size(), null, sorted), new IteratorCharStream(iter, null, sorted) };
+        final CharStream[] a = { new ArrayCharStream(list.array(), 0, list.size(), sorted, null), new IteratorCharStream(iter, sorted, null) };
 
         return this.newStream(a, false, null);
     }
@@ -487,11 +487,11 @@ abstract class AbstractCharStream extends CharStream {
             }
         }
 
-        final CharStream[] a = { new ArrayCharStream(list.array(), 0, list.size(), null, sorted), new IteratorCharStream(iter, null, sorted) };
+        final CharStream[] a = { new ArrayCharStream(list.array(), 0, list.size(), sorted, null), new IteratorCharStream(iter, sorted, null) };
 
         if (s != null) {
             if (sorted) {
-                a[1] = new IteratorCharStream(a[1].prepend(s).skippableIterator(), null, sorted);
+                a[1] = new IteratorCharStream(a[1].prepend(s).skippableIterator(), sorted, null);
             } else {
                 a[1] = a[1].prepend(s);
             }

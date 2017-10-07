@@ -63,8 +63,8 @@ import com.landawn.abacus.util.function.ToShortFunction;
  */
 abstract class AbstractShortStream extends ShortStream {
 
-    AbstractShortStream(final Collection<Runnable> closeHandlers, final boolean sorted) {
-        super(closeHandlers, sorted);
+    AbstractShortStream(final boolean sorted, final Collection<Runnable> closeHandlers) {
+        super(sorted, closeHandlers);
     }
 
     @Override
@@ -187,7 +187,7 @@ abstract class AbstractShortStream extends ShortStream {
         return splitToList(size).map(new Function<ShortList, ShortStream>() {
             @Override
             public ShortStream apply(ShortList t) {
-                return new ArrayShortStream(t.array(), 0, t.size(), null, sorted);
+                return new ArrayShortStream(t.array(), 0, t.size(), sorted, null);
             }
         });
     }
@@ -197,7 +197,7 @@ abstract class AbstractShortStream extends ShortStream {
         return splitToList(predicate).map(new Function<ShortList, ShortStream>() {
             @Override
             public ShortStream apply(ShortList t) {
-                return new ArrayShortStream(t.array(), 0, t.size(), null, sorted);
+                return new ArrayShortStream(t.array(), 0, t.size(), sorted, null);
             }
         });
     }
@@ -221,7 +221,7 @@ abstract class AbstractShortStream extends ShortStream {
         return splitToList(identity, predicate, identityUpdate).map(new Function<ShortList, ShortStream>() {
             @Override
             public ShortStream apply(ShortList t) {
-                return new ArrayShortStream(t.array(), 0, t.size(), null, sorted);
+                return new ArrayShortStream(t.array(), 0, t.size(), sorted, null);
             }
         });
     }
@@ -231,7 +231,7 @@ abstract class AbstractShortStream extends ShortStream {
         return slidingToList(windowSize, increment).map(new Function<ShortList, ShortStream>() {
             @Override
             public ShortStream apply(ShortList t) {
-                return new ArrayShortStream(t.array(), 0, t.size(), null, sorted);
+                return new ArrayShortStream(t.array(), 0, t.size(), sorted, null);
             }
         });
     }
@@ -461,7 +461,7 @@ abstract class AbstractShortStream extends ShortStream {
             list.add(iter.nextShort());
         }
 
-        final ShortStream[] a = { new ArrayShortStream(list.array(), 0, list.size(), null, sorted), new IteratorShortStream(iter, null, sorted) };
+        final ShortStream[] a = { new ArrayShortStream(list.array(), 0, list.size(), sorted, null), new IteratorShortStream(iter, sorted, null) };
 
         return this.newStream(a, false, null);
     }
@@ -487,11 +487,11 @@ abstract class AbstractShortStream extends ShortStream {
             }
         }
 
-        final ShortStream[] a = { new ArrayShortStream(list.array(), 0, list.size(), null, sorted), new IteratorShortStream(iter, null, sorted) };
+        final ShortStream[] a = { new ArrayShortStream(list.array(), 0, list.size(), sorted, null), new IteratorShortStream(iter, sorted, null) };
 
         if (s != null) {
             if (sorted) {
-                a[1] = new IteratorShortStream(a[1].prepend(s).skippableIterator(), null, sorted);
+                a[1] = new IteratorShortStream(a[1].prepend(s).skippableIterator(), sorted, null);
             } else {
                 a[1] = a[1].prepend(s);
             }

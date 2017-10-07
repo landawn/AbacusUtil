@@ -73,11 +73,11 @@ class IteratorLongStream extends AbstractLongStream {
     }
 
     IteratorLongStream(final LongIterator values, final Collection<Runnable> closeHandlers) {
-        this(values, closeHandlers, false);
+        this(values, false, closeHandlers);
     }
 
-    IteratorLongStream(final LongIterator values, final Collection<Runnable> closeHandlers, final boolean sorted) {
-        super(closeHandlers, sorted);
+    IteratorLongStream(final LongIterator values, final boolean sorted, final Collection<Runnable> closeHandlers) {
+        super(sorted, closeHandlers);
 
         SkippableLongIterator tmp = null;
 
@@ -154,7 +154,7 @@ class IteratorLongStream extends AbstractLongStream {
 
                 return next;
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -190,7 +190,7 @@ class IteratorLongStream extends AbstractLongStream {
                 return next;
             }
 
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -234,7 +234,7 @@ class IteratorLongStream extends AbstractLongStream {
                 return next;
             }
 
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -746,7 +746,7 @@ class IteratorLongStream extends AbstractLongStream {
 
                 N.sort(a);
             }
-        }, closeHandlers, true);
+        }, true, closeHandlers);
     }
 
     @Override
@@ -763,7 +763,7 @@ class IteratorLongStream extends AbstractLongStream {
                 action.accept(next);
                 return next;
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -794,7 +794,7 @@ class IteratorLongStream extends AbstractLongStream {
             public void skip(long n) {
                 elements.skip(n);
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -857,7 +857,7 @@ class IteratorLongStream extends AbstractLongStream {
 
                 return elements.toArray();
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -1056,7 +1056,7 @@ class IteratorLongStream extends AbstractLongStream {
     public OptionalLong head() {
         if (head == null) {
             head = elements.hasNext() ? OptionalLong.of(elements.nextLong()) : OptionalLong.empty();
-            tail = new IteratorLongStream(elements, closeHandlers, sorted);
+            tail = new IteratorLongStream(elements, sorted, closeHandlers);
         }
 
         return head;
@@ -1066,7 +1066,7 @@ class IteratorLongStream extends AbstractLongStream {
     public LongStream tail() {
         if (tail == null) {
             head = elements.hasNext() ? OptionalLong.of(elements.nextLong()) : OptionalLong.empty();
-            tail = new IteratorLongStream(elements, closeHandlers, sorted);
+            tail = new IteratorLongStream(elements, sorted, closeHandlers);
         }
 
         return tail;
@@ -1076,7 +1076,7 @@ class IteratorLongStream extends AbstractLongStream {
     public LongStream head2() {
         if (head2 == null) {
             final long[] a = elements.toArray();
-            head2 = new ArrayLongStream(a, 0, a.length == 0 ? 0 : a.length - 1, closeHandlers, sorted);
+            head2 = new ArrayLongStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, closeHandlers);
             tail2 = a.length == 0 ? OptionalLong.empty() : OptionalLong.of(a[a.length - 1]);
         }
 
@@ -1087,7 +1087,7 @@ class IteratorLongStream extends AbstractLongStream {
     public OptionalLong tail2() {
         if (tail2 == null) {
             final long[] a = elements.toArray();
-            head2 = new ArrayLongStream(a, 0, a.length == 0 ? 0 : a.length - 1, closeHandlers, sorted);
+            head2 = new ArrayLongStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, closeHandlers);
             tail2 = a.length == 0 ? OptionalLong.empty() : OptionalLong.of(a[a.length - 1]);
         }
 
@@ -1291,7 +1291,7 @@ class IteratorLongStream extends AbstractLongStream {
             public void skip(long n) {
                 elements.skip(n);
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
@@ -1316,12 +1316,12 @@ class IteratorLongStream extends AbstractLongStream {
             public void skip(long n) {
                 elements.skip(n);
             }
-        }, closeHandlers, sorted);
+        }, sorted, closeHandlers);
     }
 
     @Override
     public Stream<Long> boxed() {
-        return new IteratorStream<Long>(iterator(), closeHandlers, sorted, sorted ? LONG_COMPARATOR : null);
+        return new IteratorStream<Long>(iterator(), sorted, sorted ? LONG_COMPARATOR : null, closeHandlers);
     }
 
     @Override
@@ -1335,7 +1335,7 @@ class IteratorLongStream extends AbstractLongStream {
             throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
         }
 
-        return new ParallelIteratorLongStream(elements, closeHandlers, sorted, maxThreadNum, splitor);
+        return new ParallelIteratorLongStream(elements, sorted, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -1348,6 +1348,6 @@ class IteratorLongStream extends AbstractLongStream {
 
         newCloseHandlers.add(closeHandler);
 
-        return new IteratorLongStream(elements, newCloseHandlers, sorted);
+        return new IteratorLongStream(elements, sorted, newCloseHandlers);
     }
 }

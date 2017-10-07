@@ -63,8 +63,8 @@ import com.landawn.abacus.util.function.ToByteFunction;
  */
 abstract class AbstractByteStream extends ByteStream {
 
-    AbstractByteStream(final Collection<Runnable> closeHandlers, final boolean sorted) {
-        super(closeHandlers, sorted);
+    AbstractByteStream(final boolean sorted, final Collection<Runnable> closeHandlers) {
+        super(sorted, closeHandlers);
     }
 
     @Override
@@ -189,7 +189,7 @@ abstract class AbstractByteStream extends ByteStream {
         return splitToList(size).map(new Function<ByteList, ByteStream>() {
             @Override
             public ByteStream apply(ByteList t) {
-                return new ArrayByteStream(t.array(), 0, t.size(), null, sorted);
+                return new ArrayByteStream(t.array(), 0, t.size(), sorted, null);
             }
         });
     }
@@ -199,7 +199,7 @@ abstract class AbstractByteStream extends ByteStream {
         return splitToList(predicate).map(new Function<ByteList, ByteStream>() {
             @Override
             public ByteStream apply(ByteList t) {
-                return new ArrayByteStream(t.array(), 0, t.size(), null, sorted);
+                return new ArrayByteStream(t.array(), 0, t.size(), sorted, null);
             }
         });
     }
@@ -223,7 +223,7 @@ abstract class AbstractByteStream extends ByteStream {
         return splitToList(identity, predicate, identityUpdate).map(new Function<ByteList, ByteStream>() {
             @Override
             public ByteStream apply(ByteList t) {
-                return new ArrayByteStream(t.array(), 0, t.size(), null, sorted);
+                return new ArrayByteStream(t.array(), 0, t.size(), sorted, null);
             }
         });
     }
@@ -233,7 +233,7 @@ abstract class AbstractByteStream extends ByteStream {
         return slidingToList(windowSize, increment).map(new Function<ByteList, ByteStream>() {
             @Override
             public ByteStream apply(ByteList t) {
-                return new ArrayByteStream(t.array(), 0, t.size(), null, sorted);
+                return new ArrayByteStream(t.array(), 0, t.size(), sorted, null);
             }
         });
     }
@@ -463,7 +463,7 @@ abstract class AbstractByteStream extends ByteStream {
             list.add(iter.nextByte());
         }
 
-        final ByteStream[] a = { new ArrayByteStream(list.array(), 0, list.size(), null, sorted), new IteratorByteStream(iter, null, sorted) };
+        final ByteStream[] a = { new ArrayByteStream(list.array(), 0, list.size(), sorted, null), new IteratorByteStream(iter, sorted, null) };
 
         return this.newStream(a, false, null);
     }
@@ -489,11 +489,11 @@ abstract class AbstractByteStream extends ByteStream {
             }
         }
 
-        final ByteStream[] a = { new ArrayByteStream(list.array(), 0, list.size(), null, sorted), new IteratorByteStream(iter, null, sorted) };
+        final ByteStream[] a = { new ArrayByteStream(list.array(), 0, list.size(), sorted, null), new IteratorByteStream(iter, sorted, null) };
 
         if (s != null) {
             if (sorted) {
-                a[1] = new IteratorByteStream(a[1].prepend(s).skippableIterator(), null, sorted);
+                a[1] = new IteratorByteStream(a[1].prepend(s).skippableIterator(), sorted, null);
             } else {
                 a[1] = a[1].prepend(s);
             }
