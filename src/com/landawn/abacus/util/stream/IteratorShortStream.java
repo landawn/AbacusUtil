@@ -79,28 +79,6 @@ class IteratorShortStream extends AbstractShortStream {
 
         if (values instanceof SkippableShortIterator) {
             tmp = (SkippableShortIterator) values;
-        } else if (values instanceof Skippable) {
-            tmp = new SkippableShortIterator() {
-                @Override
-                public boolean hasNext() {
-                    return values.hasNext();
-                }
-
-                @Override
-                public short nextShort() {
-                    return values.nextShort();
-                }
-
-                @Override
-                public void skip(long n) {
-                    ((Skippable) values).skip(n);
-                }
-
-                @Override
-                public long count() {
-                    return ((Skippable) values).count();
-                }
-            };
         } else {
             tmp = new SkippableShortIterator() {
                 @Override

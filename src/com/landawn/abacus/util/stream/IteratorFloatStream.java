@@ -82,28 +82,6 @@ class IteratorFloatStream extends AbstractFloatStream {
 
         if (values instanceof SkippableFloatIterator) {
             tmp = (SkippableFloatIterator) values;
-        } else if (values instanceof Skippable) {
-            tmp = new SkippableFloatIterator() {
-                @Override
-                public boolean hasNext() {
-                    return values.hasNext();
-                }
-
-                @Override
-                public float nextFloat() {
-                    return values.nextFloat();
-                }
-
-                @Override
-                public void skip(long n) {
-                    ((Skippable) values).skip(n);
-                }
-
-                @Override
-                public long count() {
-                    return ((Skippable) values).count();
-                }
-            };
         } else {
             tmp = new SkippableFloatIterator() {
                 @Override

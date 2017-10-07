@@ -96,28 +96,6 @@ class IteratorStream<T> extends AbstractStream<T> {
 
         if (values instanceof SkippableObjIterator) {
             tmp = (SkippableObjIterator<T>) values;
-        } else if (values instanceof Skippable) {
-            tmp = new SkippableObjIterator<T>() {
-                @Override
-                public boolean hasNext() {
-                    return values.hasNext();
-                }
-
-                @Override
-                public T next() {
-                    return values.next();
-                }
-
-                @Override
-                public void skip(long n) {
-                    ((Skippable) values).skip(n);
-                }
-
-                @Override
-                public long count() {
-                    return ((Skippable) values).count();
-                }
-            };
         } else {
             tmp = new SkippableObjIterator<T>() {
                 @Override

@@ -83,28 +83,6 @@ class IteratorLongStream extends AbstractLongStream {
 
         if (values instanceof SkippableLongIterator) {
             tmp = (SkippableLongIterator) values;
-        } else if (values instanceof Skippable) {
-            tmp = new SkippableLongIterator() {
-                @Override
-                public boolean hasNext() {
-                    return values.hasNext();
-                }
-
-                @Override
-                public long nextLong() {
-                    return values.nextLong();
-                }
-
-                @Override
-                public void skip(long n) {
-                    ((Skippable) values).skip(n);
-                }
-
-                @Override
-                public long count() {
-                    return ((Skippable) values).count();
-                }
-            };
         } else {
             tmp = new SkippableLongIterator() {
                 @Override

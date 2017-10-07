@@ -77,28 +77,6 @@ class IteratorCharStream extends AbstractCharStream {
 
         if (values instanceof SkippableCharIterator) {
             tmp = (SkippableCharIterator) values;
-        } else if (values instanceof Skippable) {
-            tmp = new SkippableCharIterator() {
-                @Override
-                public boolean hasNext() {
-                    return values.hasNext();
-                }
-
-                @Override
-                public char nextChar() {
-                    return values.nextChar();
-                }
-
-                @Override
-                public void skip(long n) {
-                    ((Skippable) values).skip(n);
-                }
-
-                @Override
-                public long count() {
-                    return ((Skippable) values).count();
-                }
-            };
         } else {
             tmp = new SkippableCharIterator() {
                 @Override

@@ -29,7 +29,7 @@ import com.landawn.abacus.util.N;
  * 
  * @author Haiyang Li
  */
-public abstract class SkippableFloatIterator extends FloatIterator implements Skippable {
+public abstract class SkippableFloatIterator extends FloatIterator implements SkippableIterator<Float> {
     public static final SkippableFloatIterator EMPTY = new SkippableFloatIterator() {
         @Override
         public boolean hasNext() {

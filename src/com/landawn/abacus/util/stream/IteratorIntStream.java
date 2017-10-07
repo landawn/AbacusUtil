@@ -89,28 +89,6 @@ class IteratorIntStream extends AbstractIntStream {
 
         if (values instanceof SkippableIntIterator) {
             tmp = (SkippableIntIterator) values;
-        } else if (values instanceof Skippable) {
-            tmp = new SkippableIntIterator() {
-                @Override
-                public boolean hasNext() {
-                    return values.hasNext();
-                }
-
-                @Override
-                public int nextInt() {
-                    return values.nextInt();
-                }
-
-                @Override
-                public void skip(long n) {
-                    ((Skippable) values).skip(n);
-                }
-
-                @Override
-                public long count() {
-                    return ((Skippable) values).count();
-                }
-            };
         } else {
             tmp = new SkippableIntIterator() {
                 @Override

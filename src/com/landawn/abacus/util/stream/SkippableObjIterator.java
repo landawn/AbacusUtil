@@ -30,7 +30,7 @@ import com.landawn.abacus.util.ObjIterator;
  * 
  * @author Haiyang Li
  */
-public abstract class SkippableObjIterator<T> extends ObjIterator<T> implements Skippable {
+public abstract class SkippableObjIterator<T> extends ObjIterator<T> implements SkippableIterator<T> {
     @SuppressWarnings("rawtypes")
     public static final SkippableObjIterator EMPTY = new QueuedIterator(0) {
         @Override

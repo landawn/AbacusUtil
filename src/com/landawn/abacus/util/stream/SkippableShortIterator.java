@@ -29,7 +29,7 @@ import com.landawn.abacus.util.ShortList;
  * 
  * @author Haiyang Li
  */
-public abstract class SkippableShortIterator extends ShortIterator implements Skippable {
+public abstract class SkippableShortIterator extends ShortIterator implements SkippableIterator<Short> {
     public static final SkippableShortIterator EMPTY = new SkippableShortIterator() {
         @Override
         public boolean hasNext() {

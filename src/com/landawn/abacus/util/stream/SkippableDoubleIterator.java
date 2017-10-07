@@ -29,7 +29,7 @@ import com.landawn.abacus.util.N;
  * 
  * @author Haiyang Li
  */
-public abstract class SkippableDoubleIterator extends DoubleIterator implements Skippable {
+public abstract class SkippableDoubleIterator extends DoubleIterator implements SkippableIterator<Double> {
     public static final SkippableDoubleIterator EMPTY = new SkippableDoubleIterator() {
         @Override
         public boolean hasNext() {

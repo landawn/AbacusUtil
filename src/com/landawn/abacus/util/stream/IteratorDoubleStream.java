@@ -82,28 +82,6 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
         if (values instanceof SkippableDoubleIterator) {
             tmp = (SkippableDoubleIterator) values;
-        } else if (values instanceof Skippable) {
-            tmp = new SkippableDoubleIterator() {
-                @Override
-                public boolean hasNext() {
-                    return values.hasNext();
-                }
-
-                @Override
-                public double nextDouble() {
-                    return values.nextDouble();
-                }
-
-                @Override
-                public void skip(long n) {
-                    ((Skippable) values).skip(n);
-                }
-
-                @Override
-                public long count() {
-                    return ((Skippable) values).count();
-                }
-            };
         } else {
             tmp = new SkippableDoubleIterator() {
                 @Override

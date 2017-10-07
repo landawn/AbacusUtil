@@ -77,28 +77,6 @@ class IteratorByteStream extends AbstractByteStream {
 
         if (values instanceof SkippableByteIterator) {
             tmp = (SkippableByteIterator) values;
-        } else if (values instanceof Skippable) {
-            tmp = new SkippableByteIterator() {
-                @Override
-                public boolean hasNext() {
-                    return values.hasNext();
-                }
-
-                @Override
-                public byte nextByte() {
-                    return values.nextByte();
-                }
-
-                @Override
-                public void skip(long n) {
-                    ((Skippable) values).skip(n);
-                }
-
-                @Override
-                public long count() {
-                    return ((Skippable) values).count();
-                }
-            };
         } else {
             tmp = new SkippableByteIterator() {
                 @Override
