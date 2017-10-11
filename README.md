@@ -187,6 +187,10 @@ assertEquals(account, account3);
 More see: [ParserFactory](https://static.javadoc.io/com.landawn/abacus-util-all/1.0.2/com/landawn/abacus/parser/ParserFactory.html)
 
 ### Functional Programming
+[What's New in Java 8](https://leanpub.com/whatsnewinjava8/read)
+
+[An introduction to the java.util.stream library](https://www.ibm.com/developerworks/library/j-java-streams-1-brian-goetz/index.html)
+
 ```java
 
 List<String> myList = N.asList("a1", "a2", "b1", "c2", "c1");
