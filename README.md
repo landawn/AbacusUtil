@@ -191,6 +191,8 @@ More see: [ParserFactory](https://static.javadoc.io/com.landawn/abacus-util-all/
 
 [An introduction to the java.util.stream library](https://www.ibm.com/developerworks/library/j-java-streams-1-brian-goetz/index.html)
 
+[When to use parallel streams](http://gee.cs.oswego.edu/dl/html/StreamParallelGuidance.html)
+
 ```java
 
 List<String> myList = N.asList("a1", "a2", "b1", "c2", "c1");
