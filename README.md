@@ -215,7 +215,7 @@ Map<String, Person> = Stream.of(persons)
 
 ```
 
-### The Best [SQLBuilder][]/[SQLExecutor][]/Mapper Ever
+### The Best [SQLBuilder][]/[SQLExecutor][]/[Mapper] Ever
 A simple CRUD(create/read/update/delete) sample by SQLExecutor
 
 ```java
@@ -329,6 +329,7 @@ assertFalse(collExecutor.exists(dbAccount.getId()));
 [Fu]: https://static.javadoc.io/com.landawn/abacus-util-all/1.0.2/com/landawn/abacus/android/util/Fu.html
 
 [SQLExecutor]: https://static.javadoc.io/com.landawn/abacus-util-all/1.0.2/com/landawn/abacus/util/SQLExecutor.html
+[Mapper]: https://static.javadoc.io/com.landawn/abacus-util-all/1.0.2/com/landawn/abacus/util/SQLExecutor.Mapper.html
 [SQLBuilder]: https://static.javadoc.io/com.landawn/abacus-util-all/1.0.2/com/landawn/abacus/util/SQLBuilder.html
 [DataSet]: https://static.javadoc.io/com.landawn/abacus-util-all/1.0.2/com/landawn/abacus/DataSet.html
 [JdbcUtil]: https://static.javadoc.io/com.landawn/abacus-util-all/1.0.2/com/landawn/abacus/util/JdbcUtil.html
