@@ -68,7 +68,6 @@ import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.Holder;
 import com.landawn.abacus.util.IOUtil;
-import com.landawn.abacus.util.ObjIterator;
 import com.landawn.abacus.util.ImmutableList;
 import com.landawn.abacus.util.ImmutableMap;
 import com.landawn.abacus.util.ImmutableSet;
@@ -86,6 +85,7 @@ import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.NullabLe;
+import com.landawn.abacus.util.ObjIterator;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.Pair;
@@ -3544,45 +3544,44 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
             return Stream.empty();
         }
 
-        final AsyncExecutor asyncExecutor = new AsyncExecutor(N.min(readThreadNum, c.size()), 300L, TimeUnit.SECONDS);
-
-        return parallelConcat(c, queueSize, asyncExecutor);
-    }
-
-    static <T> Stream<T> parallelConcat(final Collection<? extends Iterator<? extends T>> c, final AsyncExecutor asyncExecutor) {
-        return parallelConcat(c, calculateQueueSize(c.size()), asyncExecutor);
-    }
-
-    static <T> Stream<T> parallelConcat(final Collection<? extends Iterator<? extends T>> c, final int queueSize, final AsyncExecutor asyncExecutor) {
-        if (N.isNullOrEmpty(c)) {
-            return Stream.empty();
-        }
-
         final AtomicInteger threadCounter = new AtomicInteger(c.size());
         final ArrayBlockingQueue<T> queue = new ArrayBlockingQueue<>(queueSize);
         final Holder<Throwable> eHolder = new Holder<>();
         final MutableBoolean onGoing = MutableBoolean.of(true);
 
-        for (Iterator<? extends T> e : c) {
-            final Iterator<? extends T> iter = e;
+        final Iterator<? extends Iterator<? extends T>> iterators = c.iterator();
+        final int threadNum = Math.min(c.size(), readThreadNum);
 
+        for (int i = 0; i < threadNum; i++) {
             asyncExecutor.execute(new Runnable() {
                 @Override
                 public void run() {
                     try {
-                        T next = null;
+                        while (onGoing.value()) {
+                            Iterator<? extends T> iter = null;
 
-                        while (onGoing.value() && iter.hasNext()) {
-                            next = iter.next();
-
-                            if (next == null) {
-                                next = (T) NONE;
+                            synchronized (iterators) {
+                                if (iterators.hasNext()) {
+                                    iter = iterators.next();
+                                } else {
+                                    break;
+                                }
                             }
 
-                            if (queue.offer(next) == false) {
-                                while (onGoing.value()) {
-                                    if (queue.offer(next, 100, TimeUnit.MILLISECONDS)) {
-                                        break;
+                            T next = null;
+
+                            while (onGoing.value() && iter.hasNext()) {
+                                next = iter.next();
+
+                                if (next == null) {
+                                    next = (T) NONE;
+                                }
+
+                                if (queue.offer(next) == false) {
+                                    while (onGoing.value()) {
+                                        if (queue.offer(next, 100, TimeUnit.MILLISECONDS)) {
+                                            break;
+                                        }
                                     }
                                 }
                             }
@@ -6579,7 +6578,6 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <A, B, R> Stream<R> parallelZip(final Iterator<? extends A> a, final Iterator<? extends B> b,
             final BiFunction<? super A, ? super B, R> zipFunction, final int queueSize) {
-        final AsyncExecutor asyncExecutor = new AsyncExecutor(2, 300L, TimeUnit.SECONDS);
         final AtomicInteger threadCounterA = new AtomicInteger(1);
         final AtomicInteger threadCounterB = new AtomicInteger(1);
         final BlockingQueue<A> queueA = new ArrayBlockingQueue<>(queueSize);
@@ -6680,7 +6678,6 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <A, B, C, R> Stream<R> parallelZip(final Iterator<? extends A> a, final Iterator<? extends B> b, final Iterator<? extends C> c,
             final TriFunction<? super A, ? super B, ? super C, R> zipFunction, final int queueSize) {
-        final AsyncExecutor asyncExecutor = new AsyncExecutor(3, 300L, TimeUnit.SECONDS);
         final AtomicInteger threadCounterA = new AtomicInteger(1);
         final AtomicInteger threadCounterB = new AtomicInteger(1);
         final AtomicInteger threadCounterC = new AtomicInteger(1);
@@ -6925,7 +6922,6 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         }
 
         final int len = c.size();
-        final AsyncExecutor asyncExecutor = new AsyncExecutor(len, 300L, TimeUnit.SECONDS);
         final AtomicInteger[] counters = new AtomicInteger[len];
         final BlockingQueue<Object>[] queues = new ArrayBlockingQueue[len];
         final Holder<Throwable> eHolder = new Holder<>();
@@ -7228,7 +7224,6 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <A, B, R> Stream<R> parallelZip(final Iterator<? extends A> a, final Iterator<? extends B> b, final A valueForNoneA, final B valueForNoneB,
             final BiFunction<? super A, ? super B, R> zipFunction, final int queueSize) {
-        final AsyncExecutor asyncExecutor = new AsyncExecutor(2, 300L, TimeUnit.SECONDS);
         final AtomicInteger threadCounterA = new AtomicInteger(1);
         final AtomicInteger threadCounterB = new AtomicInteger(1);
         final BlockingQueue<A> queueA = new ArrayBlockingQueue<>(queueSize);
@@ -7346,7 +7341,6 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     public static <A, B, C, R> Stream<R> parallelZip(final Iterator<? extends A> a, final Iterator<? extends B> b, final Iterator<? extends C> c,
             final A valueForNoneA, final B valueForNoneB, final C valueForNoneC, final TriFunction<? super A, ? super B, ? super C, R> zipFunction,
             final int queueSize) {
-        final AsyncExecutor asyncExecutor = new AsyncExecutor(3, 300L, TimeUnit.SECONDS);
         final AtomicInteger threadCounterA = new AtomicInteger(1);
         final AtomicInteger threadCounterB = new AtomicInteger(1);
         final AtomicInteger threadCounterC = new AtomicInteger(1);
@@ -7620,7 +7614,6 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         }
 
         final int len = c.size();
-        final AsyncExecutor asyncExecutor = new AsyncExecutor(len, 300L, TimeUnit.SECONDS);
         final Holder<Throwable> eHolder = new Holder<>();
         final MutableBoolean onGoing = MutableBoolean.of(true);
         final AtomicInteger[] counters = new AtomicInteger[len];

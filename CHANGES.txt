@@ -1,4 +1,9 @@
 ﻿
+﻿========Changes in 1.0.3 =========================================================================
+
+1, Improvements and bug fix.
+
+
 ﻿========Changes in 1.0.2 =========================================================================
 
 1*, Refactoring: change ConditionFactory/Criteria.limit(count, offset) to limit(offset, count) to keep consistent with SQLBuild.limit(...)

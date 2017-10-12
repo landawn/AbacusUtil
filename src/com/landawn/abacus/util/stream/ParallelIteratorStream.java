@@ -85,16 +85,16 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     private final Splitor splitor;
     private volatile IteratorStream<T> sequential;
 
-    ParallelIteratorStream(final Iterator<? extends T> values, final boolean sorted, final Comparator<? super T> comparator,
-            final int maxThreadNum, final Splitor splitor, final Collection<Runnable> closeHandlers) {
+    ParallelIteratorStream(final Iterator<? extends T> values, final boolean sorted, final Comparator<? super T> comparator, final int maxThreadNum,
+            final Splitor splitor, final Collection<Runnable> closeHandlers) {
         super(values, sorted, comparator, closeHandlers);
 
         this.maxThreadNum = N.min(maxThreadNum, MAX_THREAD_NUM_PER_OPERATION);
         this.splitor = splitor == null ? DEFAULT_SPLITOR : splitor;
     }
 
-    ParallelIteratorStream(final Stream<T> stream, final boolean sorted, final Comparator<? super T> comparator, final int maxThreadNum,
-            final Splitor splitor, final Set<Runnable> closeHandlers) {
+    ParallelIteratorStream(final Stream<T> stream, final boolean sorted, final Comparator<? super T> comparator, final int maxThreadNum, final Splitor splitor,
+            final Set<Runnable> closeHandlers) {
         this(stream.iterator(), sorted, comparator, maxThreadNum, splitor, mergeCloseHandlers(stream, closeHandlers));
     }
 
@@ -145,7 +145,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
             });
         }
 
-        return new ParallelIteratorStream<>(Stream.parallelConcat(iters, asyncExecutor), false, null, maxThreadNum, splitor, closeHandlers);
+        return new ParallelIteratorStream<>(Stream.parallelConcat2(iters, iters.size()), false, null, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -195,7 +195,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
             });
         }
 
-        return new ParallelIteratorStream<>(Stream.parallelConcat(iters, asyncExecutor), false, null, maxThreadNum, splitor, closeHandlers);
+        return new ParallelIteratorStream<>(Stream.parallelConcat2(iters, iters.size()), false, null, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -266,7 +266,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
             });
         }
 
-        return new ParallelIteratorStream<>(Stream.parallelConcat(iters, asyncExecutor), false, null, maxThreadNum, splitor, closeHandlers);
+        return new ParallelIteratorStream<>(Stream.parallelConcat2(iters, iters.size()), false, null, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -307,7 +307,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
             });
         }
 
-        return new ParallelIteratorStream<>(Stream.parallelConcat(iters, asyncExecutor), false, null, maxThreadNum, splitor, closeHandlers);
+        return new ParallelIteratorStream<>(Stream.parallelConcat2(iters, iters.size()), false, null, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -354,7 +354,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
             });
         }
 
-        return new ParallelIteratorStream<>(Stream.parallelConcat(iters, asyncExecutor), false, null, maxThreadNum, splitor, closeHandlers);
+        return new ParallelIteratorStream<>(Stream.parallelConcat2(iters, iters.size()), false, null, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -407,7 +407,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
             });
         }
 
-        return new ParallelIteratorStream<>(Stream.parallelConcat(iters, asyncExecutor), false, null, maxThreadNum, splitor, closeHandlers);
+        return new ParallelIteratorStream<>(Stream.parallelConcat2(iters, iters.size()), false, null, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -555,7 +555,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
             });
         }
 
-        return new ParallelIteratorStream<>(Stream.parallelConcat(iters, asyncExecutor), false, null, maxThreadNum, splitor, closeHandlers);
+        return new ParallelIteratorStream<>(Stream.parallelConcat2(iters, iters.size()), false, null, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -596,7 +596,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
             });
         }
 
-        return new ParallelIteratorCharStream(Stream.parallelConcat(iters, asyncExecutor), false, maxThreadNum, splitor, closeHandlers);
+        return new ParallelIteratorCharStream(Stream.parallelConcat2(iters, iters.size()), false, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -637,7 +637,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
             });
         }
 
-        return new ParallelIteratorByteStream(Stream.parallelConcat(iters, asyncExecutor), false, maxThreadNum, splitor, closeHandlers);
+        return new ParallelIteratorByteStream(Stream.parallelConcat2(iters, iters.size()), false, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -678,7 +678,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
             });
         }
 
-        return new ParallelIteratorShortStream(Stream.parallelConcat(iters, asyncExecutor), false, maxThreadNum, splitor, closeHandlers);
+        return new ParallelIteratorShortStream(Stream.parallelConcat2(iters, iters.size()), false, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -719,7 +719,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
             });
         }
 
-        return new ParallelIteratorIntStream(Stream.parallelConcat(iters, asyncExecutor), false, maxThreadNum, splitor, closeHandlers);
+        return new ParallelIteratorIntStream(Stream.parallelConcat2(iters, iters.size()), false, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -760,7 +760,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
             });
         }
 
-        return new ParallelIteratorLongStream(Stream.parallelConcat(iters, asyncExecutor), false, maxThreadNum, splitor, closeHandlers);
+        return new ParallelIteratorLongStream(Stream.parallelConcat2(iters, iters.size()), false, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -801,7 +801,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
             });
         }
 
-        return new ParallelIteratorFloatStream(Stream.parallelConcat(iters, asyncExecutor), false, maxThreadNum, splitor, closeHandlers);
+        return new ParallelIteratorFloatStream(Stream.parallelConcat2(iters, iters.size()), false, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -842,7 +842,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
             });
         }
 
-        return new ParallelIteratorDoubleStream(Stream.parallelConcat(iters, asyncExecutor), false, maxThreadNum, splitor, closeHandlers);
+        return new ParallelIteratorDoubleStream(Stream.parallelConcat2(iters, iters.size()), false, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -888,7 +888,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
             });
         }
 
-        return new ParallelIteratorStream<>(Stream.parallelConcat(iters, asyncExecutor), false, null, maxThreadNum, splitor, closeHandlers);
+        return new ParallelIteratorStream<>(Stream.parallelConcat2(iters, iters.size()), false, null, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -934,7 +934,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
             });
         }
 
-        return new ParallelIteratorCharStream(Stream.parallelConcat(iters, asyncExecutor), false, maxThreadNum, splitor, closeHandlers);
+        return new ParallelIteratorCharStream(Stream.parallelConcat2(iters, iters.size()), false, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -980,7 +980,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
             });
         }
 
-        return new ParallelIteratorByteStream(Stream.parallelConcat(iters, asyncExecutor), false, maxThreadNum, splitor, closeHandlers);
+        return new ParallelIteratorByteStream(Stream.parallelConcat2(iters, iters.size()), false, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -1026,7 +1026,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
             });
         }
 
-        return new ParallelIteratorShortStream(Stream.parallelConcat(iters, asyncExecutor), false, maxThreadNum, splitor, closeHandlers);
+        return new ParallelIteratorShortStream(Stream.parallelConcat2(iters, iters.size()), false, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -1072,7 +1072,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
             });
         }
 
-        return new ParallelIteratorIntStream(Stream.parallelConcat(iters, asyncExecutor), false, maxThreadNum, splitor, closeHandlers);
+        return new ParallelIteratorIntStream(Stream.parallelConcat2(iters, iters.size()), false, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -1118,7 +1118,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
             });
         }
 
-        return new ParallelIteratorLongStream(Stream.parallelConcat(iters, asyncExecutor), false, maxThreadNum, splitor, closeHandlers);
+        return new ParallelIteratorLongStream(Stream.parallelConcat2(iters, iters.size()), false, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -1164,7 +1164,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
             });
         }
 
-        return new ParallelIteratorFloatStream(Stream.parallelConcat(iters, asyncExecutor), false, maxThreadNum, splitor, closeHandlers);
+        return new ParallelIteratorFloatStream(Stream.parallelConcat2(iters, iters.size()), false, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -1210,7 +1210,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
             });
         }
 
-        return new ParallelIteratorDoubleStream(Stream.parallelConcat(iters, asyncExecutor), false, maxThreadNum, splitor, closeHandlers);
+        return new ParallelIteratorDoubleStream(Stream.parallelConcat2(iters, iters.size()), false, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -1280,7 +1280,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
             });
         }
 
-        return new ParallelIteratorStream<>(Stream.parallelConcat(iters, asyncExecutor), false, null, maxThreadNum, splitor, closeHandlers);
+        return new ParallelIteratorStream<>(Stream.parallelConcat2(iters, iters.size()), false, null, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -1361,7 +1361,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
             });
         }
 
-        return new ParallelIteratorStream<>(Stream.parallelConcat(iters, asyncExecutor), false, null, maxThreadNum, splitor, closeHandlers);
+        return new ParallelIteratorStream<>(Stream.parallelConcat2(iters, iters.size()), false, null, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -1618,7 +1618,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
             });
         }
 
-        return new ParallelIteratorStream<>(Stream.parallelConcat(iters, asyncExecutor), false, null, maxThreadNum, splitor, closeHandlers);
+        return new ParallelIteratorStream<>(Stream.parallelConcat2(iters, iters.size()), false, null, maxThreadNum, splitor, closeHandlers);
     }
 
     @Override
@@ -2813,8 +2813,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
         if (iter instanceof QueuedIterator && ((QueuedIterator<? extends T>) iter).max() >= queueSize) {
             return this;
         } else {
-            return new ParallelIteratorStream<>(Stream.parallelConcat(Arrays.asList(iter), queueSize, asyncExecutor), sorted, cmp, maxThreadNum, splitor,
-                    closeHandlers);
+            return new ParallelIteratorStream<>(Stream.parallelConcat2(Arrays.asList(iter), 1, queueSize), sorted, cmp, maxThreadNum, splitor, closeHandlers);
         }
     }
 
