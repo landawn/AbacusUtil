@@ -432,8 +432,8 @@ class IteratorByteStream extends AbstractByteStream {
     }
 
     @Override
-    public <U> Stream<ByteList> splitToList(final U identity, final BiFunction<? super Byte, ? super U, Boolean> predicate,
-            final Consumer<? super U> identityUpdate) {
+    public <U> Stream<ByteList> splitToList(final U seed, final BiFunction<? super Byte, ? super U, Boolean> predicate,
+            final Consumer<? super U> seedUpdate) {
         return new IteratorStream<ByteList>(new SkippableObjIterator<ByteList>() {
             private byte next;
             private boolean hasNext = false;
@@ -460,14 +460,14 @@ class IteratorByteStream extends AbstractByteStream {
                 while (hasNext) {
                     if (result.size() == 0) {
                         result.add(next);
-                        preCondition = predicate.apply(next, identity);
+                        preCondition = predicate.apply(next, seed);
                         next = (hasNext = elements.hasNext()) ? elements.nextByte() : 0;
-                    } else if (predicate.apply(next, identity) == preCondition) {
+                    } else if (predicate.apply(next, seed) == preCondition) {
                         result.add(next);
                         next = (hasNext = elements.hasNext()) ? elements.nextByte() : 0;
                     } else {
-                        if (identityUpdate != null) {
-                            identityUpdate.accept(identity);
+                        if (seedUpdate != null) {
+                            seedUpdate.accept(seed);
                         }
 
                         break;

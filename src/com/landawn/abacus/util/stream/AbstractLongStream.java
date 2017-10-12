@@ -215,9 +215,9 @@ abstract class AbstractLongStream extends LongStream {
     }
 
     @Override
-    public <U> Stream<LongStream> split(final U identity, final BiFunction<? super Long, ? super U, Boolean> predicate,
-            final Consumer<? super U> identityUpdate) {
-        return splitToList(identity, predicate, identityUpdate).map(new Function<LongList, LongStream>() {
+    public <U> Stream<LongStream> split(final U seed, final BiFunction<? super Long, ? super U, Boolean> predicate,
+            final Consumer<? super U> seedUpdate) {
+        return splitToList(seed, predicate, seedUpdate).map(new Function<LongList, LongStream>() {
             @Override
             public LongStream apply(LongList t) {
                 return new ArrayLongStream(t.array(), 0, t.size(), sorted, null);

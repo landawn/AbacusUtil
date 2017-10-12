@@ -516,8 +516,8 @@ class ArrayShortStream extends AbstractShortStream {
     }
 
     @Override
-    public <U> Stream<ShortStream> split(final U identity, final BiFunction<? super Short, ? super U, Boolean> predicate,
-            final Consumer<? super U> identityUpdate) {
+    public <U> Stream<ShortStream> split(final U seed, final BiFunction<? super Short, ? super U, Boolean> predicate,
+            final Consumer<? super U> seedUpdate) {
         return new IteratorStream<ShortStream>(new SkippableObjIterator<ShortStream>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
@@ -537,13 +537,13 @@ class ArrayShortStream extends AbstractShortStream {
 
                 while (cursor < toIndex) {
                     if (from == cursor) {
-                        preCondition = predicate.apply(elements[from], identity);
+                        preCondition = predicate.apply(elements[from], seed);
                         cursor++;
-                    } else if (predicate.apply(elements[cursor], identity) == preCondition) {
+                    } else if (predicate.apply(elements[cursor], seed) == preCondition) {
                         cursor++;
                     } else {
-                        if (identityUpdate != null) {
-                            identityUpdate.accept(identity);
+                        if (seedUpdate != null) {
+                            seedUpdate.accept(seed);
                         }
 
                         break;
@@ -556,8 +556,8 @@ class ArrayShortStream extends AbstractShortStream {
     }
 
     @Override
-    public <U> Stream<ShortList> splitToList(final U identity, final BiFunction<? super Short, ? super U, Boolean> predicate,
-            final Consumer<? super U> identityUpdate) {
+    public <U> Stream<ShortList> splitToList(final U seed, final BiFunction<? super Short, ? super U, Boolean> predicate,
+            final Consumer<? super U> seedUpdate) {
         return new IteratorStream<ShortList>(new SkippableObjIterator<ShortList>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
@@ -577,13 +577,13 @@ class ArrayShortStream extends AbstractShortStream {
 
                 while (cursor < toIndex) {
                     if (from == cursor) {
-                        preCondition = predicate.apply(elements[from], identity);
+                        preCondition = predicate.apply(elements[from], seed);
                         cursor++;
-                    } else if (predicate.apply(elements[cursor], identity) == preCondition) {
+                    } else if (predicate.apply(elements[cursor], seed) == preCondition) {
                         cursor++;
                     } else {
-                        if (identityUpdate != null) {
-                            identityUpdate.accept(identity);
+                        if (seedUpdate != null) {
+                            seedUpdate.accept(seed);
                         }
 
                         break;

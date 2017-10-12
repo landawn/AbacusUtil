@@ -201,12 +201,12 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * <br />
      * This method only run sequentially, even in parallel stream.
      * 
-     * @param identity
+     * @param seed
      * @param predicate
-     * @param identityUpdate
+     * @param seedUpdate
      * @return
      */
-    <U> Stream<S> split(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate);
+    <U> Stream<S> split(final U seed, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> seedUpdate);
 
     /**
      * Split the stream by the specified predicate.
@@ -222,12 +222,12 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * <br />
      * This method only run sequentially, even in parallel stream.
      * 
-     * @param identity
+     * @param seed
      * @param predicate
-     * @param identityUpdate
+     * @param seedUpdate
      * @return
      */
-    <U> Stream<PL> splitToList(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate);
+    <U> Stream<PL> splitToList(final U seed, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> seedUpdate);
 
     /**
      * Split the stream into two pieces at <code>where</code>

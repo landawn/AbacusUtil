@@ -1044,8 +1044,8 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <U> Stream<List<T>> splitToList(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate,
-            final Consumer<? super U> identityUpdate) {
+    public <U> Stream<List<T>> splitToList(final U seed, final BiFunction<? super T, ? super U, Boolean> predicate,
+            final Consumer<? super U> seedUpdate) {
         return new IteratorStream<>(new SkippableObjIterator<List<T>>() {
             private T next = (T) NONE;
             private boolean preCondition = false;
@@ -1070,14 +1070,14 @@ class IteratorStream<T> extends AbstractStream<T> {
                 while (next != NONE) {
                     if (result.size() == 0) {
                         result.add(next);
-                        preCondition = predicate.apply(next, identity);
+                        preCondition = predicate.apply(next, seed);
                         next = elements.hasNext() ? elements.next() : (T) NONE;
-                    } else if (predicate.apply(next, identity) == preCondition) {
+                    } else if (predicate.apply(next, seed) == preCondition) {
                         result.add(next);
                         next = elements.hasNext() ? elements.next() : (T) NONE;
                     } else {
-                        if (identityUpdate != null) {
-                            identityUpdate.accept(identity);
+                        if (seedUpdate != null) {
+                            seedUpdate.accept(seed);
                         }
 
                         break;
@@ -1091,8 +1091,8 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <U> Stream<Set<T>> splitToSet(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate,
-            final Consumer<? super U> identityUpdate) {
+    public <U> Stream<Set<T>> splitToSet(final U seed, final BiFunction<? super T, ? super U, Boolean> predicate,
+            final Consumer<? super U> seedUpdate) {
         return new IteratorStream<>(new SkippableObjIterator<Set<T>>() {
             private T next = (T) NONE;
             private boolean preCondition = false;
@@ -1117,14 +1117,14 @@ class IteratorStream<T> extends AbstractStream<T> {
                 while (next != NONE) {
                     if (result.size() == 0) {
                         result.add(next);
-                        preCondition = predicate.apply(next, identity);
+                        preCondition = predicate.apply(next, seed);
                         next = elements.hasNext() ? elements.next() : (T) NONE;
-                    } else if (predicate.apply(next, identity) == preCondition) {
+                    } else if (predicate.apply(next, seed) == preCondition) {
                         result.add(next);
                         next = elements.hasNext() ? elements.next() : (T) NONE;
                     } else {
-                        if (identityUpdate != null) {
-                            identityUpdate.accept(identity);
+                        if (seedUpdate != null) {
+                            seedUpdate.accept(seed);
                         }
 
                         break;

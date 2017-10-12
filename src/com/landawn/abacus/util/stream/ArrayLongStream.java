@@ -656,8 +656,8 @@ class ArrayLongStream extends AbstractLongStream {
     }
 
     @Override
-    public <U> Stream<LongStream> split(final U identity, final BiFunction<? super Long, ? super U, Boolean> predicate,
-            final Consumer<? super U> identityUpdate) {
+    public <U> Stream<LongStream> split(final U seed, final BiFunction<? super Long, ? super U, Boolean> predicate,
+            final Consumer<? super U> seedUpdate) {
         return new IteratorStream<LongStream>(new SkippableObjIterator<LongStream>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
@@ -677,13 +677,13 @@ class ArrayLongStream extends AbstractLongStream {
 
                 while (cursor < toIndex) {
                     if (from == cursor) {
-                        preCondition = predicate.apply(elements[from], identity);
+                        preCondition = predicate.apply(elements[from], seed);
                         cursor++;
-                    } else if (predicate.apply(elements[cursor], identity) == preCondition) {
+                    } else if (predicate.apply(elements[cursor], seed) == preCondition) {
                         cursor++;
                     } else {
-                        if (identityUpdate != null) {
-                            identityUpdate.accept(identity);
+                        if (seedUpdate != null) {
+                            seedUpdate.accept(seed);
                         }
 
                         break;
@@ -696,8 +696,8 @@ class ArrayLongStream extends AbstractLongStream {
     }
 
     @Override
-    public <U> Stream<LongList> splitToList(final U identity, final BiFunction<? super Long, ? super U, Boolean> predicate,
-            final Consumer<? super U> identityUpdate) {
+    public <U> Stream<LongList> splitToList(final U seed, final BiFunction<? super Long, ? super U, Boolean> predicate,
+            final Consumer<? super U> seedUpdate) {
         return new IteratorStream<LongList>(new SkippableObjIterator<LongList>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
@@ -717,13 +717,13 @@ class ArrayLongStream extends AbstractLongStream {
 
                 while (cursor < toIndex) {
                     if (from == cursor) {
-                        preCondition = predicate.apply(elements[from], identity);
+                        preCondition = predicate.apply(elements[from], seed);
                         cursor++;
-                    } else if (predicate.apply(elements[cursor], identity) == preCondition) {
+                    } else if (predicate.apply(elements[cursor], seed) == preCondition) {
                         cursor++;
                     } else {
-                        if (identityUpdate != null) {
-                            identityUpdate.accept(identity);
+                        if (seedUpdate != null) {
+                            seedUpdate.accept(seed);
                         }
 
                         break;

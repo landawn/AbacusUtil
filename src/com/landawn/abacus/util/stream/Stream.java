@@ -703,14 +703,14 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * <br />
      * This method only run sequentially, even in parallel stream.
      * 
-     * @param identity
+     * @param seed
      * @param predicate
-     * @param identityUpdate
+     * @param seedUpdate
      * @return
      */
     @Override
-    public abstract <U> Stream<List<T>> splitToList(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate,
-            final Consumer<? super U> identityUpdate);
+    public abstract <U> Stream<List<T>> splitToList(final U seed, final BiFunction<? super T, ? super U, Boolean> predicate,
+            final Consumer<? super U> seedUpdate);
 
     /**
      * Split the stream by the specified predicate.
@@ -727,13 +727,13 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * <br />
      * This method only run sequentially, even in parallel stream.
      * 
-     * @param identity
+     * @param seed
      * @param predicate
-     * @param identityUpdate
+     * @param seedUpdate
      * @return
      */
-    public abstract <U> Stream<Set<T>> splitToSet(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate,
-            final Consumer<? super U> identityUpdate);
+    public abstract <U> Stream<Set<T>> splitToSet(final U seed, final BiFunction<? super T, ? super U, Boolean> predicate,
+            final Consumer<? super U> seedUpdate);
 
     @Override
     public abstract Stream<List<T>> slidingToList(int windowSize);
@@ -769,9 +769,9 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
 
     /**
      * Returns a {@code Stream} produced by iterative application of a accumulation function
-     * to an initial element {@code identity} and next element of the current stream.
-     * Produces a {@code Stream} consisting of {@code identity}, {@code acc(identity, value1)},
-     * {@code acc(acc(identity, value1), value2)}, etc.
+     * to an initial element {@code seed} and next element of the current stream.
+     * Produces a {@code Stream} consisting of {@code seed}, {@code acc(seed, value1)},
+     * {@code acc(acc(seed, value1), value2)}, etc.
      *
      * <p>This is an intermediate operation.
      *
@@ -792,9 +792,9 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
 
     /**
      * Returns a {@code Stream} produced by iterative application of a accumulation function
-     * to an initial element {@code identity} and next element of the current stream.
-     * Produces a {@code Stream} consisting of {@code identity}, {@code acc(identity, value1)},
-     * {@code acc(acc(identity, value1), value2)}, etc.
+     * to an initial element {@code seed} and next element of the current stream.
+     * Produces a {@code Stream} consisting of {@code seed}, {@code acc(seed, value1)},
+     * {@code acc(acc(seed, value1), value2)}, etc.
      *
      * <p>This is an intermediate operation.
      *
@@ -8307,7 +8307,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         COLLAPSE, RANGE_MAP, SCAN, INTERSPERSE, TOP, K_TH_LARGEST, FOR_EACH_WITH_RESULT, //
         COUNT, FIND_FIRST_OR_LAST, FIND_FIRST_AND_LAST, //
         LAST, HEAD, HEAD_2, TAIL, TAIL_2, HEAD_AND_TAIL, HEAD_AND_TAIL_2, //
-        TO_ARRAY, TO_EXlIST, TO_LIST, TO_SET, TO_MULTISET, TO_LONG_MULTISET, TO_MATRIX, TO_DATA_SET, //
+        TO_ARRAY, TO_LIST, TO_SET, TO_MULTISET, TO_LONG_MULTISET, TO_MATRIX, TO_DATA_SET, //
         BOXED, ITERATOR, AS_INT_STREAM, AS_LONG_STREAM, AS_FLOAT_STREAM, AS_DOUBLE_STREAM, //
         PRINTLN, IS_PARALLEL, SEQUENTIAL, PARALLEL, MAX_THREAD_NUM, SPLITOR, TRIED, PERSIST_FILE, ON_CLOSE, CLOSE;
     }
@@ -8326,7 +8326,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         FLAT_MAP, FLAT_MAP_TO_, FLAT_ARRAY, FLAT_COLLECION, //
         FILTER, TAKE_WHILE, DROP_WHILE, REMOVE, REMOVE_IF, REMOVE_WHILE, SKIP_NULL, //
         SPLIT_BY, SORTED, REVERSE_SORTED, DISTINCT_BY, JOIN, PEEK, //
-        GROUP_BY, GROUP_BY_TO_ENTRY, PARTITION_BY, PARTITION_BY_TO_ENTRY, GROUP_TO, TO_MAP, TO_MULTIMAP, //
+        GROUP_BY, GROUP_BY_TO_ENTRY, GROUP_TO, TO_MAP, TO_MULTIMAP, //
         MIN, MAX, SUM_INT, SUM_LONG, SUM_DOUBLE, AVERAGE_INT, AVERAGE_LONG, AVERAGE_DOUBLE, SUMMARIZE_, //
         FOR_EACH, FOR_EACH_PAIR, FOR_EACH_TRIPLE, ANY_MATCH, ALL_MATCH, NONE_MATCH, FIND_FIRST, FIND_LAST, //
         REDUCE, COLLECT, PERSIST_DB;

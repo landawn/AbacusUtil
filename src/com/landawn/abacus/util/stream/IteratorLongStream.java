@@ -538,8 +538,8 @@ class IteratorLongStream extends AbstractLongStream {
     }
 
     @Override
-    public <U> Stream<LongList> splitToList(final U identity, final BiFunction<? super Long, ? super U, Boolean> predicate,
-            final Consumer<? super U> identityUpdate) {
+    public <U> Stream<LongList> splitToList(final U seed, final BiFunction<? super Long, ? super U, Boolean> predicate,
+            final Consumer<? super U> seedUpdate) {
         return new IteratorStream<LongList>(new SkippableObjIterator<LongList>() {
             private long next;
             private boolean hasNext = false;
@@ -566,14 +566,14 @@ class IteratorLongStream extends AbstractLongStream {
                 while (hasNext) {
                     if (result.size() == 0) {
                         result.add(next);
-                        preCondition = predicate.apply(next, identity);
+                        preCondition = predicate.apply(next, seed);
                         next = (hasNext = elements.hasNext()) ? elements.nextLong() : 0;
-                    } else if (predicate.apply(next, identity) == preCondition) {
+                    } else if (predicate.apply(next, seed) == preCondition) {
                         result.add(next);
                         next = (hasNext = elements.hasNext()) ? elements.nextLong() : 0;
                     } else {
-                        if (identityUpdate != null) {
-                            identityUpdate.accept(identity);
+                        if (seedUpdate != null) {
+                            seedUpdate.accept(seed);
                         }
 
                         break;

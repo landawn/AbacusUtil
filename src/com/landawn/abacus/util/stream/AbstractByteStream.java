@@ -218,9 +218,9 @@ abstract class AbstractByteStream extends ByteStream {
     }
 
     @Override
-    public <U> Stream<ByteStream> split(final U identity, final BiFunction<? super Byte, ? super U, Boolean> predicate,
-            final Consumer<? super U> identityUpdate) {
-        return splitToList(identity, predicate, identityUpdate).map(new Function<ByteList, ByteStream>() {
+    public <U> Stream<ByteStream> split(final U seed, final BiFunction<? super Byte, ? super U, Boolean> predicate,
+            final Consumer<? super U> seedUpdate) {
+        return splitToList(seed, predicate, seedUpdate).map(new Function<ByteList, ByteStream>() {
             @Override
             public ByteStream apply(ByteList t) {
                 return new ArrayByteStream(t.array(), 0, t.size(), sorted, null);

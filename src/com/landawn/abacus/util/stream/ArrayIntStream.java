@@ -866,8 +866,8 @@ class ArrayIntStream extends AbstractIntStream {
     }
 
     @Override
-    public <U> Stream<IntStream> split(final U identity, final BiFunction<? super Integer, ? super U, Boolean> predicate,
-            final Consumer<? super U> identityUpdate) {
+    public <U> Stream<IntStream> split(final U seed, final BiFunction<? super Integer, ? super U, Boolean> predicate,
+            final Consumer<? super U> seedUpdate) {
         return new IteratorStream<IntStream>(new SkippableObjIterator<IntStream>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
@@ -887,13 +887,13 @@ class ArrayIntStream extends AbstractIntStream {
 
                 while (cursor < toIndex) {
                     if (from == cursor) {
-                        preCondition = predicate.apply(elements[from], identity);
+                        preCondition = predicate.apply(elements[from], seed);
                         cursor++;
-                    } else if (predicate.apply(elements[cursor], identity) == preCondition) {
+                    } else if (predicate.apply(elements[cursor], seed) == preCondition) {
                         cursor++;
                     } else {
-                        if (identityUpdate != null) {
-                            identityUpdate.accept(identity);
+                        if (seedUpdate != null) {
+                            seedUpdate.accept(seed);
                         }
 
                         break;
@@ -906,8 +906,8 @@ class ArrayIntStream extends AbstractIntStream {
     }
 
     @Override
-    public <U> Stream<IntList> splitToList(final U identity, final BiFunction<? super Integer, ? super U, Boolean> predicate,
-            final Consumer<? super U> identityUpdate) {
+    public <U> Stream<IntList> splitToList(final U seed, final BiFunction<? super Integer, ? super U, Boolean> predicate,
+            final Consumer<? super U> seedUpdate) {
         return new IteratorStream<IntList>(new SkippableObjIterator<IntList>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
@@ -927,13 +927,13 @@ class ArrayIntStream extends AbstractIntStream {
 
                 while (cursor < toIndex) {
                     if (from == cursor) {
-                        preCondition = predicate.apply(elements[from], identity);
+                        preCondition = predicate.apply(elements[from], seed);
                         cursor++;
-                    } else if (predicate.apply(elements[cursor], identity) == preCondition) {
+                    } else if (predicate.apply(elements[cursor], seed) == preCondition) {
                         cursor++;
                     } else {
-                        if (identityUpdate != null) {
-                            identityUpdate.accept(identity);
+                        if (seedUpdate != null) {
+                            seedUpdate.accept(seed);
                         }
 
                         break;

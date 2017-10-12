@@ -537,8 +537,8 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public <U> Stream<DoubleList> splitToList(final U identity, final BiFunction<? super Double, ? super U, Boolean> predicate,
-            final Consumer<? super U> identityUpdate) {
+    public <U> Stream<DoubleList> splitToList(final U seed, final BiFunction<? super Double, ? super U, Boolean> predicate,
+            final Consumer<? super U> seedUpdate) {
         return new IteratorStream<DoubleList>(new SkippableObjIterator<DoubleList>() {
             private double next;
             private boolean hasNext = false;
@@ -565,14 +565,14 @@ class IteratorDoubleStream extends AbstractDoubleStream {
                 while (hasNext) {
                     if (result.size() == 0) {
                         result.add(next);
-                        preCondition = predicate.apply(next, identity);
+                        preCondition = predicate.apply(next, seed);
                         next = (hasNext = elements.hasNext()) ? elements.nextDouble() : 0;
-                    } else if (predicate.apply(next, identity) == preCondition) {
+                    } else if (predicate.apply(next, seed) == preCondition) {
                         result.add(next);
                         next = (hasNext = elements.hasNext()) ? elements.nextDouble() : 0;
                     } else {
-                        if (identityUpdate != null) {
-                            identityUpdate.accept(identity);
+                        if (seedUpdate != null) {
+                            seedUpdate.accept(seed);
                         }
 
                         break;

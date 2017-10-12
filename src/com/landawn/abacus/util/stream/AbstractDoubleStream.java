@@ -216,9 +216,9 @@ abstract class AbstractDoubleStream extends DoubleStream {
     }
 
     @Override
-    public <U> Stream<DoubleStream> split(final U identity, final BiFunction<? super Double, ? super U, Boolean> predicate,
-            final Consumer<? super U> identityUpdate) {
-        return splitToList(identity, predicate, identityUpdate).map(new Function<DoubleList, DoubleStream>() {
+    public <U> Stream<DoubleStream> split(final U seed, final BiFunction<? super Double, ? super U, Boolean> predicate,
+            final Consumer<? super U> seedUpdate) {
+        return splitToList(seed, predicate, seedUpdate).map(new Function<DoubleList, DoubleStream>() {
             @Override
             public DoubleStream apply(DoubleList t) {
                 return new ArrayDoubleStream(t.array(), 0, t.size(), sorted, null);

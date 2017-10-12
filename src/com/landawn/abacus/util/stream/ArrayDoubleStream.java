@@ -655,8 +655,8 @@ class ArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public <U> Stream<DoubleStream> split(final U identity, final BiFunction<? super Double, ? super U, Boolean> predicate,
-            final Consumer<? super U> identityUpdate) {
+    public <U> Stream<DoubleStream> split(final U seed, final BiFunction<? super Double, ? super U, Boolean> predicate,
+            final Consumer<? super U> seedUpdate) {
         return new IteratorStream<DoubleStream>(new SkippableObjIterator<DoubleStream>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
@@ -676,13 +676,13 @@ class ArrayDoubleStream extends AbstractDoubleStream {
 
                 while (cursor < toIndex) {
                     if (from == cursor) {
-                        preCondition = predicate.apply(elements[from], identity);
+                        preCondition = predicate.apply(elements[from], seed);
                         cursor++;
-                    } else if (predicate.apply(elements[cursor], identity) == preCondition) {
+                    } else if (predicate.apply(elements[cursor], seed) == preCondition) {
                         cursor++;
                     } else {
-                        if (identityUpdate != null) {
-                            identityUpdate.accept(identity);
+                        if (seedUpdate != null) {
+                            seedUpdate.accept(seed);
                         }
 
                         break;
@@ -695,8 +695,8 @@ class ArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public <U> Stream<DoubleList> splitToList(final U identity, final BiFunction<? super Double, ? super U, Boolean> predicate,
-            final Consumer<? super U> identityUpdate) {
+    public <U> Stream<DoubleList> splitToList(final U seed, final BiFunction<? super Double, ? super U, Boolean> predicate,
+            final Consumer<? super U> seedUpdate) {
         return new IteratorStream<DoubleList>(new SkippableObjIterator<DoubleList>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
@@ -716,13 +716,13 @@ class ArrayDoubleStream extends AbstractDoubleStream {
 
                 while (cursor < toIndex) {
                     if (from == cursor) {
-                        preCondition = predicate.apply(elements[from], identity);
+                        preCondition = predicate.apply(elements[from], seed);
                         cursor++;
-                    } else if (predicate.apply(elements[cursor], identity) == preCondition) {
+                    } else if (predicate.apply(elements[cursor], seed) == preCondition) {
                         cursor++;
                     } else {
-                        if (identityUpdate != null) {
-                            identityUpdate.accept(identity);
+                        if (seedUpdate != null) {
+                            seedUpdate.accept(seed);
                         }
 
                         break;

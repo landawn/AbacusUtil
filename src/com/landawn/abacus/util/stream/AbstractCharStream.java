@@ -216,9 +216,9 @@ abstract class AbstractCharStream extends CharStream {
     }
 
     @Override
-    public <U> Stream<CharStream> split(final U identity, final BiFunction<? super Character, ? super U, Boolean> predicate,
-            final Consumer<? super U> identityUpdate) {
-        return splitToList(identity, predicate, identityUpdate).map(new Function<CharList, CharStream>() {
+    public <U> Stream<CharStream> split(final U seed, final BiFunction<? super Character, ? super U, Boolean> predicate,
+            final Consumer<? super U> seedUpdate) {
+        return splitToList(seed, predicate, seedUpdate).map(new Function<CharList, CharStream>() {
             @Override
             public CharStream apply(CharList t) {
                 return new ArrayCharStream(t.array(), 0, t.size(), sorted, null);

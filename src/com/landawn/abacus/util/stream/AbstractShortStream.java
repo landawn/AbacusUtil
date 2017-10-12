@@ -216,9 +216,9 @@ abstract class AbstractShortStream extends ShortStream {
     }
 
     @Override
-    public <U> Stream<ShortStream> split(final U identity, final BiFunction<? super Short, ? super U, Boolean> predicate,
-            final Consumer<? super U> identityUpdate) {
-        return splitToList(identity, predicate, identityUpdate).map(new Function<ShortList, ShortStream>() {
+    public <U> Stream<ShortStream> split(final U seed, final BiFunction<? super Short, ? super U, Boolean> predicate,
+            final Consumer<? super U> seedUpdate) {
+        return splitToList(seed, predicate, seedUpdate).map(new Function<ShortList, ShortStream>() {
             @Override
             public ShortStream apply(ShortList t) {
                 return new ArrayShortStream(t.array(), 0, t.size(), sorted, null);

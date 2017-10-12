@@ -296,16 +296,16 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
     }
 
     @Override
-    public <U> Stream<DoubleStream> split(final U identity, final BiFunction<? super Double, ? super U, Boolean> predicate,
-            final Consumer<? super U> identityUpdate) {
-        return new ParallelIteratorStream<DoubleStream>(sequential().split(identity, predicate, identityUpdate).iterator(), false, null, maxThreadNum,
+    public <U> Stream<DoubleStream> split(final U seed, final BiFunction<? super Double, ? super U, Boolean> predicate,
+            final Consumer<? super U> seedUpdate) {
+        return new ParallelIteratorStream<DoubleStream>(sequential().split(seed, predicate, seedUpdate).iterator(), false, null, maxThreadNum,
                 splitor, closeHandlers);
     }
 
     @Override
-    public <U> Stream<DoubleList> splitToList(final U identity, final BiFunction<? super Double, ? super U, Boolean> predicate,
-            final Consumer<? super U> identityUpdate) {
-        return new ParallelIteratorStream<DoubleList>(sequential().splitToList(identity, predicate, identityUpdate).iterator(), false, null, maxThreadNum,
+    public <U> Stream<DoubleList> splitToList(final U seed, final BiFunction<? super Double, ? super U, Boolean> predicate,
+            final Consumer<? super U> seedUpdate) {
+        return new ParallelIteratorStream<DoubleList>(sequential().splitToList(seed, predicate, seedUpdate).iterator(), false, null, maxThreadNum,
                 splitor, closeHandlers);
     }
 

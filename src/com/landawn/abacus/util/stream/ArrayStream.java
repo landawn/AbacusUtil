@@ -1269,7 +1269,7 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <U> Stream<Stream<T>> split(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
+    public <U> Stream<Stream<T>> split(final U seed, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> seedUpdate) {
         return new IteratorStream<>(new SkippableObjIterator<Stream<T>>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
@@ -1289,13 +1289,13 @@ class ArrayStream<T> extends AbstractStream<T> {
 
                 while (cursor < toIndex) {
                     if (from == cursor) {
-                        preCondition = predicate.apply(elements[from], identity);
+                        preCondition = predicate.apply(elements[from], seed);
                         cursor++;
-                    } else if (predicate.apply(elements[cursor], identity) == preCondition) {
+                    } else if (predicate.apply(elements[cursor], seed) == preCondition) {
                         cursor++;
                     } else {
-                        if (identityUpdate != null) {
-                            identityUpdate.accept(identity);
+                        if (seedUpdate != null) {
+                            seedUpdate.accept(seed);
                         }
 
                         break;
@@ -1308,8 +1308,8 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <U> Stream<List<T>> splitToList(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate,
-            final Consumer<? super U> identityUpdate) {
+    public <U> Stream<List<T>> splitToList(final U seed, final BiFunction<? super T, ? super U, Boolean> predicate,
+            final Consumer<? super U> seedUpdate) {
         return new IteratorStream<>(new SkippableObjIterator<List<T>>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
@@ -1329,15 +1329,15 @@ class ArrayStream<T> extends AbstractStream<T> {
 
                 while (cursor < toIndex) {
                     if (result.size() == 0) {
-                        preCondition = predicate.apply(elements[cursor], identity);
+                        preCondition = predicate.apply(elements[cursor], seed);
                         result.add(elements[cursor]);
                         cursor++;
-                    } else if (predicate.apply(elements[cursor], identity) == preCondition) {
+                    } else if (predicate.apply(elements[cursor], seed) == preCondition) {
                         result.add(elements[cursor]);
                         cursor++;
                     } else {
-                        if (identityUpdate != null) {
-                            identityUpdate.accept(identity);
+                        if (seedUpdate != null) {
+                            seedUpdate.accept(seed);
                         }
 
                         break;
@@ -1351,8 +1351,8 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <U> Stream<Set<T>> splitToSet(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate,
-            final Consumer<? super U> identityUpdate) {
+    public <U> Stream<Set<T>> splitToSet(final U seed, final BiFunction<? super T, ? super U, Boolean> predicate,
+            final Consumer<? super U> seedUpdate) {
         return new IteratorStream<>(new SkippableObjIterator<Set<T>>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
@@ -1372,15 +1372,15 @@ class ArrayStream<T> extends AbstractStream<T> {
 
                 while (cursor < toIndex) {
                     if (result.size() == 0) {
-                        preCondition = predicate.apply(elements[cursor], identity);
+                        preCondition = predicate.apply(elements[cursor], seed);
                         result.add(elements[cursor]);
                         cursor++;
-                    } else if (predicate.apply(elements[cursor], identity) == preCondition) {
+                    } else if (predicate.apply(elements[cursor], seed) == preCondition) {
                         result.add(elements[cursor]);
                         cursor++;
                     } else {
-                        if (identityUpdate != null) {
-                            identityUpdate.accept(identity);
+                        if (seedUpdate != null) {
+                            seedUpdate.accept(seed);
                         }
 
                         break;

@@ -221,9 +221,9 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
 
     /**
      * Returns a {@code Stream} produced by iterative application of a accumulation function
-     * to an initial element {@code identity} and next element of the current stream.
-     * Produces a {@code Stream} consisting of {@code identity}, {@code acc(identity, value1)},
-     * {@code acc(acc(identity, value1), value2)}, etc.
+     * to an initial element {@code seed} and next element of the current stream.
+     * Produces a {@code Stream} consisting of {@code seed}, {@code acc(seed, value1)},
+     * {@code acc(acc(seed, value1), value2)}, etc.
      *
      * <p>This is an intermediate operation.
      *
@@ -244,9 +244,9 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
 
     /**
      * Returns a {@code Stream} produced by iterative application of a accumulation function
-     * to an initial element {@code identity} and next element of the current stream.
-     * Produces a {@code Stream} consisting of {@code identity}, {@code acc(identity, value1)},
-     * {@code acc(acc(identity, value1), value2)}, etc.
+     * to an initial element {@code seed} and next element of the current stream.
+     * Produces a {@code Stream} consisting of {@code seed}, {@code acc(seed, value1)},
+     * {@code acc(acc(seed, value1), value2)}, etc.
      *
      * <p>This is an intermediate operation.
      *

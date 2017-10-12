@@ -572,8 +572,8 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <U> Stream<Stream<T>> split(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
-        return splitToList(identity, predicate, identityUpdate).map(new Function<List<T>, Stream<T>>() {
+    public <U> Stream<Stream<T>> split(final U seed, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> seedUpdate) {
+        return splitToList(seed, predicate, seedUpdate).map(new Function<List<T>, Stream<T>>() {
             @Override
             public Stream<T> apply(List<T> t) {
                 return new ArrayStream<>(toArray(t), 0, t.size(), sorted, cmp, null);

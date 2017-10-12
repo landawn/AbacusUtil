@@ -655,8 +655,8 @@ class ArrayFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public <U> Stream<FloatStream> split(final U identity, final BiFunction<? super Float, ? super U, Boolean> predicate,
-            final Consumer<? super U> identityUpdate) {
+    public <U> Stream<FloatStream> split(final U seed, final BiFunction<? super Float, ? super U, Boolean> predicate,
+            final Consumer<? super U> seedUpdate) {
         return new IteratorStream<FloatStream>(new SkippableObjIterator<FloatStream>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
@@ -676,13 +676,13 @@ class ArrayFloatStream extends AbstractFloatStream {
 
                 while (cursor < toIndex) {
                     if (from == cursor) {
-                        preCondition = predicate.apply(elements[from], identity);
+                        preCondition = predicate.apply(elements[from], seed);
                         cursor++;
-                    } else if (predicate.apply(elements[cursor], identity) == preCondition) {
+                    } else if (predicate.apply(elements[cursor], seed) == preCondition) {
                         cursor++;
                     } else {
-                        if (identityUpdate != null) {
-                            identityUpdate.accept(identity);
+                        if (seedUpdate != null) {
+                            seedUpdate.accept(seed);
                         }
 
                         break;
@@ -695,8 +695,8 @@ class ArrayFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public <U> Stream<FloatList> splitToList(final U identity, final BiFunction<? super Float, ? super U, Boolean> predicate,
-            final Consumer<? super U> identityUpdate) {
+    public <U> Stream<FloatList> splitToList(final U seed, final BiFunction<? super Float, ? super U, Boolean> predicate,
+            final Consumer<? super U> seedUpdate) {
         return new IteratorStream<FloatList>(new SkippableObjIterator<FloatList>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
@@ -716,13 +716,13 @@ class ArrayFloatStream extends AbstractFloatStream {
 
                 while (cursor < toIndex) {
                     if (from == cursor) {
-                        preCondition = predicate.apply(elements[from], identity);
+                        preCondition = predicate.apply(elements[from], seed);
                         cursor++;
-                    } else if (predicate.apply(elements[cursor], identity) == preCondition) {
+                    } else if (predicate.apply(elements[cursor], seed) == preCondition) {
                         cursor++;
                     } else {
-                        if (identityUpdate != null) {
-                            identityUpdate.accept(identity);
+                        if (seedUpdate != null) {
+                            seedUpdate.accept(seed);
                         }
 
                         break;

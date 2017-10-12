@@ -216,9 +216,9 @@ abstract class AbstractIntStream extends IntStream {
     }
 
     @Override
-    public <U> Stream<IntStream> split(final U identity, final BiFunction<? super Integer, ? super U, Boolean> predicate,
-            final Consumer<? super U> identityUpdate) {
-        return splitToList(identity, predicate, identityUpdate).map(new Function<IntList, IntStream>() {
+    public <U> Stream<IntStream> split(final U seed, final BiFunction<? super Integer, ? super U, Boolean> predicate,
+            final Consumer<? super U> seedUpdate) {
+        return splitToList(seed, predicate, seedUpdate).map(new Function<IntList, IntStream>() {
             @Override
             public IntStream apply(IntList t) {
                 return new ArrayIntStream(t.array(), 0, t.size(), sorted, null);
