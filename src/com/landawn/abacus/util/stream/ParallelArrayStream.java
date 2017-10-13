@@ -1201,8 +1201,9 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                     public boolean hasNext() {
                         while ((cur == null || cur.hasNext() == false) && cursor < to) {
                             if (closeHandle != null) {
-                                closeHandle.run();
+                                final Runnable tmp = closeHandle;
                                 closeHandle = null;
+                                tmp.run();
                             }
 
                             s = mapper.apply(elements[cursor++]);
@@ -1237,8 +1238,9 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                     @Override
                     public void close() {
                         if (closeHandle != null) {
-                            closeHandle.run();
+                            final Runnable tmp = closeHandle;
                             closeHandle = null;
+                            tmp.run();
                         }
                     }
                 });
@@ -1266,8 +1268,9 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                             }
 
                             if (closeHandle != null) {
-                                closeHandle.run();
+                                final Runnable tmp = closeHandle;
                                 closeHandle = null;
+                                tmp.run();
                             }
 
                             s = mapper.apply(next);
@@ -1301,8 +1304,9 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                     @Override
                     public void close() {
                         if (closeHandle != null) {
-                            closeHandle.run();
+                            final Runnable tmp = closeHandle;
                             closeHandle = null;
+                            tmp.run();
                         }
                     }
                 });
@@ -1346,8 +1350,9 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                     public boolean hasNext() {
                         while ((cur == null || cur.hasNext() == false) && cursor < to) {
                             if (closeHandle != null) {
-                                closeHandle.run();
+                                final Runnable tmp = closeHandle;
                                 closeHandle = null;
+                                tmp.run();
                             }
 
                             s = mapper.apply(elements[cursor++]);
@@ -1382,8 +1387,9 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                     @Override
                     public void close() {
                         if (closeHandle != null) {
-                            closeHandle.run();
+                            final Runnable tmp = closeHandle;
                             closeHandle = null;
+                            tmp.run();
                         }
                     }
                 });
@@ -1411,8 +1417,9 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                             }
 
                             if (closeHandle != null) {
-                                closeHandle.run();
+                                final Runnable tmp = closeHandle;
                                 closeHandle = null;
+                                tmp.run();
                             }
 
                             s = mapper.apply(next);
@@ -1447,8 +1454,9 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                     @Override
                     public void close() {
                         if (closeHandle != null) {
-                            closeHandle.run();
+                            final Runnable tmp = closeHandle;
                             closeHandle = null;
+                            tmp.run();
                         }
                     }
                 });
@@ -1492,8 +1500,9 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                     public boolean hasNext() {
                         while ((cur == null || cur.hasNext() == false) && cursor < to) {
                             if (closeHandle != null) {
-                                closeHandle.run();
+                                final Runnable tmp = closeHandle;
                                 closeHandle = null;
+                                tmp.run();
                             }
 
                             s = mapper.apply(elements[cursor++]);
@@ -1528,8 +1537,9 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                     @Override
                     public void close() {
                         if (closeHandle != null) {
-                            closeHandle.run();
+                            final Runnable tmp = closeHandle;
                             closeHandle = null;
+                            tmp.run();
                         }
                     }
                 });
@@ -1557,8 +1567,9 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                             }
 
                             if (closeHandle != null) {
-                                closeHandle.run();
+                                final Runnable tmp = closeHandle;
                                 closeHandle = null;
+                                tmp.run();
                             }
 
                             s = mapper.apply(next);
@@ -1593,8 +1604,9 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                     @Override
                     public void close() {
                         if (closeHandle != null) {
-                            closeHandle.run();
+                            final Runnable tmp = closeHandle;
                             closeHandle = null;
+                            tmp.run();
                         }
                     }
                 });
@@ -1638,8 +1650,9 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                     public boolean hasNext() {
                         while ((cur == null || cur.hasNext() == false) && cursor < to) {
                             if (closeHandle != null) {
-                                closeHandle.run();
+                                final Runnable tmp = closeHandle;
                                 closeHandle = null;
+                                tmp.run();
                             }
 
                             s = mapper.apply(elements[cursor++]);
@@ -1674,8 +1687,9 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                     @Override
                     public void close() {
                         if (closeHandle != null) {
-                            closeHandle.run();
+                            final Runnable tmp = closeHandle;
                             closeHandle = null;
+                            tmp.run();
                         }
                     }
                 });
@@ -1703,8 +1717,9 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                             }
 
                             if (closeHandle != null) {
-                                closeHandle.run();
+                                final Runnable tmp = closeHandle;
                                 closeHandle = null;
+                                tmp.run();
                             }
 
                             s = mapper.apply(next);
@@ -1739,8 +1754,9 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                     @Override
                     public void close() {
                         if (closeHandle != null) {
-                            closeHandle.run();
+                            final Runnable tmp = closeHandle;
                             closeHandle = null;
+                            tmp.run();
                         }
                     }
                 });
@@ -1784,8 +1800,9 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                     public boolean hasNext() {
                         while ((cur == null || cur.hasNext() == false) && cursor < to) {
                             if (closeHandle != null) {
-                                closeHandle.run();
+                                final Runnable tmp = closeHandle;
                                 closeHandle = null;
+                                tmp.run();
                             }
 
                             s = mapper.apply(elements[cursor++]);
@@ -1820,8 +1837,9 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                     @Override
                     public void close() {
                         if (closeHandle != null) {
-                            closeHandle.run();
+                            final Runnable tmp = closeHandle;
                             closeHandle = null;
+                            tmp.run();
                         }
                     }
                 });
@@ -1849,8 +1867,9 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                             }
 
                             if (closeHandle != null) {
-                                closeHandle.run();
+                                final Runnable tmp = closeHandle;
                                 closeHandle = null;
+                                tmp.run();
                             }
 
                             s = mapper.apply(next);
@@ -1885,8 +1904,9 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                     @Override
                     public void close() {
                         if (closeHandle != null) {
-                            closeHandle.run();
+                            final Runnable tmp = closeHandle;
                             closeHandle = null;
+                            tmp.run();
                         }
                     }
                 });
@@ -1930,8 +1950,9 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                     public boolean hasNext() {
                         while ((cur == null || cur.hasNext() == false) && cursor < to) {
                             if (closeHandle != null) {
-                                closeHandle.run();
+                                final Runnable tmp = closeHandle;
                                 closeHandle = null;
+                                tmp.run();
                             }
 
                             s = mapper.apply(elements[cursor++]);
@@ -1966,8 +1987,9 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                     @Override
                     public void close() {
                         if (closeHandle != null) {
-                            closeHandle.run();
+                            final Runnable tmp = closeHandle;
                             closeHandle = null;
+                            tmp.run();
                         }
                     }
                 });
@@ -1995,8 +2017,9 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                             }
 
                             if (closeHandle != null) {
-                                closeHandle.run();
+                                final Runnable tmp = closeHandle;
                                 closeHandle = null;
+                                tmp.run();
                             }
 
                             s = mapper.apply(next);
@@ -2031,8 +2054,9 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                     @Override
                     public void close() {
                         if (closeHandle != null) {
-                            closeHandle.run();
+                            final Runnable tmp = closeHandle;
                             closeHandle = null;
+                            tmp.run();
                         }
                     }
                 });
@@ -2076,8 +2100,9 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                     public boolean hasNext() {
                         while ((cur == null || cur.hasNext() == false) && cursor < to) {
                             if (closeHandle != null) {
-                                closeHandle.run();
+                                final Runnable tmp = closeHandle;
                                 closeHandle = null;
+                                tmp.run();
                             }
 
                             s = mapper.apply(elements[cursor++]);
@@ -2112,8 +2137,9 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                     @Override
                     public void close() {
                         if (closeHandle != null) {
-                            closeHandle.run();
+                            final Runnable tmp = closeHandle;
                             closeHandle = null;
+                            tmp.run();
                         }
                     }
                 });
@@ -2141,8 +2167,9 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                             }
 
                             if (closeHandle != null) {
-                                closeHandle.run();
+                                final Runnable tmp = closeHandle;
                                 closeHandle = null;
+                                tmp.run();
                             }
 
                             s = mapper.apply(next);
@@ -2177,8 +2204,9 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                     @Override
                     public void close() {
                         if (closeHandle != null) {
-                            closeHandle.run();
+                            final Runnable tmp = closeHandle;
                             closeHandle = null;
+                            tmp.run();
                         }
                     }
                 });
@@ -2222,8 +2250,9 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                     public boolean hasNext() {
                         while ((cur == null || cur.hasNext() == false) && cursor < to) {
                             if (closeHandle != null) {
-                                closeHandle.run();
+                                final Runnable tmp = closeHandle;
                                 closeHandle = null;
+                                tmp.run();
                             }
 
                             s = mapper.apply(elements[cursor++]);
@@ -2258,8 +2287,9 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                     @Override
                     public void close() {
                         if (closeHandle != null) {
-                            closeHandle.run();
+                            final Runnable tmp = closeHandle;
                             closeHandle = null;
+                            tmp.run();
                         }
                     }
                 });
@@ -2287,8 +2317,9 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                             }
 
                             if (closeHandle != null) {
-                                closeHandle.run();
+                                final Runnable tmp = closeHandle;
                                 closeHandle = null;
+                                tmp.run();
                             }
 
                             s = mapper.apply(next);
@@ -2323,8 +2354,9 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                     @Override
                     public void close() {
                         if (closeHandle != null) {
-                            closeHandle.run();
+                            final Runnable tmp = closeHandle;
                             closeHandle = null;
+                            tmp.run();
                         }
                     }
                 });

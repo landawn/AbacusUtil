@@ -419,8 +419,9 @@ class ArrayFloatStream extends AbstractFloatStream {
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && cursor < toIndex) {
                     if (closeHandle != null) {
-                        closeHandle.run();
+                        final Runnable tmp = closeHandle;
                         closeHandle = null;
+                        tmp.run();
                     }
 
                     s = mapper.apply(elements[cursor++]);
@@ -454,8 +455,9 @@ class ArrayFloatStream extends AbstractFloatStream {
             @Override
             public void close() {
                 if (closeHandle != null) {
-                    closeHandle.run();
+                    final Runnable tmp = closeHandle;
                     closeHandle = null;
+                    tmp.run();
                 }
             }
         };
@@ -485,8 +487,9 @@ class ArrayFloatStream extends AbstractFloatStream {
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && cursor < toIndex) {
                     if (closeHandle != null) {
-                        closeHandle.run();
+                        final Runnable tmp = closeHandle;
                         closeHandle = null;
+                        tmp.run();
                     }
 
                     s = mapper.apply(elements[cursor++]);
@@ -520,8 +523,9 @@ class ArrayFloatStream extends AbstractFloatStream {
             @Override
             public void close() {
                 if (closeHandle != null) {
-                    closeHandle.run();
+                    final Runnable tmp = closeHandle;
                     closeHandle = null;
+                    tmp.run();
                 }
             }
         };
@@ -551,8 +555,9 @@ class ArrayFloatStream extends AbstractFloatStream {
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && cursor < toIndex) {
                     if (closeHandle != null) {
-                        closeHandle.run();
+                        final Runnable tmp = closeHandle;
                         closeHandle = null;
+                        tmp.run();
                     }
 
                     s = mapper.apply(elements[cursor++]);
@@ -586,8 +591,9 @@ class ArrayFloatStream extends AbstractFloatStream {
             @Override
             public void close() {
                 if (closeHandle != null) {
-                    closeHandle.run();
+                    final Runnable tmp = closeHandle;
                     closeHandle = null;
+                    tmp.run();
                 }
             }
         };
@@ -617,8 +623,9 @@ class ArrayFloatStream extends AbstractFloatStream {
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && cursor < toIndex) {
                     if (closeHandle != null) {
-                        closeHandle.run();
+                        final Runnable tmp = closeHandle;
                         closeHandle = null;
+                        tmp.run();
                     }
 
                     s = mapper.apply(elements[cursor++]);
@@ -652,8 +659,9 @@ class ArrayFloatStream extends AbstractFloatStream {
             @Override
             public void close() {
                 if (closeHandle != null) {
-                    closeHandle.run();
+                    final Runnable tmp = closeHandle;
                     closeHandle = null;
+                    tmp.run();
                 }
             }
         };
@@ -683,8 +691,9 @@ class ArrayFloatStream extends AbstractFloatStream {
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && cursor < toIndex) {
                     if (closeHandle != null) {
-                        closeHandle.run();
+                        final Runnable tmp = closeHandle;
                         closeHandle = null;
+                        tmp.run();
                     }
 
                     s = mapper.apply(elements[cursor++]);
@@ -718,8 +727,9 @@ class ArrayFloatStream extends AbstractFloatStream {
             @Override
             public void close() {
                 if (closeHandle != null) {
-                    closeHandle.run();
+                    final Runnable tmp = closeHandle;
                     closeHandle = null;
+                    tmp.run();
                 }
             }
         };

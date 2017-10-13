@@ -420,8 +420,9 @@ class ArrayLongStream extends AbstractLongStream {
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && cursor < toIndex) {
                     if (closeHandle != null) {
-                        closeHandle.run();
+                        final Runnable tmp = closeHandle;
                         closeHandle = null;
+                        tmp.run();
                     }
 
                     s = mapper.apply(elements[cursor++]);
@@ -455,8 +456,9 @@ class ArrayLongStream extends AbstractLongStream {
             @Override
             public void close() {
                 if (closeHandle != null) {
-                    closeHandle.run();
+                    final Runnable tmp = closeHandle;
                     closeHandle = null;
+                    tmp.run();
                 }
             }
         };
@@ -486,8 +488,9 @@ class ArrayLongStream extends AbstractLongStream {
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && cursor < toIndex) {
                     if (closeHandle != null) {
-                        closeHandle.run();
+                        final Runnable tmp = closeHandle;
                         closeHandle = null;
+                        tmp.run();
                     }
 
                     s = mapper.apply(elements[cursor++]);
@@ -521,8 +524,9 @@ class ArrayLongStream extends AbstractLongStream {
             @Override
             public void close() {
                 if (closeHandle != null) {
-                    closeHandle.run();
+                    final Runnable tmp = closeHandle;
                     closeHandle = null;
+                    tmp.run();
                 }
             }
         };
@@ -552,8 +556,9 @@ class ArrayLongStream extends AbstractLongStream {
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && cursor < toIndex) {
                     if (closeHandle != null) {
-                        closeHandle.run();
+                        final Runnable tmp = closeHandle;
                         closeHandle = null;
+                        tmp.run();
                     }
 
                     s = mapper.apply(elements[cursor++]);
@@ -587,8 +592,9 @@ class ArrayLongStream extends AbstractLongStream {
             @Override
             public void close() {
                 if (closeHandle != null) {
-                    closeHandle.run();
+                    final Runnable tmp = closeHandle;
                     closeHandle = null;
+                    tmp.run();
                 }
             }
         };
@@ -618,8 +624,9 @@ class ArrayLongStream extends AbstractLongStream {
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && cursor < toIndex) {
                     if (closeHandle != null) {
-                        closeHandle.run();
+                        final Runnable tmp = closeHandle;
                         closeHandle = null;
+                        tmp.run();
                     }
 
                     s = mapper.apply(elements[cursor++]);
@@ -653,8 +660,9 @@ class ArrayLongStream extends AbstractLongStream {
             @Override
             public void close() {
                 if (closeHandle != null) {
-                    closeHandle.run();
+                    final Runnable tmp = closeHandle;
                     closeHandle = null;
+                    tmp.run();
                 }
             }
         };
@@ -684,8 +692,9 @@ class ArrayLongStream extends AbstractLongStream {
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && cursor < toIndex) {
                     if (closeHandle != null) {
-                        closeHandle.run();
+                        final Runnable tmp = closeHandle;
                         closeHandle = null;
+                        tmp.run();
                     }
 
                     s = mapper.apply(elements[cursor++]);
@@ -719,8 +728,9 @@ class ArrayLongStream extends AbstractLongStream {
             @Override
             public void close() {
                 if (closeHandle != null) {
-                    closeHandle.run();
+                    final Runnable tmp = closeHandle;
                     closeHandle = null;
+                    tmp.run();
                 }
             }
         };

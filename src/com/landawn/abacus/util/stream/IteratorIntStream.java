@@ -432,8 +432,9 @@ class IteratorIntStream extends AbstractIntStream {
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && elements.hasNext()) {
                     if (closeHandle != null) {
-                        closeHandle.run();
+                        final Runnable tmp = closeHandle;
                         closeHandle = null;
+                        tmp.run();
                     }
 
                     s = mapper.apply(elements.nextInt());
@@ -467,8 +468,9 @@ class IteratorIntStream extends AbstractIntStream {
             @Override
             public void close() {
                 if (closeHandle != null) {
-                    closeHandle.run();
+                    final Runnable tmp = closeHandle;
                     closeHandle = null;
+                    tmp.run();
                 }
             }
         };
@@ -497,8 +499,9 @@ class IteratorIntStream extends AbstractIntStream {
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && elements.hasNext()) {
                     if (closeHandle != null) {
-                        closeHandle.run();
+                        final Runnable tmp = closeHandle;
                         closeHandle = null;
+                        tmp.run();
                     }
 
                     s = mapper.apply(elements.nextInt());
@@ -532,8 +535,9 @@ class IteratorIntStream extends AbstractIntStream {
             @Override
             public void close() {
                 if (closeHandle != null) {
-                    closeHandle.run();
+                    final Runnable tmp = closeHandle;
                     closeHandle = null;
+                    tmp.run();
                 }
             }
         };
@@ -562,8 +566,9 @@ class IteratorIntStream extends AbstractIntStream {
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && elements.hasNext()) {
                     if (closeHandle != null) {
-                        closeHandle.run();
+                        final Runnable tmp = closeHandle;
                         closeHandle = null;
+                        tmp.run();
                     }
 
                     s = mapper.apply(elements.nextInt());
@@ -598,8 +603,9 @@ class IteratorIntStream extends AbstractIntStream {
             @Override
             public void close() {
                 if (closeHandle != null) {
-                    closeHandle.run();
+                    final Runnable tmp = closeHandle;
                     closeHandle = null;
+                    tmp.run();
                 }
             }
         };
@@ -628,8 +634,9 @@ class IteratorIntStream extends AbstractIntStream {
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && elements.hasNext()) {
                     if (closeHandle != null) {
-                        closeHandle.run();
+                        final Runnable tmp = closeHandle;
                         closeHandle = null;
+                        tmp.run();
                     }
 
                     s = mapper.apply(elements.nextInt());
@@ -663,8 +670,9 @@ class IteratorIntStream extends AbstractIntStream {
             @Override
             public void close() {
                 if (closeHandle != null) {
-                    closeHandle.run();
+                    final Runnable tmp = closeHandle;
                     closeHandle = null;
+                    tmp.run();
                 }
             }
         };
@@ -693,8 +701,9 @@ class IteratorIntStream extends AbstractIntStream {
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && elements.hasNext()) {
                     if (closeHandle != null) {
-                        closeHandle.run();
+                        final Runnable tmp = closeHandle;
                         closeHandle = null;
+                        tmp.run();
                     }
 
                     s = mapper.apply(elements.nextInt());
@@ -728,8 +737,9 @@ class IteratorIntStream extends AbstractIntStream {
             @Override
             public void close() {
                 if (closeHandle != null) {
-                    closeHandle.run();
+                    final Runnable tmp = closeHandle;
                     closeHandle = null;
+                    tmp.run();
                 }
             }
         };
@@ -758,8 +768,9 @@ class IteratorIntStream extends AbstractIntStream {
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && elements.hasNext()) {
                     if (closeHandle != null) {
-                        closeHandle.run();
+                        final Runnable tmp = closeHandle;
                         closeHandle = null;
+                        tmp.run();
                     }
 
                     s = mapper.apply(elements.nextInt());
@@ -793,8 +804,9 @@ class IteratorIntStream extends AbstractIntStream {
             @Override
             public void close() {
                 if (closeHandle != null) {
-                    closeHandle.run();
+                    final Runnable tmp = closeHandle;
                     closeHandle = null;
+                    tmp.run();
                 }
             }
         };
@@ -823,8 +835,9 @@ class IteratorIntStream extends AbstractIntStream {
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && elements.hasNext()) {
                     if (closeHandle != null) {
-                        closeHandle.run();
+                        final Runnable tmp = closeHandle;
                         closeHandle = null;
+                        tmp.run();
                     }
 
                     s = mapper.apply(elements.nextInt());
@@ -858,8 +871,9 @@ class IteratorIntStream extends AbstractIntStream {
             @Override
             public void close() {
                 if (closeHandle != null) {
-                    closeHandle.run();
+                    final Runnable tmp = closeHandle;
                     closeHandle = null;
+                    tmp.run();
                 }
             }
         };
@@ -888,8 +902,9 @@ class IteratorIntStream extends AbstractIntStream {
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && elements.hasNext()) {
                     if (closeHandle != null) {
-                        closeHandle.run();
+                        final Runnable tmp = closeHandle;
                         closeHandle = null;
+                        tmp.run();
                     }
 
                     s = mapper.apply(elements.nextInt());
@@ -923,8 +938,9 @@ class IteratorIntStream extends AbstractIntStream {
             @Override
             public void close() {
                 if (closeHandle != null) {
-                    closeHandle.run();
+                    final Runnable tmp = closeHandle;
                     closeHandle = null;
+                    tmp.run();
                 }
             }
         };

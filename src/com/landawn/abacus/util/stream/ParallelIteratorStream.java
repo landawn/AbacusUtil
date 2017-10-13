@@ -873,8 +873,9 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                         }
 
                         if (closeHandle != null) {
-                            closeHandle.run();
+                            final Runnable tmp = closeHandle;
                             closeHandle = null;
+                            tmp.run();
                         }
 
                         s = mapper.apply(next);
@@ -908,8 +909,9 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                 @Override
                 public void close() {
                     if (closeHandle != null) {
-                        closeHandle.run();
+                        final Runnable tmp = closeHandle;
                         closeHandle = null;
+                        tmp.run();
                     }
                 }
             });
@@ -956,8 +958,9 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                         }
 
                         if (closeHandle != null) {
-                            closeHandle.run();
+                            final Runnable tmp = closeHandle;
                             closeHandle = null;
+                            tmp.run();
                         }
 
                         s = mapper.apply(next);
@@ -991,8 +994,9 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                 @Override
                 public void close() {
                     if (closeHandle != null) {
-                        closeHandle.run();
+                        final Runnable tmp = closeHandle;
                         closeHandle = null;
+                        tmp.run();
                     }
                 }
             });
@@ -1039,8 +1043,9 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                         }
 
                         if (closeHandle != null) {
-                            closeHandle.run();
+                            final Runnable tmp = closeHandle;
                             closeHandle = null;
+                            tmp.run();
                         }
 
                         s = mapper.apply(next);
@@ -1074,8 +1079,9 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                 @Override
                 public void close() {
                     if (closeHandle != null) {
-                        closeHandle.run();
+                        final Runnable tmp = closeHandle;
                         closeHandle = null;
+                        tmp.run();
                     }
                 }
             });
@@ -1122,8 +1128,9 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                         }
 
                         if (closeHandle != null) {
-                            closeHandle.run();
+                            final Runnable tmp = closeHandle;
                             closeHandle = null;
+                            tmp.run();
                         }
 
                         s = mapper.apply(next);
@@ -1157,8 +1164,9 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                 @Override
                 public void close() {
                     if (closeHandle != null) {
-                        closeHandle.run();
+                        final Runnable tmp = closeHandle;
                         closeHandle = null;
+                        tmp.run();
                     }
                 }
             });
@@ -1205,8 +1213,9 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                         }
 
                         if (closeHandle != null) {
-                            closeHandle.run();
+                            final Runnable tmp = closeHandle;
                             closeHandle = null;
+                            tmp.run();
                         }
 
                         s = mapper.apply(next);
@@ -1240,8 +1249,9 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                 @Override
                 public void close() {
                     if (closeHandle != null) {
-                        closeHandle.run();
+                        final Runnable tmp = closeHandle;
                         closeHandle = null;
+                        tmp.run();
                     }
                 }
             });
@@ -1288,8 +1298,9 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                         }
 
                         if (closeHandle != null) {
-                            closeHandle.run();
+                            final Runnable tmp = closeHandle;
                             closeHandle = null;
+                            tmp.run();
                         }
 
                         s = mapper.apply(next);
@@ -1323,8 +1334,9 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                 @Override
                 public void close() {
                     if (closeHandle != null) {
-                        closeHandle.run();
+                        final Runnable tmp = closeHandle;
                         closeHandle = null;
+                        tmp.run();
                     }
                 }
             });
@@ -1371,8 +1383,9 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                         }
 
                         if (closeHandle != null) {
-                            closeHandle.run();
+                            final Runnable tmp = closeHandle;
                             closeHandle = null;
+                            tmp.run();
                         }
 
                         s = mapper.apply(next);
@@ -1406,8 +1419,9 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                 @Override
                 public void close() {
                     if (closeHandle != null) {
-                        closeHandle.run();
+                        final Runnable tmp = closeHandle;
                         closeHandle = null;
+                        tmp.run();
                     }
                 }
             });
@@ -1454,8 +1468,9 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                         }
 
                         if (closeHandle != null) {
-                            closeHandle.run();
+                            final Runnable tmp = closeHandle;
                             closeHandle = null;
+                            tmp.run();
                         }
 
                         s = mapper.apply(next);
@@ -1489,8 +1504,9 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                 @Override
                 public void close() {
                     if (closeHandle != null) {
-                        closeHandle.run();
+                        final Runnable tmp = closeHandle;
                         closeHandle = null;
+                        tmp.run();
                     }
                 }
             });
