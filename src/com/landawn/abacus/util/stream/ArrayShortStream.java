@@ -90,7 +90,7 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public ShortStream filter(final ShortPredicate predicate) {
-        return new IteratorShortStream(new SkippableShortIterator() {
+        return new IteratorShortStream(new ShortIteratorEx() {
             private boolean hasNext = false;
             private int cursor = fromIndex;
 
@@ -123,7 +123,7 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public ShortStream takeWhile(final ShortPredicate predicate) {
-        return new IteratorShortStream(new SkippableShortIterator() {
+        return new IteratorShortStream(new ShortIteratorEx() {
             private boolean hasMore = true;
             private boolean hasNext = false;
             private int cursor = fromIndex;
@@ -156,7 +156,7 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public ShortStream dropWhile(final ShortPredicate predicate) {
-        return new IteratorShortStream(new SkippableShortIterator() {
+        return new IteratorShortStream(new ShortIteratorEx() {
             private boolean hasNext = false;
             private int cursor = fromIndex;
             private boolean dropped = false;
@@ -196,7 +196,7 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public ShortStream map(final ShortUnaryOperator mapper) {
-        return new IteratorShortStream(new SkippableShortIterator() {
+        return new IteratorShortStream(new ShortIteratorEx() {
             int cursor = fromIndex;
 
             @Override
@@ -238,7 +238,7 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public IntStream mapToInt(final ShortToIntFunction mapper) {
-        return new IteratorIntStream(new SkippableIntIterator() {
+        return new IteratorIntStream(new IntIteratorEx() {
             int cursor = fromIndex;
 
             @Override
@@ -280,7 +280,7 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public <U> Stream<U> mapToObj(final ShortFunction<? extends U> mapper) {
-        return new IteratorStream<U>(new SkippableObjIterator<U>() {
+        return new IteratorStream<U>(new ObjIteratorEx<U>() {
             int cursor = fromIndex;
 
             @Override
@@ -322,14 +322,34 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public ShortStream flatMap(final ShortFunction<? extends ShortStream> mapper) {
-        return new IteratorShortStream(new SkippableShortIterator() {
+        final ShortIteratorEx iter = new ShortIteratorEx() {
             private int cursor = fromIndex;
             private ShortIterator cur = null;
+            private ShortStream s = null;
+            private Runnable closeHandle = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && cursor < toIndex) {
-                    cur = mapper.apply(elements[cursor++]).skippableIterator();
+                    if (closeHandle != null) {
+                        closeHandle.run();
+                        closeHandle = null;
+                    }
+
+                    s = mapper.apply(elements[cursor++]);
+
+                    if (N.notNullOrEmpty(s.closeHandlers)) {
+                        final Set<Runnable> tmp = s.closeHandlers;
+
+                        closeHandle = new Runnable() {
+                            @Override
+                            public void run() {
+                                Stream.close(tmp);
+                            }
+                        };
+                    }
+
+                    cur = s.iterator();
                 }
 
                 return cur != null && cur.hasNext();
@@ -343,19 +363,59 @@ class ArrayShortStream extends AbstractShortStream {
 
                 return cur.nextShort();
             }
-        }, closeHandlers);
+
+            @Override
+            public void close() {
+                if (closeHandle != null) {
+                    closeHandle.run();
+                    closeHandle = null;
+                }
+            }
+        };
+
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>()
+                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+
+        newCloseHandlers.add(new Runnable() {
+            @Override
+            public void run() {
+                iter.close();
+            }
+        });
+
+        return new IteratorShortStream(iter, newCloseHandlers);
     }
 
     @Override
     public IntStream flatMapToInt(final ShortFunction<? extends IntStream> mapper) {
-        return new IteratorIntStream(new SkippableIntIterator() {
+        final IntIteratorEx iter = new IntIteratorEx() {
             private int cursor = fromIndex;
             private IntIterator cur = null;
+            private IntStream s = null;
+            private Runnable closeHandle = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && cursor < toIndex) {
-                    cur = mapper.apply(elements[cursor++]).skippableIterator();
+                    if (closeHandle != null) {
+                        closeHandle.run();
+                        closeHandle = null;
+                    }
+
+                    s = mapper.apply(elements[cursor++]);
+
+                    if (N.notNullOrEmpty(s.closeHandlers)) {
+                        final Set<Runnable> tmp = s.closeHandlers;
+
+                        closeHandle = new Runnable() {
+                            @Override
+                            public void run() {
+                                Stream.close(tmp);
+                            }
+                        };
+                    }
+
+                    cur = s.iterator();
                 }
 
                 return cur != null && cur.hasNext();
@@ -369,19 +429,59 @@ class ArrayShortStream extends AbstractShortStream {
 
                 return cur.nextInt();
             }
-        }, closeHandlers);
+
+            @Override
+            public void close() {
+                if (closeHandle != null) {
+                    closeHandle.run();
+                    closeHandle = null;
+                }
+            }
+        };
+
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>()
+                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+
+        newCloseHandlers.add(new Runnable() {
+            @Override
+            public void run() {
+                iter.close();
+            }
+        });
+
+        return new IteratorIntStream(iter, newCloseHandlers);
     }
 
     @Override
     public <T> Stream<T> flatMapToObj(final ShortFunction<? extends Stream<T>> mapper) {
-        return new IteratorStream<T>(new SkippableObjIterator<T>() {
+        final ObjIteratorEx<T> iter = new ObjIteratorEx<T>() {
             private int cursor = fromIndex;
-            private Iterator<? extends T> cur = null;
+            private Iterator<T> cur = null;
+            private Stream<T> s = null;
+            private Runnable closeHandle = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && cursor < toIndex) {
-                    cur = mapper.apply(elements[cursor++]).iterator();
+                    if (closeHandle != null) {
+                        closeHandle.run();
+                        closeHandle = null;
+                    }
+
+                    s = mapper.apply(elements[cursor++]);
+
+                    if (N.notNullOrEmpty(s.closeHandlers)) {
+                        final Set<Runnable> tmp = s.closeHandlers;
+
+                        closeHandle = new Runnable() {
+                            @Override
+                            public void run() {
+                                Stream.close(tmp);
+                            }
+                        };
+                    }
+
+                    cur = s.iterator();
                 }
 
                 return cur != null && cur.hasNext();
@@ -395,14 +495,34 @@ class ArrayShortStream extends AbstractShortStream {
 
                 return cur.next();
             }
-        }, closeHandlers);
+
+            @Override
+            public void close() {
+                if (closeHandle != null) {
+                    closeHandle.run();
+                    closeHandle = null;
+                }
+            }
+        };
+
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>()
+                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+
+        newCloseHandlers.add(new Runnable() {
+            @Override
+            public void run() {
+                iter.close();
+            }
+        });
+
+        return new IteratorStream<>(iter, newCloseHandlers);
     }
 
     @Override
     public Stream<ShortStream> split(final int size) {
         N.checkArgument(size > 0, "'size' must be bigger than 0");
 
-        return new IteratorStream<ShortStream>(new SkippableObjIterator<ShortStream>() {
+        return new IteratorStream<ShortStream>(new ObjIteratorEx<ShortStream>() {
             private int cursor = fromIndex;
 
             @Override
@@ -425,7 +545,7 @@ class ArrayShortStream extends AbstractShortStream {
     public Stream<ShortList> splitToList(final int size) {
         N.checkArgument(size > 0, "'size' must be bigger than 0");
 
-        return new IteratorStream<ShortList>(new SkippableObjIterator<ShortList>() {
+        return new IteratorStream<ShortList>(new ObjIteratorEx<ShortList>() {
             private int cursor = fromIndex;
 
             @Override
@@ -446,7 +566,7 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public Stream<ShortStream> split(final ShortPredicate predicate) {
-        return new IteratorStream<ShortStream>(new SkippableObjIterator<ShortStream>() {
+        return new IteratorStream<ShortStream>(new ObjIteratorEx<ShortStream>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
 
@@ -481,7 +601,7 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public Stream<ShortList> splitToList(final ShortPredicate predicate) {
-        return new IteratorStream<ShortList>(new SkippableObjIterator<ShortList>() {
+        return new IteratorStream<ShortList>(new ObjIteratorEx<ShortList>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
 
@@ -516,9 +636,8 @@ class ArrayShortStream extends AbstractShortStream {
     }
 
     @Override
-    public <U> Stream<ShortStream> split(final U seed, final BiFunction<? super Short, ? super U, Boolean> predicate,
-            final Consumer<? super U> seedUpdate) {
-        return new IteratorStream<ShortStream>(new SkippableObjIterator<ShortStream>() {
+    public <U> Stream<ShortStream> split(final U seed, final BiFunction<? super Short, ? super U, Boolean> predicate, final Consumer<? super U> seedUpdate) {
+        return new IteratorStream<ShortStream>(new ObjIteratorEx<ShortStream>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
 
@@ -558,7 +677,7 @@ class ArrayShortStream extends AbstractShortStream {
     @Override
     public <U> Stream<ShortList> splitToList(final U seed, final BiFunction<? super Short, ? super U, Boolean> predicate,
             final Consumer<? super U> seedUpdate) {
-        return new IteratorStream<ShortList>(new SkippableObjIterator<ShortList>() {
+        return new IteratorStream<ShortList>(new ObjIteratorEx<ShortList>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
 
@@ -630,7 +749,7 @@ class ArrayShortStream extends AbstractShortStream {
     public Stream<ShortStream> sliding(final int windowSize, final int increment) {
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
-        return new IteratorStream<ShortStream>(new SkippableObjIterator<ShortStream>() {
+        return new IteratorStream<ShortStream>(new ObjIteratorEx<ShortStream>() {
             private int cursor = fromIndex;
 
             @Override
@@ -659,7 +778,7 @@ class ArrayShortStream extends AbstractShortStream {
     public Stream<ShortList> slidingToList(final int windowSize, final int increment) {
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
-        return new IteratorStream<ShortList>(new SkippableObjIterator<ShortList>() {
+        return new IteratorStream<ShortList>(new ObjIteratorEx<ShortList>() {
             private int cursor = fromIndex;
 
             @Override
@@ -714,7 +833,7 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public ShortStream peek(final ShortConsumer action) {
-        return new IteratorShortStream(new SkippableShortIterator() {
+        return new IteratorShortStream(new ShortIteratorEx() {
             int cursor = fromIndex;
 
             @Override
@@ -1056,7 +1175,7 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public ShortStream reversed() {
-        return new IteratorShortStream(new SkippableShortIterator() {
+        return new IteratorShortStream(new ShortIteratorEx() {
             private int cursor = toIndex;
 
             @Override
@@ -1163,7 +1282,7 @@ class ArrayShortStream extends AbstractShortStream {
 
     @Override
     public IntStream asIntStream() {
-        return new IteratorIntStream(new SkippableIntIterator() {
+        return new IteratorIntStream(new IntIteratorEx() {
             private int cursor = fromIndex;
 
             @Override
@@ -1214,8 +1333,8 @@ class ArrayShortStream extends AbstractShortStream {
     }
 
     @Override
-    SkippableShortIterator skippableIterator() {
-        return SkippableShortIterator.of(elements, fromIndex, toIndex);
+    ShortIteratorEx iteratorEx() {
+        return ShortIteratorEx.of(elements, fromIndex, toIndex);
     }
 
     @Override

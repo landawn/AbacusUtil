@@ -19,8 +19,8 @@ import static com.landawn.abacus.util.stream.StreamBase.checkFromToIndex;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import com.landawn.abacus.util.CharIterator;
-import com.landawn.abacus.util.CharList;
+import com.landawn.abacus.util.IntIterator;
+import com.landawn.abacus.util.IntList;
 import com.landawn.abacus.util.N;
 
 /**
@@ -29,15 +29,15 @@ import com.landawn.abacus.util.N;
  * 
  * @author Haiyang Li
  */
-public abstract class SkippableCharIterator extends CharIterator implements SkippableIterator<Character> {
-    public static final SkippableCharIterator EMPTY = new SkippableCharIterator() {
+public abstract class IntIteratorEx extends IntIterator implements IteratorEx<Integer> {
+    public static final IntIteratorEx EMPTY = new IntIteratorEx() {
         @Override
         public boolean hasNext() {
             return false;
         }
 
         @Override
-        public char nextChar() {
+        public int nextInt() {
             throw new NoSuchElementException();
         }
 
@@ -52,27 +52,32 @@ public abstract class SkippableCharIterator extends CharIterator implements Skip
         }
 
         @Override
-        public char[] toArray() {
-            return N.EMPTY_CHAR_ARRAY;
+        public int[] toArray() {
+            return N.EMPTY_INT_ARRAY;
+        }
+
+        @Override
+        public void close() {
+            // Do nothing.
         }
     };
 
-    public static SkippableCharIterator empty() {
+    public static IntIteratorEx empty() {
         return EMPTY;
     }
 
-    public static SkippableCharIterator of(final char[] a) {
+    public static IntIteratorEx of(final int[] a) {
         return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);
     }
 
-    public static SkippableCharIterator of(final char[] a, final int fromIndex, final int toIndex) {
+    public static IntIteratorEx of(final int[] a, final int fromIndex, final int toIndex) {
         checkFromToIndex(fromIndex, toIndex, a.length);
 
         if (fromIndex == toIndex) {
             return EMPTY;
         }
 
-        return new SkippableCharIterator() {
+        return new IntIteratorEx() {
             int cursor = fromIndex;
 
             @Override
@@ -81,7 +86,7 @@ public abstract class SkippableCharIterator extends CharIterator implements Skip
             }
 
             @Override
-            public char nextChar() {
+            public int nextInt() {
                 if (cursor >= toIndex) {
                     throw new NoSuchElementException();
                 }
@@ -100,70 +105,90 @@ public abstract class SkippableCharIterator extends CharIterator implements Skip
             }
 
             @Override
-            public char[] toArray() {
+            public int[] toArray() {
                 return N.copyOfRange(a, cursor, toIndex);
             }
 
             @Override
-            public CharList toList() {
-                return CharList.of(N.copyOfRange(a, cursor, toIndex));
+            public IntList toList() {
+                return IntList.of(N.copyOfRange(a, cursor, toIndex));
+            }
+
+            @Override
+            public void close() {
+                // Do nothing.
             }
         };
     }
 
-    public static SkippableCharIterator of(final CharIterator iter) {
-        if (iter instanceof SkippableCharIterator) {
-            return ((SkippableCharIterator) iter);
+    public static IntIteratorEx of(final IntIterator iter) {
+        if (iter instanceof IntIteratorEx) {
+            return ((IntIteratorEx) iter);
         }
 
-        return new SkippableCharIterator() {
+        return new IntIteratorEx() {
             @Override
             public boolean hasNext() {
                 return iter.hasNext();
             }
 
             @Override
-            public char nextChar() {
-                return iter.nextChar();
+            public int nextInt() {
+                return iter.nextInt();
+            }
+
+            @Override
+            public void close() {
+                // Do nothing.
             }
         };
     }
 
-    public static SkippableCharIterator from(final Iterator<Character> iter) {
-        if (iter instanceof SkippableObjIterator) {
-            final SkippableObjIterator<Character> skippableIterator = ((SkippableObjIterator<Character>) iter);
+    public static IntIteratorEx from(final Iterator<Integer> iter) {
+        if (iter instanceof ObjIteratorEx) {
+            final ObjIteratorEx<Integer> iteratorEx = ((ObjIteratorEx<Integer>) iter);
 
-            return new SkippableCharIterator() {
+            return new IntIteratorEx() {
                 @Override
                 public boolean hasNext() {
-                    return skippableIterator.hasNext();
+                    return iteratorEx.hasNext();
                 }
 
                 @Override
-                public char nextChar() {
-                    return skippableIterator.next();
+                public int nextInt() {
+                    return iteratorEx.next();
                 }
 
                 @Override
                 public void skip(long n) {
-                    skippableIterator.skip(n);
+                    iteratorEx.skip(n);
                 }
 
                 @Override
                 public long count() {
-                    return skippableIterator.count();
+                    return iteratorEx.count();
+                }
+
+                @Override
+                public void close() {
+                    iteratorEx.close();
                 }
             };
         } else {
-            return new SkippableCharIterator() {
+            return new IntIteratorEx() {
                 @Override
                 public boolean hasNext() {
                     return iter.hasNext();
                 }
 
                 @Override
-                public char nextChar() {
+                public int nextInt() {
                     return iter.next();
+                }
+
+                @Override
+                public void close() {
+                    // Do nothing.
                 }
             };
         }
@@ -172,7 +197,7 @@ public abstract class SkippableCharIterator extends CharIterator implements Skip
     @Override
     public void skip(long n) {
         while (n > 0 && hasNext()) {
-            nextChar();
+            nextInt();
             n--;
         }
     }
@@ -182,10 +207,15 @@ public abstract class SkippableCharIterator extends CharIterator implements Skip
         long result = 0;
 
         while (hasNext()) {
-            nextChar();
+            nextInt();
             result++;
         }
 
         return result;
+    }
+
+    @Override
+    public void close() {
+        // Do nothing.
     }
 }

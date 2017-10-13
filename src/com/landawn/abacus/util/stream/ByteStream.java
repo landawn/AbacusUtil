@@ -148,10 +148,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
     /**
      * Returns a stream consisting of the results of replacing each element of
      * this stream with the contents of a mapped stream produced by applying
-     * the provided mapping function to each element.  Each mapped stream is
-     * {@link java.util.stream.Baseclose() closed} after its contents
-     * have been placed into this stream.  (If a mapped stream is {@code null}
-     * an empty stream is used, instead.)
+     * the provided mapping function to each element.
      *
      * <p>This is an <a href="package-summary.html#StreamOps">intermediate
      * operation</a>.
@@ -568,10 +565,10 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
 
     @Override
     public ByteIterator iterator() {
-        return skippableIterator();
+        return iteratorEx();
     }
 
-    abstract SkippableByteIterator skippableIterator();
+    abstract ByteIteratorEx iteratorEx();
 
     @Override
     public <R> R __(Function<? super ByteStream, R> transfer) {
@@ -619,7 +616,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * @return
      */
     public static ByteStream of(final Supplier<ByteList> supplier) {
-        final ByteIterator iter = new SkippableByteIterator() {
+        final ByteIterator iter = new ByteIteratorEx() {
             private ByteIterator iterator = null;
 
             @Override
@@ -659,7 +656,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
             return empty();
         }
 
-        return new IteratorByteStream(new SkippableByteIterator() {
+        return new IteratorByteStream(new ByteIteratorEx() {
             private byte next = startInclusive;
             private int cnt = endExclusive * 1 - startInclusive;
 
@@ -712,7 +709,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
             return empty();
         }
 
-        return new IteratorByteStream(new SkippableByteIterator() {
+        return new IteratorByteStream(new ByteIteratorEx() {
             private byte next = startInclusive;
             private int cnt = (endExclusive * 1 - startInclusive) / by + ((endExclusive * 1 - startInclusive) % by == 0 ? 0 : 1);
 
@@ -765,7 +762,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
             return of(startInclusive);
         }
 
-        return new IteratorByteStream(new SkippableByteIterator() {
+        return new IteratorByteStream(new ByteIteratorEx() {
             private byte next = startInclusive;
             private int cnt = endInclusive * 1 - startInclusive + 1;
 
@@ -820,7 +817,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
             return empty();
         }
 
-        return new IteratorByteStream(new SkippableByteIterator() {
+        return new IteratorByteStream(new ByteIteratorEx() {
             private byte next = startInclusive;
             private int cnt = (endInclusive * 1 - startInclusive) / by + 1;
 
@@ -873,7 +870,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
             return empty();
         }
 
-        return new IteratorByteStream(new SkippableByteIterator() {
+        return new IteratorByteStream(new ByteIteratorEx() {
             private long cnt = n;
 
             @Override
@@ -928,7 +925,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
         N.requireNonNull(hasNext);
         N.requireNonNull(next);
 
-        return new IteratorByteStream(new SkippableByteIterator() {
+        return new IteratorByteStream(new ByteIteratorEx() {
             private boolean hasNextVal = false;
 
             @Override
@@ -956,7 +953,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
         N.requireNonNull(hasNext);
         N.requireNonNull(f);
 
-        return new IteratorByteStream(new SkippableByteIterator() {
+        return new IteratorByteStream(new ByteIteratorEx() {
             private byte t = 0;
             private boolean isFirst = true;
             private boolean hasNextVal = false;
@@ -1001,7 +998,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
         N.requireNonNull(hasNext);
         N.requireNonNull(f);
 
-        return new IteratorByteStream(new SkippableByteIterator() {
+        return new IteratorByteStream(new ByteIteratorEx() {
             private byte t = 0;
             private byte cur = 0;
             private boolean isFirst = true;
@@ -1042,7 +1039,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
     public static ByteStream iterate(final byte seed, final ByteUnaryOperator f) {
         N.requireNonNull(f);
 
-        return new IteratorByteStream(new SkippableByteIterator() {
+        return new IteratorByteStream(new ByteIteratorEx() {
             private byte t = 0;
             private boolean isFirst = true;
 
@@ -1068,7 +1065,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
     public static ByteStream generate(final ByteSupplier s) {
         N.requireNonNull(s);
 
-        return new IteratorByteStream(new SkippableByteIterator() {
+        return new IteratorByteStream(new ByteIteratorEx() {
             @Override
             public boolean hasNext() {
                 return true;
@@ -1083,14 +1080,14 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
 
     @SafeVarargs
     public static ByteStream concat(final byte[]... a) {
-        return N.isNullOrEmpty(a) ? empty() : new IteratorByteStream(new SkippableByteIterator() {
+        return N.isNullOrEmpty(a) ? empty() : new IteratorByteStream(new ByteIteratorEx() {
             private final Iterator<byte[]> iter = N.asList(a).iterator();
             private ByteIterator cur;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
-                    cur = SkippableByteIterator.of(iter.next());
+                    cur = ByteIteratorEx.of(iter.next());
                 }
 
                 return cur != null && cur.hasNext();
@@ -1109,7 +1106,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
 
     @SafeVarargs
     public static ByteStream concat(final ByteIterator... a) {
-        return N.isNullOrEmpty(a) ? empty() : new IteratorByteStream(new SkippableByteIterator() {
+        return N.isNullOrEmpty(a) ? empty() : new IteratorByteStream(new ByteIteratorEx() {
             private final Iterator<? extends ByteIterator> iter = N.asList(a).iterator();
             private ByteIterator cur;
 
@@ -1139,14 +1136,14 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
     }
 
     public static ByteStream concat(final Collection<? extends ByteStream> c) {
-        return N.isNullOrEmpty(c) ? empty() : new IteratorByteStream(new SkippableByteIterator() {
+        return N.isNullOrEmpty(c) ? empty() : new IteratorByteStream(new ByteIteratorEx() {
             private final Iterator<? extends ByteStream> iter = c.iterator();
             private ByteIterator cur;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
-                    cur = iter.next().skippableIterator();
+                    cur = iter.next().iteratorEx();
                 }
 
                 return cur != null && cur.hasNext();
@@ -1375,7 +1372,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
             return of(a);
         }
 
-        return new IteratorByteStream(new SkippableByteIterator() {
+        return new IteratorByteStream(new ByteIteratorEx() {
             private final int lenA = a.length;
             private final int lenB = b.length;
             private int cursorA = 0;
@@ -1416,7 +1413,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * @return
      */
     public static ByteStream merge(final byte[] a, final byte[] b, final byte[] c, final ByteBiFunction<Nth> nextSelector) {
-        return merge(merge(a, b, nextSelector).skippableIterator(), ByteStream.of(c).skippableIterator(), nextSelector);
+        return merge(merge(a, b, nextSelector).iteratorEx(), ByteStream.of(c).iteratorEx(), nextSelector);
     }
 
     /**
@@ -1433,7 +1430,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
             return of(a);
         }
 
-        return new IteratorByteStream(new SkippableByteIterator() {
+        return new IteratorByteStream(new ByteIteratorEx() {
             private byte nextA = 0;
             private byte nextB = 0;
             private boolean hasNextA = false;
@@ -1502,7 +1499,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * @return
      */
     public static ByteStream merge(final ByteIterator a, final ByteIterator b, final ByteIterator c, final ByteBiFunction<Nth> nextSelector) {
-        return merge(merge(a, b, nextSelector).skippableIterator(), c, nextSelector);
+        return merge(merge(a, b, nextSelector).iteratorEx(), c, nextSelector);
     }
 
     /**
@@ -1513,7 +1510,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      * @return
      */
     public static ByteStream merge(final ByteStream a, final ByteStream b, final ByteBiFunction<Nth> nextSelector) {
-        return merge(a.skippableIterator(), b.skippableIterator(), nextSelector).onClose(newCloseHandler(N.asList(a, b)));
+        return merge(a.iteratorEx(), b.iteratorEx(), nextSelector).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -1545,10 +1542,10 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
         }
 
         final Iterator<? extends ByteStream> iter = c.iterator();
-        ByteStream result = merge(iter.next().skippableIterator(), iter.next().skippableIterator(), nextSelector);
+        ByteStream result = merge(iter.next().iteratorEx(), iter.next().iteratorEx(), nextSelector);
 
         while (iter.hasNext()) {
-            result = merge(result.skippableIterator(), iter.next().skippableIterator(), nextSelector);
+            result = merge(result.iteratorEx(), iter.next().iteratorEx(), nextSelector);
         }
 
         return result.onClose(newCloseHandler(c));
@@ -1590,7 +1587,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
         final Queue<ByteIterator> queue = N.newLinkedList();
 
         for (ByteStream e : c) {
-            queue.add(e.skippableIterator());
+            queue.add(e.iteratorEx());
         }
 
         final Holder<Throwable> eHolder = new Holder<>();
@@ -1618,7 +1615,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
                                 }
                             }
 
-                            c = SkippableByteIterator.of(merge(a, b, nextSelector).toArray());
+                            c = ByteIteratorEx.of(merge(a, b, nextSelector).toArray());
 
                             synchronized (queue) {
                                 queue.offer(c);

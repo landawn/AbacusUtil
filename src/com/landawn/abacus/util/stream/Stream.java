@@ -136,7 +136,7 @@ import com.landawn.abacus.util.function.ToShortFunction;
 import com.landawn.abacus.util.function.TriConsumer;
 import com.landawn.abacus.util.function.TriFunction;
 import com.landawn.abacus.util.function.UnaryOperator;
-import com.landawn.abacus.util.stream.SkippableObjIterator.QueuedIterator;
+import com.landawn.abacus.util.stream.ObjIteratorEx.QueuedIterator;
 
 /**
  * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk,
@@ -474,10 +474,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     /**
      * Returns a stream consisting of the results of replacing each element of
      * this stream with the contents of a mapped stream produced by applying
-     * the provided mapping function to each element.  Each mapped stream is
-     * {@link java.util.stream.Baseclose() closed} after its contents
-     * have been placed into this stream.  (If a mapped stream is {@code null}
-     * an empty stream is used, instead.)
+     * the provided mapping function to each element.
      *
      * <p>This is an <a href="package-summary.html#StreamOps">intermediate
      * operation</a>.
@@ -521,9 +518,9 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
 
     public abstract <U, R> Stream<R> flatCollection(U seed, BiFunction<? super T, ? super U, ? extends Collection<? extends R>> mapper);
 
-    public abstract <R> Stream<R> flatArray(Function<? super T, ? extends R[]> mapper);
+    public abstract <R> Stream<R> flatArray(Function<? super T, R[]> mapper);
 
-    public abstract <U, R> Stream<R> flatArray(U seed, BiFunction<? super T, ? super U, ? extends R[]> mapper);
+    public abstract <U, R> Stream<R> flatArray(U seed, BiFunction<? super T, ? super U, R[]> mapper);
 
     public abstract CharStream flatMapToChar(Function<? super T, ? extends CharStream> mapper);
 
@@ -1806,10 +1803,10 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
 
     @Override
     public ObjIterator<T> iterator() {
-        return skippableIterator();
+        return iteratorEx();
     }
 
-    abstract SkippableObjIterator<T> skippableIterator();
+    abstract ObjIteratorEx<T> iteratorEx();
 
     @Override
     public <R> R __(Function<? super Stream<T>, R> transfer) {
@@ -1907,9 +1904,9 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
 
         if (startIndex == 0 && endIndex == c.size()) {
             // return (c.size() > 10 && (c.size() < 1000 || (c.size() < 100000 && c instanceof ArrayList))) ? streamOf((T[]) c.toArray()) : c.stream();
-            return of(SkippableObjIterator.of(c));
+            return of(ObjIteratorEx.of(c));
         } else {
-            return of(SkippableObjIterator.of(c), startIndex, endIndex);
+            return of(ObjIteratorEx.of(c), startIndex, endIndex);
         }
     }
 
@@ -1935,7 +1932,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         if (iterator instanceof RowIterator) {
             final RowIterator rowIterator = ((RowIterator) iterator);
 
-            return new IteratorStream<>(new SkippableObjIterator<T>() {
+            return new IteratorStream<>(new ObjIteratorEx<T>() {
                 @Override
                 public boolean hasNext() {
                     return iterator.hasNext();
@@ -1980,7 +1977,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     }
 
     public static <T> Stream<T> of(final java.util.stream.Stream<T> stream) {
-        return of(new SkippableObjIterator<T>() {
+        return of(new ObjIteratorEx<T>() {
             private Iterator<T> iter = null;
 
             @Override
@@ -2028,6 +2025,11 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
                         return a;
                     }
                 }) : super.toArray(a);
+            }
+        }).onClose(new Runnable() {
+            @Override
+            public void run() {
+                stream.close();
             }
         });
     }
@@ -2190,7 +2192,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
             return empty();
         }
 
-        return of(new SkippableObjIterator<Boolean>() {
+        return of(new ObjIteratorEx<Boolean>() {
             private int cursor = fromIndex;
 
             @Override
@@ -2244,7 +2246,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
             return empty();
         }
 
-        return of(new SkippableObjIterator<Character>() {
+        return of(new ObjIteratorEx<Character>() {
             private int cursor = fromIndex;
 
             @Override
@@ -2299,7 +2301,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
             return empty();
         }
 
-        return of(new SkippableObjIterator<Byte>() {
+        return of(new ObjIteratorEx<Byte>() {
             private int cursor = fromIndex;
 
             @Override
@@ -2354,7 +2356,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
             return empty();
         }
 
-        return of(new SkippableObjIterator<Short>() {
+        return of(new ObjIteratorEx<Short>() {
             private int cursor = fromIndex;
 
             @Override
@@ -2409,7 +2411,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
             return empty();
         }
 
-        return of(new SkippableObjIterator<Integer>() {
+        return of(new ObjIteratorEx<Integer>() {
             private int cursor = fromIndex;
 
             @Override
@@ -2464,7 +2466,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
             return empty();
         }
 
-        return of(new SkippableObjIterator<Long>() {
+        return of(new ObjIteratorEx<Long>() {
             private int cursor = fromIndex;
 
             @Override
@@ -2519,7 +2521,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
             return empty();
         }
 
-        return of(new SkippableObjIterator<Float>() {
+        return of(new ObjIteratorEx<Float>() {
             private int cursor = fromIndex;
 
             @Override
@@ -2574,7 +2576,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
             return empty();
         }
 
-        return of(new SkippableObjIterator<Double>() {
+        return of(new ObjIteratorEx<Double>() {
             private int cursor = fromIndex;
 
             @Override
@@ -2620,7 +2622,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <T> Stream<T> of(final Supplier<Collection<? extends T>> supplier) {
-        final Iterator<T> iter = new SkippableObjIterator<T>() {
+        final Iterator<T> iter = new ObjIteratorEx<T>() {
             private Iterator<? extends T> iterator = null;
 
             @Override
@@ -2662,7 +2664,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
             return empty();
         }
 
-        return new IteratorStream<>(new SkippableObjIterator<T>() {
+        return new IteratorStream<>(new ObjIteratorEx<T>() {
             private long cnt = n;
 
             @Override
@@ -2708,7 +2710,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         N.requireNonNull(hasNext);
         N.requireNonNull(next);
 
-        return of(new SkippableObjIterator<T>() {
+        return of(new ObjIteratorEx<T>() {
             private boolean hasNextVal = false;
 
             @Override
@@ -2752,7 +2754,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         N.requireNonNull(hasNext);
         N.requireNonNull(f);
 
-        return of(new SkippableObjIterator<T>() {
+        return of(new ObjIteratorEx<T>() {
             private T t = (T) NONE;
             private boolean hasNextVal = false;
 
@@ -2788,7 +2790,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         N.requireNonNull(hasNext);
         N.requireNonNull(f);
 
-        return of(new SkippableObjIterator<T>() {
+        return of(new ObjIteratorEx<T>() {
             private T t = (T) NONE;
             private T cur = (T) NONE;
             private boolean hasMore = true;
@@ -2824,7 +2826,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     public static <T> Stream<T> iterate(final T seed, final UnaryOperator<T> f) {
         N.requireNonNull(f);
 
-        return of(new SkippableObjIterator<T>() {
+        return of(new ObjIteratorEx<T>() {
             private T t = (T) NONE;
 
             @Override
@@ -2842,7 +2844,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     public static <T> Stream<T> generate(final Supplier<T> s) {
         N.requireNonNull(s);
 
-        return of(new SkippableObjIterator<T>() {
+        return of(new ObjIteratorEx<T>() {
             @Override
             public boolean hasNext() {
                 return true;
@@ -2888,9 +2890,9 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     public static <T> Stream<T> interval(final long delay, final long interval, final TimeUnit unit, final Supplier<T> s) {
         N.requireNonNull(s);
 
-        final SkippableLongIterator timer = LongStream.interval(delay, interval, unit).skippableIterator();
+        final LongIteratorEx timer = LongStream.interval(delay, interval, unit).iteratorEx();
 
-        return of(new SkippableObjIterator<T>() {
+        return of(new ObjIteratorEx<T>() {
             @Override
             public boolean hasNext() {
                 return timer.hasNext();
@@ -2931,9 +2933,9 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     public static <T> Stream<T> interval(final long delay, final long interval, final TimeUnit unit, final LongFunction<T> s) {
         N.requireNonNull(s);
 
-        final SkippableLongIterator timer = LongStream.interval(delay, interval, unit).skippableIterator();
+        final LongIteratorEx timer = LongStream.interval(delay, interval, unit).iteratorEx();
 
-        return of(new SkippableObjIterator<T>() {
+        return of(new ObjIteratorEx<T>() {
             @Override
             public boolean hasNext() {
                 return timer.hasNext();
@@ -3141,14 +3143,14 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
 
     @SafeVarargs
     public static <T> Stream<T> concat(final T[]... a) {
-        return N.isNullOrEmpty(a) ? (Stream<T>) empty() : new IteratorStream<>(new SkippableObjIterator<T>() {
+        return N.isNullOrEmpty(a) ? (Stream<T>) empty() : new IteratorStream<>(new ObjIteratorEx<T>() {
             private final Iterator<T[]> iter = N.asList(a).iterator();
             private Iterator<T> cur;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
-                    cur = SkippableObjIterator.of(iter.next());
+                    cur = ObjIteratorEx.of(iter.next());
                 }
 
                 return cur != null && cur.hasNext();
@@ -3167,7 +3169,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
 
     @SafeVarargs
     public static <T> Stream<T> concat(final Collection<? extends T>... a) {
-        return N.isNullOrEmpty(a) ? (Stream<T>) empty() : new IteratorStream<>(new SkippableObjIterator<T>() {
+        return N.isNullOrEmpty(a) ? (Stream<T>) empty() : new IteratorStream<>(new ObjIteratorEx<T>() {
             private final Iterator<Collection<? extends T>> iter = N.asList(a).iterator();
             private Iterator<? extends T> cur;
 
@@ -3228,7 +3230,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
             return empty();
         }
 
-        return of(new SkippableObjIterator<T>() {
+        return of(new ObjIteratorEx<T>() {
             private final Iterator<? extends Iterator<? extends T>> iterators = c.iterator();
             private Iterator<? extends T> cur;
 
@@ -3646,7 +3648,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <R> Stream<R> zip(final char[] a, final char[] b, final CharBiFunction<R> zipFunction) {
-        return zip(SkippableCharIterator.of(a), SkippableCharIterator.of(b), zipFunction);
+        return zip(CharIteratorEx.of(a), CharIteratorEx.of(b), zipFunction);
     }
 
     /**
@@ -3658,7 +3660,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <R> Stream<R> zip(final char[] a, final char[] b, final char[] c, final CharTriFunction<R> zipFunction) {
-        return zip(SkippableCharIterator.of(a), SkippableCharIterator.of(b), SkippableCharIterator.of(c), zipFunction);
+        return zip(CharIteratorEx.of(a), CharIteratorEx.of(b), CharIteratorEx.of(c), zipFunction);
     }
 
     /**
@@ -3670,7 +3672,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <R> Stream<R> zip(final CharIterator a, final CharIterator b, final CharBiFunction<R> zipFunction) {
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() && b.hasNext();
@@ -3692,7 +3694,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <R> Stream<R> zip(final CharIterator a, final CharIterator b, final CharIterator c, final CharTriFunction<R> zipFunction) {
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() && b.hasNext() && c.hasNext();
@@ -3714,7 +3716,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <R> Stream<R> zip(final CharStream a, final CharStream b, final CharBiFunction<R> zipFunction) {
-        return zip(a.skippableIterator(), b.skippableIterator(), zipFunction).onClose(newCloseHandler(N.asList(a, b)));
+        return zip(a.iteratorEx(), b.iteratorEx(), zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -3726,7 +3728,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <R> Stream<R> zip(final CharStream a, final CharStream b, final CharStream c, final CharTriFunction<R> zipFunction) {
-        return zip(a.skippableIterator(), b.skippableIterator(), c.skippableIterator(), zipFunction).onClose(newCloseHandler(N.asList(a, b, c)));
+        return zip(a.iteratorEx(), b.iteratorEx(), c.iteratorEx(), zipFunction).onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
     /**
@@ -3747,10 +3749,10 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         final List<CharIterator> iterList = new ArrayList<>(len);
 
         for (CharStream e : c) {
-            iterList.add(e.skippableIterator());
+            iterList.add(e.iteratorEx());
         }
 
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 for (CharIterator e : iterList) {
@@ -3788,7 +3790,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <R> Stream<R> zip(final char[] a, final char[] b, final char valueForNoneA, final char valueForNoneB, final CharBiFunction<R> zipFunction) {
-        return zip(SkippableCharIterator.of(a), SkippableCharIterator.of(b), valueForNoneA, valueForNoneB, zipFunction);
+        return zip(CharIteratorEx.of(a), CharIteratorEx.of(b), valueForNoneA, valueForNoneB, zipFunction);
     }
 
     /**
@@ -3806,8 +3808,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <R> Stream<R> zip(final char[] a, final char[] b, final char[] c, final char valueForNoneA, final char valueForNoneB,
             final char valueForNoneC, final CharTriFunction<R> zipFunction) {
-        return zip(SkippableCharIterator.of(a), SkippableCharIterator.of(b), SkippableCharIterator.of(c), valueForNoneA, valueForNoneB, valueForNoneC,
-                zipFunction);
+        return zip(CharIteratorEx.of(a), CharIteratorEx.of(b), CharIteratorEx.of(c), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
     }
 
     /**
@@ -3823,7 +3824,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <R> Stream<R> zip(final CharIterator a, final CharIterator b, final char valueForNoneA, final char valueForNoneB,
             final CharBiFunction<R> zipFunction) {
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() || b.hasNext();
@@ -3855,7 +3856,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <R> Stream<R> zip(final CharIterator a, final CharIterator b, final CharIterator c, final char valueForNoneA, final char valueForNoneB,
             final char valueForNoneC, final CharTriFunction<R> zipFunction) {
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() || b.hasNext() || c.hasNext();
@@ -3886,7 +3887,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <R> Stream<R> zip(final CharStream a, final CharStream b, final char valueForNoneA, final char valueForNoneB,
             final CharBiFunction<R> zipFunction) {
-        return zip(a.skippableIterator(), b.skippableIterator(), valueForNoneA, valueForNoneB, zipFunction).onClose(newCloseHandler(N.asList(a, b)));
+        return zip(a.iteratorEx(), b.iteratorEx(), valueForNoneA, valueForNoneB, zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -3904,7 +3905,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <R> Stream<R> zip(final CharStream a, final CharStream b, final CharStream c, final char valueForNoneA, final char valueForNoneB,
             final char valueForNoneC, final CharTriFunction<R> zipFunction) {
-        return zip(a.skippableIterator(), b.skippableIterator(), c.skippableIterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction)
+        return zip(a.iteratorEx(), b.iteratorEx(), c.iteratorEx(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction)
                 .onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
@@ -3932,10 +3933,10 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         final List<CharIterator> iterList = new ArrayList<>(len);
 
         for (CharStream e : c) {
-            iterList.add(e.skippableIterator());
+            iterList.add(e.iteratorEx());
         }
 
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 for (CharIterator e : iterList) {
@@ -3981,7 +3982,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <R> Stream<R> zip(final byte[] a, final byte[] b, final ByteBiFunction<R> zipFunction) {
-        return zip(SkippableByteIterator.of(a), SkippableByteIterator.of(b), zipFunction);
+        return zip(ByteIteratorEx.of(a), ByteIteratorEx.of(b), zipFunction);
     }
 
     /**
@@ -3993,7 +3994,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <R> Stream<R> zip(final byte[] a, final byte[] b, final byte[] c, final ByteTriFunction<R> zipFunction) {
-        return zip(SkippableByteIterator.of(a), SkippableByteIterator.of(b), SkippableByteIterator.of(c), zipFunction);
+        return zip(ByteIteratorEx.of(a), ByteIteratorEx.of(b), ByteIteratorEx.of(c), zipFunction);
     }
 
     /**
@@ -4005,7 +4006,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <R> Stream<R> zip(final ByteIterator a, final ByteIterator b, final ByteBiFunction<R> zipFunction) {
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() && b.hasNext();
@@ -4027,7 +4028,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <R> Stream<R> zip(final ByteIterator a, final ByteIterator b, final ByteIterator c, final ByteTriFunction<R> zipFunction) {
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() && b.hasNext() && c.hasNext();
@@ -4049,7 +4050,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <R> Stream<R> zip(final ByteStream a, final ByteStream b, final ByteBiFunction<R> zipFunction) {
-        return zip(a.skippableIterator(), b.skippableIterator(), zipFunction).onClose(newCloseHandler(N.asList(a, b)));
+        return zip(a.iteratorEx(), b.iteratorEx(), zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -4061,7 +4062,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <R> Stream<R> zip(final ByteStream a, final ByteStream b, final ByteStream c, final ByteTriFunction<R> zipFunction) {
-        return zip(a.skippableIterator(), b.skippableIterator(), c.skippableIterator(), zipFunction).onClose(newCloseHandler(N.asList(a, b, c)));
+        return zip(a.iteratorEx(), b.iteratorEx(), c.iteratorEx(), zipFunction).onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
     /**
@@ -4082,10 +4083,10 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         final List<ByteIterator> iterList = new ArrayList<>(len);
 
         for (ByteStream e : c) {
-            iterList.add(e.skippableIterator());
+            iterList.add(e.iteratorEx());
         }
 
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 for (ByteIterator e : iterList) {
@@ -4123,7 +4124,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <R> Stream<R> zip(final byte[] a, final byte[] b, final byte valueForNoneA, final byte valueForNoneB, final ByteBiFunction<R> zipFunction) {
-        return zip(SkippableByteIterator.of(a), SkippableByteIterator.of(b), valueForNoneA, valueForNoneB, zipFunction);
+        return zip(ByteIteratorEx.of(a), ByteIteratorEx.of(b), valueForNoneA, valueForNoneB, zipFunction);
     }
 
     /**
@@ -4141,8 +4142,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <R> Stream<R> zip(final byte[] a, final byte[] b, final byte[] c, final byte valueForNoneA, final byte valueForNoneB,
             final byte valueForNoneC, final ByteTriFunction<R> zipFunction) {
-        return zip(SkippableByteIterator.of(a), SkippableByteIterator.of(b), SkippableByteIterator.of(c), valueForNoneA, valueForNoneB, valueForNoneC,
-                zipFunction);
+        return zip(ByteIteratorEx.of(a), ByteIteratorEx.of(b), ByteIteratorEx.of(c), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
     }
 
     /**
@@ -4158,7 +4158,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <R> Stream<R> zip(final ByteIterator a, final ByteIterator b, final byte valueForNoneA, final byte valueForNoneB,
             final ByteBiFunction<R> zipFunction) {
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() || b.hasNext();
@@ -4190,7 +4190,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <R> Stream<R> zip(final ByteIterator a, final ByteIterator b, final ByteIterator c, final byte valueForNoneA, final byte valueForNoneB,
             final byte valueForNoneC, final ByteTriFunction<R> zipFunction) {
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() || b.hasNext() || c.hasNext();
@@ -4221,7 +4221,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <R> Stream<R> zip(final ByteStream a, final ByteStream b, final byte valueForNoneA, final byte valueForNoneB,
             final ByteBiFunction<R> zipFunction) {
-        return zip(a.skippableIterator(), b.skippableIterator(), valueForNoneA, valueForNoneB, zipFunction).onClose(newCloseHandler(N.asList(a, b)));
+        return zip(a.iteratorEx(), b.iteratorEx(), valueForNoneA, valueForNoneB, zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -4239,7 +4239,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <R> Stream<R> zip(final ByteStream a, final ByteStream b, final ByteStream c, final byte valueForNoneA, final byte valueForNoneB,
             final byte valueForNoneC, final ByteTriFunction<R> zipFunction) {
-        return zip(a.skippableIterator(), b.skippableIterator(), c.skippableIterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction)
+        return zip(a.iteratorEx(), b.iteratorEx(), c.iteratorEx(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction)
                 .onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
@@ -4267,10 +4267,10 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         final List<ByteIterator> iterList = new ArrayList<>(len);
 
         for (ByteStream e : c) {
-            iterList.add(e.skippableIterator());
+            iterList.add(e.iteratorEx());
         }
 
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 for (ByteIterator e : iterList) {
@@ -4316,7 +4316,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <R> Stream<R> zip(final short[] a, final short[] b, final ShortBiFunction<R> zipFunction) {
-        return zip(SkippableShortIterator.of(a), SkippableShortIterator.of(b), zipFunction);
+        return zip(ShortIteratorEx.of(a), ShortIteratorEx.of(b), zipFunction);
     }
 
     /**
@@ -4328,7 +4328,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <R> Stream<R> zip(final short[] a, final short[] b, final short[] c, final ShortTriFunction<R> zipFunction) {
-        return zip(SkippableShortIterator.of(a), SkippableShortIterator.of(b), SkippableShortIterator.of(c), zipFunction);
+        return zip(ShortIteratorEx.of(a), ShortIteratorEx.of(b), ShortIteratorEx.of(c), zipFunction);
     }
 
     /**
@@ -4340,7 +4340,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <R> Stream<R> zip(final ShortIterator a, final ShortIterator b, final ShortBiFunction<R> zipFunction) {
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() && b.hasNext();
@@ -4362,7 +4362,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <R> Stream<R> zip(final ShortIterator a, final ShortIterator b, final ShortIterator c, final ShortTriFunction<R> zipFunction) {
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() && b.hasNext() && c.hasNext();
@@ -4384,7 +4384,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <R> Stream<R> zip(final ShortStream a, final ShortStream b, final ShortBiFunction<R> zipFunction) {
-        return zip(a.skippableIterator(), b.skippableIterator(), zipFunction).onClose(newCloseHandler(N.asList(a, b)));
+        return zip(a.iteratorEx(), b.iteratorEx(), zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -4396,7 +4396,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <R> Stream<R> zip(final ShortStream a, final ShortStream b, final ShortStream c, final ShortTriFunction<R> zipFunction) {
-        return zip(a.skippableIterator(), b.skippableIterator(), c.skippableIterator(), zipFunction).onClose(newCloseHandler(N.asList(a, b, c)));
+        return zip(a.iteratorEx(), b.iteratorEx(), c.iteratorEx(), zipFunction).onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
     /**
@@ -4417,10 +4417,10 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         final List<ShortIterator> iterList = new ArrayList<>(len);
 
         for (ShortStream e : c) {
-            iterList.add(e.skippableIterator());
+            iterList.add(e.iteratorEx());
         }
 
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 for (ShortIterator e : iterList) {
@@ -4459,7 +4459,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <R> Stream<R> zip(final short[] a, final short[] b, final short valueForNoneA, final short valueForNoneB,
             final ShortBiFunction<R> zipFunction) {
-        return zip(SkippableShortIterator.of(a), SkippableShortIterator.of(b), valueForNoneA, valueForNoneB, zipFunction);
+        return zip(ShortIteratorEx.of(a), ShortIteratorEx.of(b), valueForNoneA, valueForNoneB, zipFunction);
     }
 
     /**
@@ -4477,8 +4477,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <R> Stream<R> zip(final short[] a, final short[] b, final short[] c, final short valueForNoneA, final short valueForNoneB,
             final short valueForNoneC, final ShortTriFunction<R> zipFunction) {
-        return zip(SkippableShortIterator.of(a), SkippableShortIterator.of(b), SkippableShortIterator.of(c), valueForNoneA, valueForNoneB, valueForNoneC,
-                zipFunction);
+        return zip(ShortIteratorEx.of(a), ShortIteratorEx.of(b), ShortIteratorEx.of(c), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
     }
 
     /**
@@ -4494,7 +4493,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <R> Stream<R> zip(final ShortIterator a, final ShortIterator b, final short valueForNoneA, final short valueForNoneB,
             final ShortBiFunction<R> zipFunction) {
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() || b.hasNext();
@@ -4526,7 +4525,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <R> Stream<R> zip(final ShortIterator a, final ShortIterator b, final ShortIterator c, final short valueForNoneA, final short valueForNoneB,
             final short valueForNoneC, final ShortTriFunction<R> zipFunction) {
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() || b.hasNext() || c.hasNext();
@@ -4557,7 +4556,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <R> Stream<R> zip(final ShortStream a, final ShortStream b, final short valueForNoneA, final short valueForNoneB,
             final ShortBiFunction<R> zipFunction) {
-        return zip(a.skippableIterator(), b.skippableIterator(), valueForNoneA, valueForNoneB, zipFunction).onClose(newCloseHandler(N.asList(a, b)));
+        return zip(a.iteratorEx(), b.iteratorEx(), valueForNoneA, valueForNoneB, zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -4575,7 +4574,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <R> Stream<R> zip(final ShortStream a, final ShortStream b, final ShortStream c, final short valueForNoneA, final short valueForNoneB,
             final short valueForNoneC, final ShortTriFunction<R> zipFunction) {
-        return zip(a.skippableIterator(), b.skippableIterator(), c.skippableIterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction)
+        return zip(a.iteratorEx(), b.iteratorEx(), c.iteratorEx(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction)
                 .onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
@@ -4603,10 +4602,10 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         final List<ShortIterator> iterList = new ArrayList<>(len);
 
         for (ShortStream e : c) {
-            iterList.add(e.skippableIterator());
+            iterList.add(e.iteratorEx());
         }
 
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 for (ShortIterator e : iterList) {
@@ -4652,7 +4651,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <R> Stream<R> zip(final int[] a, final int[] b, final IntBiFunction<R> zipFunction) {
-        return zip(SkippableIntIterator.of(a), SkippableIntIterator.of(b), zipFunction);
+        return zip(IntIteratorEx.of(a), IntIteratorEx.of(b), zipFunction);
     }
 
     /**
@@ -4664,7 +4663,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <R> Stream<R> zip(final int[] a, final int[] b, final int[] c, final IntTriFunction<R> zipFunction) {
-        return zip(SkippableIntIterator.of(a), SkippableIntIterator.of(b), SkippableIntIterator.of(c), zipFunction);
+        return zip(IntIteratorEx.of(a), IntIteratorEx.of(b), IntIteratorEx.of(c), zipFunction);
     }
 
     /**
@@ -4676,7 +4675,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <R> Stream<R> zip(final IntIterator a, final IntIterator b, final IntBiFunction<R> zipFunction) {
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() && b.hasNext();
@@ -4698,7 +4697,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <R> Stream<R> zip(final IntIterator a, final IntIterator b, final IntIterator c, final IntTriFunction<R> zipFunction) {
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() && b.hasNext() && c.hasNext();
@@ -4720,7 +4719,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <R> Stream<R> zip(final IntStream a, final IntStream b, final IntBiFunction<R> zipFunction) {
-        return zip(a.skippableIterator(), b.skippableIterator(), zipFunction).onClose(newCloseHandler(N.asList(a, b)));
+        return zip(a.iteratorEx(), b.iteratorEx(), zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -4732,7 +4731,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <R> Stream<R> zip(final IntStream a, final IntStream b, final IntStream c, final IntTriFunction<R> zipFunction) {
-        return zip(a.skippableIterator(), b.skippableIterator(), c.skippableIterator(), zipFunction).onClose(newCloseHandler(N.asList(a, b, c)));
+        return zip(a.iteratorEx(), b.iteratorEx(), c.iteratorEx(), zipFunction).onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
     /**
@@ -4753,10 +4752,10 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         final List<IntIterator> iterList = new ArrayList<>(len);
 
         for (IntStream e : c) {
-            iterList.add(e.skippableIterator());
+            iterList.add(e.iteratorEx());
         }
 
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 for (IntIterator e : iterList) {
@@ -4794,7 +4793,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <R> Stream<R> zip(final int[] a, final int[] b, final int valueForNoneA, final int valueForNoneB, final IntBiFunction<R> zipFunction) {
-        return zip(SkippableIntIterator.of(a), SkippableIntIterator.of(b), valueForNoneA, valueForNoneB, zipFunction);
+        return zip(IntIteratorEx.of(a), IntIteratorEx.of(b), valueForNoneA, valueForNoneB, zipFunction);
     }
 
     /**
@@ -4812,8 +4811,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <R> Stream<R> zip(final int[] a, final int[] b, final int[] c, final int valueForNoneA, final int valueForNoneB, final int valueForNoneC,
             final IntTriFunction<R> zipFunction) {
-        return zip(SkippableIntIterator.of(a), SkippableIntIterator.of(b), SkippableIntIterator.of(c), valueForNoneA, valueForNoneB, valueForNoneC,
-                zipFunction);
+        return zip(IntIteratorEx.of(a), IntIteratorEx.of(b), IntIteratorEx.of(c), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
     }
 
     /**
@@ -4829,7 +4827,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <R> Stream<R> zip(final IntIterator a, final IntIterator b, final int valueForNoneA, final int valueForNoneB,
             final IntBiFunction<R> zipFunction) {
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() || b.hasNext();
@@ -4861,7 +4859,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <R> Stream<R> zip(final IntIterator a, final IntIterator b, final IntIterator c, final int valueForNoneA, final int valueForNoneB,
             final int valueForNoneC, final IntTriFunction<R> zipFunction) {
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() || b.hasNext() || c.hasNext();
@@ -4892,7 +4890,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <R> Stream<R> zip(final IntStream a, final IntStream b, final int valueForNoneA, final int valueForNoneB,
             final IntBiFunction<R> zipFunction) {
-        return zip(a.skippableIterator(), b.skippableIterator(), valueForNoneA, valueForNoneB, zipFunction).onClose(newCloseHandler(N.asList(a, b)));
+        return zip(a.iteratorEx(), b.iteratorEx(), valueForNoneA, valueForNoneB, zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -4910,7 +4908,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <R> Stream<R> zip(final IntStream a, final IntStream b, final IntStream c, final int valueForNoneA, final int valueForNoneB,
             final int valueForNoneC, final IntTriFunction<R> zipFunction) {
-        return zip(a.skippableIterator(), b.skippableIterator(), c.skippableIterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction)
+        return zip(a.iteratorEx(), b.iteratorEx(), c.iteratorEx(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction)
                 .onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
@@ -4938,10 +4936,10 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         final List<IntIterator> iterList = new ArrayList<>(len);
 
         for (IntStream e : c) {
-            iterList.add(e.skippableIterator());
+            iterList.add(e.iteratorEx());
         }
 
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 for (IntIterator e : iterList) {
@@ -4987,7 +4985,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <R> Stream<R> zip(final long[] a, final long[] b, final LongBiFunction<R> zipFunction) {
-        return zip(SkippableLongIterator.of(a), SkippableLongIterator.of(b), zipFunction);
+        return zip(LongIteratorEx.of(a), LongIteratorEx.of(b), zipFunction);
     }
 
     /**
@@ -4999,7 +4997,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <R> Stream<R> zip(final long[] a, final long[] b, final long[] c, final LongTriFunction<R> zipFunction) {
-        return zip(SkippableLongIterator.of(a), SkippableLongIterator.of(b), SkippableLongIterator.of(c), zipFunction);
+        return zip(LongIteratorEx.of(a), LongIteratorEx.of(b), LongIteratorEx.of(c), zipFunction);
     }
 
     /**
@@ -5011,7 +5009,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <R> Stream<R> zip(final LongIterator a, final LongIterator b, final LongBiFunction<R> zipFunction) {
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() && b.hasNext();
@@ -5033,7 +5031,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <R> Stream<R> zip(final LongIterator a, final LongIterator b, final LongIterator c, final LongTriFunction<R> zipFunction) {
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() && b.hasNext() && c.hasNext();
@@ -5055,7 +5053,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <R> Stream<R> zip(final LongStream a, final LongStream b, final LongBiFunction<R> zipFunction) {
-        return zip(a.skippableIterator(), b.skippableIterator(), zipFunction).onClose(newCloseHandler(N.asList(a, b)));
+        return zip(a.iteratorEx(), b.iteratorEx(), zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -5067,7 +5065,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <R> Stream<R> zip(final LongStream a, final LongStream b, final LongStream c, final LongTriFunction<R> zipFunction) {
-        return zip(a.skippableIterator(), b.skippableIterator(), c.skippableIterator(), zipFunction).onClose(newCloseHandler(N.asList(a, b, c)));
+        return zip(a.iteratorEx(), b.iteratorEx(), c.iteratorEx(), zipFunction).onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
     /**
@@ -5088,10 +5086,10 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         final List<LongIterator> iterList = new ArrayList<>(len);
 
         for (LongStream e : c) {
-            iterList.add(e.skippableIterator());
+            iterList.add(e.iteratorEx());
         }
 
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 for (LongIterator e : iterList) {
@@ -5129,7 +5127,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <R> Stream<R> zip(final long[] a, final long[] b, final long valueForNoneA, final long valueForNoneB, final LongBiFunction<R> zipFunction) {
-        return zip(SkippableLongIterator.of(a), SkippableLongIterator.of(b), valueForNoneA, valueForNoneB, zipFunction);
+        return zip(LongIteratorEx.of(a), LongIteratorEx.of(b), valueForNoneA, valueForNoneB, zipFunction);
     }
 
     /**
@@ -5147,8 +5145,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <R> Stream<R> zip(final long[] a, final long[] b, final long[] c, final long valueForNoneA, final long valueForNoneB,
             final long valueForNoneC, final LongTriFunction<R> zipFunction) {
-        return zip(SkippableLongIterator.of(a), SkippableLongIterator.of(b), SkippableLongIterator.of(c), valueForNoneA, valueForNoneB, valueForNoneC,
-                zipFunction);
+        return zip(LongIteratorEx.of(a), LongIteratorEx.of(b), LongIteratorEx.of(c), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
     }
 
     /**
@@ -5164,7 +5161,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <R> Stream<R> zip(final LongIterator a, final LongIterator b, final long valueForNoneA, final long valueForNoneB,
             final LongBiFunction<R> zipFunction) {
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() || b.hasNext();
@@ -5196,7 +5193,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <R> Stream<R> zip(final LongIterator a, final LongIterator b, final LongIterator c, final long valueForNoneA, final long valueForNoneB,
             final long valueForNoneC, final LongTriFunction<R> zipFunction) {
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() || b.hasNext() || c.hasNext();
@@ -5227,7 +5224,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <R> Stream<R> zip(final LongStream a, final LongStream b, final long valueForNoneA, final long valueForNoneB,
             final LongBiFunction<R> zipFunction) {
-        return zip(a.skippableIterator(), b.skippableIterator(), valueForNoneA, valueForNoneB, zipFunction).onClose(newCloseHandler(N.asList(a, b)));
+        return zip(a.iteratorEx(), b.iteratorEx(), valueForNoneA, valueForNoneB, zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -5245,7 +5242,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <R> Stream<R> zip(final LongStream a, final LongStream b, final LongStream c, final long valueForNoneA, final long valueForNoneB,
             final long valueForNoneC, final LongTriFunction<R> zipFunction) {
-        return zip(a.skippableIterator(), b.skippableIterator(), c.skippableIterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction)
+        return zip(a.iteratorEx(), b.iteratorEx(), c.iteratorEx(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction)
                 .onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
@@ -5273,10 +5270,10 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         final List<LongIterator> iterList = new ArrayList<>(len);
 
         for (LongStream e : c) {
-            iterList.add(e.skippableIterator());
+            iterList.add(e.iteratorEx());
         }
 
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 for (LongIterator e : iterList) {
@@ -5322,7 +5319,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <R> Stream<R> zip(final float[] a, final float[] b, final FloatBiFunction<R> zipFunction) {
-        return zip(SkippableFloatIterator.of(a), SkippableFloatIterator.of(b), zipFunction);
+        return zip(FloatIteratorEx.of(a), FloatIteratorEx.of(b), zipFunction);
     }
 
     /**
@@ -5334,7 +5331,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <R> Stream<R> zip(final float[] a, final float[] b, final float[] c, final FloatTriFunction<R> zipFunction) {
-        return zip(SkippableFloatIterator.of(a), SkippableFloatIterator.of(b), SkippableFloatIterator.of(c), zipFunction);
+        return zip(FloatIteratorEx.of(a), FloatIteratorEx.of(b), FloatIteratorEx.of(c), zipFunction);
     }
 
     /**
@@ -5346,7 +5343,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <R> Stream<R> zip(final FloatIterator a, final FloatIterator b, final FloatBiFunction<R> zipFunction) {
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() && b.hasNext();
@@ -5368,7 +5365,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <R> Stream<R> zip(final FloatIterator a, final FloatIterator b, final FloatIterator c, final FloatTriFunction<R> zipFunction) {
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() && b.hasNext() && c.hasNext();
@@ -5390,7 +5387,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <R> Stream<R> zip(final FloatStream a, final FloatStream b, final FloatBiFunction<R> zipFunction) {
-        return zip(a.skippableIterator(), b.skippableIterator(), zipFunction).onClose(newCloseHandler(N.asList(a, b)));
+        return zip(a.iteratorEx(), b.iteratorEx(), zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -5402,7 +5399,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <R> Stream<R> zip(final FloatStream a, final FloatStream b, final FloatStream c, final FloatTriFunction<R> zipFunction) {
-        return zip(a.skippableIterator(), b.skippableIterator(), c.skippableIterator(), zipFunction).onClose(newCloseHandler(N.asList(a, b, c)));
+        return zip(a.iteratorEx(), b.iteratorEx(), c.iteratorEx(), zipFunction).onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
     /**
@@ -5423,10 +5420,10 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         final List<FloatIterator> iterList = new ArrayList<>(len);
 
         for (FloatStream e : c) {
-            iterList.add(e.skippableIterator());
+            iterList.add(e.iteratorEx());
         }
 
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 for (FloatIterator e : iterList) {
@@ -5465,7 +5462,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <R> Stream<R> zip(final float[] a, final float[] b, final float valueForNoneA, final float valueForNoneB,
             final FloatBiFunction<R> zipFunction) {
-        return zip(SkippableFloatIterator.of(a), SkippableFloatIterator.of(b), valueForNoneA, valueForNoneB, zipFunction);
+        return zip(FloatIteratorEx.of(a), FloatIteratorEx.of(b), valueForNoneA, valueForNoneB, zipFunction);
     }
 
     /**
@@ -5483,8 +5480,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <R> Stream<R> zip(final float[] a, final float[] b, final float[] c, final float valueForNoneA, final float valueForNoneB,
             final float valueForNoneC, final FloatTriFunction<R> zipFunction) {
-        return zip(SkippableFloatIterator.of(a), SkippableFloatIterator.of(b), SkippableFloatIterator.of(c), valueForNoneA, valueForNoneB, valueForNoneC,
-                zipFunction);
+        return zip(FloatIteratorEx.of(a), FloatIteratorEx.of(b), FloatIteratorEx.of(c), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
     }
 
     /**
@@ -5500,7 +5496,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <R> Stream<R> zip(final FloatIterator a, final FloatIterator b, final float valueForNoneA, final float valueForNoneB,
             final FloatBiFunction<R> zipFunction) {
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() || b.hasNext();
@@ -5532,7 +5528,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <R> Stream<R> zip(final FloatIterator a, final FloatIterator b, final FloatIterator c, final float valueForNoneA, final float valueForNoneB,
             final float valueForNoneC, final FloatTriFunction<R> zipFunction) {
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() || b.hasNext() || c.hasNext();
@@ -5563,7 +5559,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <R> Stream<R> zip(final FloatStream a, final FloatStream b, final float valueForNoneA, final float valueForNoneB,
             final FloatBiFunction<R> zipFunction) {
-        return zip(a.skippableIterator(), b.skippableIterator(), valueForNoneA, valueForNoneB, zipFunction).onClose(newCloseHandler(N.asList(a, b)));
+        return zip(a.iteratorEx(), b.iteratorEx(), valueForNoneA, valueForNoneB, zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -5581,7 +5577,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <R> Stream<R> zip(final FloatStream a, final FloatStream b, final FloatStream c, final float valueForNoneA, final float valueForNoneB,
             final float valueForNoneC, final FloatTriFunction<R> zipFunction) {
-        return zip(a.skippableIterator(), b.skippableIterator(), c.skippableIterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction)
+        return zip(a.iteratorEx(), b.iteratorEx(), c.iteratorEx(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction)
                 .onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
@@ -5609,10 +5605,10 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         final List<FloatIterator> iterList = new ArrayList<>(len);
 
         for (FloatStream e : c) {
-            iterList.add(e.skippableIterator());
+            iterList.add(e.iteratorEx());
         }
 
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 for (FloatIterator e : iterList) {
@@ -5658,7 +5654,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <R> Stream<R> zip(final double[] a, final double[] b, final DoubleBiFunction<R> zipFunction) {
-        return zip(SkippableDoubleIterator.of(a), SkippableDoubleIterator.of(b), zipFunction);
+        return zip(DoubleIteratorEx.of(a), DoubleIteratorEx.of(b), zipFunction);
     }
 
     /**
@@ -5670,7 +5666,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <R> Stream<R> zip(final double[] a, final double[] b, final double[] c, final DoubleTriFunction<R> zipFunction) {
-        return zip(SkippableDoubleIterator.of(a), SkippableDoubleIterator.of(b), SkippableDoubleIterator.of(c), zipFunction);
+        return zip(DoubleIteratorEx.of(a), DoubleIteratorEx.of(b), DoubleIteratorEx.of(c), zipFunction);
     }
 
     /**
@@ -5682,7 +5678,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <R> Stream<R> zip(final DoubleIterator a, final DoubleIterator b, final DoubleBiFunction<R> zipFunction) {
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() && b.hasNext();
@@ -5704,7 +5700,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <R> Stream<R> zip(final DoubleIterator a, final DoubleIterator b, final DoubleIterator c, final DoubleTriFunction<R> zipFunction) {
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() && b.hasNext() && c.hasNext();
@@ -5726,7 +5722,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <R> Stream<R> zip(final DoubleStream a, final DoubleStream b, final DoubleBiFunction<R> zipFunction) {
-        return zip(a.skippableIterator(), b.skippableIterator(), zipFunction).onClose(newCloseHandler(N.asList(a, b)));
+        return zip(a.iteratorEx(), b.iteratorEx(), zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -5738,7 +5734,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <R> Stream<R> zip(final DoubleStream a, final DoubleStream b, final DoubleStream c, final DoubleTriFunction<R> zipFunction) {
-        return zip(a.skippableIterator(), b.skippableIterator(), c.skippableIterator(), zipFunction).onClose(newCloseHandler(N.asList(a, b, c)));
+        return zip(a.iteratorEx(), b.iteratorEx(), c.iteratorEx(), zipFunction).onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
     /**
@@ -5759,10 +5755,10 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         final List<DoubleIterator> iterList = new ArrayList<>(len);
 
         for (DoubleStream e : c) {
-            iterList.add(e.skippableIterator());
+            iterList.add(e.iteratorEx());
         }
 
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 for (DoubleIterator e : iterList) {
@@ -5801,7 +5797,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <R> Stream<R> zip(final double[] a, final double[] b, final double valueForNoneA, final double valueForNoneB,
             final DoubleBiFunction<R> zipFunction) {
-        return zip(SkippableDoubleIterator.of(a), SkippableDoubleIterator.of(b), valueForNoneA, valueForNoneB, zipFunction);
+        return zip(DoubleIteratorEx.of(a), DoubleIteratorEx.of(b), valueForNoneA, valueForNoneB, zipFunction);
     }
 
     /**
@@ -5819,8 +5815,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <R> Stream<R> zip(final double[] a, final double[] b, final double[] c, final double valueForNoneA, final double valueForNoneB,
             final double valueForNoneC, final DoubleTriFunction<R> zipFunction) {
-        return zip(SkippableDoubleIterator.of(a), SkippableDoubleIterator.of(b), SkippableDoubleIterator.of(c), valueForNoneA, valueForNoneB, valueForNoneC,
-                zipFunction);
+        return zip(DoubleIteratorEx.of(a), DoubleIteratorEx.of(b), DoubleIteratorEx.of(c), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
     }
 
     /**
@@ -5836,7 +5831,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <R> Stream<R> zip(final DoubleIterator a, final DoubleIterator b, final double valueForNoneA, final double valueForNoneB,
             final DoubleBiFunction<R> zipFunction) {
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() || b.hasNext();
@@ -5868,7 +5863,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <R> Stream<R> zip(final DoubleIterator a, final DoubleIterator b, final DoubleIterator c, final double valueForNoneA,
             final double valueForNoneB, final double valueForNoneC, final DoubleTriFunction<R> zipFunction) {
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() || b.hasNext() || c.hasNext();
@@ -5899,7 +5894,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <R> Stream<R> zip(final DoubleStream a, final DoubleStream b, final double valueForNoneA, final double valueForNoneB,
             final DoubleBiFunction<R> zipFunction) {
-        return zip(a.skippableIterator(), b.skippableIterator(), valueForNoneA, valueForNoneB, zipFunction).onClose(newCloseHandler(N.asList(a, b)));
+        return zip(a.iteratorEx(), b.iteratorEx(), valueForNoneA, valueForNoneB, zipFunction).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -5917,7 +5912,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <R> Stream<R> zip(final DoubleStream a, final DoubleStream b, final DoubleStream c, final double valueForNoneA, final double valueForNoneB,
             final double valueForNoneC, final DoubleTriFunction<R> zipFunction) {
-        return zip(a.skippableIterator(), b.skippableIterator(), c.skippableIterator(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction)
+        return zip(a.iteratorEx(), b.iteratorEx(), c.iteratorEx(), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction)
                 .onClose(newCloseHandler(N.asList(a, b, c)));
     }
 
@@ -5945,10 +5940,10 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         final List<DoubleIterator> iterList = new ArrayList<>(len);
 
         for (DoubleStream e : c) {
-            iterList.add(e.skippableIterator());
+            iterList.add(e.iteratorEx());
         }
 
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 for (DoubleIterator e : iterList) {
@@ -5994,7 +5989,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <A, B, R> Stream<R> zip(final A[] a, final B[] b, final BiFunction<? super A, ? super B, R> zipFunction) {
-        return zip(SkippableObjIterator.of(a), SkippableObjIterator.of(b), zipFunction);
+        return zip(ObjIteratorEx.of(a), ObjIteratorEx.of(b), zipFunction);
     }
 
     /**
@@ -6006,7 +6001,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <A, B, C, R> Stream<R> zip(final A[] a, final B[] b, final C[] c, final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
-        return zip(SkippableObjIterator.of(a), SkippableObjIterator.of(b), SkippableObjIterator.of(c), zipFunction);
+        return zip(ObjIteratorEx.of(a), ObjIteratorEx.of(b), ObjIteratorEx.of(c), zipFunction);
     }
 
     /**
@@ -6044,7 +6039,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public static <A, B, R> Stream<R> zip(final Iterator<? extends A> a, final Iterator<? extends B> b, final BiFunction<? super A, ? super B, R> zipFunction) {
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() && b.hasNext();
@@ -6067,7 +6062,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <A, B, C, R> Stream<R> zip(final Iterator<? extends A> a, final Iterator<? extends B> b, final Iterator<? extends C> c,
             final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() && b.hasNext() && c.hasNext();
@@ -6135,7 +6130,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
 
         final int len = c.size();
 
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 for (Iterator<? extends T> e : c) {
@@ -6174,7 +6169,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <A, B, R> Stream<R> zip(final A[] a, final B[] b, final A valueForNoneA, final B valueForNoneB,
             final BiFunction<? super A, ? super B, R> zipFunction) {
-        return zip(SkippableObjIterator.of(a), SkippableObjIterator.of(b), valueForNoneA, valueForNoneB, zipFunction);
+        return zip(ObjIteratorEx.of(a), ObjIteratorEx.of(b), valueForNoneA, valueForNoneB, zipFunction);
     }
 
     /**
@@ -6192,8 +6187,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <A, B, C, R> Stream<R> zip(final A[] a, final B[] b, final C[] c, final A valueForNoneA, final B valueForNoneB, final C valueForNoneC,
             final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
-        return zip(SkippableObjIterator.of(a), SkippableObjIterator.of(b), SkippableObjIterator.of(c), valueForNoneA, valueForNoneB, valueForNoneC,
-                zipFunction);
+        return zip(ObjIteratorEx.of(a), ObjIteratorEx.of(b), ObjIteratorEx.of(c), valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
     }
 
     /**
@@ -6243,7 +6237,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <A, B, R> Stream<R> zip(final Iterator<? extends A> a, final Iterator<? extends B> b, final A valueForNoneA, final B valueForNoneB,
             final BiFunction<? super A, ? super B, R> zipFunction) {
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() || b.hasNext();
@@ -6275,7 +6269,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <A, B, C, R> Stream<R> zip(final Iterator<? extends A> a, final Iterator<? extends B> b, final Iterator<? extends C> c, final A valueForNoneA,
             final B valueForNoneB, final C valueForNoneC, final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 return a.hasNext() || b.hasNext() || c.hasNext();
@@ -6377,7 +6371,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
             throw new IllegalArgumentException("The size of 'valuesForNone' must be same as the size of the collection of iterators");
         }
 
-        return new IteratorStream<>(new SkippableObjIterator<R>() {
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
             @Override
             public boolean hasNext() {
                 for (Iterator<? extends T> e : c) {
@@ -7749,7 +7743,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
             return of(a);
         }
 
-        return new IteratorStream<>(new SkippableObjIterator<T>() {
+        return new IteratorStream<>(new ObjIteratorEx<T>() {
             private final int lenA = a.length;
             private final int lenB = b.length;
             private int cursorA = 0;
@@ -7832,7 +7826,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
             return of(a);
         }
 
-        return new IteratorStream<>(new SkippableObjIterator<T>() {
+        return new IteratorStream<>(new ObjIteratorEx<T>() {
             private T nextA = null;
             private T nextB = null;
             private boolean hasNextA = false;
@@ -8078,7 +8072,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
                                 }
                             }
 
-                            c = (Iterator<? extends T>) SkippableObjIterator.of(merge(a instanceof QueuedIterator ? a : Stream.of(a).queued().iterator(),
+                            c = (Iterator<? extends T>) ObjIteratorEx.of(merge(a instanceof QueuedIterator ? a : Stream.of(a).queued().iterator(),
                                     b instanceof QueuedIterator ? b : Stream.of(b).queued().iterator(), nextSelector).toArray());
 
                             synchronized (queue) {
@@ -8342,6 +8336,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static enum LAIO {
         SORTED, SORTED_BY, REVERSE_SORTED, CACHED, REVERSED, SHUFFLED, ROTATED, //
-        GROUP_BY, GROUP_BY_TO_ENTRY, PARTITION_BY, PARTITION_BY_TO_ENTRY;
+        GROUP_BY, GROUP_BY_TO_ENTRY, //
+        HEAD_2, TAIL_2, HEAD_AND_TAIL_2;
     }
 }

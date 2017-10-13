@@ -163,9 +163,9 @@ abstract class AbstractCharStream extends CharStream {
         }
 
         final long skip = step - 1;
-        final SkippableCharIterator iter = this.skippableIterator();
+        final CharIteratorEx iter = this.iteratorEx();
 
-        final CharIterator charIterator = new SkippableCharIterator() {
+        final CharIterator charIterator = new CharIteratorEx() {
             @Override
             public boolean hasNext() {
                 return iter.hasNext();
@@ -238,9 +238,9 @@ abstract class AbstractCharStream extends CharStream {
 
     @Override
     public CharStream collapse(final CharBiPredicate collapsible, final CharBiFunction<Character> mergeFunction) {
-        final SkippableCharIterator iter = skippableIterator();
+        final CharIteratorEx iter = iteratorEx();
 
-        return this.newStream(new SkippableCharIterator() {
+        return this.newStream(new CharIteratorEx() {
             private boolean hasNext = false;
             private char next = 0;
 
@@ -268,9 +268,9 @@ abstract class AbstractCharStream extends CharStream {
 
     @Override
     public CharStream scan(final CharBiFunction<Character> accumulator) {
-        final SkippableCharIterator iter = skippableIterator();
+        final CharIteratorEx iter = iteratorEx();
 
-        return this.newStream(new SkippableCharIterator() {
+        return this.newStream(new CharIteratorEx() {
             private char res = 0;
             private boolean isFirst = true;
 
@@ -293,9 +293,9 @@ abstract class AbstractCharStream extends CharStream {
 
     @Override
     public CharStream scan(final char seed, final CharBiFunction<Character> accumulator) {
-        final SkippableCharIterator iter = skippableIterator();
+        final CharIteratorEx iter = iteratorEx();
 
-        return this.newStream(new SkippableCharIterator() {
+        return this.newStream(new CharIteratorEx() {
             private char res = seed;
 
             @Override
@@ -357,19 +357,19 @@ abstract class AbstractCharStream extends CharStream {
             public boolean test(char value) {
                 return set.add(value);
             }
-        }).skippableIterator(), sorted);
+        }).iteratorEx(), sorted);
     }
 
     @Override
     public OptionalChar first() {
-        final CharIterator iter = this.skippableIterator();
+        final CharIterator iter = this.iteratorEx();
 
         return iter.hasNext() ? OptionalChar.of(iter.nextChar()) : OptionalChar.empty();
     }
 
     @Override
     public OptionalChar last() {
-        final CharIterator iter = this.skippableIterator();
+        final CharIterator iter = this.iteratorEx();
 
         if (iter.hasNext() == false) {
             return OptionalChar.empty();
@@ -386,7 +386,7 @@ abstract class AbstractCharStream extends CharStream {
 
     @Override
     public OptionalChar findFirstOrLast(CharPredicate predicateForFirst, CharPredicate predicateForLast) {
-        final SkippableCharIterator iter = skippableIterator();
+        final CharIteratorEx iter = iteratorEx();
         MutableChar last = null;
         char next = 0;
 
@@ -416,7 +416,7 @@ abstract class AbstractCharStream extends CharStream {
             public boolean test(char value) {
                 return multiset.getAndRemove(value) > 0;
             }
-        }).skippableIterator(), sorted);
+        }).iteratorEx(), sorted);
     }
 
     @Override
@@ -428,7 +428,7 @@ abstract class AbstractCharStream extends CharStream {
             public boolean test(char value) {
                 return multiset.getAndRemove(value) < 1;
             }
-        }).skippableIterator(), sorted);
+        }).iteratorEx(), sorted);
     }
 
     @Override
@@ -445,7 +445,7 @@ abstract class AbstractCharStream extends CharStream {
             public boolean test(Character value) {
                 return multiset.getAndRemove(value) > 0;
             }
-        }).mapToChar(ToCharFunction.UNBOX)).skippableIterator(), false);
+        }).mapToChar(ToCharFunction.UNBOX)).iteratorEx(), false);
     }
 
     @Override
@@ -454,7 +454,7 @@ abstract class AbstractCharStream extends CharStream {
             throw new IllegalArgumentException("'n' can't be negative");
         }
 
-        final CharIterator iter = this.skippableIterator();
+        final CharIterator iter = this.iteratorEx();
         final CharList list = new CharList();
 
         while (list.size() < n && iter.hasNext()) {
@@ -470,7 +470,7 @@ abstract class AbstractCharStream extends CharStream {
     public Stream<CharStream> splitBy(CharPredicate where) {
         N.requireNonNull(where);
 
-        final CharIterator iter = this.skippableIterator();
+        final CharIterator iter = this.iteratorEx();
         final CharList list = new CharList();
         char next = 0;
         CharStream s = null;
@@ -491,7 +491,7 @@ abstract class AbstractCharStream extends CharStream {
 
         if (s != null) {
             if (sorted) {
-                a[1] = new IteratorCharStream(a[1].prepend(s).skippableIterator(), sorted, null);
+                a[1] = new IteratorCharStream(a[1].prepend(s).iteratorEx(), sorted, null);
             } else {
                 a[1] = a[1].prepend(s);
             }
@@ -504,7 +504,7 @@ abstract class AbstractCharStream extends CharStream {
     public CharStream reversed() {
         final char[] tmp = toArray();
 
-        return newStream(new SkippableCharIterator() {
+        return newStream(new CharIteratorEx() {
             private int cursor = tmp.length;
 
             @Override

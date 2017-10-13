@@ -162,9 +162,9 @@ abstract class AbstractLongStream extends LongStream {
         }
 
         final long skip = step - 1;
-        final SkippableLongIterator iter = this.skippableIterator();
+        final LongIteratorEx iter = this.iteratorEx();
 
-        final LongIterator longIterator = new SkippableLongIterator() {
+        final LongIterator longIterator = new LongIteratorEx() {
             @Override
             public boolean hasNext() {
                 return iter.hasNext();
@@ -237,9 +237,9 @@ abstract class AbstractLongStream extends LongStream {
 
     @Override
     public LongStream collapse(final LongBiPredicate collapsible, final LongBiFunction<Long> mergeFunction) {
-        final SkippableLongIterator iter = skippableIterator();
+        final LongIteratorEx iter = iteratorEx();
 
-        return this.newStream(new SkippableLongIterator() {
+        return this.newStream(new LongIteratorEx() {
             private boolean hasNext = false;
             private long next = 0;
 
@@ -267,9 +267,9 @@ abstract class AbstractLongStream extends LongStream {
 
     @Override
     public LongStream scan(final LongBiFunction<Long> accumulator) {
-        final SkippableLongIterator iter = skippableIterator();
+        final LongIteratorEx iter = iteratorEx();
 
-        return this.newStream(new SkippableLongIterator() {
+        return this.newStream(new LongIteratorEx() {
             private long res = 0;
             private boolean isFirst = true;
 
@@ -292,9 +292,9 @@ abstract class AbstractLongStream extends LongStream {
 
     @Override
     public LongStream scan(final long seed, final LongBiFunction<Long> accumulator) {
-        final SkippableLongIterator iter = skippableIterator();
+        final LongIteratorEx iter = iteratorEx();
 
-        return this.newStream(new SkippableLongIterator() {
+        return this.newStream(new LongIteratorEx() {
             private long res = seed;
 
             @Override
@@ -356,19 +356,19 @@ abstract class AbstractLongStream extends LongStream {
             public boolean test(long value) {
                 return set.add(value);
             }
-        }).skippableIterator(), sorted);
+        }).iteratorEx(), sorted);
     }
 
     @Override
     public OptionalLong first() {
-        final LongIterator iter = this.skippableIterator();
+        final LongIterator iter = this.iteratorEx();
 
         return iter.hasNext() ? OptionalLong.of(iter.nextLong()) : OptionalLong.empty();
     }
 
     @Override
     public OptionalLong last() {
-        final LongIterator iter = this.skippableIterator();
+        final LongIterator iter = this.iteratorEx();
 
         if (iter.hasNext() == false) {
             return OptionalLong.empty();
@@ -385,7 +385,7 @@ abstract class AbstractLongStream extends LongStream {
 
     @Override
     public OptionalLong findFirstOrLast(LongPredicate predicateForFirst, LongPredicate predicateForLast) {
-        final SkippableLongIterator iter = skippableIterator();
+        final LongIteratorEx iter = iteratorEx();
         MutableLong last = null;
         long next = 0;
 
@@ -415,7 +415,7 @@ abstract class AbstractLongStream extends LongStream {
             public boolean test(long value) {
                 return multiset.getAndRemove(value) > 0;
             }
-        }).skippableIterator(), sorted);
+        }).iteratorEx(), sorted);
     }
 
     @Override
@@ -427,7 +427,7 @@ abstract class AbstractLongStream extends LongStream {
             public boolean test(long value) {
                 return multiset.getAndRemove(value) < 1;
             }
-        }).skippableIterator(), sorted);
+        }).iteratorEx(), sorted);
     }
 
     @Override
@@ -444,7 +444,7 @@ abstract class AbstractLongStream extends LongStream {
             public boolean test(Long value) {
                 return multiset.getAndRemove(value) > 0;
             }
-        }).mapToLong(ToLongFunction.UNBOX)).skippableIterator(), false);
+        }).mapToLong(ToLongFunction.UNBOX)).iteratorEx(), false);
     }
 
     @Override
@@ -453,7 +453,7 @@ abstract class AbstractLongStream extends LongStream {
             throw new IllegalArgumentException("'n' can't be negative");
         }
 
-        final LongIterator iter = this.skippableIterator();
+        final LongIterator iter = this.iteratorEx();
         final LongList list = new LongList();
 
         while (list.size() < n && iter.hasNext()) {
@@ -469,7 +469,7 @@ abstract class AbstractLongStream extends LongStream {
     public Stream<LongStream> splitBy(LongPredicate where) {
         N.requireNonNull(where);
 
-        final LongIterator iter = this.skippableIterator();
+        final LongIterator iter = this.iteratorEx();
         final LongList list = new LongList();
         long next = 0;
         LongStream s = null;
@@ -490,7 +490,7 @@ abstract class AbstractLongStream extends LongStream {
 
         if (s != null) {
             if (sorted) {
-                a[1] = new IteratorLongStream(a[1].prepend(s).skippableIterator(), sorted, null);
+                a[1] = new IteratorLongStream(a[1].prepend(s).iteratorEx(), sorted, null);
             } else {
                 a[1] = a[1].prepend(s);
             }
@@ -503,7 +503,7 @@ abstract class AbstractLongStream extends LongStream {
     public LongStream reversed() {
         final long[] tmp = toArray();
 
-        return newStream(new SkippableLongIterator() {
+        return newStream(new LongIteratorEx() {
             private int cursor = tmp.length;
 
             @Override

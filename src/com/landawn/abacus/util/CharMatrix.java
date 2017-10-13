@@ -28,8 +28,8 @@ import com.landawn.abacus.util.function.IntBiFunction;
 import com.landawn.abacus.util.function.IntBiPredicate;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.stream.CharStream;
-import com.landawn.abacus.util.stream.SkippableCharIterator;
-import com.landawn.abacus.util.stream.SkippableObjIterator;
+import com.landawn.abacus.util.stream.CharIteratorEx;
+import com.landawn.abacus.util.stream.ObjIteratorEx;
 import com.landawn.abacus.util.stream.IntStream;
 import com.landawn.abacus.util.stream.Stream;
 
@@ -1263,7 +1263,7 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
             return CharStream.empty();
         }
 
-        return CharStream.of(new SkippableCharIterator() {
+        return CharStream.of(new CharIteratorEx() {
             private final int toIndex = rows;
             private int cursor = 0;
 
@@ -1305,7 +1305,7 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
             return CharStream.empty();
         }
 
-        return CharStream.of(new SkippableCharIterator() {
+        return CharStream.of(new CharIteratorEx() {
             private final int toIndex = rows;
             private int cursor = 0;
 
@@ -1363,7 +1363,7 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
             return CharStream.empty();
         }
 
-        return CharStream.of(new SkippableCharIterator() {
+        return CharStream.of(new CharIteratorEx() {
             private int i = fromRowIndex;
             private int j = 0;
 
@@ -1453,7 +1453,7 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
             return CharStream.empty();
         }
 
-        return CharStream.of(new SkippableCharIterator() {
+        return CharStream.of(new CharIteratorEx() {
             private int i = 0;
             private int j = fromColumnIndex;
 
@@ -1536,7 +1536,7 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
             return Stream.empty();
         }
 
-        return Stream.of(new SkippableObjIterator<CharStream>() {
+        return Stream.of(new ObjIteratorEx<CharStream>() {
             private final int toIndex = toRowIndex;
             private int cursor = fromRowIndex;
 
@@ -1591,7 +1591,7 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
             return Stream.empty();
         }
 
-        return Stream.of(new SkippableObjIterator<CharStream>() {
+        return Stream.of(new ObjIteratorEx<CharStream>() {
             private final int toIndex = toColumnIndex;
             private volatile int cursor = fromColumnIndex;
 
@@ -1606,7 +1606,7 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
                     throw new NoSuchElementException();
                 }
 
-                return CharStream.of(new SkippableCharIterator() {
+                return CharStream.of(new CharIteratorEx() {
                     private final int columnIndex = cursor++;
                     private final int toIndex2 = rows;
                     private int cursor2 = 0;

@@ -19,8 +19,8 @@ import static com.landawn.abacus.util.stream.StreamBase.checkFromToIndex;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import com.landawn.abacus.util.FloatIterator;
-import com.landawn.abacus.util.FloatList;
+import com.landawn.abacus.util.CharIterator;
+import com.landawn.abacus.util.CharList;
 import com.landawn.abacus.util.N;
 
 /**
@@ -29,15 +29,15 @@ import com.landawn.abacus.util.N;
  * 
  * @author Haiyang Li
  */
-public abstract class SkippableFloatIterator extends FloatIterator implements SkippableIterator<Float> {
-    public static final SkippableFloatIterator EMPTY = new SkippableFloatIterator() {
+public abstract class CharIteratorEx extends CharIterator implements IteratorEx<Character> {
+    public static final CharIteratorEx EMPTY = new CharIteratorEx() {
         @Override
         public boolean hasNext() {
             return false;
         }
 
         @Override
-        public float nextFloat() {
+        public char nextChar() {
             throw new NoSuchElementException();
         }
 
@@ -52,27 +52,32 @@ public abstract class SkippableFloatIterator extends FloatIterator implements Sk
         }
 
         @Override
-        public float[] toArray() {
-            return N.EMPTY_FLOAT_ARRAY;
+        public char[] toArray() {
+            return N.EMPTY_CHAR_ARRAY;
+        }
+
+        @Override
+        public void close() {
+            // Do nothing.
         }
     };
 
-    public static SkippableFloatIterator empty() {
+    public static CharIteratorEx empty() {
         return EMPTY;
     }
 
-    public static SkippableFloatIterator of(final float[] a) {
+    public static CharIteratorEx of(final char[] a) {
         return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);
     }
 
-    public static SkippableFloatIterator of(final float[] a, final int fromIndex, final int toIndex) {
+    public static CharIteratorEx of(final char[] a, final int fromIndex, final int toIndex) {
         checkFromToIndex(fromIndex, toIndex, a.length);
 
         if (fromIndex == toIndex) {
             return EMPTY;
         }
 
-        return new SkippableFloatIterator() {
+        return new CharIteratorEx() {
             int cursor = fromIndex;
 
             @Override
@@ -81,7 +86,7 @@ public abstract class SkippableFloatIterator extends FloatIterator implements Sk
             }
 
             @Override
-            public float nextFloat() {
+            public char nextChar() {
                 if (cursor >= toIndex) {
                     throw new NoSuchElementException();
                 }
@@ -100,70 +105,90 @@ public abstract class SkippableFloatIterator extends FloatIterator implements Sk
             }
 
             @Override
-            public float[] toArray() {
+            public char[] toArray() {
                 return N.copyOfRange(a, cursor, toIndex);
             }
 
             @Override
-            public FloatList toList() {
-                return FloatList.of(N.copyOfRange(a, cursor, toIndex));
+            public CharList toList() {
+                return CharList.of(N.copyOfRange(a, cursor, toIndex));
+            }
+
+            @Override
+            public void close() {
+                // Do nothing.
             }
         };
     }
 
-    public static SkippableFloatIterator of(final FloatIterator iter) {
-        if (iter instanceof SkippableFloatIterator) {
-            return ((SkippableFloatIterator) iter);
+    public static CharIteratorEx of(final CharIterator iter) {
+        if (iter instanceof CharIteratorEx) {
+            return ((CharIteratorEx) iter);
         }
 
-        return new SkippableFloatIterator() {
+        return new CharIteratorEx() {
             @Override
             public boolean hasNext() {
                 return iter.hasNext();
             }
 
             @Override
-            public float nextFloat() {
-                return iter.nextFloat();
+            public char nextChar() {
+                return iter.nextChar();
+            }
+
+            @Override
+            public void close() {
+                // Do nothing.
             }
         };
     }
 
-    public static SkippableFloatIterator from(final Iterator<Float> iter) {
-        if (iter instanceof SkippableObjIterator) {
-            final SkippableObjIterator<Float> skippableIterator = ((SkippableObjIterator<Float>) iter);
+    public static CharIteratorEx from(final Iterator<Character> iter) {
+        if (iter instanceof ObjIteratorEx) {
+            final ObjIteratorEx<Character> iteratorEx = ((ObjIteratorEx<Character>) iter);
 
-            return new SkippableFloatIterator() {
+            return new CharIteratorEx() {
                 @Override
                 public boolean hasNext() {
-                    return skippableIterator.hasNext();
+                    return iteratorEx.hasNext();
                 }
 
                 @Override
-                public float nextFloat() {
-                    return skippableIterator.next();
+                public char nextChar() {
+                    return iteratorEx.next();
                 }
 
                 @Override
                 public void skip(long n) {
-                    skippableIterator.skip(n);
+                    iteratorEx.skip(n);
                 }
 
                 @Override
                 public long count() {
-                    return skippableIterator.count();
+                    return iteratorEx.count();
+                }
+
+                @Override
+                public void close() {
+                    iteratorEx.close();
                 }
             };
         } else {
-            return new SkippableFloatIterator() {
+            return new CharIteratorEx() {
                 @Override
                 public boolean hasNext() {
                     return iter.hasNext();
                 }
 
                 @Override
-                public float nextFloat() {
+                public char nextChar() {
                     return iter.next();
+                }
+
+                @Override
+                public void close() {
+                    // Do nothing.
                 }
             };
         }
@@ -172,7 +197,7 @@ public abstract class SkippableFloatIterator extends FloatIterator implements Sk
     @Override
     public void skip(long n) {
         while (n > 0 && hasNext()) {
-            nextFloat();
+            nextChar();
             n--;
         }
     }
@@ -182,10 +207,15 @@ public abstract class SkippableFloatIterator extends FloatIterator implements Sk
         long result = 0;
 
         while (hasNext()) {
-            nextFloat();
+            nextChar();
             result++;
         }
 
         return result;
+    }
+
+    @Override
+    public void close() {
+        // Do nothing.
     }
 }

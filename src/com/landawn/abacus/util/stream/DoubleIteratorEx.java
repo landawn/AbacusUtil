@@ -19,8 +19,8 @@ import static com.landawn.abacus.util.stream.StreamBase.checkFromToIndex;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import com.landawn.abacus.util.ByteIterator;
-import com.landawn.abacus.util.ByteList;
+import com.landawn.abacus.util.DoubleIterator;
+import com.landawn.abacus.util.DoubleList;
 import com.landawn.abacus.util.N;
 
 /**
@@ -29,15 +29,15 @@ import com.landawn.abacus.util.N;
  * 
  * @author Haiyang Li
  */
-public abstract class SkippableByteIterator extends ByteIterator implements SkippableIterator<Byte> {
-    public static final SkippableByteIterator EMPTY = new SkippableByteIterator() {
+public abstract class DoubleIteratorEx extends DoubleIterator implements IteratorEx<Double> {
+    public static final DoubleIteratorEx EMPTY = new DoubleIteratorEx() {
         @Override
         public boolean hasNext() {
             return false;
         }
 
         @Override
-        public byte nextByte() {
+        public double nextDouble() {
             throw new NoSuchElementException();
         }
 
@@ -52,27 +52,32 @@ public abstract class SkippableByteIterator extends ByteIterator implements Skip
         }
 
         @Override
-        public byte[] toArray() {
-            return N.EMPTY_BYTE_ARRAY;
+        public double[] toArray() {
+            return N.EMPTY_DOUBLE_ARRAY;
+        }
+
+        @Override
+        public void close() {
+            // Do nothing.
         }
     };
 
-    public static SkippableByteIterator empty() {
+    public static DoubleIteratorEx empty() {
         return EMPTY;
     }
 
-    public static SkippableByteIterator of(final byte[] a) {
+    public static DoubleIteratorEx of(final double[] a) {
         return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);
     }
 
-    public static SkippableByteIterator of(final byte[] a, final int fromIndex, final int toIndex) {
+    public static DoubleIteratorEx of(final double[] a, final int fromIndex, final int toIndex) {
         checkFromToIndex(fromIndex, toIndex, a.length);
 
         if (fromIndex == toIndex) {
             return EMPTY;
         }
 
-        return new SkippableByteIterator() {
+        return new DoubleIteratorEx() {
             int cursor = fromIndex;
 
             @Override
@@ -81,7 +86,7 @@ public abstract class SkippableByteIterator extends ByteIterator implements Skip
             }
 
             @Override
-            public byte nextByte() {
+            public double nextDouble() {
                 if (cursor >= toIndex) {
                     throw new NoSuchElementException();
                 }
@@ -100,70 +105,90 @@ public abstract class SkippableByteIterator extends ByteIterator implements Skip
             }
 
             @Override
-            public byte[] toArray() {
+            public double[] toArray() {
                 return N.copyOfRange(a, cursor, toIndex);
             }
 
             @Override
-            public ByteList toList() {
-                return ByteList.of(N.copyOfRange(a, cursor, toIndex));
+            public DoubleList toList() {
+                return DoubleList.of(N.copyOfRange(a, cursor, toIndex));
+            }
+
+            @Override
+            public void close() {
+                // Do nothing.
             }
         };
     }
 
-    public static SkippableByteIterator of(final ByteIterator iter) {
-        if (iter instanceof SkippableByteIterator) {
-            return ((SkippableByteIterator) iter);
+    public static DoubleIteratorEx of(final DoubleIterator iter) {
+        if (iter instanceof DoubleIteratorEx) {
+            return ((DoubleIteratorEx) iter);
         }
 
-        return new SkippableByteIterator() {
+        return new DoubleIteratorEx() {
             @Override
             public boolean hasNext() {
                 return iter.hasNext();
             }
 
             @Override
-            public byte nextByte() {
-                return iter.nextByte();
+            public double nextDouble() {
+                return iter.nextDouble();
+            }
+
+            @Override
+            public void close() {
+                // Do nothing.
             }
         };
     }
 
-    public static SkippableByteIterator from(final Iterator<Byte> iter) {
-        if (iter instanceof SkippableObjIterator) {
-            final SkippableObjIterator<Byte> skippableIterator = ((SkippableObjIterator<Byte>) iter);
+    public static DoubleIteratorEx from(final Iterator<Double> iter) {
+        if (iter instanceof ObjIteratorEx) {
+            final ObjIteratorEx<Double> iteratorEx = ((ObjIteratorEx<Double>) iter);
 
-            return new SkippableByteIterator() {
+            return new DoubleIteratorEx() {
                 @Override
                 public boolean hasNext() {
-                    return skippableIterator.hasNext();
+                    return iteratorEx.hasNext();
                 }
 
                 @Override
-                public byte nextByte() {
-                    return skippableIterator.next();
+                public double nextDouble() {
+                    return iteratorEx.next();
                 }
 
                 @Override
                 public void skip(long n) {
-                    skippableIterator.skip(n);
+                    iteratorEx.skip(n);
                 }
 
                 @Override
                 public long count() {
-                    return skippableIterator.count();
+                    return iteratorEx.count();
+                }
+
+                @Override
+                public void close() {
+                    iteratorEx.close();
                 }
             };
         } else {
-            return new SkippableByteIterator() {
+            return new DoubleIteratorEx() {
                 @Override
                 public boolean hasNext() {
                     return iter.hasNext();
                 }
 
                 @Override
-                public byte nextByte() {
+                public double nextDouble() {
                     return iter.next();
+                }
+
+                @Override
+                public void close() {
+                    // Do nothing.
                 }
             };
         }
@@ -172,7 +197,7 @@ public abstract class SkippableByteIterator extends ByteIterator implements Skip
     @Override
     public void skip(long n) {
         while (n > 0 && hasNext()) {
-            nextByte();
+            nextDouble();
             n--;
         }
     }
@@ -182,10 +207,15 @@ public abstract class SkippableByteIterator extends ByteIterator implements Skip
         long result = 0;
 
         while (hasNext()) {
-            nextByte();
+            nextDouble();
             result++;
         }
 
         return result;
+    }
+
+    @Override
+    public void close() {
+        // Do nothing.
     }
 }

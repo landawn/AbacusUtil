@@ -216,6 +216,10 @@ public final class Try<T extends AutoCloseable> {
         }
     }
 
+    public T val() {
+        return t;
+    }
+
     public void run(final Try.Consumer<? super T, ? extends Throwable> cmd) {
         try {
             cmd.accept(t);

@@ -38,7 +38,7 @@ import com.landawn.abacus.util.function.IntBiFunction;
 import com.landawn.abacus.util.function.IntBiPredicate;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Predicate;
-import com.landawn.abacus.util.stream.SkippableObjIterator;
+import com.landawn.abacus.util.stream.ObjIteratorEx;
 import com.landawn.abacus.util.stream.IntStream;
 import com.landawn.abacus.util.stream.Stream;
 
@@ -1230,7 +1230,7 @@ public final class Sheet<R, C, E> {
 
         initIndexMap();
 
-        return Stream.of(new SkippableObjIterator<Sheet.Cell<R, C, E>>() {
+        return Stream.of(new ObjIteratorEx<Sheet.Cell<R, C, E>>() {
             private final long toIndex = toRowIndex * columnLength * 1L;
             private long cursor = fromRowIndex * columnLength * 1L;
 
@@ -1299,7 +1299,7 @@ public final class Sheet<R, C, E> {
 
         initIndexMap();
 
-        return Stream.of(new SkippableObjIterator<Sheet.Cell<R, C, E>>() {
+        return Stream.of(new ObjIteratorEx<Sheet.Cell<R, C, E>>() {
             private final long toIndex = toColumnIndex * rowLength * 1L;
             private long cursor = fromColumnIndex * rowLength * 1L;
 
@@ -1356,7 +1356,7 @@ public final class Sheet<R, C, E> {
 
         final int columnLength = columnLength();
 
-        return Stream.of(new SkippableObjIterator<Stream<Cell<R, C, E>>>() {
+        return Stream.of(new ObjIteratorEx<Stream<Cell<R, C, E>>>() {
             private volatile int rowIndex = fromRowIndex;
 
             @Override
@@ -1370,7 +1370,7 @@ public final class Sheet<R, C, E> {
                     throw new NoSuchElementException();
                 }
 
-                return Stream.of(new SkippableObjIterator<Cell<R, C, E>>() {
+                return Stream.of(new ObjIteratorEx<Cell<R, C, E>>() {
                     private final int curRowIndex = rowIndex++;
                     private final R r = _rowKeyIndexMap.getByValue(curRowIndex);
                     private int columnIndex = 0;
@@ -1439,7 +1439,7 @@ public final class Sheet<R, C, E> {
 
         final int rowLength = rowLength();
 
-        return Stream.of(new SkippableObjIterator<Stream<Cell<R, C, E>>>() {
+        return Stream.of(new ObjIteratorEx<Stream<Cell<R, C, E>>>() {
             private int columnIndex = fromColumnIndex;
 
             @Override
@@ -1613,7 +1613,7 @@ public final class Sheet<R, C, E> {
             return Stream.empty();
         }
 
-        return Stream.of(new SkippableObjIterator<E>() {
+        return Stream.of(new ObjIteratorEx<E>() {
             private final int columnLength = columnLength();
             private final long toIndex = toRowIndex * columnLength * 1L;
             private long cursor = fromRowIndex * columnLength * 1L;
@@ -1679,7 +1679,7 @@ public final class Sheet<R, C, E> {
             return Stream.empty();
         }
 
-        return Stream.of(new SkippableObjIterator<E>() {
+        return Stream.of(new ObjIteratorEx<E>() {
             private final int rowLength = rowLength();
             private final long toIndex = toColumnIndex * rowLength * 1L;
             private long cursor = fromColumnIndex * rowLength * 1L;
@@ -1736,7 +1736,7 @@ public final class Sheet<R, C, E> {
             return Stream.empty();
         }
 
-        return Stream.of(new SkippableObjIterator<Stream<E>>() {
+        return Stream.of(new ObjIteratorEx<Stream<E>>() {
             private final int toIndex = toRowIndex;
             private volatile int cursor = fromRowIndex;
 
@@ -1751,7 +1751,7 @@ public final class Sheet<R, C, E> {
                     throw new NoSuchElementException();
                 }
 
-                return Stream.of(new SkippableObjIterator<E>() {
+                return Stream.of(new ObjIteratorEx<E>() {
                     private final int rowIndex = cursor++;
                     private final int toIndex2 = columnLength();
                     private int cursor2 = 0;
@@ -1820,7 +1820,7 @@ public final class Sheet<R, C, E> {
             return Stream.empty();
         }
 
-        return Stream.of(new SkippableObjIterator<Stream<E>>() {
+        return Stream.of(new ObjIteratorEx<Stream<E>>() {
             private final int toIndex = toColumnIndex;
             private int cursor = fromColumnIndex;
 

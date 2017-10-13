@@ -60,7 +60,7 @@ import com.landawn.abacus.util.function.ToLongFunction;
  * @author Haiyang Li
  */
 class IteratorLongStream extends AbstractLongStream {
-    final SkippableLongIterator elements;
+    final LongIteratorEx elements;
 
     OptionalLong head;
     LongStream tail;
@@ -79,12 +79,12 @@ class IteratorLongStream extends AbstractLongStream {
     IteratorLongStream(final LongIterator values, final boolean sorted, final Collection<Runnable> closeHandlers) {
         super(sorted, closeHandlers);
 
-        SkippableLongIterator tmp = null;
+        LongIteratorEx tmp = null;
 
-        if (values instanceof SkippableLongIterator) {
-            tmp = (SkippableLongIterator) values;
+        if (values instanceof LongIteratorEx) {
+            tmp = (LongIteratorEx) values;
         } else {
-            tmp = new SkippableLongIterator() {
+            tmp = new LongIteratorEx() {
                 @Override
                 public boolean hasNext() {
                     return values.hasNext();
@@ -102,7 +102,7 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public LongStream filter(final LongPredicate predicate) {
-        return new IteratorLongStream(new SkippableLongIterator() {
+        return new IteratorLongStream(new LongIteratorEx() {
             private boolean hasNext = false;
             private long next = 0;
 
@@ -137,7 +137,7 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public LongStream takeWhile(final LongPredicate predicate) {
-        return new IteratorLongStream(new SkippableLongIterator() {
+        return new IteratorLongStream(new LongIteratorEx() {
             private boolean hasMore = true;
             private boolean hasNext = false;
             private long next = 0;
@@ -173,7 +173,7 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public LongStream dropWhile(final LongPredicate predicate) {
-        return new IteratorLongStream(new SkippableLongIterator() {
+        return new IteratorLongStream(new LongIteratorEx() {
             private boolean hasNext = false;
             private long next = 0;
             private boolean dropped = false;
@@ -217,7 +217,7 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public LongStream map(final LongUnaryOperator mapper) {
-        return new IteratorLongStream(new SkippableLongIterator() {
+        return new IteratorLongStream(new LongIteratorEx() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -242,7 +242,7 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public IntStream mapToInt(final LongToIntFunction mapper) {
-        return new IteratorIntStream(new SkippableIntIterator() {
+        return new IteratorIntStream(new IntIteratorEx() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -267,7 +267,7 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public FloatStream mapToFloat(final LongToFloatFunction mapper) {
-        return new IteratorFloatStream(new SkippableFloatIterator() {
+        return new IteratorFloatStream(new FloatIteratorEx() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -292,7 +292,7 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public DoubleStream mapToDouble(final LongToDoubleFunction mapper) {
-        return new IteratorDoubleStream(new SkippableDoubleIterator() {
+        return new IteratorDoubleStream(new DoubleIteratorEx() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -317,7 +317,7 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public <U> Stream<U> mapToObj(final LongFunction<? extends U> mapper) {
-        return new IteratorStream<U>(new SkippableObjIterator<U>() {
+        return new IteratorStream<U>(new ObjIteratorEx<U>() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -342,13 +342,33 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public LongStream flatMap(final LongFunction<? extends LongStream> mapper) {
-        return new IteratorLongStream(new SkippableLongIterator() {
+        final LongIteratorEx iter = new LongIteratorEx() {
             private LongIterator cur = null;
+            private LongStream s = null;
+            private Runnable closeHandle = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && elements.hasNext()) {
-                    cur = mapper.apply(elements.nextLong()).skippableIterator();
+                    if (closeHandle != null) {
+                        closeHandle.run();
+                        closeHandle = null;
+                    }
+
+                    s = mapper.apply(elements.nextLong());
+
+                    if (N.notNullOrEmpty(s.closeHandlers)) {
+                        final Set<Runnable> tmp = s.closeHandlers;
+
+                        closeHandle = new Runnable() {
+                            @Override
+                            public void run() {
+                                Stream.close(tmp);
+                            }
+                        };
+                    }
+
+                    cur = s.iterator();
                 }
 
                 return cur != null && cur.hasNext();
@@ -362,18 +382,58 @@ class IteratorLongStream extends AbstractLongStream {
 
                 return cur.nextLong();
             }
-        }, closeHandlers);
+
+            @Override
+            public void close() {
+                if (closeHandle != null) {
+                    closeHandle.run();
+                    closeHandle = null;
+                }
+            }
+        };
+
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>()
+                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+
+        newCloseHandlers.add(new Runnable() {
+            @Override
+            public void run() {
+                iter.close();
+            }
+        });
+
+        return new IteratorLongStream(iter, newCloseHandlers);
     }
 
     @Override
     public IntStream flatMapToInt(final LongFunction<? extends IntStream> mapper) {
-        return new IteratorIntStream(new SkippableIntIterator() {
+        final IntIteratorEx iter = new IntIteratorEx() {
             private IntIterator cur = null;
+            private IntStream s = null;
+            private Runnable closeHandle = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && elements.hasNext()) {
-                    cur = mapper.apply(elements.nextLong()).skippableIterator();
+                    if (closeHandle != null) {
+                        closeHandle.run();
+                        closeHandle = null;
+                    }
+
+                    s = mapper.apply(elements.nextLong());
+
+                    if (N.notNullOrEmpty(s.closeHandlers)) {
+                        final Set<Runnable> tmp = s.closeHandlers;
+
+                        closeHandle = new Runnable() {
+                            @Override
+                            public void run() {
+                                Stream.close(tmp);
+                            }
+                        };
+                    }
+
+                    cur = s.iterator();
                 }
 
                 return cur != null && cur.hasNext();
@@ -387,18 +447,58 @@ class IteratorLongStream extends AbstractLongStream {
 
                 return cur.nextInt();
             }
-        }, closeHandlers);
+
+            @Override
+            public void close() {
+                if (closeHandle != null) {
+                    closeHandle.run();
+                    closeHandle = null;
+                }
+            }
+        };
+
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>()
+                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+
+        newCloseHandlers.add(new Runnable() {
+            @Override
+            public void run() {
+                iter.close();
+            }
+        });
+
+        return new IteratorIntStream(iter, newCloseHandlers);
     }
 
     @Override
     public FloatStream flatMapToFloat(final LongFunction<? extends FloatStream> mapper) {
-        return new IteratorFloatStream(new SkippableFloatIterator() {
+        final FloatIteratorEx iter = new FloatIteratorEx() {
             private FloatIterator cur = null;
+            private FloatStream s = null;
+            private Runnable closeHandle = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && elements.hasNext()) {
-                    cur = mapper.apply(elements.nextLong()).skippableIterator();
+                    if (closeHandle != null) {
+                        closeHandle.run();
+                        closeHandle = null;
+                    }
+
+                    s = mapper.apply(elements.nextLong());
+
+                    if (N.notNullOrEmpty(s.closeHandlers)) {
+                        final Set<Runnable> tmp = s.closeHandlers;
+
+                        closeHandle = new Runnable() {
+                            @Override
+                            public void run() {
+                                Stream.close(tmp);
+                            }
+                        };
+                    }
+
+                    cur = s.iterator();
                 }
 
                 return cur != null && cur.hasNext();
@@ -412,18 +512,58 @@ class IteratorLongStream extends AbstractLongStream {
 
                 return cur.nextFloat();
             }
-        }, closeHandlers);
+
+            @Override
+            public void close() {
+                if (closeHandle != null) {
+                    closeHandle.run();
+                    closeHandle = null;
+                }
+            }
+        };
+
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>()
+                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+
+        newCloseHandlers.add(new Runnable() {
+            @Override
+            public void run() {
+                iter.close();
+            }
+        });
+
+        return new IteratorFloatStream(iter, newCloseHandlers);
     }
 
     @Override
     public DoubleStream flatMapToDouble(final LongFunction<? extends DoubleStream> mapper) {
-        return new IteratorDoubleStream(new SkippableDoubleIterator() {
+        final DoubleIteratorEx iter = new DoubleIteratorEx() {
             private DoubleIterator cur = null;
+            private DoubleStream s = null;
+            private Runnable closeHandle = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && elements.hasNext()) {
-                    cur = mapper.apply(elements.nextLong()).skippableIterator();
+                    if (closeHandle != null) {
+                        closeHandle.run();
+                        closeHandle = null;
+                    }
+
+                    s = mapper.apply(elements.nextLong());
+
+                    if (N.notNullOrEmpty(s.closeHandlers)) {
+                        final Set<Runnable> tmp = s.closeHandlers;
+
+                        closeHandle = new Runnable() {
+                            @Override
+                            public void run() {
+                                Stream.close(tmp);
+                            }
+                        };
+                    }
+
+                    cur = s.iterator();
                 }
 
                 return cur != null && cur.hasNext();
@@ -437,18 +577,58 @@ class IteratorLongStream extends AbstractLongStream {
 
                 return cur.nextDouble();
             }
-        }, closeHandlers);
+
+            @Override
+            public void close() {
+                if (closeHandle != null) {
+                    closeHandle.run();
+                    closeHandle = null;
+                }
+            }
+        };
+
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>()
+                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+
+        newCloseHandlers.add(new Runnable() {
+            @Override
+            public void run() {
+                iter.close();
+            }
+        });
+
+        return new IteratorDoubleStream(iter, newCloseHandlers);
     }
 
     @Override
     public <T> Stream<T> flatMapToObj(final LongFunction<? extends Stream<T>> mapper) {
-        return new IteratorStream<T>(new SkippableObjIterator<T>() {
+        final ObjIteratorEx<T> iter = new ObjIteratorEx<T>() {
             private Iterator<? extends T> cur = null;
+            private Stream<? extends T> s = null;
+            private Runnable closeHandle = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && elements.hasNext()) {
-                    cur = mapper.apply(elements.nextLong()).iterator();
+                    if (closeHandle != null) {
+                        closeHandle.run();
+                        closeHandle = null;
+                    }
+
+                    s = mapper.apply(elements.nextLong());
+
+                    if (N.notNullOrEmpty(s.closeHandlers)) {
+                        final Set<Runnable> tmp = s.closeHandlers;
+
+                        closeHandle = new Runnable() {
+                            @Override
+                            public void run() {
+                                Stream.close(tmp);
+                            }
+                        };
+                    }
+
+                    cur = s.iterator();
                 }
 
                 return cur != null && cur.hasNext();
@@ -462,14 +642,34 @@ class IteratorLongStream extends AbstractLongStream {
 
                 return cur.next();
             }
-        }, closeHandlers);
+
+            @Override
+            public void close() {
+                if (closeHandle != null) {
+                    closeHandle.run();
+                    closeHandle = null;
+                }
+            }
+        };
+
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>()
+                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+
+        newCloseHandlers.add(new Runnable() {
+            @Override
+            public void run() {
+                iter.close();
+            }
+        });
+
+        return new IteratorStream<>(iter, newCloseHandlers);
     }
 
     @Override
     public Stream<LongList> splitToList(final int size) {
         N.checkArgument(size > 0, "'size' must be bigger than 0");
 
-        return new IteratorStream<LongList>(new SkippableObjIterator<LongList>() {
+        return new IteratorStream<LongList>(new ObjIteratorEx<LongList>() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -495,7 +695,7 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public Stream<LongList> splitToList(final LongPredicate predicate) {
-        return new IteratorStream<LongList>(new SkippableObjIterator<LongList>() {
+        return new IteratorStream<LongList>(new ObjIteratorEx<LongList>() {
             private long next;
             private boolean hasNext = false;
             private boolean preCondition = false;
@@ -538,9 +738,8 @@ class IteratorLongStream extends AbstractLongStream {
     }
 
     @Override
-    public <U> Stream<LongList> splitToList(final U seed, final BiFunction<? super Long, ? super U, Boolean> predicate,
-            final Consumer<? super U> seedUpdate) {
-        return new IteratorStream<LongList>(new SkippableObjIterator<LongList>() {
+    public <U> Stream<LongList> splitToList(final U seed, final BiFunction<? super Long, ? super U, Boolean> predicate, final Consumer<? super U> seedUpdate) {
+        return new IteratorStream<LongList>(new ObjIteratorEx<LongList>() {
             private long next;
             private boolean hasNext = false;
             private boolean preCondition = false;
@@ -590,7 +789,7 @@ class IteratorLongStream extends AbstractLongStream {
     public Stream<LongList> slidingToList(final int windowSize, final int increment) {
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
-        return new IteratorStream<LongList>(new SkippableObjIterator<LongList>() {
+        return new IteratorStream<LongList>(new ObjIteratorEx<LongList>() {
             private LongList prev = null;
 
             @Override
@@ -660,7 +859,7 @@ class IteratorLongStream extends AbstractLongStream {
             return this;
         }
 
-        return new IteratorLongStream(new SkippableLongIterator() {
+        return new IteratorLongStream(new LongIteratorEx() {
             long[] a = null;
             int toIndex = 0;
             int cursor = 0;
@@ -729,7 +928,7 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public LongStream peek(final LongConsumer action) {
-        return new IteratorLongStream(new SkippableLongIterator() {
+        return new IteratorLongStream(new LongIteratorEx() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -750,7 +949,7 @@ class IteratorLongStream extends AbstractLongStream {
             throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
         }
 
-        return new IteratorLongStream(new SkippableLongIterator() {
+        return new IteratorLongStream(new LongIteratorEx() {
             private long cnt = 0;
 
             @Override
@@ -783,7 +982,7 @@ class IteratorLongStream extends AbstractLongStream {
             return this;
         }
 
-        return new IteratorLongStream(new SkippableLongIterator() {
+        return new IteratorLongStream(new LongIteratorEx() {
             private boolean skipped = false;
 
             @Override
@@ -1249,7 +1448,7 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public FloatStream asFloatStream() {
-        return new IteratorFloatStream(new SkippableFloatIterator() {
+        return new IteratorFloatStream(new FloatIteratorEx() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -1274,7 +1473,7 @@ class IteratorLongStream extends AbstractLongStream {
 
     @Override
     public DoubleStream asDoubleStream() {
-        return new IteratorDoubleStream(new SkippableDoubleIterator() {
+        return new IteratorDoubleStream(new DoubleIteratorEx() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -1303,7 +1502,7 @@ class IteratorLongStream extends AbstractLongStream {
     }
 
     @Override
-    SkippableLongIterator skippableIterator() {
+    LongIteratorEx iteratorEx() {
         return elements;
     }
 

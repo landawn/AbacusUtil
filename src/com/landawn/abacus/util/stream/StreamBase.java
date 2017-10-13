@@ -577,11 +577,35 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
         }
 
         isClosed = true;
+        close(closeHandlers);
+    }
+
+    static void close(final Set<Runnable> closeHandlers) {
         Throwable ex = null;
 
         for (Runnable closeHandler : closeHandlers) {
             try {
                 closeHandler.run();
+            } catch (Throwable e) {
+                if (ex == null) {
+                    ex = e;
+                } else {
+                    ex.addSuppressed(e);
+                }
+            }
+        }
+
+        if (ex != null) {
+            throw N.toRuntimeException(ex);
+        }
+    }
+
+    static void close(final Collection<? extends IteratorEx<?>> iters) {
+        Throwable ex = null;
+
+        for (IteratorEx<?> iter : iters) {
+            try {
+                iter.close();
             } catch (Throwable e) {
                 if (ex == null) {
                     ex = e;
@@ -794,32 +818,32 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
         return max > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) max;
     }
 
-    static SkippableCharIterator charIterator(final SkippableObjIterator<Character> iter) {
-        return SkippableCharIterator.from(iter);
+    static CharIteratorEx charIterator(final ObjIteratorEx<Character> iter) {
+        return CharIteratorEx.from(iter);
     }
 
-    static SkippableByteIterator byteIterator(final SkippableObjIterator<Byte> iter) {
-        return SkippableByteIterator.from(iter);
+    static ByteIteratorEx byteIterator(final ObjIteratorEx<Byte> iter) {
+        return ByteIteratorEx.from(iter);
     }
 
-    static SkippableShortIterator shortIterator(final SkippableObjIterator<Short> iter) {
-        return SkippableShortIterator.from(iter);
+    static ShortIteratorEx shortIterator(final ObjIteratorEx<Short> iter) {
+        return ShortIteratorEx.from(iter);
     }
 
-    static SkippableIntIterator intIterator(final SkippableObjIterator<Integer> iter) {
-        return SkippableIntIterator.from(iter);
+    static IntIteratorEx intIterator(final ObjIteratorEx<Integer> iter) {
+        return IntIteratorEx.from(iter);
     }
 
-    static SkippableLongIterator longIterator(final SkippableObjIterator<Long> iter) {
-        return SkippableLongIterator.from(iter);
+    static LongIteratorEx longIterator(final ObjIteratorEx<Long> iter) {
+        return LongIteratorEx.from(iter);
     }
 
-    static SkippableFloatIterator floatIterator(final SkippableObjIterator<Float> iter) {
-        return SkippableFloatIterator.from(iter);
+    static FloatIteratorEx floatIterator(final ObjIteratorEx<Float> iter) {
+        return FloatIteratorEx.from(iter);
     }
 
-    static SkippableDoubleIterator doubleIterator(final SkippableObjIterator<Double> iter) {
-        return SkippableDoubleIterator.from(iter);
+    static DoubleIteratorEx doubleIterator(final ObjIteratorEx<Double> iter) {
+        return DoubleIteratorEx.from(iter);
     }
 
     static Runnable newCloseHandler(final Collection<? extends StreamBase<?, ?, ?, ?, ?, ?, ?, ?>> c) {

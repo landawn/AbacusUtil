@@ -30,9 +30,9 @@ import com.landawn.abacus.util.ObjIterator;
  * 
  * @author Haiyang Li
  */
-public abstract class SkippableObjIterator<T> extends ObjIterator<T> implements SkippableIterator<T> {
+public abstract class ObjIteratorEx<T> extends ObjIterator<T> implements IteratorEx<T> {
     @SuppressWarnings("rawtypes")
-    public static final SkippableObjIterator EMPTY = new QueuedIterator(0) {
+    public static final ObjIteratorEx EMPTY = new QueuedIterator(0) {
         @Override
         public boolean hasNext() {
             return false;
@@ -52,17 +52,22 @@ public abstract class SkippableObjIterator<T> extends ObjIterator<T> implements 
         public long count() {
             return 0;
         }
+
+        @Override
+        public void close() {
+            // Do nothing.
+        }
     };
 
-    public static <T> SkippableObjIterator<T> empty() {
+    public static <T> ObjIteratorEx<T> empty() {
         return EMPTY;
     }
 
-    public static <T> SkippableObjIterator<T> of(final T[] a) {
+    public static <T> ObjIteratorEx<T> of(final T[] a) {
         return a == null ? EMPTY : of(a, 0, a.length);
     }
 
-    public static <T> SkippableObjIterator<T> of(final T[] a, final int fromIndex, final int toIndex) {
+    public static <T> ObjIteratorEx<T> of(final T[] a, final int fromIndex, final int toIndex) {
         checkFromToIndex(fromIndex, toIndex, a.length);
 
         if (fromIndex == toIndex) {
@@ -120,10 +125,15 @@ public abstract class SkippableObjIterator<T> extends ObjIterator<T> implements 
             public List<T> toList() {
                 return N.asList((T[]) toArray());
             }
+
+            @Override
+            public void close() {
+                // Do nothing.
+            }
         };
     }
 
-    public static <T> SkippableObjIterator<T> of(final Collection<? extends T> c) {
+    public static <T> ObjIteratorEx<T> of(final Collection<? extends T> c) {
         final Iterator<? extends T> iter = c.iterator();
 
         return new QueuedIterator<T>(c.size()) {
@@ -136,15 +146,20 @@ public abstract class SkippableObjIterator<T> extends ObjIterator<T> implements 
             public T next() {
                 return iter.next();
             }
+
+            @Override
+            public void close() {
+                // Do nothing.
+            }
         };
     }
 
-    public static <T> SkippableObjIterator<T> from(final Iterator<? extends T> iter) {
-        if (iter instanceof SkippableObjIterator) {
-            return ((SkippableObjIterator<T>) iter);
+    public static <T> ObjIteratorEx<T> from(final Iterator<? extends T> iter) {
+        if (iter instanceof ObjIteratorEx) {
+            return ((ObjIteratorEx<T>) iter);
         }
 
-        return new SkippableObjIterator<T>() {
+        return new ObjIteratorEx<T>() {
             @Override
             public boolean hasNext() {
                 return iter.hasNext();
@@ -153,6 +168,11 @@ public abstract class SkippableObjIterator<T> extends ObjIterator<T> implements 
             @Override
             public T next() {
                 return iter.next();
+            }
+
+            @Override
+            public void close() {
+                // Do nothing.
             }
         };
     }
@@ -177,7 +197,12 @@ public abstract class SkippableObjIterator<T> extends ObjIterator<T> implements 
         return result;
     }
 
-    static abstract class QueuedIterator<T> extends SkippableObjIterator<T> {
+    @Override
+    public void close() {
+        // Do nothing.
+    }
+
+    static abstract class QueuedIterator<T> extends ObjIteratorEx<T> {
         private final int max;
 
         QueuedIterator(int max) {

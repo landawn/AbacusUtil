@@ -25,8 +25,8 @@ import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.IntPredicate;
 import com.landawn.abacus.util.function.IntTriFunction;
 import com.landawn.abacus.util.function.IntUnaryOperator;
-import com.landawn.abacus.util.stream.SkippableIntIterator;
-import com.landawn.abacus.util.stream.SkippableObjIterator;
+import com.landawn.abacus.util.stream.IntIteratorEx;
+import com.landawn.abacus.util.stream.ObjIteratorEx;
 import com.landawn.abacus.util.stream.IntStream;
 import com.landawn.abacus.util.stream.Stream;
 
@@ -1283,7 +1283,7 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntStream, S
             return IntStream.empty();
         }
 
-        return IntStream.of(new SkippableIntIterator() {
+        return IntStream.of(new IntIteratorEx() {
             private final int toIndex = rows;
             private int cursor = 0;
 
@@ -1325,7 +1325,7 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntStream, S
             return IntStream.empty();
         }
 
-        return IntStream.of(new SkippableIntIterator() {
+        return IntStream.of(new IntIteratorEx() {
             private final int toIndex = rows;
             private int cursor = 0;
 
@@ -1383,7 +1383,7 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntStream, S
             return IntStream.empty();
         }
 
-        return IntStream.of(new SkippableIntIterator() {
+        return IntStream.of(new IntIteratorEx() {
             private int i = fromRowIndex;
             private int j = 0;
 
@@ -1473,7 +1473,7 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntStream, S
             return IntStream.empty();
         }
 
-        return IntStream.of(new SkippableIntIterator() {
+        return IntStream.of(new IntIteratorEx() {
             private int i = 0;
             private int j = fromColumnIndex;
 
@@ -1556,7 +1556,7 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntStream, S
             return Stream.empty();
         }
 
-        return Stream.of(new SkippableObjIterator<IntStream>() {
+        return Stream.of(new ObjIteratorEx<IntStream>() {
             private final int toIndex = toRowIndex;
             private int cursor = fromRowIndex;
 
@@ -1611,7 +1611,7 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntStream, S
             return Stream.empty();
         }
 
-        return Stream.of(new SkippableObjIterator<IntStream>() {
+        return Stream.of(new ObjIteratorEx<IntStream>() {
             private final int toIndex = toColumnIndex;
             private volatile int cursor = fromColumnIndex;
 
@@ -1626,7 +1626,7 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntStream, S
                     throw new NoSuchElementException();
                 }
 
-                return IntStream.of(new SkippableIntIterator() {
+                return IntStream.of(new IntIteratorEx() {
                     private final int columnIndex = cursor++;
                     private final int toIndex2 = rows;
                     private int cursor2 = 0;

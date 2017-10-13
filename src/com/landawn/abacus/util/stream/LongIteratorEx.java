@@ -19,9 +19,9 @@ import static com.landawn.abacus.util.stream.StreamBase.checkFromToIndex;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+import com.landawn.abacus.util.LongIterator;
+import com.landawn.abacus.util.LongList;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.ShortIterator;
-import com.landawn.abacus.util.ShortList;
 
 /**
  * 
@@ -29,15 +29,15 @@ import com.landawn.abacus.util.ShortList;
  * 
  * @author Haiyang Li
  */
-public abstract class SkippableShortIterator extends ShortIterator implements SkippableIterator<Short> {
-    public static final SkippableShortIterator EMPTY = new SkippableShortIterator() {
+public abstract class LongIteratorEx extends LongIterator implements IteratorEx<Long> {
+    public static final LongIteratorEx EMPTY = new LongIteratorEx() {
         @Override
         public boolean hasNext() {
             return false;
         }
 
         @Override
-        public short nextShort() {
+        public long nextLong() {
             throw new NoSuchElementException();
         }
 
@@ -52,27 +52,32 @@ public abstract class SkippableShortIterator extends ShortIterator implements Sk
         }
 
         @Override
-        public short[] toArray() {
-            return N.EMPTY_SHORT_ARRAY;
+        public long[] toArray() {
+            return N.EMPTY_LONG_ARRAY;
+        }
+
+        @Override
+        public void close() {
+            // Do nothing.
         }
     };
 
-    public static SkippableShortIterator empty() {
+    public static LongIteratorEx empty() {
         return EMPTY;
     }
 
-    public static SkippableShortIterator of(final short[] a) {
+    public static LongIteratorEx of(final long[] a) {
         return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);
     }
 
-    public static SkippableShortIterator of(final short[] a, final int fromIndex, final int toIndex) {
+    public static LongIteratorEx of(final long[] a, final int fromIndex, final int toIndex) {
         checkFromToIndex(fromIndex, toIndex, a.length);
 
         if (fromIndex == toIndex) {
             return EMPTY;
         }
 
-        return new SkippableShortIterator() {
+        return new LongIteratorEx() {
             int cursor = fromIndex;
 
             @Override
@@ -81,7 +86,7 @@ public abstract class SkippableShortIterator extends ShortIterator implements Sk
             }
 
             @Override
-            public short nextShort() {
+            public long nextLong() {
                 if (cursor >= toIndex) {
                     throw new NoSuchElementException();
                 }
@@ -100,70 +105,90 @@ public abstract class SkippableShortIterator extends ShortIterator implements Sk
             }
 
             @Override
-            public short[] toArray() {
+            public long[] toArray() {
                 return N.copyOfRange(a, cursor, toIndex);
             }
 
             @Override
-            public ShortList toList() {
-                return ShortList.of(N.copyOfRange(a, cursor, toIndex));
+            public LongList toList() {
+                return LongList.of(N.copyOfRange(a, cursor, toIndex));
+            }
+
+            @Override
+            public void close() {
+                // Do nothing.
             }
         };
     }
 
-    public static SkippableShortIterator of(final ShortIterator iter) {
-        if (iter instanceof SkippableShortIterator) {
-            return ((SkippableShortIterator) iter);
+    public static LongIteratorEx of(final LongIterator iter) {
+        if (iter instanceof LongIteratorEx) {
+            return ((LongIteratorEx) iter);
         }
 
-        return new SkippableShortIterator() {
+        return new LongIteratorEx() {
             @Override
             public boolean hasNext() {
                 return iter.hasNext();
             }
 
             @Override
-            public short nextShort() {
-                return iter.nextShort();
+            public long nextLong() {
+                return iter.nextLong();
+            }
+
+            @Override
+            public void close() {
+                // Do nothing.
             }
         };
     }
 
-    public static SkippableShortIterator from(final Iterator<Short> iter) {
-        if (iter instanceof SkippableObjIterator) {
-            final SkippableObjIterator<Short> skippableIterator = ((SkippableObjIterator<Short>) iter);
+    public static LongIteratorEx from(final Iterator<Long> iter) {
+        if (iter instanceof ObjIteratorEx) {
+            final ObjIteratorEx<Long> iteratorEx = ((ObjIteratorEx<Long>) iter);
 
-            return new SkippableShortIterator() {
+            return new LongIteratorEx() {
                 @Override
                 public boolean hasNext() {
-                    return skippableIterator.hasNext();
+                    return iteratorEx.hasNext();
                 }
 
                 @Override
-                public short nextShort() {
-                    return skippableIterator.next();
+                public long nextLong() {
+                    return iteratorEx.next();
                 }
 
                 @Override
                 public void skip(long n) {
-                    skippableIterator.skip(n);
+                    iteratorEx.skip(n);
                 }
 
                 @Override
                 public long count() {
-                    return skippableIterator.count();
+                    return iteratorEx.count();
+                }
+
+                @Override
+                public void close() {
+                    iteratorEx.close();
                 }
             };
         } else {
-            return new SkippableShortIterator() {
+            return new LongIteratorEx() {
                 @Override
                 public boolean hasNext() {
                     return iter.hasNext();
                 }
 
                 @Override
-                public short nextShort() {
+                public long nextLong() {
                     return iter.next();
+                }
+
+                @Override
+                public void close() {
+                    // Do nothing.
                 }
             };
         }
@@ -172,7 +197,7 @@ public abstract class SkippableShortIterator extends ShortIterator implements Sk
     @Override
     public void skip(long n) {
         while (n > 0 && hasNext()) {
-            nextShort();
+            nextLong();
             n--;
         }
     }
@@ -182,10 +207,15 @@ public abstract class SkippableShortIterator extends ShortIterator implements Sk
         long result = 0;
 
         while (hasNext()) {
-            nextShort();
+            nextLong();
             result++;
         }
 
         return result;
+    }
+
+    @Override
+    public void close() {
+        // Do nothing.
     }
 }

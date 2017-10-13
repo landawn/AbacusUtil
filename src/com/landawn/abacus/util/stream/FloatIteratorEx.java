@@ -19,8 +19,8 @@ import static com.landawn.abacus.util.stream.StreamBase.checkFromToIndex;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import com.landawn.abacus.util.LongIterator;
-import com.landawn.abacus.util.LongList;
+import com.landawn.abacus.util.FloatIterator;
+import com.landawn.abacus.util.FloatList;
 import com.landawn.abacus.util.N;
 
 /**
@@ -29,15 +29,15 @@ import com.landawn.abacus.util.N;
  * 
  * @author Haiyang Li
  */
-public abstract class SkippableLongIterator extends LongIterator implements SkippableIterator<Long> {
-    public static final SkippableLongIterator EMPTY = new SkippableLongIterator() {
+public abstract class FloatIteratorEx extends FloatIterator implements IteratorEx<Float> {
+    public static final FloatIteratorEx EMPTY = new FloatIteratorEx() {
         @Override
         public boolean hasNext() {
             return false;
         }
 
         @Override
-        public long nextLong() {
+        public float nextFloat() {
             throw new NoSuchElementException();
         }
 
@@ -52,27 +52,32 @@ public abstract class SkippableLongIterator extends LongIterator implements Skip
         }
 
         @Override
-        public long[] toArray() {
-            return N.EMPTY_LONG_ARRAY;
+        public float[] toArray() {
+            return N.EMPTY_FLOAT_ARRAY;
+        }
+
+        @Override
+        public void close() {
+            // Do nothing.
         }
     };
 
-    public static SkippableLongIterator empty() {
+    public static FloatIteratorEx empty() {
         return EMPTY;
     }
 
-    public static SkippableLongIterator of(final long[] a) {
+    public static FloatIteratorEx of(final float[] a) {
         return N.isNullOrEmpty(a) ? EMPTY : of(a, 0, a.length);
     }
 
-    public static SkippableLongIterator of(final long[] a, final int fromIndex, final int toIndex) {
+    public static FloatIteratorEx of(final float[] a, final int fromIndex, final int toIndex) {
         checkFromToIndex(fromIndex, toIndex, a.length);
 
         if (fromIndex == toIndex) {
             return EMPTY;
         }
 
-        return new SkippableLongIterator() {
+        return new FloatIteratorEx() {
             int cursor = fromIndex;
 
             @Override
@@ -81,7 +86,7 @@ public abstract class SkippableLongIterator extends LongIterator implements Skip
             }
 
             @Override
-            public long nextLong() {
+            public float nextFloat() {
                 if (cursor >= toIndex) {
                     throw new NoSuchElementException();
                 }
@@ -100,70 +105,90 @@ public abstract class SkippableLongIterator extends LongIterator implements Skip
             }
 
             @Override
-            public long[] toArray() {
+            public float[] toArray() {
                 return N.copyOfRange(a, cursor, toIndex);
             }
 
             @Override
-            public LongList toList() {
-                return LongList.of(N.copyOfRange(a, cursor, toIndex));
+            public FloatList toList() {
+                return FloatList.of(N.copyOfRange(a, cursor, toIndex));
+            }
+
+            @Override
+            public void close() {
+                // Do nothing.
             }
         };
     }
 
-    public static SkippableLongIterator of(final LongIterator iter) {
-        if (iter instanceof SkippableLongIterator) {
-            return ((SkippableLongIterator) iter);
+    public static FloatIteratorEx of(final FloatIterator iter) {
+        if (iter instanceof FloatIteratorEx) {
+            return ((FloatIteratorEx) iter);
         }
 
-        return new SkippableLongIterator() {
+        return new FloatIteratorEx() {
             @Override
             public boolean hasNext() {
                 return iter.hasNext();
             }
 
             @Override
-            public long nextLong() {
-                return iter.nextLong();
+            public float nextFloat() {
+                return iter.nextFloat();
+            }
+
+            @Override
+            public void close() {
+                // Do nothing.
             }
         };
     }
 
-    public static SkippableLongIterator from(final Iterator<Long> iter) {
-        if (iter instanceof SkippableObjIterator) {
-            final SkippableObjIterator<Long> skippableIterator = ((SkippableObjIterator<Long>) iter);
+    public static FloatIteratorEx from(final Iterator<Float> iter) {
+        if (iter instanceof ObjIteratorEx) {
+            final ObjIteratorEx<Float> iteratorEx = ((ObjIteratorEx<Float>) iter);
 
-            return new SkippableLongIterator() {
+            return new FloatIteratorEx() {
                 @Override
                 public boolean hasNext() {
-                    return skippableIterator.hasNext();
+                    return iteratorEx.hasNext();
                 }
 
                 @Override
-                public long nextLong() {
-                    return skippableIterator.next();
+                public float nextFloat() {
+                    return iteratorEx.next();
                 }
 
                 @Override
                 public void skip(long n) {
-                    skippableIterator.skip(n);
+                    iteratorEx.skip(n);
                 }
 
                 @Override
                 public long count() {
-                    return skippableIterator.count();
+                    return iteratorEx.count();
+                }
+
+                @Override
+                public void close() {
+                    iteratorEx.close();
                 }
             };
         } else {
-            return new SkippableLongIterator() {
+            return new FloatIteratorEx() {
                 @Override
                 public boolean hasNext() {
                     return iter.hasNext();
                 }
 
                 @Override
-                public long nextLong() {
+                public float nextFloat() {
                     return iter.next();
+                }
+
+                @Override
+                public void close() {
+                    // Do nothing.
                 }
             };
         }
@@ -172,7 +197,7 @@ public abstract class SkippableLongIterator extends LongIterator implements Skip
     @Override
     public void skip(long n) {
         while (n > 0 && hasNext()) {
-            nextLong();
+            nextFloat();
             n--;
         }
     }
@@ -182,10 +207,15 @@ public abstract class SkippableLongIterator extends LongIterator implements Skip
         long result = 0;
 
         while (hasNext()) {
-            nextLong();
+            nextFloat();
             result++;
         }
 
         return result;
+    }
+
+    @Override
+    public void close() {
+        // Do nothing.
     }
 }

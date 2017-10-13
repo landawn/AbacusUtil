@@ -163,9 +163,9 @@ abstract class AbstractShortStream extends ShortStream {
         }
 
         final long skip = step - 1;
-        final SkippableShortIterator iter = this.skippableIterator();
+        final ShortIteratorEx iter = this.iteratorEx();
 
-        final ShortIterator shortIterator = new SkippableShortIterator() {
+        final ShortIterator shortIterator = new ShortIteratorEx() {
             @Override
             public boolean hasNext() {
                 return iter.hasNext();
@@ -238,9 +238,9 @@ abstract class AbstractShortStream extends ShortStream {
 
     @Override
     public ShortStream collapse(final ShortBiPredicate collapsible, final ShortBiFunction<Short> mergeFunction) {
-        final SkippableShortIterator iter = skippableIterator();
+        final ShortIteratorEx iter = iteratorEx();
 
-        return this.newStream(new SkippableShortIterator() {
+        return this.newStream(new ShortIteratorEx() {
             private boolean hasNext = false;
             private short next = 0;
 
@@ -268,9 +268,9 @@ abstract class AbstractShortStream extends ShortStream {
 
     @Override
     public ShortStream scan(final ShortBiFunction<Short> accumulator) {
-        final SkippableShortIterator iter = skippableIterator();
+        final ShortIteratorEx iter = iteratorEx();
 
-        return this.newStream(new SkippableShortIterator() {
+        return this.newStream(new ShortIteratorEx() {
             private short res = 0;
             private boolean isFirst = true;
 
@@ -293,9 +293,9 @@ abstract class AbstractShortStream extends ShortStream {
 
     @Override
     public ShortStream scan(final short seed, final ShortBiFunction<Short> accumulator) {
-        final SkippableShortIterator iter = skippableIterator();
+        final ShortIteratorEx iter = iteratorEx();
 
-        return this.newStream(new SkippableShortIterator() {
+        return this.newStream(new ShortIteratorEx() {
             private short res = seed;
 
             @Override
@@ -357,19 +357,19 @@ abstract class AbstractShortStream extends ShortStream {
             public boolean test(short value) {
                 return set.add(value);
             }
-        }).skippableIterator(), sorted);
+        }).iteratorEx(), sorted);
     }
 
     @Override
     public OptionalShort first() {
-        final ShortIterator iter = this.skippableIterator();
+        final ShortIterator iter = this.iteratorEx();
 
         return iter.hasNext() ? OptionalShort.of(iter.nextShort()) : OptionalShort.empty();
     }
 
     @Override
     public OptionalShort last() {
-        final ShortIterator iter = this.skippableIterator();
+        final ShortIterator iter = this.iteratorEx();
 
         if (iter.hasNext() == false) {
             return OptionalShort.empty();
@@ -386,7 +386,7 @@ abstract class AbstractShortStream extends ShortStream {
 
     @Override
     public OptionalShort findFirstOrLast(ShortPredicate predicateForFirst, ShortPredicate predicateForLast) {
-        final SkippableShortIterator iter = skippableIterator();
+        final ShortIteratorEx iter = iteratorEx();
         MutableShort last = null;
         short next = 0;
 
@@ -416,7 +416,7 @@ abstract class AbstractShortStream extends ShortStream {
             public boolean test(short value) {
                 return multiset.getAndRemove(value) > 0;
             }
-        }).skippableIterator(), sorted);
+        }).iteratorEx(), sorted);
     }
 
     @Override
@@ -428,7 +428,7 @@ abstract class AbstractShortStream extends ShortStream {
             public boolean test(short value) {
                 return multiset.getAndRemove(value) < 1;
             }
-        }).skippableIterator(), sorted);
+        }).iteratorEx(), sorted);
     }
 
     @Override
@@ -445,7 +445,7 @@ abstract class AbstractShortStream extends ShortStream {
             public boolean test(Short value) {
                 return multiset.getAndRemove(value) > 0;
             }
-        }).mapToShort(ToShortFunction.UNBOX)).skippableIterator(), false);
+        }).mapToShort(ToShortFunction.UNBOX)).iteratorEx(), false);
     }
 
     @Override
@@ -454,7 +454,7 @@ abstract class AbstractShortStream extends ShortStream {
             throw new IllegalArgumentException("'n' can't be negative");
         }
 
-        final ShortIterator iter = this.skippableIterator();
+        final ShortIterator iter = this.iteratorEx();
         final ShortList list = new ShortList();
 
         while (list.size() < n && iter.hasNext()) {
@@ -470,7 +470,7 @@ abstract class AbstractShortStream extends ShortStream {
     public Stream<ShortStream> splitBy(ShortPredicate where) {
         N.requireNonNull(where);
 
-        final ShortIterator iter = this.skippableIterator();
+        final ShortIterator iter = this.iteratorEx();
         final ShortList list = new ShortList();
         short next = 0;
         ShortStream s = null;
@@ -491,7 +491,7 @@ abstract class AbstractShortStream extends ShortStream {
 
         if (s != null) {
             if (sorted) {
-                a[1] = new IteratorShortStream(a[1].prepend(s).skippableIterator(), sorted, null);
+                a[1] = new IteratorShortStream(a[1].prepend(s).iteratorEx(), sorted, null);
             } else {
                 a[1] = a[1].prepend(s);
             }
@@ -504,7 +504,7 @@ abstract class AbstractShortStream extends ShortStream {
     public ShortStream reversed() {
         final short[] tmp = toArray();
 
-        return newStream(new SkippableShortIterator() {
+        return newStream(new ShortIteratorEx() {
             private int cursor = tmp.length;
 
             @Override

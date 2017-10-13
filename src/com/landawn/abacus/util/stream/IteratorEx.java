@@ -22,9 +22,11 @@ import java.util.Iterator;
  * 
  * @author Haiyang Li
  */
-public interface SkippableIterator<T> extends Iterator<T> {
+public interface IteratorEx<T> extends Iterator<T> {
 
     void skip(long n);
 
     long count();
+
+    void close();
 }

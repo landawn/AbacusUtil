@@ -56,7 +56,7 @@ import com.landawn.abacus.util.function.ToShortFunction;
  * @author Haiyang Li
  */
 class IteratorShortStream extends AbstractShortStream {
-    final SkippableShortIterator elements;
+    final ShortIteratorEx elements;
 
     OptionalShort head;
     ShortStream tail;
@@ -75,12 +75,12 @@ class IteratorShortStream extends AbstractShortStream {
     IteratorShortStream(final ShortIterator values, final boolean sorted, final Collection<Runnable> closeHandlers) {
         super(sorted, closeHandlers);
 
-        SkippableShortIterator tmp = null;
+        ShortIteratorEx tmp = null;
 
-        if (values instanceof SkippableShortIterator) {
-            tmp = (SkippableShortIterator) values;
+        if (values instanceof ShortIteratorEx) {
+            tmp = (ShortIteratorEx) values;
         } else {
-            tmp = new SkippableShortIterator() {
+            tmp = new ShortIteratorEx() {
                 @Override
                 public boolean hasNext() {
                     return values.hasNext();
@@ -98,7 +98,7 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public ShortStream filter(final ShortPredicate predicate) {
-        return new IteratorShortStream(new SkippableShortIterator() {
+        return new IteratorShortStream(new ShortIteratorEx() {
             private boolean hasNext = false;
             private short next = 0;
 
@@ -133,7 +133,7 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public ShortStream takeWhile(final ShortPredicate predicate) {
-        return new IteratorShortStream(new SkippableShortIterator() {
+        return new IteratorShortStream(new ShortIteratorEx() {
             private boolean hasMore = true;
             private boolean hasNext = false;
             private short next = 0;
@@ -169,7 +169,7 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public ShortStream dropWhile(final ShortPredicate predicate) {
-        return new IteratorShortStream(new SkippableShortIterator() {
+        return new IteratorShortStream(new ShortIteratorEx() {
             private boolean hasNext = false;
             private short next = 0;
             private boolean dropped = false;
@@ -213,7 +213,7 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public ShortStream map(final ShortUnaryOperator mapper) {
-        return new IteratorShortStream(new SkippableShortIterator() {
+        return new IteratorShortStream(new ShortIteratorEx() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -238,7 +238,7 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public IntStream mapToInt(final ShortToIntFunction mapper) {
-        return new IteratorIntStream(new SkippableIntIterator() {
+        return new IteratorIntStream(new IntIteratorEx() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -263,7 +263,7 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public <U> Stream<U> mapToObj(final ShortFunction<? extends U> mapper) {
-        return new IteratorStream<U>(new SkippableObjIterator<U>() {
+        return new IteratorStream<U>(new ObjIteratorEx<U>() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -288,13 +288,33 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public ShortStream flatMap(final ShortFunction<? extends ShortStream> mapper) {
-        return new IteratorShortStream(new SkippableShortIterator() {
+        final ShortIteratorEx iter = new ShortIteratorEx() {
             private ShortIterator cur = null;
+            private ShortStream s = null;
+            private Runnable closeHandle = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && elements.hasNext()) {
-                    cur = mapper.apply(elements.nextShort()).skippableIterator();
+                    if (closeHandle != null) {
+                        closeHandle.run();
+                        closeHandle = null;
+                    }
+
+                    s = mapper.apply(elements.nextShort());
+
+                    if (N.notNullOrEmpty(s.closeHandlers)) {
+                        final Set<Runnable> tmp = s.closeHandlers;
+
+                        closeHandle = new Runnable() {
+                            @Override
+                            public void run() {
+                                Stream.close(tmp);
+                            }
+                        };
+                    }
+
+                    cur = s.iterator();
                 }
 
                 return cur != null && cur.hasNext();
@@ -308,18 +328,58 @@ class IteratorShortStream extends AbstractShortStream {
 
                 return cur.nextShort();
             }
-        }, closeHandlers);
+
+            @Override
+            public void close() {
+                if (closeHandle != null) {
+                    closeHandle.run();
+                    closeHandle = null;
+                }
+            }
+        };
+
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>()
+                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+
+        newCloseHandlers.add(new Runnable() {
+            @Override
+            public void run() {
+                iter.close();
+            }
+        });
+
+        return new IteratorShortStream(iter, newCloseHandlers);
     }
 
     @Override
     public IntStream flatMapToInt(final ShortFunction<? extends IntStream> mapper) {
-        return new IteratorIntStream(new SkippableIntIterator() {
+        final IntIteratorEx iter = new IntIteratorEx() {
             private IntIterator cur = null;
+            private IntStream s = null;
+            private Runnable closeHandle = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && elements.hasNext()) {
-                    cur = mapper.apply(elements.nextShort()).skippableIterator();
+                    if (closeHandle != null) {
+                        closeHandle.run();
+                        closeHandle = null;
+                    }
+
+                    s = mapper.apply(elements.nextShort());
+
+                    if (N.notNullOrEmpty(s.closeHandlers)) {
+                        final Set<Runnable> tmp = s.closeHandlers;
+
+                        closeHandle = new Runnable() {
+                            @Override
+                            public void run() {
+                                Stream.close(tmp);
+                            }
+                        };
+                    }
+
+                    cur = s.iterator();
                 }
 
                 return cur != null && cur.hasNext();
@@ -333,18 +393,58 @@ class IteratorShortStream extends AbstractShortStream {
 
                 return cur.nextInt();
             }
-        }, closeHandlers);
+
+            @Override
+            public void close() {
+                if (closeHandle != null) {
+                    closeHandle.run();
+                    closeHandle = null;
+                }
+            }
+        };
+
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>()
+                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+
+        newCloseHandlers.add(new Runnable() {
+            @Override
+            public void run() {
+                iter.close();
+            }
+        });
+
+        return new IteratorIntStream(iter, newCloseHandlers);
     }
 
     @Override
     public <T> Stream<T> flatMapToObj(final ShortFunction<? extends Stream<T>> mapper) {
-        return new IteratorStream<T>(new SkippableObjIterator<T>() {
+        final ObjIteratorEx<T> iter = new ObjIteratorEx<T>() {
             private Iterator<? extends T> cur = null;
+            private Stream<? extends T> s = null;
+            private Runnable closeHandle = null;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && elements.hasNext()) {
-                    cur = mapper.apply(elements.nextShort()).iterator();
+                    if (closeHandle != null) {
+                        closeHandle.run();
+                        closeHandle = null;
+                    }
+
+                    s = mapper.apply(elements.nextShort());
+
+                    if (N.notNullOrEmpty(s.closeHandlers)) {
+                        final Set<Runnable> tmp = s.closeHandlers;
+
+                        closeHandle = new Runnable() {
+                            @Override
+                            public void run() {
+                                Stream.close(tmp);
+                            }
+                        };
+                    }
+
+                    cur = s.iterator();
                 }
 
                 return cur != null && cur.hasNext();
@@ -358,14 +458,34 @@ class IteratorShortStream extends AbstractShortStream {
 
                 return cur.next();
             }
-        }, closeHandlers);
+
+            @Override
+            public void close() {
+                if (closeHandle != null) {
+                    closeHandle.run();
+                    closeHandle = null;
+                }
+            }
+        };
+
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>()
+                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+
+        newCloseHandlers.add(new Runnable() {
+            @Override
+            public void run() {
+                iter.close();
+            }
+        });
+
+        return new IteratorStream<>(iter, newCloseHandlers);
     }
 
     @Override
     public Stream<ShortList> splitToList(final int size) {
         N.checkArgument(size > 0, "'size' must be bigger than 0");
 
-        return new IteratorStream<ShortList>(new SkippableObjIterator<ShortList>() {
+        return new IteratorStream<ShortList>(new ObjIteratorEx<ShortList>() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -391,7 +511,7 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public Stream<ShortList> splitToList(final ShortPredicate predicate) {
-        return new IteratorStream<ShortList>(new SkippableObjIterator<ShortList>() {
+        return new IteratorStream<ShortList>(new ObjIteratorEx<ShortList>() {
             private short next;
             private boolean hasNext = false;
             private boolean preCondition = false;
@@ -436,7 +556,7 @@ class IteratorShortStream extends AbstractShortStream {
     @Override
     public <U> Stream<ShortList> splitToList(final U seed, final BiFunction<? super Short, ? super U, Boolean> predicate,
             final Consumer<? super U> seedUpdate) {
-        return new IteratorStream<ShortList>(new SkippableObjIterator<ShortList>() {
+        return new IteratorStream<ShortList>(new ObjIteratorEx<ShortList>() {
             private short next;
             private boolean hasNext = false;
             private boolean preCondition = false;
@@ -486,7 +606,7 @@ class IteratorShortStream extends AbstractShortStream {
     public Stream<ShortList> slidingToList(final int windowSize, final int increment) {
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
-        return new IteratorStream<ShortList>(new SkippableObjIterator<ShortList>() {
+        return new IteratorStream<ShortList>(new ObjIteratorEx<ShortList>() {
             private ShortList prev = null;
 
             @Override
@@ -557,7 +677,7 @@ class IteratorShortStream extends AbstractShortStream {
             return this;
         }
 
-        return new IteratorShortStream(new SkippableShortIterator() {
+        return new IteratorShortStream(new ShortIteratorEx() {
             short[] a = null;
             int toIndex = 0;
             int cursor = 0;
@@ -626,7 +746,7 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public ShortStream peek(final ShortConsumer action) {
-        return new IteratorShortStream(new SkippableShortIterator() {
+        return new IteratorShortStream(new ShortIteratorEx() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -647,7 +767,7 @@ class IteratorShortStream extends AbstractShortStream {
             throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
         }
 
-        return new IteratorShortStream(new SkippableShortIterator() {
+        return new IteratorShortStream(new ShortIteratorEx() {
             private long cnt = 0;
 
             @Override
@@ -680,7 +800,7 @@ class IteratorShortStream extends AbstractShortStream {
             return this;
         }
 
-        return new IteratorShortStream(new SkippableShortIterator() {
+        return new IteratorShortStream(new ShortIteratorEx() {
             private boolean skipped = false;
 
             @Override
@@ -1146,7 +1266,7 @@ class IteratorShortStream extends AbstractShortStream {
 
     @Override
     public IntStream asIntStream() {
-        return new IteratorIntStream(new SkippableIntIterator() {
+        return new IteratorIntStream(new IntIteratorEx() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -1175,7 +1295,7 @@ class IteratorShortStream extends AbstractShortStream {
     }
 
     @Override
-    SkippableShortIterator skippableIterator() {
+    ShortIteratorEx iteratorEx() {
         return elements;
     }
 

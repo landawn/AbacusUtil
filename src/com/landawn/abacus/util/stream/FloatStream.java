@@ -179,10 +179,7 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
     /**
      * Returns a stream consisting of the results of replacing each element of
      * this stream with the contents of a mapped stream produced by applying
-     * the provided mapping function to each element.  Each mapped stream is
-     * {@link java.util.stream.Baseclose() closed} after its contents
-     * have been placed into this stream.  (If a mapped stream is {@code null}
-     * an empty stream is used, instead.)
+     * the provided mapping function to each element.
      *
      * <p>This is an <a href="package-summary.html#StreamOps">intermediate
      * operation</a>.
@@ -695,10 +692,10 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
 
     @Override
     public FloatIterator iterator() {
-        return skippableIterator();
+        return iteratorEx();
     }
 
-    abstract SkippableFloatIterator skippableIterator();
+    abstract FloatIteratorEx iteratorEx();
 
     @Override
     public <R> R __(Function<? super FloatStream, R> transfer) {
@@ -746,7 +743,7 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
      * @return
      */
     public static FloatStream of(final Supplier<FloatList> supplier) {
-        final FloatIterator iter = new SkippableFloatIterator() {
+        final FloatIterator iter = new FloatIteratorEx() {
             private FloatIterator iterator = null;
 
             @Override
@@ -788,7 +785,7 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
             return empty();
         }
 
-        return new IteratorFloatStream(new SkippableFloatIterator() {
+        return new IteratorFloatStream(new FloatIteratorEx() {
             private long cnt = n;
 
             @Override
@@ -843,7 +840,7 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
         N.requireNonNull(hasNext);
         N.requireNonNull(next);
 
-        return new IteratorFloatStream(new SkippableFloatIterator() {
+        return new IteratorFloatStream(new FloatIteratorEx() {
             private boolean hasNextVal = false;
 
             @Override
@@ -871,7 +868,7 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
         N.requireNonNull(hasNext);
         N.requireNonNull(f);
 
-        return new IteratorFloatStream(new SkippableFloatIterator() {
+        return new IteratorFloatStream(new FloatIteratorEx() {
             private float t = 0;
             private boolean isFirst = true;
             private boolean hasNextVal = false;
@@ -916,7 +913,7 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
         N.requireNonNull(hasNext);
         N.requireNonNull(f);
 
-        return new IteratorFloatStream(new SkippableFloatIterator() {
+        return new IteratorFloatStream(new FloatIteratorEx() {
             private float t = 0;
             private float cur = 0;
             private boolean isFirst = true;
@@ -957,7 +954,7 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
     public static FloatStream iterate(final float seed, final FloatUnaryOperator f) {
         N.requireNonNull(f);
 
-        return new IteratorFloatStream(new SkippableFloatIterator() {
+        return new IteratorFloatStream(new FloatIteratorEx() {
             private float t = 0;
             private boolean isFirst = true;
 
@@ -983,7 +980,7 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
     public static FloatStream generate(final FloatSupplier s) {
         N.requireNonNull(s);
 
-        return new IteratorFloatStream(new SkippableFloatIterator() {
+        return new IteratorFloatStream(new FloatIteratorEx() {
             @Override
             public boolean hasNext() {
                 return true;
@@ -998,14 +995,14 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
 
     @SafeVarargs
     public static FloatStream concat(final float[]... a) {
-        return N.isNullOrEmpty(a) ? empty() : new IteratorFloatStream(new SkippableFloatIterator() {
+        return N.isNullOrEmpty(a) ? empty() : new IteratorFloatStream(new FloatIteratorEx() {
             private final Iterator<float[]> iter = N.asList(a).iterator();
             private FloatIterator cur;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
-                    cur = SkippableFloatIterator.of(iter.next());
+                    cur = FloatIteratorEx.of(iter.next());
                 }
 
                 return cur != null && cur.hasNext();
@@ -1024,7 +1021,7 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
 
     @SafeVarargs
     public static FloatStream concat(final FloatIterator... a) {
-        return N.isNullOrEmpty(a) ? empty() : new IteratorFloatStream(new SkippableFloatIterator() {
+        return N.isNullOrEmpty(a) ? empty() : new IteratorFloatStream(new FloatIteratorEx() {
             private final Iterator<? extends FloatIterator> iter = N.asList(a).iterator();
             private FloatIterator cur;
 
@@ -1054,14 +1051,14 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
     }
 
     public static FloatStream concat(final Collection<? extends FloatStream> c) {
-        return N.isNullOrEmpty(c) ? empty() : new IteratorFloatStream(new SkippableFloatIterator() {
+        return N.isNullOrEmpty(c) ? empty() : new IteratorFloatStream(new FloatIteratorEx() {
             private final Iterator<? extends FloatStream> iter = c.iterator();
             private FloatIterator cur;
 
             @Override
             public boolean hasNext() {
                 while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
-                    cur = iter.next().skippableIterator();
+                    cur = iter.next().iteratorEx();
                 }
 
                 return cur != null && cur.hasNext();
@@ -1291,7 +1288,7 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
             return of(a);
         }
 
-        return new IteratorFloatStream(new SkippableFloatIterator() {
+        return new IteratorFloatStream(new FloatIteratorEx() {
             private final int lenA = a.length;
             private final int lenB = b.length;
             private int cursorA = 0;
@@ -1332,7 +1329,7 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
      * @return
      */
     public static FloatStream merge(final float[] a, final float[] b, final float[] c, final FloatBiFunction<Nth> nextSelector) {
-        return merge(merge(a, b, nextSelector).skippableIterator(), FloatStream.of(c).skippableIterator(), nextSelector);
+        return merge(merge(a, b, nextSelector).iteratorEx(), FloatStream.of(c).iteratorEx(), nextSelector);
     }
 
     /**
@@ -1349,7 +1346,7 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
             return of(a);
         }
 
-        return new IteratorFloatStream(new SkippableFloatIterator() {
+        return new IteratorFloatStream(new FloatIteratorEx() {
             private float nextA = 0;
             private float nextB = 0;
             private boolean hasNextA = false;
@@ -1418,7 +1415,7 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
      * @return
      */
     public static FloatStream merge(final FloatIterator a, final FloatIterator b, final FloatIterator c, final FloatBiFunction<Nth> nextSelector) {
-        return merge(merge(a, b, nextSelector).skippableIterator(), c, nextSelector);
+        return merge(merge(a, b, nextSelector).iteratorEx(), c, nextSelector);
     }
 
     /**
@@ -1429,7 +1426,7 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
      * @return
      */
     public static FloatStream merge(final FloatStream a, final FloatStream b, final FloatBiFunction<Nth> nextSelector) {
-        return merge(a.skippableIterator(), b.skippableIterator(), nextSelector).onClose(newCloseHandler(N.asList(a, b)));
+        return merge(a.iteratorEx(), b.iteratorEx(), nextSelector).onClose(newCloseHandler(N.asList(a, b)));
     }
 
     /**
@@ -1461,10 +1458,10 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
         }
 
         final Iterator<? extends FloatStream> iter = c.iterator();
-        FloatStream result = merge(iter.next().skippableIterator(), iter.next().skippableIterator(), nextSelector);
+        FloatStream result = merge(iter.next().iteratorEx(), iter.next().iteratorEx(), nextSelector);
 
         while (iter.hasNext()) {
-            result = merge(result.skippableIterator(), iter.next().skippableIterator(), nextSelector);
+            result = merge(result.iteratorEx(), iter.next().iteratorEx(), nextSelector);
         }
 
         return result.onClose(newCloseHandler(c));
@@ -1506,7 +1503,7 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
         final Queue<FloatIterator> queue = N.newLinkedList();
 
         for (FloatStream e : c) {
-            queue.add(e.skippableIterator());
+            queue.add(e.iteratorEx());
         }
 
         final Holder<Throwable> eHolder = new Holder<>();
@@ -1534,7 +1531,7 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
                                 }
                             }
 
-                            c = SkippableFloatIterator.of(merge(a, b, nextSelector).toArray());
+                            c = FloatIteratorEx.of(merge(a, b, nextSelector).toArray());
 
                             synchronized (queue) {
                                 queue.offer(c);
