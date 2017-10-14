@@ -462,7 +462,7 @@ class ArrayFloatStream extends AbstractFloatStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>()
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
                 : new LocalLinkedHashSet<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
@@ -530,7 +530,7 @@ class ArrayFloatStream extends AbstractFloatStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>()
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
                 : new LocalLinkedHashSet<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
@@ -598,7 +598,7 @@ class ArrayFloatStream extends AbstractFloatStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>()
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
                 : new LocalLinkedHashSet<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
@@ -666,7 +666,7 @@ class ArrayFloatStream extends AbstractFloatStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>()
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
                 : new LocalLinkedHashSet<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
@@ -734,7 +734,7 @@ class ArrayFloatStream extends AbstractFloatStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>()
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
                 : new LocalLinkedHashSet<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
