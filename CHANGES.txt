@@ -1,7 +1,15 @@
 ﻿
 ﻿========Changes in 1.0.3 =========================================================================
 
-1, Improvements and bug fix.
+1, Add DynamoDBExecutor.stream.
+
+2*, Refactoring MongoDBExecutor: List<Document> distinct/aggregate/mapReduce(...) to Stream<Document> distinct/aggregate/mapReduce(...).
+
+3*, Refactoring CassandraExecutor: Stream<Row> stream(...) to Stream<Map<String, Object>> stream(...).
+
+4*, Refactoring HBaseExecutor: List<Result> scan(...) to Stream<Result> scan(...).
+
+5, Improvements and bug fix.
 
 
 ﻿========Changes in 1.0.2 =========================================================================

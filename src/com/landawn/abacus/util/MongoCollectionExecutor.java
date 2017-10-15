@@ -25,7 +25,6 @@ import org.bson.types.ObjectId;
 
 import com.landawn.abacus.DataSet;
 import com.landawn.abacus.annotation.Beta;
-import com.landawn.abacus.core.RowDataSet;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.stream.Stream;
 import com.mongodb.BasicDBObject;
@@ -304,12 +303,7 @@ public final class MongoCollectionExecutor {
         if (targetClass.isAssignableFrom(Document.class)) {
             return (Stream<T>) Stream.of(findIterable.iterator());
         } else {
-            return Stream.of(findIterable.iterator()).map(new Function<Document, T>() {
-                @Override
-                public T apply(Document t) {
-                    return MongoDBExecutor.toEntity(targetClass, t);
-                }
-            });
+            return Stream.of(findIterable.iterator()).map(toEntity(targetClass));
         }
     }
 
@@ -323,13 +317,17 @@ public final class MongoCollectionExecutor {
         if (targetClass.isAssignableFrom(Document.class)) {
             return (Stream<T>) Stream.of(findIterable.iterator());
         } else {
-            return Stream.of(findIterable.iterator()).map(new Function<Document, T>() {
-                @Override
-                public T apply(Document t) {
-                    return MongoDBExecutor.toEntity(targetClass, t);
-                }
-            });
+            return Stream.of(findIterable.iterator()).map(toEntity(targetClass));
         }
+    }
+
+    private <T> Function<Document, T> toEntity(final Class<T> targetClass) {
+        return new Function<Document, T>() {
+            @Override
+            public T apply(Document t) {
+                return MongoDBExecutor.toEntity(targetClass, t);
+            }
+        };
     }
 
     private FindIterable<Document> query(final Collection<String> selectPropNames, final Bson filter, final Bson sort, final int offset, final int count) {
@@ -586,103 +584,63 @@ public final class MongoCollectionExecutor {
         }
     }
 
-    public <T> List<T> distinct(final Class<T> targetClass, final String fieldName) {
-        return MongoDBExecutor.toList(targetClass, coll.distinct(fieldName, targetClass));
+    public <T> Stream<T> distinct(final Class<T> targetClass, final String fieldName) {
+        return Stream.of(coll.distinct(fieldName, targetClass).iterator());
     }
 
-    public <T> List<T> distinct(final Class<T> targetClass, final String fieldName, final Bson filter) {
-        return MongoDBExecutor.toList(targetClass, coll.distinct(fieldName, filter, targetClass));
+    public <T> Stream<T> distinct(final Class<T> targetClass, final String fieldName, final Bson filter) {
+        return Stream.of(coll.distinct(fieldName, filter, targetClass).iterator());
     }
 
-    @Beta
-    public DataSet groupBy(final String fieldName) {
-        final List<Document> docList = aggregate(N.asList(new Document(_$GROUP, new Document(MongoDBExecutor._ID, _$ + fieldName))));
-        final DataSet dataSet = N.newDataSet(N.asList(MongoDBExecutor._ID), docList);
-        dataSet.renameColumn(MongoDBExecutor._ID, fieldName);
-        return dataSet;
-    }
-
-    @Beta
-    public DataSet groupBy(final Collection<String> fieldNames) {
-        final Document groupFields = new Document();
-
-        for (String fieldName : fieldNames) {
-            groupFields.put(fieldName, _$ + fieldName);
-        }
-
-        final List<Document> docList = aggregate(N.asList(new Document(_$GROUP, new Document(MongoDBExecutor._ID, groupFields))));
-
-        final int columnCount = fieldNames.size();
-        final List<String> columnNameList = new ArrayList<>(fieldNames);
-        final List<List<Object>> columnList = new ArrayList<>(columnCount);
-        for (int i = 0; i < columnCount; i++) {
-            columnList.add(new ArrayList<>(docList.size()));
-        }
-
-        for (Document doc : docList) {
-            Document row = (Document) doc.get(MongoDBExecutor._ID);
-            for (int i = 0; i < columnCount; i++) {
-                columnList.get(i).add(row.get(columnNameList.get(i)));
-            }
-        }
-
-        return new RowDataSet(columnNameList, columnList);
-    }
-
-    @Beta
-    public DataSet groupByAndCount(final String fieldName) {
-        final List<Document> docList = aggregate(
-                N.asList(new Document(_$GROUP, new Document(MongoDBExecutor._ID, _$ + fieldName).append(_COUNT, new Document(_$SUM, 1)))));
-        final DataSet dataSet = N.newDataSet(N.asList(MongoDBExecutor._ID, _COUNT), docList);
-        dataSet.renameColumn(MongoDBExecutor._ID, fieldName);
-        return dataSet;
-    }
-
-    @Beta
-    public DataSet groupByAndCount(final Collection<String> fieldNames) {
-        final Document groupFields = new Document();
-
-        for (String fieldName : fieldNames) {
-            groupFields.put(fieldName, _$ + fieldName);
-        }
-
-        final List<Document> docList = aggregate(
-                N.asList(new Document(_$GROUP, new Document(MongoDBExecutor._ID, groupFields).append(_COUNT, new Document(_$SUM, 1)))));
-
-        final int columnCount = fieldNames.size() + 1;
-        final List<String> columnNameList = new ArrayList<>(fieldNames);
-        columnNameList.add(_COUNT);
-        final List<List<Object>> columnList = new ArrayList<>(columnCount);
-        for (int i = 0; i < columnCount; i++) {
-            columnList.add(new ArrayList<>(docList.size()));
-        }
-
-        for (Document doc : docList) {
-            Document row = (Document) doc.get(MongoDBExecutor._ID);
-            for (int i = 0; i < columnCount - 1; i++) {
-                columnList.get(i).add(row.get(columnNameList.get(i)));
-            }
-            columnList.get(columnCount - 1).add(doc.get(_COUNT));
-        }
-
-        return new RowDataSet(columnNameList, columnList);
-    }
-
-    public List<Document> aggregate(final List<? extends Bson> pipeline) {
+    public Stream<Document> aggregate(final List<? extends Bson> pipeline) {
         return aggregate(Document.class, pipeline);
     }
 
-    public <T> List<T> aggregate(final Class<T> targetClass, final List<? extends Bson> pipeline) {
-        return MongoDBExecutor.toList(targetClass, coll.aggregate(pipeline, Document.class));
+    public <T> Stream<T> aggregate(final Class<T> targetClass, final List<? extends Bson> pipeline) {
+        return Stream.of(coll.aggregate(pipeline, Document.class).iterator()).map(toEntity(targetClass));
     }
 
-    public List<Document> mapReduce(final String mapFunction, final String reduceFunction) {
+    public Stream<Document> mapReduce(final String mapFunction, final String reduceFunction) {
         return mapReduce(Document.class, mapFunction, reduceFunction);
     }
 
-    public <T> List<T> mapReduce(final Class<T> targetClass, final String mapFunction, final String reduceFunction) {
-        return MongoDBExecutor.toList(targetClass, coll.mapReduce(mapFunction, reduceFunction, Document.class));
+    public <T> Stream<T> mapReduce(final Class<T> targetClass, final String mapFunction, final String reduceFunction) {
+        return Stream.of(coll.mapReduce(mapFunction, reduceFunction, Document.class).iterator()).map(toEntity(targetClass));
     }
+
+    @Beta
+    public Stream<Document> groupBy(final String fieldName) {
+        return aggregate(N.asList(new Document(_$GROUP, new Document(MongoDBExecutor._ID, _$ + fieldName)))) ;
+    }
+
+    @Beta
+    public Stream<Document> groupBy(final Collection<String> fieldNames) {
+        final Document groupFields = new Document();
+
+        for (String fieldName : fieldNames) {
+            groupFields.put(fieldName, _$ + fieldName);
+        }
+
+        return aggregate(N.asList(new Document(_$GROUP, new Document(MongoDBExecutor._ID, groupFields)))) ;
+    }
+
+    @Beta
+    public Stream<Document> groupByAndCount(final String fieldName) {
+        return aggregate(N.asList(new Document(_$GROUP, new Document(MongoDBExecutor._ID, _$ + fieldName).append(_COUNT, new Document(_$SUM, 1)))))
+                 ;
+    }
+
+    @Beta
+    public Stream<Document> groupByAndCount(final Collection<String> fieldNames) {
+        final Document groupFields = new Document();
+
+        for (String fieldName : fieldNames) {
+            groupFields.put(fieldName, _$ + fieldName);
+        }
+
+        return aggregate(N.asList(new Document(_$GROUP, new Document(MongoDBExecutor._ID, groupFields).append(_COUNT, new Document(_$SUM, 1))))) ;
+    }
+ 
 
     //
     //    private String getCollectionName(final Class<?> cls) {

@@ -36,6 +36,7 @@ import org.apache.hadoop.hbase.ipc.CoprocessorRpcChannel;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
 import com.google.protobuf.Service;
+import com.landawn.abacus.util.stream.Stream;
 
 /**
  * Asynchronous <code>HBaseExecutor</code>.
@@ -168,73 +169,73 @@ public final class AsyncHBaseExecutor {
         });
     }
 
-    public CompletableFuture<List<Result>> scan(final String tableName, final Scan scan) {
-        return asyncExecutor.execute(new Callable<List<Result>>() {
+    public CompletableFuture<Stream<Result>> scan(final String tableName, final Scan scan) {
+        return asyncExecutor.execute(new Callable<Stream<Result>>() {
             @Override
-            public List<Result> call() throws Exception {
+            public Stream<Result> call() throws Exception {
                 return hbaseExecutor.scan(tableName, scan);
             }
         });
     }
 
-    public CompletableFuture<List<Result>> scan(final String tableName, final AnyScan anyScan) {
-        return asyncExecutor.execute(new Callable<List<Result>>() {
+    public CompletableFuture<Stream<Result>> scan(final String tableName, final AnyScan anyScan) {
+        return asyncExecutor.execute(new Callable<Stream<Result>>() {
             @Override
-            public List<Result> call() throws Exception {
+            public Stream<Result> call() throws Exception {
                 return hbaseExecutor.scan(tableName, anyScan);
             }
         });
     }
 
-    public CompletableFuture<List<Result>> scan(final String tableName, final String family) {
-        return asyncExecutor.execute(new Callable<List<Result>>() {
+    public CompletableFuture<Stream<Result>> scan(final String tableName, final String family) {
+        return asyncExecutor.execute(new Callable<Stream<Result>>() {
             @Override
-            public List<Result> call() throws Exception {
+            public Stream<Result> call() throws Exception {
                 return hbaseExecutor.scan(tableName, family);
             }
         });
     }
 
-    public CompletableFuture<List<Result>> scan(final String tableName, final String family, final String qualifier) {
-        return asyncExecutor.execute(new Callable<List<Result>>() {
+    public CompletableFuture<Stream<Result>> scan(final String tableName, final String family, final String qualifier) {
+        return asyncExecutor.execute(new Callable<Stream<Result>>() {
             @Override
-            public List<Result> call() throws Exception {
+            public Stream<Result> call() throws Exception {
                 return hbaseExecutor.scan(tableName, family, qualifier);
             }
         });
     }
 
-    public <T> CompletableFuture<List<T>> scan(final Class<T> targetClass, final String tableName, final Scan scan) {
-        return asyncExecutor.execute(new Callable<List<T>>() {
+    public <T> CompletableFuture<Stream<T>> scan(final Class<T> targetClass, final String tableName, final Scan scan) {
+        return asyncExecutor.execute(new Callable<Stream<T>>() {
             @Override
-            public List<T> call() throws Exception {
+            public Stream<T> call() throws Exception {
                 return hbaseExecutor.scan(targetClass, tableName, scan);
             }
         });
     }
 
-    public <T> CompletableFuture<List<T>> scan(final Class<T> targetClass, final String tableName, final AnyScan anyScan) {
-        return asyncExecutor.execute(new Callable<List<T>>() {
+    public <T> CompletableFuture<Stream<T>> scan(final Class<T> targetClass, final String tableName, final AnyScan anyScan) {
+        return asyncExecutor.execute(new Callable<Stream<T>>() {
             @Override
-            public List<T> call() throws Exception {
+            public Stream<T> call() throws Exception {
                 return hbaseExecutor.scan(targetClass, tableName, anyScan);
             }
         });
     }
 
-    public <T> CompletableFuture<List<T>> scan(final Class<T> targetClass, final String tableName, final String family) {
-        return asyncExecutor.execute(new Callable<List<T>>() {
+    public <T> CompletableFuture<Stream<T>> scan(final Class<T> targetClass, final String tableName, final String family) {
+        return asyncExecutor.execute(new Callable<Stream<T>>() {
             @Override
-            public List<T> call() throws Exception {
+            public Stream<T> call() throws Exception {
                 return hbaseExecutor.scan(targetClass, tableName, family);
             }
         });
     }
 
-    public <T> CompletableFuture<List<T>> scan(final Class<T> targetClass, final String tableName, final String family, final String qualifier) {
-        return asyncExecutor.execute(new Callable<List<T>>() {
+    public <T> CompletableFuture<Stream<T>> scan(final Class<T> targetClass, final String tableName, final String family, final String qualifier) {
+        return asyncExecutor.execute(new Callable<Stream<T>>() {
             @Override
-            public List<T> call() throws Exception {
+            public Stream<T> call() throws Exception {
                 return hbaseExecutor.scan(targetClass, tableName, family, qualifier);
             }
         });

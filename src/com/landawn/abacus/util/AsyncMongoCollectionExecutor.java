@@ -634,96 +634,96 @@ public final class AsyncMongoCollectionExecutor {
         });
     }
 
-    public <T> CompletableFuture<List<T>> distinct(final Class<T> targetClass, final String fieldName) {
-        return asyncExecutor.execute(new Callable<List<T>>() {
+    public <T> CompletableFuture<Stream<T>> distinct(final Class<T> targetClass, final String fieldName) {
+        return asyncExecutor.execute(new Callable<Stream<T>>() {
             @Override
-            public List<T> call() throws Exception {
+            public Stream<T> call() throws Exception {
                 return collExecutor.distinct(targetClass, fieldName);
             }
         });
     }
 
-    public <T> CompletableFuture<List<T>> distinct(final Class<T> targetClass, final String fieldName, final Bson filter) {
-        return asyncExecutor.execute(new Callable<List<T>>() {
+    public <T> CompletableFuture<Stream<T>> distinct(final Class<T> targetClass, final String fieldName, final Bson filter) {
+        return asyncExecutor.execute(new Callable<Stream<T>>() {
             @Override
-            public List<T> call() throws Exception {
+            public Stream<T> call() throws Exception {
                 return collExecutor.distinct(targetClass, fieldName, filter);
             }
         });
     }
 
-    @Beta
-    public CompletableFuture<DataSet> groupBy(final String fieldName) {
-        return asyncExecutor.execute(new Callable<DataSet>() {
+    public CompletableFuture<Stream<Document>> aggregate(final List<? extends Bson> pipeline) {
+        return asyncExecutor.execute(new Callable<Stream<Document>>() {
             @Override
-            public DataSet call() throws Exception {
+            public Stream<Document> call() throws Exception {
+                return collExecutor.aggregate(pipeline);
+            }
+        });
+    }
+
+    public <T> CompletableFuture<Stream<T>> aggregate(final Class<T> targetClass, final List<? extends Bson> pipeline) {
+        return asyncExecutor.execute(new Callable<Stream<T>>() {
+            @Override
+            public Stream<T> call() throws Exception {
+                return collExecutor.aggregate(targetClass, pipeline);
+            }
+        });
+    }
+
+    public CompletableFuture<Stream<Document>> mapReduce(final String mapFunction, final String reduceFunction) {
+        return asyncExecutor.execute(new Callable<Stream<Document>>() {
+            @Override
+            public Stream<Document> call() throws Exception {
+                return collExecutor.mapReduce(mapFunction, reduceFunction);
+            }
+        });
+    }
+
+    public <T> CompletableFuture<Stream<T>> mapReduce(final Class<T> targetClass, final String mapFunction, final String reduceFunction) {
+        return asyncExecutor.execute(new Callable<Stream<T>>() {
+            @Override
+            public Stream<T> call() throws Exception {
+                return collExecutor.mapReduce(targetClass, mapFunction, reduceFunction);
+            }
+        });
+    }
+
+    @Beta
+    public CompletableFuture<Stream<Document>> groupBy(final String fieldName) {
+        return asyncExecutor.execute(new Callable<Stream<Document>>() {
+            @Override
+            public Stream<Document> call() throws Exception {
                 return collExecutor.groupBy(fieldName);
             }
         });
     }
 
     @Beta
-    public CompletableFuture<DataSet> groupBy(final Collection<String> fieldNames) {
-        return asyncExecutor.execute(new Callable<DataSet>() {
+    public CompletableFuture<Stream<Document>> groupBy(final Collection<String> fieldNames) {
+        return asyncExecutor.execute(new Callable<Stream<Document>>() {
             @Override
-            public DataSet call() throws Exception {
+            public Stream<Document> call() throws Exception {
                 return collExecutor.groupBy(fieldNames);
             }
         });
     }
 
     @Beta
-    public CompletableFuture<DataSet> groupByAndCount(final String fieldName) {
-        return asyncExecutor.execute(new Callable<DataSet>() {
+    public CompletableFuture<Stream<Document>> groupByAndCount(final String fieldName) {
+        return asyncExecutor.execute(new Callable<Stream<Document>>() {
             @Override
-            public DataSet call() throws Exception {
+            public Stream<Document> call() throws Exception {
                 return collExecutor.groupByAndCount(fieldName);
             }
         });
     }
 
     @Beta
-    public CompletableFuture<DataSet> groupByAndCount(final Collection<String> fieldNames) {
-        return asyncExecutor.execute(new Callable<DataSet>() {
+    public CompletableFuture<Stream<Document>> groupByAndCount(final Collection<String> fieldNames) {
+        return asyncExecutor.execute(new Callable<Stream<Document>>() {
             @Override
-            public DataSet call() throws Exception {
+            public Stream<Document> call() throws Exception {
                 return collExecutor.groupByAndCount(fieldNames);
-            }
-        });
-    }
-
-    public CompletableFuture<List<Document>> aggregate(final List<? extends Bson> pipeline) {
-        return asyncExecutor.execute(new Callable<List<Document>>() {
-            @Override
-            public List<Document> call() throws Exception {
-                return collExecutor.aggregate(pipeline);
-            }
-        });
-    }
-
-    public <T> CompletableFuture<List<T>> aggregate(final Class<T> targetClass, final List<? extends Bson> pipeline) {
-        return asyncExecutor.execute(new Callable<List<T>>() {
-            @Override
-            public List<T> call() throws Exception {
-                return collExecutor.aggregate(targetClass, pipeline);
-            }
-        });
-    }
-
-    public CompletableFuture<List<Document>> mapReduce(final String mapFunction, final String reduceFunction) {
-        return asyncExecutor.execute(new Callable<List<Document>>() {
-            @Override
-            public List<Document> call() throws Exception {
-                return collExecutor.mapReduce(mapFunction, reduceFunction);
-            }
-        });
-    }
-
-    public <T> CompletableFuture<List<T>> mapReduce(final Class<T> targetClass, final String mapFunction, final String reduceFunction) {
-        return asyncExecutor.execute(new Callable<List<T>>() {
-            @Override
-            public List<T> call() throws Exception {
-                return collExecutor.mapReduce(targetClass, mapFunction, reduceFunction);
             }
         });
     }

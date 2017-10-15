@@ -36,6 +36,7 @@ import com.amazonaws.services.dynamodbv2.model.UpdateItemRequest;
 import com.amazonaws.services.dynamodbv2.model.UpdateItemResult;
 import com.amazonaws.services.dynamodbv2.model.WriteRequest;
 import com.landawn.abacus.DataSet;
+import com.landawn.abacus.util.stream.Stream;
 
 /**
  * Asynchronous <code>DynamoDBExecutor</code>.
@@ -327,74 +328,93 @@ public final class AsyncDynamoDBExecutor {
         });
     }
 
-    public CompletableFuture<DataSet> scan(final String tableName, final List<String> attributesToGet) {
-        return asyncExecutor.execute(new Callable<DataSet>() {
+    public CompletableFuture<Stream<Map<String, Object>>> stream(final QueryRequest queryRequest) {
+        return asyncExecutor.execute(new Callable<Stream<Map<String, Object>>>() {
             @Override
-            public DataSet call() throws Exception {
+            public Stream<Map<String, Object>> call() throws Exception {
+                return dbExecutor.stream(queryRequest);
+            }
+        });
+    }
+
+    public <T> CompletableFuture<Stream<T>> stream(final Class<T> targetClass, final QueryRequest queryRequest) {
+        return asyncExecutor.execute(new Callable<Stream<T>>() {
+            @Override
+            public Stream<T> call() throws Exception {
+                return dbExecutor.stream(targetClass, queryRequest);
+            }
+        });
+    }
+
+    public CompletableFuture<Stream<Map<String, Object>>> scan(final String tableName, final List<String> attributesToGet) {
+        return asyncExecutor.execute(new Callable<Stream<Map<String, Object>>>() {
+            @Override
+            public Stream<Map<String, Object>> call() throws Exception {
                 return dbExecutor.scan(tableName, attributesToGet);
             }
         });
     }
 
-    public CompletableFuture<DataSet> scan(final String tableName, final Map<String, Condition> scanFilter) {
-        return asyncExecutor.execute(new Callable<DataSet>() {
+    public CompletableFuture<Stream<Map<String, Object>>> scan(final String tableName, final Map<String, Condition> scanFilter) {
+        return asyncExecutor.execute(new Callable<Stream<Map<String, Object>>>() {
             @Override
-            public DataSet call() throws Exception {
+            public Stream<Map<String, Object>> call() throws Exception {
                 return dbExecutor.scan(tableName, scanFilter);
             }
         });
     }
 
-    public CompletableFuture<DataSet> scan(final String tableName, final List<String> attributesToGet, final Map<String, Condition> scanFilter) {
-        return asyncExecutor.execute(new Callable<DataSet>() {
+    public CompletableFuture<Stream<Map<String, Object>>> scan(final String tableName, final List<String> attributesToGet,
+            final Map<String, Condition> scanFilter) {
+        return asyncExecutor.execute(new Callable<Stream<Map<String, Object>>>() {
             @Override
-            public DataSet call() throws Exception {
+            public Stream<Map<String, Object>> call() throws Exception {
                 return dbExecutor.scan(tableName, attributesToGet, scanFilter);
             }
         });
     }
 
-    public CompletableFuture<DataSet> scan(final ScanRequest scanRequest) {
-        return asyncExecutor.execute(new Callable<DataSet>() {
+    public CompletableFuture<Stream<Map<String, Object>>> scan(final ScanRequest scanRequest) {
+        return asyncExecutor.execute(new Callable<Stream<Map<String, Object>>>() {
             @Override
-            public DataSet call() throws Exception {
+            public Stream<Map<String, Object>> call() throws Exception {
                 return dbExecutor.scan(scanRequest);
             }
         });
     }
 
-    public <T> CompletableFuture<List<T>> scan(final Class<T> targetClass, final String tableName, final List<String> attributesToGet) {
-        return asyncExecutor.execute(new Callable<List<T>>() {
+    public <T> CompletableFuture<Stream<T>> scan(final Class<T> targetClass, final String tableName, final List<String> attributesToGet) {
+        return asyncExecutor.execute(new Callable<Stream<T>>() {
             @Override
-            public List<T> call() throws Exception {
+            public Stream<T> call() throws Exception {
                 return dbExecutor.scan(targetClass, tableName, attributesToGet);
             }
         });
     }
 
-    public <T> CompletableFuture<List<T>> scan(final Class<T> targetClass, final String tableName, final Map<String, Condition> scanFilter) {
-        return asyncExecutor.execute(new Callable<List<T>>() {
+    public <T> CompletableFuture<Stream<T>> scan(final Class<T> targetClass, final String tableName, final Map<String, Condition> scanFilter) {
+        return asyncExecutor.execute(new Callable<Stream<T>>() {
             @Override
-            public List<T> call() throws Exception {
+            public Stream<T> call() throws Exception {
                 return dbExecutor.scan(targetClass, tableName, scanFilter);
             }
         });
     }
 
-    public <T> CompletableFuture<List<T>> scan(final Class<T> targetClass, final String tableName, final List<String> attributesToGet,
+    public <T> CompletableFuture<Stream<T>> scan(final Class<T> targetClass, final String tableName, final List<String> attributesToGet,
             final Map<String, Condition> scanFilter) {
-        return asyncExecutor.execute(new Callable<List<T>>() {
+        return asyncExecutor.execute(new Callable<Stream<T>>() {
             @Override
-            public List<T> call() throws Exception {
+            public Stream<T> call() throws Exception {
                 return dbExecutor.scan(targetClass, tableName, attributesToGet, scanFilter);
             }
         });
     }
 
-    public <T> CompletableFuture<List<T>> scan(final Class<T> targetClass, final ScanRequest scanRequest) {
-        return asyncExecutor.execute(new Callable<List<T>>() {
+    public <T> CompletableFuture<Stream<T>> scan(final Class<T> targetClass, final ScanRequest scanRequest) {
+        return asyncExecutor.execute(new Callable<Stream<T>>() {
             @Override
-            public List<T> call() throws Exception {
+            public Stream<T> call() throws Exception {
                 return dbExecutor.scan(targetClass, scanRequest);
             }
         });

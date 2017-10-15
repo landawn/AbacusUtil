@@ -56,6 +56,8 @@ import com.landawn.abacus.parser.ParserUtil;
 import com.landawn.abacus.parser.ParserUtil.EntityInfo;
 import com.landawn.abacus.parser.ParserUtil.PropInfo;
 import com.landawn.abacus.type.Type;
+import com.landawn.abacus.util.function.Function;
+import com.landawn.abacus.util.stream.Stream;
 
 /**
  * It's a simple wrapper of HBase Java client.
@@ -817,59 +819,45 @@ public final class HBaseExecutor implements Closeable {
         return toList(targetClass, get(tableName, anyGets));
     }
 
-    public List<Result> scan(final String tableName, final Scan scan) throws UncheckedIOException {
-        try {
-            return extractResult(getScanner(tableName, scan));
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
+    public Stream<Result> scan(final String tableName, final Scan scan) {
+        return Stream.of(getScanner(tableName, scan).iterator());
     }
 
-    public List<Result> scan(final String tableName, final AnyScan anyScan) throws UncheckedIOException {
-        return scan(tableName, anyScan.value());
+    public Stream<Result> scan(final String tableName, final AnyScan anyScan) {
+        return Stream.of(getScanner(tableName, anyScan).iterator());
     }
 
-    public List<Result> scan(final String tableName, final String family) throws UncheckedIOException {
-        try {
-            return extractResult(getScanner(tableName, family));
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
+    public Stream<Result> scan(final String tableName, final String family) {
+        return Stream.of(getScanner(tableName, family).iterator());
     }
 
-    public List<Result> scan(final String tableName, final String family, final String qualifier) throws UncheckedIOException {
-        try {
-            return extractResult(getScanner(tableName, family, qualifier));
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
+    public Stream<Result> scan(final String tableName, final String family, final String qualifier) {
+        return Stream.of(getScanner(tableName, family, qualifier).iterator());
     }
 
-    private List<Result> extractResult(final ResultScanner resultScanner) throws IOException {
-        final List<Result> resultList = new ArrayList<>();
-
-        Result result = null;
-        while ((result = resultScanner.next()) != null) {
-            resultList.add(result);
-        }
-
-        return resultList;
+    public <T> Stream<T> scan(final Class<T> targetClass, final String tableName, final Scan scan) {
+        return Stream.of(getScanner(tableName, scan).iterator()).map(toEntity(targetClass));
     }
 
-    public <T> List<T> scan(final Class<T> targetClass, final String tableName, final Scan scan) throws UncheckedIOException {
-        return toList(targetClass, scan(tableName, scan));
+    public <T> Stream<T> scan(final Class<T> targetClass, final String tableName, final AnyScan anyScan) {
+        return Stream.of(getScanner(tableName, anyScan).iterator()).map(toEntity(targetClass));
     }
 
-    public <T> List<T> scan(final Class<T> targetClass, final String tableName, final AnyScan anyScan) throws UncheckedIOException {
-        return scan(targetClass, tableName, anyScan.value());
+    public <T> Stream<T> scan(final Class<T> targetClass, final String tableName, final String family) {
+        return Stream.of(getScanner(tableName, family).iterator()).map(toEntity(targetClass));
     }
 
-    public <T> List<T> scan(final Class<T> targetClass, final String tableName, final String family) throws UncheckedIOException {
-        return toList(targetClass, scan(tableName, family));
+    public <T> Stream<T> scan(final Class<T> targetClass, final String tableName, final String family, final String qualifier) {
+        return Stream.of(getScanner(tableName, family, qualifier).iterator()).map(toEntity(targetClass));
     }
 
-    public <T> List<T> scan(final Class<T> targetClass, final String tableName, final String family, final String qualifier) throws UncheckedIOException {
-        return toList(targetClass, scan(tableName, family, qualifier));
+    private <T> Function<Result, T> toEntity(final Class<T> targetClass) {
+        return new Function<Result, T>() {
+            @Override
+            public T apply(Result t) {
+                return toEntity(targetClass, t);
+            }
+        };
     }
 
     public void put(final String tableName, final Put put) throws UncheckedIOException {
@@ -1128,7 +1116,8 @@ public final class HBaseExecutor implements Closeable {
     }
 
     public <R extends Message> void batchCoprocessorService(final String tableName, final Descriptors.MethodDescriptor methodDescriptor, final Message request,
-            final Object startRowKey, final Object endRowKey, final R responsePrototype, final Batch.Callback<R> callback) throws UncheckedIOException, Exception {
+            final Object startRowKey, final Object endRowKey, final R responsePrototype, final Batch.Callback<R> callback)
+            throws UncheckedIOException, Exception {
         final Table table = getTable(tableName);
 
         try {

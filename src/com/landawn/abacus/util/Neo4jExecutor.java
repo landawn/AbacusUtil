@@ -576,7 +576,7 @@ public final class Neo4jExecutor {
         Session session = null;
 
         try {
-            session = sessionPool.poll(3000, TimeUnit.MILLISECONDS);
+            session = sessionPool.poll(100, TimeUnit.MILLISECONDS);
         } catch (Throwable e) {
             // ignore.
         }
@@ -591,7 +591,7 @@ public final class Neo4jExecutor {
     private void closeSession(Session session) {
         if (session != null) {
             try {
-                sessionPool.offer(session, 3000, TimeUnit.MILLISECONDS);
+                sessionPool.offer(session, 100, TimeUnit.MILLISECONDS);
             } catch (Throwable e) {
                 // ignore.
             }

@@ -29,6 +29,7 @@ import org.bson.BasicBSONObject;
 import org.bson.BsonReader;
 import org.bson.BsonWriter;
 import org.bson.Document;
+import org.bson.codecs.BsonTypeClassMap;
 import org.bson.codecs.Codec;
 import org.bson.codecs.DecoderContext;
 import org.bson.codecs.DocumentCodec;
@@ -496,7 +497,7 @@ public final class MongoDBExecutor {
         if (obj instanceof Map) {
             result.putAll((Map<String, Object>) obj);
         } else if (N.isEntity(obj.getClass())) {
-            Maps.entity2Map(result, obj);
+            Maps.deepEntity2Map(result, obj);
         } else if (obj instanceof Object[]) {
             final Object[] a = (Object[]) obj;
 
@@ -537,7 +538,7 @@ public final class MongoDBExecutor {
         if (obj instanceof Map) {
             result.putAll((Map<String, Object>) obj);
         } else if (N.isEntity(obj.getClass())) {
-            Maps.entity2Map(result, obj);
+            Maps.deepEntity2Map(result, obj);
         } else if (obj instanceof Object[]) {
             final Object[] a = (Object[]) obj;
 
@@ -979,48 +980,48 @@ public final class MongoDBExecutor {
         return collExecutor(collectionName).bulkWrite(requests, options);
     }
 
-    public <T> List<T> distinct(final Class<T> targetClass, final String collectionName, final String fieldName) {
+    public <T> Stream<T> distinct(final Class<T> targetClass, final String collectionName, final String fieldName) {
         return collExecutor(collectionName).distinct(targetClass, fieldName);
     }
 
-    public <T> List<T> distinct(final Class<T> targetClass, final String collectionName, final String fieldName, final Bson filter) {
+    public <T> Stream<T> distinct(final Class<T> targetClass, final String collectionName, final String fieldName, final Bson filter) {
         return collExecutor(collectionName).distinct(targetClass, fieldName, filter);
     }
 
+    public Stream<Document> aggregate(final String collectionName, final List<? extends Bson> pipeline) {
+        return collExecutor(collectionName).aggregate(pipeline);
+    }
+
+    public <T> Stream<T> aggregate(final Class<T> targetClass, final String collectionName, final List<? extends Bson> pipeline) {
+        return collExecutor(collectionName).aggregate(targetClass, pipeline);
+    }
+
+    public Stream<Document> mapReduce(final String collectionName, final String mapFunction, final String reduceFunction) {
+        return collExecutor(collectionName).mapReduce(mapFunction, reduceFunction);
+    }
+
+    public <T> Stream<T> mapReduce(final Class<T> targetClass, final String collectionName, final String mapFunction, final String reduceFunction) {
+        return collExecutor(collectionName).mapReduce(targetClass, mapFunction, reduceFunction);
+    }
+
     @Beta
-    public DataSet groupBy(final String collectionName, final String fieldName) {
+    public Stream<Document> groupBy(final String collectionName, final String fieldName) {
         return collExecutor(collectionName).groupBy(fieldName);
     }
 
     @Beta
-    public DataSet groupBy(final String collectionName, final Collection<String> fieldNames) {
+    public Stream<Document> groupBy(final String collectionName, final Collection<String> fieldNames) {
         return collExecutor(collectionName).groupBy(fieldNames);
     }
 
     @Beta
-    public DataSet groupByAndCount(final String collectionName, final String fieldName) {
+    public Stream<Document> groupByAndCount(final String collectionName, final String fieldName) {
         return collExecutor(collectionName).groupByAndCount(fieldName);
     }
 
     @Beta
-    public DataSet groupByAndCount(final String collectionName, final Collection<String> fieldNames) {
+    public Stream<Document> groupByAndCount(final String collectionName, final Collection<String> fieldNames) {
         return collExecutor(collectionName).groupByAndCount(fieldNames);
-    }
-
-    public List<Document> aggregate(final String collectionName, final List<? extends Bson> pipeline) {
-        return collExecutor(collectionName).aggregate(pipeline);
-    }
-
-    public <T> List<T> aggregate(final Class<T> targetClass, final String collectionName, final List<? extends Bson> pipeline) {
-        return collExecutor(collectionName).aggregate(targetClass, pipeline);
-    }
-
-    public List<Document> mapReduce(final String collectionName, final String mapFunction, final String reduceFunction) {
-        return collExecutor(collectionName).mapReduce(mapFunction, reduceFunction);
-    }
-
-    public <T> List<T> mapReduce(final Class<T> targetClass, final String collectionName, final String mapFunction, final String reduceFunction) {
-        return collExecutor(collectionName).mapReduce(targetClass, mapFunction, reduceFunction);
     }
 
     private static <T> void checkTargetClass(final Class<T> targetClass) {
@@ -1048,7 +1049,7 @@ public final class MongoDBExecutor {
     }
 
     private static class GeneralCodec<T> implements Codec<T> {
-        private static final DocumentCodec documentCodec = new DocumentCodec();
+        private static final DocumentCodec documentCodec = new DocumentCodec(codecRegistry, new BsonTypeClassMap());
         private final Class<T> cls;
         private final boolean isEntityClass;
 

@@ -21,9 +21,11 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -58,6 +60,8 @@ import com.landawn.abacus.parser.ParserUtil;
 import com.landawn.abacus.parser.ParserUtil.EntityInfo;
 import com.landawn.abacus.parser.ParserUtil.PropInfo;
 import com.landawn.abacus.type.Type;
+import com.landawn.abacus.util.function.Function;
+import com.landawn.abacus.util.stream.Stream;
 
 /**
  * It's a simple wrapper of DynamoDB Java client.
@@ -1079,56 +1083,6 @@ public final class DynamoDBExecutor implements Closeable {
     //        return N.newDataSet(find(targetClass, queryRequest, pageOffset, pageCount));
     //    }
 
-    public DataSet scan(final String tableName, final List<String> attributesToGet) {
-        return scan(new ScanRequest().withTableName(tableName).withAttributesToGet(attributesToGet));
-    }
-
-    public DataSet scan(final String tableName, final Map<String, Condition> scanFilter) {
-        return scan(new ScanRequest().withTableName(tableName).withScanFilter(scanFilter));
-    }
-
-    public DataSet scan(final String tableName, final List<String> attributesToGet, final Map<String, Condition> scanFilter) {
-        return scan(new ScanRequest().withTableName(tableName).withAttributesToGet(attributesToGet).withScanFilter(scanFilter));
-    }
-
-    public DataSet scan(final ScanRequest scanRequest) {
-        return N.newDataSet(scan(Map.class, scanRequest));
-    }
-
-    //    public DataSet scan(final ScanRequest scanRequest, int pageOffset, int pageCount) {
-    //        return N.newDataSet(scan(Map.class, scanRequest, pageOffset, pageCount));
-    //    }
-
-    public <T> List<T> scan(final Class<T> targetClass, final String tableName, final List<String> attributesToGet) {
-        return scan(targetClass, new ScanRequest().withTableName(tableName).withAttributesToGet(attributesToGet));
-    }
-
-    public <T> List<T> scan(final Class<T> targetClass, final String tableName, final Map<String, Condition> scanFilter) {
-        return scan(targetClass, new ScanRequest().withTableName(tableName).withScanFilter(scanFilter));
-    }
-
-    public <T> List<T> scan(final Class<T> targetClass, final String tableName, final List<String> attributesToGet, final Map<String, Condition> scanFilter) {
-        return scan(targetClass, new ScanRequest().withTableName(tableName).withAttributesToGet(attributesToGet).withScanFilter(scanFilter));
-    }
-
-    public <T> List<T> scan(final Class<T> targetClass, final ScanRequest scanRequest) {
-        final ScanResult scanResult = dynamoDB.scan(scanRequest);
-        final List<T> res = toList(targetClass, scanResult);
-
-        if (N.notNullOrEmpty(scanResult.getLastEvaluatedKey()) && N.isNullOrEmpty(scanRequest.getExclusiveStartKey())) {
-            final ScanRequest newScanRequest = scanRequest.clone();
-            ScanResult newScanResult = scanResult;
-
-            while (N.notNullOrEmpty(newScanResult.getLastEvaluatedKey())) {
-                newScanRequest.setExclusiveStartKey(newScanResult.getLastEvaluatedKey());
-                newScanResult = dynamoDB.scan(newScanRequest);
-                res.addAll(toList(targetClass, newScanResult));
-            }
-        }
-
-        return res;
-    }
-
     //    public <T> List<T> scan(final Class<T> targetClass, final ScanRequest scanRequest, int pageOffset, int pageCount) {
     //        N.checkArgument(pageOffset >= 0 && pageCount >= 0, "'pageOffset' and 'pageCount' can't be negative");
     //
@@ -1166,6 +1120,148 @@ public final class DynamoDBExecutor implements Closeable {
     //
     //        return res;
     //    }
+
+    @SuppressWarnings("rawtypes")
+    public Stream<Map<String, Object>> stream(final QueryRequest queryRequest) {
+        return (Stream) stream(Map.class, queryRequest);
+    }
+
+    /**
+     * 
+     * @param targetClass <code>Map</code> or entity class with getter/setter method.
+     * @param queryRequest
+     * @return
+     */
+    public <T> Stream<T> stream(final Class<T> targetClass, final QueryRequest queryRequest) {
+        final QueryResult queryResult = dynamoDB.query(queryRequest);
+
+        final Iterator<Map<String, AttributeValue>> iterator = new ObjIterator<Map<String, AttributeValue>>() {
+            private Iterator<Map<String, AttributeValue>> iter = iterate(queryResult.getItems());
+            private Map<String, AttributeValue> lastEvaluatedKey = null;
+            private QueryRequest newQueryRequest = null;
+
+            {
+                if (N.notNullOrEmpty(queryResult.getLastEvaluatedKey()) && N.isNullOrEmpty(queryRequest.getExclusiveStartKey())) {
+                    lastEvaluatedKey = queryResult.getLastEvaluatedKey();
+                    newQueryRequest = queryRequest.clone();
+                }
+            }
+
+            @Override
+            public boolean hasNext() {
+                if (iter == null || iter.hasNext() == false) {
+                    while ((iter == null || iter.hasNext() == false) && N.notNullOrEmpty(lastEvaluatedKey)) {
+                        newQueryRequest.setExclusiveStartKey(lastEvaluatedKey);
+                        QueryResult newQueryResult = dynamoDB.query(newQueryRequest);
+                        lastEvaluatedKey = newQueryResult.getLastEvaluatedKey();
+                        iter = iterate(newQueryResult.getItems());
+                    }
+                }
+
+                return iter != null && iter.hasNext();
+            }
+
+            @Override
+            public Map<String, AttributeValue> next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return iter.next();
+            }
+        };
+
+        final Type<T> type = N.typeOf(targetClass);
+
+        return Stream.of(iterator).map(new Function<Map<String, AttributeValue>, T>() {
+            @Override
+            public T apply(Map<String, AttributeValue> t) {
+                return toValue(type, targetClass, t);
+            }
+        });
+    }
+
+    public Stream<Map<String, Object>> scan(final String tableName, final List<String> attributesToGet) {
+        return scan(new ScanRequest().withTableName(tableName).withAttributesToGet(attributesToGet));
+    }
+
+    public Stream<Map<String, Object>> scan(final String tableName, final Map<String, Condition> scanFilter) {
+        return scan(new ScanRequest().withTableName(tableName).withScanFilter(scanFilter));
+    }
+
+    public Stream<Map<String, Object>> scan(final String tableName, final List<String> attributesToGet, final Map<String, Condition> scanFilter) {
+        return scan(new ScanRequest().withTableName(tableName).withAttributesToGet(attributesToGet).withScanFilter(scanFilter));
+    }
+
+    @SuppressWarnings("rawtypes")
+    public Stream<Map<String, Object>> scan(final ScanRequest scanRequest) {
+        return (Stream) scan(Map.class, scanRequest);
+    }
+
+    public <T> Stream<T> scan(final Class<T> targetClass, final String tableName, final List<String> attributesToGet) {
+        return scan(targetClass, new ScanRequest().withTableName(tableName).withAttributesToGet(attributesToGet));
+    }
+
+    public <T> Stream<T> scan(final Class<T> targetClass, final String tableName, final Map<String, Condition> scanFilter) {
+        return scan(targetClass, new ScanRequest().withTableName(tableName).withScanFilter(scanFilter));
+    }
+
+    public <T> Stream<T> scan(final Class<T> targetClass, final String tableName, final List<String> attributesToGet, final Map<String, Condition> scanFilter) {
+        return scan(targetClass, new ScanRequest().withTableName(tableName).withAttributesToGet(attributesToGet).withScanFilter(scanFilter));
+    }
+
+    public <T> Stream<T> scan(final Class<T> targetClass, final ScanRequest scanRequest) {
+        final ScanResult scanResult = dynamoDB.scan(scanRequest);
+
+        final Iterator<Map<String, AttributeValue>> iterator = new ObjIterator<Map<String, AttributeValue>>() {
+            private Iterator<Map<String, AttributeValue>> iter = iterate(scanResult.getItems());
+            private Map<String, AttributeValue> lastEvaluatedKey = null;
+            private ScanRequest newScanRequest = null;
+
+            {
+                if (N.notNullOrEmpty(scanResult.getLastEvaluatedKey()) && N.isNullOrEmpty(scanRequest.getExclusiveStartKey())) {
+                    lastEvaluatedKey = scanResult.getLastEvaluatedKey();
+                    newScanRequest = scanRequest.clone();
+                }
+            }
+
+            @Override
+            public boolean hasNext() {
+                if (iter == null || iter.hasNext() == false) {
+                    while ((iter == null || iter.hasNext() == false) && N.notNullOrEmpty(lastEvaluatedKey)) {
+                        newScanRequest.setExclusiveStartKey(lastEvaluatedKey);
+                        ScanResult newScanResult = dynamoDB.scan(newScanRequest);
+                        lastEvaluatedKey = newScanResult.getLastEvaluatedKey();
+                        iter = iterate(newScanResult.getItems());
+                    }
+                }
+
+                return iter != null && iter.hasNext();
+            }
+
+            @Override
+            public Map<String, AttributeValue> next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return iter.next();
+            }
+        };
+
+        final Type<T> type = N.typeOf(targetClass);
+
+        return Stream.of(iterator).map(new Function<Map<String, AttributeValue>, T>() {
+            @Override
+            public T apply(Map<String, AttributeValue> t) {
+                return toValue(type, targetClass, t);
+            }
+        });
+    }
+
+    private Iterator<Map<String, AttributeValue>> iterate(final List<Map<String, AttributeValue>> items) {
+        return N.isNullOrEmpty(items) ? ObjIterator.<Map<String, AttributeValue>> empty() : items.iterator();
+    }
 
     @Override
     public void close() throws IOException {

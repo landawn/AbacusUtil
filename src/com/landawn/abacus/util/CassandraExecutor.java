@@ -856,6 +856,11 @@ public final class CassandraExecutor implements Closeable {
         return row == null ? (Optional<T>) Optional.empty() : Optional.of(toEntity(targetClass, row));
     }
 
+    @SuppressWarnings("rawtypes")
+    public final List<Map<String, Object>> find(final String query, final Object... parameters) {
+        return (List) find(Map.class, query, parameters);
+    }
+
     /**
      * 
      * @param targetClass an entity class with getter/setter method, <code>Map.class</code> or basic single value type(Primitive/String/Date...)
@@ -870,7 +875,7 @@ public final class CassandraExecutor implements Closeable {
 
     @SafeVarargs
     public final DataSet query(final String query, final Object... parameters) {
-        return extractData(execute(query, parameters));
+        return query(Map.class, query, parameters);
     }
 
     /**
@@ -885,9 +890,10 @@ public final class CassandraExecutor implements Closeable {
         return extractData(targetClass, execute(query, parameters));
     }
 
+    @SuppressWarnings("rawtypes")
     @SafeVarargs
-    public final Stream<Row> stream(final String query, final Object... parameters) {
-        return Stream.of(execute(query, parameters).iterator());
+    public final Stream<Map<String, Object>> stream(final String query, final Object... parameters) {
+        return (Stream) stream(Map.class, query, parameters);
     }
 
     /**
@@ -1332,6 +1338,16 @@ public final class CassandraExecutor implements Closeable {
     }
 
     @SafeVarargs
+    public final CompletableFuture<List<Map<String, Object>>> asyncFind(final String query, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<List<Map<String, Object>>>() {
+            @Override
+            public List<Map<String, Object>> call() throws Exception {
+                return find(query, parameters);
+            }
+        });
+    }
+
+    @SafeVarargs
     public final <T> CompletableFuture<List<T>> asyncFind(final Class<T> targetClass, final String query, final Object... parameters) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
@@ -1362,10 +1378,10 @@ public final class CassandraExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final CompletableFuture<Stream<Row>> asyncStream(final String query, final Object... parameters) {
-        return asyncExecutor.execute(new Callable<Stream<Row>>() {
+    public final CompletableFuture<Stream<Map<String, Object>>> asyncStream(final String query, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<Stream<Map<String, Object>>>() {
             @Override
-            public Stream<Row> call() throws Exception {
+            public Stream<Map<String, Object>> call() throws Exception {
                 return stream(query, parameters);
             }
         });
