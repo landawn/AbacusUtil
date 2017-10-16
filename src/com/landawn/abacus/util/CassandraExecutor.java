@@ -40,8 +40,10 @@ import java.util.concurrent.TimeUnit;
 import com.datastax.driver.core.BatchStatement;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Cluster;
+import com.datastax.driver.core.CodecRegistry;
 import com.datastax.driver.core.ColumnDefinitions;
 import com.datastax.driver.core.ConsistencyLevel;
+import com.datastax.driver.core.DataType;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ProtocolVersion;
 import com.datastax.driver.core.ResultSet;
@@ -146,6 +148,7 @@ public final class CassandraExecutor implements Closeable {
 
     private final Cluster cluster;
     private final Session session;
+    private final CodecRegistry codecRegistry;
     private final MappingManager mappingManager;
     private final StatementSettings settings;
     private final NamingPolicy namingPolicy;
@@ -171,6 +174,7 @@ public final class CassandraExecutor implements Closeable {
             final AsyncExecutor asyncExecutor) {
         this.cluster = session.getCluster();
         this.session = session;
+        this.codecRegistry = cluster.getConfiguration().getCodecRegistry();
         this.mappingManager = new MappingManager(session);
 
         if (settings == null) {
@@ -1493,6 +1497,8 @@ public final class CassandraExecutor implements Closeable {
 
         final ColumnDefinitions columnDefinitions = preStmt.getVariables();
         final int parameterCount = columnDefinitions.size();
+        DataType colType = null;
+        Class<?> javaClass = null;
 
         if (parameterCount == 0) {
             return preStmt.bind();
@@ -1501,14 +1507,17 @@ public final class CassandraExecutor implements Closeable {
         }
 
         if (parameterCount == 1 && parameters.length == 1) {
-            Class<?> javaClass = namedDataType.get(columnDefinitions.getType(0).getName().name());
+            colType = columnDefinitions.getType(0);
+            javaClass = namedDataType.get(colType.getName().name());
 
-            if (parameters[0] == null || javaClass.isAssignableFrom(parameters[0].getClass())) {
+            if (parameters[0] == null || (javaClass.isAssignableFrom(parameters[0].getClass())
+                    || (colType instanceof UserType && codecRegistry.codecFor(colType).accepts(parameters[0])))) {
                 return bind(preStmt, parameters);
             } else if (parameters[0] instanceof List && ((List<Object>) parameters[0]).size() == 1) {
                 final Object tmp = ((List<Object>) parameters[0]).get(0);
 
-                if (tmp == null || javaClass.isAssignableFrom(tmp.getClass())) {
+                if (tmp == null
+                        || (javaClass.isAssignableFrom(tmp.getClass()) || (colType instanceof UserType && codecRegistry.codecFor(colType).accepts(tmp)))) {
                     return bind(preStmt, tmp);
                 }
             }
@@ -1559,13 +1568,16 @@ public final class CassandraExecutor implements Closeable {
             }
         }
 
-        Class<?> javaClass = null;
         for (int i = 0; i < parameterCount; i++) {
-            javaClass = namedDataType.get(columnDefinitions.getType(i).getName().name());
+            colType = columnDefinitions.getType(i);
+            javaClass = namedDataType.get(colType.getName().name());
 
             if (values[i] == null) {
                 values[i] = N.defaultValueOf(javaClass);
-            } else if (!javaClass.isAssignableFrom(values[i].getClass())) {
+            } else if (javaClass.isAssignableFrom(values[i].getClass())
+                    || (colType instanceof UserType && codecRegistry.codecFor(colType).accepts(values[i]))) {
+                // continue;
+            } else {
                 try {
                     values[i] = N.as(javaClass, values[i]);
                 } catch (Throwable e) {

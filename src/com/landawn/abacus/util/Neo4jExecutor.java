@@ -23,9 +23,10 @@ import org.neo4j.ogm.cypher.Filter;
 import org.neo4j.ogm.cypher.Filters;
 import org.neo4j.ogm.cypher.query.Pagination;
 import org.neo4j.ogm.cypher.query.SortOrder;
-import org.neo4j.ogm.model.Result;
 import org.neo4j.ogm.session.Session;
 import org.neo4j.ogm.session.SessionFactory;
+
+import com.landawn.abacus.util.stream.Stream;
 
 /**
  * It's a simple wrapper of Neo4j Java client.
@@ -522,34 +523,31 @@ public final class Neo4jExecutor {
         }
     }
 
-    public <T> Iterable<T> query(Class<T> objectType, String cypher, Map<String, ?> parameters) {
+    public Try<Stream<Map<String, Object>>> query(String cypher, Map<String, ?> parameters) {
         final Session session = getSession();
 
-        try {
-            return session.query(objectType, cypher, parameters);
-        } finally {
-            closeSession(session);
-        }
+        return Stream.of(session.query(cypher, parameters).iterator()).onClose(newCloseHandle(session)).tried();
     }
 
-    public Result query(String cypher, Map<String, ?> parameters) {
+    public Try<Stream<Map<String, Object>>> query(String cypher, Map<String, ?> parameters, boolean readOnly) {
         final Session session = getSession();
 
-        try {
-            return session.query(cypher, parameters);
-        } finally {
-            closeSession(session);
-        }
+        return Stream.of(session.query(cypher, parameters, readOnly).iterator()).onClose(newCloseHandle(session)).tried();
     }
 
-    public Result query(String cypher, Map<String, ?> parameters, boolean readOnly) {
+    public <T> Try<Stream<T>> query(Class<T> objectType, String cypher, Map<String, ?> parameters) {
         final Session session = getSession();
 
-        try {
-            return session.query(cypher, parameters, readOnly);
-        } finally {
-            closeSession(session);
-        }
+        return Stream.of(session.query(objectType, cypher, parameters).iterator()).onClose(newCloseHandle(session)).tried();
+    }
+
+    private Runnable newCloseHandle(final Session session) {
+        return new Runnable() {
+            @Override
+            public void run() {
+                closeSession(session);
+            }
+        };
     }
 
     public long countEntitiesOfType(Class<?> entity) {
