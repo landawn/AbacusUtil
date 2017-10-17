@@ -395,7 +395,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * 
      * @param <U> the type of the resulting elements
      * @param sameRange a non-interfering, stateless predicate to apply to
-     *        the pair of adjacent elements which returns true for elements
+     *        the leftmost and next elements which returns true for elements
      *        which belong to the same range.
      * @param mapper a non-interfering, stateless function to apply to the
      *        range borders and produce the resulting element. If value was

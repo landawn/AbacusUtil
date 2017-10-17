@@ -314,27 +314,40 @@ abstract class AbstractStream<T> extends Stream<T> {
 
         return newStream(new ObjIteratorEx<U>() {
             private final T NULL = (T) Stream.NONE;
-            private T next = NULL;
+            private T left = NULL;
+            private T right = null;
+            private T next = null;
 
             @Override
             public boolean hasNext() {
-                return next != NULL || iter.hasNext();
+                return left != NULL || iter.hasNext();
             }
 
             @Override
             public U next() {
-                final T left = next == NULL ? iter.next() : next;
-                T right = left;
-
-                while (iter.hasNext() && sameRange.test(right, (next = iter.next()))) {
-                    right = next;
+                if (left == NULL) {
+                    left = iter.next();
                 }
 
-                if (right == next) {
-                    next = NULL;
+                right = left;
+                boolean hasNext = false;
+
+                while (iter.hasNext()) {
+                    next = iter.next();
+
+                    if (sameRange.test(left, next)) {
+                        right = next;
+                    } else {
+                        hasNext = true;
+                        break;
+                    }
                 }
 
-                return mapper.apply(left, right);
+                final U res = mapper.apply(left, right);
+
+                left = hasNext ? next : NULL;
+
+                return res;
             }
         }, false, null);
     }

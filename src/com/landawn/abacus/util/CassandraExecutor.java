@@ -289,12 +289,6 @@ public final class CassandraExecutor implements Closeable {
         return (List<T>) resultList;
     }
 
-    public static <T> T toEntity(final Class<T> targetClass, final ResultSet resultSet) {
-        final Row row = resultSet.one();
-
-        return row == null ? null : toEntity(targetClass, row);
-    }
-
     /**
      * 
      * @param targetClass an entity class with getter/setter method or <code>Map.class</code>

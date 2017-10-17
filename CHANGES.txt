@@ -1,4 +1,12 @@
 ﻿
+
+﻿========Changes in 1.0.4 =========================================================================
+
+1*, Refactoring Stream.rangeMap(...): Change 'sameRange' from 'the pair of adjacent' to 'the leftmost and next elements'.
+
+2, Improvements and bug fix.
+
+
 ﻿========Changes in 1.0.3 =========================================================================
 
 1, Add DynamoDBExecutor.stream.
