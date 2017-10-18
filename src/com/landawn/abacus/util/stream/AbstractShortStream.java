@@ -572,14 +572,14 @@ abstract class AbstractShortStream extends ShortStream {
     }
 
     @Override
-    public Optional<Map<Percentage, Short>> distribution() {
+    public Optional<Map<Percentage, Short>> percentiles() {
         final short[] a = sorted().toArray();
 
         if (a.length == 0) {
             return Optional.empty();
         }
 
-        return Optional.of(N.distribution(a));
+        return Optional.of(N.percentiles(a));
     }
 
     @Override
@@ -589,7 +589,7 @@ abstract class AbstractShortStream extends ShortStream {
         if (N.isNullOrEmpty(a)) {
             return Pair.of(new ShortSummaryStatistics(), Optional.<Map<Percentage, Short>> empty());
         } else {
-            return Pair.of(new ShortSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
+            return Pair.of(new ShortSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.percentiles(a)));
         }
     }
 

@@ -1609,25 +1609,25 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public Optional<Map<Percentage, T>> distribution() {
+    public Optional<Map<Percentage, T>> percentiles() {
         final Object[] a = sorted().toArray();
 
         if (N.isNullOrEmpty(a)) {
             return Optional.empty();
         }
 
-        return Optional.of((Map<Percentage, T>) N.distribution(a));
+        return Optional.of((Map<Percentage, T>) N.percentiles(a));
     }
 
     @Override
-    public Optional<Map<Percentage, T>> distribution(Comparator<? super T> comparator) {
+    public Optional<Map<Percentage, T>> percentiles(Comparator<? super T> comparator) {
         final Object[] a = sorted(comparator).toArray();
 
         if (N.isNullOrEmpty(a)) {
             return Optional.empty();
         }
 
-        return Optional.of((Map<Percentage, T>) N.distribution(a));
+        return Optional.of((Map<Percentage, T>) N.percentiles(a));
     }
 
     //    @Override

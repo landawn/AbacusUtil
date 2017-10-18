@@ -389,6 +389,12 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * Returns a stream consisting of results of applying the given function to
      * the ranges created from the source elements.
      * 
+     * <pre>
+     * <code>
+     * Stream.of("a", "ab", "ac", "b", "c", "cb").rangeMap((a, b) -> b.startsWith(a), (a, b) -> a + "->" + b).toList(); // a->ac, b->b, c->cb
+     * </code>
+     * </pre>
+     * 
      * <p>
      * This is a <a href="package-summary.html#StreamOps">quasi-intermediate</a>
      * partial reduction operation.
@@ -1596,7 +1602,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
 
     public abstract OptionalDouble averageDouble(ToDoubleFunction<? super T> mapper);
 
-    public abstract Optional<Map<Percentage, T>> distribution(Comparator<? super T> comparator);
+    public abstract Optional<Map<Percentage, T>> percentiles(Comparator<? super T> comparator);
 
     public abstract Stream<List<T>> combinations();
 

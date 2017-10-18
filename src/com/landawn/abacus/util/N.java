@@ -30529,7 +30529,7 @@ public final class N {
      * @return
      * @throws IllegalArgumentException if the specified <code>sortedArray</code> is null or empty.
      */
-    public static Map<Percentage, Character> distribution(final char[] sortedArray) {
+    public static Map<Percentage, Character> percentiles(final char[] sortedArray) {
         N.checkNullOrEmpty(sortedArray, "The spcified 'sortedArray' can't be null or empty");
 
         final int len = sortedArray.length;
@@ -30549,7 +30549,7 @@ public final class N {
      * @return
      * @throws IllegalArgumentException if the specified <code>sortedArray</code> is null or empty.
      */
-    public static Map<Percentage, Byte> distribution(final byte[] sortedArray) {
+    public static Map<Percentage, Byte> percentiles(final byte[] sortedArray) {
         N.checkNullOrEmpty(sortedArray, "The spcified 'sortedArray' can't be null or empty");
 
         final int len = sortedArray.length;
@@ -30569,7 +30569,7 @@ public final class N {
      * @return
      * @throws IllegalArgumentException if the specified <code>sortedArray</code> is null or empty.
      */
-    public static Map<Percentage, Short> distribution(final short[] sortedArray) {
+    public static Map<Percentage, Short> percentiles(final short[] sortedArray) {
         N.checkNullOrEmpty(sortedArray, "The spcified 'sortedArray' can't be null or empty");
 
         final int len = sortedArray.length;
@@ -30589,7 +30589,7 @@ public final class N {
      * @return
      * @throws IllegalArgumentException if the specified <code>sortedArray</code> is null or empty.
      */
-    public static Map<Percentage, Integer> distribution(final int[] sortedArray) {
+    public static Map<Percentage, Integer> percentiles(final int[] sortedArray) {
         N.checkNullOrEmpty(sortedArray, "The spcified 'sortedArray' can't be null or empty");
 
         final int len = sortedArray.length;
@@ -30609,7 +30609,7 @@ public final class N {
      * @return
      * @throws IllegalArgumentException if the specified <code>sortedArray</code> is null or empty.
      */
-    public static Map<Percentage, Long> distribution(final long[] sortedArray) {
+    public static Map<Percentage, Long> percentiles(final long[] sortedArray) {
         N.checkNullOrEmpty(sortedArray, "The spcified 'sortedArray' can't be null or empty");
 
         final int len = sortedArray.length;
@@ -30629,7 +30629,7 @@ public final class N {
      * @return
      * @throws IllegalArgumentException if the specified <code>sortedArray</code> is null or empty.
      */
-    public static Map<Percentage, Float> distribution(final float[] sortedArray) {
+    public static Map<Percentage, Float> percentiles(final float[] sortedArray) {
         N.checkNullOrEmpty(sortedArray, "The spcified 'sortedArray' can't be null or empty");
 
         final int len = sortedArray.length;
@@ -30649,7 +30649,7 @@ public final class N {
      * @return
      * @throws IllegalArgumentException if the specified <code>sortedArray</code> is null or empty.
      */
-    public static Map<Percentage, Double> distribution(final double[] sortedArray) {
+    public static Map<Percentage, Double> percentiles(final double[] sortedArray) {
         N.checkNullOrEmpty(sortedArray, "The spcified 'sortedArray' can't be null or empty");
 
         final int len = sortedArray.length;
@@ -30669,7 +30669,7 @@ public final class N {
      * @return
      * @throws IllegalArgumentException if the specified <code>sortedArray</code> is null or empty.
      */
-    public static <T> Map<Percentage, T> distribution(final T[] sortedArray) {
+    public static <T> Map<Percentage, T> percentiles(final T[] sortedArray) {
         N.checkNullOrEmpty(sortedArray, "The spcified 'sortedArray' can't be null or empty");
 
         final int len = sortedArray.length;
@@ -30689,7 +30689,7 @@ public final class N {
      * @return
      * @throws IllegalArgumentException if the specified <code>sortedArray</code> is null or empty.
      */
-    public static <T> Map<Percentage, T> distribution(final List<T> sortedList) {
+    public static <T> Map<Percentage, T> percentiles(final List<T> sortedList) {
         N.checkNullOrEmpty(sortedList, "The spcified 'sortedList' can't be null or empty");
 
         final int size = sortedList.size();

@@ -4,7 +4,13 @@
 
 1*, Refactoring Stream.rangeMap(...): Change 'sameRange' from 'the pair of adjacent' to 'the leftmost and next elements'.
 
-2, Improvements and bug fix.
+2*, Remove CassandraExecutor.toEntity(Class<T>, ResultSet).
+
+3*, Rename distribution to percentiles.
+
+4, Add DataSet.apply/accept
+
+5, Improvements and bug fix.
 
 
 ﻿========Changes in 1.0.3 =========================================================================

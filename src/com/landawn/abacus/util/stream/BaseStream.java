@@ -338,7 +338,7 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      * 
      * @return
      */
-    Optional<Map<Percentage, T>> distribution();
+    Optional<Map<Percentage, T>> percentiles();
 
     /**
      * 

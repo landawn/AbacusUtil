@@ -637,14 +637,14 @@ abstract class AbstractFloatStream extends FloatStream {
     }
 
     @Override
-    public Optional<Map<Percentage, Float>> distribution() {
+    public Optional<Map<Percentage, Float>> percentiles() {
         final float[] a = sorted().toArray();
 
         if (a.length == 0) {
             return Optional.empty();
         }
 
-        return Optional.of(N.distribution(a));
+        return Optional.of(N.percentiles(a));
     }
 
     @Override
@@ -654,7 +654,7 @@ abstract class AbstractFloatStream extends FloatStream {
         if (N.isNullOrEmpty(a)) {
             return Pair.of(new FloatSummaryStatistics(), Optional.<Map<Percentage, Float>> empty());
         } else {
-            return Pair.of(new FloatSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
+            return Pair.of(new FloatSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.percentiles(a)));
         }
     }
 

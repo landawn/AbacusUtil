@@ -572,14 +572,14 @@ abstract class AbstractCharStream extends CharStream {
     }
 
     @Override
-    public Optional<Map<Percentage, Character>> distribution() {
+    public Optional<Map<Percentage, Character>> percentiles() {
         final char[] a = sorted().toArray();
 
         if (a.length == 0) {
             return Optional.empty();
         }
 
-        return Optional.of(N.distribution(a));
+        return Optional.of(N.percentiles(a));
     }
 
     @Override
@@ -589,7 +589,7 @@ abstract class AbstractCharStream extends CharStream {
         if (N.isNullOrEmpty(a)) {
             return Pair.of(new CharSummaryStatistics(), Optional.<Map<Percentage, Character>> empty());
         } else {
-            return Pair.of(new CharSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
+            return Pair.of(new CharSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.percentiles(a)));
         }
     }
 

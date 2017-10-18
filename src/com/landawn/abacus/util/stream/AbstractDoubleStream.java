@@ -636,14 +636,14 @@ abstract class AbstractDoubleStream extends DoubleStream {
     }
 
     @Override
-    public Optional<Map<Percentage, Double>> distribution() {
+    public Optional<Map<Percentage, Double>> percentiles() {
         final double[] a = sorted().toArray();
 
         if (a.length == 0) {
             return Optional.empty();
         }
 
-        return Optional.of(N.distribution(a));
+        return Optional.of(N.percentiles(a));
     }
 
     @Override
@@ -653,7 +653,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
         if (N.isNullOrEmpty(a)) {
             return Pair.of(new DoubleSummaryStatistics(), Optional.<Map<Percentage, Double>> empty());
         } else {
-            return Pair.of(new DoubleSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
+            return Pair.of(new DoubleSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.percentiles(a)));
         }
     }
 

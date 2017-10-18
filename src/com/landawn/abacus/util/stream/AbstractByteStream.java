@@ -574,14 +574,14 @@ abstract class AbstractByteStream extends ByteStream {
     }
 
     @Override
-    public Optional<Map<Percentage, Byte>> distribution() {
+    public Optional<Map<Percentage, Byte>> percentiles() {
         final byte[] a = sorted().toArray();
 
         if (a.length == 0) {
             return Optional.empty();
         }
 
-        return Optional.of(N.distribution(a));
+        return Optional.of(N.percentiles(a));
     }
 
     @Override
@@ -591,7 +591,7 @@ abstract class AbstractByteStream extends ByteStream {
         if (N.isNullOrEmpty(a)) {
             return Pair.of(new ByteSummaryStatistics(), Optional.<Map<Percentage, Byte>> empty());
         } else {
-            return Pair.of(new ByteSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
+            return Pair.of(new ByteSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.percentiles(a)));
         }
     }
 

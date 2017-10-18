@@ -3404,7 +3404,7 @@ public interface DataSet extends Iterable<Object[]> {
     //     * @param columnName
     //     * @return
     //     */
-    //    <T extends Comparable<T>> Map<String, T> distribution(String columnName);
+    //    <T extends Comparable<T>> Map<String, T> percentiles(String columnName);
     //
     //    /**
     //     * Returns the elements at: <code>0.01%, 0.1%, 1%, 10%, 20%, 30%, 50%, 70%, 80%, 90%, 99%, 99.9%, 99.99%</code> * length of the specified column after it's sorted.
@@ -3413,7 +3413,7 @@ public interface DataSet extends Iterable<Object[]> {
     //     * @param comparator
     //     * @return
     //     */
-    //    <T> Map<String, T> distribution(String columnName, Comparator<? super T> comparator);
+    //    <T> Map<String, T> percentiles(String columnName, Comparator<? super T> comparator);
 
     /**
      * 
@@ -3545,6 +3545,10 @@ public interface DataSet extends Iterable<Object[]> {
      * @return
      */
     <T> Stream<T> stream(IntFunction<? extends T> rowSupplier, Collection<String> columnNames, int fromRowIndex, int toRowIndex);
+
+    void accept(Consumer<? super DataSet> action);
+
+    <R> R apply(Function<? super DataSet, R> func);
 
     /**
      * Method freeze

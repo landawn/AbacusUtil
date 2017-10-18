@@ -572,14 +572,14 @@ abstract class AbstractIntStream extends IntStream {
     }
 
     @Override
-    public Optional<Map<Percentage, Integer>> distribution() {
+    public Optional<Map<Percentage, Integer>> percentiles() {
         final int[] a = sorted().toArray();
 
         if (a.length == 0) {
             return Optional.empty();
         }
 
-        return Optional.of(N.distribution(a));
+        return Optional.of(N.percentiles(a));
     }
 
     @Override
@@ -589,7 +589,7 @@ abstract class AbstractIntStream extends IntStream {
         if (N.isNullOrEmpty(a)) {
             return Pair.of(new IntSummaryStatistics(), Optional.<Map<Percentage, Integer>> empty());
         } else {
-            return Pair.of(new IntSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
+            return Pair.of(new IntSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.percentiles(a)));
         }
     }
 

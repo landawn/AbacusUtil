@@ -571,14 +571,14 @@ abstract class AbstractLongStream extends LongStream {
     }
 
     @Override
-    public Optional<Map<Percentage, Long>> distribution() {
+    public Optional<Map<Percentage, Long>> percentiles() {
         final long[] a = sorted().toArray();
 
         if (a.length == 0) {
             return Optional.empty();
         }
 
-        return Optional.of(N.distribution(a));
+        return Optional.of(N.percentiles(a));
     }
 
     @Override
@@ -588,7 +588,7 @@ abstract class AbstractLongStream extends LongStream {
         if (N.isNullOrEmpty(a)) {
             return Pair.of(new LongSummaryStatistics(), Optional.<Map<Percentage, Long>> empty());
         } else {
-            return Pair.of(new LongSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.distribution(a)));
+            return Pair.of(new LongSummaryStatistics(a.length, sum(a), a[0], a[a.length - 1]), Optional.of(N.percentiles(a)));
         }
     }
 
