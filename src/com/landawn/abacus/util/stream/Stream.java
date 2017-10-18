@@ -52,8 +52,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.joda.time.Duration;
-
 import com.landawn.abacus.DataSet;
 import com.landawn.abacus.DirtyMarker;
 import com.landawn.abacus.annotation.Beta;
@@ -66,6 +64,7 @@ import com.landawn.abacus.util.Charsets;
 import com.landawn.abacus.util.ClassUtil;
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.DoubleIterator;
+import com.landawn.abacus.util.Duration;
 import com.landawn.abacus.util.FloatIterator;
 import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.Holder;
@@ -3102,7 +3101,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
 
     public static <T> Stream<T> observe(final BlockingQueue<T> queue, final Duration duration) {
         final Iterator<T> iter = new ObjIterator<T>() {
-            private final long endTime = N.currentMillis() + duration.getMillis();
+            private final long endTime = N.currentMillis() + duration.toMillis();
             private T next = null;
 
             @Override
