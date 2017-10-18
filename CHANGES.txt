@@ -10,7 +10,9 @@
 
 4, Add DataSet.apply/accept
 
-5, Improvements and bug fix.
+5, Support pushable Stream by Stream.observe(...).
+
+6, Improvements and bug fix.
 
 
 ﻿========Changes in 1.0.3 =========================================================================

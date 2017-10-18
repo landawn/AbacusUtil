@@ -52,6 +52,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.joda.time.Duration;
+
 import com.landawn.abacus.DataSet;
 import com.landawn.abacus.DirtyMarker;
 import com.landawn.abacus.annotation.Beta;
@@ -3098,54 +3100,81 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         return of(iter);
     }
 
-    //    /**
-    //     * Generate the pushable Stream.
-    //     * 
-    //     * @param queue
-    //     * @return
-    //     */
-    //    public static <T> Stream<T> pull(final BlockingQueue<T> queue) {
-    //        return pull(queue, Stream.NONE);
-    //    }
-    //
-    //    /**
-    //     * Generate the pushable Stream.
-    //     * 
-    //     * @param queue
-    //     * @param endOfQueue value to identify no more elements. Default is <code>Stream.NONE</code>
-    //     * @return
-    //     */
-    //    public static <T> Stream<T> pull(final BlockingQueue<T> queue, final Object endOfQueue) {
-    //        N.requireNonNull(endOfQueue);
-    //
-    //        return of(new ImmutableIterator<T>() {
-    //            private T next = null;
-    //
-    //            @Override
-    //            public boolean hasNext() {
-    //                if (next == null) {
-    //                    try {
-    //                        next = queue.poll(Long.MAX_VALUE, TimeUnit.MILLISECONDS);
-    //                    } catch (InterruptedException e) {
-    //                        throw N.toRuntimeException(e);
-    //                    }
-    //                }
-    //
-    //                return next != endOfQueue;
-    //            }
-    //
-    //            @Override
-    //            public T next() {
-    //                if (hasNext() == false) {
-    //                    throw new NoSuchElementException();
-    //                }
-    //
-    //                final T result = next;
-    //                next = null;
-    //                return result;
-    //            }
-    //        });
-    //    }
+    public static <T> Stream<T> observe(final BlockingQueue<T> queue, final Duration duration) {
+        final Iterator<T> iter = new ObjIterator<T>() {
+            private final long endTime = N.currentMillis() + duration.getMillis();
+            private T next = null;
+
+            @Override
+            public boolean hasNext() {
+                if (next == null) {
+                    final long curTime = N.currentMillis();
+
+                    if (curTime <= endTime) {
+                        try {
+                            next = queue.poll(endTime - curTime, TimeUnit.MILLISECONDS);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                }
+
+                return next != null;
+            }
+
+            @Override
+            public T next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final T res = next;
+                next = null;
+                return res;
+            }
+        };
+
+        return of(iter);
+    }
+
+    public static <T> Stream<T> observe(final BlockingQueue<T> queue, final Predicate<? super T> isLast, final long maxWaitIntervalInMillis) {
+        N.checkArgument(maxWaitIntervalInMillis > 0, "'maxWaitIntervalInMillis' can't be %s. It must be positive");
+
+        final Iterator<T> iter = new ObjIterator<T>() {
+            private T next = null;
+            private boolean isDone = false;
+
+            @Override
+            public boolean hasNext() {
+                if (next == null && isDone == false) {
+                    do {
+                        try {
+                            next = queue.poll(maxWaitIntervalInMillis, TimeUnit.MILLISECONDS);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+
+                        isDone = isLast.test(next);
+                    } while (next != null && isDone == false);
+                }
+
+                return next != null;
+            }
+
+            @Override
+            public T next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                final T res = next;
+                next = null;
+                return res;
+            }
+        };
+
+        return of(iter);
+    }
 
     @SafeVarargs
     public static <T> Stream<T> concat(final T[]... a) {
