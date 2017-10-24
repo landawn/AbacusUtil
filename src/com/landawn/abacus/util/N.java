@@ -10568,7 +10568,7 @@ public final class N {
      * @return boolean
      */
     public static boolean equals(final boolean[] a, final boolean[] b) {
-        return (a == null || b == null) ? a == b : (a.length == b.length && equals(a, 0, b, 0, a.length));
+        return a == b || (a != null && b != null && a.length == b.length && equals(a, 0, b, 0, a.length));
     }
 
     /**
@@ -10609,7 +10609,7 @@ public final class N {
      * @return boolean
      */
     public static boolean equals(final char[] a, final char[] b) {
-        return (a == null || b == null) ? a == b : (a.length == b.length && equals(a, 0, b, 0, a.length));
+        return a == b || (a != null && b != null && a.length == b.length && equals(a, 0, b, 0, a.length));
     }
 
     /**
@@ -10650,7 +10650,7 @@ public final class N {
      * @return boolean
      */
     public static boolean equals(final byte[] a, final byte[] b) {
-        return (a == null || b == null) ? a == b : (a.length == b.length && equals(a, 0, b, 0, a.length));
+        return a == b || (a != null && b != null && a.length == b.length && equals(a, 0, b, 0, a.length));
     }
 
     /**
@@ -10691,7 +10691,7 @@ public final class N {
      * @return boolean
      */
     public static boolean equals(final short[] a, final short[] b) {
-        return (a == null || b == null) ? a == b : (a.length == b.length && equals(a, 0, b, 0, a.length));
+        return a == b || (a != null && b != null && a.length == b.length && equals(a, 0, b, 0, a.length));
     }
 
     /**
@@ -10732,7 +10732,7 @@ public final class N {
      * @return boolean
      */
     public static boolean equals(final int[] a, final int[] b) {
-        return (a == null || b == null) ? a == b : (a.length == b.length && equals(a, 0, b, 0, a.length));
+        return a == b || (a != null && b != null && a.length == b.length && equals(a, 0, b, 0, a.length));
     }
 
     /**
@@ -10773,7 +10773,7 @@ public final class N {
      * @return boolean
      */
     public static boolean equals(final long[] a, final long[] b) {
-        return (a == null || b == null) ? a == b : (a.length == b.length && equals(a, 0, b, 0, a.length));
+        return a == b || (a != null && b != null && a.length == b.length && equals(a, 0, b, 0, a.length));
     }
 
     /**
@@ -10814,7 +10814,7 @@ public final class N {
      * @return boolean
      */
     public static boolean equals(final float[] a, final float[] b) {
-        return (a == null || b == null) ? a == b : (a.length == b.length && equals(a, 0, b, 0, a.length));
+        return a == b || (a != null && b != null && a.length == b.length && equals(a, 0, b, 0, a.length));
     }
 
     /**
@@ -10855,7 +10855,7 @@ public final class N {
      * @return boolean
      */
     public static boolean equals(final double[] a, final double[] b) {
-        return (a == null || b == null) ? a == b : (a.length == b.length && equals(a, 0, b, 0, a.length));
+        return a == b || (a != null && b != null && a.length == b.length && equals(a, 0, b, 0, a.length));
     }
 
     /**
@@ -10896,7 +10896,7 @@ public final class N {
      * @return boolean
      */
     public static boolean equals(final Object[] a, final Object[] b) {
-        return (a == null || b == null) ? a == b : (a.length == b.length && equals(a, 0, b, 0, a.length));
+        return a == b || (a != null && b != null && a.length == b.length && equals(a, 0, b, 0, a.length));
     }
 
     /**
@@ -10938,7 +10938,7 @@ public final class N {
      * @return
      */
     public static boolean deepEquals(final Object[] a, final Object[] b) {
-        return (a == null || b == null) ? a == b : (a.length == b.length && deepEquals(a, 0, b, 0, a.length));
+        return a == b || (a != null && b != null && a.length == b.length && deepEquals(a, 0, b, 0, a.length));
     }
 
     public static boolean deepEquals(final Object[] a, final int fromIndexA, final Object[] b, final int fromIndexB, final int len) {
@@ -30533,7 +30533,7 @@ public final class N {
         N.checkNullOrEmpty(sortedArray, "The spcified 'sortedArray' can't be null or empty");
 
         final int len = sortedArray.length;
-        final Map<Percentage, Character> m = new LinkedHashMap<>(32);
+        final Map<Percentage, Character> m = new LinkedHashMap<>(N.initHashCapacity(Percentage.values().length));
 
         for (Percentage p : Percentage.values()) {
             m.put(p, sortedArray[(int) (len * p.doubleValue())]);
@@ -30553,7 +30553,7 @@ public final class N {
         N.checkNullOrEmpty(sortedArray, "The spcified 'sortedArray' can't be null or empty");
 
         final int len = sortedArray.length;
-        final Map<Percentage, Byte> m = new LinkedHashMap<>(32);
+        final Map<Percentage, Byte> m = new LinkedHashMap<>(N.initHashCapacity(Percentage.values().length));
 
         for (Percentage p : Percentage.values()) {
             m.put(p, sortedArray[(int) (len * p.doubleValue())]);
@@ -30573,7 +30573,7 @@ public final class N {
         N.checkNullOrEmpty(sortedArray, "The spcified 'sortedArray' can't be null or empty");
 
         final int len = sortedArray.length;
-        final Map<Percentage, Short> m = new LinkedHashMap<>(32);
+        final Map<Percentage, Short> m = new LinkedHashMap<>(N.initHashCapacity(Percentage.values().length));
 
         for (Percentage p : Percentage.values()) {
             m.put(p, sortedArray[(int) (len * p.doubleValue())]);
@@ -30593,7 +30593,7 @@ public final class N {
         N.checkNullOrEmpty(sortedArray, "The spcified 'sortedArray' can't be null or empty");
 
         final int len = sortedArray.length;
-        final Map<Percentage, Integer> m = new LinkedHashMap<>(32);
+        final Map<Percentage, Integer> m = new LinkedHashMap<>(N.initHashCapacity(Percentage.values().length));
 
         for (Percentage p : Percentage.values()) {
             m.put(p, sortedArray[(int) (len * p.doubleValue())]);
@@ -30613,7 +30613,7 @@ public final class N {
         N.checkNullOrEmpty(sortedArray, "The spcified 'sortedArray' can't be null or empty");
 
         final int len = sortedArray.length;
-        final Map<Percentage, Long> m = new LinkedHashMap<>(32);
+        final Map<Percentage, Long> m = new LinkedHashMap<>(N.initHashCapacity(Percentage.values().length));
 
         for (Percentage p : Percentage.values()) {
             m.put(p, sortedArray[(int) (len * p.doubleValue())]);
@@ -30633,7 +30633,7 @@ public final class N {
         N.checkNullOrEmpty(sortedArray, "The spcified 'sortedArray' can't be null or empty");
 
         final int len = sortedArray.length;
-        final Map<Percentage, Float> m = new LinkedHashMap<>(32);
+        final Map<Percentage, Float> m = new LinkedHashMap<>(N.initHashCapacity(Percentage.values().length));
 
         for (Percentage p : Percentage.values()) {
             m.put(p, sortedArray[(int) (len * p.doubleValue())]);
@@ -30653,7 +30653,7 @@ public final class N {
         N.checkNullOrEmpty(sortedArray, "The spcified 'sortedArray' can't be null or empty");
 
         final int len = sortedArray.length;
-        final Map<Percentage, Double> m = new LinkedHashMap<>(32);
+        final Map<Percentage, Double> m = new LinkedHashMap<>(N.initHashCapacity(Percentage.values().length));
 
         for (Percentage p : Percentage.values()) {
             m.put(p, sortedArray[(int) (len * p.doubleValue())]);
@@ -30673,7 +30673,7 @@ public final class N {
         N.checkNullOrEmpty(sortedArray, "The spcified 'sortedArray' can't be null or empty");
 
         final int len = sortedArray.length;
-        final Map<Percentage, T> m = new LinkedHashMap<>(32);
+        final Map<Percentage, T> m = new LinkedHashMap<>(N.initHashCapacity(Percentage.values().length));
 
         for (Percentage p : Percentage.values()) {
             m.put(p, sortedArray[(int) (len * p.doubleValue())]);
@@ -30693,7 +30693,7 @@ public final class N {
         N.checkNullOrEmpty(sortedList, "The spcified 'sortedList' can't be null or empty");
 
         final int size = sortedList.size();
-        final Map<Percentage, T> m = new LinkedHashMap<>(32);
+        final Map<Percentage, T> m = new LinkedHashMap<>(N.initHashCapacity(Percentage.values().length));
 
         for (Percentage p : Percentage.values()) {
             m.put(p, sortedList.get((int) (size * p.doubleValue())));

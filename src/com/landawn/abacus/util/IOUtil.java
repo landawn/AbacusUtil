@@ -17,7 +17,6 @@
 package com.landawn.abacus.util;
 
 import java.io.ByteArrayInputStream;
-import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -120,6 +119,8 @@ public final class IOUtil {
         stringDecodeMethod = decodeMethod;
     }
 
+    public static final String HOST_NAME;
+
     static {
         String hostName = null;
         final boolean IS_PLATFORM_ANDROID = System.getProperty("java.vendor").toUpperCase().contains("ANDROID")
@@ -151,8 +152,6 @@ public final class IOUtil {
     public static final int CPU_CORES = Runtime.getRuntime().availableProcessors();
 
     public static final int MAX_MEMORY_IN_MB = (int) (Runtime.getRuntime().maxMemory() / (1024 * 1024));
-
-    public static final String HOST_NAME;
 
     // ...
     public static final String OS_NAME = System.getProperty("os.name");
@@ -2618,32 +2617,6 @@ public final class IOUtil {
         }
     }
 
-    public static void close(final ZipFile file) {
-        if (file != null) {
-            try {
-                file.close();
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
-        }
-    }
-
-    public static void close(final InputStream is) {
-        close((Closeable) is);
-    }
-
-    public static void close(final OutputStream os) {
-        close((Closeable) os);
-    }
-
-    public static void close(final Reader reader) {
-        close((Closeable) reader);
-    }
-
-    public static void close(final Writer writer) {
-        close((Closeable) writer);
-    }
-
     public static void close(final AutoCloseable closeable) {
         if (closeable != null) {
             try {
@@ -2655,25 +2628,25 @@ public final class IOUtil {
     }
 
     @SafeVarargs
-    public static void close(final AutoCloseable... a) {
+    public static void closeAll(final AutoCloseable... a) {
         if (N.isNullOrEmpty(a)) {
             return;
         }
 
-        close(Arrays.asList(a));
+        closeAll(Arrays.asList(a));
     }
 
-    public static void close(final Collection<? extends AutoCloseable> c) {
+    public static void closeAll(final Collection<? extends AutoCloseable> c) {
         if (N.isNullOrEmpty(c)) {
             return;
         }
 
-        RuntimeException ex = null;
+        Throwable ex = null;
 
         for (AutoCloseable closeable : c) {
             try {
                 close(closeable);
-            } catch (RuntimeException e) {
+            } catch (Throwable e) {
                 if (ex == null) {
                     ex = e;
                 } else {
@@ -2683,35 +2656,8 @@ public final class IOUtil {
         }
 
         if (ex != null) {
-            throw ex;
+            throw N.toRuntimeException(ex);
         }
-    }
-
-    public static void closeQuietly(final ZipFile file) {
-        if (file != null) {
-            try {
-                file.close();
-            } catch (Throwable e) {
-                // ignore
-                logger.error("Failed to close", e);
-            }
-        }
-    }
-
-    public static void closeQuietly(final InputStream is) {
-        closeQuietly((Closeable) is);
-    }
-
-    public static void closeQuietly(final OutputStream os) {
-        closeQuietly((Closeable) os);
-    }
-
-    public static void closeQuietly(final Reader reader) {
-        closeQuietly((Closeable) reader);
-    }
-
-    public static void closeQuietly(final Writer writer) {
-        closeQuietly((Closeable) writer);
     }
 
     public static void closeQuietly(final AutoCloseable closeable) {
@@ -2726,15 +2672,15 @@ public final class IOUtil {
     }
 
     @SafeVarargs
-    public static void closeQuietly(final AutoCloseable... a) {
+    public static void closeAllQuietly(final AutoCloseable... a) {
         if (N.isNullOrEmpty(a)) {
             return;
         }
 
-        closeQuietly(Arrays.asList(a));
+        closeAllQuietly(Arrays.asList(a));
     }
 
-    public static void closeQuietly(final Collection<? extends AutoCloseable> c) {
+    public static void closeAllQuietly(final Collection<? extends AutoCloseable> c) {
         if (N.isNullOrEmpty(c)) {
             return;
         }

@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.ConcurrentModificationException;
+import java.util.Deque;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
@@ -753,16 +754,27 @@ public final class Seq<T> extends ImmutableCollection<T> {
             }
 
             return NullabLe.empty();
-        } else {
-            T result = (T) N.NULL_MASK;
+        } else if (coll instanceof Deque) {
+            final Iterator<T> iter = ((Deque<T>) coll).descendingIterator();
+            T next = null;
 
-            for (T e : coll) {
-                if (predicate.test(e)) {
-                    result = e;
+            while (iter.hasNext()) {
+                if (predicate.test((next = iter.next()))) {
+                    return NullabLe.of(next);
                 }
             }
 
-            return result == N.NULL_MASK ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(result);
+            return NullabLe.empty();
+        } else {
+            final T[] a = (T[]) coll.toArray();
+
+            for (int i = a.length - 1; i >= 0; i--) {
+                if (predicate.test(a[i])) {
+                    return NullabLe.of(a[i]);
+                }
+            }
+
+            return NullabLe.empty();
         }
     }
 
@@ -809,19 +821,26 @@ public final class Seq<T> extends ImmutableCollection<T> {
             }
 
             return OptionalInt.empty();
-        } else {
-            int result = -1;
-            int idx = 0;
+        } else if (coll instanceof Deque) {
+            final Iterator<T> iter = ((Deque<T>) coll).descendingIterator();
 
-            for (T e : coll) {
-                if (predicate.test(e)) {
-                    result = idx;
+            for (int i = coll.size() - 1; iter.hasNext(); i--) {
+                if (predicate.test(iter.next())) {
+                    return OptionalInt.of(i);
                 }
-
-                idx++;
             }
 
-            return result == -1 ? OptionalInt.empty() : OptionalInt.of(result);
+            return OptionalInt.empty();
+        } else {
+            final T[] a = (T[]) coll.toArray();
+
+            for (int i = a.length - 1; i >= 0; i--) {
+                if (predicate.test(a[i])) {
+                    return OptionalInt.of(i);
+                }
+            }
+
+            return OptionalInt.empty();
         }
     }
 
@@ -830,21 +849,9 @@ public final class Seq<T> extends ImmutableCollection<T> {
             return NullabLe.<T> empty();
         }
 
-        final Iterator<T> iter = iterator();
-        T last = (T) N.NULL_MASK;
-        T next = null;
+        final NullabLe<T> res = findFirst(predicateForFirst);
 
-        while (iter.hasNext()) {
-            next = iter.next();
-
-            if (predicateForFirst.test(next)) {
-                return NullabLe.of(next);
-            } else if (predicateForLast.test(next)) {
-                last = next;
-            }
-        }
-
-        return last == N.NULL_MASK ? NullabLe.<T> empty() : NullabLe.of(last);
+        return res.isPresent() ? res : findLast(predicateForLast);
     }
 
     public OptionalInt findFirstOrLastIndex(final Predicate<? super T> predicateForFirst, final Predicate<? super T> predicateForLast) {
@@ -852,23 +859,9 @@ public final class Seq<T> extends ImmutableCollection<T> {
             return OptionalInt.empty();
         }
 
-        final Iterator<T> iter = iterator();
-        T next = null;
-        int idx = 0, lastIndex = -1;
+        final OptionalInt res = findFirstIndex(predicateForFirst);
 
-        while (iter.hasNext()) {
-            next = iter.next();
-
-            if (predicateForFirst.test(next)) {
-                return OptionalInt.of(idx);
-            } else if (predicateForLast.test(next)) {
-                lastIndex = idx;
-            }
-
-            idx++;
-        }
-
-        return lastIndex == -1 ? OptionalInt.empty() : OptionalInt.of(lastIndex);
+        return res.isPresent() ? res : findLastIndex(predicateForLast);
     }
 
     public Pair<NullabLe<T>, NullabLe<T>> findFirstAndLast(final Predicate<? super T> predicate) {

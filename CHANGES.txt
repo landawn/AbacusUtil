@@ -8,11 +8,17 @@
 
 3*, Rename distribution to percentiles.
 
-4, Add DataSet.apply/accept
+4*, Rename IOUtil.close/closeQuietly(Collection<? extends AutoCloseable>) to closeAll/closeAllQuietly(Collection<? extends AutoCloseable>).
 
-5, Support pushable Stream by Stream.observe(...).
+5*, Rename IOUtil.close/closeQuietly(Reader/Writer/..).
 
-6, Improvements and bug fix.
+6*, Move SQLExecutor.Mapper.asyncGet/Find/Query/... to SQLExecutor.AsyncMapper.get/find/query/....
+
+7, Add DataSet.apply/accept.
+
+8, Support pushable Stream by Stream.observe(...).
+
+9, Improvements and bug fix.
 
 
 ﻿========Changes in 1.0.3 =========================================================================
