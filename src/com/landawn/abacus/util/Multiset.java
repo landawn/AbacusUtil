@@ -416,6 +416,54 @@ public final class Multiset<E> implements Iterable<E> {
         return Optional.of(Pair.of(maxCountElement, maxCount));
     }
 
+    public Optional<Pair<List<E>, Integer>> allMinOccurrences() {
+        if (size() == 0) {
+            return Optional.empty();
+        }
+
+        int min = Integer.MAX_VALUE;
+
+        for (MutableInt e : valueMap.values()) {
+            if (e.value() < min) {
+                min = e.value();
+            }
+        }
+
+        final List<E> res = new ArrayList<>();
+
+        for (Map.Entry<E, MutableInt> entry : valueMap.entrySet()) {
+            if (entry.getValue().value() == min) {
+                res.add(entry.getKey());
+            }
+        }
+
+        return Optional.of(Pair.of(res, min));
+    }
+
+    public Optional<Pair<List<E>, Integer>> allMaxOccurrences() {
+        if (size() == 0) {
+            return Optional.empty();
+        }
+
+        int max = Integer.MIN_VALUE;
+
+        for (MutableInt e : valueMap.values()) {
+            if (e.value() > max) {
+                max = e.value();
+            }
+        }
+
+        final List<E> res = new ArrayList<>();
+
+        for (Map.Entry<E, MutableInt> entry : valueMap.entrySet()) {
+            if (entry.getValue().value() == max) {
+                res.add(entry.getKey());
+            }
+        }
+
+        return Optional.of(Pair.of(res, max));
+    }
+
     /**
      * 
      * @return

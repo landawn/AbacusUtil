@@ -16,9 +16,11 @@
 
 7, Add DataSet.apply/accept.
 
-8, Support pushable Stream by Stream.observe(...).
+8, Add allMinOccurrences/allMaxOccurrences to Multiset/LongMultiset.
 
-9, Improvements and bug fix.
+9, Support pushable Stream by Stream.observe(...).
+
+10, Improvements and bug fix.
 
 
 ﻿========Changes in 1.0.3 =========================================================================

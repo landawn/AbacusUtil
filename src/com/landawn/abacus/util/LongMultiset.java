@@ -362,6 +362,54 @@ public final class LongMultiset<E> implements Iterable<E> {
         return Optional.of(Pair.of(maxCountElement, maxCount));
     }
 
+    public Optional<Pair<List<E>, Long>> allMinOccurrences() {
+        if (size() == 0) {
+            return Optional.empty();
+        }
+
+        long min = Long.MAX_VALUE;
+
+        for (MutableLong e : valueMap.values()) {
+            if (e.value() < min) {
+                min = e.value();
+            }
+        }
+
+        final List<E> res = new ArrayList<>();
+
+        for (Map.Entry<E, MutableLong> entry : valueMap.entrySet()) {
+            if (entry.getValue().value() == min) {
+                res.add(entry.getKey());
+            }
+        }
+
+        return Optional.of(Pair.of(res, min));
+    }
+
+    public Optional<Pair<List<E>, Long>> allMaxOccurrences() {
+        if (size() == 0) {
+            return Optional.empty();
+        }
+
+        long max = Long.MIN_VALUE;
+
+        for (MutableLong e : valueMap.values()) {
+            if (e.value() > max) {
+                max = e.value();
+            }
+        }
+
+        final List<E> res = new ArrayList<>();
+
+        for (Map.Entry<E, MutableLong> entry : valueMap.entrySet()) {
+            if (entry.getValue().value() == max) {
+                res.add(entry.getKey());
+            }
+        }
+
+        return Optional.of(Pair.of(res, max));
+    }
+
     /**
      * 
      * @return

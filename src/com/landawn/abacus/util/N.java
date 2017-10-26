@@ -472,6 +472,9 @@ public final class N {
     // ...
     public static final Object NULL_MASK = new NullMask();
 
+    @SuppressWarnings("rawtypes")
+    public static final Class<Map<String, Object>> CLS_OF_PROPS = (Class) Map.class;
+
     // ...
     private static final char[][][] cbufOfSTDInt = new char[5][][];
 
