@@ -477,6 +477,11 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
     }
 
     @Override
+    public S carry(C action) {
+        return peek(action);
+    }
+
+    @Override
     public OT findAny(P predicate) {
         return findFirst(predicate);
     }

@@ -527,6 +527,15 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
     S peek(C action);
 
     /**
+     * Same as {@code peek}
+     * 
+     * @param action
+     * @return
+     * @see #peek(Object)
+     */
+    S carry(C action);
+
+    /**
      * Performs an action for each element of this stream.
      *
      * <p>This is a <a href="package-summary.html#StreamOps">terminal

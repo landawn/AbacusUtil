@@ -245,15 +245,15 @@ class IteratorStream<T> extends AbstractStream<T> {
                 return mapper.apply(elements.next());
             }
 
-            @Override
-            public long count() {
-                return elements.count();
-            }
-
-            @Override
-            public void skip(long n) {
-                elements.skip(n);
-            }
+            //            @Override
+            //            public long count() {
+            //                return elements.count();
+            //            }
+            //
+            //            @Override
+            //            public void skip(long n) {
+            //                elements.skip(n);
+            //            }
         }, closeHandlers);
     }
 
@@ -289,6 +289,17 @@ class IteratorStream<T> extends AbstractStream<T> {
                     return mapper.apply(elements.next(), elements.hasNext() ? elements.next() : null);
                 }
             }
+
+            //            @Override
+            //            public void skip(long n) {
+            //                elements.skip(n >= Long.MAX_VALUE / 2 ? Long.MAX_VALUE : n * 2);
+            //            }
+            //
+            //            @Override
+            //            public long count() {
+            //                final long count = elements.count();
+            //                return count % 2 == 0 || ignoreNotPaired ? count / 2 : count / 2 + 1;
+            //            }
         }, closeHandlers);
     }
 
@@ -332,6 +343,103 @@ class IteratorStream<T> extends AbstractStream<T> {
                     return mapper.apply(elements.next(), elements.hasNext() ? elements.next() : null, elements.hasNext() ? elements.next() : null);
                 }
             }
+
+            //            @Override
+            //            public void skip(long n) {
+            //                elements.skip(n >= Long.MAX_VALUE / 3 ? Long.MAX_VALUE : n * 3);
+            //            }
+            //
+            //            @Override
+            //            public long count() {
+            //                final long count = elements.count();
+            //                return count % 3 == 0 || ignoreNotPaired ? count / 3 : count / 3 + 1;
+            //            }
+        }, closeHandlers);
+    }
+
+    @Override
+    public <R> Stream<R> slidingMap(final BiFunction<? super T, ? super T, R> mapper, final int increment) {
+        final int windowSize = 2;
+
+        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
+            private T prev = (T) NONE;
+
+            @Override
+            public boolean hasNext() {
+                if (increment > windowSize && prev != NONE) {
+                    int skipNum = increment - windowSize;
+
+                    while (skipNum-- > 0 && elements.hasNext()) {
+                        elements.next();
+                    }
+
+                    prev = (T) NONE;
+                }
+
+                return elements.hasNext();
+            }
+
+            @Override
+            public R next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                if (increment == 1) {
+                    return mapper.apply(prev == NONE ? elements.next() : prev, (prev = (elements.hasNext() ? elements.next() : null)));
+                } else {
+                    return mapper.apply(elements.next(), (prev = (elements.hasNext() ? elements.next() : null)));
+                }
+            }
+        }, closeHandlers);
+    }
+
+    @Override
+    public <R> Stream<R> slidingMap(final TriFunction<? super T, ? super T, ? super T, R> mapper, final int increment) {
+        final int windowSize = 3;
+
+        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
+            private T prev = (T) NONE;
+            private T prev2 = (T) NONE;
+
+            @Override
+            public boolean hasNext() {
+                if (increment > windowSize && prev != NONE) {
+                    int skipNum = increment - windowSize;
+
+                    while (skipNum-- > 0 && elements.hasNext()) {
+                        elements.next();
+                    }
+
+                    prev = (T) NONE;
+                }
+
+                return elements.hasNext();
+            }
+
+            @Override
+            public R next() {
+                if (hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                if (increment == 1) {
+                    return mapper.apply(prev2 == NONE ? elements.next() : prev2,
+                            (prev2 = (prev == NONE ? (elements.hasNext() ? elements.next() : null) : prev)),
+                            (prev = (elements.hasNext() ? elements.next() : null)));
+
+                } else if (increment == 2) {
+                    return mapper.apply(prev == NONE ? elements.next() : prev, (prev2 = (elements.hasNext() ? elements.next() : null)),
+                            (prev = (elements.hasNext() ? elements.next() : null)));
+                } else {
+                    return mapper.apply(elements.next(), (prev2 = (elements.hasNext() ? elements.next() : null)),
+                            (prev = (elements.hasNext() ? elements.next() : null)));
+                }
+            }
         }, closeHandlers);
     }
 
@@ -357,20 +465,41 @@ class IteratorStream<T> extends AbstractStream<T> {
                 }
             }
 
-            @Override
-            public long count() {
-                isFirst = false;
-
-                return elements.count();
-            }
+            //            @Override
+            //            public void skip(long n) {
+            //                if (n > 0) {
+            //                    isFirst = false;
+            //                }
+            //
+            //                elements.skip(n);
+            //            }
+            //
+            //            @Override
+            //            public long count() {
+            //                isFirst = false;
+            //
+            //                return elements.count();
+            //            }
 
             @Override
             public void skip(long n) {
                 if (n > 0) {
-                    isFirst = false;
+                    if (hasNext()) {
+                        next();
+                    }
+
+                    elements.skip(n - 1);
+                }
+            }
+
+            @Override
+            public long count() {
+                if (hasNext()) {
+                    next();
+                    return elements.count() + 1;
                 }
 
-                elements.skip(n);
+                return 0;
             }
         }, closeHandlers);
     }
@@ -398,21 +527,21 @@ class IteratorStream<T> extends AbstractStream<T> {
                 }
             }
 
-            @Override
-            public long count() {
-                isFirst = false;
-
-                return elements.count();
-            }
-
-            @Override
-            public void skip(long n) {
-                if (n > 0) {
-                    isFirst = false;
-                }
-
-                elements.skip(n);
-            }
+            //            @Override
+            //            public long count() {
+            //                isFirst = false;
+            //
+            //                return elements.count();
+            //            }
+            //
+            //            @Override
+            //            public void skip(long n) {
+            //                if (n > 0) {
+            //                    isFirst = false;
+            //                }
+            //
+            //                elements.skip(n);
+            //            }
         }, closeHandlers);
     }
 
@@ -437,15 +566,15 @@ class IteratorStream<T> extends AbstractStream<T> {
                 }
             }
 
-            @Override
-            public long count() {
-                return elements.count();
-            }
-
-            @Override
-            public void skip(long n) {
-                elements.skip(n);
-            }
+            //            @Override
+            //            public long count() {
+            //                return elements.count();
+            //            }
+            //
+            //            @Override
+            //            public void skip(long n) {
+            //                elements.skip(n);
+            //            }
         }, closeHandlers);
     }
 
@@ -471,15 +600,15 @@ class IteratorStream<T> extends AbstractStream<T> {
                 }
             }
 
-            @Override
-            public long count() {
-                return elements.count();
-            }
-
-            @Override
-            public void skip(long n) {
-                elements.skip(n);
-            }
+            //            @Override
+            //            public long count() {
+            //                return elements.count();
+            //            }
+            //
+            //            @Override
+            //            public void skip(long n) {
+            //                elements.skip(n);
+            //            }
         }, closeHandlers);
     }
 
@@ -496,15 +625,15 @@ class IteratorStream<T> extends AbstractStream<T> {
                 return mapper.applyAsChar(elements.next());
             }
 
-            @Override
-            public long count() {
-                return elements.count();
-            }
-
-            @Override
-            public void skip(long n) {
-                elements.skip(n);
-            }
+            //            @Override
+            //            public long count() {
+            //                return elements.count();
+            //            }
+            //
+            //            @Override
+            //            public void skip(long n) {
+            //                elements.skip(n);
+            //            }
         }, closeHandlers);
     }
 
@@ -521,15 +650,15 @@ class IteratorStream<T> extends AbstractStream<T> {
                 return mapper.applyAsByte(elements.next());
             }
 
-            @Override
-            public long count() {
-                return elements.count();
-            }
-
-            @Override
-            public void skip(long n) {
-                elements.skip(n);
-            }
+            //            @Override
+            //            public long count() {
+            //                return elements.count();
+            //            }
+            //
+            //            @Override
+            //            public void skip(long n) {
+            //                elements.skip(n);
+            //            }
         }, closeHandlers);
     }
 
@@ -546,15 +675,15 @@ class IteratorStream<T> extends AbstractStream<T> {
                 return mapper.applyAsShort(elements.next());
             }
 
-            @Override
-            public long count() {
-                return elements.count();
-            }
-
-            @Override
-            public void skip(long n) {
-                elements.skip(n);
-            }
+            //            @Override
+            //            public long count() {
+            //                return elements.count();
+            //            }
+            //
+            //            @Override
+            //            public void skip(long n) {
+            //                elements.skip(n);
+            //            }
         }, closeHandlers);
     }
 
@@ -571,15 +700,15 @@ class IteratorStream<T> extends AbstractStream<T> {
                 return mapper.applyAsInt(elements.next());
             }
 
-            @Override
-            public long count() {
-                return elements.count();
-            }
-
-            @Override
-            public void skip(long n) {
-                elements.skip(n);
-            }
+            //            @Override
+            //            public long count() {
+            //                return elements.count();
+            //            }
+            //
+            //            @Override
+            //            public void skip(long n) {
+            //                elements.skip(n);
+            //            }
         }, closeHandlers);
     }
 
@@ -596,15 +725,15 @@ class IteratorStream<T> extends AbstractStream<T> {
                 return mapper.applyAsLong(elements.next());
             }
 
-            @Override
-            public long count() {
-                return elements.count();
-            }
-
-            @Override
-            public void skip(long n) {
-                elements.skip(n);
-            }
+            //            @Override
+            //            public long count() {
+            //                return elements.count();
+            //            }
+            //
+            //            @Override
+            //            public void skip(long n) {
+            //                elements.skip(n);
+            //            }
         }, closeHandlers);
     }
 
@@ -621,15 +750,15 @@ class IteratorStream<T> extends AbstractStream<T> {
                 return mapper.applyAsFloat(elements.next());
             }
 
-            @Override
-            public long count() {
-                return elements.count();
-            }
-
-            @Override
-            public void skip(long n) {
-                elements.skip(n);
-            }
+            //            @Override
+            //            public long count() {
+            //                return elements.count();
+            //            }
+            //
+            //            @Override
+            //            public void skip(long n) {
+            //                elements.skip(n);
+            //            }
         }, closeHandlers);
     }
 
@@ -646,15 +775,15 @@ class IteratorStream<T> extends AbstractStream<T> {
                 return mapper.applyAsDouble(elements.next());
             }
 
-            @Override
-            public long count() {
-                return elements.count();
-            }
-
-            @Override
-            public void skip(long n) {
-                elements.skip(n);
-            }
+            //            @Override
+            //            public long count() {
+            //                return elements.count();
+            //            }
+            //
+            //            @Override
+            //            public void skip(long n) {
+            //                elements.skip(n);
+            //            }
         }, closeHandlers);
     }
 
@@ -1195,92 +1324,6 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <R> Stream<R> slidingMap(final BiFunction<? super T, ? super T, R> mapper, final int increment) {
-        final int windowSize = 2;
-
-        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
-
-        return new IteratorStream<>(new ObjIteratorEx<R>() {
-            private T prev = (T) NONE;
-
-            @Override
-            public boolean hasNext() {
-                if (increment > windowSize && prev != NONE) {
-                    int skipNum = increment - windowSize;
-
-                    while (skipNum-- > 0 && elements.hasNext()) {
-                        elements.next();
-                    }
-
-                    prev = (T) NONE;
-                }
-
-                return elements.hasNext();
-            }
-
-            @Override
-            public R next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                if (increment == 1) {
-                    return mapper.apply(prev == NONE ? elements.next() : prev, (prev = (elements.hasNext() ? elements.next() : null)));
-                } else {
-                    return mapper.apply(elements.next(), (prev = (elements.hasNext() ? elements.next() : null)));
-                }
-            }
-        }, closeHandlers);
-    }
-
-    @Override
-    public <R> Stream<R> slidingMap(final TriFunction<? super T, ? super T, ? super T, R> mapper, final int increment) {
-        final int windowSize = 3;
-
-        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
-
-        return new IteratorStream<>(new ObjIteratorEx<R>() {
-            private T prev = (T) NONE;
-            private T prev2 = (T) NONE;
-
-            @Override
-            public boolean hasNext() {
-                if (increment > windowSize && prev != NONE) {
-                    int skipNum = increment - windowSize;
-
-                    while (skipNum-- > 0 && elements.hasNext()) {
-                        elements.next();
-                    }
-
-                    prev = (T) NONE;
-                }
-
-                return elements.hasNext();
-            }
-
-            @Override
-            public R next() {
-                if (hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                if (increment == 1) {
-                    return mapper.apply(prev2 == NONE ? elements.next() : prev2,
-                            (prev2 = (prev == NONE ? (elements.hasNext() ? elements.next() : null) : prev)),
-                            (prev = (elements.hasNext() ? elements.next() : null)));
-
-                } else if (increment == 2) {
-                    return mapper.apply(prev == NONE ? elements.next() : prev, (prev2 = (elements.hasNext() ? elements.next() : null)),
-                            (prev = (elements.hasNext() ? elements.next() : null)));
-                } else {
-                    return mapper.apply(elements.next(), (prev2 = (elements.hasNext() ? elements.next() : null)),
-                            (prev = (elements.hasNext() ? elements.next() : null)));
-                }
-            }
-        }, closeHandlers);
-    }
-
-    @Override
     public Stream<List<T>> splitToList(final int size) {
         return new IteratorStream<>(new ObjIteratorEx<List<T>>() {
             @Override
@@ -1305,6 +1348,16 @@ class IteratorStream<T> extends AbstractStream<T> {
                 return result;
             }
 
+            @Override
+            public long count() {
+                final long len = elements.count();
+                return len % size == 0 ? len / size : len / size + 1;
+            }
+
+            @Override
+            public void skip(long n) {
+                elements.skip(n >= Long.MAX_VALUE / size ? Long.MAX_VALUE : n * size);
+            }
         }, closeHandlers);
     }
 
@@ -1333,6 +1386,16 @@ class IteratorStream<T> extends AbstractStream<T> {
                 return result;
             }
 
+            @Override
+            public long count() {
+                final long len = elements.count();
+                return len % size == 0 ? len / size : len / size + 1;
+            }
+
+            @Override
+            public void skip(long n) {
+                elements.skip(n >= Long.MAX_VALUE / size ? Long.MAX_VALUE : n * size);
+            }
         }, closeHandlers);
     }
 

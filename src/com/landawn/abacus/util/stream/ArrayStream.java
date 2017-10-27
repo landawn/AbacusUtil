@@ -225,15 +225,15 @@ class ArrayStream<T> extends AbstractStream<T> {
                 return mapper.apply(elements[cursor++]);
             }
 
-            @Override
-            public long count() {
-                return toIndex - cursor;
-            }
-
-            @Override
-            public void skip(long n) {
-                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-            }
+            //            @Override
+            //            public long count() {
+            //                return toIndex - cursor;
+            //            }
+            //
+            //            @Override
+            //            public void skip(long n) {
+            //                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            //            }
 
             @Override
             public <A> A[] toArray(A[] a) {
@@ -268,15 +268,15 @@ class ArrayStream<T> extends AbstractStream<T> {
                 return mapper.apply(elements[cursor++], cursor == toIndex ? null : elements[cursor++]);
             }
 
-            @Override
-            public long count() {
-                return (toIndex - cursor) / 2 + (ignoreNotPaired || (toIndex - cursor) % 2 == 0 ? 0 : 1);
-            }
-
-            @Override
-            public void skip(long n) {
-                cursor = n < count() ? cursor + (int) n * 2 : toIndex;
-            }
+            //            @Override
+            //            public long count() {
+            //                return (toIndex - cursor) / 2 + (ignoreNotPaired || (toIndex - cursor) % 2 == 0 ? 0 : 1);
+            //            }
+            //
+            //            @Override
+            //            public void skip(long n) {
+            //                cursor = n < count() ? cursor + (int) n * 2 : toIndex;
+            //            }
 
             @Override
             public <A> A[] toArray(A[] a) {
@@ -316,15 +316,15 @@ class ArrayStream<T> extends AbstractStream<T> {
                 return mapper.apply(elements[cursor++], cursor == toIndex ? null : elements[cursor++], cursor == toIndex ? null : elements[cursor++]);
             }
 
-            @Override
-            public long count() {
-                return (toIndex - cursor) / 3 + (ignoreNotPaired || (toIndex - cursor) % 3 == 0 ? 0 : 1);
-            }
-
-            @Override
-            public void skip(long n) {
-                cursor = n < count() ? cursor + (int) n * 3 : toIndex;
-            }
+            //            @Override
+            //            public long count() {
+            //                return (toIndex - cursor) / 3 + (ignoreNotPaired || (toIndex - cursor) % 3 == 0 ? 0 : 1);
+            //            }
+            //
+            //            @Override
+            //            public void skip(long n) {
+            //                cursor = n < count() ? cursor + (int) n * 3 : toIndex;
+            //            }
 
             @Override
             public <A> A[] toArray(A[] a) {
@@ -341,6 +341,113 @@ class ArrayStream<T> extends AbstractStream<T> {
 
                 return a;
             }
+        }, closeHandlers);
+    }
+
+    @Override
+    public <R> Stream<R> slidingMap(final BiFunction<? super T, ? super T, R> mapper, final int increment) {
+        final int windowSize = 2;
+
+        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public R next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final R result = mapper.apply(elements[cursor], cursor < toIndex - 1 ? elements[cursor + 1] : null);
+
+                cursor = increment < toIndex - cursor && windowSize < toIndex - cursor ? cursor + increment : toIndex;
+
+                return result;
+            }
+
+            //            @Override
+            //            public long count() {
+            //                if (toIndex - cursor == 0) {
+            //                    return 0;
+            //                } else if (toIndex - cursor <= windowSize) {
+            //                    return 1;
+            //                } else {
+            //                    final long len = (toIndex - cursor) - windowSize;
+            //                    return 1 + (len % increment == 0 ? len / increment : len / increment + 1);
+            //                }
+            //            }
+            //
+            //            @Override
+            //            public void skip(long n) {
+            //                if (n > 0) {
+            //                    if (n >= count()) {
+            //                        cursor = toIndex;
+            //                    } else {
+            //                        cursor += n * increment;
+            //                    }
+            //                }
+            //            }
+
+        }, closeHandlers);
+    }
+
+    @Override
+    public <R> Stream<R> slidingMap(final TriFunction<? super T, ? super T, ? super T, R> mapper, final int increment) {
+        final int windowSize = 3;
+
+        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+
+        return new IteratorStream<>(new ObjIteratorEx<R>() {
+            private int cursor = fromIndex;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < toIndex;
+            }
+
+            @Override
+            public R next() {
+                if (cursor >= toIndex) {
+                    throw new NoSuchElementException();
+                }
+
+                final R result = mapper.apply(elements[cursor], cursor < toIndex - 1 ? elements[cursor + 1] : null,
+                        cursor < toIndex - 2 ? elements[cursor + 2] : null);
+
+                cursor = increment < toIndex - cursor && windowSize < toIndex - cursor ? cursor + increment : toIndex;
+
+                return result;
+            }
+
+            //            @Override
+            //            public long count() {
+            //                if (toIndex - cursor == 0) {
+            //                    return 0;
+            //                } else if (toIndex - cursor <= windowSize) {
+            //                    return 1;
+            //                } else {
+            //                    final long len = (toIndex - cursor) - windowSize;
+            //                    return 1 + (len % increment == 0 ? len / increment : len / increment + 1);
+            //                }
+            //            }
+            //
+            //            @Override
+            //            public void skip(long n) {
+            //                if (n > 0) {
+            //                    if (n >= count()) {
+            //                        cursor = toIndex;
+            //                    } else {
+            //                        cursor += n * increment;
+            //                    }
+            //                }
+            //            }
+
         }, closeHandlers);
     }
 
@@ -369,14 +476,33 @@ class ArrayStream<T> extends AbstractStream<T> {
                 }
             }
 
+            //            @Override
+            //            public long count() {
+            //                return toIndex - cursor;
+            //            }
+            //
+            //            @Override
+            //            public void skip(long n) {
+            //                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            //            }
+
             @Override
             public long count() {
-                return toIndex - cursor;
+                if (hasNext()) {
+                    next();
+                    return toIndex - cursor + 1;
+                }
+
+                return 0;
             }
 
             @Override
             public void skip(long n) {
-                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+                if (hasNext()) {
+                    next();
+                    n -= 1;
+                    cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+                }
             }
 
             @Override
@@ -422,15 +548,15 @@ class ArrayStream<T> extends AbstractStream<T> {
                 }
             }
 
-            @Override
-            public long count() {
-                return toIndex - cursor;
-            }
-
-            @Override
-            public void skip(long n) {
-                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-            }
+            //            @Override
+            //            public long count() {
+            //                return toIndex - cursor;
+            //            }
+            //
+            //            @Override
+            //            public void skip(long n) {
+            //                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            //            }
 
             @Override
             public <A> A[] toArray(A[] a) {
@@ -475,15 +601,15 @@ class ArrayStream<T> extends AbstractStream<T> {
                 }
             }
 
-            @Override
-            public long count() {
-                return toIndex - cursor;
-            }
-
-            @Override
-            public void skip(long n) {
-                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-            }
+            //            @Override
+            //            public long count() {
+            //                return toIndex - cursor;
+            //            }
+            //
+            //            @Override
+            //            public void skip(long n) {
+            //                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            //            }
 
             @Override
             public <A> A[] toArray(A[] a) {
@@ -529,15 +655,15 @@ class ArrayStream<T> extends AbstractStream<T> {
                 }
             }
 
-            @Override
-            public long count() {
-                return toIndex - cursor;
-            }
-
-            @Override
-            public void skip(long n) {
-                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-            }
+            //            @Override
+            //            public long count() {
+            //                return toIndex - cursor;
+            //            }
+            //
+            //            @Override
+            //            public void skip(long n) {
+            //                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            //            }
 
             @Override
             public <A> A[] toArray(A[] a) {
@@ -575,15 +701,15 @@ class ArrayStream<T> extends AbstractStream<T> {
                 return mapper.applyAsChar(elements[cursor++]);
             }
 
-            @Override
-            public long count() {
-                return toIndex - cursor;
-            }
-
-            @Override
-            public void skip(long n) {
-                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-            }
+            //            @Override
+            //            public long count() {
+            //                return toIndex - cursor;
+            //            }
+            //
+            //            @Override
+            //            public void skip(long n) {
+            //                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            //            }
 
             @Override
             public char[] toArray() {
@@ -617,15 +743,15 @@ class ArrayStream<T> extends AbstractStream<T> {
                 return mapper.applyAsByte(elements[cursor++]);
             }
 
-            @Override
-            public long count() {
-                return toIndex - cursor;
-            }
-
-            @Override
-            public void skip(long n) {
-                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-            }
+            //            @Override
+            //            public long count() {
+            //                return toIndex - cursor;
+            //            }
+            //
+            //            @Override
+            //            public void skip(long n) {
+            //                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            //            }
 
             @Override
             public byte[] toArray() {
@@ -659,15 +785,15 @@ class ArrayStream<T> extends AbstractStream<T> {
                 return mapper.applyAsShort(elements[cursor++]);
             }
 
-            @Override
-            public long count() {
-                return toIndex - cursor;
-            }
-
-            @Override
-            public void skip(long n) {
-                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-            }
+            //            @Override
+            //            public long count() {
+            //                return toIndex - cursor;
+            //            }
+            //
+            //            @Override
+            //            public void skip(long n) {
+            //                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            //            }
 
             @Override
             public short[] toArray() {
@@ -701,15 +827,15 @@ class ArrayStream<T> extends AbstractStream<T> {
                 return mapper.applyAsInt(elements[cursor++]);
             }
 
-            @Override
-            public long count() {
-                return toIndex - cursor;
-            }
-
-            @Override
-            public void skip(long n) {
-                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-            }
+            //            @Override
+            //            public long count() {
+            //                return toIndex - cursor;
+            //            }
+            //
+            //            @Override
+            //            public void skip(long n) {
+            //                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            //            }
 
             @Override
             public int[] toArray() {
@@ -743,15 +869,15 @@ class ArrayStream<T> extends AbstractStream<T> {
                 return mapper.applyAsLong(elements[cursor++]);
             }
 
-            @Override
-            public long count() {
-                return toIndex - cursor;
-            }
-
-            @Override
-            public void skip(long n) {
-                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-            }
+            //            @Override
+            //            public long count() {
+            //                return toIndex - cursor;
+            //            }
+            //
+            //            @Override
+            //            public void skip(long n) {
+            //                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            //            }
 
             @Override
             public long[] toArray() {
@@ -785,15 +911,15 @@ class ArrayStream<T> extends AbstractStream<T> {
                 return mapper.applyAsFloat(elements[cursor++]);
             }
 
-            @Override
-            public long count() {
-                return toIndex - cursor;
-            }
-
-            @Override
-            public void skip(long n) {
-                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-            }
+            //            @Override
+            //            public long count() {
+            //                return toIndex - cursor;
+            //            }
+            //
+            //            @Override
+            //            public void skip(long n) {
+            //                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            //            }
 
             @Override
             public float[] toArray() {
@@ -827,15 +953,15 @@ class ArrayStream<T> extends AbstractStream<T> {
                 return mapper.applyAsDouble(elements[cursor++]);
             }
 
-            @Override
-            public long count() {
-                return toIndex - cursor;
-            }
-
-            @Override
-            public void skip(long n) {
-                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-            }
+            //            @Override
+            //            public long count() {
+            //                return toIndex - cursor;
+            //            }
+            //
+            //            @Override
+            //            public void skip(long n) {
+            //                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            //            }
 
             @Override
             public double[] toArray() {
@@ -905,8 +1031,7 @@ class ArrayStream<T> extends AbstractStream<T> {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1) : new LocalLinkedHashSet<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -973,8 +1098,7 @@ class ArrayStream<T> extends AbstractStream<T> {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1) : new LocalLinkedHashSet<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -1041,8 +1165,7 @@ class ArrayStream<T> extends AbstractStream<T> {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1) : new LocalLinkedHashSet<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -1109,8 +1232,7 @@ class ArrayStream<T> extends AbstractStream<T> {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1) : new LocalLinkedHashSet<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -1177,8 +1299,7 @@ class ArrayStream<T> extends AbstractStream<T> {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1) : new LocalLinkedHashSet<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -1245,8 +1366,7 @@ class ArrayStream<T> extends AbstractStream<T> {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1) : new LocalLinkedHashSet<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -1313,8 +1433,7 @@ class ArrayStream<T> extends AbstractStream<T> {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1) : new LocalLinkedHashSet<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -1381,8 +1500,7 @@ class ArrayStream<T> extends AbstractStream<T> {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1) : new LocalLinkedHashSet<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -1392,67 +1510,6 @@ class ArrayStream<T> extends AbstractStream<T> {
         });
 
         return new IteratorDoubleStream(iter, newCloseHandlers);
-    }
-
-    @Override
-    public <R> Stream<R> slidingMap(final BiFunction<? super T, ? super T, R> mapper, final int increment) {
-        final int windowSize = 2;
-
-        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
-
-        return new IteratorStream<>(new ObjIteratorEx<R>() {
-            private int cursor = fromIndex;
-
-            @Override
-            public boolean hasNext() {
-                return cursor < toIndex;
-            }
-
-            @Override
-            public R next() {
-                if (cursor >= toIndex) {
-                    throw new NoSuchElementException();
-                }
-
-                final R result = mapper.apply(elements[cursor], cursor < toIndex - 1 ? elements[cursor + 1] : null);
-
-                cursor = increment < toIndex - cursor && windowSize < toIndex - cursor ? cursor + increment : toIndex;
-
-                return result;
-            }
-
-        }, closeHandlers);
-    }
-
-    @Override
-    public <R> Stream<R> slidingMap(final TriFunction<? super T, ? super T, ? super T, R> mapper, final int increment) {
-        final int windowSize = 3;
-
-        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
-
-        return new IteratorStream<>(new ObjIteratorEx<R>() {
-            private int cursor = fromIndex;
-
-            @Override
-            public boolean hasNext() {
-                return cursor < toIndex;
-            }
-
-            @Override
-            public R next() {
-                if (cursor >= toIndex) {
-                    throw new NoSuchElementException();
-                }
-
-                final R result = mapper.apply(elements[cursor], cursor < toIndex - 1 ? elements[cursor + 1] : null,
-                        cursor < toIndex - 2 ? elements[cursor + 2] : null);
-
-                cursor = increment < toIndex - cursor && windowSize < toIndex - cursor ? cursor + increment : toIndex;
-
-                return result;
-            }
-
-        }, closeHandlers);
     }
 
     @Override
@@ -1476,6 +1533,17 @@ class ArrayStream<T> extends AbstractStream<T> {
                 return new ArrayStream<>(elements, cursor, (cursor = size < toIndex - cursor ? cursor + size : toIndex), sorted, cmp, null);
             }
 
+            @Override
+            public long count() {
+                final long len = toIndex - cursor;
+                return len % size == 0 ? len / size : len / size + 1;
+            }
+
+            @Override
+            public void skip(long n) {
+                final long len = toIndex - cursor;
+                cursor = n <= len / size ? cursor + (int) n * size : toIndex;
+            }
         }, closeHandlers);
     }
 
@@ -1498,6 +1566,17 @@ class ArrayStream<T> extends AbstractStream<T> {
                 return N.asList(N.copyOfRange(elements, cursor, (cursor = size < toIndex - cursor ? cursor + size : toIndex)));
             }
 
+            @Override
+            public long count() {
+                final long len = toIndex - cursor;
+                return len % size == 0 ? len / size : len / size + 1;
+            }
+
+            @Override
+            public void skip(long n) {
+                final long len = toIndex - cursor;
+                cursor = n <= len / size ? cursor + (int) n * size : toIndex;
+            }
         }, closeHandlers);
     }
 
@@ -1526,6 +1605,17 @@ class ArrayStream<T> extends AbstractStream<T> {
                 return result;
             }
 
+            @Override
+            public long count() {
+                final long len = toIndex - cursor;
+                return len % size == 0 ? len / size : len / size + 1;
+            }
+
+            @Override
+            public void skip(long n) {
+                final long len = toIndex - cursor;
+                cursor = n <= len / size ? cursor + (int) n * size : toIndex;
+            }
         }, closeHandlers);
     }
 
@@ -1783,6 +1873,28 @@ class ArrayStream<T> extends AbstractStream<T> {
                 return result;
             }
 
+            @Override
+            public long count() {
+                if (toIndex - cursor == 0) {
+                    return 0;
+                } else if (toIndex - cursor <= windowSize) {
+                    return 1;
+                } else {
+                    final long len = (toIndex - cursor) - windowSize;
+                    return 1 + (len % increment == 0 ? len / increment : len / increment + 1);
+                }
+            }
+
+            @Override
+            public void skip(long n) {
+                if (n > 0) {
+                    if (n >= count()) {
+                        cursor = toIndex;
+                    } else {
+                        cursor += n * increment;
+                    }
+                }
+            }
         }, closeHandlers);
     }
 
@@ -1809,6 +1921,29 @@ class ArrayStream<T> extends AbstractStream<T> {
                 cursor = increment < toIndex - cursor && windowSize < toIndex - cursor ? cursor + increment : toIndex;
 
                 return result;
+            }
+
+            @Override
+            public long count() {
+                if (toIndex - cursor == 0) {
+                    return 0;
+                } else if (toIndex - cursor <= windowSize) {
+                    return 1;
+                } else {
+                    final long len = (toIndex - cursor) - windowSize;
+                    return 1 + (len % increment == 0 ? len / increment : len / increment + 1);
+                }
+            }
+
+            @Override
+            public void skip(long n) {
+                if (n > 0) {
+                    if (n >= count()) {
+                        cursor = toIndex;
+                    } else {
+                        cursor += n * increment;
+                    }
+                }
             }
 
         }, closeHandlers);

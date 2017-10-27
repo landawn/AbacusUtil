@@ -555,14 +555,33 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                     }
                 }
 
+                //                @Override
+                //                public long count() {
+                //                    return toIndex - cursor;
+                //                }
+                //
+                //                @Override
+                //                public void skip(long n) {
+                //                    cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+                //                }
+
                 @Override
                 public long count() {
-                    return toIndex - cursor;
+                    if (hasNext()) {
+                        next();
+                        return toIndex - cursor + 1;
+                    }
+
+                    return 0;
                 }
 
                 @Override
                 public void skip(long n) {
-                    cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+                    if (hasNext()) {
+                        next();
+                        n -= 1;
+                        cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+                    }
                 }
 
                 @Override
@@ -640,15 +659,15 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                     }
                 }
 
-                @Override
-                public long count() {
-                    return toIndex - cursor;
-                }
-
-                @Override
-                public void skip(long n) {
-                    cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-                }
+                //                @Override
+                //                public long count() {
+                //                    return toIndex - cursor;
+                //                }
+                //
+                //                @Override
+                //                public void skip(long n) {
+                //                    cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+                //                }
 
                 @Override
                 public <A> A[] toArray(A[] a) {

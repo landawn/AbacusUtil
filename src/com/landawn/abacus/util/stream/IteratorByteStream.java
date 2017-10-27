@@ -222,15 +222,15 @@ class IteratorByteStream extends AbstractByteStream {
                 return mapper.applyAsByte(elements.nextByte());
             }
 
-            @Override
-            public long count() {
-                return elements.count();
-            }
-
-            @Override
-            public void skip(long n) {
-                elements.skip(n);
-            }
+            //            @Override
+            //            public long count() {
+            //                return elements.count();
+            //            }
+            //
+            //            @Override
+            //            public void skip(long n) {
+            //                elements.skip(n);
+            //            }
         }, closeHandlers);
     }
 
@@ -247,21 +247,21 @@ class IteratorByteStream extends AbstractByteStream {
                 return mapper.applyAsInt(elements.nextByte());
             }
 
-            @Override
-            public long count() {
-                return elements.count();
-            }
-
-            @Override
-            public void skip(long n) {
-                elements.skip(n);
-            }
+            //            @Override
+            //            public long count() {
+            //                return elements.count();
+            //            }
+            //
+            //            @Override
+            //            public void skip(long n) {
+            //                elements.skip(n);
+            //            }
         }, closeHandlers);
     }
 
     @Override
     public <U> Stream<U> mapToObj(final ByteFunction<? extends U> mapper) {
-        return new IteratorStream<U>(new ObjIteratorEx<U>() {
+        return new IteratorStream<>(new ObjIteratorEx<U>() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -272,15 +272,15 @@ class IteratorByteStream extends AbstractByteStream {
                 return mapper.apply(elements.nextByte());
             }
 
-            @Override
-            public long count() {
-                return elements.count();
-            }
-
-            @Override
-            public void skip(long n) {
-                elements.skip(n);
-            }
+            //            @Override
+            //            public long count() {
+            //                return elements.count();
+            //            }
+            //
+            //            @Override
+            //            public void skip(long n) {
+            //                elements.skip(n);
+            //            }
         }, closeHandlers);
     }
 
@@ -338,8 +338,7 @@ class IteratorByteStream extends AbstractByteStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1) : new LocalLinkedHashSet<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -405,8 +404,7 @@ class IteratorByteStream extends AbstractByteStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1) : new LocalLinkedHashSet<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -472,8 +470,7 @@ class IteratorByteStream extends AbstractByteStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1) : new LocalLinkedHashSet<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -489,7 +486,7 @@ class IteratorByteStream extends AbstractByteStream {
     public Stream<ByteList> splitToList(final int size) {
         N.checkArgument(size > 0, "'size' must be bigger than 0");
 
-        return new IteratorStream<ByteList>(new ObjIteratorEx<ByteList>() {
+        return new IteratorStream<>(new ObjIteratorEx<ByteList>() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -510,12 +507,22 @@ class IteratorByteStream extends AbstractByteStream {
                 return result;
             }
 
+            @Override
+            public long count() {
+                final long len = elements.count();
+                return len % size == 0 ? len / size : len / size + 1;
+            }
+
+            @Override
+            public void skip(long n) {
+                elements.skip(n >= Long.MAX_VALUE / size ? Long.MAX_VALUE : n * size);
+            }
         }, closeHandlers);
     }
 
     @Override
     public Stream<ByteList> splitToList(final BytePredicate predicate) {
-        return new IteratorStream<ByteList>(new ObjIteratorEx<ByteList>() {
+        return new IteratorStream<>(new ObjIteratorEx<ByteList>() {
             private byte next;
             private boolean hasNext = false;
             private boolean preCondition = false;
@@ -559,7 +566,7 @@ class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public <U> Stream<ByteList> splitToList(final U seed, final BiFunction<? super Byte, ? super U, Boolean> predicate, final Consumer<? super U> seedUpdate) {
-        return new IteratorStream<ByteList>(new ObjIteratorEx<ByteList>() {
+        return new IteratorStream<>(new ObjIteratorEx<ByteList>() {
             private byte next;
             private boolean hasNext = false;
             private boolean preCondition = false;
@@ -609,7 +616,7 @@ class IteratorByteStream extends AbstractByteStream {
     public Stream<ByteList> slidingToList(final int windowSize, final int increment) {
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
-        return new IteratorStream<ByteList>(new ObjIteratorEx<ByteList>() {
+        return new IteratorStream<>(new ObjIteratorEx<ByteList>() {
             private ByteList prev = null;
 
             @Override
@@ -1285,7 +1292,7 @@ class IteratorByteStream extends AbstractByteStream {
 
     @Override
     public Stream<Byte> boxed() {
-        return new IteratorStream<Byte>(iterator(), sorted, sorted ? BYTE_COMPARATOR : null, closeHandlers);
+        return new IteratorStream<>(iterator(), sorted, sorted ? BYTE_COMPARATOR : null, closeHandlers);
     }
 
     @Override

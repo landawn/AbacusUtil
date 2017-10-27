@@ -432,20 +432,41 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                 }
             }
 
-            @Override
-            public long count() {
-                isFirst = false;
-
-                return elements.count();
-            }
+            //            @Override
+            //            public void skip(long n) {
+            //                if (n > 0) {
+            //                    isFirst = false;
+            //                }
+            //
+            //                elements.skip(n);
+            //            }
+            //
+            //            @Override
+            //            public long count() {
+            //                isFirst = false;
+            //
+            //                return elements.count();
+            //            }
 
             @Override
             public void skip(long n) {
                 if (n > 0) {
-                    isFirst = false;
+                    if (hasNext()) {
+                        next();
+                    }
+
+                    elements.skip(n - 1);
+                }
+            }
+
+            @Override
+            public long count() {
+                if (hasNext()) {
+                    next();
+                    return elements.count() + 1;
                 }
 
-                elements.skip(n);
+                return 0;
             }
         };
 
@@ -494,15 +515,15 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                 }
             }
 
-            @Override
-            public long count() {
-                return elements.count();
-            }
-
-            @Override
-            public void skip(long n) {
-                elements.skip(n);
-            }
+            //            @Override
+            //            public long count() {
+            //                return elements.count();
+            //            }
+            //
+            //            @Override
+            //            public void skip(long n) {
+            //                elements.skip(n);
+            //            }
         };
 
         return new ParallelIteratorStream<>(iter, false, null, maxThreadNum, splitor, closeHandlers);

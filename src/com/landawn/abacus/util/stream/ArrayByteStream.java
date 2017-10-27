@@ -212,15 +212,15 @@ class ArrayByteStream extends AbstractByteStream {
                 return mapper.applyAsByte(elements[cursor++]);
             }
 
-            @Override
-            public long count() {
-                return toIndex - cursor;
-            }
-
-            @Override
-            public void skip(long n) {
-                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-            }
+            //            @Override
+            //            public long count() {
+            //                return toIndex - cursor;
+            //            }
+            //
+            //            @Override
+            //            public void skip(long n) {
+            //                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            //            }
 
             @Override
             public byte[] toArray() {
@@ -254,15 +254,15 @@ class ArrayByteStream extends AbstractByteStream {
                 return mapper.applyAsInt(elements[cursor++]);
             }
 
-            @Override
-            public long count() {
-                return toIndex - cursor;
-            }
-
-            @Override
-            public void skip(long n) {
-                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-            }
+            //            @Override
+            //            public long count() {
+            //                return toIndex - cursor;
+            //            }
+            //
+            //            @Override
+            //            public void skip(long n) {
+            //                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            //            }
 
             @Override
             public int[] toArray() {
@@ -279,7 +279,7 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public <U> Stream<U> mapToObj(final ByteFunction<? extends U> mapper) {
-        return new IteratorStream<U>(new ObjIteratorEx<U>() {
+        return new IteratorStream<>(new ObjIteratorEx<U>() {
             int cursor = fromIndex;
 
             @Override
@@ -296,15 +296,15 @@ class ArrayByteStream extends AbstractByteStream {
                 return mapper.apply(elements[cursor++]);
             }
 
-            @Override
-            public long count() {
-                return toIndex - cursor;
-            }
-
-            @Override
-            public void skip(long n) {
-                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
-            }
+            //            @Override
+            //            public long count() {
+            //                return toIndex - cursor;
+            //            }
+            //
+            //            @Override
+            //            public void skip(long n) {
+            //                cursor = n < toIndex - cursor ? cursor + (int) n : toIndex;
+            //            }
 
             @Override
             public <A> A[] toArray(A[] a) {
@@ -527,7 +527,7 @@ class ArrayByteStream extends AbstractByteStream {
     public Stream<ByteStream> split(final int size) {
         N.checkArgument(size > 0, "'size' must be bigger than 0");
 
-        return new IteratorStream<ByteStream>(new ObjIteratorEx<ByteStream>() {
+        return new IteratorStream<>(new ObjIteratorEx<ByteStream>() {
             private int cursor = fromIndex;
 
             @Override
@@ -543,6 +543,18 @@ class ArrayByteStream extends AbstractByteStream {
 
                 return new ArrayByteStream(elements, cursor, (cursor = size < toIndex - cursor ? cursor + size : toIndex), sorted, null);
             }
+
+            @Override
+            public long count() {
+                final long len = toIndex - cursor;
+                return len % size == 0 ? len / size : len / size + 1;
+            }
+
+            @Override
+            public void skip(long n) {
+                final long len = toIndex - cursor;
+                cursor = n <= len / size ? cursor + (int) n * size : toIndex;
+            }
         }, closeHandlers);
     }
 
@@ -550,7 +562,7 @@ class ArrayByteStream extends AbstractByteStream {
     public Stream<ByteList> splitToList(final int size) {
         N.checkArgument(size > 0, "'size' must be bigger than 0");
 
-        return new IteratorStream<ByteList>(new ObjIteratorEx<ByteList>() {
+        return new IteratorStream<>(new ObjIteratorEx<ByteList>() {
             private int cursor = fromIndex;
 
             @Override
@@ -566,12 +578,24 @@ class ArrayByteStream extends AbstractByteStream {
 
                 return new ByteList(N.copyOfRange(elements, cursor, (cursor = size < toIndex - cursor ? cursor + size : toIndex)));
             }
+
+            @Override
+            public long count() {
+                final long len = toIndex - cursor;
+                return len % size == 0 ? len / size : len / size + 1;
+            }
+
+            @Override
+            public void skip(long n) {
+                final long len = toIndex - cursor;
+                cursor = n <= len / size ? cursor + (int) n * size : toIndex;
+            }
         }, closeHandlers);
     }
 
     @Override
     public <U> Stream<ByteStream> split(final U seed, final BiFunction<? super Byte, ? super U, Boolean> predicate, final Consumer<? super U> seedUpdate) {
-        return new IteratorStream<ByteStream>(new ObjIteratorEx<ByteStream>() {
+        return new IteratorStream<>(new ObjIteratorEx<ByteStream>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
 
@@ -610,7 +634,7 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public <U> Stream<ByteList> splitToList(final U seed, final BiFunction<? super Byte, ? super U, Boolean> predicate, final Consumer<? super U> seedUpdate) {
-        return new IteratorStream<ByteList>(new ObjIteratorEx<ByteList>() {
+        return new IteratorStream<>(new ObjIteratorEx<ByteList>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
 
@@ -649,7 +673,7 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public Stream<ByteStream> split(final BytePredicate predicate) {
-        return new IteratorStream<ByteStream>(new ObjIteratorEx<ByteStream>() {
+        return new IteratorStream<>(new ObjIteratorEx<ByteStream>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
 
@@ -684,7 +708,7 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public Stream<ByteList> splitToList(final BytePredicate predicate) {
-        return new IteratorStream<ByteList>(new ObjIteratorEx<ByteList>() {
+        return new IteratorStream<>(new ObjIteratorEx<ByteList>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
 
@@ -753,7 +777,7 @@ class ArrayByteStream extends AbstractByteStream {
     public Stream<ByteStream> sliding(final int windowSize, final int increment) {
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
-        return new IteratorStream<ByteStream>(new ObjIteratorEx<ByteStream>() {
+        return new IteratorStream<>(new ObjIteratorEx<ByteStream>() {
             private int cursor = fromIndex;
 
             @Override
@@ -775,6 +799,28 @@ class ArrayByteStream extends AbstractByteStream {
                 return result;
             }
 
+            @Override
+            public long count() {
+                if (toIndex - cursor == 0) {
+                    return 0;
+                } else if (toIndex - cursor <= windowSize) {
+                    return 1;
+                } else {
+                    final long len = (toIndex - cursor) - windowSize;
+                    return 1 + (len % increment == 0 ? len / increment : len / increment + 1);
+                }
+            }
+
+            @Override
+            public void skip(long n) {
+                if (n > 0) {
+                    if (n >= count()) {
+                        cursor = toIndex;
+                    } else {
+                        cursor += n * increment;
+                    }
+                }
+            }
         }, closeHandlers);
     }
 
@@ -782,7 +828,7 @@ class ArrayByteStream extends AbstractByteStream {
     public Stream<ByteList> slidingToList(final int windowSize, final int increment) {
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
-        return new IteratorStream<ByteList>(new ObjIteratorEx<ByteList>() {
+        return new IteratorStream<>(new ObjIteratorEx<ByteList>() {
             private int cursor = fromIndex;
 
             @Override
@@ -803,6 +849,28 @@ class ArrayByteStream extends AbstractByteStream {
                 return result;
             }
 
+            @Override
+            public long count() {
+                if (toIndex - cursor == 0) {
+                    return 0;
+                } else if (toIndex - cursor <= windowSize) {
+                    return 1;
+                } else {
+                    final long len = (toIndex - cursor) - windowSize;
+                    return 1 + (len % increment == 0 ? len / increment : len / increment + 1);
+                }
+            }
+
+            @Override
+            public void skip(long n) {
+                if (n > 0) {
+                    if (n >= count()) {
+                        cursor = toIndex;
+                    } else {
+                        cursor += n * increment;
+                    }
+                }
+            }
         }, closeHandlers);
     }
 
@@ -1310,7 +1378,7 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public Stream<Byte> boxed() {
-        return new IteratorStream<Byte>(iterator(), sorted, sorted ? BYTE_COMPARATOR : null, closeHandlers);
+        return new IteratorStream<>(iterator(), sorted, sorted ? BYTE_COMPARATOR : null, closeHandlers);
     }
 
     @Override

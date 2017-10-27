@@ -227,15 +227,15 @@ class IteratorDoubleStream extends AbstractDoubleStream {
                 return mapper.applyAsDouble(elements.nextDouble());
             }
 
-            @Override
-            public long count() {
-                return elements.count();
-            }
-
-            @Override
-            public void skip(long n) {
-                elements.skip(n);
-            }
+            //            @Override
+            //            public long count() {
+            //                return elements.count();
+            //            }
+            //
+            //            @Override
+            //            public void skip(long n) {
+            //                elements.skip(n);
+            //            }
         }, closeHandlers);
     }
 
@@ -252,15 +252,15 @@ class IteratorDoubleStream extends AbstractDoubleStream {
                 return mapper.applyAsInt(elements.nextDouble());
             }
 
-            @Override
-            public long count() {
-                return elements.count();
-            }
-
-            @Override
-            public void skip(long n) {
-                elements.skip(n);
-            }
+            //            @Override
+            //            public long count() {
+            //                return elements.count();
+            //            }
+            //
+            //            @Override
+            //            public void skip(long n) {
+            //                elements.skip(n);
+            //            }
         }, closeHandlers);
     }
 
@@ -277,15 +277,15 @@ class IteratorDoubleStream extends AbstractDoubleStream {
                 return mapper.applyAsLong(elements.nextDouble());
             }
 
-            @Override
-            public long count() {
-                return elements.count();
-            }
-
-            @Override
-            public void skip(long n) {
-                elements.skip(n);
-            }
+            //            @Override
+            //            public long count() {
+            //                return elements.count();
+            //            }
+            //
+            //            @Override
+            //            public void skip(long n) {
+            //                elements.skip(n);
+            //            }
         }, closeHandlers);
     }
 
@@ -302,21 +302,21 @@ class IteratorDoubleStream extends AbstractDoubleStream {
                 return mapper.applyAsFloat(elements.nextDouble());
             }
 
-            @Override
-            public long count() {
-                return elements.count();
-            }
-
-            @Override
-            public void skip(long n) {
-                elements.skip(n);
-            }
+            //            @Override
+            //            public long count() {
+            //                return elements.count();
+            //            }
+            //
+            //            @Override
+            //            public void skip(long n) {
+            //                elements.skip(n);
+            //            }
         }, closeHandlers);
     }
 
     @Override
     public <U> Stream<U> mapToObj(final DoubleFunction<? extends U> mapper) {
-        return new IteratorStream<U>(new ObjIteratorEx<U>() {
+        return new IteratorStream<>(new ObjIteratorEx<U>() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -327,15 +327,15 @@ class IteratorDoubleStream extends AbstractDoubleStream {
                 return mapper.apply(elements.nextDouble());
             }
 
-            @Override
-            public long count() {
-                return elements.count();
-            }
-
-            @Override
-            public void skip(long n) {
-                elements.skip(n);
-            }
+            //            @Override
+            //            public long count() {
+            //                return elements.count();
+            //            }
+            //
+            //            @Override
+            //            public void skip(long n) {
+            //                elements.skip(n);
+            //            }
         }, closeHandlers);
     }
 
@@ -393,8 +393,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1) : new LocalLinkedHashSet<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -460,8 +459,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1) : new LocalLinkedHashSet<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -527,8 +525,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1) : new LocalLinkedHashSet<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -594,8 +591,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1) : new LocalLinkedHashSet<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -661,8 +657,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
-                : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1) : new LocalLinkedHashSet<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -678,7 +673,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     public Stream<DoubleList> splitToList(final int size) {
         N.checkArgument(size > 0, "'size' must be bigger than 0");
 
-        return new IteratorStream<DoubleList>(new ObjIteratorEx<DoubleList>() {
+        return new IteratorStream<>(new ObjIteratorEx<DoubleList>() {
             @Override
             public boolean hasNext() {
                 return elements.hasNext();
@@ -699,12 +694,22 @@ class IteratorDoubleStream extends AbstractDoubleStream {
                 return result;
             }
 
+            @Override
+            public long count() {
+                final long len = elements.count();
+                return len % size == 0 ? len / size : len / size + 1;
+            }
+
+            @Override
+            public void skip(long n) {
+                elements.skip(n >= Long.MAX_VALUE / size ? Long.MAX_VALUE : n * size);
+            }
         }, closeHandlers);
     }
 
     @Override
     public Stream<DoubleList> splitToList(final DoublePredicate predicate) {
-        return new IteratorStream<DoubleList>(new ObjIteratorEx<DoubleList>() {
+        return new IteratorStream<>(new ObjIteratorEx<DoubleList>() {
             private double next;
             private boolean hasNext = false;
             private boolean preCondition = false;
@@ -749,7 +754,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     @Override
     public <U> Stream<DoubleList> splitToList(final U seed, final BiFunction<? super Double, ? super U, Boolean> predicate,
             final Consumer<? super U> seedUpdate) {
-        return new IteratorStream<DoubleList>(new ObjIteratorEx<DoubleList>() {
+        return new IteratorStream<>(new ObjIteratorEx<DoubleList>() {
             private double next;
             private boolean hasNext = false;
             private boolean preCondition = false;
@@ -799,7 +804,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     public Stream<DoubleList> slidingToList(final int windowSize, final int increment) {
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
-        return new IteratorStream<DoubleList>(new ObjIteratorEx<DoubleList>() {
+        return new IteratorStream<>(new ObjIteratorEx<DoubleList>() {
             private DoubleList prev = null;
 
             @Override
@@ -1430,7 +1435,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public Stream<Double> boxed() {
-        return new IteratorStream<Double>(iterator(), sorted, sorted ? DOUBLE_COMPARATOR : null, closeHandlers);
+        return new IteratorStream<>(iterator(), sorted, sorted ? DOUBLE_COMPARATOR : null, closeHandlers);
     }
 
     @Override
