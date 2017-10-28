@@ -10,7 +10,7 @@
 
 4*, Rename IOUtil.close/closeQuietly(Collection<? extends AutoCloseable>) to closeAll/closeAllQuietly(Collection<? extends AutoCloseable>).
 
-5*, Rename IOUtil.close/closeQuietly(Reader/Writer/..).
+5*, Remove IOUtil.close/closeQuietly(Reader/Writer/..).
 
 6*, Move SQLExecutor.Mapper.asyncGet/Find/Query/... to SQLExecutor.AsyncMapper.get/find/query/....
 
