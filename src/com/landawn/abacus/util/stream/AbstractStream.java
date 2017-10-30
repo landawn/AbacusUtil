@@ -42,11 +42,13 @@ import java.util.concurrent.atomic.AtomicLong;
 import com.landawn.abacus.DataSet;
 import com.landawn.abacus.exception.UncheckedIOException;
 import com.landawn.abacus.exception.UncheckedSQLException;
+import com.landawn.abacus.type.Type;
 import com.landawn.abacus.util.Array;
 import com.landawn.abacus.util.BufferedWriter;
 import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.Indexed;
+import com.landawn.abacus.util.Iterators;
 import com.landawn.abacus.util.ListMultimap;
 import com.landawn.abacus.util.Matrix;
 import com.landawn.abacus.util.Multimap;
@@ -56,6 +58,7 @@ import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.NullabLe;
+import com.landawn.abacus.util.ObjIterator;
 import com.landawn.abacus.util.ObjectFactory;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
@@ -1753,6 +1756,41 @@ abstract class AbstractStream<T> extends Stream<T> {
     @Override
     public DataSet toDataSet() {
         return toDataSet(null);
+    }
+
+    @Override
+    public DataSet toDataSet(boolean isFirstHeader) {
+        if (isFirstHeader) {
+            final ObjIterator<T> iter = this.iterator();
+
+            if (iter.hasNext() == false) {
+                return N.newDataSet(new ArrayList<String>(0), new ArrayList<List<Object>>(0));
+            }
+
+            final T header = iter.next();
+            final Type<?> type = N.typeOf(header.getClass());
+            List<String> columnNames = null;
+
+            if (type.isArray()) {
+                final Object[] a = (Object[]) header;
+                columnNames = new ArrayList<>(a.length);
+
+                for (Object e : a) {
+                    columnNames.add(N.stringOf(e));
+                }
+            } else {
+                final Collection<?> c = (Collection<?>) header;
+                columnNames = new ArrayList<>(c.size());
+
+                for (Object e : c) {
+                    columnNames.add(N.stringOf(e));
+                }
+            }
+
+            return N.newDataSet(columnNames, Iterators.toList(iter));
+        } else {
+            return toDataSet(null);
+        }
     }
 
     @Override

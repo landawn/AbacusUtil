@@ -1184,6 +1184,12 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     public abstract DataSet toDataSet();
 
     /**
+     * @param isFirstHeader
+     * @return
+     */
+    public abstract DataSet toDataSet(boolean isFirstHeader);
+
+    /**
      * 
      * @param columnNames it can be null or empty if this is Map or entity stream.
      * @return
