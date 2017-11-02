@@ -135,13 +135,42 @@ public final class BiMap<K, V> implements Map<K, V> {
     }
 
     /**
-     * The existed value associated with the specified key or the existed key associated with the specified value will
-     * removed/replaced with new value or new key.
+     * 
+     * @throws IllegalArgumentException if the given value is already bound to a
+     *     different key in this bimap. The bimap will remain unmodified in this
+     *     event. To avoid this exception, call {@link #forcePut} instead.
      */
     @Override
-    public V put(K key, V value) {
+    public V put(final K key, final V value) {
+        return put(key, value, false);
+    }
+
+    /**
+     * An alternate form of {@code put} that silently removes any existing entry
+     * with the value {@code value} before proceeding with the {@link #put}
+     * operation. If the bimap previously contained the provided key-value
+     * mapping, this method has no effect.
+     *
+     * <p>Note that a successful call to this method could cause the size of the
+     * bimap to increase by one, stay the same, or even decrease by one.
+     *
+     * <p><b>Warning:</b> If an existing entry with this value is removed, the key
+     * for that entry is discarded and not returned.
+     *
+     * @param key the key with which the specified value is to be associated
+     * @param value the value to be associated with the specified key
+     * @return the value which was previously associated with the key, which may
+     *     be {@code null}, or {@code null} if there was no previous entry
+     */
+    public V forcePut(final K key, final V value) {
+        return put(key, value, true);
+    }
+
+    private V put(final K key, final V value, final boolean isForce) {
         if ((key == null) || (value == null)) {
             throw new NullPointerException("key or value can't be null");
+        } else if (isForce == false && valueMap.containsKey(value)) {
+            throw new IllegalArgumentException("Value already exists: " + value);
         }
 
         V v = keyMap.remove(key);
@@ -162,6 +191,15 @@ public final class BiMap<K, V> implements Map<K, V> {
         return v;
     }
 
+    /**
+     *
+     * <p><b>Warning:</b> the results of calling this method may vary depending on
+     * the iteration order of {@code map}.
+     *
+     * @throws IllegalArgumentException if an attempt to {@code put} any
+     *     entry fails. Note that some map entries may have been added to the
+     *     bimap before the exception was thrown.
+     */
     @Override
     public void putAll(Map<? extends K, ? extends V> m) {
         for (Map.Entry<? extends K, ? extends V> e : m.entrySet()) {

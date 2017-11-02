@@ -214,7 +214,7 @@ public class Joiner {
     }
 
     public Joiner useForNull(String nullText) {
-        this.nullText = nullText;
+        this.nullText = nullText == null ? N.NULL_STRING : nullText;
 
         return this;
     }
@@ -261,7 +261,7 @@ public class Joiner {
 
     public Joiner add(String element) {
         if (element != null || skipNull == false) {
-            prepareBuilder().append(element == null ? nullText : element);
+            prepareBuilder().append(element == null ? nullText : (trim ? element.trim() : element));
         }
 
         return this;
@@ -277,7 +277,7 @@ public class Joiner {
      */
     public Joiner add(CharSequence element) {
         if (element != null || skipNull == false) {
-            prepareBuilder().append(element == null ? nullText : element);
+            prepareBuilder().append(element == null ? nullText : (trim ? element.toString().trim() : element));
         }
 
         return this;
@@ -285,7 +285,7 @@ public class Joiner {
 
     public Joiner add(Object element) {
         if (element != null || skipNull == false) {
-            prepareBuilder().append(toString(element));
+            prepareBuilder().append(trim ? toString(element).trim() : toString(element));
         }
 
         return this;

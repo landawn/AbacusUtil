@@ -38,8 +38,8 @@ import com.landawn.abacus.util.function.IntBiFunction;
 import com.landawn.abacus.util.function.IntBiPredicate;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Predicate;
-import com.landawn.abacus.util.stream.ObjIteratorEx;
 import com.landawn.abacus.util.stream.IntStream;
+import com.landawn.abacus.util.stream.ObjIteratorEx;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -571,8 +571,8 @@ public final class Sheet<R, C, E> {
         _rowKeySet.clear();
         _rowKeySet.addAll(tmp);
 
-        _rowKeyIndexMap.put(tmp.get(rowIndexA), rowIndexA);
-        _rowKeyIndexMap.put(tmp.get(rowIndexB), rowIndexB);
+        _rowKeyIndexMap.forcePut(tmp.get(rowIndexA), rowIndexA);
+        _rowKeyIndexMap.forcePut(tmp.get(rowIndexB), rowIndexB);
 
         if (_initialized && _columnList.size() > 0) {
             E tmpVal = null;
@@ -838,8 +838,8 @@ public final class Sheet<R, C, E> {
         _columnKeySet.clear();
         _columnKeySet.addAll(tmp);
 
-        _columnKeyIndexMap.put(tmp.get(columnIndexA), columnIndexA);
-        _columnKeyIndexMap.put(tmp.get(columnIndexB), columnIndexB);
+        _columnKeyIndexMap.forcePut(tmp.get(columnIndexA), columnIndexA);
+        _columnKeyIndexMap.forcePut(tmp.get(columnIndexB), columnIndexB);
 
         if (_initialized && _columnList.size() > 0) {
             final List<E> tmpColumnA = _columnList.get(columnIndexA);

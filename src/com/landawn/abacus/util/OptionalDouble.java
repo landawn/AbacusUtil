@@ -234,7 +234,7 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
     }
 
     public java.util.OptionalDouble __() {
-        return isPresent() ? java.util.OptionalDouble.empty() : java.util.OptionalDouble.of(value);
+        return isPresent() ? java.util.OptionalDouble.of(value) : java.util.OptionalDouble.empty();
     }
 
     /**

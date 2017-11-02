@@ -2,7 +2,11 @@
 
 ﻿========Changes in 1.0.6 =========================================================================
 
-1, Improvements and bug fix.
+1*, Refactoring BiMap.put(key, value) and add forcePut.
+
+2*, Rename is/not/checkNullOrEmptyOrBlank to checkNullOrBlank
+
+3, Improvements and bug fix.
 
 
 ﻿========Changes in 1.0.5 =========================================================================

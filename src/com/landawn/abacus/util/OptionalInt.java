@@ -234,7 +234,7 @@ public final class OptionalInt implements Comparable<OptionalInt> {
     }
 
     public java.util.OptionalInt __() {
-        return isPresent() ? java.util.OptionalInt.empty() : java.util.OptionalInt.of(value);
+        return isPresent() ? java.util.OptionalInt.of(value) : java.util.OptionalInt.empty();
     }
 
     /**

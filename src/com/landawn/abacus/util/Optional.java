@@ -150,6 +150,20 @@ public final class Optional<T> {
     }
 
     /**
+     * 
+     * @param val
+     * @param targetType
+     * @return an empty <code>Optional</code> if {@code val} is null or can't be assigned to {@code targetType}.
+     */
+    public static <T> Optional<T> castIfAssignable(final Object val, final Class<T> targetType) {
+        return val != null && targetType.isAssignableFrom(val.getClass()) ? Optional.of((T) val) : Optional.<T> empty();
+    }
+
+    //    public static <T> Optional<T> ifOrEmpty(boolean b, final T val) {
+    //        return b ? Optional.of(val) : Optional.<T> empty();
+    //    }
+
+    /**
      * If a value is present in this {@code Optional}, returns the value,
      * otherwise throws {@code NoSuchElementException}.
      *
@@ -424,7 +438,7 @@ public final class Optional<T> {
     }
 
     public java.util.Optional<T> __() {
-        return isPresent() ? java.util.Optional.<T> empty() : java.util.Optional.of(value);
+        return isPresent() ? java.util.Optional.of(value) : java.util.Optional.<T> empty();
     }
 
     /**

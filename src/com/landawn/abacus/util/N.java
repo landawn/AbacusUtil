@@ -9322,7 +9322,7 @@ public final class N {
         return (entityId == null) || (entityId.isEmpty());
     }
 
-    public static boolean isNullOrEmptyOrBlank(final CharSequence s) {
+    public static boolean isNullOrBlank(final CharSequence s) {
         if (N.isNullOrEmpty(s)) {
             return true;
         }
@@ -9413,8 +9413,8 @@ public final class N {
         return (entityId != null) && (!entityId.isEmpty());
     }
 
-    public static boolean notNullOrEmptyOrBlank(final CharSequence s) {
-        return !N.isNullOrEmptyOrBlank(s);
+    public static boolean notNullOrBlank(final CharSequence s) {
+        return !N.isNullOrBlank(s);
     }
 
     /**
@@ -9811,8 +9811,8 @@ public final class N {
      * @return the input parameter
      * @throws IllegalArgumentException if the specified parameter is null or empty.
      */
-    public static <T extends CharSequence> T checkNullOrEmptyOrBlank(final T parameter, final String msg) {
-        if (N.isNullOrEmptyOrBlank(parameter)) {
+    public static <T extends CharSequence> T checkNullOrBlank(final T parameter, final String msg) {
+        if (N.isNullOrBlank(parameter)) {
             if (isErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
             } else {
@@ -23274,14 +23274,60 @@ public final class N {
      * @return
      */
     public static String concat(final String a, final String b) {
-        return a + b;
+        final StringBuilder sb = ObjectFactory.createStringBuilder();
+
+        try {
+            return sb.append(a).append(b).toString();
+        } finally {
+            ObjectFactory.recycle(sb);
+        }
     }
 
     public static String concat(final String a, final String b, final String c) {
         final StringBuilder sb = ObjectFactory.createStringBuilder();
 
         try {
-            return sb.append(a).append(b).append(b).toString();
+            return sb.append(a).append(b).append(c).toString();
+        } finally {
+            ObjectFactory.recycle(sb);
+        }
+    }
+
+    public static String concat(final String a, final String b, final String c, final String d) {
+        final StringBuilder sb = ObjectFactory.createStringBuilder();
+
+        try {
+            return sb.append(a).append(b).append(c).append(d).toString();
+        } finally {
+            ObjectFactory.recycle(sb);
+        }
+    }
+
+    public static String concat(final String a, final String b, final String c, final String d, final String e) {
+        final StringBuilder sb = ObjectFactory.createStringBuilder();
+
+        try {
+            return sb.append(a).append(b).append(c).append(d).append(e).toString();
+        } finally {
+            ObjectFactory.recycle(sb);
+        }
+    }
+
+    public static String concat(final String a, final String b, final String c, final String d, final String e, final String f) {
+        final StringBuilder sb = ObjectFactory.createStringBuilder();
+
+        try {
+            return sb.append(a).append(b).append(c).append(d).append(e).append(f).toString();
+        } finally {
+            ObjectFactory.recycle(sb);
+        }
+    }
+
+    public static String concat(final String a, final String b, final String c, final String d, final String e, final String f, final String g) {
+        final StringBuilder sb = ObjectFactory.createStringBuilder();
+
+        try {
+            return sb.append(a).append(b).append(c).append(d).append(e).append(f).append(g).toString();
         } finally {
             ObjectFactory.recycle(sb);
         }

@@ -122,6 +122,10 @@ public final class NullabLe<T> {
         }
     }
 
+    //    public static <T> NullabLe<T> ifOrEmpty(boolean b, final T val) {
+    //        return b ? NullabLe.of(val) : NullabLe.<T> empty();
+    //    }
+
     //    public static <T> NullabLe<T> from(Optional<T> optional) {
     //        return optional.isPresent() ? new NullabLe<T>(optional.get()) : (NullabLe<T>) empty();
     //    }

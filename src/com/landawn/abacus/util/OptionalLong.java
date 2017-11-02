@@ -234,7 +234,7 @@ public final class OptionalLong implements Comparable<OptionalLong> {
     }
 
     public java.util.OptionalLong __() {
-        return isPresent() ? java.util.OptionalLong.empty() : java.util.OptionalLong.of(value);
+        return isPresent() ? java.util.OptionalLong.of(value) : java.util.OptionalLong.empty();
     }
 
     /**
