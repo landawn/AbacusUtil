@@ -75,7 +75,7 @@ public final class LongList extends PrimitiveList<LongConsumer, LongPredicate, L
         this.size = size;
     }
 
-    public static LongList empty() {
+    private static LongList empty() {
         return new LongList(N.EMPTY_LONG_ARRAY);
     }
 

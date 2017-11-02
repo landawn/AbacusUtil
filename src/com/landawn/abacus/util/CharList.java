@@ -74,7 +74,7 @@ public final class CharList extends PrimitiveList<CharConsumer, CharPredicate, C
         this.size = size;
     }
 
-    public static CharList empty() {
+    private static CharList empty() {
         return new CharList(N.EMPTY_CHAR_ARRAY);
     }
 

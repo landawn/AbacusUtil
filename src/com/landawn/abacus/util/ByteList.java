@@ -74,7 +74,7 @@ public final class ByteList extends PrimitiveList<ByteConsumer, BytePredicate, B
         this.size = size;
     }
 
-    public static ByteList empty() {
+    private static ByteList empty() {
         return new ByteList(N.EMPTY_BYTE_ARRAY);
     }
 

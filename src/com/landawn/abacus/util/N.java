@@ -18769,7 +18769,7 @@ public final class N {
 
     public static BooleanList filter(final boolean[] a, final BooleanPredicate filter) {
         if (N.isNullOrEmpty(a)) {
-            return BooleanList.empty();
+            return new BooleanList();
         }
 
         return filter(a, 0, a.length, filter);
@@ -18777,7 +18777,7 @@ public final class N {
 
     public static BooleanList filter(final boolean[] a, final BooleanPredicate filter, final int max) {
         if (N.isNullOrEmpty(a)) {
-            return BooleanList.empty();
+            return new BooleanList();
         }
 
         return filter(a, 0, a.length, filter, max);
@@ -18803,7 +18803,7 @@ public final class N {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
-            return BooleanList.empty();
+            return new BooleanList();
         }
 
         final BooleanList result = new BooleanList(min(9, max, (toIndex - fromIndex)));
@@ -18820,7 +18820,7 @@ public final class N {
 
     public static CharList filter(final char[] a, final CharPredicate filter) {
         if (N.isNullOrEmpty(a)) {
-            return CharList.empty();
+            return new CharList();
         }
 
         return filter(a, 0, a.length, filter);
@@ -18828,7 +18828,7 @@ public final class N {
 
     public static CharList filter(final char[] a, final CharPredicate filter, final int max) {
         if (N.isNullOrEmpty(a)) {
-            return CharList.empty();
+            return new CharList();
         }
 
         return filter(a, 0, a.length, filter, max);
@@ -18854,7 +18854,7 @@ public final class N {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
-            return CharList.empty();
+            return new CharList();
         }
 
         final CharList result = new CharList(min(9, max, (toIndex - fromIndex)));
@@ -18871,7 +18871,7 @@ public final class N {
 
     public static ByteList filter(final byte[] a, final BytePredicate filter) {
         if (N.isNullOrEmpty(a)) {
-            return ByteList.empty();
+            return new ByteList();
         }
 
         return filter(a, 0, a.length, filter);
@@ -18879,7 +18879,7 @@ public final class N {
 
     public static ByteList filter(final byte[] a, final BytePredicate filter, final int max) {
         if (N.isNullOrEmpty(a)) {
-            return ByteList.empty();
+            return new ByteList();
         }
 
         return filter(a, 0, a.length, filter, max);
@@ -18905,7 +18905,7 @@ public final class N {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
-            return ByteList.empty();
+            return new ByteList();
         }
 
         final ByteList result = new ByteList(min(9, max, (toIndex - fromIndex)));
@@ -18922,7 +18922,7 @@ public final class N {
 
     public static ShortList filter(final short[] a, final ShortPredicate filter) {
         if (N.isNullOrEmpty(a)) {
-            return ShortList.empty();
+            return new ShortList();
         }
 
         return filter(a, 0, a.length, filter);
@@ -18930,7 +18930,7 @@ public final class N {
 
     public static ShortList filter(final short[] a, final ShortPredicate filter, final int max) {
         if (N.isNullOrEmpty(a)) {
-            return ShortList.empty();
+            return new ShortList();
         }
 
         return filter(a, 0, a.length, filter, max);
@@ -18956,7 +18956,7 @@ public final class N {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
-            return ShortList.empty();
+            return new ShortList();
         }
 
         final ShortList result = new ShortList(min(9, max, (toIndex - fromIndex)));
@@ -18973,7 +18973,7 @@ public final class N {
 
     public static IntList filter(final int[] a, final IntPredicate filter) {
         if (N.isNullOrEmpty(a)) {
-            return IntList.empty();
+            return new IntList();
         }
 
         return filter(a, 0, a.length, filter);
@@ -18981,7 +18981,7 @@ public final class N {
 
     public static IntList filter(final int[] a, final IntPredicate filter, final int max) {
         if (N.isNullOrEmpty(a)) {
-            return IntList.empty();
+            return new IntList();
         }
 
         return filter(a, 0, a.length, filter, max);
@@ -19007,7 +19007,7 @@ public final class N {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
-            return IntList.empty();
+            return new IntList();
         }
 
         final IntList result = new IntList(min(9, max, (toIndex - fromIndex)));
@@ -19024,7 +19024,7 @@ public final class N {
 
     public static LongList filter(final long[] a, final LongPredicate filter) {
         if (N.isNullOrEmpty(a)) {
-            return LongList.empty();
+            return new LongList();
         }
 
         return filter(a, 0, a.length, filter);
@@ -19032,7 +19032,7 @@ public final class N {
 
     public static LongList filter(final long[] a, final LongPredicate filter, final int max) {
         if (N.isNullOrEmpty(a)) {
-            return LongList.empty();
+            return new LongList();
         }
 
         return filter(a, 0, a.length, filter, max);
@@ -19058,7 +19058,7 @@ public final class N {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
-            return LongList.empty();
+            return new LongList();
         }
 
         final LongList result = new LongList(min(9, max, (toIndex - fromIndex)));
@@ -19075,7 +19075,7 @@ public final class N {
 
     public static FloatList filter(final float[] a, final FloatPredicate filter) {
         if (N.isNullOrEmpty(a)) {
-            return FloatList.empty();
+            return new FloatList();
         }
 
         return filter(a, 0, a.length, filter);
@@ -19083,7 +19083,7 @@ public final class N {
 
     public static FloatList filter(final float[] a, final FloatPredicate filter, final int max) {
         if (N.isNullOrEmpty(a)) {
-            return FloatList.empty();
+            return new FloatList();
         }
 
         return filter(a, 0, a.length, filter, max);
@@ -19109,7 +19109,7 @@ public final class N {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
-            return FloatList.empty();
+            return new FloatList();
         }
 
         final FloatList result = new FloatList(min(9, max, (toIndex - fromIndex)));
@@ -19126,7 +19126,7 @@ public final class N {
 
     public static DoubleList filter(final double[] a, final DoublePredicate filter) {
         if (N.isNullOrEmpty(a)) {
-            return DoubleList.empty();
+            return new DoubleList();
         }
 
         return filter(a, 0, a.length, filter);
@@ -19134,7 +19134,7 @@ public final class N {
 
     public static DoubleList filter(final double[] a, final DoublePredicate filter, final int max) {
         if (N.isNullOrEmpty(a)) {
-            return DoubleList.empty();
+            return new DoubleList();
         }
 
         return filter(a, 0, a.length, filter, max);
@@ -19160,7 +19160,7 @@ public final class N {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
-            return DoubleList.empty();
+            return new DoubleList();
         }
 
         final DoubleList result = new DoubleList(min(9, max, (toIndex - fromIndex)));
@@ -19422,7 +19422,7 @@ public final class N {
 
     public static <T> BooleanList mapToBoolean(final T[] a, final ToBooleanFunction<? super T> func) {
         if (N.isNullOrEmpty(a)) {
-            return BooleanList.empty();
+            return new BooleanList();
         }
 
         return mapToBoolean(a, 0, a.length, func);
@@ -19442,7 +19442,7 @@ public final class N {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
-            return BooleanList.empty();
+            return new BooleanList();
         }
 
         final BooleanList result = new BooleanList(toIndex - fromIndex);
@@ -19456,7 +19456,7 @@ public final class N {
 
     public static <T> BooleanList mapToBoolean(final Collection<? extends T> c, final ToBooleanFunction<? super T> func) {
         if (N.isNullOrEmpty(c)) {
-            return BooleanList.empty();
+            return new BooleanList();
         }
 
         return mapToBoolean(c, 0, c.size(), func);
@@ -19477,7 +19477,7 @@ public final class N {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
-            return BooleanList.empty();
+            return new BooleanList();
         }
 
         final BooleanList result = new BooleanList(toIndex - fromIndex);
@@ -19509,7 +19509,7 @@ public final class N {
 
     public static <T> CharList mapToChar(final T[] a, final ToCharFunction<? super T> func) {
         if (N.isNullOrEmpty(a)) {
-            return CharList.empty();
+            return new CharList();
         }
 
         return mapToChar(a, 0, a.length, func);
@@ -19529,7 +19529,7 @@ public final class N {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
-            return CharList.empty();
+            return new CharList();
         }
 
         final CharList result = new CharList(toIndex - fromIndex);
@@ -19543,7 +19543,7 @@ public final class N {
 
     public static <T> CharList mapToChar(final Collection<? extends T> c, final ToCharFunction<? super T> func) {
         if (N.isNullOrEmpty(c)) {
-            return CharList.empty();
+            return new CharList();
         }
 
         return mapToChar(c, 0, c.size(), func);
@@ -19563,7 +19563,7 @@ public final class N {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
-            return CharList.empty();
+            return new CharList();
         }
 
         final CharList result = new CharList(toIndex - fromIndex);
@@ -19595,7 +19595,7 @@ public final class N {
 
     public static <T> ByteList mapToByte(final T[] a, final ToByteFunction<? super T> func) {
         if (N.isNullOrEmpty(a)) {
-            return ByteList.empty();
+            return new ByteList();
         }
 
         return mapToByte(a, 0, a.length, func);
@@ -19615,7 +19615,7 @@ public final class N {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
-            return ByteList.empty();
+            return new ByteList();
         }
 
         final ByteList result = new ByteList(toIndex - fromIndex);
@@ -19629,7 +19629,7 @@ public final class N {
 
     public static <T> ByteList mapToByte(final Collection<? extends T> c, final ToByteFunction<? super T> func) {
         if (N.isNullOrEmpty(c)) {
-            return ByteList.empty();
+            return new ByteList();
         }
 
         return mapToByte(c, 0, c.size(), func);
@@ -19649,7 +19649,7 @@ public final class N {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
-            return ByteList.empty();
+            return new ByteList();
         }
 
         final ByteList result = new ByteList(toIndex - fromIndex);
@@ -19681,7 +19681,7 @@ public final class N {
 
     public static <T> ShortList mapToShort(final T[] a, final ToShortFunction<? super T> func) {
         if (N.isNullOrEmpty(a)) {
-            return ShortList.empty();
+            return new ShortList();
         }
 
         return mapToShort(a, 0, a.length, func);
@@ -19701,7 +19701,7 @@ public final class N {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
-            return ShortList.empty();
+            return new ShortList();
         }
 
         final ShortList result = new ShortList(toIndex - fromIndex);
@@ -19715,7 +19715,7 @@ public final class N {
 
     public static <T> ShortList mapToShort(final Collection<? extends T> c, final ToShortFunction<? super T> func) {
         if (N.isNullOrEmpty(c)) {
-            return ShortList.empty();
+            return new ShortList();
         }
 
         return mapToShort(c, 0, c.size(), func);
@@ -19735,7 +19735,7 @@ public final class N {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
-            return ShortList.empty();
+            return new ShortList();
         }
 
         final ShortList result = new ShortList(toIndex - fromIndex);
@@ -19767,7 +19767,7 @@ public final class N {
 
     public static <T> IntList mapToInt(final T[] a, final ToIntFunction<? super T> func) {
         if (N.isNullOrEmpty(a)) {
-            return IntList.empty();
+            return new IntList();
         }
 
         return mapToInt(a, 0, a.length, func);
@@ -19787,7 +19787,7 @@ public final class N {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
-            return IntList.empty();
+            return new IntList();
         }
 
         final IntList result = new IntList(toIndex - fromIndex);
@@ -19801,7 +19801,7 @@ public final class N {
 
     public static <T> IntList mapToInt(final Collection<? extends T> c, final ToIntFunction<? super T> func) {
         if (N.isNullOrEmpty(c)) {
-            return IntList.empty();
+            return new IntList();
         }
 
         return mapToInt(c, 0, c.size(), func);
@@ -19821,7 +19821,7 @@ public final class N {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
-            return IntList.empty();
+            return new IntList();
         }
 
         final IntList result = new IntList(toIndex - fromIndex);
@@ -19853,7 +19853,7 @@ public final class N {
 
     public static <T> LongList mapToLong(final T[] a, final ToLongFunction<? super T> func) {
         if (N.isNullOrEmpty(a)) {
-            return LongList.empty();
+            return new LongList();
         }
 
         return mapToLong(a, 0, a.length, func);
@@ -19873,7 +19873,7 @@ public final class N {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
-            return LongList.empty();
+            return new LongList();
         }
 
         final LongList result = new LongList(toIndex - fromIndex);
@@ -19887,7 +19887,7 @@ public final class N {
 
     public static <T> LongList mapToLong(final Collection<? extends T> c, final ToLongFunction<? super T> func) {
         if (N.isNullOrEmpty(c)) {
-            return LongList.empty();
+            return new LongList();
         }
 
         return mapToLong(c, 0, c.size(), func);
@@ -19907,7 +19907,7 @@ public final class N {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
-            return LongList.empty();
+            return new LongList();
         }
 
         final LongList result = new LongList(toIndex - fromIndex);
@@ -19939,7 +19939,7 @@ public final class N {
 
     public static <T> FloatList mapToFloat(final T[] a, final ToFloatFunction<? super T> func) {
         if (N.isNullOrEmpty(a)) {
-            return FloatList.empty();
+            return new FloatList();
         }
 
         return mapToFloat(a, 0, a.length, func);
@@ -19959,7 +19959,7 @@ public final class N {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
-            return FloatList.empty();
+            return new FloatList();
         }
 
         final FloatList result = new FloatList(toIndex - fromIndex);
@@ -19973,7 +19973,7 @@ public final class N {
 
     public static <T> FloatList mapToFloat(final Collection<? extends T> c, final ToFloatFunction<? super T> func) {
         if (N.isNullOrEmpty(c)) {
-            return FloatList.empty();
+            return new FloatList();
         }
 
         return mapToFloat(c, 0, c.size(), func);
@@ -19993,7 +19993,7 @@ public final class N {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
-            return FloatList.empty();
+            return new FloatList();
         }
 
         final FloatList result = new FloatList(toIndex - fromIndex);
@@ -20025,7 +20025,7 @@ public final class N {
 
     public static <T> DoubleList mapToDouble(final T[] a, final ToDoubleFunction<? super T> func) {
         if (N.isNullOrEmpty(a)) {
-            return DoubleList.empty();
+            return new DoubleList();
         }
 
         return mapToDouble(a, 0, a.length, func);
@@ -20045,7 +20045,7 @@ public final class N {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
-            return DoubleList.empty();
+            return new DoubleList();
         }
 
         final DoubleList result = new DoubleList(toIndex - fromIndex);
@@ -20059,7 +20059,7 @@ public final class N {
 
     public static <T> DoubleList mapToDouble(final Collection<? extends T> c, final ToDoubleFunction<? super T> func) {
         if (N.isNullOrEmpty(c)) {
-            return DoubleList.empty();
+            return new DoubleList();
         }
 
         return mapToDouble(c, 0, c.size(), func);
@@ -20079,7 +20079,7 @@ public final class N {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
-            return DoubleList.empty();
+            return new DoubleList();
         }
 
         final DoubleList result = new DoubleList(toIndex - fromIndex);

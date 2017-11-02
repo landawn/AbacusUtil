@@ -75,7 +75,7 @@ public final class ShortList extends PrimitiveList<ShortConsumer, ShortPredicate
         this.size = size;
     }
 
-    public static ShortList empty() {
+    private static ShortList empty() {
         return new ShortList(N.EMPTY_SHORT_ARRAY);
     }
 

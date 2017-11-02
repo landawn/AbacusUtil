@@ -75,7 +75,7 @@ public final class DoubleList extends PrimitiveList<DoubleConsumer, DoublePredic
         this.size = size;
     }
 
-    public static DoubleList empty() {
+    private static DoubleList empty() {
         return new DoubleList(N.EMPTY_DOUBLE_ARRAY);
     }
 

@@ -74,7 +74,7 @@ public final class IntList extends PrimitiveList<IntConsumer, IntPredicate, Inte
         this.size = size;
     }
 
-    public static IntList empty() {
+    private static IntList empty() {
         return new IntList(N.EMPTY_INT_ARRAY);
     }
 

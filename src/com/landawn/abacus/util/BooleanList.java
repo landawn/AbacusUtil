@@ -74,7 +74,7 @@ public final class BooleanList extends PrimitiveList<BooleanConsumer, BooleanPre
         this.size = size;
     }
 
-    public static BooleanList empty() {
+    private static BooleanList empty() {
         return new BooleanList(N.EMPTY_BOOLEAN_ARRAY);
     }
 

@@ -75,7 +75,7 @@ public final class FloatList extends PrimitiveList<FloatConsumer, FloatPredicate
         this.size = size;
     }
 
-    public static FloatList empty() {
+    private static FloatList empty() {
         return new FloatList(N.EMPTY_FLOAT_ARRAY);
     }
 
