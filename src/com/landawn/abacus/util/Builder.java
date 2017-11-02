@@ -1085,12 +1085,6 @@ public class Builder<T> {
             return output;
         }
 
-        public static void acceptIf(boolean b, Runnable action) {
-            if (b) {
-                action.run();
-            }
-        }
-
         public static void ifOrElse(boolean b, Runnable action, Runnable elseAction) {
             if (b) {
                 action.run();
