@@ -1937,9 +1937,9 @@ public final class Seq<T> extends ImmutableCollection<T> {
             return new ArrayList<>();
         }
 
-        final BiFunction<T, Object, Boolean> predicate2 = new BiFunction<T, Object, Boolean>() {
+        final BiPredicate<T, Object> predicate2 = new BiPredicate<T, Object>() {
             @Override
-            public Boolean apply(T t, Object u) {
+            public boolean test(T t, Object u) {
                 return predicate.test(t);
             }
         };
@@ -1947,7 +1947,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return split(null, predicate2, null);
     }
 
-    public <U> List<List<T>> split(final U identity, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> identityUpdate) {
+    public <U> List<List<T>> split(final U identity, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super U> identityUpdate) {
         N.requireNonNull(predicate);
 
         if (N.isNullOrEmpty(coll)) {
@@ -1969,9 +1969,9 @@ public final class Seq<T> extends ImmutableCollection<T> {
             while (next != N.NULL_MASK) {
                 if (piece.size() == 0) {
                     piece.add(next);
-                    preCondition = predicate.apply(next, identity);
+                    preCondition = predicate.test(next, identity);
                     next = elements.hasNext() ? elements.next() : (T) N.NULL_MASK;
-                } else if (predicate.apply(next, identity) == preCondition) {
+                } else if (predicate.test(next, identity) == preCondition) {
                     piece.add(next);
                     next = elements.hasNext() ? elements.next() : (T) N.NULL_MASK;
                 } else {

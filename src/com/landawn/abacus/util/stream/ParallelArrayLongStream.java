@@ -40,7 +40,7 @@ import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalLong;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.function.BiConsumer;
-import com.landawn.abacus.util.function.BiFunction;
+import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
@@ -298,13 +298,13 @@ final class ParallelArrayLongStream extends ArrayLongStream {
     }
 
     @Override
-    public <U> Stream<LongStream> split(final U seed, final BiFunction<? super Long, ? super U, Boolean> predicate, final Consumer<? super U> seedUpdate) {
+    public <U> Stream<LongStream> split(final U seed, final BiPredicate<? super Long, ? super U> predicate, final Consumer<? super U> seedUpdate) {
         return new ParallelIteratorStream<LongStream>(sequential().split(seed, predicate, seedUpdate).iterator(), false, null, maxThreadNum, splitor,
                 closeHandlers);
     }
 
     @Override
-    public <U> Stream<LongList> splitToList(final U seed, final BiFunction<? super Long, ? super U, Boolean> predicate, final Consumer<? super U> seedUpdate) {
+    public <U> Stream<LongList> splitToList(final U seed, final BiPredicate<? super Long, ? super U> predicate, final Consumer<? super U> seedUpdate) {
         return new ParallelIteratorStream<LongList>(sequential().splitToList(seed, predicate, seedUpdate).iterator(), false, null, maxThreadNum, splitor,
                 closeHandlers);
     }

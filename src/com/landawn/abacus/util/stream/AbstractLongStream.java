@@ -38,7 +38,7 @@ import com.landawn.abacus.util.OptionalLong;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.function.BiConsumer;
-import com.landawn.abacus.util.function.BiFunction;
+import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
@@ -203,10 +203,10 @@ abstract class AbstractLongStream extends LongStream {
 
     @Override
     public Stream<LongList> splitToList(final LongPredicate predicate) {
-        final BiFunction<Long, Object, Boolean> predicate2 = new BiFunction<Long, Object, Boolean>() {
+        final BiPredicate<Long, Object> predicate2 = new BiPredicate<Long, Object>() {
 
             @Override
-            public Boolean apply(Long t, Object u) {
+            public boolean test(Long t, Object u) {
                 return predicate.test(t);
             }
         };
@@ -215,8 +215,7 @@ abstract class AbstractLongStream extends LongStream {
     }
 
     @Override
-    public <U> Stream<LongStream> split(final U seed, final BiFunction<? super Long, ? super U, Boolean> predicate,
-            final Consumer<? super U> seedUpdate) {
+    public <U> Stream<LongStream> split(final U seed, final BiPredicate<? super Long, ? super U> predicate, final Consumer<? super U> seedUpdate) {
         return splitToList(seed, predicate, seedUpdate).map(new Function<LongList, LongStream>() {
             @Override
             public LongStream apply(LongList t) {

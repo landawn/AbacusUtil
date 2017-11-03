@@ -39,7 +39,7 @@ import com.landawn.abacus.util.OptionalChar;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.function.BiConsumer;
-import com.landawn.abacus.util.function.BiFunction;
+import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.CharBiFunction;
 import com.landawn.abacus.util.function.CharBiPredicate;
@@ -204,10 +204,10 @@ abstract class AbstractCharStream extends CharStream {
 
     @Override
     public Stream<CharList> splitToList(final CharPredicate predicate) {
-        final BiFunction<Character, Object, Boolean> predicate2 = new BiFunction<Character, Object, Boolean>() {
+        final BiPredicate<Character, Object> predicate2 = new BiPredicate<Character, Object>() {
 
             @Override
-            public Boolean apply(Character t, Object u) {
+            public boolean test(Character t, Object u) {
                 return predicate.test(t);
             }
         };
@@ -216,8 +216,7 @@ abstract class AbstractCharStream extends CharStream {
     }
 
     @Override
-    public <U> Stream<CharStream> split(final U seed, final BiFunction<? super Character, ? super U, Boolean> predicate,
-            final Consumer<? super U> seedUpdate) {
+    public <U> Stream<CharStream> split(final U seed, final BiPredicate<? super Character, ? super U> predicate, final Consumer<? super U> seedUpdate) {
         return splitToList(seed, predicate, seedUpdate).map(new Function<CharList, CharStream>() {
             @Override
             public CharStream apply(CharList t) {

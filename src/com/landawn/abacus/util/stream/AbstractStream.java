@@ -468,10 +468,10 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<List<T>> splitToList(final Predicate<? super T> predicate) {
-        final BiFunction<T, Object, Boolean> predicate2 = new BiFunction<T, Object, Boolean>() {
+        final BiPredicate<T, Object> predicate2 = new BiPredicate<T, Object>() {
 
             @Override
-            public Boolean apply(T t, Object u) {
+            public boolean test(T t, Object u) {
                 return predicate.test(t);
             }
         };
@@ -480,7 +480,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <U> Stream<Stream<T>> split(final U seed, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> seedUpdate) {
+    public <U> Stream<Stream<T>> split(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super U> seedUpdate) {
         return splitToList(seed, predicate, seedUpdate).map(new Function<List<T>, Stream<T>>() {
             @Override
             public Stream<T> apply(List<T> t) {

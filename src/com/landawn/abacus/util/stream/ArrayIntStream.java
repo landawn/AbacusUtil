@@ -40,6 +40,7 @@ import com.landawn.abacus.util.OptionalInt;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
+import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.IntBinaryOperator;
@@ -595,7 +596,8 @@ class ArrayIntStream extends AbstractIntStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1) : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
+                : new LocalLinkedHashSet<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -662,7 +664,8 @@ class ArrayIntStream extends AbstractIntStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1) : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
+                : new LocalLinkedHashSet<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -729,7 +732,8 @@ class ArrayIntStream extends AbstractIntStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1) : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
+                : new LocalLinkedHashSet<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -796,7 +800,8 @@ class ArrayIntStream extends AbstractIntStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1) : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
+                : new LocalLinkedHashSet<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -863,7 +868,8 @@ class ArrayIntStream extends AbstractIntStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1) : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
+                : new LocalLinkedHashSet<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -930,7 +936,8 @@ class ArrayIntStream extends AbstractIntStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1) : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
+                : new LocalLinkedHashSet<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -997,7 +1004,8 @@ class ArrayIntStream extends AbstractIntStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1) : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
+                : new LocalLinkedHashSet<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -1064,7 +1072,8 @@ class ArrayIntStream extends AbstractIntStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1) : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
+                : new LocalLinkedHashSet<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -1218,7 +1227,7 @@ class ArrayIntStream extends AbstractIntStream {
     }
 
     @Override
-    public <U> Stream<IntStream> split(final U seed, final BiFunction<? super Integer, ? super U, Boolean> predicate, final Consumer<? super U> seedUpdate) {
+    public <U> Stream<IntStream> split(final U seed, final BiPredicate<? super Integer, ? super U> predicate, final Consumer<? super U> seedUpdate) {
         return new IteratorStream<>(new ObjIteratorEx<IntStream>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
@@ -1238,9 +1247,9 @@ class ArrayIntStream extends AbstractIntStream {
 
                 while (cursor < toIndex) {
                     if (from == cursor) {
-                        preCondition = predicate.apply(elements[from], seed);
+                        preCondition = predicate.test(elements[from], seed);
                         cursor++;
-                    } else if (predicate.apply(elements[cursor], seed) == preCondition) {
+                    } else if (predicate.test(elements[cursor], seed) == preCondition) {
                         cursor++;
                     } else {
                         if (seedUpdate != null) {
@@ -1257,8 +1266,7 @@ class ArrayIntStream extends AbstractIntStream {
     }
 
     @Override
-    public <U> Stream<IntList> splitToList(final U seed, final BiFunction<? super Integer, ? super U, Boolean> predicate,
-            final Consumer<? super U> seedUpdate) {
+    public <U> Stream<IntList> splitToList(final U seed, final BiPredicate<? super Integer, ? super U> predicate, final Consumer<? super U> seedUpdate) {
         return new IteratorStream<>(new ObjIteratorEx<IntList>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
@@ -1278,9 +1286,9 @@ class ArrayIntStream extends AbstractIntStream {
 
                 while (cursor < toIndex) {
                     if (from == cursor) {
-                        preCondition = predicate.apply(elements[from], seed);
+                        preCondition = predicate.test(elements[from], seed);
                         cursor++;
-                    } else if (predicate.apply(elements[cursor], seed) == preCondition) {
+                    } else if (predicate.test(elements[cursor], seed) == preCondition) {
                         cursor++;
                     } else {
                         if (seedUpdate != null) {

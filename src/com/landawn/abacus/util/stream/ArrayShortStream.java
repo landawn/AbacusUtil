@@ -35,6 +35,7 @@ import com.landawn.abacus.util.ShortList;
 import com.landawn.abacus.util.ShortSummaryStatistics;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
+import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.ObjShortConsumer;
@@ -375,7 +376,8 @@ class ArrayShortStream extends AbstractShortStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1) : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
+                : new LocalLinkedHashSet<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -442,7 +444,8 @@ class ArrayShortStream extends AbstractShortStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1) : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
+                : new LocalLinkedHashSet<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -509,7 +512,8 @@ class ArrayShortStream extends AbstractShortStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1) : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
+                : new LocalLinkedHashSet<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -663,7 +667,7 @@ class ArrayShortStream extends AbstractShortStream {
     }
 
     @Override
-    public <U> Stream<ShortStream> split(final U seed, final BiFunction<? super Short, ? super U, Boolean> predicate, final Consumer<? super U> seedUpdate) {
+    public <U> Stream<ShortStream> split(final U seed, final BiPredicate<? super Short, ? super U> predicate, final Consumer<? super U> seedUpdate) {
         return new IteratorStream<>(new ObjIteratorEx<ShortStream>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
@@ -683,9 +687,9 @@ class ArrayShortStream extends AbstractShortStream {
 
                 while (cursor < toIndex) {
                     if (from == cursor) {
-                        preCondition = predicate.apply(elements[from], seed);
+                        preCondition = predicate.test(elements[from], seed);
                         cursor++;
-                    } else if (predicate.apply(elements[cursor], seed) == preCondition) {
+                    } else if (predicate.test(elements[cursor], seed) == preCondition) {
                         cursor++;
                     } else {
                         if (seedUpdate != null) {
@@ -702,8 +706,7 @@ class ArrayShortStream extends AbstractShortStream {
     }
 
     @Override
-    public <U> Stream<ShortList> splitToList(final U seed, final BiFunction<? super Short, ? super U, Boolean> predicate,
-            final Consumer<? super U> seedUpdate) {
+    public <U> Stream<ShortList> splitToList(final U seed, final BiPredicate<? super Short, ? super U> predicate, final Consumer<? super U> seedUpdate) {
         return new IteratorStream<>(new ObjIteratorEx<ShortList>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
@@ -723,9 +726,9 @@ class ArrayShortStream extends AbstractShortStream {
 
                 while (cursor < toIndex) {
                     if (from == cursor) {
-                        preCondition = predicate.apply(elements[from], seed);
+                        preCondition = predicate.test(elements[from], seed);
                         cursor++;
-                    } else if (predicate.apply(elements[cursor], seed) == preCondition) {
+                    } else if (predicate.test(elements[cursor], seed) == preCondition) {
                         cursor++;
                     } else {
                         if (seedUpdate != null) {

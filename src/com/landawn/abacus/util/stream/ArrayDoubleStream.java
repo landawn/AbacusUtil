@@ -36,6 +36,7 @@ import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
+import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.DoubleBinaryOperator;
@@ -462,7 +463,8 @@ class ArrayDoubleStream extends AbstractDoubleStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1) : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
+                : new LocalLinkedHashSet<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -529,7 +531,8 @@ class ArrayDoubleStream extends AbstractDoubleStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1) : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
+                : new LocalLinkedHashSet<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -596,7 +599,8 @@ class ArrayDoubleStream extends AbstractDoubleStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1) : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
+                : new LocalLinkedHashSet<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -663,7 +667,8 @@ class ArrayDoubleStream extends AbstractDoubleStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1) : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
+                : new LocalLinkedHashSet<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -730,7 +735,8 @@ class ArrayDoubleStream extends AbstractDoubleStream {
             }
         };
 
-        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1) : new LocalLinkedHashSet<Runnable>(closeHandlers);
+        final Set<Runnable> newCloseHandlers = N.isNullOrEmpty(closeHandlers) ? new LocalLinkedHashSet<Runnable>(1)
+                : new LocalLinkedHashSet<Runnable>(closeHandlers);
 
         newCloseHandlers.add(new Runnable() {
             @Override
@@ -884,7 +890,7 @@ class ArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public <U> Stream<DoubleStream> split(final U seed, final BiFunction<? super Double, ? super U, Boolean> predicate, final Consumer<? super U> seedUpdate) {
+    public <U> Stream<DoubleStream> split(final U seed, final BiPredicate<? super Double, ? super U> predicate, final Consumer<? super U> seedUpdate) {
         return new IteratorStream<>(new ObjIteratorEx<DoubleStream>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
@@ -904,9 +910,9 @@ class ArrayDoubleStream extends AbstractDoubleStream {
 
                 while (cursor < toIndex) {
                     if (from == cursor) {
-                        preCondition = predicate.apply(elements[from], seed);
+                        preCondition = predicate.test(elements[from], seed);
                         cursor++;
-                    } else if (predicate.apply(elements[cursor], seed) == preCondition) {
+                    } else if (predicate.test(elements[cursor], seed) == preCondition) {
                         cursor++;
                     } else {
                         if (seedUpdate != null) {
@@ -923,8 +929,7 @@ class ArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public <U> Stream<DoubleList> splitToList(final U seed, final BiFunction<? super Double, ? super U, Boolean> predicate,
-            final Consumer<? super U> seedUpdate) {
+    public <U> Stream<DoubleList> splitToList(final U seed, final BiPredicate<? super Double, ? super U> predicate, final Consumer<? super U> seedUpdate) {
         return new IteratorStream<>(new ObjIteratorEx<DoubleList>() {
             private int cursor = fromIndex;
             private boolean preCondition = false;
@@ -944,9 +949,9 @@ class ArrayDoubleStream extends AbstractDoubleStream {
 
                 while (cursor < toIndex) {
                     if (from == cursor) {
-                        preCondition = predicate.apply(elements[from], seed);
+                        preCondition = predicate.test(elements[from], seed);
                         cursor++;
-                    } else if (predicate.apply(elements[cursor], seed) == preCondition) {
+                    } else if (predicate.test(elements[cursor], seed) == preCondition) {
                         cursor++;
                     } else {
                         if (seedUpdate != null) {

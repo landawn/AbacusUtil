@@ -39,7 +39,7 @@ import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.function.BiConsumer;
-import com.landawn.abacus.util.function.BiFunction;
+import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.DoubleBiFunction;
@@ -204,10 +204,10 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
     @Override
     public Stream<DoubleList> splitToList(final DoublePredicate predicate) {
-        final BiFunction<Double, Object, Boolean> predicate2 = new BiFunction<Double, Object, Boolean>() {
+        final BiPredicate<Double, Object> predicate2 = new BiPredicate<Double, Object>() {
 
             @Override
-            public Boolean apply(Double t, Object u) {
+            public boolean test(Double t, Object u) {
                 return predicate.test(t);
             }
         };
@@ -216,8 +216,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
     }
 
     @Override
-    public <U> Stream<DoubleStream> split(final U seed, final BiFunction<? super Double, ? super U, Boolean> predicate,
-            final Consumer<? super U> seedUpdate) {
+    public <U> Stream<DoubleStream> split(final U seed, final BiPredicate<? super Double, ? super U> predicate, final Consumer<? super U> seedUpdate) {
         return splitToList(seed, predicate, seedUpdate).map(new Function<DoubleList, DoubleStream>() {
             @Override
             public DoubleStream apply(DoubleList t) {

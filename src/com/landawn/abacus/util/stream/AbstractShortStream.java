@@ -39,7 +39,7 @@ import com.landawn.abacus.util.ShortList;
 import com.landawn.abacus.util.ShortMatrix;
 import com.landawn.abacus.util.ShortSummaryStatistics;
 import com.landawn.abacus.util.function.BiConsumer;
-import com.landawn.abacus.util.function.BiFunction;
+import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
@@ -204,10 +204,10 @@ abstract class AbstractShortStream extends ShortStream {
 
     @Override
     public Stream<ShortList> splitToList(final ShortPredicate predicate) {
-        final BiFunction<Short, Object, Boolean> predicate2 = new BiFunction<Short, Object, Boolean>() {
+        final BiPredicate<Short, Object> predicate2 = new BiPredicate<Short, Object>() {
 
             @Override
-            public Boolean apply(Short t, Object u) {
+            public boolean test(Short t, Object u) {
                 return predicate.test(t);
             }
         };
@@ -216,8 +216,7 @@ abstract class AbstractShortStream extends ShortStream {
     }
 
     @Override
-    public <U> Stream<ShortStream> split(final U seed, final BiFunction<? super Short, ? super U, Boolean> predicate,
-            final Consumer<? super U> seedUpdate) {
+    public <U> Stream<ShortStream> split(final U seed, final BiPredicate<? super Short, ? super U> predicate, final Consumer<? super U> seedUpdate) {
         return splitToList(seed, predicate, seedUpdate).map(new Function<ShortList, ShortStream>() {
             @Override
             public ShortStream apply(ShortList t) {

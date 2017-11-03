@@ -39,7 +39,7 @@ import com.landawn.abacus.util.OptionalInt;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.function.BiConsumer;
-import com.landawn.abacus.util.function.BiFunction;
+import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
@@ -204,10 +204,10 @@ abstract class AbstractIntStream extends IntStream {
 
     @Override
     public Stream<IntList> splitToList(final IntPredicate predicate) {
-        final BiFunction<Integer, Object, Boolean> predicate2 = new BiFunction<Integer, Object, Boolean>() {
+        final BiPredicate<Integer, Object> predicate2 = new BiPredicate<Integer, Object>() {
 
             @Override
-            public Boolean apply(Integer t, Object u) {
+            public boolean test(Integer t, Object u) {
                 return predicate.test(t);
             }
         };
@@ -216,8 +216,7 @@ abstract class AbstractIntStream extends IntStream {
     }
 
     @Override
-    public <U> Stream<IntStream> split(final U seed, final BiFunction<? super Integer, ? super U, Boolean> predicate,
-            final Consumer<? super U> seedUpdate) {
+    public <U> Stream<IntStream> split(final U seed, final BiPredicate<? super Integer, ? super U> predicate, final Consumer<? super U> seedUpdate) {
         return splitToList(seed, predicate, seedUpdate).map(new Function<IntList, IntStream>() {
             @Override
             public IntStream apply(IntList t) {

@@ -713,8 +713,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     @Override
-    public abstract <U> Stream<List<T>> splitToList(final U seed, final BiFunction<? super T, ? super U, Boolean> predicate,
-            final Consumer<? super U> seedUpdate);
+    public abstract <U> Stream<List<T>> splitToList(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super U> seedUpdate);
 
     /**
      * Split the stream by the specified predicate.
@@ -736,8 +735,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param seedUpdate
      * @return
      */
-    public abstract <U> Stream<Set<T>> splitToSet(final U seed, final BiFunction<? super T, ? super U, Boolean> predicate,
-            final Consumer<? super U> seedUpdate);
+    public abstract <U> Stream<Set<T>> splitToSet(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super U> seedUpdate);
 
     @Override
     public abstract Stream<List<T>> slidingToList(int windowSize);

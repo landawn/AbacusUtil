@@ -1443,7 +1443,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <U> Stream<List<T>> splitToList(final U seed, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> seedUpdate) {
+    public <U> Stream<List<T>> splitToList(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super U> seedUpdate) {
         return new IteratorStream<>(new ObjIteratorEx<List<T>>() {
             private T next = (T) NONE;
             private boolean preCondition = false;
@@ -1468,9 +1468,9 @@ class IteratorStream<T> extends AbstractStream<T> {
                 while (next != NONE) {
                     if (result.size() == 0) {
                         result.add(next);
-                        preCondition = predicate.apply(next, seed);
+                        preCondition = predicate.test(next, seed);
                         next = elements.hasNext() ? elements.next() : (T) NONE;
-                    } else if (predicate.apply(next, seed) == preCondition) {
+                    } else if (predicate.test(next, seed) == preCondition) {
                         result.add(next);
                         next = elements.hasNext() ? elements.next() : (T) NONE;
                     } else {
@@ -1489,7 +1489,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public <U> Stream<Set<T>> splitToSet(final U seed, final BiFunction<? super T, ? super U, Boolean> predicate, final Consumer<? super U> seedUpdate) {
+    public <U> Stream<Set<T>> splitToSet(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super U> seedUpdate) {
         return new IteratorStream<>(new ObjIteratorEx<Set<T>>() {
             private T next = (T) NONE;
             private boolean preCondition = false;
@@ -1514,9 +1514,9 @@ class IteratorStream<T> extends AbstractStream<T> {
                 while (next != NONE) {
                     if (result.size() == 0) {
                         result.add(next);
-                        preCondition = predicate.apply(next, seed);
+                        preCondition = predicate.test(next, seed);
                         next = elements.hasNext() ? elements.next() : (T) NONE;
-                    } else if (predicate.apply(next, seed) == preCondition) {
+                    } else if (predicate.test(next, seed) == preCondition) {
                         result.add(next);
                         next = elements.hasNext() ? elements.next() : (T) NONE;
                     } else {

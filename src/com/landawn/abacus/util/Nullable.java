@@ -195,7 +195,7 @@ public final class Nullable<T> extends Any<T> {
 
         if (isPresent()) {
             final Any<U> any = N.requireNonNull(mapper.apply(value));
-            return any instanceof Nullable ? (Nullable<U>) any : Nullable.of(any.get());
+            return any instanceof Nullable ? (Nullable<U>) any : (any.isPresent ? Nullable.of(any.get()) : Nullable.<U> empty());
         } else {
             return empty();
         }
@@ -284,7 +284,7 @@ public final class Nullable<T> extends Any<T> {
 
         if (isNotNull()) {
             final Any<U> any = N.requireNonNull(mapper.apply(value));
-            return any instanceof Nullable ? (Nullable<U>) any : Nullable.of(any.get());
+            return any instanceof Nullable ? (Nullable<U>) any : (any.isPresent ? Nullable.of(any.get()) : Nullable.<U> empty());
         } else {
             return empty();
         }

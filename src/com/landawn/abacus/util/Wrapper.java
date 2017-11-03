@@ -16,7 +16,7 @@
 
 package com.landawn.abacus.util;
 
-import com.landawn.abacus.util.function.BiFunction;
+import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.ToIntFunction;
 
 /**
@@ -33,19 +33,19 @@ public final class Wrapper<T> {
         }
     };
 
-    static final BiFunction<Object, Object, Boolean> arrayEqualsFunction = new BiFunction<Object, Object, Boolean>() {
+    static final BiPredicate<Object, Object> arrayEqualsFunction = new BiPredicate<Object, Object>() {
         @Override
-        public Boolean apply(Object t, Object u) {
+        public boolean test(Object t, Object u) {
             return N.deepEquals(t, u);
         }
     };
 
     private final T value;
     private final ToIntFunction<? super T> hashFunction;
-    private final BiFunction<? super T, ? super T, Boolean> equalsFunction;
+    private final BiPredicate<? super T, ? super T> equalsFunction;
     private int hashCode;
 
-    private Wrapper(T value, ToIntFunction<? super T> hashFunction, BiFunction<? super T, ? super T, Boolean> equalsFunction) {
+    private Wrapper(T value, ToIntFunction<? super T> hashFunction, BiPredicate<? super T, ? super T> equalsFunction) {
         this.value = value;
         this.hashFunction = hashFunction;
         this.equalsFunction = equalsFunction;
@@ -56,7 +56,7 @@ public final class Wrapper<T> {
         return new Wrapper<T>(array, arrayHashFunction, arrayEqualsFunction);
     }
 
-    public static <T> Wrapper<T> of(T value, ToIntFunction<? super T> hashFunction, BiFunction<? super T, ? super T, Boolean> equalsFunction) {
+    public static <T> Wrapper<T> of(T value, ToIntFunction<? super T> hashFunction, BiPredicate<? super T, ? super T> equalsFunction) {
         return new Wrapper<T>(value, hashFunction, equalsFunction);
     }
 
@@ -83,7 +83,7 @@ public final class Wrapper<T> {
 
     @Override
     public boolean equals(Object obj) {
-        return (obj == this) || (obj instanceof Wrapper && equalsFunction.apply(((Wrapper<T>) obj).value, value));
+        return (obj == this) || (obj instanceof Wrapper && equalsFunction.test(((Wrapper<T>) obj).value, value));
     }
 
     @Override

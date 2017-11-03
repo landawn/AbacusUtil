@@ -39,7 +39,7 @@ import com.landawn.abacus.util.OptionalByte;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
 import com.landawn.abacus.util.function.BiConsumer;
-import com.landawn.abacus.util.function.BiFunction;
+import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.ByteBiFunction;
 import com.landawn.abacus.util.function.ByteBiPredicate;
@@ -206,10 +206,10 @@ abstract class AbstractByteStream extends ByteStream {
 
     @Override
     public Stream<ByteList> splitToList(final BytePredicate predicate) {
-        final BiFunction<Byte, Object, Boolean> predicate2 = new BiFunction<Byte, Object, Boolean>() {
+        final BiPredicate<Byte, Object> predicate2 = new BiPredicate<Byte, Object>() {
 
             @Override
-            public Boolean apply(Byte t, Object u) {
+            public boolean test(Byte t, Object u) {
                 return predicate.test(t);
             }
         };
@@ -218,8 +218,7 @@ abstract class AbstractByteStream extends ByteStream {
     }
 
     @Override
-    public <U> Stream<ByteStream> split(final U seed, final BiFunction<? super Byte, ? super U, Boolean> predicate,
-            final Consumer<? super U> seedUpdate) {
+    public <U> Stream<ByteStream> split(final U seed, final BiPredicate<? super Byte, ? super U> predicate, final Consumer<? super U> seedUpdate) {
         return splitToList(seed, predicate, seedUpdate).map(new Function<ByteList, ByteStream>() {
             @Override
             public ByteStream apply(ByteList t) {
