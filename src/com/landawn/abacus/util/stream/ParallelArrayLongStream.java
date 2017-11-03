@@ -35,7 +35,7 @@ import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.NullabLe;
+import com.landawn.abacus.util.Nullable;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalLong;
 import com.landawn.abacus.util.Pair;
@@ -327,7 +327,7 @@ final class ParallelArrayLongStream extends ArrayLongStream {
     public Stream<LongStream> splitBy(final LongPredicate where) {
         N.requireNonNull(where);
 
-        final NullabLe<IndexedLong> first = indexed().findFirst(new Predicate<IndexedLong>() {
+        final Nullable<IndexedLong> first = indexed().findFirst(new Predicate<IndexedLong>() {
             @Override
             public boolean test(IndexedLong indexed) {
                 return !where.test(indexed.value());

@@ -41,7 +41,7 @@ import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.NullabLe;
+import com.landawn.abacus.util.Nullable;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
@@ -73,11 +73,11 @@ import com.landawn.abacus.util.stream.ObjIteratorEx.QueuedIterator;
 class IteratorStream<T> extends AbstractStream<T> {
     final ObjIteratorEx<T> elements;
 
-    NullabLe<T> head;
+    Nullable<T> head;
     Stream<T> tail;
 
     Stream<T> head2;
-    NullabLe<T> tail2;
+    Nullable<T> tail2;
 
     IteratorStream(final Iterator<? extends T> values) {
         this(values, null);
@@ -2179,9 +2179,9 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public NullabLe<T> reduce(BinaryOperator<T> accumulator) {
+    public Nullable<T> reduce(BinaryOperator<T> accumulator) {
         if (elements.hasNext() == false) {
-            NullabLe.empty();
+            Nullable.empty();
         }
 
         T result = elements.next();
@@ -2190,7 +2190,7 @@ class IteratorStream<T> extends AbstractStream<T> {
             result = accumulator.apply(result, elements.next());
         }
 
-        return NullabLe.of(result);
+        return Nullable.of(result);
     }
 
     @Override
@@ -2228,9 +2228,9 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public NullabLe<T> head() {
+    public Nullable<T> head() {
         if (head == null) {
-            head = elements.hasNext() ? NullabLe.of(elements.next()) : NullabLe.<T> empty();
+            head = elements.hasNext() ? Nullable.of(elements.next()) : Nullable.<T> empty();
             tail = new IteratorStream<>(elements, sorted, cmp, closeHandlers);
         }
 
@@ -2240,7 +2240,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     @Override
     public Stream<T> tail() {
         if (tail == null) {
-            head = elements.hasNext() ? NullabLe.of(elements.next()) : NullabLe.<T> empty();
+            head = elements.hasNext() ? Nullable.of(elements.next()) : Nullable.<T> empty();
             tail = new IteratorStream<>(elements, sorted, cmp, closeHandlers);
         }
 
@@ -2252,18 +2252,18 @@ class IteratorStream<T> extends AbstractStream<T> {
         if (head2 == null) {
             final Object[] a = this.toArray();
             head2 = new ArrayStream<>((T[]) a, 0, a.length == 0 ? 0 : a.length - 1, sorted, cmp, closeHandlers);
-            tail2 = a.length == 0 ? NullabLe.<T> empty() : NullabLe.of((T) a[a.length - 1]);
+            tail2 = a.length == 0 ? Nullable.<T> empty() : Nullable.of((T) a[a.length - 1]);
         }
 
         return head2;
     }
 
     @Override
-    public NullabLe<T> tail2() {
+    public Nullable<T> tail2() {
         if (tail2 == null) {
             final Object[] a = this.toArray();
             head2 = new ArrayStream<>((T[]) a, 0, a.length == 0 ? 0 : a.length - 1, sorted, cmp, closeHandlers);
-            tail2 = a.length == 0 ? NullabLe.<T> empty() : NullabLe.of((T) a[a.length - 1]);
+            tail2 = a.length == 0 ? Nullable.<T> empty() : Nullable.of((T) a[a.length - 1]);
         }
 
         return tail2;
@@ -2329,11 +2329,11 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public NullabLe<T> min(Comparator<? super T> comparator) {
+    public Nullable<T> min(Comparator<? super T> comparator) {
         if (elements.hasNext() == false) {
-            return NullabLe.empty();
+            return Nullable.empty();
         } else if (sorted && isSameComparator(comparator, cmp)) {
-            return NullabLe.of(elements.next());
+            return Nullable.of(elements.next());
         }
 
         comparator = comparator == null ? OBJECT_COMPARATOR : comparator;
@@ -2347,13 +2347,13 @@ class IteratorStream<T> extends AbstractStream<T> {
             }
         }
 
-        return NullabLe.of(candidate);
+        return Nullable.of(candidate);
     }
 
     @Override
-    public NullabLe<T> max(Comparator<? super T> comparator) {
+    public Nullable<T> max(Comparator<? super T> comparator) {
         if (elements.hasNext() == false) {
-            return NullabLe.empty();
+            return Nullable.empty();
         } else if (sorted && isSameComparator(comparator, cmp)) {
             T next = null;
 
@@ -2361,7 +2361,7 @@ class IteratorStream<T> extends AbstractStream<T> {
                 next = elements.next();
             }
 
-            return NullabLe.of(next);
+            return Nullable.of(next);
         }
 
         comparator = comparator == null ? OBJECT_COMPARATOR : comparator;
@@ -2375,15 +2375,15 @@ class IteratorStream<T> extends AbstractStream<T> {
             }
         }
 
-        return NullabLe.of(candidate);
+        return Nullable.of(candidate);
     }
 
     @Override
-    public NullabLe<T> kthLargest(int k, Comparator<? super T> comparator) {
+    public Nullable<T> kthLargest(int k, Comparator<? super T> comparator) {
         N.checkArgument(k > 0, "'k' must be bigger than 0");
 
         if (elements.hasNext() == false) {
-            return NullabLe.empty();
+            return Nullable.empty();
         } else if (sorted && isSameComparator(comparator, cmp)) {
             final LinkedList<T> queue = new LinkedList<>();
 
@@ -2395,7 +2395,7 @@ class IteratorStream<T> extends AbstractStream<T> {
                 queue.offer(elements.next());
             }
 
-            return queue.size() < k ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(queue.peek());
+            return queue.size() < k ? (Nullable<T>) Nullable.empty() : Nullable.of(queue.peek());
         }
 
         comparator = comparator == null ? OBJECT_COMPARATOR : comparator;
@@ -2415,7 +2415,7 @@ class IteratorStream<T> extends AbstractStream<T> {
             }
         }
 
-        return queue.size() < k ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(queue.peek());
+        return queue.size() < k ? (Nullable<T>) Nullable.empty() : Nullable.of(queue.peek());
     }
 
     @Override
@@ -2457,22 +2457,22 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public NullabLe<T> findFirst(Predicate<? super T> predicate) {
+    public Nullable<T> findFirst(Predicate<? super T> predicate) {
         while (elements.hasNext()) {
             T e = elements.next();
 
             if (predicate.test(e)) {
-                return NullabLe.of(e);
+                return Nullable.of(e);
             }
         }
 
-        return (NullabLe<T>) NullabLe.empty();
+        return (Nullable<T>) Nullable.empty();
     }
 
     @Override
-    public NullabLe<T> findLast(Predicate<? super T> predicate) {
+    public Nullable<T> findLast(Predicate<? super T> predicate) {
         if (elements.hasNext() == false) {
-            return (NullabLe<T>) NullabLe.empty();
+            return (Nullable<T>) Nullable.empty();
         }
 
         boolean hasResult = false;
@@ -2488,7 +2488,7 @@ class IteratorStream<T> extends AbstractStream<T> {
             }
         }
 
-        return hasResult ? NullabLe.of(result) : (NullabLe<T>) NullabLe.empty();
+        return hasResult ? Nullable.of(result) : (Nullable<T>) Nullable.empty();
     }
 
     /**

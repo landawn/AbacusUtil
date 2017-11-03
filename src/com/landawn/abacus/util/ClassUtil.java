@@ -262,7 +262,7 @@ public final class ClassUtil {
         BUILT_IN_TYPE.put(OptionalLong.class.getCanonicalName(), OptionalLong.class);
         BUILT_IN_TYPE.put(OptionalFloat.class.getCanonicalName(), OptionalFloat.class);
         BUILT_IN_TYPE.put(OptionalDouble.class.getCanonicalName(), OptionalDouble.class);
-        BUILT_IN_TYPE.put(NullabLe.class.getCanonicalName(), NullabLe.class);
+        BUILT_IN_TYPE.put(Nullable.class.getCanonicalName(), Nullable.class);
         BUILT_IN_TYPE.put(Optional.class.getCanonicalName(), Optional.class);
 
         BUILT_IN_TYPE.put(Fraction.class.getCanonicalName(), Fraction.class);

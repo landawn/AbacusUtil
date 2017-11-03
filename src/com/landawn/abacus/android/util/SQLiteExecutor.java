@@ -53,7 +53,7 @@ import com.landawn.abacus.util.D;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.NamedSQL;
 import com.landawn.abacus.util.NamingPolicy;
-import com.landawn.abacus.util.NullabLe;
+import com.landawn.abacus.util.Nullable;
 import com.landawn.abacus.util.ObjectFactory;
 import com.landawn.abacus.util.ObjectPool;
 import com.landawn.abacus.util.Optional;
@@ -1265,7 +1265,7 @@ public final class SQLiteExecutor {
      */
     @SafeVarargs
     public final OptionalBoolean queryForBoolean(final String sql, final Object... parameters) {
-        final NullabLe<Boolean> result = queryForSingleResult(boolean.class, sql, parameters);
+        final Nullable<Boolean> result = queryForSingleResult(boolean.class, sql, parameters);
 
         return result.isPresent() ? OptionalBoolean.of(result.get()) : OptionalBoolean.empty();
     }
@@ -1276,7 +1276,7 @@ public final class SQLiteExecutor {
      */
     @SafeVarargs
     public final OptionalChar queryForChar(final String sql, final Object... parameters) {
-        final NullabLe<Character> result = queryForSingleResult(char.class, sql, parameters);
+        final Nullable<Character> result = queryForSingleResult(char.class, sql, parameters);
 
         return result.isPresent() ? OptionalChar.of(result.get()) : OptionalChar.empty();
     }
@@ -1286,7 +1286,7 @@ public final class SQLiteExecutor {
      */
     @SafeVarargs
     public final OptionalByte queryForByte(final String sql, final Object... parameters) {
-        final NullabLe<Byte> result = queryForSingleResult(byte.class, sql, parameters);
+        final Nullable<Byte> result = queryForSingleResult(byte.class, sql, parameters);
 
         return result.isPresent() ? OptionalByte.of(result.get()) : OptionalByte.empty();
     }
@@ -1296,7 +1296,7 @@ public final class SQLiteExecutor {
      */
     @SafeVarargs
     public final OptionalShort queryForShort(final String sql, final Object... parameters) {
-        final NullabLe<Short> result = queryForSingleResult(short.class, sql, parameters);
+        final Nullable<Short> result = queryForSingleResult(short.class, sql, parameters);
 
         return result.isPresent() ? OptionalShort.of(result.get()) : OptionalShort.empty();
     }
@@ -1306,7 +1306,7 @@ public final class SQLiteExecutor {
      */
     @SafeVarargs
     public final OptionalInt queryForInt(final String sql, final Object... parameters) {
-        final NullabLe<Integer> result = queryForSingleResult(int.class, sql, parameters);
+        final Nullable<Integer> result = queryForSingleResult(int.class, sql, parameters);
 
         return result.isPresent() ? OptionalInt.of(result.get()) : OptionalInt.empty();
     }
@@ -1316,7 +1316,7 @@ public final class SQLiteExecutor {
      */
     @SafeVarargs
     public final OptionalLong queryForLong(final String sql, final Object... parameters) {
-        final NullabLe<Long> result = queryForSingleResult(long.class, sql, parameters);
+        final Nullable<Long> result = queryForSingleResult(long.class, sql, parameters);
 
         return result.isPresent() ? OptionalLong.of(result.get()) : OptionalLong.empty();
     }
@@ -1326,7 +1326,7 @@ public final class SQLiteExecutor {
      */
     @SafeVarargs
     public final OptionalFloat queryForFloat(final String sql, final Object... parameters) {
-        final NullabLe<Float> result = queryForSingleResult(float.class, sql, parameters);
+        final Nullable<Float> result = queryForSingleResult(float.class, sql, parameters);
 
         return result.isPresent() ? OptionalFloat.of(result.get()) : OptionalFloat.empty();
     }
@@ -1336,7 +1336,7 @@ public final class SQLiteExecutor {
      */
     @SafeVarargs
     public final OptionalDouble queryForDouble(final String sql, final Object... parameters) {
-        final NullabLe<Double> result = queryForSingleResult(double.class, sql, parameters);
+        final Nullable<Double> result = queryForSingleResult(double.class, sql, parameters);
 
         return result.isPresent() ? OptionalDouble.of(result.get()) : OptionalDouble.empty();
     }
@@ -1345,7 +1345,7 @@ public final class SQLiteExecutor {
      * @see SQLExecutor#queryForSingleResult(Class, String, Object...).
      */
     @SafeVarargs
-    public final NullabLe<String> queryForString(final String sql, final Object... parameters) {
+    public final Nullable<String> queryForString(final String sql, final Object... parameters) {
         return queryForSingleResult(String.class, sql, parameters);
     }
 
@@ -1371,7 +1371,7 @@ public final class SQLiteExecutor {
      */
     @SuppressWarnings("unchecked")
     @SafeVarargs
-    public final <T> NullabLe<T> queryForSingleResult(final Class<T> targetClass, final String sql, Object... parameters) {
+    public final <T> Nullable<T> queryForSingleResult(final Class<T> targetClass, final String sql, Object... parameters) {
         DataSet rs = null;
 
         final Cursor cursor = rawQuery(sql, parameters);
@@ -1383,25 +1383,25 @@ public final class SQLiteExecutor {
         }
 
         if (N.isNullOrEmpty(rs)) {
-            return NullabLe.empty();
+            return Nullable.empty();
         } else {
-            return targetClass == null ? NullabLe.of((T) rs.get(0, 0)) : NullabLe.of(N.as(targetClass, rs.get(0, 0)));
+            return targetClass == null ? Nullable.of((T) rs.get(0, 0)) : Nullable.of(N.as(targetClass, rs.get(0, 0)));
         }
     }
 
     @Deprecated
-    <T> NullabLe<T> queryForSingleResult(final Class<T> targetClass, final String tableName, final String columnName, Condition whereClause) {
+    <T> Nullable<T> queryForSingleResult(final Class<T> targetClass, final String tableName, final String columnName, Condition whereClause) {
         final DataSet rs = query(tableName, N.asArray(columnName), N.asArray(targetClass), whereClause, null, null, null, 0, 1);
 
         if (N.isNullOrEmpty(rs)) {
-            return NullabLe.empty();
+            return Nullable.empty();
         } else {
-            return targetClass == null ? NullabLe.of((T) rs.get(0, 0)) : NullabLe.of(N.as(targetClass, rs.get(0, 0)));
+            return targetClass == null ? Nullable.of((T) rs.get(0, 0)) : Nullable.of(N.as(targetClass, rs.get(0, 0)));
         }
     }
 
     @Deprecated
-    <T> NullabLe<T> queryForSingleResult(final Class<?> entityClass, final String columnName, Condition whereClause) {
+    <T> Nullable<T> queryForSingleResult(final Class<?> entityClass, final String columnName, Condition whereClause) {
         //        final Method propGetMethod = N.getPropGetMethod(entityClass, columnName);
         //        final Class<T> targetClass = (Class) propGetMethod.getReturnType();
         //        final DataSet rs = query(getTableNameByEntity(entityClass), Array.of(columnName), Array.of(targetClass), whereClause, null, null, null, 0, 1);

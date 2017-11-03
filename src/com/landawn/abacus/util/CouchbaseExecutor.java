@@ -634,15 +634,15 @@ public final class CouchbaseExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final <T> NullabLe<T> queryForSingleResult(final Class<T> targetClass, final String query, final Object... parameters) {
+    public final <T> Nullable<T> queryForSingleResult(final Class<T> targetClass, final String query, final Object... parameters) {
         final QueryResult resultSet = execute(query, parameters);
         final Iterator<QueryRow> it = resultSet.rows();
         final JsonObject jsonObject = it.hasNext() ? it.next().value() : null;
 
         if (jsonObject == null || jsonObject.size() == 0) {
-            return NullabLe.empty();
+            return Nullable.empty();
         } else {
-            return NullabLe.of(N.as(targetClass, jsonObject.get(jsonObject.getNames().iterator().next())));
+            return Nullable.of(N.as(targetClass, jsonObject.get(jsonObject.getNames().iterator().next())));
         }
     }
 
@@ -1009,10 +1009,10 @@ public final class CouchbaseExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final <T> CompletableFuture<NullabLe<T>> asyncQueryForSingleResult(final Class<T> targetClass, final String query, final Object... parameters) {
-        return asyncExecutor.execute(new Callable<NullabLe<T>>() {
+    public final <T> CompletableFuture<Nullable<T>> asyncQueryForSingleResult(final Class<T> targetClass, final String query, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<Nullable<T>>() {
             @Override
-            public NullabLe<T> call() throws Exception {
+            public Nullable<T> call() throws Exception {
                 return queryForSingleResult(targetClass, query, parameters);
             }
         });

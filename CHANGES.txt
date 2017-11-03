@@ -8,7 +8,9 @@
 
 3*, Remove IntList/ByteLits/../.empty().
 
-4, Improvements and bug fix.
+4*, Rename NullabLe to Nullable.
+
+5, Improvements and bug fix.
 
 
 ﻿========Changes in 1.0.5 =========================================================================

@@ -28,7 +28,7 @@ import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.NullabLe;
+import com.landawn.abacus.util.Nullable;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalShort;
 import com.landawn.abacus.util.ShortIterator;
@@ -1160,7 +1160,7 @@ class IteratorShortStream extends AbstractShortStream {
             return OptionalShort.empty();
         }
 
-        final NullabLe<Short> optional = boxed().kthLargest(k, SHORT_COMPARATOR);
+        final Nullable<Short> optional = boxed().kthLargest(k, SHORT_COMPARATOR);
 
         return optional.isPresent() ? OptionalShort.of(optional.get()) : OptionalShort.empty();
     }

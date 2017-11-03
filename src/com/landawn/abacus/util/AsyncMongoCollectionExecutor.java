@@ -162,10 +162,10 @@ public final class AsyncMongoCollectionExecutor {
         });
     }
 
-    public <T> CompletableFuture<NullabLe<T>> queryForSingleResult(final Class<T> targetClass, final String propName, final Bson filter) {
-        return asyncExecutor.execute(new Callable<NullabLe<T>>() {
+    public <T> CompletableFuture<Nullable<T>> queryForSingleResult(final Class<T> targetClass, final String propName, final Bson filter) {
+        return asyncExecutor.execute(new Callable<Nullable<T>>() {
             @Override
-            public NullabLe<T> call() throws Exception {
+            public Nullable<T> call() throws Exception {
                 return collExecutor.queryForSingleResult(targetClass, propName, filter);
             }
         });

@@ -57,7 +57,7 @@ import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.NullabLe;
+import com.landawn.abacus.util.Nullable;
 import com.landawn.abacus.util.ObjIterator;
 import com.landawn.abacus.util.ObjectFactory;
 import com.landawn.abacus.util.Optional;
@@ -1196,7 +1196,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <U> NullabLe<T> findFirst(final U seed, final BiPredicate<? super T, ? super U> predicate) {
+    public <U> Nullable<T> findFirst(final U seed, final BiPredicate<? super T, ? super U> predicate) {
         return findFirst(new Predicate<T>() {
             @Override
             public boolean test(T t) {
@@ -1206,7 +1206,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <U> NullabLe<T> findLast(final U seed, final BiPredicate<? super T, ? super U> predicate) {
+    public <U> Nullable<T> findLast(final U seed, final BiPredicate<? super T, ? super U> predicate) {
         return findLast(new Predicate<T>() {
             @Override
             public boolean test(T t) {
@@ -1216,7 +1216,7 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public NullabLe<T> findFirstOrLast(final Predicate<? super T> predicateForFirst, final Predicate<? super T> predicateForLast) {
+    public Nullable<T> findFirstOrLast(final Predicate<? super T> predicateForFirst, final Predicate<? super T> predicateForLast) {
         final ObjIteratorEx<T> iter = iteratorEx();
         T last = (T) NONE;
         T next = null;
@@ -1225,17 +1225,17 @@ abstract class AbstractStream<T> extends Stream<T> {
             next = iter.next();
 
             if (predicateForFirst.test(next)) {
-                return NullabLe.of(next);
+                return Nullable.of(next);
             } else if (predicateForLast.test(next)) {
                 last = next;
             }
         }
 
-        return last == NONE ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(last);
+        return last == NONE ? (Nullable<T>) Nullable.empty() : Nullable.of(last);
     }
 
     @Override
-    public <U> NullabLe<T> findFirstOrLast(final U seed, final BiPredicate<? super T, ? super U> predicateForFirst,
+    public <U> Nullable<T> findFirstOrLast(final U seed, final BiPredicate<? super T, ? super U> predicateForFirst,
             final BiPredicate<? super T, ? super U> predicateForLast) {
         final ObjIteratorEx<T> iter = iteratorEx();
         T last = (T) NONE;
@@ -1245,17 +1245,17 @@ abstract class AbstractStream<T> extends Stream<T> {
             next = iter.next();
 
             if (predicateForFirst.test(next, seed)) {
-                return NullabLe.of(next);
+                return Nullable.of(next);
             } else if (predicateForLast.test(next, seed)) {
                 last = next;
             }
         }
 
-        return last == NONE ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(last);
+        return last == NONE ? (Nullable<T>) Nullable.empty() : Nullable.of(last);
     }
 
     @Override
-    public <U> NullabLe<T> findFirstOrLast(final Function<? super T, U> preFunc, final BiPredicate<? super T, ? super U> predicateForFirst,
+    public <U> Nullable<T> findFirstOrLast(final Function<? super T, U> preFunc, final BiPredicate<? super T, ? super U> predicateForFirst,
             final BiPredicate<? super T, ? super U> predicateForLast) {
         final ObjIteratorEx<T> iter = iteratorEx();
         U seed = null;
@@ -1267,17 +1267,17 @@ abstract class AbstractStream<T> extends Stream<T> {
             seed = preFunc.apply(next);
 
             if (predicateForFirst.test(next, seed)) {
-                return NullabLe.of(next);
+                return Nullable.of(next);
             } else if (predicateForLast.test(next, seed)) {
                 last = next;
             }
         }
 
-        return last == NONE ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(last);
+        return last == NONE ? (Nullable<T>) Nullable.empty() : Nullable.of(last);
     }
 
     @Override
-    public <U> NullabLe<T> findAny(final U seed, final BiPredicate<? super T, ? super U> predicate) {
+    public <U> Nullable<T> findAny(final U seed, final BiPredicate<? super T, ? super U> predicate) {
         return findAny(new Predicate<T>() {
             @Override
             public boolean test(T t) {
@@ -1356,22 +1356,22 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public NullabLe<T> first() {
+    public Nullable<T> first() {
         final Iterator<T> iter = this.iterator();
 
         if (iter.hasNext() == false) {
-            return NullabLe.empty();
+            return Nullable.empty();
         }
 
-        return NullabLe.of(iter.next());
+        return Nullable.of(iter.next());
     }
 
     @Override
-    public NullabLe<T> last() {
+    public Nullable<T> last() {
         final Iterator<T> iter = this.iterator();
 
         if (iter.hasNext() == false) {
-            return NullabLe.empty();
+            return Nullable.empty();
         }
 
         T next = iter.next();
@@ -1380,7 +1380,7 @@ abstract class AbstractStream<T> extends Stream<T> {
             next = iter.next();
         }
 
-        return NullabLe.of(next);
+        return Nullable.of(next);
     }
 
     @Override
@@ -1878,12 +1878,12 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public Pair<NullabLe<T>, Stream<T>> headAndTail() {
+    public Pair<Nullable<T>, Stream<T>> headAndTail() {
         return Pair.of(head(), tail());
     }
 
     @Override
-    public Pair<Stream<T>, NullabLe<T>> headAndTail2() {
+    public Pair<Stream<T>, Nullable<T>> headAndTail2() {
         return Pair.of(head2(), tail2());
     }
 

@@ -65,7 +65,7 @@ import com.landawn.abacus.util.stream.Collectors;
 
 /**
  * It's an read-only wrapper for <code>Collection</code> to support more daily used/functional methods.
- * All the operations are null safety. And an empty <code>String</code>/<code>Array</code>/<code>Collection</code>/<code>Optional</code>/<code>NullabLe</code> will be returned if possible, instead of null.
+ * All the operations are null safety. And an empty <code>String</code>/<code>Array</code>/<code>Collection</code>/<code>Optional</code>/<code>Nullable</code> will be returned if possible, instead of null.
  * 
  * <br />
  * <code>Seq</code> should not be passed as a parameter or returned as a result because it's a pure utility class for the operations/calculation based on Collection/Array
@@ -335,49 +335,49 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     @SuppressWarnings("rawtypes")
-    public NullabLe<T> min() {
-        return size() == 0 ? (NullabLe<T>) NullabLe.empty() : NullabLe.of((T) N.min((Collection) coll));
+    public Nullable<T> min() {
+        return size() == 0 ? (Nullable<T>) Nullable.empty() : Nullable.of((T) N.min((Collection) coll));
     }
 
-    public NullabLe<T> min(Comparator<? super T> cmp) {
-        return size() == 0 ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(N.min(coll, cmp));
+    public Nullable<T> min(Comparator<? super T> cmp) {
+        return size() == 0 ? (Nullable<T>) Nullable.empty() : Nullable.of(N.min(coll, cmp));
     }
 
     @SuppressWarnings("rawtypes")
-    public NullabLe<T> minBy(final Function<? super T, ? extends Comparable> keyExtractor) {
+    public Nullable<T> minBy(final Function<? super T, ? extends Comparable> keyExtractor) {
         return min(Fn.comparingBy(keyExtractor));
     }
 
     @SuppressWarnings("rawtypes")
-    public NullabLe<T> max() {
-        return size() == 0 ? (NullabLe<T>) NullabLe.empty() : NullabLe.of((T) N.max((Collection) coll));
+    public Nullable<T> max() {
+        return size() == 0 ? (Nullable<T>) Nullable.empty() : Nullable.of((T) N.max((Collection) coll));
     }
 
-    public NullabLe<T> max(Comparator<? super T> cmp) {
-        return size() == 0 ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(N.max(coll, cmp));
+    public Nullable<T> max(Comparator<? super T> cmp) {
+        return size() == 0 ? (Nullable<T>) Nullable.empty() : Nullable.of(N.max(coll, cmp));
     }
 
     @SuppressWarnings("rawtypes")
-    public NullabLe<T> maxBy(final Function<? super T, ? extends Comparable> keyExtractor) {
+    public Nullable<T> maxBy(final Function<? super T, ? extends Comparable> keyExtractor) {
         return max(Fn.comparingBy(keyExtractor));
     }
 
     @SuppressWarnings("rawtypes")
-    public NullabLe<T> median() {
-        return size() == 0 ? (NullabLe<T>) NullabLe.empty() : NullabLe.of((T) N.median((Collection) coll));
+    public Nullable<T> median() {
+        return size() == 0 ? (Nullable<T>) Nullable.empty() : Nullable.of((T) N.median((Collection) coll));
     }
 
-    public NullabLe<T> median(Comparator<? super T> cmp) {
-        return size() == 0 ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(N.median(coll, cmp));
+    public Nullable<T> median(Comparator<? super T> cmp) {
+        return size() == 0 ? (Nullable<T>) Nullable.empty() : Nullable.of(N.median(coll, cmp));
     }
 
     @SuppressWarnings("rawtypes")
-    public NullabLe<T> kthLargest(final int k) {
-        return size() < k ? (NullabLe<T>) NullabLe.empty() : NullabLe.of((T) N.kthLargest((Collection) coll, k));
+    public Nullable<T> kthLargest(final int k) {
+        return size() < k ? (Nullable<T>) Nullable.empty() : Nullable.of((T) N.kthLargest((Collection) coll, k));
     }
 
-    public NullabLe<T> kthLargest(final int k, Comparator<? super T> cmp) {
-        return size() < k ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(N.kthLargest(coll, k, cmp));
+    public Nullable<T> kthLargest(final int k, Comparator<? super T> cmp) {
+        return size() < k ? (Nullable<T>) Nullable.empty() : Nullable.of(N.kthLargest(coll, k, cmp));
     }
 
     public int sumInt() {
@@ -643,15 +643,15 @@ public final class Seq<T> extends ImmutableCollection<T> {
     //        return N.forEach(coll, fromIndex, toIndex, seed, accumulator, conditionToBreak);
     //    }
 
-    public NullabLe<T> first() {
+    public Nullable<T> first() {
         if (size() == 0) {
-            return NullabLe.empty();
+            return Nullable.empty();
         }
 
         if (coll instanceof List && coll instanceof RandomAccess) {
-            return NullabLe.of(((List<T>) coll).get(0));
+            return Nullable.of(((List<T>) coll).get(0));
         } else {
-            return NullabLe.of(coll.iterator().next());
+            return Nullable.of(coll.iterator().next());
         }
     }
 
@@ -675,13 +675,13 @@ public final class Seq<T> extends ImmutableCollection<T> {
         }
     }
 
-    public NullabLe<T> last() {
+    public Nullable<T> last() {
         if (size() == 0) {
-            return NullabLe.empty();
+            return Nullable.empty();
         }
 
         if (coll instanceof List && coll instanceof RandomAccess) {
-            return NullabLe.of(((List<T>) coll).get(size() - 1));
+            return Nullable.of(((List<T>) coll).get(size() - 1));
         } else {
             final Iterator<T> iter = iterator();
             T e = null;
@@ -690,7 +690,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
                 e = iter.next();
             }
 
-            return NullabLe.of(e);
+            return Nullable.of(e);
         }
     }
 
@@ -714,23 +714,23 @@ public final class Seq<T> extends ImmutableCollection<T> {
         }
     }
 
-    public NullabLe<T> findFirst(Predicate<? super T> predicate) {
+    public Nullable<T> findFirst(Predicate<? super T> predicate) {
         if (size() == 0) {
-            return NullabLe.empty();
+            return Nullable.empty();
         }
 
         for (T e : coll) {
             if (predicate.test(e)) {
-                return NullabLe.of(e);
+                return Nullable.of(e);
             }
         }
 
-        return NullabLe.empty();
+        return Nullable.empty();
     }
 
-    public NullabLe<T> findLast(Predicate<? super T> predicate) {
+    public Nullable<T> findLast(Predicate<? super T> predicate) {
         if (size() == 0) {
-            return NullabLe.empty();
+            return Nullable.empty();
         }
 
         if (coll instanceof List) {
@@ -739,7 +739,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
             if (coll instanceof RandomAccess) {
                 for (int i = size() - 1; i >= 0; i--) {
                     if (predicate.test(list.get(i))) {
-                        return NullabLe.of(list.get(i));
+                        return Nullable.of(list.get(i));
                     }
                 }
             } else {
@@ -748,33 +748,33 @@ public final class Seq<T> extends ImmutableCollection<T> {
 
                 while (iter.hasPrevious()) {
                     if (predicate.test((pre = iter.previous()))) {
-                        return NullabLe.of(pre);
+                        return Nullable.of(pre);
                     }
                 }
             }
 
-            return NullabLe.empty();
+            return Nullable.empty();
         } else if (coll instanceof Deque) {
             final Iterator<T> iter = ((Deque<T>) coll).descendingIterator();
             T next = null;
 
             while (iter.hasNext()) {
                 if (predicate.test((next = iter.next()))) {
-                    return NullabLe.of(next);
+                    return Nullable.of(next);
                 }
             }
 
-            return NullabLe.empty();
+            return Nullable.empty();
         } else {
             final T[] a = (T[]) coll.toArray();
 
             for (int i = a.length - 1; i >= 0; i--) {
                 if (predicate.test(a[i])) {
-                    return NullabLe.of(a[i]);
+                    return Nullable.of(a[i]);
                 }
             }
 
-            return NullabLe.empty();
+            return Nullable.empty();
         }
     }
 
@@ -844,12 +844,12 @@ public final class Seq<T> extends ImmutableCollection<T> {
         }
     }
 
-    public NullabLe<T> findFirstOrLast(final Predicate<? super T> predicateForFirst, final Predicate<? super T> predicateForLast) {
+    public Nullable<T> findFirstOrLast(final Predicate<? super T> predicateForFirst, final Predicate<? super T> predicateForLast) {
         if (N.isNullOrEmpty(coll)) {
-            return NullabLe.<T> empty();
+            return Nullable.<T> empty();
         }
 
-        final NullabLe<T> res = findFirst(predicateForFirst);
+        final Nullable<T> res = findFirst(predicateForFirst);
 
         return res.isPresent() ? res : findLast(predicateForLast);
     }
@@ -864,13 +864,13 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return res.isPresent() ? res : findLastIndex(predicateForLast);
     }
 
-    public Pair<NullabLe<T>, NullabLe<T>> findFirstAndLast(final Predicate<? super T> predicate) {
+    public Pair<Nullable<T>, Nullable<T>> findFirstAndLast(final Predicate<? super T> predicate) {
         return findFirstAndLast(predicate, predicate);
     }
 
-    public Pair<NullabLe<T>, NullabLe<T>> findFirstAndLast(final Predicate<? super T> predicateForFirst, final Predicate<? super T> predicateForLast) {
+    public Pair<Nullable<T>, Nullable<T>> findFirstAndLast(final Predicate<? super T> predicateForFirst, final Predicate<? super T> predicateForLast) {
         if (N.isNullOrEmpty(coll)) {
-            return Pair.of(NullabLe.<T> empty(), NullabLe.<T> empty());
+            return Pair.of(Nullable.<T> empty(), Nullable.<T> empty());
         }
 
         return Pair.of(findFirst(predicateForFirst), findLast(predicateForLast));
@@ -1014,9 +1014,9 @@ public final class Seq<T> extends ImmutableCollection<T> {
     //        return res;
     //    }
     //
-    //    public NullabLe<T> filterThenReduce(Predicate<? super T> filter, final BinaryOperator<T> accumulator) {
+    //    public Nullable<T> filterThenReduce(Predicate<? super T> filter, final BinaryOperator<T> accumulator) {
     //        if (N.isNullOrEmpty(coll)) {
-    //            return NullabLe.<T> empty();
+    //            return Nullable.<T> empty();
     //        }
     //
     //        T result = (T) N.NULL_MASK;
@@ -1027,12 +1027,12 @@ public final class Seq<T> extends ImmutableCollection<T> {
     //            }
     //        }
     //
-    //        return result == N.NULL_MASK ? NullabLe.<T> empty() : NullabLe.of(result);
+    //        return result == N.NULL_MASK ? Nullable.<T> empty() : Nullable.of(result);
     //    }
     //
-    //    public <U> NullabLe<U> filterThenReduce(Predicate<? super T> filter, final U identity, final BiFunction<U, ? super T, U> accumulator) {
+    //    public <U> Nullable<U> filterThenReduce(Predicate<? super T> filter, final U identity, final BiFunction<U, ? super T, U> accumulator) {
     //        if (N.isNullOrEmpty(coll)) {
-    //            return NullabLe.of(identity);
+    //            return Nullable.of(identity);
     //        }
     //
     //        U result = identity;
@@ -1043,7 +1043,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     //            }
     //        }
     //
-    //        return NullabLe.of(result);
+    //        return Nullable.of(result);
     //    }
     //
     //    public <A, R> R filterThenCollect(Predicate<? super T> filter, final Supplier<R> supplier, final BiConsumer<R, ? super T> accumulator) {
@@ -1712,7 +1712,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * <pre>
      * <code>
      *    if (isEmpty()) {
-     *        return NullabLe.empty();
+     *        return Nullable.empty();
      *    }
      *
      *    final Iterator<T> iter = iterator();
@@ -1722,16 +1722,16 @@ public final class Seq<T> extends ImmutableCollection<T> {
      *        result = accumulator.apply(result, iter.next());
      *    }
      *
-     *    return NullabLe.of(result);
+     *    return Nullable.of(result);
      * </code>
      * </pre>
      * 
      * @param accumulator
      * @return
      */
-    public NullabLe<T> reduce(BinaryOperator<T> accumulator) {
+    public Nullable<T> reduce(BinaryOperator<T> accumulator) {
         if (isEmpty()) {
-            return NullabLe.empty();
+            return Nullable.empty();
         }
 
         final Iterator<T> iter = iterator();
@@ -1741,7 +1741,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
             result = accumulator.apply(result, iter.next());
         }
 
-        return NullabLe.of(result);
+        return Nullable.of(result);
     }
 
     /**

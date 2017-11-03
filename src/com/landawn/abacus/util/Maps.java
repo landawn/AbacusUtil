@@ -90,17 +90,17 @@ public final class Maps {
         return result;
     }
 
-    public static <K, V> NullabLe<V> get(final Map<K, V> map, final Object key) {
+    public static <K, V> Nullable<V> get(final Map<K, V> map, final Object key) {
         if (N.isNullOrEmpty(map)) {
-            return NullabLe.empty();
+            return Nullable.empty();
         }
 
         final V val = map.get(key);
 
         if (val != null || map.containsKey(key)) {
-            return NullabLe.of(val);
+            return Nullable.of(val);
         } else {
-            return NullabLe.empty();
+            return Nullable.empty();
         }
     }
 
@@ -251,17 +251,17 @@ public final class Maps {
         return result;
     }
 
-    public static <K, V> Map<K, Pair<V, NullabLe<V>>> difference(final Map<K, V> map, final Map<K, V> map2) {
+    public static <K, V> Map<K, Pair<V, Nullable<V>>> difference(final Map<K, V> map, final Map<K, V> map2) {
         if (N.isNullOrEmpty(map)) {
             return new LinkedHashMap<>();
         }
 
-        final Map<K, Pair<V, NullabLe<V>>> result = map instanceof IdentityHashMap ? new IdentityHashMap<K, Pair<V, NullabLe<V>>>()
-                : new LinkedHashMap<K, Pair<V, NullabLe<V>>>();
+        final Map<K, Pair<V, Nullable<V>>> result = map instanceof IdentityHashMap ? new IdentityHashMap<K, Pair<V, Nullable<V>>>()
+                : new LinkedHashMap<K, Pair<V, Nullable<V>>>();
 
         if (N.isNullOrEmpty(map2)) {
             for (Map.Entry<K, V> entry : map.entrySet()) {
-                result.put(entry.getKey(), Pair.of(entry.getValue(), NullabLe.<V> empty()));
+                result.put(entry.getKey(), Pair.of(entry.getValue(), Nullable.<V> empty()));
             }
         } else {
             V val = null;
@@ -270,9 +270,9 @@ public final class Maps {
                 val = map2.get(entry.getKey());
 
                 if (val == null && map2.containsKey(entry.getKey()) == false) {
-                    result.put(entry.getKey(), Pair.of(entry.getValue(), NullabLe.<V> empty()));
+                    result.put(entry.getKey(), Pair.of(entry.getValue(), Nullable.<V> empty()));
                 } else if (N.equals(val, entry.getValue()) == false) {
-                    result.put(entry.getKey(), Pair.of(entry.getValue(), NullabLe.of(val)));
+                    result.put(entry.getKey(), Pair.of(entry.getValue(), Nullable.of(val)));
                 }
             }
         }
@@ -280,17 +280,17 @@ public final class Maps {
         return result;
     }
 
-    public static <K, V> Map<K, Pair<NullabLe<V>, NullabLe<V>>> symmetricDifference(final Map<K, V> map, final Map<K, V> map2) {
+    public static <K, V> Map<K, Pair<Nullable<V>, Nullable<V>>> symmetricDifference(final Map<K, V> map, final Map<K, V> map2) {
         final boolean isIdentityHashMap = (N.notNullOrEmpty(map) && map instanceof IdentityHashMap)
                 || (N.notNullOrEmpty(map2) && map2 instanceof IdentityHashMap);
 
-        final Map<K, Pair<NullabLe<V>, NullabLe<V>>> result = isIdentityHashMap ? new IdentityHashMap<K, Pair<NullabLe<V>, NullabLe<V>>>()
-                : new LinkedHashMap<K, Pair<NullabLe<V>, NullabLe<V>>>();
+        final Map<K, Pair<Nullable<V>, Nullable<V>>> result = isIdentityHashMap ? new IdentityHashMap<K, Pair<Nullable<V>, Nullable<V>>>()
+                : new LinkedHashMap<K, Pair<Nullable<V>, Nullable<V>>>();
 
         if (N.notNullOrEmpty(map)) {
             if (N.isNullOrEmpty(map2)) {
                 for (Map.Entry<K, V> entry : map.entrySet()) {
-                    result.put(entry.getKey(), Pair.of(NullabLe.of(entry.getValue()), NullabLe.<V> empty()));
+                    result.put(entry.getKey(), Pair.of(Nullable.of(entry.getValue()), Nullable.<V> empty()));
                 }
             } else {
                 K key = null;
@@ -301,9 +301,9 @@ public final class Maps {
                     val2 = map2.get(key);
 
                     if (val2 == null && map2.containsKey(key) == false) {
-                        result.put(key, Pair.of(NullabLe.of(entry.getValue()), NullabLe.<V> empty()));
+                        result.put(key, Pair.of(Nullable.of(entry.getValue()), Nullable.<V> empty()));
                     } else if (N.equals(val2, entry.getValue()) == false) {
-                        result.put(key, Pair.of(NullabLe.of(entry.getValue()), NullabLe.of(val2)));
+                        result.put(key, Pair.of(Nullable.of(entry.getValue()), Nullable.of(val2)));
                     }
                 }
             }
@@ -312,12 +312,12 @@ public final class Maps {
         if (N.notNullOrEmpty(map2)) {
             if (N.isNullOrEmpty(map)) {
                 for (Map.Entry<K, V> entry : map2.entrySet()) {
-                    result.put(entry.getKey(), Pair.of(NullabLe.<V> empty(), NullabLe.of(entry.getValue())));
+                    result.put(entry.getKey(), Pair.of(Nullable.<V> empty(), Nullable.of(entry.getValue())));
                 }
             } else {
                 for (Map.Entry<K, V> entry : map2.entrySet()) {
                     if (map.containsKey(entry.getKey()) == false) {
-                        result.put(entry.getKey(), Pair.of(NullabLe.<V> empty(), NullabLe.of(entry.getValue())));
+                        result.put(entry.getKey(), Pair.of(Nullable.<V> empty(), Nullable.of(entry.getValue())));
                     }
                 }
             }

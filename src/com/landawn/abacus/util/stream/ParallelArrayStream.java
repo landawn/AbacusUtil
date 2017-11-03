@@ -46,7 +46,7 @@ import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.NullabLe;
+import com.landawn.abacus.util.Nullable;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.Try;
@@ -2539,7 +2539,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     public Stream<Stream<T>> splitBy(final Predicate<? super T> where) {
         N.requireNonNull(where);
 
-        final NullabLe<Indexed<T>> first = indexed().findFirst(new Predicate<Indexed<T>>() {
+        final Nullable<Indexed<T>> first = indexed().findFirst(new Predicate<Indexed<T>>() {
             @Override
             public boolean test(Indexed<T> indexed) {
                 return !where.test(indexed.value());
@@ -3025,21 +3025,21 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     }
 
     @Override
-    public NullabLe<T> first() {
+    public Nullable<T> first() {
         if (fromIndex == toIndex) {
-            return NullabLe.empty();
+            return Nullable.empty();
         }
 
-        return NullabLe.of(elements[fromIndex]);
+        return Nullable.of(elements[fromIndex]);
     }
 
     @Override
-    public NullabLe<T> last() {
+    public Nullable<T> last() {
         if (fromIndex == toIndex) {
-            return NullabLe.empty();
+            return Nullable.empty();
         }
 
-        return NullabLe.of(elements[toIndex - 1]);
+        return Nullable.of(elements[toIndex - 1]);
     }
 
     @Override
@@ -3131,7 +3131,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     }
 
     @Override
-    public NullabLe<T> reduce(final BinaryOperator<T> accumulator) {
+    public Nullable<T> reduce(final BinaryOperator<T> accumulator) {
         if (maxThreadNum <= 1) {
             return sequential().reduce(accumulator);
         }
@@ -3232,7 +3232,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             throw N.toRuntimeException(e);
         }
 
-        return result == NONE ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(result);
+        return result == NONE ? (Nullable<T>) Nullable.empty() : Nullable.of(result);
     }
 
     @Override
@@ -3548,11 +3548,11 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     }
 
     @Override
-    public NullabLe<T> min(Comparator<? super T> comparator) {
+    public Nullable<T> min(Comparator<? super T> comparator) {
         if (fromIndex == toIndex) {
-            return NullabLe.empty();
+            return Nullable.empty();
         } else if (sorted && isSameComparator(cmp, comparator)) {
-            return NullabLe.of(elements[fromIndex]);
+            return Nullable.of(elements[fromIndex]);
         }
 
         comparator = comparator == null ? OBJECT_COMPARATOR : comparator;
@@ -3561,11 +3561,11 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     }
 
     @Override
-    public NullabLe<T> max(Comparator<? super T> comparator) {
+    public Nullable<T> max(Comparator<? super T> comparator) {
         if (fromIndex == toIndex) {
-            return NullabLe.empty();
+            return Nullable.empty();
         } else if (sorted && isSameComparator(cmp, comparator)) {
-            return NullabLe.of(elements[toIndex - 1]);
+            return Nullable.of(elements[toIndex - 1]);
         }
 
         comparator = comparator == null ? OBJECT_COMPARATOR : comparator;
@@ -3574,7 +3574,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     }
 
     @Override
-    public NullabLe<T> kthLargest(int k, Comparator<? super T> comparator) {
+    public Nullable<T> kthLargest(int k, Comparator<? super T> comparator) {
         return sequential().kthLargest(k, comparator);
     }
 
@@ -3805,7 +3805,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     }
 
     @Override
-    public NullabLe<T> findFirst(final Predicate<? super T> predicate) {
+    public Nullable<T> findFirst(final Predicate<? super T> predicate) {
         if (maxThreadNum <= 1) {
             return sequential().findFirst(predicate);
         }
@@ -3888,11 +3888,11 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
         complete(futureList, eHolder);
 
-        return resultHolder.value() == null ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(resultHolder.value().right);
+        return resultHolder.value() == null ? (Nullable<T>) Nullable.empty() : Nullable.of(resultHolder.value().right);
     }
 
     @Override
-    public NullabLe<T> findLast(final Predicate<? super T> predicate) {
+    public Nullable<T> findLast(final Predicate<? super T> predicate) {
         if (maxThreadNum <= 1) {
             return sequential().findLast(predicate);
         }
@@ -3975,11 +3975,11 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
         complete(futureList, eHolder);
 
-        return resultHolder.value() == null ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(resultHolder.value().right);
+        return resultHolder.value() == null ? (Nullable<T>) Nullable.empty() : Nullable.of(resultHolder.value().right);
     }
 
     @Override
-    public NullabLe<T> findAny(final Predicate<? super T> predicate) {
+    public Nullable<T> findAny(final Predicate<? super T> predicate) {
         if (maxThreadNum <= 1) {
             return sequential().findAny(predicate);
         }
@@ -4060,7 +4060,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
         complete(futureList, eHolder);
 
-        return resultHolder.value() == NONE ? (NullabLe<T>) NullabLe.empty() : NullabLe.of(resultHolder.value());
+        return resultHolder.value() == NONE ? (Nullable<T>) Nullable.empty() : Nullable.of(resultHolder.value());
     }
 
     @Override

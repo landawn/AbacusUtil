@@ -36,7 +36,7 @@ import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableLong;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.NullabLe;
+import com.landawn.abacus.util.Nullable;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalInt;
 import com.landawn.abacus.util.Pair;
@@ -427,7 +427,7 @@ final class ParallelIteratorIntStream extends IteratorIntStream {
 
         final List<IndexedInt> testedElements = new ArrayList<>();
 
-        final NullabLe<IndexedInt> first = indexed().findFirst(new Predicate<IndexedInt>() {
+        final Nullable<IndexedInt> first = indexed().findFirst(new Predicate<IndexedInt>() {
             @Override
             public boolean test(IndexedInt indexed) {
                 synchronized (testedElements) {
@@ -1135,7 +1135,7 @@ final class ParallelIteratorIntStream extends IteratorIntStream {
             return OptionalInt.empty();
         }
 
-        final NullabLe<Integer> optional = boxed().kthLargest(k, INT_COMPARATOR);
+        final Nullable<Integer> optional = boxed().kthLargest(k, INT_COMPARATOR);
 
         return optional.isPresent() ? OptionalInt.of(optional.get()) : OptionalInt.empty();
     }

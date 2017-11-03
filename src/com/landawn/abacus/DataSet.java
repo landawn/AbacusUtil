@@ -27,7 +27,7 @@ import java.util.Map;
 import com.landawn.abacus.util.ListMultimap;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
-import com.landawn.abacus.util.NullabLe;
+import com.landawn.abacus.util.Nullable;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.Properties;
@@ -2603,7 +2603,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param columnName
      * @return
      */
-    <T extends Comparable<? super T>> NullabLe<T> min(String columnName);
+    <T extends Comparable<? super T>> Nullable<T> min(String columnName);
 
     /**
      *
@@ -2611,7 +2611,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param comparator
      * @return
      */
-    <T> NullabLe<T> min(String columnName, Comparator<? super T> comparator);
+    <T> Nullable<T> min(String columnName, Comparator<? super T> comparator);
 
     /**
      * 
@@ -2620,7 +2620,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param toRowIndex
      * @return
      */
-    <T extends Comparable<? super T>> NullabLe<T> min(String columnName, int fromRowIndex, int toRowIndex);
+    <T extends Comparable<? super T>> Nullable<T> min(String columnName, int fromRowIndex, int toRowIndex);
 
     /**
      * 
@@ -2630,13 +2630,13 @@ public interface DataSet extends Iterable<Object[]> {
      * @param comparator
      * @return
      */
-    <T> NullabLe<T> min(String columnName, int fromRowIndex, int toRowIndex, Comparator<? super T> comparator);
+    <T> Nullable<T> min(String columnName, int fromRowIndex, int toRowIndex, Comparator<? super T> comparator);
 
     /**
      * @param columnName
      * @return
      */
-    <T extends Comparable<? super T>> NullabLe<T> max(String columnName);
+    <T extends Comparable<? super T>> Nullable<T> max(String columnName);
 
     /**
      *
@@ -2644,7 +2644,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param comparator
      * @return
      */
-    <T> NullabLe<T> max(String columnName, Comparator<? super T> comparator);
+    <T> Nullable<T> max(String columnName, Comparator<? super T> comparator);
 
     /**
      * 
@@ -2653,7 +2653,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param toRowIndex
      * @return
      */
-    <T extends Comparable<? super T>> NullabLe<T> max(String columnName, int fromRowIndex, int toRowIndex);
+    <T extends Comparable<? super T>> Nullable<T> max(String columnName, int fromRowIndex, int toRowIndex);
 
     /**
      * 
@@ -2663,13 +2663,13 @@ public interface DataSet extends Iterable<Object[]> {
      * @param comparator
      * @return
      */
-    <T> NullabLe<T> max(String columnName, int fromRowIndex, int toRowIndex, Comparator<? super T> comparator);
+    <T> Nullable<T> max(String columnName, int fromRowIndex, int toRowIndex, Comparator<? super T> comparator);
 
     /**
      * @param columnName
      * @return
      */
-    <T extends Comparable<? super T>> NullabLe<T> median(String columnName);
+    <T extends Comparable<? super T>> Nullable<T> median(String columnName);
 
     /**
      *
@@ -2677,7 +2677,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param comparator
      * @return
      */
-    <T> NullabLe<T> median(String columnName, Comparator<? super T> comparator);
+    <T> Nullable<T> median(String columnName, Comparator<? super T> comparator);
 
     /**
      * 
@@ -2686,7 +2686,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param toRowIndex
      * @return
      */
-    <T extends Comparable<? super T>> NullabLe<T> median(String columnName, int fromRowIndex, int toRowIndex);
+    <T extends Comparable<? super T>> Nullable<T> median(String columnName, int fromRowIndex, int toRowIndex);
 
     /**
      * 
@@ -2696,14 +2696,14 @@ public interface DataSet extends Iterable<Object[]> {
      * @param comparator
      * @return
      */
-    <T> NullabLe<T> median(String columnName, int fromRowIndex, int toRowIndex, Comparator<? super T> comparator);
+    <T> Nullable<T> median(String columnName, int fromRowIndex, int toRowIndex, Comparator<? super T> comparator);
 
     /**
      * @param columnName
      * @param k
      * @return
      */
-    <T extends Comparable<? super T>> NullabLe<T> kthLargest(String columnName, int k);
+    <T extends Comparable<? super T>> Nullable<T> kthLargest(String columnName, int k);
 
     /**
      *
@@ -2712,7 +2712,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param comparator
      * @return
      */
-    <T> NullabLe<T> kthLargest(String columnName, int k, Comparator<? super T> comparator);
+    <T> Nullable<T> kthLargest(String columnName, int k, Comparator<? super T> comparator);
 
     /**
      * 
@@ -2722,7 +2722,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param k
      * @return
      */
-    <T extends Comparable<? super T>> NullabLe<T> kthLargest(String columnName, int fromRowIndex, int toRowIndex, int k);
+    <T extends Comparable<? super T>> Nullable<T> kthLargest(String columnName, int fromRowIndex, int toRowIndex, int k);
 
     /**
      * 
@@ -2733,7 +2733,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param comparator
      * @return
      */
-    <T> NullabLe<T> kthLargest(String columnName, int fromRowIndex, int toRowIndex, int k, Comparator<? super T> comparator);
+    <T> Nullable<T> kthLargest(String columnName, int fromRowIndex, int toRowIndex, int k, Comparator<? super T> comparator);
 
     /**
      * @param columnName
@@ -3852,7 +3852,7 @@ public interface DataSet extends Iterable<Object[]> {
          * @param columnName
          * @return
          */
-        <E extends Comparable<? super E>> NullabLe<E> min(Class<? extends E> columnType, String columnName);
+        <E extends Comparable<? super E>> Nullable<E> min(Class<? extends E> columnType, String columnName);
 
         /**
          * @param columnType it's only used to identify the type.
@@ -3860,7 +3860,7 @@ public interface DataSet extends Iterable<Object[]> {
          * @param comparator
          * @return
          */
-        <E> NullabLe<E> min(Class<? extends E> columnType, String columnName, Comparator<? super E> comparator);
+        <E> Nullable<E> min(Class<? extends E> columnType, String columnName, Comparator<? super E> comparator);
 
         /**
          * 
@@ -3870,7 +3870,7 @@ public interface DataSet extends Iterable<Object[]> {
          * @param toRowIndex
          * @return
          */
-        <E extends Comparable<? super E>> NullabLe<E> min(Class<? extends E> columnType, String columnName, int fromRowIndex, int toRowIndex);
+        <E extends Comparable<? super E>> Nullable<E> min(Class<? extends E> columnType, String columnName, int fromRowIndex, int toRowIndex);
 
         /**
          * 
@@ -3881,7 +3881,7 @@ public interface DataSet extends Iterable<Object[]> {
          * @param comparator
          * @return
          */
-        <E> NullabLe<E> min(Class<? extends E> columnType, String columnName, int fromRowIndex, int toRowIndex, Comparator<? super E> comparator);
+        <E> Nullable<E> min(Class<? extends E> columnType, String columnName, int fromRowIndex, int toRowIndex, Comparator<? super E> comparator);
 
         /**
          * 
@@ -3889,7 +3889,7 @@ public interface DataSet extends Iterable<Object[]> {
          * @param columnName
          * @return
          */
-        <E extends Comparable<? super E>> NullabLe<E> max(Class<? extends E> columnType, String columnName);
+        <E extends Comparable<? super E>> Nullable<E> max(Class<? extends E> columnType, String columnName);
 
         /**
          *
@@ -3898,7 +3898,7 @@ public interface DataSet extends Iterable<Object[]> {
          * @param comparator
          * @return
          */
-        <E> NullabLe<E> max(Class<? extends E> columnType, String columnName, Comparator<? super E> comparator);
+        <E> Nullable<E> max(Class<? extends E> columnType, String columnName, Comparator<? super E> comparator);
 
         /**
          * 
@@ -3908,7 +3908,7 @@ public interface DataSet extends Iterable<Object[]> {
          * @param toRowIndex
          * @return
          */
-        <E extends Comparable<? super E>> NullabLe<E> max(Class<? extends E> columnType, String columnName, int fromRowIndex, int toRowIndex);
+        <E extends Comparable<? super E>> Nullable<E> max(Class<? extends E> columnType, String columnName, int fromRowIndex, int toRowIndex);
 
         /**
          * 
@@ -3919,7 +3919,7 @@ public interface DataSet extends Iterable<Object[]> {
          * @param comparator
          * @return
          */
-        <E> NullabLe<E> max(Class<? extends E> columnType, String columnName, int fromRowIndex, int toRowIndex, Comparator<? super E> comparator);
+        <E> Nullable<E> max(Class<? extends E> columnType, String columnName, int fromRowIndex, int toRowIndex, Comparator<? super E> comparator);
 
         /**
          * 
@@ -3927,7 +3927,7 @@ public interface DataSet extends Iterable<Object[]> {
          * @param columnName
          * @return
          */
-        <E extends Comparable<? super E>> NullabLe<E> median(Class<? extends E> columnType, String columnName);
+        <E extends Comparable<? super E>> Nullable<E> median(Class<? extends E> columnType, String columnName);
 
         /**
          *
@@ -3936,7 +3936,7 @@ public interface DataSet extends Iterable<Object[]> {
          * @param comparator
          * @return
          */
-        <E> NullabLe<E> median(Class<? extends E> columnType, String columnName, Comparator<? super E> comparator);
+        <E> Nullable<E> median(Class<? extends E> columnType, String columnName, Comparator<? super E> comparator);
 
         /**
          * 
@@ -3946,7 +3946,7 @@ public interface DataSet extends Iterable<Object[]> {
          * @param toRowIndex
          * @return
          */
-        <E extends Comparable<? super E>> NullabLe<E> median(Class<? extends E> columnType, String columnName, int fromRowIndex, int toRowIndex);
+        <E extends Comparable<? super E>> Nullable<E> median(Class<? extends E> columnType, String columnName, int fromRowIndex, int toRowIndex);
 
         /**
          * 
@@ -3957,7 +3957,7 @@ public interface DataSet extends Iterable<Object[]> {
          * @param comparator
          * @return
          */
-        <E> NullabLe<E> median(Class<? extends E> columnType, String columnName, int fromRowIndex, int toRowIndex, Comparator<? super E> comparator);
+        <E> Nullable<E> median(Class<? extends E> columnType, String columnName, int fromRowIndex, int toRowIndex, Comparator<? super E> comparator);
 
         /**
          * 
@@ -3966,7 +3966,7 @@ public interface DataSet extends Iterable<Object[]> {
          * @param k
          * @return
          */
-        <E extends Comparable<? super E>> NullabLe<E> kthLargest(Class<? extends E> columnType, String columnName, int k);
+        <E extends Comparable<? super E>> Nullable<E> kthLargest(Class<? extends E> columnType, String columnName, int k);
 
         /**
          *
@@ -3976,7 +3976,7 @@ public interface DataSet extends Iterable<Object[]> {
          * @param comparator
          * @return
          */
-        <E> NullabLe<E> kthLargest(Class<? extends E> columnType, String columnName, int k, Comparator<? super E> comparator);
+        <E> Nullable<E> kthLargest(Class<? extends E> columnType, String columnName, int k, Comparator<? super E> comparator);
 
         /**
          * 
@@ -3987,7 +3987,7 @@ public interface DataSet extends Iterable<Object[]> {
          * @param k
          * @return
          */
-        <E extends Comparable<? super E>> NullabLe<E> kthLargest(Class<? extends E> columnType, String columnName, int fromRowIndex, int toRowIndex, int k);
+        <E extends Comparable<? super E>> Nullable<E> kthLargest(Class<? extends E> columnType, String columnName, int fromRowIndex, int toRowIndex, int k);
 
         /**
          * 
@@ -3999,7 +3999,7 @@ public interface DataSet extends Iterable<Object[]> {
          * @param comparator
          * @return
          */
-        <E> NullabLe<E> kthLargest(Class<? extends E> columnType, String columnName, int fromRowIndex, int toRowIndex, int k, Comparator<? super E> comparator);
+        <E> Nullable<E> kthLargest(Class<? extends E> columnType, String columnName, int fromRowIndex, int toRowIndex, int k, Comparator<? super E> comparator);
 
         /**
          * @param columnType it's only used to identify the type.

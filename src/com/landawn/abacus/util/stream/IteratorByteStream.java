@@ -30,7 +30,7 @@ import com.landawn.abacus.util.IntIterator;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.NullabLe;
+import com.landawn.abacus.util.Nullable;
 import com.landawn.abacus.util.OptionalByte;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.function.BiConsumer;
@@ -1148,7 +1148,7 @@ class IteratorByteStream extends AbstractByteStream {
             return OptionalByte.empty();
         }
 
-        final NullabLe<Byte> optional = boxed().kthLargest(k, BYTE_COMPARATOR);
+        final Nullable<Byte> optional = boxed().kthLargest(k, BYTE_COMPARATOR);
 
         return optional.isPresent() ? OptionalByte.of(optional.get()) : OptionalByte.empty();
     }

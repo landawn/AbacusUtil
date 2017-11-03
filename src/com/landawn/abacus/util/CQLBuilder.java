@@ -1234,13 +1234,13 @@ public abstract class CQLBuilder {
     //     * @return 
     //     */
     //    @Beta
-    //    public <R> NullabLe<R> execute(final Class<R> targetClass, final CassandraExecutor cassandraExecutor) {
+    //    public <R> Nullable<R> execute(final Class<R> targetClass, final CassandraExecutor cassandraExecutor) {
     //        if (op != OperationType.QUERY) {
     //            throw new IllegalArgumentException("Only SELECT statement is supported");
     //        }
     //
     //        if (N.isEntity(targetClass) || Map.class.isAssignableFrom(targetClass)) {
-    //            return NullabLe.from(cassandraExecutor.queryForEntity(targetClass, cql(), this.parameters));
+    //            return Nullable.from(cassandraExecutor.queryForEntity(targetClass, cql(), this.parameters));
     //        } else {
     //            return cassandraExecutor.queryForSingleResult(targetClass, cql(), this.parameters);
     //        }
@@ -1255,20 +1255,20 @@ public abstract class CQLBuilder {
     //     * @return
     //     */
     //    @Beta
-    //    public <R> NullabLe<R> execute(final Class<R> targetClass, final CassandraExecutor cassandraExecutor, final Object... parameters) {
+    //    public <R> Nullable<R> execute(final Class<R> targetClass, final CassandraExecutor cassandraExecutor, final Object... parameters) {
     //        if (op != OperationType.QUERY) {
     //            throw new IllegalArgumentException("Only SELECT statement is supported");
     //        }
     //
     //        if (N.isNullOrEmpty(parameters)) {
     //            if (N.isEntity(targetClass) || Map.class.isAssignableFrom(targetClass)) {
-    //                return NullabLe.from(cassandraExecutor.queryForEntity(targetClass, cql(), this.parameters));
+    //                return Nullable.from(cassandraExecutor.queryForEntity(targetClass, cql(), this.parameters));
     //            } else {
     //                return cassandraExecutor.queryForSingleResult(targetClass, cql(), this.parameters);
     //            }
     //        } else {
     //            if (N.isEntity(targetClass) || Map.class.isAssignableFrom(targetClass)) {
-    //                return NullabLe.from(cassandraExecutor.queryForEntity(targetClass, cql(), parameters));
+    //                return Nullable.from(cassandraExecutor.queryForEntity(targetClass, cql(), parameters));
     //            } else {
     //                return cassandraExecutor.queryForSingleResult(targetClass, cql(), parameters);
     //            }
@@ -1302,29 +1302,29 @@ public abstract class CQLBuilder {
     //    }
     //
     //    @Beta
-    //    public <R> CompletableFuture<NullabLe<R>> asyncExecute(final Class<R> targetClass, final CassandraExecutor cassandraExecutor) {
+    //    public <R> CompletableFuture<Nullable<R>> asyncExecute(final Class<R> targetClass, final CassandraExecutor cassandraExecutor) {
     //        if (op != OperationType.QUERY) {
     //            throw new IllegalArgumentException("Only SELECT statement is supported");
     //        }
     //
-    //        return cassandraExecutor.asyncExecutor().execute(new Callable<NullabLe<R>>() {
+    //        return cassandraExecutor.asyncExecutor().execute(new Callable<Nullable<R>>() {
     //            @Override
-    //            public NullabLe<R> call() throws Exception {
+    //            public Nullable<R> call() throws Exception {
     //                return execute(targetClass, cassandraExecutor);
     //            }
     //        });
     //    }
     //
     //    @Beta
-    //    public <R> CompletableFuture<NullabLe<R>> asyncExecute(final Class<R> targetClass, final CassandraExecutor cassandraExecutor,
+    //    public <R> CompletableFuture<Nullable<R>> asyncExecute(final Class<R> targetClass, final CassandraExecutor cassandraExecutor,
     //            final Object... parameters) {
     //        if (op != OperationType.QUERY) {
     //            throw new IllegalArgumentException("Only SELECT statement is supported");
     //        }
     //
-    //        return cassandraExecutor.asyncExecutor().execute(new Callable<NullabLe<R>>() {
+    //        return cassandraExecutor.asyncExecutor().execute(new Callable<Nullable<R>>() {
     //            @Override
-    //            public NullabLe<R> call() throws Exception {
+    //            public Nullable<R> call() throws Exception {
     //                return execute(targetClass, cassandraExecutor, parameters);
     //            }
     //        });

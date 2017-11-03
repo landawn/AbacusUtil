@@ -133,16 +133,16 @@ abstract class Reference<T, R extends Reference<T, R>> {
      * @param mapper
      * @return
      */
-    public <U> NullabLe<U> mapIfNotNull(final Function<? super T, U> mapper) {
-        return isNotNull() ? NullabLe.of(mapper.apply(value)) : NullabLe.<U> empty();
+    public <U> Nullable<U> mapIfNotNull(final Function<? super T, U> mapper) {
+        return isNotNull() ? Nullable.of(mapper.apply(value)) : Nullable.<U> empty();
     }
 
-    public NullabLe<T> filter(final Predicate<? super T> predicate) {
-        return predicate.test(value) ? NullabLe.of(value) : NullabLe.<T> empty();
+    public Nullable<T> filter(final Predicate<? super T> predicate) {
+        return predicate.test(value) ? Nullable.of(value) : Nullable.<T> empty();
     }
 
-    public NullabLe<T> filterIfNotNull(final Predicate<? super T> predicate) {
-        return isNotNull() && predicate.test(value) ? NullabLe.of(value) : NullabLe.<T> empty();
+    public Nullable<T> filterIfNotNull(final Predicate<? super T> predicate) {
+        return isNotNull() && predicate.test(value) ? Nullable.of(value) : Nullable.<T> empty();
     }
 
     public Stream<T> stream() {

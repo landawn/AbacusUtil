@@ -638,7 +638,7 @@ public final class MongoDBExecutor {
         return collExecutor(collectionName).get(targetClass, objectId, selectPropNames);
     }
 
-    public <T> NullabLe<T> queryForSingleResult(final Class<T> targetClass, final String collectionName, final String propName, final Bson filter) {
+    public <T> Nullable<T> queryForSingleResult(final Class<T> targetClass, final String collectionName, final String propName, final Bson filter) {
         return collExecutor(collectionName).queryForSingleResult(targetClass, propName, filter);
     }
 

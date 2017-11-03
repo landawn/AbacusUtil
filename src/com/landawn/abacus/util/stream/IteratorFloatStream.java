@@ -33,7 +33,7 @@ import com.landawn.abacus.util.LongIterator;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
-import com.landawn.abacus.util.NullabLe;
+import com.landawn.abacus.util.Nullable;
 import com.landawn.abacus.util.OptionalFloat;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
@@ -1344,7 +1344,7 @@ class IteratorFloatStream extends AbstractFloatStream {
             return OptionalFloat.empty();
         }
 
-        final NullabLe<Float> optional = boxed().kthLargest(k, FLOAT_COMPARATOR);
+        final Nullable<Float> optional = boxed().kthLargest(k, FLOAT_COMPARATOR);
 
         return optional.isPresent() ? OptionalFloat.of(optional.get()) : OptionalFloat.empty();
     }

@@ -136,20 +136,20 @@ public final class Matrix<T> extends AbstractMatrix<T[], List<T>, Stream<T>, Str
         a[point._1][point._2] = val;
     }
 
-    public NullabLe<T> upOf(final int i, final int j) {
-        return i == 0 ? NullabLe.<T> empty() : NullabLe.of(a[i - 1][j]);
+    public Nullable<T> upOf(final int i, final int j) {
+        return i == 0 ? Nullable.<T> empty() : Nullable.of(a[i - 1][j]);
     }
 
-    public NullabLe<T> downOf(final int i, final int j) {
-        return i == rows - 1 ? NullabLe.<T> empty() : NullabLe.of(a[i + 1][j]);
+    public Nullable<T> downOf(final int i, final int j) {
+        return i == rows - 1 ? Nullable.<T> empty() : Nullable.of(a[i + 1][j]);
     }
 
-    public NullabLe<T> leftOf(final int i, final int j) {
-        return j == 0 ? NullabLe.<T> empty() : NullabLe.of(a[i][j - 1]);
+    public Nullable<T> leftOf(final int i, final int j) {
+        return j == 0 ? Nullable.<T> empty() : Nullable.of(a[i][j - 1]);
     }
 
-    public NullabLe<T> rightOf(final int i, final int j) {
-        return j == cols - 1 ? NullabLe.<T> empty() : NullabLe.of(a[i][j + 1]);
+    public Nullable<T> rightOf(final int i, final int j) {
+        return j == cols - 1 ? Nullable.<T> empty() : Nullable.of(a[i][j + 1]);
     }
 
     /**
@@ -411,9 +411,9 @@ public final class Matrix<T> extends AbstractMatrix<T[], List<T>, Stream<T>, Str
     }
 
     // Replaced by stream and stream2.
-    //    public NullabLe<T> min(final Comparator<? super T> cmp) {
+    //    public Nullable<T> min(final Comparator<? super T> cmp) {
     //        if (isEmpty()) {
-    //            return NullabLe.empty();
+    //            return Nullable.empty();
     //        }
     //
     //        final Comparator<? super T> comparator = cmp == null ? N.NULL_MIN_COMPARATOR : cmp;
@@ -427,12 +427,12 @@ public final class Matrix<T> extends AbstractMatrix<T[], List<T>, Stream<T>, Str
     //            }
     //        }
     //
-    //        return NullabLe.of(candicate);
+    //        return Nullable.of(candicate);
     //    }
     //
-    //    public NullabLe<T> max(final Comparator<? super T> cmp) {
+    //    public Nullable<T> max(final Comparator<? super T> cmp) {
     //        if (isEmpty()) {
-    //            return NullabLe.empty();
+    //            return Nullable.empty();
     //        }
     //
     //        final Comparator<? super T> comparator = cmp == null ? N.NULL_MIN_COMPARATOR : cmp;
@@ -446,7 +446,7 @@ public final class Matrix<T> extends AbstractMatrix<T[], List<T>, Stream<T>, Str
     //            }
     //        }
     //
-    //        return NullabLe.of(candicate);
+    //        return Nullable.of(candicate);
     //    }
     //
     //    @Override

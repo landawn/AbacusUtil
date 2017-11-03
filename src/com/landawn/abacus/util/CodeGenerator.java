@@ -3180,7 +3180,7 @@ public final class CodeGenerator {
         }
 
         if ((EXTEND_ACTIVE_RECORD == entityMode) || (IMPL_ACTIVE_RECORD == entityMode)) {
-            writeClassImport(fileWrite, NullabLe.class, importedClasses);
+            writeClassImport(fileWrite, Nullable.class, importedClasses);
         }
 
         if ((generateHashEqualsMethod || generateToStringMethod) && (hasHashEqualsProperty(entityDef) || hasToStringProperty(entityDef))) {
@@ -4424,7 +4424,7 @@ public final class CodeGenerator {
             //
             // fileWrite.write(D.LINE_SEPARATOR);
             // fileWrite.write(headSpace +
-            // "    public <T> NullabLe<T> fetch(String propName) {" + D.LINE_SEPARATOR);
+            // "    public <T> Nullable<T> fetch(String propName) {" + D.LINE_SEPARATOR);
             // fileWrite.write(headSpace +
             // "        return activeRecordImpl.fetch(propName);" +
             // D.LINE_SEPARATOR);
@@ -5040,14 +5040,14 @@ public final class CodeGenerator {
             if (N.notNullOrEmpty(idParaString)) {
                 // fetch method
                 fileWrite.write(IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    public static <T> NullabLe<T> fetch(String propName, " + idParaString + ") {" + IOUtil.LINE_SEPARATOR);
+                fileWrite.write(headSpace + "    public static <T> Nullable<T> fetch(String propName, " + idParaString + ") {" + IOUtil.LINE_SEPARATOR);
                 fileWrite.write(headSpace + "        return " + ClassUtil.getSimpleClassName(extendedClass) + ".fetch(" + DOMAIN_NAME_VAR + ", propName, "
                         + ClassUtil.getSimpleClassName(Seid.class) + ".valueOf(" + idPropPair + "));" + IOUtil.LINE_SEPARATOR);
                 fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
 
                 // fetch method
                 fileWrite.write(IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    public static <T> NullabLe<T> fetch(Class<T> targetClass, String propName, " + idParaString + ") {"
+                fileWrite.write(headSpace + "    public static <T> Nullable<T> fetch(Class<T> targetClass, String propName, " + idParaString + ") {"
                         + IOUtil.LINE_SEPARATOR);
                 fileWrite.write(headSpace + "        return " + ClassUtil.getSimpleClassName(extendedClass) + ".fetch(" + DOMAIN_NAME_VAR
                         + ", targetClass, propName, " + ClassUtil.getSimpleClassName(Seid.class) + ".valueOf(" + idPropPair + "));" + IOUtil.LINE_SEPARATOR);
@@ -5060,7 +5060,7 @@ public final class CodeGenerator {
                         + "     * Fetch the value of the specified property from data store directly. {@code null} or default value for primitive type is returned if no result is found."
                         + IOUtil.LINE_SEPARATOR);
                 fileWrite.write(headSpace + "     */" + IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    public static <T> NullabLe<T> fetch(Class<T> targetClass, String propName, " + idParaString
+                fileWrite.write(headSpace + "    public static <T> Nullable<T> fetch(Class<T> targetClass, String propName, " + idParaString
                         + ", Map<String, Object> options) {" + IOUtil.LINE_SEPARATOR);
                 fileWrite.write(
                         headSpace + "        return " + ClassUtil.getSimpleClassName(extendedClass) + ".fetch(" + DOMAIN_NAME_VAR + ", targetClass, propName, "
@@ -5069,14 +5069,14 @@ public final class CodeGenerator {
 
                 // fetch method
                 fileWrite.write(IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    public static <T> NullabLe<T> fetch(String propName, EntityId entityId) {" + IOUtil.LINE_SEPARATOR);
+                fileWrite.write(headSpace + "    public static <T> Nullable<T> fetch(String propName, EntityId entityId) {" + IOUtil.LINE_SEPARATOR);
                 fileWrite.write(headSpace + "        return " + ClassUtil.getSimpleClassName(extendedClass) + ".fetch(" + DOMAIN_NAME_VAR
                         + ", propName, entityId);" + IOUtil.LINE_SEPARATOR);
                 fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
 
                 // fetch method
                 fileWrite.write(IOUtil.LINE_SEPARATOR);
-                fileWrite.write(headSpace + "    public static <T> NullabLe<T> fetch(Class<T> targetClass, String propName, EntityId entityId) {"
+                fileWrite.write(headSpace + "    public static <T> Nullable<T> fetch(Class<T> targetClass, String propName, EntityId entityId) {"
                         + IOUtil.LINE_SEPARATOR);
                 fileWrite.write(headSpace + "        return " + ClassUtil.getSimpleClassName(extendedClass) + ".fetch(" + DOMAIN_NAME_VAR
                         + ", targetClass, propName, entityId);" + IOUtil.LINE_SEPARATOR);
@@ -5090,7 +5090,7 @@ public final class CodeGenerator {
                         + IOUtil.LINE_SEPARATOR);
                 fileWrite.write(headSpace + "     */" + IOUtil.LINE_SEPARATOR);
                 fileWrite.write(headSpace
-                        + "    public static <T> NullabLe<T> fetch(Class<T> targetClass, String propName, EntityId entityId, Map<String, Object> options) {"
+                        + "    public static <T> Nullable<T> fetch(Class<T> targetClass, String propName, EntityId entityId, Map<String, Object> options) {"
                         + IOUtil.LINE_SEPARATOR);
                 fileWrite.write(headSpace + "        return " + ClassUtil.getSimpleClassName(extendedClass) + ".fetch(" + DOMAIN_NAME_VAR
                         + ", targetClass, propName, entityId, options);" + IOUtil.LINE_SEPARATOR);
@@ -5099,14 +5099,14 @@ public final class CodeGenerator {
 
             // fetch method
             fileWrite.write(IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    public static <T> NullabLe<T> fetch(String propName, Condition condition) {" + IOUtil.LINE_SEPARATOR);
+            fileWrite.write(headSpace + "    public static <T> Nullable<T> fetch(String propName, Condition condition) {" + IOUtil.LINE_SEPARATOR);
             fileWrite.write(headSpace + "        return " + ClassUtil.getSimpleClassName(extendedClass) + ".fetch(" + DOMAIN_NAME_VAR + ", " + ENTITY_NAME_VAR
                     + ", propName, condition);" + IOUtil.LINE_SEPARATOR);
             fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
 
             // fetch method
             fileWrite.write(IOUtil.LINE_SEPARATOR);
-            fileWrite.write(headSpace + "    public static <T> NullabLe<T> fetch(Class<T> targetClass, String propName, Condition condition) {"
+            fileWrite.write(headSpace + "    public static <T> Nullable<T> fetch(Class<T> targetClass, String propName, Condition condition) {"
                     + IOUtil.LINE_SEPARATOR);
             fileWrite.write(headSpace + "        return " + ClassUtil.getSimpleClassName(extendedClass) + ".fetch(" + DOMAIN_NAME_VAR + ", " + ENTITY_NAME_VAR
                     + ", targetClass, propName, condition);" + IOUtil.LINE_SEPARATOR);
@@ -5119,7 +5119,7 @@ public final class CodeGenerator {
                     + IOUtil.LINE_SEPARATOR);
             fileWrite.write(headSpace + "     */" + IOUtil.LINE_SEPARATOR);
             fileWrite.write(headSpace
-                    + "    public static <T> NullabLe<T> fetch(Class<T> targetClass, String propName, Condition condition, Map<String, Object> options) {"
+                    + "    public static <T> Nullable<T> fetch(Class<T> targetClass, String propName, Condition condition, Map<String, Object> options) {"
                     + IOUtil.LINE_SEPARATOR);
             fileWrite.write(headSpace + "        return " + ClassUtil.getSimpleClassName(extendedClass) + ".fetch(" + DOMAIN_NAME_VAR + ", " + ENTITY_NAME_VAR
                     + ", targetClass, propName, condition, options);" + IOUtil.LINE_SEPARATOR);

@@ -786,7 +786,7 @@ public final class CassandraExecutor implements Closeable {
         return query(targetClass, pair.cql, pair.parameters.toArray());
     }
 
-    public <T, E> NullabLe<E> queryForSingleResult(final Class<T> targetClass, final Class<E> valueClass, final String propName, final Condition whereCause) {
+    public <T, E> Nullable<E> queryForSingleResult(final Class<T> targetClass, final Class<E> valueClass, final String propName, final Condition whereCause) {
         final CP pair = prepareQuery(targetClass, Arrays.asList(propName), whereCause, 1);
 
         return queryForSingleResult(valueClass, pair.cql, pair.parameters.toArray());
@@ -832,11 +832,11 @@ public final class CassandraExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final <E> NullabLe<E> queryForSingleResult(final Class<E> valueClass, final String query, final Object... parameters) {
+    public final <E> Nullable<E> queryForSingleResult(final Class<E> valueClass, final String query, final Object... parameters) {
         final ResultSet resultSet = execute(query, parameters);
         final Row row = resultSet.one();
 
-        return row == null ? (NullabLe<E>) NullabLe.empty() : NullabLe.of(N.as(valueClass, row.getObject(0)));
+        return row == null ? (Nullable<E>) Nullable.empty() : Nullable.of(N.as(valueClass, row.getObject(0)));
     }
 
     /**
@@ -1241,11 +1241,11 @@ public final class CassandraExecutor implements Closeable {
         });
     }
 
-    public <T, E> CompletableFuture<NullabLe<E>> asyncQueryForSingleResult(final Class<T> targetClass, final Class<E> valueClass, final String propName,
+    public <T, E> CompletableFuture<Nullable<E>> asyncQueryForSingleResult(final Class<T> targetClass, final Class<E> valueClass, final String propName,
             final Condition whereCause) {
-        return asyncExecutor.execute(new Callable<NullabLe<E>>() {
+        return asyncExecutor.execute(new Callable<Nullable<E>>() {
             @Override
-            public NullabLe<E> call() throws Exception {
+            public Nullable<E> call() throws Exception {
                 return queryForSingleResult(targetClass, valueClass, propName, whereCause);
             }
         });
@@ -1316,10 +1316,10 @@ public final class CassandraExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final <T> CompletableFuture<NullabLe<T>> asyncQueryForSingleResult(final Class<T> targetClass, final String query, final Object... parameters) {
-        return asyncExecutor.execute(new Callable<NullabLe<T>>() {
+    public final <T> CompletableFuture<Nullable<T>> asyncQueryForSingleResult(final Class<T> targetClass, final String query, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<Nullable<T>>() {
             @Override
-            public NullabLe<T> call() throws Exception {
+            public Nullable<T> call() throws Exception {
                 return queryForSingleResult(targetClass, query, parameters);
             }
         });

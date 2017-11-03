@@ -164,11 +164,11 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
-    public <T> CompletableFuture<NullabLe<T>> queryForSingleResult(final Class<T> targetClass, final String collectionName, final String propName,
+    public <T> CompletableFuture<Nullable<T>> queryForSingleResult(final Class<T> targetClass, final String collectionName, final String propName,
             final Bson filter) {
-        return asyncExecutor.execute(new Callable<NullabLe<T>>() {
+        return asyncExecutor.execute(new Callable<Nullable<T>>() {
             @Override
-            public NullabLe<T> call() throws Exception {
+            public Nullable<T> call() throws Exception {
                 return dbExecutor.queryForSingleResult(targetClass, collectionName, propName, filter);
             }
         });

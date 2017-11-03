@@ -85,7 +85,7 @@ import com.landawn.abacus.util.MutableBoolean;
 import com.landawn.abacus.util.MutableInt;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nth;
-import com.landawn.abacus.util.NullabLe;
+import com.landawn.abacus.util.Nullable;
 import com.landawn.abacus.util.ObjIterator;
 import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
@@ -245,7 +245,7 @@ import com.landawn.abacus.util.stream.ObjIteratorEx.QueuedIterator;
  * @see DoubleStream
  * @see <a href="package-summary.html">java.util.stream</a>
  */
-public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? super T>, Consumer<? super T>, List<T>, NullabLe<T>, Indexed<T>, Stream<T>> {
+public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? super T>, Consumer<? super T>, List<T>, Nullable<T>, Indexed<T>, Stream<T>> {
 
     @SuppressWarnings("rawtypes")
     private static final Stream EMPTY = new ArrayStream(N.EMPTY_OBJECT_ARRAY, true, OBJECT_COMPARATOR, null);
@@ -927,7 +927,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param predicate
      * @return
      */
-    public abstract <U> NullabLe<T> findFirst(final U seed, final BiPredicate<? super T, ? super U> predicate);
+    public abstract <U> Nullable<T> findFirst(final U seed, final BiPredicate<? super T, ? super U> predicate);
 
     /**
      * <br />
@@ -937,7 +937,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param predicate
      * @return
      */
-    public abstract <U> NullabLe<T> findLast(final U seed, final BiPredicate<? super T, ? super U> predicate);
+    public abstract <U> Nullable<T> findLast(final U seed, final BiPredicate<? super T, ? super U> predicate);
 
     /**
      * <br />
@@ -947,7 +947,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param predicate
      * @return
      */
-    public abstract <U> NullabLe<T> findAny(final U seed, final BiPredicate<? super T, ? super U> predicate);
+    public abstract <U> Nullable<T> findAny(final U seed, final BiPredicate<? super T, ? super U> predicate);
 
     /**
      * <br />
@@ -958,7 +958,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param predicateForLast
      * @return
      */
-    public abstract <U> NullabLe<T> findFirstOrLast(final U seed, final BiPredicate<? super T, ? super U> predicateForFirst,
+    public abstract <U> Nullable<T> findFirstOrLast(final U seed, final BiPredicate<? super T, ? super U> predicateForFirst,
             final BiPredicate<? super T, ? super U> predicateForLast);
 
     /**
@@ -970,7 +970,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param predicateForLast
      * @return
      */
-    public abstract <U> NullabLe<T> findFirstOrLast(final Function<? super T, U> preFunc, final BiPredicate<? super T, ? super U> predicateForFirst,
+    public abstract <U> Nullable<T> findFirstOrLast(final Function<? super T, U> preFunc, final BiPredicate<? super T, ? super U> predicateForFirst,
             final BiPredicate<? super T, ? super U> predicateForLast);
 
     public abstract <U> boolean anyMatch(final U seed, final BiPredicate<? super T, ? super U> predicate);
@@ -1264,7 +1264,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      *         else
      *             result = accumulator.apply(result, element);
      *     }
-     *     return foundAny ? NullabLe.of(result) : NullabLe.empty();
+     *     return foundAny ? Nullable.of(result) : Nullable.empty();
      * }</pre>
      *
      * but is not constrained to execute sequentially.
@@ -1284,7 +1284,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @see #min(Comparator)
      * @see #max(Comparator)
      */
-    public abstract NullabLe<T> reduce(BinaryOperator<T> accumulator);
+    public abstract Nullable<T> reduce(BinaryOperator<T> accumulator);
 
     /**
      * Performs a <a href="package-summary.html#Reduction">reduction</a> on the
@@ -1483,7 +1483,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * 
      * @return
      */
-    public abstract NullabLe<T> head();
+    public abstract Nullable<T> head();
 
     /**
      * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
@@ -1513,9 +1513,9 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * 
      * @return
      */
-    public abstract NullabLe<T> tail2();
+    public abstract Nullable<T> tail2();
 
-    public abstract Pair<NullabLe<T>, Stream<T>> headAndTail();
+    public abstract Pair<Nullable<T>, Stream<T>> headAndTail();
 
     /**
      * 
@@ -1524,7 +1524,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * 
      * @return
      */
-    public abstract Pair<Stream<T>, NullabLe<T>> headAndTail2();
+    public abstract Pair<Stream<T>, Nullable<T>> headAndTail2();
 
     /**
      * A queue with size up to <code>n</code> will be maintained to filter out the last <code>n</code> elements. 
@@ -1557,10 +1557,10 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return an {@code Optional} describing the minimum element of this stream,
      * or an empty {@code Optional} if the stream is empty
      */
-    public abstract NullabLe<T> min(Comparator<? super T> comparator);
+    public abstract Nullable<T> min(Comparator<? super T> comparator);
 
     @SuppressWarnings("rawtypes")
-    public NullabLe<T> minBy(final Function<? super T, ? extends Comparable> keyExtractor) {
+    public Nullable<T> minBy(final Function<? super T, ? extends Comparable> keyExtractor) {
         final Comparator<? super T> comparator = Fn.comparingBy(keyExtractor);
 
         return min(comparator);
@@ -1580,10 +1580,10 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return an {@code Optional} describing the maximum element of this stream,
      * or an empty {@code Optional} if the stream is empty
      */
-    public abstract NullabLe<T> max(Comparator<? super T> comparator);
+    public abstract Nullable<T> max(Comparator<? super T> comparator);
 
     @SuppressWarnings("rawtypes")
-    public NullabLe<T> maxBy(final Function<? super T, ? extends Comparable> keyExtractor) {
+    public Nullable<T> maxBy(final Function<? super T, ? extends Comparable> keyExtractor) {
         final Comparator<? super T> comparator = Fn.comparingBy(keyExtractor);
 
         return max(comparator);
@@ -1593,9 +1593,9 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * 
      * @param k
      * @param comparator
-     * @return NullabLe.empty() if there is no element or count less than k, otherwise the kth largest element.
+     * @return Nullable.empty() if there is no element or count less than k, otherwise the kth largest element.
      */
-    public abstract NullabLe<T> kthLargest(int k, Comparator<? super T> comparator);
+    public abstract Nullable<T> kthLargest(int k, Comparator<? super T> comparator);
 
     public abstract int sumInt(ToIntFunction<? super T> mapper);
 
