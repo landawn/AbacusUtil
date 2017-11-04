@@ -306,8 +306,7 @@ Stream.of(objects).select(Client.class).forEach(Fn.println);
 
 * By Java 8
 ```java
-Stream<A> as = ...
-  as.forEach(a -> safeFoo(a));
+stream.forEach(a -> safeFoo(a));
   
 private void safeFoo(final A a) {
     try {
@@ -320,8 +319,7 @@ private void safeFoo(final A a) {
 
 * By Abacus-Util
 ```java
-Stream<A> as = ...
-  as.forEach(a -> Try.run(() -> a.foo()));
+stream.forEach(a -> Try.run(() -> a.foo()));
 ```
 
 ---
@@ -356,4 +354,180 @@ IntStream.range(1, arrayList.size())
 stream().slidingMap(Pair::of).forEach(Fn.println());
 ```
 
+---
+### [Most efficient way to get the last element of a stream](https://stackoverflow.com/questions/27547519/most-efficient-way-to-get-the-last-element-of-a-stream)
+
+* By Java 8
+```java
+T last = stream.reduce((a, b) -> b).orElse(null);
+```
+
+* By Abacus-Util
+```java
+T last = stream.last().orElse(null);
+```
+
+---
+### [Java 8 Stream with batch processing](https://stackoverflow.com/questions/30641383/java-8-stream-with-batch-processing)
+
+* By Java 8
+```java
+// No?
+```
+
+* By Abacus-Util
+```java
+stream.split(batchSize)...
+```
+
+---
+### [Merging two Map<String, Integer> with Java 8 Stream API](https://stackoverflow.com/questions/23038673/merging-two-mapstring-integer-with-java-8-stream-api)
+
+* By Java 8
+```java
+Map<String, Integer> m1 = ImmutableMap.of("a", 2, "b", 3);
+Map<String, Integer> m2 = ImmutableMap.of("a", 3, "c", 4);
+
+Map<String, Integer> mx = Stream.of(m1, m2)
+    .map(Map::entrySet)          // converts each map into an entry set
+    .flatMap(Collection::stream) // converts each set into an entry stream, then
+                                 // "concatenates" it in place of the original set
+    .collect(
+        Collectors.toMap(        // collects into a map
+            Map.Entry::getKey,   // where each entry is based
+            Map.Entry::getValue, // on the entries in the stream
+            Integer::max         // such that if a value already exist for
+                                 // a given key, the max of the old
+                                 // and new value is taken
+        )
+    );
+```
+
+* By Abacus-Util
+```java
+Stream.of(m1).append(m2.entrySet()).toMap(Fn.key(), Fn.value(), Integer::max);
+```
+
+---
+### [Take every nth element from a Java 8 stream](https://stackoverflow.com/questions/31602425/take-every-nth-element-from-a-java-8-stream)
+
+* By Java 8
+```java
+List<String> list = ...;
+return IntStream.range(0, list.size())
+    .filter(n -> n % 3 == 0)
+    .mapToObj(list::get)
+    .collect(Collectors.toList());
+```
+
+* By Abacus-Util
+```java
+Stream.of(list).step(3).toList();
+```
+
+---
+### [Java 8, Streams to find the duplicate elements](https://stackoverflow.com/questions/27677256/java-8-streams-to-find-the-duplicate-elements)
+
+* By Java 8
+```java
+Integer[] numbers = new Integer[] { 1, 2, 1, 3, 4, 4 };
+Set<Integer> allItems = new HashSet<>();
+Set<Integer> duplicates = Arrays.stream(numbers)
+        .filter(n -> !allItems.add(n)) //Set.add() returns false if the item was already in the set.
+        .collect(Collectors.toSet());
+```
+
+* By Abacus-Util
+```java
+Stream.of(numbers).groupByToEntry(Fn.identity(), Fn.counting()).filterByValue(occur -> occur > 1).keys().toList();
+// Or:
+Multiset.of(numbers).entryStream().filterByValue(occur -> occur > 1).keys().toList();
+```
+
+---
+### [How to map to multiple elements with Java 8 streams?](https://stackoverflow.com/questions/23620360/how-to-map-to-multiple-elements-with-java-8-streams)
+
+* By Java 8
+```java
+Collection<DataSet> convert(List<MultiDataPoint> multiDataPoints) {
+    Map<String, DataSet> result = new HashMap<>();
+    multiDataPoints.forEach(pt ->
+        pt.keyToData.forEach((key, value) ->
+            result.computeIfAbsent(
+                key, k -> new DataSet(k, new ArrayList<>()))
+            .dataPoints.add(new DataPoint(pt.timestamp, value))));
+    return result.values();
+}
+
+// Or:
+Collection<DataSet> convert(List<MultiDataPoint> multiDataPoints) {
+    return multiDataPoints.stream()
+        .flatMap(mdp -> mdp.keyToData.entrySet().stream().map(e ->
+            new Object() {
+                String key = e.getKey();
+                DataPoint dataPoint = new DataPoint(mdp.timestamp, e.getValue());
+            }))
+        .collect(
+            collectingAndThen(
+                groupingBy(t -> t.key, mapping(t -> t.dataPoint, toList())),
+                m -> m.entrySet().stream().map(e -> new DataSet(e.getKey(), e.getValue())).collect(toList())));
+}
+```
+
+* By Abacus-Util
+```java
+Stream.of(multiDataPoints)
+    .flatMap(mdp -> Stream.of(mdp.keyToData).map(e -> Pair.of(e.getKey(), new DataPoint(mdp.timestamp, e.getValue()))))
+    .groupBy(Entry::getKey, Entry::getValue).map(e -> new DataSet(e.getKey(), e.getValue())).toList();
+```
+
+---
+### [Simplest way to print an `IntStream` as a `String`](https://stackoverflow.com/questions/20266422/simplest-way-to-print-an-intstream-as-a-string)
+
+* By Java 8
+```java
+String result = "Hello world."
+  .codePoints()
+//.parallel()  // uncomment this line for large strings
+  .map(c -> c == ' ' ? ' ': '*')
+  .collect(StringBuilder::new,
+           StringBuilder::appendCodePoint, StringBuilder::append)
+  .toString();
+```
+
+* By Abacus-Util
+```java
+CharStream.of(result).map(c -> c == ' ' ? ' ': '*').println();
+```
+
+---
+### [java.util.stream with ResultSet](https://stackoverflow.com/questions/32209248/java-util-stream-with-resultset)https://stackoverflow.com/questions/32209248/java-util-stream-with-resultset
+
+* By Java 8
+```java
+// No?
+```
+
+* By Abacus-Util
+```java
+sqlExecutor.stream(sql, parameters);
+```
+
+---
+### [How to use streams to find pairs of elements from two lists or array multiplication](https://stackoverflow.com/questions/42220047/how-to-use-streams-to-find-pairs-of-elements-from-two-lists-or-array-multiplicat)
+
+* By Java 8
+```java
+int[] one = new int[]{1, 2, 3};
+int[] two = new int[]{3, 4};
+List<IntIntPair> list = new ArrayList<>();
+IntStream.of(one).forEach(i ->
+        IntStream.of(two).mapToObj(j -> PrimitiveTuples.pair(i, j)).forEach(list::add));
+System.out.println(list);
+```
+
+* By Abacus-Util
+```java
+Stream.of(1, 2, 3).cartesianProduct(Arrays.asList(3, 4)).forEach(Fn.println());
+```
 
