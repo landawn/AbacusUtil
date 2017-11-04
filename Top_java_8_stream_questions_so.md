@@ -32,19 +32,21 @@ targetLongList = sourceLongList.stream()
 targetLongList = Stream.of(sourceLongList).filter(l -> l > 100).toList();
 ```
 
-# [Custom thread pool in Java 8 parallel stream](https://stackoverflow.com/questions/21163108/custom-thread-pool-in-java-8-parallel-stream)
-By Java 8
+### [Custom thread pool in Java 8 parallel stream](https://stackoverflow.com/questions/21163108/custom-thread-pool-in-java-8-parallel-stream)
+
+* By Java 8
 ```java
 ???
 ```
 
-By Abacus-Util
+* By Abacus-Util
 ```java
 stream.parallel(threadNum);
 ```
 
-# [Is there a concise way to iterate over a stream with indices in Java 8?](https://stackoverflow.com/questions/18552005/is-there-a-concise-way-to-iterate-over-a-stream-with-indices-in-java-8)
-By Java 8
+### [Is there a concise way to iterate over a stream with indices in Java 8?](https://stackoverflow.com/questions/18552005/is-there-a-concise-way-to-iterate-over-a-stream-with-indices-in-java-8)
+
+* By Java 8
 ```java
 String[] names = {"Sam", "Pamela", "Dave", "Pascal", "Erik"};
 IntStream.range(0, names.length)
@@ -53,7 +55,7 @@ IntStream.range(0, names.length)
          .collect(Collectors.toList());
 ```
 
-By Abacus-Util
+* By Abacus-Util
 ```java
 String[] names = {"Sam", "Pamela", "Dave", "Pascal", "Erik"};
 IntStream.range(0, names.length)
@@ -64,3 +66,23 @@ IntStream.range(0, names.length)
 // Or: indexed for any type of collection/iterator.
 Stream.of(collection).indexed()...;
 ```
+### [How can I throw CHECKED exceptions from inside Java 8 streams? (Not wrapping it into unchecked exceptions)](https://stackoverflow.com/questions/27644361/how-can-i-throw-checked-exceptions-from-inside-java-8-streams-not-wrapping-it)
+
+* By Java 8
+```java
+Stream.of("java.lang.Object", "java.lang.Integer", "java.lang.String")
+              .map(className -> try {
+                            Class.forName(className))
+                        } catch (ClassNotFoundException ) {
+                            throw new RuntimeException(e);
+                        }
+              .collect(Collectors.toList());
+```
+
+* By Abacus-Util
+```java
+Stream.of("java.lang.Object", "java.lang.Integer", "java.lang.String")
+              .map(className -> Try.call(Class::forName))
+              .toList();
+```
+
