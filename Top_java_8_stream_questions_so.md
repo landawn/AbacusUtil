@@ -1,4 +1,3 @@
-
 ### [Java 8 `List<V>` into `Map<K, V>`](https://stackoverflow.com/questions/20363719/java-8-listv-into-mapk-v)
 
 * By Java 8
@@ -18,6 +17,7 @@ Map<String, Choice> result = Stream.of(choices).toMap(Choice::getName, Fn.identi
 Map<String, List<Choice>> result = Stream.of(choices).groupTo(Choice::getName);
 ```
 
+---
 ### [Retrieving a List from a java.util.stream.Stream in Java 8](https://stackoverflow.com/questions/14830313/retrieving-a-list-from-a-java-util-stream-stream-in-java-8)
 
 * By Java 8
@@ -32,6 +32,7 @@ targetLongList = sourceLongList.stream()
 targetLongList = Stream.of(sourceLongList).filter(l -> l > 100).toList();
 ```
 
+---
 ### [Custom thread pool in Java 8 parallel stream](https://stackoverflow.com/questions/21163108/custom-thread-pool-in-java-8-parallel-stream)
 
 * By Java 8
@@ -44,6 +45,7 @@ targetLongList = Stream.of(sourceLongList).filter(l -> l > 100).toList();
 stream.parallel(threadNum);
 ```
 
+---
 ### [Is there a concise way to iterate over a stream with indices in Java 8?](https://stackoverflow.com/questions/18552005/is-there-a-concise-way-to-iterate-over-a-stream-with-indices-in-java-8)
 
 * By Java 8
@@ -66,6 +68,8 @@ IntStream.range(0, names.length)
 // Or: indexed for any type of collection/iterator.
 Stream.of(collection).indexed()...;
 ```
+
+---
 ### [How can I throw CHECKED exceptions from inside Java 8 streams? (Not wrapping it into unchecked exceptions)](https://stackoverflow.com/questions/27644361/how-can-i-throw-checked-exceptions-from-inside-java-8-streams-not-wrapping-it)
 
 * By Java 8
@@ -86,6 +90,7 @@ Stream.of("java.lang.Object", "java.lang.Integer", "java.lang.String")
               .toList();
 ```
 
+---
 ### [Using Java 8's Optional with Stream::flatMap](https://stackoverflow.com/questions/22725537/using-java-8s-optional-with-streamflatmap)
 
 * By Java 8
@@ -106,6 +111,7 @@ Optional<Other> result =
           .first();
 ```
 
+---
 ### [Limit a stream by a predicate](https://stackoverflow.com/questions/20746429/limit-a-stream-by-a-predicate)
 
 * By Java 8
@@ -125,6 +131,7 @@ IntStream
     .forEach(Fn.println);
 ```
 
+---
 ### [Java 8 NullPointerException in Collectors.toMap](https://stackoverflow.com/questions/24630963/java-8-nullpointerexception-in-collectors-tomap)
 
 * By Java 8
