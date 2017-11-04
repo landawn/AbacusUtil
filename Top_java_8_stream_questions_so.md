@@ -246,6 +246,7 @@ users.stream().filter(user -> user.getId() == 1).limit(2)
 ```
 
 * By Abacus-Util
+
 [Kotlin vs Java 8 on Collection](./Java_Kotlin.md)
 
 
@@ -263,4 +264,41 @@ String[] a = {"a", "b", "c"};
 String[] b = {"1", "2", "3"};
 Stream.zip(a, b, Pair::of)...;
 ```
+
+---
+### [Ignore duplicates when producing map using streams](https://stackoverflow.com/questions/32312876/ignore-duplicates-when-producing-map-using-streams)
+
+* By Java 8
+```java
+Map<String, String> phoneBook = 
+    people.stream()
+          .collect(Collectors.toMap(
+             Person::getName,
+             Person::getAddress,
+             (address1, address2) -> {
+                 System.out.println("duplicate key found!");
+                 return address1;
+             }
+          ));
+```
+
+* By Abacus-Util
+```java
+Map<String, String> phoneBook = people.stream().toMap(Person::getName, Person::getAddress, Fn.ignoringMerger()); // Fn.replacingMerger()
+```
+
+---
+### [Is it possible to cast a Stream in Java 8?](https://stackoverflow.com/questions/22511750/is-it-possible-to-cast-a-stream-in-java-8)
+
+* By Java 8
+```java
+Stream.of(objects).filter(c -> c instanceof Client)
+    .map(c -> ((Client) c).getID()).forEach(System.out::println);
+```
+
+* By Abacus-Util
+```java
+Stream.of(objects).select(Client.class).forEach(Fn.println);
+```
+
 
