@@ -86,3 +86,61 @@ Stream.of("java.lang.Object", "java.lang.Integer", "java.lang.String")
               .toList();
 ```
 
+### [Using Java 8's Optional with Stream::flatMap](https://stackoverflow.com/questions/22725537/using-java-8s-optional-with-streamflatmap)
+
+* By Java 8
+```java
+Optional<Other> result =
+    things.stream()
+          .map(this::resolve)
+          .flatMap(o -> o.isPresent() ? Stream.of(o.get()) : Stream.empty())
+          .findFirst();
+```
+
+* By Abacus-Util
+```java
+Optional<Other> result =
+    things.stream()
+          .map(this::resolve)
+          .flatMap(Optional::stream)
+          .first();
+```
+
+### [Limit a stream by a predicate](https://stackoverflow.com/questions/20746429/limit-a-stream-by-a-predicate)
+
+* By Java 8
+```java
+// No easy way until Java 9
+IntStream
+    .iterate(1, n -> n + 1)
+    .takeWhile(n -> n < 10)
+    .forEach(System.out::println);
+```
+
+* By Abacus-Util
+```java
+IntStream
+    .iterate(1, n -> n + 1)
+    .takeWhile(n -> n < 10)
+    .forEach(Fn.println);
+```
+
+### [Java 8 NullPointerException in Collectors.toMap](https://stackoverflow.com/questions/24630963/java-8-nullpointerexception-in-collectors-tomap)
+
+* By Java 8
+```java
+List<Answer> answerList = new ArrayList<>();
+answerList.add(new Answer(1, true));
+answerList.add(new Answer(2, true));
+answerList.add(new Answer(3, null));
+Map<Integer, Boolean> answerMap = answerList.stream()
+          .collect(Collectors.toMap(Answer::getId, Answer::getAnswer)); // throw NullPointerException
+```
+
+* By Abacus-Util
+```java
+// Works no problem
+Map<Integer, Boolean> answerMap = answerList.stream().toMap(Answer::getId, Answer::getAnswer);
+```
+
+
