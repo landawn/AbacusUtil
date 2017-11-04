@@ -194,33 +194,7 @@ More see: [ParserFactory](https://static.javadoc.io/com.landawn/abacus-util-all/
 
 [When to use parallel streams](http://gee.cs.oswego.edu/dl/html/StreamParallelGuidance.html)
 
-```java
-
-List<String> myList = N.asList("a1", "a2", "b1", "c2", "c1");
-Stream.of(myList) // very similiar to Java 8 myList.stream()
-      .filter(s -> s.startsWith("c"))
-      .map(N::toUpperCase)
-      .sorted()
-      .forEach(N::println);
-// C1
-// C2
-
-// Group by person by name and sorted by name
-// By Java 8
-Map<String, Person> = persons.stream()
-                             .collect(Collectors.groupingBy(Person::getName))
-                             .enrySet()
-                             .stream()
-                             .sorted((a, b) -> a.getKey().compareTo(b.getKey())) // compare by name;
-                             .collect(Collectors.toMap(e -> e.getKey(), e.getValue()));
-
-// AbacusUtil
-Map<String, Person> = Stream.of(persons)
-                             .groupByToEntry(Person::getName)
-                             .sortedBy(Fn.key()) // compare by name;
-                             .toMap();
-
-```
+[Top Java 8 stream questions on stackoverflow](./Top_java_8_stream_questions_so.md.md)
 
 ### The Best [SQLBuilder][]/[SQLExecutor][]/[Mapper] Ever
 A simple CRUD(create/read/update/delete) sample by SQLExecutor
