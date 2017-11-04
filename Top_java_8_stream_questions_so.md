@@ -10,7 +10,7 @@ Map<String, Choice> result = choices.stream()
 Map<String, List<Choice>> result = choices.stream()
                                           .collect(Collectors.groupingBy(Choice::getName));
 ```
-* By Abacus
+* By Abacus-Util
 ```java
 Map<String, Choice> result = Stream.of(choices).toMap(Choice::getName, Fn.identity());
 
@@ -27,7 +27,40 @@ targetLongList = sourceLongList.stream()
                                .collect(Collectors.toList());
 ```
 
-* By Abacus
+* By Abacus-Util
 ```java
 targetLongList = Stream.of(sourceLongList).filter(l -> l > 100).toList();
+```
+
+# [Custom thread pool in Java 8 parallel stream](https://stackoverflow.com/questions/21163108/custom-thread-pool-in-java-8-parallel-stream)
+By Java 8
+```java
+???
+```
+
+By Abacus-Util
+```java
+stream.parallel(threadNum);
+```
+
+# [Is there a concise way to iterate over a stream with indices in Java 8?](https://stackoverflow.com/questions/18552005/is-there-a-concise-way-to-iterate-over-a-stream-with-indices-in-java-8)
+By Java 8
+```java
+String[] names = {"Sam", "Pamela", "Dave", "Pascal", "Erik"};
+IntStream.range(0, names.length)
+         .filter(i -> names[i].length() <= i)
+         .mapToObj(i -> names[i])
+         .collect(Collectors.toList());
+```
+
+By Abacus-Util
+```java
+String[] names = {"Sam", "Pamela", "Dave", "Pascal", "Erik"};
+IntStream.range(0, names.length)
+         .filter(i -> names[i].length() <= i)
+         .mapToObj(i -> names[i])
+         .toList();
+
+// Or: indexed for any type of collection/iterator.
+Stream.of(collection).indexed()...;
 ```
