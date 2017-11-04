@@ -301,4 +301,40 @@ Stream.of(objects).filter(c -> c instanceof Client)
 Stream.of(objects).select(Client.class).forEach(Fn.println);
 ```
 
+---
+### [Java 8: How do I work with exception throwing methods in streams?](https://stackoverflow.com/questions/23548589/java-8-how-do-i-work-with-exception-throwing-methods-in-streams)
+
+* By Java 8
+```java
+Stream<A> as = ...
+  as.forEach(a -> safeFoo(a));
+  
+private void safeFoo(final A a) {
+    try {
+        a.foo();
+    } catch (Exception ex) {
+        throw new RuntimeException(ex);
+    }
+}
+```
+
+* By Abacus-Util
+```java
+Stream<A> as = ...
+  as.forEach(a -> Try.run(() -> a.foo()));
+```
+
+---
+### [Java 8 stream reverse order](https://stackoverflow.com/questions/24010109/java-8-stream-reverse-order/24011264#24011264)
+
+* By Java 8
+```java
+No?
+```
+
+* By Abacus-Util
+```java
+stream.reversed()... // Note: All elements will be loaded into memory.
+```
+
 
