@@ -194,7 +194,7 @@ More see: [ParserFactory](https://static.javadoc.io/com.landawn/abacus-util-all/
 
 [When to use parallel streams](http://gee.cs.oswego.edu/dl/html/StreamParallelGuidance.html)
 
-[Top Java 8 stream questions on stackoverflow](./Top_java_8_stream_questions_so.md.md)
+[Top Java 8 stream questions on stackoverflow](./Top_java_8_stream_questions_so.md)
 
 ### The Best [SQLBuilder][]/[SQLExecutor][]/[Mapper] Ever
 A simple CRUD(create/read/update/delete) sample by SQLExecutor
