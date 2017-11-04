@@ -198,7 +198,7 @@ Map<String, Integer> y = Stream.of(x).toMap(e -> e.getKey(), e -> Integer.parseI
 
 * By Abacus-Util
 
-Yes, with he most beautiful design: 
+Yes, with the most beautiful design: 
 [Pair](https://static.javadoc.io/com.landawn/abacus-util-all/1.0.6/com/landawn/abacus/util/Pair.html), [Triple](https://static.javadoc.io/com.landawn/abacus-util-all/1.0.6/com/landawn/abacus/util/Triple.html), [Tuple](https://static.javadoc.io/com.landawn/abacus-util-all/1.0.6/com/landawn/abacus/util/Tuple.html)
 
 
@@ -235,5 +235,32 @@ public static <T> Collector<T, ?, T> singletonCollector() {
 users.stream().filter(user -> user.getId() == 1).limit(2)
       .toListAndThen(l -> Optional.ofNulable(l.size() == 1 ? l.get(0) : null))
       .orElseThrow(IllegalStateException::new)
+```
+
+---
+### [What Java 8 Stream.collect equivalents are available in the standard Kotlin library?](https://stackoverflow.com/questions/34642254/what-java-8-stream-collect-equivalents-are-available-in-the-standard-kotlin-libr)
+
+* By Java 8
+```java
+// Answers are included in the above link.
+```
+
+* By Abacus-Util
+[Kotlin vs Java 8 on Collection](./Java_Kotlin.md)
+
+
+---
+### [Zipping streams using JDK8 with lambda (java.util.stream.Streams.zip)](https://stackoverflow.com/questions/17640754/zipping-streams-using-jdk8-with-lambda-java-util-stream-streams-zip)
+
+* By Java 8
+```java
+// No?
+```
+
+* By Abacus-Util
+```java
+String[] a = {"a", "b", "c"};
+String[] b = {"1", "2", "3"};
+Stream.zip(a, b, Pair::of)...;
 ```
 
