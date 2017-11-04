@@ -335,6 +335,25 @@ No?
 * By Abacus-Util
 ```java
 stream.reversed()... // Note: All elements will be loaded into memory.
+IntStream.of(1, 5, 3).reverseSorted()...
+```
+
+---
+### [Collect successive pairs from a stream](https://stackoverflow.com/questions/20470010/collect-successive-pairs-from-a-stream)
+
+* By Java 8
+```java
+// For Array/List only.
+IntStream.range(1, arrayList.size())
+             .mapToObj(i -> new Pair(arrayList.get(i-1), arrayList.get(i)))
+             .forEach(System.out::println);
+// There is no general solution Stream created from iterator/collection..
+```
+
+* By Abacus-Util
+```java
+// For any stream created from iterator/Collection/Array/List...
+stream().slidingMap(Pair::of).forEach(Fn.println());
 ```
 
 
