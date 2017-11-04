@@ -185,8 +185,55 @@ Map<String, Integer> y =
 
 * By Abacus-Util
 ```java
-Map<String, String> x;
 Map<String, Integer> y = Stream.of(x).toMap(e -> e.getKey(), e -> Integer.parseInt(e.getValue()));
 ```
 
+---
+### [Does Java SE 8 have Pairs or Tuples?](https://stackoverflow.com/questions/24328679/does-java-se-8-have-pairs-or-tuples)
+
+* By Java 8
+```java
+// No
+```
+
+* By Abacus-Util
+
+Yes, with he most beautiful design: 
+[Pair](https://static.javadoc.io/com.landawn/abacus-util-all/1.0.6/com/landawn/abacus/util/Pair.html), [Triple](https://static.javadoc.io/com.landawn/abacus-util-all/1.0.6/com/landawn/abacus/util/Triple.html), [Tuple](https://static.javadoc.io/com.landawn/abacus-util-all/1.0.6/com/landawn/abacus/util/Tuple.html)
+
+
+---
+### [Filter Java Stream to 1 and only 1 element](https://stackoverflow.com/questions/22694884/filter-java-stream-to-1-and-only-1-element)
+
+* By Java 8
+```java
+List<User> resultUserList = users.stream()
+        .filter(user -> user.getId() == 1)
+        .limit(2)
+        .collect(Collectors.toList());
+if (resultUserList.size() != 1) {
+    throw new IllegalStateException();
+}
+User resultUser = resultUserList.get(0);
+
+// Or by singletonCollector()
+public static <T> Collector<T, ?, T> singletonCollector() {
+    return Collectors.collectingAndThen(
+            Collectors.toList(),
+            list -> {
+                if (list.size() != 1) {
+                    throw new IllegalStateException();
+                }
+                return list.get(0);
+            }
+    );
+}
+```
+
+* By Abacus-Util
+```java
+users.stream().filter(user -> user.getId() == 1).limit(2)
+      .toListAndThen(l -> Optional.ofNulable(l.size() == 1 ? l.get(0) : null))
+      .orElseThrow(IllegalStateException::new)
+```
 
