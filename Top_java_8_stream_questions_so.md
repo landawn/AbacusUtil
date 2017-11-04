@@ -1,0 +1,12 @@
+
+### [Java 8 `List<V>` into `Map<K, V>`](https://stackoverflow.com/questions/20363719/java-8-listv-into-mapk-v)
+
+* By Java 8
+```java
+Map<String, Choice> result = choices.stream()
+                                    .collect(Collectors.toMap(Choice::getName, Function.identity()));
+```
+* By Abacus
+```java
+Map<String, Choice> result = Stream.of(choices).toMap(Choice::getName, Fn.identity());
+```
