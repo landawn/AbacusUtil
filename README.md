@@ -196,6 +196,8 @@ More see: [ParserFactory](https://static.javadoc.io/com.landawn/abacus-util-all/
 
 [Top Java 8 stream questions on stackoverflow](./Top_java_8_stream_questions_so.md)
 
+[Kotlin vs Java 8 on Collection](./Java_Kotlin.md)
+
 ### The Best [SQLBuilder][]/[SQLExecutor][]/[Mapper] Ever
 A simple CRUD(create/read/update/delete) sample by SQLExecutor
 
@@ -249,8 +251,6 @@ collExecutor.delete(dbAccount.getId());
 // check
 assertFalse(collExecutor.exists(dbAccount.getId()));
 ```
-
-### [Kotlin vs Java 8 on Collection](./Java_Kotlin.md)
 
 
 [IOUtil]: https://static.javadoc.io/com.landawn/abacus-util-all/1.0.6/com/landawn/abacus/util/IOUtil.html
