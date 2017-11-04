@@ -140,6 +140,7 @@ List<Answer> answerList = new ArrayList<>();
 answerList.add(new Answer(1, true));
 answerList.add(new Answer(2, true));
 answerList.add(new Answer(3, null));
+
 Map<Integer, Boolean> answerMap = answerList.stream()
           .collect(Collectors.toMap(Answer::getId, Answer::getAnswer)); // throw NullPointerException
 ```
@@ -148,6 +149,44 @@ Map<Integer, Boolean> answerMap = answerList.stream()
 ```java
 // Works no problem
 Map<Integer, Boolean> answerMap = answerList.stream().toMap(Answer::getId, Answer::getAnswer);
+```
+
+---
+### [Adding two Java 8 streams, or an extra element to a stream](https://stackoverflow.com/questions/22740464/adding-two-java-8-streams-or-an-extra-element-to-a-stream)
+
+* By Java 8
+```java
+Stream stream = Stream.concat(
+                       Stream.concat(
+                              stream1.filter(x -> x!=0), stream2)
+                              .filter(x -> x!=1),
+                                  Stream.of(element))
+                                  .filter(x -> x!=2);
+```
+
+* By Abacus-Util
+```java
+stream1.append(stream2).append(element);
+```
+
+---
+### [Java8: HashMap<X, Y> to HashMap<X, Z> using Stream / Map-Reduce / Collector](https://stackoverflow.com/questions/25903137/java8-hashmapx-y-to-hashmapx-z-using-stream-map-reduce-collector)
+
+* By Java 8
+```java
+Map<String, String> x;
+Map<String, Integer> y =
+    x.entrySet().stream()
+        .collect(Collectors.toMap(
+            e -> e.getKey(),
+            e -> Integer.parseInt(e.getValue())
+        ));
+```
+
+* By Abacus-Util
+```java
+Map<String, String> x;
+Map<String, Integer> y = Stream.of(x).toMap(e -> e.getKey(), e -> Integer.parseInt(e.getValue()));
 ```
 
 
