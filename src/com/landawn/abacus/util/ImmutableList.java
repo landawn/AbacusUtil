@@ -80,7 +80,7 @@ public final class ImmutableList<E> extends ImmutableCollection<E> implements Li
         return new ImmutableList<>(Arrays.asList(N.clone(a)));
     }
 
-    public static <E> ImmutableList<E> copyOf(List<? extends E> list) {
+    public static <E> ImmutableList<E> copyOf(Collection<? extends E> list) {
         if (N.isNullOrEmpty(list)) {
             return empty();
         }

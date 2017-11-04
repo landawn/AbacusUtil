@@ -4,13 +4,11 @@
 
 1*, Refactoring BiMap.put(key, value) and add forcePut.
 
-2*, Rename is/not/checkNullOrEmptyOrBlank to checkNullOrBlank.
+2*, Remove IntList/ByteLits/../.empty().
 
-3*, Remove IntList/ByteLits/../.empty().
+3*, Rename NullabLe to Nullable.
 
-4*, Rename NullabLe to Nullable.
-
-5, Improvements and bug fix.
+4, Improvements and bug fix.
 
 
 ﻿========Changes in 1.0.5 =========================================================================

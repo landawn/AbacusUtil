@@ -9322,7 +9322,8 @@ public final class N {
         return (entityId == null) || (entityId.isEmpty());
     }
 
-    public static boolean isNullOrBlank(final CharSequence s) {
+    // DON'T change 'OrEmptyOrBlank' to 'OrBlank' because of the occurring order in the auto-completed context menu. 
+    public static boolean isNullOrEmptyOrBlank(final CharSequence s) {
         if (N.isNullOrEmpty(s)) {
             return true;
         }
@@ -9413,8 +9414,9 @@ public final class N {
         return (entityId != null) && (!entityId.isEmpty());
     }
 
-    public static boolean notNullOrBlank(final CharSequence s) {
-        return !N.isNullOrBlank(s);
+    // DON'T change 'OrEmptyOrBlank' to 'OrBlank' because of the occurring order in the auto-completed context menu.
+    public static boolean notNullOrEmptyOrBlank(final CharSequence s) {
+        return !N.isNullOrEmptyOrBlank(s);
     }
 
     /**
@@ -9811,8 +9813,9 @@ public final class N {
      * @return the input parameter
      * @throws IllegalArgumentException if the specified parameter is null or empty.
      */
-    public static <T extends CharSequence> T checkNullOrBlank(final T parameter, final String msg) {
-        if (N.isNullOrBlank(parameter)) {
+    // DON'T change 'OrEmptyOrBlank' to 'OrBlank' because of the occurring order in the auto-completed context menu.
+    public static <T extends CharSequence> T checkNullOrEmptyOrBlank(final T parameter, final String msg) {
+        if (N.isNullOrEmptyOrBlank(parameter)) {
             if (isErrorMsg(msg)) {
                 throw new IllegalArgumentException(msg);
             } else {

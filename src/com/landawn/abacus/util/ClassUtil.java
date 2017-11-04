@@ -492,10 +492,10 @@ public final class ClassUtil {
      *
      * @param clsName
      * @return
-     * @throws AbacusException if class not found.
+     * @throws IllegalArgumentException if class not found.
      */
     @SuppressWarnings("unchecked")
-    public static <T> Class<T> forClass(final String clsName) throws AbacusException {
+    public static <T> Class<T> forClass(final String clsName) throws IllegalArgumentException {
         return (Class<T>) forClass(clsName, true);
     }
 
@@ -504,10 +504,10 @@ public final class ClassUtil {
      *
      * @param clsName
      * @return
-     * @throws AbacusException if class not found.
+     * @throws IllegalArgumentException if class not found.
      */
     @SuppressWarnings("unchecked")
-    static <T> Class<T> forClass(final String clsName, final boolean cacheResult) throws AbacusException {
+    static <T> Class<T> forClass(final String clsName, final boolean cacheResult) throws IllegalArgumentException {
         Class<?> cls = clsNamePool.get(clsName);
 
         if (cls == null) {
@@ -567,7 +567,7 @@ public final class ClassUtil {
                                         final Type<?> componentType = N.typeOf(componentTypeName);
 
                                         if (componentType.getTypeClass().equals(Object.class) && !componentType.getName().equals(ObjectType.OBJECT)) {
-                                            throw new AbacusException("No Class found by name: " + clsName);
+                                            throw new IllegalArgumentException("No Class found by name: " + clsName);
                                         }
 
                                         cls = Class.forName(prefixOfArray + "L" + componentType.getTypeClass().getCanonicalName() + ";");
@@ -598,7 +598,7 @@ public final class ClassUtil {
             }
 
             if (cls == null) {
-                throw new AbacusException("No class found by name: " + clsName);
+                throw new IllegalArgumentException("No class found by name: " + clsName);
             }
 
             if (cacheResult) {
@@ -905,7 +905,7 @@ public final class ClassUtil {
         List<URL> resourceList = getResources(pkgName);
 
         if (N.isNullOrEmpty(resourceList)) {
-            throw new AbacusException("No resource found by package " + pkgName);
+            throw new IllegalArgumentException("No resource found by package " + pkgName);
         }
 
         List<Class<?>> classes = new ArrayList<Class<?>>();
@@ -1557,7 +1557,7 @@ public final class ClassUtil {
 
     static boolean isPropName(final Class<?> cls, String inputPropName, final String propNameByMethod) {
         if (inputPropName.length() > 128) {
-            throw new AbacusException("The property name execeed 128: " + inputPropName);
+            throw new IllegalArgumentException("The property name execeed 128: " + inputPropName);
         }
 
         inputPropName = inputPropName.trim();
@@ -1696,7 +1696,7 @@ public final class ClassUtil {
 
             try {
                 propSetMethod.invoke(entity, propValue);
-            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e2) {
+            } catch (IllegalAccessException | InvocationTargetException e2) {
                 throw N.toRuntimeException(e);
             }
         }
@@ -1715,7 +1715,7 @@ public final class ClassUtil {
         } else if (rt instanceof Map) {
             ((Map<?, ?>) rt).putAll((Map) propValue);
         } else {
-            throw new AbacusException("Failed to set property value by getter method '" + propGetMethod.getName() + "'");
+            throw new IllegalArgumentException("Failed to set property value by getter method '" + propGetMethod.getName() + "'");
         }
     }
 
@@ -1738,7 +1738,7 @@ public final class ClassUtil {
      * @param propName
      * @param ignoreUnknownProperty
      * @return the property value or null if the property doesn't belong to specified entity.
-     * @throws AbacusException if the specified property can't be gotten and ignoreUnknownProperty is false.
+     * @throws IllegalArgumentException if the specified property can't be gotten and ignoreUnknownProperty is false.
      */
     public static <T> T getPropValue(final Object entity, final String propName, final boolean ignoreUnknownProperty) {
         Method getMethod = getPropGetMethod(entity.getClass(), propName);
@@ -1785,7 +1785,8 @@ public final class ClassUtil {
                 if (ignoreUnknownProperty) {
                     return null;
                 } else {
-                    throw new AbacusException("No property method found with property name: " + propName + " in class " + ClassUtil.getCanonicalClassName(cls));
+                    throw new IllegalArgumentException(
+                            "No property method found with property name: " + propName + " in class " + ClassUtil.getCanonicalClassName(cls));
                 }
             } else {
                 Object propEntity = entity;
@@ -1824,7 +1825,7 @@ public final class ClassUtil {
      * @param propValue
      * @param ignoreUnknownProperty
      * @return true if the property value has been set.
-     * @throws AbacusException if the specified property can't be set and ignoreUnknownProperty is false.
+     * @throws IllegalArgumentException if the specified property can't be set and ignoreUnknownProperty is false.
      */
     public static boolean setPropValue(final Object entity, final String propName, final Object propValue, final boolean ignoreUnknownProperty) {
         Method setMethod = getPropSetMethod(entity.getClass(), propName);
@@ -1892,7 +1893,7 @@ public final class ClassUtil {
                     if (ignoreUnknownProperty) {
                         return false;
                     } else {
-                        throw new AbacusException("No property method found with property name: " + propName + " in class " + cls.getCanonicalName());
+                        throw new IllegalArgumentException("No property method found with property name: " + propName + " in class " + cls.getCanonicalName());
                     }
                 } else {
                     Object propEntity = entity;
