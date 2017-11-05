@@ -116,7 +116,7 @@ Optional<Other> result =
 
 * By Java 8
 ```java
-// No easy way until Java 9
+??? easy way until Java 9
 IntStream
     .iterate(1, n -> n + 1)
     .takeWhile(n -> n < 10)
@@ -193,7 +193,7 @@ Map<String, Integer> y = Stream.of(x).toMap(e -> e.getKey(), e -> Integer.parseI
 
 * By Java 8
 ```java
-// No
+???
 ```
 
 * By Abacus-Util
@@ -255,7 +255,7 @@ users.stream().filter(user -> user.getId() == 1).limit(2)
 
 * By Java 8
 ```java
-// No?
+???
 ```
 
 * By Abacus-Util
@@ -332,7 +332,7 @@ No?
 
 * By Abacus-Util
 ```java
-stream.reversed()... // Note: All elements will be loaded into memory.
+stream.reversed()... ???te: All elements will be loaded into memory.
 IntStream.of(1, 5, 3).reverseSorted()...
 ```
 
@@ -372,7 +372,7 @@ T last = stream.last().orElse(null);
 
 * By Java 8
 ```java
-// No?
+???
 ```
 
 * By Abacus-Util
@@ -501,11 +501,11 @@ CharStream.of(result).map(c -> c == ' ' ? ' ': '*').println();
 ```
 
 ---
-### [java.util.stream with ResultSet](https://stackoverflow.com/questions/32209248/java-util-stream-with-resultset)https://stackoverflow.com/questions/32209248/java-util-stream-with-resultset
+### [java.util.stream with ResultSet](https://stackoverflow.com/questions/32209248/java-util-stream-with-resultset)
 
 * By Java 8
 ```java
-// No?
+???
 ```
 
 * By Abacus-Util
