@@ -510,6 +510,10 @@ CharStream.of(result).map(c -> c == ' ' ? ' ': '*').println();
 
 * By Abacus-Util
 ```java
+Stream.of(resultSet)...
+// Or:
+Stream.of(entityClass, resultSet)...
+//Or:
 sqlExecutor.stream(sql, parameters);
 ```
 
