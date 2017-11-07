@@ -104,7 +104,7 @@ public final class Nullable<T> extends Any<T> {
      * @param action
      * @return
      */
-    public static <R> Nullable<R> tryOrEmpty(final Try.Callable<R, ? extends Throwable> action) {
+    public static <R> Nullable<R> tryOrEmpty(final Try.Callable<R, ? extends Exception> action) {
         try {
             return Nullable.of(action.call());
         } catch (Throwable e) {

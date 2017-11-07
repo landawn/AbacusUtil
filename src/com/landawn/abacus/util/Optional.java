@@ -141,7 +141,7 @@ public final class Optional<T> {
      * @param action
      * @return
      */
-    public static <R> Optional<R> tryOrEmpty(final Try.Callable<R, ? extends Throwable> action) {
+    public static <R> Optional<R> tryOrEmpty(final Try.Callable<R, ? extends Exception> action) {
         try {
             return Optional.of(action.call());
         } catch (Throwable e) {

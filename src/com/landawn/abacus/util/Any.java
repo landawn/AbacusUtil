@@ -68,7 +68,7 @@ public abstract class Any<T> {
      * @param action
      * @return
      */
-    public static <R> Any<R> tryOrEmpty(final Try.Callable<R, ? extends Throwable> action) {
+    public static <R> Any<R> tryOrEmpty(final Try.Callable<R, ? extends Exception> action) {
         return Nullable.tryOrEmpty(action);
     }
 
@@ -403,5 +403,13 @@ public abstract class Any<T> {
      */
     public Optional<T> toOptional() {
         return value == null ? Optional.<T> empty() : Optional.of(value);
+    }
+
+    /**
+     * 
+     * @return <code>java.util.Optional.empty()</code> if the value is not present or {@code null}.
+     */
+    public java.util.Optional<T> toJdkOptional() {
+        return value == null ? java.util.Optional.<T> empty() : java.util.Optional.of(value);
     }
 }
