@@ -57,9 +57,9 @@ public abstract class Observer<T> {
         }
     };
 
-    protected static final Consumer<Throwable> ON_ERROR_MISSING = new Consumer<Throwable>() {
+    protected static final Consumer<Exception> ON_ERROR_MISSING = new Consumer<Exception>() {
         @Override
-        public void accept(Throwable t) {
+        public void accept(Exception t) {
             throw new RuntimeException(t);
         }
     };
@@ -249,7 +249,7 @@ public abstract class Observer<T> {
                     }, delay, unit);
 
                     lastScheduledTime = N.currentMillis();
-                } catch (Throwable e) {
+                } catch (Exception e) {
                     holder.setValue(N.NULL_MASK);
 
                     if (downDispatcher != null) {
@@ -318,7 +318,7 @@ public abstract class Observer<T> {
                             }, intervalDuration, unit);
 
                             lastScheduledTime = now;
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             holder.setValue(N.NULL_MASK);
 
                             if (downDispatcher != null) {
@@ -389,7 +389,7 @@ public abstract class Observer<T> {
                             }, intervalDuration, unit);
 
                             lastScheduledTime = now;
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             holder.setValue(N.NULL_MASK);
 
                             if (downDispatcher != null) {
@@ -759,11 +759,11 @@ public abstract class Observer<T> {
         observe(action, ON_ERROR_MISSING);
     }
 
-    public void observe(final Consumer<? super T> action, final Consumer<? super Throwable> onError) {
+    public void observe(final Consumer<? super T> action, final Consumer<? super Exception> onError) {
         observe(action, onError, EMPTY_ACTION);
     }
 
-    public abstract void observe(final Consumer<? super T> action, final Consumer<? super Throwable> onError, final Runnable onComplete);
+    public abstract void observe(final Consumer<? super T> action, final Consumer<? super Exception> onError, final Runnable onComplete);
 
     void cancelScheduledFutures() {
         final long startTime = N.currentMillis();
@@ -805,10 +805,10 @@ public abstract class Observer<T> {
         }
 
         /**
-         * Signal a Throwable exception.
-         * @param error the Throwable to signal, not null
+         * Signal a Exception exception.
+         * @param error the Exception to signal, not null
          */
-        public void onError(@NonNull final Throwable error) {
+        public void onError(@NonNull final Exception error) {
             if (downDispatcher != null) {
                 downDispatcher.onError(error);
             }
@@ -835,16 +835,16 @@ public abstract class Observer<T> {
     }
 
     protected static abstract class DispatcherBase<T> extends Dispatcher<T> {
-        private final Consumer<? super Throwable> onError;
+        private final Consumer<? super Exception> onError;
         private final Runnable onComplete;
 
-        protected DispatcherBase(final Consumer<? super Throwable> onError, final Runnable onComplete) {
+        protected DispatcherBase(final Consumer<? super Exception> onError, final Runnable onComplete) {
             this.onError = onError;
             this.onComplete = onComplete;
         }
 
         @Override
-        public void onError(final Throwable error) {
+        public void onError(final Exception error) {
             onError.accept(error);
         }
 
@@ -868,7 +868,7 @@ public abstract class Observer<T> {
         }
 
         @Override
-        public void observe(final Consumer<? super T> action, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+        public void observe(final Consumer<? super T> action, final Consumer<? super Exception> onError, final Runnable onComplete) {
             N.requireNonNull(action, "action");
 
             dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
@@ -896,7 +896,7 @@ public abstract class Observer<T> {
                         isOnError = false;
 
                         onComplete.run();
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         if (isOnError) {
                             onError.accept(e);
                         } else {
@@ -918,7 +918,7 @@ public abstract class Observer<T> {
         }
 
         @Override
-        public void observe(final Consumer<? super T> action, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+        public void observe(final Consumer<? super T> action, final Consumer<? super Exception> onError, final Runnable onComplete) {
             N.requireNonNull(action, "action");
 
             dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
@@ -945,7 +945,7 @@ public abstract class Observer<T> {
                         isOnError = false;
 
                         onComplete.run();
-                    } catch (Throwable e) {
+                    } catch (Exception e) {
                         if (isOnError) {
                             onError.accept(e);
                         } else {
@@ -970,7 +970,7 @@ public abstract class Observer<T> {
         }
 
         @Override
-        public void observe(final Consumer<? super T> action, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+        public void observe(final Consumer<? super T> action, final Consumer<? super Exception> onError, final Runnable onComplete) {
             N.requireNonNull(action, "action");
 
             dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
@@ -1008,7 +1008,7 @@ public abstract class Observer<T> {
         }
 
         @Override
-        public void observe(final Consumer<? super T> action, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+        public void observe(final Consumer<? super T> action, final Consumer<? super Exception> onError, final Runnable onComplete) {
             N.requireNonNull(action, "action");
 
             dispatcher.append(new DispatcherBase<Object>(onError, onComplete) {
@@ -1036,7 +1036,7 @@ public abstract class Observer<T> {
                     } else {
                         try {
                             dispatcher.onNext(val++);
-                        } catch (Throwable e) {
+                        } catch (Exception e) {
                             try {
                                 future.cancel(true);
                             } finally {

@@ -183,7 +183,7 @@ public final class Futures {
                     return zipFunctionForGet.apply(cfs);
                 } catch (InterruptedException | ExecutionException e) {
                     throw e;
-                } catch (Throwable e) {
+                } catch (Exception e) {
                     throw N.toRuntimeException(e);
                 }
             }
@@ -197,7 +197,7 @@ public final class Futures {
                     return zipFunctionTimeoutGet.apply(t);
                 } catch (InterruptedException | ExecutionException | TimeoutException e) {
                     throw e;
-                } catch (Throwable e) {
+                } catch (Exception e) {
                     throw N.toRuntimeException(e);
                 }
             }
@@ -500,8 +500,8 @@ public final class Futures {
 
             @Override
             public Object get() throws InterruptedException, ExecutionException {
-                final Iterator<Pair<Object, Throwable>> iter = iterate2(cfs);
-                Pair<Object, Throwable> result = null;
+                final Iterator<Pair<Object, Exception>> iter = iterate2(cfs);
+                Pair<Object, Exception> result = null;
 
                 while (iter.hasNext()) {
                     result = iter.next();
@@ -516,8 +516,8 @@ public final class Futures {
 
             @Override
             public Object get(final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-                final Iterator<Pair<Object, Throwable>> iter = iterate2(cfs, timeout, unit);
-                Pair<Object, Throwable> result = null;
+                final Iterator<Pair<Object, Exception>> iter = iterate2(cfs, timeout, unit);
+                Pair<Object, Exception> result = null;
 
                 while (iter.hasNext()) {
                     result = iter.next();
@@ -558,7 +558,7 @@ public final class Futures {
     }
 
     private static Iterator<Object> iterate02(final Collection<? extends CompletableFuture<?>> cfs, final long timeout, final TimeUnit unit) {
-        final Iterator<Pair<Object, Throwable>> iter = iterate22(cfs, timeout, unit);
+        final Iterator<Pair<Object, Exception>> iter = iterate22(cfs, timeout, unit);
 
         return new Iterator<Object>() {
             @Override
@@ -583,35 +583,35 @@ public final class Futures {
     }
 
     @SafeVarargs
-    public static Iterator<Pair<Object, Throwable>> iterate2(final CompletableFuture<?>... cfs) {
+    public static Iterator<Pair<Object, Exception>> iterate2(final CompletableFuture<?>... cfs) {
         return iterate22(N.asList(cfs));
     }
 
-    public static Iterator<Pair<Object, Throwable>> iterate2(final Collection<? extends CompletableFuture<?>> cfs) {
+    public static Iterator<Pair<Object, Exception>> iterate2(final Collection<? extends CompletableFuture<?>> cfs) {
         return iterate22(cfs);
     }
 
-    public static Iterator<Pair<Object, Throwable>> iterate2(final Collection<? extends CompletableFuture<?>> cfs, final long timeout, final TimeUnit unit) {
+    public static Iterator<Pair<Object, Exception>> iterate2(final Collection<? extends CompletableFuture<?>> cfs, final long timeout, final TimeUnit unit) {
         return iterate22(cfs, timeout, unit);
     }
 
     @SuppressWarnings("rawtypes")
-    public static <T> Iterator<Pair<T, Throwable>> iterate2(final List<? extends CompletableFuture<? extends T>> cfs) {
+    public static <T> Iterator<Pair<T, Exception>> iterate2(final List<? extends CompletableFuture<? extends T>> cfs) {
         return (Iterator) iterate22(cfs);
     }
 
     @SuppressWarnings("rawtypes")
-    public static <T> Iterator<Pair<T, Throwable>> iterate2(final List<? extends CompletableFuture<? extends T>> cfs, final long timeout, final TimeUnit unit) {
+    public static <T> Iterator<Pair<T, Exception>> iterate2(final List<? extends CompletableFuture<? extends T>> cfs, final long timeout, final TimeUnit unit) {
         return (Iterator) iterate22(cfs, timeout, unit);
     }
 
-    static Iterator<Pair<Object, Throwable>> iterate22(final Collection<? extends CompletableFuture<?>> cfs) {
+    static Iterator<Pair<Object, Exception>> iterate22(final Collection<? extends CompletableFuture<?>> cfs) {
         return iterate22(cfs, Long.MAX_VALUE, TimeUnit.MILLISECONDS);
     }
 
-    static Iterator<Pair<Object, Throwable>> iterate22(final Collection<? extends CompletableFuture<?>> cfs, final long timeout, final TimeUnit unit) {
+    static Iterator<Pair<Object, Exception>> iterate22(final Collection<? extends CompletableFuture<?>> cfs, final long timeout, final TimeUnit unit) {
         final ExecutorService executor = Executors.newFixedThreadPool(cfs.size());
-        final BlockingQueue<Pair<Object, Throwable>> queue = new ArrayBlockingQueue<>(cfs.size());
+        final BlockingQueue<Pair<Object, Exception>> queue = new ArrayBlockingQueue<>(cfs.size());
 
         for (CompletableFuture<?> e : cfs) {
             final CompletableFuture<Object> futuer = (CompletableFuture<Object>) e;
@@ -624,7 +624,7 @@ public final class Futures {
             });
         }
 
-        return new Iterator<Pair<Object, Throwable>>() {
+        return new Iterator<Pair<Object, Exception>>() {
             private final int end = cfs.size();
             private int cursor = 0;
 
@@ -634,7 +634,7 @@ public final class Futures {
             }
 
             @Override
-            public Pair<Object, Throwable> next() {
+            public Pair<Object, Exception> next() {
                 if (cursor >= end) {
                     throw new NoSuchElementException();
                 }
@@ -655,7 +655,7 @@ public final class Futures {
         };
     }
 
-    private static Object handle(final Pair<Object, Throwable> result) throws InterruptedException, ExecutionException {
+    private static Object handle(final Pair<Object, Exception> result) throws InterruptedException, ExecutionException {
         if (result.right != null) {
             if (result.right instanceof InterruptedException) {
                 throw ((InterruptedException) result.right);

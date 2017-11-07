@@ -293,7 +293,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
          */
         @Deprecated
         @Override
-        public void observe(final Consumer<? super T> action, final Consumer<? super Throwable> onError) {
+        public void observe(final Consumer<? super T> action, final Consumer<? super Exception> onError) {
             throw new UnsupportedOperationException();
         }
 
@@ -303,7 +303,7 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
          */
         @Deprecated
         @Override
-        public void observe(final Consumer<? super T> action, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+        public void observe(final Consumer<? super T> action, final Consumer<? super Exception> onError, final Runnable onComplete) {
             throw new UnsupportedOperationException();
         }
 
@@ -336,11 +336,11 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
             return onClick(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public Disposable onClick(final OnClickListener onNext, final Consumer<? super Throwable> onError) {
+        public Disposable onClick(final OnClickListener onNext, final Consumer<? super Exception> onError) {
             return onClick(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public Disposable onClick(final OnClickListener onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+        public Disposable onClick(final OnClickListener onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
             N.requireNonNull(onComplete, "onComplete");
@@ -384,11 +384,11 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
             return onLongClick(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public Disposable onLongClick(final OnLongClickListener onNext, final Consumer<? super Throwable> onError) {
+        public Disposable onLongClick(final OnLongClickListener onNext, final Consumer<? super Exception> onError) {
             return onLongClick(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public Disposable onLongClick(final OnLongClickListener onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+        public Disposable onLongClick(final OnLongClickListener onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
             N.requireNonNull(onComplete, "onComplete");
@@ -433,11 +433,11 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
             return onDrag(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public Disposable onDrag(final OnDragListener onNext, final Consumer<? super Throwable> onError) {
+        public Disposable onDrag(final OnDragListener onNext, final Consumer<? super Exception> onError) {
             return onDrag(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public Disposable onDrag(final OnDragListener onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+        public Disposable onDrag(final OnDragListener onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
             N.requireNonNull(onComplete, "onComplete");
@@ -482,11 +482,11 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
             return onTouch(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public Disposable onTouch(final OnTouchListener onNext, final Consumer<? super Throwable> onError) {
+        public Disposable onTouch(final OnTouchListener onNext, final Consumer<? super Exception> onError) {
             return onTouch(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public Disposable onTouch(final OnTouchListener onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+        public Disposable onTouch(final OnTouchListener onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
             N.requireNonNull(onComplete, "onComplete");
@@ -531,11 +531,11 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
             return onFocusChange(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public Disposable onFocusChange(final OnFocusChangeListener onNext, final Consumer<? super Throwable> onError) {
+        public Disposable onFocusChange(final OnFocusChangeListener onNext, final Consumer<? super Exception> onError) {
             return onFocusChange(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public Disposable onFocusChange(final OnFocusChangeListener onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+        public Disposable onFocusChange(final OnFocusChangeListener onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
             N.requireNonNull(onComplete, "onComplete");
@@ -579,11 +579,11 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
             return onHover(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public Disposable onHover(final OnHoverListener onNext, final Consumer<? super Throwable> onError) {
+        public Disposable onHover(final OnHoverListener onNext, final Consumer<? super Exception> onError) {
             return onHover(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public Disposable onHover(final OnHoverListener onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+        public Disposable onHover(final OnHoverListener onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
             N.requireNonNull(onComplete, "onComplete");
@@ -628,11 +628,11 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
             return onKey(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public Disposable onKey(final OnKeyListener onNext, final Consumer<? super Throwable> onError) {
+        public Disposable onKey(final OnKeyListener onNext, final Consumer<? super Exception> onError) {
             return onKey(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public Disposable onKey(final OnKeyListener onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+        public Disposable onKey(final OnKeyListener onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
             N.requireNonNull(onComplete, "onComplete");
@@ -677,11 +677,11 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
             return onViewAttachedToWindow(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public Disposable onViewAttachedToWindow(final Consumer<? super View> onNext, final Consumer<? super Throwable> onError) {
+        public Disposable onViewAttachedToWindow(final Consumer<? super View> onNext, final Consumer<? super Exception> onError) {
             return onViewAttachedToWindow(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public Disposable onViewAttachedToWindow(final Consumer<? super View> onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+        public Disposable onViewAttachedToWindow(final Consumer<? super View> onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
             N.requireNonNull(onComplete, "onComplete");
@@ -732,11 +732,11 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
             return onViewDetachedFromWindow(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public Disposable onViewDetachedFromWindow(final Consumer<? super View> onNext, final Consumer<? super Throwable> onError) {
+        public Disposable onViewDetachedFromWindow(final Consumer<? super View> onNext, final Consumer<? super Exception> onError) {
             return onViewDetachedFromWindow(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public Disposable onViewDetachedFromWindow(final Consumer<? super View> onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+        public Disposable onViewDetachedFromWindow(final Consumer<? super View> onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
             N.requireNonNull(onComplete, "onComplete");
@@ -787,11 +787,11 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
             return onAttachStateChange(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public Disposable onAttachStateChange(final OnAttachStateChangeListener onNext, final Consumer<? super Throwable> onError) {
+        public Disposable onAttachStateChange(final OnAttachStateChangeListener onNext, final Consumer<? super Exception> onError) {
             return onAttachStateChange(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public Disposable onAttachStateChange(final OnAttachStateChangeListener onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+        public Disposable onAttachStateChange(final OnAttachStateChangeListener onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
             N.requireNonNull(onComplete, "onComplete");
@@ -850,11 +850,11 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
             return onLayoutChange(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public Disposable onLayoutChange(final OnLayoutChangeListener onNext, final Consumer<? super Throwable> onError) {
+        public Disposable onLayoutChange(final OnLayoutChangeListener onNext, final Consumer<? super Exception> onError) {
             return onLayoutChange(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public Disposable onLayoutChange(final OnLayoutChangeListener onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+        public Disposable onLayoutChange(final OnLayoutChangeListener onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
             N.requireNonNull(onComplete, "onComplete");
@@ -901,12 +901,12 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
         }
 
         public Disposable onLayoutChange(final Consumer<? super Tuple9<View, Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>> onNext,
-                final Consumer<? super Throwable> onError) {
+                final Consumer<? super Exception> onError) {
             return onLayoutChange(onNext, onError, Fu.EMPTY_ACTION);
         }
 
         public Disposable onLayoutChange(final Consumer<? super Tuple9<View, Integer, Integer, Integer, Integer, Integer, Integer, Integer, Integer>> onNext,
-                final Consumer<? super Throwable> onError, final Runnable onComplete) {
+                final Consumer<? super Exception> onError, final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
             N.requireNonNull(onComplete, "onComplete");
@@ -959,11 +959,11 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
             return onChildViewAdded(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public Disposable onChildViewAdded(final BiConsumer<? super View, ? super View> onNext, final Consumer<? super Throwable> onError) {
+        public Disposable onChildViewAdded(final BiConsumer<? super View, ? super View> onNext, final Consumer<? super Exception> onError) {
             return onChildViewAdded(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public Disposable onChildViewAdded(final BiConsumer<? super View, ? super View> onNext, final Consumer<? super Throwable> onError,
+        public Disposable onChildViewAdded(final BiConsumer<? super View, ? super View> onNext, final Consumer<? super Exception> onError,
                 final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
@@ -1014,11 +1014,11 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
             return onChildViewRemoved(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public Disposable onChildViewRemoved(final BiConsumer<? super View, ? super View> onNext, final Consumer<? super Throwable> onError) {
+        public Disposable onChildViewRemoved(final BiConsumer<? super View, ? super View> onNext, final Consumer<? super Exception> onError) {
             return onChildViewRemoved(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public Disposable onChildViewRemoved(final BiConsumer<? super View, ? super View> onNext, final Consumer<? super Throwable> onError,
+        public Disposable onChildViewRemoved(final BiConsumer<? super View, ? super View> onNext, final Consumer<? super Exception> onError,
                 final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
@@ -1069,11 +1069,11 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
             return onHierarchyChange(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public Disposable onHierarchyChange(final OnHierarchyChangeListener onNext, final Consumer<? super Throwable> onError) {
+        public Disposable onHierarchyChange(final OnHierarchyChangeListener onNext, final Consumer<? super Exception> onError) {
             return onHierarchyChange(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public Disposable onHierarchyChange(final OnHierarchyChangeListener onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+        public Disposable onHierarchyChange(final OnHierarchyChangeListener onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
             N.requireNonNull(onComplete, "onComplete");
@@ -1138,11 +1138,11 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
             return onTextChanged(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public Disposable onTextChanged(final Consumer<? super String> onNext, final Consumer<? super Throwable> onError) {
+        public Disposable onTextChanged(final Consumer<? super String> onNext, final Consumer<? super Exception> onError) {
             return onTextChanged(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public Disposable onTextChanged(final Consumer<? super String> onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+        public Disposable onTextChanged(final Consumer<? super String> onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
             N.requireNonNull(onComplete, "onComplete");
@@ -1200,12 +1200,12 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
         }
 
         public Disposable onTextChanged2(final Consumer<? super Tuple4<CharSequence, Integer, Integer, Integer>> onNext,
-                final Consumer<? super Throwable> onError) {
+                final Consumer<? super Exception> onError) {
             return onTextChanged2(onNext, onError, Fu.EMPTY_ACTION);
         }
 
         public Disposable onTextChanged2(final Consumer<? super Tuple4<CharSequence, Integer, Integer, Integer>> onNext,
-                final Consumer<? super Throwable> onError, final Runnable onComplete) {
+                final Consumer<? super Exception> onError, final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
             N.requireNonNull(onComplete, "onComplete");
@@ -1262,11 +1262,11 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
             return beforeTextChanged(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public Disposable beforeTextChanged(final Consumer<? super String> onNext, final Consumer<? super Throwable> onError) {
+        public Disposable beforeTextChanged(final Consumer<? super String> onNext, final Consumer<? super Exception> onError) {
             return beforeTextChanged(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public Disposable beforeTextChanged(final Consumer<? super String> onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+        public Disposable beforeTextChanged(final Consumer<? super String> onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
             N.requireNonNull(onComplete, "onComplete");
@@ -1324,12 +1324,12 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
         }
 
         public Disposable beforeTextChanged2(final Consumer<? super Tuple4<CharSequence, Integer, Integer, Integer>> onNext,
-                final Consumer<? super Throwable> onError) {
+                final Consumer<? super Exception> onError) {
             return beforeTextChanged2(onNext, onError, Fu.EMPTY_ACTION);
         }
 
         public Disposable beforeTextChanged2(final Consumer<? super Tuple4<CharSequence, Integer, Integer, Integer>> onNext,
-                final Consumer<? super Throwable> onError, final Runnable onComplete) {
+                final Consumer<? super Exception> onError, final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
             N.requireNonNull(onComplete, "onComplete");
@@ -1386,11 +1386,11 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
             return afterTextChanged(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public Disposable afterTextChanged(final Consumer<? super String> onNext, final Consumer<? super Throwable> onError) {
+        public Disposable afterTextChanged(final Consumer<? super String> onNext, final Consumer<? super Exception> onError) {
             return afterTextChanged(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public Disposable afterTextChanged(final Consumer<? super String> onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+        public Disposable afterTextChanged(final Consumer<? super String> onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
             N.requireNonNull(onComplete, "onComplete");
@@ -1447,11 +1447,11 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
             return afterTextChanged2(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public Disposable afterTextChanged2(final Consumer<? super Editable> onNext, final Consumer<? super Throwable> onError) {
+        public Disposable afterTextChanged2(final Consumer<? super Editable> onNext, final Consumer<? super Exception> onError) {
             return afterTextChanged2(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public Disposable afterTextChanged2(final Consumer<? super Editable> onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+        public Disposable afterTextChanged2(final Consumer<? super Editable> onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
             N.requireNonNull(onComplete, "onComplete");
@@ -1508,11 +1508,11 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
             return onTextChanged(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public Disposable onTextChanged(final TextWatcher onNext, final Consumer<? super Throwable> onError) {
+        public Disposable onTextChanged(final TextWatcher onNext, final Consumer<? super Exception> onError) {
             return onTextChanged(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public Disposable onTextChanged(final TextWatcher onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+        public Disposable onTextChanged(final TextWatcher onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
             N.requireNonNull(onComplete, "onComplete");
@@ -1597,11 +1597,11 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
             return onQueryTextChange(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public Disposable onQueryTextChange(final Consumer<? super String> onNext, final Consumer<? super Throwable> onError) {
+        public Disposable onQueryTextChange(final Consumer<? super String> onNext, final Consumer<? super Exception> onError) {
             return onQueryTextChange(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public Disposable onQueryTextChange(final Consumer<? super String> onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+        public Disposable onQueryTextChange(final Consumer<? super String> onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
             N.requireNonNull(onComplete, "onComplete");
@@ -1653,11 +1653,11 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
             return onQueryTextSubmit(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public Disposable onQueryTextSubmit(final Consumer<? super String> onNext, final Consumer<? super Throwable> onError) {
+        public Disposable onQueryTextSubmit(final Consumer<? super String> onNext, final Consumer<? super Exception> onError) {
             return onQueryTextSubmit(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public Disposable onQueryTextSubmit(final Consumer<? super String> onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+        public Disposable onQueryTextSubmit(final Consumer<? super String> onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
             N.requireNonNull(onComplete, "onComplete");
@@ -1709,11 +1709,11 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
             return onQueryText(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public Disposable onQueryText(final OnQueryTextListener onNext, final Consumer<? super Throwable> onError) {
+        public Disposable onQueryText(final OnQueryTextListener onNext, final Consumer<? super Exception> onError) {
             return onQueryText(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public Disposable onQueryText(final OnQueryTextListener onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+        public Disposable onQueryText(final OnQueryTextListener onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
             N.requireNonNull(onComplete, "onComplete");
@@ -1781,11 +1781,11 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
             return onItemClick(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public Disposable onItemClick(final OnItemClickListener onNext, final Consumer<? super Throwable> onError) {
+        public Disposable onItemClick(final OnItemClickListener onNext, final Consumer<? super Exception> onError) {
             return onItemClick(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public Disposable onItemClick(final OnItemClickListener onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+        public Disposable onItemClick(final OnItemClickListener onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
             N.requireNonNull(onComplete, "onComplete");
@@ -1830,11 +1830,11 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
         }
 
         public Disposable onItemClick(final Consumer<? super Tuple4<AdapterView<?>, View, Integer, Integer>> onNext,
-                final Consumer<? super Throwable> onError) {
+                final Consumer<? super Exception> onError) {
             return onItemClick(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public Disposable onItemClick(final Consumer<? super Tuple4<AdapterView<?>, View, Integer, Integer>> onNext, final Consumer<? super Throwable> onError,
+        public Disposable onItemClick(final Consumer<? super Tuple4<AdapterView<?>, View, Integer, Integer>> onNext, final Consumer<? super Exception> onError,
                 final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
@@ -1887,11 +1887,11 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
             return onMenuItemClick(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public Disposable onMenuItemClick(final OnMenuItemClickListener onNext, final Consumer<? super Throwable> onError) {
+        public Disposable onMenuItemClick(final OnMenuItemClickListener onNext, final Consumer<? super Exception> onError) {
             return onMenuItemClick(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public Disposable onMenuItemClick(final OnMenuItemClickListener onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+        public Disposable onMenuItemClick(final OnMenuItemClickListener onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
             N.requireNonNull(onComplete, "onComplete");

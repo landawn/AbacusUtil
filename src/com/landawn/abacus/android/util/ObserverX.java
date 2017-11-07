@@ -50,11 +50,11 @@ public abstract class ObserverX<T> {
             return onScrollChange(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public Disposable onScrollChange(final OnScrollChangeListener onNext, final Consumer<? super Throwable> onError) {
+        public Disposable onScrollChange(final OnScrollChangeListener onNext, final Consumer<? super Exception> onError) {
             return onScrollChange(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public Disposable onScrollChange(final OnScrollChangeListener onNext, final Consumer<? super Throwable> onError, final Runnable onComplete) {
+        public Disposable onScrollChange(final OnScrollChangeListener onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
             N.requireNonNull(onComplete, "onComplete");
@@ -99,12 +99,12 @@ public abstract class ObserverX<T> {
         }
 
         public Disposable onScrollChange(final Consumer<? super Tuple5<View, Integer, Integer, Integer, Integer>> onNext,
-                final Consumer<? super Throwable> onError) {
+                final Consumer<? super Exception> onError) {
             return onScrollChange(onNext, onError, Fu.EMPTY_ACTION);
         }
 
         public Disposable onScrollChange(final Consumer<? super Tuple5<View, Integer, Integer, Integer, Integer>> onNext,
-                final Consumer<? super Throwable> onError, final Runnable onComplete) {
+                final Consumer<? super Exception> onError, final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
             N.requireNonNull(onComplete, "onComplete");

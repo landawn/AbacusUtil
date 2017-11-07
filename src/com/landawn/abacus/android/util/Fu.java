@@ -88,9 +88,9 @@ public class Fu {
         }
     };
 
-    public static final Consumer<Throwable> ON_ERROR_MISSING = new Consumer<Throwable>() {
+    public static final Consumer<Exception> ON_ERROR_MISSING = new Consumer<Exception>() {
         @Override
-        public void accept(Throwable t) {
+        public void accept(Exception t) {
             throw new RuntimeException(t);
         }
     };

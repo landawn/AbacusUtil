@@ -112,15 +112,9 @@ import com.landawn.abacus.exception.UncheckedSQLException;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
 import com.landawn.abacus.parser.JSONDeserializationConfig;
-import com.landawn.abacus.parser.JSONParser;
 import com.landawn.abacus.parser.JSONSerializationConfig;
-import com.landawn.abacus.parser.JSONSerializationConfig.JSC;
-import com.landawn.abacus.parser.KryoParser;
-import com.landawn.abacus.parser.ParserFactory;
 import com.landawn.abacus.parser.XMLDeserializationConfig;
-import com.landawn.abacus.parser.XMLParser;
 import com.landawn.abacus.parser.XMLSerializationConfig;
-import com.landawn.abacus.parser.XMLSerializationConfig.XSC;
 import com.landawn.abacus.type.EntityType;
 import com.landawn.abacus.type.Type;
 import com.landawn.abacus.type.TypeFactory;
@@ -632,13 +626,6 @@ public final class N {
     private static final Map<Class<?>, Boolean> dirtyMarkerClassPool = new ObjectPool<>(POOL_SIZE);
     private static final Map<Class<?>, Boolean> dirtyMarkerEntityClassPool = new ObjectPool<>(POOL_SIZE);
 
-    private static final JSONParser jsonParser = ParserFactory.createJSONParser();
-    private static final XMLParser abacusXMLParser = ParserFactory.isAbacusXMLAvailable() ? ParserFactory.createAbacusXMLParser() : null;
-    private static final XMLParser xmlParser = ParserFactory.isXMLAvailable() ? ParserFactory.createXMLParser() : null;
-    private static final KryoParser kryoParser = ParserFactory.isKryoAvailable() ? ParserFactory.createKryoParser() : null;
-    private static final JSONSerializationConfig jsc = JSC.of(true, true);
-    private static final XMLSerializationConfig xscForClone = XSC.create().setIgnoreTypeInfo(false);
-
     // ...
     static final Field strValueField;
     static volatile boolean isStringCharsGettable = true;
@@ -744,15 +731,6 @@ public final class N {
             charStringCache[i] = String.valueOf((char) i);
         }
     }
-
-    static final Type<Boolean> booleanType = N.typeOf(boolean.class);
-    static final Type<Character> charType = N.typeOf(char.class);
-    static final Type<Byte> byteType = N.typeOf(byte.class);
-    static final Type<Short> shortType = N.typeOf(short.class);
-    static final Type<Integer> intType = N.typeOf(int.class);
-    static final Type<Long> longType = N.typeOf(long.class);
-    static final Type<Float> floatType = N.typeOf(float.class);
-    static final Type<Double> doubleType = N.typeOf(double.class);
 
     /**
      * Constructor for
@@ -4275,9 +4253,9 @@ public final class N {
     public static <T> T copy(final Class<T> targetClass, final Object entity, final Set<String> selectPropNames) {
         T copy = null;
 
-        if (selectPropNames == null && kryoParser != null && targetClass.equals(entity.getClass())) {
+        if (selectPropNames == null && Utils.kryoParser != null && targetClass.equals(entity.getClass())) {
             try {
-                copy = (T) kryoParser.copy(entity);
+                copy = (T) Utils.kryoParser.copy(entity);
             } catch (Exception e) {
                 // ignore
             }
@@ -4338,9 +4316,9 @@ public final class N {
     public static <T> T copy(final Class<T> targetClass, final T entity, final boolean ignoreUnknownProperty, final Set<String> ignorePropNames) {
         T copy = null;
 
-        if (ignorePropNames == null && kryoParser != null && targetClass.equals(entity.getClass())) {
+        if (ignorePropNames == null && Utils.kryoParser != null && targetClass.equals(entity.getClass())) {
             try {
-                copy = kryoParser.copy(entity);
+                copy = Utils.kryoParser.copy(entity);
             } catch (Exception e) {
                 // ignore
             }
@@ -4412,17 +4390,17 @@ public final class N {
     public static <T> T clone(final Class<T> targetClass, final Object entity) {
         Object copy = null;
 
-        if (kryoParser != null && targetClass.equals(entity.getClass())) {
+        if (Utils.kryoParser != null && targetClass.equals(entity.getClass())) {
             try {
-                copy = kryoParser.clone(entity);
+                copy = Utils.kryoParser.clone(entity);
             } catch (Exception e) {
                 // ignore.
             }
         }
 
         if (copy == null) {
-            String xml = abacusXMLParser.serialize(entity, xscForClone);
-            copy = abacusXMLParser.deserialize(targetClass, xml);
+            String xml = Utils.abacusXMLParser.serialize(entity, Utils.xscForClone);
+            copy = Utils.abacusXMLParser.deserialize(targetClass, xml);
 
             setDirtyMarker(entity, copy);
         }
@@ -30755,140 +30733,140 @@ public final class N {
     }
 
     public static String toJSON(final Object obj) {
-        return jsonParser.serialize(obj, jsc);
+        return Utils.jsonParser.serialize(obj, Utils.jsc);
     }
 
     public static String toJSON(final Object obj, final JSONSerializationConfig config) {
-        return jsonParser.serialize(obj, config);
+        return Utils.jsonParser.serialize(obj, config);
     }
 
     public static void toJSON(final File file, final Object obj) {
-        jsonParser.serialize(file, obj);
+        Utils.jsonParser.serialize(file, obj);
     }
 
     public static void toJSON(final File file, final Object obj, final JSONSerializationConfig config) {
-        jsonParser.serialize(file, obj, config);
+        Utils.jsonParser.serialize(file, obj, config);
     }
 
     public static void toJSON(final OutputStream os, final Object obj) {
-        jsonParser.serialize(os, obj);
+        Utils.jsonParser.serialize(os, obj);
     }
 
     public static void toJSON(final OutputStream os, final Object obj, final JSONSerializationConfig config) {
-        jsonParser.serialize(os, obj, config);
+        Utils.jsonParser.serialize(os, obj, config);
     }
 
     public static void toJSON(final Writer writer, final Object obj) {
-        jsonParser.serialize(writer, obj);
+        Utils.jsonParser.serialize(writer, obj);
     }
 
     public static void toJSON(final Writer writer, final Object obj, final JSONSerializationConfig config) {
-        jsonParser.serialize(writer, obj, config);
+        Utils.jsonParser.serialize(writer, obj, config);
     }
 
     public static <T> T fromJSON(final Class<T> targetClass, final String json) {
-        return jsonParser.deserialize(targetClass, json);
+        return Utils.jsonParser.deserialize(targetClass, json);
     }
 
     public static <T> T fromJSON(final Class<T> targetClass, final String json, final JSONDeserializationConfig config) {
-        return jsonParser.deserialize(targetClass, json, config);
+        return Utils.jsonParser.deserialize(targetClass, json, config);
     }
 
     public static <T> T fromJSON(final Class<T> targetClass, final File json) {
-        return jsonParser.deserialize(targetClass, json);
+        return Utils.jsonParser.deserialize(targetClass, json);
     }
 
     public static <T> T fromJSON(final Class<T> targetClass, final File json, final JSONDeserializationConfig config) {
-        return jsonParser.deserialize(targetClass, json, config);
+        return Utils.jsonParser.deserialize(targetClass, json, config);
     }
 
     public static <T> T fromJSON(final Class<T> targetClass, final InputStream json) {
-        return jsonParser.deserialize(targetClass, json);
+        return Utils.jsonParser.deserialize(targetClass, json);
     }
 
     public static <T> T fromJSON(final Class<T> targetClass, final InputStream json, final JSONDeserializationConfig config) {
-        return jsonParser.deserialize(targetClass, json, config);
+        return Utils.jsonParser.deserialize(targetClass, json, config);
     }
 
     public static <T> T fromJSON(final Class<T> targetClass, final Reader json) {
-        return jsonParser.deserialize(targetClass, json);
+        return Utils.jsonParser.deserialize(targetClass, json);
     }
 
     public static <T> T fromJSON(final Class<T> targetClass, final Reader json, final JSONDeserializationConfig config) {
-        return jsonParser.deserialize(targetClass, json, config);
+        return Utils.jsonParser.deserialize(targetClass, json, config);
     }
 
     public static <T> T fromJSON(final Class<T> targetClass, final String json, final int fromIndex, final int toIndex) {
-        return jsonParser.deserialize(targetClass, json, fromIndex, toIndex);
+        return Utils.jsonParser.deserialize(targetClass, json, fromIndex, toIndex);
     }
 
     public static <T> T fromJSON(final Class<T> targetClass, final String json, final int fromIndex, final int toIndex,
             final JSONDeserializationConfig config) {
-        return jsonParser.deserialize(targetClass, json, fromIndex, toIndex, config);
+        return Utils.jsonParser.deserialize(targetClass, json, fromIndex, toIndex, config);
     }
 
     public static String toXML(final Object obj) {
-        return xmlParser.serialize(obj);
+        return Utils.xmlParser.serialize(obj);
     }
 
     public static String toXML(final Object obj, final XMLSerializationConfig config) {
-        return xmlParser.serialize(obj, config);
+        return Utils.xmlParser.serialize(obj, config);
     }
 
     public static void toXML(final File file, final Object obj) {
-        xmlParser.serialize(file, obj);
+        Utils.xmlParser.serialize(file, obj);
     }
 
     public static void toXML(final File file, final Object obj, final XMLSerializationConfig config) {
-        xmlParser.serialize(file, obj, config);
+        Utils.xmlParser.serialize(file, obj, config);
     }
 
     public static void toXML(final OutputStream os, final Object obj) {
-        xmlParser.serialize(os, obj);
+        Utils.xmlParser.serialize(os, obj);
     }
 
     public static void toXML(final OutputStream os, final Object obj, final XMLSerializationConfig config) {
-        xmlParser.serialize(os, obj, config);
+        Utils.xmlParser.serialize(os, obj, config);
     }
 
     public static void toXML(final Writer writer, final Object obj) {
-        xmlParser.serialize(writer, obj);
+        Utils.xmlParser.serialize(writer, obj);
     }
 
     public static void toXML(final Writer writer, final Object obj, final XMLSerializationConfig config) {
-        xmlParser.serialize(writer, obj, config);
+        Utils.xmlParser.serialize(writer, obj, config);
     }
 
     public static <T> T fromXML(final Class<T> targetClass, final String xml) {
-        return xmlParser.deserialize(targetClass, xml);
+        return Utils.xmlParser.deserialize(targetClass, xml);
     }
 
     public static <T> T fromXML(final Class<T> targetClass, final String xml, final XMLDeserializationConfig config) {
-        return xmlParser.deserialize(targetClass, xml, config);
+        return Utils.xmlParser.deserialize(targetClass, xml, config);
     }
 
     public static <T> T fromXML(final Class<T> targetClass, final File xml) {
-        return xmlParser.deserialize(targetClass, xml);
+        return Utils.xmlParser.deserialize(targetClass, xml);
     }
 
     public static <T> T fromXML(final Class<T> targetClass, final File xml, final XMLDeserializationConfig config) {
-        return xmlParser.deserialize(targetClass, xml, config);
+        return Utils.xmlParser.deserialize(targetClass, xml, config);
     }
 
     public static <T> T fromXML(final Class<T> targetClass, final InputStream xml) {
-        return xmlParser.deserialize(targetClass, xml);
+        return Utils.xmlParser.deserialize(targetClass, xml);
     }
 
     public static <T> T fromXML(final Class<T> targetClass, final InputStream xml, final XMLDeserializationConfig config) {
-        return xmlParser.deserialize(targetClass, xml, config);
+        return Utils.xmlParser.deserialize(targetClass, xml, config);
     }
 
     public static <T> T fromXML(final Class<T> targetClass, final Reader xml) {
-        return xmlParser.deserialize(targetClass, xml);
+        return Utils.xmlParser.deserialize(targetClass, xml);
     }
 
     public static <T> T fromXML(final Class<T> targetClass, final Reader xml, final XMLDeserializationConfig config) {
-        return xmlParser.deserialize(targetClass, xml, config);
+        return Utils.xmlParser.deserialize(targetClass, xml, config);
     }
 
     public static String xml2JSON(final String xml) {
@@ -30896,7 +30874,7 @@ public final class N {
     }
 
     public static String xml2JSON(final Class<?> cls, final String xml) {
-        return jsonParser.serialize(xmlParser.deserialize(cls, xml), jsc);
+        return Utils.jsonParser.serialize(Utils.xmlParser.deserialize(cls, xml), Utils.jsc);
     }
 
     public static String json2XML(final String json) {
@@ -30904,7 +30882,7 @@ public final class N {
     }
 
     public static String json2XML(final Class<?> cls, final String json) {
-        return xmlParser.serialize(jsonParser.deserialize(cls, json));
+        return Utils.xmlParser.serialize(Utils.jsonParser.deserialize(cls, json));
     }
 
     public static void execute(final Try.Runnable<? extends Exception> cmd, final int retryTimes, final long retryInterval,

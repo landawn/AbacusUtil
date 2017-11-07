@@ -1,5 +1,12 @@
 ﻿
 
+﻿========Changes in 1.0.7 =========================================================================
+
+1, Replace Throwable with Exception in Try/CompletableFuture/Futures/Observer/....
+
+2, Improvements and bug fix.
+
+
 ﻿========Changes in 1.0.6 =========================================================================
 
 1*, Refactoring BiMap.put(key, value) and add forcePut.
