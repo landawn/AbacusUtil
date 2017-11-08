@@ -34,7 +34,6 @@ import java.util.concurrent.TimeoutException;
 
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
-import com.landawn.abacus.util.Retry.Retry0;
 import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.Predicate;
 
@@ -201,12 +200,13 @@ public class AsyncExecutor {
         return results;
     }
 
-    public CompletableFuture<Void> execute(final Runnable action, final int retryTimes, final long retryInterval,
+    public CompletableFuture<Void> execute(final Try.Runnable<? extends Exception> action, final int retryTimes, final long retryInterval,
             final Predicate<? super Exception> retryCondition) {
-        return execute(new Runnable() {
+        return execute(new Callable<Void>() {
             @Override
-            public void run() {
+            public Void call() throws Exception {
                 Retry.of(retryTimes, retryInterval, retryCondition).run(action);
+                return null;
             }
         });
     }
@@ -216,7 +216,7 @@ public class AsyncExecutor {
         return execute(new Callable<T>() {
             @Override
             public T call() throws Exception {
-                final Retry0<T> retry = Retry0.of(retryTimes, retryInterval, retryCondition);
+                final Retry<T> retry = Retry.of(retryTimes, retryInterval, retryCondition);
                 return retry.call(action);
             }
         });

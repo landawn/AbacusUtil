@@ -65,14 +65,14 @@ public final class Retry<T> {
         return new Retry<R>(retryTimes, retryInterval, null, retryCondition);
     }
 
-    public void run(final Runnable cmd) {
+    public void run(final Try.Runnable<? extends Exception> cmd) throws Exception {
         try {
             cmd.run();
-        } catch (RuntimeException e) {
+        } catch (Exception e) {
             logger.error("AutoRetry", e);
 
             int retriedTimes = 0;
-            RuntimeException throwable = e;
+            Exception throwable = e;
 
             while (retriedTimes++ < retryTimes
                     && ((retryCondition != null && retryCondition.test(throwable)) || (retryCondition2 != null && retryCondition2.test(null, throwable)))) {
@@ -83,7 +83,7 @@ public final class Retry<T> {
 
                     cmd.run();
                     return;
-                } catch (RuntimeException e2) {
+                } catch (Exception e2) {
                     logger.error("AutoRetry", e2);
 
                     throwable = e2;
@@ -94,7 +94,7 @@ public final class Retry<T> {
         }
     }
 
-    public T call(final Try.Callable<T, RuntimeException> callable) {
+    public T call(final Callable<T> callable) throws Exception {
         T result = null;
         int retriedTimes = 0;
 
@@ -112,10 +112,10 @@ public final class Retry<T> {
                     return result;
                 }
             }
-        } catch (RuntimeException e) {
+        } catch (Exception e) {
             logger.error("AutoRetry", e);
 
-            RuntimeException throwable = e;
+            Exception throwable = e;
 
             while (retriedTimes++ < retryTimes
                     && ((retryCondition != null && retryCondition.test(throwable)) || (retryCondition2 != null && retryCondition2.test(null, throwable)))) {
@@ -129,7 +129,7 @@ public final class Retry<T> {
                     if (retryCondition2 == null || retryCondition2.test(result, null) == false) {
                         return result;
                     }
-                } catch (RuntimeException e2) {
+                } catch (Exception e2) {
                     logger.error("AutoRetry", e2);
 
                     throwable = e2;
@@ -235,122 +235,5 @@ public final class Retry<T> {
                 }
             }
         };
-    }
-
-    public static final class Retry0<T> {
-        private final int retryTimes;
-        private final long retryInterval;
-        private final Predicate<? super Exception> retryCondition;
-        private final BiPredicate<? super T, ? super Exception> retryCondition2;
-
-        Retry0(final int retryTimes, final long retryInterval, final Predicate<? super Exception> retryCondition,
-                final BiPredicate<? super T, ? super Exception> retryCondition2) {
-
-            this.retryTimes = retryTimes;
-            this.retryInterval = retryInterval;
-            this.retryCondition = retryCondition;
-            this.retryCondition2 = retryCondition2;
-        }
-
-        public static Retry0<Void> of(final int retryTimes, final long retryInterval, final Predicate<? super Exception> retryCondition) {
-            if (retryTimes < 0 || retryInterval < 0) {
-                throw new IllegalArgumentException("'retryTimes' and 'retryInterval' can't be negative");
-            }
-
-            N.requireNonNull(retryCondition);
-
-            return new Retry0<Void>(retryTimes, retryInterval, retryCondition, null);
-        }
-
-        public static <R> Retry0<R> of(final int retryTimes, final long retryInterval, final BiPredicate<? super R, ? super Exception> retryCondition) {
-            if (retryTimes < 0 || retryInterval < 0) {
-                throw new IllegalArgumentException("'retryTimes' and 'retryInterval' can't be negative");
-            }
-
-            N.requireNonNull(retryCondition);
-
-            return new Retry0<R>(retryTimes, retryInterval, null, retryCondition);
-        }
-
-        public void run(final Try.Runnable<? extends Exception> cmd) throws Exception {
-            try {
-                cmd.run();
-            } catch (Exception e) {
-                logger.error("AutoRetry", e);
-
-                int retriedTimes = 0;
-                Exception throwable = e;
-
-                while (retriedTimes++ < retryTimes
-                        && ((retryCondition != null && retryCondition.test(throwable)) || (retryCondition2 != null && retryCondition2.test(null, throwable)))) {
-                    try {
-                        if (retryInterval > 0) {
-                            N.sleep(retryInterval);
-                        }
-
-                        cmd.run();
-                        return;
-                    } catch (Exception e2) {
-                        logger.error("AutoRetry", e2);
-
-                        throwable = e2;
-                    }
-                }
-
-                throw throwable;
-            }
-        }
-
-        public T call(final Callable<T> callable) throws Exception {
-            T result = null;
-            int retriedTimes = 0;
-
-            try {
-                result = callable.call();
-
-                while (retriedTimes++ < retryTimes && (retryCondition2 != null && retryCondition2.test(result, null))) {
-                    if (retryInterval > 0) {
-                        N.sleep(retryInterval);
-                    }
-
-                    result = callable.call();
-
-                    if (retryCondition2 == null || retryCondition2.test(result, null) == false) {
-                        return result;
-                    }
-                }
-            } catch (Exception e) {
-                logger.error("AutoRetry", e);
-
-                Exception throwable = e;
-
-                while (retriedTimes++ < retryTimes
-                        && ((retryCondition != null && retryCondition.test(throwable)) || (retryCondition2 != null && retryCondition2.test(null, throwable)))) {
-                    try {
-                        if (retryInterval > 0) {
-                            N.sleep(retryInterval);
-                        }
-
-                        result = callable.call();
-
-                        if (retryCondition2 == null || retryCondition2.test(result, null) == false) {
-                            return result;
-                        }
-                    } catch (Exception e2) {
-                        logger.error("AutoRetry", e2);
-
-                        throwable = e2;
-                    }
-                }
-
-                throw throwable;
-            }
-
-            if (retryTimes > 0 && (retryCondition2 != null && retryCondition2.test(result, null))) {
-                throw new RuntimeException("Still failed after retried " + retryTimes + " times for result: " + N.toString(result));
-            }
-
-            return result;
-        }
     }
 }

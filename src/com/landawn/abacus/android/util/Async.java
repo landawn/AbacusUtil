@@ -30,7 +30,7 @@ import java.util.concurrent.TimeoutException;
 import com.landawn.abacus.util.MoreExecutors;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Retry;
-import com.landawn.abacus.util.Retry.Retry0;
+import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.Predicate;
 
@@ -96,12 +96,13 @@ public class Async {
      * @param retryCondition
      * @return
      */
-    static CompletableFuture<Void> execute(final Runnable action, final int retryTimes, final long retryInterval,
+    static CompletableFuture<Void> execute(final Try.Runnable<? extends Exception> action, final int retryTimes, final long retryInterval,
             final Predicate<? super Exception> retryCondition) {
-        return execute(new Runnable() {
+        return execute(new Callable<Void>() {
             @Override
-            public void run() {
+            public Void call() throws Exception {
                 Retry.of(retryTimes, retryInterval, retryCondition).run(action);
+                return null;
             }
         });
     }
@@ -142,7 +143,7 @@ public class Async {
         return execute(new Callable<T>() {
             @Override
             public T call() throws Exception {
-                final Retry0<T> retry = Retry0.of(retryTimes, retryInterval, retryCondition);
+                final Retry<T> retry = Retry.of(retryTimes, retryInterval, retryCondition);
                 return retry.call(action);
             }
         });
@@ -179,12 +180,13 @@ public class Async {
      * @param retryCondition
      * @return
      */
-    static CompletableFuture<Void> executeWithThreadPool(final Runnable action, final int retryTimes, final long retryInterval,
+    static CompletableFuture<Void> executeWithThreadPool(final Try.Runnable<? extends Exception> action, final int retryTimes, final long retryInterval,
             final Predicate<? super Exception> retryCondition) {
-        return executeWithThreadPool(new Runnable() {
+        return execute(new Callable<Void>() {
             @Override
-            public void run() {
+            public Void call() throws Exception {
                 Retry.of(retryTimes, retryInterval, retryCondition).run(action);
+                return null;
             }
         });
     }
@@ -225,7 +227,7 @@ public class Async {
         return executeWithThreadPool(new Callable<T>() {
             @Override
             public T call() throws Exception {
-                final Retry0<T> retry = Retry0.of(retryTimes, retryInterval, retryCondition);
+                final Retry<T> retry = Retry.of(retryTimes, retryInterval, retryCondition);
                 return retry.call(action);
             }
         });
@@ -260,12 +262,13 @@ public class Async {
      * @param retryCondition
      * @return
      */
-    static CompletableFuture<Void> executeOnUiThread(final Runnable action, final int retryTimes, final long retryInterval,
+    static CompletableFuture<Void> executeOnUiThread(final Try.Runnable<? extends Exception> action, final int retryTimes, final long retryInterval,
             final Predicate<? super Exception> retryCondition) {
-        return executeOnUiThread(new Runnable() {
+        return execute(new Callable<Void>() {
             @Override
-            public void run() {
+            public Void call() throws Exception {
                 Retry.of(retryTimes, retryInterval, retryCondition).run(action);
+                return null;
             }
         });
     }
@@ -304,7 +307,7 @@ public class Async {
         return executeOnUiThread(new Callable<T>() {
             @Override
             public T call() throws Exception {
-                final Retry0<T> retry = Retry0.of(retryTimes, retryInterval, retryCondition);
+                final Retry<T> retry = Retry.of(retryTimes, retryInterval, retryCondition);
                 return retry.call(action);
             }
         });
@@ -425,7 +428,7 @@ public class Async {
             return Async.execute(action, delay);
         }
 
-        public static CompletableFuture<Void> execute(final Runnable action, final int retryTimes, final long retryInterval,
+        public static CompletableFuture<Void> execute(final Try.Runnable<? extends Exception> action, final int retryTimes, final long retryInterval,
                 final Predicate<? super Exception> retryCondition) {
             return Async.execute(action, retryTimes, retryInterval, retryCondition);
 
@@ -470,7 +473,7 @@ public class Async {
             return Async.executeWithThreadPool(action, delay);
         }
 
-        public static CompletableFuture<Void> execute(final Runnable action, final int retryTimes, final long retryInterval,
+        public static CompletableFuture<Void> execute(final Try.Runnable<? extends Exception> action, final int retryTimes, final long retryInterval,
                 final Predicate<? super Exception> retryCondition) {
             return Async.executeWithThreadPool(action, retryTimes, retryInterval, retryCondition);
 
@@ -522,7 +525,7 @@ public class Async {
             return Async.executeOnUiThread(action, delay);
         }
 
-        public static CompletableFuture<Void> execute(final Runnable action, final int retryTimes, final long retryInterval,
+        public static CompletableFuture<Void> execute(final Try.Runnable<? extends Exception> action, final int retryTimes, final long retryInterval,
                 final Predicate<? super Exception> retryCondition) {
             return Async.executeOnUiThread(action, retryTimes, retryInterval, retryCondition);
         }

@@ -144,7 +144,7 @@ public final class Optional<T> {
     public static <R> Optional<R> tryOrEmpty(final Try.Callable<R, ? extends Exception> action) {
         try {
             return Optional.of(action.call());
-        } catch (Throwable e) {
+        } catch (Exception e) {
             return Optional.<R> empty();
         }
     }

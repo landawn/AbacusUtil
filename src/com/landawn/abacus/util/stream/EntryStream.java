@@ -26,7 +26,6 @@ import java.util.Random;
 import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.util.Comparators;
 import com.landawn.abacus.util.Fn;
-import com.landawn.abacus.util.ObjIterator;
 import com.landawn.abacus.util.ImmutableMap;
 import com.landawn.abacus.util.ListMultimap;
 import com.landawn.abacus.util.LongMultiset;
@@ -34,6 +33,8 @@ import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nullable;
+import com.landawn.abacus.util.ObjIterator;
+import com.landawn.abacus.util.Tuple;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
@@ -59,7 +60,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
     };
 
     @SuppressWarnings("rawtypes")
-    private static final EntryStream EMPTY = of(new Map.Entry[0]);
+    private static final EntryStream EMPTY = new EntryStream(Stream.<Map.Entry> empty());
 
     private final Stream<Map.Entry<K, V>> s;
 
@@ -74,6 +75,34 @@ public final class EntryStream<K, V> implements AutoCloseable {
 
     public static <K, V> EntryStream<K, V> empty() {
         return EMPTY;
+    }
+
+    public static <K, V> EntryStream<K, V> of(K k1, V v1) {
+        return of(Stream.of(Tuple.of(k1, v1)));
+    }
+
+    public static <K, V> EntryStream<K, V> of(K k1, V v1, K k2, V v2) {
+        return of(Stream.of(Tuple.of(k1, v1), Tuple.of(k2, v2)));
+    }
+
+    public static <K, V> EntryStream<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3) {
+        return of(Stream.of(Tuple.of(k1, v1), Tuple.of(k2, v2), Tuple.of(k3, v3)));
+    }
+
+    public static <K, V> EntryStream<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4) {
+        return of(Stream.of(Tuple.of(k1, v1), Tuple.of(k2, v2), Tuple.of(k3, v3), Tuple.of(k4, v4)));
+    }
+
+    public static <K, V> EntryStream<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4, K k5, V v5) {
+        return of(Stream.of(Tuple.of(k1, v1), Tuple.of(k2, v2), Tuple.of(k3, v3), Tuple.of(k4, v4), Tuple.of(k5, v5)));
+    }
+
+    public static <K, V> EntryStream<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4, K k5, V v5, K k6, V v6) {
+        return of(Stream.of(Tuple.of(k1, v1), Tuple.of(k2, v2), Tuple.of(k3, v3), Tuple.of(k4, v4), Tuple.of(k5, v5), Tuple.of(k6, v6)));
+    }
+
+    public static <K, V> EntryStream<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4, K k5, V v5, K k6, V v6, K k7, V v7) {
+        return of(Stream.of(Tuple.of(k1, v1), Tuple.of(k2, v2), Tuple.of(k3, v3), Tuple.of(k4, v4), Tuple.of(k5, v5), Tuple.of(k6, v6), Tuple.of(k7, v7)));
     }
 
     public static <K, V> EntryStream<K, V> of(final Stream<? extends Map.Entry<K, V>> s) {
@@ -92,10 +121,10 @@ public final class EntryStream<K, V> implements AutoCloseable {
         return new EntryStream<K, V>(Stream.of(entries));
     }
 
-    @SafeVarargs
-    public static <K, V> EntryStream<K, V> of(final Map.Entry<K, V>... entries) {
-        return new EntryStream<K, V>(Stream.of(entries));
-    }
+    //    @SafeVarargs
+    //    public static <K, V> EntryStream<K, V> of(final Map.Entry<K, V>... entries) {
+    //        return new EntryStream<K, V>(Stream.of(entries));
+    //    }
 
     public static <E> EntryStream<E, Integer> of(final Multiset<E> multiset) {
         return multiset == null ? EntryStream.<E, Integer> empty() : multiset.entryStream();

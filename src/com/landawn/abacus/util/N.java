@@ -119,7 +119,6 @@ import com.landawn.abacus.type.EntityType;
 import com.landawn.abacus.type.Type;
 import com.landawn.abacus.type.TypeFactory;
 import com.landawn.abacus.util.Pair.IntPair;
-import com.landawn.abacus.util.Retry.Retry0;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
@@ -30888,7 +30887,7 @@ public final class N {
     public static void execute(final Try.Runnable<? extends Exception> cmd, final int retryTimes, final long retryInterval,
             final Predicate<? super Exception> retryCondition) {
         try {
-            Retry0.of(retryTimes, retryInterval, retryCondition).run(cmd);
+            Retry.of(retryTimes, retryInterval, retryCondition).run(cmd);
         } catch (Exception e) {
             throw N.toRuntimeException(e);
         }
@@ -30897,7 +30896,7 @@ public final class N {
     public static <T> T execute(final Callable<T> cmd, final int retryTimes, final long retryInterval,
             final BiPredicate<? super T, ? super Exception> retryCondition) {
         try {
-            final Retry0<T> retry = Retry0.of(retryTimes, retryInterval, retryCondition);
+            final Retry<T> retry = Retry.of(retryTimes, retryInterval, retryCondition);
             return retry.call(cmd);
         } catch (Exception e) {
             throw N.toRuntimeException(e);
@@ -30940,14 +30939,11 @@ public final class N {
 
     public static CompletableFuture<Void> asyncExecute(final Try.Runnable<? extends Exception> cmd, final int retryTimes, final long retryInterval,
             final Predicate<? super Exception> retryCondition) {
-        return asyncExecutor.execute(new Runnable() {
+        return asyncExecutor.execute(new Callable<Void>() {
             @Override
-            public void run() {
-                try {
-                    Retry0.of(retryTimes, retryInterval, retryCondition).run(cmd);
-                } catch (Exception e) {
-                    throw N.toRuntimeException(e);
-                }
+            public Void call() throws Exception {
+                Retry.of(retryTimes, retryInterval, retryCondition).run(cmd);
+                return null;
             }
         });
     }
@@ -30956,13 +30952,9 @@ public final class N {
             final BiPredicate<? super T, ? super Exception> retryCondition) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
-            public T call() {
-                try {
-                    final Retry0<T> retry = Retry0.of(retryTimes, retryInterval, retryCondition);
-                    return retry.call(cmd);
-                } catch (Exception e) {
-                    throw N.toRuntimeException(e);
-                }
+            public T call() throws Exception {
+                final Retry<T> retry = Retry.of(retryTimes, retryInterval, retryCondition);
+                return retry.call(cmd);
             }
         });
     }
