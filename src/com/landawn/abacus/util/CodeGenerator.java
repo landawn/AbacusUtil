@@ -2023,12 +2023,12 @@ public final class CodeGenerator {
     }
 
     private static void readPackageTypes(Type<?> type, String packageName, final Multimap<String, String, Set<String>> packClasses) {
-        final Package pkg = type.cls().getPackage();
+        final Package pkg = type.clazz().getPackage();
 
-        if (pkg == null || pkg.getName().equals(packageName) || type.cls().getCanonicalName().startsWith("java.lang.")) {
+        if (pkg == null || pkg.getName().equals(packageName) || type.clazz().getCanonicalName().startsWith("java.lang.")) {
             // ignore.
         } else {
-            packClasses.put(pkg.getName(), type.cls().getCanonicalName());
+            packClasses.put(pkg.getName(), type.clazz().getCanonicalName());
         }
 
         if (N.notNullOrEmpty(type.getParameterTypes())) {
@@ -2844,7 +2844,7 @@ public final class CodeGenerator {
     }
 
     static String getAnnoType(Type<?> type, final String packageName, Map<String, Class<?>> importedClasses) {
-        if (N.isNullOrEmpty(type.getParameterTypes()) && !type.cls().equals(Object.class)) {
+        if (N.isNullOrEmpty(type.getParameterTypes()) && !type.clazz().equals(Object.class)) {
             return type.name();
         }
 
@@ -2858,7 +2858,7 @@ public final class CodeGenerator {
             if (ch == '<' || ch == '>' || ch == ' ' || ch == ',') {
                 String str = typeName.substring(start, i);
 
-                if (str.length() > 0 && N.typeOf(str).cls().equals(Object.class)) {
+                if (str.length() > 0 && N.typeOf(str).clazz().equals(Object.class)) {
                     String pkgName = packageName;
 
                     for (Map.Entry<String, Class<?>> entry : importedClasses.entrySet()) {
@@ -2868,7 +2868,7 @@ public final class CodeGenerator {
                         }
                     }
 
-                    if (N.notNullOrEmpty(pkgName) && !N.typeOf(pkgName + "." + str).cls().equals(Object.class)) {
+                    if (N.notNullOrEmpty(pkgName) && !N.typeOf(pkgName + "." + str).clazz().equals(Object.class)) {
                         sb.append(pkgName + "." + str);
                     } else {
                         sb.append(str);
@@ -2885,7 +2885,7 @@ public final class CodeGenerator {
         if (start < typeName.length()) {
             String str = typeName.substring(start);
 
-            if (str.length() > 0 && N.typeOf(str).cls().equals(Object.class)) {
+            if (str.length() > 0 && N.typeOf(str).clazz().equals(Object.class)) {
                 String pkgName = packageName;
 
                 for (Map.Entry<String, Class<?>> entry : importedClasses.entrySet()) {
@@ -2895,7 +2895,7 @@ public final class CodeGenerator {
                     }
                 }
 
-                if (N.notNullOrEmpty(pkgName) && !N.typeOf(pkgName + "." + str).cls().equals(Object.class)) {
+                if (N.notNullOrEmpty(pkgName) && !N.typeOf(pkgName + "." + str).clazz().equals(Object.class)) {
                     sb.append(pkgName + "." + str);
                 } else {
                     sb.append(str);
@@ -3142,7 +3142,7 @@ public final class CodeGenerator {
 
         for (Property prop : entityDef.getPropertyList()) {
             if (prop.isCollection()) {
-                writeClassImport(fileWrite, prop.getType().cls(), importedClasses);
+                writeClassImport(fileWrite, prop.getType().clazz(), importedClasses);
             }
         }
 
@@ -3621,8 +3621,8 @@ public final class CodeGenerator {
                 writeNonIdConstructor = true;
             } else {
                 for (int i = 0; i < tmp.size(); i++) {
-                    if (!entityDef.getProperty(tmp.get(i)).getType().cls()
-                            .isAssignableFrom(entityDef.getIdPropertyList().get(i).getType().cls())) {
+                    if (!entityDef.getProperty(tmp.get(i)).getType().clazz()
+                            .isAssignableFrom(entityDef.getIdPropertyList().get(i).getType().clazz())) {
                         writeNonIdConstructor = true;
 
                         break;
@@ -3827,15 +3827,15 @@ public final class CodeGenerator {
 
             fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
 
-            if (prop.getType().cls().equals(HBaseColumn.class)) {
+            if (prop.getType().clazz().equals(HBaseColumn.class)) {
                 HBaseColumnType<?> hbaseColumnType = (HBaseColumnType) prop.getType();
 
                 if (hbaseColumnType.getParameterTypes()[0].isEntity()) {
                     throw new AbacusException("Family/Entity property can't/unnecessary to be HBaseColumn");
                 }
 
-                String valueTypeName = N.isPrimitiveWapper(hbaseColumnType.getElementType().cls())
-                        ? N.primitiveOf(hbaseColumnType.getElementType().cls()).getSimpleName() : hbaseColumnType.getElementType().name();
+                String valueTypeName = N.isPrimitiveWapper(hbaseColumnType.getElementType().clazz())
+                        ? N.primitiveOf(hbaseColumnType.getElementType().clazz()).getSimpleName() : hbaseColumnType.getElementType().name();
 
                 // =========================
                 fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "    /**");
@@ -3884,13 +3884,13 @@ public final class CodeGenerator {
 
                 fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
 
-            } else if ((Collection.class.isAssignableFrom(prop.getType().cls())
-                    && prop.getType().getParameterTypes()[0].cls().equals(HBaseColumn.class))
-                    || (Map.class.isAssignableFrom(prop.getType().cls())
-                            && prop.getType().getParameterTypes()[1].cls().equals(HBaseColumn.class))) {
+            } else if ((Collection.class.isAssignableFrom(prop.getType().clazz())
+                    && prop.getType().getParameterTypes()[0].clazz().equals(HBaseColumn.class))
+                    || (Map.class.isAssignableFrom(prop.getType().clazz())
+                            && prop.getType().getParameterTypes()[1].clazz().equals(HBaseColumn.class))) {
 
                 HBaseColumnType<?> hbaseColumnType = null;
-                if (Collection.class.isAssignableFrom(prop.getType().cls())) {
+                if (Collection.class.isAssignableFrom(prop.getType().clazz())) {
                     hbaseColumnType = (HBaseColumnType) prop.getType().getParameterTypes()[0];
                 } else {
                     hbaseColumnType = (HBaseColumnType) prop.getType().getParameterTypes()[1];
@@ -3900,8 +3900,8 @@ public final class CodeGenerator {
                     throw new AbacusException("Family/Entity property can't/unnecessary to be HBaseColumn");
                 }
 
-                String valueTypeName = N.isPrimitiveWapper(hbaseColumnType.getElementType().cls())
-                        ? N.primitiveOf(hbaseColumnType.getElementType().cls()).getSimpleName() : hbaseColumnType.getElementType().name();
+                String valueTypeName = N.isPrimitiveWapper(hbaseColumnType.getElementType().clazz())
+                        ? N.primitiveOf(hbaseColumnType.getElementType().clazz()).getSimpleName() : hbaseColumnType.getElementType().name();
 
                 // =========================
                 fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "    /**");
@@ -3910,7 +3910,7 @@ public final class CodeGenerator {
                 fileWrite.write(
                         IOUtil.LINE_SEPARATOR + headSpace + "    public " + hbaseColumnType.name() + " " + fieldName + "() {" + IOUtil.LINE_SEPARATOR);
 
-                if (Collection.class.isAssignableFrom(prop.getType().cls())) {
+                if (Collection.class.isAssignableFrom(prop.getType().clazz())) {
                     fileWrite.write(headSpace + "        return (" + hbaseColumnType.name() + ") (N.isNullOrEmpty(" + fieldName + ") ? "
                             + HBaseColumn.class.getSimpleName() + ".emptyOf(" + valueTypeName + ".class) : " + fieldName + ".iterator().next());"
                             + IOUtil.LINE_SEPARATOR);
@@ -3975,22 +3975,22 @@ public final class CodeGenerator {
 
                 fileWrite.write(headSpace + "        if (" + fieldName + " == null) {" + IOUtil.LINE_SEPARATOR);
 
-                if (prop.getType().cls().equals(SortedSet.class)) {
+                if (prop.getType().clazz().equals(SortedSet.class)) {
                     fileWrite.write(headSpace + "            " + fieldName + " = new java.util.TreeSet<" + prop.getType().getParameterTypes()[0].name()
                             + ">(HBaseColumn.DESC_HBASE_COLUMN_COMPARATOR);" + IOUtil.LINE_SEPARATOR);
-                } else if (prop.getType().cls().equals(SortedMap.class)) {
+                } else if (prop.getType().clazz().equals(SortedMap.class)) {
                     fileWrite.write(headSpace + "            " + fieldName + " = new java.util.TreeMap<" + prop.getType().getParameterTypes()[0].name()
                             + ", " + prop.getType().getParameterTypes()[1].name() + ">(HBaseColumn.DESC_HBASE_VERSION_COMPARATOR);" + IOUtil.LINE_SEPARATOR);
                 } else {
                     fileWrite.write(headSpace + "            " + fieldName + " = N.newInstance("
-                            + ClassUtil.getCanonicalClassName(prop.getType().cls()) + ".class);" + IOUtil.LINE_SEPARATOR);
+                            + ClassUtil.getCanonicalClassName(prop.getType().clazz()) + ".class);" + IOUtil.LINE_SEPARATOR);
                 }
 
                 fileWrite.write(headSpace + "        } else {" + IOUtil.LINE_SEPARATOR);
                 fileWrite.write(headSpace + "            " + fieldName + ".clear();" + IOUtil.LINE_SEPARATOR);
                 fileWrite.write(headSpace + "        }" + IOUtil.LINE_SEPARATOR);
 
-                if (Collection.class.isAssignableFrom(prop.getType().cls())) {
+                if (Collection.class.isAssignableFrom(prop.getType().clazz())) {
                     fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "        " + fieldName + ".add(hbaseColumn);" + IOUtil.LINE_SEPARATOR);
                 } else {
                     fileWrite.write(
@@ -4058,20 +4058,20 @@ public final class CodeGenerator {
 
                 fileWrite.write(headSpace + "        if (" + fieldName + " == null) {" + IOUtil.LINE_SEPARATOR);
 
-                if (prop.getType().cls().equals(SortedSet.class)) {
+                if (prop.getType().clazz().equals(SortedSet.class)) {
                     fileWrite.write(headSpace + "            " + fieldName + " = new java.util.TreeSet<" + prop.getType().getParameterTypes()[0].name()
                             + ">(HBaseColumn.DESC_HBASE_COLUMN_COMPARATOR);" + IOUtil.LINE_SEPARATOR);
-                } else if (prop.getType().cls().equals(SortedMap.class)) {
+                } else if (prop.getType().clazz().equals(SortedMap.class)) {
                     fileWrite.write(headSpace + "            " + fieldName + " = new java.util.TreeMap<" + prop.getType().getParameterTypes()[0].name()
                             + ", " + prop.getType().getParameterTypes()[1].name() + ">(HBaseColumn.DESC_HBASE_VERSION_COMPARATOR);" + IOUtil.LINE_SEPARATOR);
                 } else {
                     fileWrite.write(headSpace + "            " + fieldName + " = N.newInstance("
-                            + ClassUtil.getCanonicalClassName(prop.getType().cls()) + ".class);" + IOUtil.LINE_SEPARATOR);
+                            + ClassUtil.getCanonicalClassName(prop.getType().clazz()) + ".class);" + IOUtil.LINE_SEPARATOR);
                 }
 
                 fileWrite.write(headSpace + "        }" + IOUtil.LINE_SEPARATOR);
 
-                if (Collection.class.isAssignableFrom(prop.getType().cls())) {
+                if (Collection.class.isAssignableFrom(prop.getType().clazz())) {
                     fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "        " + fieldName + ".add(hbaseColumn);" + IOUtil.LINE_SEPARATOR);
                 } else {
                     fileWrite.write(
@@ -4797,14 +4797,14 @@ public final class CodeGenerator {
 
     private static String getSimpleType(Type<?> type, final Property prop, final String pkgName, final Map<String, Class<?>> importedClasses) {
         type = type == null ? prop.getType() : type;
-        final Class<?> typeClass = type.cls();
+        final Class<?> typeClass = type.clazz();
 
         String typeName = null;
 
         if (type.isGenericType()) {
             typeName = type.name();
         } else {
-            Class<?> clazz = type.cls();
+            Class<?> clazz = type.clazz();
             typeName = Object.class.equals(clazz) && !type.name().equals(ObjectType.OBJECT) ? type.name() : clazz.getCanonicalName();
         }
 
@@ -4885,8 +4885,8 @@ public final class CodeGenerator {
     }
 
     private static void getUsualType(final Set<Class<?>> set, final Type<?> type) {
-        if (isUsualType(type.cls().getCanonicalName())) {
-            set.add(type.cls());
+        if (isUsualType(type.clazz().getCanonicalName())) {
+            set.add(type.clazz());
         }
 
         if (type.isGenericType()) {

@@ -936,9 +936,9 @@ public final class N {
             } else if (cls.equals(Set.class)) {
                 return (T) new HashSet<>();
             } else if (cls.equals(Queue.class)) {
-                return (T) new ArrayDeque<>();
+                return (T) new LinkedList<>();
             } else if (cls.equals(Deque.class)) {
-                return (T) new ArrayDeque<>();
+                return (T) new LinkedList<>();
             } else if (cls.equals(SortedSet.class)) {
                 return (T) new TreeSet<>();
             } else if (cls.equals(SortedMap.class)) {
@@ -2326,7 +2326,7 @@ public final class N {
 
         final Class<?> srcPropClass = obj.getClass();
 
-        if (targetType.cls().isAssignableFrom(srcPropClass)) {
+        if (targetType.clazz().isAssignableFrom(srcPropClass)) {
             return (T) obj;
         }
 
@@ -2337,17 +2337,17 @@ public final class N {
         }
 
         if (targetType.isEntity() && srcPropType.isMap()) {
-            return Maps.map2Entity(targetType.cls(), (Map<String, Object>) obj);
+            return Maps.map2Entity(targetType.clazz(), (Map<String, Object>) obj);
         } else if (targetType.isMap() && srcPropType.isEntity()) {
             try {
-                return (T) Maps.entity2Map((Map<String, Object>) N.newInstance(targetType.cls()), obj);
+                return (T) Maps.entity2Map((Map<String, Object>) N.newInstance(targetType.clazz()), obj);
             } catch (Exception e) {
                 // ignore.
             }
         } else if (targetType.isEntity() && srcPropType.isEntity()) {
-            return copy(targetType.cls(), obj);
-        } else if (targetType.isNumber() && srcPropType.isNumber() && CLASS_TYPE_ENUM.containsKey(targetType.cls())) {
-            switch (CLASS_TYPE_ENUM.get(targetType.cls())) {
+            return copy(targetType.clazz(), obj);
+        } else if (targetType.isNumber() && srcPropType.isNumber() && CLASS_TYPE_ENUM.containsKey(targetType.clazz())) {
+            switch (CLASS_TYPE_ENUM.get(targetType.clazz())) {
                 case 3:
                 case 13:
                     return (T) (Byte) ((Number) obj).byteValue();
@@ -10516,7 +10516,7 @@ public final class N {
             if (typeA.isPrimitiveArray()) {
                 final Type<Object> typeB = typeOf(b.getClass());
 
-                return typeA.cls().equals(typeB.cls()) && typeA.equals(a, b);
+                return typeA.clazz().equals(typeB.clazz()) && typeA.equals(a, b);
             } else if (typeA.isObjectArray()) {
                 final Type<Object> typeB = typeOf(b.getClass());
 
@@ -30826,7 +30826,7 @@ public final class N {
      * @return
      */
     public static <T> T fromJSON(final Type<T> targetType, final String json, final JSONDeserializationConfig config) {
-        return Utils.jsonParser.deserialize(targetType.cls(), json, setConfig(targetType, config, true));
+        return Utils.jsonParser.deserialize(targetType.clazz(), json, setConfig(targetType, config, true));
     }
 
     /**
@@ -30847,7 +30847,7 @@ public final class N {
      * @return
      */
     public static <T> T fromJSON(final Type<T> targetType, final File json, final JSONDeserializationConfig config) {
-        return Utils.jsonParser.deserialize(targetType.cls(), json, setConfig(targetType, config, true));
+        return Utils.jsonParser.deserialize(targetType.clazz(), json, setConfig(targetType, config, true));
     }
 
     /**
@@ -30868,7 +30868,7 @@ public final class N {
      * @return
      */
     public static <T> T fromJSON(final Type<T> targetType, final InputStream json, final JSONDeserializationConfig config) {
-        return Utils.jsonParser.deserialize(targetType.cls(), json, setConfig(targetType, config, true));
+        return Utils.jsonParser.deserialize(targetType.clazz(), json, setConfig(targetType, config, true));
     }
 
     /**
@@ -30889,7 +30889,7 @@ public final class N {
      * @return
      */
     public static <T> T fromJSON(final Type<T> targetType, final Reader json, final JSONDeserializationConfig config) {
-        return Utils.jsonParser.deserialize(targetType.cls(), json, setConfig(targetType, config, true));
+        return Utils.jsonParser.deserialize(targetType.clazz(), json, setConfig(targetType, config, true));
     }
 
     /**
@@ -30914,7 +30914,7 @@ public final class N {
      * @return
      */
     public static <T> T fromJSON(final Type<T> targetType, final String json, final int fromIndex, final int toIndex, final JSONDeserializationConfig config) {
-        return Utils.jsonParser.deserialize(targetType.cls(), json, fromIndex, toIndex, setConfig(targetType, config, true));
+        return Utils.jsonParser.deserialize(targetType.clazz(), json, fromIndex, toIndex, setConfig(targetType, config, true));
     }
 
     public static String toXML(final Object obj) {
@@ -30999,7 +30999,7 @@ public final class N {
      * @return
      */
     public static <T> T fromXML(final Type<T> targetType, final String xml, final XMLDeserializationConfig config) {
-        return Utils.xmlParser.deserialize(targetType.cls(), xml, setConfig(targetType, config, false));
+        return Utils.xmlParser.deserialize(targetType.clazz(), xml, setConfig(targetType, config, false));
     }
 
     /**
@@ -31020,7 +31020,7 @@ public final class N {
      * @return
      */
     public static <T> T fromXML(final Type<T> targetType, final File xml, final XMLDeserializationConfig config) {
-        return Utils.xmlParser.deserialize(targetType.cls(), xml, setConfig(targetType, config, false));
+        return Utils.xmlParser.deserialize(targetType.clazz(), xml, setConfig(targetType, config, false));
     }
 
     /**
@@ -31041,7 +31041,7 @@ public final class N {
      * @return
      */
     public static <T> T fromXML(final Type<T> targetType, final InputStream xml, final XMLDeserializationConfig config) {
-        return Utils.xmlParser.deserialize(targetType.cls(), xml, setConfig(targetType, config, false));
+        return Utils.xmlParser.deserialize(targetType.clazz(), xml, setConfig(targetType, config, false));
     }
 
     /**
@@ -31062,7 +31062,7 @@ public final class N {
      * @return
      */
     public static <T> T fromXML(final Type<T> targetType, final Reader xml, final XMLDeserializationConfig config) {
-        return Utils.xmlParser.deserialize(targetType.cls(), xml, setConfig(targetType, config, false));
+        return Utils.xmlParser.deserialize(targetType.clazz(), xml, setConfig(targetType, config, false));
     }
 
     private static <C extends DeserializationConfig<C>> C setConfig(final Type<?> targetType, final C config, boolean isJSON) {

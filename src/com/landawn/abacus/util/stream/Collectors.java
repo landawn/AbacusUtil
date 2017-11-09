@@ -4368,7 +4368,7 @@ public class Collectors {
 
     public static <T, K, U> Collector<T, ?, ListMultimap<K, U>> toMultimap(Function<? super T, ? extends K> keyExtractor,
             Function<? super T, ? extends U> valueMapper) {
-        final Supplier<ListMultimap<K, U>> mapFactory = Suppliers.ofMultimap();
+        final Supplier<ListMultimap<K, U>> mapFactory = Suppliers.ofListMultimap();
 
         return toMultimap(keyExtractor, valueMapper, mapFactory);
     }

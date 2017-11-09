@@ -33,6 +33,8 @@ import java.util.Objects;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
@@ -1433,41 +1435,17 @@ public final class Fn {
         };
 
         @SuppressWarnings("rawtypes")
-        private static final IntFunction<? super Map> MAP_FACTORY = new IntFunction<Map>() {
-            @Override
-            public Map apply(int len) {
-                return new HashMap<>(N.initHashCapacity(len));
-            }
-        };
-
-        @SuppressWarnings("rawtypes")
-        private static final IntFunction<? super LinkedHashMap> LINKED_HASH_MAP_FACTORY = new IntFunction<LinkedHashMap>() {
-            @Override
-            public LinkedHashMap apply(int len) {
-                return new LinkedHashMap<>(N.initHashCapacity(len));
-            }
-        };
-
-        @SuppressWarnings("rawtypes")
-        private static final IntFunction<? super TreeMap> TREE_MAP_FACTORY = new IntFunction<TreeMap>() {
-            @Override
-            public TreeMap apply(int len) {
-                return new TreeMap<>();
-            }
-        };
-
-        @SuppressWarnings("rawtypes")
-        private static final IntFunction<? super ConcurrentHashMap> CONCURRENT_HASH_MAP_FACTORY = new IntFunction<ConcurrentHashMap>() {
-            @Override
-            public ConcurrentHashMap apply(int len) {
-                return new ConcurrentHashMap(N.initHashCapacity(len));
-            }
-        };
-
-        @SuppressWarnings("rawtypes")
         private static final IntFunction<? super Queue> QUEUE_FACTORY = new IntFunction<Queue>() {
             @Override
             public Queue apply(int len) {
+                return new LinkedList();
+            }
+        };
+
+        @SuppressWarnings("rawtypes")
+        private static final IntFunction<? super Deque> DEQUE_FACTORY = new IntFunction<Deque>() {
+            @Override
+            public Deque apply(int len) {
                 return new LinkedList();
             }
         };
@@ -1501,6 +1479,38 @@ public final class Fn {
             @Override
             public PriorityQueue apply(int len) {
                 return new PriorityQueue(len);
+            }
+        };
+
+        @SuppressWarnings("rawtypes")
+        private static final IntFunction<? super Map> MAP_FACTORY = new IntFunction<Map>() {
+            @Override
+            public Map apply(int len) {
+                return new HashMap<>(N.initHashCapacity(len));
+            }
+        };
+
+        @SuppressWarnings("rawtypes")
+        private static final IntFunction<? super LinkedHashMap> LINKED_HASH_MAP_FACTORY = new IntFunction<LinkedHashMap>() {
+            @Override
+            public LinkedHashMap apply(int len) {
+                return new LinkedHashMap<>(N.initHashCapacity(len));
+            }
+        };
+
+        @SuppressWarnings("rawtypes")
+        private static final IntFunction<? super TreeMap> TREE_MAP_FACTORY = new IntFunction<TreeMap>() {
+            @Override
+            public TreeMap apply(int len) {
+                return new TreeMap<>();
+            }
+        };
+
+        @SuppressWarnings("rawtypes")
+        private static final IntFunction<? super ConcurrentHashMap> CONCURRENT_HASH_MAP_FACTORY = new IntFunction<ConcurrentHashMap>() {
+            @Override
+            public ConcurrentHashMap apply(int len) {
+                return new ConcurrentHashMap(N.initHashCapacity(len));
             }
         };
 
@@ -1601,33 +1611,23 @@ public final class Fn {
         }
 
         @SuppressWarnings("rawtypes")
+        public static <T> IntFunction<SortedSet<T>> ofSortedSet() {
+            return (IntFunction) TREE_SET_FACTORY;
+        }
+
+        @SuppressWarnings("rawtypes")
         public static <T> IntFunction<TreeSet<T>> ofTreeSet() {
             return (IntFunction) TREE_SET_FACTORY;
         }
 
         @SuppressWarnings("rawtypes")
-        public static <K, V> IntFunction<Map<K, V>> ofMap() {
-            return (IntFunction) MAP_FACTORY;
-        }
-
-        @SuppressWarnings("rawtypes")
-        public static <K, V> IntFunction<LinkedHashMap<K, V>> ofLinkedHashMap() {
-            return (IntFunction) LINKED_HASH_MAP_FACTORY;
-        }
-
-        @SuppressWarnings("rawtypes")
-        public static <K, V> IntFunction<TreeMap<K, V>> ofTreeMap() {
-            return (IntFunction) TREE_MAP_FACTORY;
-        }
-
-        @SuppressWarnings("rawtypes")
-        public static <K, V> IntFunction<ConcurrentHashMap<K, V>> ofConcurrentHashMap() {
-            return (IntFunction) CONCURRENT_HASH_MAP_FACTORY;
-        }
-
-        @SuppressWarnings("rawtypes")
         public static <T> IntFunction<Queue<T>> ofQueue() {
             return (IntFunction) QUEUE_FACTORY;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <T> IntFunction<Deque<T>> ofDeque() {
+            return (IntFunction) DEQUE_FACTORY;
         }
 
         @SuppressWarnings("rawtypes")
@@ -1648,6 +1648,36 @@ public final class Fn {
         @SuppressWarnings("rawtypes")
         public static <T> IntFunction<PriorityQueue<T>> ofPriorityQueue() {
             return (IntFunction) PRIORITY_QUEUE_FACTORY;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <K, V> IntFunction<Map<K, V>> ofMap() {
+            return (IntFunction) MAP_FACTORY;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <K, V> IntFunction<LinkedHashMap<K, V>> ofLinkedHashMap() {
+            return (IntFunction) LINKED_HASH_MAP_FACTORY;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <K, V> IntFunction<SortedMap<K, V>> ofSortedMap() {
+            return (IntFunction) TREE_MAP_FACTORY;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <K, V> IntFunction<TreeMap<K, V>> ofTreeMap() {
+            return (IntFunction) TREE_MAP_FACTORY;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <K, V> IntFunction<ConcurrentMap<K, V>> ofConcurrentMap() {
+            return (IntFunction) CONCURRENT_HASH_MAP_FACTORY;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <K, V> IntFunction<ConcurrentHashMap<K, V>> ofConcurrentHashMap() {
+            return (IntFunction) CONCURRENT_HASH_MAP_FACTORY;
         }
     }
 
@@ -1833,41 +1863,17 @@ public final class Fn {
         };
 
         @SuppressWarnings("rawtypes")
-        private static final Supplier<? super Map> MAP = new Supplier<Map>() {
-            @Override
-            public Map get() {
-                return new HashMap();
-            }
-        };
-
-        @SuppressWarnings("rawtypes")
-        private static final Supplier<? super LinkedHashMap> LINKED_HASH_MAP = new Supplier<LinkedHashMap>() {
-            @Override
-            public LinkedHashMap get() {
-                return new LinkedHashMap();
-            }
-        };
-
-        @SuppressWarnings("rawtypes")
-        private static final Supplier<? super TreeMap> TREE_MAP = new Supplier<TreeMap>() {
-            @Override
-            public TreeMap get() {
-                return new TreeMap();
-            }
-        };
-
-        @SuppressWarnings("rawtypes")
-        private static final Supplier<? super ConcurrentHashMap> CONCURRENT_HASH_MAP = new Supplier<ConcurrentHashMap>() {
-            @Override
-            public ConcurrentHashMap get() {
-                return new ConcurrentHashMap();
-            }
-        };
-
-        @SuppressWarnings("rawtypes")
         private static final Supplier<? super Queue> QUEUE = new Supplier<Queue>() {
             @Override
             public Queue get() {
+                return new LinkedList();
+            }
+        };
+
+        @SuppressWarnings("rawtypes")
+        private static final Supplier<? super Deque> DEQUE = new Supplier<Deque>() {
+            @Override
+            public Deque get() {
                 return new LinkedList();
             }
         };
@@ -1905,6 +1911,46 @@ public final class Fn {
         };
 
         @SuppressWarnings("rawtypes")
+        private static final Supplier<? super Map> MAP = new Supplier<Map>() {
+            @Override
+            public Map get() {
+                return new HashMap();
+            }
+        };
+
+        @SuppressWarnings("rawtypes")
+        private static final Supplier<? super LinkedHashMap> LINKED_HASH_MAP = new Supplier<LinkedHashMap>() {
+            @Override
+            public LinkedHashMap get() {
+                return new LinkedHashMap();
+            }
+        };
+
+        @SuppressWarnings("rawtypes")
+        private static final Supplier<? super TreeMap> TREE_MAP = new Supplier<TreeMap>() {
+            @Override
+            public TreeMap get() {
+                return new TreeMap();
+            }
+        };
+
+        @SuppressWarnings("rawtypes")
+        private static final Supplier<? super ConcurrentHashMap> CONCURRENT_HASH_MAP = new Supplier<ConcurrentHashMap>() {
+            @Override
+            public ConcurrentHashMap get() {
+                return new ConcurrentHashMap();
+            }
+        };
+
+        @SuppressWarnings("rawtypes")
+        private static final Supplier<? super BiMap> BI_MAP = new Supplier<BiMap>() {
+            @Override
+            public BiMap get() {
+                return new BiMap();
+            }
+        };
+
+        @SuppressWarnings("rawtypes")
         private static final Supplier<? super Multiset> MULTISET = new Supplier<Multiset>() {
             @Override
             public Multiset get() {
@@ -1921,7 +1967,7 @@ public final class Fn {
         };
 
         @SuppressWarnings("rawtypes")
-        private static final Supplier<? super ListMultimap> MULTIMAP = new Supplier<ListMultimap>() {
+        private static final Supplier<? super ListMultimap> LISTMULTIMAP = new Supplier<ListMultimap>() {
             @Override
             public ListMultimap get() {
                 return N.newListMultimap();
@@ -1929,10 +1975,10 @@ public final class Fn {
         };
 
         @SuppressWarnings("rawtypes")
-        private static final Supplier<? super BiMap> BI_MAP = new Supplier<BiMap>() {
+        private static final Supplier<? super SetMultimap> SETMULTIMAP = new Supplier<SetMultimap>() {
             @Override
-            public BiMap get() {
-                return new BiMap();
+            public SetMultimap get() {
+                return N.newSetMultimap();
             }
         };
 
@@ -2048,33 +2094,13 @@ public final class Fn {
         }
 
         @SuppressWarnings("rawtypes")
-        public static <T> Supplier<TreeSet<T>> ofTreeSet() {
+        public static <T> Supplier<SortedSet<T>> ofSortedSet() {
             return (Supplier) TREE_SET;
         }
 
         @SuppressWarnings("rawtypes")
-        public static <K, V> Supplier<Map<K, V>> ofMap() {
-            return (Supplier) MAP;
-        }
-
-        @SuppressWarnings("rawtypes")
-        public static <K, V> Supplier<LinkedHashMap<K, V>> ofLinkedHashMap() {
-            return (Supplier) LINKED_HASH_MAP;
-        }
-
-        @SuppressWarnings("rawtypes")
-        public static <K, V> Supplier<TreeMap<K, V>> ofTreeMap() {
-            return (Supplier) TREE_MAP;
-        }
-
-        @SuppressWarnings("rawtypes")
-        public static <K, V> Supplier<ConcurrentMap<K, V>> ofConcurrentMap() {
-            return (Supplier) CONCURRENT_HASH_MAP;
-        }
-
-        @SuppressWarnings("rawtypes")
-        public static <K, V> Supplier<ConcurrentHashMap<K, V>> ofConcurrentHashMap() {
-            return (Supplier) CONCURRENT_HASH_MAP;
+        public static <T> Supplier<TreeSet<T>> ofTreeSet() {
+            return (Supplier) TREE_SET;
         }
 
         @SuppressWarnings("rawtypes")
@@ -2084,7 +2110,7 @@ public final class Fn {
 
         @SuppressWarnings("rawtypes")
         public static <T> Supplier<Deque<T>> ofDeque() {
-            return (Supplier) ARRAY_DEQUE;
+            return (Supplier) DEQUE;
         }
 
         @SuppressWarnings("rawtypes")
@@ -2108,6 +2134,41 @@ public final class Fn {
         }
 
         @SuppressWarnings("rawtypes")
+        public static <K, V> Supplier<Map<K, V>> ofMap() {
+            return (Supplier) MAP;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <K, V> Supplier<LinkedHashMap<K, V>> ofLinkedHashMap() {
+            return (Supplier) LINKED_HASH_MAP;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <K, V> Supplier<SortedMap<K, V>> ofSortedMap() {
+            return (Supplier) TREE_MAP;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <K, V> Supplier<TreeMap<K, V>> ofTreeMap() {
+            return (Supplier) TREE_MAP;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <K, V> Supplier<ConcurrentMap<K, V>> ofConcurrentMap() {
+            return (Supplier) CONCURRENT_HASH_MAP;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <K, V> Supplier<ConcurrentHashMap<K, V>> ofConcurrentHashMap() {
+            return (Supplier) CONCURRENT_HASH_MAP;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <K, V> Supplier<BiMap<K, V>> ofBiMap() {
+            return (Supplier) BI_MAP;
+        }
+
+        @SuppressWarnings("rawtypes")
         public static <T> Supplier<Multiset<T>> ofMultiset() {
             return (Supplier) MULTISET;
         }
@@ -2118,13 +2179,13 @@ public final class Fn {
         }
 
         @SuppressWarnings("rawtypes")
-        public static <K, v> Supplier<ListMultimap<K, v>> ofMultimap() {
-            return (Supplier) MULTIMAP;
+        public static <K, E> Supplier<ListMultimap<K, E>> ofListMultimap() {
+            return (Supplier) LISTMULTIMAP;
         }
 
         @SuppressWarnings("rawtypes")
-        public static <K, V> Supplier<BiMap<K, V>> ofBiMap() {
-            return (Supplier) BI_MAP;
+        public static <K, E> Supplier<SetMultimap<K, E>> ofSetMultimap() {
+            return (Supplier) SETMULTIMAP;
         }
 
         public static Supplier<StringBuilder> ofStringBuilder() {

@@ -15,6 +15,7 @@
 package com.landawn.abacus.util.function;
 
 import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -24,10 +25,13 @@ import java.util.Objects;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Function;
 
@@ -156,28 +160,20 @@ public interface IntFunction<R> extends java.util.function.IntFunction<R> {
         return Factory.ofLinkedHashSet();
     }
 
+    public static <T> IntFunction<SortedSet<T>> ofSortedSet() {
+        return Factory.ofSortedSet();
+    }
+
     public static <T> IntFunction<TreeSet<T>> ofTreeSet() {
         return Factory.ofTreeSet();
     }
 
-    public static <K, V> IntFunction<Map<K, V>> ofMap() {
-        return Factory.ofMap();
-    }
-
-    public static <K, V> IntFunction<LinkedHashMap<K, V>> ofLinkedHashMap() {
-        return Factory.ofLinkedHashMap();
-    }
-
-    public static <K, V> IntFunction<TreeMap<K, V>> ofTreeMap() {
-        return Factory.ofTreeMap();
-    }
-
-    public static <K, V> IntFunction<ConcurrentHashMap<K, V>> ofConcurrentHashMap() {
-        return Factory.ofConcurrentHashMap();
-    }
-
     public static <T> IntFunction<Queue<T>> ofQueue() {
         return Factory.ofQueue();
+    }
+
+    public static <T> IntFunction<Deque<T>> ofDeque() {
+        return Factory.ofDeque();
     }
 
     public static <T> IntFunction<ArrayDeque<T>> ofArrayDeque() {
@@ -194,5 +190,29 @@ public interface IntFunction<R> extends java.util.function.IntFunction<R> {
 
     public static <T> IntFunction<PriorityQueue<T>> ofPriorityQueue() {
         return Factory.ofPriorityQueue();
+    }
+
+    public static <K, V> IntFunction<Map<K, V>> ofMap() {
+        return Factory.ofMap();
+    }
+
+    public static <K, V> IntFunction<LinkedHashMap<K, V>> ofLinkedHashMap() {
+        return Factory.ofLinkedHashMap();
+    }
+
+    public static <K, V> IntFunction<SortedMap<K, V>> ofSortedMap() {
+        return Factory.ofSortedMap();
+    }
+
+    public static <K, V> IntFunction<TreeMap<K, V>> ofTreeMap() {
+        return Factory.ofTreeMap();
+    }
+
+    public static <K, V> IntFunction<ConcurrentMap<K, V>> ofConcurrentMap() {
+        return Factory.ofConcurrentMap();
+    }
+
+    public static <K, V> IntFunction<ConcurrentHashMap<K, V>> ofConcurrentHashMap() {
+        return Factory.ofConcurrentHashMap();
     }
 }

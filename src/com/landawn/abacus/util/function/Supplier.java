@@ -15,6 +15,7 @@
 package com.landawn.abacus.util.function;
 
 import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -23,10 +24,13 @@ import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import com.landawn.abacus.util.BiMap;
@@ -41,6 +45,7 @@ import com.landawn.abacus.util.ListMultimap;
 import com.landawn.abacus.util.LongList;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multiset;
+import com.landawn.abacus.util.SetMultimap;
 import com.landawn.abacus.util.ShortList;
 
 /**
@@ -102,28 +107,20 @@ public interface Supplier<T> extends java.util.function.Supplier<T> {
         return Suppliers.ofLinkedHashSet();
     }
 
+    static <T> Supplier<SortedSet<T>> ofSortedSet() {
+        return Suppliers.ofSortedSet();
+    }
+
     static <T> Supplier<TreeSet<T>> ofTreeSet() {
         return Suppliers.ofTreeSet();
     }
 
-    static <K, V> Supplier<Map<K, V>> ofMap() {
-        return Suppliers.ofMap();
-    }
-
-    static <K, V> Supplier<LinkedHashMap<K, V>> ofLinkedHashMap() {
-        return Suppliers.ofLinkedHashMap();
-    }
-
-    static <K, V> Supplier<TreeMap<K, V>> ofTreeMap() {
-        return Suppliers.ofTreeMap();
-    }
-
-    static <K, V> Supplier<ConcurrentHashMap<K, V>> ofConcurrentHashMap() {
-        return Suppliers.ofConcurrentHashMap();
-    }
-
     static <T> Supplier<Queue<T>> ofQueue() {
         return Suppliers.ofQueue();
+    }
+
+    static <T> Supplier<Deque<T>> ofDeque() {
+        return Suppliers.ofDeque();
     }
 
     static <T> Supplier<ArrayDeque<T>> ofArrayDeque() {
@@ -142,6 +139,34 @@ public interface Supplier<T> extends java.util.function.Supplier<T> {
         return Suppliers.ofPriorityQueue();
     }
 
+    static <K, V> Supplier<Map<K, V>> ofMap() {
+        return Suppliers.ofMap();
+    }
+
+    static <K, V> Supplier<LinkedHashMap<K, V>> ofLinkedHashMap() {
+        return Suppliers.ofLinkedHashMap();
+    }
+
+    static <K, V> Supplier<SortedMap<K, V>> ofSortedMap() {
+        return Suppliers.ofSortedMap();
+    }
+
+    static <K, V> Supplier<TreeMap<K, V>> ofTreeMap() {
+        return Suppliers.ofTreeMap();
+    }
+
+    static <K, V> Supplier<ConcurrentMap<K, V>> ofConcurrentMap() {
+        return Suppliers.ofConcurrentMap();
+    }
+
+    static <K, V> Supplier<ConcurrentHashMap<K, V>> ofConcurrentHashMap() {
+        return Suppliers.ofConcurrentHashMap();
+    }
+
+    public static <K, V> Supplier<BiMap<K, V>> ofBiMap() {
+        return Suppliers.ofBiMap();
+    }
+
     public static <T> Supplier<Multiset<T>> ofMultiset() {
         return Suppliers.ofMultiset();
     }
@@ -150,12 +175,12 @@ public interface Supplier<T> extends java.util.function.Supplier<T> {
         return Suppliers.ofLongMultiset();
     }
 
-    public static <K, v> Supplier<ListMultimap<K, v>> ofMultimap() {
-        return Suppliers.ofMultimap();
+    public static <K, v> Supplier<ListMultimap<K, v>> ofListMultimap() {
+        return Suppliers.ofListMultimap();
     }
 
-    public static <K, V> Supplier<BiMap<K, V>> ofBiMap() {
-        return Suppliers.ofBiMap();
+    public static <K, v> Supplier<SetMultimap<K, v>> ofSetMultimap() {
+        return Suppliers.ofSetMultimap();
     }
 
     public static Supplier<StringBuilder> ofStringBuilder() {
