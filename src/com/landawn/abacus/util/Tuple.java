@@ -386,6 +386,10 @@ public abstract class Tuple {
             throw new UnsupportedOperationException();
         }
 
+        public Pair<T1, T2> toPair() {
+            return Pair.of(_1, _2);
+        }
+
         @Override
         public int hashCode() {
             final int prime = 31;
@@ -483,6 +487,10 @@ public abstract class Tuple {
         @Override
         public Stream<Tuple3<T1, T2, T3>> stream() {
             return Stream.of(this);
+        }
+
+        public Triple<T1, T2, T3> toTriple() {
+            return Triple.of(_1, _2, _3);
         }
 
         @Override

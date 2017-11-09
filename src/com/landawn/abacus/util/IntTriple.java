@@ -1,0 +1,103 @@
+package com.landawn.abacus.util;
+
+import com.landawn.abacus.util.function.Consumer;
+import com.landawn.abacus.util.function.Function;
+import com.landawn.abacus.util.function.IntConsumer;
+import com.landawn.abacus.util.function.Predicate;
+import com.landawn.abacus.util.stream.Stream;
+
+public final class IntTriple {
+    public final int _1;
+    public final int _2;
+    public final int _3;
+
+    IntTriple() {
+        this(0, 0, 0);
+    }
+
+    IntTriple(int _1, int _2, int _3) {
+        this._1 = _1;
+        this._2 = _2;
+        this._3 = _3;
+    }
+
+    public static IntTriple of(int _1, int _2, int _3) {
+        return new IntTriple(_1, _2, _3);
+    }
+
+    public int min() {
+        return N.min(_1, _2, _3);
+    }
+
+    public int max() {
+        return N.max(_1, _2, _3);
+    }
+
+    public int median() {
+        return N.median(_1, _2, _3);
+    }
+
+    public int sum() {
+        return _1 + _2 + _3;
+    }
+
+    public double average() {
+        return sum() / 3d;
+    }
+
+    public IntTriple reversed() {
+        return new IntTriple(_3, _2, _1);
+    }
+
+    public int[] toArray() {
+        return new int[] { _1, _2, _3 };
+    }
+
+    public IntList toList() {
+        return IntList.of(_1, _2, _3);
+    }
+
+    public void forEach(IntConsumer comsumer) {
+        comsumer.accept(this._1);
+        comsumer.accept(this._2);
+        comsumer.accept(this._3);
+    }
+
+    public void accept(Consumer<IntTriple> action) {
+        action.accept(this);
+    }
+
+    public <U> U map(Function<IntTriple, U> mapper) {
+        return mapper.apply(this);
+    }
+
+    public Optional<IntTriple> filter(final Predicate<IntTriple> predicate) {
+        return predicate.test(this) ? Optional.of(this) : Optional.<IntTriple> empty();
+    }
+
+    public Stream<IntTriple> stream() {
+        return Stream.of(this);
+    }
+
+    @Override
+    public int hashCode() {
+        return (31 * (31 * _1 + this._2)) + _3;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        } else if (!(obj instanceof IntTriple)) {
+            return false;
+        } else {
+            IntTriple other = (IntTriple) obj;
+            return this._1 == other._1 && this._2 == other._2 && this._3 == other._3;
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "[" + this._1 + ", " + this._2 + ", " + this._3 + "]";
+    }
+}

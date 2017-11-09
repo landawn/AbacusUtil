@@ -1,6 +1,10 @@
 package com.landawn.abacus.util;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.util.function.Consumer;
@@ -294,22 +298,6 @@ public abstract class Any<T> {
     public abstract <U> Any<U> flatMapIfNotNull(Function<? super T, ? extends Any<U>> mapper);
 
     /**
-     * 
-     * @return an empty stream if it's not present.
-     */
-    public Stream<T> stream() {
-        return isPresent() ? Stream.of(value) : Stream.<T> empty();
-    }
-
-    /**
-     * 
-     * @return an empty stream if it's null.
-     */
-    public Stream<T> streamIfNotNull() {
-        return isNotNull() ? Stream.of(value) : Stream.<T> empty();
-    }
-
-    /**
      * Return the value if present, otherwise return {@code other}.
      *
      * @param other the value to be returned if there is no value present, may be null
@@ -395,6 +383,58 @@ public abstract class Any<T> {
         } else {
             throw exceptionSupplier.get();
         }
+    }
+
+    /**
+     * 
+     * @return an empty stream if it's not present.
+     */
+    public Stream<T> stream() {
+        return isPresent() ? Stream.of(value) : Stream.<T> empty();
+    }
+
+    /**
+     * 
+     * @return an empty stream if it's null.
+     */
+    public Stream<T> streamIfNotNull() {
+        return isNotNull() ? Stream.of(value) : Stream.<T> empty();
+    }
+
+    /**
+     * Returns a {@code List} with the value if it presents, otherwise an empty {@code List}.
+     * 
+     * @return
+     */
+    public List<T> toList() {
+        return isPresent() ? N.asList(value) : new ArrayList<T>();
+    }
+
+    /**
+     * Returns a {@code List} with the value if the value is not null, otherwise an empty {@code List}.
+     * 
+     * @return
+     */
+    public List<T> toListIfNotNull() {
+        return isNotNull() ? N.asList(value) : new ArrayList<T>();
+    }
+
+    /**
+     * Returns a {@code Set} with the value if it presents, otherwise an empty {@code Set}.
+     * 
+     * @return
+     */
+    public Set<T> toSet() {
+        return isPresent() ? N.asSet(value) : new HashSet<T>();
+    }
+
+    /**
+     * Returns a {@code Set} with the value if the value is not null, otherwise an empty {@code Set}.
+     * 
+     * @return
+     */
+    public Set<T> toSetIfNotNull() {
+        return isNotNull() ? N.asSet(value) : new HashSet<T>();
     }
 
     /**

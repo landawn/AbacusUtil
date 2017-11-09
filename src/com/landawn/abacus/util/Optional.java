@@ -24,7 +24,11 @@
  */
 package com.landawn.abacus.util;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
@@ -439,6 +443,24 @@ public final class Optional<T> {
 
     public java.util.Optional<T> __() {
         return isPresent() ? java.util.Optional.of(value) : java.util.Optional.<T> empty();
+    }
+
+    /**
+     * Returns a {@code List} with the value if it presents, otherwise an empty {@code List}.
+     * 
+     * @return
+     */
+    public List<T> toList() {
+        return isPresent() ? N.asList(value) : new ArrayList<T>();
+    }
+
+    /**
+     * Returns a {@code Set} with the value if it presents, otherwise an empty {@code Set}.
+     * 
+     * @return
+     */
+    public Set<T> toSet() {
+        return isPresent() ? N.asSet(value) : new HashSet<T>();
     }
 
     /**

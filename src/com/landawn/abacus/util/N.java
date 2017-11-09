@@ -121,7 +121,6 @@ import com.landawn.abacus.parser.XMLSerializationConfig;
 import com.landawn.abacus.type.EntityType;
 import com.landawn.abacus.type.Type;
 import com.landawn.abacus.type.TypeFactory;
-import com.landawn.abacus.util.Pair.IntPair;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
@@ -937,6 +936,8 @@ public final class N {
             } else if (cls.equals(Set.class)) {
                 return (T) new HashSet<>();
             } else if (cls.equals(Queue.class)) {
+                return (T) new ArrayDeque<>();
+            } else if (cls.equals(Deque.class)) {
                 return (T) new ArrayDeque<>();
             } else if (cls.equals(SortedSet.class)) {
                 return (T) new TreeSet<>();

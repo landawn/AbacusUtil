@@ -1092,5 +1092,22 @@ public class Builder<T> {
                 elseAction.run();
             }
         }
+
+        public static Optional<Exception> run(Try.Runnable<? extends Exception> cmd) {
+            try {
+                cmd.run();
+                return Optional.empty();
+            } catch (Exception e) {
+                return Optional.of(e);
+            }
+        }
+
+        public static <R> Pair<R, Exception> call(Try.Callable<R, ? extends Exception> cmd) {
+            try {
+                return Pair.of(cmd.call(), null);
+            } catch (Exception e) {
+                return Pair.of(null, e);
+            }
+        }
     }
 }

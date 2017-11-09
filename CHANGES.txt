@@ -6,11 +6,13 @@
 
 2*, Rename Fast to Fj.
 
-3, Add Type.ofList/ofSet/ofMap.
+3*, Move IntPair/LongPair/.../IntTriple/LongTriple/... to new Files.
 
-4, Add N.fromJSON/fromXML(Type...).
+4, Add Type.ofList/ofSet/ofMap.
 
-5, Improvements and bug fix.
+5, Add N.fromJSON/fromXML(Type...).
+
+6, Improvements and bug fix.
 
 
 ﻿========Changes in 1.0.7 =========================================================================
