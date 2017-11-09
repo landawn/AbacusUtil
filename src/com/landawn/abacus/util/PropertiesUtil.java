@@ -769,10 +769,10 @@ public final class PropertiesUtil {
                             if (ignoreTypeInfo) {
                                 bw.write("<" + elementPropName + ">");
                             } else {
-                                if (N.isPrimitiveWapper(type.getTypeClass())) {
-                                    bw.write("<" + elementPropName + " type=\"" + ClassUtil.getSimpleClassName(N.primitiveOf(type.getTypeClass())) + "\">");
+                                if (N.isPrimitiveWapper(type.cls())) {
+                                    bw.write("<" + elementPropName + " type=\"" + ClassUtil.getSimpleClassName(N.primitiveOf(type.cls())) + "\">");
                                 } else {
-                                    bw.write("<" + elementPropName + " type=\"" + type.getDeclaringName() + "\">");
+                                    bw.write("<" + elementPropName + " type=\"" + type.declaringName() + "\">");
                                 }
                             }
 
@@ -792,10 +792,10 @@ public final class PropertiesUtil {
                     if (ignoreTypeInfo) {
                         bw.write("<" + propName + ">");
                     } else {
-                        if (N.isPrimitiveWapper(type.getTypeClass())) {
-                            bw.write("<" + propName + " type=\"" + ClassUtil.getSimpleClassName(N.primitiveOf(type.getTypeClass())) + "\">");
+                        if (N.isPrimitiveWapper(type.cls())) {
+                            bw.write("<" + propName + " type=\"" + ClassUtil.getSimpleClassName(N.primitiveOf(type.cls())) + "\">");
                         } else {
-                            bw.write("<" + propName + " type=\"" + type.getDeclaringName() + "\">");
+                            bw.write("<" + propName + " type=\"" + type.declaringName() + "\">");
                         }
                     }
 
@@ -969,7 +969,7 @@ public final class PropertiesUtil {
 
                 if (duplicatedPropNameSet.contains(propName)) {
                     String listPropName = propName + "List";
-                    String elementTypeName = N.typeOf(typeName).isPrimitiveType() ? ClassUtil.getSimpleClassName(N.wrapperOf(N.typeOf(typeName).getTypeClass()))
+                    String elementTypeName = N.typeOf(typeName).isPrimitiveType() ? ClassUtil.getSimpleClassName(N.wrapperOf(N.typeOf(typeName).cls()))
                             : typeName;
 
                     writer.write(spaces + "    " + (isPublicField ? "public " : "private ") + "List<" + elementTypeName + "> " + listPropName
@@ -1092,12 +1092,12 @@ public final class PropertiesUtil {
             if (N.notNullOrEmpty(attr)) {
                 type = N.typeOf(attr);
                 if (type != null) {
-                    Class<?> typeClass = type.getTypeClass();
+                    Class<?> typeClass = type.cls();
                     if (typeClass.getCanonicalName().startsWith("java.lang") || N.isPrimitive(typeClass)
                             || (typeClass.isArray() && N.isPrimitive(typeClass.getComponentType()))) {
                         // ignore
                     } else {
-                        result.add(type.getTypeClass().getCanonicalName());
+                        result.add(type.cls().getCanonicalName());
                     }
 
                 }
@@ -1113,7 +1113,7 @@ public final class PropertiesUtil {
 
     private static void writeMethod(Writer writer, String spaces, String propName, String typeName, Set<String> duplicatedPropNameSet) throws IOException {
         String listPropName = propName + "List";
-        String elementTypeName = N.typeOf(typeName).isPrimitiveType() ? ClassUtil.getSimpleClassName(N.wrapperOf(N.typeOf(typeName).getTypeClass())) : typeName;
+        String elementTypeName = N.typeOf(typeName).isPrimitiveType() ? ClassUtil.getSimpleClassName(N.wrapperOf(N.typeOf(typeName).cls())) : typeName;
 
         writer.write(spaces + "public " + typeName + " get" + N.capitalize(propName) + "() {" + IOUtil.LINE_SEPARATOR);
         writer.write(spaces + "    " + "return " + propName + ";" + IOUtil.LINE_SEPARATOR);
@@ -1172,7 +1172,7 @@ public final class PropertiesUtil {
             } else {
                 Type<?> type = N.typeOf(typeAttr);
                 if (type != null) {
-                    typeName = type.getTypeClass().getSimpleName();
+                    typeName = type.cls().getSimpleName();
                 }
             }
         }

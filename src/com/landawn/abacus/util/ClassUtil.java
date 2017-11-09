@@ -566,11 +566,11 @@ public final class ClassUtil {
                                     try {
                                         final Type<?> componentType = N.typeOf(componentTypeName);
 
-                                        if (componentType.getTypeClass().equals(Object.class) && !componentType.getName().equals(ObjectType.OBJECT)) {
+                                        if (componentType.cls().equals(Object.class) && !componentType.name().equals(ObjectType.OBJECT)) {
                                             throw new IllegalArgumentException("No Class found by name: " + clsName);
                                         }
 
-                                        cls = Class.forName(prefixOfArray + "L" + componentType.getTypeClass().getCanonicalName() + ";");
+                                        cls = Class.forName(prefixOfArray + "L" + componentType.cls().getCanonicalName() + ";");
                                     } catch (ClassNotFoundException e3) {
                                         // ignore.
                                     }

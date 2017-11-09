@@ -2,9 +2,15 @@
 
 ﻿========Changes in 1.0.8 =========================================================================
 
-1*, Remove Retry0
+1*, Remove Retry0.
 
-2, Improvements and bug fix.
+2*, Rename Fast to Fj.
+
+3, Add Type.ofList/ofSet/ofMap.
+
+4, Add N.fromJSON/fromXML(Type...).
+
+5, Improvements and bug fix.
 
 
 ﻿========Changes in 1.0.7 =========================================================================

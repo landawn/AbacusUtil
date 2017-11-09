@@ -323,7 +323,7 @@ public final class HBaseExecutor implements Closeable {
                 }
 
                 if (familyPropInfo.type.isEntity()) {
-                    final Class<?> propEntityClass = familyPropInfo.type.getTypeClass();
+                    final Class<?> propEntityClass = familyPropInfo.type.cls();
                     final EntityInfo propEntityInfo = ParserUtil.getEntityInfo(propEntityClass);
                     Object propEntity = ClassUtil.getPropValue(entity, ClassUtil.getPropGetMethod(targetClass, family));
 
@@ -340,7 +340,7 @@ public final class HBaseExecutor implements Closeable {
                         continue;
                     }
 
-                    if (columnPropInfo.type.isMap() && columnPropInfo.type.getParameterTypes()[1].getTypeClass().equals(HBaseColumn.class)) {
+                    if (columnPropInfo.type.isMap() && columnPropInfo.type.getParameterTypes()[1].cls().equals(HBaseColumn.class)) {
                         addMethod = ClassUtil.getDeclaredMethod(propEntityClass, getAddMethodName(columnPropInfo.setMethod), HBaseColumn.class);
                         columnValueType = N.typeOf(ClassUtil.getTypeArgumentsByMethod(addMethod)[0]);
                         columnValueTypeMap.put(qualifier, columnValueType);
@@ -356,7 +356,7 @@ public final class HBaseExecutor implements Closeable {
                         }
 
                         columnMapMap.put(qualifier, columnMap);
-                    } else if (columnPropInfo.type.isCollection() && columnPropInfo.type.getParameterTypes()[0].getTypeClass().equals(HBaseColumn.class)) {
+                    } else if (columnPropInfo.type.isCollection() && columnPropInfo.type.getParameterTypes()[0].cls().equals(HBaseColumn.class)) {
                         addMethod = ClassUtil.getDeclaredMethod(propEntityClass, getAddMethodName(columnPropInfo.setMethod), HBaseColumn.class);
                         columnValueType = N.typeOf(ClassUtil.getTypeArgumentsByMethod(addMethod)[0]);
                         columnValueTypeMap.put(qualifier, columnValueType);
@@ -372,7 +372,7 @@ public final class HBaseExecutor implements Closeable {
                         }
 
                         columnCollectionMap.put(qualifier, columnColl);
-                    } else if (columnPropInfo.type.getTypeClass().equals(HBaseColumn.class)) {
+                    } else if (columnPropInfo.type.cls().equals(HBaseColumn.class)) {
                         columnValueType = columnValueTypeMap.get(qualifier);
 
                         if (columnValueType == null) {
@@ -387,7 +387,7 @@ public final class HBaseExecutor implements Closeable {
                         ClassUtil.setPropValue(propEntity, columnPropInfo.setMethod, columnPropInfo.type.valueOf(getValueString(cell)));
                     }
 
-                } else if (familyPropInfo.type.isMap() && familyPropInfo.type.getParameterTypes()[1].getTypeClass().equals(HBaseColumn.class)) {
+                } else if (familyPropInfo.type.isMap() && familyPropInfo.type.getParameterTypes()[1].cls().equals(HBaseColumn.class)) {
                     addMethod = ClassUtil.getDeclaredMethod(targetClass, getAddMethodName(familyPropInfo.setMethod), HBaseColumn.class);
                     columnValueType = N.typeOf(ClassUtil.getTypeArgumentsByMethod(addMethod)[0]);
                     columnValueTypeMap.put(qualifier, columnValueType);
@@ -403,7 +403,7 @@ public final class HBaseExecutor implements Closeable {
                     }
 
                     columnMapMap.put(qualifier, columnMap);
-                } else if (familyPropInfo.type.isCollection() && familyPropInfo.type.getParameterTypes()[0].getTypeClass().equals(HBaseColumn.class)) {
+                } else if (familyPropInfo.type.isCollection() && familyPropInfo.type.getParameterTypes()[0].cls().equals(HBaseColumn.class)) {
                     addMethod = ClassUtil.getDeclaredMethod(targetClass, getAddMethodName(familyPropInfo.setMethod), HBaseColumn.class);
                     columnValueType = N.typeOf(ClassUtil.getTypeArgumentsByMethod(addMethod)[0]);
                     columnValueTypeMap.put(qualifier, columnValueType);
@@ -419,7 +419,7 @@ public final class HBaseExecutor implements Closeable {
                     }
 
                     columnCollectionMap.put(qualifier, columnColl);
-                } else if (familyPropInfo.type.getTypeClass().equals(HBaseColumn.class)) {
+                } else if (familyPropInfo.type.cls().equals(HBaseColumn.class)) {
                     columnValueType = columnValueTypeMap.get(qualifier);
 
                     if (columnValueType == null) {
@@ -457,7 +457,7 @@ public final class HBaseExecutor implements Closeable {
 
             if (cellScanner.advance()) {
                 throw new IllegalArgumentException("Can't covert result with columns: " + getFamilyString(cell) + ":" + getQualifierString(cell) + " to class: "
-                        + ClassUtil.getCanonicalClassName(type.getTypeClass()));
+                        + ClassUtil.getCanonicalClassName(type.cls()));
             }
 
             return value;
@@ -552,7 +552,7 @@ public final class HBaseExecutor implements Closeable {
             }
 
             if (familyPropInfo.type.isEntity()) {
-                final Class<?> propEntityClass = familyPropInfo.type.getTypeClass();
+                final Class<?> propEntityClass = familyPropInfo.type.cls();
                 final EntityInfo propEntityInfo = ParserUtil.getEntityInfo(propEntityClass);
                 final Object propEntity = propValue;
 
@@ -568,42 +568,42 @@ public final class HBaseExecutor implements Closeable {
                         continue;
                     }
 
-                    if (columnPropInfo.type.isMap() && columnPropInfo.type.getParameterTypes()[1].getTypeClass().equals(HBaseColumn.class)) {
+                    if (columnPropInfo.type.isMap() && columnPropInfo.type.getParameterTypes()[1].cls().equals(HBaseColumn.class)) {
                         columnMap = (Map<Long, HBaseColumn<?>>) propValue;
 
                         for (HBaseColumn<?> e : columnMap.values()) {
                             anyPut.addColumn(familyName, columnName, e.version(), e.value());
 
                         }
-                    } else if (columnPropInfo.type.isCollection() && columnPropInfo.type.getParameterTypes()[0].getTypeClass().equals(HBaseColumn.class)) {
+                    } else if (columnPropInfo.type.isCollection() && columnPropInfo.type.getParameterTypes()[0].cls().equals(HBaseColumn.class)) {
                         columnColl = (Collection<HBaseColumn<?>>) propValue;
 
                         for (HBaseColumn<?> e : columnColl) {
                             anyPut.addColumn(familyName, columnName, e.version(), e.value());
 
                         }
-                    } else if (columnPropInfo.type.getTypeClass().equals(HBaseColumn.class)) {
+                    } else if (columnPropInfo.type.cls().equals(HBaseColumn.class)) {
                         column = (HBaseColumn<?>) propValue;
                         anyPut.addColumn(familyName, columnName, column.version(), column.value());
                     } else {
                         anyPut.addColumn(familyName, columnName, propValue);
                     }
                 }
-            } else if (familyPropInfo.type.isMap() && familyPropInfo.type.getParameterTypes()[1].getTypeClass().equals(HBaseColumn.class)) {
+            } else if (familyPropInfo.type.isMap() && familyPropInfo.type.getParameterTypes()[1].cls().equals(HBaseColumn.class)) {
                 columnMap = (Map<Long, HBaseColumn<?>>) propValue;
 
                 for (HBaseColumn<?> e : columnMap.values()) {
                     anyPut.addColumn(familyName, EMPTY_QULIFIER, e.version(), e.value());
 
                 }
-            } else if (familyPropInfo.type.isCollection() && familyPropInfo.type.getParameterTypes()[0].getTypeClass().equals(HBaseColumn.class)) {
+            } else if (familyPropInfo.type.isCollection() && familyPropInfo.type.getParameterTypes()[0].cls().equals(HBaseColumn.class)) {
                 columnColl = (Collection<HBaseColumn<?>>) propValue;
 
                 for (HBaseColumn<?> e : columnColl) {
                     anyPut.addColumn(familyName, EMPTY_QULIFIER, e.version(), e.value());
 
                 }
-            } else if (familyPropInfo.type.getTypeClass().equals(HBaseColumn.class)) {
+            } else if (familyPropInfo.type.cls().equals(HBaseColumn.class)) {
                 column = (HBaseColumn<?>) propValue;
                 anyPut.addColumn(familyName, EMPTY_QULIFIER, column.version(), column.value());
             } else {

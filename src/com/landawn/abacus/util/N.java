@@ -111,9 +111,12 @@ import com.landawn.abacus.exception.UncheckedIOException;
 import com.landawn.abacus.exception.UncheckedSQLException;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
+import com.landawn.abacus.parser.DeserializationConfig;
 import com.landawn.abacus.parser.JSONDeserializationConfig;
+import com.landawn.abacus.parser.JSONDeserializationConfig.JDC;
 import com.landawn.abacus.parser.JSONSerializationConfig;
 import com.landawn.abacus.parser.XMLDeserializationConfig;
+import com.landawn.abacus.parser.XMLDeserializationConfig.XDC;
 import com.landawn.abacus.parser.XMLSerializationConfig;
 import com.landawn.abacus.type.EntityType;
 import com.landawn.abacus.type.Type;
@@ -2322,7 +2325,7 @@ public final class N {
 
         final Class<?> srcPropClass = obj.getClass();
 
-        if (targetType.getTypeClass().isAssignableFrom(srcPropClass)) {
+        if (targetType.cls().isAssignableFrom(srcPropClass)) {
             return (T) obj;
         }
 
@@ -2333,17 +2336,17 @@ public final class N {
         }
 
         if (targetType.isEntity() && srcPropType.isMap()) {
-            return Maps.map2Entity(targetType.getTypeClass(), (Map<String, Object>) obj);
+            return Maps.map2Entity(targetType.cls(), (Map<String, Object>) obj);
         } else if (targetType.isMap() && srcPropType.isEntity()) {
             try {
-                return (T) Maps.entity2Map((Map<String, Object>) N.newInstance(targetType.getTypeClass()), obj);
+                return (T) Maps.entity2Map((Map<String, Object>) N.newInstance(targetType.cls()), obj);
             } catch (Exception e) {
                 // ignore.
             }
         } else if (targetType.isEntity() && srcPropType.isEntity()) {
-            return copy(targetType.getTypeClass(), obj);
-        } else if (targetType.isNumber() && srcPropType.isNumber() && CLASS_TYPE_ENUM.containsKey(targetType.getTypeClass())) {
-            switch (CLASS_TYPE_ENUM.get(targetType.getTypeClass())) {
+            return copy(targetType.cls(), obj);
+        } else if (targetType.isNumber() && srcPropType.isNumber() && CLASS_TYPE_ENUM.containsKey(targetType.cls())) {
+            switch (CLASS_TYPE_ENUM.get(targetType.cls())) {
                 case 3:
                 case 13:
                     return (T) (Byte) ((Number) obj).byteValue();
@@ -10512,7 +10515,7 @@ public final class N {
             if (typeA.isPrimitiveArray()) {
                 final Type<Object> typeB = typeOf(b.getClass());
 
-                return typeA.getTypeClass().equals(typeB.getTypeClass()) && typeA.equals(a, b);
+                return typeA.cls().equals(typeB.cls()) && typeA.equals(a, b);
             } else if (typeA.isObjectArray()) {
                 final Type<Object> typeB = typeOf(b.getClass());
 
@@ -30804,6 +30807,115 @@ public final class N {
         return Utils.jsonParser.deserialize(targetClass, json, fromIndex, toIndex, config);
     }
 
+    /**
+     * 
+     * @param targetType can be the {@code Type} of {@code Entity/Array/Collection/Map}.
+     * @param json
+     * @return
+     */
+    public static <T> T fromJSON(final Type<T> targetType, final String json) {
+        return fromJSON(targetType, json, null);
+    }
+
+    /**
+     * 
+     * @param targetType can be the {@code Type} of {@code Entity/Array/Collection/Map}.
+     * @param json
+     * @param config
+     * @return
+     */
+    public static <T> T fromJSON(final Type<T> targetType, final String json, final JSONDeserializationConfig config) {
+        return Utils.jsonParser.deserialize(targetType.cls(), json, setConfig(targetType, config, true));
+    }
+
+    /**
+     * 
+     * @param targetType can be the {@code Type} of {@code Entity/Array/Collection/Map}.
+     * @param json
+     * @return
+     */
+    public static <T> T fromJSON(final Type<T> targetType, final File json) {
+        return fromJSON(targetType, json, null);
+    }
+
+    /**
+     * 
+     * @param targetType can be the {@code Type} of {@code Entity/Array/Collection/Map}.
+     * @param json
+     * @param config
+     * @return
+     */
+    public static <T> T fromJSON(final Type<T> targetType, final File json, final JSONDeserializationConfig config) {
+        return Utils.jsonParser.deserialize(targetType.cls(), json, setConfig(targetType, config, true));
+    }
+
+    /**
+     * 
+     * @param targetType can be the {@code Type} of {@code Entity/Array/Collection/Map}.
+     * @param json
+     * @return
+     */
+    public static <T> T fromJSON(final Type<T> targetType, final InputStream json) {
+        return fromJSON(targetType, json, null);
+    }
+
+    /**
+     * 
+     * @param targetType can be the {@code Type} of {@code Entity/Array/Collection/Map}.
+     * @param json
+     * @param config
+     * @return
+     */
+    public static <T> T fromJSON(final Type<T> targetType, final InputStream json, final JSONDeserializationConfig config) {
+        return Utils.jsonParser.deserialize(targetType.cls(), json, setConfig(targetType, config, true));
+    }
+
+    /**
+     * 
+     * @param targetType can be the {@code Type} of {@code Entity/Array/Collection/Map}.
+     * @param json
+     * @return
+     */
+    public static <T> T fromJSON(final Type<T> targetType, final Reader json) {
+        return fromJSON(targetType, json, null);
+    }
+
+    /**
+     * 
+     * @param targetType can be the {@code Type} of {@code Entity/Array/Collection/Map}.
+     * @param json
+     * @param config
+     * @return
+     */
+    public static <T> T fromJSON(final Type<T> targetType, final Reader json, final JSONDeserializationConfig config) {
+        return Utils.jsonParser.deserialize(targetType.cls(), json, setConfig(targetType, config, true));
+    }
+
+    /**
+     * 
+     * @param targetType can be the {@code Type} of {@code Entity/Array/Collection/Map}.
+     * @param json
+     * @param fromIndex
+     * @param toIndex
+     * @return
+     */
+    public static <T> T fromJSON(final Type<T> targetType, final String json, final int fromIndex, final int toIndex) {
+        return fromJSON(targetType, json, fromIndex, toIndex, null);
+    }
+
+    /**
+     * 
+     * @param targetType can be the {@code Type} of {@code Entity/Array/Collection/Map}.
+     * @param json
+     * @param fromIndex
+     * @param toIndex
+     * @param config
+     * @return
+     */
+    public static <T> T fromJSON(final Type<T> targetType, final String json, final int fromIndex, final int toIndex, final JSONDeserializationConfig config) {
+        return Utils.jsonParser.deserialize(targetType.cls(), json, fromIndex, toIndex, setConfig(targetType, config, true));
+    }
+
     public static String toXML(final Object obj) {
         return Utils.xmlParser.serialize(obj);
     }
@@ -30866,6 +30978,115 @@ public final class N {
 
     public static <T> T fromXML(final Class<T> targetClass, final Reader xml, final XMLDeserializationConfig config) {
         return Utils.xmlParser.deserialize(targetClass, xml, config);
+    }
+
+    /**
+     * 
+     * @param targetType can be the {@code Type} of {@code Entity/Array/Collection/Map}.
+     * @param xml
+     * @return
+     */
+    public static <T> T fromXML(final Type<T> targetType, final String xml) {
+        return fromJSON(targetType, xml, null);
+    }
+
+    /**
+     * 
+     * @param targetType can be the {@code Type} of {@code Entity/Array/Collection/Map}.
+     * @param xml
+     * @param config
+     * @return
+     */
+    public static <T> T fromXML(final Type<T> targetType, final String xml, final XMLDeserializationConfig config) {
+        return Utils.xmlParser.deserialize(targetType.cls(), xml, setConfig(targetType, config, false));
+    }
+
+    /**
+     * 
+     * @param targetType can be the {@code Type} of {@code Entity/Array/Collection/Map}.
+     * @param xml
+     * @return
+     */
+    public static <T> T fromXML(final Type<T> targetType, final File xml) {
+        return fromJSON(targetType, xml, null);
+    }
+
+    /**
+     * 
+     * @param targetType can be the {@code Type} of {@code Entity/Array/Collection/Map}.
+     * @param xml
+     * @param config
+     * @return
+     */
+    public static <T> T fromXML(final Type<T> targetType, final File xml, final XMLDeserializationConfig config) {
+        return Utils.xmlParser.deserialize(targetType.cls(), xml, setConfig(targetType, config, false));
+    }
+
+    /**
+     * 
+     * @param targetType can be the {@code Type} of {@code Entity/Array/Collection/Map}.
+     * @param xml
+     * @return
+     */
+    public static <T> T fromXML(final Type<T> targetType, final InputStream xml) {
+        return fromJSON(targetType, xml, null);
+    }
+
+    /**
+     * 
+     * @param targetType can be the {@code Type} of {@code Entity/Array/Collection/Map}.
+     * @param xml
+     * @param config
+     * @return
+     */
+    public static <T> T fromXML(final Type<T> targetType, final InputStream xml, final XMLDeserializationConfig config) {
+        return Utils.xmlParser.deserialize(targetType.cls(), xml, setConfig(targetType, config, false));
+    }
+
+    /**
+     * 
+     * @param targetType can be the {@code Type} of {@code Entity/Array/Collection/Map}.
+     * @param xml
+     * @return
+     */
+    public static <T> T fromXML(final Type<T> targetType, final Reader xml) {
+        return fromJSON(targetType, xml, null);
+    }
+
+    /**
+     * 
+     * @param targetType can be the {@code Type} of {@code Entity/Array/Collection/Map}.
+     * @param xml
+     * @param config
+     * @return
+     */
+    public static <T> T fromXML(final Type<T> targetType, final Reader xml, final XMLDeserializationConfig config) {
+        return Utils.xmlParser.deserialize(targetType.cls(), xml, setConfig(targetType, config, false));
+    }
+
+    private static <C extends DeserializationConfig<C>> C setConfig(final Type<?> targetType, final C config, boolean isJSON) {
+        C res = config;
+
+        if (targetType.isCollection()) {
+            if (config == null || config.getElementType() == null) {
+                res = config == null ? (C) (isJSON ? JDC.create() : XDC.create()) : (C) config.copy();
+                res.setElementType(targetType.getParameterTypes()[0]);
+            }
+        } else if (targetType.isMap()) {
+            if (config == null || config.getMapKeyType() == null || config.getMapValueType() == null) {
+                res = config == null ? (C) (isJSON ? JDC.create() : XDC.create()) : (C) config.copy();
+
+                if (res.getMapKeyType() == null) {
+                    res.setMapKeyType(targetType.getParameterTypes()[0]);
+                }
+
+                if (res.getMapValueType() == null) {
+                    res.setMapValueType(targetType.getParameterTypes()[1]);
+                }
+            }
+        }
+
+        return res;
     }
 
     public static String xml2JSON(final String xml) {

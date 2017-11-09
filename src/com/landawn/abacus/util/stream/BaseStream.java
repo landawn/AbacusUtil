@@ -238,7 +238,13 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
     Stream<S> splitAt(int where);
 
     /**
-     * Split the stream into two pieces at <code>where</code>
+     * Split the stream into two pieces at <code>where</code> turns to {@code false}
+     * 
+     * <pre>
+     * <code>
+     * Stream.of(1, 3, 2, 4, 2, 5).splitBy(i -> i <= 3).forEach(s -> s.println()); // [1, 3, 2], [4, 2, 5]
+     * </code>
+     * </pre>
      * 
      * @param where
      * @return
