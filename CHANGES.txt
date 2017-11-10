@@ -8,15 +8,21 @@
 
 3*, Move IntPair/LongPair/.../IntTriple/LongTriple/... to new Files.
 
-4*, Move Optional/Nullable.tryOrEmpty(...) to X.
+4*, Move Optional/Nullable.tryOrEmpty/castIfAssignable to N.
 
 5*, Rename NamingPolicy.CAMEL_CASE to NamingPolicy.LOWER_CAMEL_CASE.
 
-6, Add Type.ofList/ofSet/ofMap.
+6*, Remove SQLBuilder.E/E2/.../SE.select(String expr).
 
-7, Add N.fromJSON/fromXML(Type...).
+7, Add SQLBuilder.E/E2/.../SE.select(String expr, String[] columnNames).
 
-8, Improvements and bug fix.
+8, Add Type.ofList/ofSet/ofMap.
+
+9, Add N.fromJSON/fromXML(Type...).
+
+10, Add N.castIfAssignable/ifOrElse/run/call/tryOrEmpty.
+
+11, Improvements and bug fix.
 
 
 ﻿========Changes in 1.0.7 =========================================================================

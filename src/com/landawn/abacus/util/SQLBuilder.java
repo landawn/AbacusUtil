@@ -722,41 +722,37 @@ public abstract class SQLBuilder {
         final Map<String, String> propColumnNameMap = entityTablePropColumnNameMap.get(tableName);
 
         if (N.notNullOrEmpty(columnNames)) {
-            if (columnNames.length == 1 && columnNames[0].indexOf(D._SPACE) > 0) {
-                sb.append(columnNames[0]);
-            } else {
-                int idx = -1;
-                for (int i = 0, len = columnNames.length; i < len; i++) {
-                    if (i > 0) {
-                        sb.append(_COMMA_SPACE);
+            int idx = -1;
+            for (int i = 0, len = columnNames.length; i < len; i++) {
+                if (i > 0) {
+                    sb.append(_COMMA_SPACE);
+                }
+
+                idx = columnNames[i].indexOf(" AS ");
+
+                if (idx < 0) {
+                    idx = columnNames[i].indexOf(" as ");
+                }
+
+                if (idx < 0) {
+                    sb.append(formalizeName(propColumnNameMap, columnNames[i]));
+
+                    if (namingPolicy != NamingPolicy.LOWER_CAMEL_CASE && !D.ASTERISK.equals(columnNames[i])) {
+                        sb.append(_SPACE_AS_SPACE);
+
+                        sb.append(D._QUOTATION_D);
+                        sb.append(columnNames[i]);
+                        sb.append(D._QUOTATION_D);
                     }
+                } else {
+                    sb.append(formalizeName(propColumnNameMap, columnNames[i].substring(0, idx).trim()));
 
-                    idx = columnNames[i].indexOf(" AS ");
+                    if (namingPolicy != NamingPolicy.LOWER_CAMEL_CASE && !D.ASTERISK.equals(columnNames[i])) {
+                        sb.append(_SPACE_AS_SPACE);
 
-                    if (idx < 0) {
-                        idx = columnNames[i].indexOf(" as ");
-                    }
-
-                    if (idx < 0) {
-                        sb.append(formalizeName(propColumnNameMap, columnNames[i]));
-
-                        if (namingPolicy != NamingPolicy.LOWER_CAMEL_CASE && !D.ASTERISK.equals(columnNames[i])) {
-                            sb.append(_SPACE_AS_SPACE);
-
-                            sb.append(D._QUOTATION_D);
-                            sb.append(columnNames[i]);
-                            sb.append(D._QUOTATION_D);
-                        }
-                    } else {
-                        sb.append(formalizeName(propColumnNameMap, columnNames[i].substring(0, idx).trim()));
-
-                        if (namingPolicy != NamingPolicy.LOWER_CAMEL_CASE && !D.ASTERISK.equals(columnNames[i])) {
-                            sb.append(_SPACE_AS_SPACE);
-
-                            sb.append(D._QUOTATION_D);
-                            sb.append(columnNames[i].substring(idx + 4).trim());
-                            sb.append(D._QUOTATION_D);
-                        }
+                        sb.append(D._QUOTATION_D);
+                        sb.append(columnNames[i].substring(idx + 4).trim());
+                        sb.append(D._QUOTATION_D);
                     }
                 }
             }

@@ -126,108 +126,108 @@ public class Builder<T> {
         return predicate.test(val) ? Optional.of(val) : Optional.<T> empty();
     }
 
-    /**
-    * Returns an empty <code>Nullable</code> if {@code val()} is {@code null} while {@code targetType} is primitive or can't be assigned to {@code targetType}.
-    * Please be aware that {@code null} can be assigned to any {@code Object} type except primitive types: {@code boolean/char/byte/short/int/long/double}.
-    * 
-    * @param val
-    * @param targetType
-    * @return
-    */
-    @SuppressWarnings("unchecked")
-    public <TT> Nullable<TT> castIfAssignable(final Class<TT> targetType) {
-        if (N.isPrimitive(targetType)) {
-            return val != null && N.wrapperOf(targetType).isAssignableFrom(val.getClass()) ? Nullable.of((TT) val) : Nullable.<TT> empty();
-        }
-
-        return val == null || targetType.isAssignableFrom(val.getClass()) ? Nullable.of((TT) val) : Nullable.<TT> empty();
-    }
-
-    /**
-     * 
-     * @param b
-     * @param actionForTrue do nothing if it's {@code null} even {@code b} is true.
-     * @param actionForFalse do nothing if it's {@code null} even {@code b} is false.
-     * @throws E1
-     * @throws E2
-     */
-    public <E1 extends Exception, E2 extends Exception> void ifOrElse(final boolean b, final Try.Consumer<? super T, E1> actionForTrue,
-            final Try.Consumer<? super T, E2> actionForFalse) throws E1, E2 {
-        if (b) {
-            if (actionForTrue != null) {
-                actionForTrue.accept(val);
-            }
-        } else {
-            if (actionForFalse != null) {
-                actionForFalse.accept(val);
-            }
-        }
-    }
-
-    /**
-     * 
-     * @param predicate
-     * @param actionForTrue do nothing if it's {@code null} even {@code b} is true.
-     * @param actionForFalse do nothing if it's {@code null} even {@code b} is false.
-     * @throws E0
-     * @throws E1
-     * @throws E2
-     */
-    public <E0 extends Exception, E1 extends Exception, E2 extends Exception> void ifOrElse(final Try.Predicate<? super T, E0> predicate,
-            final Try.Consumer<? super T, E1> actionForTrue, final Try.Consumer<? super T, E2> actionForFalse) throws E0, E1, E2 {
-        if (predicate.test(val)) {
-            if (actionForTrue != null) {
-                actionForTrue.accept(val);
-            }
-        } else {
-            if (actionForFalse != null) {
-                actionForFalse.accept(val);
-            }
-        }
-    }
-
-    /**
-     * Returns an empty {@code Optional} if {@code cmd} is executed successfully, otherwise a {@code Optional} with the exception threw.
-     * 
-     * @param cmd
-     * @return
-     */
-    public Optional<Exception> run(final Try.Consumer<? super T, ? extends Exception> cmd) {
-        try {
-            cmd.accept(val);
-            return Optional.empty();
-        } catch (Exception e) {
-            return Optional.of(e);
-        }
-    }
-
-    /**
-     * Returns a {@code Pair} with {@code left=returnedValue, right=null} if {@code cmd} is executed successfully, otherwise a {@code Pair} with {@code left=null, right=exception}.
-     * 
-     * @param cmd
-     * @return
-     */
-    public <R> Pair<R, Exception> call(final Try.Function<? super T, R, ? extends Exception> cmd) {
-        try {
-            return Pair.of(cmd.apply(val), null);
-        } catch (Exception e) {
-            return Pair.of(null, e);
-        }
-    }
-
-    /**
-     * Returns a {@code Nullable} with the value returned by {@code action} or an empty {@code Nullable} if exception happens.
-     * 
-     * @param cmd
-     * @return
-     */
-    public <R> Nullable<R> tryOrEmpty(final Try.Function<? super T, R, ? extends Exception> cmd) {
-        try {
-            return Nullable.of(cmd.apply(val));
-        } catch (Throwable e) {
-            return Nullable.<R> empty();
-        }
-    }
+    //    /**
+    //    * Returns an empty <code>Nullable</code> if {@code val()} is {@code null} while {@code targetType} is primitive or can't be assigned to {@code targetType}.
+    //    * Please be aware that {@code null} can be assigned to any {@code Object} type except primitive types: {@code boolean/char/byte/short/int/long/double}.
+    //    * 
+    //    * @param val
+    //    * @param targetType
+    //    * @return
+    //    */
+    //    @SuppressWarnings("unchecked")
+    //    public <TT> Nullable<TT> castIfAssignable(final Class<TT> targetType) {
+    //        if (N.isPrimitive(targetType)) {
+    //            return val != null && N.wrapperOf(targetType).isAssignableFrom(val.getClass()) ? Nullable.of((TT) val) : Nullable.<TT> empty();
+    //        }
+    //
+    //        return val == null || targetType.isAssignableFrom(val.getClass()) ? Nullable.of((TT) val) : Nullable.<TT> empty();
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * @param b
+    //     * @param actionForTrue do nothing if it's {@code null} even {@code b} is true.
+    //     * @param actionForFalse do nothing if it's {@code null} even {@code b} is false.
+    //     * @throws E1
+    //     * @throws E2
+    //     */
+    //    public <E1 extends Exception, E2 extends Exception> void ifOrElse(final boolean b, final Try.Consumer<? super T, E1> actionForTrue,
+    //            final Try.Consumer<? super T, E2> actionForFalse) throws E1, E2 {
+    //        if (b) {
+    //            if (actionForTrue != null) {
+    //                actionForTrue.accept(val);
+    //            }
+    //        } else {
+    //            if (actionForFalse != null) {
+    //                actionForFalse.accept(val);
+    //            }
+    //        }
+    //    }
+    //
+    //    /**
+    //     * 
+    //     * @param predicate
+    //     * @param actionForTrue do nothing if it's {@code null} even {@code b} is true.
+    //     * @param actionForFalse do nothing if it's {@code null} even {@code b} is false.
+    //     * @throws E0
+    //     * @throws E1
+    //     * @throws E2
+    //     */
+    //    public <E0 extends Exception, E1 extends Exception, E2 extends Exception> void ifOrElse(final Try.Predicate<? super T, E0> predicate,
+    //            final Try.Consumer<? super T, E1> actionForTrue, final Try.Consumer<? super T, E2> actionForFalse) throws E0, E1, E2 {
+    //        if (predicate.test(val)) {
+    //            if (actionForTrue != null) {
+    //                actionForTrue.accept(val);
+    //            }
+    //        } else {
+    //            if (actionForFalse != null) {
+    //                actionForFalse.accept(val);
+    //            }
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Returns an empty {@code Optional} if {@code cmd} is executed successfully, otherwise a {@code Optional} with the exception threw.
+    //     * 
+    //     * @param cmd
+    //     * @return
+    //     */
+    //    public Optional<Exception> run(final Try.Consumer<? super T, ? extends Exception> cmd) {
+    //        try {
+    //            cmd.accept(val);
+    //            return Optional.empty();
+    //        } catch (Exception e) {
+    //            return Optional.of(e);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Returns a {@code Pair} with {@code left=returnedValue, right=null} if {@code cmd} is executed successfully, otherwise a {@code Pair} with {@code left=null, right=exception}.
+    //     * 
+    //     * @param cmd
+    //     * @return
+    //     */
+    //    public <R> Pair<R, Exception> call(final Try.Function<? super T, R, ? extends Exception> cmd) {
+    //        try {
+    //            return Pair.of(cmd.apply(val), null);
+    //        } catch (Exception e) {
+    //            return Pair.of(null, e);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Returns a {@code Nullable} with the value returned by {@code action} or an empty {@code Nullable} if exception happens.
+    //     * 
+    //     * @param cmd
+    //     * @return
+    //     */
+    //    public <R> Nullable<R> tryOrEmpty(final Try.Function<? super T, R, ? extends Exception> cmd) {
+    //        try {
+    //            return Nullable.of(cmd.apply(val));
+    //        } catch (Throwable e) {
+    //            return Nullable.<R> empty();
+    //        }
+    //    }
 
     public static final class BooleanListBuilder extends Builder<BooleanList> {
         BooleanListBuilder(BooleanList val) {
