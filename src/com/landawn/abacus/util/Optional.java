@@ -140,34 +140,6 @@ public final class Optional<T> {
     }
 
     /**
-     * Returns an {@code Optional} with the value returned by {@code action} or an empty {@code Optional} if exception happens.
-     * 
-     * @param action
-     * @return
-     */
-    public static <R> Optional<R> tryOrEmpty(final Try.Callable<R, ? extends Exception> action) {
-        try {
-            return Optional.of(action.call());
-        } catch (Exception e) {
-            return Optional.<R> empty();
-        }
-    }
-
-    /**
-     * 
-     * @param val
-     * @param targetType
-     * @return an empty <code>Optional</code> if {@code val} is null or can't be assigned to {@code targetType}.
-     */
-    public static <T> Optional<T> castIfAssignable(final Object val, final Class<T> targetType) {
-        return val != null && targetType.isAssignableFrom(val.getClass()) ? Optional.of((T) val) : Optional.<T> empty();
-    }
-
-    //    public static <T> Optional<T> ifOrEmpty(boolean b, final T val) {
-    //        return b ? Optional.of(val) : Optional.<T> empty();
-    //    }
-
-    /**
      * If a value is present in this {@code Optional}, returns the value,
      * otherwise throws {@code NoSuchElementException}.
      *

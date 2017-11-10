@@ -527,7 +527,7 @@ public final class DynamoDBExecutor implements Closeable {
     }
 
     public static Map<String, AttributeValue> toItem(final Object entity) {
-        return toItem(entity, NamingPolicy.CAMEL_CASE);
+        return toItem(entity, NamingPolicy.LOWER_CAMEL_CASE);
     }
 
     public static Map<String, AttributeValue> toItem(final Object entity, NamingPolicy namingPolicy) {
@@ -542,7 +542,7 @@ public final class DynamoDBExecutor implements Closeable {
                 Object propValue = null;
 
                 switch (namingPolicy) {
-                    case CAMEL_CASE: {
+                    case LOWER_CAMEL_CASE: {
                         for (String propName : signedPropNames) {
                             propGetMethod = ClassUtil.getPropGetMethod(cls, propName);
                             propName = ClassUtil.getPropNameByMethod(propGetMethod);
@@ -587,7 +587,7 @@ public final class DynamoDBExecutor implements Closeable {
                 Object propValue = null;
 
                 switch (namingPolicy) {
-                    case CAMEL_CASE: {
+                    case LOWER_CAMEL_CASE: {
                         for (Map.Entry<String, Method> entry : getMethodMap.entrySet()) {
                             propValue = ClassUtil.getPropValue(entity, entry.getValue());
 
@@ -638,7 +638,7 @@ public final class DynamoDBExecutor implements Closeable {
             final Map<String, Object> map = (Map<String, Object>) entity;
 
             switch (namingPolicy) {
-                case CAMEL_CASE: {
+                case LOWER_CAMEL_CASE: {
                     for (Map.Entry<String, Object> entry : map.entrySet()) {
                         attrs.put(entry.getKey(), attrValueOf(entry.getValue()));
                     }
@@ -676,7 +676,7 @@ public final class DynamoDBExecutor implements Closeable {
     }
 
     static List<Map<String, AttributeValue>> toItem(final Collection<?> entities) {
-        return toItem(entities, NamingPolicy.CAMEL_CASE);
+        return toItem(entities, NamingPolicy.LOWER_CAMEL_CASE);
     }
 
     static List<Map<String, AttributeValue>> toItem(final Collection<?> entities, NamingPolicy namingPolicy) {
@@ -696,7 +696,7 @@ public final class DynamoDBExecutor implements Closeable {
      * @return
      */
     public static Map<String, AttributeValueUpdate> toUpdateItem(final Object entity) {
-        return toUpdateItem(entity, NamingPolicy.CAMEL_CASE);
+        return toUpdateItem(entity, NamingPolicy.LOWER_CAMEL_CASE);
     }
 
     /**
@@ -718,7 +718,7 @@ public final class DynamoDBExecutor implements Closeable {
                 Object propValue = null;
 
                 switch (namingPolicy) {
-                    case CAMEL_CASE: {
+                    case LOWER_CAMEL_CASE: {
                         for (String propName : dirtyPropNames) {
                             propGetMethod = ClassUtil.getPropGetMethod(cls, propName);
                             propName = ClassUtil.getPropNameByMethod(propGetMethod);
@@ -763,7 +763,7 @@ public final class DynamoDBExecutor implements Closeable {
                 Object propValue = null;
 
                 switch (namingPolicy) {
-                    case CAMEL_CASE: {
+                    case LOWER_CAMEL_CASE: {
                         for (Map.Entry<String, Method> entry : getMethodMap.entrySet()) {
                             propValue = ClassUtil.getPropValue(entity, entry.getValue());
 
@@ -814,7 +814,7 @@ public final class DynamoDBExecutor implements Closeable {
             final Map<String, Object> map = (Map<String, Object>) entity;
 
             switch (namingPolicy) {
-                case CAMEL_CASE: {
+                case LOWER_CAMEL_CASE: {
                     for (Map.Entry<String, Object> entry : map.entrySet()) {
                         attrs.put(entry.getKey(), attrValueUpdateOf(entry.getValue()));
                     }
@@ -852,7 +852,7 @@ public final class DynamoDBExecutor implements Closeable {
     }
 
     static List<Map<String, AttributeValueUpdate>> toUpdateItem(final Collection<?> entities) {
-        return toUpdateItem(entities, NamingPolicy.CAMEL_CASE);
+        return toUpdateItem(entities, NamingPolicy.LOWER_CAMEL_CASE);
     }
 
     static List<Map<String, AttributeValueUpdate>> toUpdateItem(final Collection<?> entities, NamingPolicy namingPolicy) {

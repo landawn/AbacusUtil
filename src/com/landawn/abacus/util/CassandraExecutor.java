@@ -509,7 +509,7 @@ public final class CassandraExecutor implements Closeable {
             case UPPER_CASE_WITH_UNDERSCORE:
                 return NE2.insert(props).into(targetClass).pair();
 
-            case CAMEL_CASE:
+            case LOWER_CAMEL_CASE:
                 return NE3.insert(props).into(targetClass).pair();
 
             default:
@@ -669,7 +669,7 @@ public final class CassandraExecutor implements Closeable {
             case UPPER_CASE_WITH_UNDERSCORE:
                 return NE2.update(targetClass).set(props).where(whereCause).pair();
 
-            case CAMEL_CASE:
+            case LOWER_CAMEL_CASE:
                 return NE3.update(targetClass).set(props).where(whereCause).pair();
 
             default:
@@ -735,7 +735,7 @@ public final class CassandraExecutor implements Closeable {
                     return NE2.delete(deletingPropNames).from(targetClass).where(whereCause).pair();
                 }
 
-            case CAMEL_CASE:
+            case LOWER_CAMEL_CASE:
                 if (N.isNullOrEmpty(deletingPropNames)) {
                     return NE3.deleteFrom(targetClass).where(whereCause).pair();
                 } else {
@@ -937,7 +937,7 @@ public final class CassandraExecutor implements Closeable {
 
                 break;
 
-            case CAMEL_CASE:
+            case LOWER_CAMEL_CASE:
                 if (N.isNullOrEmpty(selectPropNames)) {
                     cqlBuilder = NE3.selectFrom(targetClass).where(whereCause);
                 } else {

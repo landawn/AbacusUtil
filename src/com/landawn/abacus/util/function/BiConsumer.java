@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import com.landawn.abacus.util.Fn;
+import com.landawn.abacus.util.Try;
 
 /**
  * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
@@ -25,7 +26,7 @@ import com.landawn.abacus.util.Fn;
  * 
  * @author Haiyang Li
  */
-public interface BiConsumer<T, U> extends java.util.function.BiConsumer<T, U> {
+public interface BiConsumer<T, U> extends java.util.function.BiConsumer<T, U>, Try.BiConsumer<T, U, RuntimeException> {
 
     static <T, U> BiConsumer<T, U> doNothing() {
         return Fn.BiConsumers.doNothing();
@@ -50,12 +51,4 @@ public interface BiConsumer<T, U> extends java.util.function.BiConsumer<T, U> {
     static <K, V, M extends Map<K, V>> BiConsumer<M, M> ofPutAll() {
         return Fn.BiConsumers.ofPutAll();
     }
-
-    //    public static interface _2<T, U> extends BiConsumer<T, U> {
-    //
-    //    }
-    //
-    //    public static interface _3<T, U> extends _2<T, U> {
-    //
-    //    }
 }

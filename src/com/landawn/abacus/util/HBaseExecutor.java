@@ -477,7 +477,7 @@ public final class HBaseExecutor implements Closeable {
      * @return
      */
     public static AnyPut toAnyPut(final Object obj) {
-        return toAnyPut(obj, NamingPolicy.CAMEL_CASE);
+        return toAnyPut(obj, NamingPolicy.LOWER_CAMEL_CASE);
     }
 
     /**
@@ -495,7 +495,7 @@ public final class HBaseExecutor implements Closeable {
      * @return
      */
     static AnyPut toAnyPut(final AnyPut outputAnyPut, final Object obj) {
-        return toAnyPut(outputAnyPut, obj, NamingPolicy.CAMEL_CASE);
+        return toAnyPut(outputAnyPut, obj, NamingPolicy.LOWER_CAMEL_CASE);
     }
 
     /**
@@ -620,7 +620,7 @@ public final class HBaseExecutor implements Closeable {
                 return ClassUtil.toLowerCaseWithUnderscore(name);
             case UPPER_CASE_WITH_UNDERSCORE:
                 return ClassUtil.toUpperCaseWithUnderscore(name);
-            case CAMEL_CASE:
+            case LOWER_CAMEL_CASE:
                 return name;
             default:
                 throw new AbacusException("Unsupported naming policy: " + namingPolicy);

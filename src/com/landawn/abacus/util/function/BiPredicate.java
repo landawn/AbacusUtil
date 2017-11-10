@@ -15,6 +15,7 @@
 package com.landawn.abacus.util.function;
 
 import com.landawn.abacus.util.Fn;
+import com.landawn.abacus.util.Try;
 
 /**
  * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
@@ -22,7 +23,7 @@ import com.landawn.abacus.util.Fn;
  * 
  * @author Haiyang Li
  */
-public interface BiPredicate<T, U> extends java.util.function.BiPredicate<T, U> {
+public interface BiPredicate<T, U> extends java.util.function.BiPredicate<T, U>, Try.BiPredicate<T, U, RuntimeException> {
 
     @Override
     boolean test(T t, U u);
@@ -58,12 +59,4 @@ public interface BiPredicate<T, U> extends java.util.function.BiPredicate<T, U> 
     static <T extends Comparable<? super T>> BiPredicate<T, T> lessEqual() {
         return Fn.lessEqual();
     }
-
-    //    public static interface _2<T, U> extends BiPredicate<T, U> {
-    //
-    //    }
-    //
-    //    public static interface _3<T, U> extends _2<T, U> {
-    //
-    //    }
 }

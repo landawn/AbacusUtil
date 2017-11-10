@@ -7979,7 +7979,7 @@ public final class N {
      *  "2e10" => true
      *  "2E-10" => true
      *
-     * @param value
+     * @param val
      * @return
      */
     public static boolean isAsciiDigtalNumber(final String str) {
@@ -8058,7 +8058,7 @@ public final class N {
      *  "1 a" => false
      *  "2e10" => false
      *
-     * @param value
+     * @param val
      * @return
      */
     public static boolean isAsciiDigtalInteger(final String str) {

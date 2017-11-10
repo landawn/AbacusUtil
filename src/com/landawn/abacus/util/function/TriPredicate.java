@@ -17,14 +17,16 @@ package com.landawn.abacus.util.function;
 import java.util.Objects;
 
 import com.landawn.abacus.util.Fn;
+import com.landawn.abacus.util.Try;
 
 /**
  * @since 0.8
  * 
  * @author Haiyang Li
  */
-public interface TriPredicate<A, B, C> {
+public interface TriPredicate<A, B, C> extends Try.TriPredicate<A, B, C, RuntimeException> {
 
+    @Override
     boolean test(A a, B b, C c);
 
     default TriPredicate<A, B, C> and(TriPredicate<A, B, C> other) {

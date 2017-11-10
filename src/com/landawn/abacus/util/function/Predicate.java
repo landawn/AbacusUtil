@@ -15,6 +15,7 @@
 package com.landawn.abacus.util.function;
 
 import com.landawn.abacus.util.Fn;
+import com.landawn.abacus.util.Try;
 
 /**
  * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
@@ -22,7 +23,7 @@ import com.landawn.abacus.util.Fn;
  * 
  * @author Haiyang Li
  */
-public interface Predicate<T> extends java.util.function.Predicate<T> {
+public interface Predicate<T> extends java.util.function.Predicate<T>, Try.Predicate<T, RuntimeException> {
 
     @Override
     boolean test(T value);
@@ -66,12 +67,4 @@ public interface Predicate<T> extends java.util.function.Predicate<T> {
     static <T extends Comparable<? super T>> Predicate<T> lessEqual(T targetRef) {
         return Fn.lessEqual(targetRef);
     }
-
-    //    public static interface _2<T> extends Predicate<T> {
-    //
-    //    }
-    //
-    //    public static interface _3<T> extends _2<T> {
-    //
-    //    }
 }

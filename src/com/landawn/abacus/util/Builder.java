@@ -30,12 +30,12 @@ import com.landawn.abacus.util.function.Predicate;
  * @author haiyangl
  */
 public class Builder<T> {
-    final T value;
+    final T val;
 
     Builder(T val) {
         N.requireNonNull(val);
 
-        this.value = val;
+        this.val = val;
     }
 
     public static final BooleanListBuilder of(BooleanList val) {
@@ -102,14 +102,18 @@ public class Builder<T> {
     //        return new Builder<>(supplier.get());
     //    }
 
+    public T val() {
+        return val;
+    }
+
     public Builder<T> accept(final Consumer<? super T> consumer) {
-        consumer.accept(value);
+        consumer.accept(val);
 
         return this;
     }
 
     public <R> Builder<R> map(final Function<? super T, R> mapper) {
-        return of(mapper.apply(value));
+        return of(mapper.apply(val));
     }
 
     /**
@@ -119,11 +123,110 @@ public class Builder<T> {
      * otherwise, return an empty <code>Optional</code>
      */
     public Optional<T> filter(final Predicate<? super T> predicate) {
-        return predicate.test(value) ? Optional.of(value) : Optional.<T> empty();
+        return predicate.test(val) ? Optional.of(val) : Optional.<T> empty();
     }
 
-    public T val() {
-        return value;
+    /**
+    * Returns an empty <code>Nullable</code> if {@code val()} is {@code null} while {@code targetType} is primitive or can't be assigned to {@code targetType}.
+    * Please be aware that {@code null} can be assigned to any {@code Object} type except primitive types: {@code boolean/char/byte/short/int/long/double}.
+    * 
+    * @param val
+    * @param targetType
+    * @return
+    */
+    @SuppressWarnings("unchecked")
+    public <TT> Nullable<TT> castIfAssignable(final Class<TT> targetType) {
+        if (N.isPrimitive(targetType)) {
+            return val != null && N.wrapperOf(targetType).isAssignableFrom(val.getClass()) ? Nullable.of((TT) val) : Nullable.<TT> empty();
+        }
+
+        return val == null || targetType.isAssignableFrom(val.getClass()) ? Nullable.of((TT) val) : Nullable.<TT> empty();
+    }
+
+    /**
+     * 
+     * @param b
+     * @param actionForTrue do nothing if it's {@code null} even {@code b} is true.
+     * @param actionForFalse do nothing if it's {@code null} even {@code b} is false.
+     * @throws E1
+     * @throws E2
+     */
+    public <E1 extends Exception, E2 extends Exception> void ifOrElse(final boolean b, final Try.Consumer<? super T, E1> actionForTrue,
+            final Try.Consumer<? super T, E2> actionForFalse) throws E1, E2 {
+        if (b) {
+            if (actionForTrue != null) {
+                actionForTrue.accept(val);
+            }
+        } else {
+            if (actionForFalse != null) {
+                actionForFalse.accept(val);
+            }
+        }
+    }
+
+    /**
+     * 
+     * @param predicate
+     * @param actionForTrue do nothing if it's {@code null} even {@code b} is true.
+     * @param actionForFalse do nothing if it's {@code null} even {@code b} is false.
+     * @throws E0
+     * @throws E1
+     * @throws E2
+     */
+    public <E0 extends Exception, E1 extends Exception, E2 extends Exception> void ifOrElse(final Try.Predicate<? super T, E0> predicate,
+            final Try.Consumer<? super T, E1> actionForTrue, final Try.Consumer<? super T, E2> actionForFalse) throws E0, E1, E2 {
+        if (predicate.test(val)) {
+            if (actionForTrue != null) {
+                actionForTrue.accept(val);
+            }
+        } else {
+            if (actionForFalse != null) {
+                actionForFalse.accept(val);
+            }
+        }
+    }
+
+    /**
+     * Returns an empty {@code Optional} if {@code cmd} is executed successfully, otherwise a {@code Optional} with the exception threw.
+     * 
+     * @param cmd
+     * @return
+     */
+    public Optional<Exception> run(final Try.Consumer<? super T, ? extends Exception> cmd) {
+        try {
+            cmd.accept(val);
+            return Optional.empty();
+        } catch (Exception e) {
+            return Optional.of(e);
+        }
+    }
+
+    /**
+     * Returns a {@code Pair} with {@code left=returnedValue, right=null} if {@code cmd} is executed successfully, otherwise a {@code Pair} with {@code left=null, right=exception}.
+     * 
+     * @param cmd
+     * @return
+     */
+    public <R> Pair<R, Exception> call(final Try.Function<? super T, R, ? extends Exception> cmd) {
+        try {
+            return Pair.of(cmd.apply(val), null);
+        } catch (Exception e) {
+            return Pair.of(null, e);
+        }
+    }
+
+    /**
+     * Returns a {@code Nullable} with the value returned by {@code action} or an empty {@code Nullable} if exception happens.
+     * 
+     * @param cmd
+     * @return
+     */
+    public <R> Nullable<R> tryOrEmpty(final Try.Function<? super T, R, ? extends Exception> cmd) {
+        try {
+            return Nullable.of(cmd.apply(val));
+        } catch (Throwable e) {
+            return Nullable.<R> empty();
+        }
     }
 
     public static final class BooleanListBuilder extends Builder<BooleanList> {
@@ -132,37 +235,37 @@ public class Builder<T> {
         }
 
         public BooleanListBuilder set(int index, boolean e) {
-            value.set(index, e);
+            val.set(index, e);
 
             return this;
         }
 
         public BooleanListBuilder add(boolean e) {
-            value.add(e);
+            val.add(e);
 
             return this;
         }
 
         public BooleanListBuilder add(int index, boolean e) {
-            value.add(index, e);
+            val.add(index, e);
 
             return this;
         }
 
         public BooleanListBuilder addAll(BooleanList c) {
-            value.addAll(c);
+            val.addAll(c);
 
             return this;
         }
 
         public BooleanListBuilder addAll(int index, BooleanList c) {
-            value.addAll(index, c);
+            val.addAll(index, c);
 
             return this;
         }
 
         public BooleanListBuilder remove(boolean e) {
-            value.remove(e);
+            val.remove(e);
 
             return this;
         }
@@ -174,7 +277,7 @@ public class Builder<T> {
         //        }
 
         public BooleanListBuilder removeAll(BooleanList c) {
-            value.removeAll(c);
+            val.removeAll(c);
 
             return this;
         }
@@ -186,37 +289,37 @@ public class Builder<T> {
         }
 
         public CharListBuilder set(int index, char e) {
-            value.set(index, e);
+            val.set(index, e);
 
             return this;
         }
 
         public CharListBuilder add(char e) {
-            value.add(e);
+            val.add(e);
 
             return this;
         }
 
         public CharListBuilder add(int index, char e) {
-            value.add(index, e);
+            val.add(index, e);
 
             return this;
         }
 
         public CharListBuilder addAll(CharList c) {
-            value.addAll(c);
+            val.addAll(c);
 
             return this;
         }
 
         public CharListBuilder addAll(int index, CharList c) {
-            value.addAll(index, c);
+            val.addAll(index, c);
 
             return this;
         }
 
         public CharListBuilder remove(char e) {
-            value.remove(e);
+            val.remove(e);
 
             return this;
         }
@@ -228,7 +331,7 @@ public class Builder<T> {
         //        }
 
         public CharListBuilder removeAll(CharList c) {
-            value.removeAll(c);
+            val.removeAll(c);
 
             return this;
         }
@@ -240,37 +343,37 @@ public class Builder<T> {
         }
 
         public ByteListBuilder set(int index, byte e) {
-            value.set(index, e);
+            val.set(index, e);
 
             return this;
         }
 
         public ByteListBuilder add(byte e) {
-            value.add(e);
+            val.add(e);
 
             return this;
         }
 
         public ByteListBuilder add(int index, byte e) {
-            value.add(index, e);
+            val.add(index, e);
 
             return this;
         }
 
         public ByteListBuilder addAll(ByteList c) {
-            value.addAll(c);
+            val.addAll(c);
 
             return this;
         }
 
         public ByteListBuilder addAll(int index, ByteList c) {
-            value.addAll(index, c);
+            val.addAll(index, c);
 
             return this;
         }
 
         public ByteListBuilder remove(byte e) {
-            value.remove(e);
+            val.remove(e);
 
             return this;
         }
@@ -282,7 +385,7 @@ public class Builder<T> {
         //        }
 
         public ByteListBuilder removeAll(ByteList c) {
-            value.removeAll(c);
+            val.removeAll(c);
 
             return this;
         }
@@ -294,37 +397,37 @@ public class Builder<T> {
         }
 
         public ShortListBuilder set(int index, short e) {
-            value.set(index, e);
+            val.set(index, e);
 
             return this;
         }
 
         public ShortListBuilder add(short e) {
-            value.add(e);
+            val.add(e);
 
             return this;
         }
 
         public ShortListBuilder add(int index, short e) {
-            value.add(index, e);
+            val.add(index, e);
 
             return this;
         }
 
         public ShortListBuilder addAll(ShortList c) {
-            value.addAll(c);
+            val.addAll(c);
 
             return this;
         }
 
         public ShortListBuilder addAll(int index, ShortList c) {
-            value.addAll(index, c);
+            val.addAll(index, c);
 
             return this;
         }
 
         public ShortListBuilder remove(short e) {
-            value.remove(e);
+            val.remove(e);
 
             return this;
         }
@@ -336,7 +439,7 @@ public class Builder<T> {
         //        }
 
         public ShortListBuilder removeAll(ShortList c) {
-            value.removeAll(c);
+            val.removeAll(c);
 
             return this;
         }
@@ -348,37 +451,37 @@ public class Builder<T> {
         }
 
         public IntListBuilder set(int index, int e) {
-            value.set(index, e);
+            val.set(index, e);
 
             return this;
         }
 
         public IntListBuilder add(int e) {
-            value.add(e);
+            val.add(e);
 
             return this;
         }
 
         public IntListBuilder add(int index, int e) {
-            value.add(index, e);
+            val.add(index, e);
 
             return this;
         }
 
         public IntListBuilder addAll(IntList c) {
-            value.addAll(c);
+            val.addAll(c);
 
             return this;
         }
 
         public IntListBuilder addAll(int index, IntList c) {
-            value.addAll(index, c);
+            val.addAll(index, c);
 
             return this;
         }
 
         public IntListBuilder remove(int e) {
-            value.remove(e);
+            val.remove(e);
 
             return this;
         }
@@ -390,7 +493,7 @@ public class Builder<T> {
         //        }
 
         public IntListBuilder removeAll(IntList c) {
-            value.removeAll(c);
+            val.removeAll(c);
 
             return this;
         }
@@ -402,37 +505,37 @@ public class Builder<T> {
         }
 
         public LongListBuilder set(int index, long e) {
-            value.set(index, e);
+            val.set(index, e);
 
             return this;
         }
 
         public LongListBuilder add(long e) {
-            value.add(e);
+            val.add(e);
 
             return this;
         }
 
         public LongListBuilder add(int index, long e) {
-            value.add(index, e);
+            val.add(index, e);
 
             return this;
         }
 
         public LongListBuilder addAll(LongList c) {
-            value.addAll(c);
+            val.addAll(c);
 
             return this;
         }
 
         public LongListBuilder addAll(int index, LongList c) {
-            value.addAll(index, c);
+            val.addAll(index, c);
 
             return this;
         }
 
         public LongListBuilder remove(long e) {
-            value.remove(e);
+            val.remove(e);
 
             return this;
         }
@@ -444,7 +547,7 @@ public class Builder<T> {
         //        }
 
         public LongListBuilder removeAll(LongList c) {
-            value.removeAll(c);
+            val.removeAll(c);
 
             return this;
         }
@@ -456,37 +559,37 @@ public class Builder<T> {
         }
 
         public FloatListBuilder set(int index, float e) {
-            value.set(index, e);
+            val.set(index, e);
 
             return this;
         }
 
         public FloatListBuilder add(float e) {
-            value.add(e);
+            val.add(e);
 
             return this;
         }
 
         public FloatListBuilder add(int index, float e) {
-            value.add(index, e);
+            val.add(index, e);
 
             return this;
         }
 
         public FloatListBuilder addAll(FloatList c) {
-            value.addAll(c);
+            val.addAll(c);
 
             return this;
         }
 
         public FloatListBuilder addAll(int index, FloatList c) {
-            value.addAll(index, c);
+            val.addAll(index, c);
 
             return this;
         }
 
         public FloatListBuilder remove(float e) {
-            value.remove(e);
+            val.remove(e);
 
             return this;
         }
@@ -498,7 +601,7 @@ public class Builder<T> {
         //        }
 
         public FloatListBuilder removeAll(FloatList c) {
-            value.removeAll(c);
+            val.removeAll(c);
 
             return this;
         }
@@ -510,37 +613,37 @@ public class Builder<T> {
         }
 
         public DoubleListBuilder set(int index, double e) {
-            value.set(index, e);
+            val.set(index, e);
 
             return this;
         }
 
         public DoubleListBuilder add(double e) {
-            value.add(e);
+            val.add(e);
 
             return this;
         }
 
         public DoubleListBuilder add(int index, double e) {
-            value.add(index, e);
+            val.add(index, e);
 
             return this;
         }
 
         public DoubleListBuilder addAll(DoubleList c) {
-            value.addAll(c);
+            val.addAll(c);
 
             return this;
         }
 
         public DoubleListBuilder addAll(int index, DoubleList c) {
-            value.addAll(index, c);
+            val.addAll(index, c);
 
             return this;
         }
 
         public DoubleListBuilder remove(double e) {
-            value.remove(e);
+            val.remove(e);
 
             return this;
         }
@@ -552,7 +655,7 @@ public class Builder<T> {
         //        }
 
         public DoubleListBuilder removeAll(DoubleList c) {
-            value.removeAll(c);
+            val.removeAll(c);
 
             return this;
         }
@@ -564,19 +667,19 @@ public class Builder<T> {
         }
 
         public ListBuilder<T, L> add(int index, T e) {
-            value.add(index, e);
+            val.add(index, e);
 
             return this;
         }
 
         public ListBuilder<T, L> addAll(int index, Collection<? extends T> c) {
-            value.addAll(index, c);
+            val.addAll(index, c);
 
             return this;
         }
 
         public ListBuilder<T, L> remove(int index) {
-            value.remove(index);
+            val.remove(index);
 
             return this;
         }
@@ -588,25 +691,25 @@ public class Builder<T> {
         }
 
         public CollectionBuilder<T, C> add(T e) {
-            value.add(e);
+            val.add(e);
 
             return this;
         }
 
         public CollectionBuilder<T, C> addAll(final Collection<? extends T> c) {
-            value.addAll(c);
+            val.addAll(c);
 
             return this;
         }
 
         public CollectionBuilder<T, C> remove(Object e) {
-            value.remove(e);
+            val.remove(e);
 
             return this;
         }
 
         public CollectionBuilder<T, C> removeAll(Collection<?> c) {
-            value.removeAll(c);
+            val.removeAll(c);
 
             return this;
         }
@@ -618,49 +721,49 @@ public class Builder<T> {
         }
 
         public MultisetBuilder<T> add(T e) {
-            value.add(e);
+            val.add(e);
 
             return this;
         }
 
         public MultisetBuilder<T> addAll(final Collection<? extends T> c) {
-            value.addAll(c);
+            val.addAll(c);
 
             return this;
         }
 
         public MultisetBuilder<T> addAll(final Map<? extends T, Integer> m) {
-            value.addAll(m);
+            val.addAll(m);
 
             return this;
         }
 
         public MultisetBuilder<T> addAll(final Multiset<? extends T> multiset) {
-            value.addAll(multiset);
+            val.addAll(multiset);
 
             return this;
         }
 
         public MultisetBuilder<T> remove(Object e) {
-            value.remove(e);
+            val.remove(e);
 
             return this;
         }
 
         public MultisetBuilder<T> removeAll(Collection<?> c) {
-            value.removeAll(c);
+            val.removeAll(c);
 
             return this;
         }
 
         public MultisetBuilder<T> removeAll(final Map<? extends T, Integer> m) {
-            value.removeAll(m);
+            val.removeAll(m);
 
             return this;
         }
 
         public MultisetBuilder<T> removeAll(Multiset<? extends T> multiset) {
-            value.removeAll(multiset);
+            val.removeAll(multiset);
 
             return this;
         }
@@ -672,49 +775,49 @@ public class Builder<T> {
         }
 
         public LongMultisetBuilder<T> add(T e) {
-            value.add(e);
+            val.add(e);
 
             return this;
         }
 
         public LongMultisetBuilder<T> addAll(final Collection<? extends T> c) {
-            value.addAll(c);
+            val.addAll(c);
 
             return this;
         }
 
         public LongMultisetBuilder<T> addAll(final Map<? extends T, Long> m) {
-            value.addAll(m);
+            val.addAll(m);
 
             return this;
         }
 
         public LongMultisetBuilder<T> addAll(final LongMultiset<? extends T> multiset) {
-            value.addAll(multiset);
+            val.addAll(multiset);
 
             return this;
         }
 
         public LongMultisetBuilder<T> remove(Object e) {
-            value.remove(e);
+            val.remove(e);
 
             return this;
         }
 
         public LongMultisetBuilder<T> removeAll(Collection<?> c) {
-            value.removeAll(c);
+            val.removeAll(c);
 
             return this;
         }
 
         public LongMultisetBuilder<T> removeAll(final Map<? extends T, Long> m) {
-            value.removeAll(m);
+            val.removeAll(m);
 
             return this;
         }
 
         public LongMultisetBuilder<T> removeAll(LongMultiset<? extends T> multiset) {
-            value.removeAll(multiset);
+            val.removeAll(multiset);
 
             return this;
         }
@@ -726,26 +829,26 @@ public class Builder<T> {
         }
 
         public MapBuilder<K, V, M> put(K k, V v) {
-            value.put(k, v);
+            val.put(k, v);
 
             return this;
         }
 
         public MapBuilder<K, V, M> putAll(Map<? extends K, ? extends V> m) {
-            value.putAll(m);
+            val.putAll(m);
 
             return this;
         }
 
         public MapBuilder<K, V, M> remove(Object k) {
-            value.remove(k);
+            val.remove(k);
 
             return this;
         }
 
         public MapBuilder<K, V, M> removeAll(Collection<?> c) {
             for (Object k : c) {
-                value.remove(k);
+                val.remove(k);
             }
 
             return this;
@@ -758,57 +861,57 @@ public class Builder<T> {
         }
 
         public MultimapBuilder<K, E, V, M> put(K key, E e) {
-            value.put(key, e);
+            val.put(key, e);
 
             return this;
         }
 
         public MultimapBuilder<K, E, V, M> putAll(final K k, final Collection<? extends E> c) {
-            value.putAll(k, c);
+            val.putAll(k, c);
 
             return this;
         }
 
         public MultimapBuilder<K, E, V, M> putAll(Map<? extends K, ? extends E> m) {
-            value.putAll(m);
+            val.putAll(m);
 
             return this;
         }
 
         public MultimapBuilder<K, E, V, M> putAll(Multimap<? extends K, ? extends E, ? extends V> m) {
-            value.putAll(m);
+            val.putAll(m);
 
             return this;
         }
 
         public MultimapBuilder<K, E, V, M> remove(Object k, Object e) {
-            value.remove(k, e);
+            val.remove(k, e);
 
             return this;
         }
 
         public MultimapBuilder<K, E, V, M> removeAll(K k) {
-            value.removeAll(k);
+            val.removeAll(k);
 
             return this;
         }
 
         public MultimapBuilder<K, E, V, M> removeAll(Collection<? extends K> c) {
             for (Object k : c) {
-                value.removeAll(k);
+                val.removeAll(k);
             }
 
             return this;
         }
 
         public MultimapBuilder<K, E, V, M> removeAll(Map<? extends K, ? extends E> m) {
-            value.removeAll(m);
+            val.removeAll(m);
 
             return this;
         }
 
         public MultimapBuilder<K, E, V, M> removeAll(Multimap<? extends K, ? extends E, ? extends V> m) {
-            value.removeAll(m);
+            val.removeAll(m);
 
             return this;
         }
@@ -1085,15 +1188,73 @@ public class Builder<T> {
             return output;
         }
 
-        public static void ifOrElse(boolean b, Runnable action, Runnable elseAction) {
+        /**
+         * Returns an empty <code>Nullable</code> if {@code val} is {@code null} while {@code targetType} is primitive or can't be assigned to {@code targetType}.
+         * Please be aware that {@code null} can be assigned to any {@code Object} type except primitive types: {@code boolean/char/byte/short/int/long/double}.
+         * 
+         * @param val
+         * @param targetType
+         * @return
+         */
+        @SuppressWarnings("unchecked")
+        public static <T> Nullable<T> castIfAssignable(final Object val, final Class<T> targetType) {
+            if (N.isPrimitive(targetType)) {
+                return val != null && N.wrapperOf(targetType).isAssignableFrom(val.getClass()) ? Nullable.of((T) val) : Nullable.<T> empty();
+            }
+
+            return val == null || targetType.isAssignableFrom(val.getClass()) ? Nullable.of((T) val) : Nullable.<T> empty();
+        }
+
+        /**
+         * 
+         * @param b
+         * @param actionForTrue do nothing if it's {@code null} even {@code b} is true.
+         * @param actionForFalse do nothing if it's {@code null} even {@code b} is false.
+         * @throws E1
+         * @throws E2
+         */
+        public static <E1 extends Exception, E2 extends Exception> void ifOrElse(final boolean b, final Try.Runnable<E1> actionForTrue,
+                final Try.Runnable<E2> actionForFalse) throws E1, E2 {
             if (b) {
-                action.run();
+                if (actionForTrue != null) {
+                    actionForTrue.run();
+                }
             } else {
-                elseAction.run();
+                if (actionForFalse != null) {
+                    actionForFalse.run();
+                }
             }
         }
 
-        public static Optional<Exception> run(Try.Runnable<? extends Exception> cmd) {
+        /**
+         * 
+         * @param supplier
+         * @param actionForTrue do nothing if it's {@code null} even {@code b} is true.
+         * @param actionForFalse do nothing if it's {@code null} even {@code b} is false.
+         * @throws E0
+         * @throws E1
+         * @throws E2
+         */
+        public static <E0 extends Exception, E1 extends Exception, E2 extends Exception> void ifOrElse(final Try.Supplier<Boolean, E0> supplier,
+                final Try.Runnable<E1> actionForTrue, final Try.Runnable<E2> actionForFalse) throws E0, E1, E2 {
+            if (supplier.get()) {
+                if (actionForTrue != null) {
+                    actionForTrue.run();
+                }
+            } else {
+                if (actionForFalse != null) {
+                    actionForFalse.run();
+                }
+            }
+        }
+
+        /**
+         * Returns an empty {@code Optional} if {@code cmd} is executed successfully, otherwise a {@code Optional} with the exception threw.
+         * 
+         * @param cmd
+         * @return
+         */
+        public static Optional<Exception> run(final Try.Runnable<? extends Exception> cmd) {
             try {
                 cmd.run();
                 return Optional.empty();
@@ -1102,11 +1263,31 @@ public class Builder<T> {
             }
         }
 
-        public static <R> Pair<R, Exception> call(Try.Callable<R, ? extends Exception> cmd) {
+        /**
+         * Returns a {@code Pair} with {@code left=returnedValue, right=null} if {@code cmd} is executed successfully, otherwise a {@code Pair} with {@code left=null, right=exception}.
+         * 
+         * @param cmd
+         * @return
+         */
+        public static <R> Pair<R, Exception> call(final Try.Callable<R, ? extends Exception> cmd) {
             try {
                 return Pair.of(cmd.call(), null);
             } catch (Exception e) {
                 return Pair.of(null, e);
+            }
+        }
+
+        /**
+         * Returns a {@code Nullable} with the value returned by {@code action} or an empty {@code Nullable} if exception happens.
+         * 
+         * @param cmd
+         * @return
+         */
+        public static <R> Nullable<R> tryOrEmpty(final Try.Callable<R, ? extends Exception> cmd) {
+            try {
+                return Nullable.of(cmd.call());
+            } catch (Throwable e) {
+                return Nullable.<R> empty();
             }
         }
     }

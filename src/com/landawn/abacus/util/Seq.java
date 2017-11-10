@@ -2696,14 +2696,6 @@ public final class Seq<T> extends ImmutableCollection<T> {
     //    public Stream<T> stream() {
     //        return N.isNullOrEmpty(coll) ? Stream.<T> empty() : Stream.of(coll);
     //    }
-    //
-    //    public ListBuilder<T> __() {
-    //        return Builder.of(this);
-    //    }
-    //
-    //    public ListBuilder<T> __(Consumer<? super List<T>> func) {
-    //        return Builder.of(this).__(func);
-    //    }
 
     @Override
     public int hashCode() {

@@ -99,20 +99,6 @@ public final class Nullable<T> extends Any<T> {
     }
 
     /**
-     * Returns a {@code Nullable} with the value returned by {@code action} or an empty {@code Nullable} if exception happens.
-     * 
-     * @param action
-     * @return
-     */
-    public static <R> Nullable<R> tryOrEmpty(final Try.Callable<R, ? extends Exception> action) {
-        try {
-            return Nullable.of(action.call());
-        } catch (Throwable e) {
-            return Nullable.<R> empty();
-        }
-    }
-
-    /**
      * If a value is present, and the value matches the given predicate,
      * return an {@code Nullable} describing the value, otherwise return an
      * empty {@code Nullable}.

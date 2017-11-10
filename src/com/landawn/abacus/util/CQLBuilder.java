@@ -505,7 +505,7 @@ public abstract class CQLBuilder {
                     if (idx < 0) {
                         sb.append(formalizeName(propColumnNameMap, columnNames[i]));
 
-                        if (op == OperationType.QUERY && namingPolicy != NamingPolicy.CAMEL_CASE && !D.ASTERISK.equals(columnNames[i])) {
+                        if (op == OperationType.QUERY && namingPolicy != NamingPolicy.LOWER_CAMEL_CASE && !D.ASTERISK.equals(columnNames[i])) {
                             sb.append(_SPACE_AS_SPACE);
 
                             sb.append(D._QUOTATION_D);
@@ -515,7 +515,7 @@ public abstract class CQLBuilder {
                     } else {
                         sb.append(formalizeName(propColumnNameMap, columnNames[i].substring(0, idx).trim()));
 
-                        if (op == OperationType.QUERY && namingPolicy != NamingPolicy.CAMEL_CASE && !D.ASTERISK.equals(columnNames[i])) {
+                        if (op == OperationType.QUERY && namingPolicy != NamingPolicy.LOWER_CAMEL_CASE && !D.ASTERISK.equals(columnNames[i])) {
                             sb.append(_SPACE_AS_SPACE);
 
                             sb.append(D._QUOTATION_D);
@@ -534,7 +534,7 @@ public abstract class CQLBuilder {
 
                 sb.append(formalizeName(propColumnNameMap, columnName));
 
-                if (op == OperationType.QUERY && namingPolicy != NamingPolicy.CAMEL_CASE && !D.ASTERISK.equals(columnName)) {
+                if (op == OperationType.QUERY && namingPolicy != NamingPolicy.LOWER_CAMEL_CASE && !D.ASTERISK.equals(columnName)) {
                     sb.append(_SPACE_AS_SPACE);
 
                     sb.append(D._QUOTATION_D);
@@ -3590,7 +3590,7 @@ public abstract class CQLBuilder {
      */
     public static final class E3 extends CQLBuilder {
         E3() {
-            super(NamingPolicy.CAMEL_CASE, CQLPolicy.CQL);
+            super(NamingPolicy.LOWER_CAMEL_CASE, CQLPolicy.CQL);
         }
 
         static E3 createInstance() {
@@ -3819,7 +3819,7 @@ public abstract class CQLBuilder {
      */
     public static final class RE3 extends CQLBuilder {
         RE3() {
-            super(NamingPolicy.CAMEL_CASE, CQLPolicy.RAW_CQL);
+            super(NamingPolicy.LOWER_CAMEL_CASE, CQLPolicy.RAW_CQL);
         }
 
         static RE3 createInstance() {
@@ -4048,7 +4048,7 @@ public abstract class CQLBuilder {
      */
     public static final class NE3 extends CQLBuilder {
         NE3() {
-            super(NamingPolicy.CAMEL_CASE, CQLPolicy.NAMED_CQL);
+            super(NamingPolicy.LOWER_CAMEL_CASE, CQLPolicy.NAMED_CQL);
         }
 
         static NE3 createInstance() {
@@ -4277,7 +4277,7 @@ public abstract class CQLBuilder {
      */
     static final class SE3 extends CQLBuilder {
         SE3() {
-            super(NamingPolicy.CAMEL_CASE, CQLPolicy.IBATIS_CQL);
+            super(NamingPolicy.LOWER_CAMEL_CASE, CQLPolicy.IBATIS_CQL);
         }
 
         static SE3 createInstance() {

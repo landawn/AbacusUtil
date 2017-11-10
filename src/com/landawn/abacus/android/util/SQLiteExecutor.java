@@ -368,7 +368,7 @@ public final class SQLiteExecutor {
     }
 
     static <T> T toEntity(final Class<T> targetClass, final ContentValues contentValues) {
-        return toEntity(targetClass, contentValues, NamingPolicy.CAMEL_CASE);
+        return toEntity(targetClass, contentValues, NamingPolicy.LOWER_CAMEL_CASE);
     }
 
     /**
@@ -391,7 +391,7 @@ public final class SQLiteExecutor {
             Object propValue = null;
 
             switch (namingPolicy) {
-                case CAMEL_CASE: {
+                case LOWER_CAMEL_CASE: {
                     for (String propName : contentValues.keySet()) {
                         propValue = contentValues.get(propName);
 
@@ -529,7 +529,7 @@ public final class SQLiteExecutor {
             Map<String, Object> props = (Map<String, Object>) obj;
 
             switch (namingPolicy) {
-                case CAMEL_CASE: {
+                case LOWER_CAMEL_CASE: {
                     for (Map.Entry<String, Object> entry : props.entrySet()) {
                         if (notNullOrEmptyIgnorePropNames && ignoredPropNames.contains(entry.getKey())) {
                             continue;
@@ -604,7 +604,7 @@ public final class SQLiteExecutor {
                     Object propValue = null;
 
                     switch (namingPolicy) {
-                        case CAMEL_CASE: {
+                        case LOWER_CAMEL_CASE: {
                             for (String propName : updatePropNames) {
                                 propGetMethod = ClassUtil.getPropGetMethod(srCls, propName);
                                 propName = ClassUtil.getPropNameByMethod(propGetMethod);
@@ -680,7 +680,7 @@ public final class SQLiteExecutor {
                 Object propValue = null;
 
                 switch (namingPolicy) {
-                    case CAMEL_CASE: {
+                    case LOWER_CAMEL_CASE: {
                         for (Map.Entry<String, Method> entry : getterMethodList.entrySet()) {
                             propName = entry.getKey();
 
@@ -1224,7 +1224,7 @@ public final class SQLiteExecutor {
             case UPPER_CASE_WITH_UNDERSCORE:
                 return RE2.select(selectColumnName).from(tableName).where(whereClause).pair();
 
-            case CAMEL_CASE:
+            case LOWER_CAMEL_CASE:
                 return RE3.select(selectColumnName).from(tableName).where(whereClause).pair();
 
             default:
@@ -1986,7 +1986,7 @@ public final class SQLiteExecutor {
 
     private String formatName(String tableName) {
         switch (columnNamingPolicy) {
-            case CAMEL_CASE:
+            case LOWER_CAMEL_CASE:
                 return tableName;
             case LOWER_CASE_WITH_UNDERSCORE:
                 return ClassUtil.toLowerCaseWithUnderscore(tableName);

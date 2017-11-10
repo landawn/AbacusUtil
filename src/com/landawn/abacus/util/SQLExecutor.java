@@ -3847,7 +3847,7 @@ public final class SQLExecutor implements Closeable {
 
                     break;
 
-                case CAMEL_CASE:
+                case LOWER_CAMEL_CASE:
                     if (N.isNullOrEmpty(selectPropNames)) {
                         sqlBuilder = NE3.selectFrom(targetClass).where(whereCause);
                     } else {
@@ -4033,7 +4033,7 @@ public final class SQLExecutor implements Closeable {
                 case UPPER_CASE_WITH_UNDERSCORE:
                     return NE2.insert(props).into(targetClass).pair();
 
-                case CAMEL_CASE:
+                case LOWER_CAMEL_CASE:
                     return NE3.insert(props).into(targetClass).pair();
 
                 default:
@@ -4223,7 +4223,7 @@ public final class SQLExecutor implements Closeable {
                 case UPPER_CASE_WITH_UNDERSCORE:
                     return NE2.update(targetClass).set(props).where(whereCause).pair();
 
-                case CAMEL_CASE:
+                case LOWER_CAMEL_CASE:
                     return NE3.update(targetClass).set(props).where(whereCause).pair();
 
                 default:
@@ -4332,7 +4332,7 @@ public final class SQLExecutor implements Closeable {
 
                     break;
 
-                case CAMEL_CASE:
+                case LOWER_CAMEL_CASE:
                     pair = NE3.deleteFrom(targetClass).where(whereCause).pair();
 
                     break;

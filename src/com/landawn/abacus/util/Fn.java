@@ -107,7 +107,7 @@ public final class Fn {
     @SuppressWarnings("rawtypes")
     public static final Supplier<LinkedHashMap<String, Object>> SUPPLIER_OF_LINKED_HASH_MAP = (Supplier) Suppliers.LINKED_HASH_MAP;
 
-    private static final Runnable EMPTY_ACTION = new Runnable() {
+    private static final com.landawn.abacus.util.function.Runnable EMPTY_ACTION = new com.landawn.abacus.util.function.Runnable() {
         @Override
         public void run() {
         }
@@ -261,7 +261,7 @@ public final class Fn {
         return Comparators.reversedComparingBy(keyExtractor);
     }
 
-    public static Runnable emptyAction() {
+    public static com.landawn.abacus.util.function.Runnable emptyAction() {
         return EMPTY_ACTION;
     }
 

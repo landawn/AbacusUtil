@@ -47,6 +47,7 @@ import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.SetMultimap;
 import com.landawn.abacus.util.ShortList;
+import com.landawn.abacus.util.Try;
 
 /**
  * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
@@ -54,7 +55,7 @@ import com.landawn.abacus.util.ShortList;
  * 
  * @author Haiyang Li
  */
-public interface Supplier<T> extends java.util.function.Supplier<T> {
+public interface Supplier<T> extends java.util.function.Supplier<T>, Try.Supplier<T, RuntimeException> {
 
     @Override
     T get();

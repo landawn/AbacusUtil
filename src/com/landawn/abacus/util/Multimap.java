@@ -588,7 +588,7 @@ public class Multimap<K, E, V extends Collection<E>> {
     /**
      * Remove the specified values (all occurrences) from the value set associated with keys which satisfy the specified <code>predicate</code>.
      * 
-     * @param value
+     * @param val
      * @param predicate
      * @return <code>true</code> if this Multimap is modified by this operation, otherwise <code>false</code>.
      */

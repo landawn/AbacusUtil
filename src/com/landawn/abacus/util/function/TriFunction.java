@@ -17,14 +17,17 @@ package com.landawn.abacus.util.function;
 import java.util.Objects;
 import java.util.function.Function;
 
+import com.landawn.abacus.util.Try;
+
 /**
  * 
  * @since 0.8
  * 
  * @author Haiyang Li
  */
-public interface TriFunction<A, B, C, R> {
+public interface TriFunction<A, B, C, R> extends Try.TriFunction<A, B, C, R, RuntimeException> {
 
+    @Override
     R apply(A a, B b, C c);
 
     default <V> TriFunction<A, B, C, V> andThen(Function<? super R, ? extends V> after) {

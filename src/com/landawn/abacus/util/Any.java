@@ -67,24 +67,6 @@ public abstract class Any<T> {
     }
 
     /**
-     * Returns a {@code Any} with the value returned by {@code action} or an empty {@code Any} if exception happens.
-     * 
-     * @param action
-     * @return
-     */
-    public static <R> Any<R> tryOrEmpty(final Try.Callable<R, ? extends Exception> action) {
-        return Nullable.tryOrEmpty(action);
-    }
-
-    //    public static <T> Any<T> ifOrEmpty(boolean b, final T val) {
-    //        return b ? Any.of(val) : Any.<T> empty();
-    //    }
-
-    //    public static <T> Any<T> from(Optional<T> optional) {
-    //        return optional.isPresent() ? new Any<T>(optional.get()) : (Any<T>) empty();
-    //    }
-
-    /**
      * If a value is present in this {@code Any}, returns the value,
      * otherwise throws {@code NoSuchElementException}.
      *

@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import com.landawn.abacus.util.Fn;
+import com.landawn.abacus.util.Try;
 
 /**
  * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
@@ -25,7 +26,7 @@ import com.landawn.abacus.util.Fn;
  * 
  * @author Haiyang Li
  */
-public interface BiFunction<T, U, R> extends java.util.function.BiFunction<T, U, R> {
+public interface BiFunction<T, U, R> extends java.util.function.BiFunction<T, U, R>, Try.BiFunction<T, U, R, RuntimeException> {
 
     @Override
     R apply(T t, U u);
@@ -49,12 +50,4 @@ public interface BiFunction<T, U, R> extends java.util.function.BiFunction<T, U,
     static <K, V, M extends Map<K, V>> BiFunction<M, M, M> ofPutAll() {
         return Fn.BiFunctions.ofPutAll();
     }
-
-    //    public static interface _2<T, U, R> extends BiFunction<T, U, R> {
-    //
-    //    }
-    //
-    //    public static interface _3<T, U, R> extends _2<T, U, R> {
-    //
-    //    }
 }
