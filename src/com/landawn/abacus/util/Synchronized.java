@@ -14,11 +14,6 @@
 
 package com.landawn.abacus.util;
 
-import java.util.concurrent.Callable;
-
-import com.landawn.abacus.util.function.Consumer;
-import com.landawn.abacus.util.function.Function;
-
 /**
  * 
  * @since 0.8
@@ -38,93 +33,27 @@ public final class Synchronized<T> {
         return new Synchronized<>(target);
     }
 
-    public void run(final Runnable cmd) {
+    public <E extends Exception> void run(final Try.Runnable<E> cmd) throws E {
         synchronized (target) {
             cmd.run();
         }
     }
 
-    public void run(final Consumer<? super T> cmd) {
+    public <E extends Exception> void run(final Try.Consumer<? super T, E> cmd) throws E {
         synchronized (target) {
             cmd.accept(target);
         }
     }
 
-    public <R> R call(final Try.Callable<R, RuntimeException> cmd) {
+    public <R, E extends Exception> R call(final Try.Callable<R, E> cmd) throws E {
         synchronized (target) {
             return cmd.call();
         }
     }
 
-    public <R> R call(final Function<? super T, R> cmd) {
+    public <R, E extends Exception> R call(final Try.Function<? super T, R, E> cmd) throws E {
         synchronized (target) {
             return cmd.apply(target);
-        }
-    }
-
-    //    public static <T> T execute(final Object target, final Callable<T> callable) {
-    //        synchronized (target) {
-    //            try {
-    //                return callable.call();
-    //            } catch (Exception e) {
-    //                throw N.toRuntimeException(e);
-    //            }
-    //        }
-    //    }
-    //
-    //    public static void execute(final Object target, final Runnable runnable) {
-    //        synchronized (target) {
-    //            runnable.run();
-    //        }
-    //    }
-    //
-    //    public static <T, R> R execute(final T target, final Function<T, R> func) {
-    //        synchronized (target) {
-    //            return func.apply(target);
-    //        }
-    //    }
-    //
-    //    public static <T> void execute(final T target, final Consumer<T> consumer) {
-    //        synchronized (target) {
-    //            consumer.accept(target);
-    //        }
-    //    }
-
-    public static final class Synchronized0<T> {
-        private final T target;
-
-        Synchronized0(final T target) {
-            this.target = target;
-        }
-
-        public static <T> Synchronized0<T> on(final T target) {
-            N.requireNonNull(target);
-
-            return new Synchronized0<>(target);
-        }
-
-        public void run(final Try.Runnable<? extends Exception> cmd) throws Exception {
-            synchronized (target) {
-                cmd.run();
-            }
-        }
-
-        public void run(final Try.Consumer<? super T, ? extends Exception> cmd) throws Exception {
-            synchronized (target) {
-                cmd.accept(target);
-            }
-        }
-
-        public <R> R call(final Callable<R> cmd) throws Exception {
-            synchronized (target) {
-                return cmd.call();
-            }
-        }
-
-        public <R> R call(final Try.Function<? super T, R, ? extends Exception> cmd) throws Exception {
-            synchronized (target) {
-                return cmd.apply(target);
-            }
         }
     }
 }

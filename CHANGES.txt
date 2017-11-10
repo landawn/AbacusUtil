@@ -2,7 +2,7 @@
 
 ﻿========Changes in 1.0.8 =========================================================================
 
-1*, Remove Retry0.
+1*, Remove Retry0/Synchronized0.
 
 2*, Rename Fast to Fj.
 

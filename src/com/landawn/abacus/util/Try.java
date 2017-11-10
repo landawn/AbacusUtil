@@ -132,7 +132,7 @@ public final class Try<T extends AutoCloseable> {
      * @return
      * @throws RuntimeException if some error happens
      */
-    public static <R> R call(final Try.Callable<R, ? extends Exception> cmd) {
+    public static <R> R call(final java.util.concurrent.Callable<R> cmd) {
         try {
             return cmd.call();
         } catch (Exception e) {
@@ -140,8 +140,7 @@ public final class Try<T extends AutoCloseable> {
         }
     }
 
-    public static <R> R call(final Try.Callable<R, ? extends Exception> cmd,
-            final com.landawn.abacus.util.function.Function<? super Exception, R> actionOnError) {
+    public static <R> R call(final java.util.concurrent.Callable<R> cmd, final com.landawn.abacus.util.function.Function<? super Exception, R> actionOnError) {
         N.requireNonNull(actionOnError);
 
         try {
@@ -151,7 +150,7 @@ public final class Try<T extends AutoCloseable> {
         }
     }
 
-    public static <R> R call(final Try.Callable<R, ? extends Exception> cmd, final com.landawn.abacus.util.function.Supplier<R> supplier) {
+    public static <R> R call(final java.util.concurrent.Callable<R> cmd, final com.landawn.abacus.util.function.Supplier<R> supplier) {
         N.requireNonNull(supplier);
 
         try {
@@ -161,7 +160,7 @@ public final class Try<T extends AutoCloseable> {
         }
     }
 
-    public static <R> R call(final Try.Callable<R, ? extends Exception> cmd, final R defaultValue) {
+    public static <R> R call(final java.util.concurrent.Callable<R> cmd, final R defaultValue) {
         try {
             return cmd.call();
         } catch (Exception e) {
@@ -177,7 +176,7 @@ public final class Try<T extends AutoCloseable> {
      * @return the value returned <code>Supplier.get()</code> if some error happens and <code>predicate</code> return true.
      * @throws RuntimeException if some error happens and <code>predicate</code> return false.
      */
-    public static <R> R call(final Try.Callable<R, ? extends Exception> cmd, final com.landawn.abacus.util.function.Predicate<? super Exception> predicate,
+    public static <R> R call(final java.util.concurrent.Callable<R> cmd, final com.landawn.abacus.util.function.Predicate<? super Exception> predicate,
             final com.landawn.abacus.util.function.Supplier<R> supplier) {
         N.requireNonNull(predicate);
         N.requireNonNull(supplier);
@@ -201,7 +200,7 @@ public final class Try<T extends AutoCloseable> {
      * @return the <code>defaultValue()</code> if some error happens and <code>predicate</code> return true.
      * @throws RuntimeException if some error happens and <code>predicate</code> return false.
      */
-    public static <R> R call(final Try.Callable<R, ? extends Exception> cmd, final com.landawn.abacus.util.function.Predicate<? super Exception> predicate,
+    public static <R> R call(final java.util.concurrent.Callable<R> cmd, final com.landawn.abacus.util.function.Predicate<? super Exception> predicate,
             final R defaultValue) {
         N.requireNonNull(predicate);
 
