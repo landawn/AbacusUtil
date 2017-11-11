@@ -29,6 +29,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.NavigableMap;
+import java.util.NavigableSet;
 import java.util.Objects;
 import java.util.PriorityQueue;
 import java.util.Queue;
@@ -523,6 +525,116 @@ public final class Fn {
     @SuppressWarnings("rawtypes")
     public static <T extends Comparable> BiPredicate<T, T> lessEqual() {
         return (BiPredicate<T, T>) BiPredicates.LESS_EQUAL;
+    }
+
+    public static Supplier<Boolean> and(final Supplier<Boolean> first, final Supplier<Boolean> second) {
+        return new Supplier<Boolean>() {
+            @Override
+            public Boolean get() {
+                return first.get() && second.get();
+            }
+        };
+    }
+
+    public static Supplier<Boolean> and(final Supplier<Boolean> first, final Supplier<Boolean> second, final Supplier<Boolean> third) {
+        return new Supplier<Boolean>() {
+            @Override
+            public Boolean get() {
+                return first.get() && second.get() && third.get();
+            }
+        };
+    }
+
+    public static <T> Predicate<T> and(final Predicate<? super T> first, final Predicate<? super T> second) {
+        return new Predicate<T>() {
+            @Override
+            public boolean test(T t) {
+                return first.test(t) && second.test(t);
+            }
+        };
+    }
+
+    public static <T> Predicate<T> and(final Predicate<? super T> first, final Predicate<? super T> second, final Predicate<? super T> third) {
+        return new Predicate<T>() {
+            @Override
+            public boolean test(T t) {
+                return first.test(t) && second.test(t) && third.test(t);
+            }
+        };
+    }
+
+    public static <T, U> BiPredicate<T, U> and(final BiPredicate<? super T, ? super U> first, final BiPredicate<? super T, ? super U> second) {
+        return new BiPredicate<T, U>() {
+            @Override
+            public boolean test(T t, U u) {
+                return first.test(t, u) && second.test(t, u);
+            }
+        };
+    }
+
+    public static <T, U> BiPredicate<T, U> and(final BiPredicate<? super T, ? super U> first, final BiPredicate<? super T, ? super U> second,
+            final BiPredicate<? super T, ? super U> third) {
+        return new BiPredicate<T, U>() {
+            @Override
+            public boolean test(T t, U u) {
+                return first.test(t, u) && second.test(t, u) && third.test(t, u);
+            }
+        };
+    }
+
+    public static Supplier<Boolean> or(final Supplier<Boolean> first, final Supplier<Boolean> second) {
+        return new Supplier<Boolean>() {
+            @Override
+            public Boolean get() {
+                return first.get() || second.get();
+            }
+        };
+    }
+
+    public static Supplier<Boolean> or(final Supplier<Boolean> first, final Supplier<Boolean> second, final Supplier<Boolean> third) {
+        return new Supplier<Boolean>() {
+            @Override
+            public Boolean get() {
+                return first.get() || second.get() || third.get();
+            }
+        };
+    }
+
+    public static <T> Predicate<T> or(final Predicate<? super T> first, final Predicate<? super T> second) {
+        return new Predicate<T>() {
+            @Override
+            public boolean test(T t) {
+                return first.test(t) || second.test(t);
+            }
+        };
+    }
+
+    public static <T> Predicate<T> or(final Predicate<? super T> first, final Predicate<? super T> second, final Predicate<? super T> third) {
+        return new Predicate<T>() {
+            @Override
+            public boolean test(T t) {
+                return first.test(t) || second.test(t) || third.test(t);
+            }
+        };
+    }
+
+    public static <T, U> BiPredicate<T, U> or(final BiPredicate<? super T, ? super U> first, final BiPredicate<? super T, ? super U> second) {
+        return new BiPredicate<T, U>() {
+            @Override
+            public boolean test(T t, U u) {
+                return first.test(t, u) || second.test(t, u);
+            }
+        };
+    }
+
+    public static <T, U> BiPredicate<T, U> or(final BiPredicate<? super T, ? super U> first, final BiPredicate<? super T, ? super U> second,
+            final BiPredicate<? super T, ? super U> third) {
+        return new BiPredicate<T, U>() {
+            @Override
+            public boolean test(T t, U u) {
+                return first.test(t, u) || second.test(t, u) || third.test(t, u);
+            }
+        };
     }
 
     public static <K, V> Predicate<Map.Entry<K, V>> testByKey(final Predicate<? super K> predicate) {
@@ -1616,6 +1728,11 @@ public final class Fn {
         }
 
         @SuppressWarnings("rawtypes")
+        public static <T> IntFunction<NavigableSet<T>> ofNavigableSet() {
+            return (IntFunction) TREE_SET_FACTORY;
+        }
+
+        @SuppressWarnings("rawtypes")
         public static <T> IntFunction<TreeSet<T>> ofTreeSet() {
             return (IntFunction) TREE_SET_FACTORY;
         }
@@ -1662,6 +1779,11 @@ public final class Fn {
 
         @SuppressWarnings("rawtypes")
         public static <K, V> IntFunction<SortedMap<K, V>> ofSortedMap() {
+            return (IntFunction) TREE_MAP_FACTORY;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <K, V> IntFunction<NavigableMap<K, V>> ofNavigableMap() {
             return (IntFunction) TREE_MAP_FACTORY;
         }
 
@@ -2099,6 +2221,11 @@ public final class Fn {
         }
 
         @SuppressWarnings("rawtypes")
+        public static <T> Supplier<NavigableSet<T>> ofNavigableSet() {
+            return (Supplier) TREE_SET;
+        }
+
+        @SuppressWarnings("rawtypes")
         public static <T> Supplier<TreeSet<T>> ofTreeSet() {
             return (Supplier) TREE_SET;
         }
@@ -2145,6 +2272,11 @@ public final class Fn {
 
         @SuppressWarnings("rawtypes")
         public static <K, V> Supplier<SortedMap<K, V>> ofSortedMap() {
+            return (Supplier) TREE_MAP;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <K, V> Supplier<NavigableMap<K, V>> ofNavigableMap() {
             return (Supplier) TREE_MAP;
         }
 
@@ -2231,42 +2363,6 @@ public final class Fn {
 
         public static <T> Predicate<T> indexed(final IndexedPredicate<T> predicate) {
             return Fn.indexed(predicate);
-        }
-
-        public static <T> Predicate<T> and(final Predicate<? super T> first, final Predicate<? super T> second) {
-            return new Predicate<T>() {
-                @Override
-                public boolean test(T t) {
-                    return first.test(t) && second.test(t);
-                }
-            };
-        }
-
-        public static <T> Predicate<T> and(final Predicate<? super T> first, final Predicate<? super T> second, final Predicate<? super T> third) {
-            return new Predicate<T>() {
-                @Override
-                public boolean test(T t) {
-                    return first.test(t) && second.test(t) && third.test(t);
-                }
-            };
-        }
-
-        public static <T> Predicate<T> or(final Predicate<? super T> first, final Predicate<? super T> second) {
-            return new Predicate<T>() {
-                @Override
-                public boolean test(T t) {
-                    return first.test(t) || second.test(t);
-                }
-            };
-        }
-
-        public static <T> Predicate<T> or(final Predicate<? super T> first, final Predicate<? super T> second, final Predicate<? super T> third) {
-            return new Predicate<T>() {
-                @Override
-                public boolean test(T t) {
-                    return first.test(t) || second.test(t) || third.test(t);
-                }
-            };
         }
     }
 

@@ -815,6 +815,43 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
         });
     }
 
+    public static IntStream ofCodePoints(final CharSequence str) {
+        if (N.isNullOrEmpty(str)) {
+            return empty();
+        }
+
+        final IntIterator iter = new IntIterator() {
+            private final int len = str.length();
+            private int cursor = 0;
+
+            @Override
+            public boolean hasNext() {
+                return cursor < len;
+            }
+
+            @Override
+            public int nextInt() {
+                if (cursor >= len) {
+                    throw new NoSuchElementException();
+                }
+
+                char c1 = str.charAt(cursor++);
+
+                if (Character.isHighSurrogate(c1) && cursor < len) {
+                    char c2 = str.charAt(cursor);
+                    if (Character.isLowSurrogate(c2)) {
+                        cursor++;
+                        return Character.toCodePoint(c1, c2);
+                    }
+                }
+
+                return c1;
+            }
+        };
+
+        return of(iter);
+    }
+
     @SafeVarargs
     public static IntStream from(final char... a) {
         return N.isNullOrEmpty(a) ? empty() : from(a, 0, a.length);

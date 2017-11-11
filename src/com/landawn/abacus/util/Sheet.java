@@ -2076,20 +2076,20 @@ public final class Sheet<R, C, E> {
 
     public void println() {
         final int columnLength = columnLength();
-        N.println(Joiner.with(", ", "       ", "").join(_columnKeySet).toString());
+        N.println(Joiner.with(", ", "       ", "").reuseStringBuilder(true).appendAll(_columnKeySet).toString());
 
         int i = 0;
         for (R rowKey : _rowKeySet) {
-            final Joiner joiner = Joiner.with(", ");
-            joiner.add(rowKey);
+            final Joiner joiner = Joiner.with(", ").reuseStringBuilder(true);
+            joiner.append(rowKey);
 
             if (this._initialized) {
                 for (int j = 0; j < columnLength; j++) {
-                    joiner.add(_columnList.get(j).get(i));
+                    joiner.append(_columnList.get(j).get(i));
                 }
             } else {
                 for (int j = 0; j < columnLength; j++) {
-                    joiner.add(N.NULL_STRING);
+                    joiner.append(N.NULL_STRING);
                 }
             }
 

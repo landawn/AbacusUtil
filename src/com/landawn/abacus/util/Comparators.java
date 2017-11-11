@@ -63,6 +63,13 @@ public final class Comparators {
     @SuppressWarnings("rawtypes")
     static final Comparator OBJ_COMPARATOR = NATURAL_ORDER;
 
+    static final Comparator<String> COMPARING_IGNORE_CASE = new Comparator<String>() {
+        @Override
+        public int compare(String a, String b) {
+            return N.compareIgnoreCase(a, b);
+        }
+    };
+
     private Comparators() {
         // Singleton
     }
@@ -242,6 +249,10 @@ public final class Comparators {
                 return Double.compare(keyExtractor.applyAsDouble(a), keyExtractor.applyAsDouble(b));
             }
         };
+    }
+
+    public static Comparator<String> comparingIgnoreCase() {
+        return COMPARING_IGNORE_CASE;
     }
 
     @SuppressWarnings("rawtypes")

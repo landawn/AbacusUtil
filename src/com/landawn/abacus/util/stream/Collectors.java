@@ -413,7 +413,7 @@ public class Collectors {
     static final BiConsumer<Joiner, CharSequence> Joiner_Accumulator = new BiConsumer<Joiner, CharSequence>() {
         @Override
         public void accept(Joiner a, CharSequence t) {
-            a.add(t);
+            a.append(t);
         }
     };
 

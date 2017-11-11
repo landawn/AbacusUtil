@@ -61,6 +61,8 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableMap;
+import java.util.NavigableSet;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
@@ -186,6 +188,7 @@ public final class ClassUtil {
         BUILT_IN_TYPE.put(HashSet.class.getCanonicalName(), HashSet.class);
         BUILT_IN_TYPE.put(LinkedHashSet.class.getCanonicalName(), LinkedHashSet.class);
         BUILT_IN_TYPE.put(SortedSet.class.getCanonicalName(), SortedSet.class);
+        BUILT_IN_TYPE.put(NavigableSet.class.getCanonicalName(), NavigableSet.class);
         BUILT_IN_TYPE.put(TreeSet.class.getCanonicalName(), TreeSet.class);
         BUILT_IN_TYPE.put(Queue.class.getCanonicalName(), Queue.class);
         BUILT_IN_TYPE.put(Deque.class.getCanonicalName(), Deque.class);
@@ -205,6 +208,7 @@ public final class ClassUtil {
         BUILT_IN_TYPE.put(ConcurrentMap.class.getCanonicalName(), ConcurrentMap.class);
         BUILT_IN_TYPE.put(ConcurrentHashMap.class.getCanonicalName(), ConcurrentHashMap.class);
         BUILT_IN_TYPE.put(SortedMap.class.getCanonicalName(), SortedMap.class);
+        BUILT_IN_TYPE.put(NavigableMap.class.getCanonicalName(), NavigableMap.class);
         BUILT_IN_TYPE.put(TreeMap.class.getCanonicalName(), TreeMap.class);
 
         BUILT_IN_TYPE.put(File.class.getCanonicalName(), File.class);

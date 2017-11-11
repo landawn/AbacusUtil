@@ -83,6 +83,7 @@ public class Joiner {
     private final boolean isEmptyKeyValueDelimiter;
     private boolean trim = false;
     private boolean skipNull = false;
+    private boolean reuseStringBuilder = false;
     private String nullText = N.NULL_STRING;
 
     /*
@@ -91,7 +92,7 @@ public class Joiner {
      * suffix, so that we can more easily add elements without having to jigger
      * the suffix each time.
      */
-    private StringBuilder value;
+    private StringBuilder buffer;
 
     /*
      * By default, the string consisting of prefix+suffix, returned by
@@ -207,6 +208,12 @@ public class Joiner {
         return this;
     }
 
+    /**
+     * Ignore the {@code null} element/value for {@code key/value, Map, Entity} when the specified {@code element} or {@code value} is {@code null} if it's set to {@code true}.
+     * 
+     * @param skipNull
+     * @return
+     */
     public Joiner skipNull(boolean skipNull) {
         this.skipNull = skipNull;
 
@@ -219,47 +226,53 @@ public class Joiner {
         return this;
     }
 
-    public Joiner add(boolean element) {
+    /**
+     * Get the {@code StringBuilder} from object factory to improve performance if it's set to true, and must remember to call {@code toString()/map()/mapIfNotEmpty()/stream()/streamIfNotEmpty()} to recycle the {@code StringBuilder}.
+     * 
+     * @param reuseStringBuilder
+     * @return
+     */
+    public Joiner reuseStringBuilder(boolean reuseStringBuilder) {
+        if (buffer != null) {
+            throw new IllegalStateException("Can't reset because the StringBuilder has been created");
+        }
+
+        this.reuseStringBuilder = reuseStringBuilder;
+
+        return this;
+    }
+
+    public Joiner append(boolean element) {
         prepareBuilder().append(element);
         return this;
     }
 
-    public Joiner add(char element) {
+    public Joiner append(char element) {
         prepareBuilder().append(element);
         return this;
     }
 
-    public Joiner add(byte element) {
+    public Joiner append(int element) {
         prepareBuilder().append(element);
         return this;
     }
 
-    public Joiner add(short element) {
+    public Joiner append(long element) {
         prepareBuilder().append(element);
         return this;
     }
 
-    public Joiner add(int element) {
+    public Joiner append(float element) {
         prepareBuilder().append(element);
         return this;
     }
 
-    public Joiner add(long element) {
+    public Joiner append(double element) {
         prepareBuilder().append(element);
         return this;
     }
 
-    public Joiner add(float element) {
-        prepareBuilder().append(element);
-        return this;
-    }
-
-    public Joiner add(double element) {
-        prepareBuilder().append(element);
-        return this;
-    }
-
-    public Joiner add(String element) {
+    public Joiner append(String element) {
         if (element != null || skipNull == false) {
             prepareBuilder().append(element == null ? nullText : (trim ? element.trim() : element));
         }
@@ -267,15 +280,7 @@ public class Joiner {
         return this;
     }
 
-    /**
-     * Adds a copy of the given {@code CharSequence} value as the next
-     * element of the {@code StringJoiner} value. If {@code element} is
-     * {@code null}, then {@code "null"} is added.
-     *
-     * @param  element The element to add
-     * @return a reference to this {@code StringJoiner}
-     */
-    public Joiner add(CharSequence element) {
+    public Joiner append(CharSequence element) {
         if (element != null || skipNull == false) {
             prepareBuilder().append(element == null ? nullText : (trim ? element.toString().trim() : element));
         }
@@ -283,312 +288,518 @@ public class Joiner {
         return this;
     }
 
-    public Joiner add(Object element) {
+    public Joiner append(CharSequence element, final int start, final int end) {
         if (element != null || skipNull == false) {
-            prepareBuilder().append(trim ? toString(element).trim() : toString(element));
-        }
-
-        return this;
-    }
-
-    public Joiner join(final boolean[] a) {
-        if (N.isNullOrEmpty(a)) {
-            return this;
-        }
-
-        return join(a, 0, a.length);
-    }
-
-    public Joiner join(final boolean[] a, final int fromIndex, final int toIndex) {
-        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
-            return this;
-        }
-
-        StringBuilder sb = null;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (sb == null) {
-                sb = prepareBuilder().append(a[i]);
+            if (element == null) {
+                prepareBuilder().append(nullText);
+            } else if (trim) {
+                prepareBuilder().append(element.subSequence(start, end).toString().trim());
             } else {
-                if (isEmptyDelimiter) {
-                    sb.append(a[i]);
-                } else {
-                    sb.append(delimiter).append(a[i]);
-                }
+                prepareBuilder().append(element, start, end);
             }
         }
 
         return this;
     }
 
-    public Joiner join(final char[] a) {
-        if (N.isNullOrEmpty(a)) {
-            return this;
-        }
-
-        return join(a, 0, a.length);
-    }
-
-    public Joiner join(final char[] a, final int fromIndex, final int toIndex) {
-        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
-            return this;
-        }
-
-        StringBuilder sb = null;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (sb == null) {
-                sb = prepareBuilder().append(a[i]);
+    public Joiner append(StringBuffer element) {
+        if (element != null || skipNull == false) {
+            if (element == null) {
+                prepareBuilder().append(nullText);
             } else {
-                if (isEmptyDelimiter) {
-                    sb.append(a[i]);
-                } else {
-                    sb.append(delimiter).append(a[i]);
-                }
+                prepareBuilder().append(element);
             }
         }
 
         return this;
     }
 
-    public Joiner join(final byte[] a) {
-        if (N.isNullOrEmpty(a)) {
-            return this;
-        }
-
-        return join(a, 0, a.length);
-    }
-
-    public Joiner join(final byte[] a, final int fromIndex, final int toIndex) {
-        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
-            return this;
-        }
-
-        StringBuilder sb = null;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (sb == null) {
-                sb = prepareBuilder().append(a[i]);
+    public Joiner append(char[] element) {
+        if (element != null || skipNull == false) {
+            if (element == null) {
+                prepareBuilder().append(nullText);
             } else {
-                if (isEmptyDelimiter) {
-                    sb.append(a[i]);
-                } else {
-                    sb.append(delimiter).append(a[i]);
-                }
+                prepareBuilder().append(element);
             }
         }
 
         return this;
     }
 
-    public Joiner join(final short[] a) {
-        if (N.isNullOrEmpty(a)) {
-            return this;
-        }
-
-        return join(a, 0, a.length);
-    }
-
-    public Joiner join(final short[] a, final int fromIndex, final int toIndex) {
-        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
-            return this;
-        }
-
-        StringBuilder sb = null;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (sb == null) {
-                sb = prepareBuilder().append(a[i]);
+    public Joiner append(char[] element, final int offset, final int len) {
+        if (element != null || skipNull == false) {
+            if (element == null) {
+                prepareBuilder().append(nullText);
             } else {
-                if (isEmptyDelimiter) {
-                    sb.append(a[i]);
-                } else {
-                    sb.append(delimiter).append(a[i]);
-                }
+                prepareBuilder().append(element, offset, len);
             }
         }
 
         return this;
     }
 
-    public Joiner join(final int[] a) {
-        if (N.isNullOrEmpty(a)) {
-            return this;
-        }
-
-        return join(a, 0, a.length);
-    }
-
-    public Joiner join(final int[] a, final int fromIndex, final int toIndex) {
-        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
-            return this;
-        }
-
-        StringBuilder sb = null;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (sb == null) {
-                sb = prepareBuilder().append(a[i]);
-            } else {
-                if (isEmptyDelimiter) {
-                    sb.append(a[i]);
-                } else {
-                    sb.append(delimiter).append(a[i]);
-                }
-            }
+    public Joiner append(Object element) {
+        if (element != null || skipNull == false) {
+            prepareBuilder().append(toString(element));
         }
 
         return this;
     }
 
-    public Joiner join(final long[] a) {
-        if (N.isNullOrEmpty(a)) {
-            return this;
-        }
-
-        return join(a, 0, a.length);
-    }
-
-    public Joiner join(final long[] a, final int fromIndex, final int toIndex) {
-        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
-            return this;
-        }
-
-        StringBuilder sb = null;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (sb == null) {
-                sb = prepareBuilder().append(a[i]);
-            } else {
-                if (isEmptyDelimiter) {
-                    sb.append(a[i]);
-                } else {
-                    sb.append(delimiter).append(a[i]);
-                }
-            }
-        }
-
-        return this;
-    }
-
-    public Joiner join(final float[] a) {
-        if (N.isNullOrEmpty(a)) {
-            return this;
-        }
-
-        return join(a, 0, a.length);
-    }
-
-    public Joiner join(final float[] a, final int fromIndex, final int toIndex) {
-        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
-            return this;
-        }
-
-        StringBuilder sb = null;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (sb == null) {
-                sb = prepareBuilder().append(a[i]);
-            } else {
-                if (isEmptyDelimiter) {
-                    sb.append(a[i]);
-                } else {
-                    sb.append(delimiter).append(a[i]);
-                }
-            }
-        }
-
-        return this;
-    }
-
-    public Joiner join(final double[] a) {
-        if (N.isNullOrEmpty(a)) {
-            return this;
-        }
-
-        return join(a, 0, a.length);
-    }
-
-    public Joiner join(final double[] a, final int fromIndex, final int toIndex) {
-        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
-            return this;
-        }
-
-        StringBuilder sb = null;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            if (sb == null) {
-                sb = prepareBuilder().append(a[i]);
-            } else {
-                if (isEmptyDelimiter) {
-                    sb.append(a[i]);
-                } else {
-                    sb.append(delimiter).append(a[i]);
-                }
-            }
-        }
-
-        return this;
-    }
-
-    public Joiner join(final Object[] a) {
-        if (N.isNullOrEmpty(a)) {
-            return this;
-        }
-
-        return join(a, 0, a.length);
-    }
-
-    public Joiner join(final Object[] a, final int fromIndex, final int toIndex) {
-        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
-        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
-            return this;
-        }
-
-        StringBuilder sb = null;
-
-        if (trim) {
-            for (int i = fromIndex; i < toIndex; i++) {
-                if (a[i] != null || skipNull == false) {
-                    if (sb == null) {
-                        sb = prepareBuilder().append(toString(a[i]).trim());
-                    } else {
-                        if (isEmptyDelimiter) {
-                            sb.append(toString(a[i]).trim());
-                        } else {
-                            sb.append(delimiter).append(toString(a[i]).trim());
-                        }
-                    }
-                }
-            }
+    public Joiner append(String key, boolean value) {
+        if (isEmptyKeyValueDelimiter) {
+            prepareBuilder().append(key).append(value);
         } else {
-            for (int i = fromIndex; i < toIndex; i++) {
-                if (a[i] != null || skipNull == false) {
-                    if (sb == null) {
-                        sb = prepareBuilder().append(toString(a[i]));
+            prepareBuilder().append(key).append(keyValueDelimiter).append(value);
+        }
+
+        return this;
+    }
+
+    public Joiner append(String key, char value) {
+        if (isEmptyKeyValueDelimiter) {
+            prepareBuilder().append(key).append(value);
+        } else {
+            prepareBuilder().append(key).append(keyValueDelimiter).append(value);
+        }
+
+        return this;
+    }
+
+    public Joiner append(String key, int value) {
+        if (isEmptyKeyValueDelimiter) {
+            prepareBuilder().append(key).append(value);
+        } else {
+            prepareBuilder().append(key).append(keyValueDelimiter).append(value);
+        }
+
+        return this;
+    }
+
+    public Joiner append(String key, long value) {
+        if (isEmptyKeyValueDelimiter) {
+            prepareBuilder().append(key).append(value);
+        } else {
+            prepareBuilder().append(key).append(keyValueDelimiter).append(value);
+        }
+
+        return this;
+    }
+
+    public Joiner append(String key, float value) {
+        if (isEmptyKeyValueDelimiter) {
+            prepareBuilder().append(key).append(value);
+        } else {
+            prepareBuilder().append(key).append(keyValueDelimiter).append(value);
+        }
+
+        return this;
+    }
+
+    public Joiner append(String key, double value) {
+        if (isEmptyKeyValueDelimiter) {
+            prepareBuilder().append(key).append(value);
+        } else {
+            prepareBuilder().append(key).append(keyValueDelimiter).append(value);
+        }
+
+        return this;
+    }
+
+    public Joiner append(String key, String value) {
+        if (value != null || skipNull == false) {
+            if (isEmptyKeyValueDelimiter) {
+                prepareBuilder().append(key).append(value == null ? nullText : (trim ? value.trim() : value));
+            } else {
+                prepareBuilder().append(key).append(keyValueDelimiter).append(value == null ? nullText : (trim ? value.trim() : value));
+            }
+        }
+
+        return this;
+    }
+
+    public Joiner append(String key, CharSequence value) {
+        if (value != null || skipNull == false) {
+            if (isEmptyKeyValueDelimiter) {
+                prepareBuilder().append(key).append(value == null ? nullText : (trim ? value.toString().trim() : value));
+            } else {
+                prepareBuilder().append(key).append(keyValueDelimiter).append(value == null ? nullText : (trim ? value.toString().trim() : value));
+            }
+        }
+
+        return this;
+    }
+
+    public Joiner append(String key, StringBuffer value) {
+        if (value != null || skipNull == false) {
+            if (value == null) {
+                if (isEmptyKeyValueDelimiter) {
+                    prepareBuilder().append(key).append(nullText);
+                } else {
+                    prepareBuilder().append(key).append(keyValueDelimiter).append(nullText);
+                }
+            } else {
+                if (isEmptyKeyValueDelimiter) {
+                    prepareBuilder().append(key).append(value);
+                } else {
+                    prepareBuilder().append(key).append(keyValueDelimiter).append(value);
+                }
+            }
+        }
+
+        return this;
+    }
+
+    public Joiner append(String key, char[] value) {
+        if (value != null || skipNull == false) {
+            if (value == null) {
+                if (isEmptyKeyValueDelimiter) {
+                    prepareBuilder().append(key).append(nullText);
+                } else {
+                    prepareBuilder().append(key).append(keyValueDelimiter).append(nullText);
+                }
+            } else {
+                if (isEmptyKeyValueDelimiter) {
+                    prepareBuilder().append(key).append(value);
+                } else {
+                    prepareBuilder().append(key).append(keyValueDelimiter).append(value);
+                }
+            }
+        }
+
+        return this;
+    }
+
+    public Joiner append(String key, Object value) {
+        if (value != null || skipNull == false) {
+            if (isEmptyKeyValueDelimiter) {
+                prepareBuilder().append(key).append(toString(value));
+            } else {
+                prepareBuilder().append(key).append(keyValueDelimiter).append(toString(value));
+            }
+        }
+
+        return this;
+    }
+
+    public Joiner appendEntry(Map.Entry<?, ?> entry) {
+        if (skipNull == false || (entry != null && entry.getValue() != null)) {
+            if (entry == null) {
+                append(nullText);
+            } else {
+                append(toString(entry.getKey()), toString(entry.getValue()));
+            }
+        }
+
+        return this;
+    }
+
+    public Joiner appendIf(boolean b, Object element) {
+        if (b) {
+            append(element);
+        }
+
+        return this;
+    }
+
+    public Joiner appendIf(boolean b, String key, Object value) {
+        if (b) {
+            append(key, value);
+        }
+
+        return this;
+    }
+
+    public Joiner appendEntryIf(boolean b, Map.Entry<?, ?> entry) {
+        if (b) {
+            appendEntry(entry);
+        }
+
+        return this;
+    }
+
+    public Joiner appendAll(final boolean[] a) {
+        if (N.notNullOrEmpty(a)) {
+            return appendAll(a, 0, a.length);
+        }
+
+        return this;
+    }
+
+    public Joiner appendAll(final boolean[] a, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
+            return this;
+        }
+
+        StringBuilder sb = null;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (sb == null) {
+                sb = prepareBuilder().append(a[i]);
+            } else {
+                if (isEmptyDelimiter) {
+                    sb.append(a[i]);
+                } else {
+                    sb.append(delimiter).append(a[i]);
+                }
+            }
+        }
+
+        return this;
+    }
+
+    public Joiner appendAll(final char[] a) {
+        if (N.notNullOrEmpty(a)) {
+            return appendAll(a, 0, a.length);
+        }
+
+        return this;
+    }
+
+    public Joiner appendAll(final char[] a, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
+            return this;
+        }
+
+        StringBuilder sb = null;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (sb == null) {
+                sb = prepareBuilder().append(a[i]);
+            } else {
+                if (isEmptyDelimiter) {
+                    sb.append(a[i]);
+                } else {
+                    sb.append(delimiter).append(a[i]);
+                }
+            }
+        }
+
+        return this;
+    }
+
+    public Joiner appendAll(final byte[] a) {
+        if (N.notNullOrEmpty(a)) {
+            return appendAll(a, 0, a.length);
+        }
+
+        return this;
+    }
+
+    public Joiner appendAll(final byte[] a, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
+            return this;
+        }
+
+        StringBuilder sb = null;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (sb == null) {
+                sb = prepareBuilder().append(a[i]);
+            } else {
+                if (isEmptyDelimiter) {
+                    sb.append(a[i]);
+                } else {
+                    sb.append(delimiter).append(a[i]);
+                }
+            }
+        }
+
+        return this;
+    }
+
+    public Joiner appendAll(final short[] a) {
+        if (N.notNullOrEmpty(a)) {
+            return appendAll(a, 0, a.length);
+        }
+
+        return this;
+    }
+
+    public Joiner appendAll(final short[] a, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
+            return this;
+        }
+
+        StringBuilder sb = null;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (sb == null) {
+                sb = prepareBuilder().append(a[i]);
+            } else {
+                if (isEmptyDelimiter) {
+                    sb.append(a[i]);
+                } else {
+                    sb.append(delimiter).append(a[i]);
+                }
+            }
+        }
+
+        return this;
+    }
+
+    public Joiner appendAll(final int[] a) {
+        if (N.notNullOrEmpty(a)) {
+            return appendAll(a, 0, a.length);
+        }
+
+        return this;
+    }
+
+    public Joiner appendAll(final int[] a, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
+            return this;
+        }
+
+        StringBuilder sb = null;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (sb == null) {
+                sb = prepareBuilder().append(a[i]);
+            } else {
+                if (isEmptyDelimiter) {
+                    sb.append(a[i]);
+                } else {
+                    sb.append(delimiter).append(a[i]);
+                }
+            }
+        }
+
+        return this;
+    }
+
+    public Joiner appendAll(final long[] a) {
+        if (N.notNullOrEmpty(a)) {
+            return appendAll(a, 0, a.length);
+        }
+
+        return this;
+    }
+
+    public Joiner appendAll(final long[] a, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
+            return this;
+        }
+
+        StringBuilder sb = null;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (sb == null) {
+                sb = prepareBuilder().append(a[i]);
+            } else {
+                if (isEmptyDelimiter) {
+                    sb.append(a[i]);
+                } else {
+                    sb.append(delimiter).append(a[i]);
+                }
+            }
+        }
+
+        return this;
+    }
+
+    public Joiner appendAll(final float[] a) {
+        if (N.notNullOrEmpty(a)) {
+            return appendAll(a, 0, a.length);
+        }
+
+        return this;
+    }
+
+    public Joiner appendAll(final float[] a, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
+            return this;
+        }
+
+        StringBuilder sb = null;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (sb == null) {
+                sb = prepareBuilder().append(a[i]);
+            } else {
+                if (isEmptyDelimiter) {
+                    sb.append(a[i]);
+                } else {
+                    sb.append(delimiter).append(a[i]);
+                }
+            }
+        }
+
+        return this;
+    }
+
+    public Joiner appendAll(final double[] a) {
+        if (N.notNullOrEmpty(a)) {
+            return appendAll(a, 0, a.length);
+        }
+
+        return this;
+    }
+
+    public Joiner appendAll(final double[] a, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
+            return this;
+        }
+
+        StringBuilder sb = null;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (sb == null) {
+                sb = prepareBuilder().append(a[i]);
+            } else {
+                if (isEmptyDelimiter) {
+                    sb.append(a[i]);
+                } else {
+                    sb.append(delimiter).append(a[i]);
+                }
+            }
+        }
+
+        return this;
+    }
+
+    public Joiner appendAll(final Object[] a) {
+        if (N.notNullOrEmpty(a)) {
+            return appendAll(a, 0, a.length);
+        }
+
+        return this;
+    }
+
+    public Joiner appendAll(final Object[] a, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
+
+        if (N.isNullOrEmpty(a) || fromIndex == toIndex) {
+            return this;
+        }
+
+        StringBuilder sb = null;
+
+        for (int i = fromIndex; i < toIndex; i++) {
+            if (a[i] != null || skipNull == false) {
+                if (sb == null) {
+                    sb = prepareBuilder().append(toString(a[i]));
+                } else {
+                    if (isEmptyDelimiter) {
+                        sb.append(toString(a[i]));
                     } else {
-                        if (isEmptyDelimiter) {
-                            sb.append(toString(a[i]));
-                        } else {
-                            sb.append(delimiter).append(toString(a[i]));
-                        }
+                        sb.append(delimiter).append(toString(a[i]));
                     }
                 }
             }
@@ -597,15 +808,159 @@ public class Joiner {
         return this;
     }
 
-    public Joiner join(final Collection<?> c) {
-        if (N.isNullOrEmpty(c)) {
+    public Joiner appendAll(final BooleanList c) {
+        if (N.notNullOrEmpty(c)) {
+            return appendAll(c.array(), 0, c.size());
+        }
+
+        return this;
+    }
+
+    public Joiner appendAll(final BooleanList c, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if (N.isNullOrEmpty(c) || fromIndex == toIndex) {
             return this;
         }
 
-        return join(c, 0, c.size());
+        return appendAll(c.array(), fromIndex, toIndex);
     }
 
-    public Joiner join(final Collection<?> c, final int fromIndex, final int toIndex) {
+    public Joiner appendAll(final CharList c) {
+        if (N.notNullOrEmpty(c)) {
+            return appendAll(c.array(), 0, c.size());
+        }
+
+        return this;
+    }
+
+    public Joiner appendAll(final CharList c, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if (N.isNullOrEmpty(c) || fromIndex == toIndex) {
+            return this;
+        }
+
+        return appendAll(c.array(), fromIndex, toIndex);
+    }
+
+    public Joiner appendAll(final ByteList c) {
+        if (N.notNullOrEmpty(c)) {
+            return appendAll(c.array(), 0, c.size());
+        }
+
+        return this;
+    }
+
+    public Joiner appendAll(final ByteList c, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if (N.isNullOrEmpty(c) || fromIndex == toIndex) {
+            return this;
+        }
+
+        return appendAll(c.array(), fromIndex, toIndex);
+    }
+
+    public Joiner appendAll(final ShortList c) {
+        if (N.notNullOrEmpty(c)) {
+            return appendAll(c.array(), 0, c.size());
+        }
+
+        return this;
+    }
+
+    public Joiner appendAll(final ShortList c, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if (N.isNullOrEmpty(c) || fromIndex == toIndex) {
+            return this;
+        }
+
+        return appendAll(c.array(), fromIndex, toIndex);
+    }
+
+    public Joiner appendAll(final IntList c) {
+        if (N.notNullOrEmpty(c)) {
+            return appendAll(c.array(), 0, c.size());
+        }
+
+        return this;
+    }
+
+    public Joiner appendAll(final IntList c, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if (N.isNullOrEmpty(c) || fromIndex == toIndex) {
+            return this;
+        }
+
+        return appendAll(c.array(), fromIndex, toIndex);
+    }
+
+    public Joiner appendAll(final LongList c) {
+        if (N.notNullOrEmpty(c)) {
+            return appendAll(c.array(), 0, c.size());
+        }
+
+        return this;
+    }
+
+    public Joiner appendAll(final LongList c, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if (N.isNullOrEmpty(c) || fromIndex == toIndex) {
+            return this;
+        }
+
+        return appendAll(c.array(), fromIndex, toIndex);
+    }
+
+    public Joiner appendAll(final FloatList c) {
+        if (N.notNullOrEmpty(c)) {
+            return appendAll(c.array(), 0, c.size());
+        }
+
+        return this;
+    }
+
+    public Joiner appendAll(final FloatList c, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if (N.isNullOrEmpty(c) || fromIndex == toIndex) {
+            return this;
+        }
+
+        return appendAll(c.array(), fromIndex, toIndex);
+    }
+
+    public Joiner appendAll(final DoubleList c) {
+        if (N.notNullOrEmpty(c)) {
+            return appendAll(c.array(), 0, c.size());
+        }
+
+        return this;
+    }
+
+    public Joiner appendAll(final DoubleList c, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+
+        if (N.isNullOrEmpty(c) || fromIndex == toIndex) {
+            return this;
+        }
+
+        return appendAll(c.array(), fromIndex, toIndex);
+    }
+
+    public Joiner appendAll(final Collection<?> c) {
+        if (N.notNullOrEmpty(c)) {
+            return appendAll(c, 0, c.size());
+        }
+
+        return this;
+    }
+
+    public Joiner appendAll(final Collection<?> c, final int fromIndex, final int toIndex) {
         N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if (N.isNullOrEmpty(c) || (fromIndex == toIndex && fromIndex < c.size())) {
@@ -620,28 +975,14 @@ public class Joiner {
                 continue;
             }
 
-            if (trim) {
-                if (e != null || skipNull == false) {
-                    if (sb == null) {
-                        sb = prepareBuilder().append(toString(e).trim());
+            if (e != null || skipNull == false) {
+                if (sb == null) {
+                    sb = prepareBuilder().append(toString(e));
+                } else {
+                    if (isEmptyDelimiter) {
+                        sb.append(toString(e));
                     } else {
-                        if (isEmptyDelimiter) {
-                            sb.append(toString(e).trim());
-                        } else {
-                            sb.append(delimiter).append(toString(e).trim());
-                        }
-                    }
-                }
-            } else {
-                if (e != null || skipNull == false) {
-                    if (sb == null) {
-                        sb = prepareBuilder().append(toString(e));
-                    } else {
-                        if (isEmptyDelimiter) {
-                            sb.append(toString(e));
-                        } else {
-                            sb.append(delimiter).append(toString(e));
-                        }
+                        sb.append(delimiter).append(toString(e));
                     }
                 }
             }
@@ -654,15 +995,15 @@ public class Joiner {
         return this;
     }
 
-    public Joiner join(final Map<?, ?> m) {
-        if (N.isNullOrEmpty(m)) {
-            return this;
+    public Joiner appendAll(final Map<?, ?> m) {
+        if (N.notNullOrEmpty(m)) {
+            return appendAll(m, 0, m.size());
         }
 
-        return join(m, 0, m.size());
+        return this;
     }
 
-    public Joiner join(final Map<?, ?> m, final int fromIndex, final int toIndex) {
+    public Joiner appendAll(final Map<?, ?> m, final int fromIndex, final int toIndex) {
         N.checkFromToIndex(fromIndex, toIndex, m == null ? 0 : m.size());
 
         if ((N.isNullOrEmpty(m) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < m.size())) {
@@ -677,23 +1018,7 @@ public class Joiner {
                 continue;
             }
 
-            if (trim) {
-                if (sb == null) {
-                    sb = prepareBuilder().append(toString(entry.getKey()).trim()).append(keyValueDelimiter).append(toString(entry.getValue()).trim());
-                } else {
-                    if (isEmptyDelimiter) {
-                        sb.append(toString(entry.getKey()).trim());
-                    } else {
-                        sb.append(delimiter).append(toString(entry.getKey()).trim());
-                    }
-
-                    if (isEmptyKeyValueDelimiter) {
-                        sb.append(toString(entry.getValue()).trim());
-                    } else {
-                        sb.append(keyValueDelimiter).append(toString(entry.getValue()).trim());
-                    }
-                }
-            } else {
+            if (entry.getValue() != null || skipNull == false) {
                 if (sb == null) {
                     sb = prepareBuilder().append(toString(entry.getKey())).append(keyValueDelimiter).append(toString(entry.getValue()));
                 } else {
@@ -719,148 +1044,47 @@ public class Joiner {
         return this;
     }
 
-    public Joiner join(final BooleanList c) {
-        if (N.isNullOrEmpty(c)) {
+    /**
+     * 
+     * @param entity entity class with getter/setter methods.
+     * @return
+     */
+    @SuppressWarnings("rawtypes")
+    public Joiner appendAll(final Object entity) {
+        if (entity == null) {
             return this;
+        } else if (entity instanceof Map) {
+            return appendAll((Map) entity);
         }
 
-        return join(c.array(), 0, c.size());
-    }
+        N.checkArgument(N.isEntity(entity.getClass()), "'entity' must be entity class with getter/setter methods");
 
-    public Joiner join(final BooleanList c, final int fromIndex, final int toIndex) {
-        N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
+        StringBuilder sb = null;
+        Object propValue = null;
 
-        if (N.isNullOrEmpty(c) || fromIndex == toIndex) {
-            return this;
+        for (String propName : ClassUtil.getPropGetMethodList(entity.getClass()).keySet()) {
+            propValue = ClassUtil.getPropValue(entity, propName);
+
+            if (propValue != null || skipNull == false) {
+                if (sb == null) {
+                    sb = prepareBuilder().append(propName).append(keyValueDelimiter).append(toString(propValue));
+                } else {
+                    if (isEmptyDelimiter) {
+                        sb.append(propName);
+                    } else {
+                        sb.append(delimiter).append(propName);
+                    }
+
+                    if (isEmptyKeyValueDelimiter) {
+                        sb.append(toString(propValue));
+                    } else {
+                        sb.append(keyValueDelimiter).append(toString(propValue));
+                    }
+                }
+            }
         }
 
-        return join(c.array(), fromIndex, toIndex);
-    }
-
-    public Joiner join(final CharList c) {
-        if (N.isNullOrEmpty(c)) {
-            return this;
-        }
-
-        return join(c.array(), 0, c.size());
-    }
-
-    public Joiner join(final CharList c, final int fromIndex, final int toIndex) {
-        N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
-
-        if (N.isNullOrEmpty(c) || fromIndex == toIndex) {
-            return this;
-        }
-
-        return join(c.array(), fromIndex, toIndex);
-    }
-
-    public Joiner join(final ByteList c) {
-        if (N.isNullOrEmpty(c)) {
-            return this;
-        }
-
-        return join(c.array(), 0, c.size());
-    }
-
-    public Joiner join(final ByteList c, final int fromIndex, final int toIndex) {
-        N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
-
-        if (N.isNullOrEmpty(c) || fromIndex == toIndex) {
-            return this;
-        }
-
-        return join(c.array(), fromIndex, toIndex);
-    }
-
-    public Joiner join(final ShortList c) {
-        if (N.isNullOrEmpty(c)) {
-            return this;
-        }
-
-        return join(c.array(), 0, c.size());
-    }
-
-    public Joiner join(final ShortList c, final int fromIndex, final int toIndex) {
-        N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
-
-        if (N.isNullOrEmpty(c) || fromIndex == toIndex) {
-            return this;
-        }
-
-        return join(c.array(), fromIndex, toIndex);
-    }
-
-    public Joiner join(final IntList c) {
-        if (N.isNullOrEmpty(c)) {
-            return this;
-        }
-
-        return join(c.array(), 0, c.size());
-    }
-
-    public Joiner join(final IntList c, final int fromIndex, final int toIndex) {
-        N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
-
-        if (N.isNullOrEmpty(c) || fromIndex == toIndex) {
-            return this;
-        }
-
-        return join(c.array(), fromIndex, toIndex);
-    }
-
-    public Joiner join(final LongList c) {
-        if (N.isNullOrEmpty(c)) {
-            return this;
-        }
-
-        return join(c.array(), 0, c.size());
-    }
-
-    public Joiner join(final LongList c, final int fromIndex, final int toIndex) {
-        N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
-
-        if (N.isNullOrEmpty(c) || fromIndex == toIndex) {
-            return this;
-        }
-
-        return join(c.array(), fromIndex, toIndex);
-    }
-
-    public Joiner join(final FloatList c) {
-        if (N.isNullOrEmpty(c)) {
-            return this;
-        }
-
-        return join(c.array(), 0, c.size());
-    }
-
-    public Joiner join(final FloatList c, final int fromIndex, final int toIndex) {
-        N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
-
-        if (N.isNullOrEmpty(c) || fromIndex == toIndex) {
-            return this;
-        }
-
-        return join(c.array(), fromIndex, toIndex);
-    }
-
-    public Joiner join(final DoubleList c) {
-        if (N.isNullOrEmpty(c)) {
-            return this;
-        }
-
-        return join(c.array(), 0, c.size());
-    }
-
-    public Joiner join(final DoubleList c, final int fromIndex, final int toIndex) {
-        N.checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
-
-        if (N.isNullOrEmpty(c) || fromIndex == toIndex) {
-            return this;
-        }
-
-        return join(c.array(), fromIndex, toIndex);
+        return this;
     }
 
     /**
@@ -884,30 +1108,30 @@ public class Joiner {
      */
     public Joiner merge(Joiner other) {
         N.requireNonNull(other);
-        if (other.value != null) {
-            final int length = other.value.length();
+        if (other.buffer != null) {
+            final int length = other.buffer.length();
             // lock the length so that we can seize the data to be appended
             // before initiate copying to avoid interference, especially when
             // merge 'this'
             StringBuilder builder = prepareBuilder();
-            builder.append(other.value, other.prefix.length(), length);
+            builder.append(other.buffer, other.prefix.length(), length);
         }
         return this;
     }
 
     private StringBuilder prepareBuilder() {
-        if (value != null) {
+        if (buffer != null) {
             if (isEmptyDelimiter == false) {
-                value.append(delimiter);
+                buffer.append(delimiter);
             }
         } else {
-            value = new StringBuilder().append(prefix);
+            buffer = (reuseStringBuilder ? ObjectFactory.createStringBuilder() : new StringBuilder()).append(prefix);
         }
-        return value;
+        return buffer;
     }
 
-    private String toString(Object element) {
-        return element == null ? nullText : N.deepToString(element);
+    private String toString(Object obj) {
+        return obj == null ? nullText : (trim ? N.toString(obj).trim() : N.toString(obj));
     }
 
     /**
@@ -924,47 +1148,93 @@ public class Joiner {
         // Remember that we never actually append the suffix unless we return
         // the full (present) value or some sub-string or length of it, so that
         // we can add on more if we need to.
-        return (value != null ? value.length() + suffix.length() : emptyValue.length());
+        return (buffer != null ? buffer.length() + suffix.length() : emptyValue.length());
     }
 
-    /**
+    /** 
      * Returns the current value, consisting of the {@code prefix}, the values
      * added so far separated by the {@code delimiter}, and the {@code suffix},
      * unless no elements have been added in which case, the
      * {@code prefix + suffix} or the {@code emptyValue} characters are returned
+     * 
+     * <pre>
+     * The underline {@code StringBuilder} will be recycled after this method is called if {@code resueStringBuilder} is set to {@code true},
+     * and should not continue to this instance.
+     * </pre>
      *
      * @return the string representation of this {@code StringJoiner}
      */
     @Override
     public String toString() {
-        if (value == null) {
+        if (buffer == null) {
             return emptyValue;
         } else {
-            if (suffix.equals("")) {
-                return value.toString();
-            } else {
-                int initialLength = value.length();
-                String result = value.append(suffix).toString();
-                // reset value to pre-append initialLength
-                value.setLength(initialLength);
-                return result;
+            try {
+                if (suffix.equals("")) {
+                    return buffer.toString();
+                } else {
+                    int initialLength = buffer.length();
+                    String result = buffer.append(suffix).toString();
+                    // reset value to pre-append initialLength
+                    buffer.setLength(initialLength);
+                    return result;
+                }
+            } finally {
+                if (reuseStringBuilder) {
+                    ObjectFactory.recycle(buffer);
+                    buffer = null;
+                }
             }
         }
     }
 
+    /**
+     * <pre>
+     * The underline {@code StringBuilder} will be recycled after this method is called if {@code resueStringBuilder} is set to {@code true},
+     * and should not continue to this instance.
+     * </pre>
+     * 
+     * @param mapper
+     * @return
+     */
     public <T> T map(Function<? super String, T> mapper) {
         return mapper.apply(toString());
     }
 
+    /**
+     * <pre>
+     * The underline {@code StringBuilder} will be recycled after this method is called if {@code resueStringBuilder} is set to {@code true},
+     * and should not continue to this instance.
+     * </pre>
+     * 
+     * @param mapper
+     * @return
+     */
     public <T> Optional<T> mapIfNotEmpty(Function<? super String, T> mapper) {
-        return value == null ? Optional.<T> empty() : Optional.of(mapper.apply(toString()));
+        return buffer == null ? Optional.<T> empty() : Optional.of(mapper.apply(toString()));
     }
 
+    /**
+     * <pre>
+     * The underline {@code StringBuilder} will be recycled after this method is called if {@code resueStringBuilder} is set to {@code true},
+     * and should not continue to this instance.
+     * </pre>
+     * 
+     * @return
+     */
     public Stream<String> stream() {
         return Stream.of(toString());
     }
 
+    /**
+     * <pre>
+     * The underline {@code StringBuilder} will be recycled after this method is called if {@code resueStringBuilder} is set to {@code true},
+     * and should not continue to this instance.
+     * </pre>
+     * 
+     * @return
+     */
     public Stream<String> streamIfNotEmpty() {
-        return value == null ? Stream.<String> empty() : Stream.of(toString());
+        return buffer == null ? Stream.<String> empty() : Stream.of(toString());
     }
 }

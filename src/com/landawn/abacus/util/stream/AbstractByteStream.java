@@ -611,7 +611,7 @@ abstract class AbstractByteStream extends ByteStream {
         final ObjByteConsumer<Joiner> accumulator = new ObjByteConsumer<Joiner>() {
             @Override
             public void accept(Joiner a, byte t) {
-                a.add(t);
+                a.append(t);
             }
         };
 

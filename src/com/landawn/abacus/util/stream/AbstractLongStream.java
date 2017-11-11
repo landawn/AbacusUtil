@@ -608,7 +608,7 @@ abstract class AbstractLongStream extends LongStream {
         final ObjLongConsumer<Joiner> accumulator = new ObjLongConsumer<Joiner>() {
             @Override
             public void accept(Joiner a, long t) {
-                a.add(t);
+                a.append(t);
             }
         };
 

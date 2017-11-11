@@ -609,7 +609,7 @@ abstract class AbstractCharStream extends CharStream {
         final ObjCharConsumer<Joiner> accumulator = new ObjCharConsumer<Joiner>() {
             @Override
             public void accept(Joiner a, char t) {
-                a.add(t);
+                a.append(t);
             }
         };
 

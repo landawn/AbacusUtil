@@ -41,6 +41,8 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableMap;
+import java.util.NavigableSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
@@ -3621,8 +3623,7 @@ public final class CodeGenerator {
                 writeNonIdConstructor = true;
             } else {
                 for (int i = 0; i < tmp.size(); i++) {
-                    if (!entityDef.getProperty(tmp.get(i)).getType().clazz()
-                            .isAssignableFrom(entityDef.getIdPropertyList().get(i).getType().clazz())) {
+                    if (!entityDef.getProperty(tmp.get(i)).getType().clazz().isAssignableFrom(entityDef.getIdPropertyList().get(i).getType().clazz())) {
                         writeNonIdConstructor = true;
 
                         break;
@@ -3841,8 +3842,7 @@ public final class CodeGenerator {
                 fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "    /**");
                 fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "     * Returns the (first) column or an empty column if it's null.");
                 fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "     */");
-                fileWrite.write(
-                        IOUtil.LINE_SEPARATOR + headSpace + "    public " + hbaseColumnType.name() + " " + fieldName + "() {" + IOUtil.LINE_SEPARATOR);
+                fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "    public " + hbaseColumnType.name() + " " + fieldName + "() {" + IOUtil.LINE_SEPARATOR);
                 fileWrite.write(headSpace + "        return (" + hbaseColumnType.name() + ") (this." + fieldName + " == null ? "
                         + HBaseColumn.class.getSimpleName() + ".emptyOf(" + valueTypeName + ".class) : " + fieldName + ");" + IOUtil.LINE_SEPARATOR);
                 fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
@@ -3884,10 +3884,8 @@ public final class CodeGenerator {
 
                 fileWrite.write(headSpace + "    }" + IOUtil.LINE_SEPARATOR);
 
-            } else if ((Collection.class.isAssignableFrom(prop.getType().clazz())
-                    && prop.getType().getParameterTypes()[0].clazz().equals(HBaseColumn.class))
-                    || (Map.class.isAssignableFrom(prop.getType().clazz())
-                            && prop.getType().getParameterTypes()[1].clazz().equals(HBaseColumn.class))) {
+            } else if ((Collection.class.isAssignableFrom(prop.getType().clazz()) && prop.getType().getParameterTypes()[0].clazz().equals(HBaseColumn.class))
+                    || (Map.class.isAssignableFrom(prop.getType().clazz()) && prop.getType().getParameterTypes()[1].clazz().equals(HBaseColumn.class))) {
 
                 HBaseColumnType<?> hbaseColumnType = null;
                 if (Collection.class.isAssignableFrom(prop.getType().clazz())) {
@@ -3907,8 +3905,7 @@ public final class CodeGenerator {
                 fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "    /**");
                 fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "     * Returns the (first) column or an empty column if it's null.");
                 fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "     */");
-                fileWrite.write(
-                        IOUtil.LINE_SEPARATOR + headSpace + "    public " + hbaseColumnType.name() + " " + fieldName + "() {" + IOUtil.LINE_SEPARATOR);
+                fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "    public " + hbaseColumnType.name() + " " + fieldName + "() {" + IOUtil.LINE_SEPARATOR);
 
                 if (Collection.class.isAssignableFrom(prop.getType().clazz())) {
                     fileWrite.write(headSpace + "        return (" + hbaseColumnType.name() + ") (N.isNullOrEmpty(" + fieldName + ") ? "
@@ -3960,8 +3957,8 @@ public final class CodeGenerator {
 
                 // =========================
                 if (fluentSetMethod) {
-                    fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "    public " + entityDef.getName() + " set" + methodName + "("
-                            + hbaseColumnType.name() + " hbaseColumn) {" + IOUtil.LINE_SEPARATOR);
+                    fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "    public " + entityDef.getName() + " set" + methodName + "(" + hbaseColumnType.name()
+                            + " hbaseColumn) {" + IOUtil.LINE_SEPARATOR);
                 } else {
                     fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "    public void set" + methodName + "(" + hbaseColumnType.name() + " hbaseColumn) {"
                             + IOUtil.LINE_SEPARATOR);
@@ -3975,15 +3972,15 @@ public final class CodeGenerator {
 
                 fileWrite.write(headSpace + "        if (" + fieldName + " == null) {" + IOUtil.LINE_SEPARATOR);
 
-                if (prop.getType().clazz().equals(SortedSet.class)) {
+                if (prop.getType().clazz().equals(SortedSet.class) || prop.getType().clazz().equals(NavigableSet.class)) {
                     fileWrite.write(headSpace + "            " + fieldName + " = new java.util.TreeSet<" + prop.getType().getParameterTypes()[0].name()
                             + ">(HBaseColumn.DESC_HBASE_COLUMN_COMPARATOR);" + IOUtil.LINE_SEPARATOR);
-                } else if (prop.getType().clazz().equals(SortedMap.class)) {
-                    fileWrite.write(headSpace + "            " + fieldName + " = new java.util.TreeMap<" + prop.getType().getParameterTypes()[0].name()
-                            + ", " + prop.getType().getParameterTypes()[1].name() + ">(HBaseColumn.DESC_HBASE_VERSION_COMPARATOR);" + IOUtil.LINE_SEPARATOR);
+                } else if (prop.getType().clazz().equals(SortedMap.class) || prop.getType().clazz().equals(NavigableMap.class)) {
+                    fileWrite.write(headSpace + "            " + fieldName + " = new java.util.TreeMap<" + prop.getType().getParameterTypes()[0].name() + ", "
+                            + prop.getType().getParameterTypes()[1].name() + ">(HBaseColumn.DESC_HBASE_VERSION_COMPARATOR);" + IOUtil.LINE_SEPARATOR);
                 } else {
-                    fileWrite.write(headSpace + "            " + fieldName + " = N.newInstance("
-                            + ClassUtil.getCanonicalClassName(prop.getType().clazz()) + ".class);" + IOUtil.LINE_SEPARATOR);
+                    fileWrite.write(headSpace + "            " + fieldName + " = N.newInstance(" + ClassUtil.getCanonicalClassName(prop.getType().clazz())
+                            + ".class);" + IOUtil.LINE_SEPARATOR);
                 }
 
                 fileWrite.write(headSpace + "        } else {" + IOUtil.LINE_SEPARATOR);
@@ -4043,8 +4040,8 @@ public final class CodeGenerator {
 
                 // =========================
                 if (fluentSetMethod) {
-                    fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "    public " + entityDef.getName() + " add" + methodName + "("
-                            + hbaseColumnType.name() + " hbaseColumn) {" + IOUtil.LINE_SEPARATOR);
+                    fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "    public " + entityDef.getName() + " add" + methodName + "(" + hbaseColumnType.name()
+                            + " hbaseColumn) {" + IOUtil.LINE_SEPARATOR);
                 } else {
                     fileWrite.write(IOUtil.LINE_SEPARATOR + headSpace + "    public void add" + methodName + "(" + hbaseColumnType.name() + " hbaseColumn) {"
                             + IOUtil.LINE_SEPARATOR);
@@ -4058,15 +4055,15 @@ public final class CodeGenerator {
 
                 fileWrite.write(headSpace + "        if (" + fieldName + " == null) {" + IOUtil.LINE_SEPARATOR);
 
-                if (prop.getType().clazz().equals(SortedSet.class)) {
+                if (prop.getType().clazz().equals(SortedSet.class) || prop.getType().clazz().equals(NavigableSet.class)) {
                     fileWrite.write(headSpace + "            " + fieldName + " = new java.util.TreeSet<" + prop.getType().getParameterTypes()[0].name()
                             + ">(HBaseColumn.DESC_HBASE_COLUMN_COMPARATOR);" + IOUtil.LINE_SEPARATOR);
-                } else if (prop.getType().clazz().equals(SortedMap.class)) {
-                    fileWrite.write(headSpace + "            " + fieldName + " = new java.util.TreeMap<" + prop.getType().getParameterTypes()[0].name()
-                            + ", " + prop.getType().getParameterTypes()[1].name() + ">(HBaseColumn.DESC_HBASE_VERSION_COMPARATOR);" + IOUtil.LINE_SEPARATOR);
+                } else if (prop.getType().clazz().equals(SortedMap.class) || prop.getType().clazz().equals(NavigableMap.class)) {
+                    fileWrite.write(headSpace + "            " + fieldName + " = new java.util.TreeMap<" + prop.getType().getParameterTypes()[0].name() + ", "
+                            + prop.getType().getParameterTypes()[1].name() + ">(HBaseColumn.DESC_HBASE_VERSION_COMPARATOR);" + IOUtil.LINE_SEPARATOR);
                 } else {
-                    fileWrite.write(headSpace + "            " + fieldName + " = N.newInstance("
-                            + ClassUtil.getCanonicalClassName(prop.getType().clazz()) + ".class);" + IOUtil.LINE_SEPARATOR);
+                    fileWrite.write(headSpace + "            " + fieldName + " = N.newInstance(" + ClassUtil.getCanonicalClassName(prop.getType().clazz())
+                            + ".class);" + IOUtil.LINE_SEPARATOR);
                 }
 
                 fileWrite.write(headSpace + "        }" + IOUtil.LINE_SEPARATOR);

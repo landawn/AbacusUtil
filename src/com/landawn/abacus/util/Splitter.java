@@ -112,12 +112,6 @@ public final class Splitter {
         return result;
     }
 
-    public <T> List<T> split(String typeName, CharSequence source) {
-        final Type<T> type = N.typeOf(typeName);
-
-        return split(type, source);
-    }
-
     public <C extends Collection<String>> C split(final C output, CharSequence source) {
         final C result = output;
 
@@ -151,12 +145,6 @@ public final class Splitter {
         }
 
         return result;
-    }
-
-    public <T, C extends Collection<T>> C split(final C output, String typeName, CharSequence source) {
-        final Type<T> type = N.typeOf(typeName);
-
-        return split(output, type, source);
     }
 
     //    public <C extends Collection<String>> C split(final Supplier<C> supplier, CharSequence source) {
@@ -380,13 +368,6 @@ public final class Splitter {
             return result;
         }
 
-        public <K, V> Map<K, V> split(String keyTypeName, String valueTypeName, CharSequence source) {
-            final Type<K> typeOfKey = N.typeOf(keyTypeName);
-            final Type<V> typeOfValue = N.typeOf(valueTypeName);
-
-            return split(typeOfKey, typeOfValue, source);
-        }
-
         public <M extends Map<String, String>> M split(final M output, CharSequence source) {
             final M result = output;
 
@@ -472,13 +453,6 @@ public final class Splitter {
             }
 
             return result;
-        }
-
-        public <K, V, M extends Map<K, V>> M split(final M output, String keyTypeName, String valueTypeName, CharSequence source) {
-            final Type<K> typeOfKey = N.typeOf(keyTypeName);
-            final Type<V> typeOfValue = N.typeOf(valueTypeName);
-
-            return split(output, typeOfKey, typeOfValue, source);
         }
 
         //        public <M extends Map<String, String>> M split(final Supplier<M> supplier, CharSequence source) {

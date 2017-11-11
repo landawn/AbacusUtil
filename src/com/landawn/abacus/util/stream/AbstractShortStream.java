@@ -609,7 +609,7 @@ abstract class AbstractShortStream extends ShortStream {
         final ObjShortConsumer<Joiner> accumulator = new ObjShortConsumer<Joiner>() {
             @Override
             public void accept(Joiner a, short t) {
-                a.add(t);
+                a.append(t);
             }
         };
 

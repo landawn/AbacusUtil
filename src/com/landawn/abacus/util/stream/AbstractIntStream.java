@@ -609,7 +609,7 @@ abstract class AbstractIntStream extends IntStream {
         final ObjIntConsumer<Joiner> accumulator = new ObjIntConsumer<Joiner>() {
             @Override
             public void accept(Joiner a, int t) {
-                a.add(t);
+                a.append(t);
             }
         };
 

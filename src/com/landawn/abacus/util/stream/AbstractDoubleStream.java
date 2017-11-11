@@ -673,7 +673,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
         final ObjDoubleConsumer<Joiner> accumulator = new ObjDoubleConsumer<Joiner>() {
             @Override
             public void accept(Joiner a, double t) {
-                a.add(t);
+                a.append(t);
             }
         };
 

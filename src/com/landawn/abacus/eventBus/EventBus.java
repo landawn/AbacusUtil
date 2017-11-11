@@ -464,7 +464,7 @@ public class EventBus {
                     if (registeredEventIdSubMap.containsKey(eventId)) {
                         listOfEventIdSub = new ArrayList<>(registeredEventIdSubMap.get(eventId)); // in case concurrent register/unregister.
                     } else {
-                        listOfEventIdSub = N.EMPTY_LIST;
+                        listOfEventIdSub = N.emptyList();
                     }
 
                     this.listOfEventIdSubMap.put(eventId, listOfEventIdSub);

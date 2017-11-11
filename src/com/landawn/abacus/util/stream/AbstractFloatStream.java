@@ -674,7 +674,7 @@ abstract class AbstractFloatStream extends FloatStream {
         final ObjFloatConsumer<Joiner> accumulator = new ObjFloatConsumer<Joiner>() {
             @Override
             public void accept(Joiner a, float t) {
-                a.add(t);
+                a.append(t);
             }
         };
 

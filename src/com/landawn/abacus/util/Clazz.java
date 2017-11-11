@@ -7,6 +7,8 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableMap;
+import java.util.NavigableSet;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
@@ -20,6 +22,10 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public final class Clazz {
+
+    @SuppressWarnings("rawtypes")
+    public static final Class<Map<String, Object>> PROPS_MAP = (Class) Map.class;
+
     private Clazz() {
         // singleton.
     }
@@ -47,6 +53,11 @@ public final class Clazz {
     @SuppressWarnings("rawtypes")
     public static <T> Class<SortedSet<T>> ofSortedSet(final Class<T> eleCls) {
         return (Class) SortedSet.class;
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static <T> Class<NavigableSet<T>> ofNavigableSet(final Class<T> eleCls) {
+        return (Class) NavigableSet.class;
     }
 
     @SuppressWarnings("rawtypes")
@@ -97,6 +108,11 @@ public final class Clazz {
     @SuppressWarnings("rawtypes")
     public static <K, V> Class<SortedMap<K, V>> ofSortedMap(final Class<K> keyCls, final Class<V> valueCls) {
         return (Class) SortedMap.class;
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static <K, V> Class<NavigableMap<K, V>> ofNavigableMap(final Class<K> keyCls, final Class<V> valueCls) {
+        return (Class) NavigableMap.class;
     }
 
     @SuppressWarnings("rawtypes")

@@ -413,6 +413,9 @@ public final class N {
         dataTypeFactory = temp;
     }
 
+    // ...
+    public static final String EMPTY_STRING = "".intern();
+
     /**
      * An empty immutable {@code boolean} array.
      */
@@ -453,22 +456,28 @@ public final class N {
      * An empty immutable {@code Object} array.
      */
     public static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
+
     @SuppressWarnings("rawtypes")
-    public static final List EMPTY_LIST = Collections.EMPTY_LIST;
+    static final List EMPTY_LIST = Collections.emptyList();
     @SuppressWarnings("rawtypes")
-    public static final Set EMPTY_SET = Collections.EMPTY_SET;
+    static final Set EMPTY_SET = Collections.emptySet();
     @SuppressWarnings("rawtypes")
-    public static final Map EMPTY_MAP = Collections.EMPTY_MAP;
+    static final SortedSet EMPTY_SORTED_SET = Collections.emptySortedSet();
     @SuppressWarnings("rawtypes")
-    public static final Iterator EMPTY_ITERATOR = EMPTY_LIST.iterator();
-    // ...
-    public static final String EMPTY_STRING = "".intern();
+    static final NavigableSet EMPTY_NAVIGABLE_SET = Collections.emptyNavigableSet();
+    @SuppressWarnings("rawtypes")
+    static final Map EMPTY_MAP = Collections.emptyMap();
+    @SuppressWarnings("rawtypes")
+    static final SortedMap EMPTY_SORTED_MAP = Collections.emptySortedMap();
+    @SuppressWarnings("rawtypes")
+    static final NavigableMap EMPTY_NAVIGABLE_MAP = Collections.emptyNavigableMap();
+    @SuppressWarnings("rawtypes")
+    static final Iterator EMPTY_ITERATOR = Collections.emptyIterator();
+    @SuppressWarnings("rawtypes")
+    static final ListIterator EMPTY_LIST_ITERATOR = Collections.emptyListIterator();
 
     // ...
     public static final Object NULL_MASK = new NullMask();
-
-    @SuppressWarnings("rawtypes")
-    public static final Class<Map<String, Object>> CLS_OF_PROPS = (Class) Map.class;
 
     // ...
     private static final char[][][] cbufOfSTDInt = new char[5][][];
@@ -775,7 +784,7 @@ public final class N {
 
     @SuppressWarnings("unchecked")
     @SafeVarargs
-    public static <T> List<Type<T>> typeOf(final Class<?>... classes) {
+    public static <T> List<Type<T>> typeOfAll(final Class<?>... classes) {
         if (N.isNullOrEmpty(classes)) {
             return new ArrayList<>();
         }
@@ -790,7 +799,7 @@ public final class N {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> List<Type<T>> typeOf(final Collection<? extends Class<?>> classes) {
+    public static <T> List<Type<T>> typeOfAll(final Collection<? extends Class<?>> classes) {
         final List<Type<T>> result = new ArrayList<>(classes.size());
 
         for (Class<?> cls : classes) {
@@ -877,6 +886,151 @@ public final class N {
         return (T) N.typeOf(cls).defaultValue();
     }
 
+    public static <T> T defaultIfNull(final T val, final T defaultValue) {
+        return val == null ? defaultValue : val;
+    }
+
+    public static <T> boolean anyNull(final T[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return false;
+        }
+
+        for (T e : a) {
+            if (e == null) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static <T> boolean anyNull(final Collection<T> c) {
+        if (N.isNullOrEmpty(c)) {
+            return false;
+        }
+
+        for (T e : c) {
+            if (e == null) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static <T> boolean allNull(final T[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return true;
+        }
+
+        for (T e : a) {
+            if (e != null) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public static <T> boolean allNull(final Collection<T> c) {
+        if (N.isNullOrEmpty(c)) {
+            return true;
+        }
+
+        for (T e : c) {
+            if (e != null) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public static <T> Optional<T> firstNonNull(final T[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return Optional.empty();
+        }
+
+        for (T e : a) {
+            if (e != null) {
+                return Optional.of(e);
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    public static <T> Optional<T> firstNonNull(final Collection<T> c) {
+        if (N.isNullOrEmpty(c)) {
+            return Optional.empty();
+        }
+
+        for (T e : c) {
+            if (e != null) {
+                return Optional.of(e);
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    public static <T> Optional<T> lastNonNull(final T[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return Optional.empty();
+        }
+
+        for (int i = a.length - 1; i >= 0; i--) {
+            if (a[i] != null) {
+                return Optional.of(a[i]);
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    public static <T> Optional<T> lastNonNull(final Collection<T> c) {
+        if (N.isNullOrEmpty(c)) {
+            return Optional.empty();
+        }
+
+        if (c instanceof List) {
+            final List<T> list = (List<T>) c;
+
+            if (c instanceof RandomAccess) {
+                for (int i = c.size() - 1; i >= 0; i--) {
+                    if (list.get(i) != null) {
+                        return Optional.of(list.get(i));
+                    }
+                }
+            } else {
+                final ListIterator<T> iter = list.listIterator(list.size());
+                T pre = null;
+
+                while (iter.hasPrevious()) {
+                    if ((pre = iter.previous()) != null) {
+                        return Optional.of(pre);
+                    }
+                }
+            }
+        } else if (c instanceof Deque) {
+            final Iterator<T> iter = ((Deque<T>) c).descendingIterator();
+            T next = null;
+
+            while (iter.hasNext()) {
+                if ((next = iter.next()) != null) {
+                    return Optional.of(next);
+                }
+            }
+        } else {
+            @SuppressWarnings("unchecked")
+            final T[] a = (T[]) c.toArray();
+
+            return lastNonNull(a);
+        }
+
+        return Optional.empty();
+    }
+
     public static <E extends Enum<E>> List<E> enumListOf(final Class<E> enumClass) {
         List<E> enumList = (List<E>) enumListPool.get(enumClass);
 
@@ -939,9 +1093,9 @@ public final class N {
                 return (T) new LinkedList<>();
             } else if (cls.equals(Deque.class)) {
                 return (T) new LinkedList<>();
-            } else if (cls.equals(SortedSet.class)) {
+            } else if (cls.equals(SortedSet.class) || cls.equals(NavigableSet.class)) {
                 return (T) new TreeSet<>();
-            } else if (cls.equals(SortedMap.class)) {
+            } else if (cls.equals(SortedMap.class) || cls.equals(NavigableMap.class)) {
                 return (T) new TreeMap<>();
             }
         }
@@ -2077,6 +2231,21 @@ public final class N {
         }
 
         final SortedSet<T> set = new TreeSet<>();
+
+        for (T e : a) {
+            set.add(e);
+        }
+
+        return set;
+    }
+
+    @SafeVarargs
+    public static <T> NavigableSet<T> asNavigableSet(final T... a) {
+        if (N.isNullOrEmpty(a)) {
+            return new TreeSet<>();
+        }
+
+        final NavigableSet<T> set = new TreeSet<>();
 
         for (T e : a) {
             set.add(e);
@@ -5074,7 +5243,7 @@ public final class N {
 
         N.reverse(strs);
 
-        return Joiner.with(delimiter).join(strs).toString();
+        return Joiner.with(delimiter).reuseStringBuilder(true).appendAll(strs).toString();
     }
 
     public static String padStart(final String str, final int minLength) {
@@ -9005,7 +9174,7 @@ public final class N {
      * @see Collections#emptyList()
      */
     public static <T> List<T> emptyList() {
-        return Collections.<T> emptyList();
+        return EMPTY_LIST;
     }
 
     /**
@@ -9015,7 +9184,7 @@ public final class N {
      * @see Collections#emptySet()
      */
     public static <T> Set<T> emptySet() {
-        return Collections.<T> emptySet();
+        return EMPTY_SET;
     }
 
     /**
@@ -9025,7 +9194,7 @@ public final class N {
      * @see Collections#emptySortedSet()
      */
     public static <T> SortedSet<T> emptySortedSet() {
-        return Collections.<T> emptySortedSet();
+        return EMPTY_SORTED_SET;
     }
 
     /**
@@ -9035,7 +9204,7 @@ public final class N {
      * @see Collections#emptyNavigableSet()
      */
     public static <T> NavigableSet<T> emptyNavigableSet() {
-        return Collections.<T> emptyNavigableSet();
+        return EMPTY_NAVIGABLE_SET;
     }
 
     /**
@@ -9045,7 +9214,7 @@ public final class N {
      * @see Collections#emptyMap()
      */
     public static <K, V> Map<K, V> emptyMap() {
-        return Collections.<K, V> emptyMap();
+        return EMPTY_MAP;
     }
 
     /**
@@ -9055,7 +9224,7 @@ public final class N {
      * @see Collections#emptySortedMap()
      */
     public static <K, V> SortedMap<K, V> emptySortedMap() {
-        return Collections.<K, V> emptySortedMap();
+        return EMPTY_SORTED_MAP;
     }
 
     /**
@@ -9065,7 +9234,7 @@ public final class N {
      * @see Collections#emptyNavigableMap()
      */
     public static <K, V> NavigableMap<K, V> emptyNavigableMap() {
-        return Collections.<K, V> emptyNavigableMap();
+        return EMPTY_NAVIGABLE_MAP;
     }
 
     /**
@@ -9075,7 +9244,7 @@ public final class N {
      * @see Collections#emptyIterator()
      */
     public static <T> Iterator<T> emptyIterator() {
-        return Collections.<T> emptyIterator();
+        return EMPTY_ITERATOR;
     }
 
     /**
@@ -9085,7 +9254,7 @@ public final class N {
      * @see Collections#emptyListIterator()
      */
     public static <T> ListIterator<T> emptyListIterator() {
-        return Collections.<T> emptyListIterator();
+        return EMPTY_LIST_ITERATOR;
     }
 
     /**

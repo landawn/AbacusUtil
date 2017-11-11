@@ -1665,7 +1665,7 @@ abstract class AbstractStream<T> extends Stream<T> {
             N.checkFromIndexSize(0, len, (int) count());
 
             if (len == 0) {
-                return newStream(N.asArray((List<T>) N.EMPTY_LIST), false, null);
+                return newStream(N.asArray(N.<T> emptyList()), false, null);
             } else if (len == 1) {
                 return map(new Function<T, List<T>>() {
                     @Override

@@ -14,15 +14,21 @@
 
 6*, Remove SQLBuilder.E/E2/.../SE.select(String expr).
 
-7, Add SQLBuilder.E/E2/.../SE.select(String expr, String[] columnNames).
+7*, Remove Splitter.split(typeName...).
 
-8, Add Type.ofList/ofSet/ofMap.
+8*, Refactoring Joiner.
 
-9, Add N.fromJSON/fromXML(Type...).
+9, Add SQLBuilder.E/E2/.../SE.select(String expr, String[] columnNames).
 
-10, Add N.castIfAssignable/ifOrElse/run/call/tryOrEmpty.
+10, Add Type.ofList/ofSet/ofMap.
 
-11, Improvements and bug fix.
+11, Add N.anyNull/allNull/firstNonNull/lastNonNull/defaultIfNull.
+
+12, Add N.fromJSON/fromXML(Type...).
+
+13, Add N.castIfAssignable/ifOrElse/run/call/tryOrEmpty.
+
+14, Improvements and bug fix.
 
 
 ﻿========Changes in 1.0.7 =========================================================================
