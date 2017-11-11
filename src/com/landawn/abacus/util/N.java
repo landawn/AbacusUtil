@@ -886,151 +886,6 @@ public final class N {
         return (T) N.typeOf(cls).defaultValue();
     }
 
-    public static <T> T defaultIfNull(final T val, final T defaultValue) {
-        return val == null ? defaultValue : val;
-    }
-
-    public static <T> boolean anyNull(final T[] a) {
-        if (N.isNullOrEmpty(a)) {
-            return false;
-        }
-
-        for (T e : a) {
-            if (e == null) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public static <T> boolean anyNull(final Collection<T> c) {
-        if (N.isNullOrEmpty(c)) {
-            return false;
-        }
-
-        for (T e : c) {
-            if (e == null) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public static <T> boolean allNull(final T[] a) {
-        if (N.isNullOrEmpty(a)) {
-            return true;
-        }
-
-        for (T e : a) {
-            if (e != null) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    public static <T> boolean allNull(final Collection<T> c) {
-        if (N.isNullOrEmpty(c)) {
-            return true;
-        }
-
-        for (T e : c) {
-            if (e != null) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    public static <T> Optional<T> firstNonNull(final T[] a) {
-        if (N.isNullOrEmpty(a)) {
-            return Optional.empty();
-        }
-
-        for (T e : a) {
-            if (e != null) {
-                return Optional.of(e);
-            }
-        }
-
-        return Optional.empty();
-    }
-
-    public static <T> Optional<T> firstNonNull(final Collection<T> c) {
-        if (N.isNullOrEmpty(c)) {
-            return Optional.empty();
-        }
-
-        for (T e : c) {
-            if (e != null) {
-                return Optional.of(e);
-            }
-        }
-
-        return Optional.empty();
-    }
-
-    public static <T> Optional<T> lastNonNull(final T[] a) {
-        if (N.isNullOrEmpty(a)) {
-            return Optional.empty();
-        }
-
-        for (int i = a.length - 1; i >= 0; i--) {
-            if (a[i] != null) {
-                return Optional.of(a[i]);
-            }
-        }
-
-        return Optional.empty();
-    }
-
-    public static <T> Optional<T> lastNonNull(final Collection<T> c) {
-        if (N.isNullOrEmpty(c)) {
-            return Optional.empty();
-        }
-
-        if (c instanceof List) {
-            final List<T> list = (List<T>) c;
-
-            if (c instanceof RandomAccess) {
-                for (int i = c.size() - 1; i >= 0; i--) {
-                    if (list.get(i) != null) {
-                        return Optional.of(list.get(i));
-                    }
-                }
-            } else {
-                final ListIterator<T> iter = list.listIterator(list.size());
-                T pre = null;
-
-                while (iter.hasPrevious()) {
-                    if ((pre = iter.previous()) != null) {
-                        return Optional.of(pre);
-                    }
-                }
-            }
-        } else if (c instanceof Deque) {
-            final Iterator<T> iter = ((Deque<T>) c).descendingIterator();
-            T next = null;
-
-            while (iter.hasNext()) {
-                if ((next = iter.next()) != null) {
-                    return Optional.of(next);
-                }
-            }
-        } else {
-            @SuppressWarnings("unchecked")
-            final T[] a = (T[]) c.toArray();
-
-            return lastNonNull(a);
-        }
-
-        return Optional.empty();
-    }
-
     public static <E extends Enum<E>> List<E> enumListOf(final Class<E> enumClass) {
         List<E> enumList = (List<E>) enumListPool.get(enumClass);
 
@@ -9255,6 +9110,147 @@ public final class N {
      */
     public static <T> ListIterator<T> emptyListIterator() {
         return EMPTY_LIST_ITERATOR;
+    }
+
+    public static <T> boolean anyNull(final T[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return false;
+        }
+
+        for (T e : a) {
+            if (e == null) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static <T> boolean anyNull(final Collection<T> c) {
+        if (N.isNullOrEmpty(c)) {
+            return false;
+        }
+
+        for (T e : c) {
+            if (e == null) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static <T> boolean allNull(final T[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return true;
+        }
+
+        for (T e : a) {
+            if (e != null) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public static <T> boolean allNull(final Collection<T> c) {
+        if (N.isNullOrEmpty(c)) {
+            return true;
+        }
+
+        for (T e : c) {
+            if (e != null) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public static <T> Optional<T> firstNonNull(final T[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return Optional.empty();
+        }
+
+        for (T e : a) {
+            if (e != null) {
+                return Optional.of(e);
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    public static <T> Optional<T> firstNonNull(final Collection<T> c) {
+        if (N.isNullOrEmpty(c)) {
+            return Optional.empty();
+        }
+
+        for (T e : c) {
+            if (e != null) {
+                return Optional.of(e);
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    public static <T> Optional<T> lastNonNull(final T[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return Optional.empty();
+        }
+
+        for (int i = a.length - 1; i >= 0; i--) {
+            if (a[i] != null) {
+                return Optional.of(a[i]);
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    public static <T> Optional<T> lastNonNull(final Collection<T> c) {
+        if (N.isNullOrEmpty(c)) {
+            return Optional.empty();
+        }
+
+        if (c instanceof List) {
+            final List<T> list = (List<T>) c;
+
+            if (c instanceof RandomAccess) {
+                for (int i = c.size() - 1; i >= 0; i--) {
+                    if (list.get(i) != null) {
+                        return Optional.of(list.get(i));
+                    }
+                }
+            } else {
+                final ListIterator<T> iter = list.listIterator(list.size());
+                T pre = null;
+
+                while (iter.hasPrevious()) {
+                    if ((pre = iter.previous()) != null) {
+                        return Optional.of(pre);
+                    }
+                }
+            }
+        } else if (c instanceof Deque) {
+            final Iterator<T> iter = ((Deque<T>) c).descendingIterator();
+            T next = null;
+
+            while (iter.hasNext()) {
+                if ((next = iter.next()) != null) {
+                    return Optional.of(next);
+                }
+            }
+        } else {
+            @SuppressWarnings("unchecked")
+            final T[] a = (T[]) c.toArray();
+
+            return lastNonNull(a);
+        }
+
+        return Optional.empty();
     }
 
     /**
@@ -31619,6 +31615,20 @@ public final class N {
     }
 
     /**
+     * Returns a {@code Nullable} with the value returned by {@code action} or an empty {@code Nullable} if exception happens.
+     * 
+     * @param cmd
+     * @return
+     */
+    public static <R> Nullable<R> tryOrEmpty(final Callable<R> cmd) {
+        try {
+            return Nullable.of(cmd.call());
+        } catch (Throwable e) {
+            return Nullable.<R> empty();
+        }
+    }
+
+    /**
      * Returns an empty <code>Nullable</code> if {@code val} is {@code null} while {@code targetType} is primitive or can't be assigned to {@code targetType}.
      * Please be aware that {@code null} can be assigned to any {@code Object} type except primitive types: {@code boolean/char/byte/short/int/long/double}.
      * 
@@ -31656,70 +31666,56 @@ public final class N {
         }
     }
 
-    /**
-     * 
-     * @param supplier
-     * @param actionForTrue do nothing if it's {@code null} even {@code b} is true.
-     * @param actionForFalse do nothing if it's {@code null} even {@code b} is false.
-     * @throws E0
-     * @throws E1
-     * @throws E2
-     */
-    public static <E0 extends Exception, E1 extends Exception, E2 extends Exception> void ifOrElse(final Try.Supplier<Boolean, E0> supplier,
-            final Try.Runnable<E1> actionForTrue, final Try.Runnable<E2> actionForFalse) throws E0, E1, E2 {
-        if (supplier.get()) {
-            if (actionForTrue != null) {
-                actionForTrue.run();
-            }
-        } else {
-            if (actionForFalse != null) {
-                actionForFalse.run();
-            }
-        }
-    }
+    //    /**
+    //     * 
+    //     * @param supplier
+    //     * @param actionForTrue do nothing if it's {@code null} even {@code b} is true.
+    //     * @param actionForFalse do nothing if it's {@code null} even {@code b} is false.
+    //     * @throws E0
+    //     * @throws E1
+    //     * @throws E2
+    //     */
+    //    public static <E0 extends Exception, E1 extends Exception, E2 extends Exception> void ifOrElse(final Try.Supplier<Boolean, E0> supplier,
+    //            final Try.Runnable<E1> actionForTrue, final Try.Runnable<E2> actionForFalse) throws E0, E1, E2 {
+    //        if (supplier.get()) {
+    //            if (actionForTrue != null) {
+    //                actionForTrue.run();
+    //            }
+    //        } else {
+    //            if (actionForFalse != null) {
+    //                actionForFalse.run();
+    //            }
+    //        }
+    //    }
 
-    /**
-     * Returns an empty {@code Optional} if {@code cmd} is executed successfully, otherwise a {@code Optional} with the exception threw.
-     * 
-     * @param cmd
-     * @return
-     */
-    public static Optional<Exception> run(final Try.Runnable<? extends Exception> cmd) {
-        try {
-            cmd.run();
-            return Optional.empty();
-        } catch (Exception e) {
-            return Optional.of(e);
-        }
-    }
-
-    /**
-     * Returns a {@code Pair} with {@code left=returnedValue, right=null} if {@code cmd} is executed successfully, otherwise a {@code Pair} with {@code left=null, right=exception}.
-     * 
-     * @param cmd
-     * @return
-     */
-    public static <R> Pair<R, Exception> call(final Callable<R> cmd) {
-        try {
-            return Pair.of(cmd.call(), null);
-        } catch (Exception e) {
-            return Pair.of(null, e);
-        }
-    }
-
-    /**
-     * Returns a {@code Nullable} with the value returned by {@code action} or an empty {@code Nullable} if exception happens.
-     * 
-     * @param cmd
-     * @return
-     */
-    public static <R> Nullable<R> tryOrEmpty(final Callable<R> cmd) {
-        try {
-            return Nullable.of(cmd.call());
-        } catch (Throwable e) {
-            return Nullable.<R> empty();
-        }
-    }
+    //    /**
+    //     * Returns an empty {@code Optional} if {@code cmd} is executed successfully, otherwise a {@code Optional} with the exception threw.
+    //     * 
+    //     * @param cmd
+    //     * @return
+    //     */
+    //    public static Optional<Exception> run(final Try.Runnable<? extends Exception> cmd) {
+    //        try {
+    //            cmd.run();
+    //            return Optional.empty();
+    //        } catch (Exception e) {
+    //            return Optional.of(e);
+    //        }
+    //    }
+    //
+    //    /**
+    //     * Returns a {@code Pair} with {@code left=returnedValue, right=null} if {@code cmd} is executed successfully, otherwise a {@code Pair} with {@code left=null, right=exception}.
+    //     * 
+    //     * @param cmd
+    //     * @return
+    //     */
+    //    public static <R> Pair<R, Exception> call(final Callable<R> cmd) {
+    //        try {
+    //            return Pair.of(cmd.call(), null);
+    //        } catch (Exception e) {
+    //            return Pair.of(null, e);
+    //        }
+    //    }
 
     static <T> T createMask(final Class<T> interfaceClass) {
         InvocationHandler h = new InvocationHandler() {

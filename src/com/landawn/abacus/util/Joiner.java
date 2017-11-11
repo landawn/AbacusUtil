@@ -166,6 +166,25 @@ public class Joiner {
         return with(DEFAULT_DELIMITER, DEFAULT_KEY_VALUE_DELIMITER);
     }
 
+    /**
+     * 
+     * @param str for both prefix and suffix
+     * @return
+     */
+    public static Joiner quoted(String str) {
+        return with(DEFAULT_DELIMITER, DEFAULT_KEY_VALUE_DELIMITER, str, str);
+    }
+
+    /**
+     * 
+     * @param prefix
+     * @param suffix
+     * @return
+     */
+    public static Joiner enclosed(String prefix, String suffix) {
+        return with(DEFAULT_DELIMITER, DEFAULT_KEY_VALUE_DELIMITER, prefix, suffix);
+    }
+
     public static Joiner with(final CharSequence delimiter) {
         return new Joiner(delimiter);
     }
@@ -1050,7 +1069,7 @@ public class Joiner {
      * @return
      */
     @SuppressWarnings("rawtypes")
-    public Joiner appendAll(final Object entity) {
+    public Joiner appendEntity(final Object entity) {
         if (entity == null) {
             return this;
         } else if (entity instanceof Map) {
