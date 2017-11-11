@@ -5763,29 +5763,33 @@ public final class N {
      * </p>
      *
      * <pre>
-     * N.replace(null, *, *)        = null
-     * N.replace("", *, *)          = ""
-     * N.replace("any", null, *)    = "any"
-     * N.replace("any", *, null)    = "any"
-     * N.replace("any", "", *)      = "any"
-     * N.replace("aba", "a", null)  = "aba"
-     * N.replace("aba", "a", "")    = "b"
-     * N.replace("aba", "a", "z")   = "zbz"
+     * N.replaceAll(null, *, *)        = null
+     * N.replaceAll("", *, *)          = ""
+     * N.replaceAll("any", null, *)    = "any"
+     * N.replaceAll("any", *, null)    = "any"
+     * N.replaceAll("any", "", *)      = "any"
+     * N.replaceAll("aba", "a", null)  = "aba"
+     * N.replaceAll("aba", "a", "")    = "b"
+     * N.replaceAll("aba", "a", "z")   = "zbz"
      * </pre>
      *
      * @see #replaceAll(String text, String searchString, String replacement,
      *      int max)
      * @param str
      *            text to search and replace in, may be null
-     * @param substr
+     * @param target
      *            the String to search for, may be null
      * @param replacement
      *            the String to replace it with, may be null
      * @return the text with any replacements processed, {@code null} if null
      *         String input
      */
-    public static String replaceAll(final String str, final String substr, final String replacement) {
-        return replaceAll(str, 0, substr, replacement);
+    public static String replaceAll(final String str, final String target, final String replacement) {
+        return replaceAll(str, 0, target, replacement);
+    }
+
+    public static String replaceAll(final String str, final int fromIndex, final String target, final String replacement) {
+        return replace(str, fromIndex, target, replacement, -1);
     }
 
     /**
@@ -5804,18 +5808,18 @@ public final class N {
      * N.replace("any", null, *, *)     = "any"
      * N.replace("any", "", *, *)       = "any"
      * N.replace("any", *, *, 0)        = "any"
-     * N.replace("abaa", "a", null, -1) = "abaa"
-     * N.replace("abaa", "a", "", -1)   = "b"
-     * N.replace("abaa", "a", "z", 0)   = "abaa"
-     * N.replace("abaa", "a", "z", 1)   = "zbaa"
-     * N.replace("abaa", "a", "z", 2)   = "zbza"
-     * N.replace("abaa", "a", "z", -1)  = "zbzz"
+     * N.replace("abaa", 0, "a", null, -1) = "abaa"
+     * N.replace("abaa", 0, "a", "", -1)   = "b"
+     * N.replace("abaa", 0, "a", "z", 0)   = "abaa"
+     * N.replace("abaa", 0, "a", "z", 1)   = "zbaa"
+     * N.replace("abaa", 0, "a", "z", 2)   = "zbza"
+     * N.replace("abaa", 0, "a", "z", -1)  = "zbzz"
      * </pre>
      *
      * @param str
      *            text to search and replace in, may be null
      * @param fromIndex
-     * @param substr
+     * @param target
      *            the String to search for, may be null
      * @param replacement
      *            the String to replace it with, can't be null
@@ -5825,42 +5829,57 @@ public final class N {
      * @return the text with any replacements processed, {@code null} if null
      *         String input
      */
-
-    public static String replaceAll(final String str, final int fromIndex, final String substr, final String replacement) {
-        return replace(str, fromIndex, substr, replacement, -1);
+    public static String replace(final String str, final int fromIndex, final String target, final String replacement, int max) {
+        return N.replace(str, fromIndex, target, replacement, max, false);
     }
 
-    public static String replace(final String str, final int fromIndex, final String substr, final String replacement, int max) {
+    public static String replaceAllIgnoreCase(final String str, final String target, final String replacement) {
+        return replaceAllIgnoreCase(str, 0, target, replacement);
+    }
+
+    public static String replaceAllIgnoreCase(final String str, final int fromIndex, final String target, final String replacement) {
+        return replaceIgnoreCase(str, fromIndex, target, replacement, -1);
+    }
+
+    public static String replaceIgnoreCase(final String str, final int fromIndex, final String target, final String replacement, int max) {
+        return N.replace(str, fromIndex, target, replacement, max, true);
+    }
+
+    private static String replace(final String str, final int fromIndex, final String target, final String replacement, int max, boolean ignoreCase) {
         if (replacement == null) {
             throw new IllegalArgumentException("Replacement can't be null");
         }
 
-        if (N.isNullOrEmpty(str) || N.isNullOrEmpty(substr) || max == 0) {
+        if (N.isNullOrEmpty(str) || N.isNullOrEmpty(target) || max == 0) {
             return str;
         }
 
+        final String searchText = ignoreCase ? str.toLowerCase() : str;
+        final String searchTarget = ignoreCase ? target.toLowerCase() : target;
+
         int start = fromIndex;
-        int end = str.indexOf(substr, start);
+        int end = searchText.indexOf(searchTarget, start);
+
         if (end == N.INDEX_NOT_FOUND) {
             return str;
         }
 
         final StringBuilder sb = ObjectFactory.createStringBuilder();
-        final int substrLength = substr.length();
+        final int substrLength = target.length();
 
         try {
             while (end != N.INDEX_NOT_FOUND) {
-                sb.append(str.substring(start, end)).append(replacement);
+                sb.append(str, start, end).append(replacement);
                 start = end + substrLength;
 
                 if (--max == 0) {
                     break;
                 }
 
-                end = str.indexOf(substr, start);
+                end = searchText.indexOf(searchTarget, start);
             }
 
-            sb.append(str.substring(start));
+            sb.append(str, start, str.length());
 
             return sb.toString();
         } finally {
@@ -16620,20 +16639,20 @@ public final class N {
         return INDEX_NOT_FOUND;
     }
 
-    public static int indexOf(final String str, final char ch) {
+    public static int indexOf(final String str, final int targetChar) {
         if (N.isNullOrEmpty(str)) {
             return N.INDEX_NOT_FOUND;
         }
 
-        return str.indexOf(ch);
+        return str.indexOf(targetChar);
     }
 
-    public static int indexOf(final String str, final int fromIndex, final char ch) {
+    public static int indexOf(final String str, final int fromIndex, final int targetChar) {
         if (N.isNullOrEmpty(str)) {
             return N.INDEX_NOT_FOUND;
         }
 
-        return str.indexOf(ch, fromIndex);
+        return str.indexOf(targetChar, fromIndex);
     }
 
     public static int indexOf(final String str, final String substr) {
@@ -17154,12 +17173,12 @@ public final class N {
         return INDEX_NOT_FOUND;
     }
 
-    public static int lastIndexOf(final String str, final char ch) {
+    public static int lastIndexOf(final String str, final int targetChar) {
         if (N.isNullOrEmpty(str)) {
             return N.INDEX_NOT_FOUND;
         }
 
-        return str.lastIndexOf(ch);
+        return str.lastIndexOf(targetChar);
     }
 
     /**
@@ -17195,19 +17214,19 @@ public final class N {
      *            if it were equal to one less than the length of this string:
      *            this entire string may be searched. If it is negative, it has
      *            the same effect as if it were -1: -1 is returned.
-     * @param ch
+     * @param targetChar
      *            a character (Unicode code point).
      * @return the index of the last occurrence of the character in the
      *         character sequence represented by this object that is less than
      *         or equal to <code>fromIndex</code>, or <code>-1</code> if the
      *         character does not occur before that point.
      */
-    public static int lastIndexOf(final String str, final int fromIndex, final char ch) {
+    public static int lastIndexOf(final String str, final int fromIndex, final int targetChar) {
         if (N.isNullOrEmpty(str)) {
             return N.INDEX_NOT_FOUND;
         }
 
-        return str.lastIndexOf(ch, fromIndex);
+        return str.lastIndexOf(targetChar, fromIndex);
     }
 
     public static int lastIndexOf(final String str, final String substr) {
@@ -17599,12 +17618,12 @@ public final class N {
         return c.contains(e);
     }
 
-    public static boolean contains(final String str, final char ch) {
+    public static boolean contains(final String str, final int targetChar) {
         if (N.isNullOrEmpty(str)) {
             return false;
         }
 
-        return indexOf(str, ch) != N.INDEX_NOT_FOUND;
+        return indexOf(str, targetChar) != N.INDEX_NOT_FOUND;
     }
 
     public static boolean contains(final String str, final String substr) {

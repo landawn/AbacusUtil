@@ -21,6 +21,8 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableMap;
+import java.util.NavigableSet;
 import java.util.Objects;
 import java.util.PriorityQueue;
 import java.util.Queue;
@@ -164,6 +166,10 @@ public interface IntFunction<R> extends java.util.function.IntFunction<R> {
         return Factory.ofSortedSet();
     }
 
+    public static <T> IntFunction<NavigableSet<T>> ofNavigableSet() {
+        return Factory.ofNavigableSet();
+    }
+
     public static <T> IntFunction<TreeSet<T>> ofTreeSet() {
         return Factory.ofTreeSet();
     }
@@ -202,6 +208,10 @@ public interface IntFunction<R> extends java.util.function.IntFunction<R> {
 
     public static <K, V> IntFunction<SortedMap<K, V>> ofSortedMap() {
         return Factory.ofSortedMap();
+    }
+
+    public static <K, V> IntFunction<NavigableMap<K, V>> ofNavigableMap() {
+        return Factory.ofNavigableMap();
     }
 
     public static <K, V> IntFunction<TreeMap<K, V>> ofTreeMap() {

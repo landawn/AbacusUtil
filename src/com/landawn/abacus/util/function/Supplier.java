@@ -21,6 +21,8 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableMap;
+import java.util.NavigableSet;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
@@ -112,6 +114,10 @@ public interface Supplier<T> extends java.util.function.Supplier<T>, Try.Supplie
         return Suppliers.ofSortedSet();
     }
 
+    static <T> Supplier<NavigableSet<T>> ofNavigableSet() {
+        return Suppliers.ofNavigableSet();
+    }
+
     static <T> Supplier<TreeSet<T>> ofTreeSet() {
         return Suppliers.ofTreeSet();
     }
@@ -150,6 +156,10 @@ public interface Supplier<T> extends java.util.function.Supplier<T>, Try.Supplie
 
     static <K, V> Supplier<SortedMap<K, V>> ofSortedMap() {
         return Suppliers.ofSortedMap();
+    }
+
+    static <K, V> Supplier<NavigableMap<K, V>> ofNavigableMap() {
+        return Suppliers.ofNavigableMap();
     }
 
     static <K, V> Supplier<TreeMap<K, V>> ofTreeMap() {
