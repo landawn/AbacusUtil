@@ -409,24 +409,6 @@ public interface DataSet extends Iterable<Object[]> {
      */
     <T> List<T> getColumn(String columnName);
 
-    //    /**
-    //     * Must NOT modify the returned list.
-    //     * 
-    //     * @param columnType it's only used to identify the type.
-    //     * @param columnIndex
-    //     * @return
-    //     */
-    //    <T> List<T> getColumn(Class<? extends T> columnType, int columnIndex);
-    //
-    //    /**
-    //     * Must NOT modify the returned list.
-    //     *
-    //     * @param columnType it's only used to identify the type.
-    //     * @param columnName
-    //     * @return
-    //     */
-    //    <T> List<T> getColumn(Class<? extends T> columnType, String columnName);
-
     /**
      * Method addColumn.
      *
@@ -503,7 +485,7 @@ public interface DataSet extends Iterable<Object[]> {
     void updateColumn(String columnName, Function<?, ?> func);
 
     /**
-     * Update the values of the specified columns by the specified function.
+     * Update the values of the specified columns one by one with the specified function.
      *
      * @param columnNames
      * @param func
@@ -574,12 +556,42 @@ public interface DataSet extends Iterable<Object[]> {
      */
     void removeRowAll(int... indices);
 
+    /**
+     * 
+     * @param inclusiveFromRowIndex
+     * @param exclusiveToRowIndex
+     */
+    void removeRowRange(int inclusiveFromRowIndex, int exclusiveToRowIndex);
+
+    /**
+     * Update the values in the specified row with the specified function.
+     * 
+     * @param rowIndex
+     * @param func
+     */
     void updateRow(int rowIndex, Function<?, ?> func);
 
+    /**
+     * Update the values in the specified rows one by one with the specified function.
+     * 
+     * @param indices
+     * @param func
+     */
     void updateRow(int[] indices, Function<?, ?> func);
 
+    /**
+     * Update all the values in this DataSet with the specified function.
+     * 
+     * @param func
+     */
     void updateAll(Function<?, ?> func);
 
+    /**
+     * Replace all the values in this DataSet with the specified new value if it matches the specified condition.
+     * 
+     * @param func
+     * @param newValue
+     */
     void replaceIf(Predicate<?> func, Object newValue);
 
     /**
@@ -3430,23 +3442,6 @@ public interface DataSet extends Iterable<Object[]> {
      * @return
      */
     <T> Stream<T> stream(String columnName, int fromRowIndex, int toRowIndex);
-
-    /**
-     * @param columnType it's only used to identify the type.
-     * @param columnName
-     * @return
-     */
-    <T> Stream<T> stream(Class<? extends T> columnType, String columnName);
-
-    /**
-     * 
-     * @param columnType it's only used to identify the type.
-     * @param columnName
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @return
-     */
-    <T> Stream<T> stream(Class<? extends T> columnType, String columnName, int fromRowIndex, int toRowIndex);
 
     /**
      *

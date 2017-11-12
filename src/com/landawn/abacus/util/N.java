@@ -26449,6 +26449,10 @@ public final class N {
 
         indices = indices.clone();
         N.sort(indices);
+        return deleteAllBySortedIndices(a, indices);
+    }
+
+    private static <T> T[] deleteAllBySortedIndices(final T[] a, int... indices) {
         final int lastIndex = indices[indices.length - 1];
 
         if (indices[0] < 0 || lastIndex >= a.length) {
@@ -26492,6 +26496,7 @@ public final class N {
      * @param indices
      * @return
      */
+    @SuppressWarnings("rawtypes")
     @SafeVarargs
     public static boolean deleteAll(final List<?> list, int... indices) {
         N.requireNonNull(list);
@@ -26510,20 +26515,27 @@ public final class N {
             throw new IndexOutOfBoundsException("The specified indices are from: " + indices[0] + " to: " + indices[indices.length - 1]);
         }
 
-        final Iterator<?> iterator = list.iterator();
+        if (list instanceof LinkedList) {
+            final Iterator<?> iterator = list.iterator();
 
-        int idx = -1;
-        for (int i = 0, len = indices.length; i < len; i++) {
-            if (i > 0 && indices[i] == indices[i - 1]) {
-                continue;
+            int idx = -1;
+            for (int i = 0, len = indices.length; i < len; i++) {
+                if (i > 0 && indices[i] == indices[i - 1]) {
+                    continue;
+                }
+
+                while (idx < indices[i]) {
+                    idx++;
+                    iterator.next();
+                }
+
+                iterator.remove();
             }
-
-            while (idx < indices[i]) {
-                idx++;
-                iterator.next();
-            }
-
-            iterator.remove();
+        } else {
+            final Object[] a = list.toArray();
+            final Object[] res = deleteAllBySortedIndices(a, indices);
+            list.clear();
+            list.addAll((List) Arrays.asList(res));
         }
 
         return true;

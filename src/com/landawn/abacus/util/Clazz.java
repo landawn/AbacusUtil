@@ -22,6 +22,27 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
+/**
+ * It's designed to provide a convenient way to parameterized the generic type (e.g. {@code List.<String>class}).
+ * <br /> 
+ * But the returned Class by all the methods doesn't have the actual parameterized type informations. For example:
+ * <pre>
+ * <code>
+ * List&ltString&gt clazz = Clazz.ofList(String.class);
+ * // clazz doesn't have the actual type parameters information. 
+ * // you won't be able to get type parameter {@code String} by: cls.getTypeParameters();
+ * // To save the real type parameters: you need to either:
+ * Type&ltList&ltString&gt&gt type = Type.of("List&ltString&gt"); // or Type.ofList(String.class)
+ * 
+ * // Or
+ * Type&ltList&ltString&gt&gt type = new TypeReference&ltList&ltString&gt&gt() {}.type();
+ *
+ * </code>
+ * </pre>
+ * 
+ * @author Haiyang Li
+ *
+ */
 public final class Clazz {
 
     @SuppressWarnings("rawtypes")
