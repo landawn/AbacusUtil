@@ -28,11 +28,13 @@ import java.util.Set;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
+import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.FloatBinaryOperator;
 import com.landawn.abacus.util.function.FloatConsumer;
 import com.landawn.abacus.util.function.FloatFunction;
 import com.landawn.abacus.util.function.FloatPredicate;
 import com.landawn.abacus.util.function.FloatUnaryOperator;
+import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IndexedFloatConsumer;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Supplier;
@@ -1440,6 +1442,16 @@ public final class FloatList extends PrimitiveList<FloatConsumer, FloatPredicate
         checkFromToIndex(fromIndex, toIndex);
 
         return FloatStream.of(elementData, fromIndex, toIndex);
+    }
+
+    @Override
+    public <R> R apply(Function<? super FloatList, R> func) {
+        return func.apply(this);
+    }
+
+    @Override
+    public void accept(Consumer<? super FloatList> action) {
+        action.accept(this);
     }
 
     @Override

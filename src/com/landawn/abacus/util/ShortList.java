@@ -28,6 +28,8 @@ import java.util.Set;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
+import com.landawn.abacus.util.function.Consumer;
+import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IndexedShortConsumer;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.ShortBinaryOperator;
@@ -1456,6 +1458,16 @@ public final class ShortList extends PrimitiveList<ShortConsumer, ShortPredicate
         checkFromToIndex(fromIndex, toIndex);
 
         return ShortStream.of(elementData, fromIndex, toIndex);
+    }
+
+    @Override
+    public <R> R apply(Function<? super ShortList, R> func) {
+        return func.apply(this);
+    }
+
+    @Override
+    public void accept(Consumer<? super ShortList> action) {
+        action.accept(this);
     }
 
     @Override

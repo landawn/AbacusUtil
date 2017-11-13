@@ -28,6 +28,8 @@ import java.util.Set;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
+import com.landawn.abacus.util.function.Consumer;
+import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IndexedIntConsumer;
 import com.landawn.abacus.util.function.IntBinaryOperator;
 import com.landawn.abacus.util.function.IntConsumer;
@@ -1561,6 +1563,16 @@ public final class IntList extends PrimitiveList<IntConsumer, IntPredicate, Inte
         checkFromToIndex(fromIndex, toIndex);
 
         return IntStream.of(elementData, fromIndex, toIndex);
+    }
+
+    @Override
+    public <R> R apply(Function<? super IntList, R> func) {
+        return func.apply(this);
+    }
+
+    @Override
+    public void accept(Consumer<? super IntList> action) {
+        action.accept(this);
     }
 
     @Override

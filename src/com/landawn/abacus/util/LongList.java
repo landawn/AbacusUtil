@@ -28,6 +28,8 @@ import java.util.Set;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
+import com.landawn.abacus.util.function.Consumer;
+import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IndexedLongConsumer;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.LongBinaryOperator;
@@ -1466,6 +1468,16 @@ public final class LongList extends PrimitiveList<LongConsumer, LongPredicate, L
         checkFromToIndex(fromIndex, toIndex);
 
         return LongStream.of(elementData, fromIndex, toIndex);
+    }
+
+    @Override
+    public <R> R apply(Function<? super LongList, R> func) {
+        return func.apply(this);
+    }
+
+    @Override
+    public void accept(Consumer<? super LongList> action) {
+        action.accept(this);
     }
 
     @Override

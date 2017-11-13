@@ -23,6 +23,8 @@ import java.util.Random;
 import java.util.RandomAccess;
 import java.util.Set;
 
+import com.landawn.abacus.util.function.Consumer;
+import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
 
 /**
@@ -427,6 +429,10 @@ public abstract class PrimitiveList<C, P, E, A, L extends PrimitiveList<C, P, E,
     }
 
     public abstract Multiset<E> toMultiset(final int fromIndex, final int toIndex, final IntFunction<Multiset<E>> supplier);
+
+    public abstract <R> R apply(Function<? super L, R> func);
+
+    public abstract void accept(Consumer<? super L> action);
 
     public void println() {
         N.println(toString());

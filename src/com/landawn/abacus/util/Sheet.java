@@ -32,6 +32,7 @@ import com.landawn.abacus.core.RowDataSet;
 import com.landawn.abacus.parser.KryoParser;
 import com.landawn.abacus.parser.ParserFactory;
 import com.landawn.abacus.util.function.BiFunction;
+import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntBiFunction;
 import com.landawn.abacus.util.function.IntBiPredicate;
@@ -2072,6 +2073,14 @@ public final class Sheet<R, C, E> {
         }
 
         return copy;
+    }
+
+    public <T> T apply(Function<? super Sheet<R, C, E>, T> func) {
+        return func.apply(this);
+    }
+
+    public void accept(Consumer<? super Sheet<R, C, E>> action) {
+        action.accept(this);
     }
 
     public void println() {

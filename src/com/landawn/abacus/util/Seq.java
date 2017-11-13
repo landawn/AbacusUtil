@@ -2697,6 +2697,18 @@ public final class Seq<T> extends ImmutableCollection<T> {
     //        return N.isNullOrEmpty(coll) ? Stream.<T> empty() : Stream.of(coll);
     //    }
 
+    public <R> R apply(Function<? super Seq<T>, R> func) {
+        return func.apply(this);
+    }
+
+    public void accept(Consumer<? super Seq<T>> action) {
+        action.accept(this);
+    }
+
+    public void println() {
+        N.println(toString());
+    }
+
     @Override
     public int hashCode() {
         return coll == null ? 0 : coll.hashCode();
@@ -2720,10 +2732,6 @@ public final class Seq<T> extends ImmutableCollection<T> {
     @Override
     public String toString() {
         return coll == null ? N.NULL_STRING : coll.toString();
-    }
-
-    public void println() {
-        N.println(toString());
     }
 
     //    /**

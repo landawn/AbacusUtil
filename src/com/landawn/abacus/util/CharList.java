@@ -32,6 +32,8 @@ import com.landawn.abacus.util.function.CharConsumer;
 import com.landawn.abacus.util.function.CharFunction;
 import com.landawn.abacus.util.function.CharPredicate;
 import com.landawn.abacus.util.function.CharUnaryOperator;
+import com.landawn.abacus.util.function.Consumer;
+import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IndexedCharConsumer;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Supplier;
@@ -1469,6 +1471,16 @@ public final class CharList extends PrimitiveList<CharConsumer, CharPredicate, C
         checkFromToIndex(fromIndex, toIndex);
 
         return CharStream.of(elementData, fromIndex, toIndex);
+    }
+
+    @Override
+    public <R> R apply(Function<? super CharList, R> func) {
+        return func.apply(this);
+    }
+
+    @Override
+    public void accept(Consumer<? super CharList> action) {
+        action.accept(this);
     }
 
     @Override

@@ -35,6 +35,7 @@ import com.landawn.abacus.annotation.Internal;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
+import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Predicate;
@@ -1293,6 +1294,14 @@ public class Multimap<K, E, V extends Collection<E>> {
 
     public boolean isEmpty() {
         return valueMap.isEmpty();
+    }
+
+    public <R> R apply(Function<? super Multimap<K, E, V>, R> func) {
+        return func.apply(this);
+    }
+
+    public void accept(Consumer<? super Multimap<K, E, V>> action) {
+        action.accept(this);
     }
 
     @Override

@@ -34,6 +34,7 @@ import java.util.Set;
 import com.landawn.abacus.annotation.Internal;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
+import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.ObjLongConsumer;
@@ -1375,6 +1376,14 @@ public final class LongMultiset<E> implements Iterable<E> {
 
     public EntryStream<E, Long> entryStream() {
         return EntryStream.of(stream());
+    }
+
+    public <R> R apply(Function<? super LongMultiset<E>, R> func) {
+        return func.apply(this);
+    }
+
+    public void accept(Consumer<? super LongMultiset<E>> action) {
+        action.accept(this);
     }
 
     @Override

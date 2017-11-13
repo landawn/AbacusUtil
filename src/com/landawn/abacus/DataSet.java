@@ -3541,9 +3541,9 @@ public interface DataSet extends Iterable<Object[]> {
      */
     <T> Stream<T> stream(IntFunction<? extends T> rowSupplier, Collection<String> columnNames, int fromRowIndex, int toRowIndex);
 
-    void accept(Consumer<? super DataSet> action);
-
     <R> R apply(Function<? super DataSet, R> func);
+
+    void accept(Consumer<? super DataSet> action);
 
     /**
      * Method freeze

@@ -32,6 +32,8 @@ import com.landawn.abacus.util.function.BooleanConsumer;
 import com.landawn.abacus.util.function.BooleanFunction;
 import com.landawn.abacus.util.function.BooleanPredicate;
 import com.landawn.abacus.util.function.BooleanUnaryOperator;
+import com.landawn.abacus.util.function.Consumer;
+import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IndexedBooleanConsumer;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Supplier;
@@ -1340,6 +1342,16 @@ public final class BooleanList extends PrimitiveList<BooleanConsumer, BooleanPre
         checkFromToIndex(fromIndex, toIndex);
 
         return Stream.of(elementData, fromIndex, toIndex);
+    }
+
+    @Override
+    public <R> R apply(Function<? super BooleanList, R> func) {
+        return func.apply(this);
+    }
+
+    @Override
+    public void accept(Consumer<? super BooleanList> action) {
+        action.accept(this);
     }
 
     @Override

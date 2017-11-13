@@ -34,6 +34,7 @@ import java.util.Set;
 import com.landawn.abacus.annotation.Internal;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
+import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.ObjIntConsumer;
@@ -1429,6 +1430,14 @@ public final class Multiset<E> implements Iterable<E> {
 
     public EntryStream<E, Integer> entryStream() {
         return EntryStream.of(stream());
+    }
+
+    public <R> R apply(Function<? super Multiset<E>, R> func) {
+        return func.apply(this);
+    }
+
+    public void accept(Consumer<? super Multiset<E>> action) {
+        action.accept(this);
     }
 
     @Override
