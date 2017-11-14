@@ -83,7 +83,7 @@ A general programming library in Java/Android. It's simple, powerful and easy to
 [Traverser](https://static.javadoc.io/com.landawn/abacus-util-all/1.0.9/com/landawn/abacus/util/Traverser.html)(from JDK8, Apache commons, Google Guava...) ...
 
 
-## Download/Installation & [CHANGES](https://github.com/landawn/AbacusUtil/blob/master/CHANGES.md):
+## Download/Installation & [Changes](https://github.com/landawn/AbacusUtil/blob/master/CHANGES.md):
 
 * [Maven](http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.landawn%22)
 
