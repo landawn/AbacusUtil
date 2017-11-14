@@ -76,26 +76,22 @@ public final class IntList extends PrimitiveList<IntConsumer, IntPredicate, Inte
         this.size = size;
     }
 
-    private static IntList empty() {
-        return new IntList(N.EMPTY_INT_ARRAY);
-    }
-
     @SafeVarargs
     public static IntList of(int... a) {
-        return a == null ? empty() : new IntList(a);
+        return a == null ? new IntList() : new IntList(a);
     }
 
     public static IntList of(int[] a, int size) {
-        return a == null && size == 0 ? empty() : new IntList(a, size);
+        return a == null && size == 0 ? new IntList() : new IntList(a, size);
     }
 
     //    public static IntList from(String... a) {
-    //        return a == null ? empty() : from(a, 0, a.length);
+    //        return a == null ? new IntList() : from(a, 0, a.length);
     //    }
     //
     //    public static IntList from(String[] a, int startIndex, int endIndex) {
     //        if (a == null && (startIndex == 0 && endIndex == 0)) {
-    //            return empty();
+    //            return new IntList();
     //        }
     //
     //        N.checkIndex(startIndex, endIndex, a == null ? 0 : a.length);
@@ -111,7 +107,7 @@ public final class IntList extends PrimitiveList<IntConsumer, IntPredicate, Inte
 
     public static IntList from(Collection<Integer> c) {
         if (N.isNullOrEmpty(c)) {
-            return empty();
+            return new IntList();
         }
 
         return from(c, 0);
@@ -119,7 +115,7 @@ public final class IntList extends PrimitiveList<IntConsumer, IntPredicate, Inte
 
     public static IntList from(Collection<Integer> c, int defaultValueForNull) {
         if (N.isNullOrEmpty(c)) {
-            return empty();
+            return new IntList();
         }
 
         final int[] a = new int[c.size()];
@@ -646,7 +642,7 @@ public final class IntList extends PrimitiveList<IntConsumer, IntPredicate, Inte
      */
     public IntList intersection(final IntList b) {
         if (N.isNullOrEmpty(b)) {
-            return empty();
+            return new IntList();
         }
 
         final Multiset<Integer> bOccurrences = b.toMultiset();
@@ -664,7 +660,7 @@ public final class IntList extends PrimitiveList<IntConsumer, IntPredicate, Inte
 
     public IntList intersection(final int[] a) {
         if (N.isNullOrEmpty(a)) {
-            return empty();
+            return new IntList();
         }
 
         return intersection(of(a));

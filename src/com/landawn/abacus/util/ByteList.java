@@ -76,22 +76,18 @@ public final class ByteList extends PrimitiveList<ByteConsumer, BytePredicate, B
         this.size = size;
     }
 
-    private static ByteList empty() {
-        return new ByteList(N.EMPTY_BYTE_ARRAY);
-    }
-
     @SafeVarargs
     public static ByteList of(byte... a) {
-        return a == null ? empty() : new ByteList(a);
+        return a == null ? new ByteList() : new ByteList(a);
     }
 
     public static ByteList of(byte[] a, int size) {
-        return a == null && size == 0 ? empty() : new ByteList(a, size);
+        return a == null && size == 0 ? new ByteList() : new ByteList(a, size);
     }
 
     public static ByteList from(Collection<Byte> c) {
         if (N.isNullOrEmpty(c)) {
-            return empty();
+            return new ByteList();
         }
 
         return from(c, (byte) 0);
@@ -99,7 +95,7 @@ public final class ByteList extends PrimitiveList<ByteConsumer, BytePredicate, B
 
     public static ByteList from(Collection<Byte> c, byte defaultValueForNull) {
         if (N.isNullOrEmpty(c)) {
-            return empty();
+            return new ByteList();
         }
 
         final byte[] a = new byte[c.size()];
@@ -596,7 +592,7 @@ public final class ByteList extends PrimitiveList<ByteConsumer, BytePredicate, B
      */
     public ByteList intersection(final ByteList b) {
         if (N.isNullOrEmpty(b)) {
-            return empty();
+            return new ByteList();
         }
 
         final Multiset<Byte> bOccurrences = b.toMultiset();
@@ -614,7 +610,7 @@ public final class ByteList extends PrimitiveList<ByteConsumer, BytePredicate, B
 
     public ByteList intersection(final byte[] a) {
         if (N.isNullOrEmpty(a)) {
-            return empty();
+            return new ByteList();
         }
 
         return intersection(of(a));

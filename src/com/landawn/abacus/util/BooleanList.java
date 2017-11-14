@@ -76,22 +76,18 @@ public final class BooleanList extends PrimitiveList<BooleanConsumer, BooleanPre
         this.size = size;
     }
 
-    private static BooleanList empty() {
-        return new BooleanList(N.EMPTY_BOOLEAN_ARRAY);
-    }
-
     @SafeVarargs
     public static BooleanList of(boolean... a) {
-        return a == null ? empty() : new BooleanList(a);
+        return a == null ? new BooleanList() : new BooleanList(a);
     }
 
     public static BooleanList of(boolean[] a, int size) {
-        return a == null && size == 0 ? empty() : new BooleanList(a, size);
+        return a == null && size == 0 ? new BooleanList() : new BooleanList(a, size);
     }
 
     public static BooleanList from(Collection<Boolean> c) {
         if (N.isNullOrEmpty(c)) {
-            return empty();
+            return new BooleanList();
         }
 
         return from(c, false);
@@ -99,7 +95,7 @@ public final class BooleanList extends PrimitiveList<BooleanConsumer, BooleanPre
 
     public static BooleanList from(Collection<Boolean> c, boolean defaultValueForNull) {
         if (N.isNullOrEmpty(c)) {
-            return empty();
+            return new BooleanList();
         }
 
         final boolean[] a = new boolean[c.size()];
@@ -578,7 +574,7 @@ public final class BooleanList extends PrimitiveList<BooleanConsumer, BooleanPre
      */
     public BooleanList intersection(final BooleanList b) {
         if (N.isNullOrEmpty(b)) {
-            return empty();
+            return new BooleanList();
         }
 
         final Multiset<Boolean> bOccurrences = b.toMultiset();
@@ -596,7 +592,7 @@ public final class BooleanList extends PrimitiveList<BooleanConsumer, BooleanPre
 
     public BooleanList intersection(final boolean[] a) {
         if (N.isNullOrEmpty(a)) {
-            return empty();
+            return new BooleanList();
         }
 
         return intersection(of(a));

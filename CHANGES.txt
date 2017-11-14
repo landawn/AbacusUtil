@@ -1,4 +1,12 @@
 ﻿
+﻿========Changes in 1.1.0 =========================================================================
+
+1, Clazz.of(Class<?>) is marked to ‘Deprecated’ and will be removed in version 1.2.0 because it doesn’t work as expected.
+
+2, Add EntryStream.collect(java.util.stream.Collector) and EntryStream.collectAndThen(java.util.stream.Collector, Function).
+
+3, Improvements and bug fix.
+
 
 ﻿========Changes in 1.0.9 =========================================================================
 

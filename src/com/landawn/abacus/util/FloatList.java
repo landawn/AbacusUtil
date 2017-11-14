@@ -77,22 +77,18 @@ public final class FloatList extends PrimitiveList<FloatConsumer, FloatPredicate
         this.size = size;
     }
 
-    private static FloatList empty() {
-        return new FloatList(N.EMPTY_FLOAT_ARRAY);
-    }
-
     @SafeVarargs
     public static FloatList of(float... a) {
         return new FloatList(a);
     }
 
     public static FloatList of(float[] a, int size) {
-        return a == null && size == 0 ? empty() : new FloatList(a, size);
+        return a == null && size == 0 ? new FloatList() : new FloatList(a, size);
     }
 
     public static FloatList from(Collection<Float> c) {
         if (N.isNullOrEmpty(c)) {
-            return empty();
+            return new FloatList();
         }
 
         return from(c, 0f);
@@ -100,7 +96,7 @@ public final class FloatList extends PrimitiveList<FloatConsumer, FloatPredicate
 
     public static FloatList from(Collection<Float> c, float defaultValueForNull) {
         if (N.isNullOrEmpty(c)) {
-            return empty();
+            return new FloatList();
         }
 
         final float[] a = new float[c.size()];
@@ -578,7 +574,7 @@ public final class FloatList extends PrimitiveList<FloatConsumer, FloatPredicate
      */
     public FloatList intersection(final FloatList b) {
         if (N.isNullOrEmpty(b)) {
-            return empty();
+            return new FloatList();
         }
 
         final Multiset<Float> bOccurrences = b.toMultiset();
@@ -596,7 +592,7 @@ public final class FloatList extends PrimitiveList<FloatConsumer, FloatPredicate
 
     public FloatList intersection(final float[] a) {
         if (N.isNullOrEmpty(a)) {
-            return empty();
+            return new FloatList();
         }
 
         return intersection(of(a));

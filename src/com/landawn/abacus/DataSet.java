@@ -2963,6 +2963,33 @@ public interface DataSet extends Iterable<Object[]> {
      */
     OptionalDouble averageDouble(String columnName, int fromRowIndex, int toRowIndex, ToDoubleFunction<?> mapper);
 
+    // TODO
+    //    /**
+    //     * @param columnNames
+    //     * @return a copy of this DataSet
+    //     * @see List#subList(int, int).
+    //     */
+    //    DataSet slice(Collection<String> columnNames);
+    //
+    //    /**
+    //     *
+    //     * @param fromRowIndex
+    //     * @param toRowIndex
+    //     * @return a copy of this DataSet
+    //     * @see List#subList(int, int).
+    //     */
+    //    DataSet slice(int fromRowIndex, int toRowIndex);
+    //
+    //    /**
+    //     *
+    //     * @param columnNames
+    //     * @param fromRowIndex
+    //     * @param toRowIndex
+    //     * @return a copy of this DataSet
+    //     * @see List#subList(int, int).
+    //     */
+    //    DataSet slice(Collection<String> columnNames, int fromRowIndex, int toRowIndex);
+
     /**
      * Returns the copy of this <code>DataSet</code>.
      * The frozen status of the copy will always be false, even the original <code>DataSet</code> is frozen.

@@ -1988,7 +1988,6 @@ public class Collectors {
 
                     if (cmp > 0) {
                         if (isCollection.isTrue()) {
-
                             ((Collection) t.left).clear();
                         } else {
                             t.left = downstreamSupplier.get();
@@ -2087,12 +2086,13 @@ public class Collectors {
                     acc.right = t;
                 } else {
                     int cmp = comparator.compare(t, acc.right);
-                    if (cmp < 0) {
+
+                    if (cmp > 0) {
                         acc.left.clear();
                         acc.right = t;
                     }
 
-                    if (cmp <= 0) {
+                    if (cmp >= 0) {
                         if (acc.left.size() < atMostSize) {
                             acc.left.add(t);
                         }
@@ -2112,9 +2112,9 @@ public class Collectors {
 
                 int cmp = comparator.compare(acc1.right, acc2.right);
 
-                if (cmp < 0) {
+                if (cmp > 0) {
                     return acc1;
-                } else if (cmp > 0) {
+                } else if (cmp < 0) {
                     return acc2;
                 }
 

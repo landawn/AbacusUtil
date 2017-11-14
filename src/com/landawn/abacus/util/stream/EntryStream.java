@@ -981,7 +981,15 @@ public final class EntryStream<K, V> implements AutoCloseable {
         return s.collect(collector);
     }
 
+    public <R, A> R collect(final java.util.stream.Collector<? super Map.Entry<K, V>, A, R> collector) {
+        return s.collect(collector);
+    }
+
     public <R, A, RR> RR collectAndThen(final Collector<? super Map.Entry<K, V>, A, R> downstream, final Function<R, RR> finisher) {
+        return s.collectAndThen(downstream, finisher);
+    }
+
+    public <R, A, RR> RR collectAndThen(final java.util.stream.Collector<? super Map.Entry<K, V>, A, R> downstream, final Function<R, RR> finisher) {
         return s.collectAndThen(downstream, finisher);
     }
 

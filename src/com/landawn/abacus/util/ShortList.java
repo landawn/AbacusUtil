@@ -77,22 +77,18 @@ public final class ShortList extends PrimitiveList<ShortConsumer, ShortPredicate
         this.size = size;
     }
 
-    private static ShortList empty() {
-        return new ShortList(N.EMPTY_SHORT_ARRAY);
-    }
-
     @SafeVarargs
     public static ShortList of(short... a) {
-        return a == null ? empty() : new ShortList(a);
+        return a == null ? new ShortList() : new ShortList(a);
     }
 
     public static ShortList of(short[] a, int size) {
-        return a == null && size == 0 ? empty() : new ShortList(a, size);
+        return a == null && size == 0 ? new ShortList() : new ShortList(a, size);
     }
 
     public static ShortList from(Collection<Short> c) {
         if (N.isNullOrEmpty(c)) {
-            return empty();
+            return new ShortList();
         }
 
         return from(c, (short) 0);
@@ -100,7 +96,7 @@ public final class ShortList extends PrimitiveList<ShortConsumer, ShortPredicate
 
     public static ShortList from(Collection<Short> c, short defaultValueForNull) {
         if (N.isNullOrEmpty(c)) {
-            return empty();
+            return new ShortList();
         }
 
         final short[] a = new short[c.size()];
@@ -594,7 +590,7 @@ public final class ShortList extends PrimitiveList<ShortConsumer, ShortPredicate
      */
     public ShortList intersection(final ShortList b) {
         if (N.isNullOrEmpty(b)) {
-            return empty();
+            return new ShortList();
         }
 
         final Multiset<Short> bOccurrences = b.toMultiset();
@@ -612,7 +608,7 @@ public final class ShortList extends PrimitiveList<ShortConsumer, ShortPredicate
 
     public ShortList intersection(final short[] a) {
         if (N.isNullOrEmpty(a)) {
-            return empty();
+            return new ShortList();
         }
 
         return intersection(of(a));

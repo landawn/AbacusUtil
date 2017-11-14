@@ -77,22 +77,18 @@ public final class LongList extends PrimitiveList<LongConsumer, LongPredicate, L
         this.size = size;
     }
 
-    private static LongList empty() {
-        return new LongList(N.EMPTY_LONG_ARRAY);
-    }
-
     @SafeVarargs
     public static LongList of(long... a) {
-        return a == null ? empty() : new LongList(a);
+        return a == null ? new LongList() : new LongList(a);
     }
 
     public static LongList of(long[] a, int size) {
-        return a == null && size == 0 ? empty() : new LongList(a, size);
+        return a == null && size == 0 ? new LongList() : new LongList(a, size);
     }
 
     public static LongList from(Collection<Long> c) {
         if (N.isNullOrEmpty(c)) {
-            return empty();
+            return new LongList();
         }
 
         return from(c, 0);
@@ -100,7 +96,7 @@ public final class LongList extends PrimitiveList<LongConsumer, LongPredicate, L
 
     public static LongList from(Collection<Long> c, long defaultValueForNull) {
         if (N.isNullOrEmpty(c)) {
-            return empty();
+            return new LongList();
         }
 
         final long[] a = new long[c.size()];
@@ -594,7 +590,7 @@ public final class LongList extends PrimitiveList<LongConsumer, LongPredicate, L
      */
     public LongList intersection(final LongList b) {
         if (N.isNullOrEmpty(b)) {
-            return empty();
+            return new LongList();
         }
 
         final Multiset<Long> bOccurrences = b.toMultiset();
@@ -612,7 +608,7 @@ public final class LongList extends PrimitiveList<LongConsumer, LongPredicate, L
 
     public LongList intersection(final long[] a) {
         if (N.isNullOrEmpty(a)) {
-            return empty();
+            return new LongList();
         }
 
         return intersection(of(a));

@@ -4,7 +4,7 @@
 
 * `Clazz.of(Class<?>)` is marked to ‘Deprecated’ and will be removed in version 1.2.0 because it doesn’t work as expected.
 
-* Add Interface `Immutable`
+* Add `EntryStream.collect(java.util.stream.Collector)` and `EntryStream.collectAndThen(java.util.stream.Collector, Function)`.
 
 * Improvements and bug fix.
 

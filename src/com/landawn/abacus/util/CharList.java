@@ -76,22 +76,18 @@ public final class CharList extends PrimitiveList<CharConsumer, CharPredicate, C
         this.size = size;
     }
 
-    private static CharList empty() {
-        return new CharList(N.EMPTY_CHAR_ARRAY);
-    }
-
     @SafeVarargs
     public static CharList of(char... a) {
-        return a == null ? empty() : new CharList(a);
+        return a == null ? new CharList() : new CharList(a);
     }
 
     public static CharList of(char[] a, int size) {
-        return a == null && size == 0 ? empty() : new CharList(a, size);
+        return a == null && size == 0 ? new CharList() : new CharList(a, size);
     }
 
     public static CharList from(Collection<Character> c) {
         if (N.isNullOrEmpty(c)) {
-            return empty();
+            return new CharList();
         }
 
         return from(c, (char) 0);
@@ -99,7 +95,7 @@ public final class CharList extends PrimitiveList<CharConsumer, CharPredicate, C
 
     public static CharList from(Collection<Character> c, char defaultValueForNull) {
         if (N.isNullOrEmpty(c)) {
-            return empty();
+            return new CharList();
         }
 
         final char[] a = new char[c.size()];
@@ -626,7 +622,7 @@ public final class CharList extends PrimitiveList<CharConsumer, CharPredicate, C
      */
     public CharList intersection(final CharList b) {
         if (N.isNullOrEmpty(b)) {
-            return empty();
+            return new CharList();
         }
 
         final Multiset<Character> bOccurrences = b.toMultiset();
@@ -644,7 +640,7 @@ public final class CharList extends PrimitiveList<CharConsumer, CharPredicate, C
 
     public CharList intersection(final char[] a) {
         if (N.isNullOrEmpty(a)) {
-            return empty();
+            return new CharList();
         }
 
         return intersection(of(a));

@@ -77,22 +77,18 @@ public final class DoubleList extends PrimitiveList<DoubleConsumer, DoublePredic
         this.size = size;
     }
 
-    private static DoubleList empty() {
-        return new DoubleList(N.EMPTY_DOUBLE_ARRAY);
-    }
-
     @SafeVarargs
     public static DoubleList of(double... a) {
-        return a == null ? empty() : new DoubleList(a);
+        return a == null ? new DoubleList() : new DoubleList(a);
     }
 
     public static DoubleList of(double[] a, int size) {
-        return a == null && size == 0 ? empty() : new DoubleList(a, size);
+        return a == null && size == 0 ? new DoubleList() : new DoubleList(a, size);
     }
 
     public static DoubleList from(Collection<Double> c) {
         if (N.isNullOrEmpty(c)) {
-            return empty();
+            return new DoubleList();
         }
 
         return from(c, 0d);
@@ -100,7 +96,7 @@ public final class DoubleList extends PrimitiveList<DoubleConsumer, DoublePredic
 
     public static DoubleList from(Collection<Double> c, double defaultValueForNull) {
         if (N.isNullOrEmpty(c)) {
-            return empty();
+            return new DoubleList();
         }
 
         final double[] a = new double[c.size()];
@@ -578,7 +574,7 @@ public final class DoubleList extends PrimitiveList<DoubleConsumer, DoublePredic
      */
     public DoubleList intersection(final DoubleList b) {
         if (N.isNullOrEmpty(b)) {
-            return empty();
+            return new DoubleList();
         }
 
         final Multiset<Double> bOccurrences = b.toMultiset();
@@ -596,7 +592,7 @@ public final class DoubleList extends PrimitiveList<DoubleConsumer, DoublePredic
 
     public DoubleList intersection(final double[] a) {
         if (N.isNullOrEmpty(a)) {
-            return empty();
+            return new DoubleList();
         }
 
         return intersection(of(a));
