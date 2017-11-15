@@ -8,7 +8,7 @@
 
 * Add `Math2.asinh(double)/acosh(double)/atanh(double)`. Copied from Apache Commons Math.
 
-* Add `N.deleteRange(boolean[])/deleteRange(char[])/deleteRange(byte[])/.../deleteRange(List<T>)`
+* Add `N.deleteRange(boolean[] a, int fromIndex, int toIndex)/deleteRange(char[]...)/deleteRange(byte[]...)/.../deleteRange(List<T>...)`
 
 * Improvements and bug fix.
 
