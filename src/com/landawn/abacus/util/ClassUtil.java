@@ -56,6 +56,7 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -105,6 +106,8 @@ import com.landawn.abacus.util.Tuple.Tuple4;
 import com.landawn.abacus.util.Tuple.Tuple5;
 import com.landawn.abacus.util.Tuple.Tuple6;
 import com.landawn.abacus.util.Tuple.Tuple7;
+import com.landawn.abacus.util.Tuple.Tuple8;
+import com.landawn.abacus.util.Tuple.Tuple9;
 import com.landawn.abacus.util.function.Predicate;
 
 /**
@@ -210,6 +213,7 @@ public final class ClassUtil {
         BUILT_IN_TYPE.put(SortedMap.class.getCanonicalName(), SortedMap.class);
         BUILT_IN_TYPE.put(NavigableMap.class.getCanonicalName(), NavigableMap.class);
         BUILT_IN_TYPE.put(TreeMap.class.getCanonicalName(), TreeMap.class);
+        BUILT_IN_TYPE.put(Iterator.class.getCanonicalName(), Iterator.class);
 
         BUILT_IN_TYPE.put(File.class.getCanonicalName(), File.class);
         BUILT_IN_TYPE.put(InputStream.class.getCanonicalName(), InputStream.class);
@@ -247,7 +251,6 @@ public final class ClassUtil {
         BUILT_IN_TYPE.put(LongList.class.getCanonicalName(), LongList.class);
         BUILT_IN_TYPE.put(FloatList.class.getCanonicalName(), FloatList.class);
         BUILT_IN_TYPE.put(DoubleList.class.getCanonicalName(), DoubleList.class);
-        BUILT_IN_TYPE.put(List.class.getCanonicalName(), List.class);
 
         BUILT_IN_TYPE.put(MutableBoolean.class.getCanonicalName(), MutableBoolean.class);
         BUILT_IN_TYPE.put(MutableChar.class.getCanonicalName(), MutableChar.class);
@@ -273,7 +276,17 @@ public final class ClassUtil {
         BUILT_IN_TYPE.put(Range.class.getCanonicalName(), Range.class);
         BUILT_IN_TYPE.put(Duration.class.getCanonicalName(), Duration.class);
         BUILT_IN_TYPE.put(Pair.class.getCanonicalName(), Pair.class);
+        BUILT_IN_TYPE.put(CharPair.class.getCanonicalName(), CharPair.class);
+        BUILT_IN_TYPE.put(IntPair.class.getCanonicalName(), IntPair.class);
+        BUILT_IN_TYPE.put(LongPair.class.getCanonicalName(), LongPair.class);
+        BUILT_IN_TYPE.put(FloatPair.class.getCanonicalName(), FloatPair.class);
+        BUILT_IN_TYPE.put(DoublePair.class.getCanonicalName(), DoublePair.class);
         BUILT_IN_TYPE.put(Triple.class.getCanonicalName(), Triple.class);
+        BUILT_IN_TYPE.put(CharTriple.class.getCanonicalName(), CharTriple.class);
+        BUILT_IN_TYPE.put(IntTriple.class.getCanonicalName(), IntTriple.class);
+        BUILT_IN_TYPE.put(LongTriple.class.getCanonicalName(), LongTriple.class);
+        BUILT_IN_TYPE.put(FloatTriple.class.getCanonicalName(), FloatTriple.class);
+        BUILT_IN_TYPE.put(DoubleTriple.class.getCanonicalName(), DoubleTriple.class);
         BUILT_IN_TYPE.put(Tuple.class.getCanonicalName(), Tuple.class);
         BUILT_IN_TYPE.put(Tuple1.class.getCanonicalName(), Tuple1.class);
         BUILT_IN_TYPE.put(Tuple2.class.getCanonicalName(), Tuple2.class);
@@ -282,9 +295,13 @@ public final class ClassUtil {
         BUILT_IN_TYPE.put(Tuple5.class.getCanonicalName(), Tuple5.class);
         BUILT_IN_TYPE.put(Tuple6.class.getCanonicalName(), Tuple6.class);
         BUILT_IN_TYPE.put(Tuple7.class.getCanonicalName(), Tuple7.class);
+        BUILT_IN_TYPE.put(Tuple8.class.getCanonicalName(), Tuple8.class);
+        BUILT_IN_TYPE.put(Tuple9.class.getCanonicalName(), Tuple9.class);
 
         BUILT_IN_TYPE.put(ArrayHashMap.class.getCanonicalName(), ArrayHashMap.class);
+        BUILT_IN_TYPE.put(LinkedArrayHashMap.class.getCanonicalName(), LinkedArrayHashMap.class);
         BUILT_IN_TYPE.put(ArrayHashSet.class.getCanonicalName(), ArrayHashSet.class);
+        BUILT_IN_TYPE.put(LinkedArrayHashSet.class.getCanonicalName(), LinkedArrayHashSet.class);
         BUILT_IN_TYPE.put(BiMap.class.getCanonicalName(), BiMap.class);
         BUILT_IN_TYPE.put(ListMultimap.class.getCanonicalName(), ListMultimap.class);
         BUILT_IN_TYPE.put(SetMultimap.class.getCanonicalName(), SetMultimap.class);
@@ -299,11 +316,16 @@ public final class ClassUtil {
         BUILT_IN_TYPE.put(DataSet.class.getCanonicalName(), DataSet.class);
         BUILT_IN_TYPE.put(RowDataSet.class.getCanonicalName(), RowDataSet.class);
 
+        //
+        BUILT_IN_TYPE.put(Map.Entry.class.getCanonicalName(), Map.Entry.class);
+        BUILT_IN_TYPE.put("java.util.Map.Entry", Map.Entry.class);
+        BUILT_IN_TYPE.put("Map.Entry", Map.Entry.class);
+
         List<Class<?>> classes = new ArrayList<>(BUILT_IN_TYPE.values());
         for (Class<?> cls : classes) {
             Class<?> arrayClass = cls;
 
-            for (int i = 0; i < 10; i++) {
+            for (int i = 0; i < 7; i++) {
                 arrayClass = java.lang.reflect.Array.newInstance(arrayClass, 0).getClass();
 
                 BUILT_IN_TYPE.put(arrayClass.getCanonicalName(), arrayClass);

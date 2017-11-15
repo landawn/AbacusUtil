@@ -599,28 +599,12 @@ abstract class AbstractIntStream extends IntStream {
 
     @Override
     public String join(final CharSequence delimiter, final CharSequence prefix, final CharSequence suffix) {
-        final Supplier<Joiner> supplier = new Supplier<Joiner>() {
-            @Override
-            public Joiner get() {
-                return Joiner.with(delimiter, prefix, suffix);
-            }
-        };
+        final Joiner joiner = Joiner.with(delimiter, prefix, suffix).reuseStringBuilder(true);
+        final IntIteratorEx iter = this.iteratorEx();
 
-        final ObjIntConsumer<Joiner> accumulator = new ObjIntConsumer<Joiner>() {
-            @Override
-            public void accept(Joiner a, int t) {
-                a.append(t);
-            }
-        };
-
-        final BiConsumer<Joiner, Joiner> combiner = new BiConsumer<Joiner, Joiner>() {
-            @Override
-            public void accept(Joiner a, Joiner b) {
-                a.merge(b);
-            }
-        };
-
-        final Joiner joiner = collect(supplier, accumulator, combiner);
+        while (iter.hasNext()) {
+            joiner.append(iter.nextInt());
+        }
 
         return joiner.toString();
     }

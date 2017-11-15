@@ -35,7 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *  Note: A lot of codes in this classed are copied from Google Guava and Apache Common Math under under the Apache License, Version 2.0.
+ *  Note: A lot of codes in this classed are copied from Google Guava and Apache Commons Math under under the Apache License, Version 2.0.
  *  The purpose of copying the code is to re-organize the APIs.
  *
  */
@@ -159,6 +159,41 @@ public final class Math2 {
             { 7999252175582850L, 2, 4130806001517L, 149795463772692060L, 186635894390467037L, 3967304179347715805L },
             { 585226005592931976L, 2, 123635709730000L, 9233062284813009L, 43835965440333360L, 761179012939631437L, 1263739024124850375L },
             { Long.MAX_VALUE, 2, 325, 9375, 28178, 450775, 9780504, 1795265022 } };
+
+    /** Constant: {@value}. */
+    static final double F_1_3 = 1d / 3d;
+    /** Constant: {@value}. */
+    static final double F_1_5 = 1d / 5d;
+    /** Constant: {@value}. */
+    static final double F_1_7 = 1d / 7d;
+    /** Constant: {@value}. */
+    static final double F_1_9 = 1d / 9d;
+    /** Constant: {@value}. */
+    static final double F_1_11 = 1d / 11d;
+    /** Constant: {@value}. */
+    static final double F_1_13 = 1d / 13d;
+    /** Constant: {@value}. */
+    static final double F_1_15 = 1d / 15d;
+    /** Constant: {@value}. */
+    static final double F_1_17 = 1d / 17d;
+    /** Constant: {@value}. */
+    static final double F_3_4 = 3d / 4d;
+    /** Constant: {@value}. */
+    static final double F_15_16 = 15d / 16d;
+    /** Constant: {@value}. */
+    static final double F_13_14 = 13d / 14d;
+    /** Constant: {@value}. */
+    static final double F_11_12 = 11d / 12d;
+    /** Constant: {@value}. */
+    static final double F_9_10 = 9d / 10d;
+    /** Constant: {@value}. */
+    static final double F_7_8 = 7d / 8d;
+    /** Constant: {@value}. */
+    static final double F_5_6 = 5d / 6d;
+    /** Constant: {@value}. */
+    static final double F_1_2 = 1d / 2d;
+    /** Constant: {@value}. */
+    static final double F_1_4 = 1d / 4d;
 
     //    /**
     //     * Primality test: tells if the argument is a (provable) prime or not. 
@@ -2513,6 +2548,78 @@ public final class Math2 {
         if (!condition) {
             throw new ArithmeticException("overflow");
         }
+    }
+
+    /** Compute the inverse hyperbolic sine of a number.
+     * @param a number on which evaluation is done
+     * @return inverse hyperbolic sine of a
+     */
+    public static double asinh(double a) {
+        boolean negative = false;
+        if (a < 0) {
+            negative = true;
+            a = -a;
+        }
+
+        double absAsinh;
+        if (a > 0.167) {
+            absAsinh = Math.log(Math.sqrt(a * a + 1) + a);
+        } else {
+            final double a2 = a * a;
+            if (a > 0.097) {
+                absAsinh = a * (1 - a2 * (F_1_3 - a2 * (F_1_5 - a2
+                        * (F_1_7 - a2 * (F_1_9 - a2 * (F_1_11 - a2 * (F_1_13 - a2 * (F_1_15 - a2 * F_1_17 * F_15_16) * F_13_14) * F_11_12) * F_9_10) * F_7_8)
+                        * F_5_6) * F_3_4) * F_1_2);
+            } else if (a > 0.036) {
+                absAsinh = a * (1
+                        - a2 * (F_1_3 - a2 * (F_1_5 - a2 * (F_1_7 - a2 * (F_1_9 - a2 * (F_1_11 - a2 * F_1_13 * F_11_12) * F_9_10) * F_7_8) * F_5_6) * F_3_4)
+                                * F_1_2);
+            } else if (a > 0.0036) {
+                absAsinh = a * (1 - a2 * (F_1_3 - a2 * (F_1_5 - a2 * (F_1_7 - a2 * F_1_9 * F_7_8) * F_5_6) * F_3_4) * F_1_2);
+            } else {
+                absAsinh = a * (1 - a2 * (F_1_3 - a2 * F_1_5 * F_3_4) * F_1_2);
+            }
+        }
+
+        return negative ? -absAsinh : absAsinh;
+    }
+
+    /** Compute the inverse hyperbolic cosine of a number.
+     * @param a number on which evaluation is done
+     * @return inverse hyperbolic cosine of a
+     */
+    public static double acosh(final double a) {
+        return Math.log(a + Math.sqrt(a * a - 1));
+    }
+
+    /** Compute the inverse hyperbolic tangent of a number.
+     * @param a number on which evaluation is done
+     * @return inverse hyperbolic tangent of a
+     */
+    public static double atanh(double a) {
+        boolean negative = false;
+        if (a < 0) {
+            negative = true;
+            a = -a;
+        }
+
+        double absAtanh;
+        if (a > 0.15) {
+            absAtanh = 0.5 * Math.log((1 + a) / (1 - a));
+        } else {
+            final double a2 = a * a;
+            if (a > 0.087) {
+                absAtanh = a * (1 + a2 * (F_1_3 + a2 * (F_1_5 + a2 * (F_1_7 + a2 * (F_1_9 + a2 * (F_1_11 + a2 * (F_1_13 + a2 * (F_1_15 + a2 * F_1_17))))))));
+            } else if (a > 0.031) {
+                absAtanh = a * (1 + a2 * (F_1_3 + a2 * (F_1_5 + a2 * (F_1_7 + a2 * (F_1_9 + a2 * (F_1_11 + a2 * F_1_13))))));
+            } else if (a > 0.003) {
+                absAtanh = a * (1 + a2 * (F_1_3 + a2 * (F_1_5 + a2 * (F_1_7 + a2 * F_1_9))));
+            } else {
+                absAtanh = a * (1 + a2 * (F_1_3 + a2 * F_1_5));
+            }
+        }
+
+        return negative ? -absAtanh : absAtanh;
     }
 
     static final class UnsignedLongs {

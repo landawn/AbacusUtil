@@ -26542,6 +26542,303 @@ public final class N {
     }
 
     /**
+     * Deletes the values from {@code fromIndex} to {@code toIndex}.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @return a new array
+     */
+    public static boolean[] deleteRange(final boolean[] a, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, a.length);
+
+        if (fromIndex == toIndex) {
+            return a.clone();
+        }
+
+        final boolean[] b = new boolean[a.length - (toIndex - fromIndex)];
+
+        if (fromIndex > 0) {
+            N.copy(a, 0, b, 0, fromIndex);
+        }
+
+        if (toIndex < a.length) {
+            N.copy(a, toIndex, b, fromIndex, a.length - toIndex);
+        }
+
+        return b;
+    }
+
+    /**
+     * Deletes the values from {@code fromIndex} to {@code toIndex}.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @return a new array
+     */
+    public static char[] deleteRange(final char[] a, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, a.length);
+
+        if (fromIndex == toIndex) {
+            return a.clone();
+        }
+
+        final char[] b = new char[a.length - (toIndex - fromIndex)];
+
+        if (fromIndex > 0) {
+            N.copy(a, 0, b, 0, fromIndex);
+        }
+
+        if (toIndex < a.length) {
+            N.copy(a, toIndex, b, fromIndex, a.length - toIndex);
+        }
+
+        return b;
+    }
+
+    /**
+     * Deletes the values from {@code fromIndex} to {@code toIndex}.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @return a new array
+     */
+    public static byte[] deleteRange(final byte[] a, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, a.length);
+
+        if (fromIndex == toIndex) {
+            return a.clone();
+        }
+
+        final byte[] b = new byte[a.length - (toIndex - fromIndex)];
+
+        if (fromIndex > 0) {
+            N.copy(a, 0, b, 0, fromIndex);
+        }
+
+        if (toIndex < a.length) {
+            N.copy(a, toIndex, b, fromIndex, a.length - toIndex);
+        }
+
+        return b;
+    }
+
+    /**
+     * Deletes the values from {@code fromIndex} to {@code toIndex}.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @return a new array
+     */
+    public static short[] deleteRange(final short[] a, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, a.length);
+
+        if (fromIndex == toIndex) {
+            return a.clone();
+        }
+
+        final short[] b = new short[a.length - (toIndex - fromIndex)];
+
+        if (fromIndex > 0) {
+            N.copy(a, 0, b, 0, fromIndex);
+        }
+
+        if (toIndex < a.length) {
+            N.copy(a, toIndex, b, fromIndex, a.length - toIndex);
+        }
+
+        return b;
+    }
+
+    /**
+     * Deletes the values from {@code fromIndex} to {@code toIndex}.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @return a new array
+     */
+    public static int[] deleteRange(final int[] a, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, a.length);
+
+        if (fromIndex == toIndex) {
+            return a.clone();
+        }
+
+        final int[] b = new int[a.length - (toIndex - fromIndex)];
+
+        if (fromIndex > 0) {
+            N.copy(a, 0, b, 0, fromIndex);
+        }
+
+        if (toIndex < a.length) {
+            N.copy(a, toIndex, b, fromIndex, a.length - toIndex);
+        }
+
+        return b;
+    }
+
+    /**
+     * Deletes the values from {@code fromIndex} to {@code toIndex}.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @return a new array
+     */
+    public static long[] deleteRange(final long[] a, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, a.length);
+
+        if (fromIndex == toIndex) {
+            return a.clone();
+        }
+
+        final long[] b = new long[a.length - (toIndex - fromIndex)];
+
+        if (fromIndex > 0) {
+            N.copy(a, 0, b, 0, fromIndex);
+        }
+
+        if (toIndex < a.length) {
+            N.copy(a, toIndex, b, fromIndex, a.length - toIndex);
+        }
+
+        return b;
+    }
+
+    /**
+     * Deletes the values from {@code fromIndex} to {@code toIndex}.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @return a new array
+     */
+    public static float[] deleteRange(final float[] a, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, a.length);
+
+        if (fromIndex == toIndex) {
+            return a.clone();
+        }
+
+        final float[] b = new float[a.length - (toIndex - fromIndex)];
+
+        if (fromIndex > 0) {
+            N.copy(a, 0, b, 0, fromIndex);
+        }
+
+        if (toIndex < a.length) {
+            N.copy(a, toIndex, b, fromIndex, a.length - toIndex);
+        }
+
+        return b;
+    }
+
+    /**
+     * Deletes the values from {@code fromIndex} to {@code toIndex}.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @return a new array
+     */
+    public static double[] deleteRange(final double[] a, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, a.length);
+
+        if (fromIndex == toIndex) {
+            return a.clone();
+        }
+
+        final double[] b = new double[a.length - (toIndex - fromIndex)];
+
+        if (fromIndex > 0) {
+            N.copy(a, 0, b, 0, fromIndex);
+        }
+
+        if (toIndex < a.length) {
+            N.copy(a, toIndex, b, fromIndex, a.length - toIndex);
+        }
+
+        return b;
+    }
+
+    /**
+     * Deletes the values from {@code fromIndex} to {@code toIndex}.
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @return a new array
+     */
+    public static <T> T[] deleteRange(final T[] a, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, a.length);
+
+        if (fromIndex == toIndex) {
+            return a.clone();
+        }
+
+        final T[] b = Array.newInstance(a.getClass().getComponentType(), a.length - (toIndex - fromIndex));
+
+        if (fromIndex > 0) {
+            N.copy(a, 0, b, 0, fromIndex);
+        }
+
+        if (toIndex < a.length) {
+            N.copy(a, toIndex, b, fromIndex, a.length - toIndex);
+        }
+
+        return b;
+    }
+
+    /**
+     * Returns {@code true} if the {@code List} is updated when {@code fromIndex < toIndex}, otherwise {@code false} is returned when {@code fromIndex == toIndex}.
+     * 
+     * @param c
+     * @param fromIndex
+     * @param toIndex
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> boolean deleteRange(final List<T> c, final int fromIndex, final int toIndex) {
+        N.checkFromToIndex(fromIndex, toIndex, c.size());
+
+        if (fromIndex == toIndex) {
+            return false;
+        }
+
+        if (c instanceof LinkedList) {
+            c.subList(fromIndex, toIndex).clear();
+        } else {
+            if (isListElementDataFieldGettable && isListElementDataFieldSettable && listElementDataField != null && c instanceof ArrayList) {
+                T[] array = null;
+
+                try {
+                    array = (T[]) listElementDataField.get(c);
+                    N.copy(array, toIndex, array, fromIndex, c.size() - toIndex);
+                    listSizeField.set(c, c.size() - ((toIndex - fromIndex)));
+                    // update modCount
+                    c.add(null);
+                    c.remove(c.size() - 1);
+                    return true;
+                } catch (Throwable e) {
+                    // ignore;
+                    isListElementDataFieldSettable = false;
+                }
+            }
+
+            final Object[] a = c.toArray();
+            final Object[] b = deleteRange(a, fromIndex, toIndex);
+            c.clear();
+            c.addAll(Arrays.asList((T[]) b));
+        }
+
+        return true;
+    }
+
+    /**
      * <p>
      * Removes the first occurrence of the specified element from the specified
      * array. All subsequent elements are shifted to the left (subtracts one

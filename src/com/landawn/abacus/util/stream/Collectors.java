@@ -388,28 +388,6 @@ public class Collectors {
         }
     };
 
-    static final BiConsumer<StringBuilder, CharSequence> StringBuilder_Accumulator = new BiConsumer<StringBuilder, CharSequence>() {
-        @Override
-        public void accept(StringBuilder a, CharSequence t) {
-            a.append(t);
-        }
-    };
-
-    static final BinaryOperator<StringBuilder> StringBuilder_Combiner = new BinaryOperator<StringBuilder>() {
-        @Override
-        public StringBuilder apply(StringBuilder a, StringBuilder b) {
-            a.append(b);
-            return a;
-        }
-    };
-
-    static final Function<StringBuilder, String> StringBuilder_Finisher = new Function<StringBuilder, String>() {
-        @Override
-        public String apply(StringBuilder a) {
-            return a.toString();
-        }
-    };
-
     static final BiConsumer<Joiner, CharSequence> Joiner_Accumulator = new BiConsumer<Joiner, CharSequence>() {
         @Override
         public void accept(Joiner a, CharSequence t) {
@@ -421,6 +399,7 @@ public class Collectors {
         @Override
         public Joiner apply(Joiner a, Joiner b) {
             a.merge(b);
+            b.close();
             return a;
         }
     };
@@ -1346,12 +1325,7 @@ public class Collectors {
      * {@code String}, in encounter order
      */
     public static Collector<CharSequence, ?, String> joining() {
-        final Supplier<StringBuilder> supplier = Suppliers.ofStringBuilder();
-        final BiConsumer<StringBuilder, CharSequence> accumulator = StringBuilder_Accumulator;
-        final BinaryOperator<StringBuilder> combiner = StringBuilder_Combiner;
-        final Function<StringBuilder, String> finisher = StringBuilder_Finisher;
-
-        return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_NOID);
+        return joining("", "", "");
     }
 
     /**
@@ -1383,7 +1357,7 @@ public class Collectors {
         final Supplier<Joiner> supplier = new Supplier<Joiner>() {
             @Override
             public Joiner get() {
-                return Joiner.with(delimiter, prefix, suffix);
+                return Joiner.with(delimiter, prefix, suffix).reuseStringBuilder(true);
             }
         };
 

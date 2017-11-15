@@ -1256,4 +1256,11 @@ public class Joiner {
     public Stream<String> streamIfNotEmpty() {
         return buffer == null ? Stream.<String> empty() : Stream.of(toString());
     }
+
+    public void close() {
+        if (buffer != null && reuseStringBuilder) {
+            ObjectFactory.recycle(buffer);
+            buffer = null;
+        }
+    }
 }

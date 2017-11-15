@@ -599,28 +599,12 @@ abstract class AbstractShortStream extends ShortStream {
 
     @Override
     public String join(final CharSequence delimiter, final CharSequence prefix, final CharSequence suffix) {
-        final Supplier<Joiner> supplier = new Supplier<Joiner>() {
-            @Override
-            public Joiner get() {
-                return Joiner.with(delimiter, prefix, suffix);
-            }
-        };
+        final Joiner joiner = Joiner.with(delimiter, prefix, suffix).reuseStringBuilder(true);
+        final ShortIteratorEx iter = this.iteratorEx();
 
-        final ObjShortConsumer<Joiner> accumulator = new ObjShortConsumer<Joiner>() {
-            @Override
-            public void accept(Joiner a, short t) {
-                a.append(t);
-            }
-        };
-
-        final BiConsumer<Joiner, Joiner> combiner = new BiConsumer<Joiner, Joiner>() {
-            @Override
-            public void accept(Joiner a, Joiner b) {
-                a.merge(b);
-            }
-        };
-
-        final Joiner joiner = collect(supplier, accumulator, combiner);
+        while (iter.hasNext()) {
+            joiner.append(iter.nextShort());
+        }
 
         return joiner.toString();
     }

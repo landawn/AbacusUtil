@@ -6,6 +6,10 @@
 
 * Add `EntryStream.collect(java.util.stream.Collector)` and `EntryStream.collectAndThen(java.util.stream.Collector, Function)`.
 
+* Add `Math2.asinh(double)/acosh(double)/atanh(double)`. Copied from Apache Commons Math.
+
+* Add `N.deleteRange(boolean[])/deleteRange(char[])/deleteRange(byte[])/.../deleteRange(List<T>)`
+
 * Improvements and bug fix.
 
 

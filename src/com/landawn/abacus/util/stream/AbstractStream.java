@@ -49,6 +49,7 @@ import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.IOUtil;
 import com.landawn.abacus.util.Indexed;
 import com.landawn.abacus.util.Iterators;
+import com.landawn.abacus.util.Joiner;
 import com.landawn.abacus.util.ListMultimap;
 import com.landawn.abacus.util.Matrix;
 import com.landawn.abacus.util.Multimap;
@@ -1813,15 +1814,14 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public String join(CharSequence delimiter, CharSequence prefix, CharSequence suffix) {
-        final Function<T, String> mapper = new Function<T, String>() {
-            @SuppressWarnings("rawtypes")
-            @Override
-            public String apply(T t) {
-                return t instanceof BaseStream ? ((BaseStream) t).join(", ", "[", "]") : N.toString(t);
-            }
-        };
+        final Joiner joiner = Joiner.with(delimiter, prefix, suffix).reuseStringBuilder(true);
+        final IteratorEx<T> iter = this.iteratorEx();
 
-        return this.map(mapper).collect(Collectors.joining(delimiter, prefix, suffix));
+        while (iter.hasNext()) {
+            joiner.append(iter.next());
+        }
+
+        return joiner.toString();
     }
 
     @Override

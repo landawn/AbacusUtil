@@ -664,28 +664,12 @@ abstract class AbstractFloatStream extends FloatStream {
 
     @Override
     public String join(final CharSequence delimiter, final CharSequence prefix, final CharSequence suffix) {
-        final Supplier<Joiner> supplier = new Supplier<Joiner>() {
-            @Override
-            public Joiner get() {
-                return Joiner.with(delimiter, prefix, suffix);
-            }
-        };
+        final Joiner joiner = Joiner.with(delimiter, prefix, suffix).reuseStringBuilder(true);
+        final FloatIteratorEx iter = this.iteratorEx();
 
-        final ObjFloatConsumer<Joiner> accumulator = new ObjFloatConsumer<Joiner>() {
-            @Override
-            public void accept(Joiner a, float t) {
-                a.append(t);
-            }
-        };
-
-        final BiConsumer<Joiner, Joiner> combiner = new BiConsumer<Joiner, Joiner>() {
-            @Override
-            public void accept(Joiner a, Joiner b) {
-                a.merge(b);
-            }
-        };
-
-        final Joiner joiner = collect(supplier, accumulator, combiner);
+        while (iter.hasNext()) {
+            joiner.append(iter.nextFloat());
+        }
 
         return joiner.toString();
     }
