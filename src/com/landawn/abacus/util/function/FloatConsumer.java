@@ -16,14 +16,17 @@ package com.landawn.abacus.util.function;
 
 import java.util.Objects;
 
+import com.landawn.abacus.util.Try;
+
 /**
  * 
  * @since 0.8
  * 
  * @author Haiyang Li
  */
-public interface FloatConsumer {
+public interface FloatConsumer extends Try.FloatConsumer<RuntimeException> {
 
+    @Override
     void accept(float t);
 
     default FloatConsumer andThen(FloatConsumer after) {

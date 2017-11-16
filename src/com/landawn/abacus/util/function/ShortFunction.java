@@ -17,13 +17,16 @@ package com.landawn.abacus.util.function;
 import java.util.Objects;
 import java.util.function.Function;
 
+import com.landawn.abacus.util.Try;
+
 /**
  * 
  * @since 0.8
  * 
  * @author Haiyang Li
  */
-public interface ShortFunction<R> {
+public interface ShortFunction<R> extends Try.ShortFunction<R, RuntimeException> {
+
     static final ShortFunction<Short> BOX = new ShortFunction<Short>() {
         @Override
         public Short apply(short value) {
@@ -31,6 +34,7 @@ public interface ShortFunction<R> {
         }
     };
 
+    @Override
     R apply(short value);
 
     default <V> ShortFunction<V> andThen(Function<? super R, ? extends V> after) {

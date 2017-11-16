@@ -15,7 +15,8 @@
 package com.landawn.abacus.util.function;
 
 import java.util.Objects;
-import java.util.function.Function;
+
+import com.landawn.abacus.util.Try;
 
 /**
  * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
@@ -23,7 +24,7 @@ import java.util.function.Function;
  * 
  * @author Haiyang Li
  */
-public interface DoubleFunction<R> extends java.util.function.DoubleFunction<R> {
+public interface DoubleFunction<R> extends java.util.function.DoubleFunction<R>, Try.DoubleFunction<R, RuntimeException> {
     static final DoubleFunction<Double> BOX = new DoubleFunction<Double>() {
         @Override
         public Double apply(double value) {

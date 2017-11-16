@@ -15,6 +15,7 @@
 package com.landawn.abacus.util.function;
 
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.Try;
 
 /**
  * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
@@ -22,58 +23,58 @@ import com.landawn.abacus.util.N;
  * 
  * @author Haiyang Li
  */
-public interface IntPredicate extends java.util.function.IntPredicate {
+public interface IntPredicate extends java.util.function.IntPredicate, Try.IntPredicate<RuntimeException> {
 
-   static final IntPredicate ALWAYS_TRUE = new IntPredicate() {
+    static final IntPredicate ALWAYS_TRUE = new IntPredicate() {
         @Override
         public boolean test(int value) {
             return true;
         }
     };
 
-   static final IntPredicate ALWAYS_FALSE = new IntPredicate() {
+    static final IntPredicate ALWAYS_FALSE = new IntPredicate() {
         @Override
         public boolean test(int value) {
             return false;
         }
     };
 
-   static final IntPredicate IS_ZERO = new IntPredicate() {
+    static final IntPredicate IS_ZERO = new IntPredicate() {
         @Override
         public boolean test(int value) {
             return value == 0;
         }
     };
 
-   static final IntPredicate NOT_ZERO = new IntPredicate() {
+    static final IntPredicate NOT_ZERO = new IntPredicate() {
         @Override
         public boolean test(int value) {
             return value != 0;
         }
     };
 
-   static final IntPredicate IS_POSITIVE = new IntPredicate() {
+    static final IntPredicate IS_POSITIVE = new IntPredicate() {
         @Override
         public boolean test(int value) {
             return value > 0;
         }
     };
 
-   static final IntPredicate NOT_POSITIVE = new IntPredicate() {
+    static final IntPredicate NOT_POSITIVE = new IntPredicate() {
         @Override
         public boolean test(int value) {
             return value <= 0;
         }
     };
 
-   static final IntPredicate IS_NEGATIVE = new IntPredicate() {
+    static final IntPredicate IS_NEGATIVE = new IntPredicate() {
         @Override
         public boolean test(int value) {
             return value < 0;
         }
     };
 
-   static final IntPredicate NOT_NEGATIVE = new IntPredicate() {
+    static final IntPredicate NOT_NEGATIVE = new IntPredicate() {
         @Override
         public boolean test(int value) {
             return value >= 0;

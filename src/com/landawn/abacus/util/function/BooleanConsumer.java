@@ -16,14 +16,17 @@ package com.landawn.abacus.util.function;
 
 import java.util.Objects;
 
+import com.landawn.abacus.util.Try;
+
 /**
  * 
  * @since 0.8
  * 
  * @author Haiyang Li
  */
-public interface BooleanConsumer {
+public interface BooleanConsumer extends Try.BooleanConsumer<RuntimeException> {
 
+    @Override
     void accept(boolean t);
 
     default BooleanConsumer andThen(BooleanConsumer after) {

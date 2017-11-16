@@ -17,6 +17,7 @@ package com.landawn.abacus.util.function;
 import java.util.Objects;
 
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.Try;
 
 /**
  * 
@@ -24,7 +25,7 @@ import com.landawn.abacus.util.N;
  * 
  * @author Haiyang Li
  */
-public interface CharPredicate {
+public interface CharPredicate extends Try.CharPredicate<RuntimeException> {
 
     static final CharPredicate ALWAYS_TRUE = new CharPredicate() {
         @Override
@@ -54,6 +55,7 @@ public interface CharPredicate {
         }
     };
 
+    @Override
     boolean test(char value);
 
     default CharPredicate negate() {

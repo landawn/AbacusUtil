@@ -17,6 +17,7 @@ package com.landawn.abacus.util.function;
 import java.util.Objects;
 
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.Try;
 
 /**
  * 
@@ -24,7 +25,7 @@ import com.landawn.abacus.util.N;
  * 
  * @author Haiyang Li
  */
-public interface ShortPredicate {
+public interface ShortPredicate extends Try.ShortPredicate<RuntimeException> {
 
     static final ShortPredicate ALWAYS_TRUE = new ShortPredicate() {
         @Override
@@ -82,6 +83,7 @@ public interface ShortPredicate {
         }
     };
 
+    @Override
     boolean test(short value);
 
     default ShortPredicate negate() {

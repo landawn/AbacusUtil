@@ -15,7 +15,8 @@
 package com.landawn.abacus.util.function;
 
 import java.util.Objects;
-import java.util.function.Function;
+
+import com.landawn.abacus.util.Try;
 
 /**
  * 
@@ -23,7 +24,7 @@ import java.util.function.Function;
  * 
  * @author Haiyang Li
  */
-public interface BooleanFunction<R> {
+public interface BooleanFunction<R> extends Try.BooleanFunction<R, RuntimeException> {
     static final BooleanFunction<Boolean> BOX = new BooleanFunction<Boolean>() {
         @Override
         public Boolean apply(boolean value) {
@@ -31,6 +32,7 @@ public interface BooleanFunction<R> {
         }
     };
 
+    @Override
     R apply(boolean value);
 
     default <V> BooleanFunction<V> andThen(Function<? super R, ? extends V> after) {

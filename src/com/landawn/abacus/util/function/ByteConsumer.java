@@ -16,14 +16,17 @@ package com.landawn.abacus.util.function;
 
 import java.util.Objects;
 
+import com.landawn.abacus.util.Try;
+
 /**
  * 
  * @since 0.8
  * 
  * @author Haiyang Li
  */
-public interface ByteConsumer {
+public interface ByteConsumer extends Try.ByteConsumer<RuntimeException> {
 
+    @Override
     void accept(byte t);
 
     default ByteConsumer andThen(ByteConsumer after) {

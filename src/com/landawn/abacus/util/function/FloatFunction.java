@@ -15,7 +15,8 @@
 package com.landawn.abacus.util.function;
 
 import java.util.Objects;
-import java.util.function.Function;
+
+import com.landawn.abacus.util.Try;
 
 /**
  * 
@@ -23,7 +24,7 @@ import java.util.function.Function;
  * 
  * @author Haiyang Li
  */
-public interface FloatFunction<R> {
+public interface FloatFunction<R> extends Try.FloatFunction<R, RuntimeException> {
     static final FloatFunction<Float> BOX = new FloatFunction<Float>() {
         @Override
         public Float apply(float value) {
@@ -31,6 +32,7 @@ public interface FloatFunction<R> {
         }
     };
 
+    @Override
     R apply(float value);
 
     default <V> FloatFunction<V> andThen(Function<? super R, ? extends V> after) {

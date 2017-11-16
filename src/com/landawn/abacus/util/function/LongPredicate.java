@@ -15,6 +15,7 @@
 package com.landawn.abacus.util.function;
 
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.Try;
 
 /**
  * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
@@ -22,58 +23,58 @@ import com.landawn.abacus.util.N;
  * 
  * @author Haiyang Li
  */
-public interface LongPredicate extends java.util.function.LongPredicate {
+public interface LongPredicate extends java.util.function.LongPredicate, Try.LongPredicate<RuntimeException> {
 
-   static final LongPredicate ALWAYS_TRUE = new LongPredicate() {
+    static final LongPredicate ALWAYS_TRUE = new LongPredicate() {
         @Override
         public boolean test(long value) {
             return true;
         }
     };
 
-   static final LongPredicate ALWAYS_FALSE = new LongPredicate() {
+    static final LongPredicate ALWAYS_FALSE = new LongPredicate() {
         @Override
         public boolean test(long value) {
             return false;
         }
     };
 
-   static final LongPredicate IS_ZERO = new LongPredicate() {
+    static final LongPredicate IS_ZERO = new LongPredicate() {
         @Override
         public boolean test(long value) {
             return value == 0;
         }
     };
 
-   static final LongPredicate NOT_ZERO = new LongPredicate() {
+    static final LongPredicate NOT_ZERO = new LongPredicate() {
         @Override
         public boolean test(long value) {
             return value != 0;
         }
     };
 
-   static final LongPredicate IS_POSITIVE = new LongPredicate() {
+    static final LongPredicate IS_POSITIVE = new LongPredicate() {
         @Override
         public boolean test(long value) {
             return value > 0;
         }
     };
 
-   static final LongPredicate NOT_POSITIVE = new LongPredicate() {
+    static final LongPredicate NOT_POSITIVE = new LongPredicate() {
         @Override
         public boolean test(long value) {
             return value <= 0;
         }
     };
 
-   static final LongPredicate IS_NEGATIVE = new LongPredicate() {
+    static final LongPredicate IS_NEGATIVE = new LongPredicate() {
         @Override
         public boolean test(long value) {
             return value < 0;
         }
     };
 
-   static final LongPredicate NOT_NEGATIVE = new LongPredicate() {
+    static final LongPredicate NOT_NEGATIVE = new LongPredicate() {
         @Override
         public boolean test(long value) {
             return value >= 0;

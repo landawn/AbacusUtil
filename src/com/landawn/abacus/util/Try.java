@@ -407,4 +407,100 @@ public final class Try<T extends AutoCloseable> {
     public interface IndexedBiPredicate<U, T, E extends Exception> {
         boolean test(U u, int idx, T e) throws E;
     }
+
+    public interface BooleanPredicate<E extends Exception> {
+        boolean test(boolean value) throws E;
+    }
+
+    public interface BooleanFunction<R, E extends Exception> {
+        R apply(boolean value);
+    }
+
+    public interface BooleanConsumer<E extends Exception> {
+        void accept(boolean t);
+    }
+
+    public interface CharPredicate<E extends Exception> {
+        boolean test(char value) throws E;
+    }
+
+    public interface CharFunction<R, E extends Exception> {
+        R apply(char value);
+    }
+
+    public interface CharConsumer<E extends Exception> {
+        void accept(char t);
+    }
+
+    public interface BytePredicate<E extends Exception> {
+        boolean test(byte value) throws E;
+    }
+
+    public interface ByteFunction<R, E extends Exception> {
+        R apply(byte value);
+    }
+
+    public interface ByteConsumer<E extends Exception> {
+        void accept(byte t);
+    }
+
+    public interface ShortPredicate<E extends Exception> {
+        boolean test(short value) throws E;
+    }
+
+    public interface ShortFunction<R, E extends Exception> {
+        R apply(short value);
+    }
+
+    public interface ShortConsumer<E extends Exception> {
+        void accept(short t);
+    }
+
+    public interface IntPredicate<E extends Exception> {
+        boolean test(int value) throws E;
+    }
+
+    public interface IntFunction<R, E extends Exception> {
+        R apply(int value);
+    }
+
+    public interface IntConsumer<E extends Exception> {
+        void accept(int t);
+    }
+
+    public interface LongPredicate<E extends Exception> {
+        boolean test(long value) throws E;
+    }
+
+    public interface LongFunction<R, E extends Exception> {
+        R apply(long value);
+    }
+
+    public interface LongConsumer<E extends Exception> {
+        void accept(long t);
+    }
+
+    public interface FloatPredicate<E extends Exception> {
+        boolean test(float value) throws E;
+    }
+
+    public interface FloatFunction<R, E extends Exception> {
+        R apply(float value);
+    }
+
+    public interface FloatConsumer<E extends Exception> {
+        void accept(float t);
+    }
+
+    public interface DoublePredicate<E extends Exception> {
+        boolean test(double value) throws E;
+    }
+
+    public interface DoubleFunction<R, E extends Exception> {
+        R apply(double value);
+    }
+
+    public interface DoubleConsumer<E extends Exception> {
+        void accept(double t);
+    }
 }

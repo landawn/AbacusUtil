@@ -46,6 +46,7 @@ import com.landawn.abacus.util.Fn.Factory;
 import com.landawn.abacus.util.IntList;
 import com.landawn.abacus.util.LongList;
 import com.landawn.abacus.util.ShortList;
+import com.landawn.abacus.util.Try;
 
 /**
  * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
@@ -53,7 +54,7 @@ import com.landawn.abacus.util.ShortList;
  * 
  * @author Haiyang Li
  */
-public interface IntFunction<R> extends java.util.function.IntFunction<R> {
+public interface IntFunction<R> extends java.util.function.IntFunction<R>, Try.IntFunction<R, RuntimeException> {
     static final IntFunction<Integer> BOX = new IntFunction<Integer>() {
         @Override
         public Integer apply(int value) {

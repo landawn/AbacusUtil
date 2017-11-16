@@ -15,7 +15,8 @@
 package com.landawn.abacus.util.function;
 
 import java.util.Objects;
-import java.util.function.Function;
+
+import com.landawn.abacus.util.Try;
 
 /**
  * 
@@ -23,7 +24,7 @@ import java.util.function.Function;
  * 
  * @author Haiyang Li
  */
-public interface ByteFunction<R> {
+public interface ByteFunction<R> extends Try.ByteFunction<R, RuntimeException> {
     static final ByteFunction<Byte> BOX = new ByteFunction<Byte>() {
         @Override
         public Byte apply(byte value) {
@@ -31,6 +32,7 @@ public interface ByteFunction<R> {
         }
     };
 
+    @Override
     R apply(byte value);
 
     default <V> ByteFunction<V> andThen(Function<? super R, ? extends V> after) {

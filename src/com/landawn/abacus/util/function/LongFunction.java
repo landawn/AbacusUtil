@@ -17,13 +17,15 @@ package com.landawn.abacus.util.function;
 import java.util.Objects;
 import java.util.function.Function;
 
+import com.landawn.abacus.util.Try;
+
 /**
  * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
  * @since 0.8
  * 
  * @author Haiyang Li
  */
-public interface LongFunction<R> extends java.util.function.LongFunction<R> {
+public interface LongFunction<R> extends java.util.function.LongFunction<R>, Try.LongFunction<R, RuntimeException> {
     static final LongFunction<Long> BOX = new LongFunction<Long>() {
         @Override
         public Long apply(long value) {

@@ -17,6 +17,7 @@ package com.landawn.abacus.util.function;
 import java.util.Objects;
 
 import com.landawn.abacus.util.N;
+import com.landawn.abacus.util.Try;
 
 /**
  * 
@@ -24,7 +25,7 @@ import com.landawn.abacus.util.N;
  * 
  * @author Haiyang Li
  */
-public interface FloatPredicate {
+public interface FloatPredicate extends Try.FloatPredicate<RuntimeException> {
 
     static final FloatPredicate ALWAYS_TRUE = new FloatPredicate() {
         @Override
@@ -82,6 +83,7 @@ public interface FloatPredicate {
         }
     };
 
+    @Override
     boolean test(float value);
 
     default FloatPredicate negate() {

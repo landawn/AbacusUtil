@@ -15,7 +15,8 @@
 package com.landawn.abacus.util.function;
 
 import java.util.Objects;
-import java.util.function.Function;
+
+import com.landawn.abacus.util.Try;
 
 /**
  * 
@@ -23,7 +24,7 @@ import java.util.function.Function;
  * 
  * @author Haiyang Li
  */
-public interface CharFunction<R> {
+public interface CharFunction<R> extends Try.CharFunction<R, RuntimeException> {
     static final CharFunction<Character> BOX = new CharFunction<Character>() {
         @Override
         public Character apply(char value) {
@@ -31,6 +32,7 @@ public interface CharFunction<R> {
         }
     };
 
+    @Override
     R apply(char value);
 
     default <V> CharFunction<V> andThen(Function<? super R, ? extends V> after) {
