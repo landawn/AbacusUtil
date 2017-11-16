@@ -2310,7 +2310,7 @@ class ArrayStream<T> extends AbstractStream<T> {
     @Override
     public Nullable<T> reduce(BinaryOperator<T> accumulator) {
         if (fromIndex == toIndex) {
-            Nullable.empty();
+            return Nullable.empty();
         }
 
         T result = elements[fromIndex];

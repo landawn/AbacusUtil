@@ -2182,7 +2182,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     @Override
     public Nullable<T> reduce(BinaryOperator<T> accumulator) {
         if (elements.hasNext() == false) {
-            Nullable.empty();
+            return Nullable.empty();
         }
 
         T result = elements.next();
