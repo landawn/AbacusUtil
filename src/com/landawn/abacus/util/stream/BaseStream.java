@@ -541,24 +541,24 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
      */
     S carry(C action);
 
-    /**
-     * Performs an action for each element of this stream.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">terminal
-     * operation</a>.
-     *
-     * <p>The behavior of this operation is explicitly nondeterministic.
-     * For parallel stream pipelines, this operation does <em>not</em>
-     * guarantee to respect the encounter order of the stream, as doing so
-     * would sacrifice the benefit of parallelism.  For any given element, the
-     * action may be performed at whatever time and in whatever thread the
-     * library chooses.  If the action accesses shared state, it is
-     * responsible for providing the required synchronization.
-     *
-     * @param action a <a href="package-summary.html#NonInterference">
-     *               non-interfering</a> action to perform on the elements
-     */
-    void forEach(C action);
+    //    /**
+    //     * Performs an action for each element of this stream.
+    //     *
+    //     * <p>This is a <a href="package-summary.html#StreamOps">terminal
+    //     * operation</a>.
+    //     *
+    //     * <p>The behavior of this operation is explicitly nondeterministic.
+    //     * For parallel stream pipelines, this operation does <em>not</em>
+    //     * guarantee to respect the encounter order of the stream, as doing so
+    //     * would sacrifice the benefit of parallelism.  For any given element, the
+    //     * action may be performed at whatever time and in whatever thread the
+    //     * library chooses.  If the action accesses shared state, it is
+    //     * responsible for providing the required synchronization.
+    //     *
+    //     * @param action a <a href="package-summary.html#NonInterference">
+    //     *               non-interfering</a> action to perform on the elements
+    //     */
+    //    void forEach(C action);
 
     /**
      * Returns whether any elements of this stream match the provided

@@ -383,4 +383,28 @@ public final class Try<T extends AutoCloseable> {
     public interface QuadConsumer<A, B, C, D, E extends Exception> {
         void accept(A a, B b, C c, D d) throws E;
     }
+
+    public interface IndexedConsumer<T, E extends Exception> {
+        void accept(int idx, T e) throws E;
+    }
+
+    public interface IndexedBiConsumer<U, T, E extends Exception> {
+        void accept(U u, int idx, T e) throws E;
+    }
+
+    public interface IndexedFunction<T, R, E extends Exception> {
+        R apply(int idx, T e) throws E;
+    }
+
+    public interface IndexedBiFunction<U, T, R, E extends Exception> {
+        R apply(U u, int idx, T e) throws E;
+    }
+
+    public interface IndexedPredicate<T, E extends Exception> {
+        boolean test(int idx, T e) throws E;
+    }
+
+    public interface IndexedBiPredicate<U, T, E extends Exception> {
+        boolean test(U u, int idx, T e) throws E;
+    }
 }

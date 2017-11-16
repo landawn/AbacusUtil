@@ -443,6 +443,8 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
      */
     public abstract <R> R collect(Supplier<R> supplier, ObjShortConsumer<R> accumulator);
 
+    public abstract void forEach(ShortConsumer action);
+
     /**
      * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
      * Don't call any other methods with this stream after head() and tail() are called. 

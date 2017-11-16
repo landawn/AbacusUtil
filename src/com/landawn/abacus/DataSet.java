@@ -24,6 +24,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
+import com.landawn.abacus.util.ImmutableIterator;
 import com.landawn.abacus.util.ListMultimap;
 import com.landawn.abacus.util.Multimap;
 import com.landawn.abacus.util.Multiset;
@@ -32,8 +33,7 @@ import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.Properties;
 import com.landawn.abacus.util.Sheet;
-import com.landawn.abacus.util.function.BiFunction;
-import com.landawn.abacus.util.function.BiPredicate;
+import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
@@ -51,7 +51,7 @@ import com.landawn.abacus.util.stream.Stream;
  * 
  * @author Haiyang Li
  */
-public interface DataSet extends Iterable<Object[]> {
+public interface DataSet {
 
     //    /**
     //     * Returns the entity name associated with the query.
@@ -749,7 +749,7 @@ public interface DataSet extends Iterable<Object[]> {
      * 
      * @param action
      */
-    void forEach(Consumer<? super Object[]> action);
+    <E extends Exception> void forEach(Try.Consumer<? super Object[], E> action) throws E;
 
     /**
      * Performs the given action for each row of the {@code DataSet}
@@ -760,7 +760,7 @@ public interface DataSet extends Iterable<Object[]> {
      * It can be set to <code>true</code> to improve the performance if the <code>action</code> only read each row object array once, don't modify it or save it in collection.
      * The default value is false.
      */
-    void forEach(Consumer<? super Object[]> action, boolean shareRowArray);
+    <E extends Exception> void forEach(Try.Consumer<? super Object[], E> action, boolean shareRowArray) throws E;
 
     /**
      * Performs the given action for each row of the {@code DataSet}
@@ -770,7 +770,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param columnNames
      * @param action
      */
-    void forEach(Collection<String> columnNames, Consumer<? super Object[]> action);
+    <E extends Exception> void forEach(Collection<String> columnNames, Try.Consumer<? super Object[], E> action) throws E;
 
     /**
      * Performs the given action for each row of the {@code DataSet}
@@ -783,7 +783,7 @@ public interface DataSet extends Iterable<Object[]> {
      * It can be set to <code>true</code> to improve the performance if the <code>action</code> only read each row object array once, don't modify it or save it in collection.
      * The default value is false.
      */
-    void forEach(Collection<String> columnNames, Consumer<? super Object[]> action, boolean shareRowArray);
+    <E extends Exception> void forEach(Collection<String> columnNames, Try.Consumer<? super Object[], E> action, boolean shareRowArray) throws E;
 
     /**
      * Performs the given action for each row of the {@code DataSet}
@@ -794,7 +794,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param toRowIndex
      * @param action
      */
-    void forEach(int fromRowIndex, int toRowIndex, Consumer<? super Object[]> action);
+    <E extends Exception> void forEach(int fromRowIndex, int toRowIndex, Try.Consumer<? super Object[], E> action) throws E;
 
     /**
      * Performs the given action for each row of the {@code DataSet}
@@ -808,7 +808,7 @@ public interface DataSet extends Iterable<Object[]> {
      * It can be set to <code>true</code> to improve the performance if the <code>action</code> only read each row object array once, don't modify it or save it in collection.
      * The default value is false.
      */
-    void forEach(int fromRowIndex, int toRowIndex, Consumer<? super Object[]> action, boolean shareRowArray);
+    <E extends Exception> void forEach(int fromRowIndex, int toRowIndex, Try.Consumer<? super Object[], E> action, boolean shareRowArray) throws E;
 
     /**
      * Performs the given action for each row of the {@code DataSet}
@@ -820,7 +820,7 @@ public interface DataSet extends Iterable<Object[]> {
      * @param toRowIndex
      * @param action
      */
-    void forEach(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Consumer<? super Object[]> action);
+    <E extends Exception> void forEach(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Try.Consumer<? super Object[], E> action) throws E;
 
     /**
      * Performs the given action for each row of the {@code DataSet}
@@ -835,14 +835,17 @@ public interface DataSet extends Iterable<Object[]> {
      * It can be set to <code>true</code> to improve the performance if the <code>action</code> only read each row object array once, don't modify it or save it in collection.
      * The default value is false.
      */
-    void forEach(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Consumer<? super Object[]> action, boolean shareRowArray);
+    <E extends Exception> void forEach(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Try.Consumer<? super Object[], E> action,
+            boolean shareRowArray) throws E;
 
-    <R> R forEach(R seed, BiFunction<R, ? super Object[], R> accumulator, BiPredicate<? super R, ? super Object[]> conditionToBreak);
+    <R, E extends Exception, E2 extends Exception> R forEach(R seed, Try.BiFunction<R, ? super Object[], R, E> accumulator,
+            Try.BiPredicate<? super R, ? super Object[], E2> conditionToBreak) throws E, E2;
 
-    <R> R forEach(R seed, BiFunction<R, ? super Object[], R> accumulator, BiPredicate<? super R, ? super Object[]> conditionToBreak, boolean shareRowArray);
+    <R, E extends Exception, E2 extends Exception> R forEach(R seed, Try.BiFunction<R, ? super Object[], R, E> accumulator,
+            Try.BiPredicate<? super R, ? super Object[], E2> conditionToBreak, boolean shareRowArray) throws E, E2;
 
-    <R> R forEach(Collection<String> columnNames, R seed, BiFunction<R, ? super Object[], R> accumulator,
-            BiPredicate<? super R, ? super Object[]> conditionToBreak);
+    <R, E extends Exception, E2 extends Exception> R forEach(Collection<String> columnNames, R seed, Try.BiFunction<R, ? super Object[], R, E> accumulator,
+            Try.BiPredicate<? super R, ? super Object[], E2> conditionToBreak) throws E, E2;
 
     /**
      * Execute <code>accumulator</code> on each element till <code>true</code> is returned by <code>conditionToBreak</code>
@@ -854,17 +857,17 @@ public interface DataSet extends Iterable<Object[]> {
      * @param shareRowArray
      * @return
      */
-    <R> R forEach(Collection<String> columnNames, R seed, BiFunction<R, ? super Object[], R> accumulator,
-            BiPredicate<? super R, ? super Object[]> conditionToBreak, boolean shareRowArray);
+    <R, E extends Exception, E2 extends Exception> R forEach(Collection<String> columnNames, R seed, Try.BiFunction<R, ? super Object[], R, E> accumulator,
+            Try.BiPredicate<? super R, ? super Object[], E2> conditionToBreak, boolean shareRowArray) throws E, E2;
 
-    <R> R forEach(int fromRowIndex, int toRowIndex, R seed, BiFunction<R, ? super Object[], R> accumulator,
-            BiPredicate<? super R, ? super Object[]> conditionToBreak);
+    <R, E extends Exception, E2 extends Exception> R forEach(int fromRowIndex, int toRowIndex, R seed, Try.BiFunction<R, ? super Object[], R, E> accumulator,
+            Try.BiPredicate<? super R, ? super Object[], E2> conditionToBreak) throws E, E2;
 
-    <R> R forEach(int fromRowIndex, int toRowIndex, R seed, BiFunction<R, ? super Object[], R> accumulator,
-            BiPredicate<? super R, ? super Object[]> conditionToBreak, boolean shareRowArray);
+    <R, E extends Exception, E2 extends Exception> R forEach(int fromRowIndex, int toRowIndex, R seed, Try.BiFunction<R, ? super Object[], R, E> accumulator,
+            Try.BiPredicate<? super R, ? super Object[], E2> conditionToBreak, boolean shareRowArray) throws E, E2;
 
-    <R> R forEach(Collection<String> columnNames, int fromRowIndex, int toRowIndex, R seed, BiFunction<R, ? super Object[], R> accumulator,
-            BiPredicate<? super R, ? super Object[]> conditionToBreak);
+    <R, E extends Exception, E2 extends Exception> R forEach(Collection<String> columnNames, int fromRowIndex, int toRowIndex, R seed,
+            Try.BiFunction<R, ? super Object[], R, E> accumulator, Try.BiPredicate<? super R, ? super Object[], E2> conditionToBreak) throws E, E2;
 
     /**
      * Execute <code>accumulator</code> on each element till <code>true</code> is returned by <code>conditionToBreak</code>
@@ -878,8 +881,9 @@ public interface DataSet extends Iterable<Object[]> {
      * @param shareRowArray
      * @return
      */
-    <R> R forEach(Collection<String> columnNames, int fromRowIndex, int toRowIndex, R seed, BiFunction<R, ? super Object[], R> accumulator,
-            BiPredicate<? super R, ? super Object[]> conditionToBreak, boolean shareRowArray);
+    <R, E extends Exception, E2 extends Exception> R forEach(Collection<String> columnNames, int fromRowIndex, int toRowIndex, R seed,
+            Try.BiFunction<R, ? super Object[], R, E> accumulator, Try.BiPredicate<? super R, ? super Object[], E2> conditionToBreak, boolean shareRowArray)
+            throws E, E2;
 
     /**
      *
@@ -3427,6 +3431,8 @@ public interface DataSet extends Iterable<Object[]> {
      * @return
      */
     <T> List<List<T>> split(IntFunction<? extends T> rowSupplier, Collection<String> columnNames, int fromRowIndex, int toRowIndex, int size);
+
+    ImmutableIterator<Object[]> iterator();
 
     /**
      * Method paginate.

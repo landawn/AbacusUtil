@@ -16,14 +16,17 @@ package com.landawn.abacus.util.function;
 
 import java.util.Objects;
 
+import com.landawn.abacus.util.Try;
+
 /**
  * 
  * @since 0.8
  * 
  * @author Haiyang Li
  */
-public interface IndexedBiConsumer<U, T> {
+public interface IndexedBiConsumer<U, T> extends Try.IndexedBiConsumer<U, T, RuntimeException> {
 
+    @Override
     void accept(U u, int idx, T e);
 
     default IndexedBiConsumer<U, T> andThen(IndexedBiConsumer<? super U, ? super T> after) {

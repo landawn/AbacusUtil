@@ -68,7 +68,6 @@ import com.landawn.abacus.util.function.ToFloatFunction;
 import com.landawn.abacus.util.function.ToIntFunction;
 import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.function.ToShortFunction;
-import com.landawn.abacus.util.function.TriConsumer;
 import com.landawn.abacus.util.function.TriFunction;
 import com.landawn.abacus.util.stream.ObjIteratorEx.QueuedIterator;
 
@@ -2045,7 +2044,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     }
 
     @Override
-    public void forEach(final Consumer<? super T> action) {
+    public <E extends Exception> void forEach(final Try.Consumer<? super T, E> action) throws E {
         if (maxThreadNum <= 1) {
             sequential().forEach(action);
             return;
@@ -2083,7 +2082,8 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     }
 
     @Override
-    public <R> R forEach(R seed, BiFunction<R, ? super T, R> accumulator, BiPredicate<? super R, ? super T> conditionToBreak) {
+    public <R, E extends Exception, E2 extends Exception> R forEach(R seed, Try.BiFunction<R, ? super T, R, E> accumulator,
+            Try.BiPredicate<? super R, ? super T, E2> conditionToBreak) throws E, E2 {
         if (logger.isWarnEnabled()) {
             logger.warn("The 'forEach' with break condition is sequentially executed in parallel stream");
         }
@@ -2092,7 +2092,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     }
 
     @Override
-    public void forEachPair(final BiConsumer<? super T, ? super T> action, final int increment) {
+    public <E extends Exception> void forEachPair(final Try.BiConsumer<? super T, ? super T, E> action, final int increment) throws E {
         if (maxThreadNum <= 1) {
             sequential().forEachPair(action, increment);
             return;
@@ -2159,7 +2159,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     }
 
     @Override
-    public void forEachTriple(final TriConsumer<? super T, ? super T, ? super T> action, final int increment) {
+    public <E extends Exception> void forEachTriple(final Try.TriConsumer<? super T, ? super T, ? super T, E> action, final int increment) throws E {
         if (maxThreadNum <= 1) {
             sequential().forEachTriple(action, increment);
             return;

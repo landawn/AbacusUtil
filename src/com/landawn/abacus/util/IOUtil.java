@@ -62,7 +62,6 @@ import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
 import com.landawn.abacus.util.Fn.BiPredicates;
 import com.landawn.abacus.util.function.BiPredicate;
-import com.landawn.abacus.util.function.Consumer;
 
 /**
  *
@@ -3781,25 +3780,28 @@ public final class IOUtil {
         return file.exists() && file.setLastModified(System.currentTimeMillis());
     }
 
-    public static void parse(final File file, final Consumer<String> lineParser) {
-        parse(file, lineParser, null);
+    public static <E extends Exception> void parse(final File file, final Try.Consumer<String, E> lineParser) throws E {
+        parse(file, lineParser, Fn.emptyAction());
     }
 
-    public static void parse(final File file, final Consumer<String> lineParser, final Runnable onComplete) {
+    public static <E extends Exception, E2 extends Exception> void parse(final File file, final Try.Consumer<String, E> lineParser,
+            final Try.Runnable<E2> onComplete) throws E, E2 {
         parse(file, 0, Long.MAX_VALUE, lineParser, onComplete);
     }
 
-    public static void parse(final File file, final long lineOffset, final long count, final Consumer<String> lineParser) {
-        parse(file, lineOffset, count, lineParser, null);
+    public static <E extends Exception> void parse(final File file, final long lineOffset, final long count, final Try.Consumer<String, E> lineParser)
+            throws E {
+        parse(file, lineOffset, count, lineParser, Fn.emptyAction());
     }
 
-    public static void parse(final File file, final long lineOffset, final long count, final Consumer<String> lineParser, final Runnable onComplete) {
+    public static <E extends Exception, E2 extends Exception> void parse(final File file, final long lineOffset, final long count,
+            final Try.Consumer<String, E> lineParser, final Try.Runnable<E2> onComplete) throws E, E2 {
         parse(file, lineOffset, count, 0, 0, lineParser, onComplete);
     }
 
-    public static void parse(final File file, final long lineOffset, final long count, final int processThreadNum, final int queueSize,
-            final Consumer<String> lineParser) {
-        parse(file, lineOffset, count, processThreadNum, queueSize, lineParser, null);
+    public static <E extends Exception> void parse(final File file, final long lineOffset, final long count, final int processThreadNum, final int queueSize,
+            final Try.Consumer<String, E> lineParser) throws E {
+        parse(file, lineOffset, count, processThreadNum, queueSize, lineParser, Fn.emptyAction());
     }
 
     /**
@@ -3814,30 +3816,33 @@ public final class IOUtil {
      * @param lineParser
      * @param onComplete
      */
-    public static void parse(final File file, final long lineOffset, final long count, final int processThreadNum, final int queueSize,
-            final Consumer<String> lineParser, final Runnable onComplete) {
+    public static <E extends Exception, E2 extends Exception> void parse(final File file, final long lineOffset, final long count, final int processThreadNum,
+            final int queueSize, final Try.Consumer<String, E> lineParser, final Try.Runnable<E2> onComplete) throws E, E2 {
         parse(file.isDirectory() ? listFiles(file, true, true) : N.asList(file), lineOffset, count, processThreadNum, queueSize, lineParser, onComplete);
     }
 
-    public static void parse(final List<File> files, final Consumer<String> lineParser) {
-        parse(files, lineParser, null);
+    public static <E extends Exception> void parse(final List<File> files, final Try.Consumer<String, E> lineParser) throws E {
+        parse(files, lineParser, Fn.emptyAction());
     }
 
-    public static void parse(final List<File> files, final Consumer<String> lineParser, final Runnable onComplete) {
+    public static <E extends Exception, E2 extends Exception> void parse(final List<File> files, final Try.Consumer<String, E> lineParser,
+            final Try.Runnable<E2> onComplete) throws E, E2 {
         parse(files, 0, Long.MAX_VALUE, lineParser, onComplete);
     }
 
-    public static void parse(final List<File> files, final long lineOffset, final long count, final Consumer<String> lineParser) {
-        parse(files, lineOffset, count, lineParser, null);
+    public static <E extends Exception> void parse(final List<File> files, final long lineOffset, final long count, final Try.Consumer<String, E> lineParser)
+            throws E {
+        parse(files, lineOffset, count, lineParser, Fn.emptyAction());
     }
 
-    public static void parse(final List<File> files, final long lineOffset, final long count, final Consumer<String> lineParser, final Runnable onComplete) {
+    public static <E extends Exception, E2 extends Exception> void parse(final List<File> files, final long lineOffset, final long count,
+            final Try.Consumer<String, E> lineParser, final Try.Runnable<E2> onComplete) throws E, E2 {
         parse(files, lineOffset, count, 0, 0, lineParser, onComplete);
     }
 
-    public static void parse(final List<File> files, final long lineOffset, final long count, final int processThreadNum, final int queueSize,
-            final Consumer<String> lineParser) {
-        parse(files, lineOffset, count, processThreadNum, queueSize, lineParser, null);
+    public static <E extends Exception> void parse(final List<File> files, final long lineOffset, final long count, final int processThreadNum,
+            final int queueSize, final Try.Consumer<String, E> lineParser) throws E {
+        parse(files, lineOffset, count, processThreadNum, queueSize, lineParser, Fn.emptyAction());
     }
 
     /**
@@ -3850,8 +3855,8 @@ public final class IOUtil {
      * @param queueSize size of queue to save the processing records/lines loaded from source data. Default size is 1024.
      * @param lineParser
      */
-    public static void parse(final List<File> files, final long lineOffset, final long count, final int processThreadNum, final int queueSize,
-            final Consumer<String> lineParser, final Runnable onComplete) {
+    public static <E extends Exception, E2 extends Exception> void parse(final List<File> files, final long lineOffset, final long count,
+            final int processThreadNum, final int queueSize, final Try.Consumer<String, E> lineParser, final Try.Runnable<E2> onComplete) throws E, E2 {
         if (N.isNullOrEmpty(files)) {
             return;
         }
@@ -3883,18 +3888,19 @@ public final class IOUtil {
         }
     }
 
-    public static void parse(final File file, final int readThreadNum, final int processThreadNum, final int queueSize, final Consumer<String> lineParser) {
-        parse(file, readThreadNum, processThreadNum, queueSize, lineParser, null);
+    public static <E extends Exception> void parse(final File file, final int readThreadNum, final int processThreadNum, final int queueSize,
+            final Try.Consumer<String, E> lineParser) throws E {
+        parse(file, readThreadNum, processThreadNum, queueSize, lineParser, Fn.emptyAction());
     }
 
-    public static void parse(final File file, final int readThreadNum, final int processThreadNum, final int queueSize, final Consumer<String> lineParser,
-            final Runnable onComplete) {
+    public static <E extends Exception, E2 extends Exception> void parse(final File file, final int readThreadNum, final int processThreadNum,
+            final int queueSize, final Try.Consumer<String, E> lineParser, final Try.Runnable<E2> onComplete) throws E, E2 {
         parse(file, 0, Long.MAX_VALUE, readThreadNum, processThreadNum, queueSize, lineParser, onComplete);
     }
 
-    public static void parse(final File file, final long lineOffset, final long count, final int readThreadNum, final int processThreadNum, final int queueSize,
-            final Consumer<String> lineParser) {
-        parse(file, lineOffset, count, readThreadNum, processThreadNum, queueSize, lineParser, null);
+    public static <E extends Exception> void parse(final File file, final long lineOffset, final long count, final int readThreadNum,
+            final int processThreadNum, final int queueSize, final Try.Consumer<String, E> lineParser) throws E {
+        parse(file, lineOffset, count, readThreadNum, processThreadNum, queueSize, lineParser, Fn.emptyAction());
     }
 
     /**
@@ -3909,25 +3915,25 @@ public final class IOUtil {
      * @param lineParser
      * @param onComplete
      */
-    public static void parse(final File file, final long lineOffset, final long count, final int readThreadNum, final int processThreadNum, final int queueSize,
-            final Consumer<String> lineParser, final Runnable onComplete) {
+    public static <E extends Exception, E2 extends Exception> void parse(final File file, final long lineOffset, final long count, final int readThreadNum,
+            final int processThreadNum, final int queueSize, final Try.Consumer<String, E> lineParser, final Try.Runnable<E2> onComplete) throws E, E2 {
         parse(file.isDirectory() ? listFiles(file, true, true) : N.asList(file), lineOffset, count, readThreadNum, processThreadNum, queueSize, lineParser,
                 onComplete);
     }
 
-    public static void parse(final List<File> files, final int readThreadNum, final int processThreadNum, final int queueSize,
-            final Consumer<String> lineParser) {
-        parse(files, readThreadNum, processThreadNum, queueSize, lineParser, null);
+    public static <E extends Exception> void parse(final List<File> files, final int readThreadNum, final int processThreadNum, final int queueSize,
+            final Try.Consumer<String, E> lineParser) throws E {
+        parse(files, readThreadNum, processThreadNum, queueSize, lineParser, Fn.emptyAction());
     }
 
-    public static void parse(final List<File> files, final int readThreadNum, final int processThreadNum, final int queueSize,
-            final Consumer<String> lineParser, final Runnable onComplete) {
+    public static <E extends Exception, E2 extends Exception> void parse(final List<File> files, final int readThreadNum, final int processThreadNum,
+            final int queueSize, final Try.Consumer<String, E> lineParser, final Try.Runnable<E2> onComplete) throws E, E2 {
         parse(files, 0, Long.MAX_VALUE, readThreadNum, processThreadNum, queueSize, lineParser, onComplete);
     }
 
-    public static void parse(final List<File> files, final long lineOffset, final long count, final int readThreadNum, final int processThreadNum,
-            final int queueSize, final Consumer<String> lineParser) {
-        parse(files, lineOffset, count, readThreadNum, processThreadNum, queueSize, lineParser, null);
+    public static <E extends Exception> void parse(final List<File> files, final long lineOffset, final long count, final int readThreadNum,
+            final int processThreadNum, final int queueSize, final Try.Consumer<String, E> lineParser) throws E {
+        parse(files, lineOffset, count, readThreadNum, processThreadNum, queueSize, lineParser, Fn.emptyAction());
     }
 
     /**
@@ -3942,8 +3948,9 @@ public final class IOUtil {
      * @param lineParser
      * @param onComplete
      */
-    public static void parse(final List<File> files, final long lineOffset, final long count, final int readThreadNum, final int processThreadNum,
-            final int queueSize, final Consumer<String> lineParser, final Runnable onComplete) {
+    public static <E extends Exception, E2 extends Exception> void parse(final List<File> files, final long lineOffset, final long count,
+            final int readThreadNum, final int processThreadNum, final int queueSize, final Try.Consumer<String, E> lineParser,
+            final Try.Runnable<E2> onComplete) throws E, E2 {
         if (N.isNullOrEmpty(files)) {
             return;
         }
@@ -3975,25 +3982,28 @@ public final class IOUtil {
         }
     }
 
-    public static void parse(final InputStream is, final Consumer<String> lineParser) {
-        parse(is, lineParser, null);
+    public static <E extends Exception> void parse(final InputStream is, final Try.Consumer<String, E> lineParser) throws E {
+        parse(is, lineParser, Fn.emptyAction());
     }
 
-    public static void parse(final InputStream is, final Consumer<String> lineParser, final Runnable onComplete) {
+    public static <E extends Exception, E2 extends Exception> void parse(final InputStream is, final Try.Consumer<String, E> lineParser,
+            final Try.Runnable<E2> onComplete) throws E, E2 {
         parse(is, 0, Long.MAX_VALUE, lineParser, onComplete);
     }
 
-    public static void parse(final InputStream is, final long lineOffset, final long count, final Consumer<String> lineParser) {
-        parse(is, lineOffset, count, lineParser, null);
+    public static <E extends Exception> void parse(final InputStream is, final long lineOffset, final long count, final Try.Consumer<String, E> lineParser)
+            throws E {
+        parse(is, lineOffset, count, lineParser, Fn.emptyAction());
     }
 
-    public static void parse(final InputStream is, final long lineOffset, final long count, final Consumer<String> lineParser, final Runnable onComplete) {
+    public static <E extends Exception, E2 extends Exception> void parse(final InputStream is, final long lineOffset, final long count,
+            final Try.Consumer<String, E> lineParser, final Try.Runnable<E2> onComplete) throws E, E2 {
         parse(is, lineOffset, count, 0, 0, lineParser, onComplete);
     }
 
-    public static void parse(final InputStream is, final long lineOffset, final long count, final int processThreadNum, final int queueSize,
-            final Consumer<String> lineParser) {
-        parse(is, lineOffset, count, processThreadNum, queueSize, lineParser, null);
+    public static <E extends Exception> void parse(final InputStream is, final long lineOffset, final long count, final int processThreadNum,
+            final int queueSize, final Try.Consumer<String, E> lineParser) throws E {
+        parse(is, lineOffset, count, processThreadNum, queueSize, lineParser, Fn.emptyAction());
     }
 
     /**
@@ -4007,8 +4017,8 @@ public final class IOUtil {
      * @param lineParser
      * @param onComplete
      */
-    public static void parse(final InputStream is, final long lineOffset, final long count, final int processThreadNum, final int queueSize,
-            final Consumer<String> lineParser, final Runnable onComplete) {
+    public static <E extends Exception, E2 extends Exception> void parse(final InputStream is, final long lineOffset, final long count,
+            final int processThreadNum, final int queueSize, final Try.Consumer<String, E> lineParser, final Try.Runnable<E2> onComplete) throws E, E2 {
         final BufferedReader br = ObjectFactory.createBufferedReader(is);
 
         try {
@@ -4018,25 +4028,28 @@ public final class IOUtil {
         }
     }
 
-    public static void parse(final Reader reader, final Consumer<String> lineParser) {
-        parse(reader, lineParser, null);
+    public static <E extends Exception> void parse(final Reader reader, final Try.Consumer<String, E> lineParser) throws E {
+        parse(reader, lineParser, Fn.emptyAction());
     }
 
-    public static void parse(final Reader reader, final Consumer<String> lineParser, final Runnable onComplete) {
+    public static <E extends Exception, E2 extends Exception> void parse(final Reader reader, final Try.Consumer<String, E> lineParser,
+            final Try.Runnable<E2> onComplete) throws E, E2 {
         parse(reader, 0, Long.MAX_VALUE, lineParser, onComplete);
     }
 
-    public static void parse(final Reader reader, final long lineOffset, final long count, final Consumer<String> lineParser) {
-        parse(reader, lineOffset, count, lineParser, null);
+    public static <E extends Exception> void parse(final Reader reader, final long lineOffset, final long count, final Try.Consumer<String, E> lineParser)
+            throws E {
+        parse(reader, lineOffset, count, lineParser, Fn.emptyAction());
     }
 
-    public static void parse(final Reader reader, final long lineOffset, final long count, final Consumer<String> lineParser, final Runnable onComplete) {
+    public static <E extends Exception, E2 extends Exception> void parse(final Reader reader, final long lineOffset, final long count,
+            final Try.Consumer<String, E> lineParser, final Try.Runnable<E2> onComplete) throws E, E2 {
         parse(reader, lineOffset, count, 0, 0, lineParser, onComplete);
     }
 
-    public static void parse(final Reader reader, final long lineOffset, final long count, final int processThreadNum, final int queueSize,
-            final Consumer<String> lineParser) {
-        parse(reader, lineOffset, count, processThreadNum, queueSize, lineParser, null);
+    public static <E extends Exception> void parse(final Reader reader, final long lineOffset, final long count, final int processThreadNum,
+            final int queueSize, final Try.Consumer<String, E> lineParser) throws E {
+        parse(reader, lineOffset, count, processThreadNum, queueSize, lineParser, Fn.emptyAction());
     }
 
     /**
@@ -4050,8 +4063,8 @@ public final class IOUtil {
      * @param lineParser
      * @param onComplete
      */
-    public static void parse(final Reader reader, final long lineOffset, final long count, final int processThreadNum, final int queueSize,
-            final Consumer<String> lineParser, final Runnable onComplete) {
+    public static <E extends Exception, E2 extends Exception> void parse(final Reader reader, final long lineOffset, final long count,
+            final int processThreadNum, final int queueSize, final Try.Consumer<String, E> lineParser, final Try.Runnable<E2> onComplete) throws E, E2 {
         N.parse(new LineIterator(reader), lineOffset, count, processThreadNum, queueSize, lineParser, onComplete);
     }
 

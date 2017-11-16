@@ -45,8 +45,6 @@ import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
-import com.landawn.abacus.util.function.IndexedBiFunction;
-import com.landawn.abacus.util.function.IndexedConsumer;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
@@ -58,7 +56,6 @@ import com.landawn.abacus.util.function.ToFloatFunction;
 import com.landawn.abacus.util.function.ToIntFunction;
 import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.function.ToShortFunction;
-import com.landawn.abacus.util.function.TriConsumer;
 import com.landawn.abacus.util.function.TriFunction;
 import com.landawn.abacus.util.stream.Collector;
 import com.landawn.abacus.util.stream.Collectors;
@@ -486,28 +483,29 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return size() == 0 ? OptionalDouble.empty() : N.averageDouble(coll, mapper);
     }
 
-    public void forEach(final Consumer<? super T> action) {
+    public <E extends Exception> void foreach(final Try.Consumer<? super T, E> action) throws E {
         N.forEach(coll, action);
     }
 
-    //    public void forEach(int fromIndex, final int toIndex, final Consumer<? super T> action) {
+    //    public <E extends Exception> void forEach(int fromIndex, final int toIndex, final Consumer<? super T> action) throws E {
     //        N.forEach(coll, fromIndex, toIndex, action);
     //    }
 
-    public void forEach(final IndexedConsumer<? super T> action) {
+    public <E extends Exception> void forEach(final Try.IndexedConsumer<? super T, E> action) throws E {
         N.forEach(coll, action);
     }
 
-    //    public void forEach(int fromIndex, final int toIndex, final IndexedConsumer<? super T> action) {
+    //    public void forEach(int fromIndex, final int toIndex, final IndexedConsumer<? super T> action) throws E {
     //        N.forEach(coll, fromIndex, toIndex, action);
     //    }
 
-    public <R> R forEach(final R seed, BiFunction<R, ? super T, R> accumulator, final BiPredicate<? super R, ? super T> conditionToBreak) {
+    public <R, E extends Exception, E2 extends Exception> R forEach(final R seed, Try.BiFunction<R, ? super T, R, E> accumulator,
+            final Try.BiPredicate<? super R, ? super T, E2> conditionToBreak) throws E, E2 {
         return N.forEach(coll, seed, accumulator, conditionToBreak);
     }
 
     //    public <R> R forEach(int fromIndex, final int toIndex, final R seed, final BiFunction<R, ? super T, R> accumulator,
-    //            final BiPredicate<? super R, ? super T> conditionToBreak) {
+    //            final BiPredicate<? super R, ? super T> conditionToBreak) throws E {
     //        return N.forEach(coll, fromIndex, toIndex, seed, accumulator, conditionToBreak);
     //    }
 
@@ -519,37 +517,40 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @param conditionToBreak break if <code>true</code> is return.
      * @return
      */
-    public <R> R forEach(final R seed, final IndexedBiFunction<R, ? super T, R> accumulator, final BiPredicate<? super R, ? super T> conditionToBreak) {
+    public <R, E extends Exception, E2 extends Exception> R forEach(final R seed, final Try.IndexedBiFunction<R, ? super T, R, E> accumulator,
+            final Try.BiPredicate<? super R, ? super T, E2> conditionToBreak) throws E, E2 {
         return N.forEach(coll, seed, accumulator, conditionToBreak);
     }
 
-    public <U> void forEach(final Function<? super T, ? extends Collection<U>> flatMapper, final BiConsumer<? super T, ? super U> action) {
+    public <U, E extends Exception> void forEach(final Function<? super T, ? extends Collection<U>> flatMapper,
+            final Try.BiConsumer<? super T, ? super U, E> action) throws E {
         N.forEach(coll, flatMapper, action);
     }
 
-    public <T2, T3> void forEach(final Function<? super T, ? extends Collection<T2>> flatMapper,
-            final Function<? super T2, ? extends Collection<T3>> flatMapper2, final TriConsumer<? super T, ? super T2, ? super T3> action) {
+    public <T2, T3, E extends Exception> void forEach(final Function<? super T, ? extends Collection<T2>> flatMapper,
+            final Function<? super T2, ? extends Collection<T3>> flatMapper2, final Try.TriConsumer<? super T, ? super T2, ? super T3, E> action) throws E {
         N.forEach(coll, flatMapper, flatMapper2, action);
     }
 
-    //    public void forEachNonNull(final Consumer<? super T> action) {
+    //    public void forEachNonNull(final Consumer<? super T> action) throws E {
     //        N.forEachNonNull(coll, action);
     //    }
 
-    public <U> void forEachNonNull(final Function<? super T, ? extends Collection<U>> flatMapper, final BiConsumer<? super T, ? super U> action) {
+    public <U, E extends Exception> void forEachNonNull(final Function<? super T, ? extends Collection<U>> flatMapper,
+            final Try.BiConsumer<? super T, ? super U, E> action) throws E {
         N.forEachNonNull(coll, flatMapper, action);
     }
 
-    public <T2, T3> void forEachNonNull(final Function<? super T, ? extends Collection<T2>> flatMapper,
-            final Function<? super T2, ? extends Collection<T3>> flatMapper2, final TriConsumer<? super T, ? super T2, ? super T3> action) {
+    public <T2, T3, E extends Exception> void forEachNonNull(final Function<? super T, ? extends Collection<T2>> flatMapper,
+            final Function<? super T2, ? extends Collection<T3>> flatMapper2, final Try.TriConsumer<? super T, ? super T2, ? super T3, E> action) throws E {
         N.forEachNonNull(coll, flatMapper, flatMapper2, action);
     }
 
-    public void forEachPair(final BiConsumer<? super T, ? super T> action) {
+    public <E extends Exception> void forEachPair(final Try.BiConsumer<? super T, ? super T, E> action) throws E {
         forEachPair(action, 1);
     }
 
-    public void forEachPair(final BiConsumer<? super T, ? super T> action, final int increment) {
+    public <E extends Exception> void forEachPair(final Try.BiConsumer<? super T, ? super T, E> action, final int increment) throws E {
         final int windowSize = 2;
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
@@ -584,11 +585,11 @@ public final class Seq<T> extends ImmutableCollection<T> {
         }
     }
 
-    public void forEachTriple(final TriConsumer<? super T, ? super T, ? super T> action) {
+    public <E extends Exception> void forEachTriple(final Try.TriConsumer<? super T, ? super T, ? super T, E> action) throws E {
         forEachTriple(action, 1);
     }
 
-    public void forEachTriple(final TriConsumer<? super T, ? super T, ? super T> action, final int increment) {
+    public <E extends Exception> void forEachTriple(final Try.TriConsumer<? super T, ? super T, ? super T, E> action, final int increment) throws E {
         final int windowSize = 3;
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
@@ -639,7 +640,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
     //     * @return
     //     */
     //    public <R> R forEach(int fromIndex, final int toIndex, final R seed, final IndexedBiFunction<R, ? super T, R> accumulator,
-    //            final BiPredicate<? super R, ? super T> conditionToBreak) {
+    //            final BiPredicate<? super R, ? super T> conditionToBreak) throws E {
     //        return N.forEach(coll, fromIndex, toIndex, seed, accumulator, conditionToBreak);
     //    }
 

@@ -134,7 +134,6 @@ import com.landawn.abacus.util.function.ToFloatFunction;
 import com.landawn.abacus.util.function.ToIntFunction;
 import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.function.ToShortFunction;
-import com.landawn.abacus.util.function.TriConsumer;
 import com.landawn.abacus.util.function.TriFunction;
 import com.landawn.abacus.util.function.UnaryOperator;
 import com.landawn.abacus.util.stream.ObjIteratorEx.QueuedIterator;
@@ -882,6 +881,8 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     @SuppressWarnings("rawtypes")
     public abstract Stream<T> sortedBy(Function<? super T, ? extends Comparable> keyExtractor);
 
+    public abstract <E extends Exception> void forEach(Try.Consumer<? super T, E> action) throws E;
+
     /**
      * Execute <code>accumulator</code> on each element till <code>true</code> is returned by <code>conditionToBreak</code>
      * 
@@ -893,9 +894,10 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param conditionToBreak break if <code>true</code> is return.
      * @return
      */
-    public abstract <R> R forEach(final R seed, BiFunction<R, ? super T, R> accumulator, final BiPredicate<? super R, ? super T> conditionToBreak);
+    public abstract <R, E extends Exception, E2 extends Exception> R forEach(final R seed, Try.BiFunction<R, ? super T, R, E> accumulator,
+            final Try.BiPredicate<? super R, ? super T, E2> conditionToBreak) throws E, E2;
 
-    public abstract void forEachPair(final BiConsumer<? super T, ? super T> action);
+    public abstract <E extends Exception> void forEachPair(final Try.BiConsumer<? super T, ? super T, E> action) throws E;
 
     /**
      * Slide with <code>windowSize = 2</code> and the specified <code>increment</code>, then <code>consume</code> by the specified <code>mapper</code>.
@@ -904,9 +906,9 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param increment
      * @return
      */
-    public abstract void forEachPair(final BiConsumer<? super T, ? super T> action, final int increment);
+    public abstract <E extends Exception> void forEachPair(final Try.BiConsumer<? super T, ? super T, E> action, final int increment) throws E;
 
-    public abstract void forEachTriple(final TriConsumer<? super T, ? super T, ? super T> action);
+    public abstract <E extends Exception> void forEachTriple(final Try.TriConsumer<? super T, ? super T, ? super T, E> action) throws E;
 
     /**
      * Slide with <code>windowSize = 3</code> and the specified <code>increment</code>, then <code>consume</code> by the specified <code>mapper</code>.
@@ -915,7 +917,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param increment
      * @return
      */
-    public abstract void forEachTriple(final TriConsumer<? super T, ? super T, ? super T> action, final int increment);
+    public abstract <E extends Exception> void forEachTriple(final Try.TriConsumer<? super T, ? super T, ? super T, E> action, final int increment) throws E;
 
     /**
      * <br />

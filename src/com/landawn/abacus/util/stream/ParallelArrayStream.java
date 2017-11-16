@@ -66,7 +66,6 @@ import com.landawn.abacus.util.function.ToFloatFunction;
 import com.landawn.abacus.util.function.ToIntFunction;
 import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.function.ToShortFunction;
-import com.landawn.abacus.util.function.TriConsumer;
 import com.landawn.abacus.util.function.TriFunction;
 
 /**
@@ -141,6 +140,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 iters.add(new ObjIteratorEx<T>() {
+
                     private T next = null;
                     private boolean hasNext = false;
 
@@ -175,6 +175,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                         hasNext = false;
                         return next;
                     }
+
                 });
             }
         }
@@ -342,6 +343,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 iters.add(new ObjIteratorEx<R>() {
+
                     private Object next = NONE;
 
                     @Override
@@ -367,6 +369,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                         next = NONE;
                         return result;
                     }
+
                 });
             }
         }
@@ -413,6 +416,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 iters.add(new ObjIteratorEx<R>() {
+
                     private Object pre = NONE;
                     private Object next = NONE;
 
@@ -441,6 +445,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                         next = NONE;
                         return result;
                     }
+
                 });
             }
         }
@@ -487,6 +492,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 iters.add(new ObjIteratorEx<R>() {
+
                     private Object prepre = NONE;
                     private Object pre = NONE;
                     private Object next = NONE;
@@ -518,6 +524,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                         next = NONE;
                         return result;
                     }
+
                 });
             }
         }
@@ -750,6 +757,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 iters.add(new ObjIteratorEx<Character>() {
+
                     private Object next = NONE;
 
                     @Override
@@ -775,6 +783,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                         next = NONE;
                         return result;
                     }
+
                 });
             }
         }
@@ -819,6 +828,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 iters.add(new ObjIteratorEx<Byte>() {
+
                     private Object next = NONE;
 
                     @Override
@@ -844,6 +854,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                         next = NONE;
                         return result;
                     }
+
                 });
             }
         }
@@ -888,6 +899,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 iters.add(new ObjIteratorEx<Short>() {
+
                     private Object next = NONE;
 
                     @Override
@@ -913,6 +925,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                         next = NONE;
                         return result;
                     }
+
                 });
             }
         }
@@ -957,6 +970,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 iters.add(new ObjIteratorEx<Integer>() {
+
                     private Object next = NONE;
 
                     @Override
@@ -982,6 +996,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                         next = NONE;
                         return result;
                     }
+
                 });
             }
         }
@@ -1026,6 +1041,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 iters.add(new ObjIteratorEx<Long>() {
+
                     private Object next = NONE;
 
                     @Override
@@ -1051,6 +1067,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                         next = NONE;
                         return result;
                     }
+
                 });
             }
         }
@@ -1095,6 +1112,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 iters.add(new ObjIteratorEx<Float>() {
+
                     private Object next = NONE;
 
                     @Override
@@ -1120,6 +1138,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                         next = NONE;
                         return result;
                     }
+
                 });
             }
         }
@@ -1164,6 +1183,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 iters.add(new ObjIteratorEx<Double>() {
+
                     private Object next = NONE;
 
                     @Override
@@ -1189,6 +1209,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                         next = NONE;
                         return result;
                     }
+
                 });
             }
         }
@@ -1269,6 +1290,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 iters.add(new ObjIteratorEx<R>() {
+
                     private T next = null;
                     private Iterator<? extends R> cur = null;
                     private Stream<? extends R> s = null;
@@ -1418,6 +1440,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 iters.add(new ObjIteratorEx<Character>() {
+
                     private T next = null;
                     private CharIterator cur = null;
                     private CharStream s = null;
@@ -1568,6 +1591,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 iters.add(new ObjIteratorEx<Byte>() {
+
                     private T next = null;
                     private ByteIterator cur = null;
                     private ByteStream s = null;
@@ -1718,6 +1742,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 iters.add(new ObjIteratorEx<Short>() {
+
                     private T next = null;
                     private ShortIterator cur = null;
                     private ShortStream s = null;
@@ -1868,6 +1893,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 iters.add(new ObjIteratorEx<Integer>() {
+
                     private T next = null;
                     private IntIterator cur = null;
                     private IntStream s = null;
@@ -2018,6 +2044,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 iters.add(new ObjIteratorEx<Long>() {
+
                     private T next = null;
                     private LongIterator cur = null;
                     private LongStream s = null;
@@ -2168,6 +2195,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 iters.add(new ObjIteratorEx<Float>() {
+
                     private T next = null;
                     private FloatIterator cur = null;
                     private FloatStream s = null;
@@ -2318,6 +2346,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 iters.add(new ObjIteratorEx<Double>() {
+
                     private T next = null;
                     private DoubleIterator cur = null;
                     private DoubleStream s = null;
@@ -2649,6 +2678,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 iters.add(new ObjIteratorEx<T>() {
+
                     private Object next = NONE;
 
                     @Override
@@ -2675,6 +2705,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                         next = NONE;
                         return result;
                     }
+
                 });
             }
         }
@@ -2709,7 +2740,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     }
 
     @Override
-    public void forEach(final Consumer<? super T> action) {
+    public <E extends Exception> void forEach(final Try.Consumer<? super T, E> action) throws E {
         if (maxThreadNum <= 1) {
             sequential().forEach(action);
             return;
@@ -2745,6 +2776,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 futureList.add(asyncExecutor.execute(new Runnable() {
+
                     @Override
                     public void run() {
                         T next = null;
@@ -2765,6 +2797,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                             setError(eHolder, e);
                         }
                     }
+
                 }));
             }
         }
@@ -2773,7 +2806,8 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     }
 
     @Override
-    public <R> R forEach(R seed, BiFunction<R, ? super T, R> accumulator, BiPredicate<? super R, ? super T> conditionToBreak) {
+    public <R, E extends Exception, E2 extends Exception> R forEach(R seed, Try.BiFunction<R, ? super T, R, E> accumulator,
+            Try.BiPredicate<? super R, ? super T, E2> conditionToBreak) throws E, E2 {
         if (logger.isWarnEnabled()) {
             logger.warn("The 'forEach' with break condition is sequentially executed in parallel stream");
         }
@@ -2782,7 +2816,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     }
 
     @Override
-    public void forEachPair(final BiConsumer<? super T, ? super T> action, final int increment) {
+    public <E extends Exception> void forEachPair(final Try.BiConsumer<? super T, ? super T, E> action, final int increment) throws E {
         if (maxThreadNum <= 1) {
             sequential().forEachPair(action, increment);
             return;
@@ -2826,7 +2860,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
     }
 
     @Override
-    public void forEachTriple(final TriConsumer<? super T, ? super T, ? super T> action, final int increment) {
+    public <E extends Exception> void forEachTriple(final Try.TriConsumer<? super T, ? super T, ? super T, E> action, final int increment) throws E {
         if (maxThreadNum <= 1) {
             sequential().forEachTriple(action, increment);
             return;
@@ -3082,6 +3116,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 futureList.add(asyncExecutor.execute(new Callable<T>() {
+
                     @Override
                     public T call() {
                         T result = identity;
@@ -3174,6 +3209,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 futureList.add(asyncExecutor.execute(new Callable<T>() {
+
                     @Override
                     public T call() {
                         T result = null;
@@ -3275,6 +3311,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 futureList.add(asyncExecutor.execute(new Callable<U>() {
+
                     @Override
                     public U call() {
                         U result = identity;
@@ -3365,6 +3402,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 futureList.add(asyncExecutor.execute(new Callable<R>() {
+
                     @Override
                     public R call() {
                         final R container = supplier.get();
@@ -3459,6 +3497,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 futureList.add(asyncExecutor.execute(new Callable<A>() {
+
                     @Override
                     public A call() {
                         A container = supplier.get();
@@ -3628,6 +3667,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 futureList.add(asyncExecutor.execute(new Runnable() {
+
                     @Override
                     public void run() {
                         T next = null;
@@ -3651,6 +3691,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                             setError(eHolder, e);
                         }
                     }
+
                 }));
             }
         }
@@ -3700,6 +3741,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 futureList.add(asyncExecutor.execute(new Runnable() {
+
                     @Override
                     public void run() {
                         T next = null;
@@ -3723,6 +3765,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                             setError(eHolder, e);
                         }
                     }
+
                 }));
             }
         }
@@ -3772,6 +3815,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 futureList.add(asyncExecutor.execute(new Runnable() {
+
                     @Override
                     public void run() {
                         T next = null;
@@ -3795,6 +3839,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                             setError(eHolder, e);
                         }
                     }
+
                 }));
             }
         }
@@ -3853,6 +3898,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 futureList.add(asyncExecutor.execute(new Runnable() {
+
                     @Override
                     public void run() {
                         final Pair<Integer, T> pair = new Pair<>();
@@ -3882,6 +3928,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                             setError(eHolder, e);
                         }
                     }
+
                 }));
             }
         }
@@ -3940,6 +3987,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 futureList.add(asyncExecutor.execute(new Runnable() {
+
                     @Override
                     public void run() {
                         final Pair<Integer, T> pair = new Pair<>();
@@ -3969,6 +4017,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                             setError(eHolder, e);
                         }
                     }
+
                 }));
             }
         }
@@ -4026,6 +4075,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 futureList.add(asyncExecutor.execute(new Runnable() {
+
                     @Override
                     public void run() {
                         T next = null;
@@ -4054,6 +4104,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                             setError(eHolder, e);
                         }
                     }
+
                 }));
             }
         }
@@ -4209,6 +4260,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
 
             for (int i = 0; i < maxThreadNum; i++) {
                 futureList.add(asyncExecutor.execute(new Runnable() {
+
                     @Override
                     public void run() {
                         long cnt = 0;
@@ -4247,6 +4299,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
                             setError(eHolder, e);
                         }
                     }
+
                 }));
             }
         }

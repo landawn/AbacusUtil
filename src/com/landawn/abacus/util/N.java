@@ -121,18 +121,13 @@ import com.landawn.abacus.parser.XMLSerializationConfig;
 import com.landawn.abacus.type.EntityType;
 import com.landawn.abacus.type.Type;
 import com.landawn.abacus.type.TypeFactory;
-import com.landawn.abacus.util.function.BiConsumer;
-import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BooleanPredicate;
 import com.landawn.abacus.util.function.BytePredicate;
 import com.landawn.abacus.util.function.CharPredicate;
-import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.DoublePredicate;
 import com.landawn.abacus.util.function.FloatPredicate;
 import com.landawn.abacus.util.function.Function;
-import com.landawn.abacus.util.function.IndexedBiFunction;
-import com.landawn.abacus.util.function.IndexedConsumer;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.IntPredicate;
 import com.landawn.abacus.util.function.IntUnaryOperator;
@@ -147,7 +142,6 @@ import com.landawn.abacus.util.function.ToFloatFunction;
 import com.landawn.abacus.util.function.ToIntFunction;
 import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.function.ToShortFunction;
-import com.landawn.abacus.util.function.TriConsumer;
 import com.landawn.abacus.util.stream.DoubleStream;
 import com.landawn.abacus.util.stream.FloatStream;
 import com.landawn.abacus.util.stream.Stream;
@@ -477,7 +471,7 @@ public final class N {
     static final ListIterator EMPTY_LIST_ITERATOR = Collections.emptyListIterator();
 
     // ...
-    public static final Object NULL_MASK = new NullMask();
+    static final Object NULL_MASK = new NullMask();
 
     // ...
     private static final char[][][] cbufOfSTDInt = new char[5][][];
@@ -18098,7 +18092,7 @@ public final class N {
         return count;
     }
 
-    public static <T> void forEach(final T[] a, final Consumer<? super T> action) {
+    public static <T, E extends Exception> void forEach(final T[] a, final Try.Consumer<? super T, E> action) throws E {
         if (N.isNullOrEmpty(a)) {
             return;
         }
@@ -18108,7 +18102,7 @@ public final class N {
         }
     }
 
-    public static <T> void forEach(final T[] a, final int fromIndex, final int toIndex, final Consumer<? super T> action) {
+    public static <T, E extends Exception> void forEach(final T[] a, final int fromIndex, final int toIndex, final Try.Consumer<? super T, E> action) throws E {
         N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex,
                 a == null ? 0 : a.length);
 
@@ -18127,7 +18121,7 @@ public final class N {
         }
     }
 
-    public static <T> void forEach(final T[] a, final IndexedConsumer<T> action) {
+    public static <T, E extends Exception> void forEach(final T[] a, final Try.IndexedConsumer<? super T, E> action) throws E {
         if (N.isNullOrEmpty(a)) {
             return;
         }
@@ -18135,7 +18129,8 @@ public final class N {
         forEach(a, 0, a.length, action);
     }
 
-    public static <T> void forEach(final T[] a, final int fromIndex, final int toIndex, final IndexedConsumer<? super T> action) {
+    public static <T, E extends Exception> void forEach(final T[] a, final int fromIndex, final int toIndex, final Try.IndexedConsumer<? super T, E> action)
+            throws E {
         N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex,
                 a == null ? 0 : a.length);
 
@@ -18154,8 +18149,8 @@ public final class N {
         }
     }
 
-    public static <T, R> R forEach(final T[] a, final R seed, final BiFunction<R, ? super T, R> accumulator,
-            final BiPredicate<? super R, ? super T> conditionToBreak) {
+    public static <T, R, E extends Exception, E2 extends Exception> R forEach(final T[] a, final R seed, final Try.BiFunction<R, ? super T, R, E> accumulator,
+            final Try.BiPredicate<? super R, ? super T, E2> conditionToBreak) throws E, E2 {
         if (N.isNullOrEmpty(a)) {
             return seed;
         }
@@ -18173,8 +18168,8 @@ public final class N {
      * @param conditionToBreak break if <code>true</code> is return.
      * @return
      */
-    public static <T, R> R forEach(final T[] a, final int fromIndex, final int toIndex, final R seed, final BiFunction<R, ? super T, R> accumulator,
-            final BiPredicate<? super R, ? super T> conditionToBreak) {
+    public static <T, R, E extends Exception, E2 extends Exception> R forEach(final T[] a, final int fromIndex, final int toIndex, final R seed,
+            final Try.BiFunction<R, ? super T, R, E> accumulator, final Try.BiPredicate<? super R, ? super T, E2> conditionToBreak) throws E, E2 {
         N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex,
                 a == null ? 0 : a.length);
 
@@ -18205,8 +18200,8 @@ public final class N {
         return result;
     }
 
-    public static <T, R> R forEach(final T[] a, final R seed, final IndexedBiFunction<R, ? super T, R> accumulator,
-            final BiPredicate<? super R, ? super T> conditionToBreak) {
+    public static <T, R, E extends Exception, E2 extends Exception> R forEach(final T[] a, final R seed,
+            final Try.IndexedBiFunction<R, ? super T, R, E> accumulator, final Try.BiPredicate<? super R, ? super T, E2> conditionToBreak) throws E, E2 {
         if (N.isNullOrEmpty(a)) {
             return seed;
         }
@@ -18224,8 +18219,8 @@ public final class N {
      * @param conditionToBreak break if <code>true</code> is return.
      * @return
      */
-    public static <T, R> R forEach(final T[] a, final int fromIndex, final int toIndex, final R seed, final IndexedBiFunction<R, ? super T, R> accumulator,
-            final BiPredicate<? super R, ? super T> conditionToBreak) {
+    public static <T, R, E extends Exception, E2 extends Exception> R forEach(final T[] a, final int fromIndex, final int toIndex, final R seed,
+            final Try.IndexedBiFunction<R, ? super T, R, E> accumulator, final Try.BiPredicate<? super R, ? super T, E2> conditionToBreak) throws E, E2 {
         N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex,
                 a == null ? 0 : a.length);
 
@@ -18256,7 +18251,7 @@ public final class N {
         return result;
     }
 
-    public static <T, C extends Collection<? extends T>> void forEach(final C c, final Consumer<? super T> action) {
+    public static <T, C extends Collection<? extends T>, E extends Exception> void forEach(final C c, final Try.Consumer<? super T, E> action) throws E {
         if (N.isNullOrEmpty(c)) {
             return;
         }
@@ -18278,7 +18273,8 @@ public final class N {
      * @param toIndex
      * @param action
      */
-    public static <T, C extends Collection<? extends T>> void forEach(final C c, int fromIndex, final int toIndex, final Consumer<? super T> action) {
+    public static <T, C extends Collection<? extends T>, E extends Exception> void forEach(final C c, int fromIndex, final int toIndex,
+            final Try.Consumer<? super T, E> action) throws E {
         N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex,
                 c == null ? 0 : c.size());
 
@@ -18340,7 +18336,7 @@ public final class N {
         }
     }
 
-    public static <T, C extends Collection<? extends T>> void forEach(final C c, final IndexedConsumer<? super T> action) {
+    public static <T, C extends Collection<? extends T>, E extends Exception> void forEach(final C c, final Try.IndexedConsumer<? super T, E> action) throws E {
         if (N.isNullOrEmpty(c)) {
             return;
         }
@@ -18363,7 +18359,8 @@ public final class N {
      * @param toIndex
      * @param action
      */
-    public static <T, C extends Collection<? extends T>> void forEach(final C c, int fromIndex, final int toIndex, final IndexedConsumer<? super T> action) {
+    public static <T, C extends Collection<? extends T>, E extends Exception> void forEach(final C c, int fromIndex, final int toIndex,
+            final Try.IndexedConsumer<? super T, E> action) throws E {
         N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex,
                 c == null ? 0 : c.size());
 
@@ -18425,8 +18422,8 @@ public final class N {
         }
     }
 
-    public static <T, C extends Collection<? extends T>, R> R forEach(final C c, final R seed, BiFunction<R, ? super T, R> accumulator,
-            final BiPredicate<? super R, ? super T> conditionToBreak) {
+    public static <T, C extends Collection<? extends T>, R, E extends Exception, E2 extends Exception> R forEach(final C c, final R seed,
+            Try.BiFunction<R, ? super T, R, E> accumulator, final Try.BiPredicate<? super R, ? super T, E2> conditionToBreak) throws E, E2 {
         if (N.isNullOrEmpty(c)) {
             return seed;
         }
@@ -18444,8 +18441,8 @@ public final class N {
      * @param conditionToBreak break if <code>true</code> is return.
      * @return
      */
-    public static <T, C extends Collection<? extends T>, R> R forEach(final C c, int fromIndex, final int toIndex, final R seed,
-            final BiFunction<R, ? super T, R> accumulator, final BiPredicate<? super R, ? super T> conditionToBreak) {
+    public static <T, C extends Collection<? extends T>, R, E extends Exception, E2 extends Exception> R forEach(final C c, int fromIndex, final int toIndex,
+            final R seed, final Try.BiFunction<R, ? super T, R, E> accumulator, final Try.BiPredicate<? super R, ? super T, E2> conditionToBreak) throws E, E2 {
         N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex,
                 c == null ? 0 : c.size());
 
@@ -18530,8 +18527,8 @@ public final class N {
         return result;
     }
 
-    public static <T, C extends Collection<? extends T>, R> R forEach(final C c, final R seed, final IndexedBiFunction<R, ? super T, R> accumulator,
-            final BiPredicate<? super R, ? super T> conditionToBreak) {
+    public static <T, C extends Collection<? extends T>, R, E extends Exception, E2 extends Exception> R forEach(final C c, final R seed,
+            final Try.IndexedBiFunction<R, ? super T, R, E> accumulator, final Try.BiPredicate<? super R, ? super T, E2> conditionToBreak) throws E, E2 {
         if (N.isNullOrEmpty(c)) {
             return seed;
         }
@@ -18549,8 +18546,9 @@ public final class N {
      * @param conditionToBreak break if <code>true</code> is return.
      * @return
      */
-    public static <T, C extends Collection<? extends T>, R> R forEach(final C c, int fromIndex, final int toIndex, final R seed,
-            final IndexedBiFunction<R, ? super T, R> accumulator, final BiPredicate<? super R, ? super T> conditionToBreak) {
+    public static <T, C extends Collection<? extends T>, R, E extends Exception, E2 extends Exception> R forEach(final C c, int fromIndex, final int toIndex,
+            final R seed, final Try.IndexedBiFunction<R, ? super T, R, E> accumulator, final Try.BiPredicate<? super R, ? super T, E2> conditionToBreak)
+            throws E, E2 {
         N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex,
                 c == null ? 0 : c.size());
 
@@ -18635,8 +18633,8 @@ public final class N {
         return result;
     }
 
-    public static <T, U> void forEach(final T[] a, final Function<? super T, ? extends Collection<U>> flatMapper,
-            final BiConsumer<? super T, ? super U> action) {
+    public static <T, U, E extends Exception> void forEach(final T[] a, final Function<? super T, ? extends Collection<U>> flatMapper,
+            final Try.BiConsumer<? super T, ? super U, E> action) throws E {
         if (N.isNullOrEmpty(a)) {
             return;
         }
@@ -18652,8 +18650,8 @@ public final class N {
         }
     }
 
-    public static <T, U> void forEach(final Collection<T> c, final Function<? super T, ? extends Collection<U>> flatMapper,
-            final BiConsumer<? super T, ? super U> action) {
+    public static <T, U, E extends Exception> void forEach(final Collection<T> c, final Function<? super T, ? extends Collection<U>> flatMapper,
+            final Try.BiConsumer<? super T, ? super U, E> action) throws E {
         if (N.isNullOrEmpty(c)) {
             return;
         }
@@ -18669,8 +18667,8 @@ public final class N {
         }
     }
 
-    public static <T, T2, T3> void forEach(final T[] a, final Function<? super T, ? extends Collection<T2>> flatMapper,
-            final Function<? super T2, ? extends Collection<T3>> flatMapper2, final TriConsumer<? super T, ? super T2, ? super T3> action) {
+    public static <T, T2, T3, E extends Exception> void forEach(final T[] a, final Function<? super T, ? extends Collection<T2>> flatMapper,
+            final Function<? super T2, ? extends Collection<T3>> flatMapper2, final Try.TriConsumer<? super T, ? super T2, ? super T3, E> action) throws E {
         if (N.isNullOrEmpty(a)) {
             return;
         }
@@ -18692,8 +18690,8 @@ public final class N {
         }
     }
 
-    public static <T, T2, T3> void forEach(final Collection<T> c, final Function<? super T, ? extends Collection<T2>> flatMapper,
-            final Function<? super T2, ? extends Collection<T3>> flatMapper2, final TriConsumer<? super T, ? super T2, ? super T3> action) {
+    public static <T, T2, T3, E extends Exception> void forEach(final Collection<T> c, final Function<? super T, ? extends Collection<T2>> flatMapper,
+            final Function<? super T2, ? extends Collection<T3>> flatMapper2, final Try.TriConsumer<? super T, ? super T2, ? super T3, E> action) throws E {
         if (N.isNullOrEmpty(c)) {
             return;
         }
@@ -18715,7 +18713,7 @@ public final class N {
         }
     }
 
-    public static <A, B> void forEach(final A[] a, final B[] b, final BiConsumer<? super A, ? super B> action) {
+    public static <A, B, E extends Exception> void forEach(final A[] a, final B[] b, final Try.BiConsumer<? super A, ? super B, E> action) throws E {
         if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
             return;
         }
@@ -18725,7 +18723,8 @@ public final class N {
         }
     }
 
-    public static <A, B> void forEach(final Collection<A> a, final Collection<B> b, final BiConsumer<? super A, ? super B> action) {
+    public static <A, B, E extends Exception> void forEach(final Collection<A> a, final Collection<B> b, final Try.BiConsumer<? super A, ? super B, E> action)
+            throws E {
         if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
             return;
         }
@@ -18738,7 +18737,8 @@ public final class N {
         }
     }
 
-    public static <A, B, C> void forEach(final A[] a, final B[] b, final C[] c, final TriConsumer<? super A, ? super B, ? super C> action) {
+    public static <A, B, C, E extends Exception> void forEach(final A[] a, final B[] b, final C[] c,
+            final Try.TriConsumer<? super A, ? super B, ? super C, E> action) throws E {
         if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b) || N.isNullOrEmpty(c)) {
             return;
         }
@@ -18748,8 +18748,8 @@ public final class N {
         }
     }
 
-    public static <A, B, C> void forEach(final Collection<A> a, final Collection<B> b, final Collection<C> c,
-            final TriConsumer<? super A, ? super B, ? super C> action) {
+    public static <A, B, C, E extends Exception> void forEach(final Collection<A> a, final Collection<B> b, final Collection<C> c,
+            final Try.TriConsumer<? super A, ? super B, ? super C, E> action) throws E {
         if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b) || N.isNullOrEmpty(c)) {
             return;
         }
@@ -18763,7 +18763,8 @@ public final class N {
         }
     }
 
-    public static <A, B> void forEach(final A[] a, final B[] b, final A valueForNoneA, final B valueForNoneB, final BiConsumer<? super A, ? super B> action) {
+    public static <A, B, E extends Exception> void forEach(final A[] a, final B[] b, final A valueForNoneA, final B valueForNoneB,
+            final Try.BiConsumer<? super A, ? super B, E> action) throws E {
         final int lenA = a == null ? 0 : a.length;
         final int lenB = b == null ? 0 : b.length;
 
@@ -18772,8 +18773,8 @@ public final class N {
         }
     }
 
-    public static <A, B> void forEach(final Collection<A> a, final Collection<B> b, final A valueForNoneA, final B valueForNoneB,
-            final BiConsumer<? super A, ? super B> action) {
+    public static <A, B, E extends Exception> void forEach(final Collection<A> a, final Collection<B> b, final A valueForNoneA, final B valueForNoneB,
+            final Try.BiConsumer<? super A, ? super B, E> action) throws E {
 
         final Iterator<A> iterA = a == null ? ObjIterator.<A> empty() : a.iterator();
         final Iterator<B> iterB = b == null ? ObjIterator.<B> empty() : b.iterator();
@@ -18785,8 +18786,8 @@ public final class N {
         }
     }
 
-    public static <A, B, C> void forEach(final A[] a, final B[] b, final C[] c, final A valueForNoneA, final B valueForNoneB, final C valueForNoneC,
-            final TriConsumer<? super A, ? super B, ? super C> action) {
+    public static <A, B, C, E extends Exception> void forEach(final A[] a, final B[] b, final C[] c, final A valueForNoneA, final B valueForNoneB,
+            final C valueForNoneC, final Try.TriConsumer<? super A, ? super B, ? super C, E> action) throws E {
         final int lenA = a == null ? 0 : a.length;
         final int lenB = b == null ? 0 : b.length;
         final int lenC = c == null ? 0 : c.length;
@@ -18796,8 +18797,8 @@ public final class N {
         }
     }
 
-    public static <A, B, C> void forEach(final Collection<A> a, final Collection<B> b, final Collection<C> c, final A valueForNoneA, final B valueForNoneB,
-            final C valueForNoneC, final TriConsumer<? super A, ? super B, ? super C> action) {
+    public static <A, B, C, E extends Exception> void forEach(final Collection<A> a, final Collection<B> b, final Collection<C> c, final A valueForNoneA,
+            final B valueForNoneB, final C valueForNoneC, final Try.TriConsumer<? super A, ? super B, ? super C, E> action) throws E {
 
         final Iterator<A> iterA = a == null ? ObjIterator.<A> empty() : a.iterator();
         final Iterator<B> iterB = b == null ? ObjIterator.<B> empty() : b.iterator();
@@ -18811,7 +18812,7 @@ public final class N {
         }
     }
 
-    //    public static <T> void forEachNonNull(final T[] a, final Consumer<? super T> action) {
+    //    public static <T, E extends Exception> void forEachNonNull(final T[] a, final Try.Consumer<? super T, E> action) throws E {
     //        if (N.isNullOrEmpty(a)) {
     //            return;
     //        }
@@ -18823,7 +18824,7 @@ public final class N {
     //        }
     //    }
     //
-    //    public static <T, C extends Collection<? extends T>> void forEachNonNull(final C c, final Consumer<? super T> action) {
+    //    public static <T, C extends Collection<? extends T>> void forEachNonNull(final C c, final Try.Consumer<? super T, E> action) throws E {
     //        if (N.isNullOrEmpty(c)) {
     //            return;
     //        }
@@ -18835,8 +18836,8 @@ public final class N {
     //        }
     //    }
 
-    public static <T, U> void forEachNonNull(final T[] a, final Function<? super T, ? extends Collection<U>> flatMapper,
-            final BiConsumer<? super T, ? super U> action) {
+    public static <T, U, E extends Exception> void forEachNonNull(final T[] a, final Function<? super T, ? extends Collection<U>> flatMapper,
+            final Try.BiConsumer<? super T, ? super U, E> action) throws E {
         if (N.isNullOrEmpty(a)) {
             return;
         }
@@ -18856,8 +18857,8 @@ public final class N {
         }
     }
 
-    public static <T, U> void forEachNonNull(final Collection<T> c, final Function<? super T, ? extends Collection<U>> flatMapper,
-            final BiConsumer<? super T, ? super U> action) {
+    public static <T, U, E extends Exception> void forEachNonNull(final Collection<T> c, final Function<? super T, ? extends Collection<U>> flatMapper,
+            final Try.BiConsumer<? super T, ? super U, E> action) throws E {
         if (N.isNullOrEmpty(c)) {
             return;
         }
@@ -18877,8 +18878,8 @@ public final class N {
         }
     }
 
-    public static <T, T2, T3> void forEachNonNull(final T[] a, final Function<? super T, ? extends Collection<T2>> flatMapper,
-            final Function<? super T2, ? extends Collection<T3>> flatMapper2, final TriConsumer<? super T, ? super T2, ? super T3> action) {
+    public static <T, T2, T3, E extends Exception> void forEachNonNull(final T[] a, final Function<? super T, ? extends Collection<T2>> flatMapper,
+            final Function<? super T2, ? extends Collection<T3>> flatMapper2, final Try.TriConsumer<? super T, ? super T2, ? super T3, E> action) throws E {
         if (N.isNullOrEmpty(a)) {
             return;
         }
@@ -18906,8 +18907,8 @@ public final class N {
         }
     }
 
-    public static <T, T2, T3> void forEachNonNull(final Collection<T> c, final Function<? super T, ? extends Collection<T2>> flatMapper,
-            final Function<? super T2, ? extends Collection<T3>> flatMapper2, final TriConsumer<? super T, ? super T2, ? super T3> action) {
+    public static <T, T2, T3, E extends Exception> void forEachNonNull(final Collection<T> c, final Function<? super T, ? extends Collection<T2>> flatMapper,
+            final Function<? super T2, ? extends Collection<T3>> flatMapper2, final Try.TriConsumer<? super T, ? super T2, ? super T3, E> action) throws E {
         if (N.isNullOrEmpty(c)) {
             return;
         }
@@ -26809,7 +26810,7 @@ public final class N {
             return false;
         }
 
-        if (c instanceof LinkedList) {
+        if (c instanceof LinkedList || toIndex - fromIndex <= 3) {
             c.subList(fromIndex, toIndex).clear();
         } else {
             if (isListElementDataFieldGettable && isListElementDataFieldSettable && listElementDataField != null && c instanceof ArrayList) {
@@ -30189,18 +30190,14 @@ public final class N {
         return candidate;
     }
 
-    /**
-     * <p>
-     * Gets the median of three <code>char</code> values.
-     * </p>
+    /** 
+     * Gets the median of three values.
      *
-     * @param a
-     *            value 1
-     * @param b
-     *            value 2
-     * @param c
-     *            value 3
+     * @param a 
+     * @param b 
+     * @param c 
      * @return the median of the values
+     * @see #median(int...)
      */
     public static char median(final char a, final char b, final char c) {
         if ((a >= b && a <= c) || (a >= c && a <= b)) {
@@ -30212,18 +30209,14 @@ public final class N {
         }
     }
 
-    /**
-     * <p>
-     * Gets the median of three <code>byte</code> values.
-     * </p>
+    /** 
+     * Gets the median of three values.
      *
-     * @param a
-     *            value 1
-     * @param b
-     *            value 2
-     * @param c
-     *            value 3
+     * @param a 
+     * @param b 
+     * @param c 
      * @return the median of the values
+     * @see #median(int...)
      */
     public static byte median(final byte a, final byte b, final byte c) {
         if ((a >= b && a <= c) || (a >= c && a <= b)) {
@@ -30235,18 +30228,14 @@ public final class N {
         }
     }
 
-    /**
-     * <p>
-     * Gets the median of three <code>short</code> values.
-     * </p>
+    /** 
+     * Gets the median of three values.
      *
-     * @param a
-     *            value 1
-     * @param b
-     *            value 2
-     * @param c
-     *            value 3
+     * @param a 
+     * @param b 
+     * @param c 
      * @return the median of the values
+     * @see #median(int...)
      */
     public static short median(final short a, final short b, final short c) {
         if ((a >= b && a <= c) || (a >= c && a <= b)) {
@@ -30258,18 +30247,14 @@ public final class N {
         }
     }
 
-    /**
-     * <p>
-     * Gets the median of three <code>int</code> values.
-     * </p>
+    /** 
+     * Gets the median of three values.
      *
-     * @param a
-     *            value 1
-     * @param b
-     *            value 2
-     * @param c
-     *            value 3
+     * @param a 
+     * @param b 
+     * @param c 
      * @return the median of the values
+     * @see #median(int...)
      */
     public static int median(final int a, final int b, final int c) {
         if ((a >= b && a <= c) || (a >= c && a <= b)) {
@@ -30281,18 +30266,14 @@ public final class N {
         }
     }
 
-    /**
-     * <p>
-     * Gets the median of three <code>long</code> values.
-     * </p>
+    /** 
+     * Gets the median of three values.
      *
-     * @param a
-     *            value 1
-     * @param b
-     *            value 2
-     * @param c
-     *            value 3
+     * @param a 
+     * @param b 
+     * @param c 
      * @return the median of the values
+     * @see #median(int...)
      */
     public static long median(final long a, final long b, final long c) {
         if ((a >= b && a <= c) || (a >= c && a <= b)) {
@@ -30304,23 +30285,14 @@ public final class N {
         }
     }
 
-    /**
-     * <p>
-     * Gets the median of three <code>float</code> values.
-     * </p>
+    /** 
+     * Gets the median of three values.
      *
-     * <p>
-     * If any value is <code>NaN</code>, <code>NaN</code> is returned. Infinity
-     * is handled.
-     * </p>
-     *
-     * @param a
-     *            value 1
-     * @param b
-     *            value 2
-     * @param c
-     *            value 3
+     * @param a 
+     * @param b 
+     * @param c 
      * @return the median of the values
+     * @see #median(int...)
      */
     public static float median(final float a, final float b, final float c) {
         int ab = Float.compare(a, b);
@@ -30336,23 +30308,14 @@ public final class N {
         }
     }
 
-    /**
-     * <p>
-     * Gets the median of three <code>double</code> values.
-     * </p>
+    /** 
+     * Gets the median of three values.
      *
-     * <p>
-     * If any value is <code>NaN</code>, <code>NaN</code> is returned. Infinity
-     * is handled.
-     * </p>
-     *
-     * @param a
-     *            value 1
-     * @param b
-     *            value 2
-     * @param c
-     *            value 3
+     * @param a 
+     * @param b 
+     * @param c 
      * @return the median of the values
+     * @see #median(int...)
      */
     public static double median(final double a, final double b, final double c) {
         int ab = Double.compare(a, b);
@@ -30368,10 +30331,28 @@ public final class N {
         }
     }
 
+    /** 
+     * Gets the median of three values.
+     *
+     * @param a 
+     * @param b 
+     * @param c 
+     * @return the median of the values
+     * @see #median(int...)
+     */
     public static <T extends Comparable<? super T>> T median(final T a, final T b, final T c) {
         return (T) median(a, b, c, NULL_MIN_COMPARATOR);
     }
 
+    /** 
+     * Gets the median of three values.
+     *
+     * @param a 
+     * @param b 
+     * @param c 
+     * @return the median of the values
+     * @see #median(int...)
+     */
     public static <T> T median(final T a, final T b, final T c, final Comparator<? super T> cmp) {
         int ab = cmp.compare(a, b);
         int ac = cmp.compare(a, c);
@@ -30389,9 +30370,9 @@ public final class N {
     /**
      * Returns the <code>length / 2 + 1</code> largest value in the specified array.
      *
-     * @param a
-     *            an array, must not be null or empty
+     * @param a an array, must not be null or empty
      * @return the median value in the array
+     * @see #median(int...)
      */
     @SafeVarargs
     public static char median(final char... a) {
@@ -30423,9 +30404,9 @@ public final class N {
     /**
      * Returns the <code>length / 2 + 1</code> largest value in the specified array.
      *
-     * @param a
-     *            an array, must not be null or empty
+     * @param a an array, must not be null or empty
      * @return the median value in the array
+     * @see #median(int...)
      */
     @SafeVarargs
     public static byte median(final byte... a) {
@@ -30457,9 +30438,9 @@ public final class N {
     /**
      * Returns the <code>length / 2 + 1</code> largest value in the specified array.
      *
-     * @param a
-     *            an array, must not be null or empty
+     * @param a an array, must not be null or empty
      * @return the median value in the array
+     * @see #median(int...)
      */
     @SafeVarargs
     public static short median(final short... a) {
@@ -30491,9 +30472,9 @@ public final class N {
     /**
      * Returns the <code>length / 2 + 1</code> largest value in the specified array.
      *
-     * @param a
-     *            an array, must not be null or empty
+     * @param a an array, must not be null or empty
      * @return the median value in the array
+     * @see #median(int...)
      */
     @SafeVarargs
     public static int median(final int... a) {
@@ -30525,9 +30506,9 @@ public final class N {
     /**
      * Returns the <code>length / 2 + 1</code> largest value in the specified array.
      *
-     * @param a
-     *            an array, must not be null or empty
+     * @param a an array, must not be null or empty
      * @return the median value in the array
+     * @see #median(int...)
      */
     @SafeVarargs
     public static long median(final long... a) {
@@ -30559,9 +30540,9 @@ public final class N {
     /**
      * Returns the <code>length / 2 + 1</code> largest value in the specified array.
      *
-     * @param a
-     *            an array, must not be null or empty
+     * @param a an array, must not be null or empty
      * @return the median value in the array
+     * @see #median(int...)
      */
     @SafeVarargs
     public static float median(final float... a) {
@@ -30593,9 +30574,9 @@ public final class N {
     /**
      * Returns the <code>length / 2 + 1</code> largest value in the specified array.
      *
-     * @param a
-     *            an array, must not be null or empty
+     * @param a an array, must not be null or empty
      * @return the median value in the array
+     * @see #median(int...)
      */
     @SafeVarargs
     public static double median(final double... a) {
@@ -30627,8 +30608,9 @@ public final class N {
     /**
      * Returns the <code>length / 2 + 1</code> largest value in the specified array.
      *
-     * @param a
+     * @param a an array, must not be null or empty
      * @return the median value in the array
+     * @see #median(int...)
      */
     public static <T extends Comparable<? super T>> T median(final T[] a) {
         N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
@@ -30644,19 +30626,19 @@ public final class N {
         return (T) median(a, from, to, OBJ_COMPARATOR);
     }
 
+    /**
+     * Returns the <code>length / 2 + 1</code> largest value in the specified array.
+     *
+     * @param a an array, must not be null or empty
+     * @return the median value in the array
+     * @see #median(int...)
+     */
     public static <T> T median(final T[] a, Comparator<? super T> cmp) {
         N.checkNullOrEmpty(a, "The spcified array 'a' can't be null or empty");
 
         return median(a, 0, a.length, cmp);
     }
 
-    /**
-     * Returns the <code>length / 2 + 1</code> largest value in the specified array.
-     *
-     * @param array
-     * @param c
-     * @return the median value in the array
-     */
     public static <T> T median(final T[] a, final int from, final int to, Comparator<? super T> cmp) {
         if (N.isNullOrEmpty(a) || to - from < 1) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
@@ -30672,10 +30654,11 @@ public final class N {
     }
 
     /**
-     * Returns the <code>length / 2 + 1</code> largest value in the specified collection.
+     * Returns the <code>length / 2 + 1</code> largest value in the specified array.
      *
-     * @param c
-     * @return the median value in the collection
+     * @param a an array, must not be null or empty
+     * @return the median value in the array
+     * @see #median(int...)
      */
     public static <T extends Comparable<? super T>> T median(final Collection<? extends T> c) {
         N.checkNullOrEmpty(c, "The spcified collection 'c' can't be null or empty");
@@ -30687,19 +30670,19 @@ public final class N {
         return (T) median(c, from, to, OBJ_COMPARATOR);
     }
 
+    /**
+     * Returns the <code>length / 2 + 1</code> largest value in the specified array.
+     *
+     * @param a an array, must not be null or empty
+     * @return the median value in the array
+     * @see #median(int...)
+     */
     public static <T> T median(final Collection<? extends T> c, Comparator<? super T> cmp) {
         N.checkNullOrEmpty(c, "The spcified collection 'c' can't be null or empty");
 
         return median(c, 0, c.size(), cmp);
     }
 
-    /**
-     * Returns the <code>length / 2 + 1</code> largest value in the specified collection.
-     *
-     * @param c
-     * @param cmp
-     * @return the median value in the Collection
-     */
     public static <T> T median(final Collection<? extends T> c, final int from, final int to, Comparator<? super T> cmp) {
         if (N.isNullOrEmpty(c) || to - from < 1) {
             throw new IllegalArgumentException("The length of array can't be null or empty");
@@ -31674,26 +31657,28 @@ public final class N {
         });
     }
 
-    public static <T> void parse(final Iterator<? extends T> iter, final Consumer<? super T> elementParser) {
-        parse(iter, elementParser, null);
+    public static <T, E extends Exception> void parse(final Iterator<? extends T> iter, final Try.Consumer<? super T, E> elementParser) throws E {
+        parse(iter, elementParser, Fn.emptyAction());
     }
 
-    public static <T> void parse(final Iterator<? extends T> iter, final Consumer<? super T> elementParser, final Runnable onComplete) {
+    public static <T, E extends Exception, E2 extends Exception> void parse(final Iterator<? extends T> iter, final Try.Consumer<? super T, E> elementParser,
+            final Try.Runnable<E2> onComplete) throws E, E2 {
         parse(iter, 0, Long.MAX_VALUE, elementParser, onComplete);
     }
 
-    public static <T> void parse(final Iterator<? extends T> iter, final long offset, final long count, final Consumer<? super T> elementParser) {
-        parse(iter, offset, count, elementParser, null);
+    public static <T, E extends Exception> void parse(final Iterator<? extends T> iter, final long offset, final long count,
+            final Try.Consumer<? super T, E> elementParser) throws E {
+        parse(iter, offset, count, elementParser, Fn.emptyAction());
     }
 
-    public static <T> void parse(final Iterator<? extends T> iter, final long offset, final long count, final Consumer<? super T> elementParser,
-            final Runnable onComplete) {
+    public static <T, E extends Exception, E2 extends Exception> void parse(final Iterator<? extends T> iter, final long offset, final long count,
+            final Try.Consumer<? super T, E> elementParser, final Try.Runnable<E2> onComplete) throws E, E2 {
         parse(iter, offset, count, 0, 0, elementParser, onComplete);
     }
 
-    public static <T> void parse(final Iterator<? extends T> iter, long offset, long count, final int processThreadNum, final int queueSize,
-            final Consumer<? super T> elementParser) {
-        parse(iter, offset, count, processThreadNum, queueSize, elementParser, null);
+    public static <T, E extends Exception> void parse(final Iterator<? extends T> iter, long offset, long count, final int processThreadNum,
+            final int queueSize, final Try.Consumer<? super T, E> elementParser) throws E {
+        parse(iter, offset, count, processThreadNum, queueSize, elementParser, Fn.emptyAction());
     }
 
     /**
@@ -31708,43 +31693,45 @@ public final class N {
      * @param onComplete
      * @param onError
      */
-    public static <T> void parse(final Iterator<? extends T> iter, long offset, long count, final int processThreadNum, final int queueSize,
-            final Consumer<? super T> elementParser, final Runnable onComplete) {
+    public static <T, E extends Exception, E2 extends Exception> void parse(final Iterator<? extends T> iter, long offset, long count,
+            final int processThreadNum, final int queueSize, final Try.Consumer<? super T, E> elementParser, final Try.Runnable<E2> onComplete) throws E, E2 {
         parse(N.asList(iter), offset, count, 0, processThreadNum, queueSize, elementParser, onComplete);
     }
 
-    public static <T> void parse(final Collection<? extends Iterator<? extends T>> iterators, final Consumer<? super T> elementParser) {
-        parse(iterators, elementParser, null);
+    public static <T, E extends Exception> void parse(final Collection<? extends Iterator<? extends T>> iterators,
+            final Try.Consumer<? super T, E> elementParser) throws E {
+        parse(iterators, elementParser, Fn.emptyAction());
     }
 
-    public static <T> void parse(final Collection<? extends Iterator<? extends T>> iterators, final Consumer<? super T> elementParser,
-            final Runnable onComplete) {
+    public static <T, E extends Exception, E2 extends Exception> void parse(final Collection<? extends Iterator<? extends T>> iterators,
+            final Try.Consumer<? super T, E> elementParser, final Try.Runnable<E2> onComplete) throws E, E2 {
         parse(iterators, 0, Long.MAX_VALUE, elementParser, onComplete);
     }
 
-    public static <T> void parse(final Collection<? extends Iterator<? extends T>> iterators, final long offset, final long count,
-            final Consumer<? super T> elementParser) {
-        parse(iterators, offset, count, elementParser, null);
+    public static <T, E extends Exception> void parse(final Collection<? extends Iterator<? extends T>> iterators, final long offset, final long count,
+            final Try.Consumer<? super T, E> elementParser) throws E {
+        parse(iterators, offset, count, elementParser, Fn.emptyAction());
     }
 
-    public static <T> void parse(final Collection<? extends Iterator<? extends T>> iterators, final long offset, final long count,
-            final Consumer<? super T> elementParser, final Runnable onComplete) {
+    public static <T, E extends Exception, E2 extends Exception> void parse(final Collection<? extends Iterator<? extends T>> iterators, final long offset,
+            final long count, final Try.Consumer<? super T, E> elementParser, final Try.Runnable<E2> onComplete) throws E, E2 {
         parse(iterators, offset, count, 0, 0, 0, elementParser, onComplete);
     }
 
-    public static <T> void parse(final Collection<? extends Iterator<? extends T>> iterators, final int readThreadNum, final int processThreadNum,
-            final int queueSize, final Consumer<? super T> elementParser) {
-        parse(iterators, readThreadNum, processThreadNum, queueSize, elementParser, null);
+    public static <T, E extends Exception> void parse(final Collection<? extends Iterator<? extends T>> iterators, final int readThreadNum,
+            final int processThreadNum, final int queueSize, final Try.Consumer<? super T, E> elementParser) throws E {
+        parse(iterators, readThreadNum, processThreadNum, queueSize, elementParser, Fn.emptyAction());
     }
 
-    public static <T> void parse(final Collection<? extends Iterator<? extends T>> iterators, final int readThreadNum, final int processThreadNum,
-            final int queueSize, final Consumer<? super T> elementParser, final Runnable onComplete) {
+    public static <T, E extends Exception, E2 extends Exception> void parse(final Collection<? extends Iterator<? extends T>> iterators,
+            final int readThreadNum, final int processThreadNum, final int queueSize, final Try.Consumer<? super T, E> elementParser,
+            final Try.Runnable<E2> onComplete) throws E {
         parse(iterators, 0, Long.MAX_VALUE, readThreadNum, processThreadNum, queueSize, elementParser);
     }
 
-    public static <T> void parse(final Collection<? extends Iterator<? extends T>> iterators, final long offset, final long count, final int readThreadNum,
-            final int processThreadNum, final int queueSize, final Consumer<? super T> elementParser) {
-        parse(iterators, offset, count, readThreadNum, processThreadNum, queueSize, elementParser, null);
+    public static <T, E extends Exception> void parse(final Collection<? extends Iterator<? extends T>> iterators, final long offset, final long count,
+            final int readThreadNum, final int processThreadNum, final int queueSize, final Try.Consumer<? super T, E> elementParser) throws E {
+        parse(iterators, offset, count, readThreadNum, processThreadNum, queueSize, elementParser, Fn.emptyAction());
     }
 
     /**
@@ -31759,8 +31746,9 @@ public final class N {
      * @param elementParser.
      * @param onComplete
      */
-    public static <T> void parse(final Collection<? extends Iterator<? extends T>> iterators, final long offset, final long count, final int readThreadNum,
-            final int processThreadNum, final int queueSize, final Consumer<? super T> elementParser, final Runnable onComplete) {
+    public static <T, E extends Exception, E2 extends Exception> void parse(final Collection<? extends Iterator<? extends T>> iterators, final long offset,
+            final long count, final int readThreadNum, final int processThreadNum, final int queueSize, final Try.Consumer<? super T, E> elementParser,
+            final Try.Runnable<E2> onComplete) throws E, E2 {
         N.checkArgument(offset >= 0 && count >= 0, "'offset'=%s and 'count'=%s can't be negative", offset, count);
 
         if (N.isNullOrEmpty(iterators)) {

@@ -16,14 +16,17 @@ package com.landawn.abacus.util.function;
 
 import java.util.Objects;
 
+import com.landawn.abacus.util.Try;
+
 /**
  * 
  * @since 0.8
  * 
  * @author Haiyang Li
  */
-public interface IndexedBiFunction<U, T, R> {
+public interface IndexedBiFunction<U, T, R> extends Try.IndexedBiFunction<U, T, R, RuntimeException> {
 
+    @Override
     R apply(U u, int idx, T e);
 
     default <V> IndexedBiFunction<U, T, V> andThen(IndexedFunction<? super R, ? extends V> after) {

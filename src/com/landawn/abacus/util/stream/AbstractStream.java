@@ -80,7 +80,6 @@ import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.function.ToDoubleFunction;
 import com.landawn.abacus.util.function.ToIntFunction;
 import com.landawn.abacus.util.function.ToLongFunction;
-import com.landawn.abacus.util.function.TriConsumer;
 import com.landawn.abacus.util.function.TriFunction;
 
 /**
@@ -638,12 +637,12 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public void forEachPair(final BiConsumer<? super T, ? super T> action) {
+    public <E extends Exception> void forEachPair(final Try.BiConsumer<? super T, ? super T, E> action) throws E {
         forEachPair(action, 1);
     }
 
     @Override
-    public void forEachTriple(final TriConsumer<? super T, ? super T, ? super T> action) {
+    public <E extends Exception> void forEachTriple(final Try.TriConsumer<? super T, ? super T, ? super T, E> action) throws E {
         forEachTriple(action, 1);
     }
 

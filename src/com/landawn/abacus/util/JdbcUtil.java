@@ -83,7 +83,6 @@ import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
 import com.landawn.abacus.type.Type;
 import com.landawn.abacus.util.Try.BiConsumer;
-import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.Predicate;
 
@@ -1903,26 +1902,28 @@ public final class JdbcUtil {
         return result;
     }
 
-    public static void parse(final Connection conn, final String sql, final Consumer<Object[]> rowParser) {
-        parse(conn, sql, rowParser, null);
+    public static <E extends Exception> void parse(final Connection conn, final String sql, final Try.Consumer<Object[], E> rowParser) throws E {
+        parse(conn, sql, rowParser, Fn.emptyAction());
     }
 
-    public static void parse(final Connection conn, final String sql, final Consumer<Object[]> rowParser, final Runnable onComplete) {
+    public static <E extends Exception, E2 extends Exception> void parse(final Connection conn, final String sql, final Try.Consumer<Object[], E> rowParser,
+            final Try.Runnable<E2> onComplete) throws E, E2 {
         parse(conn, sql, 0, Long.MAX_VALUE, rowParser, onComplete);
     }
 
-    public static void parse(final Connection conn, final String sql, final long offset, final long count, final Consumer<Object[]> rowParser) {
-        parse(conn, sql, offset, count, rowParser, null);
+    public static <E extends Exception> void parse(final Connection conn, final String sql, final long offset, final long count,
+            final Try.Consumer<Object[], E> rowParser) throws E {
+        parse(conn, sql, offset, count, rowParser, Fn.emptyAction());
     }
 
-    public static void parse(final Connection conn, final String sql, final long offset, final long count, final Consumer<Object[]> rowParser,
-            final Runnable onComplete) {
+    public static <E extends Exception, E2 extends Exception> void parse(final Connection conn, final String sql, final long offset, final long count,
+            final Try.Consumer<Object[], E> rowParser, final Try.Runnable<E2> onComplete) throws E, E2 {
         parse(conn, sql, offset, count, 0, 0, rowParser, onComplete);
     }
 
-    public static void parse(final Connection conn, final String sql, final long offset, final long count, final int processThreadNum, final int queueSize,
-            final Consumer<Object[]> rowParser) {
-        parse(conn, sql, offset, count, processThreadNum, queueSize, rowParser, null);
+    public static <E extends Exception> void parse(final Connection conn, final String sql, final long offset, final long count, final int processThreadNum,
+            final int queueSize, final Try.Consumer<Object[], E> rowParser) throws E {
+        parse(conn, sql, offset, count, processThreadNum, queueSize, rowParser, Fn.emptyAction());
     }
 
     /**
@@ -1937,8 +1938,8 @@ public final class JdbcUtil {
      * @param rowParser
      * @param onComplete
      */
-    public static void parse(final Connection conn, final String sql, final long offset, final long count, final int processThreadNum, final int queueSize,
-            final Consumer<Object[]> rowParser, final Runnable onComplete) {
+    public static <E extends Exception, E2 extends Exception> void parse(final Connection conn, final String sql, final long offset, final long count,
+            final int processThreadNum, final int queueSize, final Try.Consumer<Object[], E> rowParser, final Try.Runnable<E2> onComplete) throws E, E2 {
         PreparedStatement stmt = null;
         try {
             stmt = prepareStatement(conn, sql);
@@ -1953,25 +1954,28 @@ public final class JdbcUtil {
         }
     }
 
-    public static void parse(final PreparedStatement stmt, final Consumer<Object[]> rowParser) {
-        parse(stmt, rowParser, null);
+    public static <E extends Exception> void parse(final PreparedStatement stmt, final Try.Consumer<Object[], E> rowParser) throws E {
+        parse(stmt, rowParser, Fn.emptyAction());
     }
 
-    public static void parse(final PreparedStatement stmt, final Consumer<Object[]> rowParser, final Runnable onComplete) {
+    public static <E extends Exception, E2 extends Exception> void parse(final PreparedStatement stmt, final Try.Consumer<Object[], E> rowParser,
+            final Try.Runnable<E2> onComplete) throws E, E2 {
         parse(stmt, 0, Long.MAX_VALUE, rowParser, onComplete);
     }
 
-    public static void parse(final PreparedStatement stmt, final long offset, final long count, final Consumer<Object[]> rowParser) {
-        parse(stmt, offset, count, rowParser, null);
+    public static <E extends Exception> void parse(final PreparedStatement stmt, final long offset, final long count, final Try.Consumer<Object[], E> rowParser)
+            throws E {
+        parse(stmt, offset, count, rowParser, Fn.emptyAction());
     }
 
-    public static void parse(final PreparedStatement stmt, final long offset, final long count, final Consumer<Object[]> rowParser, final Runnable onComplete) {
+    public static <E extends Exception, E2 extends Exception> void parse(final PreparedStatement stmt, final long offset, final long count,
+            final Try.Consumer<Object[], E> rowParser, final Try.Runnable<E2> onComplete) throws E, E2 {
         parse(stmt, offset, count, 0, 0, rowParser, onComplete);
     }
 
-    public static void parse(final PreparedStatement stmt, final long offset, final long count, final int processThreadNum, final int queueSize,
-            final Consumer<Object[]> rowParser) {
-        parse(stmt, offset, count, processThreadNum, queueSize, rowParser, null);
+    public static <E extends Exception> void parse(final PreparedStatement stmt, final long offset, final long count, final int processThreadNum,
+            final int queueSize, final Try.Consumer<Object[], E> rowParser) throws E {
+        parse(stmt, offset, count, processThreadNum, queueSize, rowParser, Fn.emptyAction());
     }
 
     /**
@@ -1985,8 +1989,8 @@ public final class JdbcUtil {
      * @param rowParser
      * @param onComplete
      */
-    public static void parse(final PreparedStatement stmt, final long offset, final long count, final int processThreadNum, final int queueSize,
-            final Consumer<Object[]> rowParser, final Runnable onComplete) {
+    public static <E extends Exception, E2 extends Exception> void parse(final PreparedStatement stmt, final long offset, final long count,
+            final int processThreadNum, final int queueSize, final Try.Consumer<Object[], E> rowParser, final Try.Runnable<E2> onComplete) throws E, E2 {
         ResultSet rs = null;
 
         try {
@@ -2000,24 +2004,27 @@ public final class JdbcUtil {
         }
     }
 
-    public static void parse(final ResultSet rs, final Consumer<Object[]> rowParser) {
-        parse(rs, rowParser, null);
+    public static <E extends Exception> void parse(final ResultSet rs, final Try.Consumer<Object[], E> rowParser) throws E {
+        parse(rs, rowParser, Fn.emptyAction());
     }
 
-    public static void parse(final ResultSet rs, final Consumer<Object[]> rowParser, final Runnable onComplete) {
+    public static <E extends Exception, E2 extends Exception> void parse(final ResultSet rs, final Try.Consumer<Object[], E> rowParser,
+            final Try.Runnable<E2> onComplete) throws E, E2 {
         parse(rs, 0, Long.MAX_VALUE, rowParser, onComplete);
     }
 
-    public static void parse(final ResultSet rs, long offset, long count, final Consumer<Object[]> rowParser) {
-        parse(rs, offset, count, rowParser, null);
+    public static <E extends Exception> void parse(final ResultSet rs, long offset, long count, final Try.Consumer<Object[], E> rowParser) throws E {
+        parse(rs, offset, count, rowParser, Fn.emptyAction());
     }
 
-    public static void parse(final ResultSet rs, long offset, long count, final Consumer<Object[]> rowParser, final Runnable onComplete) {
+    public static <E extends Exception, E2 extends Exception> void parse(final ResultSet rs, long offset, long count, final Try.Consumer<Object[], E> rowParser,
+            final Try.Runnable<E2> onComplete) throws E, E2 {
         parse(rs, offset, count, 0, 0, rowParser, onComplete);
     }
 
-    public static void parse(final ResultSet rs, long offset, long count, final int processThreadNum, final int queueSize, final Consumer<Object[]> rowParser) {
-        parse(rs, offset, count, processThreadNum, queueSize, rowParser, null);
+    public static <E extends Exception> void parse(final ResultSet rs, long offset, long count, final int processThreadNum, final int queueSize,
+            final Try.Consumer<Object[], E> rowParser) throws E {
+        parse(rs, offset, count, processThreadNum, queueSize, rowParser, Fn.emptyAction());
     }
 
     /**
@@ -2031,8 +2038,8 @@ public final class JdbcUtil {
      * @param rowParser
      * @param onComplete
      */
-    public static void parse(final ResultSet rs, long offset, long count, final int processThreadNum, final int queueSize, final Consumer<Object[]> rowParser,
-            final Runnable onComplete) {
+    public static <E extends Exception, E2 extends Exception> void parse(final ResultSet rs, long offset, long count, final int processThreadNum,
+            final int queueSize, final Try.Consumer<Object[], E> rowParser, final Try.Runnable<E2> onComplete) throws E, E2 {
         N.parse(new RowIterator(rs), offset, count, processThreadNum, queueSize, rowParser, onComplete);
     }
 
@@ -2109,7 +2116,7 @@ public final class JdbcUtil {
                 : stmtSetter);
         final AtomicLong result = new AtomicLong();
 
-        final Consumer<Object[]> rowParser = new Consumer<Object[]>() {
+        final Try.Consumer<Object[], RuntimeException> rowParser = new Try.Consumer<Object[], RuntimeException>() {
             @Override
             public void accept(Object[] row) {
                 try {
@@ -2132,7 +2139,7 @@ public final class JdbcUtil {
             }
         };
 
-        final Runnable onComplete = new Runnable() {
+        final Try.Runnable<RuntimeException> onComplete = new Try.Runnable<RuntimeException>() {
             @Override
             public void run() {
                 if ((result.longValue() % batchSize) > 0) {

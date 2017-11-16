@@ -16,14 +16,17 @@ package com.landawn.abacus.util.function;
 
 import java.util.Objects;
 
+import com.landawn.abacus.util.Try;
+
 /**
  * 
  * @since 0.8
  * 
  * @author Haiyang Li
  */
-public interface IndexedBiPredicate<U, T> {
+public interface IndexedBiPredicate<U, T> extends Try.IndexedBiPredicate<U, T, RuntimeException> {
 
+    @Override
     boolean test(U u, int idx, T e);
 
     default IndexedBiPredicate<U, T> negate() {

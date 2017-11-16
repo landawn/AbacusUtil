@@ -491,6 +491,8 @@ public abstract class DoubleStream
      */
     public abstract <R> R collect(Supplier<R> supplier, ObjDoubleConsumer<R> accumulator);
 
+    public abstract void forEach(DoubleConsumer action);
+
     /**
      * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
      * Don't call any other methods with this stream after head() and tail() are called. 

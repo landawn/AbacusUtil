@@ -43,6 +43,7 @@ import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nullable;
 import com.landawn.abacus.util.ShortIterator;
+import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
@@ -58,7 +59,6 @@ import com.landawn.abacus.util.function.ToFloatFunction;
 import com.landawn.abacus.util.function.ToIntFunction;
 import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.function.ToShortFunction;
-import com.landawn.abacus.util.function.TriConsumer;
 import com.landawn.abacus.util.function.TriFunction;
 import com.landawn.abacus.util.stream.ObjIteratorEx.QueuedIterator;
 
@@ -1915,14 +1915,15 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public void forEach(Consumer<? super T> action) {
+    public <E extends Exception> void forEach(Try.Consumer<? super T, E> action) throws E {
         while (elements.hasNext()) {
             action.accept(elements.next());
         }
     }
 
     @Override
-    public <R> R forEach(R seed, BiFunction<R, ? super T, R> accumulator, BiPredicate<? super R, ? super T> conditionToBreak) {
+    public <R, E extends Exception, E2 extends Exception> R forEach(R seed, Try.BiFunction<R, ? super T, R, E> accumulator,
+            Try.BiPredicate<? super R, ? super T, E2> conditionToBreak) throws E, E2 {
         R result = seed;
         T next = null;
 
@@ -1939,7 +1940,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public void forEachPair(final BiConsumer<? super T, ? super T> action, final int increment) {
+    public <E extends Exception> void forEachPair(final Try.BiConsumer<? super T, ? super T, E> action, final int increment) throws E {
         final int windowSize = 2;
 
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
@@ -1970,7 +1971,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public void forEachTriple(final TriConsumer<? super T, ? super T, ? super T> action, final int increment) {
+    public <E extends Exception> void forEachTriple(final Try.TriConsumer<? super T, ? super T, ? super T, E> action, final int increment) throws E {
         final int windowSize = 3;
 
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);

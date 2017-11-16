@@ -16,14 +16,17 @@ package com.landawn.abacus.util.function;
 
 import java.util.Objects;
 
+import com.landawn.abacus.util.Try;
+
 /**
  * 
  * @since 0.8
  * 
  * @author Haiyang Li
  */
-public interface IndexedConsumer<T> {
+public interface IndexedConsumer<T> extends Try.IndexedConsumer<T, RuntimeException> {
 
+    @Override
     void accept(int idx, T e);
 
     default IndexedConsumer<T> andThen(IndexedConsumer<? super T> after) {

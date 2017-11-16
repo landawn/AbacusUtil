@@ -16,14 +16,17 @@ package com.landawn.abacus.util.function;
 
 import java.util.Objects;
 
+import com.landawn.abacus.util.Try;
+
 /**
  * 
  * @since 0.8
  * 
  * @author Haiyang Li
  */
-public interface IndexedFunction<T, R> {
+public interface IndexedFunction<T, R> extends Try.IndexedFunction<T, R, RuntimeException> {
 
+    @Override
     R apply(int idx, T e);
 
     default <V> IndexedFunction<V, R> compose(IndexedFunction<? super V, ? extends T> before) {

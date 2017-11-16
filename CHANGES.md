@@ -4,6 +4,8 @@
 
 * `Clazz.of(Class<?>)` is marked to ‘Deprecated’ and will be removed in version 1.2.0 because it doesn’t work as expected.
 
+* Replace `Predicate/Consumer/Function` in `N/Seq/Stream/DataSet.forEach(...)` and `N/JdbcUtil/IOUtil.parse(...)` with `Try.Predicate/Consumer/Function`.
+
 * Add `EntryStream.collect(java.util.stream.Collector)` and `EntryStream.collectAndThen(java.util.stream.Collector, Function)`.
 
 * Add `Math2.asinh(double)/acosh(double)/atanh(double)`. Copied from Apache Commons Math.
