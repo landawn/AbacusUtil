@@ -122,26 +122,9 @@ import com.landawn.abacus.type.EntityType;
 import com.landawn.abacus.type.Type;
 import com.landawn.abacus.type.TypeFactory;
 import com.landawn.abacus.util.function.BiPredicate;
-import com.landawn.abacus.util.function.BooleanPredicate;
-import com.landawn.abacus.util.function.BytePredicate;
-import com.landawn.abacus.util.function.CharPredicate;
-import com.landawn.abacus.util.function.DoublePredicate;
-import com.landawn.abacus.util.function.FloatPredicate;
-import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
-import com.landawn.abacus.util.function.IntPredicate;
 import com.landawn.abacus.util.function.IntUnaryOperator;
-import com.landawn.abacus.util.function.LongPredicate;
 import com.landawn.abacus.util.function.Predicate;
-import com.landawn.abacus.util.function.ShortPredicate;
-import com.landawn.abacus.util.function.ToBooleanFunction;
-import com.landawn.abacus.util.function.ToByteFunction;
-import com.landawn.abacus.util.function.ToCharFunction;
-import com.landawn.abacus.util.function.ToDoubleFunction;
-import com.landawn.abacus.util.function.ToFloatFunction;
-import com.landawn.abacus.util.function.ToIntFunction;
-import com.landawn.abacus.util.function.ToLongFunction;
-import com.landawn.abacus.util.function.ToShortFunction;
 import com.landawn.abacus.util.stream.DoubleStream;
 import com.landawn.abacus.util.stream.FloatStream;
 import com.landawn.abacus.util.stream.Stream;
@@ -1155,7 +1138,8 @@ public final class N {
         return new HashMap<>(m);
     }
 
-    public static <K, V> HashMap<K, V> newHashMap(final Collection<? extends V> c, final Function<? super V, ? extends K> keyExtractor) {
+    public static <K, V, E extends Exception> HashMap<K, V> newHashMap(final Collection<? extends V> c,
+            final Try.Function<? super V, ? extends K, E> keyExtractor) throws E {
         N.requireNonNull(keyExtractor);
 
         if (isNullOrEmpty(c)) {
@@ -1188,7 +1172,8 @@ public final class N {
         return new LinkedHashMap<>(m);
     }
 
-    public static <K, V> LinkedHashMap<K, V> newLinkedHashMap(final Collection<? extends V> c, final Function<? super V, ? extends K> keyExtractor) {
+    public static <K, V, E extends Exception> LinkedHashMap<K, V> newLinkedHashMap(final Collection<? extends V> c,
+            final Try.Function<? super V, ? extends K, E> keyExtractor) throws E {
         N.requireNonNull(keyExtractor);
 
         if (isNullOrEmpty(c)) {
@@ -9181,7 +9166,7 @@ public final class N {
         return true;
     }
 
-    public static <T> Optional<T> firstNonNull(final T[] a) {
+    public static <T, E extends Exception> Optional<T> firstNonNull(final T[] a) {
         if (N.isNullOrEmpty(a)) {
             return Optional.empty();
         }
@@ -9195,7 +9180,7 @@ public final class N {
         return Optional.empty();
     }
 
-    public static <T> Optional<T> firstNonNull(final Collection<T> c) {
+    public static <T, E extends Exception> Optional<T> firstNonNull(final Collection<T> c) {
         if (N.isNullOrEmpty(c)) {
             return Optional.empty();
         }
@@ -9209,7 +9194,7 @@ public final class N {
         return Optional.empty();
     }
 
-    public static <T> Optional<T> lastNonNull(final T[] a) {
+    public static <T, E extends Exception> Optional<T> lastNonNull(final T[] a) {
         if (N.isNullOrEmpty(a)) {
             return Optional.empty();
         }
@@ -9223,7 +9208,7 @@ public final class N {
         return Optional.empty();
     }
 
-    public static <T> Optional<T> lastNonNull(final Collection<T> c) {
+    public static <T, E extends Exception> Optional<T> lastNonNull(final Collection<T> c) {
         if (N.isNullOrEmpty(c)) {
             return Optional.empty();
         }
@@ -15724,7 +15709,7 @@ public final class N {
     //     * @param postfix
     //     * @return
     //     */
-    //    public static <T> Optional<T> findFirst(Class<T> targetClass, String str, String prefix, String postfix) {
+    //    public static <T, E extends Exception> Optional<T> findFirst(Class<T> targetClass, String str, String prefix, String postfix) {
     //        return findFirst(targetClass, str, 0, prefix, postfix);
     //    }
     //
@@ -15741,7 +15726,7 @@ public final class N {
     //     * @return
     //     * @see String#indexOf(String, int)
     //     */
-    //    public static <T> Optional<T> findFirst(Class<T> targetClass, String str, int fromIndex, String prefix, String postfix) {
+    //    public static <T, E extends Exception> Optional<T> findFirst(Class<T> targetClass, String str, int fromIndex, String prefix, String postfix) {
     //        final Type<T> type = typeOf(targetClass);
     //
     //        if (N.isNullOrEmpty(str)) {
@@ -15802,7 +15787,7 @@ public final class N {
     //     * @param postfix
     //     * @return
     //     */
-    //    public static <T> Optional<T> findLast(Class<T> targetClass, String str, String prefix, String postfix) {
+    //    public static <T, E extends Exception> Optional<T> findLast(Class<T> targetClass, String str, String prefix, String postfix) {
     //        return findLast(targetClass, str, N.isNullOrEmpty(str) ? 0 : str.length(), prefix, postfix);
     //    }
     //
@@ -15819,7 +15804,7 @@ public final class N {
     //     * @return
     //     * @see String#lastIndexOf(String, int)
     //     */
-    //    public static <T> Optional<T> findLast(Class<T> targetClass, String str, int fromIndex, String prefix, String postfix) {
+    //    public static <T, E extends Exception> Optional<T> findLast(Class<T> targetClass, String str, int fromIndex, String prefix, String postfix) {
     //        final Type<T> type = typeOf(targetClass);
     //
     //        if (N.isNullOrEmpty(str)) {
@@ -16283,7 +16268,8 @@ public final class N {
         return N.isNullOrEmpty(str) ? new ArrayList<String>() : findAll(str, 0, str.length(), prefix, postfix);
     }
 
-    public static <T> List<T> findAll(final String str, final char prefix, final char postfix, final Function<? super String, T> func) {
+    public static <T, E extends Exception> List<T> findAll(final String str, final char prefix, final char postfix,
+            final Try.Function<? super String, T, E> func) throws E {
         return N.isNullOrEmpty(str) ? new ArrayList<T>() : findAll(str, 0, str.length(), prefix, postfix, func);
     }
 
@@ -16309,8 +16295,8 @@ public final class N {
         return res;
     }
 
-    public static <T> List<T> findAll(final String str, final int fromIndex, final int toIndex, final char prefix, final char postfix,
-            final Function<? super String, T> func) {
+    public static <T, E extends Exception> List<T> findAll(final String str, final int fromIndex, final int toIndex, final char prefix, final char postfix,
+            final Try.Function<? super String, T, E> func) throws E {
         final List<String> strs = findAll(str, fromIndex, toIndex, prefix, postfix);
         final List<T> res = new ArrayList<>(strs.size());
 
@@ -16334,7 +16320,8 @@ public final class N {
         return N.isNullOrEmpty(str) ? new ArrayList<String>() : findAll(str, 0, str.length(), prefix, postfix);
     }
 
-    public static <T> List<T> findAll(final String str, final String prefix, final String postfix, final Function<? super String, T> func) {
+    public static <T, E extends Exception> List<T> findAll(final String str, final String prefix, final String postfix,
+            final Try.Function<? super String, T, E> func) throws E {
         return N.isNullOrEmpty(str) ? new ArrayList<T>() : findAll(str, 0, str.length(), prefix, postfix, func);
     }
 
@@ -16360,8 +16347,8 @@ public final class N {
         return res;
     }
 
-    public static <T> List<T> findAll(final String str, final int fromIndex, final int toIndex, final String prefix, final String postfix,
-            final Function<? super String, T> func) {
+    public static <T, E extends Exception> List<T> findAll(final String str, final int fromIndex, final int toIndex, final String prefix, final String postfix,
+            final Try.Function<? super String, T, E> func) throws E {
         final List<String> strs = findAll(str, fromIndex, toIndex, prefix, postfix);
         final List<T> res = new ArrayList<>(strs.size());
 
@@ -18633,8 +18620,8 @@ public final class N {
         return result;
     }
 
-    public static <T, U, E extends Exception> void forEach(final T[] a, final Function<? super T, ? extends Collection<U>> flatMapper,
-            final Try.BiConsumer<? super T, ? super U, E> action) throws E {
+    public static <T, U, E extends Exception, E2 extends Exception> void forEach(final T[] a,
+            final Try.Function<? super T, ? extends Collection<U>, E> flatMapper, final Try.BiConsumer<? super T, ? super U, E2> action) throws E, E2 {
         if (N.isNullOrEmpty(a)) {
             return;
         }
@@ -18650,8 +18637,8 @@ public final class N {
         }
     }
 
-    public static <T, U, E extends Exception> void forEach(final Collection<T> c, final Function<? super T, ? extends Collection<U>> flatMapper,
-            final Try.BiConsumer<? super T, ? super U, E> action) throws E {
+    public static <T, U, E extends Exception, E2 extends Exception> void forEach(final Collection<T> c,
+            final Try.Function<? super T, ? extends Collection<U>, E> flatMapper, final Try.BiConsumer<? super T, ? super U, E2> action) throws E, E2 {
         if (N.isNullOrEmpty(c)) {
             return;
         }
@@ -18667,8 +18654,9 @@ public final class N {
         }
     }
 
-    public static <T, T2, T3, E extends Exception> void forEach(final T[] a, final Function<? super T, ? extends Collection<T2>> flatMapper,
-            final Function<? super T2, ? extends Collection<T3>> flatMapper2, final Try.TriConsumer<? super T, ? super T2, ? super T3, E> action) throws E {
+    public static <T, T2, T3, E extends Exception, E2 extends Exception, E3 extends Exception> void forEach(final T[] a,
+            final Try.Function<? super T, ? extends Collection<T2>, E> flatMapper, final Try.Function<? super T2, ? extends Collection<T3>, E2> flatMapper2,
+            final Try.TriConsumer<? super T, ? super T2, ? super T3, E3> action) throws E, E2, E3 {
         if (N.isNullOrEmpty(a)) {
             return;
         }
@@ -18690,8 +18678,9 @@ public final class N {
         }
     }
 
-    public static <T, T2, T3, E extends Exception> void forEach(final Collection<T> c, final Function<? super T, ? extends Collection<T2>> flatMapper,
-            final Function<? super T2, ? extends Collection<T3>> flatMapper2, final Try.TriConsumer<? super T, ? super T2, ? super T3, E> action) throws E {
+    public static <T, T2, T3, E extends Exception, E2 extends Exception, E3 extends Exception> void forEach(final Collection<T> c,
+            final Try.Function<? super T, ? extends Collection<T2>, E> flatMapper, final Try.Function<? super T2, ? extends Collection<T3>, E2> flatMapper2,
+            final Try.TriConsumer<? super T, ? super T2, ? super T3, E3> action) throws E, E2, E3 {
         if (N.isNullOrEmpty(c)) {
             return;
         }
@@ -18836,8 +18825,8 @@ public final class N {
     //        }
     //    }
 
-    public static <T, U, E extends Exception> void forEachNonNull(final T[] a, final Function<? super T, ? extends Collection<U>> flatMapper,
-            final Try.BiConsumer<? super T, ? super U, E> action) throws E {
+    public static <T, U, E extends Exception, E2 extends Exception> void forEachNonNull(final T[] a,
+            final Try.Function<? super T, ? extends Collection<U>, E> flatMapper, final Try.BiConsumer<? super T, ? super U, E2> action) throws E, E2 {
         if (N.isNullOrEmpty(a)) {
             return;
         }
@@ -18857,8 +18846,8 @@ public final class N {
         }
     }
 
-    public static <T, U, E extends Exception> void forEachNonNull(final Collection<T> c, final Function<? super T, ? extends Collection<U>> flatMapper,
-            final Try.BiConsumer<? super T, ? super U, E> action) throws E {
+    public static <T, U, E extends Exception, E2 extends Exception> void forEachNonNull(final Collection<T> c,
+            final Try.Function<? super T, ? extends Collection<U>, E> flatMapper, final Try.BiConsumer<? super T, ? super U, E2> action) throws E, E2 {
         if (N.isNullOrEmpty(c)) {
             return;
         }
@@ -18878,8 +18867,9 @@ public final class N {
         }
     }
 
-    public static <T, T2, T3, E extends Exception> void forEachNonNull(final T[] a, final Function<? super T, ? extends Collection<T2>> flatMapper,
-            final Function<? super T2, ? extends Collection<T3>> flatMapper2, final Try.TriConsumer<? super T, ? super T2, ? super T3, E> action) throws E {
+    public static <T, T2, T3, E extends Exception, E2 extends Exception, E3 extends Exception> void forEachNonNull(final T[] a,
+            final Try.Function<? super T, ? extends Collection<T2>, E> flatMapper, final Try.Function<? super T2, ? extends Collection<T3>, E2> flatMapper2,
+            final Try.TriConsumer<? super T, ? super T2, ? super T3, E3> action) throws E, E2, E3 {
         if (N.isNullOrEmpty(a)) {
             return;
         }
@@ -18907,8 +18897,9 @@ public final class N {
         }
     }
 
-    public static <T, T2, T3, E extends Exception> void forEachNonNull(final Collection<T> c, final Function<? super T, ? extends Collection<T2>> flatMapper,
-            final Function<? super T2, ? extends Collection<T3>> flatMapper2, final Try.TriConsumer<? super T, ? super T2, ? super T3, E> action) throws E {
+    public static <T, T2, T3, E extends Exception, E2 extends Exception, E3 extends Exception> void forEachNonNull(final Collection<T> c,
+            final Try.Function<? super T, ? extends Collection<T2>, E> flatMapper, final Try.Function<? super T2, ? extends Collection<T3>, E2> flatMapper2,
+            final Try.TriConsumer<? super T, ? super T2, ? super T3, E3> action) throws E, E2, E3 {
         if (N.isNullOrEmpty(c)) {
             return;
         }
@@ -18936,7 +18927,7 @@ public final class N {
         }
     }
 
-    public static BooleanList filter(final boolean[] a, final BooleanPredicate filter) {
+    public static <E extends Exception> BooleanList filter(final boolean[] a, final Try.BooleanPredicate<E> filter) throws E {
         if (N.isNullOrEmpty(a)) {
             return new BooleanList();
         }
@@ -18944,7 +18935,7 @@ public final class N {
         return filter(a, 0, a.length, filter);
     }
 
-    public static BooleanList filter(final boolean[] a, final BooleanPredicate filter, final int max) {
+    public static <E extends Exception> BooleanList filter(final boolean[] a, final Try.BooleanPredicate<E> filter, final int max) throws E {
         if (N.isNullOrEmpty(a)) {
             return new BooleanList();
         }
@@ -18952,7 +18943,8 @@ public final class N {
         return filter(a, 0, a.length, filter, max);
     }
 
-    public static BooleanList filter(final boolean[] a, final int fromIndex, final int toIndex, final BooleanPredicate filter) {
+    public static <E extends Exception> BooleanList filter(final boolean[] a, final int fromIndex, final int toIndex, final Try.BooleanPredicate<E> filter)
+            throws E {
         return filter(a, fromIndex, toIndex, filter, Integer.MAX_VALUE);
     }
 
@@ -18968,7 +18960,8 @@ public final class N {
      * @param max maximum return result.
      * @return
      */
-    public static BooleanList filter(final boolean[] a, final int fromIndex, final int toIndex, final BooleanPredicate filter, final int max) {
+    public static <E extends Exception> BooleanList filter(final boolean[] a, final int fromIndex, final int toIndex, final Try.BooleanPredicate<E> filter,
+            final int max) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -18987,7 +18980,7 @@ public final class N {
         return result;
     }
 
-    public static CharList filter(final char[] a, final CharPredicate filter) {
+    public static <E extends Exception> CharList filter(final char[] a, final Try.CharPredicate<E> filter) throws E {
         if (N.isNullOrEmpty(a)) {
             return new CharList();
         }
@@ -18995,7 +18988,7 @@ public final class N {
         return filter(a, 0, a.length, filter);
     }
 
-    public static CharList filter(final char[] a, final CharPredicate filter, final int max) {
+    public static <E extends Exception> CharList filter(final char[] a, final Try.CharPredicate<E> filter, final int max) throws E {
         if (N.isNullOrEmpty(a)) {
             return new CharList();
         }
@@ -19003,7 +18996,7 @@ public final class N {
         return filter(a, 0, a.length, filter, max);
     }
 
-    public static CharList filter(final char[] a, final int fromIndex, final int toIndex, final CharPredicate filter) {
+    public static <E extends Exception> CharList filter(final char[] a, final int fromIndex, final int toIndex, final Try.CharPredicate<E> filter) throws E {
         return filter(a, fromIndex, toIndex, filter, Integer.MAX_VALUE);
     }
 
@@ -19019,7 +19012,8 @@ public final class N {
      * @param max maximum return result.
      * @return
      */
-    public static CharList filter(final char[] a, final int fromIndex, final int toIndex, final CharPredicate filter, final int max) {
+    public static <E extends Exception> CharList filter(final char[] a, final int fromIndex, final int toIndex, final Try.CharPredicate<E> filter,
+            final int max) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -19038,7 +19032,7 @@ public final class N {
         return result;
     }
 
-    public static ByteList filter(final byte[] a, final BytePredicate filter) {
+    public static <E extends Exception> ByteList filter(final byte[] a, final Try.BytePredicate<E> filter) throws E {
         if (N.isNullOrEmpty(a)) {
             return new ByteList();
         }
@@ -19046,7 +19040,7 @@ public final class N {
         return filter(a, 0, a.length, filter);
     }
 
-    public static ByteList filter(final byte[] a, final BytePredicate filter, final int max) {
+    public static <E extends Exception> ByteList filter(final byte[] a, final Try.BytePredicate<E> filter, final int max) throws E {
         if (N.isNullOrEmpty(a)) {
             return new ByteList();
         }
@@ -19054,7 +19048,7 @@ public final class N {
         return filter(a, 0, a.length, filter, max);
     }
 
-    public static ByteList filter(final byte[] a, final int fromIndex, final int toIndex, final BytePredicate filter) {
+    public static <E extends Exception> ByteList filter(final byte[] a, final int fromIndex, final int toIndex, final Try.BytePredicate<E> filter) throws E {
         return filter(a, fromIndex, toIndex, filter, Integer.MAX_VALUE);
     }
 
@@ -19070,7 +19064,8 @@ public final class N {
      * @param max maximum return result.
      * @return
      */
-    public static ByteList filter(final byte[] a, final int fromIndex, final int toIndex, final BytePredicate filter, final int max) {
+    public static <E extends Exception> ByteList filter(final byte[] a, final int fromIndex, final int toIndex, final Try.BytePredicate<E> filter,
+            final int max) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -19089,7 +19084,7 @@ public final class N {
         return result;
     }
 
-    public static ShortList filter(final short[] a, final ShortPredicate filter) {
+    public static <E extends Exception> ShortList filter(final short[] a, final Try.ShortPredicate<E> filter) throws E {
         if (N.isNullOrEmpty(a)) {
             return new ShortList();
         }
@@ -19097,7 +19092,7 @@ public final class N {
         return filter(a, 0, a.length, filter);
     }
 
-    public static ShortList filter(final short[] a, final ShortPredicate filter, final int max) {
+    public static <E extends Exception> ShortList filter(final short[] a, final Try.ShortPredicate<E> filter, final int max) throws E {
         if (N.isNullOrEmpty(a)) {
             return new ShortList();
         }
@@ -19105,7 +19100,7 @@ public final class N {
         return filter(a, 0, a.length, filter, max);
     }
 
-    public static ShortList filter(final short[] a, final int fromIndex, final int toIndex, final ShortPredicate filter) {
+    public static <E extends Exception> ShortList filter(final short[] a, final int fromIndex, final int toIndex, final Try.ShortPredicate<E> filter) throws E {
         return filter(a, fromIndex, toIndex, filter, Integer.MAX_VALUE);
     }
 
@@ -19121,7 +19116,8 @@ public final class N {
      * @param max maximum return result.
      * @return
      */
-    public static ShortList filter(final short[] a, final int fromIndex, final int toIndex, final ShortPredicate filter, final int max) {
+    public static <E extends Exception> ShortList filter(final short[] a, final int fromIndex, final int toIndex, final Try.ShortPredicate<E> filter,
+            final int max) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -19140,7 +19136,7 @@ public final class N {
         return result;
     }
 
-    public static IntList filter(final int[] a, final IntPredicate filter) {
+    public static <E extends Exception> IntList filter(final int[] a, final Try.IntPredicate<E> filter) throws E {
         if (N.isNullOrEmpty(a)) {
             return new IntList();
         }
@@ -19148,7 +19144,7 @@ public final class N {
         return filter(a, 0, a.length, filter);
     }
 
-    public static IntList filter(final int[] a, final IntPredicate filter, final int max) {
+    public static <E extends Exception> IntList filter(final int[] a, final Try.IntPredicate<E> filter, final int max) throws E {
         if (N.isNullOrEmpty(a)) {
             return new IntList();
         }
@@ -19156,7 +19152,7 @@ public final class N {
         return filter(a, 0, a.length, filter, max);
     }
 
-    public static IntList filter(final int[] a, final int fromIndex, final int toIndex, final IntPredicate filter) {
+    public static <E extends Exception> IntList filter(final int[] a, final int fromIndex, final int toIndex, final Try.IntPredicate<E> filter) throws E {
         return filter(a, fromIndex, toIndex, filter, Integer.MAX_VALUE);
     }
 
@@ -19172,7 +19168,8 @@ public final class N {
      * @param max maximum return result.
      * @return
      */
-    public static IntList filter(final int[] a, final int fromIndex, final int toIndex, final IntPredicate filter, final int max) {
+    public static <E extends Exception> IntList filter(final int[] a, final int fromIndex, final int toIndex, final Try.IntPredicate<E> filter, final int max)
+            throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -19191,7 +19188,7 @@ public final class N {
         return result;
     }
 
-    public static LongList filter(final long[] a, final LongPredicate filter) {
+    public static <E extends Exception> LongList filter(final long[] a, final Try.LongPredicate<E> filter) throws E {
         if (N.isNullOrEmpty(a)) {
             return new LongList();
         }
@@ -19199,7 +19196,7 @@ public final class N {
         return filter(a, 0, a.length, filter);
     }
 
-    public static LongList filter(final long[] a, final LongPredicate filter, final int max) {
+    public static <E extends Exception> LongList filter(final long[] a, final Try.LongPredicate<E> filter, final int max) throws E {
         if (N.isNullOrEmpty(a)) {
             return new LongList();
         }
@@ -19207,7 +19204,7 @@ public final class N {
         return filter(a, 0, a.length, filter, max);
     }
 
-    public static LongList filter(final long[] a, final int fromIndex, final int toIndex, final LongPredicate filter) {
+    public static <E extends Exception> LongList filter(final long[] a, final int fromIndex, final int toIndex, final Try.LongPredicate<E> filter) throws E {
         return filter(a, fromIndex, toIndex, filter, Integer.MAX_VALUE);
     }
 
@@ -19223,7 +19220,8 @@ public final class N {
      * @param max maximum return result.
      * @return
      */
-    public static LongList filter(final long[] a, final int fromIndex, final int toIndex, final LongPredicate filter, final int max) {
+    public static <E extends Exception> LongList filter(final long[] a, final int fromIndex, final int toIndex, final Try.LongPredicate<E> filter,
+            final int max) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -19242,7 +19240,7 @@ public final class N {
         return result;
     }
 
-    public static FloatList filter(final float[] a, final FloatPredicate filter) {
+    public static <E extends Exception> FloatList filter(final float[] a, final Try.FloatPredicate<E> filter) throws E {
         if (N.isNullOrEmpty(a)) {
             return new FloatList();
         }
@@ -19250,7 +19248,7 @@ public final class N {
         return filter(a, 0, a.length, filter);
     }
 
-    public static FloatList filter(final float[] a, final FloatPredicate filter, final int max) {
+    public static <E extends Exception> FloatList filter(final float[] a, final Try.FloatPredicate<E> filter, final int max) throws E {
         if (N.isNullOrEmpty(a)) {
             return new FloatList();
         }
@@ -19258,7 +19256,7 @@ public final class N {
         return filter(a, 0, a.length, filter, max);
     }
 
-    public static FloatList filter(final float[] a, final int fromIndex, final int toIndex, final FloatPredicate filter) {
+    public static <E extends Exception> FloatList filter(final float[] a, final int fromIndex, final int toIndex, final Try.FloatPredicate<E> filter) throws E {
         return filter(a, fromIndex, toIndex, filter, Integer.MAX_VALUE);
     }
 
@@ -19274,7 +19272,8 @@ public final class N {
      * @param max maximum return result.
      * @return
      */
-    public static FloatList filter(final float[] a, final int fromIndex, final int toIndex, final FloatPredicate filter, final int max) {
+    public static <E extends Exception> FloatList filter(final float[] a, final int fromIndex, final int toIndex, final Try.FloatPredicate<E> filter,
+            final int max) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -19293,7 +19292,7 @@ public final class N {
         return result;
     }
 
-    public static DoubleList filter(final double[] a, final DoublePredicate filter) {
+    public static <E extends Exception> DoubleList filter(final double[] a, final Try.DoublePredicate<E> filter) throws E {
         if (N.isNullOrEmpty(a)) {
             return new DoubleList();
         }
@@ -19301,7 +19300,7 @@ public final class N {
         return filter(a, 0, a.length, filter);
     }
 
-    public static DoubleList filter(final double[] a, final DoublePredicate filter, final int max) {
+    public static <E extends Exception> DoubleList filter(final double[] a, final Try.DoublePredicate<E> filter, final int max) throws E {
         if (N.isNullOrEmpty(a)) {
             return new DoubleList();
         }
@@ -19309,7 +19308,8 @@ public final class N {
         return filter(a, 0, a.length, filter, max);
     }
 
-    public static DoubleList filter(final double[] a, final int fromIndex, final int toIndex, final DoublePredicate filter) {
+    public static <E extends Exception> DoubleList filter(final double[] a, final int fromIndex, final int toIndex, final Try.DoublePredicate<E> filter)
+            throws E {
         return filter(a, fromIndex, toIndex, filter, Integer.MAX_VALUE);
     }
 
@@ -19325,7 +19325,8 @@ public final class N {
      * @param max maximum return result.
      * @return
      */
-    public static DoubleList filter(final double[] a, final int fromIndex, final int toIndex, final DoublePredicate filter, final int max) {
+    public static <E extends Exception> DoubleList filter(final double[] a, final int fromIndex, final int toIndex, final Try.DoublePredicate<E> filter,
+            final int max) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -19344,7 +19345,7 @@ public final class N {
         return result;
     }
 
-    public static <T> List<T> filter(final T[] a, final Predicate<? super T> filter) {
+    public static <T, E extends Exception> List<T> filter(final T[] a, final Try.Predicate<? super T, E> filter) throws E {
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
         }
@@ -19352,7 +19353,7 @@ public final class N {
         return filter(a, filter, Integer.MAX_VALUE);
     }
 
-    public static <T> List<T> filter(final T[] a, final Predicate<? super T> filter, final int max) {
+    public static <T, E extends Exception> List<T> filter(final T[] a, final Try.Predicate<? super T, E> filter, final int max) throws E {
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
         }
@@ -19360,7 +19361,8 @@ public final class N {
         return filter(a, 0, a.length, filter, max);
     }
 
-    public static <T> List<T> filter(final T[] a, final int fromIndex, final int toIndex, final Predicate<? super T> filter) {
+    public static <T, E extends Exception> List<T> filter(final T[] a, final int fromIndex, final int toIndex, final Try.Predicate<? super T, E> filter)
+            throws E {
         return filter(a, fromIndex, toIndex, filter, Integer.MAX_VALUE);
     }
 
@@ -19375,7 +19377,8 @@ public final class N {
      * @param max
      * @return
      */
-    public static <T> List<T> filter(final T[] a, final int fromIndex, final int toIndex, final Predicate<? super T> filter, final int max) {
+    public static <T, E extends Exception> List<T> filter(final T[] a, final int fromIndex, final int toIndex, final Try.Predicate<? super T, E> filter,
+            final int max) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -19394,7 +19397,7 @@ public final class N {
         return result;
     }
 
-    public static <T> List<T> filter(final Collection<? extends T> c, final Predicate<? super T> filter) {
+    public static <T, E extends Exception> List<T> filter(final Collection<? extends T> c, final Try.Predicate<? super T, E> filter) throws E {
         if (N.isNullOrEmpty(c)) {
             return new ArrayList<>();
         }
@@ -19402,7 +19405,7 @@ public final class N {
         return filter(c, filter, Integer.MAX_VALUE);
     }
 
-    public static <T> List<T> filter(final Collection<? extends T> c, final Predicate<? super T> filter, final int max) {
+    public static <T, E extends Exception> List<T> filter(final Collection<? extends T> c, final Try.Predicate<? super T, E> filter, final int max) throws E {
         if (N.isNullOrEmpty(c)) {
             return new ArrayList<>();
         }
@@ -19410,12 +19413,13 @@ public final class N {
         return filter(c, 0, c.size(), filter, max);
     }
 
-    public static <T> List<T> filter(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Predicate<? super T> filter) {
+    public static <T, E extends Exception> List<T> filter(final Collection<? extends T> c, final int fromIndex, final int toIndex,
+            final Try.Predicate<? super T, E> filter) throws E {
         return filter(c, fromIndex, toIndex, filter, Integer.MAX_VALUE);
     }
 
-    public static <T> List<T> filter(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Predicate<? super T> filter,
-            final int max) {
+    public static <T, E extends Exception> List<T> filter(final Collection<? extends T> c, final int fromIndex, final int toIndex,
+            final Try.Predicate<? super T, E> filter, final int max) throws E {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -19462,7 +19466,8 @@ public final class N {
         return result;
     }
 
-    public static <T, R extends Collection<T>> R filter(final T[] a, final Predicate<? super T> filter, final IntFunction<R> supplier) {
+    public static <T, R extends Collection<T>, E extends Exception> R filter(final T[] a, final Try.Predicate<? super T, E> filter,
+            final IntFunction<R> supplier) throws E {
         if (N.isNullOrEmpty(a)) {
             return supplier.apply(0);
         }
@@ -19470,7 +19475,8 @@ public final class N {
         return filter(a, filter, Integer.MAX_VALUE, supplier);
     }
 
-    public static <T, R extends Collection<T>> R filter(final T[] a, final Predicate<? super T> filter, final int max, final IntFunction<R> supplier) {
+    public static <T, R extends Collection<T>, E extends Exception> R filter(final T[] a, final Try.Predicate<? super T, E> filter, final int max,
+            final IntFunction<R> supplier) throws E {
         if (N.isNullOrEmpty(a)) {
             return supplier.apply(0);
         }
@@ -19478,8 +19484,8 @@ public final class N {
         return filter(a, 0, a.length, filter, max, supplier);
     }
 
-    public static <T, R extends Collection<T>> R filter(final T[] a, final int fromIndex, final int toIndex, final Predicate<? super T> filter,
-            final IntFunction<R> supplier) {
+    public static <T, R extends Collection<T>, E extends Exception> R filter(final T[] a, final int fromIndex, final int toIndex,
+            final Try.Predicate<? super T, E> filter, final IntFunction<R> supplier) throws E {
         return filter(a, fromIndex, toIndex, filter, Integer.MAX_VALUE, supplier);
     }
 
@@ -19495,8 +19501,8 @@ public final class N {
      * @param supplier
      * @return
      */
-    public static <T, R extends Collection<T>> R filter(final T[] a, final int fromIndex, final int toIndex, final Predicate<? super T> filter, final int max,
-            final IntFunction<R> supplier) {
+    public static <T, R extends Collection<T>, E extends Exception> R filter(final T[] a, final int fromIndex, final int toIndex,
+            final Try.Predicate<? super T, E> filter, final int max, final IntFunction<R> supplier) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -19515,7 +19521,8 @@ public final class N {
         return result;
     }
 
-    public static <T, R extends Collection<T>> R filter(final Collection<? extends T> c, final Predicate<? super T> filter, final IntFunction<R> supplier) {
+    public static <T, R extends Collection<T>, E extends Exception> R filter(final Collection<? extends T> c, final Try.Predicate<? super T, E> filter,
+            final IntFunction<R> supplier) throws E {
         if (N.isNullOrEmpty(c)) {
             return supplier.apply(0);
         }
@@ -19523,8 +19530,8 @@ public final class N {
         return filter(c, filter, Integer.MAX_VALUE, supplier);
     }
 
-    public static <T, R extends Collection<T>> R filter(final Collection<? extends T> c, final Predicate<? super T> filter, final int max,
-            final IntFunction<R> supplier) {
+    public static <T, R extends Collection<T>, E extends Exception> R filter(final Collection<? extends T> c, final Try.Predicate<? super T, E> filter,
+            final int max, final IntFunction<R> supplier) throws E {
         if (N.isNullOrEmpty(c)) {
             return supplier.apply(0);
         }
@@ -19532,13 +19539,13 @@ public final class N {
         return filter(c, 0, c.size(), filter, max, supplier);
     }
 
-    public static <T, R extends Collection<T>> R filter(final Collection<? extends T> c, final int fromIndex, final int toIndex,
-            final Predicate<? super T> filter, final IntFunction<R> supplier) {
+    public static <T, R extends Collection<T>, E extends Exception> R filter(final Collection<? extends T> c, final int fromIndex, final int toIndex,
+            final Try.Predicate<? super T, E> filter, final IntFunction<R> supplier) throws E {
         return filter(c, fromIndex, toIndex, filter, Integer.MAX_VALUE, supplier);
     }
 
-    public static <T, R extends Collection<T>> R filter(final Collection<? extends T> c, final int fromIndex, final int toIndex,
-            final Predicate<? super T> filter, final int max, final IntFunction<R> supplier) {
+    public static <T, R extends Collection<T>, E extends Exception> R filter(final Collection<? extends T> c, final int fromIndex, final int toIndex,
+            final Try.Predicate<? super T, E> filter, final int max, final IntFunction<R> supplier) throws E {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -19589,7 +19596,7 @@ public final class N {
         return result;
     }
 
-    public static <T> BooleanList mapToBoolean(final T[] a, final ToBooleanFunction<? super T> func) {
+    public static <T, E extends Exception> BooleanList mapToBoolean(final T[] a, final Try.ToBooleanFunction<? super T, E> func) throws E {
         if (N.isNullOrEmpty(a)) {
             return new BooleanList();
         }
@@ -19607,7 +19614,8 @@ public final class N {
      * @param func 
      * @return
      */
-    public static <T> BooleanList mapToBoolean(final T[] a, final int fromIndex, final int toIndex, final ToBooleanFunction<? super T> func) {
+    public static <T, E extends Exception> BooleanList mapToBoolean(final T[] a, final int fromIndex, final int toIndex,
+            final Try.ToBooleanFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -19623,7 +19631,7 @@ public final class N {
         return result;
     }
 
-    public static <T> BooleanList mapToBoolean(final Collection<? extends T> c, final ToBooleanFunction<? super T> func) {
+    public static <T, E extends Exception> BooleanList mapToBoolean(final Collection<? extends T> c, final Try.ToBooleanFunction<? super T, E> func) throws E {
         if (N.isNullOrEmpty(c)) {
             return new BooleanList();
         }
@@ -19641,8 +19649,8 @@ public final class N {
      * @param func 
      * @return
      */
-    public static <T> BooleanList mapToBoolean(final Collection<? extends T> c, final int fromIndex, final int toIndex,
-            final ToBooleanFunction<? super T> func) {
+    public static <T, E extends Exception> BooleanList mapToBoolean(final Collection<? extends T> c, final int fromIndex, final int toIndex,
+            final Try.ToBooleanFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -19676,7 +19684,7 @@ public final class N {
         return result;
     }
 
-    public static <T> CharList mapToChar(final T[] a, final ToCharFunction<? super T> func) {
+    public static <T, E extends Exception> CharList mapToChar(final T[] a, final Try.ToCharFunction<? super T, E> func) throws E {
         if (N.isNullOrEmpty(a)) {
             return new CharList();
         }
@@ -19694,7 +19702,8 @@ public final class N {
      * @param func 
      * @return
      */
-    public static <T> CharList mapToChar(final T[] a, final int fromIndex, final int toIndex, final ToCharFunction<? super T> func) {
+    public static <T, E extends Exception> CharList mapToChar(final T[] a, final int fromIndex, final int toIndex, final Try.ToCharFunction<? super T, E> func)
+            throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -19710,7 +19719,7 @@ public final class N {
         return result;
     }
 
-    public static <T> CharList mapToChar(final Collection<? extends T> c, final ToCharFunction<? super T> func) {
+    public static <T, E extends Exception> CharList mapToChar(final Collection<? extends T> c, final Try.ToCharFunction<? super T, E> func) throws E {
         if (N.isNullOrEmpty(c)) {
             return new CharList();
         }
@@ -19728,7 +19737,8 @@ public final class N {
      * @param func 
      * @return
      */
-    public static <T> CharList mapToChar(final Collection<? extends T> c, final int fromIndex, final int toIndex, final ToCharFunction<? super T> func) {
+    public static <T, E extends Exception> CharList mapToChar(final Collection<? extends T> c, final int fromIndex, final int toIndex,
+            final Try.ToCharFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -19762,7 +19772,7 @@ public final class N {
         return result;
     }
 
-    public static <T> ByteList mapToByte(final T[] a, final ToByteFunction<? super T> func) {
+    public static <T, E extends Exception> ByteList mapToByte(final T[] a, final Try.ToByteFunction<? super T, E> func) throws E {
         if (N.isNullOrEmpty(a)) {
             return new ByteList();
         }
@@ -19780,7 +19790,8 @@ public final class N {
      * @param func 
      * @return
      */
-    public static <T> ByteList mapToByte(final T[] a, final int fromIndex, final int toIndex, final ToByteFunction<? super T> func) {
+    public static <T, E extends Exception> ByteList mapToByte(final T[] a, final int fromIndex, final int toIndex, final Try.ToByteFunction<? super T, E> func)
+            throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -19796,7 +19807,7 @@ public final class N {
         return result;
     }
 
-    public static <T> ByteList mapToByte(final Collection<? extends T> c, final ToByteFunction<? super T> func) {
+    public static <T, E extends Exception> ByteList mapToByte(final Collection<? extends T> c, final Try.ToByteFunction<? super T, E> func) throws E {
         if (N.isNullOrEmpty(c)) {
             return new ByteList();
         }
@@ -19814,7 +19825,8 @@ public final class N {
      * @param func 
      * @return
      */
-    public static <T> ByteList mapToByte(final Collection<? extends T> c, final int fromIndex, final int toIndex, final ToByteFunction<? super T> func) {
+    public static <T, E extends Exception> ByteList mapToByte(final Collection<? extends T> c, final int fromIndex, final int toIndex,
+            final Try.ToByteFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -19848,7 +19860,7 @@ public final class N {
         return result;
     }
 
-    public static <T> ShortList mapToShort(final T[] a, final ToShortFunction<? super T> func) {
+    public static <T, E extends Exception> ShortList mapToShort(final T[] a, final Try.ToShortFunction<? super T, E> func) throws E {
         if (N.isNullOrEmpty(a)) {
             return new ShortList();
         }
@@ -19866,7 +19878,8 @@ public final class N {
      * @param func 
      * @return
      */
-    public static <T> ShortList mapToShort(final T[] a, final int fromIndex, final int toIndex, final ToShortFunction<? super T> func) {
+    public static <T, E extends Exception> ShortList mapToShort(final T[] a, final int fromIndex, final int toIndex,
+            final Try.ToShortFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -19882,7 +19895,7 @@ public final class N {
         return result;
     }
 
-    public static <T> ShortList mapToShort(final Collection<? extends T> c, final ToShortFunction<? super T> func) {
+    public static <T, E extends Exception> ShortList mapToShort(final Collection<? extends T> c, final Try.ToShortFunction<? super T, E> func) throws E {
         if (N.isNullOrEmpty(c)) {
             return new ShortList();
         }
@@ -19900,7 +19913,8 @@ public final class N {
      * @param func 
      * @return
      */
-    public static <T> ShortList mapToShort(final Collection<? extends T> c, final int fromIndex, final int toIndex, final ToShortFunction<? super T> func) {
+    public static <T, E extends Exception> ShortList mapToShort(final Collection<? extends T> c, final int fromIndex, final int toIndex,
+            final Try.ToShortFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -19934,7 +19948,7 @@ public final class N {
         return result;
     }
 
-    public static <T> IntList mapToInt(final T[] a, final ToIntFunction<? super T> func) {
+    public static <T, E extends Exception> IntList mapToInt(final T[] a, final Try.ToIntFunction<? super T, E> func) throws E {
         if (N.isNullOrEmpty(a)) {
             return new IntList();
         }
@@ -19952,7 +19966,8 @@ public final class N {
      * @param func 
      * @return
      */
-    public static <T> IntList mapToInt(final T[] a, final int fromIndex, final int toIndex, final ToIntFunction<? super T> func) {
+    public static <T, E extends Exception> IntList mapToInt(final T[] a, final int fromIndex, final int toIndex, final Try.ToIntFunction<? super T, E> func)
+            throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -19968,7 +19983,7 @@ public final class N {
         return result;
     }
 
-    public static <T> IntList mapToInt(final Collection<? extends T> c, final ToIntFunction<? super T> func) {
+    public static <T, E extends Exception> IntList mapToInt(final Collection<? extends T> c, final Try.ToIntFunction<? super T, E> func) throws E {
         if (N.isNullOrEmpty(c)) {
             return new IntList();
         }
@@ -19986,7 +20001,8 @@ public final class N {
      * @param func 
      * @return
      */
-    public static <T> IntList mapToInt(final Collection<? extends T> c, final int fromIndex, final int toIndex, final ToIntFunction<? super T> func) {
+    public static <T, E extends Exception> IntList mapToInt(final Collection<? extends T> c, final int fromIndex, final int toIndex,
+            final Try.ToIntFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -20020,7 +20036,7 @@ public final class N {
         return result;
     }
 
-    public static <T> LongList mapToLong(final T[] a, final ToLongFunction<? super T> func) {
+    public static <T, E extends Exception> LongList mapToLong(final T[] a, final Try.ToLongFunction<? super T, E> func) throws E {
         if (N.isNullOrEmpty(a)) {
             return new LongList();
         }
@@ -20038,7 +20054,8 @@ public final class N {
      * @param func 
      * @return
      */
-    public static <T> LongList mapToLong(final T[] a, final int fromIndex, final int toIndex, final ToLongFunction<? super T> func) {
+    public static <T, E extends Exception> LongList mapToLong(final T[] a, final int fromIndex, final int toIndex, final Try.ToLongFunction<? super T, E> func)
+            throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -20054,7 +20071,7 @@ public final class N {
         return result;
     }
 
-    public static <T> LongList mapToLong(final Collection<? extends T> c, final ToLongFunction<? super T> func) {
+    public static <T, E extends Exception> LongList mapToLong(final Collection<? extends T> c, final Try.ToLongFunction<? super T, E> func) throws E {
         if (N.isNullOrEmpty(c)) {
             return new LongList();
         }
@@ -20072,7 +20089,8 @@ public final class N {
      * @param func 
      * @return
      */
-    public static <T> LongList mapToLong(final Collection<? extends T> c, final int fromIndex, final int toIndex, final ToLongFunction<? super T> func) {
+    public static <T, E extends Exception> LongList mapToLong(final Collection<? extends T> c, final int fromIndex, final int toIndex,
+            final Try.ToLongFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -20106,7 +20124,7 @@ public final class N {
         return result;
     }
 
-    public static <T> FloatList mapToFloat(final T[] a, final ToFloatFunction<? super T> func) {
+    public static <T, E extends Exception> FloatList mapToFloat(final T[] a, final Try.ToFloatFunction<? super T, E> func) throws E {
         if (N.isNullOrEmpty(a)) {
             return new FloatList();
         }
@@ -20124,7 +20142,8 @@ public final class N {
      * @param func 
      * @return
      */
-    public static <T> FloatList mapToFloat(final T[] a, final int fromIndex, final int toIndex, final ToFloatFunction<? super T> func) {
+    public static <T, E extends Exception> FloatList mapToFloat(final T[] a, final int fromIndex, final int toIndex,
+            final Try.ToFloatFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -20140,7 +20159,7 @@ public final class N {
         return result;
     }
 
-    public static <T> FloatList mapToFloat(final Collection<? extends T> c, final ToFloatFunction<? super T> func) {
+    public static <T, E extends Exception> FloatList mapToFloat(final Collection<? extends T> c, final Try.ToFloatFunction<? super T, E> func) throws E {
         if (N.isNullOrEmpty(c)) {
             return new FloatList();
         }
@@ -20158,7 +20177,8 @@ public final class N {
      * @param func 
      * @return
      */
-    public static <T> FloatList mapToFloat(final Collection<? extends T> c, final int fromIndex, final int toIndex, final ToFloatFunction<? super T> func) {
+    public static <T, E extends Exception> FloatList mapToFloat(final Collection<? extends T> c, final int fromIndex, final int toIndex,
+            final Try.ToFloatFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -20192,7 +20212,7 @@ public final class N {
         return result;
     }
 
-    public static <T> DoubleList mapToDouble(final T[] a, final ToDoubleFunction<? super T> func) {
+    public static <T, E extends Exception> DoubleList mapToDouble(final T[] a, final Try.ToDoubleFunction<? super T, E> func) throws E {
         if (N.isNullOrEmpty(a)) {
             return new DoubleList();
         }
@@ -20210,7 +20230,8 @@ public final class N {
      * @param func 
      * @return
      */
-    public static <T> DoubleList mapToDouble(final T[] a, final int fromIndex, final int toIndex, final ToDoubleFunction<? super T> func) {
+    public static <T, E extends Exception> DoubleList mapToDouble(final T[] a, final int fromIndex, final int toIndex,
+            final Try.ToDoubleFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -20226,7 +20247,7 @@ public final class N {
         return result;
     }
 
-    public static <T> DoubleList mapToDouble(final Collection<? extends T> c, final ToDoubleFunction<? super T> func) {
+    public static <T, E extends Exception> DoubleList mapToDouble(final Collection<? extends T> c, final Try.ToDoubleFunction<? super T, E> func) throws E {
         if (N.isNullOrEmpty(c)) {
             return new DoubleList();
         }
@@ -20244,7 +20265,8 @@ public final class N {
      * @param func 
      * @return
      */
-    public static <T> DoubleList mapToDouble(final Collection<? extends T> c, final int fromIndex, final int toIndex, final ToDoubleFunction<? super T> func) {
+    public static <T, E extends Exception> DoubleList mapToDouble(final Collection<? extends T> c, final int fromIndex, final int toIndex,
+            final Try.ToDoubleFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -20278,7 +20300,7 @@ public final class N {
         return result;
     }
 
-    public static <T, R> List<R> map(final T[] a, final Function<? super T, ? extends R> func) {
+    public static <T, R, E extends Exception> List<R> map(final T[] a, final Try.Function<? super T, ? extends R, E> func) throws E {
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();
         }
@@ -20296,7 +20318,8 @@ public final class N {
      * @param func 
      * @return
      */
-    public static <T, R> List<R> map(final T[] a, final int fromIndex, final int toIndex, final Function<? super T, ? extends R> func) {
+    public static <T, R, E extends Exception> List<R> map(final T[] a, final int fromIndex, final int toIndex,
+            final Try.Function<? super T, ? extends R, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -20312,7 +20335,7 @@ public final class N {
         return result;
     }
 
-    public static <T, R> List<R> map(final Collection<? extends T> c, final Function<? super T, ? extends R> func) {
+    public static <T, R, E extends Exception> List<R> map(final Collection<? extends T> c, final Try.Function<? super T, ? extends R, E> func) throws E {
         if (N.isNullOrEmpty(c)) {
             return new ArrayList<>();
         }
@@ -20330,7 +20353,8 @@ public final class N {
      * @param func 
      * @return
      */
-    public static <T, R> List<R> map(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Function<? super T, ? extends R> func) {
+    public static <T, R, E extends Exception> List<R> map(final Collection<? extends T> c, final int fromIndex, final int toIndex,
+            final Try.Function<? super T, ? extends R, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -20364,7 +20388,8 @@ public final class N {
         return result;
     }
 
-    public static <T, R, C extends Collection<R>> C map(final T[] a, final Function<? super T, ? extends R> func, final IntFunction<C> supplier) {
+    public static <T, R, C extends Collection<R>, E extends Exception> C map(final T[] a, final Try.Function<? super T, ? extends R, E> func,
+            final IntFunction<C> supplier) throws E {
         if (N.isNullOrEmpty(a)) {
             return supplier.apply(0);
         }
@@ -20384,8 +20409,8 @@ public final class N {
      * @param supplier
      * @return
      */
-    public static <T, R, C extends Collection<R>> C map(final T[] a, final int fromIndex, final int toIndex, final Function<? super T, ? extends R> func,
-            final IntFunction<C> supplier) {
+    public static <T, R, C extends Collection<R>, E extends Exception> C map(final T[] a, final int fromIndex, final int toIndex,
+            final Try.Function<? super T, ? extends R, E> func, final IntFunction<C> supplier) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -20401,8 +20426,8 @@ public final class N {
         return result;
     }
 
-    public static <T, R, C extends Collection<R>> C map(final Collection<? extends T> c, final Function<? super T, ? extends R> func,
-            final IntFunction<C> supplier) {
+    public static <T, R, C extends Collection<R>, E extends Exception> C map(final Collection<? extends T> c,
+            final Try.Function<? super T, ? extends R, E> func, final IntFunction<C> supplier) throws E {
         if (N.isNullOrEmpty(c)) {
             return supplier.apply(0);
         }
@@ -20422,8 +20447,8 @@ public final class N {
      * @param supplier
      * @return
      */
-    public static <T, R, C extends Collection<R>> C map(final Collection<? extends T> c, final int fromIndex, final int toIndex,
-            final Function<? super T, ? extends R> func, final IntFunction<C> supplier) {
+    public static <T, R, C extends Collection<R>, E extends Exception> C map(final Collection<? extends T> c, final int fromIndex, final int toIndex,
+            final Try.Function<? super T, ? extends R, E> func, final IntFunction<C> supplier) throws E {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
@@ -20457,7 +20482,7 @@ public final class N {
         return result;
     }
 
-    public static <T> int sumInt(final T[] a, final ToIntFunction<? super T> func) {
+    public static <T, E extends Exception> int sumInt(final T[] a, final Try.ToIntFunction<? super T, E> func) throws E {
         if (N.isNullOrEmpty(a)) {
             return 0;
         }
@@ -20465,7 +20490,8 @@ public final class N {
         return sumInt(a, 0, a.length, func);
     }
 
-    public static <T> int sumInt(final T[] a, final int fromIndex, final int toIndex, final ToIntFunction<? super T> func) {
+    public static <T, E extends Exception> int sumInt(final T[] a, final int fromIndex, final int toIndex, final Try.ToIntFunction<? super T, E> func)
+            throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (fromIndex == toIndex) {
@@ -20481,7 +20507,7 @@ public final class N {
         return result;
     }
 
-    public static <T> int sumInt(final Collection<? extends T> c, final ToIntFunction<? super T> func) {
+    public static <T, E extends Exception> int sumInt(final Collection<? extends T> c, final Try.ToIntFunction<? super T, E> func) throws E {
         if (N.isNullOrEmpty(c)) {
             return 0;
         }
@@ -20489,7 +20515,8 @@ public final class N {
         return sumInt(c, 0, c.size(), func);
     }
 
-    public static <T> int sumInt(final Collection<? extends T> c, final int fromIndex, final int toIndex, final ToIntFunction<? super T> func) {
+    public static <T, E extends Exception> int sumInt(final Collection<? extends T> c, final int fromIndex, final int toIndex,
+            final Try.ToIntFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if (fromIndex == toIndex) {
@@ -20523,7 +20550,7 @@ public final class N {
         return result;
     }
 
-    public static <T> long sumLong(final T[] a, final ToLongFunction<? super T> func) {
+    public static <T, E extends Exception> long sumLong(final T[] a, final Try.ToLongFunction<? super T, E> func) throws E {
         if (N.isNullOrEmpty(a)) {
             return 0L;
         }
@@ -20531,7 +20558,8 @@ public final class N {
         return sumLong(a, 0, a.length, func);
     }
 
-    public static <T> long sumLong(final T[] a, final int fromIndex, final int toIndex, final ToLongFunction<? super T> func) {
+    public static <T, E extends Exception> long sumLong(final T[] a, final int fromIndex, final int toIndex, final Try.ToLongFunction<? super T, E> func)
+            throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (fromIndex == toIndex) {
@@ -20547,7 +20575,7 @@ public final class N {
         return result;
     }
 
-    public static <T> long sumLong(final Collection<? extends T> c, final ToLongFunction<? super T> func) {
+    public static <T, E extends Exception> long sumLong(final Collection<? extends T> c, final Try.ToLongFunction<? super T, E> func) throws E {
         if (N.isNullOrEmpty(c)) {
             return 0L;
         }
@@ -20555,7 +20583,8 @@ public final class N {
         return sumLong(c, 0, c.size(), func);
     }
 
-    public static <T> long sumLong(final Collection<? extends T> c, final int fromIndex, final int toIndex, final ToLongFunction<? super T> func) {
+    public static <T, E extends Exception> long sumLong(final Collection<? extends T> c, final int fromIndex, final int toIndex,
+            final Try.ToLongFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if (fromIndex == toIndex) {
@@ -20589,7 +20618,7 @@ public final class N {
         return result;
     }
 
-    public static <T> double sumDouble(final T[] a, final ToDoubleFunction<? super T> func) {
+    public static <T, E extends Exception> double sumDouble(final T[] a, final Try.ToDoubleFunction<? super T, E> func) throws E {
         if (N.isNullOrEmpty(a)) {
             return 0D;
         }
@@ -20597,7 +20626,8 @@ public final class N {
         return sumDouble(a, 0, a.length, func);
     }
 
-    public static <T> double sumDouble(final T[] a, final int fromIndex, final int toIndex, final ToDoubleFunction<? super T> func) {
+    public static <T, E extends Exception> double sumDouble(final T[] a, final int fromIndex, final int toIndex, final Try.ToDoubleFunction<? super T, E> func)
+            throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (fromIndex == toIndex) {
@@ -20613,7 +20643,7 @@ public final class N {
         return result;
     }
 
-    public static <T> double sumDouble(final Collection<? extends T> c, final ToDoubleFunction<? super T> func) {
+    public static <T, E extends Exception> double sumDouble(final Collection<? extends T> c, final Try.ToDoubleFunction<? super T, E> func) throws E {
         if (N.isNullOrEmpty(c)) {
             return 0D;
         }
@@ -20621,7 +20651,8 @@ public final class N {
         return sumDouble(c, 0, c.size(), func);
     }
 
-    public static <T> double sumDouble(final Collection<? extends T> c, final int fromIndex, final int toIndex, final ToDoubleFunction<? super T> func) {
+    public static <T, E extends Exception> double sumDouble(final Collection<? extends T> c, final int fromIndex, final int toIndex,
+            final Try.ToDoubleFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if (fromIndex == toIndex) {
@@ -20655,7 +20686,7 @@ public final class N {
         return result;
     }
 
-    public static <T> OptionalDouble averageInt(final T[] a, final ToIntFunction<? super T> func) {
+    public static <T, E extends Exception> OptionalDouble averageInt(final T[] a, final Try.ToIntFunction<? super T, E> func) throws E {
         if (N.isNullOrEmpty(a)) {
             return OptionalDouble.empty();
         }
@@ -20663,7 +20694,8 @@ public final class N {
         return averageInt(a, 0, a.length, func);
     }
 
-    public static <T> OptionalDouble averageInt(final T[] a, final int fromIndex, final int toIndex, final ToIntFunction<? super T> func) {
+    public static <T, E extends Exception> OptionalDouble averageInt(final T[] a, final int fromIndex, final int toIndex,
+            final Try.ToIntFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (fromIndex == toIndex) {
@@ -20679,7 +20711,7 @@ public final class N {
         return OptionalDouble.of(result / (toIndex - fromIndex));
     }
 
-    public static <T> OptionalDouble averageInt(final Collection<? extends T> c, final ToIntFunction<? super T> func) {
+    public static <T, E extends Exception> OptionalDouble averageInt(final Collection<? extends T> c, final Try.ToIntFunction<? super T, E> func) throws E {
         if (N.isNullOrEmpty(c)) {
             return OptionalDouble.empty();
         }
@@ -20687,7 +20719,8 @@ public final class N {
         return averageInt(c, 0, c.size(), func);
     }
 
-    public static <T> OptionalDouble averageInt(final Collection<? extends T> c, final int fromIndex, final int toIndex, final ToIntFunction<? super T> func) {
+    public static <T, E extends Exception> OptionalDouble averageInt(final Collection<? extends T> c, final int fromIndex, final int toIndex,
+            final Try.ToIntFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if (fromIndex == toIndex) {
@@ -20697,7 +20730,7 @@ public final class N {
         return OptionalDouble.of(sumInt(c, fromIndex, toIndex, func) / (toIndex - fromIndex));
     }
 
-    public static <T> OptionalDouble averageLong(final T[] a, final ToLongFunction<? super T> func) {
+    public static <T, E extends Exception> OptionalDouble averageLong(final T[] a, final Try.ToLongFunction<? super T, E> func) throws E {
         if (N.isNullOrEmpty(a)) {
             return OptionalDouble.empty();
         }
@@ -20705,7 +20738,8 @@ public final class N {
         return averageLong(a, 0, a.length, func);
     }
 
-    public static <T> OptionalDouble averageLong(final T[] a, final int fromIndex, final int toIndex, final ToLongFunction<? super T> func) {
+    public static <T, E extends Exception> OptionalDouble averageLong(final T[] a, final int fromIndex, final int toIndex,
+            final Try.ToLongFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (fromIndex == toIndex) {
@@ -20721,7 +20755,7 @@ public final class N {
         return OptionalDouble.of(result / (toIndex - fromIndex));
     }
 
-    public static <T> OptionalDouble averageLong(final Collection<? extends T> c, final ToLongFunction<? super T> func) {
+    public static <T, E extends Exception> OptionalDouble averageLong(final Collection<? extends T> c, final Try.ToLongFunction<? super T, E> func) throws E {
         if (N.isNullOrEmpty(c)) {
             return OptionalDouble.empty();
         }
@@ -20729,8 +20763,8 @@ public final class N {
         return averageLong(c, 0, c.size(), func);
     }
 
-    public static <T> OptionalDouble averageLong(final Collection<? extends T> c, final int fromIndex, final int toIndex,
-            final ToLongFunction<? super T> func) {
+    public static <T, E extends Exception> OptionalDouble averageLong(final Collection<? extends T> c, final int fromIndex, final int toIndex,
+            final Try.ToLongFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if (fromIndex == toIndex) {
@@ -20740,7 +20774,7 @@ public final class N {
         return OptionalDouble.of(sumLong(c, fromIndex, toIndex, func) / (toIndex - fromIndex));
     }
 
-    public static <T> OptionalDouble averageDouble(final T[] a, final ToDoubleFunction<? super T> func) {
+    public static <T, E extends Exception> OptionalDouble averageDouble(final T[] a, final Try.ToDoubleFunction<? super T, E> func) throws E {
         if (N.isNullOrEmpty(a)) {
             return OptionalDouble.empty();
         }
@@ -20748,7 +20782,8 @@ public final class N {
         return averageDouble(a, 0, a.length, func);
     }
 
-    public static <T> OptionalDouble averageDouble(final T[] a, final int fromIndex, final int toIndex, final ToDoubleFunction<? super T> func) {
+    public static <T, E extends Exception> OptionalDouble averageDouble(final T[] a, final int fromIndex, final int toIndex,
+            final Try.ToDoubleFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (fromIndex == toIndex) {
@@ -20764,7 +20799,8 @@ public final class N {
         return OptionalDouble.of(result / (toIndex - fromIndex));
     }
 
-    public static <T> OptionalDouble averageDouble(final Collection<? extends T> c, final ToDoubleFunction<? super T> func) {
+    public static <T, E extends Exception> OptionalDouble averageDouble(final Collection<? extends T> c, final Try.ToDoubleFunction<? super T, E> func)
+            throws E {
         if (N.isNullOrEmpty(c)) {
             return OptionalDouble.empty();
         }
@@ -20772,8 +20808,8 @@ public final class N {
         return averageDouble(c, 0, c.size(), func);
     }
 
-    public static <T> OptionalDouble averageDouble(final Collection<? extends T> c, final int fromIndex, final int toIndex,
-            final ToDoubleFunction<? super T> func) {
+    public static <T, E extends Exception> OptionalDouble averageDouble(final Collection<? extends T> c, final int fromIndex, final int toIndex,
+            final Try.ToDoubleFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if (fromIndex == toIndex) {
@@ -20792,7 +20828,7 @@ public final class N {
      * @param filter
      * @return
      */
-    public static int count(final boolean[] a, final BooleanPredicate filter) {
+    public static <E extends Exception> int count(final boolean[] a, final Try.BooleanPredicate<E> filter) throws E {
         if (N.isNullOrEmpty(a)) {
             return 0;
         }
@@ -20811,7 +20847,7 @@ public final class N {
      * @param filter
      * @return
      */
-    public static int count(final boolean[] a, final int fromIndex, final int toIndex, final BooleanPredicate filter) {
+    public static <E extends Exception> int count(final boolean[] a, final int fromIndex, final int toIndex, final Try.BooleanPredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -20838,7 +20874,7 @@ public final class N {
      * @param filter
      * @return
      */
-    public static int count(final char[] a, final CharPredicate filter) {
+    public static <E extends Exception> int count(final char[] a, final Try.CharPredicate<E> filter) throws E {
         if (N.isNullOrEmpty(a)) {
             return 0;
         }
@@ -20857,7 +20893,7 @@ public final class N {
      * @param filter
      * @return
      */
-    public static int count(final char[] a, final int fromIndex, final int toIndex, final CharPredicate filter) {
+    public static <E extends Exception> int count(final char[] a, final int fromIndex, final int toIndex, final Try.CharPredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -20884,7 +20920,7 @@ public final class N {
      * @param filter
      * @return
      */
-    public static int count(final byte[] a, final BytePredicate filter) {
+    public static <E extends Exception> int count(final byte[] a, final Try.BytePredicate<E> filter) throws E {
         if (N.isNullOrEmpty(a)) {
             return 0;
         }
@@ -20903,7 +20939,7 @@ public final class N {
      * @param filter
      * @return
      */
-    public static int count(final byte[] a, final int fromIndex, final int toIndex, final BytePredicate filter) {
+    public static <E extends Exception> int count(final byte[] a, final int fromIndex, final int toIndex, final Try.BytePredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -20930,7 +20966,7 @@ public final class N {
      * @param filter
      * @return
      */
-    public static int count(final short[] a, final ShortPredicate filter) {
+    public static <E extends Exception> int count(final short[] a, final Try.ShortPredicate<E> filter) throws E {
         if (N.isNullOrEmpty(a)) {
             return 0;
         }
@@ -20949,7 +20985,7 @@ public final class N {
      * @param filter
      * @return
      */
-    public static int count(final short[] a, final int fromIndex, final int toIndex, final ShortPredicate filter) {
+    public static <E extends Exception> int count(final short[] a, final int fromIndex, final int toIndex, final Try.ShortPredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -20976,7 +21012,7 @@ public final class N {
      * @param filter
      * @return
      */
-    public static int count(final int[] a, final IntPredicate filter) {
+    public static <E extends Exception> int count(final int[] a, final Try.IntPredicate<E> filter) throws E {
         if (N.isNullOrEmpty(a)) {
             return 0;
         }
@@ -20995,7 +21031,7 @@ public final class N {
      * @param filter
      * @return
      */
-    public static int count(final int[] a, final int fromIndex, final int toIndex, final IntPredicate filter) {
+    public static <E extends Exception> int count(final int[] a, final int fromIndex, final int toIndex, final Try.IntPredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -21022,7 +21058,7 @@ public final class N {
      * @param filter
      * @return
      */
-    public static int count(final long[] a, final LongPredicate filter) {
+    public static <E extends Exception> int count(final long[] a, final Try.LongPredicate<E> filter) throws E {
         if (N.isNullOrEmpty(a)) {
             return 0;
         }
@@ -21041,7 +21077,7 @@ public final class N {
      * @param filter
      * @return
      */
-    public static int count(final long[] a, final int fromIndex, final int toIndex, final LongPredicate filter) {
+    public static <E extends Exception> int count(final long[] a, final int fromIndex, final int toIndex, final Try.LongPredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -21068,7 +21104,7 @@ public final class N {
      * @param filter
      * @return
      */
-    public static int count(final float[] a, final FloatPredicate filter) {
+    public static <E extends Exception> int count(final float[] a, final Try.FloatPredicate<E> filter) throws E {
         if (N.isNullOrEmpty(a)) {
             return 0;
         }
@@ -21087,7 +21123,7 @@ public final class N {
      * @param filter
      * @return
      */
-    public static int count(final float[] a, final int fromIndex, final int toIndex, final FloatPredicate filter) {
+    public static <E extends Exception> int count(final float[] a, final int fromIndex, final int toIndex, final Try.FloatPredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -21114,7 +21150,7 @@ public final class N {
      * @param filter
      * @return
      */
-    public static int count(final double[] a, final DoublePredicate filter) {
+    public static <E extends Exception> int count(final double[] a, final Try.DoublePredicate<E> filter) throws E {
         if (N.isNullOrEmpty(a)) {
             return 0;
         }
@@ -21133,7 +21169,7 @@ public final class N {
      * @param filter
      * @return
      */
-    public static int count(final double[] a, final int fromIndex, final int toIndex, final DoublePredicate filter) {
+    public static <E extends Exception> int count(final double[] a, final int fromIndex, final int toIndex, final Try.DoublePredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -21160,7 +21196,7 @@ public final class N {
      * @param filter
      * @return
      */
-    public static <T> int count(final T[] a, final Predicate<? super T> filter) {
+    public static <T, E extends Exception> int count(final T[] a, final Try.Predicate<? super T, E> filter) throws E {
         if (N.isNullOrEmpty(a)) {
             return 0;
         }
@@ -21179,7 +21215,7 @@ public final class N {
      * @param filter
      * @return
      */
-    public static <T> int count(final T[] a, final int fromIndex, final int toIndex, final Predicate<? super T> filter) {
+    public static <T, E extends Exception> int count(final T[] a, final int fromIndex, final int toIndex, final Try.Predicate<? super T, E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -21206,7 +21242,7 @@ public final class N {
      * @param filter
      * @return
      */
-    public static <T> int count(final Collection<? extends T> c, final Predicate<? super T> filter) {
+    public static <T, E extends Exception> int count(final Collection<? extends T> c, final Try.Predicate<? super T, E> filter) throws E {
         if (N.isNullOrEmpty(c)) {
             return 0;
         }
@@ -21225,7 +21261,8 @@ public final class N {
      * @param filter
      * @return
      */
-    public static <T> int count(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Predicate<? super T> filter) {
+    public static <T, E extends Exception> int count(final Collection<? extends T> c, final int fromIndex, final int toIndex,
+            final Try.Predicate<? super T, E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if ((N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < c.size())) {
@@ -22087,7 +22124,7 @@ public final class N {
      * @param keyExtractor don't change value of the input parameter.
      * @return
      */
-    public static <T> T[] distinctBy(final T[] a, final Function<? super T, ?> keyExtractor) {
+    public static <T, E extends Exception> T[] distinctBy(final T[] a, final Try.Function<? super T, ?, E> keyExtractor) throws E {
         if (N.isNullOrEmpty(a)) {
             return a;
         }
@@ -22107,7 +22144,8 @@ public final class N {
      * @param keyExtractor don't change value of the input parameter.
      * @return
      */
-    public static <T> T[] distinctBy(final T[] a, final int fromIndex, final int toIndex, final Function<? super T, ?> keyExtractor) {
+    public static <T, E extends Exception> T[] distinctBy(final T[] a, final int fromIndex, final int toIndex, final Try.Function<? super T, ?, E> keyExtractor)
+            throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
 
         if (N.isNullOrEmpty(a)) {
@@ -22136,7 +22174,7 @@ public final class N {
      * @param keyExtractor don't change value of the input parameter.
      * @return
      */
-    public static <T> List<T> distinctBy(final Collection<? extends T> c, final Function<? super T, ?> keyExtractor) {
+    public static <T, E extends Exception> List<T> distinctBy(final Collection<? extends T> c, final Try.Function<? super T, ?, E> keyExtractor) throws E {
         if (N.isNullOrEmpty(c)) {
             return new ArrayList<>();
         }
@@ -22156,7 +22194,8 @@ public final class N {
      * @param keyExtractor don't change value of the input parameter.
      * @return
      */
-    public static <T> List<T> distinctBy(final Collection<? extends T> c, final int fromIndex, final int toIndex, final Function<? super T, ?> keyExtractor) {
+    public static <T, E extends Exception> List<T> distinctBy(final Collection<? extends T> c, final int fromIndex, final int toIndex,
+            final Try.Function<? super T, ?, E> keyExtractor) throws E {
         checkFromToIndex(fromIndex, toIndex, c == null ? 0 : c.size());
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {

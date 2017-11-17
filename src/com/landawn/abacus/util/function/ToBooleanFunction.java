@@ -14,20 +14,23 @@
 
 package com.landawn.abacus.util.function;
 
+import com.landawn.abacus.util.Try;
+
 /**
  * 
  * @since 0.8
  * 
  * @author Haiyang Li
  */
-public interface ToBooleanFunction<T> {
+public interface ToBooleanFunction<T> extends Try.ToBooleanFunction<T, RuntimeException> {
 
-   static final ToBooleanFunction<Boolean> UNBOX = new ToBooleanFunction<Boolean>() {
+    static final ToBooleanFunction<Boolean> UNBOX = new ToBooleanFunction<Boolean>() {
         @Override
         public boolean applyAsBoolean(Boolean value) {
             return value == null ? false : value.booleanValue();
         }
     };
 
+    @Override
     boolean applyAsBoolean(T value);
 }

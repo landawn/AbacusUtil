@@ -20,8 +20,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.landawn.abacus.util.function.Function;
-
 /**
  * 
  * @since 0.9
@@ -70,7 +68,8 @@ public final class ListMultimap<K, E> extends Multimap<K, E, List<E>> {
         return multimap;
     }
 
-    public static <K, E> ListMultimap<K, E> from(final Collection<? extends E> c, final Function<? super E, ? extends K> keyExtractor) {
+    public static <K, E, X extends Exception> ListMultimap<K, E> from(final Collection<? extends E> c,
+            final Try.Function<? super E, ? extends K, X> keyExtractor) throws X {
         final ListMultimap<K, E> multimap = N.newListMultimap(N.initHashCapacity(N.min(9, c == null ? 0 : c.size())));
 
         if (N.notNullOrEmpty(c)) {

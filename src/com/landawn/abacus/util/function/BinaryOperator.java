@@ -19,6 +19,7 @@ import java.util.Comparator;
 import java.util.Map;
 
 import com.landawn.abacus.util.Fn;
+import com.landawn.abacus.util.Try;
 
 /**
  * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
@@ -26,7 +27,7 @@ import com.landawn.abacus.util.Fn;
  * 
  * @author Haiyang Li
  */
-public interface BinaryOperator<T> extends BiFunction<T, T, T>, java.util.function.BinaryOperator<T> {
+public interface BinaryOperator<T> extends BiFunction<T, T, T>, java.util.function.BinaryOperator<T>, Try.BinaryOperator<T, RuntimeException> {
 
     static <T, C extends Collection<T>> BinaryOperator<C> ofAddAll() {
         return Fn.BinaryOperators.ofAddAll();

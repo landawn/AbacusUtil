@@ -14,20 +14,23 @@
 
 package com.landawn.abacus.util.function;
 
+import com.landawn.abacus.util.Try;
+
 /**
  * 
  * @since 0.8
  * 
  * @author Haiyang Li
  */
-public interface ToShortFunction<T> {
+public interface ToShortFunction<T> extends Try.ToShortFunction<T, RuntimeException> {
 
-   static final ToShortFunction<Short> UNBOX = new ToShortFunction<Short>() {
+    static final ToShortFunction<Short> UNBOX = new ToShortFunction<Short>() {
         @Override
         public short applyAsShort(Short value) {
             return value == null ? 0 : value.shortValue();
         }
     };
 
+    @Override
     short applyAsShort(T value);
 }

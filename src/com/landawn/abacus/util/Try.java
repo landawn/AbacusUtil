@@ -503,4 +503,40 @@ public final class Try<T extends AutoCloseable> {
     public interface DoubleConsumer<E extends Exception> {
         void accept(double t) throws E;
     }
+
+    public interface ToBooleanFunction<T, E extends Exception> {
+        boolean applyAsBoolean(T t) throws E;
+    }
+
+    public interface ToCharFunction<T, E extends Exception> {
+        char applyAsChar(T t) throws E;
+    }
+
+    public interface ToByteFunction<T, E extends Exception> {
+        byte applyAsByte(T t) throws E;
+    }
+
+    public interface ToShortFunction<T, E extends Exception> {
+        short applyAsShort(T t) throws E;
+    }
+
+    public interface ToIntFunction<T, E extends Exception> {
+        int applyAsInt(T t) throws E;
+    }
+
+    public interface ToLongFunction<T, E extends Exception> {
+        long applyAsLong(T t) throws E;
+    }
+
+    public interface ToFloatFunction<T, E extends Exception> {
+        float applyAsFloat(T t) throws E;
+    }
+
+    public interface ToDoubleFunction<T, E extends Exception> {
+        double applyAsDouble(T t) throws E;
+    }
+
+    public interface BinaryOperator<T, E extends Exception> extends BiFunction<T, T, T, E> {
+    }
+
 }

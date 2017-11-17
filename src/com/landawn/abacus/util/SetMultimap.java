@@ -19,8 +19,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.landawn.abacus.util.function.Function;
-
 /**
  * 
  * @since 0.9
@@ -69,7 +67,8 @@ public final class SetMultimap<K, E> extends Multimap<K, E, Set<E>> {
         return multimap;
     }
 
-    public static <K, E> SetMultimap<K, E> from(final Collection<? extends E> c, final Function<? super E, ? extends K> keyExtractor) {
+    public static <K, E, X extends Exception> SetMultimap<K, E> from(final Collection<? extends E> c,
+            final Try.Function<? super E, ? extends K, X> keyExtractor) throws X {
         final SetMultimap<K, E> multimap = N.newSetMultimap(N.initHashCapacity(N.min(9, c == null ? 0 : c.size())));
 
         if (N.notNullOrEmpty(c)) {

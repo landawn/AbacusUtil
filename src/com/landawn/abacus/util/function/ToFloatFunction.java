@@ -14,20 +14,23 @@
 
 package com.landawn.abacus.util.function;
 
+import com.landawn.abacus.util.Try;
+
 /**
  * 
  * @since 0.8
  * 
  * @author Haiyang Li
  */
-public interface ToFloatFunction<T> {
+public interface ToFloatFunction<T> extends Try.ToFloatFunction<T, RuntimeException> {
 
-   static final ToFloatFunction<Float> UNBOX = new ToFloatFunction<Float>() {
+    static final ToFloatFunction<Float> UNBOX = new ToFloatFunction<Float>() {
         @Override
         public float applyAsFloat(Float value) {
             return value == null ? 0 : value.floatValue();
         }
     };
 
+    @Override
     float applyAsFloat(T value);
 }

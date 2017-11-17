@@ -14,15 +14,17 @@
 
 package com.landawn.abacus.util.function;
 
+import com.landawn.abacus.util.Try;
+
 /**
  * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
  * @since 0.8
  * 
  * @author Haiyang Li
  */
-public interface ToIntFunction<T> extends java.util.function.ToIntFunction<T> {
+public interface ToIntFunction<T> extends java.util.function.ToIntFunction<T>, Try.ToIntFunction<T, RuntimeException> {
 
-   static final ToIntFunction<Integer> UNBOX = new ToIntFunction<Integer>() {
+    static final ToIntFunction<Integer> UNBOX = new ToIntFunction<Integer>() {
         @Override
         public int applyAsInt(Integer value) {
             return value == null ? 0 : value.intValue();

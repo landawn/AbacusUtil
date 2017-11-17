@@ -14,15 +14,17 @@
 
 package com.landawn.abacus.util.function;
 
+import com.landawn.abacus.util.Try;
+
 /**
  * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
  * @since 0.8
  * 
  * @author Haiyang Li
  */
-public interface ToDoubleFunction<T> extends java.util.function.ToDoubleFunction<T> {
+public interface ToDoubleFunction<T> extends java.util.function.ToDoubleFunction<T>, Try.ToDoubleFunction<T, RuntimeException> {
 
-   static final ToDoubleFunction<Double> UNBOX = new ToDoubleFunction<Double>() {
+    static final ToDoubleFunction<Double> UNBOX = new ToDoubleFunction<Double>() {
         @Override
         public double applyAsDouble(Double value) {
             return value == null ? 0 : value.doubleValue();

@@ -14,20 +14,23 @@
 
 package com.landawn.abacus.util.function;
 
+import com.landawn.abacus.util.Try;
+
 /**
  * 
  * @since 0.8
  * 
  * @author Haiyang Li
  */
-public interface ToByteFunction<T> {
+public interface ToByteFunction<T> extends Try.ToByteFunction<T, RuntimeException> {
 
-   static final ToByteFunction<Byte> UNBOX = new ToByteFunction<Byte>() {
+    static final ToByteFunction<Byte> UNBOX = new ToByteFunction<Byte>() {
         @Override
         public byte applyAsByte(Byte value) {
             return value == null ? 0 : value.byteValue();
         }
     };
 
+    @Override
     byte applyAsByte(T value);
 }

@@ -14,20 +14,23 @@
 
 package com.landawn.abacus.util.function;
 
+import com.landawn.abacus.util.Try;
+
 /**
  * 
  * @since 0.8
  * 
  * @author Haiyang Li
  */
-public interface ToCharFunction<T> {
+public interface ToCharFunction<T> extends Try.ToCharFunction<T, RuntimeException> {
 
-   static final ToCharFunction<Character> UNBOX = new ToCharFunction<Character>() {
+    static final ToCharFunction<Character> UNBOX = new ToCharFunction<Character>() {
         @Override
         public char applyAsChar(Character value) {
             return value == null ? 0 : value.charValue();
         }
     };
 
+    @Override
     char applyAsChar(T value);
 }

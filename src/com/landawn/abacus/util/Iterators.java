@@ -929,8 +929,8 @@ public final class Iterators {
         };
     }
 
-    public static <A, B, C, R> ObjIterator<R> zip(final Iterator<A> a, final Iterator<B> b, final Iterator<C> c, final A valueForNoneA,
-            final B valueForNoneB, final C valueForNoneC, final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
+    public static <A, B, C, R> ObjIterator<R> zip(final Iterator<A> a, final Iterator<B> b, final Iterator<C> c, final A valueForNoneA, final B valueForNoneB,
+            final C valueForNoneC, final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
         return new ObjIterator<R>() {
             private final Iterator<A> iterA = a == null ? ObjIterator.<A> empty() : a;
             private final Iterator<B> iterB = b == null ? ObjIterator.<B> empty() : b;
