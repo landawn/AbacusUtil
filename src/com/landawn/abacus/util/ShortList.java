@@ -792,7 +792,7 @@ public final class ShortList extends PrimitiveList<ShortConsumer, ShortPredicate
         return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(N.average(elementData, fromIndex, toIndex));
     }
 
-    public <E extends Exception> void forEach(final int toIndex, Try.ShortConsumer<E> action) throws E {
+    public <E extends Exception> void forEach(Try.ShortConsumer<E> action) throws E {
         forEach(0, size, action);
     }
 

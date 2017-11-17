@@ -776,7 +776,7 @@ public final class FloatList extends PrimitiveList<FloatConsumer, FloatPredicate
         return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(N.average(elementData, fromIndex, toIndex));
     }
 
-    public <E extends Exception> void forEach(final int toIndex, Try.FloatConsumer<E> action) throws E {
+    public <E extends Exception> void forEach(Try.FloatConsumer<E> action) throws E {
         forEach(0, size, action);
     }
 

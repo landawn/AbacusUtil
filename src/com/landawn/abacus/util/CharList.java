@@ -824,7 +824,7 @@ public final class CharList extends PrimitiveList<CharConsumer, CharPredicate, C
         return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(N.average(elementData, fromIndex, toIndex));
     }
 
-    public <E extends Exception> void forEach(final int toIndex, Try.CharConsumer<E> action) throws E {
+    public <E extends Exception> void forEach(Try.CharConsumer<E> action) throws E {
         forEach(0, size, action);
     }
 

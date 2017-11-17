@@ -794,7 +794,7 @@ public final class ByteList extends PrimitiveList<ByteConsumer, BytePredicate, B
         return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(N.average(elementData, fromIndex, toIndex));
     }
 
-    public <E extends Exception> void forEach(final int toIndex, Try.ByteConsumer<E> action) throws E {
+    public <E extends Exception> void forEach(Try.ByteConsumer<E> action) throws E {
         forEach(0, size, action);
     }
 

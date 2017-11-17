@@ -716,7 +716,7 @@ public final class BooleanList extends PrimitiveList<BooleanConsumer, BooleanPre
         return -1;
     }
 
-    public <E extends Exception> void forEach(final int toIndex, Try.BooleanConsumer<E> action) throws E {
+    public <E extends Exception> void forEach(Try.BooleanConsumer<E> action) throws E {
         forEach(0, size, action);
     }
 
