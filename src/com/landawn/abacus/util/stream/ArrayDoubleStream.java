@@ -34,6 +34,7 @@ import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.OptionalDouble;
+import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
@@ -1193,7 +1194,7 @@ class ArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public void forEach(DoubleConsumer action) {
+    public <E extends Exception> void forEach(final Try.DoubleConsumer<E> action) throws E {
         for (int i = fromIndex; i < toIndex; i++) {
             action.accept(elements[i]);
         }

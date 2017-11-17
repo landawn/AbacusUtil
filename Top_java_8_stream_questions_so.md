@@ -116,7 +116,7 @@ Optional<Other> result =
 
 * By Java 8
 ```java
-??? easy way until Java 9
+// ??? No easy way to do it until Java 9
 IntStream
     .iterate(1, n -> n + 1)
     .takeWhile(n -> n < 10)
@@ -147,7 +147,7 @@ Map<Integer, Boolean> answerMap = answerList.stream()
 
 * By Abacus-Util
 ```java
-// Works no problem
+// Works well.
 Map<Integer, Boolean> answerMap = answerList.stream().toMap(Answer::getId, Answer::getAnswer);
 ```
 
@@ -327,12 +327,12 @@ stream.forEach(a -> Try.run(() -> a.foo()));
 
 * By Java 8
 ```java
-No?
+???
 ```
 
 * By Abacus-Util
 ```java
-stream.reversed()... ???te: All elements will be loaded into memory.
+stream.reversed()...
 IntStream.of(1, 5, 3).reverseSorted()...
 ```
 

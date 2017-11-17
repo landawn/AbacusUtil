@@ -34,6 +34,7 @@ import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nullable;
 import com.landawn.abacus.util.ObjIterator;
+import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.Tuple;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
@@ -105,7 +106,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
         return of(Stream.of(Tuple.of(k1, v1), Tuple.of(k2, v2), Tuple.of(k3, v3), Tuple.of(k4, v4), Tuple.of(k5, v5), Tuple.of(k6, v6), Tuple.of(k7, v7)));
     }
 
-    public static <K, V> EntryStream<K, V> of(final Stream<? extends Map.Entry<K, V>> s) {
+    static <K, V> EntryStream<K, V> of(final Stream<? extends Map.Entry<K, V>> s) {
         return new EntryStream<K, V>(s);
     }
 
@@ -598,14 +599,14 @@ public final class EntryStream<K, V> implements AutoCloseable {
         return of(s.peek(action2));
     }
 
-    public void forEach(final Consumer<? super Map.Entry<K, V>> action) {
+    public <E extends Exception> void forEach(final Try.Consumer<? super Map.Entry<K, V>, E> action) throws E {
         s.forEach(action);
     }
 
-    public void forEach(final BiConsumer<? super K, ? super V> action) {
-        final Consumer<Map.Entry<K, V>> action2 = new Consumer<Map.Entry<K, V>>() {
+    public <E extends Exception> void forEach(final Try.BiConsumer<? super K, ? super V, E> action) throws E {
+        final Try.Consumer<Map.Entry<K, V>, E> action2 = new Try.Consumer<Map.Entry<K, V>, E>() {
             @Override
-            public void accept(Entry<K, V> entry) {
+            public void accept(Entry<K, V> entry) throws E {
                 action.accept(entry.getKey(), entry.getValue());
             }
         };

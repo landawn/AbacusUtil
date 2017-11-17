@@ -1375,7 +1375,7 @@ public final class LongMultiset<E> implements Iterable<E> {
     }
 
     public EntryStream<E, Long> entryStream() {
-        return EntryStream.of(stream());
+        return stream().mapToEntry(Fn.<Map.Entry<E, Long>> identity());
     }
 
     public <R> R apply(Function<? super LongMultiset<E>, R> func) {

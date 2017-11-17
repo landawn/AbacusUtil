@@ -49,6 +49,7 @@ import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.ShortList;
 import com.landawn.abacus.util.ShortMatrix;
 import com.landawn.abacus.util.ShortSummaryStatistics;
+import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Function;
@@ -443,7 +444,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
      */
     public abstract <R> R collect(Supplier<R> supplier, ObjShortConsumer<R> accumulator);
 
-    public abstract void forEach(ShortConsumer action);
+    public abstract <E extends Exception> void forEach(final Try.ShortConsumer<E> action) throws E;
 
     /**
      * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.

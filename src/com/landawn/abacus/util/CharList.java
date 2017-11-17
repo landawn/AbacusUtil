@@ -34,7 +34,6 @@ import com.landawn.abacus.util.function.CharPredicate;
 import com.landawn.abacus.util.function.CharUnaryOperator;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
-import com.landawn.abacus.util.function.IndexedCharConsumer;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.CharStream;
@@ -825,8 +824,11 @@ public final class CharList extends PrimitiveList<CharConsumer, CharPredicate, C
         return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(N.average(elementData, fromIndex, toIndex));
     }
 
-    @Override
-    public void forEach(final int fromIndex, final int toIndex, CharConsumer action) {
+    public <E extends Exception> void forEach(final int toIndex, Try.CharConsumer<E> action) throws E {
+        forEach(0, size, action);
+    }
+
+    public <E extends Exception> void forEach(final int fromIndex, final int toIndex, Try.CharConsumer<E> action) throws E {
         N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, size);
 
         if (size > 0) {
@@ -837,26 +839,6 @@ public final class CharList extends PrimitiveList<CharConsumer, CharPredicate, C
             } else {
                 for (int i = N.min(size - 1, fromIndex); i > toIndex; i--) {
                     action.accept(elementData[i]);
-                }
-            }
-        }
-    }
-
-    public void forEach(IndexedCharConsumer action) {
-        forEach(0, size(), action);
-    }
-
-    public void forEach(final int fromIndex, final int toIndex, IndexedCharConsumer action) {
-        N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, size);
-
-        if (size > 0) {
-            if (fromIndex <= toIndex) {
-                for (int i = fromIndex; i < toIndex; i++) {
-                    action.accept(i, elementData[i]);
-                }
-            } else {
-                for (int i = N.min(size - 1, fromIndex); i > toIndex; i--) {
-                    action.accept(i, elementData[i]);
                 }
             }
         }

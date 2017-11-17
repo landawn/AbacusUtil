@@ -1429,7 +1429,7 @@ public final class Multiset<E> implements Iterable<E> {
     }
 
     public EntryStream<E, Integer> entryStream() {
-        return EntryStream.of(stream());
+        return stream().mapToEntry(Fn.<Map.Entry<E, Integer>> identity());
     }
 
     public <R> R apply(Function<? super Multiset<E>, R> func) {

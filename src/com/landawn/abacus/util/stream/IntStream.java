@@ -50,6 +50,7 @@ import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalInt;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
+import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Function;
@@ -506,7 +507,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      */
     public abstract <R> R collect(Supplier<R> supplier, ObjIntConsumer<R> accumulator);
 
-    public abstract void forEach(IntConsumer action);
+    public abstract <E extends Exception> void forEach(final Try.IntConsumer<E> action) throws E;
 
     /**
      * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.

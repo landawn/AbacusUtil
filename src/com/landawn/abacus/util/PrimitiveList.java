@@ -100,23 +100,6 @@ public abstract class PrimitiveList<C, P, E, A, L extends PrimitiveList<C, P, E,
     public abstract boolean disjoint(A a);
 
     /**
-     * Performs the given action for each element of the Iterable until all elements have been processed or the action throws an exception.
-     * 
-     * @param action
-     */
-    public void forEach(C action) {
-        forEach(0, size(), action);
-    }
-
-    /**
-     * 
-     * @param fromIndex
-     * @param toIndex
-     * @param action
-     */
-    public abstract void forEach(final int fromIndex, final int toIndex, C action);
-
-    /**
      * Returns whether all elements of this List match the provided predicate.
      * 
      * @param filter

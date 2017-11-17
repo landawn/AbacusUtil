@@ -186,7 +186,7 @@ Account account3 = N.fromXML(Account.class, xml);
 assertEquals(account, account3);
 ```
 
-More see: [ParserFactory](https://static.javadoc.io/com.landawn/abacus-util-all/1.0.9/com/landawn/abacus/parser/ParserFactory.html)
+More see: [Parser](https://static.javadoc.io/com.landawn/abacus-util-all/1.0.9/com/landawn/abacus/parser/Parser.html), [ParserFactory](https://static.javadoc.io/com.landawn/abacus-util-all/1.0.9/com/landawn/abacus/parser/ParserFactory.html)
 
 ### Functional Programming
 [What's New in Java 8](https://leanpub.com/whatsnewinjava8/read)

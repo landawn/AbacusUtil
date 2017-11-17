@@ -48,6 +48,7 @@ import com.landawn.abacus.util.OptionalByte;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
+import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.ByteBiFunction;
@@ -434,7 +435,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
      */
     public abstract <R> R collect(Supplier<R> supplier, ObjByteConsumer<R> accumulator);
 
-    public abstract void forEach(ByteConsumer action);
+    public abstract <E extends Exception> void forEach(Try.ByteConsumer<E> action) throws E;
 
     /**
      * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead. 

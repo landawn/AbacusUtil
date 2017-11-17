@@ -410,9 +410,9 @@ public final class ClassUtil {
     private static final Map<Class<?>, Map<Class<?>[], Constructor<?>>> classDeclaredConstructorPool = new ObjectPool<>(POOL_SIZE);
     private static final Map<Class<?>, Map<String, Map<Class<?>[], Method>>> classDeclaredMethodPool = new ObjectPool<>(POOL_SIZE);
 
-    public static final Class<?> CLASS_MASK = ClassMask.class;
-    public static final Method METHOD_MASK = ClassUtil.internalGetDeclaredMethod(ClassMask.class, "methodMask");
-    public static final Field FIELD_MASK;
+    static final Class<?> CLASS_MASK = ClassMask.class;
+    static final Method METHOD_MASK = ClassUtil.internalGetDeclaredMethod(ClassMask.class, "methodMask");
+    static final Field FIELD_MASK;
 
     static {
         try {

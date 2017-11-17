@@ -34,6 +34,7 @@ import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.OptionalFloat;
+import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
@@ -1191,7 +1192,7 @@ class ArrayFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public void forEach(FloatConsumer action) {
+    public <E extends Exception> void forEach(final Try.FloatConsumer<E> action) throws E {
         for (int i = fromIndex; i < toIndex; i++) {
             action.accept(elements[i]);
         }

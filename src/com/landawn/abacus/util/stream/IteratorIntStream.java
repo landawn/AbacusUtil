@@ -39,6 +39,7 @@ import com.landawn.abacus.util.Nullable;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalInt;
 import com.landawn.abacus.util.ShortIterator;
+import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
@@ -1342,7 +1343,7 @@ class IteratorIntStream extends AbstractIntStream {
     }
 
     @Override
-    public void forEach(IntConsumer action) {
+    public <E extends Exception> void forEach(final Try.IntConsumer<E> action) throws E {
         while (elements.hasNext()) {
             action.accept(elements.nextInt());
         }

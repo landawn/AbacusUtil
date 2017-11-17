@@ -37,6 +37,7 @@ import com.landawn.abacus.util.Nth;
 import com.landawn.abacus.util.Nullable;
 import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.Pair;
+import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
@@ -420,7 +421,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
     }
 
     @Override
-    public void forEach(final DoubleConsumer action) {
+    public <E extends Exception> void forEach(final Try.DoubleConsumer<E> action) throws E {
         if (maxThreadNum <= 1) {
             sequential().forEach(action);
             return;

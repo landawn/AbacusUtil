@@ -33,6 +33,7 @@ import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nullable;
 import com.landawn.abacus.util.OptionalByte;
 import com.landawn.abacus.util.OptionalDouble;
+import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
@@ -861,7 +862,7 @@ class IteratorByteStream extends AbstractByteStream {
     }
 
     @Override
-    public void forEach(ByteConsumer action) {
+    public <E extends Exception> void forEach(final Try.ByteConsumer<E> action) throws E {
         while (elements.hasNext()) {
             action.accept(elements.nextByte());
         }

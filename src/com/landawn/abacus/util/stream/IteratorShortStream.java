@@ -34,6 +34,7 @@ import com.landawn.abacus.util.OptionalShort;
 import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.ShortList;
 import com.landawn.abacus.util.ShortSummaryStatistics;
+import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
@@ -872,7 +873,7 @@ class IteratorShortStream extends AbstractShortStream {
     }
 
     @Override
-    public void forEach(ShortConsumer action) {
+    public <E extends Exception> void forEach(final Try.ShortConsumer<E> action) throws E {
         while (elements.hasNext()) {
             action.accept(elements.nextShort());
         }

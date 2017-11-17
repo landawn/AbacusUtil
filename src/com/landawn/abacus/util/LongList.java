@@ -30,7 +30,6 @@ import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BinaryOperator;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
-import com.landawn.abacus.util.function.IndexedLongConsumer;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.LongBinaryOperator;
 import com.landawn.abacus.util.function.LongConsumer;
@@ -793,8 +792,11 @@ public final class LongList extends PrimitiveList<LongConsumer, LongPredicate, L
         return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(N.average(elementData, fromIndex, toIndex));
     }
 
-    @Override
-    public void forEach(final int fromIndex, final int toIndex, LongConsumer action) {
+    public <E extends Exception> void forEach(final int toIndex, Try.LongConsumer<E> action) throws E {
+        forEach(0, size, action);
+    }
+
+    public <E extends Exception> void forEach(final int fromIndex, final int toIndex, Try.LongConsumer<E> action) throws E {
         N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, size);
 
         if (size > 0) {
@@ -805,26 +807,6 @@ public final class LongList extends PrimitiveList<LongConsumer, LongPredicate, L
             } else {
                 for (int i = N.min(size - 1, fromIndex); i > toIndex; i--) {
                     action.accept(elementData[i]);
-                }
-            }
-        }
-    }
-
-    public void forEach(IndexedLongConsumer action) {
-        forEach(0, size(), action);
-    }
-
-    public void forEach(final int fromIndex, final int toIndex, IndexedLongConsumer action) {
-        N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex, size);
-
-        if (size > 0) {
-            if (fromIndex <= toIndex) {
-                for (int i = fromIndex; i < toIndex; i++) {
-                    action.accept(i, elementData[i]);
-                }
-            } else {
-                for (int i = N.min(size - 1, fromIndex); i > toIndex; i--) {
-                    action.accept(i, elementData[i]);
                 }
             }
         }
