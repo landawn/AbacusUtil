@@ -413,11 +413,11 @@ public final class Try<T extends AutoCloseable> {
     }
 
     public interface BooleanFunction<R, E extends Exception> {
-        R apply(boolean value);
+        R apply(boolean value) throws E;
     }
 
     public interface BooleanConsumer<E extends Exception> {
-        void accept(boolean t);
+        void accept(boolean t) throws E;
     }
 
     public interface CharPredicate<E extends Exception> {
@@ -425,11 +425,11 @@ public final class Try<T extends AutoCloseable> {
     }
 
     public interface CharFunction<R, E extends Exception> {
-        R apply(char value);
+        R apply(char value) throws E;
     }
 
     public interface CharConsumer<E extends Exception> {
-        void accept(char t);
+        void accept(char t) throws E;
     }
 
     public interface BytePredicate<E extends Exception> {
@@ -437,11 +437,11 @@ public final class Try<T extends AutoCloseable> {
     }
 
     public interface ByteFunction<R, E extends Exception> {
-        R apply(byte value);
+        R apply(byte value) throws E;
     }
 
     public interface ByteConsumer<E extends Exception> {
-        void accept(byte t);
+        void accept(byte t) throws E;
     }
 
     public interface ShortPredicate<E extends Exception> {
@@ -449,11 +449,11 @@ public final class Try<T extends AutoCloseable> {
     }
 
     public interface ShortFunction<R, E extends Exception> {
-        R apply(short value);
+        R apply(short value) throws E;
     }
 
     public interface ShortConsumer<E extends Exception> {
-        void accept(short t);
+        void accept(short t) throws E;
     }
 
     public interface IntPredicate<E extends Exception> {
@@ -461,11 +461,11 @@ public final class Try<T extends AutoCloseable> {
     }
 
     public interface IntFunction<R, E extends Exception> {
-        R apply(int value);
+        R apply(int value) throws E;
     }
 
     public interface IntConsumer<E extends Exception> {
-        void accept(int t);
+        void accept(int t) throws E;
     }
 
     public interface LongPredicate<E extends Exception> {
@@ -473,11 +473,11 @@ public final class Try<T extends AutoCloseable> {
     }
 
     public interface LongFunction<R, E extends Exception> {
-        R apply(long value);
+        R apply(long value) throws E;
     }
 
     public interface LongConsumer<E extends Exception> {
-        void accept(long t);
+        void accept(long t) throws E;
     }
 
     public interface FloatPredicate<E extends Exception> {
@@ -485,11 +485,11 @@ public final class Try<T extends AutoCloseable> {
     }
 
     public interface FloatFunction<R, E extends Exception> {
-        R apply(float value);
+        R apply(float value) throws E;
     }
 
     public interface FloatConsumer<E extends Exception> {
-        void accept(float t);
+        void accept(float t) throws E;
     }
 
     public interface DoublePredicate<E extends Exception> {
@@ -497,10 +497,10 @@ public final class Try<T extends AutoCloseable> {
     }
 
     public interface DoubleFunction<R, E extends Exception> {
-        R apply(double value);
+        R apply(double value) throws E;
     }
 
     public interface DoubleConsumer<E extends Exception> {
-        void accept(double t);
+        void accept(double t) throws E;
     }
 }
