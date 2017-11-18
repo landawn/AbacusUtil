@@ -14,6 +14,8 @@
 
 package com.landawn.abacus.util.function;
 
+import java.util.Objects;
+
 import com.landawn.abacus.util.Try;
 
 /**
@@ -26,6 +28,18 @@ public interface CharUnaryOperator extends Try.CharUnaryOperator<RuntimeExceptio
 
     @Override
     char applyAsChar(char operand);
+
+    default CharUnaryOperator compose(CharUnaryOperator before) {
+        Objects.requireNonNull(before);
+
+        return v -> applyAsChar(before.applyAsChar(v));
+    }
+
+    default CharUnaryOperator andThen(CharUnaryOperator after) {
+        Objects.requireNonNull(after);
+
+        return t -> after.applyAsChar(applyAsChar(t));
+    }
 
     static CharUnaryOperator identity() {
         return t -> t;

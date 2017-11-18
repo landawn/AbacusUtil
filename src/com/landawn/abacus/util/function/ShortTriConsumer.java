@@ -16,14 +16,17 @@ package com.landawn.abacus.util.function;
 
 import java.util.Objects;
 
+import com.landawn.abacus.util.Try;
+
 /**
  * 
  * @since 0.8
  * 
  * @author Haiyang Li
  */
-public interface ShortTriConsumer {
+public interface ShortTriConsumer extends Try.ShortTriConsumer<RuntimeException> {
 
+    @Override
     void accept(short a, short b, short c);
 
     default ShortTriConsumer andThen(ShortTriConsumer after) {

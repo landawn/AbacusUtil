@@ -14,6 +14,8 @@
 
 package com.landawn.abacus.util.function;
 
+import java.util.Objects;
+
 import com.landawn.abacus.util.Try;
 
 /**
@@ -26,6 +28,18 @@ public interface ShortUnaryOperator extends Try.ShortUnaryOperator<RuntimeExcept
 
     @Override
     short applyAsShort(short operand);
+
+    default ShortUnaryOperator compose(ShortUnaryOperator before) {
+        Objects.requireNonNull(before);
+
+        return v -> applyAsShort(before.applyAsShort(v));
+    }
+
+    default ShortUnaryOperator andThen(ShortUnaryOperator after) {
+        Objects.requireNonNull(after);
+
+        return t -> after.applyAsShort(applyAsShort(t));
+    }
 
     static ShortUnaryOperator identity() {
         return t -> t;

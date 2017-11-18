@@ -42,7 +42,7 @@ import com.landawn.abacus.util.stream.Stream;
  *
  * @author Haiyang Li
  */
-public final class Sheet<R, C, E> {
+public final class Sheet<R, C, E> implements Cloneable {
     private static final KryoParser kryoParser = ParserFactory.isKryoAvailable() ? ParserFactory.createKryoParser() : null;
 
     private final Set<R> _rowKeySet;

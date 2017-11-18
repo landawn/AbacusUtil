@@ -408,7 +408,7 @@ public final class Try<T extends AutoCloseable> {
     }
 
     @SuppressWarnings("hiding")
-    public interface QuadFunction<A, B, C, D, R, E extends Exception> {
+    public static interface QuadFunction<A, B, C, D, R, E extends Exception> {
         R apply(A a, B b, C c, D d) throws E;
     }
 
@@ -425,325 +425,421 @@ public final class Try<T extends AutoCloseable> {
     }
 
     @SuppressWarnings("hiding")
-    public interface QuadConsumer<A, B, C, D, E extends Exception> {
+    public static interface QuadConsumer<A, B, C, D, E extends Exception> {
         void accept(A a, B b, C c, D d) throws E;
     }
 
-    public interface IndexedConsumer<T, E extends Exception> {
+    public static interface IndexedConsumer<T, E extends Exception> {
         void accept(int idx, T e) throws E;
     }
 
-    public interface IndexedBiConsumer<U, T, E extends Exception> {
+    public static interface IndexedBiConsumer<U, T, E extends Exception> {
         void accept(U u, int idx, T e) throws E;
     }
 
-    public interface IndexedFunction<T, R, E extends Exception> {
+    public static interface IndexedFunction<T, R, E extends Exception> {
         R apply(int idx, T e) throws E;
     }
 
-    public interface IndexedBiFunction<U, T, R, E extends Exception> {
+    public static interface IndexedBiFunction<U, T, R, E extends Exception> {
         R apply(U u, int idx, T e) throws E;
     }
 
-    public interface IndexedPredicate<T, E extends Exception> {
+    public static interface IndexedPredicate<T, E extends Exception> {
         boolean test(int idx, T e) throws E;
     }
 
-    public interface IndexedBiPredicate<U, T, E extends Exception> {
+    public static interface IndexedBiPredicate<U, T, E extends Exception> {
         boolean test(U u, int idx, T e) throws E;
     }
 
-    public interface BooleanPredicate<E extends Exception> {
+    public static interface BooleanPredicate<E extends Exception> {
         boolean test(boolean value) throws E;
     }
 
-    public interface BooleanFunction<R, E extends Exception> {
+    public static interface BooleanFunction<R, E extends Exception> {
         R apply(boolean value) throws E;
     }
 
-    public interface BooleanConsumer<E extends Exception> {
+    public static interface BooleanConsumer<E extends Exception> {
         void accept(boolean t) throws E;
     }
 
-    public interface CharPredicate<E extends Exception> {
+    public static interface CharPredicate<E extends Exception> {
         boolean test(char value) throws E;
     }
 
-    public interface CharFunction<R, E extends Exception> {
+    public static interface CharFunction<R, E extends Exception> {
         R apply(char value) throws E;
     }
 
-    public interface CharConsumer<E extends Exception> {
+    public static interface CharConsumer<E extends Exception> {
         void accept(char t) throws E;
     }
 
-    public interface BytePredicate<E extends Exception> {
+    public static interface BytePredicate<E extends Exception> {
         boolean test(byte value) throws E;
     }
 
-    public interface ByteFunction<R, E extends Exception> {
+    public static interface ByteFunction<R, E extends Exception> {
         R apply(byte value) throws E;
     }
 
-    public interface ByteConsumer<E extends Exception> {
+    public static interface ByteConsumer<E extends Exception> {
         void accept(byte t) throws E;
     }
 
-    public interface ShortPredicate<E extends Exception> {
+    public static interface ShortPredicate<E extends Exception> {
         boolean test(short value) throws E;
     }
 
-    public interface ShortFunction<R, E extends Exception> {
+    public static interface ShortFunction<R, E extends Exception> {
         R apply(short value) throws E;
     }
 
-    public interface ShortConsumer<E extends Exception> {
+    public static interface ShortConsumer<E extends Exception> {
         void accept(short t) throws E;
     }
 
-    public interface IntPredicate<E extends Exception> {
+    public static interface IntPredicate<E extends Exception> {
         boolean test(int value) throws E;
     }
 
-    public interface IntFunction<R, E extends Exception> {
+    public static interface IntFunction<R, E extends Exception> {
         R apply(int value) throws E;
     }
 
-    public interface IntConsumer<E extends Exception> {
+    public static interface IntConsumer<E extends Exception> {
         void accept(int t) throws E;
     }
 
-    public interface LongPredicate<E extends Exception> {
+    public static interface LongPredicate<E extends Exception> {
         boolean test(long value) throws E;
     }
 
-    public interface LongFunction<R, E extends Exception> {
+    public static interface LongFunction<R, E extends Exception> {
         R apply(long value) throws E;
     }
 
-    public interface LongConsumer<E extends Exception> {
+    public static interface LongConsumer<E extends Exception> {
         void accept(long t) throws E;
     }
 
-    public interface FloatPredicate<E extends Exception> {
+    public static interface FloatPredicate<E extends Exception> {
         boolean test(float value) throws E;
     }
 
-    public interface FloatFunction<R, E extends Exception> {
+    public static interface FloatFunction<R, E extends Exception> {
         R apply(float value) throws E;
     }
 
-    public interface FloatConsumer<E extends Exception> {
+    public static interface FloatConsumer<E extends Exception> {
         void accept(float t) throws E;
     }
 
-    public interface DoublePredicate<E extends Exception> {
+    public static interface DoublePredicate<E extends Exception> {
         boolean test(double value) throws E;
     }
 
-    public interface DoubleFunction<R, E extends Exception> {
+    public static interface DoubleFunction<R, E extends Exception> {
         R apply(double value) throws E;
     }
 
-    public interface DoubleConsumer<E extends Exception> {
+    public static interface DoubleConsumer<E extends Exception> {
         void accept(double t) throws E;
     }
 
-    public interface ToBooleanFunction<T, E extends Exception> {
+    public static interface ToBooleanFunction<T, E extends Exception> {
         boolean applyAsBoolean(T t) throws E;
     }
 
-    public interface ToCharFunction<T, E extends Exception> {
+    public static interface ToCharFunction<T, E extends Exception> {
         char applyAsChar(T t) throws E;
     }
 
-    public interface ToByteFunction<T, E extends Exception> {
+    public static interface ToByteFunction<T, E extends Exception> {
         byte applyAsByte(T t) throws E;
     }
 
-    public interface ToShortFunction<T, E extends Exception> {
+    public static interface ToShortFunction<T, E extends Exception> {
         short applyAsShort(T t) throws E;
     }
 
-    public interface ToIntFunction<T, E extends Exception> {
+    public static interface ToIntFunction<T, E extends Exception> {
         int applyAsInt(T t) throws E;
     }
 
-    public interface ToLongFunction<T, E extends Exception> {
+    public static interface ToLongFunction<T, E extends Exception> {
         long applyAsLong(T t) throws E;
     }
 
-    public interface ToFloatFunction<T, E extends Exception> {
+    public static interface ToFloatFunction<T, E extends Exception> {
         float applyAsFloat(T t) throws E;
     }
 
-    public interface ToDoubleFunction<T, E extends Exception> {
+    public static interface ToDoubleFunction<T, E extends Exception> {
         double applyAsDouble(T t) throws E;
     }
 
-    public interface UnaryOperator<T, E extends Exception> extends Function<T, T, E> {
+    public static interface UnaryOperator<T, E extends Exception> extends Function<T, T, E> {
     }
 
-    public interface BinaryOperator<T, E extends Exception> extends BiFunction<T, T, T, E> {
+    public static interface BinaryOperator<T, E extends Exception> extends BiFunction<T, T, T, E> {
     }
 
-    public interface BooleanBinaryOperator<E extends Exception> {
+    public static interface BooleanBinaryOperator<E extends Exception> {
         boolean applyAsBoolean(boolean left, boolean right) throws E;
     }
 
-    public interface CharBinaryOperator<E extends Exception> {
+    public static interface CharBinaryOperator<E extends Exception> {
         char applyAsChar(char left, char right) throws E;
     }
 
-    public interface ByteBinaryOperator<E extends Exception> {
+    public static interface ByteBinaryOperator<E extends Exception> {
         byte applyAsByte(byte left, byte right) throws E;
     }
 
-    public interface ShortBinaryOperator<E extends Exception> {
+    public static interface ShortBinaryOperator<E extends Exception> {
         short applyAsShort(short left, short right) throws E;
     }
 
-    public interface IntBinaryOperator<E extends Exception> {
+    public static interface IntBinaryOperator<E extends Exception> {
         int applyAsInt(int left, int right) throws E;
     }
 
-    public interface LongBinaryOperator<E extends Exception> {
+    public static interface LongBinaryOperator<E extends Exception> {
         long applyAsLong(long left, long right) throws E;
     }
 
-    public interface FloatBinaryOperator<E extends Exception> {
+    public static interface FloatBinaryOperator<E extends Exception> {
         float applyAsFloat(float left, float right) throws E;
     }
 
-    public interface DoubleBinaryOperator<E extends Exception> {
+    public static interface DoubleBinaryOperator<E extends Exception> {
         double applyAsDouble(double left, double right) throws E;
     }
 
-    public interface BooleanUnaryOperator<E extends Exception> {
+    public static interface BooleanUnaryOperator<E extends Exception> {
         boolean applyAsBoolean(boolean operand) throws E;
     }
 
-    public interface CharUnaryOperator<E extends Exception> {
+    public static interface CharUnaryOperator<E extends Exception> {
         char applyAsChar(char operand) throws E;
     }
 
-    public interface ByteUnaryOperator<E extends Exception> {
+    public static interface ByteUnaryOperator<E extends Exception> {
         byte applyAsByte(byte operand) throws E;
     }
 
-    public interface ShortUnaryOperator<E extends Exception> {
+    public static interface ShortUnaryOperator<E extends Exception> {
         short applyAsShort(short operand) throws E;
     }
 
-    public interface IntUnaryOperator<E extends Exception> {
+    public static interface IntUnaryOperator<E extends Exception> {
         int applyAsInt(int operand) throws E;
     }
 
-    public interface LongUnaryOperator<E extends Exception> {
+    public static interface LongUnaryOperator<E extends Exception> {
         long applyAsLong(long operand) throws E;
     }
 
-    public interface FloatUnaryOperator<E extends Exception> {
+    public static interface FloatUnaryOperator<E extends Exception> {
         float applyAsFloat(float operand) throws E;
     }
 
-    public interface DoubleUnaryOperator<E extends Exception> {
+    public static interface DoubleUnaryOperator<E extends Exception> {
         double applyAsDouble(double operand) throws E;
     }
 
-    public interface BooleanBiPredicate<E extends Exception> {
+    public static interface BooleanBiPredicate<E extends Exception> {
         boolean test(boolean t, boolean u) throws E;
     }
 
-    public interface CharBiPredicate<E extends Exception> {
+    public static interface CharBiPredicate<E extends Exception> {
         boolean test(char t, char u) throws E;
     }
 
-    public interface ByteBiPredicate<E extends Exception> {
+    public static interface ByteBiPredicate<E extends Exception> {
         boolean test(byte t, byte u) throws E;
     }
 
-    public interface ShortBiPredicate<E extends Exception> {
+    public static interface ShortBiPredicate<E extends Exception> {
         boolean test(short t, short u) throws E;
     }
 
-    public interface IntBiPredicate<E extends Exception> {
+    public static interface IntBiPredicate<E extends Exception> {
         boolean test(int t, int u) throws E;
     }
 
-    public interface LongBiPredicate<E extends Exception> {
+    public static interface LongBiPredicate<E extends Exception> {
         boolean test(long t, long u) throws E;
     }
 
-    public interface FloatBiPredicate<E extends Exception> {
+    public static interface FloatBiPredicate<E extends Exception> {
         boolean test(float t, float u) throws E;
     }
 
-    public interface DoubleBiPredicate<E extends Exception> {
+    public static interface DoubleBiPredicate<E extends Exception> {
         boolean test(double t, double u) throws E;
     }
 
-    public interface BooleanBiFunction<R, E extends Exception> {
+    public static interface BooleanBiFunction<R, E extends Exception> {
         R apply(boolean t, boolean u) throws E;
     }
 
-    public interface CharBiFunction<R, E extends Exception> {
+    public static interface CharBiFunction<R, E extends Exception> {
         R apply(char t, char u) throws E;
     }
 
-    public interface ByteBiFunction<R, E extends Exception> {
+    public static interface ByteBiFunction<R, E extends Exception> {
         R apply(byte t, byte u) throws E;
     }
 
-    public interface ShortBiFunction<R, E extends Exception> {
+    public static interface ShortBiFunction<R, E extends Exception> {
         R apply(short t, short u) throws E;
     }
 
-    public interface IntBiFunction<R, E extends Exception> {
+    public static interface IntBiFunction<R, E extends Exception> {
         R apply(int t, int u) throws E;
     }
 
-    public interface LongBiFunction<R, E extends Exception> {
+    public static interface LongBiFunction<R, E extends Exception> {
         R apply(long t, long u) throws E;
     }
 
-    public interface FloatBiFunction<R, E extends Exception> {
+    public static interface FloatBiFunction<R, E extends Exception> {
         R apply(float t, float u) throws E;
     }
 
-    public interface DoubleBiFunction<R, E extends Exception> {
+    public static interface DoubleBiFunction<R, E extends Exception> {
         R apply(double t, double u) throws E;
     }
 
-    public interface BooleanBiConsumer<E extends Exception> {
+    public static interface BooleanBiConsumer<E extends Exception> {
         void accept(boolean t, boolean u) throws E;
     }
 
-    public interface CharBiConsumer<E extends Exception> {
+    public static interface CharBiConsumer<E extends Exception> {
         void accept(char t, char u) throws E;
     }
 
-    public interface ByteBiConsumer<E extends Exception> {
+    public static interface ByteBiConsumer<E extends Exception> {
         void accept(byte t, byte u) throws E;
     }
 
-    public interface ShortBiConsumer<E extends Exception> {
+    public static interface ShortBiConsumer<E extends Exception> {
         void accept(short t, short u) throws E;
     }
 
-    public interface IntBiConsumer<E extends Exception> {
+    public static interface IntBiConsumer<E extends Exception> {
         void accept(int t, int u) throws E;
     }
 
-    public interface LongBiConsumer<E extends Exception> {
+    public static interface LongBiConsumer<E extends Exception> {
         void accept(long t, long u) throws E;
     }
 
-    public interface FloatBiConsumer<E extends Exception> {
+    public static interface FloatBiConsumer<E extends Exception> {
         void accept(float t, float u) throws E;
     }
 
-    public interface DoubleBiConsumer<E extends Exception> {
+    public static interface DoubleBiConsumer<E extends Exception> {
         void accept(double t, double u) throws E;
+    }
+
+    public static interface BooleanTriPredicate<E extends Exception> {
+        boolean test(boolean a, boolean b, boolean c) throws E;
+    }
+
+    public static interface CharTriPredicate<E extends Exception> {
+        boolean test(char a, char b, char c) throws E;
+    }
+
+    public static interface ByteTriPredicate<E extends Exception> {
+        boolean test(byte a, byte b, byte c) throws E;
+    }
+
+    public static interface ShortTriPredicate<E extends Exception> {
+        boolean test(short a, short b, short c) throws E;
+    }
+
+    public static interface IntTriPredicate<E extends Exception> {
+        boolean test(int a, int b, int c) throws E;
+    }
+
+    public static interface LongTriPredicate<E extends Exception> {
+        boolean test(long a, long b, long c) throws E;
+    }
+
+    public static interface FloatTriPredicate<E extends Exception> {
+        boolean test(float a, float b, float c) throws E;
+    }
+
+    public static interface DoubleTriPredicate<E extends Exception> {
+        boolean test(double a, double b, double c) throws E;
+    }
+
+    public static interface BooleanTriFunction<R, E extends Exception> {
+        R apply(boolean a, boolean b, boolean c) throws E;
+    }
+
+    public static interface CharTriFunction<R, E extends Exception> {
+        R apply(char a, char b, char c) throws E;
+    }
+
+    public static interface ByteTriFunction<R, E extends Exception> {
+        R apply(byte a, byte b, byte c) throws E;
+    }
+
+    public static interface ShortTriFunction<R, E extends Exception> {
+        R apply(short a, short b, short c) throws E;
+    }
+
+    public static interface IntTriFunction<R, E extends Exception> {
+        R apply(int a, int b, int c) throws E;
+    }
+
+    public static interface LongTriFunction<R, E extends Exception> {
+        R apply(long a, long b, long c) throws E;
+    }
+
+    public static interface FloatTriFunction<R, E extends Exception> {
+        R apply(float a, float b, float c) throws E;
+    }
+
+    public static interface DoubleTriFunction<R, E extends Exception> {
+        R apply(double a, double b, double c) throws E;
+    }
+
+    public static interface BooleanTriConsumer<E extends Exception> {
+        void accept(boolean a, boolean b, boolean c) throws E;
+    }
+
+    public static interface CharTriConsumer<E extends Exception> {
+        void accept(char a, char b, char c) throws E;
+    }
+
+    public static interface ByteTriConsumer<E extends Exception> {
+        void accept(byte a, byte b, byte c) throws E;
+    }
+
+    public static interface ShortTriConsumer<E extends Exception> {
+        void accept(short a, short b, short c) throws E;
+    }
+
+    public static interface IntTriConsumer<E extends Exception> {
+        void accept(int a, int b, int c) throws E;
+    }
+
+    public static interface LongTriConsumer<E extends Exception> {
+        void accept(long a, long b, long c) throws E;
+    }
+
+    public static interface FloatTriConsumer<E extends Exception> {
+        void accept(float a, float b, float c) throws E;
+    }
+
+    public static interface DoubleTriConsumer<E extends Exception> {
+        void accept(double a, double b, double c) throws E;
     }
 }

@@ -15,7 +15,8 @@
 package com.landawn.abacus.util.function;
 
 import java.util.Objects;
-import java.util.function.Function;
+
+import com.landawn.abacus.util.Try;
 
 /**
  * 
@@ -23,8 +24,9 @@ import java.util.function.Function;
  * 
  * @author Haiyang Li
  */
-public interface IntTriFunction<R> {
+public interface IntTriFunction<R> extends Try.IntTriFunction<R, RuntimeException> {
 
+    @Override
     R apply(int a, int b, int c);
 
     default <V> IntTriFunction<V> andThen(Function<? super R, ? extends V> after) {

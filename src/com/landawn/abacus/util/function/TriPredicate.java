@@ -29,14 +29,14 @@ public interface TriPredicate<A, B, C> extends Try.TriPredicate<A, B, C, Runtime
     @Override
     boolean test(A a, B b, C c);
 
+    default TriPredicate<A, B, C> negate() {
+        return (a, b, c) -> !test(a, b, c);
+    }
+
     default TriPredicate<A, B, C> and(TriPredicate<A, B, C> other) {
         Objects.requireNonNull(other);
 
         return (a, b, c) -> test(a, b, c) && other.test(a, b, c);
-    }
-
-    default TriPredicate<A, B, C> negate() {
-        return (a, b, c) -> !test(a, b, c);
     }
 
     default TriPredicate<A, B, C> or(TriPredicate<A, B, C> other) {

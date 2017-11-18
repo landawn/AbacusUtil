@@ -16,14 +16,17 @@ package com.landawn.abacus.util.function;
 
 import java.util.Objects;
 
+import com.landawn.abacus.util.Try;
+
 /**
  * 
  * @since 0.8
  * 
  * @author Haiyang Li
  */
-public interface LongTriConsumer {
+public interface LongTriConsumer extends Try.LongTriConsumer<RuntimeException> {
 
+    @Override
     void accept(long a, long b, long c);
 
     default LongTriConsumer andThen(LongTriConsumer after) {
