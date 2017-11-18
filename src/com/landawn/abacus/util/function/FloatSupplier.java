@@ -14,27 +14,30 @@
 
 package com.landawn.abacus.util.function;
 
+import com.landawn.abacus.util.Try;
+
 /**
  * 
  * @since 0.8
  * 
  * @author Haiyang Li
  */
-public interface FloatSupplier {
+public interface FloatSupplier extends Try.FloatSupplier<RuntimeException> {
 
-   static final FloatSupplier ZERO = new FloatSupplier() {
+    static final FloatSupplier ZERO = new FloatSupplier() {
         @Override
         public float getAsFloat() {
             return 0;
         }
     };
 
-   static final FloatSupplier RANDOM = new FloatSupplier() {
+    static final FloatSupplier RANDOM = new FloatSupplier() {
         @Override
         public float getAsFloat() {
             return Util.RAND.nextFloat();
         }
     };
 
+    @Override
     float getAsFloat();
 }

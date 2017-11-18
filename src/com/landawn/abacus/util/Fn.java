@@ -1626,6 +1626,46 @@ public final class Fn {
             }
         };
 
+        @SuppressWarnings("rawtypes")
+        private static final IntFunction<? super BiMap> BI_MAP_FACTORY = new IntFunction<BiMap>() {
+            @Override
+            public BiMap apply(int len) {
+                return new BiMap(N.initHashCapacity(len));
+            }
+        };
+
+        @SuppressWarnings("rawtypes")
+        private static final IntFunction<? super Multiset> MULTISET_FACTORY = new IntFunction<Multiset>() {
+            @Override
+            public Multiset apply(int len) {
+                return new Multiset(N.initHashCapacity(len));
+            }
+        };
+
+        @SuppressWarnings("rawtypes")
+        private static final IntFunction<? super LongMultiset> LONG_MULTISET_FACTORY = new IntFunction<LongMultiset>() {
+            @Override
+            public LongMultiset apply(int len) {
+                return new LongMultiset(N.initHashCapacity(len));
+            }
+        };
+
+        @SuppressWarnings("rawtypes")
+        private static final IntFunction<? super ListMultimap> LIST_MULTIMAP_FACTORY = new IntFunction<ListMultimap>() {
+            @Override
+            public ListMultimap apply(int len) {
+                return new ListMultimap(N.initHashCapacity(len));
+            }
+        };
+
+        @SuppressWarnings("rawtypes")
+        private static final IntFunction<? super SetMultimap> SET_MULTIMAP_FACTORY = new IntFunction<SetMultimap>() {
+            @Override
+            public SetMultimap apply(int len) {
+                return new SetMultimap(N.initHashCapacity(len));
+            }
+        };
+
         private Factory() {
             // singleton.
         }
@@ -1800,6 +1840,31 @@ public final class Fn {
         @SuppressWarnings("rawtypes")
         public static <K, V> IntFunction<ConcurrentHashMap<K, V>> ofConcurrentHashMap() {
             return (IntFunction) CONCURRENT_HASH_MAP_FACTORY;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <K, V> IntFunction<BiMap<K, V>> ofBiMap() {
+            return (IntFunction) BI_MAP_FACTORY;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <T> IntFunction<Multiset<T>> ofMultiset() {
+            return (IntFunction) MULTISET_FACTORY;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <T> IntFunction<LongMultiset<T>> ofLongMultiset() {
+            return (IntFunction) LONG_MULTISET_FACTORY;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <K, E> IntFunction<ListMultimap<K, E>> ofListMultimap() {
+            return (IntFunction) LIST_MULTIMAP_FACTORY;
+        }
+
+        @SuppressWarnings("rawtypes")
+        public static <K, E> IntFunction<SetMultimap<K, E>> ofSetMultimap() {
+            return (IntFunction) SET_MULTIMAP_FACTORY;
         }
     }
 
@@ -2089,7 +2154,7 @@ public final class Fn {
         };
 
         @SuppressWarnings("rawtypes")
-        private static final Supplier<? super ListMultimap> LISTMULTIMAP = new Supplier<ListMultimap>() {
+        private static final Supplier<? super ListMultimap> LIST_MULTIMAP = new Supplier<ListMultimap>() {
             @Override
             public ListMultimap get() {
                 return N.newListMultimap();
@@ -2097,7 +2162,7 @@ public final class Fn {
         };
 
         @SuppressWarnings("rawtypes")
-        private static final Supplier<? super SetMultimap> SETMULTIMAP = new Supplier<SetMultimap>() {
+        private static final Supplier<? super SetMultimap> SET_MULTIMAP = new Supplier<SetMultimap>() {
             @Override
             public SetMultimap get() {
                 return N.newSetMultimap();
@@ -2312,12 +2377,12 @@ public final class Fn {
 
         @SuppressWarnings("rawtypes")
         public static <K, E> Supplier<ListMultimap<K, E>> ofListMultimap() {
-            return (Supplier) LISTMULTIMAP;
+            return (Supplier) LIST_MULTIMAP;
         }
 
         @SuppressWarnings("rawtypes")
         public static <K, E> Supplier<SetMultimap<K, E>> ofSetMultimap() {
-            return (Supplier) SETMULTIMAP;
+            return (Supplier) SET_MULTIMAP;
         }
 
         public static Supplier<StringBuilder> ofStringBuilder() {

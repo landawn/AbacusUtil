@@ -16,8 +16,6 @@ package com.landawn.abacus.util;
 
 import java.util.NoSuchElementException;
 
-import com.landawn.abacus.util.function.DoubleConsumer;
-
 /**
  * 
  * @since 0.8
@@ -107,7 +105,7 @@ public abstract class DoubleIterator extends ImmutableIterator<Double> {
         return list;
     }
 
-    public void forEachRemaining(DoubleConsumer action) {
+    public <E extends Exception> void forEachRemaining(Try.DoubleConsumer<E> action) throws E {
         N.requireNonNull(action);
 
         while (hasNext()) {

@@ -15,7 +15,8 @@
 package com.landawn.abacus.util.function;
 
 import java.util.Objects;
-import java.util.function.Function;
+
+import com.landawn.abacus.util.Try;
 
 /**
  * 
@@ -23,8 +24,9 @@ import java.util.function.Function;
  * 
  * @author Haiyang Li
  */
-public interface FloatBiFunction<R> {
+public interface FloatBiFunction<R> extends Try.FloatBiFunction<R, RuntimeException> {
 
+    @Override
     R apply(float t, float u);
 
     default <V> FloatBiFunction<V> andThen(Function<? super R, ? extends V> after) {

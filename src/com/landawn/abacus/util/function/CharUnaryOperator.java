@@ -14,14 +14,17 @@
 
 package com.landawn.abacus.util.function;
 
+import com.landawn.abacus.util.Try;
+
 /**
  * 
  * @since 0.8
  * 
  * @author Haiyang Li
  */
-public interface CharUnaryOperator {
+public interface CharUnaryOperator extends Try.CharUnaryOperator<RuntimeException> {
 
+    @Override
     char applyAsChar(char operand);
 
     static CharUnaryOperator identity() {

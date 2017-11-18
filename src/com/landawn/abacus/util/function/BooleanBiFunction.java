@@ -15,7 +15,8 @@
 package com.landawn.abacus.util.function;
 
 import java.util.Objects;
-import java.util.function.Function;
+
+import com.landawn.abacus.util.Try;
 
 /**
  * 
@@ -23,8 +24,9 @@ import java.util.function.Function;
  * 
  * @author Haiyang Li
  */
-public interface BooleanBiFunction<R> {
+public interface BooleanBiFunction<R> extends Try.BooleanBiFunction<R, RuntimeException> {
 
+    @Override
     R apply(boolean t, boolean u);
 
     default <V> BooleanBiFunction<V> andThen(Function<? super R, ? extends V> after) {

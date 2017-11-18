@@ -14,27 +14,30 @@
 
 package com.landawn.abacus.util.function;
 
+import com.landawn.abacus.util.Try;
+
 /**
  * 
  * @since 0.8
  * 
  * @author Haiyang Li
  */
-public interface CharSupplier {
+public interface CharSupplier extends Try.CharSupplier<RuntimeException> {
 
-   static final CharSupplier ZERO = new CharSupplier() {
+    static final CharSupplier ZERO = new CharSupplier() {
         @Override
         public char getAsChar() {
             return 0;
         }
     };
 
-   static final CharSupplier RANDOM = new CharSupplier() {
+    static final CharSupplier RANDOM = new CharSupplier() {
         @Override
         public char getAsChar() {
             return (char) Math.abs(Util.RAND.nextInt() % Util.CHAR_MOD);
         }
     };
 
+    @Override
     char getAsChar();
 }

@@ -27,15 +27,7 @@ import java.util.Set;
 
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
-import com.landawn.abacus.util.function.BinaryOperator;
-import com.landawn.abacus.util.function.Consumer;
-import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
-import com.landawn.abacus.util.function.LongBinaryOperator;
-import com.landawn.abacus.util.function.LongConsumer;
-import com.landawn.abacus.util.function.LongFunction;
-import com.landawn.abacus.util.function.LongPredicate;
-import com.landawn.abacus.util.function.LongUnaryOperator;
 import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.Collector;
 import com.landawn.abacus.util.stream.LongStream;
@@ -46,7 +38,7 @@ import com.landawn.abacus.util.stream.LongStream;
  * 
  * @author Haiyang Li
  */
-public final class LongList extends PrimitiveList<LongConsumer, LongPredicate, Long, long[], LongList> {
+public final class LongList extends PrimitiveList<Long, long[], LongList> {
     private static final long serialVersionUID = -7764836427712181163L;
 
     private long[] elementData = N.EMPTY_LONG_ARRAY;
@@ -343,8 +335,7 @@ public final class LongList extends PrimitiveList<LongConsumer, LongPredicate, L
         return removeAll(of(a));
     }
 
-    @Override
-    public boolean removeIf(LongPredicate p) {
+    public <E extends Exception> boolean removeIf(Try.LongPredicate<E> p) throws E {
         final LongList tmp = new LongList(size());
 
         for (int i = 0; i < size; i++) {
@@ -452,13 +443,13 @@ public final class LongList extends PrimitiveList<LongConsumer, LongPredicate, L
         return result;
     }
 
-    public void replaceAll(LongUnaryOperator operator) {
+    public <E extends Exception> void replaceAll(Try.LongUnaryOperator<E> operator) throws E {
         for (int i = 0, len = size(); i < len; i++) {
             elementData[i] = operator.applyAsLong(elementData[i]);
         }
     }
 
-    public boolean replaceIf(LongPredicate predicate, long newValue) {
+    public <E extends Exception> boolean replaceIf(Try.LongPredicate<E> predicate, long newValue) throws E {
         boolean result = false;
 
         for (int i = 0, len = size(); i < len; i++) {
@@ -820,7 +811,7 @@ public final class LongList extends PrimitiveList<LongConsumer, LongPredicate, L
         return size() == 0 ? OptionalLong.empty() : OptionalLong.of(elementData[size() - 1]);
     }
 
-    public OptionalLong findFirst(LongPredicate predicate) {
+    public <E extends Exception> OptionalLong findFirst(Try.LongPredicate<E> predicate) throws E {
         for (int i = 0; i < size; i++) {
             if (predicate.test(elementData[i])) {
                 return OptionalLong.of(elementData[i]);
@@ -830,17 +821,7 @@ public final class LongList extends PrimitiveList<LongConsumer, LongPredicate, L
         return OptionalLong.empty();
     }
 
-    //    public Optional<IndexedLong> findFirst2(LongPredicate predicate) {
-    //        for (int i = 0; i < size; i++) {
-    //            if (predicate.test(elementData[i])) {
-    //                return Optional.of(IndexedLong.of(i, elementData[i]));
-    //            }
-    //        }
-    //
-    //        return Optional.empty();
-    //    }
-
-    public OptionalLong findLast(LongPredicate predicate) {
+    public <E extends Exception> OptionalLong findLast(Try.LongPredicate<E> predicate) throws E {
         for (int i = size - 1; i >= 0; i--) {
             if (predicate.test(elementData[i])) {
                 return OptionalLong.of(elementData[i]);
@@ -850,17 +831,7 @@ public final class LongList extends PrimitiveList<LongConsumer, LongPredicate, L
         return OptionalLong.empty();
     }
 
-    //    public Optional<IndexedLong> findLast2(LongPredicate predicate) {
-    //        for (int i = size - 1; i >= 0; i--) {
-    //            if (predicate.test(elementData[i])) {
-    //                return Optional.of(IndexedLong.of(i, elementData[i]));
-    //            }
-    //        }
-    //
-    //        return Optional.empty();
-    //    }
-
-    public OptionalInt findFirstIndex(LongPredicate predicate) {
+    public <E extends Exception> OptionalInt findFirstIndex(Try.LongPredicate<E> predicate) throws E {
         for (int i = 0; i < size; i++) {
             if (predicate.test(elementData[i])) {
                 return OptionalInt.of(i);
@@ -870,7 +841,7 @@ public final class LongList extends PrimitiveList<LongConsumer, LongPredicate, L
         return OptionalInt.empty();
     }
 
-    public OptionalInt findLastIndex(LongPredicate predicate) {
+    public <E extends Exception> OptionalInt findLastIndex(Try.LongPredicate<E> predicate) throws E {
         for (int i = size - 1; i >= 0; i--) {
             if (predicate.test(elementData[i])) {
                 return OptionalInt.of(i);
@@ -880,8 +851,17 @@ public final class LongList extends PrimitiveList<LongConsumer, LongPredicate, L
         return OptionalInt.empty();
     }
 
-    @Override
-    public boolean allMatch(final int fromIndex, final int toIndex, LongPredicate filter) {
+    /**
+     * Returns whether all elements of this List match the provided predicate.
+     * 
+     * @param filter
+     * @return
+     */
+    public <E extends Exception> boolean allMatch(Try.LongPredicate<E> filter) throws E {
+        return allMatch(0, size(), filter);
+    }
+
+    public <E extends Exception> boolean allMatch(final int fromIndex, final int toIndex, Try.LongPredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         if (size > 0) {
@@ -895,8 +875,17 @@ public final class LongList extends PrimitiveList<LongConsumer, LongPredicate, L
         return true;
     }
 
-    @Override
-    public boolean anyMatch(final int fromIndex, final int toIndex, LongPredicate filter) {
+    /**
+     * Returns whether any elements of this List match the provided predicate.
+     * 
+     * @param filter
+     * @return
+     */
+    public <E extends Exception> boolean anyMatch(Try.LongPredicate<E> filter) throws E {
+        return anyMatch(0, size(), filter);
+    }
+
+    public <E extends Exception> boolean anyMatch(final int fromIndex, final int toIndex, Try.LongPredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         if (size > 0) {
@@ -910,8 +899,17 @@ public final class LongList extends PrimitiveList<LongConsumer, LongPredicate, L
         return false;
     }
 
-    @Override
-    public boolean noneMatch(final int fromIndex, final int toIndex, LongPredicate filter) {
+    /**
+     * Returns whether no elements of this List match the provided predicate.
+     * 
+     * @param filter
+     * @return
+     */
+    public <E extends Exception> boolean noneMatch(Try.LongPredicate<E> filter) throws E {
+        return noneMatch(0, size(), filter);
+    }
+
+    public <E extends Exception> boolean noneMatch(final int fromIndex, final int toIndex, Try.LongPredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         if (size > 0) {
@@ -925,37 +923,56 @@ public final class LongList extends PrimitiveList<LongConsumer, LongPredicate, L
         return true;
     }
 
-    @Override
-    public boolean hasDuplicates() {
-        return N.hasDuplicates(elementData, 0, size, false);
+    /**
+     * 
+     * @param filter
+     * @return
+     */
+    public <E extends Exception> int count(Try.LongPredicate<E> filter) throws E {
+        return count(0, size(), filter);
     }
 
-    @Override
-    public int count(final int fromIndex, final int toIndex, LongPredicate filter) {
+    public <E extends Exception> int count(final int fromIndex, final int toIndex, Try.LongPredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         return N.count(elementData, fromIndex, toIndex, filter);
     }
 
-    @Override
-    public LongList filter(final int fromIndex, final int toIndex, LongPredicate filter) {
+    /**
+     * 
+     * @param filter
+     * @return a new List with the elements match the provided predicate.
+     */
+    public <E extends Exception> LongList filter(Try.LongPredicate<E> filter) throws E {
+        return filter(0, size(), filter);
+    }
+
+    public <E extends Exception> LongList filter(final int fromIndex, final int toIndex, Try.LongPredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         return N.filter(elementData, fromIndex, toIndex, filter);
     }
 
-    @Override
-    public LongList filter(final int fromIndex, final int toIndex, LongPredicate filter, final int max) {
+    /**
+     * 
+     * @param filter
+     * @return a new List with the elements match the provided predicate.
+     */
+    public <E extends Exception> LongList filter(Try.LongPredicate<E> filter, int max) throws E {
+        return filter(0, size(), filter, max);
+    }
+
+    public <E extends Exception> LongList filter(final int fromIndex, final int toIndex, Try.LongPredicate<E> filter, final int max) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         return N.filter(elementData, fromIndex, toIndex, filter, max);
     }
 
-    public LongList map(final LongUnaryOperator mapper) {
+    public <E extends Exception> LongList map(final Try.LongUnaryOperator<E> mapper) throws E {
         return map(0, size, mapper);
     }
 
-    public LongList map(final int fromIndex, final int toIndex, final LongUnaryOperator mapper) {
+    public <E extends Exception> LongList map(final int fromIndex, final int toIndex, final Try.LongUnaryOperator<E> mapper) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         final LongList result = new LongList(toIndex - fromIndex);
@@ -967,11 +984,11 @@ public final class LongList extends PrimitiveList<LongConsumer, LongPredicate, L
         return result;
     }
 
-    public <T> List<T> mapToObj(final LongFunction<? extends T> mapper) {
+    public <T, E extends Exception> List<T> mapToObj(final Try.LongFunction<? extends T, E> mapper) throws E {
         return mapToObj(0, size, mapper);
     }
 
-    public <T> List<T> mapToObj(final int fromIndex, final int toIndex, final LongFunction<? extends T> mapper) {
+    public <T, E extends Exception> List<T> mapToObj(final int fromIndex, final int toIndex, final Try.LongFunction<? extends T, E> mapper) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         final List<T> result = new ArrayList<>(toIndex - fromIndex);
@@ -1004,7 +1021,7 @@ public final class LongList extends PrimitiveList<LongConsumer, LongPredicate, L
      * @param accumulator
      * @return
      */
-    public OptionalLong reduce(final LongBinaryOperator accumulator) {
+    public <E extends Exception> OptionalLong reduce(final Try.LongBinaryOperator<E> accumulator) throws E {
         if (isEmpty()) {
             return OptionalLong.empty();
         }
@@ -1040,7 +1057,7 @@ public final class LongList extends PrimitiveList<LongConsumer, LongPredicate, L
      * @param accumulator
      * @return
      */
-    public long reduce(final long identity, final LongBinaryOperator accumulator) {
+    public <E extends Exception> long reduce(final long identity, final Try.LongBinaryOperator<E> accumulator) throws E {
         if (isEmpty()) {
             return identity;
         }
@@ -1052,6 +1069,11 @@ public final class LongList extends PrimitiveList<LongConsumer, LongPredicate, L
         }
 
         return result;
+    }
+
+    @Override
+    public boolean hasDuplicates() {
+        return N.hasDuplicates(elementData, 0, size, false);
     }
 
     @Override
@@ -1360,26 +1382,29 @@ public final class LongList extends PrimitiveList<LongConsumer, LongPredicate, L
         return multiset;
     }
 
-    public <K, U> Map<K, U> toMap(LongFunction<? extends K> keyExtractor, LongFunction<? extends U> valueMapper) {
-        final Supplier<Map<K, U>> mapFactory = Fn.Suppliers.ofMap();
+    public <K, V, E extends Exception, E2 extends Exception> Map<K, V> toMap(Try.LongFunction<? extends K, E> keyExtractor,
+            Try.LongFunction<? extends V, E2> valueMapper) throws E, E2 {
+        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(keyExtractor, valueMapper, mapFactory);
     }
 
-    public <K, U, M extends Map<K, U>> M toMap(LongFunction<? extends K> keyExtractor, LongFunction<? extends U> valueMapper, Supplier<M> mapFactory) {
-        final BinaryOperator<U> mergeFunction = Fn.throwingMerger();
+    public <K, V, M extends Map<K, V>, E extends Exception, E2 extends Exception> M toMap(Try.LongFunction<? extends K, E> keyExtractor,
+            Try.LongFunction<? extends V, E2> valueMapper, Supplier<M> mapFactory) throws E, E2 {
+        final Try.BinaryOperator<V, RuntimeException> mergeFunction = Fn.throwingMerger();
 
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
-    public <K, U> Map<K, U> toMap(LongFunction<? extends K> keyExtractor, LongFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
-        final Supplier<Map<K, U>> mapFactory = Fn.Suppliers.ofMap();
+    public <K, V, E extends Exception, E2 extends Exception, E3 extends Exception> Map<K, V> toMap(Try.LongFunction<? extends K, E> keyExtractor,
+            Try.LongFunction<? extends V, E2> valueMapper, Try.BinaryOperator<V, E3> mergeFunction) throws E, E2, E3 {
+        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
-    public <K, U, M extends Map<K, U>> M toMap(LongFunction<? extends K> keyExtractor, LongFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
-            Supplier<M> mapFactory) {
+    public <K, V, M extends Map<K, V>, E extends Exception, E2 extends Exception, E3 extends Exception> M toMap(Try.LongFunction<? extends K, E> keyExtractor,
+            Try.LongFunction<? extends V, E2> valueMapper, Try.BinaryOperator<V, E3> mergeFunction, Supplier<M> mapFactory) throws E, E2, E3 {
         final M result = mapFactory.get();
 
         for (int i = 0; i < size; i++) {
@@ -1390,15 +1415,15 @@ public final class LongList extends PrimitiveList<LongConsumer, LongPredicate, L
     }
 
     @SuppressWarnings("hiding")
-    public <K, A, D> Map<K, D> toMap(LongFunction<? extends K> classifier, Collector<Long, A, D> downstream) {
+    public <K, A, D, E extends Exception> Map<K, D> toMap(Try.LongFunction<? extends K, E> classifier, Collector<Long, A, D> downstream) throws E {
         final Supplier<Map<K, D>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(classifier, downstream, mapFactory);
     }
 
     @SuppressWarnings("hiding")
-    public <K, A, D, M extends Map<K, D>> M toMap(final LongFunction<? extends K> classifier, final Collector<Long, A, D> downstream,
-            final Supplier<M> mapFactory) {
+    public <K, A, D, M extends Map<K, D>, E extends Exception> M toMap(final Try.LongFunction<? extends K, E> classifier,
+            final Collector<Long, A, D> downstream, final Supplier<M> mapFactory) throws E {
         final M result = mapFactory.get();
         final Supplier<A> downstreamSupplier = downstream.supplier();
         final BiConsumer<A, Long> downstreamAccumulator = downstream.accumulator();
@@ -1449,12 +1474,12 @@ public final class LongList extends PrimitiveList<LongConsumer, LongPredicate, L
     }
 
     @Override
-    public <R> R apply(Function<? super LongList, R> func) {
+    public <R, E extends Exception> R apply(Try.Function<? super LongList, R, E> func) throws E {
         return func.apply(this);
     }
 
     @Override
-    public void accept(Consumer<? super LongList> action) {
+    public <E extends Exception> void accept(Try.Consumer<? super LongList, E> action) throws E {
         action.accept(this);
     }
 

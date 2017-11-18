@@ -21,14 +21,13 @@ import com.landawn.abacus.util.function.IntBiFunction;
 import com.landawn.abacus.util.function.IntBiPredicate;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.function.ShortBiFunction;
-import com.landawn.abacus.util.function.ShortConsumer;
 import com.landawn.abacus.util.function.ShortFunction;
 import com.landawn.abacus.util.function.ShortPredicate;
 import com.landawn.abacus.util.function.ShortTriFunction;
 import com.landawn.abacus.util.function.ShortUnaryOperator;
+import com.landawn.abacus.util.stream.IntStream;
 import com.landawn.abacus.util.stream.ObjIteratorEx;
 import com.landawn.abacus.util.stream.ShortIteratorEx;
-import com.landawn.abacus.util.stream.IntStream;
 import com.landawn.abacus.util.stream.ShortStream;
 import com.landawn.abacus.util.stream.Stream;
 
@@ -1678,11 +1677,12 @@ public final class ShortMatrix extends AbstractMatrix<short[], ShortList, ShortS
         return a == null ? 0 : a.length;
     }
 
-    public void forEach(final ShortConsumer action) {
+    public <E extends Exception> void forEach(final Try.ShortConsumer<E> action) throws E {
         forEach(0, rows, 0, cols, action);
     }
 
-    public void forEach(final int fromRowIndex, final int toRowIndex, final int fromColumnIndex, final int toColumnIndex, final ShortConsumer action) {
+    public <E extends Exception> void forEach(final int fromRowIndex, final int toRowIndex, final int fromColumnIndex, final int toColumnIndex,
+            final Try.ShortConsumer<E> action) throws E {
         N.checkFromToIndex(fromRowIndex, toRowIndex, rows);
         N.checkFromToIndex(fromColumnIndex, toColumnIndex, cols);
 

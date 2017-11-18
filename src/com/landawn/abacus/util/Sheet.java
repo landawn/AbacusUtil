@@ -31,13 +31,7 @@ import com.landawn.abacus.DataSet;
 import com.landawn.abacus.core.RowDataSet;
 import com.landawn.abacus.parser.KryoParser;
 import com.landawn.abacus.parser.ParserFactory;
-import com.landawn.abacus.util.function.BiFunction;
-import com.landawn.abacus.util.function.Consumer;
-import com.landawn.abacus.util.function.Function;
-import com.landawn.abacus.util.function.IntBiFunction;
-import com.landawn.abacus.util.function.IntBiPredicate;
 import com.landawn.abacus.util.function.IntFunction;
-import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.stream.IntStream;
 import com.landawn.abacus.util.stream.ObjIteratorEx;
 import com.landawn.abacus.util.stream.Stream;
@@ -480,7 +474,7 @@ public final class Sheet<R, C, E> {
 
     }
 
-    public void updateRow(R rowKey, Function<? super E, E> func) {
+    public <X extends Exception> void updateRow(R rowKey, Try.Function<? super E, E, X> func) throws X {
         checkFrozen();
 
         if (columnLength() > 0) {
@@ -751,7 +745,7 @@ public final class Sheet<R, C, E> {
         }
     }
 
-    public void updateColumn(C columnKey, Function<? super E, E> func) {
+    public <X extends Exception> void updateColumn(C columnKey, Try.Function<? super E, E, X> func) throws X {
         checkFrozen();
 
         if (rowLength() > 0) {
@@ -925,7 +919,7 @@ public final class Sheet<R, C, E> {
         return _columnKeySet.size();
     }
 
-    public void updateAll(Function<? super E, E> func) {
+    public <X extends Exception> void updateAll(Try.Function<? super E, E, X> func) throws X {
         checkFrozen();
 
         if (rowLength() > 0 && columnLength() > 0) {
@@ -946,7 +940,7 @@ public final class Sheet<R, C, E> {
      * 
      * @param func
      */
-    public void updateAll(IntBiFunction<E> func) {
+    public <X extends Exception> void updateAll(Try.IntBiFunction<E, X> func) throws X {
         checkFrozen();
 
         if (rowLength() > 0 && columnLength() > 0) {
@@ -970,7 +964,7 @@ public final class Sheet<R, C, E> {
      * @param predicate
      * @param newValue
      */
-    public void replaceIf(final Predicate<? super E> predicate, final E newValue) {
+    public <X extends Exception> void replaceIf(final Try.Predicate<? super E, X> predicate, final E newValue) throws X {
         checkFrozen();
 
         if (rowLength() > 0 && columnLength() > 0) {
@@ -995,7 +989,7 @@ public final class Sheet<R, C, E> {
      * @param predicate
      * @param newValue
      */
-    public void replaceIf(final IntBiPredicate predicate, final E newValue) {
+    public <X extends Exception> void replaceIf(final Try.IntBiPredicate<X> predicate, final E newValue) throws X {
         checkFrozen();
 
         if (rowLength() > 0 && columnLength() > 0) {
@@ -1104,7 +1098,8 @@ public final class Sheet<R, C, E> {
         return copy;
     }
 
-    public Sheet<R, C, E> merge(Sheet<? extends R, ? extends C, ? extends E> source, BiFunction<? super E, ? super E, E> mergeFunction) {
+    public <X extends Exception> Sheet<R, C, E> merge(Sheet<? extends R, ? extends C, ? extends E> source,
+            Try.BiFunction<? super E, ? super E, E, X> mergeFunction) throws X {
         final Sheet<R, C, E> result = this.copy();
 
         for (R rowKey : source.rowKeySet()) {
@@ -1473,6 +1468,7 @@ public final class Sheet<R, C, E> {
                         }
                     });
                 }
+
             }
 
             @Override
@@ -1484,6 +1480,7 @@ public final class Sheet<R, C, E> {
             public long count() {
                 return toColumnIndex - columnIndex;
             }
+
         });
     }
 
@@ -2075,11 +2072,11 @@ public final class Sheet<R, C, E> {
         return copy;
     }
 
-    public <T> T apply(Function<? super Sheet<R, C, E>, T> func) {
+    public <T, X extends Exception> T apply(Try.Function<? super Sheet<R, C, E>, T, X> func) throws X {
         return func.apply(this);
     }
 
-    public void accept(Consumer<? super Sheet<R, C, E>> action) {
+    public <X extends Exception> void accept(Try.Consumer<? super Sheet<R, C, E>, X> action) throws X {
         action.accept(this);
     }
 

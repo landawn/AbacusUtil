@@ -26,14 +26,6 @@ import java.util.Set;
 
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
-import com.landawn.abacus.util.function.BinaryOperator;
-import com.landawn.abacus.util.function.BooleanBinaryOperator;
-import com.landawn.abacus.util.function.BooleanConsumer;
-import com.landawn.abacus.util.function.BooleanFunction;
-import com.landawn.abacus.util.function.BooleanPredicate;
-import com.landawn.abacus.util.function.BooleanUnaryOperator;
-import com.landawn.abacus.util.function.Consumer;
-import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.Collector;
@@ -45,7 +37,7 @@ import com.landawn.abacus.util.stream.Stream;
  * 
  * @author Haiyang Li
  */
-public final class BooleanList extends PrimitiveList<BooleanConsumer, BooleanPredicate, Boolean, boolean[], BooleanList> {
+public final class BooleanList extends PrimitiveList<Boolean, boolean[], BooleanList> {
     private static final long serialVersionUID = -1194435277403867258L;
 
     private boolean[] elementData = N.EMPTY_BOOLEAN_ARRAY;
@@ -326,8 +318,7 @@ public final class BooleanList extends PrimitiveList<BooleanConsumer, BooleanPre
         return removeAll(of(a));
     }
 
-    @Override
-    public boolean removeIf(BooleanPredicate p) {
+    public <E extends Exception> boolean removeIf(Try.BooleanPredicate<E> p) throws E {
         final BooleanList tmp = new BooleanList(size());
 
         for (int i = 0; i < size; i++) {
@@ -436,13 +427,13 @@ public final class BooleanList extends PrimitiveList<BooleanConsumer, BooleanPre
         return result;
     }
 
-    public void replaceAll(BooleanUnaryOperator operator) {
+    public <E extends Exception> void replaceAll(Try.BooleanUnaryOperator<E> operator) throws E {
         for (int i = 0, len = size(); i < len; i++) {
             elementData[i] = operator.applyAsBoolean(elementData[i]);
         }
     }
 
-    public boolean replaceIf(BooleanPredicate predicate, boolean newValue) {
+    public <E extends Exception> boolean replaceIf(Try.BooleanPredicate<E> predicate, boolean newValue) throws E {
         boolean result = false;
 
         for (int i = 0, len = size(); i < len; i++) {
@@ -744,7 +735,7 @@ public final class BooleanList extends PrimitiveList<BooleanConsumer, BooleanPre
         return size() == 0 ? OptionalBoolean.empty() : OptionalBoolean.of(elementData[size() - 1]);
     }
 
-    public OptionalBoolean findFirst(BooleanPredicate predicate) {
+    public <E extends Exception> OptionalBoolean findFirst(Try.BooleanPredicate<E> predicate) throws E {
         for (int i = 0; i < size; i++) {
             if (predicate.test(elementData[i])) {
                 return OptionalBoolean.of(elementData[i]);
@@ -754,17 +745,7 @@ public final class BooleanList extends PrimitiveList<BooleanConsumer, BooleanPre
         return OptionalBoolean.empty();
     }
 
-    //    public Optional<IndexedBoolean> findFirst2(BooleanPredicate predicate) {
-    //        for (int i = 0; i < size; i++) {
-    //            if (predicate.test(elementData[i])) {
-    //                return Optional.of(IndexedBoolean.of(i, elementData[i]));
-    //            }
-    //        }
-    //
-    //        return Optional.empty();
-    //    }
-
-    public OptionalBoolean findLast(BooleanPredicate predicate) {
+    public <E extends Exception> OptionalBoolean findLast(Try.BooleanPredicate<E> predicate) throws E {
         for (int i = size - 1; i >= 0; i--) {
             if (predicate.test(elementData[i])) {
                 return OptionalBoolean.of(elementData[i]);
@@ -774,17 +755,7 @@ public final class BooleanList extends PrimitiveList<BooleanConsumer, BooleanPre
         return OptionalBoolean.empty();
     }
 
-    //    public Optional<IndexedBoolean> findLast2(BooleanPredicate predicate) {
-    //        for (int i = size - 1; i >= 0; i--) {
-    //            if (predicate.test(elementData[i])) {
-    //                return Optional.of(IndexedBoolean.of(i, elementData[i]));
-    //            }
-    //        }
-    //
-    //        return Optional.empty();
-    //    }
-
-    public OptionalInt findFirstIndex(BooleanPredicate predicate) {
+    public <E extends Exception> OptionalInt findFirstIndex(Try.BooleanPredicate<E> predicate) throws E {
         for (int i = 0; i < size; i++) {
             if (predicate.test(elementData[i])) {
                 return OptionalInt.of(i);
@@ -794,7 +765,7 @@ public final class BooleanList extends PrimitiveList<BooleanConsumer, BooleanPre
         return OptionalInt.empty();
     }
 
-    public OptionalInt findLastIndex(BooleanPredicate predicate) {
+    public <E extends Exception> OptionalInt findLastIndex(Try.BooleanPredicate<E> predicate) throws E {
         for (int i = size - 1; i >= 0; i--) {
             if (predicate.test(elementData[i])) {
                 return OptionalInt.of(i);
@@ -804,8 +775,17 @@ public final class BooleanList extends PrimitiveList<BooleanConsumer, BooleanPre
         return OptionalInt.empty();
     }
 
-    @Override
-    public boolean allMatch(final int fromIndex, final int toIndex, final BooleanPredicate filter) {
+    /**
+     * Returns whether all elements of this List match the provided predicate.
+     * 
+     * @param filter
+     * @return
+     */
+    public <E extends Exception> boolean allMatch(Try.BooleanPredicate<E> filter) throws E {
+        return allMatch(0, size(), filter);
+    }
+
+    public <E extends Exception> boolean allMatch(final int fromIndex, final int toIndex, Try.BooleanPredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         if (size > 0) {
@@ -819,8 +799,17 @@ public final class BooleanList extends PrimitiveList<BooleanConsumer, BooleanPre
         return true;
     }
 
-    @Override
-    public boolean anyMatch(final int fromIndex, final int toIndex, final BooleanPredicate filter) {
+    /**
+     * Returns whether any elements of this List match the provided predicate.
+     * 
+     * @param filter
+     * @return
+     */
+    public <E extends Exception> boolean anyMatch(Try.BooleanPredicate<E> filter) throws E {
+        return anyMatch(0, size(), filter);
+    }
+
+    public <E extends Exception> boolean anyMatch(final int fromIndex, final int toIndex, Try.BooleanPredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         if (size > 0) {
@@ -834,8 +823,17 @@ public final class BooleanList extends PrimitiveList<BooleanConsumer, BooleanPre
         return false;
     }
 
-    @Override
-    public boolean noneMatch(final int fromIndex, final int toIndex, final BooleanPredicate filter) {
+    /**
+     * Returns whether no elements of this List match the provided predicate.
+     * 
+     * @param filter
+     * @return
+     */
+    public <E extends Exception> boolean noneMatch(Try.BooleanPredicate<E> filter) throws E {
+        return noneMatch(0, size(), filter);
+    }
+
+    public <E extends Exception> boolean noneMatch(final int fromIndex, final int toIndex, Try.BooleanPredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         if (size > 0) {
@@ -849,43 +847,56 @@ public final class BooleanList extends PrimitiveList<BooleanConsumer, BooleanPre
         return true;
     }
 
-    @Override
-    public boolean hasDuplicates() {
-        if (size < 2) {
-            return false;
-        } else if (size == 2) {
-            return elementData[0] == elementData[1];
-        } else {
-            return true;
-        }
+    /**
+     * 
+     * @param filter
+     * @return
+     */
+    public <E extends Exception> int count(Try.BooleanPredicate<E> filter) throws E {
+        return count(0, size(), filter);
     }
 
-    @Override
-    public int count(final int fromIndex, final int toIndex, final BooleanPredicate filter) {
+    public <E extends Exception> int count(final int fromIndex, final int toIndex, Try.BooleanPredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         return N.count(elementData, fromIndex, toIndex, filter);
     }
 
-    @Override
-    public BooleanList filter(final int fromIndex, final int toIndex, final BooleanPredicate filter) {
+    /**
+     * 
+     * @param filter
+     * @return a new List with the elements match the provided predicate.
+     */
+    public <E extends Exception> BooleanList filter(Try.BooleanPredicate<E> filter) throws E {
+        return filter(0, size(), filter);
+    }
+
+    public <E extends Exception> BooleanList filter(final int fromIndex, final int toIndex, Try.BooleanPredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         return N.filter(elementData, fromIndex, toIndex, filter);
     }
 
-    @Override
-    public BooleanList filter(final int fromIndex, final int toIndex, final BooleanPredicate filter, int max) {
+    /**
+     * 
+     * @param filter
+     * @return a new List with the elements match the provided predicate.
+     */
+    public <E extends Exception> BooleanList filter(Try.BooleanPredicate<E> filter, int max) throws E {
+        return filter(0, size(), filter, max);
+    }
+
+    public <E extends Exception> BooleanList filter(final int fromIndex, final int toIndex, Try.BooleanPredicate<E> filter, final int max) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         return N.filter(elementData, fromIndex, toIndex, filter, max);
     }
 
-    public BooleanList map(final BooleanUnaryOperator mapper) {
+    public <E extends Exception> BooleanList map(final Try.BooleanUnaryOperator<E> mapper) throws E {
         return map(0, size, mapper);
     }
 
-    public BooleanList map(final int fromIndex, final int toIndex, final BooleanUnaryOperator mapper) {
+    public <E extends Exception> BooleanList map(final int fromIndex, final int toIndex, final Try.BooleanUnaryOperator<E> mapper) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         final BooleanList result = new BooleanList(toIndex - fromIndex);
@@ -897,11 +908,11 @@ public final class BooleanList extends PrimitiveList<BooleanConsumer, BooleanPre
         return result;
     }
 
-    public <T> List<T> mapToObj(final BooleanFunction<? extends T> mapper) {
+    public <T, E extends Exception> List<T> mapToObj(final Try.BooleanFunction<? extends T, E> mapper) throws E {
         return mapToObj(0, size, mapper);
     }
 
-    public <T> List<T> mapToObj(final int fromIndex, final int toIndex, final BooleanFunction<? extends T> mapper) {
+    public <T, E extends Exception> List<T> mapToObj(final int fromIndex, final int toIndex, final Try.BooleanFunction<? extends T, E> mapper) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         final List<T> result = new ArrayList<>(toIndex - fromIndex);
@@ -934,7 +945,7 @@ public final class BooleanList extends PrimitiveList<BooleanConsumer, BooleanPre
      * @param accumulator
      * @return
      */
-    public OptionalBoolean reduce(final BooleanBinaryOperator accumulator) {
+    public <E extends Exception> OptionalBoolean reduce(final Try.BooleanBinaryOperator<E> accumulator) throws E {
         if (isEmpty()) {
             return OptionalBoolean.empty();
         }
@@ -970,7 +981,7 @@ public final class BooleanList extends PrimitiveList<BooleanConsumer, BooleanPre
      * @param accumulator
      * @return
      */
-    public boolean reduce(final boolean identity, final BooleanBinaryOperator accumulator) {
+    public <E extends Exception> boolean reduce(final boolean identity, final Try.BooleanBinaryOperator<E> accumulator) throws E {
         if (isEmpty()) {
             return identity;
         }
@@ -982,6 +993,17 @@ public final class BooleanList extends PrimitiveList<BooleanConsumer, BooleanPre
         }
 
         return result;
+    }
+
+    @Override
+    public boolean hasDuplicates() {
+        if (size < 2) {
+            return false;
+        } else if (size == 2) {
+            return elementData[0] == elementData[1];
+        } else {
+            return true;
+        }
     }
 
     @Override
@@ -1234,26 +1256,30 @@ public final class BooleanList extends PrimitiveList<BooleanConsumer, BooleanPre
         return multiset;
     }
 
-    public <K, U> Map<K, U> toMap(BooleanFunction<? extends K> keyExtractor, BooleanFunction<? extends U> valueMapper) {
-        final Supplier<Map<K, U>> mapFactory = Fn.Suppliers.ofMap();
+    public <K, V, E extends Exception, E2 extends Exception> Map<K, V> toMap(Try.BooleanFunction<? extends K, E> keyExtractor,
+            Try.BooleanFunction<? extends V, E2> valueMapper) throws E, E2 {
+        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(keyExtractor, valueMapper, mapFactory);
     }
 
-    public <K, U, M extends Map<K, U>> M toMap(BooleanFunction<? extends K> keyExtractor, BooleanFunction<? extends U> valueMapper, Supplier<M> mapFactory) {
-        final BinaryOperator<U> mergeFunction = Fn.throwingMerger();
+    public <K, V, M extends Map<K, V>, E extends Exception, E2 extends Exception> M toMap(Try.BooleanFunction<? extends K, E> keyExtractor,
+            Try.BooleanFunction<? extends V, E2> valueMapper, Supplier<M> mapFactory) throws E, E2 {
+        final Try.BinaryOperator<V, RuntimeException> mergeFunction = Fn.throwingMerger();
 
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
-    public <K, U> Map<K, U> toMap(BooleanFunction<? extends K> keyExtractor, BooleanFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
-        final Supplier<Map<K, U>> mapFactory = Fn.Suppliers.ofMap();
+    public <K, V, E extends Exception, E2 extends Exception, E3 extends Exception> Map<K, V> toMap(Try.BooleanFunction<? extends K, E> keyExtractor,
+            Try.BooleanFunction<? extends V, E2> valueMapper, Try.BinaryOperator<V, E3> mergeFunction) throws E, E2, E3 {
+        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
-    public <K, U, M extends Map<K, U>> M toMap(BooleanFunction<? extends K> keyExtractor, BooleanFunction<? extends U> valueMapper,
-            BinaryOperator<U> mergeFunction, Supplier<M> mapFactory) {
+    public <K, V, M extends Map<K, V>, E extends Exception, E2 extends Exception, E3 extends Exception> M toMap(
+            Try.BooleanFunction<? extends K, E> keyExtractor, Try.BooleanFunction<? extends V, E2> valueMapper, Try.BinaryOperator<V, E3> mergeFunction,
+            Supplier<M> mapFactory) throws E, E2, E3 {
         final M result = mapFactory.get();
 
         for (int i = 0; i < size; i++) {
@@ -1264,15 +1290,15 @@ public final class BooleanList extends PrimitiveList<BooleanConsumer, BooleanPre
     }
 
     @SuppressWarnings("hiding")
-    public <K, A, D> Map<K, D> toMap(BooleanFunction<? extends K> classifier, Collector<Boolean, A, D> downstream) {
+    public <K, A, D, E extends Exception> Map<K, D> toMap(Try.BooleanFunction<? extends K, E> classifier, Collector<Boolean, A, D> downstream) throws E {
         final Supplier<Map<K, D>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(classifier, downstream, mapFactory);
     }
 
     @SuppressWarnings("hiding")
-    public <K, A, D, M extends Map<K, D>> M toMap(final BooleanFunction<? extends K> classifier, final Collector<Boolean, A, D> downstream,
-            final Supplier<M> mapFactory) {
+    public <K, A, D, M extends Map<K, D>, E extends Exception> M toMap(final Try.BooleanFunction<? extends K, E> classifier,
+            final Collector<Boolean, A, D> downstream, final Supplier<M> mapFactory) throws E {
         final M result = mapFactory.get();
         final Supplier<A> downstreamSupplier = downstream.supplier();
         final BiConsumer<A, Boolean> downstreamAccumulator = downstream.accumulator();
@@ -1323,12 +1349,12 @@ public final class BooleanList extends PrimitiveList<BooleanConsumer, BooleanPre
     }
 
     @Override
-    public <R> R apply(Function<? super BooleanList, R> func) {
+    public <R, E extends Exception> R apply(Try.Function<? super BooleanList, R, E> func) throws E {
         return func.apply(this);
     }
 
     @Override
-    public void accept(Consumer<? super BooleanList> action) {
+    public <E extends Exception> void accept(Try.Consumer<? super BooleanList, E> action) throws E {
         action.accept(this);
     }
 

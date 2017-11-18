@@ -26,9 +26,6 @@ package com.landawn.abacus.util;
 
 import java.util.NoSuchElementException;
 
-import com.landawn.abacus.util.function.IntConsumer;
-import com.landawn.abacus.util.function.IntSupplier;
-import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.IntStream;
 
 /**
@@ -144,7 +141,7 @@ public final class OptionalInt implements Comparable<OptionalInt> {
      * @throws NullPointerException if value is present and {@code consumer} is
      * null
      */
-    public void ifPresent(IntConsumer action) {
+    public <E extends Exception> void ifPresent(Try.IntConsumer<E> action) throws E {
         if (isPresent()) {
             action.accept(value);
         }
@@ -156,7 +153,7 @@ public final class OptionalInt implements Comparable<OptionalInt> {
      * @param action
      * @param emptyAction
      */
-    public void ifPresentOrElse(IntConsumer action, Runnable emptyAction) {
+    public <E extends Exception, E2 extends Exception> void ifPresentOrElse(Try.IntConsumer<E> action, Try.Runnable<E2> emptyAction) throws E, E2 {
         if (isPresent()) {
             action.accept(value);
         } else {
@@ -184,7 +181,7 @@ public final class OptionalInt implements Comparable<OptionalInt> {
      * @throws NullPointerException if value is not present and {@code other} is
      * null
      */
-    public int orElseGet(IntSupplier other) {
+    public <E extends Exception> int orElseGet(Try.IntSupplier<E> other) throws E {
         return isPresent() ? value : other.getAsInt();
     }
 
@@ -204,7 +201,7 @@ public final class OptionalInt implements Comparable<OptionalInt> {
      * @throws NullPointerException if no value is present and
      * {@code exceptionSupplier} is null
      */
-    public <X extends Throwable> int orElseThrow(Supplier<X> exceptionSupplier) throws X {
+    public <X extends Throwable, E extends Exception> int orElseThrow(Try.Supplier<X, E> exceptionSupplier) throws X, E {
         if (isPresent()) {
             return value;
         } else {

@@ -1,9 +1,5 @@
 package com.landawn.abacus.util;
 
-import com.landawn.abacus.util.function.Consumer;
-import com.landawn.abacus.util.function.Function;
-import com.landawn.abacus.util.function.LongConsumer;
-import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.stream.Stream;
 
 public final class LongTriple {
@@ -57,21 +53,21 @@ public final class LongTriple {
         return LongList.of(_1, _2, _3);
     }
 
-    public void forEach(LongConsumer comsumer) {
+    public <E extends Exception> void forEach(Try.LongConsumer<E> comsumer) throws E {
         comsumer.accept(this._1);
         comsumer.accept(this._2);
         comsumer.accept(this._3);
     }
 
-    public void accept(Consumer<LongTriple> action) {
+    public <E extends Exception> void accept(Try.Consumer<LongTriple, E> action) throws E {
         action.accept(this);
     }
 
-    public <U> U map(Function<LongTriple, U> mapper) {
+    public <U, E extends Exception> U map(Try.Function<LongTriple, U, E> mapper) throws E {
         return mapper.apply(this);
     }
 
-    public Optional<LongTriple> filter(final Predicate<LongTriple> predicate) {
+    public <E extends Exception> Optional<LongTriple> filter(final Try.Predicate<LongTriple, E> predicate) throws E {
         return predicate.test(this) ? Optional.of(this) : Optional.<LongTriple> empty();
     }
 

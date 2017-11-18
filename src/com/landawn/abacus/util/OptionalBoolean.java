@@ -26,9 +26,6 @@ package com.landawn.abacus.util;
 
 import java.util.NoSuchElementException;
 
-import com.landawn.abacus.util.function.BooleanConsumer;
-import com.landawn.abacus.util.function.BooleanSupplier;
-import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -144,7 +141,7 @@ public final class OptionalBoolean implements Comparable<OptionalBoolean> {
      * @throws NullPobooleanerException if value is present and {@code consumer} is
      * null
      */
-    public void ifPresent(BooleanConsumer action) {
+    public <E extends Exception> void ifPresent(Try.BooleanConsumer<E> action) throws E {
         if (isPresent()) {
             action.accept(value);
         }
@@ -156,7 +153,7 @@ public final class OptionalBoolean implements Comparable<OptionalBoolean> {
      * @param action
      * @param emptyAction
      */
-    public void ifPresentOrElse(BooleanConsumer action, Runnable emptyAction) {
+    public <E extends Exception, E2 extends Exception> void ifPresentOrElse(Try.BooleanConsumer<E> action, Try.Runnable<E2> emptyAction) throws E, E2 {
         if (isPresent()) {
             action.accept(value);
         } else {
@@ -184,7 +181,7 @@ public final class OptionalBoolean implements Comparable<OptionalBoolean> {
      * @throws NullPobooleanerException if value is not present and {@code other} is
      * null
      */
-    public boolean orElseGet(BooleanSupplier other) {
+    public <E extends Exception> boolean orElseGet(Try.BooleanSupplier<E> other) throws E {
         return isPresent() ? value : other.getAsBoolean();
     }
 
@@ -204,7 +201,7 @@ public final class OptionalBoolean implements Comparable<OptionalBoolean> {
      * @throws NullPobooleanerException if no value is present and
      * {@code exceptionSupplier} is null
      */
-    public <X extends Throwable> boolean orElseThrow(Supplier<X> exceptionSupplier) throws X {
+    public <X extends Throwable, E extends Exception> boolean orElseThrow(Try.Supplier<X, E> exceptionSupplier) throws X, E {
         if (isPresent()) {
             return value;
         } else {

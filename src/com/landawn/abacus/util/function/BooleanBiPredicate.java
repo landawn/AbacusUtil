@@ -16,13 +16,15 @@ package com.landawn.abacus.util.function;
 
 import java.util.Objects;
 
+import com.landawn.abacus.util.Try;
+
 /**
  * 
  * @since 0.8
  * 
  * @author Haiyang Li
  */
-public interface BooleanBiPredicate {
+public interface BooleanBiPredicate extends Try.BooleanBiPredicate<RuntimeException> {
 
     static final BooleanBiPredicate ALWAYS_TRUE = new BooleanBiPredicate() {
         @Override
@@ -66,6 +68,7 @@ public interface BooleanBiPredicate {
         }
     };
 
+    @Override
     boolean test(boolean t, boolean u);
 
     default BooleanBiPredicate negate() {

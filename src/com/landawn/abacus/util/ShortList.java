@@ -27,15 +27,7 @@ import java.util.Set;
 
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
-import com.landawn.abacus.util.function.BinaryOperator;
-import com.landawn.abacus.util.function.Consumer;
-import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
-import com.landawn.abacus.util.function.ShortBinaryOperator;
-import com.landawn.abacus.util.function.ShortConsumer;
-import com.landawn.abacus.util.function.ShortFunction;
-import com.landawn.abacus.util.function.ShortPredicate;
-import com.landawn.abacus.util.function.ShortUnaryOperator;
 import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.Collector;
 import com.landawn.abacus.util.stream.ShortStream;
@@ -46,7 +38,7 @@ import com.landawn.abacus.util.stream.ShortStream;
  * 
  * @author Haiyang Li
  */
-public final class ShortList extends PrimitiveList<ShortConsumer, ShortPredicate, Short, short[], ShortList> {
+public final class ShortList extends PrimitiveList<Short, short[], ShortList> {
     private static final long serialVersionUID = 25682021483156507L;
 
     private short[] elementData = N.EMPTY_SHORT_ARRAY;
@@ -343,8 +335,7 @@ public final class ShortList extends PrimitiveList<ShortConsumer, ShortPredicate
         return removeAll(of(a));
     }
 
-    @Override
-    public boolean removeIf(ShortPredicate p) {
+    public <E extends Exception> boolean removeIf(Try.ShortPredicate<E> p) throws E {
         final ShortList tmp = new ShortList(size());
 
         for (int i = 0; i < size; i++) {
@@ -452,13 +443,13 @@ public final class ShortList extends PrimitiveList<ShortConsumer, ShortPredicate
         return result;
     }
 
-    public void replaceAll(ShortUnaryOperator operator) {
+    public <E extends Exception> void replaceAll(Try.ShortUnaryOperator<E> operator) throws E {
         for (int i = 0, len = size(); i < len; i++) {
             elementData[i] = operator.applyAsShort(elementData[i]);
         }
     }
 
-    public boolean replaceIf(ShortPredicate predicate, short newValue) {
+    public <E extends Exception> boolean replaceIf(Try.ShortPredicate<E> predicate, short newValue) throws E {
         boolean result = false;
 
         for (int i = 0, len = size(); i < len; i++) {
@@ -820,7 +811,7 @@ public final class ShortList extends PrimitiveList<ShortConsumer, ShortPredicate
         return size() == 0 ? OptionalShort.empty() : OptionalShort.of(elementData[size() - 1]);
     }
 
-    public OptionalShort findFirst(ShortPredicate predicate) {
+    public <E extends Exception> OptionalShort findFirst(Try.ShortPredicate<E> predicate) throws E {
         for (int i = 0; i < size; i++) {
             if (predicate.test(elementData[i])) {
                 return OptionalShort.of(elementData[i]);
@@ -830,17 +821,7 @@ public final class ShortList extends PrimitiveList<ShortConsumer, ShortPredicate
         return OptionalShort.empty();
     }
 
-    //    public Optional<IndexedShort> findFirst2(ShortPredicate predicate) {
-    //        for (int i = 0; i < size; i++) {
-    //            if (predicate.test(elementData[i])) {
-    //                return Optional.of(IndexedShort.of(i, elementData[i]));
-    //            }
-    //        }
-    //
-    //        return Optional.empty();
-    //    }
-
-    public OptionalShort findLast(ShortPredicate predicate) {
+    public <E extends Exception> OptionalShort findLast(Try.ShortPredicate<E> predicate) throws E {
         for (int i = size - 1; i >= 0; i--) {
             if (predicate.test(elementData[i])) {
                 return OptionalShort.of(elementData[i]);
@@ -850,17 +831,7 @@ public final class ShortList extends PrimitiveList<ShortConsumer, ShortPredicate
         return OptionalShort.empty();
     }
 
-    //    public Optional<IndexedShort> findLast2(ShortPredicate predicate) {
-    //        for (int i = size - 1; i >= 0; i--) {
-    //            if (predicate.test(elementData[i])) {
-    //                return Optional.of(IndexedShort.of(i, elementData[i]));
-    //            }
-    //        }
-    //
-    //        return Optional.empty();
-    //    }
-
-    public OptionalInt findFirstIndex(ShortPredicate predicate) {
+    public <E extends Exception> OptionalInt findFirstIndex(Try.ShortPredicate<E> predicate) throws E {
         for (int i = 0; i < size; i++) {
             if (predicate.test(elementData[i])) {
                 return OptionalInt.of(i);
@@ -870,7 +841,7 @@ public final class ShortList extends PrimitiveList<ShortConsumer, ShortPredicate
         return OptionalInt.empty();
     }
 
-    public OptionalInt findLastIndex(ShortPredicate predicate) {
+    public <E extends Exception> OptionalInt findLastIndex(Try.ShortPredicate<E> predicate) throws E {
         for (int i = size - 1; i >= 0; i--) {
             if (predicate.test(elementData[i])) {
                 return OptionalInt.of(i);
@@ -880,8 +851,17 @@ public final class ShortList extends PrimitiveList<ShortConsumer, ShortPredicate
         return OptionalInt.empty();
     }
 
-    @Override
-    public boolean allMatch(final int fromIndex, final int toIndex, ShortPredicate filter) {
+    /**
+     * Returns whether all elements of this List match the provided predicate.
+     * 
+     * @param filter
+     * @return
+     */
+    public <E extends Exception> boolean allMatch(Try.ShortPredicate<E> filter) throws E {
+        return allMatch(0, size(), filter);
+    }
+
+    public <E extends Exception> boolean allMatch(final int fromIndex, final int toIndex, Try.ShortPredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         if (size > 0) {
@@ -895,8 +875,17 @@ public final class ShortList extends PrimitiveList<ShortConsumer, ShortPredicate
         return true;
     }
 
-    @Override
-    public boolean anyMatch(final int fromIndex, final int toIndex, ShortPredicate filter) {
+    /**
+     * Returns whether any elements of this List match the provided predicate.
+     * 
+     * @param filter
+     * @return
+     */
+    public <E extends Exception> boolean anyMatch(Try.ShortPredicate<E> filter) throws E {
+        return anyMatch(0, size(), filter);
+    }
+
+    public <E extends Exception> boolean anyMatch(final int fromIndex, final int toIndex, Try.ShortPredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         if (size > 0) {
@@ -910,8 +899,17 @@ public final class ShortList extends PrimitiveList<ShortConsumer, ShortPredicate
         return false;
     }
 
-    @Override
-    public boolean noneMatch(final int fromIndex, final int toIndex, ShortPredicate filter) {
+    /**
+     * Returns whether no elements of this List match the provided predicate.
+     * 
+     * @param filter
+     * @return
+     */
+    public <E extends Exception> boolean noneMatch(Try.ShortPredicate<E> filter) throws E {
+        return noneMatch(0, size(), filter);
+    }
+
+    public <E extends Exception> boolean noneMatch(final int fromIndex, final int toIndex, Try.ShortPredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         if (size > 0) {
@@ -925,37 +923,56 @@ public final class ShortList extends PrimitiveList<ShortConsumer, ShortPredicate
         return true;
     }
 
-    @Override
-    public boolean hasDuplicates() {
-        return N.hasDuplicates(elementData, 0, size, false);
+    /**
+     * 
+     * @param filter
+     * @return
+     */
+    public <E extends Exception> int count(Try.ShortPredicate<E> filter) throws E {
+        return count(0, size(), filter);
     }
 
-    @Override
-    public int count(final int fromIndex, final int toIndex, ShortPredicate filter) {
+    public <E extends Exception> int count(final int fromIndex, final int toIndex, Try.ShortPredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         return N.count(elementData, fromIndex, toIndex, filter);
     }
 
-    @Override
-    public ShortList filter(final int fromIndex, final int toIndex, ShortPredicate filter) {
+    /**
+     * 
+     * @param filter
+     * @return a new List with the elements match the provided predicate.
+     */
+    public <E extends Exception> ShortList filter(Try.ShortPredicate<E> filter) throws E {
+        return filter(0, size(), filter);
+    }
+
+    public <E extends Exception> ShortList filter(final int fromIndex, final int toIndex, Try.ShortPredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         return N.filter(elementData, fromIndex, toIndex, filter);
     }
 
-    @Override
-    public ShortList filter(final int fromIndex, final int toIndex, ShortPredicate filter, final int max) {
+    /**
+     * 
+     * @param filter
+     * @return a new List with the elements match the provided predicate.
+     */
+    public <E extends Exception> ShortList filter(Try.ShortPredicate<E> filter, int max) throws E {
+        return filter(0, size(), filter, max);
+    }
+
+    public <E extends Exception> ShortList filter(final int fromIndex, final int toIndex, Try.ShortPredicate<E> filter, final int max) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         return N.filter(elementData, fromIndex, toIndex, filter, max);
     }
 
-    public ShortList map(final ShortUnaryOperator mapper) {
+    public <E extends Exception> ShortList map(final Try.ShortUnaryOperator<E> mapper) throws E {
         return map(0, size, mapper);
     }
 
-    public ShortList map(final int fromIndex, final int toIndex, final ShortUnaryOperator mapper) {
+    public <E extends Exception> ShortList map(final int fromIndex, final int toIndex, final Try.ShortUnaryOperator<E> mapper) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         final ShortList result = new ShortList(toIndex - fromIndex);
@@ -967,11 +984,11 @@ public final class ShortList extends PrimitiveList<ShortConsumer, ShortPredicate
         return result;
     }
 
-    public <T> List<T> mapToObj(final ShortFunction<? extends T> mapper) {
+    public <T, E extends Exception> List<T> mapToObj(final Try.ShortFunction<? extends T, E> mapper) throws E {
         return mapToObj(0, size, mapper);
     }
 
-    public <T> List<T> mapToObj(final int fromIndex, final int toIndex, final ShortFunction<? extends T> mapper) {
+    public <T, E extends Exception> List<T> mapToObj(final int fromIndex, final int toIndex, final Try.ShortFunction<? extends T, E> mapper) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         final List<T> result = new ArrayList<>(toIndex - fromIndex);
@@ -1004,7 +1021,7 @@ public final class ShortList extends PrimitiveList<ShortConsumer, ShortPredicate
      * @param accumulator
      * @return
      */
-    public OptionalShort reduce(final ShortBinaryOperator accumulator) {
+    public <E extends Exception> OptionalShort reduce(final Try.ShortBinaryOperator<E> accumulator) throws E {
         if (isEmpty()) {
             return OptionalShort.empty();
         }
@@ -1040,7 +1057,7 @@ public final class ShortList extends PrimitiveList<ShortConsumer, ShortPredicate
      * @param accumulator
      * @return
      */
-    public short reduce(final short identity, final ShortBinaryOperator accumulator) {
+    public <E extends Exception> short reduce(final short identity, final Try.ShortBinaryOperator<E> accumulator) throws E {
         if (isEmpty()) {
             return identity;
         }
@@ -1052,6 +1069,11 @@ public final class ShortList extends PrimitiveList<ShortConsumer, ShortPredicate
         }
 
         return result;
+    }
+
+    @Override
+    public boolean hasDuplicates() {
+        return N.hasDuplicates(elementData, 0, size, false);
     }
 
     @Override
@@ -1350,26 +1372,29 @@ public final class ShortList extends PrimitiveList<ShortConsumer, ShortPredicate
         return multiset;
     }
 
-    public <K, U> Map<K, U> toMap(ShortFunction<? extends K> keyExtractor, ShortFunction<? extends U> valueMapper) {
-        final Supplier<Map<K, U>> mapFactory = Fn.Suppliers.ofMap();
+    public <K, V, E extends Exception, E2 extends Exception> Map<K, V> toMap(Try.ShortFunction<? extends K, E> keyExtractor,
+            Try.ShortFunction<? extends V, E2> valueMapper) throws E, E2 {
+        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(keyExtractor, valueMapper, mapFactory);
     }
 
-    public <K, U, M extends Map<K, U>> M toMap(ShortFunction<? extends K> keyExtractor, ShortFunction<? extends U> valueMapper, Supplier<M> mapFactory) {
-        final BinaryOperator<U> mergeFunction = Fn.throwingMerger();
+    public <K, V, M extends Map<K, V>, E extends Exception, E2 extends Exception> M toMap(Try.ShortFunction<? extends K, E> keyExtractor,
+            Try.ShortFunction<? extends V, E2> valueMapper, Supplier<M> mapFactory) throws E, E2 {
+        final Try.BinaryOperator<V, RuntimeException> mergeFunction = Fn.throwingMerger();
 
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
-    public <K, U> Map<K, U> toMap(ShortFunction<? extends K> keyExtractor, ShortFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
-        final Supplier<Map<K, U>> mapFactory = Fn.Suppliers.ofMap();
+    public <K, V, E extends Exception, E2 extends Exception, E3 extends Exception> Map<K, V> toMap(Try.ShortFunction<? extends K, E> keyExtractor,
+            Try.ShortFunction<? extends V, E2> valueMapper, Try.BinaryOperator<V, E3> mergeFunction) throws E, E2, E3 {
+        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
-    public <K, U, M extends Map<K, U>> M toMap(ShortFunction<? extends K> keyExtractor, ShortFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
-            Supplier<M> mapFactory) {
+    public <K, V, M extends Map<K, V>, E extends Exception, E2 extends Exception, E3 extends Exception> M toMap(Try.ShortFunction<? extends K, E> keyExtractor,
+            Try.ShortFunction<? extends V, E2> valueMapper, Try.BinaryOperator<V, E3> mergeFunction, Supplier<M> mapFactory) throws E, E2, E3 {
         final M result = mapFactory.get();
 
         for (int i = 0; i < size; i++) {
@@ -1380,15 +1405,15 @@ public final class ShortList extends PrimitiveList<ShortConsumer, ShortPredicate
     }
 
     @SuppressWarnings("hiding")
-    public <K, A, D> Map<K, D> toMap(ShortFunction<? extends K> classifier, Collector<Short, A, D> downstream) {
+    public <K, A, D, E extends Exception> Map<K, D> toMap(Try.ShortFunction<? extends K, E> classifier, Collector<Short, A, D> downstream) throws E {
         final Supplier<Map<K, D>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(classifier, downstream, mapFactory);
     }
 
     @SuppressWarnings("hiding")
-    public <K, A, D, M extends Map<K, D>> M toMap(final ShortFunction<? extends K> classifier, final Collector<Short, A, D> downstream,
-            final Supplier<M> mapFactory) {
+    public <K, A, D, M extends Map<K, D>, E extends Exception> M toMap(final Try.ShortFunction<? extends K, E> classifier,
+            final Collector<Short, A, D> downstream, final Supplier<M> mapFactory) throws E {
         final M result = mapFactory.get();
         final Supplier<A> downstreamSupplier = downstream.supplier();
         final BiConsumer<A, Short> downstreamAccumulator = downstream.accumulator();
@@ -1439,12 +1464,12 @@ public final class ShortList extends PrimitiveList<ShortConsumer, ShortPredicate
     }
 
     @Override
-    public <R> R apply(Function<? super ShortList, R> func) {
+    public <R, E extends Exception> R apply(Try.Function<? super ShortList, R, E> func) throws E {
         return func.apply(this);
     }
 
     @Override
-    public void accept(Consumer<? super ShortList> action) {
+    public <E extends Exception> void accept(Try.Consumer<? super ShortList, E> action) throws E {
         action.accept(this);
     }
 

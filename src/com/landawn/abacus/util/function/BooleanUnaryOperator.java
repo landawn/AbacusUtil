@@ -14,14 +14,17 @@
 
 package com.landawn.abacus.util.function;
 
+import com.landawn.abacus.util.Try;
+
 /**
  * 
  * @since 0.8
  * 
  * @author Haiyang Li
  */
-public interface BooleanUnaryOperator {
+public interface BooleanUnaryOperator extends Try.BooleanUnaryOperator<RuntimeException> {
 
+    @Override
     boolean applyAsBoolean(boolean operand);
 
     static BooleanUnaryOperator identity() {

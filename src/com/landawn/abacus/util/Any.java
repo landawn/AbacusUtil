@@ -7,10 +7,6 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import com.landawn.abacus.annotation.Beta;
-import com.landawn.abacus.util.function.Consumer;
-import com.landawn.abacus.util.function.Function;
-import com.landawn.abacus.util.function.Predicate;
-import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.Stream;
 
 @Beta
@@ -109,7 +105,7 @@ public abstract class Any<T> {
      * @throws NullPointerException if value is present and {@code consumer} is
      * null
      */
-    public void ifPresent(Consumer<? super T> consumer) {
+    public <E extends Exception> void ifPresent(Try.Consumer<? super T, E> consumer) throws E {
         if (isPresent()) {
             consumer.accept(value);
         }
@@ -121,7 +117,7 @@ public abstract class Any<T> {
     * @param action
     * @param emptyAction
     */
-    public void ifPresentOrElse(Consumer<? super T> action, Runnable emptyAction) {
+    public <E extends Exception, E2 extends Exception> void ifPresentOrElse(Try.Consumer<? super T, E> action, Try.Runnable<E2> emptyAction) throws E, E2 {
         if (isPresent()) {
             action.accept(value);
         } else {
@@ -137,7 +133,7 @@ public abstract class Any<T> {
      * @throws NullPointerException if value is present and {@code consumer} is
      * null
      */
-    public void ifNotNull(Consumer<? super T> consumer) {
+    public <E extends Exception> void ifNotNull(Try.Consumer<? super T, E> consumer) throws E {
         if (isNotNull()) {
             consumer.accept(value);
         }
@@ -149,7 +145,7 @@ public abstract class Any<T> {
     * @param action
     * @param emptyAction
     */
-    public void ifNotNullOrElse(Consumer<? super T> action, Runnable emptyAction) {
+    public <E extends Exception, E2 extends Exception> void ifNotNullOrElse(Try.Consumer<? super T, E> action, Try.Runnable<E2> emptyAction) throws E, E2 {
         if (isNotNull()) {
             action.accept(value);
         } else {
@@ -168,7 +164,7 @@ public abstract class Any<T> {
      * otherwise an empty {@code Any}
      * @throws NullPointerException if the predicate is null
      */
-    public abstract Any<T> filter(Predicate<? super T> predicate);
+    public abstract <E extends Exception> Any<T> filter(Try.Predicate<? super T, E> predicate) throws E;
 
     /**
      * If a value is present, apply the provided mapping function to it,
@@ -197,7 +193,7 @@ public abstract class Any<T> {
      * otherwise an empty {@code Any}
      * @throws NullPointerException if the mapping function is null
      */
-    public abstract <U> Any<U> map(Function<? super T, ? extends U> mapper);
+    public abstract <U, E extends Exception> Any<U> map(Try.Function<? super T, ? extends U, E> mapper) throws E;
 
     /**
      * If a value is present, apply the provided {@code Any}-bearing
@@ -216,7 +212,7 @@ public abstract class Any<T> {
      * @throws NullPointerException if the mapping function is null or returns
      * a null result
      */
-    public abstract <U> Any<U> flatMap(Function<? super T, ? extends Any<U>> mapper);
+    public abstract <U, E extends Exception> Any<U> flatMap(Try.Function<? super T, ? extends Any<U>, E> mapper) throws E;
 
     /**
      * If a value is not null, and the value matches the given predicate,
@@ -229,7 +225,7 @@ public abstract class Any<T> {
      * otherwise an empty {@code Any}
      * @throws NullPointerException if the predicate is null
      */
-    public abstract Any<T> filterIfNotNull(Predicate<? super T> predicate);
+    public abstract <E extends Exception> Any<T> filterIfNotNull(Try.Predicate<? super T, E> predicate) throws E;
 
     /**
      * If a value is not null, apply the provided mapping function to it,
@@ -258,7 +254,7 @@ public abstract class Any<T> {
      * otherwise an empty {@code Any}
      * @throws NullPointerException if the mapping function is null
      */
-    public abstract <U> Any<U> mapIfNotNull(Function<? super T, ? extends U> mapper);
+    public abstract <U, E extends Exception> Any<U> mapIfNotNull(Try.Function<? super T, ? extends U, E> mapper) throws E;
 
     /**
      * If a value is not null, apply the provided {@code Any}-bearing
@@ -277,7 +273,7 @@ public abstract class Any<T> {
      * @throws NullPointerException if the mapping function is null or returns
      * a null result
      */
-    public abstract <U> Any<U> flatMapIfNotNull(Function<? super T, ? extends Any<U>> mapper);
+    public abstract <U, E extends Exception> Any<U> flatMapIfNotNull(Try.Function<? super T, ? extends Any<U>, E> mapper) throws E;
 
     /**
      * Return the value if present, otherwise return {@code other}.
@@ -297,7 +293,7 @@ public abstract class Any<T> {
      * @throws NullPointerException if value is not present and {@code other} is
      * null
      */
-    public T orElseGet(Supplier<? extends T> other) {
+    public <E extends Exception> T orElseGet(Try.Supplier<? extends T, E> other) throws E {
         return isPresent() ? value : other.get();
     }
 
@@ -316,7 +312,7 @@ public abstract class Any<T> {
      * @throws NullPointerException if no value is present and
      * {@code exceptionSupplier} is null
      */
-    public <X extends Throwable> T orElseThrow(Supplier<? extends X> exceptionSupplier) throws X {
+    public <X extends Throwable, E extends Exception> T orElseThrow(Try.Supplier<? extends X, E> exceptionSupplier) throws X, E {
         if (isPresent()) {
             return value;
         } else {
@@ -341,7 +337,7 @@ public abstract class Any<T> {
      * @return the value if not present or null otherwise the result of {@code other.get()}
      * @throws NullPointerException if value is not present and {@code other} is null
      */
-    public T orGetIfNull(Supplier<? extends T> other) {
+    public <E extends Exception> T orGetIfNull(Try.Supplier<? extends T, E> other) throws E {
         return isNotNull() ? value : other.get();
     }
 
@@ -359,7 +355,7 @@ public abstract class Any<T> {
      * @throws NullPointerException if not present or null and
      * {@code exceptionSupplier} is null
      */
-    public <X extends Throwable> T orThrowIfNull(Supplier<? extends X> exceptionSupplier) throws X {
+    public <X extends Throwable, E extends Exception> T orThrowIfNull(Try.Supplier<? extends X, E> exceptionSupplier) throws X, E {
         if (isNotNull()) {
             return value;
         } else {

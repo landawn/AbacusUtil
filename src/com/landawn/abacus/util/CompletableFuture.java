@@ -11,7 +11,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.landawn.abacus.util;
 
 import java.util.Arrays;
@@ -29,10 +28,6 @@ import java.util.concurrent.TimeoutException;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
 import com.landawn.abacus.util.Tuple.Tuple4;
-import com.landawn.abacus.util.function.BiConsumer;
-import com.landawn.abacus.util.function.BiFunction;
-import com.landawn.abacus.util.function.Consumer;
-import com.landawn.abacus.util.function.Function;
 
 /**
  * 
@@ -75,23 +70,29 @@ public class CompletableFuture<T> implements Future<T> {
         this.asyncExecutor = asyncExecutor;
     }
 
-    public static CompletableFuture<Void> run(final Runnable action) {
+    public static <E extends Exception> CompletableFuture<Void> run(final Try.Runnable<E> action) {
         return run(action, commonPool);
     }
 
-    public static <T> CompletableFuture<T> run(final Try.Callable<T, RuntimeException> action) {
-        return run(action, commonPool);
-    }
-
-    public static CompletableFuture<Void> run(final Runnable action, final Executor executor) {
-        final FutureTask<Void> futureTask = new FutureTask<>(action, null);
+    public static <E extends Exception> CompletableFuture<Void> run(final Try.Runnable<E> action, final Executor executor) {
+        final FutureTask<Void> futureTask = new FutureTask<>(new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                action.run();
+                return null;
+            }
+        });
 
         executor.execute(futureTask);
 
         return new CompletableFuture<>(futureTask, null, executor);
     }
 
-    public static <T> CompletableFuture<T> run(final Try.Callable<T, RuntimeException> action, final Executor executor) {
+    public static <T, E extends Exception> CompletableFuture<T> call(final Try.Callable<T, E> action) {
+        return call(action, commonPool);
+    }
+
+    public static <T, E extends Exception> CompletableFuture<T> call(final Try.Callable<T, E> action, final Executor executor) {
         final FutureTask<T> futureTask = new FutureTask<>(new Callable<T>() {
             @Override
             public T call() throws Exception {
@@ -223,7 +224,7 @@ public class CompletableFuture<T> implements Future<T> {
         }
     }
 
-    public <U> U get(final Function<? super T, ? extends U> action) {
+    public <U, E extends Exception> U get(final Try.Function<? super T, ? extends U, E> action) throws E {
         try {
             return action.apply(get());
         } catch (InterruptedException | ExecutionException e) {
@@ -231,7 +232,7 @@ public class CompletableFuture<T> implements Future<T> {
         }
     }
 
-    public <U> U get(final long timeout, final TimeUnit unit, final Function<? super T, ? extends U> action) {
+    public <U, E extends Exception> U get(final long timeout, final TimeUnit unit, final Try.Function<? super T, ? extends U, E> action) throws E {
         try {
             return action.apply(get(timeout, unit));
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
@@ -239,12 +240,12 @@ public class CompletableFuture<T> implements Future<T> {
         }
     }
 
-    public <U> U get(final BiFunction<? super T, Exception, ? extends U> action) {
+    public <U, E extends Exception> U get(final Try.BiFunction<? super T, Exception, ? extends U, E> action) throws E {
         final Pair<T, Exception> result = get2();
         return action.apply(result.left, result.right);
     }
 
-    public <U> U get(final long timeout, final TimeUnit unit, final BiFunction<? super T, Exception, ? extends U> action) {
+    public <U, E extends Exception> U get(final long timeout, final TimeUnit unit, final Try.BiFunction<? super T, Exception, ? extends U, E> action) throws E {
         final Pair<T, Exception> result = get2(timeout, unit);
         return action.apply(result.left, result.right);
     }
@@ -266,7 +267,7 @@ public class CompletableFuture<T> implements Future<T> {
     //        action.accept(result.left, result.right);
     //    }
 
-    <U> CompletableFuture<U> thenApply(final Function<? super T, ? extends U> action) {
+    <U, E extends Exception> CompletableFuture<U> thenApply(final Try.Function<? super T, ? extends U, E> action) {
         return new CompletableFuture<U>(new Future<U>() {
             @Override
             public boolean cancel(boolean mayInterruptIfRunning) {
@@ -285,12 +286,24 @@ public class CompletableFuture<T> implements Future<T> {
 
             @Override
             public U get() throws InterruptedException, ExecutionException {
-                return action.apply(future.get());
+                try {
+                    return action.apply(future.get());
+                } catch (InterruptedException | ExecutionException e) {
+                    throw e;
+                } catch (Exception e) {
+                    throw N.toRuntimeException(e);
+                }
             }
 
             @Override
             public U get(final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-                return action.apply(future.get(timeout, unit));
+                try {
+                    return action.apply(future.get(timeout, unit));
+                } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                    throw e;
+                } catch (Exception e) {
+                    throw N.toRuntimeException(e);
+                }
             }
         }, null, asyncExecutor) {
             @Override
@@ -481,7 +494,7 @@ public class CompletableFuture<T> implements Future<T> {
     //        });
     //    }
 
-    public CompletableFuture<Void> thenRun(final Runnable action) {
+    public <E extends Exception> CompletableFuture<Void> thenRun(final Try.Runnable<E> action) {
         return execute(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
@@ -492,7 +505,7 @@ public class CompletableFuture<T> implements Future<T> {
         });
     }
 
-    public CompletableFuture<Void> thenRun(final Consumer<? super T> action) {
+    public <E extends Exception> CompletableFuture<Void> thenRun(final Try.Consumer<? super T, E> action) {
         return execute(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
@@ -502,17 +515,18 @@ public class CompletableFuture<T> implements Future<T> {
         });
     }
 
-    public CompletableFuture<Void> thenRun(final BiConsumer<? super T, Exception> action) {
-        return execute(new Runnable() {
+    public <E extends Exception> CompletableFuture<Void> thenRun(final Try.BiConsumer<? super T, Exception, E> action) {
+        return execute(new Callable<Void>() {
             @Override
-            public void run() {
+            public Void call() throws Exception {
                 final Pair<T, Exception> result = get2();
                 action.accept(result.left, result.right);
+                return null;
             }
         });
     }
 
-    public <U> CompletableFuture<U> thenCall(final Try.Callable<U, RuntimeException> action) {
+    public <U, E extends Exception> CompletableFuture<U> thenCall(final Try.Callable<U, E> action) {
         return execute(new Callable<U>() {
             @Override
             public U call() throws Exception {
@@ -522,7 +536,7 @@ public class CompletableFuture<T> implements Future<T> {
         });
     }
 
-    public <R> CompletableFuture<R> thenCall(final Function<? super T, R> action) {
+    public <R, E extends Exception> CompletableFuture<R> thenCall(final Try.Function<? super T, R, E> action) {
         return execute(new Callable<R>() {
             @Override
             public R call() throws Exception {
@@ -531,7 +545,7 @@ public class CompletableFuture<T> implements Future<T> {
         });
     }
 
-    public <R> CompletableFuture<R> thenCall(final BiFunction<? super T, Exception, R> action) {
+    public <R, E extends Exception> CompletableFuture<R> thenCall(final Try.BiFunction<? super T, Exception, R, E> action) {
         return execute(new Callable<R>() {
             @Override
             public R call() throws Exception {
@@ -541,7 +555,7 @@ public class CompletableFuture<T> implements Future<T> {
         });
     }
 
-    public CompletableFuture<Void> runAfterBoth(final CompletableFuture<?> other, final Runnable action) {
+    public <E extends Exception> CompletableFuture<Void> runAfterBoth(final CompletableFuture<?> other, final Try.Runnable<E> action) {
         return execute(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
@@ -553,7 +567,7 @@ public class CompletableFuture<T> implements Future<T> {
         }, other);
     }
 
-    public <U> CompletableFuture<Void> runAfterBoth(final CompletableFuture<U> other, final BiConsumer<T, U> action) {
+    public <U, E extends Exception> CompletableFuture<Void> runAfterBoth(final CompletableFuture<U> other, final Try.BiConsumer<T, U, E> action) {
         return execute(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
@@ -563,19 +577,21 @@ public class CompletableFuture<T> implements Future<T> {
         }, other);
     }
 
-    public <U> CompletableFuture<Void> runAfterBoth(final CompletableFuture<U> other, final Consumer<Tuple4<T, Exception, U, Exception>> action) {
-        return execute(new Runnable() {
+    public <U, E extends Exception> CompletableFuture<Void> runAfterBoth(final CompletableFuture<U> other,
+            final Try.Consumer<Tuple4<T, Exception, U, Exception>, E> action) {
+        return execute(new Callable<Void>() {
             @Override
-            public void run() {
+            public Void call() throws Exception {
                 final Pair<T, Exception> result = get2();
                 final Pair<U, Exception> result2 = other.get2();
 
                 action.accept(Tuple.of(result.left, result.right, result2.left, result.right));
+                return null;
             }
         }, other);
     }
 
-    public <U> CompletableFuture<U> callAfterBoth(final CompletableFuture<?> other, final Try.Callable<U, RuntimeException> action) {
+    public <U, E extends Exception> CompletableFuture<U> callAfterBoth(final CompletableFuture<?> other, final Try.Callable<U, E> action) {
         return execute(new Callable<U>() {
             @Override
             public U call() throws Exception {
@@ -586,7 +602,7 @@ public class CompletableFuture<T> implements Future<T> {
         }, other);
     }
 
-    public <U, R> CompletableFuture<R> callAfterBoth(final CompletableFuture<U> other, final BiFunction<T, U, R> action) {
+    public <U, R, E extends Exception> CompletableFuture<R> callAfterBoth(final CompletableFuture<U> other, final Try.BiFunction<T, U, R, E> action) {
         return execute(new Callable<R>() {
             @Override
             public R call() throws Exception {
@@ -595,7 +611,8 @@ public class CompletableFuture<T> implements Future<T> {
         }, other);
     }
 
-    public <U, R> CompletableFuture<R> callAfterBoth(final CompletableFuture<U> other, final Function<Tuple4<T, Exception, U, Exception>, R> action) {
+    public <U, R, E extends Exception> CompletableFuture<R> callAfterBoth(final CompletableFuture<U> other,
+            final Try.Function<Tuple4<T, Exception, U, Exception>, R, E> action) {
         return execute(new Callable<R>() {
             @Override
             public R call() throws Exception {
@@ -607,7 +624,7 @@ public class CompletableFuture<T> implements Future<T> {
         }, other);
     }
 
-    public CompletableFuture<Void> runAfterEither(final CompletableFuture<?> other, final Runnable action) {
+    public <E extends Exception> CompletableFuture<Void> runAfterEither(final CompletableFuture<?> other, final Try.Runnable<E> action) {
         return execute(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
@@ -619,7 +636,7 @@ public class CompletableFuture<T> implements Future<T> {
         }, other);
     }
 
-    public CompletableFuture<Void> runAfterEither(final CompletableFuture<? extends T> other, final Consumer<? super T> action) {
+    public <E extends Exception> CompletableFuture<Void> runAfterEither(final CompletableFuture<? extends T> other, final Try.Consumer<? super T, E> action) {
         return execute(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
@@ -631,18 +648,20 @@ public class CompletableFuture<T> implements Future<T> {
         }, other);
     }
 
-    public CompletableFuture<Void> runAfterEither(final CompletableFuture<? extends T> other, final BiConsumer<? super T, Exception> action) {
-        return execute(new Runnable() {
+    public <E extends Exception> CompletableFuture<Void> runAfterEither(final CompletableFuture<? extends T> other,
+            final Try.BiConsumer<? super T, Exception, E> action) {
+        return execute(new Callable<Void>() {
             @Override
-            public void run() {
+            public Void call() throws Exception {
                 final Pair<T, Exception> result = Futures.anyOf(N.asList(CompletableFuture.this, other)).get2();
 
                 action.accept(result.left, result.right);
+                return null;
             }
         }, other);
     }
 
-    public <U> CompletableFuture<U> callAfterEither(final CompletableFuture<?> other, final Try.Callable<U, RuntimeException> action) {
+    public <U, E extends Exception> CompletableFuture<U> callAfterEither(final CompletableFuture<?> other, final Try.Callable<U, RuntimeException> action) {
         return execute(new Callable<U>() {
             @Override
             public U call() throws Exception {
@@ -653,7 +672,8 @@ public class CompletableFuture<T> implements Future<T> {
         }, other);
     }
 
-    public <R> CompletableFuture<R> callAfterEither(final CompletableFuture<? extends T> other, final Function<? super T, R> action) {
+    public <R, E extends Exception> CompletableFuture<R> callAfterEither(final CompletableFuture<? extends T> other,
+            final Try.Function<? super T, R, E> action) {
         return execute(new Callable<R>() {
             @Override
             public R call() throws Exception {
@@ -664,7 +684,8 @@ public class CompletableFuture<T> implements Future<T> {
         }, other);
     }
 
-    public <R> CompletableFuture<R> callAfterEither(final CompletableFuture<? extends T> other, final BiFunction<? super T, Exception, R> action) {
+    public <R, E extends Exception> CompletableFuture<R> callAfterEither(final CompletableFuture<? extends T> other,
+            final Try.BiFunction<? super T, Exception, R, E> action) {
         return execute(new Callable<R>() {
             @Override
             public R call() throws Exception {
@@ -857,14 +878,6 @@ public class CompletableFuture<T> implements Future<T> {
     //            }
     //        }, asyncExecutor);
     //    }
-
-    private CompletableFuture<Void> execute(final Runnable command) {
-        return execute(command, null);
-    }
-
-    private CompletableFuture<Void> execute(final Runnable command, final CompletableFuture<?> other) {
-        return execute(new FutureTask<Void>(command, null), other);
-    }
 
     private <U> CompletableFuture<U> execute(final Callable<U> command) {
         return execute(command, null);

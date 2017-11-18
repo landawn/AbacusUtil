@@ -14,13 +14,16 @@
 
 package com.landawn.abacus.util.function;
 
+import com.landawn.abacus.util.Try;
+
 /**
  * 
  * @since 0.8
  * 
  * @author Haiyang Li
  */
-public interface ShortBinaryOperator {
+public interface ShortBinaryOperator extends Try.ShortBinaryOperator<RuntimeException> {
 
+    @Override
     short applyAsShort(short left, short right);
 }

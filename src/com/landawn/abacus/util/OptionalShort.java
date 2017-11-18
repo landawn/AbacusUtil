@@ -26,9 +26,6 @@ package com.landawn.abacus.util;
 
 import java.util.NoSuchElementException;
 
-import com.landawn.abacus.util.function.ShortConsumer;
-import com.landawn.abacus.util.function.ShortSupplier;
-import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.ShortStream;
 
 /**
@@ -144,7 +141,7 @@ public final class OptionalShort implements Comparable<OptionalShort> {
      * @throws NullPoshorterException if value is present and {@code consumer} is
      * null
      */
-    public void ifPresent(ShortConsumer action) {
+    public <E extends Exception> void ifPresent(Try.ShortConsumer<E> action) throws E {
         if (isPresent()) {
             action.accept(value);
         }
@@ -156,7 +153,7 @@ public final class OptionalShort implements Comparable<OptionalShort> {
      * @param action
      * @param emptyAction
      */
-    public void ifPresentOrElse(ShortConsumer action, Runnable emptyAction) {
+    public <E extends Exception, E2 extends Exception> void ifPresentOrElse(Try.ShortConsumer<E> action, Try.Runnable<E2> emptyAction) throws E, E2 {
         if (isPresent()) {
             action.accept(value);
         } else {
@@ -184,7 +181,7 @@ public final class OptionalShort implements Comparable<OptionalShort> {
      * @throws NullPoshorterException if value is not present and {@code other} is
      * null
      */
-    public short orElseGet(ShortSupplier other) {
+    public <E extends Exception> short orElseGet(Try.ShortSupplier<E> other) throws E {
         return isPresent() ? value : other.getAsShort();
     }
 
@@ -204,7 +201,7 @@ public final class OptionalShort implements Comparable<OptionalShort> {
      * @throws NullPoshorterException if no value is present and
      * {@code exceptionSupplier} is null
      */
-    public <X extends Throwable> short orElseThrow(Supplier<X> exceptionSupplier) throws X {
+    public <X extends Throwable, E extends Exception> short orElseThrow(Try.Supplier<X, E> exceptionSupplier) throws X, E {
         if (isPresent()) {
             return value;
         } else {

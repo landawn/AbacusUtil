@@ -15,7 +15,8 @@
 package com.landawn.abacus.util.function;
 
 import java.util.Objects;
-import java.util.function.Function;
+
+import com.landawn.abacus.util.Try;
 
 /**
  * 
@@ -23,8 +24,9 @@ import java.util.function.Function;
  * 
  * @author Haiyang Li
  */
-public interface ShortBiFunction<R> {
+public interface ShortBiFunction<R> extends Try.ShortBiFunction<R, RuntimeException> {
 
+    @Override
     R apply(short t, short u);
 
     default <V> ShortBiFunction<V> andThen(Function<? super R, ? extends V> after) {

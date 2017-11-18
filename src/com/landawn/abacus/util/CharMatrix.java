@@ -18,7 +18,6 @@ import java.util.NoSuchElementException;
 
 import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.util.function.CharBiFunction;
-import com.landawn.abacus.util.function.CharConsumer;
 import com.landawn.abacus.util.function.CharFunction;
 import com.landawn.abacus.util.function.CharPredicate;
 import com.landawn.abacus.util.function.CharTriFunction;
@@ -26,10 +25,10 @@ import com.landawn.abacus.util.function.CharUnaryOperator;
 import com.landawn.abacus.util.function.IntBiFunction;
 import com.landawn.abacus.util.function.IntBiPredicate;
 import com.landawn.abacus.util.function.IntConsumer;
-import com.landawn.abacus.util.stream.CharStream;
 import com.landawn.abacus.util.stream.CharIteratorEx;
-import com.landawn.abacus.util.stream.ObjIteratorEx;
+import com.landawn.abacus.util.stream.CharStream;
 import com.landawn.abacus.util.stream.IntStream;
+import com.landawn.abacus.util.stream.ObjIteratorEx;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -1653,11 +1652,12 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
         return a == null ? 0 : a.length;
     }
 
-    public void forEach(final CharConsumer action) {
+    public <E extends Exception> void forEach(final Try.CharConsumer<E> action) throws E {
         forEach(0, rows, 0, cols, action);
     }
 
-    public void forEach(final int fromRowIndex, final int toRowIndex, final int fromColumnIndex, final int toColumnIndex, final CharConsumer action) {
+    public <E extends Exception> void forEach(final int fromRowIndex, final int toRowIndex, final int fromColumnIndex, final int toColumnIndex,
+            final Try.CharConsumer<E> action) throws E {
         N.checkFromToIndex(fromRowIndex, toRowIndex, rows);
         N.checkFromToIndex(fromColumnIndex, toColumnIndex, cols);
 

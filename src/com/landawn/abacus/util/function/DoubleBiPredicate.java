@@ -16,13 +16,15 @@ package com.landawn.abacus.util.function;
 
 import java.util.Objects;
 
+import com.landawn.abacus.util.Try;
+
 /**
  * 
  * @since 0.8
  * 
  * @author Haiyang Li
  */
-public interface DoubleBiPredicate {
+public interface DoubleBiPredicate extends Try.DoubleBiPredicate<RuntimeException> {
 
     static final DoubleBiPredicate ALWAYS_TRUE = new DoubleBiPredicate() {
         @Override
@@ -79,6 +81,7 @@ public interface DoubleBiPredicate {
         }
     };
 
+    @Override
     boolean test(double t, double u);
 
     default DoubleBiPredicate negate() {

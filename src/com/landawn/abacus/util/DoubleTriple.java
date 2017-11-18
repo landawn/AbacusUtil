@@ -1,9 +1,5 @@
 package com.landawn.abacus.util;
 
-import com.landawn.abacus.util.function.Consumer;
-import com.landawn.abacus.util.function.DoubleConsumer;
-import com.landawn.abacus.util.function.Function;
-import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.stream.Stream;
 
 public final class DoubleTriple {
@@ -57,21 +53,21 @@ public final class DoubleTriple {
         return DoubleList.of(_1, _2, _3);
     }
 
-    public void forEach(DoubleConsumer comsumer) {
+    public <E extends Exception> void forEach(Try.DoubleConsumer<E> comsumer) throws E {
         comsumer.accept(this._1);
         comsumer.accept(this._2);
         comsumer.accept(this._3);
     }
 
-    public void accept(Consumer<DoubleTriple> action) {
+    public <E extends Exception> void accept(Try.Consumer<DoubleTriple, E> action) throws E {
         action.accept(this);
     }
 
-    public <U> U map(Function<DoubleTriple, U> mapper) {
+    public <U, E extends Exception> U map(Try.Function<DoubleTriple, U, E> mapper) throws E {
         return mapper.apply(this);
     }
 
-    public Optional<DoubleTriple> filter(final Predicate<DoubleTriple> predicate) {
+    public <E extends Exception> Optional<DoubleTriple> filter(final Try.Predicate<DoubleTriple, E> predicate) throws E {
         return predicate.test(this) ? Optional.of(this) : Optional.<DoubleTriple> empty();
     }
 

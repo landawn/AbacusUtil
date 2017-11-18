@@ -34,13 +34,7 @@ import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.Properties;
 import com.landawn.abacus.util.Sheet;
 import com.landawn.abacus.util.Try;
-import com.landawn.abacus.util.function.Consumer;
-import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
-import com.landawn.abacus.util.function.Predicate;
-import com.landawn.abacus.util.function.ToDoubleFunction;
-import com.landawn.abacus.util.function.ToIntFunction;
-import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.stream.Collector;
 import com.landawn.abacus.util.stream.Stream;
 
@@ -77,7 +71,7 @@ public interface DataSet {
      * 
      * @param filter
      */
-    List<String> columnNames(Predicate<String> filter);
+    <E extends Exception> List<String> columnNames(Try.Predicate<String, E> filter) throws E;
 
     /**
      * Method getColumnName.
@@ -136,14 +130,14 @@ public interface DataSet {
      * @param columnName
      * @param func
      */
-    void renameColumn(String columnName, Function<String, String> func);
+    <E extends Exception> void renameColumn(String columnName, Try.Function<String, String, E> func) throws E;
 
     /**
      *
      * @param columnNames
      * @param func
      */
-    void renameColumn(Collection<String> columnNames, Function<String, String> func);
+    <E extends Exception> void renameColumn(Collection<String> columnNames, Try.Function<String, String, E> func) throws E;
 
     void moveColumn(String columnName, int newPosition);
 
@@ -432,7 +426,7 @@ public interface DataSet {
      * @param fromColumnName
      * @param func
      */
-    void addColumn(String newColumnName, String fromColumnName, Function<?, ?> func);
+    <E extends Exception> void addColumn(String newColumnName, String fromColumnName, Try.Function<?, ?, E> func) throws E;
 
     /**
      * Generate the new column values from the specified column by the specified <code>Function</code>.
@@ -442,7 +436,7 @@ public interface DataSet {
      * @param fromColumnName
      * @param func
      */
-    void addColumn(int columnIndex, String newColumnName, String fromColumnName, Function<?, ?> func);
+    <E extends Exception> void addColumn(int columnIndex, String newColumnName, String fromColumnName, Try.Function<?, ?, E> func) throws E;
 
     /**
      * Generate the new column values from the specified columns by the specified <code>Function</code>.
@@ -450,7 +444,7 @@ public interface DataSet {
      * @param fromColumnNames
      * @param func
      */
-    void addColumn(String newColumnName, Collection<String> fromColumnNames, Function<? super Object[], ?> func);
+    <E extends Exception> void addColumn(String newColumnName, Collection<String> fromColumnNames, Try.Function<? super Object[], ?, E> func) throws E;
 
     /**
      * Generate the new column values from the specified columns by the specified <code>Function</code>.
@@ -460,7 +454,8 @@ public interface DataSet {
      * @param fromColumnNames
      * @param func
      */
-    void addColumn(int columnIndex, String newColumnName, Collection<String> fromColumnNames, Function<? super Object[], ?> func);
+    <E extends Exception> void addColumn(int columnIndex, String newColumnName, Collection<String> fromColumnNames, Try.Function<? super Object[], ?, E> func)
+            throws E;
 
     /**
      * Remove the column with the specified columnName from this DataSet.
@@ -482,7 +477,7 @@ public interface DataSet {
      * @param columnName
      * @param func
      */
-    void updateColumn(String columnName, Function<?, ?> func);
+    <E extends Exception> void updateColumn(String columnName, Try.Function<?, ?, E> func) throws E;
 
     /**
      * Update the values of the specified columns one by one with the specified function.
@@ -490,7 +485,7 @@ public interface DataSet {
      * @param columnNames
      * @param func
      */
-    void updateColumn(Collection<String> columnNames, Function<?, ?> func);
+    <E extends Exception> void updateColumn(Collection<String> columnNames, Try.Function<?, ?, E> func) throws E;
 
     /**
      * Convert the specified column to target type.
@@ -524,13 +519,14 @@ public interface DataSet {
      */
     void combineColumn(Collection<String> columnNames, String newColumnName, Class<?> newColumnClass);
 
-    void combineColumn(Collection<String> columnNames, String newColumnName, Function<? super Object[], ?> combineFunc);
+    <E extends Exception> void combineColumn(Collection<String> columnNames, String newColumnName, Try.Function<? super Object[], ?, E> combineFunc) throws E;
 
-    void combineColumn(Predicate<String> columnNameFilter, String newColumnName, Class<?> newColumnClass);
+    <E extends Exception> void combineColumn(Try.Predicate<String, E> columnNameFilter, String newColumnName, Class<?> newColumnClass) throws E;
 
-    void combineColumn(Predicate<String> columnNameFilter, String newColumnName, Function<? super Object[], ?> combineFunc);
+    <E extends Exception, E2 extends Exception> void combineColumn(Try.Predicate<String, E> columnNameFilter, String newColumnName,
+            Try.Function<? super Object[], ?, E2> combineFunc) throws E, E2;
 
-    void divideColumn(String columnName, Collection<String> newColumnNames, Function<?, ? extends List<?>> divideFunc);
+    <E extends Exception> void divideColumn(String columnName, Collection<String> newColumnNames, Try.Function<?, ? extends List<?>, E> divideFunc) throws E;
 
     /**
      * 
@@ -569,7 +565,7 @@ public interface DataSet {
      * @param rowIndex
      * @param func
      */
-    void updateRow(int rowIndex, Function<?, ?> func);
+    <E extends Exception> void updateRow(int rowIndex, Try.Function<?, ?, E> func) throws E;
 
     /**
      * Update the values in the specified rows one by one with the specified function.
@@ -577,14 +573,14 @@ public interface DataSet {
      * @param indices
      * @param func
      */
-    void updateRow(int[] indices, Function<?, ?> func);
+    <E extends Exception> void updateRow(int[] indices, Try.Function<?, ?, E> func) throws E;
 
     /**
      * Update all the values in this DataSet with the specified function.
      * 
      * @param func
      */
-    void updateAll(Function<?, ?> func);
+    <E extends Exception> void updateAll(Try.Function<?, ?, E> func) throws E;
 
     /**
      * Replace all the values in this DataSet with the specified new value if it matches the specified condition.
@@ -592,7 +588,7 @@ public interface DataSet {
      * @param func
      * @param newValue
      */
-    void replaceIf(Predicate<?> func, Object newValue);
+    <E extends Exception> void replaceIf(Try.Predicate<?, E> func, Object newValue) throws E;
 
     /**
      * Returns the current row number.
@@ -1804,7 +1800,7 @@ public interface DataSet {
      * @param keyExtractor don't change value of the input parameter.
      * @return
      */
-    DataSet groupBy(String columnName, Function<?, ?> keyExtractor);
+    <E extends Exception> DataSet groupBy(String columnName, Try.Function<?, ?, E> keyExtractor) throws E;
 
     /**
      * 
@@ -1839,8 +1835,8 @@ public interface DataSet {
      * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
      * @return
      */
-    DataSet groupBy(String columnName, Function<?, ?> keyExtractor, String aggregateResultColumnName, String aggregateOnColumnName,
-            Collector<Object, ?, ?> collector);
+    <E extends Exception> DataSet groupBy(String columnName, Try.Function<?, ?, E> keyExtractor, String aggregateResultColumnName, String aggregateOnColumnName,
+            Collector<Object, ?, ?> collector) throws E;
 
     /**
      * 
@@ -1852,8 +1848,8 @@ public interface DataSet {
      * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
      * @return
      */
-    DataSet groupBy(String columnName, Function<?, ?> keyExtractor, String aggregateResultColumnName, Collection<String> aggregateOnColumnNames,
-            Collector<? super Object[], ?, ?> collector);
+    <E extends Exception> DataSet groupBy(String columnName, Try.Function<?, ?, E> keyExtractor, String aggregateResultColumnName,
+            Collection<String> aggregateOnColumnNames, Collector<? super Object[], ?, ?> collector) throws E;
 
     /**
      *
@@ -1872,7 +1868,7 @@ public interface DataSet {
      * @param keyExtractor don't change value of the input parameter.
      * @return
      */
-    DataSet groupBy(String columnName, int fromRowIndex, int toRowIndex, Function<?, ?> keyExtractor);
+    <E extends Exception> DataSet groupBy(String columnName, int fromRowIndex, int toRowIndex, Try.Function<?, ?, E> keyExtractor) throws E;
 
     /**
      * 
@@ -1914,8 +1910,8 @@ public interface DataSet {
      * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
      * @return
      */
-    DataSet groupBy(String columnName, int fromRowIndex, int toRowIndex, Function<?, ?> keyExtractor, String aggregateResultColumnName,
-            String aggregateOnColumnName, Collector<Object, ?, ?> collector);
+    <E extends Exception> DataSet groupBy(String columnName, int fromRowIndex, int toRowIndex, Try.Function<?, ?, E> keyExtractor,
+            String aggregateResultColumnName, String aggregateOnColumnName, Collector<Object, ?, ?> collector) throws E;
 
     /**
      * 
@@ -1929,8 +1925,8 @@ public interface DataSet {
      * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
      * @return
      */
-    DataSet groupBy(String columnName, int fromRowIndex, int toRowIndex, Function<?, ?> keyExtractor, String aggregateResultColumnName,
-            Collection<String> aggregateOnColumnNames, Collector<? super Object[], ?, ?> collector);
+    <E extends Exception> DataSet groupBy(String columnName, int fromRowIndex, int toRowIndex, Try.Function<?, ?, E> keyExtractor,
+            String aggregateResultColumnName, Collection<String> aggregateOnColumnNames, Collector<? super Object[], ?, ?> collector) throws E;
 
     /**
      *
@@ -1946,7 +1942,7 @@ public interface DataSet {
      * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
      * @return
      */
-    DataSet groupBy(Collection<String> columnNames, Function<? super Object[], ?> keyExtractor);
+    <E extends Exception> DataSet groupBy(Collection<String> columnNames, Try.Function<? super Object[], ?, E> keyExtractor) throws E;
 
     /**
      * 
@@ -1981,8 +1977,8 @@ public interface DataSet {
      * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
      * @return
      */
-    DataSet groupBy(Collection<String> columnNames, Function<? super Object[], ?> keyExtractor, String aggregateResultColumnName, String aggregateOnColumnName,
-            Collector<Object, ?, ?> collector);
+    <E extends Exception> DataSet groupBy(Collection<String> columnNames, Try.Function<? super Object[], ?, E> keyExtractor, String aggregateResultColumnName,
+            String aggregateOnColumnName, Collector<Object, ?, ?> collector) throws E;
 
     /**
      * 
@@ -1994,8 +1990,8 @@ public interface DataSet {
      * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
      * @return
      */
-    DataSet groupBy(Collection<String> columnNames, Function<? super Object[], ?> keyExtractor, String aggregateResultColumnName,
-            Collection<String> aggregateOnColumnNames, Collector<? super Object[], ?, ?> collector);
+    <E extends Exception> DataSet groupBy(Collection<String> columnNames, Try.Function<? super Object[], ?, E> keyExtractor, String aggregateResultColumnName,
+            Collection<String> aggregateOnColumnNames, Collector<? super Object[], ?, ?> collector) throws E;
 
     /**
      *
@@ -2014,7 +2010,8 @@ public interface DataSet {
      * @param keyExtractor don't change value of the input parameter.
      * @return
      */
-    DataSet groupBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Function<? super Object[], ?> keyExtractor);
+    <E extends Exception> DataSet groupBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Try.Function<? super Object[], ?, E> keyExtractor)
+            throws E;
 
     /**
      * 
@@ -2056,8 +2053,8 @@ public interface DataSet {
      * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
      * @return
      */
-    DataSet groupBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Function<? super Object[], ?> keyExtractor,
-            String aggregateResultColumnName, String aggregateOnColumnName, Collector<Object, ?, ?> collector);
+    <E extends Exception> DataSet groupBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Try.Function<? super Object[], ?, E> keyExtractor,
+            String aggregateResultColumnName, String aggregateOnColumnName, Collector<Object, ?, ?> collector) throws E;
 
     /**
      * 
@@ -2071,8 +2068,8 @@ public interface DataSet {
      * For example, set collector to {@link com.landawn.abacus.util.stream.Collectors#counting()} to count the row number.
      * @return
      */
-    DataSet groupBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Function<? super Object[], ?> keyExtractor,
-            String aggregateResultColumnName, Collection<String> aggregateOnColumnNames, Collector<? super Object[], ?, ?> collector);
+    <E extends Exception> DataSet groupBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Try.Function<? super Object[], ?, E> keyExtractor,
+            String aggregateResultColumnName, Collection<String> aggregateOnColumnNames, Collector<? super Object[], ?, ?> collector) throws E;
 
     /**
      *
@@ -2242,7 +2239,7 @@ public interface DataSet {
      * @param keyExtractor don't change value of the input parameter.
      * @return
      */
-    DataSet distinctBy(String columnName, Function<?, ?> keyExtractor);
+    <E extends Exception> DataSet distinctBy(String columnName, Try.Function<?, ?, E> keyExtractor) throws E;
 
     /**
      * Returns a new <code>DataSet</code> with the rows de-duplicated by the value in the specified column from the specified <code>fromRowIndex</code> to <code>toRowIndex</code>
@@ -2253,7 +2250,7 @@ public interface DataSet {
      * @param keyExtractor don't change value of the input parameter.
      * @return
      */
-    DataSet distinctBy(String columnName, int fromRowIndex, int toRowIndex, Function<?, ?> keyExtractor);
+    <E extends Exception> DataSet distinctBy(String columnName, int fromRowIndex, int toRowIndex, Try.Function<?, ?, E> keyExtractor) throws E;
 
     /**
      * Returns a new <code>DataSet</code> with the rows de-duplicated by the values in the specified columns from the specified <code>fromRowIndex</code> to <code>toRowIndex</code>
@@ -2264,7 +2261,7 @@ public interface DataSet {
      * @param keyExtractor don't change value of the input parameter.
      * @return
      */
-    DataSet distinctBy(Collection<String> columnNames, Function<? super Object[], ?> keyExtractor);
+    <E extends Exception> DataSet distinctBy(Collection<String> columnNames, Try.Function<? super Object[], ?, E> keyExtractor) throws E;
 
     /**
      * Returns a new <code>DataSet</code> with the rows de-duplicated by the values in the specified columns from the specified <code>fromRowIndex</code> to <code>toRowIndex</code>
@@ -2275,14 +2272,15 @@ public interface DataSet {
      * @param keyExtractor don't change value of the input parameter.
      * @return
      */
-    DataSet distinctBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Function<? super Object[], ?> keyExtractor);
+    <E extends Exception> DataSet distinctBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex,
+            Try.Function<? super Object[], ?, E> keyExtractor) throws E;
 
     /**
      *
      * @param filter
      * @return
      */
-    DataSet filter(Predicate<? super Object[]> filter);
+    <E extends Exception> DataSet filter(Try.Predicate<? super Object[], E> filter) throws E;
 
     /**
      * 
@@ -2290,7 +2288,7 @@ public interface DataSet {
      * @param max
      * @return
      */
-    DataSet filter(Predicate<? super Object[]> filter, int max);
+    <E extends Exception> DataSet filter(Try.Predicate<? super Object[], E> filter, int max) throws E;
 
     /**
      *
@@ -2299,7 +2297,7 @@ public interface DataSet {
      * @param filter
      * @return
      */
-    DataSet filter(int fromRowIndex, int toRowIndex, Predicate<? super Object[]> filter);
+    <E extends Exception> DataSet filter(int fromRowIndex, int toRowIndex, Try.Predicate<? super Object[], E> filter) throws E;
 
     /**
      * 
@@ -2309,7 +2307,7 @@ public interface DataSet {
      * @param max
      * @return
      */
-    DataSet filter(int fromRowIndex, int toRowIndex, Predicate<? super Object[]> filter, int max);
+    <E extends Exception> DataSet filter(int fromRowIndex, int toRowIndex, Try.Predicate<? super Object[], E> filter, int max) throws E;
 
     /**
      *
@@ -2317,7 +2315,7 @@ public interface DataSet {
      * @param filter
      * @return
      */
-    DataSet filter(String columnName, Predicate<?> filter);
+    <E extends Exception> DataSet filter(String columnName, Try.Predicate<?, E> filter) throws E;
 
     /**
      * 
@@ -2326,7 +2324,7 @@ public interface DataSet {
      * @param max
      * @return
      */
-    DataSet filter(String columnName, Predicate<?> filter, int max);
+    <E extends Exception> DataSet filter(String columnName, Try.Predicate<?, E> filter, int max) throws E;
 
     /**
      *
@@ -2336,7 +2334,7 @@ public interface DataSet {
      * @param filter
      * @return
      */
-    DataSet filter(String columnName, int fromRowIndex, int toRowIndex, Predicate<?> filter);
+    <E extends Exception> DataSet filter(String columnName, int fromRowIndex, int toRowIndex, Try.Predicate<?, E> filter) throws E;
 
     /**
      * 
@@ -2347,7 +2345,7 @@ public interface DataSet {
      * @param max
      * @return
      */
-    DataSet filter(String columnName, int fromRowIndex, int toRowIndex, Predicate<?> filter, int max);
+    <E extends Exception> DataSet filter(String columnName, int fromRowIndex, int toRowIndex, Try.Predicate<?, E> filter, int max) throws E;
 
     //    /**
     //     *
@@ -2367,7 +2365,7 @@ public interface DataSet {
      * @param filter
      * @return
      */
-    DataSet filter(Collection<String> columnNames, Predicate<? super Object[]> filter);
+    <E extends Exception> DataSet filter(Collection<String> columnNames, Try.Predicate<? super Object[], E> filter) throws E;
 
     /**
      * 
@@ -2376,7 +2374,7 @@ public interface DataSet {
      * @param max
      * @return
      */
-    DataSet filter(Collection<String> columnNames, Predicate<? super Object[]> filter, int max);
+    <E extends Exception> DataSet filter(Collection<String> columnNames, Try.Predicate<? super Object[], E> filter, int max) throws E;
 
     /**
      *
@@ -2386,7 +2384,7 @@ public interface DataSet {
      * @param filter
      * @return
      */
-    DataSet filter(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Predicate<? super Object[]> filter);
+    <E extends Exception> DataSet filter(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Try.Predicate<? super Object[], E> filter) throws E;
 
     /**
      * 
@@ -2397,7 +2395,8 @@ public interface DataSet {
      * @param max
      * @return
      */
-    DataSet filter(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Predicate<? super Object[]> filter, int max);
+    <E extends Exception> DataSet filter(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Try.Predicate<? super Object[], E> filter, int max)
+            throws E;
 
     //    /**
     //     * Filter the result by the specified columns {@code columnNames} with the specified {@code filter}.
@@ -2409,7 +2408,7 @@ public interface DataSet {
     //     * @param count
     //     * @return
     //     */
-    //    DataSet filter(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Predicate<? super Object[]> filter, int offset, int count);
+    //    <E extends Exception> DataSet filter(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Try.Predicate<? super Object[], E> filter, int offset, int count);
 
     //    /**
     //     *
@@ -2417,7 +2416,7 @@ public interface DataSet {
     //     * @param filter
     //     * @return
     //     */
-    //    <T> List<T> filter(Class<T> rowClass, Predicate<? super Object[]> filter);
+    //    <T> List<T> filter(Class<T> rowClass, Try.Predicate<? super Object[], E> filter) throws E;
     //
     //    /**
     //     * 
@@ -2426,7 +2425,7 @@ public interface DataSet {
     //     * @param max
     //     * @return
     //     */
-    //    <T> List<T> filter(Class<T> rowClass, Predicate<? super Object[]> filter, int max);
+    //    <T> List<T> filter(Class<T> rowClass, Try.Predicate<? super Object[], E> filter, int max);
     //
     //    /**
     //     *
@@ -2436,7 +2435,7 @@ public interface DataSet {
     //     * @param filter
     //     * @return
     //     */
-    //    <T> List<T> filter(Class<T> rowClass, int fromRowIndex, int toRowIndex, Predicate<? super Object[]> filter);
+    //    <T> List<T> filter(Class<T> rowClass, int fromRowIndex, int toRowIndex, Try.Predicate<? super Object[], E> filter) throws E;
     //
     //    /**
     //     * 
@@ -2447,7 +2446,7 @@ public interface DataSet {
     //     * @param max
     //     * @return
     //     */
-    //    <T> List<T> filter(Class<T> rowClass, int fromRowIndex, int toRowIndex, Predicate<? super Object[]> filter, int max);
+    //    <T> List<T> filter(Class<T> rowClass, int fromRowIndex, int toRowIndex, Try.Predicate<? super Object[], E> filter, int max);
     //
     //    /**
     //     *
@@ -2456,7 +2455,7 @@ public interface DataSet {
     //     * @param filter
     //     * @return
     //     */
-    //    <T> List<T> filter(Class<T> rowClass, String columnName, Predicate<?> filter);
+    //    <T> List<T> filter(Class<T> rowClass, String columnName, Try.Predicate<?, E> filter) throws E;
     //
     //    /**
     //     * 
@@ -2466,7 +2465,7 @@ public interface DataSet {
     //     * @param max
     //     * @return
     //     */
-    //    <T> List<T> filter(Class<T> rowClass, String columnName, Predicate<?> filter, int max);
+    //    <T> List<T> filter(Class<T> rowClass, String columnName, Try.Predicate<?, E> filter, int max);
     //
     //    /**
     //     *
@@ -2477,7 +2476,7 @@ public interface DataSet {
     //     * @param filter
     //     * @return
     //     */
-    //    <T> List<T> filter(Class<T> rowClass, String columnName, int fromRowIndex, int toRowIndex, Predicate<?> filter);
+    //    <T> List<T> filter(Class<T> rowClass, String columnName, int fromRowIndex, int toRowIndex, Try.Predicate<?, E> filter) throws E;
     //
     //    /**
     //     * 
@@ -2489,7 +2488,7 @@ public interface DataSet {
     //     * @param max
     //     * @return
     //     */
-    //    <T> List<T> filter(Class<T> rowClass, String columnName, int fromRowIndex, int toRowIndex, Predicate<?> filter, int max);
+    //    <T> List<T> filter(Class<T> rowClass, String columnName, int fromRowIndex, int toRowIndex, Try.Predicate<?, E> filter, int max);
 
     //    /**
     //     * 
@@ -2511,7 +2510,7 @@ public interface DataSet {
     //     * @param filter
     //     * @return
     //     */
-    //    <T> List<T> filter(Class<T> rowClass, Collection<String> columnNames, Predicate<? super Object[]> filter);
+    //    <T> List<T> filter(Class<T> rowClass, Collection<String> columnNames, Try.Predicate<? super Object[], E> filter) throws E;
     //
     //    /**
     //     * 
@@ -2521,7 +2520,7 @@ public interface DataSet {
     //     * @param max
     //     * @return
     //     */
-    //    <T> List<T> filter(Class<T> rowClass, Collection<String> columnNames, Predicate<? super Object[]> filter, int max);
+    //    <T> List<T> filter(Class<T> rowClass, Collection<String> columnNames, Try.Predicate<? super Object[], E> filter, int max);
     //
     //    /**
     //     *
@@ -2532,7 +2531,7 @@ public interface DataSet {
     //     * @param filter
     //     * @return
     //     */
-    //    <T> List<T> filter(Class<T> rowClass, Collection<String> columnNames, int fromRowIndex, int toRowIndex, Predicate<? super Object[]> filter);
+    //    <T> List<T> filter(Class<T> rowClass, Collection<String> columnNames, int fromRowIndex, int toRowIndex, Try.Predicate<? super Object[], E> filter) throws E;
     //
     //    /**
     //     * 
@@ -2544,7 +2543,7 @@ public interface DataSet {
     //     * @param max
     //     * @return
     //     */
-    //    <T> List<T> filter(Class<T> rowClass, Collection<String> columnNames, int fromRowIndex, int toRowIndex, Predicate<? super Object[]> filter, int max);
+    //    <T> List<T> filter(Class<T> rowClass, Collection<String> columnNames, int fromRowIndex, int toRowIndex, Try.Predicate<? super Object[], E> filter, int max);
 
     //    /**
     //     * Filter the result by the specified columns {@code columnNames} with the specified {@code filter}.
@@ -2559,14 +2558,14 @@ public interface DataSet {
     //     * @param count
     //     * @return the a list of row
     //     */
-    //    <T> List<T> filter(Class<T> rowClass, Collection<String> columnNames, int fromRowIndex, int toRowIndex, Predicate<? super Object[]> filter, int offset, int count);
+    //    <T> List<T> filter(Class<T> rowClass, Collection<String> columnNames, int fromRowIndex, int toRowIndex, Try.Predicate<? super Object[], E> filter, int offset, int count);
 
     /**
      *
      * @param filter
      * @return
      */
-    int count(Predicate<? super Object[]> filter);
+    <E extends Exception> int count(Try.Predicate<? super Object[], E> filter) throws E;
 
     /**
      *
@@ -2575,7 +2574,7 @@ public interface DataSet {
      * @param filter
      * @return
      */
-    int count(int fromRowIndex, int toRowIndex, Predicate<? super Object[]> filter);
+    <E extends Exception> int count(int fromRowIndex, int toRowIndex, Try.Predicate<? super Object[], E> filter) throws E;
 
     /**
     *
@@ -2583,7 +2582,7 @@ public interface DataSet {
     * @param filter
     * @return
     */
-    int count(String columnName, Predicate<?> filter);
+    <E extends Exception> int count(String columnName, Try.Predicate<?, E> filter) throws E;
 
     /**
     * count the result by the specified columns {@code columnName} with the specified {@code filter}.
@@ -2594,7 +2593,7 @@ public interface DataSet {
     * @param filter
     * @return
     */
-    int count(String columnName, int fromRowIndex, int toRowIndex, Predicate<?> filter);
+    <E extends Exception> int count(String columnName, int fromRowIndex, int toRowIndex, Try.Predicate<?, E> filter) throws E;
 
     /**
      *
@@ -2602,7 +2601,7 @@ public interface DataSet {
      * @param filter
      * @return
      */
-    int count(Collection<String> columnNames, Predicate<? super Object[]> filter);
+    <E extends Exception> int count(Collection<String> columnNames, Try.Predicate<? super Object[], E> filter) throws E;
 
     /**
      * count the result by the specified columns {@code columnNames} with the specified {@code filter}.
@@ -2613,7 +2612,7 @@ public interface DataSet {
      * @param filter
      * @return
      */
-    int count(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Predicate<? super Object[]> filter);
+    <E extends Exception> int count(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Try.Predicate<? super Object[], E> filter) throws E;
 
     /**
      * @param columnName
@@ -2772,7 +2771,7 @@ public interface DataSet {
      * @param mapper
      * @return
      */
-    int sumInt(String columnName, ToIntFunction<?> mapper);
+    <E extends Exception> int sumInt(String columnName, Try.ToIntFunction<?, E> mapper) throws E;
 
     /**
      * 
@@ -2782,7 +2781,7 @@ public interface DataSet {
      * @param mapper
      * @return
      */
-    int sumInt(String columnName, int fromRowIndex, int toRowIndex, ToIntFunction<?> mapper);
+    <E extends Exception> int sumInt(String columnName, int fromRowIndex, int toRowIndex, Try.ToIntFunction<?, E> mapper) throws E;
 
     /**
      * @param columnName
@@ -2805,7 +2804,7 @@ public interface DataSet {
      * @param mapper
      * @return
      */
-    long sumLong(String columnName, ToLongFunction<?> mapper);
+    <E extends Exception> long sumLong(String columnName, Try.ToLongFunction<?, E> mapper) throws E;
 
     /**
      * 
@@ -2815,7 +2814,7 @@ public interface DataSet {
      * @param mapper
      * @return
      */
-    long sumLong(String columnName, int fromRowIndex, int toRowIndex, ToLongFunction<?> mapper);
+    <E extends Exception> long sumLong(String columnName, int fromRowIndex, int toRowIndex, Try.ToLongFunction<?, E> mapper) throws E;
 
     /**
      * @param columnName
@@ -2838,7 +2837,7 @@ public interface DataSet {
      * @param mapper
      * @return
      */
-    double sumDouble(String columnName, ToDoubleFunction<?> mapper);
+    <E extends Exception> double sumDouble(String columnName, Try.ToDoubleFunction<?, E> mapper) throws E;
 
     /**
      * 
@@ -2848,7 +2847,7 @@ public interface DataSet {
      * @param mapper
      * @return
      */
-    double sumDouble(String columnName, int fromRowIndex, int toRowIndex, ToDoubleFunction<?> mapper);
+    <E extends Exception> double sumDouble(String columnName, int fromRowIndex, int toRowIndex, Try.ToDoubleFunction<?, E> mapper) throws E;
 
     /**
      * @param columnName
@@ -2871,7 +2870,7 @@ public interface DataSet {
      * @param mapper
      * @return
      */
-    OptionalDouble averageInt(String columnName, ToIntFunction<?> mapper);
+    <E extends Exception> OptionalDouble averageInt(String columnName, Try.ToIntFunction<?, E> mapper) throws E;
 
     /**
      * 
@@ -2881,7 +2880,7 @@ public interface DataSet {
      * @param mapper
      * @return
      */
-    OptionalDouble averageInt(String columnName, int fromRowIndex, int toRowIndex, ToIntFunction<?> mapper);
+    <E extends Exception> OptionalDouble averageInt(String columnName, int fromRowIndex, int toRowIndex, Try.ToIntFunction<?, E> mapper) throws E;
 
     /**
      * @param columnName
@@ -2904,7 +2903,7 @@ public interface DataSet {
      * @param mapper
      * @return
      */
-    OptionalDouble averageLong(String columnName, ToLongFunction<?> mapper);
+    <E extends Exception> OptionalDouble averageLong(String columnName, Try.ToLongFunction<?, E> mapper) throws E;
 
     /**
      * 
@@ -2914,7 +2913,7 @@ public interface DataSet {
      * @param mapper
      * @return
      */
-    OptionalDouble averageLong(String columnName, int fromRowIndex, int toRowIndex, ToLongFunction<?> mapper);
+    <E extends Exception> OptionalDouble averageLong(String columnName, int fromRowIndex, int toRowIndex, Try.ToLongFunction<?, E> mapper) throws E;
 
     /**
      * @param columnName
@@ -2937,7 +2936,7 @@ public interface DataSet {
     //     * @param mapper
     //     * @return
     //     */
-    //    OptionalDouble average(String columnName, ToLongFunction<?> mapper);
+    //    OptionalDouble average(String columnName, Try.ToLongFunction<?> mapper) throws E;
     //
     //    /**
     //     * 
@@ -2947,7 +2946,7 @@ public interface DataSet {
     //     * @param mapper
     //     * @return
     //     */
-    //    OptionalDouble average(String columnName, int fromRowIndex, int toRowIndex, ToLongFunction<?> mapper);
+    //    OptionalDouble average(String columnName, int fromRowIndex, int toRowIndex, Try.ToLongFunction<?> mapper) throws E;
 
     /**
      *
@@ -2955,7 +2954,7 @@ public interface DataSet {
      * @param mapper
      * @return
      */
-    OptionalDouble averageDouble(String columnName, ToDoubleFunction<?> mapper);
+    <E extends Exception> OptionalDouble averageDouble(String columnName, Try.ToDoubleFunction<?, E> mapper) throws E;
 
     /**
      * 
@@ -2965,7 +2964,7 @@ public interface DataSet {
      * @param mapper
      * @return
      */
-    OptionalDouble averageDouble(String columnName, int fromRowIndex, int toRowIndex, ToDoubleFunction<?> mapper);
+    <E extends Exception> OptionalDouble averageDouble(String columnName, int fromRowIndex, int toRowIndex, Try.ToDoubleFunction<?, E> mapper) throws E;
 
     // TODO
     //    /**
@@ -3574,9 +3573,9 @@ public interface DataSet {
      */
     <T> Stream<T> stream(IntFunction<? extends T> rowSupplier, Collection<String> columnNames, int fromRowIndex, int toRowIndex);
 
-    <R> R apply(Function<? super DataSet, R> func);
+    <R, E extends Exception> R apply(Try.Function<? super DataSet, R, E> func) throws E;
 
-    void accept(Consumer<? super DataSet> action);
+    <E extends Exception> void accept(Try.Consumer<? super DataSet, E> action) throws E;
 
     /**
      * Method freeze

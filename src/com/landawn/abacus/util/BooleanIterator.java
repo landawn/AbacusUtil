@@ -16,8 +16,6 @@ package com.landawn.abacus.util;
 
 import java.util.NoSuchElementException;
 
-import com.landawn.abacus.util.function.BooleanConsumer;
-
 /**
  * 
  * @since 0.8
@@ -107,7 +105,7 @@ public abstract class BooleanIterator extends ImmutableIterator<Boolean> {
         return list;
     }
 
-    public void forEachRemaining(BooleanConsumer action) {
+    public <E extends Exception> void forEachRemaining(Try.BooleanConsumer<E> action) throws E {
         N.requireNonNull(action);
 
         while (hasNext()) {

@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.landawn.abacus.util;
 
 import java.io.ByteArrayInputStream;
@@ -2694,7 +2693,7 @@ public final class IOUtil {
     }
 
     public static void copy(final File srcFile, final File destDir, final boolean preserveFileDate) {
-        copy(srcFile, destDir, preserveFileDate, null);
+        copy(srcFile, destDir, preserveFileDate, Fn.BiPredicates.alwaysTrue());
     }
 
     /**
@@ -2705,7 +2704,8 @@ public final class IOUtil {
      * @param preserveFileDate
      * @param filter
      */
-    public static void copy(File srcFile, File destDir, final boolean preserveFileDate, final BiPredicate<? super File, ? super File> filter) {
+    public static <E extends Exception> void copy(File srcFile, File destDir, final boolean preserveFileDate,
+            final Try.BiPredicate<? super File, ? super File, E> filter) throws E {
         if (!srcFile.exists()) {
             throw new UncheckedIOException("The source file doesn't exist: " + srcFile.getAbsolutePath());
         }
@@ -2781,8 +2781,8 @@ public final class IOUtil {
      *             if an error occurs
      * @since 1.1
      */
-    private static void doCopyDirectory(final File srcDir, final File destDir, final boolean preserveFileDate,
-            final BiPredicate<? super File, ? super File> filter) throws IOException {
+    private static <E extends Exception> void doCopyDirectory(final File srcDir, final File destDir, final boolean preserveFileDate,
+            final Try.BiPredicate<? super File, ? super File, E> filter) throws IOException, E {
         if (destDir.exists()) {
             if (destDir.isFile()) {
                 throw new IOException("Destination '" + destDir + "' exists but is not a directory");
@@ -2808,7 +2808,7 @@ public final class IOUtil {
                 final File dest = new File(destDir, subFile.getName());
 
                 if (subFile.isDirectory()) {
-                    doCopyDirectory(subFile, dest, preserveFileDate, null);
+                    doCopyDirectory(subFile, dest, preserveFileDate, Fn.BiPredicates.alwaysTrue());
                 } else {
                     doCopyFile(subFile, dest, preserveFileDate);
                 }
@@ -3088,7 +3088,7 @@ public final class IOUtil {
      * @param filter
      * @return
      */
-    public static boolean deleteFiles(final File dir, BiPredicate<? super File, ? super File> filter) {
+    public static <E extends Exception> boolean deleteFiles(final File dir, Try.BiPredicate<? super File, ? super File, E> filter) throws E {
         if ((dir == null) || !dir.exists()) {
             return false;
         }
@@ -3538,7 +3538,8 @@ public final class IOUtil {
         return list(parentPath, recursively, excludeDirectory ? directories_excluded_filter : all_files_filter);
     }
 
-    public static List<String> list(File parentPath, final boolean recursively, final BiPredicate<? super File, ? super File> filter) {
+    public static <E extends Exception> List<String> list(File parentPath, final boolean recursively,
+            final Try.BiPredicate<? super File, ? super File, E> filter) throws E {
         List<String> files = new ArrayList<>();
 
         if (!parentPath.exists()) {
@@ -3574,7 +3575,8 @@ public final class IOUtil {
         return listFiles(parentPath, recursively, excludeDirectory ? directories_excluded_filter : all_files_filter);
     }
 
-    public static List<File> listFiles(final File parentPath, final boolean recursively, final BiPredicate<? super File, ? super File> filter) {
+    public static <E extends Exception> List<File> listFiles(final File parentPath, final boolean recursively,
+            final Try.BiPredicate<? super File, ? super File, E> filter) throws E {
         final List<File> files = new ArrayList<>();
 
         if (!parentPath.exists()) {

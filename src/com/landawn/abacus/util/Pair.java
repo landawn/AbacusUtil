@@ -22,13 +22,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.landawn.abacus.util.Tuple.Tuple2;
-import com.landawn.abacus.util.function.BiConsumer;
-import com.landawn.abacus.util.function.BiFunction;
-import com.landawn.abacus.util.function.BiPredicate;
-import com.landawn.abacus.util.function.Consumer;
-import com.landawn.abacus.util.function.Function;
-import com.landawn.abacus.util.function.Predicate;
-import com.landawn.abacus.util.function.TriPredicate;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -156,7 +149,7 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
      *        parameter is the <code>newLeft</code>
      * @return
      */
-    public boolean setLeftIf(final L newLeft, BiPredicate<? super Pair<L, R>, ? super L> predicate) {
+    public <E extends Exception> boolean setLeftIf(final L newLeft, Try.BiPredicate<? super Pair<L, R>, ? super L, E> predicate) throws E {
         if (predicate.test(this, newLeft)) {
             this.left = newLeft;
             return true;
@@ -175,7 +168,7 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
      *        parameter is the <code>newRight</code>
      * @return
      */
-    public boolean setRightIf(final R newRight, BiPredicate<? super Pair<L, R>, ? super R> predicate) {
+    public <E extends Exception> boolean setRightIf(final R newRight, Try.BiPredicate<? super Pair<L, R>, ? super R, E> predicate) throws E {
         if (predicate.test(this, newRight)) {
             this.right = newRight;
             return true;
@@ -195,7 +188,8 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
      *        parameter is the <code>newLeft</code>, the third parameter is the <code>newRight</code>.
      * @return
      */
-    public boolean setIf(final L newLeft, final R newRight, TriPredicate<? super Pair<L, R>, ? super L, ? super R> predicate) {
+    public <E extends Exception> boolean setIf(final L newLeft, final R newRight, Try.TriPredicate<? super Pair<L, R>, ? super L, ? super R, E> predicate)
+            throws E {
         if (predicate.test(this, newLeft, newRight)) {
             this.left = newLeft;
             this.right = newRight;
@@ -269,34 +263,34 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
         return a;
     }
 
-    public void forEach(Consumer<?> comsumer) {
-        final Consumer<Object> objComsumer = (Consumer<Object>) comsumer;
+    public <E extends Exception> void forEach(Try.Consumer<?, E> comsumer) throws E {
+        final Try.Consumer<Object, E> objComsumer = (Try.Consumer<Object, E>) comsumer;
 
         objComsumer.accept(left);
         objComsumer.accept(right);
     }
 
-    public void accept(final BiConsumer<? super L, ? super R> action) {
+    public <E extends Exception> void accept(final Try.BiConsumer<? super L, ? super R, E> action) throws E {
         action.accept(left, right);
     }
 
-    public void accept(final Consumer<Pair<L, R>> action) {
+    public <E extends Exception> void accept(final Try.Consumer<Pair<L, R>, E> action) throws E {
         action.accept(this);
     }
 
-    public <U> U map(final BiFunction<? super L, ? super R, U> mapper) {
+    public <U, E extends Exception> U map(final Try.BiFunction<? super L, ? super R, U, E> mapper) throws E {
         return mapper.apply(left, right);
     }
 
-    public <U> U map(final Function<Pair<L, R>, U> mapper) {
+    public <U, E extends Exception> U map(final Try.Function<Pair<L, R>, U, E> mapper) throws E {
         return mapper.apply(this);
     }
 
-    public Optional<Pair<L, R>> filter(final BiPredicate<? super L, ? super R> predicate) {
+    public <E extends Exception> Optional<Pair<L, R>> filter(final Try.BiPredicate<? super L, ? super R, E> predicate) throws E {
         return predicate.test(left, right) ? Optional.of(this) : Optional.<Pair<L, R>> empty();
     }
 
-    public Optional<Pair<L, R>> filter(final Predicate<Pair<L, R>> predicate) {
+    public <E extends Exception> Optional<Pair<L, R>> filter(final Try.Predicate<Pair<L, R>, E> predicate) throws E {
         return predicate.test(this) ? Optional.of(this) : Optional.<Pair<L, R>> empty();
     }
 

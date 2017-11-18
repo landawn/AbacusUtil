@@ -14,29 +14,31 @@
 
 package com.landawn.abacus.util.function;
 
+import com.landawn.abacus.util.Try;
+
 /**
  * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
  * @since 0.8
  * 
  * @author Haiyang Li
  */
-public interface BooleanSupplier extends java.util.function.BooleanSupplier {
+public interface BooleanSupplier extends java.util.function.BooleanSupplier, Try.BooleanSupplier<RuntimeException> {
 
-   static final BooleanSupplier TRUE = new BooleanSupplier() {
+    static final BooleanSupplier TRUE = new BooleanSupplier() {
         @Override
         public boolean getAsBoolean() {
             return true;
         }
     };
 
-   static final BooleanSupplier FALSE = new BooleanSupplier() {
+    static final BooleanSupplier FALSE = new BooleanSupplier() {
         @Override
         public boolean getAsBoolean() {
             return false;
         }
     };
 
-   static final BooleanSupplier RANDOM = new BooleanSupplier() {
+    static final BooleanSupplier RANDOM = new BooleanSupplier() {
         @Override
         public boolean getAsBoolean() {
             return Util.RAND.nextInt() / 2 == 0 ? false : true;

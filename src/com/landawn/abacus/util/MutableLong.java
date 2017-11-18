@@ -16,9 +16,6 @@
  */
 package com.landawn.abacus.util;
 
-import com.landawn.abacus.util.function.LongBiPredicate;
-import com.landawn.abacus.util.function.LongPredicate;
-
 /**
  * <p>
  * Note: it's copied from Apache Commons Lang developed at The Apache Software Foundation (http://www.apache.org/), or
@@ -110,7 +107,7 @@ public final class MutableLong extends Number implements Comparable<MutableLong>
      * @param predicate - test the current value.
      * @return
      */
-    public boolean setIf(long newValue, LongPredicate predicate) {
+    public <E extends Exception> boolean setIf(long newValue, Try.LongPredicate<E> predicate) throws E {
         if (predicate.test(this.value)) {
             this.value = newValue;
             return true;
@@ -127,7 +124,7 @@ public final class MutableLong extends Number implements Comparable<MutableLong>
      * @param predicate the first parameter is the current value, the second parameter is the new value.
      * @return
      */
-    public boolean setIf(long newValue, LongBiPredicate predicate) {
+    public <E extends Exception> boolean setIf(long newValue, Try.LongBiPredicate<E> predicate) throws E {
         if (predicate.test(this.value, newValue)) {
             this.value = newValue;
             return true;

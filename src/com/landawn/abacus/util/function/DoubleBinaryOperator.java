@@ -14,13 +14,15 @@
 
 package com.landawn.abacus.util.function;
 
+import com.landawn.abacus.util.Try;
+
 /**
  * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
  * @since 0.8
  * 
  * @author Haiyang Li
  */
-public interface DoubleBinaryOperator extends java.util.function.DoubleBinaryOperator {
+public interface DoubleBinaryOperator extends java.util.function.DoubleBinaryOperator, Try.DoubleBinaryOperator<RuntimeException> {
 
     @Override
     double applyAsDouble(double left, double right);

@@ -37,6 +37,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Function;
 
+import com.landawn.abacus.util.BiMap;
 import com.landawn.abacus.util.BooleanList;
 import com.landawn.abacus.util.ByteList;
 import com.landawn.abacus.util.CharList;
@@ -44,7 +45,11 @@ import com.landawn.abacus.util.DoubleList;
 import com.landawn.abacus.util.FloatList;
 import com.landawn.abacus.util.Fn.Factory;
 import com.landawn.abacus.util.IntList;
+import com.landawn.abacus.util.ListMultimap;
 import com.landawn.abacus.util.LongList;
+import com.landawn.abacus.util.LongMultiset;
+import com.landawn.abacus.util.Multiset;
+import com.landawn.abacus.util.SetMultimap;
 import com.landawn.abacus.util.ShortList;
 import com.landawn.abacus.util.Try;
 
@@ -225,5 +230,25 @@ public interface IntFunction<R> extends java.util.function.IntFunction<R>, Try.I
 
     public static <K, V> IntFunction<ConcurrentHashMap<K, V>> ofConcurrentHashMap() {
         return Factory.ofConcurrentHashMap();
+    }
+
+    public static <K, V> IntFunction<BiMap<K, V>> ofBiMap() {
+        return Factory.ofBiMap();
+    }
+
+    public static <T> IntFunction<Multiset<T>> ofMultiset() {
+        return Factory.ofMultiset();
+    }
+
+    public static <T> IntFunction<LongMultiset<T>> ofLongMultiset() {
+        return Factory.ofLongMultiset();
+    }
+
+    public static <K, E> IntFunction<ListMultimap<K, E>> ofListMultimap() {
+        return Factory.ofListMultimap();
+    }
+
+    public static <K, E> IntFunction<SetMultimap<K, E>> ofSetMultimap() {
+        return Factory.ofSetMultimap();
     }
 }

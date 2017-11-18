@@ -14,12 +14,6 @@
 
 package com.landawn.abacus.util;
 
-import com.landawn.abacus.util.function.BiPredicate;
-import com.landawn.abacus.util.function.Consumer;
-import com.landawn.abacus.util.function.Function;
-import com.landawn.abacus.util.function.Predicate;
-import com.landawn.abacus.util.function.Supplier;
-import com.landawn.abacus.util.function.UnaryOperator;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -64,13 +58,13 @@ abstract class Reference<T, R extends Reference<T, R>> {
         return this.value;
     }
 
-    public final T getAndUpdate(UnaryOperator<T> updateFunction) {
+    public final <E extends Exception> T getAndUpdate(Try.UnaryOperator<T, E> updateFunction) throws E {
         final T res = value;
         this.value = updateFunction.apply(value);
         return res;
     }
 
-    public final T updateAndGet(UnaryOperator<T> updateFunction) {
+    public final <E extends Exception> T updateAndGet(Try.UnaryOperator<T, E> updateFunction) throws E {
         this.value = updateFunction.apply(value);
         return value;
     }
@@ -83,7 +77,7 @@ abstract class Reference<T, R extends Reference<T, R>> {
      * @param predicate - test the current value.
      * @return
      */
-    public boolean setIf(final T newValue, final Predicate<? super T> predicate) {
+    public <E extends Exception> boolean setIf(final T newValue, final Try.Predicate<? super T, E> predicate) throws E {
         if (predicate.test(value)) {
             this.value = newValue;
             return true;
@@ -100,7 +94,7 @@ abstract class Reference<T, R extends Reference<T, R>> {
      * @param predicate the first parameter is the current value, the second parameter is the new value.
      * @return
      */
-    public boolean setIf(final T newValue, final BiPredicate<? super T, ? super T> predicate) {
+    public <E extends Exception> boolean setIf(final T newValue, final Try.BiPredicate<? super T, ? super T, E> predicate) throws E {
         if (predicate.test(value, newValue)) {
             this.value = newValue;
             return true;
@@ -113,17 +107,17 @@ abstract class Reference<T, R extends Reference<T, R>> {
         return value != null;
     }
 
-    public void accept(final Consumer<? super T> action) {
+    public <E extends Exception> void accept(final Try.Consumer<? super T, E> action) throws E {
         action.accept(value);
     }
 
-    public void acceptIfNotNull(final Consumer<? super T> action) {
+    public <E extends Exception> void acceptIfNotNull(final Try.Consumer<? super T, E> action) throws E {
         if (isNotNull()) {
             action.accept(value);
         }
     }
 
-    public <U> U map(final Function<? super T, U> mapper) {
+    public <U, E extends Exception> U map(final Try.Function<? super T, U, E> mapper) throws E {
         return mapper.apply(value);
     }
 
@@ -133,15 +127,15 @@ abstract class Reference<T, R extends Reference<T, R>> {
      * @param mapper
      * @return
      */
-    public <U> Nullable<U> mapIfNotNull(final Function<? super T, U> mapper) {
+    public <U, E extends Exception> Nullable<U> mapIfNotNull(final Try.Function<? super T, U, E> mapper) throws E {
         return isNotNull() ? Nullable.of(mapper.apply(value)) : Nullable.<U> empty();
     }
 
-    public Nullable<T> filter(final Predicate<? super T> predicate) {
+    public <E extends Exception> Nullable<T> filter(final Try.Predicate<? super T, E> predicate) throws E {
         return predicate.test(value) ? Nullable.of(value) : Nullable.<T> empty();
     }
 
-    public Nullable<T> filterIfNotNull(final Predicate<? super T> predicate) {
+    public <E extends Exception> Nullable<T> filterIfNotNull(final Try.Predicate<? super T, E> predicate) throws E {
         return isNotNull() && predicate.test(value) ? Nullable.of(value) : Nullable.<T> empty();
     }
 
@@ -174,7 +168,7 @@ abstract class Reference<T, R extends Reference<T, R>> {
      * @return the value if not present or null otherwise the result of {@code other.get()}
      * @throws NullPointerException if value is not present and {@code other} is null
      */
-    public T orGetIfNull(Supplier<? extends T> other) {
+    public <E extends Exception> T orGetIfNull(Try.Supplier<? extends T, E> other) throws E {
         return isNotNull() ? value : other.get();
     }
 
@@ -192,7 +186,7 @@ abstract class Reference<T, R extends Reference<T, R>> {
      * @throws NullPointerException if not present or null and
      * {@code exceptionSupplier} is null
      */
-    public <X extends Throwable> T orThrowIfNull(Supplier<? extends X> exceptionSupplier) throws X {
+    public <X extends Throwable, E extends Exception> T orThrowIfNull(Try.Supplier<? extends X, E> exceptionSupplier) throws X, E {
         if (isNotNull()) {
             return value;
         } else {

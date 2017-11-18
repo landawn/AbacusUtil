@@ -23,8 +23,6 @@ import java.util.Random;
 import java.util.RandomAccess;
 import java.util.Set;
 
-import com.landawn.abacus.util.function.Consumer;
-import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
 
 /**
@@ -33,15 +31,8 @@ import com.landawn.abacus.util.function.IntFunction;
  *
  * @author Haiyang Li
  */
-public abstract class PrimitiveList<C, P, E, A, L extends PrimitiveList<C, P, E, A, L>> implements RandomAccess, java.io.Serializable {
+public abstract class PrimitiveList<B, A, L extends PrimitiveList<B, A, L>> implements RandomAccess, java.io.Serializable {
     private static final long serialVersionUID = 1504784980113045443L;
-
-    static final IntFunction<Multiset<Object>> MULTISET_FACTORY = new IntFunction<Multiset<Object>>() {
-        @Override
-        public Multiset<Object> apply(int len) {
-            return new Multiset<>(N.initHashCapacity(len));
-        }
-    };
 
     /**
      * Default initial capacity.
@@ -83,8 +74,6 @@ public abstract class PrimitiveList<C, P, E, A, L extends PrimitiveList<C, P, E,
      */
     public abstract boolean removeAll(A a);
 
-    public abstract boolean removeIf(P p);
-
     public abstract void deleteAll(int... indices);
 
     // public abstract boolean containsAll(L l);
@@ -99,118 +88,7 @@ public abstract class PrimitiveList<C, P, E, A, L extends PrimitiveList<C, P, E,
 
     public abstract boolean disjoint(A a);
 
-    /**
-     * Returns whether all elements of this List match the provided predicate.
-     * 
-     * @param filter
-     * @return
-     */
-    public boolean allMatch(P filter) {
-        return allMatch(0, size(), filter);
-    }
-
-    /**
-     * 
-     * @param fromIndex
-     * @param toIndex
-     * @param filter
-     * @return
-     */
-    public abstract boolean allMatch(final int fromIndex, final int toIndex, P filter);
-
-    /**
-     * Returns whether any elements of this List match the provided predicate.
-     * 
-     * @param filter
-     * @return
-     */
-    public boolean anyMatch(P filter) {
-        return anyMatch(0, size(), filter);
-    }
-
-    /**
-     * 
-     * @param fromIndex
-     * @param toIndex
-     * @param filter
-     * @return
-     */
-    public abstract boolean anyMatch(final int fromIndex, final int toIndex, P filter);
-
-    /**
-     * Returns whether no elements of this List match the provided predicate.
-     * 
-     * @param filter
-     * @return
-     */
-    public boolean noneMatch(P filter) {
-        return noneMatch(0, size(), filter);
-    }
-
-    /**
-     * 
-     * @param fromIndex
-     * @param toIndex
-     * @param filter
-     * @return
-     */
-    public abstract boolean noneMatch(final int fromIndex, final int toIndex, P filter);
-
     public abstract boolean hasDuplicates();
-
-    /**
-     * 
-     * @param filter
-     * @return
-     */
-    public int count(P filter) {
-        return count(0, size(), filter);
-    }
-
-    /**
-     * 
-     * @param fromIndex
-     * @param toIndex
-     * @param filter
-     * @return
-     */
-    public abstract int count(final int fromIndex, final int toIndex, P filter);
-
-    /**
-     * 
-     * @param filter
-     * @return a new List with the elements match the provided predicate.
-     */
-    public L filter(P filter) {
-        return filter(0, size(), filter);
-    }
-
-    /**
-     * 
-     * @param filter
-     * @return a new List with the elements match the provided predicate.
-     */
-    public L filter(P filter, int max) {
-        return filter(0, size(), filter, max);
-    }
-
-    /**
-     * 
-     * @param fromIndex
-     * @param toIndex
-     * @param filter
-     * @return
-     */
-    public abstract L filter(final int fromIndex, final int toIndex, P filter);
-
-    /**
-     * 
-     * @param fromIndex
-     * @param toIndex
-     * @param filter
-     * @return
-     */
-    public abstract L filter(final int fromIndex, final int toIndex, P filter, int max);
 
     /**
      *
@@ -359,63 +237,63 @@ public abstract class PrimitiveList<C, P, E, A, L extends PrimitiveList<C, P, E,
 
     public abstract int size();
 
-    public List<E> toList() {
+    public List<B> toList() {
         return toList(0, size());
     }
 
-    public List<E> toList(final int fromIndex, final int toIndex) {
+    public List<B> toList(final int fromIndex, final int toIndex) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final IntFunction<List<E>> supplier = createListSupplier();
+        final IntFunction<List<B>> supplier = createListSupplier();
 
         return toList(fromIndex, toIndex, supplier);
     }
 
-    public <R extends List<E>> R toList(final IntFunction<R> supplier) {
+    public <R extends List<B>> R toList(final IntFunction<R> supplier) {
         return toList(0, size(), supplier);
     }
 
-    public abstract <R extends List<E>> R toList(final int fromIndex, final int toIndex, final IntFunction<R> supplier);
+    public abstract <R extends List<B>> R toList(final int fromIndex, final int toIndex, final IntFunction<R> supplier);
 
-    public Set<E> toSet() {
+    public Set<B> toSet() {
         return toSet(0, size());
     }
 
-    public Set<E> toSet(final int fromIndex, final int toIndex) {
+    public Set<B> toSet(final int fromIndex, final int toIndex) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final IntFunction<Set<E>> supplier = createSetSupplier();
+        final IntFunction<Set<B>> supplier = createSetSupplier();
 
         return toSet(fromIndex, toIndex, supplier);
     }
 
-    public <R extends Set<E>> R toSet(final IntFunction<R> supplier) {
+    public <R extends Set<B>> R toSet(final IntFunction<R> supplier) {
         return toSet(0, size(), supplier);
     }
 
-    public abstract <R extends Set<E>> R toSet(final int fromIndex, final int toIndex, final IntFunction<R> supplier);
+    public abstract <R extends Set<B>> R toSet(final int fromIndex, final int toIndex, final IntFunction<R> supplier);
 
-    public Multiset<E> toMultiset() {
+    public Multiset<B> toMultiset() {
         return toMultiset(0, size());
     }
 
-    public Multiset<E> toMultiset(final int fromIndex, final int toIndex) {
+    public Multiset<B> toMultiset(final int fromIndex, final int toIndex) {
         checkFromToIndex(fromIndex, toIndex);
 
-        final IntFunction<Multiset<E>> supplier = createMultisetSupplier();
+        final IntFunction<Multiset<B>> supplier = createMultisetSupplier();
 
         return toMultiset(fromIndex, toIndex, supplier);
     }
 
-    public Multiset<E> toMultiset(final IntFunction<Multiset<E>> supplier) {
+    public Multiset<B> toMultiset(final IntFunction<Multiset<B>> supplier) {
         return toMultiset(0, size(), supplier);
     }
 
-    public abstract Multiset<E> toMultiset(final int fromIndex, final int toIndex, final IntFunction<Multiset<E>> supplier);
+    public abstract Multiset<B> toMultiset(final int fromIndex, final int toIndex, final IntFunction<Multiset<B>> supplier);
 
-    public abstract <R> R apply(Function<? super L, R> func);
+    public abstract <R, E extends Exception> R apply(Try.Function<? super L, R, E> func) throws E;
 
-    public abstract void accept(Consumer<? super L> action);
+    public abstract <E extends Exception> void accept(Try.Consumer<? super L, E> action) throws E;
 
     public void println() {
         N.println(toString());
@@ -437,9 +315,8 @@ public abstract class PrimitiveList<C, P, E, A, L extends PrimitiveList<C, P, E,
         return Fn.Factory.ofMap();
     }
 
-    @SuppressWarnings("rawtypes")
     protected <T> IntFunction<Multiset<T>> createMultisetSupplier() {
-        return (IntFunction) MULTISET_FACTORY;
+        return Fn.Factory.ofMultiset();
     }
 
     protected boolean needToSet(int lenA, int lenB) {

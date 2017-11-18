@@ -21,14 +21,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.landawn.abacus.util.Tuple.Tuple3;
-import com.landawn.abacus.util.function.BiPredicate;
-import com.landawn.abacus.util.function.Consumer;
-import com.landawn.abacus.util.function.Function;
-import com.landawn.abacus.util.function.Predicate;
-import com.landawn.abacus.util.function.QuadPredicate;
-import com.landawn.abacus.util.function.TriConsumer;
-import com.landawn.abacus.util.function.TriFunction;
-import com.landawn.abacus.util.function.TriPredicate;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -194,7 +186,7 @@ public final class Triple<L, M, R> {
      *        parameter is the <code>newLeft</code>
      * @return
      */
-    public boolean setLeftIf(final L newLeft, BiPredicate<? super Triple<L, M, R>, ? super L> predicate) {
+    public <E extends Exception> boolean setLeftIf(final L newLeft, Try.BiPredicate<? super Triple<L, M, R>, ? super L, E> predicate) throws E {
         if (predicate.test(this, newLeft)) {
             this.left = newLeft;
             return true;
@@ -213,7 +205,7 @@ public final class Triple<L, M, R> {
      *        parameter is the <code>newMiddle</code>
      * @return
      */
-    public boolean setMiddleIf(final M newMiddle, BiPredicate<? super Triple<L, M, R>, ? super M> predicate) {
+    public <E extends Exception> boolean setMiddleIf(final M newMiddle, Try.BiPredicate<? super Triple<L, M, R>, ? super M, E> predicate) throws E {
         if (predicate.test(this, newMiddle)) {
             this.middle = newMiddle;
             return true;
@@ -232,7 +224,7 @@ public final class Triple<L, M, R> {
      *        parameter is the <code>newRight</code>
      * @return
      */
-    public boolean setRightIf(final R newRight, BiPredicate<? super Triple<L, M, R>, ? super R> predicate) {
+    public <E extends Exception> boolean setRightIf(final R newRight, Try.BiPredicate<? super Triple<L, M, R>, ? super R, E> predicate) throws E {
         if (predicate.test(this, newRight)) {
             this.right = newRight;
             return true;
@@ -256,8 +248,8 @@ public final class Triple<L, M, R> {
      *        <code>newRight</code>
      * @return
      */
-    public boolean setIf(final L newLeft, final M newMiddle, final R newRight,
-            QuadPredicate<? super Triple<L, M, R>, ? super L, ? super M, ? super R> predicate) {
+    public <E extends Exception> boolean setIf(final L newLeft, final M newMiddle, final R newRight,
+            Try.QuadPredicate<? super Triple<L, M, R>, ? super L, ? super M, ? super R, E> predicate) throws E {
         if (predicate.test(this, newLeft, newMiddle, newRight)) {
             this.left = newLeft;
             this.middle = newMiddle;
@@ -305,35 +297,35 @@ public final class Triple<L, M, R> {
         return a;
     }
 
-    public void forEach(Consumer<?> comsumer) {
-        final Consumer<Object> objComsumer = (Consumer<Object>) comsumer;
+    public <E extends Exception> void forEach(Try.Consumer<?, E> comsumer) throws E {
+        final Try.Consumer<Object, E> objComsumer = (Try.Consumer<Object, E>) comsumer;
 
         objComsumer.accept(left);
         objComsumer.accept(middle);
         objComsumer.accept(right);
     }
 
-    public void accept(final TriConsumer<? super L, ? super M, ? super R> action) {
+    public <E extends Exception> void accept(final Try.TriConsumer<? super L, ? super M, ? super R, E> action) throws E {
         action.accept(left, middle, right);
     }
 
-    public void accept(final Consumer<Triple<L, M, R>> action) {
+    public <E extends Exception> void accept(final Try.Consumer<Triple<L, M, R>, E> action) throws E {
         action.accept(this);
     }
 
-    public <U> U map(final TriFunction<? super L, ? super M, ? super R, U> mapper) {
+    public <U, E extends Exception> U map(final Try.TriFunction<? super L, ? super M, ? super R, U, E> mapper) throws E {
         return mapper.apply(left, middle, right);
     }
 
-    public <U> U map(final Function<Triple<L, M, R>, U> mapper) {
+    public <U, E extends Exception> U map(final Try.Function<Triple<L, M, R>, U, E> mapper) throws E {
         return mapper.apply(this);
     }
 
-    public Optional<Triple<L, M, R>> filter(final TriPredicate<? super L, ? super M, ? super R> predicate) {
+    public <E extends Exception> Optional<Triple<L, M, R>> filter(final Try.TriPredicate<? super L, ? super M, ? super R, E> predicate) throws E {
         return predicate.test(left, middle, right) ? Optional.of(this) : Optional.<Triple<L, M, R>> empty();
     }
 
-    public Optional<Triple<L, M, R>> filter(final Predicate<Triple<L, M, R>> predicate) {
+    public <E extends Exception> Optional<Triple<L, M, R>> filter(final Try.Predicate<Triple<L, M, R>, E> predicate) throws E {
         return predicate.test(this) ? Optional.of(this) : Optional.<Triple<L, M, R>> empty();
     }
 

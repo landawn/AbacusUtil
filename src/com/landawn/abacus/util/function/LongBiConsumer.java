@@ -16,14 +16,17 @@ package com.landawn.abacus.util.function;
 
 import java.util.Objects;
 
+import com.landawn.abacus.util.Try;
+
 /**
  * 
  * @since 0.8
  * 
  * @author Haiyang Li
  */
-public interface LongBiConsumer {
+public interface LongBiConsumer extends Try.LongBiConsumer<RuntimeException> {
 
+    @Override
     void accept(long t, long u);
 
     default LongBiConsumer andThen(LongBiConsumer after) {

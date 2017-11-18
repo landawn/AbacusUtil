@@ -40,11 +40,6 @@ import java.util.Set;
 
 import com.landawn.abacus.DirtyMarker;
 import com.landawn.abacus.exception.AbacusException;
-import com.landawn.abacus.util.function.BiConsumer;
-import com.landawn.abacus.util.function.BiFunction;
-import com.landawn.abacus.util.function.BiPredicate;
-import com.landawn.abacus.util.function.Function;
-import com.landawn.abacus.util.function.Predicate;
 
 /**
  * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
@@ -58,7 +53,7 @@ public final class Maps {
         // singleton.
     }
 
-    public static <K, T> Map<K, T> newMap(Collection<? extends T> c, final Function<? super T, ? extends K> keyExtractor) {
+    public static <K, T, E extends Exception> Map<K, T> newMap(Collection<? extends T> c, final Try.Function<? super T, ? extends K, E> keyExtractor) throws E {
         N.requireNonNull(keyExtractor);
 
         if (N.isNullOrEmpty(c)) {
@@ -74,7 +69,8 @@ public final class Maps {
         return result;
     }
 
-    public static <K, T> Map<K, T> newLinkedHashMap(Collection<? extends T> c, final Function<? super T, ? extends K> keyExtractor) {
+    public static <K, T, E extends Exception> Map<K, T> newLinkedHashMap(Collection<? extends T> c, final Try.Function<? super T, ? extends K, E> keyExtractor)
+            throws E {
         N.requireNonNull(keyExtractor);
 
         if (N.isNullOrEmpty(c)) {
@@ -623,7 +619,8 @@ public final class Maps {
      * removed during iteration
      * @since 1.8
      */
-    public static <K, V> void replaceAll(final Map<K, V> map, final BiFunction<? super K, ? super V, ? extends V> function) {
+    public static <K, V, E extends Exception> void replaceAll(final Map<K, V> map, final Try.BiFunction<? super K, ? super V, ? extends V, E> function)
+            throws E {
         N.requireNonNull(function);
 
         if (N.isNullOrEmpty(map)) {
@@ -713,7 +710,8 @@ public final class Maps {
      *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
      * @since 1.8
      */
-    public static <K, V> V computeIfAbsent(final Map<K, V> map, final K key, final Function<? super K, ? extends V> mappingFunction) {
+    public static <K, V, E extends Exception> V computeIfAbsent(final Map<K, V> map, final K key, final Try.Function<? super K, ? extends V, E> mappingFunction)
+            throws E {
         N.requireNonNull(mappingFunction);
         V v = null;
 
@@ -775,7 +773,8 @@ public final class Maps {
      *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
      * @since 1.8
      */
-    public static <K, V> V computeIfPresent(final Map<K, V> map, K key, final BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+    public static <K, V, E extends Exception> V computeIfPresent(final Map<K, V> map, K key,
+            final Try.BiFunction<? super K, ? super V, ? extends V, E> remappingFunction) throws E {
         N.requireNonNull(remappingFunction);
 
         V oldValue = null;
@@ -853,7 +852,8 @@ public final class Maps {
      *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
      * @since 1.8
      */
-    public static <K, V> V compute(final Map<K, V> map, K key, final BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+    public static <K, V, E extends Exception> V compute(final Map<K, V> map, K key,
+            final Try.BiFunction<? super K, ? super V, ? extends V, E> remappingFunction) throws E {
         N.requireNonNull(remappingFunction);
 
         V oldValue = map.get(key);
@@ -934,7 +934,8 @@ public final class Maps {
      *         null
      * @since 1.8
      */
-    public static <K, V> V merge(final Map<K, V> map, final K key, final V value, final BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
+    public static <K, V, E extends Exception> V merge(final Map<K, V> map, final K key, final V value,
+            final Try.BiFunction<? super V, ? super V, ? extends V, E> remappingFunction) throws E {
         N.requireNonNull(remappingFunction);
         N.requireNonNull(value);
 
@@ -975,7 +976,7 @@ public final class Maps {
      * removed during iteration
      * @since 1.8
      */
-    public static <K, V> void forEach(final Map<K, V> map, final BiConsumer<? super K, ? super V> action) {
+    public static <K, V, E extends Exception> void forEach(final Map<K, V> map, final Try.BiConsumer<? super K, ? super V, E> action) throws E {
         N.requireNonNull(action);
 
         if (N.isNullOrEmpty(map)) {
@@ -998,7 +999,7 @@ public final class Maps {
         }
     }
 
-    public static <K, V> Map<K, V> filterByKey(final Map<K, V> map, final Predicate<? super K> predicate) {
+    public static <K, V, E extends Exception> Map<K, V> filterByKey(final Map<K, V> map, final Try.Predicate<? super K, E> predicate) throws E {
         if (map == null) {
             return new HashMap<K, V>();
         }
@@ -1027,7 +1028,7 @@ public final class Maps {
         }
     }
 
-    public static <K, V> Map<K, V> filterByValue(final Map<K, V> map, final Predicate<? super V> predicate) {
+    public static <K, V, E extends Exception> Map<K, V> filterByValue(final Map<K, V> map, final Try.Predicate<? super V, E> predicate) throws E {
         if (map == null) {
             return new HashMap<K, V>();
         }
@@ -1043,7 +1044,7 @@ public final class Maps {
         return result;
     }
 
-    public static <K, V> Map<K, V> filter(final Map<K, V> map, final BiPredicate<? super K, ? super V> predicate) {
+    public static <K, V, E extends Exception> Map<K, V> filter(final Map<K, V> map, final Try.BiPredicate<? super K, ? super V, E> predicate) throws E {
         if (map == null) {
             return new HashMap<K, V>();
         }

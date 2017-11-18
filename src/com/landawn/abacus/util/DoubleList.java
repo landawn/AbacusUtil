@@ -27,14 +27,6 @@ import java.util.Set;
 
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
-import com.landawn.abacus.util.function.BinaryOperator;
-import com.landawn.abacus.util.function.Consumer;
-import com.landawn.abacus.util.function.DoubleBinaryOperator;
-import com.landawn.abacus.util.function.DoubleConsumer;
-import com.landawn.abacus.util.function.DoubleFunction;
-import com.landawn.abacus.util.function.DoublePredicate;
-import com.landawn.abacus.util.function.DoubleUnaryOperator;
-import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.Collector;
@@ -46,7 +38,7 @@ import com.landawn.abacus.util.stream.DoubleStream;
  * 
  * @author Haiyang Li
  */
-public final class DoubleList extends PrimitiveList<DoubleConsumer, DoublePredicate, Double, double[], DoubleList> {
+public final class DoubleList extends PrimitiveList<Double, double[], DoubleList> {
     private static final long serialVersionUID = 766157472430159621L;
 
     private double[] elementData = N.EMPTY_DOUBLE_ARRAY;
@@ -327,8 +319,7 @@ public final class DoubleList extends PrimitiveList<DoubleConsumer, DoublePredic
         return removeAll(of(a));
     }
 
-    @Override
-    public boolean removeIf(DoublePredicate p) {
+    public <E extends Exception> boolean removeIf(Try.DoublePredicate<E> p) throws E {
         final DoubleList tmp = new DoubleList(size());
 
         for (int i = 0; i < size; i++) {
@@ -436,13 +427,13 @@ public final class DoubleList extends PrimitiveList<DoubleConsumer, DoublePredic
         return result;
     }
 
-    public void replaceAll(DoubleUnaryOperator operator) {
+    public <E extends Exception> void replaceAll(Try.DoubleUnaryOperator<E> operator) throws E {
         for (int i = 0, len = size(); i < len; i++) {
             elementData[i] = operator.applyAsDouble(elementData[i]);
         }
     }
 
-    public boolean replaceIf(DoublePredicate predicate, double newValue) {
+    public <E extends Exception> boolean replaceIf(Try.DoublePredicate<E> predicate, double newValue) throws E {
         boolean result = false;
 
         for (int i = 0, len = size(); i < len; i++) {
@@ -804,7 +795,7 @@ public final class DoubleList extends PrimitiveList<DoubleConsumer, DoublePredic
         return size() == 0 ? OptionalDouble.empty() : OptionalDouble.of(elementData[size() - 1]);
     }
 
-    public OptionalDouble findFirst(DoublePredicate predicate) {
+    public <E extends Exception> OptionalDouble findFirst(Try.DoublePredicate<E> predicate) throws E {
         for (int i = 0; i < size; i++) {
             if (predicate.test(elementData[i])) {
                 return OptionalDouble.of(elementData[i]);
@@ -814,17 +805,7 @@ public final class DoubleList extends PrimitiveList<DoubleConsumer, DoublePredic
         return OptionalDouble.empty();
     }
 
-    //    public Optional<IndexedDouble> findFirst2(DoublePredicate predicate) {
-    //        for (int i = 0; i < size; i++) {
-    //            if (predicate.test(elementData[i])) {
-    //                return Optional.of(IndexedDouble.of(i, elementData[i]));
-    //            }
-    //        }
-    //
-    //        return Optional.empty();
-    //    }
-
-    public OptionalDouble findLast(DoublePredicate predicate) {
+    public <E extends Exception> OptionalDouble findLast(Try.DoublePredicate<E> predicate) throws E {
         for (int i = size - 1; i >= 0; i--) {
             if (predicate.test(elementData[i])) {
                 return OptionalDouble.of(elementData[i]);
@@ -834,17 +815,7 @@ public final class DoubleList extends PrimitiveList<DoubleConsumer, DoublePredic
         return OptionalDouble.empty();
     }
 
-    //    public Optional<IndexedDouble> findLast2(DoublePredicate predicate) {
-    //        for (int i = size - 1; i >= 0; i--) {
-    //            if (predicate.test(elementData[i])) {
-    //                return Optional.of(IndexedDouble.of(i, elementData[i]));
-    //            }
-    //        }
-    //
-    //        return Optional.empty();
-    //    }
-
-    public OptionalInt findFirstIndex(DoublePredicate predicate) {
+    public <E extends Exception> OptionalInt findFirstIndex(Try.DoublePredicate<E> predicate) throws E {
         for (int i = 0; i < size; i++) {
             if (predicate.test(elementData[i])) {
                 return OptionalInt.of(i);
@@ -854,7 +825,7 @@ public final class DoubleList extends PrimitiveList<DoubleConsumer, DoublePredic
         return OptionalInt.empty();
     }
 
-    public OptionalInt findLastIndex(DoublePredicate predicate) {
+    public <E extends Exception> OptionalInt findLastIndex(Try.DoublePredicate<E> predicate) throws E {
         for (int i = size - 1; i >= 0; i--) {
             if (predicate.test(elementData[i])) {
                 return OptionalInt.of(i);
@@ -864,8 +835,17 @@ public final class DoubleList extends PrimitiveList<DoubleConsumer, DoublePredic
         return OptionalInt.empty();
     }
 
-    @Override
-    public boolean allMatch(final int fromIndex, final int toIndex, DoublePredicate filter) {
+    /**
+     * Returns whether all elements of this List match the provided predicate.
+     * 
+     * @param filter
+     * @return
+     */
+    public <E extends Exception> boolean allMatch(Try.DoublePredicate<E> filter) throws E {
+        return allMatch(0, size(), filter);
+    }
+
+    public <E extends Exception> boolean allMatch(final int fromIndex, final int toIndex, Try.DoublePredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         if (size > 0) {
@@ -879,8 +859,17 @@ public final class DoubleList extends PrimitiveList<DoubleConsumer, DoublePredic
         return true;
     }
 
-    @Override
-    public boolean anyMatch(final int fromIndex, final int toIndex, DoublePredicate filter) {
+    /**
+     * Returns whether any elements of this List match the provided predicate.
+     * 
+     * @param filter
+     * @return
+     */
+    public <E extends Exception> boolean anyMatch(Try.DoublePredicate<E> filter) throws E {
+        return anyMatch(0, size(), filter);
+    }
+
+    public <E extends Exception> boolean anyMatch(final int fromIndex, final int toIndex, Try.DoublePredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         if (size > 0) {
@@ -894,8 +883,17 @@ public final class DoubleList extends PrimitiveList<DoubleConsumer, DoublePredic
         return false;
     }
 
-    @Override
-    public boolean noneMatch(final int fromIndex, final int toIndex, DoublePredicate filter) {
+    /**
+     * Returns whether no elements of this List match the provided predicate.
+     * 
+     * @param filter
+     * @return
+     */
+    public <E extends Exception> boolean noneMatch(Try.DoublePredicate<E> filter) throws E {
+        return noneMatch(0, size(), filter);
+    }
+
+    public <E extends Exception> boolean noneMatch(final int fromIndex, final int toIndex, Try.DoublePredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         if (size > 0) {
@@ -909,37 +907,56 @@ public final class DoubleList extends PrimitiveList<DoubleConsumer, DoublePredic
         return true;
     }
 
-    @Override
-    public boolean hasDuplicates() {
-        return N.hasDuplicates(elementData, 0, size, false);
+    /**
+     * 
+     * @param filter
+     * @return
+     */
+    public <E extends Exception> int count(Try.DoublePredicate<E> filter) throws E {
+        return count(0, size(), filter);
     }
 
-    @Override
-    public int count(final int fromIndex, final int toIndex, DoublePredicate filter) {
+    public <E extends Exception> int count(final int fromIndex, final int toIndex, Try.DoublePredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         return N.count(elementData, fromIndex, toIndex, filter);
     }
 
-    @Override
-    public DoubleList filter(final int fromIndex, final int toIndex, DoublePredicate filter) {
+    /**
+     * 
+     * @param filter
+     * @return a new List with the elements match the provided predicate.
+     */
+    public <E extends Exception> DoubleList filter(Try.DoublePredicate<E> filter) throws E {
+        return filter(0, size(), filter);
+    }
+
+    public <E extends Exception> DoubleList filter(final int fromIndex, final int toIndex, Try.DoublePredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         return N.filter(elementData, fromIndex, toIndex, filter);
     }
 
-    @Override
-    public DoubleList filter(final int fromIndex, final int toIndex, DoublePredicate filter, final int max) {
+    /**
+     * 
+     * @param filter
+     * @return a new List with the elements match the provided predicate.
+     */
+    public <E extends Exception> DoubleList filter(Try.DoublePredicate<E> filter, int max) throws E {
+        return filter(0, size(), filter, max);
+    }
+
+    public <E extends Exception> DoubleList filter(final int fromIndex, final int toIndex, Try.DoublePredicate<E> filter, final int max) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         return N.filter(elementData, fromIndex, toIndex, filter, max);
     }
 
-    public DoubleList map(final DoubleUnaryOperator mapper) {
+    public <E extends Exception> DoubleList map(final Try.DoubleUnaryOperator<E> mapper) throws E {
         return map(0, size, mapper);
     }
 
-    public DoubleList map(final int fromIndex, final int toIndex, final DoubleUnaryOperator mapper) {
+    public <E extends Exception> DoubleList map(final int fromIndex, final int toIndex, final Try.DoubleUnaryOperator<E> mapper) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         final DoubleList result = new DoubleList(toIndex - fromIndex);
@@ -951,11 +968,11 @@ public final class DoubleList extends PrimitiveList<DoubleConsumer, DoublePredic
         return result;
     }
 
-    public <T> List<T> mapToObj(final DoubleFunction<? extends T> mapper) {
+    public <T, E extends Exception> List<T> mapToObj(final Try.DoubleFunction<? extends T, E> mapper) throws E {
         return mapToObj(0, size, mapper);
     }
 
-    public <T> List<T> mapToObj(final int fromIndex, final int toIndex, final DoubleFunction<? extends T> mapper) {
+    public <T, E extends Exception> List<T> mapToObj(final int fromIndex, final int toIndex, final Try.DoubleFunction<? extends T, E> mapper) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         final List<T> result = new ArrayList<>(toIndex - fromIndex);
@@ -988,7 +1005,7 @@ public final class DoubleList extends PrimitiveList<DoubleConsumer, DoublePredic
      * @param accumulator
      * @return
      */
-    public OptionalDouble reduce(final DoubleBinaryOperator accumulator) {
+    public <E extends Exception> OptionalDouble reduce(final Try.DoubleBinaryOperator<E> accumulator) throws E {
         if (isEmpty()) {
             return OptionalDouble.empty();
         }
@@ -1024,7 +1041,7 @@ public final class DoubleList extends PrimitiveList<DoubleConsumer, DoublePredic
      * @param accumulator
      * @return
      */
-    public double reduce(final double identity, final DoubleBinaryOperator accumulator) {
+    public <E extends Exception> double reduce(final double identity, final Try.DoubleBinaryOperator<E> accumulator) throws E {
         if (isEmpty()) {
             return identity;
         }
@@ -1036,6 +1053,11 @@ public final class DoubleList extends PrimitiveList<DoubleConsumer, DoublePredic
         }
 
         return result;
+    }
+
+    @Override
+    public boolean hasDuplicates() {
+        return N.hasDuplicates(elementData, 0, size, false);
     }
 
     @Override
@@ -1324,26 +1346,29 @@ public final class DoubleList extends PrimitiveList<DoubleConsumer, DoublePredic
         return multiset;
     }
 
-    public <K, U> Map<K, U> toMap(DoubleFunction<? extends K> keyExtractor, DoubleFunction<? extends U> valueMapper) {
-        final Supplier<Map<K, U>> mapFactory = Fn.Suppliers.ofMap();
+    public <K, V, E extends Exception, E2 extends Exception> Map<K, V> toMap(Try.DoubleFunction<? extends K, E> keyExtractor,
+            Try.DoubleFunction<? extends V, E2> valueMapper) throws E, E2 {
+        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(keyExtractor, valueMapper, mapFactory);
     }
 
-    public <K, U, M extends Map<K, U>> M toMap(DoubleFunction<? extends K> keyExtractor, DoubleFunction<? extends U> valueMapper, Supplier<M> mapFactory) {
-        final BinaryOperator<U> mergeFunction = Fn.throwingMerger();
+    public <K, V, M extends Map<K, V>, E extends Exception, E2 extends Exception> M toMap(Try.DoubleFunction<? extends K, E> keyExtractor,
+            Try.DoubleFunction<? extends V, E2> valueMapper, Supplier<M> mapFactory) throws E, E2 {
+        final Try.BinaryOperator<V, RuntimeException> mergeFunction = Fn.throwingMerger();
 
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
-    public <K, U> Map<K, U> toMap(DoubleFunction<? extends K> keyExtractor, DoubleFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
-        final Supplier<Map<K, U>> mapFactory = Fn.Suppliers.ofMap();
+    public <K, V, E extends Exception, E2 extends Exception, E3 extends Exception> Map<K, V> toMap(Try.DoubleFunction<? extends K, E> keyExtractor,
+            Try.DoubleFunction<? extends V, E2> valueMapper, Try.BinaryOperator<V, E3> mergeFunction) throws E, E2, E3 {
+        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
-    public <K, U, M extends Map<K, U>> M toMap(DoubleFunction<? extends K> keyExtractor, DoubleFunction<? extends U> valueMapper,
-            BinaryOperator<U> mergeFunction, Supplier<M> mapFactory) {
+    public <K, V, M extends Map<K, V>, E extends Exception, E2 extends Exception, E3 extends Exception> M toMap(Try.DoubleFunction<? extends K, E> keyExtractor,
+            Try.DoubleFunction<? extends V, E2> valueMapper, Try.BinaryOperator<V, E3> mergeFunction, Supplier<M> mapFactory) throws E, E2, E3 {
         final M result = mapFactory.get();
 
         for (int i = 0; i < size; i++) {
@@ -1354,15 +1379,15 @@ public final class DoubleList extends PrimitiveList<DoubleConsumer, DoublePredic
     }
 
     @SuppressWarnings("hiding")
-    public <K, A, D> Map<K, D> toMap(DoubleFunction<? extends K> classifier, Collector<Double, A, D> downstream) {
+    public <K, A, D, E extends Exception> Map<K, D> toMap(Try.DoubleFunction<? extends K, E> classifier, Collector<Double, A, D> downstream) throws E {
         final Supplier<Map<K, D>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(classifier, downstream, mapFactory);
     }
 
     @SuppressWarnings("hiding")
-    public <K, A, D, M extends Map<K, D>> M toMap(final DoubleFunction<? extends K> classifier, final Collector<Double, A, D> downstream,
-            final Supplier<M> mapFactory) {
+    public <K, A, D, M extends Map<K, D>, E extends Exception> M toMap(final Try.DoubleFunction<? extends K, E> classifier,
+            final Collector<Double, A, D> downstream, final Supplier<M> mapFactory) throws E {
         final M result = mapFactory.get();
         final Supplier<A> downstreamSupplier = downstream.supplier();
         final BiConsumer<A, Double> downstreamAccumulator = downstream.accumulator();
@@ -1413,12 +1438,12 @@ public final class DoubleList extends PrimitiveList<DoubleConsumer, DoublePredic
     }
 
     @Override
-    public <R> R apply(Function<? super DoubleList, R> func) {
+    public <R, E extends Exception> R apply(Try.Function<? super DoubleList, R, E> func) throws E {
         return func.apply(this);
     }
 
     @Override
-    public void accept(Consumer<? super DoubleList> action) {
+    public <E extends Exception> void accept(Try.Consumer<? super DoubleList, E> action) throws E {
         action.accept(this);
     }
 

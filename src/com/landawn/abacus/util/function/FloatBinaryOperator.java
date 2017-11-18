@@ -14,13 +14,16 @@
 
 package com.landawn.abacus.util.function;
 
+import com.landawn.abacus.util.Try;
+
 /**
  * 
  * @since 0.8
  * 
  * @author Haiyang Li
  */
-public interface FloatBinaryOperator {
+public interface FloatBinaryOperator extends Try.FloatBinaryOperator<RuntimeException> {
 
+    @Override
     float applyAsFloat(float left, float right);
 }

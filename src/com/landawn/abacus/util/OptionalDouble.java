@@ -26,9 +26,6 @@ package com.landawn.abacus.util;
 
 import java.util.NoSuchElementException;
 
-import com.landawn.abacus.util.function.DoubleConsumer;
-import com.landawn.abacus.util.function.DoubleSupplier;
-import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.DoubleStream;
 
 /**
@@ -144,7 +141,7 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
      * @throws NullPointerException if value is present and {@code consumer} is
      * null
      */
-    public void ifPresent(DoubleConsumer consumer) {
+    public <E extends Exception> void ifPresent(Try.DoubleConsumer<E> consumer) throws E {
         if (isPresent()) {
             consumer.accept(value);
         }
@@ -156,7 +153,7 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
      * @param action
      * @param emptyAction
      */
-    public void ifPresentOrElse(DoubleConsumer action, Runnable emptyAction) {
+    public <E extends Exception, E2 extends Exception> void ifPresentOrElse(Try.DoubleConsumer<E> action, Try.Runnable<E2> emptyAction) throws E, E2 {
         if (isPresent()) {
             action.accept(value);
         } else {
@@ -184,7 +181,7 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
      * @throws NullPointerException if value is not present and {@code other} is
      * null
      */
-    public double orElseGet(DoubleSupplier other) {
+    public <E extends Exception> double orElseGet(Try.DoubleSupplier<E> other) throws E {
         return isPresent() ? value : other.getAsDouble();
     }
 
@@ -204,7 +201,7 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
      * @throws NullPointerException if no value is present and
      * {@code exceptionSupplier} is null
      */
-    public <X extends Throwable> double orElseThrow(Supplier<X> exceptionSupplier) throws X {
+    public <X extends Throwable, E extends Exception> double orElseThrow(Try.Supplier<X, E> exceptionSupplier) throws X, E {
         if (isPresent()) {
             return value;
         } else {

@@ -15,7 +15,8 @@
 package com.landawn.abacus.util.function;
 
 import java.util.Objects;
-import java.util.function.Function;
+
+import com.landawn.abacus.util.Try;
 
 /**
  * 
@@ -23,8 +24,9 @@ import java.util.function.Function;
  * 
  * @author Haiyang Li
  */
-public interface ByteBiFunction<R> {
+public interface ByteBiFunction<R> extends Try.ByteBiFunction<R, RuntimeException> {
 
+    @Override
     R apply(byte t, byte u);
 
     default <V> ByteBiFunction<V> andThen(Function<? super R, ? extends V> after) {

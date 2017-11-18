@@ -19,9 +19,6 @@ package com.landawn.abacus.util;
 
 import java.io.Serializable;
 
-import com.landawn.abacus.util.function.BooleanBiPredicate;
-import com.landawn.abacus.util.function.BooleanPredicate;
-
 /**
  * <p>
  * Note: it's copied from Apache Commons Lang developed at The Apache Software Foundation (http://www.apache.org/), or
@@ -113,7 +110,7 @@ public final class MutableBoolean implements Mutable, Serializable, Comparable<M
      * @param predicate - test the current value.
      * @return
      */
-    public boolean setIf(boolean newValue, BooleanPredicate predicate) {
+    public <E extends Exception> boolean setIf(boolean newValue, Try.BooleanPredicate<E> predicate) throws E {
         if (predicate.test(this.value)) {
             this.value = newValue;
             return true;
@@ -130,7 +127,7 @@ public final class MutableBoolean implements Mutable, Serializable, Comparable<M
      * @param predicate the first parameter is the current value, the second parameter is the new value.
      * @return
      */
-    public boolean setIf(boolean newValue, BooleanBiPredicate predicate) {
+    public <E extends Exception> boolean setIf(boolean newValue, Try.BooleanBiPredicate<E> predicate) throws E {
         if (predicate.test(this.value, newValue)) {
             this.value = newValue;
             return true;

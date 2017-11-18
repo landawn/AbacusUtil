@@ -26,9 +26,6 @@ package com.landawn.abacus.util;
 
 import java.util.NoSuchElementException;
 
-import com.landawn.abacus.util.function.CharConsumer;
-import com.landawn.abacus.util.function.CharSupplier;
-import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.CharStream;
 
 /**
@@ -144,7 +141,7 @@ public final class OptionalChar implements Comparable<OptionalChar> {
      * @throws NullPocharerException if value is present and {@code consumer} is
      * null
      */
-    public void ifPresent(CharConsumer action) {
+    public <E extends Exception> void ifPresent(Try.CharConsumer<E> action) throws E {
         if (isPresent()) {
             action.accept(value);
         }
@@ -156,7 +153,7 @@ public final class OptionalChar implements Comparable<OptionalChar> {
      * @param action
      * @param emptyAction
      */
-    public void ifPresentOrElse(CharConsumer action, Runnable emptyAction) {
+    public <E extends Exception, E2 extends Exception> void ifPresentOrElse(Try.CharConsumer<E> action, Try.Runnable<E2> emptyAction) throws E, E2 {
         if (isPresent()) {
             action.accept(value);
         } else {
@@ -184,7 +181,7 @@ public final class OptionalChar implements Comparable<OptionalChar> {
      * @throws NullPocharerException if value is not present and {@code other} is
      * null
      */
-    public char orElseGet(CharSupplier other) {
+    public <E extends Exception> char orElseGet(Try.CharSupplier<E> other) throws E {
         return isPresent() ? value : other.getAsChar();
     }
 
@@ -204,7 +201,7 @@ public final class OptionalChar implements Comparable<OptionalChar> {
      * @throws NullPocharerException if no value is present and
      * {@code exceptionSupplier} is null
      */
-    public <X extends Throwable> char orElseThrow(Supplier<X> exceptionSupplier) throws X {
+    public <X extends Throwable, E extends Exception> char orElseThrow(Try.Supplier<X, E> exceptionSupplier) throws X, E {
         if (isPresent()) {
             return value;
         } else {

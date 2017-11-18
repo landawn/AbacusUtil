@@ -108,7 +108,6 @@ import com.landawn.abacus.util.Tuple.Tuple6;
 import com.landawn.abacus.util.Tuple.Tuple7;
 import com.landawn.abacus.util.Tuple.Tuple8;
 import com.landawn.abacus.util.Tuple.Tuple9;
-import com.landawn.abacus.util.function.Predicate;
 
 /**
  * 
@@ -920,8 +919,8 @@ public final class ClassUtil {
         return getClassesByPackage(pkgName, isRecursive, skipClassLoaddingException, Fn.alwaysTrue());
     }
 
-    public static List<Class<?>> getClassesByPackage(String pkgName, boolean isRecursive, boolean skipClassLoaddingException,
-            Predicate<? super Class<?>> predicate) {
+    public static <E extends Exception> List<Class<?>> getClassesByPackage(String pkgName, boolean isRecursive, boolean skipClassLoaddingException,
+            Try.Predicate<? super Class<?>, E> predicate) throws E {
         if (logger.isInfoEnabled()) {
             logger.info("Looking for classes in package: " + pkgName);
         }

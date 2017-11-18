@@ -16,13 +16,15 @@ package com.landawn.abacus.util.function;
 
 import java.util.Objects;
 
+import com.landawn.abacus.util.Try;
+
 /**
  * 
  * @since 0.8
  * 
  * @author Haiyang Li
  */
-public interface CharBiPredicate {
+public interface CharBiPredicate extends Try.CharBiPredicate<RuntimeException> {
 
     static final CharBiPredicate ALWAYS_TRUE = new CharBiPredicate() {
         @Override
@@ -80,6 +82,7 @@ public interface CharBiPredicate {
         }
     };
 
+    @Override
     boolean test(char t, char u);
 
     default CharBiPredicate negate() {

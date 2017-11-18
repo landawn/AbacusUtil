@@ -14,27 +14,30 @@
 
 package com.landawn.abacus.util.function;
 
+import com.landawn.abacus.util.Try;
+
 /**
  * 
  * @since 0.8
  * 
  * @author Haiyang Li
  */
-public interface ByteSupplier {
+public interface ByteSupplier extends Try.ByteSupplier<RuntimeException> {
 
-   static final ByteSupplier ZERO = new ByteSupplier() {
+    static final ByteSupplier ZERO = new ByteSupplier() {
         @Override
         public byte getAsByte() {
             return 0;
         }
     };
 
-   static final ByteSupplier RANDOM = new ByteSupplier() {
+    static final ByteSupplier RANDOM = new ByteSupplier() {
         @Override
         public byte getAsByte() {
             return (byte) Util.RAND.nextInt();
         }
     };
 
+    @Override
     byte getAsByte();
 }

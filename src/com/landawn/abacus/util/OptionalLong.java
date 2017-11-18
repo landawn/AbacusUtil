@@ -26,9 +26,6 @@ package com.landawn.abacus.util;
 
 import java.util.NoSuchElementException;
 
-import com.landawn.abacus.util.function.LongConsumer;
-import com.landawn.abacus.util.function.LongSupplier;
-import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.LongStream;
 
 /**
@@ -144,7 +141,7 @@ public final class OptionalLong implements Comparable<OptionalLong> {
      * @throws NullPointerException if value is present and {@code consumer} is
      * null
      */
-    public void ifPresent(LongConsumer action) {
+    public <E extends Exception> void ifPresent(Try.LongConsumer<E> action) throws E {
         if (isPresent()) {
             action.accept(value);
         }
@@ -156,7 +153,7 @@ public final class OptionalLong implements Comparable<OptionalLong> {
      * @param action
      * @param emptyAction
      */
-    public void ifPresentOrElse(LongConsumer action, Runnable emptyAction) {
+    public <E extends Exception, E2 extends Exception> void ifPresentOrElse(Try.LongConsumer<E> action, Try.Runnable<E2> emptyAction) throws E, E2 {
         if (isPresent()) {
             action.accept(value);
         } else {
@@ -184,7 +181,7 @@ public final class OptionalLong implements Comparable<OptionalLong> {
      * @throws NullPointerException if value is not present and {@code other} is
      * null
      */
-    public long orElseGet(LongSupplier other) {
+    public <E extends Exception> long orElseGet(Try.LongSupplier<E> other) throws E {
         return isPresent() ? value : other.getAsLong();
     }
 
@@ -204,7 +201,7 @@ public final class OptionalLong implements Comparable<OptionalLong> {
      * @throws NullPointerException if no value is present and
      * {@code exceptionSupplier} is null
      */
-    public <X extends Throwable> long orElseThrow(Supplier<X> exceptionSupplier) throws X {
+    public <X extends Throwable, E extends Exception> long orElseThrow(Try.Supplier<X, E> exceptionSupplier) throws X, E {
         if (isPresent()) {
             return value;
         } else {

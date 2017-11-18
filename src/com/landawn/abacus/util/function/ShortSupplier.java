@@ -14,27 +14,30 @@
 
 package com.landawn.abacus.util.function;
 
+import com.landawn.abacus.util.Try;
+
 /**
  * 
  * @since 0.8
  * 
  * @author Haiyang Li
  */
-public interface ShortSupplier {
+public interface ShortSupplier extends Try.ShortSupplier<RuntimeException> {
 
-   static final ShortSupplier ZERO = new ShortSupplier() {
+    static final ShortSupplier ZERO = new ShortSupplier() {
         @Override
         public short getAsShort() {
             return 0;
         }
     };
 
-   static final ShortSupplier RANDOM = new ShortSupplier() {
+    static final ShortSupplier RANDOM = new ShortSupplier() {
         @Override
         public short getAsShort() {
             return (short) Util.RAND.nextInt();
         }
     };
 
+    @Override
     short getAsShort();
 }

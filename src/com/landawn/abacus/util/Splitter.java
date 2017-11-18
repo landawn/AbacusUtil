@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.landawn.abacus.type.Type;
-import com.landawn.abacus.util.function.Function;
 
 /**
  * 
@@ -163,7 +162,7 @@ public final class Splitter {
     //        return this.split(supplier.get(), typeName, source);
     //    }
 
-    public <T> T split(CharSequence source, Function<? super String[], T> converter) {
+    public <T, E extends Exception> T split(CharSequence source, Try.Function<? super String[], T, E> converter) throws E {
         return converter.apply(this.splitToArray(source));
     }
 
@@ -471,7 +470,7 @@ public final class Splitter {
         //            return this.split(supplier.get(), keyTypeName, valueTypeName, source);
         //        }
 
-        public <T> T split(CharSequence source, Function<? super Map<String, String>, T> converter) {
+        public <T, E extends Exception> T split(CharSequence source, Try.Function<? super Map<String, String>, T, E> converter) throws E {
             return converter.apply(this.split(source));
         }
     }

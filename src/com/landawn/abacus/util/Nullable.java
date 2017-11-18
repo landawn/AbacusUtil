@@ -24,9 +24,6 @@
  */
 package com.landawn.abacus.util;
 
-import com.landawn.abacus.util.function.Function;
-import com.landawn.abacus.util.function.Predicate;
-
 /**
  * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
  * <br />
@@ -110,7 +107,7 @@ public final class Nullable<T> extends Any<T> {
      * @throws NullPointerException if the predicate is null
      */
     @Override
-    public Nullable<T> filter(Predicate<? super T> predicate) {
+    public <E extends Exception> Nullable<T> filter(Try.Predicate<? super T, E> predicate) throws E {
         N.requireNonNull(predicate);
 
         if (isPresent() && predicate.test(value)) {
@@ -148,7 +145,7 @@ public final class Nullable<T> extends Any<T> {
      * @throws NullPointerException if the mapping function is null
      */
     @Override
-    public <U> Nullable<U> map(Function<? super T, ? extends U> mapper) {
+    public <U, E extends Exception> Nullable<U> map(Try.Function<? super T, ? extends U, E> mapper) throws E {
         N.requireNonNull(mapper);
 
         if (isPresent()) {
@@ -176,7 +173,7 @@ public final class Nullable<T> extends Any<T> {
      * a null result
      */
     @Override
-    public <U> Nullable<U> flatMap(Function<? super T, ? extends Any<U>> mapper) {
+    public <U, E extends Exception> Nullable<U> flatMap(Try.Function<? super T, ? extends Any<U>, E> mapper) throws E {
         N.requireNonNull(mapper);
 
         if (isPresent()) {
@@ -199,7 +196,7 @@ public final class Nullable<T> extends Any<T> {
      * @throws NullPointerException if the predicate is null
      */
     @Override
-    public Nullable<T> filterIfNotNull(Predicate<? super T> predicate) {
+    public <E extends Exception> Nullable<T> filterIfNotNull(Try.Predicate<? super T, E> predicate) throws E {
         N.requireNonNull(predicate);
 
         if (isNotNull() && predicate.test(value)) {
@@ -237,7 +234,7 @@ public final class Nullable<T> extends Any<T> {
      * @throws NullPointerException if the mapping function is null
      */
     @Override
-    public <U> Nullable<U> mapIfNotNull(Function<? super T, ? extends U> mapper) {
+    public <U, E extends Exception> Nullable<U> mapIfNotNull(Try.Function<? super T, ? extends U, E> mapper) throws E {
         N.requireNonNull(mapper);
 
         if (isNotNull()) {
@@ -265,7 +262,7 @@ public final class Nullable<T> extends Any<T> {
      * a null result
      */
     @Override
-    public <U> Nullable<U> flatMapIfNotNull(Function<? super T, ? extends Any<U>> mapper) {
+    public <U, E extends Exception> Nullable<U> flatMapIfNotNull(Try.Function<? super T, ? extends Any<U>, E> mapper) throws E {
         N.requireNonNull(mapper);
 
         if (isNotNull()) {

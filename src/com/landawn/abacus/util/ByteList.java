@@ -26,14 +26,6 @@ import java.util.Set;
 
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
-import com.landawn.abacus.util.function.BinaryOperator;
-import com.landawn.abacus.util.function.ByteBinaryOperator;
-import com.landawn.abacus.util.function.ByteConsumer;
-import com.landawn.abacus.util.function.ByteFunction;
-import com.landawn.abacus.util.function.BytePredicate;
-import com.landawn.abacus.util.function.ByteUnaryOperator;
-import com.landawn.abacus.util.function.Consumer;
-import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.ByteStream;
@@ -45,7 +37,7 @@ import com.landawn.abacus.util.stream.Collector;
  * 
  * @author Haiyang Li
  */
-public final class ByteList extends PrimitiveList<ByteConsumer, BytePredicate, Byte, byte[], ByteList> {
+public final class ByteList extends PrimitiveList<Byte, byte[], ByteList> {
     private static final long serialVersionUID = 6361439693114081075L;
 
     private byte[] elementData = N.EMPTY_BYTE_ARRAY;
@@ -345,8 +337,7 @@ public final class ByteList extends PrimitiveList<ByteConsumer, BytePredicate, B
         return removeAll(of(a));
     }
 
-    @Override
-    public boolean removeIf(BytePredicate p) {
+    public <E extends Exception> boolean removeIf(Try.BytePredicate<E> p) throws E {
         final ByteList tmp = new ByteList(size());
 
         for (int i = 0; i < size; i++) {
@@ -454,13 +445,13 @@ public final class ByteList extends PrimitiveList<ByteConsumer, BytePredicate, B
         return result;
     }
 
-    public void replaceAll(ByteUnaryOperator operator) {
+    public <E extends Exception> void replaceAll(Try.ByteUnaryOperator<E> operator) throws E {
         for (int i = 0, len = size(); i < len; i++) {
             elementData[i] = operator.applyAsByte(elementData[i]);
         }
     }
 
-    public boolean replaceIf(BytePredicate predicate, byte newValue) {
+    public <E extends Exception> boolean replaceIf(Try.BytePredicate<E> predicate, byte newValue) throws E {
         boolean result = false;
 
         for (int i = 0, len = size(); i < len; i++) {
@@ -822,7 +813,7 @@ public final class ByteList extends PrimitiveList<ByteConsumer, BytePredicate, B
         return size() == 0 ? OptionalByte.empty() : OptionalByte.of(elementData[size() - 1]);
     }
 
-    public OptionalByte findFirst(BytePredicate predicate) {
+    public <E extends Exception> OptionalByte findFirst(Try.BytePredicate<E> predicate) throws E {
         for (int i = 0; i < size; i++) {
             if (predicate.test(elementData[i])) {
                 return OptionalByte.of(elementData[i]);
@@ -832,17 +823,7 @@ public final class ByteList extends PrimitiveList<ByteConsumer, BytePredicate, B
         return OptionalByte.empty();
     }
 
-    //    public Optional<IndexedByte> findFirst2(BytePredicate predicate) {
-    //        for (int i = 0; i < size; i++) {
-    //            if (predicate.test(elementData[i])) {
-    //                return Optional.of(IndexedByte.of(i, elementData[i]));
-    //            }
-    //        }
-    //
-    //        return Optional.empty();
-    //    }
-
-    public OptionalByte findLast(BytePredicate predicate) {
+    public <E extends Exception> OptionalByte findLast(Try.BytePredicate<E> predicate) throws E {
         for (int i = size - 1; i >= 0; i--) {
             if (predicate.test(elementData[i])) {
                 return OptionalByte.of(elementData[i]);
@@ -852,17 +833,7 @@ public final class ByteList extends PrimitiveList<ByteConsumer, BytePredicate, B
         return OptionalByte.empty();
     }
 
-    //    public Optional<IndexedByte> findLast2(BytePredicate predicate) {
-    //        for (int i = size - 1; i >= 0; i--) {
-    //            if (predicate.test(elementData[i])) {
-    //                return Optional.of(IndexedByte.of(i, elementData[i]));
-    //            }
-    //        }
-    //
-    //        return Optional.empty();
-    //    }
-
-    public OptionalInt findFirstIndex(BytePredicate predicate) {
+    public <E extends Exception> OptionalInt findFirstIndex(Try.BytePredicate<E> predicate) throws E {
         for (int i = 0; i < size; i++) {
             if (predicate.test(elementData[i])) {
                 return OptionalInt.of(i);
@@ -872,7 +843,7 @@ public final class ByteList extends PrimitiveList<ByteConsumer, BytePredicate, B
         return OptionalInt.empty();
     }
 
-    public OptionalInt findLastIndex(BytePredicate predicate) {
+    public <E extends Exception> OptionalInt findLastIndex(Try.BytePredicate<E> predicate) throws E {
         for (int i = size - 1; i >= 0; i--) {
             if (predicate.test(elementData[i])) {
                 return OptionalInt.of(i);
@@ -882,8 +853,17 @@ public final class ByteList extends PrimitiveList<ByteConsumer, BytePredicate, B
         return OptionalInt.empty();
     }
 
-    @Override
-    public boolean allMatch(final int fromIndex, final int toIndex, BytePredicate filter) {
+    /**
+     * Returns whether all elements of this List match the provided predicate.
+     * 
+     * @param filter
+     * @return
+     */
+    public <E extends Exception> boolean allMatch(Try.BytePredicate<E> filter) throws E {
+        return allMatch(0, size(), filter);
+    }
+
+    public <E extends Exception> boolean allMatch(final int fromIndex, final int toIndex, Try.BytePredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         if (size > 0) {
@@ -897,8 +877,17 @@ public final class ByteList extends PrimitiveList<ByteConsumer, BytePredicate, B
         return true;
     }
 
-    @Override
-    public boolean anyMatch(final int fromIndex, final int toIndex, BytePredicate filter) {
+    /**
+     * Returns whether any elements of this List match the provided predicate.
+     * 
+     * @param filter
+     * @return
+     */
+    public <E extends Exception> boolean anyMatch(Try.BytePredicate<E> filter) throws E {
+        return anyMatch(0, size(), filter);
+    }
+
+    public <E extends Exception> boolean anyMatch(final int fromIndex, final int toIndex, Try.BytePredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         if (size > 0) {
@@ -912,8 +901,17 @@ public final class ByteList extends PrimitiveList<ByteConsumer, BytePredicate, B
         return false;
     }
 
-    @Override
-    public boolean noneMatch(final int fromIndex, final int toIndex, BytePredicate filter) {
+    /**
+     * Returns whether no elements of this List match the provided predicate.
+     * 
+     * @param filter
+     * @return
+     */
+    public <E extends Exception> boolean noneMatch(Try.BytePredicate<E> filter) throws E {
+        return noneMatch(0, size(), filter);
+    }
+
+    public <E extends Exception> boolean noneMatch(final int fromIndex, final int toIndex, Try.BytePredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         if (size > 0) {
@@ -927,37 +925,56 @@ public final class ByteList extends PrimitiveList<ByteConsumer, BytePredicate, B
         return true;
     }
 
-    @Override
-    public boolean hasDuplicates() {
-        return N.hasDuplicates(elementData, 0, size, false);
+    /**
+     * 
+     * @param filter
+     * @return
+     */
+    public <E extends Exception> int count(Try.BytePredicate<E> filter) throws E {
+        return count(0, size(), filter);
     }
 
-    @Override
-    public int count(final int fromIndex, final int toIndex, BytePredicate filter) {
+    public <E extends Exception> int count(final int fromIndex, final int toIndex, Try.BytePredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         return N.count(elementData, fromIndex, toIndex, filter);
     }
 
-    @Override
-    public ByteList filter(final int fromIndex, final int toIndex, BytePredicate filter) {
+    /**
+     * 
+     * @param filter
+     * @return a new List with the elements match the provided predicate.
+     */
+    public <E extends Exception> ByteList filter(Try.BytePredicate<E> filter) throws E {
+        return filter(0, size(), filter);
+    }
+
+    public <E extends Exception> ByteList filter(final int fromIndex, final int toIndex, Try.BytePredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         return N.filter(elementData, fromIndex, toIndex, filter);
     }
 
-    @Override
-    public ByteList filter(final int fromIndex, final int toIndex, BytePredicate filter, final int max) {
+    /**
+     * 
+     * @param filter
+     * @return a new List with the elements match the provided predicate.
+     */
+    public <E extends Exception> ByteList filter(Try.BytePredicate<E> filter, int max) throws E {
+        return filter(0, size(), filter, max);
+    }
+
+    public <E extends Exception> ByteList filter(final int fromIndex, final int toIndex, Try.BytePredicate<E> filter, final int max) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         return N.filter(elementData, fromIndex, toIndex, filter, max);
     }
 
-    public ByteList map(final ByteUnaryOperator mapper) {
+    public <E extends Exception> ByteList map(final Try.ByteUnaryOperator<E> mapper) throws E {
         return map(0, size, mapper);
     }
 
-    public ByteList map(final int fromIndex, final int toIndex, final ByteUnaryOperator mapper) {
+    public <E extends Exception> ByteList map(final int fromIndex, final int toIndex, final Try.ByteUnaryOperator<E> mapper) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         final ByteList result = new ByteList(toIndex - fromIndex);
@@ -969,11 +986,11 @@ public final class ByteList extends PrimitiveList<ByteConsumer, BytePredicate, B
         return result;
     }
 
-    public <T> List<T> mapToObj(final ByteFunction<? extends T> mapper) {
+    public <T, E extends Exception> List<T> mapToObj(final Try.ByteFunction<? extends T, E> mapper) throws E {
         return mapToObj(0, size, mapper);
     }
 
-    public <T> List<T> mapToObj(final int fromIndex, final int toIndex, final ByteFunction<? extends T> mapper) {
+    public <T, E extends Exception> List<T> mapToObj(final int fromIndex, final int toIndex, final Try.ByteFunction<? extends T, E> mapper) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         final List<T> result = new ArrayList<>(toIndex - fromIndex);
@@ -1006,7 +1023,7 @@ public final class ByteList extends PrimitiveList<ByteConsumer, BytePredicate, B
      * @param accumulator
      * @return
      */
-    public OptionalByte reduce(final ByteBinaryOperator accumulator) {
+    public <E extends Exception> OptionalByte reduce(final Try.ByteBinaryOperator<E> accumulator) throws E {
         if (isEmpty()) {
             return OptionalByte.empty();
         }
@@ -1042,7 +1059,7 @@ public final class ByteList extends PrimitiveList<ByteConsumer, BytePredicate, B
      * @param accumulator
      * @return
      */
-    public byte reduce(final byte identity, final ByteBinaryOperator accumulator) {
+    public <E extends Exception> byte reduce(final byte identity, final Try.ByteBinaryOperator<E> accumulator) throws E {
         if (isEmpty()) {
             return identity;
         }
@@ -1054,6 +1071,11 @@ public final class ByteList extends PrimitiveList<ByteConsumer, BytePredicate, B
         }
 
         return result;
+    }
+
+    @Override
+    public boolean hasDuplicates() {
+        return N.hasDuplicates(elementData, 0, size, false);
     }
 
     @Override
@@ -1198,7 +1220,7 @@ public final class ByteList extends PrimitiveList<ByteConsumer, BytePredicate, B
     }
 
     //    @Override
-    //    public List<ByteList> split(int fromIndex, int toIndex, BytePredicate predicate) {
+    //    public List<ByteList> split(int fromIndex, int toIndex, Try.BytePredicate<E> predicate) throws E {
     //        checkIndex(fromIndex, toIndex);
     //
     //        final List<ByteList> result = new ArrayList<>();
@@ -1332,26 +1354,29 @@ public final class ByteList extends PrimitiveList<ByteConsumer, BytePredicate, B
         return multiset;
     }
 
-    public <K, U> Map<K, U> toMap(ByteFunction<? extends K> keyExtractor, ByteFunction<? extends U> valueMapper) {
-        final Supplier<Map<K, U>> mapFactory = Fn.Suppliers.ofMap();
+    public <K, V, E extends Exception, E2 extends Exception> Map<K, V> toMap(Try.ByteFunction<? extends K, E> keyExtractor,
+            Try.ByteFunction<? extends V, E2> valueMapper) throws E, E2 {
+        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(keyExtractor, valueMapper, mapFactory);
     }
 
-    public <K, U, M extends Map<K, U>> M toMap(ByteFunction<? extends K> keyExtractor, ByteFunction<? extends U> valueMapper, Supplier<M> mapFactory) {
-        final BinaryOperator<U> mergeFunction = Fn.throwingMerger();
+    public <K, V, M extends Map<K, V>, E extends Exception, E2 extends Exception> M toMap(Try.ByteFunction<? extends K, E> keyExtractor,
+            Try.ByteFunction<? extends V, E2> valueMapper, Supplier<M> mapFactory) throws E, E2 {
+        final Try.BinaryOperator<V, RuntimeException> mergeFunction = Fn.throwingMerger();
 
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
-    public <K, U> Map<K, U> toMap(ByteFunction<? extends K> keyExtractor, ByteFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
-        final Supplier<Map<K, U>> mapFactory = Fn.Suppliers.ofMap();
+    public <K, V, E extends Exception, E2 extends Exception, E3 extends Exception> Map<K, V> toMap(Try.ByteFunction<? extends K, E> keyExtractor,
+            Try.ByteFunction<? extends V, E2> valueMapper, Try.BinaryOperator<V, E3> mergeFunction) throws E, E2, E3 {
+        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
-    public <K, U, M extends Map<K, U>> M toMap(ByteFunction<? extends K> keyExtractor, ByteFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
-            Supplier<M> mapFactory) {
+    public <K, V, M extends Map<K, V>, E extends Exception, E2 extends Exception, E3 extends Exception> M toMap(Try.ByteFunction<? extends K, E> keyExtractor,
+            Try.ByteFunction<? extends V, E2> valueMapper, Try.BinaryOperator<V, E3> mergeFunction, Supplier<M> mapFactory) throws E, E2, E3 {
         final M result = mapFactory.get();
 
         for (int i = 0; i < size; i++) {
@@ -1362,15 +1387,15 @@ public final class ByteList extends PrimitiveList<ByteConsumer, BytePredicate, B
     }
 
     @SuppressWarnings("hiding")
-    public <K, A, D> Map<K, D> toMap(ByteFunction<? extends K> classifier, Collector<Byte, A, D> downstream) {
+    public <K, A, D, E extends Exception> Map<K, D> toMap(Try.ByteFunction<? extends K, E> classifier, Collector<Byte, A, D> downstream) throws E {
         final Supplier<Map<K, D>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(classifier, downstream, mapFactory);
     }
 
     @SuppressWarnings("hiding")
-    public <K, A, D, M extends Map<K, D>> M toMap(final ByteFunction<? extends K> classifier, final Collector<Byte, A, D> downstream,
-            final Supplier<M> mapFactory) {
+    public <K, A, D, M extends Map<K, D>, E extends Exception> M toMap(final Try.ByteFunction<? extends K, E> classifier,
+            final Collector<Byte, A, D> downstream, final Supplier<M> mapFactory) throws E {
         final M result = mapFactory.get();
         final Supplier<A> downstreamSupplier = downstream.supplier();
         final BiConsumer<A, Byte> downstreamAccumulator = downstream.accumulator();
@@ -1421,12 +1446,12 @@ public final class ByteList extends PrimitiveList<ByteConsumer, BytePredicate, B
     }
 
     @Override
-    public <R> R apply(Function<? super ByteList, R> func) {
+    public <R, E extends Exception> R apply(Try.Function<? super ByteList, R, E> func) throws E {
         return func.apply(this);
     }
 
     @Override
-    public void accept(Consumer<? super ByteList> action) {
+    public <E extends Exception> void accept(Try.Consumer<? super ByteList, E> action) throws E {
         action.accept(this);
     }
 

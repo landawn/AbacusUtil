@@ -47,7 +47,6 @@ import com.landawn.abacus.condition.SubQuery;
 import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
-import com.landawn.abacus.util.function.Function;
 
 /**
  * It's easier to write/maintain the sql by <code>SQLBuilder</code> and more efficient, comparing to write sql in plain text. 
@@ -1740,7 +1739,7 @@ public abstract class SQLBuilder {
         return set(getPropNamesByClass(entityClass, false, excludedPropNames));
     }
 
-    public <T> T apply(final Function<? super SP, T> func) {
+    public <T, EX extends Exception> T apply(final Try.Function<? super SP, T, EX> func) throws EX {
         return func.apply(this.pair());
     }
 

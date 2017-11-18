@@ -16,9 +16,6 @@
  */
 package com.landawn.abacus.util;
 
-import com.landawn.abacus.util.function.DoubleBiPredicate;
-import com.landawn.abacus.util.function.DoublePredicate;
-
 /**
  * <p>
  * Note: it's copied from Apache Commons Lang developed at The Apache Software Foundation (http://www.apache.org/), or
@@ -110,7 +107,7 @@ public final class MutableDouble extends Number implements Comparable<MutableDou
      * @param predicate - test the current value.
      * @return
      */
-    public boolean setIf(double newValue, DoublePredicate predicate) {
+    public <E extends Exception> boolean setIf(double newValue, Try.DoublePredicate<E> predicate) throws E {
         if (predicate.test(this.value)) {
             this.value = newValue;
             return true;
@@ -127,7 +124,7 @@ public final class MutableDouble extends Number implements Comparable<MutableDou
      * @param predicate the first parameter is the current value, the second parameter is the new value.
      * @return
      */
-    public boolean setIf(double newValue, DoubleBiPredicate predicate) {
+    public <E extends Exception> boolean setIf(double newValue, Try.DoubleBiPredicate<E> predicate) throws E {
         if (predicate.test(this.value, newValue)) {
             this.value = newValue;
             return true;

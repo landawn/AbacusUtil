@@ -18,7 +18,6 @@ import java.util.NoSuchElementException;
 
 import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.util.function.BooleanBiFunction;
-import com.landawn.abacus.util.function.BooleanConsumer;
 import com.landawn.abacus.util.function.BooleanFunction;
 import com.landawn.abacus.util.function.BooleanPredicate;
 import com.landawn.abacus.util.function.BooleanTriFunction;
@@ -26,8 +25,8 @@ import com.landawn.abacus.util.function.BooleanUnaryOperator;
 import com.landawn.abacus.util.function.IntBiFunction;
 import com.landawn.abacus.util.function.IntBiPredicate;
 import com.landawn.abacus.util.function.IntConsumer;
-import com.landawn.abacus.util.stream.ObjIteratorEx;
 import com.landawn.abacus.util.stream.IntStream;
+import com.landawn.abacus.util.stream.ObjIteratorEx;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -1357,11 +1356,12 @@ public final class BooleanMatrix extends AbstractMatrix<boolean[], BooleanList, 
         return a == null ? 0 : a.length;
     }
 
-    public void forEach(final BooleanConsumer action) {
+    public <E extends Exception> void forEach(final Try.BooleanConsumer<E> action) throws E {
         forEach(0, rows, 0, cols, action);
     }
 
-    public void forEach(final int fromRowIndex, final int toRowIndex, final int fromColumnIndex, final int toColumnIndex, final BooleanConsumer action) {
+    public <E extends Exception> void forEach(final int fromRowIndex, final int toRowIndex, final int fromColumnIndex, final int toColumnIndex,
+            final Try.BooleanConsumer<E> action) throws E {
         N.checkFromToIndex(fromRowIndex, toRowIndex, rows);
         N.checkFromToIndex(fromColumnIndex, toColumnIndex, cols);
 

@@ -21,15 +21,14 @@ import com.landawn.abacus.util.function.IntBiFunction;
 import com.landawn.abacus.util.function.IntBiPredicate;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.function.LongBiFunction;
-import com.landawn.abacus.util.function.LongConsumer;
 import com.landawn.abacus.util.function.LongFunction;
 import com.landawn.abacus.util.function.LongPredicate;
 import com.landawn.abacus.util.function.LongTriFunction;
 import com.landawn.abacus.util.function.LongUnaryOperator;
-import com.landawn.abacus.util.stream.ObjIteratorEx;
-import com.landawn.abacus.util.stream.LongIteratorEx;
 import com.landawn.abacus.util.stream.IntStream;
+import com.landawn.abacus.util.stream.LongIteratorEx;
 import com.landawn.abacus.util.stream.LongStream;
+import com.landawn.abacus.util.stream.ObjIteratorEx;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -1630,11 +1629,12 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongStrea
         return a == null ? 0 : a.length;
     }
 
-    public void forEach(final LongConsumer action) {
+    public <E extends Exception> void forEach(final Try.LongConsumer<E> action) throws E {
         forEach(0, rows, 0, cols, action);
     }
 
-    public void forEach(final int fromRowIndex, final int toRowIndex, final int fromColumnIndex, final int toColumnIndex, final LongConsumer action) {
+    public <E extends Exception> void forEach(final int fromRowIndex, final int toRowIndex, final int fromColumnIndex, final int toColumnIndex,
+            final Try.LongConsumer<E> action) throws E {
         N.checkFromToIndex(fromRowIndex, toRowIndex, rows);
         N.checkFromToIndex(fromColumnIndex, toColumnIndex, cols);
 

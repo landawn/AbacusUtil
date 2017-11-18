@@ -16,8 +16,6 @@ package com.landawn.abacus.util;
 
 import java.util.NoSuchElementException;
 
-import com.landawn.abacus.util.function.ByteConsumer;
-
 /**
  * 
  * @since 0.8
@@ -107,7 +105,7 @@ public abstract class ByteIterator extends ImmutableIterator<Byte> {
         return list;
     }
 
-    public void forEachRemaining(ByteConsumer action) {
+    public <E extends Exception> void forEachRemaining(Try.ByteConsumer<E> action) throws E {
         N.requireNonNull(action);
 
         while (hasNext()) {

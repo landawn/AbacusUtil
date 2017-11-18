@@ -14,13 +14,16 @@
 
 package com.landawn.abacus.util.function;
 
+import com.landawn.abacus.util.Try;
+
 /**
  * 
  * @since 0.8
  * 
  * @author Haiyang Li
  */
-public interface ByteBinaryOperator {
+public interface ByteBinaryOperator extends Try.ByteBinaryOperator<RuntimeException> {
 
+    @Override
     byte applyAsByte(byte left, byte right);
 }

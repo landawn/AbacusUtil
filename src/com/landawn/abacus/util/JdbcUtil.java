@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.landawn.abacus.util;
 
 import static com.landawn.abacus.core.AbacusConfiguration.DataSourceConfiguration.DRIVER;
@@ -82,9 +81,6 @@ import com.landawn.abacus.exception.UncheckedSQLException;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
 import com.landawn.abacus.type.Type;
-import com.landawn.abacus.util.Try.BiConsumer;
-import com.landawn.abacus.util.function.Function;
-import com.landawn.abacus.util.function.Predicate;
 
 /**
  *
@@ -103,7 +99,7 @@ public final class JdbcUtil {
     // ...
     private static final String CURRENT_DIR_PATH = "./";
 
-    private static final BiConsumer<? super PreparedStatement, ? super Object[], SQLException> DEFAULT_STMT_SETTER = new BiConsumer<PreparedStatement, Object[], SQLException>() {
+    private static final Try.BiConsumer<? super PreparedStatement, ? super Object[], SQLException> DEFAULT_STMT_SETTER = new Try.BiConsumer<PreparedStatement, Object[], SQLException>() {
         @Override
         public void accept(PreparedStatement stmt, Object[] parameters) throws SQLException {
             for (int i = 0, len = parameters.length; i < len; i++) {
@@ -862,10 +858,11 @@ public final class JdbcUtil {
     }
 
     public static DataSet extractData(final ResultSet rs, final int offset, final int count, final boolean closeResultSet) {
-        return extractData(rs, offset, count, null, closeResultSet);
+        return extractData(rs, offset, count, Fn.alwaysTrue(), closeResultSet);
     }
 
-    public static DataSet extractData(final ResultSet rs, int offset, int count, final Predicate<? super Object[]> filter, final boolean closeResultSet) {
+    public static <E extends Exception> DataSet extractData(final ResultSet rs, int offset, int count, final Try.Predicate<? super Object[], E> filter,
+            final boolean closeResultSet) throws E {
         try {
             // TODO [performance improvement]. it will improve performance a lot if MetaData is cached.
             final ResultSetMetaData metaData = rs.getMetaData();
@@ -985,7 +982,7 @@ public final class JdbcUtil {
      */
     public static int importData(final DataSet dataset, final Collection<String> selectColumnNames, final int offset, final int count, final Connection conn,
             final String insertSQL, final int batchSize, final int batchInterval) {
-        return importData(dataset, selectColumnNames, offset, count, null, conn, insertSQL, batchSize, batchInterval);
+        return importData(dataset, selectColumnNames, offset, count, Fn.alwaysTrue(), conn, insertSQL, batchSize, batchInterval);
     }
 
     /**
@@ -1007,8 +1004,9 @@ public final class JdbcUtil {
      * @param batchInterval
      * @return
      */
-    public static int importData(final DataSet dataset, final Collection<String> selectColumnNames, final int offset, final int count,
-            final Predicate<Object[]> filter, final Connection conn, final String insertSQL, final int batchSize, final int batchInterval) {
+    public static <E extends Exception> int importData(final DataSet dataset, final Collection<String> selectColumnNames, final int offset, final int count,
+            final Try.Predicate<? super Object[], E> filter, final Connection conn, final String insertSQL, final int batchSize, final int batchInterval)
+            throws E {
         PreparedStatement stmt = null;
 
         try {
@@ -1084,7 +1082,7 @@ public final class JdbcUtil {
     @SuppressWarnings("rawtypes")
     public static int importData(final DataSet dataset, final int offset, final int count, final Connection conn, final String insertSQL, final int batchSize,
             final int batchInterval, final Map<String, ? extends Type> columnTypeMap) {
-        return importData(dataset, offset, count, null, conn, insertSQL, batchSize, batchInterval, columnTypeMap);
+        return importData(dataset, offset, count, Fn.alwaysTrue(), conn, insertSQL, batchSize, batchInterval, columnTypeMap);
     }
 
     /**
@@ -1107,8 +1105,9 @@ public final class JdbcUtil {
      * @return
      */
     @SuppressWarnings("rawtypes")
-    public static int importData(final DataSet dataset, final int offset, final int count, final Predicate<Object[]> filter, final Connection conn,
-            final String insertSQL, final int batchSize, final int batchInterval, final Map<String, ? extends Type> columnTypeMap) {
+    public static <E extends Exception> int importData(final DataSet dataset, final int offset, final int count,
+            final Try.Predicate<? super Object[], E> filter, final Connection conn, final String insertSQL, final int batchSize, final int batchInterval,
+            final Map<String, ? extends Type> columnTypeMap) throws E {
         PreparedStatement stmt = null;
 
         try {
@@ -1137,7 +1136,7 @@ public final class JdbcUtil {
      * @return
      */
     public static int importData(final DataSet dataset, final Connection conn, final String insertSQL,
-            final BiConsumer<? super PreparedStatement, ? super Object[], SQLException> stmtSetter) {
+            final Try.BiConsumer<? super PreparedStatement, ? super Object[], SQLException> stmtSetter) {
         return importData(dataset, 0, dataset.size(), conn, insertSQL, stmtSetter);
     }
 
@@ -1158,7 +1157,7 @@ public final class JdbcUtil {
      * @return
      */
     public static int importData(final DataSet dataset, final int offset, final int count, final Connection conn, final String insertSQL,
-            final BiConsumer<? super PreparedStatement, ? super Object[], SQLException> stmtSetter) {
+            final Try.BiConsumer<? super PreparedStatement, ? super Object[], SQLException> stmtSetter) {
         return importData(dataset, offset, count, conn, insertSQL, 200, 0, stmtSetter);
     }
 
@@ -1181,8 +1180,8 @@ public final class JdbcUtil {
      * @return
      */
     public static int importData(final DataSet dataset, final int offset, final int count, final Connection conn, final String insertSQL, final int batchSize,
-            final int batchInterval, final BiConsumer<? super PreparedStatement, ? super Object[], SQLException> stmtSetter) {
-        return importData(dataset, offset, count, null, conn, insertSQL, batchSize, batchInterval, stmtSetter);
+            final int batchInterval, final Try.BiConsumer<? super PreparedStatement, ? super Object[], SQLException> stmtSetter) {
+        return importData(dataset, offset, count, Fn.alwaysTrue(), conn, insertSQL, batchSize, batchInterval, stmtSetter);
     }
 
     /**
@@ -1204,9 +1203,9 @@ public final class JdbcUtil {
      * @param stmtSetter
      * @return
      */
-    public static int importData(final DataSet dataset, final int offset, final int count, final Predicate<Object[]> filter, final Connection conn,
-            final String insertSQL, final int batchSize, final int batchInterval,
-            final BiConsumer<? super PreparedStatement, ? super Object[], SQLException> stmtSetter) {
+    public static <E extends Exception> int importData(final DataSet dataset, final int offset, final int count,
+            final Try.Predicate<? super Object[], E> filter, final Connection conn, final String insertSQL, final int batchSize, final int batchInterval,
+            final Try.BiConsumer<? super PreparedStatement, ? super Object[], SQLException> stmtSetter) throws E {
         PreparedStatement stmt = null;
 
         try {
@@ -1270,7 +1269,7 @@ public final class JdbcUtil {
      */
     public static int importData(final DataSet dataset, final Collection<String> selectColumnNames, final int offset, final int count,
             final PreparedStatement stmt, final int batchSize, final int batchInterval) {
-        return importData(dataset, selectColumnNames, offset, count, null, stmt, batchSize, batchInterval);
+        return importData(dataset, selectColumnNames, offset, count, Fn.alwaysTrue(), stmt, batchSize, batchInterval);
     }
 
     /**
@@ -1285,8 +1284,8 @@ public final class JdbcUtil {
      * @param batchInterval
      * @return
      */
-    public static int importData(final DataSet dataset, final Collection<String> selectColumnNames, final int offset, final int count,
-            final Predicate<Object[]> filter, final PreparedStatement stmt, final int batchSize, final int batchInterval) {
+    public static <E extends Exception> int importData(final DataSet dataset, final Collection<String> selectColumnNames, final int offset, final int count,
+            final Try.Predicate<? super Object[], E> filter, final PreparedStatement stmt, final int batchSize, final int batchInterval) throws E {
         final Type<?> objType = N.typeOf(Object.class);
         final Map<String, Type<?>> columnTypeMap = new HashMap<>();
 
@@ -1340,7 +1339,7 @@ public final class JdbcUtil {
     @SuppressWarnings("rawtypes")
     public static int importData(final DataSet dataset, final int offset, final int count, final PreparedStatement stmt, final int batchSize,
             final int batchInterval, final Map<String, ? extends Type> columnTypeMap) {
-        return importData(dataset, offset, count, null, stmt, batchSize, batchInterval, columnTypeMap);
+        return importData(dataset, offset, count, Fn.alwaysTrue(), stmt, batchSize, batchInterval, columnTypeMap);
     }
 
     /**
@@ -1357,8 +1356,9 @@ public final class JdbcUtil {
      * @return
      */
     @SuppressWarnings("rawtypes")
-    public static int importData(final DataSet dataset, final int offset, final int count, final Predicate<Object[]> filter, final PreparedStatement stmt,
-            final int batchSize, final int batchInterval, final Map<String, ? extends Type> columnTypeMap) {
+    public static <E extends Exception> int importData(final DataSet dataset, final int offset, final int count,
+            final Try.Predicate<? super Object[], E> filter, final PreparedStatement stmt, final int batchSize, final int batchInterval,
+            final Map<String, ? extends Type> columnTypeMap) throws E {
         N.checkArgument(offset >= 0 && count >= 0, "'offset'=%s and 'count'=%s can't be negative", offset, count);
         N.checkArgument(batchSize > 0 && batchInterval >= 0, "'batchSize'=%s must be greater than 0 and 'batchInterval'=%s can't be negative", batchSize,
                 batchInterval);
@@ -1435,7 +1435,7 @@ public final class JdbcUtil {
     }
 
     public static int importData(final DataSet dataset, final PreparedStatement stmt,
-            final BiConsumer<? super PreparedStatement, ? super Object[], SQLException> stmtSetter) {
+            final Try.BiConsumer<? super PreparedStatement, ? super Object[], SQLException> stmtSetter) {
         return importData(dataset, 0, dataset.size(), stmt, stmtSetter);
     }
 
@@ -1449,7 +1449,7 @@ public final class JdbcUtil {
      * @return
      */
     public static int importData(final DataSet dataset, final int offset, final int count, final PreparedStatement stmt,
-            final BiConsumer<? super PreparedStatement, ? super Object[], SQLException> stmtSetter) {
+            final Try.BiConsumer<? super PreparedStatement, ? super Object[], SQLException> stmtSetter) {
         return importData(dataset, offset, count, stmt, 200, 0, stmtSetter);
     }
 
@@ -1466,8 +1466,8 @@ public final class JdbcUtil {
      * @return
      */
     public static int importData(final DataSet dataset, final int offset, final int count, final PreparedStatement stmt, final int batchSize,
-            final int batchInterval, final BiConsumer<? super PreparedStatement, ? super Object[], SQLException> stmtSetter) {
-        return importData(dataset, offset, count, null, stmt, batchSize, batchInterval, stmtSetter);
+            final int batchInterval, final Try.BiConsumer<? super PreparedStatement, ? super Object[], SQLException> stmtSetter) {
+        return importData(dataset, offset, count, Fn.alwaysTrue(), stmt, batchSize, batchInterval, stmtSetter);
     }
 
     /**
@@ -1484,8 +1484,9 @@ public final class JdbcUtil {
      * @param columnTypeMap
      * @return
      */
-    public static int importData(final DataSet dataset, final int offset, final int count, final Predicate<Object[]> filter, final PreparedStatement stmt,
-            final int batchSize, final int batchInterval, final BiConsumer<? super PreparedStatement, ? super Object[], SQLException> stmtSetter) {
+    public static <E extends Exception> int importData(final DataSet dataset, final int offset, final int count,
+            final Try.Predicate<? super Object[], E> filter, final PreparedStatement stmt, final int batchSize, final int batchInterval,
+            final Try.BiConsumer<? super PreparedStatement, ? super Object[], SQLException> stmtSetter) throws E {
         N.checkArgument(offset >= 0 && count >= 0, "'offset'=%s and 'count'=%s can't be negative", offset, count);
         N.checkArgument(batchSize > 0 && batchInterval >= 0, "'batchSize'=%s must be greater than 0 and 'batchInterval'=%s can't be negative", batchSize,
                 batchInterval);
@@ -1531,12 +1532,13 @@ public final class JdbcUtil {
         return result;
     }
 
-    public static long importData(final File file, final Connection conn, final String insertSQL, final Function<String, Object[]> func) {
+    public static <E extends Exception> long importData(final File file, final Connection conn, final String insertSQL,
+            final Try.Function<String, Object[], E> func) throws E {
         return importData(file, 0, Long.MAX_VALUE, conn, insertSQL, 200, 0, func);
     }
 
-    public static long importData(final File file, final long offset, final long count, final Connection conn, final String insertSQL, final int batchSize,
-            final int batchInterval, final Function<String, Object[]> func) {
+    public static <E extends Exception> long importData(final File file, final long offset, final long count, final Connection conn, final String insertSQL,
+            final int batchSize, final int batchInterval, final Try.Function<String, Object[], E> func) throws E {
         PreparedStatement stmt = null;
 
         try {
@@ -1550,7 +1552,7 @@ public final class JdbcUtil {
         }
     }
 
-    public static long importData(final File file, final PreparedStatement stmt, final Function<String, Object[]> func) {
+    public static <E extends Exception> long importData(final File file, final PreparedStatement stmt, final Try.Function<String, Object[], E> func) throws E {
         return importData(file, 0, Long.MAX_VALUE, stmt, 200, 0, func);
     }
 
@@ -1566,8 +1568,8 @@ public final class JdbcUtil {
      * @param func convert line to the parameters for record insert. Returns a <code>null</code> array to skip the line. 
      * @return
      */
-    public static long importData(final File file, final long offset, final long count, final PreparedStatement stmt, final int batchSize,
-            final int batchInterval, final Function<String, Object[]> func) {
+    public static <E extends Exception> long importData(final File file, final long offset, final long count, final PreparedStatement stmt, final int batchSize,
+            final int batchInterval, final Try.Function<String, Object[], E> func) throws E {
         Reader reader = null;
 
         try {
@@ -1581,12 +1583,13 @@ public final class JdbcUtil {
         }
     }
 
-    public static long importData(final InputStream is, final Connection conn, final String insertSQL, final Function<String, Object[]> func) {
+    public static <E extends Exception> long importData(final InputStream is, final Connection conn, final String insertSQL,
+            final Try.Function<String, Object[], E> func) throws E {
         return importData(is, 0, Long.MAX_VALUE, conn, insertSQL, 200, 0, func);
     }
 
-    public static long importData(final InputStream is, final long offset, final long count, final Connection conn, final String insertSQL, final int batchSize,
-            final int batchInterval, final Function<String, Object[]> func) {
+    public static <E extends Exception> long importData(final InputStream is, final long offset, final long count, final Connection conn,
+            final String insertSQL, final int batchSize, final int batchInterval, final Try.Function<String, Object[], E> func) throws E {
         PreparedStatement stmt = null;
 
         try {
@@ -1600,7 +1603,8 @@ public final class JdbcUtil {
         }
     }
 
-    public static long importData(final InputStream is, final PreparedStatement stmt, final Function<String, Object[]> func) {
+    public static <E extends Exception> long importData(final InputStream is, final PreparedStatement stmt, final Try.Function<String, Object[], E> func)
+            throws E {
         return importData(is, 0, Long.MAX_VALUE, stmt, 200, 0, func);
     }
 
@@ -1616,19 +1620,20 @@ public final class JdbcUtil {
      * @param func convert line to the parameters for record insert. Returns a <code>null</code> array to skip the line. 
      * @return
      */
-    public static long importData(final InputStream is, final long offset, final long count, final PreparedStatement stmt, final int batchSize,
-            final int batchInterval, final Function<String, Object[]> func) {
+    public static <E extends Exception> long importData(final InputStream is, final long offset, final long count, final PreparedStatement stmt,
+            final int batchSize, final int batchInterval, final Try.Function<String, Object[], E> func) throws E {
         final Reader reader = new InputStreamReader(is);
 
         return importData(reader, offset, count, stmt, batchSize, batchInterval, func);
     }
 
-    public static long importData(final Reader reader, final Connection conn, final String insertSQL, final Function<String, Object[]> func) {
+    public static <E extends Exception> long importData(final Reader reader, final Connection conn, final String insertSQL,
+            final Try.Function<String, Object[], E> func) throws E {
         return importData(reader, 0, Long.MAX_VALUE, conn, insertSQL, 200, 0, func);
     }
 
-    public static long importData(final Reader reader, final long offset, final long count, final Connection conn, final String insertSQL, final int batchSize,
-            final int batchInterval, final Function<String, Object[]> func) {
+    public static <E extends Exception> long importData(final Reader reader, final long offset, final long count, final Connection conn, final String insertSQL,
+            final int batchSize, final int batchInterval, final Try.Function<String, Object[], E> func) throws E {
         PreparedStatement stmt = null;
 
         try {
@@ -1642,7 +1647,8 @@ public final class JdbcUtil {
         }
     }
 
-    public static long importData(final Reader reader, final PreparedStatement stmt, final Function<String, Object[]> func) {
+    public static <E extends Exception> long importData(final Reader reader, final PreparedStatement stmt, final Try.Function<String, Object[], E> func)
+            throws E {
         return importData(reader, 0, Long.MAX_VALUE, stmt, 200, 0, func);
     }
 
@@ -1658,8 +1664,8 @@ public final class JdbcUtil {
      * @param func convert line to the parameters for record insert. Returns a <code>null</code> array to skip the line. 
      * @return
      */
-    public static long importData(final Reader reader, long offset, final long count, final PreparedStatement stmt, final int batchSize,
-            final int batchInterval, final Function<String, Object[]> func) {
+    public static <E extends Exception> long importData(final Reader reader, long offset, final long count, final PreparedStatement stmt, final int batchSize,
+            final int batchInterval, final Try.Function<String, Object[], E> func) throws E {
         N.checkArgument(offset >= 0 && count >= 0, "'offset'=%s and 'count'=%s can't be negative", offset, count);
         N.checkArgument(batchSize > 0 && batchInterval >= 0, "'batchSize'=%s must be greater than 0 and 'batchInterval'=%s can't be negative", batchSize,
                 batchInterval);
@@ -1712,12 +1718,13 @@ public final class JdbcUtil {
         return result;
     }
 
-    public static <T> long importData(final Iterator<T> iter, final Connection conn, final String insertSQL, final Function<T, Object[]> func) {
+    public static <T, E extends Exception> long importData(final Iterator<T> iter, final Connection conn, final String insertSQL,
+            final Try.Function<T, Object[], E> func) throws E {
         return importData(iter, 0, Long.MAX_VALUE, conn, insertSQL, 200, 0, func);
     }
 
-    public static <T> long importData(final Iterator<T> iter, final long offset, final long count, final Connection conn, final String insertSQL,
-            final int batchSize, final int batchInterval, final Function<T, Object[]> func) {
+    public static <T, E extends Exception> long importData(final Iterator<T> iter, final long offset, final long count, final Connection conn,
+            final String insertSQL, final int batchSize, final int batchInterval, final Try.Function<T, Object[], E> func) throws E {
         PreparedStatement stmt = null;
 
         try {
@@ -1731,7 +1738,8 @@ public final class JdbcUtil {
         }
     }
 
-    public static <T> long importData(final Iterator<T> iter, final PreparedStatement stmt, final Function<T, Object[]> func) {
+    public static <T, E extends Exception> long importData(final Iterator<T> iter, final PreparedStatement stmt, final Try.Function<T, Object[], E> func)
+            throws E {
         return importData(iter, 0, Long.MAX_VALUE, stmt, 200, 0, func);
     }
 
@@ -1747,8 +1755,8 @@ public final class JdbcUtil {
      * @param func convert element to the parameters for record insert. Returns a <code>null</code> array to skip the line. 
      * @return
      */
-    public static <T> long importData(final Iterator<T> iter, long offset, final long count, final PreparedStatement stmt, final int batchSize,
-            final int batchInterval, final Function<T, Object[]> func) {
+    public static <T, E extends Exception> long importData(final Iterator<T> iter, long offset, final long count, final PreparedStatement stmt,
+            final int batchSize, final int batchInterval, final Try.Function<T, Object[], E> func) throws E {
         N.checkArgument(offset >= 0 && count >= 0, "'offset'=%s and 'count'=%s can't be negative", offset, count);
         N.checkArgument(batchSize > 0 && batchInterval >= 0, "'batchSize'=%s must be greater than 0 and 'batchInterval'=%s can't be negative", batchSize,
                 batchInterval);
@@ -1797,13 +1805,13 @@ public final class JdbcUtil {
     }
 
     public static <T> long importData(final Iterator<T> iter, final Connection conn, final String insertSQL,
-            final BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter) {
+            final Try.BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter) {
         return importData(iter, 0, Long.MAX_VALUE, conn, insertSQL, 200, 0, stmtSetter);
     }
 
     public static <T> long importData(final Iterator<T> iter, final long offset, final long count, final Connection conn, final String insertSQL,
-            final int batchSize, final int batchInterval, final BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter) {
-        return importData(iter, offset, count, null, conn, insertSQL, batchSize, batchInterval, stmtSetter);
+            final int batchSize, final int batchInterval, final Try.BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter) {
+        return importData(iter, offset, count, Fn.alwaysTrue(), conn, insertSQL, batchSize, batchInterval, stmtSetter);
     }
 
     /**
@@ -1819,9 +1827,9 @@ public final class JdbcUtil {
      * @param stmtSetter
      * @return
      */
-    public static <T> long importData(final Iterator<T> iter, final long offset, final long count, final Predicate<? super T> filter, final Connection conn,
-            final String insertSQL, final int batchSize, final int batchInterval,
-            final BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter) {
+    public static <T, E extends Exception> long importData(final Iterator<T> iter, final long offset, final long count,
+            final Try.Predicate<? super T, E> filter, final Connection conn, final String insertSQL, final int batchSize, final int batchInterval,
+            final Try.BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter) throws E {
         PreparedStatement stmt = null;
 
         try {
@@ -1836,13 +1844,13 @@ public final class JdbcUtil {
     }
 
     public static <T> long importData(final Iterator<T> iter, final PreparedStatement stmt,
-            final BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter) {
+            final Try.BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter) {
         return importData(iter, 0, Long.MAX_VALUE, stmt, 200, 0, stmtSetter);
     }
 
     public static <T> long importData(final Iterator<T> iter, long offset, final long count, final PreparedStatement stmt, final int batchSize,
-            final int batchInterval, final BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter) {
-        return importData(iter, offset, count, null, stmt, batchSize, batchInterval, stmtSetter);
+            final int batchInterval, final Try.BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter) {
+        return importData(iter, offset, count, Fn.alwaysTrue(), stmt, batchSize, batchInterval, stmtSetter);
     }
 
     /**
@@ -1858,8 +1866,9 @@ public final class JdbcUtil {
      * @param stmtSetter 
      * @return
      */
-    public static <T> long importData(final Iterator<T> iter, long offset, final long count, final Predicate<? super T> filter, final PreparedStatement stmt,
-            final int batchSize, final int batchInterval, final BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter) {
+    public static <T, E extends Exception> long importData(final Iterator<T> iter, long offset, final long count, final Try.Predicate<? super T, E> filter,
+            final PreparedStatement stmt, final int batchSize, final int batchInterval,
+            final Try.BiConsumer<? super PreparedStatement, ? super T, SQLException> stmtSetter) throws E {
         N.checkArgument(offset >= 0 && count >= 0, "'offset'=%s and 'count'=%s can't be negative", offset, count);
         N.checkArgument(batchSize > 0 && batchInterval >= 0, "'batchSize'=%s must be greater than 0 and 'batchInterval'=%s can't be negative", batchSize,
                 batchInterval);
@@ -2063,7 +2072,7 @@ public final class JdbcUtil {
      * @return
      */
     public static long copy(final Connection sourceConn, final String selectSql, final int fetchSize, final long offset, final long count,
-            final Connection targetConn, final String insertSql, final BiConsumer<? super PreparedStatement, ? super Object[], SQLException> stmtSetter,
+            final Connection targetConn, final String insertSql, final Try.BiConsumer<? super PreparedStatement, ? super Object[], SQLException> stmtSetter,
             final int batchSize, final int batchInterval, final boolean inParallel) {
         PreparedStatement selectStmt = null;
         PreparedStatement insertStmt = null;
@@ -2088,7 +2097,7 @@ public final class JdbcUtil {
     }
 
     public static long copy(final PreparedStatement selectStmt, final PreparedStatement insertStmt,
-            final BiConsumer<? super PreparedStatement, ? super Object[], SQLException> stmtSetter) {
+            final Try.BiConsumer<? super PreparedStatement, ? super Object[], SQLException> stmtSetter) {
         return copy(selectStmt, 0, Integer.MAX_VALUE, insertStmt, stmtSetter, 200, 0, false);
     }
 
@@ -2105,14 +2114,14 @@ public final class JdbcUtil {
      * @return
      */
     public static long copy(final PreparedStatement selectStmt, final long offset, final long count, final PreparedStatement insertStmt,
-            final BiConsumer<? super PreparedStatement, ? super Object[], SQLException> stmtSetter, final int batchSize, final int batchInterval,
+            final Try.BiConsumer<? super PreparedStatement, ? super Object[], SQLException> stmtSetter, final int batchSize, final int batchInterval,
             final boolean inParallel) {
         N.checkArgument(offset >= 0 && count >= 0, "'offset'=%s and 'count'=%s can't be negative", offset, count);
         N.checkArgument(batchSize > 0 && batchInterval >= 0, "'batchSize'=%s must be greater than 0 and 'batchInterval'=%s can't be negative", batchSize,
                 batchInterval);
 
         @SuppressWarnings("rawtypes")
-        final BiConsumer<? super PreparedStatement, ? super Object[], SQLException> setter = (BiConsumer) (stmtSetter == null ? DEFAULT_STMT_SETTER
+        final Try.BiConsumer<? super PreparedStatement, ? super Object[], SQLException> setter = (Try.BiConsumer) (stmtSetter == null ? DEFAULT_STMT_SETTER
                 : stmtSetter);
         final AtomicLong result = new AtomicLong();
 

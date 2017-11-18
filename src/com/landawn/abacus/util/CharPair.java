@@ -1,9 +1,5 @@
 package com.landawn.abacus.util;
 
-import com.landawn.abacus.util.function.CharConsumer;
-import com.landawn.abacus.util.function.Consumer;
-import com.landawn.abacus.util.function.Function;
-import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.stream.Stream;
 
 public final class CharPair {
@@ -51,20 +47,20 @@ public final class CharPair {
         return CharList.of(_1, _2);
     }
 
-    public void forEach(CharConsumer comsumer) {
+    public <E extends Exception> void forEach(Try.CharConsumer<E> comsumer) throws E {
         comsumer.accept(this._1);
         comsumer.accept(this._2);
     }
 
-    public void accept(Consumer<CharPair> action) {
+    public <E extends Exception> void accept(Try.Consumer<CharPair, E> action) throws E {
         action.accept(this);
     }
 
-    public <U> U map(Function<CharPair, U> mapper) {
+    public <U, E extends Exception> U map(Try.Function<CharPair, U, E> mapper) throws E {
         return mapper.apply(this);
     }
 
-    public Optional<CharPair> filter(final Predicate<CharPair> predicate) {
+    public <E extends Exception> Optional<CharPair> filter(Try.Predicate<CharPair, E> predicate) throws E {
         return predicate.test(this) ? Optional.of(this) : Optional.<CharPair> empty();
     }
 

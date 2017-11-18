@@ -18,7 +18,6 @@ import java.util.NoSuchElementException;
 
 import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.util.function.DoubleBiFunction;
-import com.landawn.abacus.util.function.DoubleConsumer;
 import com.landawn.abacus.util.function.DoubleFunction;
 import com.landawn.abacus.util.function.DoublePredicate;
 import com.landawn.abacus.util.function.DoubleTriFunction;
@@ -26,10 +25,10 @@ import com.landawn.abacus.util.function.DoubleUnaryOperator;
 import com.landawn.abacus.util.function.IntBiFunction;
 import com.landawn.abacus.util.function.IntBiPredicate;
 import com.landawn.abacus.util.function.IntConsumer;
-import com.landawn.abacus.util.stream.DoubleStream;
 import com.landawn.abacus.util.stream.DoubleIteratorEx;
-import com.landawn.abacus.util.stream.ObjIteratorEx;
+import com.landawn.abacus.util.stream.DoubleStream;
 import com.landawn.abacus.util.stream.IntStream;
+import com.landawn.abacus.util.stream.ObjIteratorEx;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -1624,11 +1623,12 @@ public final class DoubleMatrix extends AbstractMatrix<double[], DoubleList, Dou
         return a == null ? 0 : a.length;
     }
 
-    public void forEach(final DoubleConsumer action) {
+    public <E extends Exception> void forEach(final Try.DoubleConsumer<E> action) throws E {
         forEach(0, rows, 0, cols, action);
     }
 
-    public void forEach(final int fromRowIndex, final int toRowIndex, final int fromColumnIndex, final int toColumnIndex, final DoubleConsumer action) {
+    public <E extends Exception> void forEach(final int fromRowIndex, final int toRowIndex, final int fromColumnIndex, final int toColumnIndex,
+            final Try.DoubleConsumer<E> action) throws E {
         N.checkFromToIndex(fromRowIndex, toRowIndex, rows);
         N.checkFromToIndex(fromColumnIndex, toColumnIndex, cols);
 

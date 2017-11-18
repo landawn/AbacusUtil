@@ -27,14 +27,6 @@ import java.util.Set;
 
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
-import com.landawn.abacus.util.function.BinaryOperator;
-import com.landawn.abacus.util.function.Consumer;
-import com.landawn.abacus.util.function.FloatBinaryOperator;
-import com.landawn.abacus.util.function.FloatConsumer;
-import com.landawn.abacus.util.function.FloatFunction;
-import com.landawn.abacus.util.function.FloatPredicate;
-import com.landawn.abacus.util.function.FloatUnaryOperator;
-import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.Collector;
@@ -46,7 +38,7 @@ import com.landawn.abacus.util.stream.FloatStream;
  * 
  * @author Haiyang Li
  */
-public final class FloatList extends PrimitiveList<FloatConsumer, FloatPredicate, Float, float[], FloatList> {
+public final class FloatList extends PrimitiveList<Float, float[], FloatList> {
     private static final long serialVersionUID = 6459013170687883950L;
 
     private float[] elementData = N.EMPTY_FLOAT_ARRAY;
@@ -327,8 +319,7 @@ public final class FloatList extends PrimitiveList<FloatConsumer, FloatPredicate
         return removeAll(of(a));
     }
 
-    @Override
-    public boolean removeIf(FloatPredicate p) {
+    public <E extends Exception> boolean removeIf(Try.FloatPredicate<E> p) throws E {
         final FloatList tmp = new FloatList(size());
 
         for (int i = 0; i < size; i++) {
@@ -436,13 +427,13 @@ public final class FloatList extends PrimitiveList<FloatConsumer, FloatPredicate
         return result;
     }
 
-    public void replaceAll(FloatUnaryOperator operator) {
+    public <E extends Exception> void replaceAll(Try.FloatUnaryOperator<E> operator) throws E {
         for (int i = 0, len = size(); i < len; i++) {
             elementData[i] = operator.applyAsFloat(elementData[i]);
         }
     }
 
-    public boolean replaceIf(FloatPredicate predicate, float newValue) {
+    public <E extends Exception> boolean replaceIf(Try.FloatPredicate<E> predicate, float newValue) throws E {
         boolean result = false;
 
         for (int i = 0, len = size(); i < len; i++) {
@@ -804,7 +795,7 @@ public final class FloatList extends PrimitiveList<FloatConsumer, FloatPredicate
         return size() == 0 ? OptionalFloat.empty() : OptionalFloat.of(elementData[size() - 1]);
     }
 
-    public OptionalFloat findFirst(FloatPredicate predicate) {
+    public <E extends Exception> OptionalFloat findFirst(Try.FloatPredicate<E> predicate) throws E {
         for (int i = 0; i < size; i++) {
             if (predicate.test(elementData[i])) {
                 return OptionalFloat.of(elementData[i]);
@@ -814,17 +805,7 @@ public final class FloatList extends PrimitiveList<FloatConsumer, FloatPredicate
         return OptionalFloat.empty();
     }
 
-    //    public Optional<IndexedFloat> findFirst2(FloatPredicate predicate) {
-    //        for (int i = 0; i < size; i++) {
-    //            if (predicate.test(elementData[i])) {
-    //                return Optional.of(IndexedFloat.of(i, elementData[i]));
-    //            }
-    //        }
-    //
-    //        return Optional.empty();
-    //    }
-
-    public OptionalFloat findLast(FloatPredicate predicate) {
+    public <E extends Exception> OptionalFloat findLast(Try.FloatPredicate<E> predicate) throws E {
         for (int i = size - 1; i >= 0; i--) {
             if (predicate.test(elementData[i])) {
                 return OptionalFloat.of(elementData[i]);
@@ -834,17 +815,7 @@ public final class FloatList extends PrimitiveList<FloatConsumer, FloatPredicate
         return OptionalFloat.empty();
     }
 
-    //    public Optional<IndexedFloat> findLast2(FloatPredicate predicate) {
-    //        for (int i = size - 1; i >= 0; i--) {
-    //            if (predicate.test(elementData[i])) {
-    //                return Optional.of(IndexedFloat.of(i, elementData[i]));
-    //            }
-    //        }
-    //
-    //        return Optional.empty();
-    //    }
-
-    public OptionalInt findFirstIndex(FloatPredicate predicate) {
+    public <E extends Exception> OptionalInt findFirstIndex(Try.FloatPredicate<E> predicate) throws E {
         for (int i = 0; i < size; i++) {
             if (predicate.test(elementData[i])) {
                 return OptionalInt.of(i);
@@ -854,7 +825,7 @@ public final class FloatList extends PrimitiveList<FloatConsumer, FloatPredicate
         return OptionalInt.empty();
     }
 
-    public OptionalInt findLastIndex(FloatPredicate predicate) {
+    public <E extends Exception> OptionalInt findLastIndex(Try.FloatPredicate<E> predicate) throws E {
         for (int i = size - 1; i >= 0; i--) {
             if (predicate.test(elementData[i])) {
                 return OptionalInt.of(i);
@@ -864,8 +835,17 @@ public final class FloatList extends PrimitiveList<FloatConsumer, FloatPredicate
         return OptionalInt.empty();
     }
 
-    @Override
-    public boolean allMatch(final int fromIndex, final int toIndex, FloatPredicate filter) {
+    /**
+     * Returns whether all elements of this List match the provided predicate.
+     * 
+     * @param filter
+     * @return
+     */
+    public <E extends Exception> boolean allMatch(Try.FloatPredicate<E> filter) throws E {
+        return allMatch(0, size(), filter);
+    }
+
+    public <E extends Exception> boolean allMatch(final int fromIndex, final int toIndex, Try.FloatPredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         if (size > 0) {
@@ -879,8 +859,17 @@ public final class FloatList extends PrimitiveList<FloatConsumer, FloatPredicate
         return true;
     }
 
-    @Override
-    public boolean anyMatch(final int fromIndex, final int toIndex, FloatPredicate filter) {
+    /**
+     * Returns whether any elements of this List match the provided predicate.
+     * 
+     * @param filter
+     * @return
+     */
+    public <E extends Exception> boolean anyMatch(Try.FloatPredicate<E> filter) throws E {
+        return anyMatch(0, size(), filter);
+    }
+
+    public <E extends Exception> boolean anyMatch(final int fromIndex, final int toIndex, Try.FloatPredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         if (size > 0) {
@@ -894,8 +883,17 @@ public final class FloatList extends PrimitiveList<FloatConsumer, FloatPredicate
         return false;
     }
 
-    @Override
-    public boolean noneMatch(final int fromIndex, final int toIndex, FloatPredicate filter) {
+    /**
+     * Returns whether no elements of this List match the provided predicate.
+     * 
+     * @param filter
+     * @return
+     */
+    public <E extends Exception> boolean noneMatch(Try.FloatPredicate<E> filter) throws E {
+        return noneMatch(0, size(), filter);
+    }
+
+    public <E extends Exception> boolean noneMatch(final int fromIndex, final int toIndex, Try.FloatPredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         if (size > 0) {
@@ -909,37 +907,56 @@ public final class FloatList extends PrimitiveList<FloatConsumer, FloatPredicate
         return true;
     }
 
-    @Override
-    public boolean hasDuplicates() {
-        return N.hasDuplicates(elementData, 0, size, false);
+    /**
+     * 
+     * @param filter
+     * @return
+     */
+    public <E extends Exception> int count(Try.FloatPredicate<E> filter) throws E {
+        return count(0, size(), filter);
     }
 
-    @Override
-    public int count(final int fromIndex, final int toIndex, FloatPredicate filter) {
+    public <E extends Exception> int count(final int fromIndex, final int toIndex, Try.FloatPredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         return N.count(elementData, fromIndex, toIndex, filter);
     }
 
-    @Override
-    public FloatList filter(final int fromIndex, final int toIndex, FloatPredicate filter) {
+    /**
+     * 
+     * @param filter
+     * @return a new List with the elements match the provided predicate.
+     */
+    public <E extends Exception> FloatList filter(Try.FloatPredicate<E> filter) throws E {
+        return filter(0, size(), filter);
+    }
+
+    public <E extends Exception> FloatList filter(final int fromIndex, final int toIndex, Try.FloatPredicate<E> filter) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         return N.filter(elementData, fromIndex, toIndex, filter);
     }
 
-    @Override
-    public FloatList filter(final int fromIndex, final int toIndex, FloatPredicate filter, final int max) {
+    /**
+     * 
+     * @param filter
+     * @return a new List with the elements match the provided predicate.
+     */
+    public <E extends Exception> FloatList filter(Try.FloatPredicate<E> filter, int max) throws E {
+        return filter(0, size(), filter, max);
+    }
+
+    public <E extends Exception> FloatList filter(final int fromIndex, final int toIndex, Try.FloatPredicate<E> filter, final int max) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         return N.filter(elementData, fromIndex, toIndex, filter, max);
     }
 
-    public FloatList map(final FloatUnaryOperator mapper) {
+    public <E extends Exception> FloatList map(final Try.FloatUnaryOperator<E> mapper) throws E {
         return map(0, size, mapper);
     }
 
-    public FloatList map(final int fromIndex, final int toIndex, final FloatUnaryOperator mapper) {
+    public <E extends Exception> FloatList map(final int fromIndex, final int toIndex, final Try.FloatUnaryOperator<E> mapper) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         final FloatList result = new FloatList(toIndex - fromIndex);
@@ -951,11 +968,11 @@ public final class FloatList extends PrimitiveList<FloatConsumer, FloatPredicate
         return result;
     }
 
-    public <T> List<T> mapToObj(final FloatFunction<? extends T> mapper) {
+    public <T, E extends Exception> List<T> mapToObj(final Try.FloatFunction<? extends T, E> mapper) throws E {
         return mapToObj(0, size, mapper);
     }
 
-    public <T> List<T> mapToObj(final int fromIndex, final int toIndex, final FloatFunction<? extends T> mapper) {
+    public <T, E extends Exception> List<T> mapToObj(final int fromIndex, final int toIndex, final Try.FloatFunction<? extends T, E> mapper) throws E {
         checkFromToIndex(fromIndex, toIndex);
 
         final List<T> result = new ArrayList<>(toIndex - fromIndex);
@@ -988,7 +1005,7 @@ public final class FloatList extends PrimitiveList<FloatConsumer, FloatPredicate
      * @param accumulator
      * @return
      */
-    public OptionalFloat reduce(final FloatBinaryOperator accumulator) {
+    public <E extends Exception> OptionalFloat reduce(final Try.FloatBinaryOperator<E> accumulator) throws E {
         if (isEmpty()) {
             return OptionalFloat.empty();
         }
@@ -1024,7 +1041,7 @@ public final class FloatList extends PrimitiveList<FloatConsumer, FloatPredicate
      * @param accumulator
      * @return
      */
-    public float reduce(final float identity, final FloatBinaryOperator accumulator) {
+    public <E extends Exception> float reduce(final float identity, final Try.FloatBinaryOperator<E> accumulator) throws E {
         if (isEmpty()) {
             return identity;
         }
@@ -1036,6 +1053,11 @@ public final class FloatList extends PrimitiveList<FloatConsumer, FloatPredicate
         }
 
         return result;
+    }
+
+    @Override
+    public boolean hasDuplicates() {
+        return N.hasDuplicates(elementData, 0, size, false);
     }
 
     @Override
@@ -1334,26 +1356,29 @@ public final class FloatList extends PrimitiveList<FloatConsumer, FloatPredicate
         return multiset;
     }
 
-    public <K, U> Map<K, U> toMap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends U> valueMapper) {
-        final Supplier<Map<K, U>> mapFactory = Fn.Suppliers.ofMap();
+    public <K, V, E extends Exception, E2 extends Exception> Map<K, V> toMap(Try.FloatFunction<? extends K, E> keyExtractor,
+            Try.FloatFunction<? extends V, E2> valueMapper) throws E, E2 {
+        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(keyExtractor, valueMapper, mapFactory);
     }
 
-    public <K, U, M extends Map<K, U>> M toMap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends U> valueMapper, Supplier<M> mapFactory) {
-        final BinaryOperator<U> mergeFunction = Fn.throwingMerger();
+    public <K, V, M extends Map<K, V>, E extends Exception, E2 extends Exception> M toMap(Try.FloatFunction<? extends K, E> keyExtractor,
+            Try.FloatFunction<? extends V, E2> valueMapper, Supplier<M> mapFactory) throws E, E2 {
+        final Try.BinaryOperator<V, RuntimeException> mergeFunction = Fn.throwingMerger();
 
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
-    public <K, U> Map<K, U> toMap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction) {
-        final Supplier<Map<K, U>> mapFactory = Fn.Suppliers.ofMap();
+    public <K, V, E extends Exception, E2 extends Exception, E3 extends Exception> Map<K, V> toMap(Try.FloatFunction<? extends K, E> keyExtractor,
+            Try.FloatFunction<? extends V, E2> valueMapper, Try.BinaryOperator<V, E3> mergeFunction) throws E, E2, E3 {
+        final Supplier<Map<K, V>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
     }
 
-    public <K, U, M extends Map<K, U>> M toMap(FloatFunction<? extends K> keyExtractor, FloatFunction<? extends U> valueMapper, BinaryOperator<U> mergeFunction,
-            Supplier<M> mapFactory) {
+    public <K, V, M extends Map<K, V>, E extends Exception, E2 extends Exception, E3 extends Exception> M toMap(Try.FloatFunction<? extends K, E> keyExtractor,
+            Try.FloatFunction<? extends V, E2> valueMapper, Try.BinaryOperator<V, E3> mergeFunction, Supplier<M> mapFactory) throws E, E2, E3 {
         final M result = mapFactory.get();
 
         for (int i = 0; i < size; i++) {
@@ -1364,15 +1389,15 @@ public final class FloatList extends PrimitiveList<FloatConsumer, FloatPredicate
     }
 
     @SuppressWarnings("hiding")
-    public <K, A, D> Map<K, D> toMap(FloatFunction<? extends K> classifier, Collector<Float, A, D> downstream) {
+    public <K, A, D, E extends Exception> Map<K, D> toMap(Try.FloatFunction<? extends K, E> classifier, Collector<Float, A, D> downstream) throws E {
         final Supplier<Map<K, D>> mapFactory = Fn.Suppliers.ofMap();
 
         return toMap(classifier, downstream, mapFactory);
     }
 
     @SuppressWarnings("hiding")
-    public <K, A, D, M extends Map<K, D>> M toMap(final FloatFunction<? extends K> classifier, final Collector<Float, A, D> downstream,
-            final Supplier<M> mapFactory) {
+    public <K, A, D, M extends Map<K, D>, E extends Exception> M toMap(final Try.FloatFunction<? extends K, E> classifier,
+            final Collector<Float, A, D> downstream, final Supplier<M> mapFactory) throws E {
         final M result = mapFactory.get();
         final Supplier<A> downstreamSupplier = downstream.supplier();
         final BiConsumer<A, Float> downstreamAccumulator = downstream.accumulator();
@@ -1423,12 +1448,12 @@ public final class FloatList extends PrimitiveList<FloatConsumer, FloatPredicate
     }
 
     @Override
-    public <R> R apply(Function<? super FloatList, R> func) {
+    public <R, E extends Exception> R apply(Try.Function<? super FloatList, R, E> func) throws E {
         return func.apply(this);
     }
 
     @Override
-    public void accept(Consumer<? super FloatList> action) {
+    public <E extends Exception> void accept(Try.Consumer<? super FloatList, E> action) throws E {
         action.accept(this);
     }
 

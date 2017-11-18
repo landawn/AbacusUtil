@@ -27,7 +27,6 @@ package com.landawn.abacus.util;
 import java.util.Collection;
 import java.util.Map;
 
-import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -1216,7 +1215,7 @@ public class Joiner {
      * @param mapper
      * @return
      */
-    public <T> T map(Function<? super String, T> mapper) {
+    public <T, E extends Exception> T map(Try.Function<? super String, T, E> mapper) throws E {
         return mapper.apply(toString());
     }
 
@@ -1229,7 +1228,7 @@ public class Joiner {
      * @param mapper
      * @return
      */
-    public <T> Optional<T> mapIfNotEmpty(Function<? super String, T> mapper) {
+    public <T, E extends Exception> Optional<T> mapIfNotEmpty(Try.Function<? super String, T, E> mapper) throws E {
         return buffer == null ? Optional.<T> empty() : Optional.of(mapper.apply(toString()));
     }
 

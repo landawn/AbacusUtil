@@ -1,10 +1,5 @@
 package com.landawn.abacus.util;
 
-import com.landawn.abacus.util.FloatPair;
-import com.landawn.abacus.util.function.Consumer;
-import com.landawn.abacus.util.function.FloatConsumer;
-import com.landawn.abacus.util.function.Function;
-import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.stream.Stream;
 
 public final class FloatPair {
@@ -52,20 +47,20 @@ public final class FloatPair {
         return FloatList.of(_1, _2);
     }
 
-    public void forEach(FloatConsumer comsumer) {
+    public <E extends Exception> void forEach(Try.FloatConsumer<E> comsumer) throws E {
         comsumer.accept(this._1);
         comsumer.accept(this._2);
     }
 
-    public void accept(Consumer<FloatPair> action) {
+    public <E extends Exception> void accept(Try.Consumer<FloatPair, E> action) throws E {
         action.accept(this);
     }
 
-    public <U> U map(Function<FloatPair, U> mapper) {
+    public <U, E extends Exception> U map(Try.Function<FloatPair, U, E> mapper) throws E {
         return mapper.apply(this);
     }
 
-    public Optional<FloatPair> filter(final Predicate<FloatPair> predicate) {
+    public <E extends Exception> Optional<FloatPair> filter(final Try.Predicate<FloatPair, E> predicate) throws E {
         return predicate.test(this) ? Optional.of(this) : Optional.<FloatPair> empty();
     }
 

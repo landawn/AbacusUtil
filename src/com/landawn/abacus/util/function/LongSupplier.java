@@ -14,22 +14,24 @@
 
 package com.landawn.abacus.util.function;
 
+import com.landawn.abacus.util.Try;
+
 /**
  * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
  * @since 0.8
  * 
  * @author Haiyang Li
  */
-public interface LongSupplier extends java.util.function.LongSupplier {
+public interface LongSupplier extends java.util.function.LongSupplier, Try.LongSupplier<RuntimeException> {
 
-   static final LongSupplier ZERO = new LongSupplier() {
+    static final LongSupplier ZERO = new LongSupplier() {
         @Override
         public long getAsLong() {
             return 0;
         }
     };
 
-   static final LongSupplier RANDOM = new LongSupplier() {
+    static final LongSupplier RANDOM = new LongSupplier() {
         @Override
         public long getAsLong() {
             return Util.RAND.nextLong();

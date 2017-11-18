@@ -15,7 +15,8 @@
 package com.landawn.abacus.util.function;
 
 import java.util.Objects;
-import java.util.function.Function;
+
+import com.landawn.abacus.util.Try;
 
 /**
  * 
@@ -23,8 +24,9 @@ import java.util.function.Function;
  * 
  * @author Haiyang Li
  */
-public interface LongBiFunction<R> {
+public interface LongBiFunction<R> extends Try.LongBiFunction<R, RuntimeException> {
 
+    @Override
     R apply(long t, long u);
 
     default <V> LongBiFunction<V> andThen(Function<? super R, ? extends V> after) {

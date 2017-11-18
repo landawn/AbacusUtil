@@ -14,13 +14,16 @@
 
 package com.landawn.abacus.util.function;
 
+import com.landawn.abacus.util.Try;
+
 /**
  * 
  * @since 0.8
  * 
  * @author Haiyang Li
  */
-public interface CharBinaryOperator {
+public interface CharBinaryOperator extends Try.CharBinaryOperator<RuntimeException> {
 
+    @Override
     char applyAsChar(char left, char right);
 }

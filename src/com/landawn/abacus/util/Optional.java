@@ -30,18 +30,6 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import com.landawn.abacus.util.function.Consumer;
-import com.landawn.abacus.util.function.Function;
-import com.landawn.abacus.util.function.Predicate;
-import com.landawn.abacus.util.function.Supplier;
-import com.landawn.abacus.util.function.ToBooleanFunction;
-import com.landawn.abacus.util.function.ToByteFunction;
-import com.landawn.abacus.util.function.ToCharFunction;
-import com.landawn.abacus.util.function.ToDoubleFunction;
-import com.landawn.abacus.util.function.ToFloatFunction;
-import com.landawn.abacus.util.function.ToIntFunction;
-import com.landawn.abacus.util.function.ToLongFunction;
-import com.landawn.abacus.util.function.ToShortFunction;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -173,7 +161,7 @@ public final class Optional<T> {
      * @throws NullPointerException if value is present and {@code consumer} is
      * null
      */
-    public void ifPresent(Consumer<? super T> action) {
+    public <E extends Exception> void ifPresent(Try.Consumer<? super T, E> action) throws E {
         if (isPresent()) {
             action.accept(value);
         }
@@ -185,7 +173,7 @@ public final class Optional<T> {
      * @param action
      * @param emptyAction
      */
-    public void ifPresentOrElse(Consumer<? super T> action, Runnable emptyAction) {
+    public <E extends Exception, E2 extends Exception> void ifPresentOrElse(Try.Consumer<? super T, E> action, Try.Runnable<E2> emptyAction) throws E, E2 {
         if (isPresent()) {
             action.accept(value);
         } else {
@@ -204,7 +192,7 @@ public final class Optional<T> {
      * otherwise an empty {@code Optional}
      * @throws NullPointerException if the predicate is null
      */
-    public Optional<T> filter(Predicate<? super T> predicate) {
+    public <E extends Exception> Optional<T> filter(Try.Predicate<? super T, E> predicate) throws E {
         N.requireNonNull(predicate);
 
         if (isPresent() && predicate.test(value)) {
@@ -243,7 +231,7 @@ public final class Optional<T> {
      * otherwise an empty {@code Optional}
      * @throws NullPointerException if the mapping function is null
      */
-    public <U> Optional<U> map(final Function<? super T, ? extends U> mapper) {
+    public <U, E extends Exception> Optional<U> map(final Try.Function<? super T, ? extends U, E> mapper) throws E {
         N.requireNonNull(mapper);
 
         if (isPresent()) {
@@ -253,7 +241,7 @@ public final class Optional<T> {
         }
     }
 
-    public OptionalBoolean mapToBoolean(final ToBooleanFunction<? super T> mapper) {
+    public <E extends Exception> OptionalBoolean mapToBoolean(final Try.ToBooleanFunction<? super T, E> mapper) throws E {
         N.requireNonNull(mapper);
 
         if (isPresent()) {
@@ -263,7 +251,7 @@ public final class Optional<T> {
         }
     }
 
-    public OptionalChar mapToChar(final ToCharFunction<? super T> mapper) {
+    public <E extends Exception> OptionalChar mapToChar(final Try.ToCharFunction<? super T, E> mapper) throws E {
         N.requireNonNull(mapper);
 
         if (isPresent()) {
@@ -273,7 +261,7 @@ public final class Optional<T> {
         }
     }
 
-    public OptionalByte mapToByte(final ToByteFunction<? super T> mapper) {
+    public <E extends Exception> OptionalByte mapToByte(final Try.ToByteFunction<? super T, E> mapper) throws E {
         N.requireNonNull(mapper);
 
         if (isPresent()) {
@@ -283,7 +271,7 @@ public final class Optional<T> {
         }
     }
 
-    public OptionalShort mapToShort(final ToShortFunction<? super T> mapper) {
+    public <E extends Exception> OptionalShort mapToShort(final Try.ToShortFunction<? super T, E> mapper) throws E {
         N.requireNonNull(mapper);
 
         if (isPresent()) {
@@ -293,7 +281,7 @@ public final class Optional<T> {
         }
     }
 
-    public OptionalInt mapToInt(final ToIntFunction<? super T> mapper) {
+    public <E extends Exception> OptionalInt mapToInt(final Try.ToIntFunction<? super T, E> mapper) throws E {
         N.requireNonNull(mapper);
 
         if (isPresent()) {
@@ -303,7 +291,7 @@ public final class Optional<T> {
         }
     }
 
-    public OptionalLong mapToLong(final ToLongFunction<? super T> mapper) {
+    public <E extends Exception> OptionalLong mapToLong(final Try.ToLongFunction<? super T, E> mapper) throws E {
         N.requireNonNull(mapper);
 
         if (isPresent()) {
@@ -313,7 +301,7 @@ public final class Optional<T> {
         }
     }
 
-    public OptionalFloat mapToFloat(final ToFloatFunction<? super T> mapper) {
+    public <E extends Exception> OptionalFloat mapToFloat(final Try.ToFloatFunction<? super T, E> mapper) throws E {
         N.requireNonNull(mapper);
 
         if (isPresent()) {
@@ -323,7 +311,7 @@ public final class Optional<T> {
         }
     }
 
-    public OptionalDouble mapToDouble(final ToDoubleFunction<? super T> mapper) {
+    public <E extends Exception> OptionalDouble mapToDouble(final Try.ToDoubleFunction<? super T, E> mapper) throws E {
         N.requireNonNull(mapper);
 
         if (isPresent()) {
@@ -350,7 +338,7 @@ public final class Optional<T> {
      * @throws NullPointerException if the mapping function is null or returns
      * a null result
      */
-    public <U> Optional<U> flatMap(Function<? super T, Optional<U>> mapper) {
+    public <U, E extends Exception> Optional<U> flatMap(Try.Function<? super T, Optional<U>, E> mapper) throws E {
         N.requireNonNull(mapper);
 
         if (isPresent()) {
@@ -381,7 +369,7 @@ public final class Optional<T> {
      * @throws NullPointerException if value is not present and {@code other} is
      * null
      */
-    public T orElseGet(Supplier<? extends T> other) {
+    public <E extends Exception> T orElseGet(Try.Supplier<? extends T, E> other) throws E {
         return isPresent() ? value : other.get();
     }
 
@@ -401,7 +389,7 @@ public final class Optional<T> {
      * @throws NullPointerException if no value is present and
      * {@code exceptionSupplier} is null
      */
-    public <X extends Throwable> T orElseThrow(Supplier<? extends X> exceptionSupplier) throws X {
+    public <X extends Throwable, E extends Exception> T orElseThrow(Try.Supplier<? extends X, E> exceptionSupplier) throws X, E {
         if (isPresent()) {
             return value;
         } else {

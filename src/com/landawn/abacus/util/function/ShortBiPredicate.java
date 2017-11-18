@@ -16,13 +16,15 @@ package com.landawn.abacus.util.function;
 
 import java.util.Objects;
 
+import com.landawn.abacus.util.Try;
+
 /**
  * 
  * @since 0.8
  * 
  * @author Haiyang Li
  */
-public interface ShortBiPredicate {
+public interface ShortBiPredicate extends Try.ShortBiPredicate<RuntimeException> {
 
     static final ShortBiPredicate ALWAYS_TRUE = new ShortBiPredicate() {
         @Override
@@ -80,6 +82,7 @@ public interface ShortBiPredicate {
         }
     };
 
+    @Override
     boolean test(short t, short u);
 
     default ShortBiPredicate negate() {

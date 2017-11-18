@@ -18,10 +18,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import com.landawn.abacus.util.function.Consumer;
-import com.landawn.abacus.util.function.Function;
-import com.landawn.abacus.util.function.Predicate;
-
 /**
  * 
  * @param <T>
@@ -106,13 +102,13 @@ public class Builder<T> {
         return val;
     }
 
-    public Builder<T> accept(final Consumer<? super T> consumer) {
+    public <E extends Exception> Builder<T> accept(final Try.Consumer<? super T, E> consumer) throws E {
         consumer.accept(val);
 
         return this;
     }
 
-    public <R> Builder<R> map(final Function<? super T, R> mapper) {
+    public <R, E extends Exception> Builder<R> map(final Try.Function<? super T, R, E> mapper) throws E {
         return of(mapper.apply(val));
     }
 
@@ -122,7 +118,7 @@ public class Builder<T> {
      * @return <code>Optional</code> with the value if <code>predicate</code> returns true, 
      * otherwise, return an empty <code>Optional</code>
      */
-    public Optional<T> filter(final Predicate<? super T> predicate) {
+    public <E extends Exception> Optional<T> filter(final Try.Predicate<? super T, E> predicate) throws E {
         return predicate.test(val) ? Optional.of(val) : Optional.<T> empty();
     }
 
