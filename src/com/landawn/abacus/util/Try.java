@@ -842,4 +842,36 @@ public final class Try<T extends AutoCloseable> {
     public static interface DoubleTriConsumer<E extends Exception> {
         void accept(double a, double b, double c) throws E;
     }
+
+    public static interface ObjBooleanConsumer<T, E extends Exception> {
+        void accept(T t, boolean value) throws E;
+    }
+
+    public static interface ObjCharConsumer<T, E extends Exception> {
+        void accept(T t, char value) throws E;
+    }
+
+    public static interface ObjByteConsumer<T, E extends Exception> {
+        void accept(T t, byte value) throws E;
+    }
+
+    public static interface ObjShortConsumer<T, E extends Exception> {
+        void accept(T t, short value) throws E;
+    }
+
+    public static interface ObjIntConsumer<T, E extends Exception> {
+        void accept(T t, int value) throws E;
+    }
+
+    public static interface ObjLongConsumer<T, E extends Exception> {
+        void accept(T t, long value) throws E;
+    }
+
+    public static interface ObjFloatConsumer<T, E extends Exception> {
+        void accept(T t, float value) throws E;
+    }
+
+    public static interface ObjDoubleConsumer<T, E extends Exception> {
+        void accept(T t, double value) throws E;
+    }
 }

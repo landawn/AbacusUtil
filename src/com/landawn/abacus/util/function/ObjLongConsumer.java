@@ -14,13 +14,15 @@
 
 package com.landawn.abacus.util.function;
 
+import com.landawn.abacus.util.Try;
+
 /**
  * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
  * @since 0.8
  * 
  * @author Haiyang Li
  */
-public interface ObjLongConsumer<T> extends java.util.function.ObjLongConsumer<T> {
+public interface ObjLongConsumer<T> extends java.util.function.ObjLongConsumer<T>, Try.ObjLongConsumer<T, RuntimeException> {
 
     @Override
     void accept(T t, long value);

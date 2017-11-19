@@ -1,4 +1,16 @@
 
+### 1.1.1
+
+* Replace `Predicate/Consumer/Function` in `Multiset/LongMultiset/Multimap` with `Try.Predicate/Consumer/Function`.
+
+* Add `Median`.
+
+* Add `Joiner.concat`.
+
+* Add `Fn.tuple1/tuple2/tuple3/tuple4`.
+
+* Improvements and bug fix.
+
 
 ### 1.1.0
 

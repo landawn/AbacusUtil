@@ -32,15 +32,7 @@ import java.util.Queue;
 import java.util.Set;
 
 import com.landawn.abacus.annotation.Internal;
-import com.landawn.abacus.util.function.BiConsumer;
-import com.landawn.abacus.util.function.BiFunction;
-import com.landawn.abacus.util.function.BiPredicate;
-import com.landawn.abacus.util.function.Consumer;
-import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
-import com.landawn.abacus.util.function.Predicate;
-import com.landawn.abacus.util.function.TriFunction;
-import com.landawn.abacus.util.function.TriPredicate;
 import com.landawn.abacus.util.stream.EntryStream;
 import com.landawn.abacus.util.stream.Stream;
 
@@ -215,7 +207,7 @@ public class Multimap<K, E, V extends Collection<E>> {
      * @param keyExtractor
      * @return
      */
-    public Multimap<K, E, V> setAll(final Collection<? extends E> c, final Function<? super E, K> keyExtractor) {
+    public <X extends Exception> Multimap<K, E, V> setAll(final Collection<? extends E> c, final Try.Function<? super E, K, X> keyExtractor) throws X {
         if (N.notNullOrEmpty(c)) {
             for (E e : c) {
                 set(keyExtractor.apply(e), e);
@@ -350,7 +342,7 @@ public class Multimap<K, E, V extends Collection<E>> {
         return false;
     }
 
-    public boolean putAll(final Collection<? extends E> c, final Function<? super E, K> keyExtractor) {
+    public <X extends Exception> boolean putAll(final Collection<? extends E> c, final Try.Function<? super E, K, X> keyExtractor) throws X {
         if (N.isNullOrEmpty(c)) {
             return false;
         }
@@ -523,7 +515,7 @@ public class Multimap<K, E, V extends Collection<E>> {
      * @param predicate
      * @return <code>true</code> if this Multimap is modified by this operation, otherwise <code>false</code>.
      */
-    public boolean removeIf(E value, Predicate<? super K> predicate) {
+    public <X extends Exception> boolean removeIf(E value, Try.Predicate<? super K, X> predicate) throws X {
         Set<K> removingKeys = null;
 
         for (K key : this.valueMap.keySet()) {
@@ -558,7 +550,7 @@ public class Multimap<K, E, V extends Collection<E>> {
      * @param predicate
      * @return <code>true</code> if this Multimap is modified by this operation, otherwise <code>false</code>.
      */
-    public boolean removeIf(E value, BiPredicate<? super K, ? super V> predicate) {
+    public <X extends Exception> boolean removeIf(E value, Try.BiPredicate<? super K, ? super V, X> predicate) throws X {
         Set<K> removingKeys = null;
 
         for (Map.Entry<K, V> entry : this.valueMap.entrySet()) {
@@ -593,7 +585,7 @@ public class Multimap<K, E, V extends Collection<E>> {
      * @param predicate
      * @return <code>true</code> if this Multimap is modified by this operation, otherwise <code>false</code>.
      */
-    public boolean removeAllIf(Collection<?> values, Predicate<? super K> predicate) {
+    public <X extends Exception> boolean removeAllIf(Collection<?> values, Try.Predicate<? super K, X> predicate) throws X {
         Set<K> removingKeys = null;
 
         for (K key : this.valueMap.keySet()) {
@@ -628,7 +620,7 @@ public class Multimap<K, E, V extends Collection<E>> {
      * @param predicate
      * @return <code>true</code> if this Multimap is modified by this operation, otherwise <code>false</code>.
      */
-    public boolean removeAllIf(Collection<?> values, BiPredicate<? super K, ? super V> predicate) {
+    public <X extends Exception> boolean removeAllIf(Collection<?> values, Try.BiPredicate<? super K, ? super V, X> predicate) throws X {
         Set<K> removingKeys = null;
 
         for (Map.Entry<K, V> entry : this.valueMap.entrySet()) {
@@ -662,7 +654,7 @@ public class Multimap<K, E, V extends Collection<E>> {
      * @param predicate
      * @return <code>true</code> if this Multimap is modified by this operation, otherwise <code>false</code>.
      */
-    public boolean removeAllIf(Predicate<? super K> predicate) {
+    public <X extends Exception> boolean removeAllIf(Try.Predicate<? super K, X> predicate) throws X {
         Set<K> removingKeys = null;
 
         for (K key : this.valueMap.keySet()) {
@@ -692,7 +684,7 @@ public class Multimap<K, E, V extends Collection<E>> {
      * @param predicate
      * @return <code>true</code> if this Multimap is modified by this operation, otherwise <code>false</code>.
      */
-    public boolean removeAllIf(BiPredicate<? super K, ? super V> predicate) {
+    public <X extends Exception> boolean removeAllIf(Try.BiPredicate<? super K, ? super V, X> predicate) throws X {
         Set<K> removingKeys = null;
 
         for (Map.Entry<K, V> entry : this.valueMap.entrySet()) {
@@ -810,7 +802,7 @@ public class Multimap<K, E, V extends Collection<E>> {
      * 
      * @return <code>true</code> if this Multimap is modified by this operation, otherwise <code>false</code>.
      */
-    public boolean replaceIf(Predicate<? super K> predicate, Object oldValue, E newValue) {
+    public <X extends Exception> boolean replaceIf(Try.Predicate<? super K, X> predicate, Object oldValue, E newValue) throws X {
         boolean modified = false;
 
         for (Map.Entry<K, V> entry : this.valueMap.entrySet()) {
@@ -830,7 +822,7 @@ public class Multimap<K, E, V extends Collection<E>> {
      * 
      * @return <code>true</code> if this Multimap is modified by this operation, otherwise <code>false</code>.
      */
-    public boolean replaceIf(BiPredicate<? super K, ? super V> predicate, Object oldValue, E newValue) {
+    public <X extends Exception> boolean replaceIf(Try.BiPredicate<? super K, ? super V, X> predicate, Object oldValue, E newValue) throws X {
         boolean modified = false;
 
         for (Map.Entry<K, V> entry : this.valueMap.entrySet()) {
@@ -850,7 +842,7 @@ public class Multimap<K, E, V extends Collection<E>> {
      * 
      * @return <code>true</code> if this Multimap is modified by this operation, otherwise <code>false</code>.
      */
-    public boolean replaceAllIf(Predicate<? super K> predicate, Collection<?> oldValues, E newValue) {
+    public <X extends Exception> boolean replaceAllIf(Try.Predicate<? super K, X> predicate, Collection<?> oldValues, E newValue) throws X {
         boolean modified = false;
 
         for (Map.Entry<K, V> entry : this.valueMap.entrySet()) {
@@ -873,7 +865,7 @@ public class Multimap<K, E, V extends Collection<E>> {
      * 
      * @return <code>true</code> if this Multimap is modified by this operation, otherwise <code>false</code>.
      */
-    public boolean replaceAllIf(BiPredicate<? super K, ? super V> predicate, Collection<?> oldValues, E newValue) {
+    public <X extends Exception> boolean replaceAllIf(Try.BiPredicate<? super K, ? super V, X> predicate, Collection<?> oldValues, E newValue) throws X {
         boolean modified = false;
 
         for (Map.Entry<K, V> entry : this.valueMap.entrySet()) {
@@ -893,7 +885,7 @@ public class Multimap<K, E, V extends Collection<E>> {
      * 
      * @param function
      */
-    public void replaceAll(BiFunction<? super K, ? super V, ? extends V> function) {
+    public <X extends Exception> void replaceAll(Try.BiFunction<? super K, ? super V, ? extends V, X> function) throws X {
         List<K> keyToRemove = null;
         V newVal = null;
 
@@ -950,7 +942,7 @@ public class Multimap<K, E, V extends Collection<E>> {
         return val == null ? false : (N.isNullOrEmpty(c) ? true : val.containsAll(c));
     }
 
-    public Multimap<K, E, List<E>> filterByKey(Predicate<? super K> filter) {
+    public <X extends Exception> Multimap<K, E, List<E>> filterByKey(Try.Predicate<? super K, X> filter) throws X {
         final Multimap<K, E, List<E>> result = new Multimap<>(valueMap instanceof IdentityHashMap ? IdentityHashMap.class : LinkedHashMap.class, List.class);
 
         for (Map.Entry<K, V> entry : valueMap.entrySet()) {
@@ -962,7 +954,7 @@ public class Multimap<K, E, V extends Collection<E>> {
         return result;
     }
 
-    public Multimap<K, E, List<E>> filterByValue(Predicate<? super V> filter) {
+    public <X extends Exception> Multimap<K, E, List<E>> filterByValue(Try.Predicate<? super V, X> filter) throws X {
         final Multimap<K, E, List<E>> result = new Multimap<>(valueMap instanceof IdentityHashMap ? IdentityHashMap.class : LinkedHashMap.class, List.class);
 
         for (Map.Entry<K, V> entry : valueMap.entrySet()) {
@@ -974,7 +966,7 @@ public class Multimap<K, E, V extends Collection<E>> {
         return result;
     }
 
-    public Multimap<K, E, List<E>> filter(BiPredicate<? super K, ? super V> filter) {
+    public <X extends Exception> Multimap<K, E, List<E>> filter(Try.BiPredicate<? super K, ? super V, X> filter) throws X {
         final Multimap<K, E, List<E>> result = new Multimap<>(valueMap instanceof IdentityHashMap ? IdentityHashMap.class : LinkedHashMap.class, List.class);
 
         for (Map.Entry<K, V> entry : valueMap.entrySet()) {
@@ -986,7 +978,7 @@ public class Multimap<K, E, V extends Collection<E>> {
         return result;
     }
 
-    public void forEach(BiConsumer<? super K, ? super V> action) {
+    public <X extends Exception> void forEach(Try.BiConsumer<? super K, ? super V, X> action) throws X {
         N.requireNonNull(action);
 
         for (Map.Entry<K, V> entry : valueMap.entrySet()) {
@@ -1002,8 +994,8 @@ public class Multimap<K, E, V extends Collection<E>> {
      * @param conditionToBreak break if <code>true</code> is return.
      * @return
      */
-    public <R> R forEach(final R seed, TriFunction<R, ? super K, ? super V, R> accumulator,
-            final TriPredicate<? super R, ? super K, ? super V> conditionToBreak) {
+    public <R, X extends Exception, X2 extends Exception> R forEach(final R seed, Try.TriFunction<R, ? super K, ? super V, R, X> accumulator,
+            final Try.TriPredicate<? super R, ? super K, ? super V, X2> conditionToBreak) throws X, X2 {
         N.requireNonNull(accumulator);
         N.requireNonNull(conditionToBreak);
 
@@ -1043,7 +1035,7 @@ public class Multimap<K, E, V extends Collection<E>> {
      * @param mappingFunction
      * @return
      */
-    public V computeIfAbsent(K key, Function<? super K, ? extends V> mappingFunction) {
+    public <X extends Exception> V computeIfAbsent(K key, Try.Function<? super K, ? extends V, X> mappingFunction) throws X {
         N.requireNonNull(mappingFunction);
 
         final V oldValue = get(key);
@@ -1086,7 +1078,7 @@ public class Multimap<K, E, V extends Collection<E>> {
      * @param remappingFunction
      * @return
      */
-    public V computeIfPresent(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+    public <X extends Exception> V computeIfPresent(K key, Try.BiFunction<? super K, ? super V, ? extends V, X> remappingFunction) throws X {
         N.requireNonNull(remappingFunction);
 
         final V oldValue = get(key);
@@ -1128,7 +1120,7 @@ public class Multimap<K, E, V extends Collection<E>> {
      * @param remappingFunction
      * @return
      */
-    public V compute(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+    public <X extends Exception> V compute(K key, Try.BiFunction<? super K, ? super V, ? extends V, X> remappingFunction) throws X {
         N.requireNonNull(remappingFunction);
 
         final V oldValue = get(key);
@@ -1168,7 +1160,7 @@ public class Multimap<K, E, V extends Collection<E>> {
      * @param remappingFunction
      * @return
      */
-    public V merge(K key, V value, BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
+    public <X extends Exception> V merge(K key, V value, Try.BiFunction<? super V, ? super V, ? extends V, X> remappingFunction) throws X {
         N.requireNonNull(remappingFunction);
         N.requireNonNull(value);
 
@@ -1215,7 +1207,7 @@ public class Multimap<K, E, V extends Collection<E>> {
      * @param remappingFunction
      * @return
      */
-    public V merge(K key, E e, BiFunction<? super V, ? super E, ? extends V> remappingFunction) {
+    public <X extends Exception> V merge(K key, E e, Try.BiFunction<? super V, ? super E, ? extends V, X> remappingFunction) throws X {
         N.requireNonNull(remappingFunction);
         N.requireNonNull(e);
 
@@ -1296,11 +1288,11 @@ public class Multimap<K, E, V extends Collection<E>> {
         return valueMap.isEmpty();
     }
 
-    public <R> R apply(Function<? super Multimap<K, E, V>, R> func) {
+    public <R, X extends Exception> R apply(Try.Function<? super Multimap<K, E, V>, R, X> func) throws X {
         return func.apply(this);
     }
 
-    public void accept(Consumer<? super Multimap<K, E, V>> action) {
+    public <X extends Exception> void accept(Try.Consumer<? super Multimap<K, E, V>, X> action) throws X {
         action.accept(this);
     }
 

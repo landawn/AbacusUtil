@@ -16,7 +16,6 @@
 
 package com.landawn.abacus.util;
 
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -32,15 +31,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import com.landawn.abacus.annotation.Internal;
-import com.landawn.abacus.util.function.BiFunction;
-import com.landawn.abacus.util.function.BiPredicate;
-import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.ObjIntConsumer;
-import com.landawn.abacus.util.function.Predicate;
-import com.landawn.abacus.util.function.TriFunction;
-import com.landawn.abacus.util.function.TriPredicate;
 import com.landawn.abacus.util.stream.EntryStream;
 import com.landawn.abacus.util.stream.Stream;
 
@@ -56,13 +49,13 @@ import com.landawn.abacus.util.stream.Stream;
  * int}, a Multiset may never contain more than {@link MutableInt#MAX_VALUE}
  * occurrences of any one element.
  *
- * @param <E>
+ * @param <T>
  *
  * @since 0.8
  *
  * @author Haiyang Li
  */
-public final class Multiset<E> implements Iterable<E> {
+public final class Multiset<T> implements Iterable<T> {
     private static final Comparator<Map.Entry<?, MutableInt>> cmpByCount = new Comparator<Map.Entry<?, MutableInt>>() {
         @Override
         public int compare(Entry<?, MutableInt> a, Entry<?, MutableInt> b) {
@@ -70,14 +63,14 @@ public final class Multiset<E> implements Iterable<E> {
         }
     };
 
-    final Map<E, MutableInt> valueMap;
+    final Map<T, MutableInt> valueMap;
 
     public Multiset() {
         this(HashMap.class);
     }
 
     public Multiset(int initialCapacity) {
-        this(new HashMap<E, MutableInt>(initialCapacity));
+        this(new HashMap<T, MutableInt>(initialCapacity));
     }
 
     @SuppressWarnings("rawtypes")
@@ -85,7 +78,7 @@ public final class Multiset<E> implements Iterable<E> {
         this(N.newInstance(valueMapType));
     }
 
-    public Multiset(final Collection<? extends E> c) {
+    public Multiset(final Collection<? extends T> c) {
         this();
 
         addAll(c);
@@ -96,109 +89,23 @@ public final class Multiset<E> implements Iterable<E> {
      * @param valueMap The valueMap and this Multiset share the same data; any changes to one will appear in the other.
      */
     @Internal
-    Multiset(final Map<E, MutableInt> valueMap) {
+    Multiset(final Map<T, MutableInt> valueMap) {
         this.valueMap = valueMap;
-    }
-
-    public static Multiset<Boolean> of(final boolean[] a) {
-        final Multiset<Boolean> res = new Multiset<>();
-
-        if (N.notNullOrEmpty(a)) {
-            for (boolean b : a) {
-                res.add(b);
-            }
-        }
-
-        return res;
-    }
-
-    public static Multiset<Character> of(final char[] a) {
-        final Multiset<Character> res = new Multiset<>();
-
-        if (N.notNullOrEmpty(a)) {
-            for (char b : a) {
-                res.add(b);
-            }
-        }
-
-        return res;
-    }
-
-    public static Multiset<Byte> of(final byte[] a) {
-        final Multiset<Byte> res = new Multiset<>();
-
-        if (N.notNullOrEmpty(a)) {
-            for (byte b : a) {
-                res.add(b);
-            }
-        }
-
-        return res;
-    }
-
-    public static Multiset<Short> of(final short[] a) {
-        final Multiset<Short> res = new Multiset<>();
-
-        if (N.notNullOrEmpty(a)) {
-            for (short b : a) {
-                res.add(b);
-            }
-        }
-
-        return res;
-    }
-
-    public static Multiset<Integer> of(final int[] a) {
-        final Multiset<Integer> res = new Multiset<>();
-
-        if (N.notNullOrEmpty(a)) {
-            for (int b : a) {
-                res.add(b);
-            }
-        }
-
-        return res;
-    }
-
-    public static Multiset<Long> of(final long[] a) {
-        final Multiset<Long> res = new Multiset<>();
-
-        if (N.notNullOrEmpty(a)) {
-            for (long b : a) {
-                res.add(b);
-            }
-        }
-
-        return res;
-    }
-
-    public static Multiset<Float> of(final float[] a) {
-        final Multiset<Float> res = new Multiset<>();
-
-        if (N.notNullOrEmpty(a)) {
-            for (float b : a) {
-                res.add(b);
-            }
-        }
-
-        return res;
-    }
-
-    public static Multiset<Double> of(final double[] a) {
-        final Multiset<Double> res = new Multiset<>();
-
-        if (N.notNullOrEmpty(a)) {
-            for (double b : a) {
-                res.add(b);
-            }
-        }
-
-        return res;
     }
 
     @SafeVarargs
     public static <T> Multiset<T> of(final T... a) {
-        return N.asMultiset(a);
+        if (N.isNullOrEmpty(a)) {
+            return new Multiset<>();
+        }
+
+        final Multiset<T> multiset = new Multiset<>(new HashMap<T, MutableInt>(N.initHashCapacity(a.length)));
+
+        for (T e : a) {
+            multiset.add(e);
+        }
+
+        return multiset;
     }
 
     public static <T> Multiset<T> from(final Collection<? extends T> coll) {
@@ -215,6 +122,20 @@ public final class Multiset<E> implements Iterable<E> {
         multiset.setAll(m);
 
         return multiset;
+    }
+
+    public static <T> Multiset<T> from(final Multiset<? extends T> multiset) {
+        if (N.isNullOrEmpty(multiset)) {
+            return new Multiset<T>();
+        }
+
+        final Multiset<T> result = new Multiset<>(N.initHashCapacity(multiset.size()));
+
+        for (Map.Entry<? extends T, MutableInt> entry : multiset.valueMap.entrySet()) {
+            result.set(entry.getKey(), entry.getValue().intValue());
+        }
+
+        return result;
     }
 
     /**
@@ -247,7 +168,7 @@ public final class Multiset<E> implements Iterable<E> {
      * @param occurrences
      * @return
      */
-    public int getAndSet(final E e, final int occurrences) {
+    public int getAndSet(final T e, final int occurrences) {
         checkOccurrences(occurrences);
 
         final MutableInt count = valueMap.get(e);
@@ -275,7 +196,7 @@ public final class Multiset<E> implements Iterable<E> {
      * @param occurrences
      * @return
      */
-    public int setAndGet(final E e, final int occurrences) {
+    public int setAndGet(final T e, final int occurrences) {
         checkOccurrences(occurrences);
 
         final MutableInt count = valueMap.get(e);
@@ -303,7 +224,7 @@ public final class Multiset<E> implements Iterable<E> {
      * @return this Multiset.
      * @throws IllegalArgumentException if the occurrences of element is less than 0
      */
-    public Multiset<E> set(final E e, final int occurrences) {
+    public Multiset<T> set(final T e, final int occurrences) {
         checkOccurrences(occurrences);
 
         if (occurrences == 0) {
@@ -321,11 +242,11 @@ public final class Multiset<E> implements Iterable<E> {
         return this;
     }
 
-    public Multiset<E> setAll(final Collection<? extends E> c, final int occurrences) {
+    public Multiset<T> setAll(final Collection<? extends T> c, final int occurrences) {
         checkOccurrences(occurrences);
 
         if (N.notNullOrEmpty(c)) {
-            for (E e : c) {
+            for (T e : c) {
                 set(e, occurrences);
             }
         }
@@ -339,13 +260,13 @@ public final class Multiset<E> implements Iterable<E> {
      * @return this Multiset.
      * @throws IllegalArgumentException if the occurrences of element is less than 0.
      */
-    public Multiset<E> setAll(final Map<? extends E, Integer> m) throws IllegalArgumentException {
+    public Multiset<T> setAll(final Map<? extends T, Integer> m) throws IllegalArgumentException {
         if (N.notNullOrEmpty(m)) {
-            for (Map.Entry<? extends E, Integer> entry : m.entrySet()) {
+            for (Map.Entry<? extends T, Integer> entry : m.entrySet()) {
                 checkOccurrences(entry.getValue().intValue());
             }
 
-            for (Map.Entry<? extends E, Integer> entry : m.entrySet()) {
+            for (Map.Entry<? extends T, Integer> entry : m.entrySet()) {
                 set(entry.getKey(), entry.getValue().intValue());
             }
         }
@@ -359,9 +280,9 @@ public final class Multiset<E> implements Iterable<E> {
      * @return this Multiset.
      * @throws IllegalArgumentException if the occurrences of element is less than 0.
      */
-    public Multiset<E> setAll(final Multiset<? extends E> multiset) throws IllegalArgumentException {
+    public Multiset<T> setAll(final Multiset<? extends T> multiset) throws IllegalArgumentException {
         if (N.notNullOrEmpty(multiset)) {
-            for (Map.Entry<? extends E, MutableInt> entry : multiset.valueMap.entrySet()) {
+            for (Map.Entry<? extends T, MutableInt> entry : multiset.valueMap.entrySet()) {
                 set(entry.getKey(), entry.getValue().value());
             }
         }
@@ -373,14 +294,14 @@ public final class Multiset<E> implements Iterable<E> {
         return get(e);
     }
 
-    public Optional<Pair<E, Integer>> minOccurrences() {
+    public Optional<Pair<T, Integer>> minOccurrences() {
         if (size() == 0) {
             return Optional.empty();
         }
 
-        final Iterator<Map.Entry<E, MutableInt>> it = valueMap.entrySet().iterator();
-        Map.Entry<E, MutableInt> entry = it.next();
-        E minCountElement = entry.getKey();
+        final Iterator<Map.Entry<T, MutableInt>> it = valueMap.entrySet().iterator();
+        Map.Entry<T, MutableInt> entry = it.next();
+        T minCountElement = entry.getKey();
         int minCount = entry.getValue().value();
 
         while (it.hasNext()) {
@@ -395,14 +316,14 @@ public final class Multiset<E> implements Iterable<E> {
         return Optional.of(Pair.of(minCountElement, minCount));
     }
 
-    public Optional<Pair<E, Integer>> maxOccurrences() {
+    public Optional<Pair<T, Integer>> maxOccurrences() {
         if (size() == 0) {
             return Optional.empty();
         }
 
-        final Iterator<Map.Entry<E, MutableInt>> it = valueMap.entrySet().iterator();
-        Map.Entry<E, MutableInt> entry = it.next();
-        E maxCountElement = entry.getKey();
+        final Iterator<Map.Entry<T, MutableInt>> it = valueMap.entrySet().iterator();
+        Map.Entry<T, MutableInt> entry = it.next();
+        T maxCountElement = entry.getKey();
         int maxCount = entry.getValue().value();
 
         while (it.hasNext()) {
@@ -417,7 +338,7 @@ public final class Multiset<E> implements Iterable<E> {
         return Optional.of(Pair.of(maxCountElement, maxCount));
     }
 
-    public Optional<Pair<List<E>, Integer>> allMinOccurrences() {
+    public Optional<Pair<List<T>, Integer>> allMinOccurrences() {
         if (size() == 0) {
             return Optional.empty();
         }
@@ -430,9 +351,9 @@ public final class Multiset<E> implements Iterable<E> {
             }
         }
 
-        final List<E> res = new ArrayList<>();
+        final List<T> res = new ArrayList<>();
 
-        for (Map.Entry<E, MutableInt> entry : valueMap.entrySet()) {
+        for (Map.Entry<T, MutableInt> entry : valueMap.entrySet()) {
             if (entry.getValue().value() == min) {
                 res.add(entry.getKey());
             }
@@ -441,7 +362,7 @@ public final class Multiset<E> implements Iterable<E> {
         return Optional.of(Pair.of(res, min));
     }
 
-    public Optional<Pair<List<E>, Integer>> allMaxOccurrences() {
+    public Optional<Pair<List<T>, Integer>> allMaxOccurrences() {
         if (size() == 0) {
             return Optional.empty();
         }
@@ -454,9 +375,9 @@ public final class Multiset<E> implements Iterable<E> {
             }
         }
 
-        final List<E> res = new ArrayList<>();
+        final List<T> res = new ArrayList<>();
 
-        for (Map.Entry<E, MutableInt> entry : valueMap.entrySet()) {
+        for (Map.Entry<T, MutableInt> entry : valueMap.entrySet()) {
             if (entry.getValue().value() == max) {
                 res.add(entry.getKey());
             }
@@ -468,7 +389,7 @@ public final class Multiset<E> implements Iterable<E> {
     /**
      * 
      * @return
-     * @throws ArithmeticException if total occurrences overflows the maximum value of long.
+     * @throws ArithmeticException if total occurrences overflows the maximum value of int.
      */
     public long sumOfOccurrences() {
         long sum = 0;
@@ -496,7 +417,7 @@ public final class Multiset<E> implements Iterable<E> {
      * @return always true
      * @throws IllegalArgumentException if the occurrences of element after this operation is bigger than Integer.MAX_VALUE.
      */
-    public boolean add(final E e) throws IllegalArgumentException {
+    public boolean add(final T e) throws IllegalArgumentException {
         return add(e, 1);
     }
 
@@ -507,13 +428,13 @@ public final class Multiset<E> implements Iterable<E> {
      * @return true if the specified occurrences is bigger than 0.
      * @throws IllegalArgumentException if the occurrences of element after this operation is bigger than Integer.MAX_VALUE.
      */
-    public boolean add(final E e, final int occurrences) throws IllegalArgumentException {
+    public boolean add(final T e, final int occurrences) throws IllegalArgumentException {
         checkOccurrences(occurrences);
 
         MutableInt count = valueMap.get(e);
 
         if (count != null && occurrences > (Integer.MAX_VALUE - count.value())) {
-            throw new IllegalArgumentException("The total count is out of the bound of integer");
+            throw new IllegalArgumentException("The total count is out of the bound of int");
         }
 
         if (count == null) {
@@ -534,7 +455,7 @@ public final class Multiset<E> implements Iterable<E> {
      * @return true if the specified element is absent.
      * @throws IllegalArgumentException
      */
-    public boolean addIfAbsent(final E e) throws IllegalArgumentException {
+    public boolean addIfAbsent(final T e) throws IllegalArgumentException {
         return addIfAbsent(e, 1);
     }
 
@@ -545,7 +466,7 @@ public final class Multiset<E> implements Iterable<E> {
      * @return true if the specified element is absent and occurrences is bigger than 0.
      * @throws IllegalArgumentException 
      */
-    public boolean addIfAbsent(final E e, final int occurrences) throws IllegalArgumentException {
+    public boolean addIfAbsent(final T e, final int occurrences) throws IllegalArgumentException {
         checkOccurrences(occurrences);
 
         MutableInt count = valueMap.get(e);
@@ -560,17 +481,17 @@ public final class Multiset<E> implements Iterable<E> {
         return false;
     }
 
-    public int addAndGet(final E e) {
+    public int addAndGet(final T e) {
         return addAndGet(e, 1);
     }
 
-    public int addAndGet(final E e, final int occurrences) {
+    public int addAndGet(final T e, final int occurrences) {
         checkOccurrences(occurrences);
 
         MutableInt count = valueMap.get(e);
 
         if (count != null && occurrences > (Integer.MAX_VALUE - count.value())) {
-            throw new IllegalArgumentException("The total count is out of the bound of integer");
+            throw new IllegalArgumentException("The total count is out of the bound of int");
         }
 
         if (count == null) {
@@ -585,17 +506,17 @@ public final class Multiset<E> implements Iterable<E> {
         return count == null ? 0 : count.value();
     }
 
-    public int getAndAdd(final E e) {
+    public int getAndAdd(final T e) {
         return getAndAdd(e, 1);
     }
 
-    public int getAndAdd(final E e, final int occurrences) {
+    public int getAndAdd(final T e, final int occurrences) {
         checkOccurrences(occurrences);
 
         MutableInt count = valueMap.get(e);
 
         if (count != null && occurrences > (Integer.MAX_VALUE - count.value())) {
-            throw new IllegalArgumentException("The total count is out of the bound of integer");
+            throw new IllegalArgumentException("The total count is out of the bound of int");
         }
 
         final int result = count == null ? 0 : count.value();
@@ -617,7 +538,7 @@ public final class Multiset<E> implements Iterable<E> {
      * @param c
      * @throws IllegalArgumentException if the occurrences of element after this operation is bigger than Integer.MAX_VALUE.
      */
-    public boolean addAll(final Collection<? extends E> c) throws IllegalArgumentException {
+    public boolean addAll(final Collection<? extends T> c) throws IllegalArgumentException {
         if (N.isNullOrEmpty(c)) {
             return false;
         }
@@ -631,14 +552,14 @@ public final class Multiset<E> implements Iterable<E> {
      * @param occurrences
      * @throws IllegalArgumentException if the occurrences of element after this operation is bigger than Integer.MAX_VALUE.
      */
-    public boolean addAll(final Collection<? extends E> c, final int occurrences) throws IllegalArgumentException {
+    public boolean addAll(final Collection<? extends T> c, final int occurrences) throws IllegalArgumentException {
         checkOccurrences(occurrences);
 
         if (N.isNullOrEmpty(c) || occurrences == 0) {
             return false;
         }
 
-        for (E e : c) {
+        for (T e : c) {
             add(e, occurrences);
         }
 
@@ -650,18 +571,18 @@ public final class Multiset<E> implements Iterable<E> {
      * @param m
      * @throws IllegalArgumentException if the occurrences of element after this operation is bigger than Integer.MAX_VALUE.
      */
-    public boolean addAll(final Map<? extends E, Integer> m) throws IllegalArgumentException {
+    public boolean addAll(final Map<? extends T, Integer> m) throws IllegalArgumentException {
         if (N.isNullOrEmpty(m)) {
             return false;
         }
 
-        for (Map.Entry<? extends E, Integer> entry : m.entrySet()) {
+        for (Map.Entry<? extends T, Integer> entry : m.entrySet()) {
             checkOccurrences(entry.getValue().intValue());
         }
 
         boolean result = false;
 
-        for (Map.Entry<? extends E, Integer> entry : m.entrySet()) {
+        for (Map.Entry<? extends T, Integer> entry : m.entrySet()) {
             if (result == false) {
                 result = add(entry.getKey(), entry.getValue().intValue());
             } else {
@@ -677,12 +598,12 @@ public final class Multiset<E> implements Iterable<E> {
      * @param m
      * @throws IllegalArgumentException if the occurrences of element is less than 0.
      */
-    public boolean addAll(final Multiset<? extends E> multiset) throws IllegalArgumentException {
+    public boolean addAll(final Multiset<? extends T> multiset) throws IllegalArgumentException {
         if (N.isNullOrEmpty(multiset)) {
             return false;
         }
 
-        for (Map.Entry<? extends E, MutableInt> entry : multiset.valueMap.entrySet()) {
+        for (Map.Entry<? extends T, MutableInt> entry : multiset.valueMap.entrySet()) {
             add(entry.getKey(), entry.getValue().value());
         }
 
@@ -698,27 +619,26 @@ public final class Multiset<E> implements Iterable<E> {
     }
 
     /**
-     * Remove one occurrences from the specified element. 
-     * The elements will be removed from this set if the occurrences equals to or less than 0 after the operation.
+     * Remove one occurrence from the specified elements. 
+     * The element will be removed from this <code>Multiset</code> if the occurrences equals to or less than 0 after the operation.
      *
      * @param e
      * @param occurrences
      * @return
      */
-    public boolean remove(final Object e) throws IllegalArgumentException {
+    public boolean remove(final Object e) {
         return remove(e, 1);
     }
 
     /**
      * Remove the specified occurrences from the specified element. 
-     * The elements will be removed from this set if the occurrences equals to or less than 0 after the operation.
-     *
+     * The element will be removed from this <code>Multiset</code> if the occurrences equals to or less than 0 after the operation.
      *
      * @param e
      * @param occurrences
      * @return
      */
-    public boolean remove(final Object e, final int occurrences) throws IllegalArgumentException {
+    public boolean remove(final Object e, final int occurrences) {
         checkOccurrences(occurrences);
 
         final MutableInt count = valueMap.get(e);
@@ -790,10 +710,10 @@ public final class Multiset<E> implements Iterable<E> {
         return count == null ? 0 : count.value();
     }
 
-    public boolean removeAllOccurrencesIf(Predicate<? super E> predicate) {
-        Set<E> removingKeys = null;
+    public <E extends Exception> boolean removeAllOccurrencesIf(Try.Predicate<? super T, E> predicate) throws E {
+        Set<T> removingKeys = null;
 
-        for (E key : this.valueMap.keySet()) {
+        for (T key : this.valueMap.keySet()) {
             if (predicate.test(key)) {
                 if (removingKeys == null) {
                     removingKeys = new HashSet<>();
@@ -812,10 +732,10 @@ public final class Multiset<E> implements Iterable<E> {
         return true;
     }
 
-    public boolean removeAllOccurrencesIf(BiPredicate<? super E, ? super Integer> predicate) {
-        Set<E> removingKeys = null;
+    public <E extends Exception> boolean removeAllOccurrencesIf(Try.BiPredicate<? super T, ? super Integer, E> predicate) throws E {
+        Set<T> removingKeys = null;
 
-        for (Map.Entry<E, MutableInt> entry : this.valueMap.entrySet()) {
+        for (Map.Entry<T, MutableInt> entry : this.valueMap.entrySet()) {
             if (predicate.test(entry.getKey(), entry.getValue().value())) {
                 if (removingKeys == null) {
                     removingKeys = new HashSet<>();
@@ -834,12 +754,12 @@ public final class Multiset<E> implements Iterable<E> {
         return true;
     }
 
-    public boolean removeIf(final int occurrences, Predicate<? super E> predicate) {
+    public <E extends Exception> boolean removeIf(final int occurrences, Try.Predicate<? super T, E> predicate) throws E {
         checkOccurrences(occurrences);
 
-        Set<E> removingKeys = null;
+        Set<T> removingKeys = null;
 
-        for (E key : this.valueMap.keySet()) {
+        for (T key : this.valueMap.keySet()) {
             if (predicate.test(key)) {
                 if (removingKeys == null) {
                     removingKeys = new HashSet<>();
@@ -858,12 +778,12 @@ public final class Multiset<E> implements Iterable<E> {
         return true;
     }
 
-    public boolean removeIf(final int occurrences, BiPredicate<? super E, ? super Integer> predicate) {
+    public <E extends Exception> boolean removeIf(final int occurrences, Try.BiPredicate<? super T, ? super Integer, E> predicate) throws E {
         checkOccurrences(occurrences);
 
-        Set<E> removingKeys = null;
+        Set<T> removingKeys = null;
 
-        for (Map.Entry<E, MutableInt> entry : this.valueMap.entrySet()) {
+        for (Map.Entry<T, MutableInt> entry : this.valueMap.entrySet()) {
             if (predicate.test(entry.getKey(), entry.getValue().value())) {
                 if (removingKeys == null) {
                     removingKeys = new HashSet<>();
@@ -888,7 +808,7 @@ public final class Multiset<E> implements Iterable<E> {
      * this Multiset will contain no elements in common with the specified
      * collection. This method ignores how often any element might appear in
      * {@code c}, and only cares whether or not an element appears at all.
-     *
+     * 
      * @param c
      * @return <tt>true</tt> if this set changed as a result of the call
      * @see Collection#removeAll(Collection)
@@ -920,7 +840,7 @@ public final class Multiset<E> implements Iterable<E> {
      *            the occurrences to remove if the element is in the specified collection <code>c</code>.
      * @return <tt>true</tt> if this set changed as a result of the call
      */
-    public boolean removeAll(final Collection<?> c, final int occurrences) throws IllegalArgumentException {
+    public boolean removeAll(final Collection<?> c, final int occurrences) {
         checkOccurrences(occurrences);
 
         if (N.isNullOrEmpty(c) || occurrences == 0) {
@@ -945,7 +865,7 @@ public final class Multiset<E> implements Iterable<E> {
      * @param m
      * @return
      */
-    public boolean removeAll(final Map<?, Integer> m) throws IllegalArgumentException {
+    public boolean removeAll(final Map<?, Integer> m) {
         if (N.isNullOrEmpty(m)) {
             return false;
         }
@@ -988,11 +908,11 @@ public final class Multiset<E> implements Iterable<E> {
      * 
      * @param function
      */
-    public void replaceAll(BiFunction<? super E, ? super Integer, Integer> function) {
-        List<E> keyToRemove = null;
+    public <E extends Exception> void replaceAll(Try.BiFunction<? super T, ? super Integer, Integer, E> function) throws E {
+        List<T> keyToRemove = null;
         Integer newVal = null;
 
-        for (Map.Entry<E, MutableInt> entry : this.valueMap.entrySet()) {
+        for (Map.Entry<T, MutableInt> entry : this.valueMap.entrySet()) {
             newVal = function.apply(entry.getKey(), entry.getValue().value());
 
             if (newVal == null || newVal.intValue() <= 0) {
@@ -1007,18 +927,18 @@ public final class Multiset<E> implements Iterable<E> {
         }
 
         if (N.notNullOrEmpty(keyToRemove)) {
-            for (E key : keyToRemove) {
+            for (T key : keyToRemove) {
                 valueMap.remove(key);
             }
         }
     }
 
-    public boolean replaceIf(Predicate<? super E> predicate, final int newOccurrences) {
+    public <E extends Exception> boolean replaceIf(Try.Predicate<? super T, E> predicate, final int newOccurrences) throws E {
         checkNewOccurrences(newOccurrences);
 
         boolean modified = false;
 
-        for (Map.Entry<E, MutableInt> entry : this.valueMap.entrySet()) {
+        for (Map.Entry<T, MutableInt> entry : this.valueMap.entrySet()) {
             if (predicate.test(entry.getKey())) {
                 entry.getValue().setValue(newOccurrences);
 
@@ -1029,12 +949,12 @@ public final class Multiset<E> implements Iterable<E> {
         return modified;
     }
 
-    public boolean replaceIf(BiPredicate<? super E, ? super Integer> predicate, final int newOccurrences) {
+    public <E extends Exception> boolean replaceIf(Try.BiPredicate<? super T, ? super Integer, E> predicate, final int newOccurrences) throws E {
         checkNewOccurrences(newOccurrences);
 
         boolean modified = false;
 
-        for (Map.Entry<E, MutableInt> entry : this.valueMap.entrySet()) {
+        for (Map.Entry<T, MutableInt> entry : this.valueMap.entrySet()) {
             if (predicate.test(entry.getKey(), entry.getValue().value())) {
                 entry.getValue().setValue(newOccurrences);
 
@@ -1053,6 +973,7 @@ public final class Multiset<E> implements Iterable<E> {
      *
      * @param c
      * @return <tt>true</tt> if this set changed as a result of the call
+     * @see Collection#retainAll(Collection)
      */
     public boolean retainAll(final Collection<?> c) {
         if (N.isNullOrEmpty(c)) {
@@ -1061,9 +982,9 @@ public final class Multiset<E> implements Iterable<E> {
             return result;
         }
 
-        Set<E> others = null;
+        Set<T> others = null;
 
-        for (E e : valueMap.keySet()) {
+        for (T e : valueMap.keySet()) {
             if (!c.contains(e)) {
                 if (others == null) {
                     others = new HashSet<>(valueMap.size());
@@ -1076,7 +997,7 @@ public final class Multiset<E> implements Iterable<E> {
         return N.isNullOrEmpty(others) ? false : removeAll(others, Integer.MAX_VALUE);
     }
 
-    public Set<E> elements() {
+    public Set<T> elements() {
         return valueMap.keySet();
     }
 
@@ -1093,7 +1014,7 @@ public final class Multiset<E> implements Iterable<E> {
     }
 
     @Override
-    public Iterator<E> iterator() {
+    public Iterator<T> iterator() {
         return valueMap.keySet().iterator();
     }
 
@@ -1105,25 +1026,25 @@ public final class Multiset<E> implements Iterable<E> {
         return valueMap.keySet().toArray();
     }
 
-    public <T> T[] toArray(final T[] a) {
+    public <A> A[] toArray(final A[] a) {
         return valueMap.keySet().toArray(a);
     }
 
-    public Map<E, Integer> toMap() {
-        final Map<E, Integer> result = valueMap instanceof IdentityHashMap ? new IdentityHashMap<E, Integer>(N.initHashCapacity(size()))
-                : new HashMap<E, Integer>(N.initHashCapacity(size()));
+    public Map<T, Integer> toMap() {
+        final Map<T, Integer> result = valueMap instanceof IdentityHashMap ? new IdentityHashMap<T, Integer>(N.initHashCapacity(size()))
+                : new HashMap<T, Integer>(N.initHashCapacity(size()));
 
-        for (Map.Entry<E, MutableInt> entry : valueMap.entrySet()) {
+        for (Map.Entry<T, MutableInt> entry : valueMap.entrySet()) {
             result.put(entry.getKey(), entry.getValue().value());
         }
 
         return result;
     }
 
-    public <M extends Map<E, Integer>> M toMap(final IntFunction<M> supplier) {
+    public <M extends Map<T, Integer>> M toMap(final IntFunction<M> supplier) {
         final M result = supplier.apply(size());
 
-        for (Map.Entry<E, MutableInt> entry : valueMap.entrySet()) {
+        for (Map.Entry<T, MutableInt> entry : valueMap.entrySet()) {
             result.put(entry.getKey(), entry.getValue().value());
         }
 
@@ -1131,39 +1052,39 @@ public final class Multiset<E> implements Iterable<E> {
     }
 
     @SuppressWarnings("rawtypes")
-    public Map<E, Integer> toMapSortedByOccurrences() {
+    public Map<T, Integer> toMapSortedByOccurrences() {
         return toMapSortedBy((Comparator) cmpByCount);
     }
 
-    public Map<E, Integer> toMapSortedByOccurrences(final Comparator<? super Integer> cmp) {
-        return toMapSortedBy(new Comparator<Map.Entry<E, MutableInt>>() {
+    public Map<T, Integer> toMapSortedByOccurrences(final Comparator<? super Integer> cmp) {
+        return toMapSortedBy(new Comparator<Map.Entry<T, MutableInt>>() {
             @Override
-            public int compare(Entry<E, MutableInt> o1, Entry<E, MutableInt> o2) {
+            public int compare(Entry<T, MutableInt> o1, Entry<T, MutableInt> o2) {
                 return cmp.compare(o1.getValue().value(), o2.getValue().value());
             }
         });
     }
 
-    public Map<E, Integer> toMapSortedByKey(final Comparator<? super E> cmp) {
-        return toMapSortedBy(new Comparator<Map.Entry<E, MutableInt>>() {
+    public Map<T, Integer> toMapSortedByKey(final Comparator<? super T> cmp) {
+        return toMapSortedBy(new Comparator<Map.Entry<T, MutableInt>>() {
             @Override
-            public int compare(Entry<E, MutableInt> o1, Entry<E, MutableInt> o2) {
+            public int compare(Entry<T, MutableInt> o1, Entry<T, MutableInt> o2) {
                 return cmp.compare(o1.getKey(), o2.getKey());
             }
         });
     }
 
-    Map<E, Integer> toMapSortedBy(final Comparator<Map.Entry<E, MutableInt>> cmp) {
+    Map<T, Integer> toMapSortedBy(final Comparator<Map.Entry<T, MutableInt>> cmp) {
         if (N.isNullOrEmpty(valueMap)) {
             return new LinkedHashMap<>();
         }
 
-        final Map.Entry<E, MutableInt>[] entries = valueMap.entrySet().toArray(new Map.Entry[size()]);
+        final Map.Entry<T, MutableInt>[] entries = valueMap.entrySet().toArray(new Map.Entry[size()]);
         Arrays.sort(entries, cmp);
 
-        final Map<E, Integer> sortedValues = new LinkedHashMap<>(N.initHashCapacity(size()));
+        final Map<T, Integer> sortedValues = new LinkedHashMap<>(N.initHashCapacity(size()));
 
-        for (Map.Entry<E, MutableInt> entry : entries) {
+        for (Map.Entry<T, MutableInt> entry : entries) {
             sortedValues.put(entry.getKey(), entry.getValue().value());
         }
 
@@ -1174,7 +1095,7 @@ public final class Multiset<E> implements Iterable<E> {
      * 
      * @return a list with all elements, each of them is repeated with the occurrences in this <code>Multiset</code>   
      */
-    public List<E> flatten() {
+    public List<T> flatten() {
         final long totalOccurrences = sumOfOccurrences();
 
         if (totalOccurrences > Integer.MAX_VALUE) {
@@ -1186,20 +1107,20 @@ public final class Multiset<E> implements Iterable<E> {
         int fromIndex = 0;
         int toIndex = 0;
 
-        for (Map.Entry<E, MutableInt> entry : valueMap.entrySet()) {
+        for (Map.Entry<T, MutableInt> entry : valueMap.entrySet()) {
             toIndex = fromIndex + entry.getValue().value();
 
             Arrays.fill(a, fromIndex, toIndex, entry.getKey());
             fromIndex = toIndex;
         }
 
-        return N.asList((E[]) a);
+        return N.asList((T[]) a);
     }
 
-    public Multiset<E> filter(Predicate<? super E> filter) {
-        final Multiset<E> result = new Multiset<>(valueMap instanceof IdentityHashMap ? IdentityHashMap.class : LinkedHashMap.class);
+    public <E extends Exception> Multiset<T> filter(Try.Predicate<? super T, E> filter) throws E {
+        final Multiset<T> result = new Multiset<>(valueMap instanceof IdentityHashMap ? IdentityHashMap.class : LinkedHashMap.class);
 
-        for (Map.Entry<E, MutableInt> entry : valueMap.entrySet()) {
+        for (Map.Entry<T, MutableInt> entry : valueMap.entrySet()) {
             if (filter.test(entry.getKey())) {
                 result.add(entry.getKey(), entry.getValue().intValue());
             }
@@ -1208,10 +1129,10 @@ public final class Multiset<E> implements Iterable<E> {
         return result;
     }
 
-    public Multiset<E> filter(BiPredicate<? super E, Integer> filter) {
-        final Multiset<E> result = new Multiset<>(valueMap instanceof IdentityHashMap ? IdentityHashMap.class : LinkedHashMap.class);
+    public <E extends Exception> Multiset<T> filter(Try.BiPredicate<? super T, Integer, E> filter) throws E {
+        final Multiset<T> result = new Multiset<>(valueMap instanceof IdentityHashMap ? IdentityHashMap.class : LinkedHashMap.class);
 
-        for (Map.Entry<E, MutableInt> entry : valueMap.entrySet()) {
+        for (Map.Entry<T, MutableInt> entry : valueMap.entrySet()) {
             if (filter.test(entry.getKey(), entry.getValue().intValue())) {
                 result.add(entry.getKey(), entry.getValue().intValue());
             }
@@ -1220,10 +1141,10 @@ public final class Multiset<E> implements Iterable<E> {
         return result;
     }
 
-    public void forEach(final ObjIntConsumer<? super E> action) {
+    public void forEach(final ObjIntConsumer<? super T> action) {
         N.requireNonNull(action);
 
-        for (Map.Entry<E, MutableInt> entry : valueMap.entrySet()) {
+        for (Map.Entry<T, MutableInt> entry : valueMap.entrySet()) {
             action.accept(entry.getKey(), entry.getValue().value());
         }
     }
@@ -1236,13 +1157,14 @@ public final class Multiset<E> implements Iterable<E> {
      * @param conditionToBreak break if <code>true</code> is return.
      * @return
      */
-    public <R> R forEach(final R seed, TriFunction<R, ? super E, Integer, R> accumulator, final TriPredicate<? super R, ? super E, Integer> conditionToBreak) {
+    public <R, E extends Exception, E2 extends Exception> R forEach(final R seed, Try.TriFunction<R, ? super T, Integer, R, E> accumulator,
+            final Try.TriPredicate<? super R, ? super T, Integer, E2> conditionToBreak) throws E, E2 {
         N.requireNonNull(accumulator);
         N.requireNonNull(conditionToBreak);
 
         R result = seed;
 
-        for (Map.Entry<E, MutableInt> entry : valueMap.entrySet()) {
+        for (Map.Entry<T, MutableInt> entry : valueMap.entrySet()) {
             result = accumulator.apply(result, entry.getKey(), entry.getValue().value());
 
             if (conditionToBreak.test(result, entry.getKey(), entry.getValue().value())) {
@@ -1276,7 +1198,7 @@ public final class Multiset<E> implements Iterable<E> {
      * @param mappingFunction
      * @return
      */
-    public int computeIfAbsent(E e, Function<? super E, Integer> mappingFunction) {
+    public <E extends Exception> int computeIfAbsent(T e, Try.Function<? super T, Integer, E> mappingFunction) throws E {
         N.requireNonNull(mappingFunction);
 
         final int oldValue = get(e);
@@ -1319,7 +1241,7 @@ public final class Multiset<E> implements Iterable<E> {
      * @param remappingFunction
      * @return
      */
-    public int computeIfPresent(E e, BiFunction<? super E, Integer, Integer> remappingFunction) {
+    public <E extends Exception> int computeIfPresent(T e, Try.BiFunction<? super T, Integer, Integer, E> remappingFunction) throws E {
         N.requireNonNull(remappingFunction);
 
         final int oldValue = get(e);
@@ -1361,7 +1283,7 @@ public final class Multiset<E> implements Iterable<E> {
      * @param remappingFunction
      * @return
      */
-    public int compute(E key, BiFunction<? super E, Integer, Integer> remappingFunction) {
+    public <E extends Exception> int compute(T key, Try.BiFunction<? super T, Integer, Integer, E> remappingFunction) throws E {
         N.requireNonNull(remappingFunction);
 
         final int oldValue = get(key);
@@ -1401,7 +1323,7 @@ public final class Multiset<E> implements Iterable<E> {
      * @param remappingFunction
      * @return
      */
-    public int merge(E key, int value, BiFunction<Integer, Integer, Integer> remappingFunction) {
+    public <E extends Exception> int merge(T key, int value, Try.BiFunction<Integer, Integer, Integer, E> remappingFunction) throws E {
         N.requireNonNull(remappingFunction);
         N.requireNonNull(value);
 
@@ -1419,24 +1341,24 @@ public final class Multiset<E> implements Iterable<E> {
         return newValue;
     }
 
-    public Stream<Entry<E, Integer>> stream() {
-        return Stream.of(valueMap.entrySet()).map(new Function<Map.Entry<E, MutableInt>, Map.Entry<E, Integer>>() {
+    public Stream<Entry<T, Integer>> stream() {
+        return Stream.of(valueMap.entrySet()).map(new Function<Map.Entry<T, MutableInt>, Map.Entry<T, Integer>>() {
             @Override
-            public Entry<E, Integer> apply(Entry<E, MutableInt> t) {
-                return new AbstractMap.SimpleImmutableEntry<>(t.getKey(), t.getValue().value());
+            public Entry<T, Integer> apply(Entry<T, MutableInt> t) {
+                return Tuple.of(t.getKey(), t.getValue().value());
             }
         });
     }
 
-    public EntryStream<E, Integer> entryStream() {
-        return stream().mapToEntry(Fn.<Map.Entry<E, Integer>> identity());
+    public EntryStream<T, Integer> entryStream() {
+        return stream().mapToEntry(Fn.<Map.Entry<T, Integer>> identity());
     }
 
-    public <R> R apply(Function<? super Multiset<E>, R> func) {
+    public <R, E extends Exception> R apply(Try.Function<? super Multiset<T>, R, E> func) throws E {
         return func.apply(this);
     }
 
-    public void accept(Consumer<? super Multiset<E>> action) {
+    public <E extends Exception> void accept(Try.Consumer<? super Multiset<T>, E> action) throws E {
         action.accept(this);
     }
 
@@ -1447,7 +1369,7 @@ public final class Multiset<E> implements Iterable<E> {
 
     @Override
     public boolean equals(final Object obj) {
-        return obj == this || (obj instanceof Multiset && valueMap.equals(((Multiset<E>) obj).valueMap));
+        return obj == this || (obj instanceof Multiset && valueMap.equals(((Multiset<T>) obj).valueMap));
     }
 
     @Override

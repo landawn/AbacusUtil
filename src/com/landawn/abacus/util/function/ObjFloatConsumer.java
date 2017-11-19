@@ -14,13 +14,16 @@
 
 package com.landawn.abacus.util.function;
 
+import com.landawn.abacus.util.Try;
+
 /**
  * 
  * @since 0.8
  * 
  * @author Haiyang Li
  */
-public interface ObjFloatConsumer<T> {
+public interface ObjFloatConsumer<T> extends Try.ObjFloatConsumer<T, RuntimeException> {
 
+    @Override
     void accept(T t, float value);
 }

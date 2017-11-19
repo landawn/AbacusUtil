@@ -14,13 +14,16 @@
 
 package com.landawn.abacus.util.function;
 
+import com.landawn.abacus.util.Try;
+
 /**
  * 
  * @since 0.8
  * 
  * @author Haiyang Li
  */
-public interface ObjCharConsumer<T> {
+public interface ObjCharConsumer<T> extends Try.ObjCharConsumer<T, RuntimeException> {
 
+    @Override
     void accept(T t, char value);
 }

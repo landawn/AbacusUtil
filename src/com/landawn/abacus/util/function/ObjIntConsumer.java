@@ -14,14 +14,15 @@
 
 package com.landawn.abacus.util.function;
 
+import com.landawn.abacus.util.Try;
+
 /**
  * Refer to JDK API documentation at: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html">https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html</a>
  * @since 0.8
  * 
  * @author Haiyang Li
  */
-public interface ObjIntConsumer<T> extends java.util.function.ObjIntConsumer<T> {
-
+public interface ObjIntConsumer<T> extends java.util.function.ObjIntConsumer<T>, Try.ObjIntConsumer<T, RuntimeException> {
     @Override
     void accept(T t, int value);
 }

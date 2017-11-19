@@ -1262,4 +1262,111 @@ public class Joiner {
             buffer = null;
         }
     }
+
+    /**
+     * Returns {@code N.toString(a) + N.toString(b)}.
+     * 
+     * @param a
+     * @param b
+     * @return
+     */
+    public static Object concat(final Object a, final Object b) {
+        return N.concat(N.toString(a), N.toString(b));
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @return
+     * @see #concat(Object, Object)
+     */
+    public static Object concat(final Object a, final Object b, final Object c) {
+        return N.concat(N.toString(a), N.toString(b), N.toString(c));
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @param d
+     * @return
+     * @see #concat(Object, Object)
+     */
+    public static Object concat(final Object a, final Object b, final Object c, final Object d) {
+        return N.concat(N.toString(a), N.toString(b), N.toString(c), N.toString(d));
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @param d
+     * @param e
+     * @return
+     * @see #concat(Object, Object)
+     */
+    public static Object concat(final Object a, final Object b, final Object c, final Object d, final Object e) {
+        return N.concat(N.toString(a), N.toString(b), N.toString(c), N.toString(d), N.toString(e));
+    }
+
+    /**
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @param d
+     * @param e
+     * @param f
+     * @return
+     * @see #concat(Object, Object)
+     */
+    public static Object concat(final Object a, final Object b, final Object c, final Object d, final Object e, final Object f) {
+        return N.concat(N.toString(a), N.toString(b), N.toString(c), N.toString(d), N.toString(e), N.toString(f));
+    }
+
+    /**
+     * 
+     * Returns {@code N.toString(a) + N.toString(b) + N.toString(c) + N.toString(d) + N.toString(e) + N.toString(f) + N.toString(g)}.
+     * 
+     * @param a
+     * @param b
+     * @param c
+     * @param d
+     * @param e
+     * @param f
+     * @param g
+     * @return
+     * @see #concat(Object, Object)
+     */
+    public static Object concat(final Object a, final Object b, final Object c, final Object d, final Object e, final Object f, final Object g) {
+        return N.concat(N.toString(a), N.toString(b), N.toString(c), N.toString(d), N.toString(e), N.toString(f), N.toString(g));
+    }
+
+    /**
+     * 
+     * @param a
+     * @return
+     * @see #concat(Object, Object)
+     */
+    @SafeVarargs
+    public static Object concat(final Object... a) {
+        if (N.isNullOrEmpty(a)) {
+            return N.EMPTY_STRING;
+        }
+
+        final StringBuilder sb = ObjectFactory.createStringBuilder();
+
+        try {
+            for (Object e : a) {
+                sb.append(N.toString(e));
+            }
+            return sb.toString();
+        } finally {
+            ObjectFactory.recycle(sb);
+        }
+    }
 }

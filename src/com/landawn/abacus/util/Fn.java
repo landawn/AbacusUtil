@@ -47,8 +47,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 
+import com.landawn.abacus.util.Tuple.Tuple1;
 import com.landawn.abacus.util.Tuple.Tuple2;
 import com.landawn.abacus.util.Tuple.Tuple3;
+import com.landawn.abacus.util.Tuple.Tuple4;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
@@ -63,6 +65,7 @@ import com.landawn.abacus.util.function.IndexedFunction;
 import com.landawn.abacus.util.function.IndexedPredicate;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Predicate;
+import com.landawn.abacus.util.function.QuadFunction;
 import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.function.ToByteFunction;
 import com.landawn.abacus.util.function.ToCharFunction;
@@ -124,6 +127,70 @@ public final class Fn {
     };
 
     @SuppressWarnings("rawtypes")
+    private static final BiConsumer PRINTLN_EQUAL = new BiConsumer() {
+        @Override
+        public void accept(Object key, Object value) {
+            N.println(N.concat(N.toString(key), "=", N.toString(value)));
+        }
+    };
+
+    @SuppressWarnings("rawtypes")
+    private static final BiConsumer PRINTLN_HYPHEN = new BiConsumer() {
+        @Override
+        public void accept(Object key, Object value) {
+            N.println(N.concat(N.toString(key), "-", N.toString(value)));
+        }
+    };
+
+    @SuppressWarnings("rawtypes")
+    private static final BiConsumer PRINTLN_UNDERSCORE = new BiConsumer() {
+        @Override
+        public void accept(Object key, Object value) {
+            N.println(N.concat(N.toString(key), "_", N.toString(value)));
+        }
+    };
+
+    @SuppressWarnings("rawtypes")
+    private static final BiConsumer PRINTLN_COLON = new BiConsumer() {
+        @Override
+        public void accept(Object key, Object value) {
+            N.println(N.concat(N.toString(key), ":", N.toString(value)));
+        }
+    };
+
+    @SuppressWarnings("rawtypes")
+    private static final BiConsumer PRINTLN_COLON_SPACE = new BiConsumer() {
+        @Override
+        public void accept(Object key, Object value) {
+            N.println(N.concat(N.toString(key), ": ", N.toString(value)));
+        }
+    };
+
+    @SuppressWarnings("rawtypes")
+    private static final BiConsumer PRINTLN_COMMA = new BiConsumer() {
+        @Override
+        public void accept(Object key, Object value) {
+            N.println(N.concat(N.toString(key), ",", N.toString(value)));
+        }
+    };
+
+    @SuppressWarnings("rawtypes")
+    private static final BiConsumer PRINTLN_COMMA_SPACE = new BiConsumer() {
+        @Override
+        public void accept(Object key, Object value) {
+            N.println(N.concat(N.toString(key), ", ", N.toString(value)));
+        }
+    };
+
+    @SuppressWarnings("rawtypes")
+    private static final BiConsumer PRINTLN_EMPTY = new BiConsumer() {
+        @Override
+        public void accept(Object key, Object value) {
+            N.println(N.concat(N.toString(key), N.toString(value)));
+        }
+    };
+
+    @SuppressWarnings("rawtypes")
     private static final Consumer PRINTLN = new Consumer() {
         @Override
         public void accept(Object value) {
@@ -136,27 +203,6 @@ public final class Fn {
         @Override
         public Object apply(Object t) {
             return t;
-        }
-    };
-
-    private static final Function<Map.Entry<Object, Object>, Object> KEY = new Function<Map.Entry<Object, Object>, Object>() {
-        @Override
-        public Object apply(Map.Entry<Object, Object> t) {
-            return t.getKey();
-        }
-    };
-
-    private static final Function<Map.Entry<Object, Object>, Object> VALUE = new Function<Map.Entry<Object, Object>, Object>() {
-        @Override
-        public Object apply(Map.Entry<Object, Object> t) {
-            return t.getValue();
-        }
-    };
-
-    private static final BiFunction<Object, Object, Map.Entry<Object, Object>> ENTRY = new BiFunction<Object, Object, Map.Entry<Object, Object>>() {
-        @Override
-        public Map.Entry<Object, Object> apply(Object key, Object value) {
-            return new AbstractMap.SimpleImmutableEntry<>(key, value);
         }
     };
 
@@ -185,6 +231,27 @@ public final class Fn {
         }
     };
 
+    private static final Function<Map.Entry<Object, Object>, Object> KEY = new Function<Map.Entry<Object, Object>, Object>() {
+        @Override
+        public Object apply(Map.Entry<Object, Object> t) {
+            return t.getKey();
+        }
+    };
+
+    private static final Function<Map.Entry<Object, Object>, Object> VALUE = new Function<Map.Entry<Object, Object>, Object>() {
+        @Override
+        public Object apply(Map.Entry<Object, Object> t) {
+            return t.getValue();
+        }
+    };
+
+    private static final BiFunction<Object, Object, Map.Entry<Object, Object>> ENTRY = new BiFunction<Object, Object, Map.Entry<Object, Object>>() {
+        @Override
+        public Map.Entry<Object, Object> apply(Object key, Object value) {
+            return new AbstractMap.SimpleImmutableEntry<>(key, value);
+        }
+    };
+
     private static final BiFunction<Object, Object, Pair<Object, Object>> PAIR = new BiFunction<Object, Object, Pair<Object, Object>>() {
         @Override
         public Pair<Object, Object> apply(Object key, Object value) {
@@ -196,6 +263,34 @@ public final class Fn {
         @Override
         public Triple<Object, Object, Object> apply(Object a, Object b, Object c) {
             return Triple.of(a, b, c);
+        }
+    };
+
+    private static final Function<Object, Tuple1<Object>> TUPLE_1 = new Function<Object, Tuple1<Object>>() {
+        @Override
+        public Tuple1<Object> apply(Object t) {
+            return Tuple.of(t);
+        }
+    };
+
+    private static final BiFunction<Object, Object, Tuple2<Object, Object>> TUPLE_2 = new BiFunction<Object, Object, Tuple2<Object, Object>>() {
+        @Override
+        public Tuple2<Object, Object> apply(Object t, Object u) {
+            return Tuple.of(t, u);
+        }
+    };
+
+    private static final TriFunction<Object, Object, Object, Tuple3<Object, Object, Object>> TUPLE_3 = new TriFunction<Object, Object, Object, Tuple3<Object, Object, Object>>() {
+        @Override
+        public Tuple3<Object, Object, Object> apply(Object a, Object b, Object c) {
+            return Tuple.of(a, b, c);
+        }
+    };
+
+    private static final QuadFunction<Object, Object, Object, Object, Tuple4<Object, Object, Object, Object>> TUPLE_4 = new QuadFunction<Object, Object, Object, Object, Tuple4<Object, Object, Object, Object>>() {
+        @Override
+        public Tuple4<Object, Object, Object, Object> apply(Object a, Object b, Object c, Object d) {
+            return Tuple.of(a, b, c, d);
         }
     };
 
@@ -276,12 +371,41 @@ public final class Fn {
     }
 
     public static <T, U> BiConsumer<T, U> println(final String separator) {
-        return new BiConsumer<T, U>() {
-            @Override
-            public void accept(T t, U u) {
-                N.println(t + separator + u);
-            }
-        };
+        N.requireNonNull(separator);
+
+        switch (separator) {
+            case "=":
+                return PRINTLN_EQUAL;
+
+            case ":":
+                return PRINTLN_COLON;
+
+            case ": ":
+                return PRINTLN_COLON_SPACE;
+
+            case "-":
+                return PRINTLN_HYPHEN;
+
+            case "_":
+                return PRINTLN_UNDERSCORE;
+
+            case ",":
+                return PRINTLN_COMMA;
+
+            case ", ":
+                return PRINTLN_COMMA_SPACE;
+
+            case "":
+                return PRINTLN_EMPTY;
+
+            default:
+                return new BiConsumer<T, U>() {
+                    @Override
+                    public void accept(T t, U u) {
+                        N.println(t + separator + u);
+                    }
+                };
+        }
     }
 
     public static <T> Function<T, T> identity() {
@@ -331,13 +455,33 @@ public final class Fn {
     }
 
     @SuppressWarnings("rawtypes")
-    public static <K, V> BiFunction<K, V, Pair<K, V>> pair() {
+    public static <L, R> BiFunction<L, R, Pair<L, R>> pair() {
         return (BiFunction) PAIR;
     }
 
     @SuppressWarnings("rawtypes")
-    public static <A, B, C> TriFunction<A, B, C, Triple<A, B, C>> triple() {
+    public static <L, M, R> TriFunction<L, M, R, Triple<L, M, R>> triple() {
         return (TriFunction) TRIPLE;
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static <T> Function<T, Tuple1<T>> tuple1() {
+        return (Function) TUPLE_1;
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static <T, U> BiFunction<T, U, Tuple2<T, U>> tuple2() {
+        return (BiFunction) TUPLE_2;
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static <A, B, C> TriFunction<A, B, C, Tuple3<A, B, C>> tuple3() {
+        return (TriFunction) TUPLE_3;
+    }
+
+    @SuppressWarnings({ "rawtypes", "hiding" })
+    public static <A, B, C, D> QuadFunction<A, B, C, D, Tuple4<A, B, C, D>> tuple4() {
+        return (QuadFunction) TUPLE_4;
     }
 
     public static Function<String, String> trim() {
