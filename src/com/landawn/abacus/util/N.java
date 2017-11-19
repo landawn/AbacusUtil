@@ -9166,7 +9166,7 @@ public final class N {
         return true;
     }
 
-    public static <T, E extends Exception> Optional<T> firstNonNull(final T[] a) {
+    public static <T> Optional<T> firstNonNull(final T[] a) {
         if (N.isNullOrEmpty(a)) {
             return Optional.empty();
         }
@@ -9180,7 +9180,7 @@ public final class N {
         return Optional.empty();
     }
 
-    public static <T, E extends Exception> Optional<T> firstNonNull(final Collection<T> c) {
+    public static <T> Optional<T> firstNonNull(final Collection<T> c) {
         if (N.isNullOrEmpty(c)) {
             return Optional.empty();
         }
@@ -9194,7 +9194,7 @@ public final class N {
         return Optional.empty();
     }
 
-    public static <T, E extends Exception> Optional<T> lastNonNull(final T[] a) {
+    public static <T> Optional<T> lastNonNull(final T[] a) {
         if (N.isNullOrEmpty(a)) {
             return Optional.empty();
         }
@@ -9208,7 +9208,7 @@ public final class N {
         return Optional.empty();
     }
 
-    public static <T, E extends Exception> Optional<T> lastNonNull(final Collection<T> c) {
+    public static <T> Optional<T> lastNonNull(final Collection<T> c) {
         if (N.isNullOrEmpty(c)) {
             return Optional.empty();
         }
