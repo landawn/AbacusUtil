@@ -33,7 +33,6 @@ import java.util.Set;
 import com.landawn.abacus.annotation.Internal;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
-import com.landawn.abacus.util.function.ObjLongConsumer;
 import com.landawn.abacus.util.stream.EntryStream;
 import com.landawn.abacus.util.stream.Stream;
 
@@ -1159,7 +1158,7 @@ public final class LongMultiset<T> implements Iterable<T> {
         return result;
     }
 
-    public void forEach(final ObjLongConsumer<? super T> action) {
+    public <E extends Exception> void forEach(final Try.ObjLongConsumer<? super T, E> action) throws E {
         N.requireNonNull(action);
 
         for (Map.Entry<T, MutableLong> entry : valueMap.entrySet()) {

@@ -17,13 +17,6 @@ package com.landawn.abacus.util;
 import java.util.NoSuchElementException;
 
 import com.landawn.abacus.annotation.Beta;
-import com.landawn.abacus.util.function.FloatBiFunction;
-import com.landawn.abacus.util.function.FloatFunction;
-import com.landawn.abacus.util.function.FloatPredicate;
-import com.landawn.abacus.util.function.FloatTriFunction;
-import com.landawn.abacus.util.function.FloatUnaryOperator;
-import com.landawn.abacus.util.function.IntBiFunction;
-import com.landawn.abacus.util.function.IntBiPredicate;
 import com.landawn.abacus.util.function.IntConsumer;
 import com.landawn.abacus.util.stream.FloatIteratorEx;
 import com.landawn.abacus.util.stream.FloatStream;
@@ -228,13 +221,13 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatS
         }
     }
 
-    public void updateRow(int rowIndex, FloatUnaryOperator func) {
+    public <E extends Exception> void updateRow(int rowIndex, Try.FloatUnaryOperator<E> func) throws E {
         for (int i = 0; i < cols; i++) {
             a[rowIndex][i] = func.applyAsFloat(a[rowIndex][i]);
         }
     }
 
-    public void updateColumn(int columnIndex, FloatUnaryOperator func) {
+    public <E extends Exception> void updateColumn(int columnIndex, Try.FloatUnaryOperator<E> func) throws E {
         for (int i = 0; i < rows; i++) {
             a[i][columnIndex] = func.applyAsFloat(a[i][columnIndex]);
         }
@@ -261,7 +254,7 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatS
         }
     }
 
-    public void updateLU2RD(final FloatUnaryOperator func) {
+    public <E extends Exception> void updateLU2RD(final Try.FloatUnaryOperator<E> func) throws E {
         N.checkState(rows == cols, "'rows' and 'cols' must be same to get diagonals: rows=%s, cols=%s", rows, cols);
 
         for (int i = 0; i < rows; i++) {
@@ -290,7 +283,7 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatS
         }
     }
 
-    public void updateRU2LD(final FloatUnaryOperator func) {
+    public <E extends Exception> void updateRU2LD(final Try.FloatUnaryOperator<E> func) throws E {
         N.checkState(rows == cols, "'rows' and 'cols' must be same to get diagonals: rows=%s, cols=%s", rows, cols);
 
         for (int i = 0; i < rows; i++) {
@@ -298,21 +291,21 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatS
         }
     }
 
-    public void updateAll(final FloatUnaryOperator func) {
+    public <E extends Exception> void updateAll(final Try.FloatUnaryOperator<E> func) throws E {
         if (isParallelable()) {
             if (rows <= cols) {
-                IntStream.range(0, rows).parallel().forEach(new IntConsumer() {
+                IntStream.range(0, rows).parallel().forEach(new Try.IntConsumer<E>() {
                     @Override
-                    public void accept(final int i) {
+                    public void accept(final int i) throws E {
                         for (int j = 0; j < cols; j++) {
                             a[i][j] = func.applyAsFloat(a[i][j]);
                         }
                     }
                 });
             } else {
-                IntStream.range(0, cols).parallel().forEach(new IntConsumer() {
+                IntStream.range(0, cols).parallel().forEach(new Try.IntConsumer<E>() {
                     @Override
-                    public void accept(final int j) {
+                    public void accept(final int j) throws E {
                         for (int i = 0; i < rows; i++) {
                             a[i][j] = func.applyAsFloat(a[i][j]);
                         }
@@ -341,21 +334,21 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatS
      * 
      * @param func
      */
-    public void updateAll(final IntBiFunction<Float> func) {
+    public <E extends Exception> void updateAll(final Try.IntBiFunction<Float, E> func) throws E {
         if (isParallelable()) {
             if (rows <= cols) {
-                IntStream.range(0, rows).parallel().forEach(new IntConsumer() {
+                IntStream.range(0, rows).parallel().forEach(new Try.IntConsumer<E>() {
                     @Override
-                    public void accept(final int i) {
+                    public void accept(final int i) throws E {
                         for (int j = 0; j < cols; j++) {
                             a[i][j] = func.apply(i, j);
                         }
                     }
                 });
             } else {
-                IntStream.range(0, cols).parallel().forEach(new IntConsumer() {
+                IntStream.range(0, cols).parallel().forEach(new Try.IntConsumer<E>() {
                     @Override
-                    public void accept(final int j) {
+                    public void accept(final int j) throws E {
                         for (int i = 0; i < rows; i++) {
                             a[i][j] = func.apply(i, j);
                         }
@@ -379,21 +372,21 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatS
         }
     }
 
-    public void replaceIf(final FloatPredicate predicate, final float newValue) {
+    public <E extends Exception> void replaceIf(final Try.FloatPredicate<E> predicate, final float newValue) throws E {
         if (isParallelable()) {
             if (rows <= cols) {
-                IntStream.range(0, rows).parallel().forEach(new IntConsumer() {
+                IntStream.range(0, rows).parallel().forEach(new Try.IntConsumer<E>() {
                     @Override
-                    public void accept(final int i) {
+                    public void accept(final int i) throws E {
                         for (int j = 0; j < cols; j++) {
                             a[i][j] = predicate.test(a[i][j]) ? newValue : a[i][j];
                         }
                     }
                 });
             } else {
-                IntStream.range(0, cols).parallel().forEach(new IntConsumer() {
+                IntStream.range(0, cols).parallel().forEach(new Try.IntConsumer<E>() {
                     @Override
-                    public void accept(final int j) {
+                    public void accept(final int j) throws E {
                         for (int i = 0; i < rows; i++) {
                             a[i][j] = predicate.test(a[i][j]) ? newValue : a[i][j];
                         }
@@ -423,21 +416,21 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatS
      * @param predicate
      * @param newValue
      */
-    public void replaceIf(final IntBiPredicate predicate, final float newValue) {
+    public <E extends Exception> void replaceIf(final Try.IntBiPredicate<E> predicate, final float newValue) throws E {
         if (isParallelable()) {
             if (rows <= cols) {
-                IntStream.range(0, rows).parallel().forEach(new IntConsumer() {
+                IntStream.range(0, rows).parallel().forEach(new Try.IntConsumer<E>() {
                     @Override
-                    public void accept(final int i) {
+                    public void accept(final int i) throws E {
                         for (int j = 0; j < cols; j++) {
                             a[i][j] = predicate.test(i, j) ? newValue : a[i][j];
                         }
                     }
                 });
             } else {
-                IntStream.range(0, cols).parallel().forEach(new IntConsumer() {
+                IntStream.range(0, cols).parallel().forEach(new Try.IntConsumer<E>() {
                     @Override
-                    public void accept(final int j) {
+                    public void accept(final int j) throws E {
                         for (int i = 0; i < rows; i++) {
                             a[i][j] = predicate.test(i, j) ? newValue : a[i][j];
                         }
@@ -461,23 +454,23 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatS
         }
     }
 
-    public FloatMatrix map(final FloatUnaryOperator func) {
+    public <E extends Exception> FloatMatrix map(final Try.FloatUnaryOperator<E> func) throws E {
         final float[][] c = new float[rows][cols];
 
         if (isParallelable()) {
             if (rows <= cols) {
-                IntStream.range(0, rows).parallel().forEach(new IntConsumer() {
+                IntStream.range(0, rows).parallel().forEach(new Try.IntConsumer<E>() {
                     @Override
-                    public void accept(final int i) {
+                    public void accept(final int i) throws E {
                         for (int j = 0; j < cols; j++) {
                             c[i][j] = func.applyAsFloat(a[i][j]);
                         }
                     }
                 });
             } else {
-                IntStream.range(0, cols).parallel().forEach(new IntConsumer() {
+                IntStream.range(0, cols).parallel().forEach(new Try.IntConsumer<E>() {
                     @Override
-                    public void accept(final int j) {
+                    public void accept(final int j) throws E {
                         for (int i = 0; i < rows; i++) {
                             c[i][j] = func.applyAsFloat(a[i][j]);
                         }
@@ -503,7 +496,7 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatS
         return FloatMatrix.of(c);
     }
 
-    public <T> Matrix<T> mapToObj(final Class<T> cls, final FloatFunction<? extends T> func) {
+    public <T, E extends Exception> Matrix<T> mapToObj(final Class<T> cls, final Try.FloatFunction<? extends T, E> func) throws E {
         final T[][] c = N.newArray(N.newArray(cls, 0).getClass(), rows);
 
         for (int i = 0; i < rows; i++) {
@@ -512,18 +505,18 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatS
 
         if (isParallelable()) {
             if (rows <= cols) {
-                IntStream.range(0, rows).parallel().forEach(new IntConsumer() {
+                IntStream.range(0, rows).parallel().forEach(new Try.IntConsumer<E>() {
                     @Override
-                    public void accept(final int i) {
+                    public void accept(final int i) throws E {
                         for (int j = 0; j < cols; j++) {
                             c[i][j] = func.apply(a[i][j]);
                         }
                     }
                 });
             } else {
-                IntStream.range(0, cols).parallel().forEach(new IntConsumer() {
+                IntStream.range(0, cols).parallel().forEach(new Try.IntConsumer<E>() {
                     @Override
-                    public void accept(final int j) {
+                    public void accept(final int j) throws E {
                         for (int i = 0; i < rows; i++) {
                             c[i][j] = func.apply(a[i][j]);
                         }
@@ -1099,7 +1092,7 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatS
         return DoubleMatrix.from(a);
     }
 
-    public FloatMatrix zipWith(final FloatMatrix matrixB, final FloatBiFunction<Float> zipFunction) {
+    public <E extends Exception> FloatMatrix zipWith(final FloatMatrix matrixB, final Try.FloatBiFunction<Float, E> zipFunction) throws E {
         N.checkArgument(isSameShape(matrixB), "Can't zip two matrices which have different shape.");
 
         final float[][] result = new float[rows][cols];
@@ -1107,18 +1100,18 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatS
 
         if (isParallelable()) {
             if (rows <= cols) {
-                IntStream.range(0, rows).parallel().forEach(new IntConsumer() {
+                IntStream.range(0, rows).parallel().forEach(new Try.IntConsumer<E>() {
                     @Override
-                    public void accept(final int i) {
+                    public void accept(final int i) throws E {
                         for (int j = 0; j < cols; j++) {
                             result[i][j] = zipFunction.apply(a[i][j], b[i][j]);
                         }
                     }
                 });
             } else {
-                IntStream.range(0, cols).parallel().forEach(new IntConsumer() {
+                IntStream.range(0, cols).parallel().forEach(new Try.IntConsumer<E>() {
                     @Override
-                    public void accept(final int j) {
+                    public void accept(final int j) throws E {
                         for (int i = 0; i < rows; i++) {
                             result[i][j] = zipFunction.apply(a[i][j], b[i][j]);
                         }
@@ -1144,7 +1137,8 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatS
         return new FloatMatrix(result);
     }
 
-    public FloatMatrix zipWith(final FloatMatrix matrixB, final FloatMatrix matrixC, final FloatTriFunction<Float> zipFunction) {
+    public <E extends Exception> FloatMatrix zipWith(final FloatMatrix matrixB, final FloatMatrix matrixC, final Try.FloatTriFunction<Float, E> zipFunction)
+            throws E {
         N.checkArgument(isSameShape(matrixB) && isSameShape(matrixC), "Can't zip three matrices which have different shape.");
 
         final float[][] result = new float[rows][cols];
@@ -1153,18 +1147,18 @@ public final class FloatMatrix extends AbstractMatrix<float[], FloatList, FloatS
 
         if (isParallelable()) {
             if (rows <= cols) {
-                IntStream.range(0, rows).parallel().forEach(new IntConsumer() {
+                IntStream.range(0, rows).parallel().forEach(new Try.IntConsumer<E>() {
                     @Override
-                    public void accept(final int i) {
+                    public void accept(final int i) throws E {
                         for (int j = 0; j < cols; j++) {
                             result[i][j] = zipFunction.apply(a[i][j], b[i][j], c[i][j]);
                         }
                     }
                 });
             } else {
-                IntStream.range(0, cols).parallel().forEach(new IntConsumer() {
+                IntStream.range(0, cols).parallel().forEach(new Try.IntConsumer<E>() {
                     @Override
-                    public void accept(final int j) {
+                    public void accept(final int j) throws E {
                         for (int i = 0; i < rows; i++) {
                             result[i][j] = zipFunction.apply(a[i][j], b[i][j], c[i][j]);
                         }

@@ -1,7 +1,7 @@
 
 ### 1.1.1
 
-* Replace `Predicate/Consumer/Function` in `Multiset/LongMultiset/Multimap` with `Try.Predicate/Consumer/Function`.
+* Replace `Predicate/Consumer/Function` in `Multiset/LongMultiset/Multimap/Matrix/IntMatrix/.../f` with `Try.Predicate/Consumer/Function`.
 
 * Add `Median`.
 
