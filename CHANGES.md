@@ -3,6 +3,8 @@
 
 * Replace `Predicate/Consumer/Function` in `Multiset/LongMultiset/Multimap/Matrix/IntMatrix/.../f` with `Try.Predicate/Consumer/Function`.
 
+* Remove `IOUtil.parseInt/parseLong`.
+
 * Add `Median`.
 
 * Add `Joiner.concat`.

@@ -123,20 +123,6 @@ public final class Multiset<T> implements Iterable<T> {
         return multiset;
     }
 
-    public static <T> Multiset<T> from(final Multiset<? extends T> multiset) {
-        if (N.isNullOrEmpty(multiset)) {
-            return new Multiset<T>();
-        }
-
-        final Multiset<T> result = new Multiset<>(N.initHashCapacity(multiset.size()));
-
-        for (Map.Entry<? extends T, MutableInt> entry : multiset.valueMap.entrySet()) {
-            result.set(entry.getKey(), entry.getValue().intValue());
-        }
-
-        return result;
-    }
-
     /**
      *
      * @param e

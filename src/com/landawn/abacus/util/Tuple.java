@@ -46,7 +46,8 @@ public abstract class Tuple {
         }
 
         @Override
-        public <E extends Exception> void forEach(Try.Consumer<?, E> comsumer) throws E {
+        public <E extends Exception> void forEach(Try.Consumer<?, E> consumer) throws E {
+            N.requireNonNull(consumer);
             // do nothing.
         }
 
@@ -70,7 +71,7 @@ public abstract class Tuple {
 
     public abstract <A> A[] toArray(A[] a);
 
-    public abstract <E extends Exception> void forEach(Try.Consumer<?, E> comsumer) throws E;
+    public abstract <E extends Exception> void forEach(Try.Consumer<?, E> consumer) throws E;
 
     protected abstract Stream<? extends Tuple> stream();
 
@@ -246,10 +247,10 @@ public abstract class Tuple {
         }
 
         @Override
-        public <E extends Exception> void forEach(Try.Consumer<?, E> comsumer) throws E {
-            final Try.Consumer<Object, E> objComsumer = (Try.Consumer<Object, E>) comsumer;
+        public <E extends Exception> void forEach(Try.Consumer<?, E> consumer) throws E {
+            final Try.Consumer<Object, E> objConsumer = (Try.Consumer<Object, E>) consumer;
 
-            objComsumer.accept(_1);
+            objConsumer.accept(_1);
         }
 
         public <E extends Exception> void accept(final Try.Consumer<? super Tuple1<T1>, E> action) throws E {
@@ -339,11 +340,11 @@ public abstract class Tuple {
         }
 
         @Override
-        public <E extends Exception> void forEach(Try.Consumer<?, E> comsumer) throws E {
-            final Try.Consumer<Object, E> objComsumer = (Try.Consumer<Object, E>) comsumer;
+        public <E extends Exception> void forEach(Try.Consumer<?, E> consumer) throws E {
+            final Try.Consumer<Object, E> objConsumer = (Try.Consumer<Object, E>) consumer;
 
-            objComsumer.accept(_1);
-            objComsumer.accept(_2);
+            objConsumer.accept(_1);
+            objConsumer.accept(_2);
         }
 
         public <E extends Exception> void accept(final Try.Consumer<? super Tuple2<T1, T2>, E> action) throws E {
@@ -461,12 +462,12 @@ public abstract class Tuple {
         }
 
         @Override
-        public <E extends Exception> void forEach(Try.Consumer<?, E> comsumer) throws E {
-            final Try.Consumer<Object, E> objComsumer = (Try.Consumer<Object, E>) comsumer;
+        public <E extends Exception> void forEach(Try.Consumer<?, E> consumer) throws E {
+            final Try.Consumer<Object, E> objConsumer = (Try.Consumer<Object, E>) consumer;
 
-            objComsumer.accept(_1);
-            objComsumer.accept(_2);
-            objComsumer.accept(_3);
+            objConsumer.accept(_1);
+            objConsumer.accept(_2);
+            objConsumer.accept(_3);
         }
 
         public <E extends Exception> void accept(final Try.Consumer<? super Tuple3<T1, T2, T3>, E> action) throws E {
@@ -568,13 +569,13 @@ public abstract class Tuple {
         }
 
         @Override
-        public <E extends Exception> void forEach(Try.Consumer<?, E> comsumer) throws E {
-            final Try.Consumer<Object, E> objComsumer = (Try.Consumer<Object, E>) comsumer;
+        public <E extends Exception> void forEach(Try.Consumer<?, E> consumer) throws E {
+            final Try.Consumer<Object, E> objConsumer = (Try.Consumer<Object, E>) consumer;
 
-            objComsumer.accept(_1);
-            objComsumer.accept(_2);
-            objComsumer.accept(_3);
-            objComsumer.accept(_4);
+            objConsumer.accept(_1);
+            objConsumer.accept(_2);
+            objConsumer.accept(_3);
+            objConsumer.accept(_4);
         }
 
         public <E extends Exception> void accept(final Try.Consumer<? super Tuple4<T1, T2, T3, T4>, E> action) throws E {
@@ -676,14 +677,14 @@ public abstract class Tuple {
         }
 
         @Override
-        public <E extends Exception> void forEach(Try.Consumer<?, E> comsumer) throws E {
-            final Try.Consumer<Object, E> objComsumer = (Try.Consumer<Object, E>) comsumer;
+        public <E extends Exception> void forEach(Try.Consumer<?, E> consumer) throws E {
+            final Try.Consumer<Object, E> objConsumer = (Try.Consumer<Object, E>) consumer;
 
-            objComsumer.accept(_1);
-            objComsumer.accept(_2);
-            objComsumer.accept(_3);
-            objComsumer.accept(_4);
-            objComsumer.accept(_5);
+            objConsumer.accept(_1);
+            objConsumer.accept(_2);
+            objConsumer.accept(_3);
+            objConsumer.accept(_4);
+            objConsumer.accept(_5);
         }
 
         public <E extends Exception> void accept(final Try.Consumer<? super Tuple5<T1, T2, T3, T4, T5>, E> action) throws E {
@@ -791,15 +792,15 @@ public abstract class Tuple {
         }
 
         @Override
-        public <E extends Exception> void forEach(Try.Consumer<?, E> comsumer) throws E {
-            final Try.Consumer<Object, E> objComsumer = (Try.Consumer<Object, E>) comsumer;
+        public <E extends Exception> void forEach(Try.Consumer<?, E> consumer) throws E {
+            final Try.Consumer<Object, E> objConsumer = (Try.Consumer<Object, E>) consumer;
 
-            objComsumer.accept(_1);
-            objComsumer.accept(_2);
-            objComsumer.accept(_3);
-            objComsumer.accept(_4);
-            objComsumer.accept(_5);
-            objComsumer.accept(_6);
+            objConsumer.accept(_1);
+            objConsumer.accept(_2);
+            objConsumer.accept(_3);
+            objConsumer.accept(_4);
+            objConsumer.accept(_5);
+            objConsumer.accept(_6);
         }
 
         public <E extends Exception> void accept(final Try.Consumer<? super Tuple6<T1, T2, T3, T4, T5, T6>, E> action) throws E {
@@ -912,16 +913,16 @@ public abstract class Tuple {
         }
 
         @Override
-        public <E extends Exception> void forEach(Try.Consumer<?, E> comsumer) throws E {
-            final Try.Consumer<Object, E> objComsumer = (Try.Consumer<Object, E>) comsumer;
+        public <E extends Exception> void forEach(Try.Consumer<?, E> consumer) throws E {
+            final Try.Consumer<Object, E> objConsumer = (Try.Consumer<Object, E>) consumer;
 
-            objComsumer.accept(_1);
-            objComsumer.accept(_2);
-            objComsumer.accept(_3);
-            objComsumer.accept(_4);
-            objComsumer.accept(_5);
-            objComsumer.accept(_6);
-            objComsumer.accept(_7);
+            objConsumer.accept(_1);
+            objConsumer.accept(_2);
+            objConsumer.accept(_3);
+            objConsumer.accept(_4);
+            objConsumer.accept(_5);
+            objConsumer.accept(_6);
+            objConsumer.accept(_7);
         }
 
         public <E extends Exception> void accept(final Try.Consumer<? super Tuple7<T1, T2, T3, T4, T5, T6, T7>, E> action) throws E {
@@ -1038,17 +1039,17 @@ public abstract class Tuple {
         }
 
         @Override
-        public <E extends Exception> void forEach(Try.Consumer<?, E> comsumer) throws E {
-            final Try.Consumer<Object, E> objComsumer = (Try.Consumer<Object, E>) comsumer;
+        public <E extends Exception> void forEach(Try.Consumer<?, E> consumer) throws E {
+            final Try.Consumer<Object, E> objConsumer = (Try.Consumer<Object, E>) consumer;
 
-            objComsumer.accept(_1);
-            objComsumer.accept(_2);
-            objComsumer.accept(_3);
-            objComsumer.accept(_4);
-            objComsumer.accept(_5);
-            objComsumer.accept(_6);
-            objComsumer.accept(_7);
-            objComsumer.accept(_8);
+            objConsumer.accept(_1);
+            objConsumer.accept(_2);
+            objConsumer.accept(_3);
+            objConsumer.accept(_4);
+            objConsumer.accept(_5);
+            objConsumer.accept(_6);
+            objConsumer.accept(_7);
+            objConsumer.accept(_8);
         }
 
         public <E extends Exception> void accept(final Try.Consumer<? super Tuple8<T1, T2, T3, T4, T5, T6, T7, T8>, E> action) throws E {
@@ -1169,18 +1170,18 @@ public abstract class Tuple {
         }
 
         @Override
-        public <E extends Exception> void forEach(Try.Consumer<?, E> comsumer) throws E {
-            final Try.Consumer<Object, E> objComsumer = (Try.Consumer<Object, E>) comsumer;
+        public <E extends Exception> void forEach(Try.Consumer<?, E> consumer) throws E {
+            final Try.Consumer<Object, E> objConsumer = (Try.Consumer<Object, E>) consumer;
 
-            objComsumer.accept(_1);
-            objComsumer.accept(_2);
-            objComsumer.accept(_3);
-            objComsumer.accept(_4);
-            objComsumer.accept(_5);
-            objComsumer.accept(_6);
-            objComsumer.accept(_7);
-            objComsumer.accept(_8);
-            objComsumer.accept(_9);
+            objConsumer.accept(_1);
+            objConsumer.accept(_2);
+            objConsumer.accept(_3);
+            objConsumer.accept(_4);
+            objConsumer.accept(_5);
+            objConsumer.accept(_6);
+            objConsumer.accept(_7);
+            objConsumer.accept(_8);
+            objConsumer.accept(_9);
         }
 
         public <E extends Exception> void accept(final Try.Consumer<? super Tuple9<T1, T2, T3, T4, T5, T6, T7, T8, T9>, E> action) throws E {

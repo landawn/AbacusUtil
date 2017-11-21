@@ -32,7 +32,7 @@ public final class FloatPair {
     }
 
     public double average() {
-        return sum() / 2d;
+        return (0d + _1 + _2) / 2;
     }
 
     public FloatPair reversed() {

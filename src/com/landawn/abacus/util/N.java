@@ -125,8 +125,6 @@ import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.IntUnaryOperator;
 import com.landawn.abacus.util.function.Predicate;
-import com.landawn.abacus.util.stream.DoubleStream;
-import com.landawn.abacus.util.stream.FloatStream;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -2485,7 +2483,7 @@ public final class N {
             }
         }
 
-        return IOUtil.parseInt(N.getCharsForReadOnly(str), 0, str.length());
+        return Integer.decode(str);
     }
 
     public static int asInt(final Number num) {
@@ -2512,7 +2510,7 @@ public final class N {
             }
         }
 
-        return IOUtil.parseLong(N.getCharsForReadOnly(str), 0, str.length());
+        return Long.decode(str);
     }
 
     public static long asLong(final Number num) {
@@ -3601,87 +3599,11 @@ public final class N {
      * @return
      */
     public static OptionalInt createInteger(final String str) {
-        final Integer val = createInteger(str, true);
-
-        return val == null ? OptionalInt.empty() : OptionalInt.of(val);
-    }
-
-    // It's copied from OpenJDK 1.7 on 3/9/2015
-    /*
-     * Copyright (c) 1994, 2009, Oracle and/or its affiliates. All rights reserved.
-     * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
-     *
-     * This code is free software; you can redistribute it and/or modify it
-     * under the terms of the GNU General Public License version 2 only, as
-     * published by the Free Software Foundation.  Oracle designates this
-     * particular file as subject to the "Classpath" exception as provided
-     * by Oracle in the LICENSE file that accompanied this code.
-     *
-     * This code is distributed in the hope that it will be useful, but WITHOUT
-     * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-     * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-     * version 2 for more details (a copy is included in the LICENSE file that
-     * accompanied this code).
-     *
-     * You should have received a copy of the GNU General Public License version
-     * 2 along with this work; if not, write to the Free Software Foundation,
-     * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
-     *
-     * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
-     * or visit www.oracle.com if you need additional information or have any
-     * questions.
-     */
-    private static Integer createInteger(final String str, final boolean isNumberCheck) {
-        if (N.isNullOrEmpty(str)) {
-            return null;
+        try {
+            return OptionalInt.of(Integer.decode(str));
+        } catch (NumberFormatException e) {
+            return OptionalInt.empty();
         }
-
-        boolean negative = false;
-        int radix = 10;
-        int index = 0;
-
-        char firstChar = str.charAt(0);
-        // Handle sign, if present
-        if (firstChar == '-') {
-            negative = true;
-            index++;
-        } else if (firstChar == '+') {
-            index++;
-        }
-
-        // Handle radix specifier, if present
-        if (str.startsWith("0x", index) || str.startsWith("0X", index)) {
-            index += 2;
-            radix = 16;
-        } else if (str.startsWith("#", index)) {
-            index++;
-            radix = 16;
-        } else if (str.startsWith("0", index) && str.length() > 1 + index) {
-            index++;
-            radix = 8;
-        }
-
-        if (str.startsWith("-", index) || str.startsWith("+", index)) {
-            if (isNumberCheck) {
-                return null;
-            } else {
-                throw new NumberFormatException("Sign character in wrong position");
-            }
-        }
-
-        int value = 0;
-
-        if (isNumberCheck) {
-            try {
-                value = IOUtil.parseInt(N.getCharsForReadOnly(str), index, str.length() - index, radix);
-            } catch (NumberFormatException e) {
-                return null;
-            }
-        } else {
-            value = IOUtil.parseInt(N.getCharsForReadOnly(str), index, str.length() - index, radix);
-        }
-
-        return negative ? -value : value;
     }
 
     /**
@@ -3699,87 +3621,11 @@ public final class N {
      * @return
      */
     public static OptionalLong createLong(final String str) {
-        final Long val = createLong(str, true);
-
-        return val == null ? OptionalLong.empty() : OptionalLong.of(val);
-    }
-
-    // It's copied from OpenJDK 1.7 on 3/9/2015
-    /*
-     * Copyright (c) 1994, 2009, Oracle and/or its affiliates. All rights reserved.
-     * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
-     *
-     * This code is free software; you can redistribute it and/or modify it
-     * under the terms of the GNU General Public License version 2 only, as
-     * published by the Free Software Foundation.  Oracle designates this
-     * particular file as subject to the "Classpath" exception as provided
-     * by Oracle in the LICENSE file that accompanied this code.
-     *
-     * This code is distributed in the hope that it will be useful, but WITHOUT
-     * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-     * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-     * version 2 for more details (a copy is included in the LICENSE file that
-     * accompanied this code).
-     *
-     * You should have received a copy of the GNU General Public License version
-     * 2 along with this work; if not, write to the Free Software Foundation,
-     * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
-     *
-     * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
-     * or visit www.oracle.com if you need additional information or have any
-     * questions.
-     */
-    private static Long createLong(final String str, final boolean isNumberCheck) {
-        if (N.isNullOrEmpty(str)) {
-            return null;
+        try {
+            return OptionalLong.of(Long.decode(str));
+        } catch (NumberFormatException e) {
+            return OptionalLong.empty();
         }
-
-        boolean negative = false;
-        int radix = 10;
-        int index = 0;
-
-        char firstChar = str.charAt(0);
-        // Handle sign, if present
-        if (firstChar == '-') {
-            negative = true;
-            index++;
-        } else if (firstChar == '+') {
-            index++;
-        }
-
-        // Handle radix specifier, if present
-        if (str.startsWith("0x", index) || str.startsWith("0X", index)) {
-            index += 2;
-            radix = 16;
-        } else if (str.startsWith("#", index)) {
-            index++;
-            radix = 16;
-        } else if (str.startsWith("0", index) && str.length() > 1 + index) {
-            index++;
-            radix = 8;
-        }
-
-        if (str.startsWith("-", index) || str.startsWith("+", index)) {
-            if (isNumberCheck) {
-                return null;
-            } else {
-                throw new NumberFormatException("Sign character in wrong position");
-            }
-        }
-
-        long value = 0;
-
-        if (isNumberCheck) {
-            try {
-                value = IOUtil.parseLong(N.getCharsForReadOnly(str), index, str.length() - index, radix);
-            } catch (NumberFormatException e) {
-                return null;
-            }
-        } else {
-            value = IOUtil.parseLong(N.getCharsForReadOnly(str), index, str.length() - index, radix);
-        }
-
-        return negative ? -value : value;
     }
 
     // -----------------------------------------------------------------------
@@ -3796,9 +3642,11 @@ public final class N {
      * @return
      */
     public static OptionalFloat createFloat(final String str) {
-        final Float val = N.isNullOrEmpty(str) ? null : createNumber(str, true).floatValue();
-
-        return val == null ? OptionalFloat.empty() : OptionalFloat.of(val);
+        try {
+            return OptionalFloat.of(Float.parseFloat(str));
+        } catch (NumberFormatException e) {
+            return OptionalFloat.empty();
+        }
     }
 
     /**
@@ -3816,9 +3664,11 @@ public final class N {
      * @return
      */
     public static OptionalDouble createDouble(final String str) {
-        final Double val = N.isNullOrEmpty(str) ? null : createNumber(str, true).doubleValue();
-
-        return val == null ? OptionalDouble.empty() : OptionalDouble.of(val);
+        try {
+            return OptionalDouble.of(Double.parseDouble(str));
+        } catch (NumberFormatException e) {
+            return OptionalDouble.empty();
+        }
     }
 
     /**
@@ -3834,53 +3684,35 @@ public final class N {
      * @param str a <code>String</code> to convert, may be null
      * @return
      */
-    public static Optional<BigInteger> createBigInteger(final String str) throws NumberFormatException {
-        final BigInteger val = createBigInteger(str, true);
-
-        return val == null ? Optional.<BigInteger> empty() : Optional.of(val);
-    }
-
-    private static BigInteger createBigInteger(final String str, final boolean isNumberCheck) {
-        if (N.isNullOrEmpty(str)) {
-            return null;
+    public static Optional<BigInteger> createBigInteger(final String str) {
+        if (N.isNullOrEmptyOrBlank(str)) {
+            return Optional.empty();
         }
 
-        boolean negative = false;
+        int pos = 0; // offset within string
         int radix = 10;
-        int index = 0;
-
-        char firstChar = str.charAt(0);
-        // Handle sign, if present
-        if (firstChar == '-') {
-            negative = true;
-            index++;
-        } else if (firstChar == '+') {
-            index++;
+        boolean negate = false; // need to negate later?
+        if (str.startsWith("-")) {
+            negate = true;
+            pos = 1;
         }
-
-        // Handle radix specifier, if present
-        if (str.startsWith("0x", index) || str.startsWith("0X", index)) {
-            index += 2;
+        if (str.startsWith("0x", pos) || str.startsWith("0X", pos)) { // hex
             radix = 16;
-        } else if (str.startsWith("#", index)) {
-            index++;
+            pos += 2;
+        } else if (str.startsWith("#", pos)) { // alternative hex (allowed by Long/Integer)
             radix = 16;
-        } else if (str.startsWith("0", index) && str.length() > 1 + index) {
-            index++;
+            pos++;
+        } else if (str.startsWith("0", pos) && str.length() > pos + 1) { // octal; so long as there are additional digits
             radix = 8;
+            pos++;
+        } // default is to treat as decimal
+
+        try {
+            final BigInteger value = new BigInteger(str.substring(pos), radix);
+            return Optional.of(negate ? value.negate() : value);
+        } catch (NumberFormatException e) {
+            return Optional.empty();
         }
-
-        if (str.startsWith("-", index) || str.startsWith("+", index)) {
-            if (isNumberCheck) {
-                return null;
-            } else {
-                throw new NumberFormatException("Sign character in wrong position");
-            }
-        }
-
-        final BigInteger value = new BigInteger(str.substring(index), radix);
-
-        return negative ? value.negate() : value;
     }
 
     /**
@@ -3895,40 +3727,16 @@ public final class N {
      * @param str a <code>String</code> to convert, may be null
      * @return
      */
-    public static Optional<BigDecimal> createBigDecimal(final String str) throws NumberFormatException {
-        final BigDecimal val = createBigDecimal(str, true);
-
-        return val == null ? Optional.<BigDecimal> empty() : Optional.of(val);
-    }
-
-    private static BigDecimal createBigDecimal(final String str, final boolean isNumberCheck) {
-        if (N.isNullOrEmpty(str)) {
-            return null;
+    public static Optional<BigDecimal> createBigDecimal(final String str) {
+        if (N.isNullOrEmptyOrBlank(str) || str.trim().startsWith("--")) {
+            return Optional.empty();
         }
 
-        // handle JDK1.3.1 bug where "" throws IndexOutOfBoundsException
-        if (N.containsWhitespace(str)) {
-            if (isNumberCheck) {
-                return null;
-            } else {
-                throw new NumberFormatException("A blank string is not a valid number");
-            }
+        try {
+            return Optional.of(new BigDecimal(str));
+        } catch (NumberFormatException e) {
+            return Optional.empty();
         }
-
-        if (str.trim().startsWith("--")) {
-            // this is protection for poorness in java.lang.BigDecimal.
-            // it accepts this as a legal value, but it does not appear
-            // to be in specification of class. OS X Java parses it to
-            // a wrong value.
-
-            if (isNumberCheck) {
-                return null;
-            } else {
-                throw new NumberFormatException(str + " is not a valid number.");
-            }
-        }
-
-        return new BigDecimal(str);
     }
 
     /**
@@ -3965,31 +3773,14 @@ public final class N {
      * Returns an empty {@code Optional} if the string is {@code null} or can't be parsed as {@code Number}.
      * </p>
      *
-     * <p>
-     * This method does not trim the input string, i.e., strings with leading or
-     * trailing spaces will generate NumberFormatExceptions.
-     * </p>
      *
      * @param str a String containing a number, may be null
      * @return
      */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public static Optional<Number> createNumber(final String str) {
-        final Number val = createNumber(str, true);
-
-        return val == null ? Optional.<Number> empty() : Optional.of(val);
-    }
-
-    private static Number createNumber(final String str, final boolean isNumberCheck) throws NumberFormatException {
-        if (N.isNullOrEmpty(str)) {
-            return null;
-        }
-
-        if (N.containsWhitespace(str)) {
-            if (isNumberCheck) {
-                return null;
-            } else {
-                throw new NumberFormatException("A blank string is not a valid number");
-            }
+        if (N.isNullOrEmptyOrBlank(str)) {
+            return Optional.empty();
         }
 
         // Need to deal with all possible hex prefixes here
@@ -3998,13 +3789,12 @@ public final class N {
         for (final String pfx : hex_prefixes) {
             if (str.startsWith(pfx)) {
                 pfxLen += pfx.length();
-
                 break;
             }
         }
-
         if (pfxLen > 0) { // we have a hex number
             char firstSigDigit = 0; // strip leading zeroes
+
             for (int i = pfxLen; i < str.length(); i++) {
                 firstSigDigit = str.charAt(i);
                 if (firstSigDigit == '0') { // count leading zeroes
@@ -4015,67 +3805,51 @@ public final class N {
             }
 
             final int hexDigits = str.length() - pfxLen;
-            if (hexDigits > 16 || (hexDigits == 16 && firstSigDigit > '7')) { // too many for Long
-                return createBigInteger(str, isNumberCheck);
-            } else if (hexDigits > 8 || (hexDigits == 8 && firstSigDigit > '7')) { // too many for an int
-                return createLong(str, isNumberCheck);
+
+            if (hexDigits > 16 || hexDigits == 16 && firstSigDigit > '7') { // too many for Long
+                return (Optional) createBigInteger(str);
+            } else if (hexDigits > 8 || hexDigits == 8 && firstSigDigit > '7') { // too many for an int
+                return (Optional) createLong(str).boxed();
             } else {
-                return createInteger(str, isNumberCheck);
+                return (Optional) createInteger(str).boxed();
             }
         }
 
+        final char lastChar = str.charAt(str.length() - 1);
         String mant;
         String dec;
         String exp;
         final int decPos = str.indexOf('.');
-        final int expPos = str.indexOf('e') + str.indexOf('E') + 1; // assumes
-        // both not
-        // present
-        // if both e and E are present, this is caught by the checks on expPos
-        // (which prevent IOOBE)
-        // and the parsing which will detect if e or E appear in a number due to
-        // using the wrong offset
+        final int expPos = str.indexOf('e') + str.indexOf('E') + 1; // assumes both not present
+        // if both e and E are present, this is caught by the checks on expPos (which prevent IOOBE)
+        // and the parsing which will detect if e or E appear in a number due to using the wrong offset
 
-        int numDecimals = 0; // Check required precision (LANG-693)
+        Optional<? extends Number> op = null;
+
         if (decPos > -1) { // there is a decimal point
-
             if (expPos > -1) { // there is an exponent
                 if (expPos < decPos || expPos > str.length()) { // prevents double exponent causing IOOBE
-                    if (isNumberCheck) {
-                        return null;
-                    } else {
-                        throw new NumberFormatException(str + " is not a valid number.");
-                    }
+                    return Optional.empty();
                 }
-
                 dec = str.substring(decPos + 1, expPos);
             } else {
                 dec = str.substring(decPos + 1);
             }
 
-            mant = str.substring(0, decPos);
-            numDecimals = dec.length(); // gets number of digits past the
-            // decimal to ensure no loss of
-            // precision for floating point numbers.
+            mant = getMantissa(str, decPos);
         } else {
             if (expPos > -1) {
                 if (expPos > str.length()) { // prevents double exponent causing IOOBE
-                    if (isNumberCheck) {
-                        return null;
-                    } else {
-                        throw new NumberFormatException(str + " is not a valid number.");
-                    }
+                    return Optional.empty();
                 }
-
-                mant = str.substring(0, expPos);
+                mant = getMantissa(str, expPos);
             } else {
-                mant = str;
+                mant = getMantissa(str);
             }
 
             dec = null;
         }
 
-        final char lastChar = str.charAt(str.length() - 1);
         if (!Character.isDigit(lastChar) && lastChar != '.') {
             if (expPos > -1 && expPos < str.length() - 1) {
                 exp = str.substring(expPos + 1, str.length() - 1);
@@ -4083,73 +3857,62 @@ public final class N {
                 exp = null;
             }
 
-            // Requesting a specific type..
+            //Requesting a specific type..
             final String numeric = str.substring(0, str.length() - 1);
             final boolean allZeros = isAllZeros(mant) && isAllZeros(exp);
             switch (lastChar) {
                 case 'l':
                 case 'L':
-                    if (dec == null && exp == null && (numeric.charAt(0) == '-' && isNumeric(numeric.substring(1)) || isNumeric(numeric))) {
-                        try {
-                            return createLong(numeric, isNumberCheck);
-                        } catch (final NumberFormatException nfe) { // NOPMD
-                            // Too big for a long
+                    if (dec == null && exp == null && (numeric.charAt(0) == '-' && N.isNumeric(numeric.substring(1)) || N.isNumeric(numeric))) {
+
+                        op = createLong(numeric).boxed();
+
+                        if (op.isPresent()) {
+                            return (Optional) op;
+                        } else {
+                            return (Optional) createBigInteger(numeric);
                         }
-
-                        return createBigInteger(numeric, isNumberCheck);
                     }
 
-                    if (isNumberCheck) {
-                        return null;
-                    } else {
-                        throw new NumberFormatException(str + " is not a valid number.");
-                    }
+                    return Optional.empty();
 
                 case 'f':
                 case 'F':
                     try {
-                        final Float f = Float.valueOf(numeric);
-                        if (!(f.isInfinite() || (f.floatValue() == 0.0F && !allZeros))) {
-                            // If it's too big for a float or the float value = 0
-                            // and the string
-                            // has non-zeros in it, then float does not have the
-                            // precision we want
-                            return f;
+                        final Float f = Float.valueOf(str);
+
+                        if (!(f.isInfinite() || f.floatValue() == 0.0F && !allZeros)) {
+                            //If it's too big for a float or the float value = 0 and the string
+                            //has non-zeros in it, then float does not have the precision we want
+                            return (Optional) Optional.of(f);
                         }
+
                     } catch (final NumberFormatException nfe) { // NOPMD
                         // ignore the bad number
                     }
-
                     //$FALL-THROUGH$
                 case 'd':
                 case 'D':
                     try {
-                        final Double d = Double.valueOf(numeric);
-                        if (!(d.isInfinite() || (d.floatValue() == 0.0D && !allZeros))) {
-                            return d;
+                        final Double d = Double.valueOf(str);
+
+                        if (!(d.isInfinite() || d.floatValue() == 0.0D && !allZeros)) {
+                            return (Optional) Optional.of(d);
                         }
                     } catch (final NumberFormatException nfe) { // NOPMD
                         // ignore the bad number
                     }
 
-                    try {
-                        return createBigDecimal(numeric, isNumberCheck);
-                    } catch (final NumberFormatException e) { // NOPMD
-                        // ignore the bad number
-                    }
+                    return (Optional) createBigDecimal(numeric);
 
-                    //$FALL-THROUGH$
+                //$FALL-THROUGH$
                 default:
-                    if (isNumberCheck) {
-                        return null;
-                    } else {
-                        throw new NumberFormatException(str + " is not a valid number.");
-                    }
+                    return Optional.empty();
             }
         }
 
-        // User doesn't have a preference on the return type, so let's start
-        // small and go from there...
+        //User doesn't have a preference on the return type, so let's start
+        //small and go from there...
         if (expPos > -1 && expPos < str.length() - 1) {
             exp = str.substring(expPos + 1, str.length());
         } else {
@@ -4157,52 +3920,75 @@ public final class N {
         }
 
         if (dec == null && exp == null) { // no decimal point and no exponent
-            // Must be an Integer, Long, Biginteger
-            try {
-                return createInteger(str, isNumberCheck);
-            } catch (final NumberFormatException nfe) { // NOPMD
-                // ignore the bad number
-            }
+            //Must be an Integer, Long, Biginteger          
+            op = createInteger(str).boxed();
 
-            try {
-                return createLong(str, isNumberCheck);
-            } catch (final NumberFormatException nfe) { // NOPMD
-                // ignore the bad number
-            }
+            if (op.isPresent()) {
+                return (Optional) op;
+            } else {
+                op = createLong(str).boxed();
 
-            return createBigInteger(str, isNumberCheck);
+                if (op.isPresent()) {
+                    return (Optional) op;
+                } else {
+                    return (Optional) createBigInteger(str);
+                }
+            }
         }
 
-        // Must be a Float, Double, BigDecimal
+        //Must be a Float, Double, BigDecimal
         final boolean allZeros = isAllZeros(mant) && isAllZeros(exp);
 
-        // refer to: https://issues.apache.org/jira/browse/LANG-1018. skip float
-        // try {
-        // if (numDecimals <= 7) {// If number has 7 or fewer digits past the
-        // decimal point then make it a float
-        // final Float f = createFloat(str);
-        // if (!(f.isInfinite() || (f.floatValue() == 0.0F && !allZeros))) {
-        // return f;
-        // }
-        // }
-        // } catch (final NumberFormatException nfe) { // NOPMD
-        // // ignore the bad number
-        // }
-        //
         try {
-            if (numDecimals <= 16) {// If number has between 8 and 16 digits
-                // past the decimal point then make it a
-                // double
-                final Double d = Double.valueOf(str);
-                if (!(d.isInfinite() || (d.doubleValue() == 0.0D && !allZeros))) {
-                    return d;
+            final Float f = Float.valueOf(str);
+            final Double d = Double.valueOf(str);
+
+            if (!f.isInfinite() && !(f.floatValue() == 0.0F && !allZeros) && f.toString().equals(d.toString())) {
+                return (Optional) Optional.of(f);
+            }
+
+            if (!d.isInfinite() && !(d.doubleValue() == 0.0D && !allZeros)) {
+                final Optional<BigDecimal> b = createBigDecimal(str);
+
+                if (b.isPresent() && b.get().compareTo(BigDecimal.valueOf(d.doubleValue())) == 0) {
+                    return (Optional) Optional.of(d);
+                } else {
+                    return (Optional) b;
                 }
             }
         } catch (final NumberFormatException nfe) { // NOPMD
             // ignore the bad number
         }
 
-        return createBigDecimal(str, isNumberCheck);
+        return (Optional) createBigDecimal(str);
+    }
+
+    /**
+     * <p>Utility method for {@link #createNumber(java.lang.String)}.</p>
+     *
+     * <p>Returns mantissa of the given number.</p>
+     *
+     * @param str the string representation of the number
+     * @return mantissa of the given number
+     */
+    private static String getMantissa(final String str) {
+        return getMantissa(str, str.length());
+    }
+
+    /**
+     * <p>Utility method for {@link #createNumber(java.lang.String)}.</p>
+     *
+     * <p>Returns mantissa of the given number.</p>
+     *
+     * @param str the string representation of the number
+     * @param stopPos the position of the exponent or decimal point
+     * @return mantissa of the given number
+     */
+    private static String getMantissa(final String str, final int stopPos) {
+        final char firstChar = str.charAt(0);
+        final boolean hasSign = firstChar == '-' || firstChar == '+';
+
+        return hasSign ? str.substring(1, stopPos) : str.substring(0, stopPos);
     }
 
     private static boolean isAllZeros(final String str) {
@@ -7986,7 +7772,7 @@ public final class N {
      *        validation
      */
     public static boolean isNumber(final String str) {
-        return N.createNumber(str, true) != null;
+        return N.createNumber(str).isPresent();
     }
 
     /**
@@ -20512,7 +20298,13 @@ public final class N {
             return 0;
         }
 
-        return sumInt(c, 0, c.size(), func);
+        int result = 0;
+
+        for (T e : c) {
+            result += func.applyAsInt(e);
+        }
+
+        return result;
     }
 
     public static <T, E extends Exception> int sumInt(final Collection<? extends T> c, final int fromIndex, final int toIndex,
@@ -20580,7 +20372,13 @@ public final class N {
             return 0L;
         }
 
-        return sumLong(c, 0, c.size(), func);
+        long result = 0;
+
+        for (T e : c) {
+            result += func.applyAsLong(e);
+        }
+
+        return result;
     }
 
     public static <T, E extends Exception> long sumLong(final Collection<? extends T> c, final int fromIndex, final int toIndex,
@@ -20648,7 +20446,13 @@ public final class N {
             return 0D;
         }
 
-        return sumDouble(c, 0, c.size(), func);
+        double result = 0;
+
+        for (T e : c) {
+            result += func.applyAsDouble(e);
+        }
+
+        return result;
     }
 
     public static <T, E extends Exception> double sumDouble(final Collection<? extends T> c, final int fromIndex, final int toIndex,
@@ -20702,13 +20506,13 @@ public final class N {
             return OptionalDouble.empty();
         }
 
-        double result = 0;
+        long sum = 0;
 
         for (int i = fromIndex; i < toIndex; i++) {
-            result += func.applyAsInt(a[i]);
+            sum += func.applyAsInt(a[i]);
         }
 
-        return OptionalDouble.of(result / (toIndex - fromIndex));
+        return OptionalDouble.of(((double) sum) / (toIndex - fromIndex));
     }
 
     public static <T, E extends Exception> OptionalDouble averageInt(final Collection<? extends T> c, final Try.ToIntFunction<? super T, E> func) throws E {
@@ -20716,7 +20520,13 @@ public final class N {
             return OptionalDouble.empty();
         }
 
-        return averageInt(c, 0, c.size(), func);
+        long sum = 0;
+
+        for (T e : c) {
+            sum += func.applyAsInt(e);
+        }
+
+        return OptionalDouble.of(((double) sum) / c.size());
     }
 
     public static <T, E extends Exception> OptionalDouble averageInt(final Collection<? extends T> c, final int fromIndex, final int toIndex,
@@ -20727,7 +20537,31 @@ public final class N {
             return OptionalDouble.empty();
         }
 
-        return OptionalDouble.of(sumInt(c, fromIndex, toIndex, func) / (toIndex - fromIndex));
+        long sum = 0;
+
+        if (c instanceof List && c instanceof RandomAccess) {
+            final List<T> list = (List<T>) c;
+
+            for (int i = fromIndex; i < toIndex; i++) {
+                sum += func.applyAsInt(list.get(i));
+            }
+        } else {
+            int idx = 0;
+
+            for (T e : c) {
+                if (idx++ < fromIndex) {
+                    continue;
+                }
+
+                sum += func.applyAsInt(e);
+
+                if (idx >= toIndex) {
+                    break;
+                }
+            }
+        }
+
+        return OptionalDouble.of(((double) sum) / (toIndex - fromIndex));
     }
 
     public static <T, E extends Exception> OptionalDouble averageLong(final T[] a, final Try.ToLongFunction<? super T, E> func) throws E {
@@ -20746,13 +20580,7 @@ public final class N {
             return OptionalDouble.empty();
         }
 
-        double result = 0;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result += func.applyAsLong(a[i]);
-        }
-
-        return OptionalDouble.of(result / (toIndex - fromIndex));
+        return OptionalDouble.of(((double) sumLong(a, fromIndex, toIndex, func)) / (toIndex - fromIndex));
     }
 
     public static <T, E extends Exception> OptionalDouble averageLong(final Collection<? extends T> c, final Try.ToLongFunction<? super T, E> func) throws E {
@@ -20760,7 +20588,7 @@ public final class N {
             return OptionalDouble.empty();
         }
 
-        return averageLong(c, 0, c.size(), func);
+        return OptionalDouble.of(((double) sumLong(c, func)) / c.size());
     }
 
     public static <T, E extends Exception> OptionalDouble averageLong(final Collection<? extends T> c, final int fromIndex, final int toIndex,
@@ -20771,7 +20599,7 @@ public final class N {
             return OptionalDouble.empty();
         }
 
-        return OptionalDouble.of(sumLong(c, fromIndex, toIndex, func) / (toIndex - fromIndex));
+        return OptionalDouble.of(((double) sumLong(c, fromIndex, toIndex, func)) / (toIndex - fromIndex));
     }
 
     public static <T, E extends Exception> OptionalDouble averageDouble(final T[] a, final Try.ToDoubleFunction<? super T, E> func) throws E {
@@ -20790,13 +20618,7 @@ public final class N {
             return OptionalDouble.empty();
         }
 
-        double result = 0;
-
-        for (int i = fromIndex; i < toIndex; i++) {
-            result += func.applyAsDouble(a[i]);
-        }
-
-        return OptionalDouble.of(result / (toIndex - fromIndex));
+        return OptionalDouble.of(sumDouble(a, fromIndex, toIndex, func) / (toIndex - fromIndex));
     }
 
     public static <T, E extends Exception> OptionalDouble averageDouble(final Collection<? extends T> c, final Try.ToDoubleFunction<? super T, E> func)
@@ -20805,7 +20627,7 @@ public final class N {
             return OptionalDouble.empty();
         }
 
-        return averageDouble(c, 0, c.size(), func);
+        return OptionalDouble.of(sumDouble(c, func) / c.size());
     }
 
     public static <T, E extends Exception> OptionalDouble averageDouble(final Collection<? extends T> c, final int fromIndex, final int toIndex,
@@ -28830,15 +28652,15 @@ public final class N {
             return 0f;
         }
 
-        //        double sum = 0;
-        //
-        //        for (int i = from; i < to; i++) {
-        //            sum += a[i];
-        //        }
-        //
-        //        return sum;
+        float sum = 0;
 
-        return (float) FloatStream.of(a, from, to).sum();
+        for (int i = from; i < to; i++) {
+            sum += a[i];
+        }
+
+        return sum;
+
+        // return (float) FloatStream.of(a, from, to).sum();
     }
 
     /**
@@ -28866,15 +28688,15 @@ public final class N {
             return 0d;
         }
 
-        //        double sum = 0;
-        //
-        //        for (int i = from; i < to; i++) {
-        //            sum += a[i];
-        //        }
-        //
-        //        return sum;
+        double sum = 0;
 
-        return DoubleStream.of(a, from, to).sum();
+        for (int i = from; i < to; i++) {
+            sum += a[i];
+        }
+
+        return sum;
+
+        // return DoubleStream.of(a, from, to).sum();
     }
 
     /**
@@ -28900,9 +28722,17 @@ public final class N {
             }
 
             return 0d;
+        } else if (from == to) {
+            return 0d;
         }
 
-        return from == to ? 0d : ((double) sum(a, from, to)) / (to - from);
+        long sum = 0;
+
+        for (int i = from; i < to; i++) {
+            sum += a[i];
+        }
+
+        return ((double) sum) / (to - from);
     }
 
     /**
@@ -28928,9 +28758,17 @@ public final class N {
             }
 
             return 0d;
+        } else if (from == to) {
+            return 0d;
         }
 
-        return from == to ? 0d : ((double) sum(a, from, to)) / (to - from);
+        long sum = 0;
+
+        for (int i = from; i < to; i++) {
+            sum += a[i];
+        }
+
+        return ((double) sum) / (to - from);
     }
 
     /**
@@ -28956,9 +28794,17 @@ public final class N {
             }
 
             return 0d;
+        } else if (from == to) {
+            return 0d;
         }
 
-        return from == to ? 0d : ((double) sum(a, from, to)) / (to - from);
+        long sum = 0;
+
+        for (int i = from; i < to; i++) {
+            sum += a[i];
+        }
+
+        return ((double) sum) / (to - from);
     }
 
     /**
@@ -28984,9 +28830,17 @@ public final class N {
             }
 
             return 0d;
+        } else if (from == to) {
+            return 0d;
         }
 
-        return from == to ? 0d : ((double) sum(a, from, to)) / (to - from);
+        long sum = 0;
+
+        for (int i = from; i < to; i++) {
+            sum += a[i];
+        }
+
+        return ((double) sum) / (to - from);
     }
 
     /**
@@ -29012,9 +28866,17 @@ public final class N {
             }
 
             return 0d;
+        } else if (from == to) {
+            return 0d;
         }
 
-        return from == to ? 0d : ((double) sum(a, from, to)) / (to - from);
+        long sum = 0;
+
+        for (int i = from; i < to; i++) {
+            sum += a[i];
+        }
+
+        return ((double) sum) / (to - from);
     }
 
     /**
@@ -29040,11 +28902,19 @@ public final class N {
             }
 
             return 0d;
+        } else if (from == to) {
+            return 0d;
         }
 
-        // return from == to ? 0d : ((double) sum(a, from, to)) / (to - from);
+        double sum = 0;
 
-        return FloatStream.of(a, from, to).average().orElse(0);
+        for (int i = from; i < to; i++) {
+            sum += a[i];
+        }
+
+        return sum / (to - from);
+
+        // return FloatStream.of(a, from, to).average().orElse(0);
     }
 
     /**
@@ -29070,11 +28940,13 @@ public final class N {
             }
 
             return 0d;
+        } else if (from == to) {
+            return 0d;
         }
 
-        // return from == to ? 0d : ((double) sum(a, from, to)) / (to - from);
+        return sum(a, from, to) / (to - from);
 
-        return DoubleStream.of(a, from, to).average().orElse(0);
+        // return DoubleStream.of(a, from, to).average().orElse(0);
     }
 
     /**

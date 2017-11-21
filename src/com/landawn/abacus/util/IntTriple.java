@@ -38,7 +38,7 @@ public final class IntTriple {
     }
 
     public double average() {
-        return sum() / 3d;
+        return (0d + _1 + _2 + _3) / 3;
     }
 
     public IntTriple reversed() {

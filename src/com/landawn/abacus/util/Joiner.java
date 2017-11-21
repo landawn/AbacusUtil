@@ -1356,6 +1356,8 @@ public class Joiner {
     public static Object concat(final Object... a) {
         if (N.isNullOrEmpty(a)) {
             return N.EMPTY_STRING;
+        } else if (a.getClass().equals(String[].class)) {
+            return N.concat((String[]) a);
         }
 
         final StringBuilder sb = ObjectFactory.createStringBuilder();

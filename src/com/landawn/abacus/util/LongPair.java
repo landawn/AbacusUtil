@@ -32,7 +32,7 @@ public final class LongPair {
     }
 
     public double average() {
-        return sum() / 2d;
+        return (0d + _1 + _2) / 2;
     }
 
     public LongPair reversed() {

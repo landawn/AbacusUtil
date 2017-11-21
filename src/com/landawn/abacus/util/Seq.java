@@ -46,6 +46,8 @@ import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.function.ToDoubleFunction;
+import com.landawn.abacus.util.function.ToIntFunction;
+import com.landawn.abacus.util.function.ToLongFunction;
 import com.landawn.abacus.util.stream.Collector;
 import com.landawn.abacus.util.stream.Collectors;
 
@@ -64,6 +66,27 @@ public final class Seq<T> extends ImmutableCollection<T> {
 
     @SuppressWarnings("rawtypes")
     private static final Seq EMPTY = new Seq<>(Collections.EMPTY_LIST);
+
+    static final ToIntFunction<Number> NUM_TO_INT_FUNC = new ToIntFunction<Number>() {
+        @Override
+        public int applyAsInt(Number value) {
+            return value == null ? 0 : value.intValue();
+        }
+    };
+
+    static final ToLongFunction<Number> NUM_TO_LONG_FUNC = new ToLongFunction<Number>() {
+        @Override
+        public long applyAsLong(Number value) {
+            return value == null ? 0 : value.longValue();
+        }
+    };
+
+    static final ToDoubleFunction<Number> NUM_TO_DOUBLE_FUNC = new ToDoubleFunction<Number>() {
+        @Override
+        public double applyAsDouble(Number value) {
+            return value == null ? 0d : value.doubleValue();
+        }
+    };
 
     /**
      * The returned <code>Seq</code> and the specified <code>Collection</code> are backed by the same data.
@@ -371,15 +394,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
             return 0;
         }
 
-        int result = 0;
-
-        for (T e : coll) {
-            if (e != null) {
-                result += ((Number) e).intValue();
-            }
-        }
-
-        return result;
+        return sumInt((ToIntFunction<T>) NUM_TO_INT_FUNC);
     }
 
     public <E extends Exception> int sumInt(final Try.ToIntFunction<? super T, E> mapper) throws E {
@@ -387,13 +402,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
             return 0;
         }
 
-        int result = 0;
-
-        for (T e : coll) {
-            result += mapper.applyAsInt(e);
-        }
-
-        return result;
+        return N.sumInt(coll, mapper);
     }
 
     public long sumLong() {
@@ -401,15 +410,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
             return 0L;
         }
 
-        long result = 0;
-
-        for (T e : coll) {
-            if (e != null) {
-                result += ((Number) e).longValue();
-            }
-        }
-
-        return result;
+        return sumLong((ToLongFunction<T>) NUM_TO_LONG_FUNC);
     }
 
     public <E extends Exception> long sumLong(final Try.ToLongFunction<? super T, E> mapper) throws E {
@@ -417,13 +418,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
             return 0L;
         }
 
-        long result = 0L;
-
-        for (T e : coll) {
-            result += mapper.applyAsLong(e);
-        }
-
-        return result;
+        return N.sumLong(coll, mapper);
     }
 
     public double sumDouble() {
@@ -431,45 +426,51 @@ public final class Seq<T> extends ImmutableCollection<T> {
             return 0D;
         }
 
-        return sumDouble((ToDoubleFunction<? super T>) new ToDoubleFunction<Number>() {
-            @Override
-            public double applyAsDouble(Number value) {
-                return value == null ? 0d : value.doubleValue();
-            }
-        });
+        return sumDouble((ToDoubleFunction<T>) NUM_TO_DOUBLE_FUNC);
     }
 
     public <E extends Exception> double sumDouble(final Try.ToDoubleFunction<? super T, E> mapper) throws E {
-        return size() == 0 ? 0d : N.sumDouble(coll, mapper);
+        if (N.isNullOrEmpty(coll)) {
+            return 0L;
+        }
+
+        return N.sumDouble(coll, mapper);
     }
 
     public OptionalDouble averageInt() {
-        return size() == 0 ? OptionalDouble.empty() : OptionalDouble.of(((double) sumInt()) / size());
+        if (N.isNullOrEmpty(coll)) {
+            return OptionalDouble.empty();
+        }
+
+        return averageInt((ToIntFunction<T>) NUM_TO_INT_FUNC);
     }
 
     public <E extends Exception> OptionalDouble averageInt(final Try.ToIntFunction<? super T, E> mapper) throws E {
-        return size() == 0 ? OptionalDouble.empty() : OptionalDouble.of(((double) sumInt(mapper)) / size());
+        return N.averageInt(coll, mapper);
     }
 
     public OptionalDouble averageLong() {
-        return size() == 0 ? OptionalDouble.empty() : OptionalDouble.of(((double) sumLong()) / size());
+        if (N.isNullOrEmpty(coll)) {
+            return OptionalDouble.empty();
+        }
+
+        return averageLong((ToLongFunction<T>) NUM_TO_LONG_FUNC);
     }
 
     public <E extends Exception> OptionalDouble averageLong(final Try.ToLongFunction<? super T, E> mapper) throws E {
-        return size() == 0 ? OptionalDouble.empty() : OptionalDouble.of(((double) sumLong(mapper)) / size());
+        return N.averageLong(coll, mapper);
     }
 
     public OptionalDouble averageDouble() {
-        return averageDouble((ToDoubleFunction<? super T>) new ToDoubleFunction<Number>() {
-            @Override
-            public double applyAsDouble(Number value) {
-                return value == null ? 0d : value.doubleValue();
-            }
-        });
+        if (N.isNullOrEmpty(coll)) {
+            return OptionalDouble.empty();
+        }
+
+        return averageDouble((ToDoubleFunction<T>) NUM_TO_DOUBLE_FUNC);
     }
 
     public <E extends Exception> OptionalDouble averageDouble(final Try.ToDoubleFunction<? super T, E> mapper) throws E {
-        return size() == 0 ? OptionalDouble.empty() : N.averageDouble(coll, mapper);
+        return N.averageDouble(coll, mapper);
     }
 
     public <E extends Exception> void foreach(final Try.Consumer<? super T, E> action) throws E {
