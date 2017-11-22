@@ -13,11 +13,17 @@
 
 * Add `Median`.
 
-* Add `Joiner.concat`.
+* Add `Joiner.concat(...)`.
 
-* Add `Fn.tuple1/tuple2/tuple3/tuple4`.
+* Add `Fn.tuple1/tuple2/tuple3/tuple4(...)`.
 
 * Add `BooleanPair/BytePair/ShortPair/BooleanTriple/ByteTriple/ShortTriple`.
+
+* Add `Maps.removeIf/removeIfKey/removeIfValue(...)`.
+
+* Add `Maps.map2Entity(targetClass, map, selectPropNames)`.
+
+* Add `N.newTreeMap(...)`.
 
 * Improvements and bug fix.
 

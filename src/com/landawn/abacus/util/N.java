@@ -1207,6 +1207,24 @@ public final class N {
         return new ConcurrentHashMap<>(m);
     }
 
+    @SuppressWarnings("rawtypes")
+    public static <K extends Comparable, V> TreeMap<K, V> newTreeMap() {
+        return new TreeMap<>();
+    }
+
+    public static <C, K extends C, V> TreeMap<K, V> newTreeMap(Comparator<C> comparator) {
+        return new TreeMap<>(comparator);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static <K extends Comparable, V> TreeMap<K, V> newTreeMap(Map<? extends K, ? extends V> m) {
+        return new TreeMap<>(m);
+    }
+
+    public static <K, V> TreeMap<K, V> newTreeMap(SortedMap<K, ? extends V> map) {
+        return new TreeMap<>(map);
+    }
+
     public static <K, E> ListMultimap<K, E> newListMultimap() {
         return new ListMultimap<>();
     }

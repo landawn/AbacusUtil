@@ -472,6 +472,102 @@ public final class Maps {
     }
 
     /**
+     * Removes entries from the specified {@code map} by the the specified {@code filter}.
+     * 
+     * @param map
+     * @param filter
+     * @return {@code true} if there are one or more than one entries removed from the specified map.
+     * @throws E
+     */
+    public static <K, V, E extends Exception> boolean removeIf(final Map<K, V> map, final Try.Predicate<? super Map.Entry<K, V>, E> filter) throws E {
+        List<K> keysToRemove = null;
+
+        for (Map.Entry<K, V> entry : map.entrySet()) {
+            if (filter.test(entry)) {
+                if (keysToRemove == null) {
+                    keysToRemove = new ArrayList<>(7);
+                }
+
+                keysToRemove.add(entry.getKey());
+            }
+        }
+
+        if (N.notNullOrEmpty(keysToRemove)) {
+            for (K key : keysToRemove) {
+                map.remove(key);
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Removes entries from the specified {@code map} by the the specified {@code filter}.
+     * 
+     * @param map
+     * @param filter
+     * @return {@code true} if there are one or more than one entries removed from the specified map.
+     * @throws E
+     */
+    public static <K, V, E extends Exception> boolean removeIfKey(final Map<K, V> map, final Try.Predicate<? super K, E> filter) throws E {
+        List<K> keysToRemove = null;
+
+        for (Map.Entry<K, V> entry : map.entrySet()) {
+            if (filter.test(entry.getKey())) {
+                if (keysToRemove == null) {
+                    keysToRemove = new ArrayList<>(7);
+                }
+
+                keysToRemove.add(entry.getKey());
+            }
+        }
+
+        if (N.notNullOrEmpty(keysToRemove)) {
+            for (K key : keysToRemove) {
+                map.remove(key);
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Removes entries from the specified {@code map} by the the specified {@code filter}.
+     * 
+     * @param map
+     * @param filter
+     * @return {@code true} if there are one or more than one entries removed from the specified map.
+     * @throws E
+     */
+    public static <K, V, E extends Exception> boolean removeIfValue(final Map<K, V> map, final Try.Predicate<? super V, E> filter) throws E {
+        List<K> keysToRemove = null;
+
+        for (Map.Entry<K, V> entry : map.entrySet()) {
+            if (filter.test(entry.getValue())) {
+                if (keysToRemove == null) {
+                    keysToRemove = new ArrayList<>(7);
+                }
+
+                keysToRemove.add(entry.getKey());
+            }
+        }
+
+        if (N.notNullOrEmpty(keysToRemove)) {
+            for (K key : keysToRemove) {
+                map.remove(key);
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Replaces the entry for the specified key only if currently
      * mapped to the specified value.
      *
@@ -999,6 +1095,22 @@ public final class Maps {
         }
     }
 
+    public static <K, V, E extends Exception> Map<K, V> filter(final Map<K, V> map, final Try.BiPredicate<? super K, ? super V, E> predicate) throws E {
+        if (map == null) {
+            return new HashMap<K, V>();
+        }
+
+        final Map<K, V> result = createResultMap(map.getClass());
+
+        for (Map.Entry<K, V> entry : map.entrySet()) {
+            if (predicate.test(entry.getKey(), entry.getValue())) {
+                result.put(entry.getKey(), entry.getValue());
+            }
+        }
+
+        return result;
+    }
+
     public static <K, V, E extends Exception> Map<K, V> filterByKey(final Map<K, V> map, final Try.Predicate<? super K, E> predicate) throws E {
         if (map == null) {
             return new HashMap<K, V>();
@@ -1037,22 +1149,6 @@ public final class Maps {
 
         for (Map.Entry<K, V> entry : map.entrySet()) {
             if (predicate.test(entry.getValue())) {
-                result.put(entry.getKey(), entry.getValue());
-            }
-        }
-
-        return result;
-    }
-
-    public static <K, V, E extends Exception> Map<K, V> filter(final Map<K, V> map, final Try.BiPredicate<? super K, ? super V, E> predicate) throws E {
-        if (map == null) {
-            return new HashMap<K, V>();
-        }
-
-        final Map<K, V> result = createResultMap(map.getClass());
-
-        for (Map.Entry<K, V> entry : map.entrySet()) {
-            if (predicate.test(entry.getKey(), entry.getValue())) {
                 result.put(entry.getKey(), entry.getValue());
             }
         }
@@ -1144,6 +1240,40 @@ public final class Maps {
         return entity;
     }
 
+    public static <T> T map2Entity(final Class<T> targetClass, final Map<String, Object> m, final Collection<String> selectPropNames) {
+        checkEntityClass(targetClass);
+
+        final T entity = N.newInstance(targetClass);
+
+        Object propValue = null;
+        Method propSetMethod = null;
+        Class<?> paramClass = null;
+
+        for (String propName : selectPropNames) {
+            propValue = m.get(propName);
+
+            if (propValue == null && m.containsKey(propName) == false) {
+                throw new IllegalArgumentException("Property name: " + propName + " is not found in map with key set: " + m.keySet());
+            }
+
+            propSetMethod = ClassUtil.getPropSetMethod(targetClass, propName);
+
+            if (propSetMethod == null) {
+                ClassUtil.setPropValue(entity, propName, propValue, false);
+            } else {
+                paramClass = propSetMethod.getParameterTypes()[0];
+
+                if (propValue != null && N.typeOf(propValue.getClass()).isMap() && N.isEntity(paramClass)) {
+                    ClassUtil.setPropValue(entity, propSetMethod, map2Entity(paramClass, (Map<String, Object>) propValue));
+                } else {
+                    ClassUtil.setPropValue(entity, propSetMethod, propValue);
+                }
+            }
+        }
+
+        return entity;
+    }
+
     public static <T> List<T> map2Entity(final Class<T> targetClass, final Collection<Map<String, Object>> mList) {
         return map2Entity(targetClass, mList, N.isDirtyMarker(targetClass) == false, true);
     }
@@ -1156,6 +1286,18 @@ public final class Maps {
 
         for (Map<String, Object> m : mList) {
             entityList.add(map2Entity(targetClass, m, igoreNullProperty, ignoreUnknownProperty));
+        }
+
+        return entityList;
+    }
+
+    public static <T> List<T> map2Entity(final Class<T> targetClass, final Collection<Map<String, Object>> mList, final Collection<String> selectPropNames) {
+        checkEntityClass(targetClass);
+
+        final List<T> entityList = new ArrayList<>(mList.size());
+
+        for (Map<String, Object> m : mList) {
+            entityList.add(map2Entity(targetClass, m, selectPropNames));
         }
 
         return entityList;

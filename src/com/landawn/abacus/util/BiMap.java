@@ -282,25 +282,32 @@ public final class BiMap<K, V> implements Map<K, V> {
         return valueMap.containsKey(value);
     }
 
+    /**
+     * Returns an immutable key set.
+     * 
+     */
     @Override
     public Set<K> keySet() {
         return ImmutableSet.of(keyMap.keySet());
     }
 
+    /**
+     * Returns an immutable value set.
+     */
     @Override
     public Set<V> values() {
         return ImmutableSet.of(valueMap.keySet());
     }
 
     /**
-     * Returns a Set of Immutable entry.
+     * Returns an immutable Set of Immutable entry.
      */
     @Override
     public Set<Map.Entry<K, V>> entrySet() {
         return new AbstractSet<Map.Entry<K, V>>() {
             @Override
             public Iterator<Map.Entry<K, V>> iterator() {
-                return new Iterator<Map.Entry<K, V>>() {
+                return new ImmutableIterator<Map.Entry<K, V>>() {
                     private final Iterator<Map.Entry<K, V>> keyValueEntryIter = keyMap.entrySet().iterator();
 
                     @Override
@@ -340,11 +347,6 @@ public final class BiMap<K, V> implements Map<K, V> {
                                 throw new UnsupportedOperationException();
                             }
                         };
-                    }
-
-                    @Override
-                    public void remove() {
-                        throw new UnsupportedOperationException();
                     }
                 };
             }
