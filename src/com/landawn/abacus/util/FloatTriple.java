@@ -34,11 +34,11 @@ public final class FloatTriple {
     }
 
     public float sum() {
-        return _1 + _2 + _3;
+        return N.sum(_1, _2, _3);
     }
 
     public double average() {
-        return (0d + _1 + _2 + _3) / 3;
+        return N.average(_1, _2, _3);
     }
 
     public FloatTriple reversed() {

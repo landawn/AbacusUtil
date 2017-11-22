@@ -3,13 +3,21 @@
 
 * Replace `Predicate/Consumer/Function` in `Multiset/LongMultiset/Multimap/Matrix/IntMatrix/.../f` with `Try.Predicate/Consumer/Function`.
 
-* Remove `IOUtil.parseInt/parseLong`.
+* Remove `IOUtil.parseInt(...)/parseLong(...)`.
+
+* Remove `N.copy(Object entity, boolean ignoreUnknownProperty, Set<String> ignorePropNames)`.
+
+* Remove `N.asConcurrentMap/asBiMap(...)`, Replace with `BiMap.of(...)`.
+
+* Refactoring `N.merge`: change `merge(sourceEntity, selectPropNames, targetEntity)` to `merge(sourceEntity, targetEntity, selectPropNames)`.
 
 * Add `Median`.
 
 * Add `Joiner.concat`.
 
 * Add `Fn.tuple1/tuple2/tuple3/tuple4`.
+
+* Add `BooleanPair/BytePair/ShortPair/BooleanTriple/ByteTriple/ShortTriple`.
 
 * Improvements and bug fix.
 

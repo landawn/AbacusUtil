@@ -125,6 +125,9 @@ import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.IntUnaryOperator;
 import com.landawn.abacus.util.function.Predicate;
+import com.landawn.abacus.util.function.ToDoubleFunction;
+import com.landawn.abacus.util.stream.DoubleStream;
+import com.landawn.abacus.util.stream.FloatStream;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -1835,159 +1838,6 @@ public final class N {
         return newMap(new LinkedHashMap<K, V>(initHashCapacity(a.length / 2)), a);
     }
 
-    public static <K, V, k extends K, v extends V> ConcurrentHashMap<K, V> asConcurrentHashMap(final k k1, final v v1) {
-        final ConcurrentHashMap<K, V> map = new ConcurrentHashMap<>();
-        map.put(k1, v1);
-        return map;
-    }
-
-    public static <K, V, k extends K, v extends V> ConcurrentHashMap<K, V> asConcurrentHashMap(final k k1, final v v1, final k k2, final v v2) {
-        final ConcurrentHashMap<K, V> map = new ConcurrentHashMap<>();
-        map.put(k1, v1);
-        map.put(k2, v2);
-        return map;
-    }
-
-    public static <K, V, k extends K, v extends V> ConcurrentHashMap<K, V> asConcurrentHashMap(final k k1, final v v1, final k k2, final v v2, final k k3,
-            final v v3) {
-        final ConcurrentHashMap<K, V> map = new ConcurrentHashMap<>();
-        map.put(k1, v1);
-        map.put(k2, v2);
-        map.put(k3, v3);
-        return map;
-    }
-
-    public static <K, V, k extends K, v extends V> ConcurrentHashMap<K, V> asConcurrentHashMap(final k k1, final v v1, final k k2, final v v2, final k k3,
-            final v v3, final k k4, final v v4) {
-        final ConcurrentHashMap<K, V> map = new ConcurrentHashMap<>();
-        map.put(k1, v1);
-        map.put(k2, v2);
-        map.put(k3, v3);
-        map.put(k4, v4);
-        return map;
-    }
-
-    public static <K, V, k extends K, v extends V> ConcurrentHashMap<K, V> asConcurrentHashMap(final k k1, final v v1, final k k2, final v v2, final k k3,
-            final v v3, final k k4, final v v4, final k k5, final v v5) {
-        final ConcurrentHashMap<K, V> map = new ConcurrentHashMap<>();
-        map.put(k1, v1);
-        map.put(k2, v2);
-        map.put(k3, v3);
-        map.put(k4, v4);
-        map.put(k5, v5);
-        return map;
-    }
-
-    public static <K, V, k extends K, v extends V> ConcurrentHashMap<K, V> asConcurrentHashMap(final k k1, final v v1, final k k2, final v v2, final k k3,
-            final v v3, final k k4, final v v4, final k k5, final v v5, final k k6, final v v6) {
-        final ConcurrentHashMap<K, V> map = new ConcurrentHashMap<>();
-        map.put(k1, v1);
-        map.put(k2, v2);
-        map.put(k3, v3);
-        map.put(k4, v4);
-        map.put(k5, v5);
-        map.put(k6, v6);
-        return map;
-    }
-
-    public static <K, V, k extends K, v extends V> ConcurrentHashMap<K, V> asConcurrentHashMap(final k k1, final v v1, final k k2, final v v2, final k k3,
-            final v v3, final k k4, final v v4, final k k5, final v v5, final k k6, final v v6, final k k7, final v v7) {
-        final ConcurrentHashMap<K, V> map = new ConcurrentHashMap<>();
-        map.put(k1, v1);
-        map.put(k2, v2);
-        map.put(k3, v3);
-        map.put(k4, v4);
-        map.put(k5, v5);
-        map.put(k6, v6);
-        map.put(k7, v7);
-        return map;
-    }
-
-    @SafeVarargs
-    public static <K, V> ConcurrentHashMap<K, V> asConcurrentHashMap(final Object... a) {
-        if (N.isNullOrEmpty(a)) {
-            return new ConcurrentHashMap<>();
-        }
-
-        return newMap(new ConcurrentHashMap<K, V>(initHashCapacity(a.length / 2)), a);
-    }
-
-    public static <K, V, k extends K, v extends V> BiMap<K, V> asBiMap(final k k1, final v v1) {
-        final BiMap<K, V> map = new BiMap<>();
-        map.put(k1, v1);
-        return map;
-    }
-
-    public static <K, V, k extends K, v extends V> BiMap<K, V> asBiMap(final k k1, final v v1, final k k2, final v v2) {
-        final BiMap<K, V> map = new BiMap<>();
-        map.put(k1, v1);
-        map.put(k2, v2);
-        return map;
-    }
-
-    public static <K, V, k extends K, v extends V> BiMap<K, V> asBiMap(final k k1, final v v1, final k k2, final v v2, final k k3, final v v3) {
-        final BiMap<K, V> map = new BiMap<>();
-        map.put(k1, v1);
-        map.put(k2, v2);
-        map.put(k3, v3);
-        return map;
-    }
-
-    public static <K, V, k extends K, v extends V> BiMap<K, V> asBiMap(final k k1, final v v1, final k k2, final v v2, final k k3, final v v3, final k k4,
-            final v v4) {
-        final BiMap<K, V> map = new BiMap<>();
-        map.put(k1, v1);
-        map.put(k2, v2);
-        map.put(k3, v3);
-        map.put(k4, v4);
-        return map;
-    }
-
-    public static <K, V, k extends K, v extends V> BiMap<K, V> asBiMap(final k k1, final v v1, final k k2, final v v2, final k k3, final v v3, final k k4,
-            final v v4, final k k5, final v v5) {
-        final BiMap<K, V> map = new BiMap<>();
-        map.put(k1, v1);
-        map.put(k2, v2);
-        map.put(k3, v3);
-        map.put(k4, v4);
-        map.put(k5, v5);
-        return map;
-    }
-
-    public static <K, V, k extends K, v extends V> BiMap<K, V> asBiMap(final k k1, final v v1, final k k2, final v v2, final k k3, final v v3, final k k4,
-            final v v4, final k k5, final v v5, final k k6, final v v6) {
-        final BiMap<K, V> map = new BiMap<>();
-        map.put(k1, v1);
-        map.put(k2, v2);
-        map.put(k3, v3);
-        map.put(k4, v4);
-        map.put(k5, v5);
-        map.put(k6, v6);
-        return map;
-    }
-
-    public static <K, V, k extends K, v extends V> BiMap<K, V> asBiMap(final k k1, final v v1, final k k2, final v v2, final k k3, final v v3, final k k4,
-            final v v4, final k k5, final v v5, final k k6, final v v6, final k k7, final v v7) {
-        final BiMap<K, V> map = new BiMap<>();
-        map.put(k1, v1);
-        map.put(k2, v2);
-        map.put(k3, v3);
-        map.put(k4, v4);
-        map.put(k5, v5);
-        map.put(k6, v6);
-        map.put(k7, v7);
-        return map;
-    }
-
-    @SafeVarargs
-    public static <K, V> BiMap<K, V> asBiMap(final Object... a) {
-        if (N.isNullOrEmpty(a)) {
-            return new BiMap<>();
-        }
-
-        return newMap(new BiMap<K, V>(initHashCapacity(a.length / 2)), a);
-    }
-
     /**
      * @param a
      * @return
@@ -3599,6 +3449,10 @@ public final class N {
      * @return
      */
     public static OptionalInt createInteger(final String str) {
+        if (N.isNullOrEmpty(str)) {
+            return OptionalInt.empty();
+        }
+
         try {
             return OptionalInt.of(Integer.decode(str));
         } catch (NumberFormatException e) {
@@ -3621,6 +3475,10 @@ public final class N {
      * @return
      */
     public static OptionalLong createLong(final String str) {
+        if (N.isNullOrEmpty(str)) {
+            return OptionalLong.empty();
+        }
+
         try {
             return OptionalLong.of(Long.decode(str));
         } catch (NumberFormatException e) {
@@ -3642,6 +3500,10 @@ public final class N {
      * @return
      */
     public static OptionalFloat createFloat(final String str) {
+        if (N.isNullOrEmpty(str)) {
+            return OptionalFloat.empty();
+        }
+
         try {
             return OptionalFloat.of(Float.parseFloat(str));
         } catch (NumberFormatException e) {
@@ -3664,6 +3526,10 @@ public final class N {
      * @return
      */
     public static OptionalDouble createDouble(final String str) {
+        if (N.isNullOrEmpty(str)) {
+            return OptionalDouble.empty();
+        }
+
         try {
             return OptionalDouble.of(Double.parseDouble(str));
         } catch (NumberFormatException e) {
@@ -4005,6 +3871,50 @@ public final class N {
         return str.length() > 0;
     }
 
+    private static final Set<Class<?>> notKryoCompatible = new HashSet<>();
+
+    @SuppressWarnings("unchecked")
+    public static <T> T clone(final T entity) {
+        return (T) clone(entity.getClass(), entity);
+    }
+
+    /**
+     * Deeply copy by: entity -> serialize -> String/bytes -> deserialize -> new
+     * entity.
+     *
+     * @param targetClass
+     *            a Java Object what allows access to properties using getter
+     *            and setter methods.
+     * @param entity
+     *            a Java Object what allows access to properties using getter
+     *            and setter methods.
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> T clone(final Class<T> targetClass, final Object entity) {
+        final Class<?> srcCls = entity.getClass();
+        Object copy = null;
+
+        if (Utils.kryoParser != null && targetClass.equals(entity.getClass()) && !notKryoCompatible.contains(srcCls)) {
+            try {
+                copy = Utils.kryoParser.clone(entity);
+            } catch (Exception e) {
+                notKryoCompatible.add(srcCls);
+
+                // ignore.
+            }
+        }
+
+        if (copy == null) {
+            String xml = Utils.abacusXMLParser.serialize(entity, Utils.xscForClone);
+            copy = Utils.abacusXMLParser.deserialize(targetClass, xml);
+
+            setDirtyMarker(entity, copy);
+        }
+
+        return (T) copy;
+    }
+
     /**
      * Returns a new created instance of the same class and set with same
      * properties retrieved by 'getXXX' method in the specified {@code entity}.
@@ -4019,7 +3929,7 @@ public final class N {
         return copy((Class<T>) entity.getClass(), entity);
     }
 
-    public static <T> T copy(final T entity, final Set<String> selectPropNames) {
+    public static <T> T copy(final T entity, final Collection<String> selectPropNames) {
         return copy((Class<T>) entity.getClass(), entity, selectPropNames);
     }
 
@@ -4041,163 +3951,158 @@ public final class N {
      * @param selectPropNames
      * @return
      */
-    @SuppressWarnings({ "unchecked", "deprecation" })
-    public static <T> T copy(final Class<T> targetClass, final Object entity, final Set<String> selectPropNames) {
+    @SuppressWarnings({ "unchecked" })
+    public static <T> T copy(final Class<T> targetClass, final Object entity, final Collection<String> selectPropNames) {
+        final Class<?> srcCls = entity.getClass();
         T copy = null;
 
-        if (selectPropNames == null && Utils.kryoParser != null && targetClass.equals(entity.getClass())) {
+        if (selectPropNames == null && Utils.kryoParser != null && targetClass.equals(srcCls) && !notKryoCompatible.contains(srcCls)) {
             try {
                 copy = (T) Utils.kryoParser.copy(entity);
             } catch (Exception e) {
+                notKryoCompatible.add(srcCls);
+
                 // ignore
             }
         }
 
-        final boolean ignoreUnknownProperty = selectPropNames == null;
-
-        if (copy == null) {
-            Class<?> srcCls = entity.getClass();
-            copy = newInstance(targetClass);
-
-            if (entity instanceof DirtyMarker) {
-                Set<String> signedPropNames = ((DirtyMarker) entity).signedPropNames();
-
-                if (signedPropNames.size() == 0) {
-                    // logger.warn("no property is signed in the specified source entity: "
-                    // + toString(entity));
-                } else {
-                    try {
-                        Method srcPropGetMethod = null;
-
-                        for (String propName : signedPropNames) {
-                            if (selectPropNames == null || selectPropNames.contains(propName)) {
-                                srcPropGetMethod = ClassUtil.getPropGetMethod(srcCls, propName);
-
-                                ClassUtil.setPropValue(copy, propName, srcPropGetMethod.invoke(entity), ignoreUnknownProperty);
-                            }
-                        }
-                    } catch (Exception e) {
-                        throw new AbacusException(e);
-                    }
-                }
-            } else {
-                Map<String, Method> srcGetterMethodList = ClassUtil.checkPropGetMethodList(srcCls);
-
-                try {
-                    for (Map.Entry<String, Method> entry : srcGetterMethodList.entrySet()) {
-                        if (selectPropNames == null || selectPropNames.contains(entry.getKey())) {
-                            ClassUtil.setPropValue(copy, entry.getKey(), entry.getValue().invoke(entity), ignoreUnknownProperty);
-                        }
-                    }
-                } catch (Exception e) {
-                    throw new AbacusException(e);
-                }
-            }
-
-            setDirtyMarker(entity, copy);
+        if (copy != null) {
+            return copy;
         }
 
-        return copy;
-    }
+        copy = N.newInstance(targetClass);
 
-    public static <T> T copy(final T entity, final boolean ignoreUnknownProperty, final Set<String> ignorePropNames) {
-        return copy((Class<T>) entity.getClass(), entity, ignoreUnknownProperty, ignorePropNames);
+        merge(entity, copy, selectPropNames);
+
+        setDirtyMarker(entity, copy);
+
+        return copy;
     }
 
     @SuppressWarnings({ "unchecked", "deprecation" })
-    public static <T> T copy(final Class<T> targetClass, final T entity, final boolean ignoreUnknownProperty, final Set<String> ignorePropNames) {
+    public static <T> T copy(final Class<T> targetClass, final Object entity, final boolean ignoreUnknownProperty, final Set<String> ignorePropNames) {
+        final Class<?> srcCls = entity.getClass();
         T copy = null;
 
-        if (ignorePropNames == null && Utils.kryoParser != null && targetClass.equals(entity.getClass())) {
+        if (ignorePropNames == null && Utils.kryoParser != null && targetClass.equals(srcCls) && !notKryoCompatible.contains(srcCls)) {
             try {
-                copy = Utils.kryoParser.copy(entity);
+                copy = (T) Utils.kryoParser.copy(entity);
             } catch (Exception e) {
+                notKryoCompatible.add(srcCls);
+
                 // ignore
             }
         }
 
-        if (copy == null) {
-            Class<?> srcCls = entity.getClass();
-            copy = newInstance(targetClass);
+        if (copy != null) {
+            return copy;
+        }
 
-            if (entity instanceof DirtyMarker) {
-                Set<String> signedPropNames = ((DirtyMarker) entity).signedPropNames();
+        copy = N.newInstance(targetClass);
 
-                if (signedPropNames.size() == 0) {
-                    // logger.warn("no property is signed in the specified source entity: "
-                    // + toString(entity));
-                } else {
-                    try {
-                        Method srcPropGetMethod = null;
+        if (entity instanceof DirtyMarker) {
+            Set<String> signedPropNames = ((DirtyMarker) entity).signedPropNames();
 
-                        for (String propName : signedPropNames) {
-                            if (ignorePropNames == null || ignorePropNames.contains(propName) == false) {
-                                srcPropGetMethod = ClassUtil.getPropGetMethod(srcCls, propName);
-
-                                ClassUtil.setPropValue(copy, propName, srcPropGetMethod.invoke(entity), ignoreUnknownProperty);
-                            }
-                        }
-                    } catch (Exception e) {
-                        throw new AbacusException(e);
-                    }
-                }
+            if (signedPropNames.size() == 0) {
+                // logger.warn("no property is signed in the specified source entity: "
+                // + toString(entity));
             } else {
-                Map<String, Method> srcGetterMethodList = ClassUtil.checkPropGetMethodList(srcCls);
-
                 try {
-                    for (Map.Entry<String, Method> entry : srcGetterMethodList.entrySet()) {
-                        if (ignorePropNames == null || ignorePropNames.contains(entry.getKey()) == false) {
-                            ClassUtil.setPropValue(copy, entry.getKey(), entry.getValue().invoke(entity), ignoreUnknownProperty);
+                    Method srcPropGetMethod = null;
+
+                    for (String propName : signedPropNames) {
+                        if (ignorePropNames == null || ignorePropNames.contains(propName) == false) {
+                            srcPropGetMethod = ClassUtil.getPropGetMethod(srcCls, propName);
+
+                            ClassUtil.setPropValue(copy, propName, srcPropGetMethod.invoke(entity), ignoreUnknownProperty);
                         }
                     }
                 } catch (Exception e) {
                     throw new AbacusException(e);
                 }
             }
+        } else {
+            Map<String, Method> srcGetterMethodList = ClassUtil.checkPropGetMethodList(srcCls);
 
-            setDirtyMarker(entity, copy);
+            try {
+                for (Map.Entry<String, Method> entry : srcGetterMethodList.entrySet()) {
+                    if (ignorePropNames == null || ignorePropNames.contains(entry.getKey()) == false) {
+                        ClassUtil.setPropValue(copy, entry.getKey(), entry.getValue().invoke(entity), ignoreUnknownProperty);
+                    }
+                }
+            } catch (Exception e) {
+                throw new AbacusException(e);
+            }
         }
+
+        setDirtyMarker(entity, copy);
 
         return copy;
     }
 
-    @SuppressWarnings("unchecked")
-    public static <T> T clone(final T entity) {
-        return (T) clone(entity.getClass(), entity);
+    public static void merge(final Object sourceEntity, final Object targetEntity) {
+        merge(sourceEntity, targetEntity, null);
     }
 
     /**
-     * Deeply copy by: entity -> serialize -> String/bytes -> deserialize -> new
-     * entity.
+     * Set all the signed properties(including all primitive type properties) in
+     * the specified {@code sourceEntity} to the specified {@code targetEntity}.
      *
-     * @param targetClass
+     * @param sourceEntity
      *            a Java Object what allows access to properties using getter
      *            and setter methods.
-     * @param entity
+     * @param targetEntity
      *            a Java Object what allows access to properties using getter
      *            and setter methods.
-     * @return
+     * @param selectPropNames
      */
-    @SuppressWarnings("unchecked")
-    public static <T> T clone(final Class<T> targetClass, final Object entity) {
-        Object copy = null;
+    @SuppressWarnings("deprecation")
+    public static void merge(final Object sourceEntity, final Object targetEntity, final Collection<String> selectPropNames) {
+        final Class<?> srcCls = sourceEntity.getClass();
+        final boolean ignoreUnknownProperty = selectPropNames == null;
 
-        if (Utils.kryoParser != null && targetClass.equals(entity.getClass())) {
+        if (selectPropNames == null) {
+            if (sourceEntity instanceof DirtyMarker) {
+                Set<String> signedPropNames = ((DirtyMarker) sourceEntity).signedPropNames();
+
+                if (signedPropNames.size() == 0) {
+                    // logger.warn("no property is signed in the specified source entity: "
+                    // + toString(entity));
+                } else {
+                    Method srcPropGetMethod = null;
+
+                    try {
+                        for (String propName : signedPropNames) {
+                            srcPropGetMethod = ClassUtil.getPropGetMethod(srcCls, propName);
+                            ClassUtil.setPropValue(targetEntity, propName, srcPropGetMethod.invoke(sourceEntity), ignoreUnknownProperty);
+                        }
+                    } catch (Exception e) {
+                        throw new AbacusException(e);
+                    }
+                }
+            } else {
+                final Map<String, Method> srcGetterMethodList = ClassUtil.checkPropGetMethodList(srcCls);
+
+                try {
+                    for (Map.Entry<String, Method> entry : srcGetterMethodList.entrySet()) {
+                        ClassUtil.setPropValue(targetEntity, entry.getKey(), entry.getValue().invoke(sourceEntity), ignoreUnknownProperty);
+                    }
+                } catch (Exception e) {
+                    throw new AbacusException(e);
+                }
+            }
+        } else {
+            Method srcPropGetMethod = null;
+
             try {
-                copy = Utils.kryoParser.clone(entity);
+                for (String propName : selectPropNames) {
+                    srcPropGetMethod = ClassUtil.getPropGetMethod(srcCls, propName);
+                    ClassUtil.setPropValue(targetEntity, propName, srcPropGetMethod.invoke(sourceEntity), ignoreUnknownProperty);
+                }
             } catch (Exception e) {
-                // ignore.
+                throw new AbacusException(e);
             }
         }
-
-        if (copy == null) {
-            String xml = Utils.abacusXMLParser.serialize(entity, Utils.xscForClone);
-            copy = Utils.abacusXMLParser.deserialize(targetClass, xml);
-
-            setDirtyMarker(entity, copy);
-        }
-
-        return (T) copy;
     }
 
     @SuppressWarnings("deprecation")
@@ -4213,83 +4118,6 @@ public final class N {
             dirtyMarkerTarget.dirtyPropNames().addAll(dirtyMarkerSource.dirtyPropNames());
 
             EntityManagerUtil.setVersion(dirtyMarkerTarget, dirtyMarkerSource.version());
-        }
-    }
-
-    public static void merge(final Object sourceEntity, final Object targetEntity) {
-        merge(sourceEntity, null, targetEntity);
-    }
-
-    /**
-     * Set all the signed properties(including all primitive type properties) in
-     * the specified {@code sourceEntity} to the specified {@code targetEntity}.
-     *
-     * @param sourceEntity
-     *            a Java Object what allows access to properties using getter
-     *            and setter methods.
-     * @param selectPropNames
-     * @param targetEntity
-     *            a Java Object what allows access to properties using getter
-     *            and setter methods.
-     */
-    @SuppressWarnings("deprecation")
-    public static void merge(final Object sourceEntity, final Set<String> selectPropNames, final Object targetEntity) {
-        final Class<?> sourceEntityClass = sourceEntity.getClass();
-        final boolean ignoreUnknownProperty = selectPropNames == null;
-
-        if (sourceEntity instanceof Map) {
-            final Map<String, Object> m = (Map<String, Object>) sourceEntity;
-
-            for (Map.Entry<String, Object> entry : m.entrySet()) {
-                if (selectPropNames == null || selectPropNames.contains(entry.getKey())) {
-                    ClassUtil.setPropValue(targetEntity, entry.getKey(), entry.getValue(), ignoreUnknownProperty);
-                }
-            }
-        } else if (sourceEntity instanceof DirtyMarker) {
-            Set<String> signedPropNames = ((DirtyMarker) sourceEntity).signedPropNames();
-
-            if (signedPropNames.size() == 0) {
-                // logger.warn("No property is signed in the specified source entity: " + toString(sourceEntity));
-                return;
-            }
-
-            Method srcPropGetMethod = null;
-            Object propValue = null;
-
-            try {
-                for (String propName : signedPropNames) {
-                    if (selectPropNames == null || selectPropNames.contains(propName)) {
-                        srcPropGetMethod = ClassUtil.getPropGetMethod(sourceEntityClass, propName);
-                        propValue = srcPropGetMethod.invoke(sourceEntity);
-                        ClassUtil.setPropValue(targetEntity, propName, propValue, ignoreUnknownProperty);
-                    }
-                }
-            } catch (Exception e) {
-                throw new AbacusException(e);
-            }
-        } else {
-            final Map<String, Method> getterMethodList = ClassUtil.checkPropGetMethodList(sourceEntity.getClass());
-
-            String propName = null;
-            Object propValue = null;
-
-            try {
-                for (Map.Entry<String, Method> entry : getterMethodList.entrySet()) {
-                    propName = entry.getKey();
-
-                    if (selectPropNames == null || selectPropNames.contains(propName)) {
-                        propValue = entry.getValue().invoke(sourceEntity);
-
-                        if (propValue == null) {
-                            continue;
-                        }
-
-                        ClassUtil.setPropValue(targetEntity, propName, propValue, ignoreUnknownProperty);
-                    }
-                }
-            } catch (Exception e) {
-                throw new AbacusException(e);
-            }
         }
     }
 
@@ -20432,13 +20260,15 @@ public final class N {
             return 0D;
         }
 
-        double result = 0;
+        //        double result = 0;
+        //
+        //        for (int i = fromIndex; i < toIndex; i++) {
+        //            result += func.applyAsDouble(a[i]);
+        //        }
+        //
+        //        return result;
 
-        for (int i = fromIndex; i < toIndex; i++) {
-            result += func.applyAsDouble(a[i]);
-        }
-
-        return result;
+        return Stream.of(a, fromIndex, toIndex).mapToDouble(toDoubleFunction(func)).sum();
     }
 
     public static <T, E extends Exception> double sumDouble(final Collection<? extends T> c, final Try.ToDoubleFunction<? super T, E> func) throws E {
@@ -20446,13 +20276,15 @@ public final class N {
             return 0D;
         }
 
-        double result = 0;
+        //        double result = 0;
+        //
+        //        for (T e : c) {
+        //            result += func.applyAsDouble(e);
+        //        }
+        //
+        //        return result;
 
-        for (T e : c) {
-            result += func.applyAsDouble(e);
-        }
-
-        return result;
+        return Stream.of(c).mapToDouble(toDoubleFunction(func)).sum();
     }
 
     public static <T, E extends Exception> double sumDouble(final Collection<? extends T> c, final int fromIndex, final int toIndex,
@@ -20463,31 +20295,33 @@ public final class N {
             return 0D;
         }
 
-        double result = 0;
+        //        double result = 0;
+        //
+        //        if (c instanceof List && c instanceof RandomAccess) {
+        //            final List<T> list = (List<T>) c;
+        //
+        //            for (int i = fromIndex; i < toIndex; i++) {
+        //                result += func.applyAsDouble(list.get(i));
+        //            }
+        //        } else {
+        //            int idx = 0;
+        //
+        //            for (T e : c) {
+        //                if (idx++ < fromIndex) {
+        //                    continue;
+        //                }
+        //
+        //                result += func.applyAsDouble(e);
+        //
+        //                if (idx >= toIndex) {
+        //                    break;
+        //                }
+        //            }
+        //        }
+        //
+        //        return result;
 
-        if (c instanceof List && c instanceof RandomAccess) {
-            final List<T> list = (List<T>) c;
-
-            for (int i = fromIndex; i < toIndex; i++) {
-                result += func.applyAsDouble(list.get(i));
-            }
-        } else {
-            int idx = 0;
-
-            for (T e : c) {
-                if (idx++ < fromIndex) {
-                    continue;
-                }
-
-                result += func.applyAsDouble(e);
-
-                if (idx >= toIndex) {
-                    break;
-                }
-            }
-        }
-
-        return result;
+        return Stream.of(c, fromIndex, toIndex).mapToDouble(toDoubleFunction(func)).sum();
     }
 
     public static <T, E extends Exception> OptionalDouble averageInt(final T[] a, final Try.ToIntFunction<? super T, E> func) throws E {
@@ -20618,7 +20452,9 @@ public final class N {
             return OptionalDouble.empty();
         }
 
-        return OptionalDouble.of(sumDouble(a, fromIndex, toIndex, func) / (toIndex - fromIndex));
+        // return OptionalDouble.of(sumDouble(a, fromIndex, toIndex, func) / (toIndex - fromIndex));
+
+        return Stream.of(a, fromIndex, toIndex).mapToDouble(toDoubleFunction(func)).average();
     }
 
     public static <T, E extends Exception> OptionalDouble averageDouble(final Collection<? extends T> c, final Try.ToDoubleFunction<? super T, E> func)
@@ -20627,7 +20463,9 @@ public final class N {
             return OptionalDouble.empty();
         }
 
-        return OptionalDouble.of(sumDouble(c, func) / c.size());
+        // return OptionalDouble.of(sumDouble(c, func) / c.size());
+
+        return Stream.of(c).mapToDouble(toDoubleFunction(func)).average();
     }
 
     public static <T, E extends Exception> OptionalDouble averageDouble(final Collection<? extends T> c, final int fromIndex, final int toIndex,
@@ -20638,7 +20476,22 @@ public final class N {
             return OptionalDouble.empty();
         }
 
-        return OptionalDouble.of(sumDouble(c, fromIndex, toIndex, func) / (toIndex - fromIndex));
+        // return OptionalDouble.of(sumDouble(c, fromIndex, toIndex, func) / (toIndex - fromIndex));
+
+        return Stream.of(c, fromIndex, toIndex).mapToDouble(toDoubleFunction(func)).average();
+    }
+
+    private static <T, E extends Exception> ToDoubleFunction<T> toDoubleFunction(final Try.ToDoubleFunction<? super T, E> func) {
+        return func instanceof ToDoubleFunction ? (ToDoubleFunction<T>) func : new ToDoubleFunction<T>() {
+            @Override
+            public double applyAsDouble(T t) {
+                try {
+                    return func.applyAsDouble(t);
+                } catch (Exception e) {
+                    throw N.toRuntimeException(e);
+                }
+            }
+        };
     }
 
     /**
@@ -28652,15 +28505,15 @@ public final class N {
             return 0f;
         }
 
-        float sum = 0;
+        //        float sum = 0;
+        //
+        //        for (int i = from; i < to; i++) {
+        //            sum += a[i];
+        //        }
+        //
+        //        return sum;
 
-        for (int i = from; i < to; i++) {
-            sum += a[i];
-        }
-
-        return sum;
-
-        // return (float) FloatStream.of(a, from, to).sum();
+        return (float) FloatStream.of(a, from, to).sum();
     }
 
     /**
@@ -28688,15 +28541,15 @@ public final class N {
             return 0d;
         }
 
-        double sum = 0;
+        //        double sum = 0;
+        //
+        //        for (int i = from; i < to; i++) {
+        //            sum += a[i];
+        //        }
+        //
+        //        return sum;
 
-        for (int i = from; i < to; i++) {
-            sum += a[i];
-        }
-
-        return sum;
-
-        // return DoubleStream.of(a, from, to).sum();
+        return DoubleStream.of(a, from, to).sum();
     }
 
     /**
@@ -28906,15 +28759,15 @@ public final class N {
             return 0d;
         }
 
-        double sum = 0;
+        //        double sum = 0;
+        //
+        //        for (int i = from; i < to; i++) {
+        //            sum += a[i];
+        //        }
+        //
+        //        return sum / (to - from);
 
-        for (int i = from; i < to; i++) {
-            sum += a[i];
-        }
-
-        return sum / (to - from);
-
-        // return FloatStream.of(a, from, to).average().orElse(0);
+        return FloatStream.of(a, from, to).average().orElse(0);
     }
 
     /**
@@ -28944,9 +28797,9 @@ public final class N {
             return 0d;
         }
 
-        return sum(a, from, to) / (to - from);
+        // return sum(a, from, to) / (to - from);
 
-        // return DoubleStream.of(a, from, to).average().orElse(0);
+        return DoubleStream.of(a, from, to).average().orElse(0);
     }
 
     /**

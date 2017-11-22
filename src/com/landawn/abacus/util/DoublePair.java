@@ -28,11 +28,11 @@ public final class DoublePair {
     }
 
     public double sum() {
-        return _1 + _2;
+        return N.sum(_1, _2);
     }
 
     public double average() {
-        return (0d + _1 + _2) / 2;
+        return N.average(_1, _2);
     }
 
     public DoublePair reversed() {

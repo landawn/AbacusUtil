@@ -41,45 +41,6 @@ public class Properties<K, V> implements Map<K, V> {
         this.values = (Map<K, V>) valueMap;
     }
 
-    public static <K, V, k extends K, v extends V> Properties<K, V> of(final k k1, final v v1) {
-        final ConcurrentHashMap<K, V> m = N.asConcurrentHashMap(k1, v1);
-        return new Properties<K, V>(m);
-    }
-
-    public static <K, V, k extends K, v extends V> Properties<K, V> of(final k k1, final v v1, final k k2, final v v2) {
-        final ConcurrentHashMap<K, V> m = N.asConcurrentHashMap(k1, v1, k2, v2);
-        return new Properties<K, V>(m);
-    }
-
-    public static <K, V, k extends K, v extends V> Properties<K, V> of(final k k1, final v v1, final k k2, final v v2, final k k3, final v v3) {
-        final ConcurrentHashMap<K, V> m = N.asConcurrentHashMap(k1, v1, k2, v2, k3, v3);
-        return new Properties<K, V>(m);
-    }
-
-    public static <K, V, k extends K, v extends V> Properties<K, V> of(final k k1, final v v1, final k k2, final v v2, final k k3, final v v3, final k k4,
-            final v v4) {
-        final ConcurrentHashMap<K, V> m = N.asConcurrentHashMap(k1, v1, k2, v2, k3, v3, k4, v4);
-        return new Properties<K, V>(m);
-    }
-
-    public static <K, V, k extends K, v extends V> Properties<K, V> of(final k k1, final v v1, final k k2, final v v2, final k k3, final v v3, final k k4,
-            final v v4, final k k5, final v v5) {
-        final ConcurrentHashMap<K, V> m = N.asConcurrentHashMap(k1, v1, k2, v2, k3, v3, k4, v4, k5, v5);
-        return new Properties<K, V>(m);
-    }
-
-    public static <K, V, k extends K, v extends V> Properties<K, V> of(final k k1, final v v1, final k k2, final v v2, final k k3, final v v3, final k k4,
-            final v v4, final k k5, final v v5, final k k6, final v v6) {
-        final ConcurrentHashMap<K, V> m = N.asConcurrentHashMap(k1, v1, k2, v2, k3, v3, k4, v4, k5, v5, k6, v6);
-        return new Properties<K, V>(m);
-    }
-
-    public static <K, V, k extends K, v extends V> Properties<K, V> of(final k k1, final v v1, final k k2, final v v2, final k k3, final v v3, final k k4,
-            final v v4, final k k5, final v v5, final k k6, final v v6, final k k7, final v v7) {
-        final ConcurrentHashMap<K, V> m = N.asConcurrentHashMap(k1, v1, k2, v2, k3, v3, k4, v4, k5, v5, k6, v6, k7, v7);
-        return new Properties<K, V>(m);
-    }
-
     public static <K, V> Properties<K, V> from(final Map<? extends K, ? extends V> map) {
         return new Properties<K, V>(new ConcurrentHashMap<K, V>(map));
     }
