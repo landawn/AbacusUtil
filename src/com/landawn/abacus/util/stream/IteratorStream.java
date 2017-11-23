@@ -257,114 +257,117 @@ class IteratorStream<T> extends AbstractStream<T> {
         }, closeHandlers);
     }
 
+    //    @Override
+    //    public <R> Stream<R> biMap(final BiFunction<? super T, ? super T, ? extends R> mapper, final boolean ignoreNotPaired) {
+    //        return new IteratorStream<>(new ObjIteratorEx<R>() {
+    //            private T pre = (T) NONE;
+    //
+    //            @Override
+    //            public boolean hasNext() {
+    //                if (ignoreNotPaired && pre == NONE) {
+    //                    if (elements.hasNext()) {
+    //                        pre = elements.next();
+    //                    } else {
+    //                        return false;
+    //                    }
+    //                }
+    //
+    //                return elements.hasNext();
+    //            }
+    //
+    //            @Override
+    //            public R next() {
+    //                if (!hasNext()) {
+    //                    throw new NoSuchElementException();
+    //                }
+    //
+    //                if (ignoreNotPaired) {
+    //                    final R res = mapper.apply(pre, elements.next());
+    //                    pre = (T) NONE;
+    //                    return res;
+    //                } else {
+    //                    return mapper.apply(elements.next(), elements.hasNext() ? elements.next() : null);
+    //                }
+    //            }
+    //
+    //            //            @Override
+    //            //            public void skip(long n) {
+    //            //                elements.skip(n >= Long.MAX_VALUE / 2 ? Long.MAX_VALUE : n * 2);
+    //            //            }
+    //            //
+    //            //            @Override
+    //            //            public long count() {
+    //            //                final long count = elements.count();
+    //            //                return count % 2 == 0 || ignoreNotPaired ? count / 2 : count / 2 + 1;
+    //            //            }
+    //        }, closeHandlers);
+    //    }
+    //
+    //    @Override
+    //    public <R> Stream<R> triMap(final TriFunction<? super T, ? super T, ? super T, ? extends R> mapper, final boolean ignoreNotPaired) {
+    //        return new IteratorStream<>(new ObjIteratorEx<R>() {
+    //            private T prepre = (T) NONE;
+    //            private T pre = (T) NONE;
+    //
+    //            @Override
+    //            public boolean hasNext() {
+    //                if (ignoreNotPaired && pre == NONE) {
+    //                    if (elements.hasNext()) {
+    //                        prepre = elements.next();
+    //
+    //                        if (elements.hasNext()) {
+    //                            pre = elements.next();
+    //                        } else {
+    //                            return false;
+    //                        }
+    //                    } else {
+    //                        return false;
+    //                    }
+    //                }
+    //
+    //                return elements.hasNext();
+    //            }
+    //
+    //            @Override
+    //            public R next() {
+    //                if (!hasNext()) {
+    //                    throw new NoSuchElementException();
+    //                }
+    //
+    //                if (ignoreNotPaired) {
+    //                    final R res = mapper.apply(prepre, pre, elements.next());
+    //                    prepre = (T) NONE;
+    //                    pre = (T) NONE;
+    //                    return res;
+    //                } else {
+    //                    return mapper.apply(elements.next(), elements.hasNext() ? elements.next() : null, elements.hasNext() ? elements.next() : null);
+    //                }
+    //            }
+    //
+    //            //            @Override
+    //            //            public void skip(long n) {
+    //            //                elements.skip(n >= Long.MAX_VALUE / 3 ? Long.MAX_VALUE : n * 3);
+    //            //            }
+    //            //
+    //            //            @Override
+    //            //            public long count() {
+    //            //                final long count = elements.count();
+    //            //                return count % 3 == 0 || ignoreNotPaired ? count / 3 : count / 3 + 1;
+    //            //            }
+    //        }, closeHandlers);
+    //    }
+
     @Override
-    public <R> Stream<R> biMap(final BiFunction<? super T, ? super T, ? extends R> mapper, final boolean ignoreNotPaired) {
-        return new IteratorStream<>(new ObjIteratorEx<R>() {
-            private T pre = (T) NONE;
-
-            @Override
-            public boolean hasNext() {
-                if (ignoreNotPaired && pre == NONE) {
-                    if (elements.hasNext()) {
-                        pre = elements.next();
-                    } else {
-                        return false;
-                    }
-                }
-
-                return elements.hasNext();
-            }
-
-            @Override
-            public R next() {
-                if (!hasNext()) {
-                    throw new NoSuchElementException();
-                }
-
-                if (ignoreNotPaired) {
-                    final R res = mapper.apply(pre, elements.next());
-                    pre = (T) NONE;
-                    return res;
-                } else {
-                    return mapper.apply(elements.next(), elements.hasNext() ? elements.next() : null);
-                }
-            }
-
-            //            @Override
-            //            public void skip(long n) {
-            //                elements.skip(n >= Long.MAX_VALUE / 2 ? Long.MAX_VALUE : n * 2);
-            //            }
-            //
-            //            @Override
-            //            public long count() {
-            //                final long count = elements.count();
-            //                return count % 2 == 0 || ignoreNotPaired ? count / 2 : count / 2 + 1;
-            //            }
-        }, closeHandlers);
-    }
-
-    @Override
-    public <R> Stream<R> triMap(final TriFunction<? super T, ? super T, ? super T, ? extends R> mapper, final boolean ignoreNotPaired) {
-        return new IteratorStream<>(new ObjIteratorEx<R>() {
-            private T prepre = (T) NONE;
-            private T pre = (T) NONE;
-
-            @Override
-            public boolean hasNext() {
-                if (ignoreNotPaired && pre == NONE) {
-                    if (elements.hasNext()) {
-                        prepre = elements.next();
-
-                        if (elements.hasNext()) {
-                            pre = elements.next();
-                        } else {
-                            return false;
-                        }
-                    } else {
-                        return false;
-                    }
-                }
-
-                return elements.hasNext();
-            }
-
-            @Override
-            public R next() {
-                if (!hasNext()) {
-                    throw new NoSuchElementException();
-                }
-
-                if (ignoreNotPaired) {
-                    final R res = mapper.apply(prepre, pre, elements.next());
-                    prepre = (T) NONE;
-                    pre = (T) NONE;
-                    return res;
-                } else {
-                    return mapper.apply(elements.next(), elements.hasNext() ? elements.next() : null, elements.hasNext() ? elements.next() : null);
-                }
-            }
-
-            //            @Override
-            //            public void skip(long n) {
-            //                elements.skip(n >= Long.MAX_VALUE / 3 ? Long.MAX_VALUE : n * 3);
-            //            }
-            //
-            //            @Override
-            //            public long count() {
-            //                final long count = elements.count();
-            //                return count % 3 == 0 || ignoreNotPaired ? count / 3 : count / 3 + 1;
-            //            }
-        }, closeHandlers);
-    }
-
-    @Override
-    public <R> Stream<R> slidingMap(final BiFunction<? super T, ? super T, R> mapper, final int increment) {
+    public <R> Stream<R> slidingMap(final BiFunction<? super T, ? super T, R> mapper, final int increment, final boolean ignoreNotPaired) {
         final int windowSize = 2;
 
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
         return new IteratorStream<>(new ObjIteratorEx<R>() {
-            private T prev = (T) NONE;
+            @SuppressWarnings("unchecked")
+            private final T NONE = (T) Stream.NONE;
+            private T prev = NONE;
+            private T _1 = NONE;
 
             @Override
             public boolean hasNext() {
@@ -375,7 +378,11 @@ class IteratorStream<T> extends AbstractStream<T> {
                         elements.next();
                     }
 
-                    prev = (T) NONE;
+                    prev = NONE;
+                }
+
+                if (ignoreNotPaired && _1 == NONE && elements.hasNext()) {
+                    _1 = elements.next();
                 }
 
                 return elements.hasNext();
@@ -387,24 +394,34 @@ class IteratorStream<T> extends AbstractStream<T> {
                     throw new NoSuchElementException();
                 }
 
-                if (increment == 1) {
-                    return mapper.apply(prev == NONE ? elements.next() : prev, (prev = (elements.hasNext() ? elements.next() : null)));
+                if (ignoreNotPaired) {
+                    final R res = mapper.apply(_1, (prev = elements.next()));
+                    _1 = increment == 1 ? prev : NONE;
+                    return res;
                 } else {
-                    return mapper.apply(elements.next(), (prev = (elements.hasNext() ? elements.next() : null)));
+                    if (increment == 1) {
+                        return mapper.apply(prev == NONE ? elements.next() : prev, (prev = (elements.hasNext() ? elements.next() : null)));
+                    } else {
+                        return mapper.apply(elements.next(), (prev = (elements.hasNext() ? elements.next() : null)));
+                    }
                 }
             }
         }, closeHandlers);
     }
 
     @Override
-    public <R> Stream<R> slidingMap(final TriFunction<? super T, ? super T, ? super T, R> mapper, final int increment) {
+    public <R> Stream<R> slidingMap(final TriFunction<? super T, ? super T, ? super T, R> mapper, final int increment, final boolean ignoreNotPaired) {
         final int windowSize = 3;
 
         N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
 
         return new IteratorStream<>(new ObjIteratorEx<R>() {
-            private T prev = (T) NONE;
-            private T prev2 = (T) NONE;
+            @SuppressWarnings("unchecked")
+            private final T NONE = (T) Stream.NONE;
+            private T prev = NONE;
+            private T prev2 = NONE;
+            private T _1 = NONE;
+            private T _2 = NONE;
 
             @Override
             public boolean hasNext() {
@@ -415,7 +432,17 @@ class IteratorStream<T> extends AbstractStream<T> {
                         elements.next();
                     }
 
-                    prev = (T) NONE;
+                    prev = NONE;
+                }
+
+                if (ignoreNotPaired) {
+                    if (_1 == NONE && elements.hasNext()) {
+                        _1 = elements.next();
+                    }
+
+                    if (_2 == NONE && elements.hasNext()) {
+                        _2 = elements.next();
+                    }
                 }
 
                 return elements.hasNext();
@@ -427,17 +454,24 @@ class IteratorStream<T> extends AbstractStream<T> {
                     throw new NoSuchElementException();
                 }
 
-                if (increment == 1) {
-                    return mapper.apply(prev2 == NONE ? elements.next() : prev2,
-                            (prev2 = (prev == NONE ? (elements.hasNext() ? elements.next() : null) : prev)),
-                            (prev = (elements.hasNext() ? elements.next() : null)));
-
-                } else if (increment == 2) {
-                    return mapper.apply(prev == NONE ? elements.next() : prev, (prev2 = (elements.hasNext() ? elements.next() : null)),
-                            (prev = (elements.hasNext() ? elements.next() : null)));
+                if (ignoreNotPaired) {
+                    final R res = mapper.apply(_1, _2, (prev = elements.next()));
+                    _1 = increment == 1 ? _2 : (increment == 2 ? prev : NONE);
+                    _2 = increment == 1 ? prev : NONE;
+                    return res;
                 } else {
-                    return mapper.apply(elements.next(), (prev2 = (elements.hasNext() ? elements.next() : null)),
-                            (prev = (elements.hasNext() ? elements.next() : null)));
+                    if (increment == 1) {
+                        return mapper.apply(prev2 == NONE ? elements.next() : prev2,
+                                (prev2 = (prev == NONE ? (elements.hasNext() ? elements.next() : null) : prev)),
+                                (prev = (elements.hasNext() ? elements.next() : null)));
+
+                    } else if (increment == 2) {
+                        return mapper.apply(prev == NONE ? elements.next() : prev, (prev2 = (elements.hasNext() ? elements.next() : null)),
+                                (prev = (elements.hasNext() ? elements.next() : null)));
+                    } else {
+                        return mapper.apply(elements.next(), (prev2 = (elements.hasNext() ? elements.next() : null)),
+                                (prev = (elements.hasNext() ? elements.next() : null)));
+                    }
                 }
             }
         }, closeHandlers);

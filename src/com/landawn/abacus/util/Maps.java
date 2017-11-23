@@ -1198,7 +1198,7 @@ public final class Maps {
     }
 
     public static <T> T map2Entity(final Class<T> targetClass, final Map<String, Object> m) {
-        return map2Entity(targetClass, m, N.isDirtyMarker(targetClass) == false, true);
+        return map2Entity(targetClass, m, false, true);
     }
 
     @SuppressWarnings("unchecked")
@@ -1275,7 +1275,7 @@ public final class Maps {
     }
 
     public static <T> List<T> map2Entity(final Class<T> targetClass, final Collection<Map<String, Object>> mList) {
-        return map2Entity(targetClass, mList, N.isDirtyMarker(targetClass) == false, true);
+        return map2Entity(targetClass, mList, false, true);
     }
 
     public static <T> List<T> map2Entity(final Class<T> targetClass, final Collection<Map<String, Object>> mList, final boolean igoreNullProperty,
@@ -1310,7 +1310,7 @@ public final class Maps {
     }
 
     public static Map<String, Object> entity2Map(final Object entity) {
-        return entity2Map(entity, (entity instanceof DirtyMarker == false));
+        return entity2Map(entity, false);
     }
 
     public static Map<String, Object> entity2Map(final Object entity, final boolean ignoreNullProperty) {
@@ -1318,7 +1318,7 @@ public final class Maps {
     }
 
     public static Map<String, Object> entity2Map(final Object entity, final Collection<String> ignoredPropNames) {
-        return entity2Map(entity, (entity instanceof DirtyMarker == false), ignoredPropNames);
+        return entity2Map(entity, false, ignoredPropNames);
     }
 
     public static Map<String, Object> entity2Map(final Object entity, final boolean ignoreNullProperty, final Collection<String> ignoredPropNames) {
@@ -1344,7 +1344,7 @@ public final class Maps {
      * @return the input <code>resultMap</code>
      */
     public static <T extends Map<String, Object>> T entity2Map(final T resultMap, final Object entity) {
-        return entity2Map(resultMap, entity, (entity instanceof DirtyMarker == false));
+        return entity2Map(resultMap, entity, false);
     }
 
     /**
@@ -1366,7 +1366,7 @@ public final class Maps {
      * @return the input <code>resultMap</code>
      */
     public static <T extends Map<String, Object>> T entity2Map(final T resultMap, final Object entity, final Collection<String> ignoredPropNames) {
-        return entity2Map(resultMap, entity, (entity instanceof DirtyMarker == false), ignoredPropNames);
+        return entity2Map(resultMap, entity, false, ignoredPropNames);
     }
 
     /**
@@ -1516,10 +1516,7 @@ public final class Maps {
     }
 
     public static List<Map<String, Object>> entity2Map(final Collection<?> entityList, final Collection<String> ignoredPropNames) {
-        final boolean ignoreNullProperty = N.isNullOrEmpty(entityList) ? true
-                : (entityList instanceof ArrayList ? ((ArrayList<?>) entityList).get(0) : entityList.iterator().next()) instanceof DirtyMarker == false;
-
-        return entity2Map(entityList, ignoreNullProperty, ignoredPropNames);
+        return entity2Map(entityList, false, ignoredPropNames);
     }
 
     public static List<Map<String, Object>> entity2Map(final Collection<?> entityList, final boolean ignoreNullProperty,
@@ -1539,7 +1536,7 @@ public final class Maps {
     }
 
     public static Map<String, Object> deepEntity2Map(final Object entity) {
-        return deepEntity2Map(entity, (entity instanceof DirtyMarker == false));
+        return deepEntity2Map(entity, false);
     }
 
     public static Map<String, Object> deepEntity2Map(final Object entity, final boolean ignoreNullProperty) {
@@ -1547,7 +1544,7 @@ public final class Maps {
     }
 
     public static Map<String, Object> deepEntity2Map(final Object entity, final Collection<String> ignoredPropNames) {
-        return deepEntity2Map(entity, (entity instanceof DirtyMarker == false), ignoredPropNames);
+        return deepEntity2Map(entity, false, ignoredPropNames);
     }
 
     public static Map<String, Object> deepEntity2Map(final Object entity, final boolean ignoreNullProperty, final Collection<String> ignoredPropNames) {
@@ -1573,7 +1570,7 @@ public final class Maps {
      * @return the input <code>resultMap</code>
      */
     public static <T extends Map<String, Object>> T deepEntity2Map(final T resultMap, final Object entity) {
-        return deepEntity2Map(resultMap, entity, (entity instanceof DirtyMarker == false));
+        return deepEntity2Map(resultMap, entity, false);
     }
 
     /**
@@ -1595,7 +1592,7 @@ public final class Maps {
      * @return the input <code>resultMap</code>
      */
     public static <T extends Map<String, Object>> T deepEntity2Map(final T resultMap, final Object entity, final Collection<String> ignoredPropNames) {
-        return deepEntity2Map(resultMap, entity, (entity instanceof DirtyMarker == false), ignoredPropNames);
+        return deepEntity2Map(resultMap, entity, false, ignoredPropNames);
     }
 
     /**
@@ -1780,7 +1777,7 @@ public final class Maps {
     }
 
     public static Map<String, Object> entity2FlatMap(final Object entity) {
-        return entity2FlatMap(entity, (entity instanceof DirtyMarker == false));
+        return entity2FlatMap(entity, false);
     }
 
     public static Map<String, Object> entity2FlatMap(final Object entity, final boolean ignoreNullProperty) {
@@ -1788,7 +1785,7 @@ public final class Maps {
     }
 
     public static Map<String, Object> entity2FlatMap(final Object entity, final Collection<String> ignoredPropNames) {
-        return entity2FlatMap(entity, (entity instanceof DirtyMarker == false), ignoredPropNames);
+        return entity2FlatMap(entity, false, ignoredPropNames);
     }
 
     public static Map<String, Object> entity2FlatMap(final Object entity, final boolean ignoreNullProperty, final Collection<String> ignoredPropNames) {
@@ -1814,7 +1811,7 @@ public final class Maps {
      * @return the input <code>resultMap</code>
      */
     public static <T extends Map<String, Object>> T entity2FlatMap(final T resultMap, final Object entity) {
-        return entity2FlatMap(resultMap, entity, (entity instanceof DirtyMarker == false));
+        return entity2FlatMap(resultMap, entity, false);
     }
 
     /**
@@ -1836,7 +1833,7 @@ public final class Maps {
      * @return the input <code>resultMap</code>
      */
     public static <T extends Map<String, Object>> T entity2FlatMap(final T resultMap, final Object entity, final Collection<String> ignoredPropNames) {
-        return entity2FlatMap(resultMap, entity, (entity instanceof DirtyMarker == false), ignoredPropNames);
+        return entity2FlatMap(resultMap, entity, false, ignoredPropNames);
     }
 
     /**
@@ -2129,10 +2126,7 @@ public final class Maps {
     }
 
     public static List<Map<String, Object>> entity2FlatMap(final Collection<?> entityList, final Collection<String> ignoredPropNames) {
-        final boolean ignoreNullProperty = N.isNullOrEmpty(entityList) ? true
-                : (entityList instanceof ArrayList ? ((ArrayList<?>) entityList).get(0) : entityList.iterator().next()) instanceof DirtyMarker == false;
-
-        return entity2FlatMap(entityList, ignoreNullProperty, ignoredPropNames);
+        return entity2FlatMap(entityList, false, ignoredPropNames);
     }
 
     public static List<Map<String, Object>> entity2FlatMap(final Collection<?> entityList, final boolean ignoreNullProperty,

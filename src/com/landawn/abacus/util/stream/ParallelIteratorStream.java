@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.landawn.abacus.util.ByteIterator;
@@ -309,45 +308,171 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
         return new ParallelIteratorStream<>(Stream.parallelConcat2(iters, iters.size()), false, null, maxThreadNum, splitor, closeHandlers);
     }
 
+    //    @Override
+    //    public <R> Stream<R> biMap(final BiFunction<? super T, ? super T, ? extends R> mapper, final boolean ignoreNotPaired) {
+    //        if (maxThreadNum <= 1) {
+    //            return new ParallelIteratorStream<>(sequential().biMap(mapper, ignoreNotPaired).iterator(), false, null, maxThreadNum, splitor, closeHandlers);
+    //        }
+    //
+    //        final List<Iterator<R>> iters = new ArrayList<>(maxThreadNum);
+    //
+    //        for (int i = 0; i < maxThreadNum; i++) {
+    //            iters.add(new ObjIteratorEx<R>() {
+    //                private Object pre = NONE;
+    //                private Object next = NONE;
+    //
+    //                @Override
+    //                public boolean hasNext() {
+    //                    if (pre == NONE) {
+    //                        synchronized (elements) {
+    //                            if (elements.hasNext()) {
+    //                                pre = elements.next();
+    //
+    //                                if (elements.hasNext()) {
+    //                                    next = elements.next();
+    //                                }
+    //                            }
+    //                        }
+    //                    }
+    //
+    //                    return ignoreNotPaired ? next != NONE : pre != NONE;
+    //                }
+    //
+    //                @Override
+    //                public R next() {
+    //                    if (next == NONE && hasNext() == false) {
+    //                        throw new NoSuchElementException();
+    //                    }
+    //
+    //                    final R result = mapper.apply((T) pre, next == NONE ? null : (T) next);
+    //                    pre = NONE;
+    //                    next = NONE;
+    //                    return result;
+    //                }
+    //            });
+    //        }
+    //
+    //        return new ParallelIteratorStream<>(Stream.parallelConcat2(iters, iters.size()), false, null, maxThreadNum, splitor, closeHandlers);
+    //    }
+    //
+    //    @Override
+    //    public <R> Stream<R> triMap(final TriFunction<? super T, ? super T, ? super T, ? extends R> mapper, final boolean ignoreNotPaired) {
+    //        if (maxThreadNum <= 1) {
+    //            return new ParallelIteratorStream<>(sequential().triMap(mapper, ignoreNotPaired).iterator(), false, null, maxThreadNum, splitor, closeHandlers);
+    //        }
+    //
+    //        final List<Iterator<R>> iters = new ArrayList<>(maxThreadNum);
+    //
+    //        for (int i = 0; i < maxThreadNum; i++) {
+    //            iters.add(new ObjIteratorEx<R>() {
+    //                private Object prepre = NONE;
+    //                private Object pre = NONE;
+    //                private Object next = NONE;
+    //
+    //                @Override
+    //                public boolean hasNext() {
+    //                    if (prepre == NONE) {
+    //                        synchronized (elements) {
+    //                            if (elements.hasNext()) {
+    //                                prepre = elements.next();
+    //
+    //                                if (elements.hasNext()) {
+    //                                    pre = elements.next();
+    //
+    //                                    if (elements.hasNext()) {
+    //                                        next = elements.next();
+    //                                    }
+    //                                }
+    //                            }
+    //                        }
+    //                    }
+    //
+    //                    return ignoreNotPaired ? next != NONE : prepre != NONE;
+    //                }
+    //
+    //                @Override
+    //                public R next() {
+    //                    if (next == NONE && hasNext() == false) {
+    //                        throw new NoSuchElementException();
+    //                    }
+    //
+    //                    final R result = mapper.apply((T) prepre, pre == NONE ? null : (T) pre, next == NONE ? null : (T) next);
+    //                    prepre = NONE;
+    //                    pre = NONE;
+    //                    next = NONE;
+    //                    return result;
+    //                }
+    //            });
+    //        }
+    //
+    //        return new ParallelIteratorStream<>(Stream.parallelConcat2(iters, iters.size()), false, null, maxThreadNum, splitor, closeHandlers);
+    //    }
+
     @Override
-    public <R> Stream<R> biMap(final BiFunction<? super T, ? super T, ? extends R> mapper, final boolean ignoreNotPaired) {
+    public <R> Stream<R> slidingMap(final BiFunction<? super T, ? super T, R> mapper, final int increment, final boolean ignoreNotPaired) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorStream<>(sequential().biMap(mapper, ignoreNotPaired).iterator(), false, null, maxThreadNum, splitor, closeHandlers);
+            return new ParallelIteratorStream<>(sequential().slidingMap(mapper, increment).iterator(), false, null, maxThreadNum, splitor, closeHandlers);
         }
 
+        final int windowSize = 2;
+
+        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+
         final List<Iterator<R>> iters = new ArrayList<>(maxThreadNum);
+        final MutableBoolean isFirst = MutableBoolean.of(true);
+        final Holder<T> prev = new Holder<>();
 
         for (int i = 0; i < maxThreadNum; i++) {
             iters.add(new ObjIteratorEx<R>() {
-                private Object pre = NONE;
-                private Object next = NONE;
+                @SuppressWarnings("unchecked")
+                private final T NONE = (T) Stream.NONE;
+
+                private T first = NONE;
+                private T second = NONE;
 
                 @Override
                 public boolean hasNext() {
-                    if (pre == NONE) {
+                    if (first == NONE) {
                         synchronized (elements) {
                             if (elements.hasNext()) {
-                                pre = elements.next();
+                                if (increment > windowSize && isFirst.isFalse()) {
+                                    int skipNum = increment - windowSize;
+
+                                    while (skipNum-- > 0 && elements.hasNext()) {
+                                        elements.next();
+                                    }
+                                }
 
                                 if (elements.hasNext()) {
-                                    next = elements.next();
+                                    if (increment == 1) {
+                                        first = isFirst.isTrue() ? elements.next() : prev.value();
+                                        second = elements.hasNext() ? elements.next() : null;
+
+                                        prev.setValue(second);
+
+                                    } else {
+                                        first = elements.next();
+                                        second = elements.hasNext() ? elements.next() : null;
+                                    }
                                 }
+
+                                isFirst.setFalse();
                             }
                         }
                     }
 
-                    return ignoreNotPaired ? next != NONE : pre != NONE;
+                    return ignoreNotPaired ? second != NONE : first != NONE;
                 }
 
                 @Override
                 public R next() {
-                    if (next == NONE && hasNext() == false) {
+                    if ((ignoreNotPaired ? second == NONE : first == NONE) && hasNext() == false) {
                         throw new NoSuchElementException();
                     }
 
-                    final R result = mapper.apply((T) pre, next == NONE ? null : (T) next);
-                    pre = NONE;
-                    next = NONE;
+                    final R result = mapper.apply(first, second == NONE ? null : second);
+                    first = NONE;
+                    second = NONE;
                     return result;
                 }
             });
@@ -357,50 +482,81 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     }
 
     @Override
-    public <R> Stream<R> triMap(final TriFunction<? super T, ? super T, ? super T, ? extends R> mapper, final boolean ignoreNotPaired) {
+    public <R> Stream<R> slidingMap(final TriFunction<? super T, ? super T, ? super T, R> mapper, final int increment, final boolean ignoreNotPaired) {
         if (maxThreadNum <= 1) {
-            return new ParallelIteratorStream<>(sequential().triMap(mapper, ignoreNotPaired).iterator(), false, null, maxThreadNum, splitor, closeHandlers);
+            return new ParallelIteratorStream<>(sequential().slidingMap(mapper, increment).iterator(), false, null, maxThreadNum, splitor, closeHandlers);
         }
 
+        final int windowSize = 3;
+
+        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
+
         final List<Iterator<R>> iters = new ArrayList<>(maxThreadNum);
+        final MutableBoolean isFirst = MutableBoolean.of(true);
+        final Holder<T> prev = new Holder<>();
+        final Holder<T> prev2 = new Holder<>();
 
         for (int i = 0; i < maxThreadNum; i++) {
             iters.add(new ObjIteratorEx<R>() {
-                private Object prepre = NONE;
-                private Object pre = NONE;
-                private Object next = NONE;
+                @SuppressWarnings("unchecked")
+                private final T NONE = (T) Stream.NONE;
+
+                private T first = NONE;
+                private T second = NONE;
+                private T third = NONE;
 
                 @Override
                 public boolean hasNext() {
-                    if (prepre == NONE) {
+                    if (first == NONE) {
                         synchronized (elements) {
                             if (elements.hasNext()) {
-                                prepre = elements.next();
+                                if (increment > windowSize && isFirst.isFalse()) {
+                                    int skipNum = increment - windowSize;
 
-                                if (elements.hasNext()) {
-                                    pre = elements.next();
-
-                                    if (elements.hasNext()) {
-                                        next = elements.next();
+                                    while (skipNum-- > 0 && elements.hasNext()) {
+                                        elements.next();
                                     }
                                 }
+
+                                if (elements.hasNext()) {
+                                    if (increment == 1) {
+                                        first = isFirst.isTrue() ? elements.next() : prev2.value();
+                                        second = isFirst.isTrue() ? (elements.hasNext() ? elements.next() : null) : prev.value();
+                                        third = elements.hasNext() ? elements.next() : null;
+
+                                        prev2.setValue(second);
+                                        prev.setValue(third);
+                                    } else if (increment == 2) {
+                                        first = isFirst.isTrue() ? elements.next() : prev.value();
+                                        second = elements.hasNext() ? elements.next() : null;
+                                        third = elements.hasNext() ? elements.next() : null;
+
+                                        prev.setValue(third);
+                                    } else {
+                                        first = elements.next();
+                                        second = elements.hasNext() ? elements.next() : null;
+                                        third = elements.hasNext() ? elements.next() : null;
+                                    }
+                                }
+
+                                isFirst.setFalse();
                             }
                         }
                     }
 
-                    return ignoreNotPaired ? next != NONE : prepre != NONE;
+                    return ignoreNotPaired ? third != NONE : first != NONE;
                 }
 
                 @Override
                 public R next() {
-                    if (next == NONE && hasNext() == false) {
+                    if ((ignoreNotPaired ? third == NONE : first == NONE) && hasNext() == false) {
                         throw new NoSuchElementException();
                     }
 
-                    final R result = mapper.apply((T) prepre, pre == NONE ? null : (T) pre, next == NONE ? null : (T) next);
-                    prepre = NONE;
-                    pre = NONE;
-                    next = NONE;
+                    final R result = mapper.apply(first, second == NONE ? null : second, third == NONE ? null : third);
+                    first = NONE;
+                    second = NONE;
+                    third = NONE;
                     return result;
                 }
             });
@@ -1546,157 +1702,6 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     }
 
     @Override
-    public <R> Stream<R> slidingMap(final BiFunction<? super T, ? super T, R> mapper, final int increment) {
-        if (maxThreadNum <= 1) {
-            return new ParallelIteratorStream<>(sequential().slidingMap(mapper, increment).iterator(), false, null, maxThreadNum, splitor, closeHandlers);
-        }
-
-        final int windowSize = 2;
-
-        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
-
-        final List<Iterator<R>> iters = new ArrayList<>(maxThreadNum);
-        final MutableBoolean isFirst = MutableBoolean.of(true);
-        final Holder<T> prev = new Holder<>();
-
-        for (int i = 0; i < maxThreadNum; i++) {
-            iters.add(new ObjIteratorEx<R>() {
-                private Object first = NONE;
-                private Object second = NONE;
-
-                @Override
-                public boolean hasNext() {
-                    if (first == NONE) {
-                        synchronized (elements) {
-                            if (elements.hasNext()) {
-                                if (increment > windowSize && isFirst.isFalse()) {
-                                    int skipNum = increment - windowSize;
-
-                                    while (skipNum-- > 0 && elements.hasNext()) {
-                                        elements.next();
-                                    }
-                                }
-
-                                if (elements.hasNext()) {
-                                    if (increment == 1) {
-                                        first = isFirst.isTrue() ? elements.next() : prev.value();
-                                        second = elements.hasNext() ? elements.next() : null;
-
-                                        prev.setValue((T) second);
-
-                                    } else {
-                                        first = elements.next();
-                                        second = elements.hasNext() ? elements.next() : null;
-                                    }
-                                }
-
-                                isFirst.setFalse();
-                            }
-                        }
-                    }
-
-                    return first != NONE;
-                }
-
-                @Override
-                public R next() {
-                    if (first == NONE && hasNext() == false) {
-                        throw new NoSuchElementException();
-                    }
-
-                    final R result = mapper.apply((T) first, second == NONE ? null : (T) second);
-                    first = NONE;
-                    second = NONE;
-                    return result;
-                }
-            });
-        }
-
-        return new ParallelIteratorStream<>(Stream.parallelConcat2(iters, iters.size()), false, null, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
-    public <R> Stream<R> slidingMap(final TriFunction<? super T, ? super T, ? super T, R> mapper, final int increment) {
-        if (maxThreadNum <= 1) {
-            return new ParallelIteratorStream<>(sequential().slidingMap(mapper, increment).iterator(), false, null, maxThreadNum, splitor, closeHandlers);
-        }
-
-        final int windowSize = 3;
-
-        N.checkArgument(windowSize > 0 && increment > 0, "'windowSize'=%s and 'increment'=%s must not be less than 1", windowSize, increment);
-
-        final List<Iterator<R>> iters = new ArrayList<>(maxThreadNum);
-        final MutableBoolean isFirst = MutableBoolean.of(true);
-        final Holder<T> prev = new Holder<>();
-        final Holder<T> prev2 = new Holder<>();
-
-        for (int i = 0; i < maxThreadNum; i++) {
-            iters.add(new ObjIteratorEx<R>() {
-                private Object first = NONE;
-                private Object second = NONE;
-                private Object third = NONE;
-
-                @Override
-                public boolean hasNext() {
-                    if (first == NONE) {
-                        synchronized (elements) {
-                            if (elements.hasNext()) {
-                                if (increment > windowSize && isFirst.isFalse()) {
-                                    int skipNum = increment - windowSize;
-
-                                    while (skipNum-- > 0 && elements.hasNext()) {
-                                        elements.next();
-                                    }
-                                }
-
-                                if (elements.hasNext()) {
-                                    if (increment == 1) {
-                                        first = isFirst.isTrue() ? elements.next() : prev2.value();
-                                        second = isFirst.isTrue() ? (elements.hasNext() ? elements.next() : null) : prev.value();
-                                        third = elements.hasNext() ? elements.next() : null;
-
-                                        prev2.setValue((T) second);
-                                        prev.setValue((T) third);
-                                    } else if (increment == 2) {
-                                        first = isFirst.isTrue() ? elements.next() : prev.value();
-                                        second = elements.hasNext() ? elements.next() : null;
-                                        third = elements.hasNext() ? elements.next() : null;
-
-                                        prev.setValue((T) third);
-                                    } else {
-                                        first = elements.next();
-                                        second = elements.hasNext() ? elements.next() : null;
-                                        third = elements.hasNext() ? elements.next() : null;
-                                    }
-                                }
-
-                                isFirst.setFalse();
-                            }
-                        }
-                    }
-
-                    return first != NONE;
-                }
-
-                @Override
-                public R next() {
-                    if (first == NONE && hasNext() == false) {
-                        throw new NoSuchElementException();
-                    }
-
-                    final R result = mapper.apply((T) first, second == NONE ? null : (T) second, third == NONE ? null : (T) third);
-                    first = NONE;
-                    second = NONE;
-                    third = NONE;
-                    return result;
-                }
-            });
-        }
-
-        return new ParallelIteratorStream<>(Stream.parallelConcat2(iters, iters.size()), false, null, maxThreadNum, splitor, closeHandlers);
-    }
-
-    @Override
     public Stream<Stream<T>> split(final int size) {
         return new ParallelIteratorStream<>(sequential().split(size).iterator(), false, null, maxThreadNum, splitor, closeHandlers);
     }
@@ -1791,6 +1796,10 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public Stream<T> distinctBy(final Function<? super T, ?> keyExtractor) {
+        if (maxThreadNum <= 1) {
+            return new ParallelIteratorStream<>(sequential().distinctBy(keyExtractor).iterator(), sorted, cmp, maxThreadNum, splitor, closeHandlers);
+        }
+
         final Set<Object> set = new HashSet<>();
 
         return filter(new Predicate<T>() {
@@ -2341,9 +2350,11 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
             return sequential().toMap(keyExtractor, valueMapper, mapFactory);
         }
 
-        final M res = mapFactory.get();
-        res.putAll(collect(Collectors.toConcurrentMap(keyExtractor, valueMapper, mergeFunction)));
-        return res;
+        //    final M res = mapFactory.get();
+        //    res.putAll(collect(Collectors.toConcurrentMap(keyExtractor, valueMapper, mergeFunction)));
+        //    return res;
+
+        return collect(Collectors.toMap(keyExtractor, valueMapper, mapFactory));
     }
 
     @Override
@@ -2353,9 +2364,11 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
             return sequential().toMap(classifier, downstream, mapFactory);
         }
 
-        final M res = mapFactory.get();
-        res.putAll(collect(Collectors.groupingByConcurrent(classifier, downstream)));
-        return res;
+        //    final M res = mapFactory.get();
+        //    res.putAll(collect(Collectors.groupingByConcurrent(classifier, downstream)));
+        //    return res;
+
+        return collect(Collectors.groupingBy(classifier, downstream, mapFactory));
     }
 
     @Override
@@ -2365,14 +2378,16 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
             return sequential().toMultimap(keyExtractor, valueMapper, mapFactory);
         }
 
-        final M res = mapFactory.get();
-        final ConcurrentMap<K, List<U>> tmp = collect(Collectors.groupingByConcurrent(keyExtractor, Collectors.mapping(valueMapper, Collectors.<U> toList())));
+        //    final M res = mapFactory.get();
+        //    final ConcurrentMap<K, List<U>> tmp = collect(Collectors.groupingByConcurrent(keyExtractor, Collectors.mapping(valueMapper, Collectors.<U> toList())));
+        //
+        //    for (Map.Entry<K, List<U>> entry : tmp.entrySet()) {
+        //        res.putAll(entry.getKey(), entry.getValue());
+        //    }
+        //
+        //    return res;
 
-        for (Map.Entry<K, List<U>> entry : tmp.entrySet()) {
-            res.putAll(entry.getKey(), entry.getValue());
-        }
-
-        return res;
+        return collect(Collectors.toMultimap(keyExtractor, valueMapper, mapFactory));
     }
 
     @Override
@@ -2615,7 +2630,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public <R, A> R collect(final Collector<? super T, A, R> collector) {
-        if (maxThreadNum <= 1 || sorted || collector.characteristics().contains(Collector.Characteristics.CONCURRENT) == false
+        if (maxThreadNum <= 1 || collector.characteristics().contains(Collector.Characteristics.CONCURRENT) == false
                 || collector.characteristics().contains(Collector.Characteristics.UNORDERED) == false) {
             return sequential().collect(collector);
         }

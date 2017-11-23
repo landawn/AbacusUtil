@@ -27,7 +27,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -4016,13 +4015,25 @@ public final class SQLExecutor implements Closeable {
         private SP prepareAdd(final Object entity) {
             checkEntity(entity);
 
-            final Class<?> cls = entity.getClass();
-            final boolean isEntity = N.isEntity(cls);
-            final Set<String> readOnlyPropNames = isEntity ? readOnlyPropNamesMap.get(cls) : null;
-            final Map<String, Object> props = entity instanceof Map ? (Map<String, Object>) entity
-                    : (readOnlyPropNames == null ? Maps.entity2Map(entity) : Maps.entity2Map(entity, readOnlyPropNames));
+            if (entity instanceof Map) {
+                return prepareAdd((Map<String, Object>) entity);
+            } else {
+                final Set<String> readOnlyPropNames = readOnlyPropNamesMap.get(entity.getClass());
 
-            return prepareAdd(props);
+                switch (namingPolicy) {
+                    case LOWER_CASE_WITH_UNDERSCORE:
+                        return NE.insert(entity, readOnlyPropNames).into(targetClass).pair();
+
+                    case UPPER_CASE_WITH_UNDERSCORE:
+                        return NE2.insert(entity, readOnlyPropNames).into(targetClass).pair();
+
+                    case LOWER_CAMEL_CASE:
+                        return NE3.insert(entity, readOnlyPropNames).into(targetClass).pair();
+
+                    default:
+                        throw new RuntimeException("Unsupported naming policy: " + namingPolicy);
+                }
+            }
         }
 
         private SP prepareAdd(final Map<String, Object> props) {
@@ -4187,22 +4198,15 @@ public final class SQLExecutor implements Closeable {
             checkEntity(entity);
 
             final Class<?> cls = entity.getClass();
-            final boolean isDirtyMarker = N.isDirtyMarker(cls);
             final Set<String> readOrWriteOnlyPropNames = readOrWriteOnlyPropNamesMap.get(cls);
-            Map<String, Object> props = null;
+            final Collection<String> propNames = SQLBuilder.getPropNamesByClass(cls, false, readOrWriteOnlyPropNames);
+            final Set<String> dirtyPropNames = N.isDirtyMarker(cls) ? ((DirtyMarker) entity).dirtyPropNames() : null;
+            final Map<String, Object> props = N.newHashMap(N.initHashCapacity(N.isNullOrEmpty(dirtyPropNames) ? propNames.size() : dirtyPropNames.size()));
 
-            if (isDirtyMarker) {
-                props = new HashMap<>();
-
-                for (String propName : ((DirtyMarker) entity).dirtyPropNames()) {
+            for (String propName : propNames) {
+                if (N.isNullOrEmpty(dirtyPropNames) || dirtyPropNames.contains(propName)) {
                     props.put(propName, ClassUtil.getPropValue(entity, propName));
                 }
-
-                if (N.notNullOrEmpty(readOrWriteOnlyPropNames)) {
-                    Maps.removeAll(props, readOrWriteOnlyPropNames);
-                }
-            } else {
-                props = readOrWriteOnlyPropNames == null ? Maps.entity2Map(entity) : Maps.entity2Map(entity, readOrWriteOnlyPropNames);
             }
 
             final Object idVal = props.containsKey(idName) ? props.remove(idName) : getId(entity);

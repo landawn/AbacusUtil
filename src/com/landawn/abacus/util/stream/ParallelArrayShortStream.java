@@ -76,7 +76,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
             final Collection<Runnable> closeHandlers) {
         super(values, fromIndex, toIndex, sorted, closeHandlers);
 
-        this.maxThreadNum = fromIndex >= toIndex ? 1 : N.min(maxThreadNum, MAX_THREAD_NUM_PER_OPERATION, toIndex - fromIndex);
+        this.maxThreadNum = N.min(maxThreadNum, MAX_THREAD_NUM_PER_OPERATION);
         this.splitor = splitor == null ? DEFAULT_SPLITOR : splitor;
     }
 
@@ -362,13 +362,14 @@ final class ParallelArrayShortStream extends ArrayShortStream {
             return;
         }
 
-        final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
+        final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
+        final List<CompletableFuture<Void>> futureList = new ArrayList<>(threadNum);
         final Holder<Throwable> eHolder = new Holder<>();
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
+            final int sliceSize = (toIndex - fromIndex) / threadNum + ((toIndex - fromIndex) % threadNum == 0 ? 0 : 1);
 
-            for (int i = 0; i < maxThreadNum; i++) {
+            for (int i = 0; i < threadNum; i++) {
                 final int sliceIndex = i;
 
                 futureList.add(asyncExecutor.execute(new Runnable() {
@@ -390,7 +391,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
         } else {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
-            for (int i = 0; i < maxThreadNum; i++) {
+            for (int i = 0; i < threadNum; i++) {
                 futureList.add(asyncExecutor.execute(new Runnable() {
                     @Override
                     public void run() {
@@ -574,13 +575,14 @@ final class ParallelArrayShortStream extends ArrayShortStream {
             return sequential().reduce(identity, op);
         }
 
-        final List<CompletableFuture<Short>> futureList = new ArrayList<>(maxThreadNum);
+        final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
+        final List<CompletableFuture<Short>> futureList = new ArrayList<>(threadNum);
         final Holder<Throwable> eHolder = new Holder<>();
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
+            final int sliceSize = (toIndex - fromIndex) / threadNum + ((toIndex - fromIndex) % threadNum == 0 ? 0 : 1);
 
-            for (int i = 0; i < maxThreadNum; i++) {
+            for (int i = 0; i < threadNum; i++) {
                 final int sliceIndex = i;
 
                 futureList.add(asyncExecutor.execute(new Callable<Short>() {
@@ -606,7 +608,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
         } else {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
-            for (int i = 0; i < maxThreadNum; i++) {
+            for (int i = 0; i < threadNum; i++) {
                 futureList.add(asyncExecutor.execute(new Callable<Short>() {
                     @Override
                     public Short call() {
@@ -662,13 +664,14 @@ final class ParallelArrayShortStream extends ArrayShortStream {
             return sequential().reduce(accumulator);
         }
 
-        final List<CompletableFuture<Short>> futureList = new ArrayList<>(maxThreadNum);
+        final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
+        final List<CompletableFuture<Short>> futureList = new ArrayList<>(threadNum);
         final Holder<Throwable> eHolder = new Holder<>();
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
+            final int sliceSize = (toIndex - fromIndex) / threadNum + ((toIndex - fromIndex) % threadNum == 0 ? 0 : 1);
 
-            for (int i = 0; i < maxThreadNum; i++) {
+            for (int i = 0; i < threadNum; i++) {
                 final int sliceIndex = i;
 
                 futureList.add(asyncExecutor.execute(new Callable<Short>() {
@@ -698,7 +701,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
         } else {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
-            for (int i = 0; i < maxThreadNum; i++) {
+            for (int i = 0; i < threadNum; i++) {
                 futureList.add(asyncExecutor.execute(new Callable<Short>() {
                     @Override
                     public Short call() {
@@ -767,13 +770,14 @@ final class ParallelArrayShortStream extends ArrayShortStream {
             return sequential().collect(supplier, accumulator, combiner);
         }
 
-        final List<CompletableFuture<R>> futureList = new ArrayList<>(maxThreadNum);
+        final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
+        final List<CompletableFuture<R>> futureList = new ArrayList<>(threadNum);
         final Holder<Throwable> eHolder = new Holder<>();
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
+            final int sliceSize = (toIndex - fromIndex) / threadNum + ((toIndex - fromIndex) % threadNum == 0 ? 0 : 1);
 
-            for (int i = 0; i < maxThreadNum; i++) {
+            for (int i = 0; i < threadNum; i++) {
                 final int sliceIndex = i;
 
                 futureList.add(asyncExecutor.execute(new Callable<R>() {
@@ -799,7 +803,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
         } else {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
-            for (int i = 0; i < maxThreadNum; i++) {
+            for (int i = 0; i < threadNum; i++) {
                 futureList.add(asyncExecutor.execute(new Callable<R>() {
                     @Override
                     public R call() {
@@ -877,10 +881,11 @@ final class ParallelArrayShortStream extends ArrayShortStream {
             return OptionalShort.of(N.min(elements, fromIndex, toIndex));
         }
 
-        final List<CompletableFuture<Short>> futureList = new ArrayList<>(maxThreadNum);
-        final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
+        final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
+        final List<CompletableFuture<Short>> futureList = new ArrayList<>(threadNum);
+        final int sliceSize = (toIndex - fromIndex) / threadNum + ((toIndex - fromIndex) % threadNum == 0 ? 0 : 1);
 
-        for (int i = 0; i < maxThreadNum; i++) {
+        for (int i = 0; i < threadNum; i++) {
             final int sliceIndex = i;
 
             futureList.add(asyncExecutor.execute(new Callable<Short>() {
@@ -923,10 +928,11 @@ final class ParallelArrayShortStream extends ArrayShortStream {
             return OptionalShort.of(N.max(elements, fromIndex, toIndex));
         }
 
-        final List<CompletableFuture<Short>> futureList = new ArrayList<>(maxThreadNum);
-        final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
+        final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
+        final List<CompletableFuture<Short>> futureList = new ArrayList<>(threadNum);
+        final int sliceSize = (toIndex - fromIndex) / threadNum + ((toIndex - fromIndex) % threadNum == 0 ? 0 : 1);
 
-        for (int i = 0; i < maxThreadNum; i++) {
+        for (int i = 0; i < threadNum; i++) {
             final int sliceIndex = i;
 
             futureList.add(asyncExecutor.execute(new Callable<Short>() {
@@ -979,10 +985,11 @@ final class ParallelArrayShortStream extends ArrayShortStream {
             return sum(elements, fromIndex, toIndex);
         }
 
-        final List<CompletableFuture<Long>> futureList = new ArrayList<>(maxThreadNum);
-        final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
+        final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
+        final List<CompletableFuture<Long>> futureList = new ArrayList<>(threadNum);
+        final int sliceSize = (toIndex - fromIndex) / threadNum + ((toIndex - fromIndex) % threadNum == 0 ? 0 : 1);
 
-        for (int i = 0; i < maxThreadNum; i++) {
+        for (int i = 0; i < threadNum; i++) {
             final int sliceIndex = i;
 
             futureList.add(asyncExecutor.execute(new Callable<Long>() {
@@ -1042,10 +1049,11 @@ final class ParallelArrayShortStream extends ArrayShortStream {
             return sequential().summarize();
         }
 
-        final List<CompletableFuture<ShortSummaryStatistics>> futureList = new ArrayList<>(maxThreadNum);
-        final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
+        final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
+        final List<CompletableFuture<ShortSummaryStatistics>> futureList = new ArrayList<>(threadNum);
+        final int sliceSize = (toIndex - fromIndex) / threadNum + ((toIndex - fromIndex) % threadNum == 0 ? 0 : 1);
 
-        for (int i = 0; i < maxThreadNum; i++) {
+        for (int i = 0; i < threadNum; i++) {
             final int sliceIndex = i;
 
             futureList.add(asyncExecutor.execute(new Callable<ShortSummaryStatistics>() {
@@ -1091,14 +1099,15 @@ final class ParallelArrayShortStream extends ArrayShortStream {
             return sequential().anyMatch(predicate);
         }
 
-        final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
+        final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
+        final List<CompletableFuture<Void>> futureList = new ArrayList<>(threadNum);
         final Holder<Throwable> eHolder = new Holder<>();
         final MutableBoolean result = MutableBoolean.of(false);
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
+            final int sliceSize = (toIndex - fromIndex) / threadNum + ((toIndex - fromIndex) % threadNum == 0 ? 0 : 1);
 
-            for (int i = 0; i < maxThreadNum; i++) {
+            for (int i = 0; i < threadNum; i++) {
                 final int sliceIndex = i;
 
                 futureList.add(asyncExecutor.execute(new Runnable() {
@@ -1123,7 +1132,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
         } else {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
-            for (int i = 0; i < maxThreadNum; i++) {
+            for (int i = 0; i < threadNum; i++) {
                 futureList.add(asyncExecutor.execute(new Runnable() {
                     @Override
                     public void run() {
@@ -1163,14 +1172,15 @@ final class ParallelArrayShortStream extends ArrayShortStream {
             return sequential().allMatch(predicate);
         }
 
-        final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
+        final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
+        final List<CompletableFuture<Void>> futureList = new ArrayList<>(threadNum);
         final Holder<Throwable> eHolder = new Holder<>();
         final MutableBoolean result = MutableBoolean.of(true);
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
+            final int sliceSize = (toIndex - fromIndex) / threadNum + ((toIndex - fromIndex) % threadNum == 0 ? 0 : 1);
 
-            for (int i = 0; i < maxThreadNum; i++) {
+            for (int i = 0; i < threadNum; i++) {
                 final int sliceIndex = i;
 
                 futureList.add(asyncExecutor.execute(new Runnable() {
@@ -1195,7 +1205,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
         } else {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
-            for (int i = 0; i < maxThreadNum; i++) {
+            for (int i = 0; i < threadNum; i++) {
                 futureList.add(asyncExecutor.execute(new Runnable() {
                     @Override
                     public void run() {
@@ -1235,14 +1245,15 @@ final class ParallelArrayShortStream extends ArrayShortStream {
             return sequential().noneMatch(predicate);
         }
 
-        final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
+        final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
+        final List<CompletableFuture<Void>> futureList = new ArrayList<>(threadNum);
         final Holder<Throwable> eHolder = new Holder<>();
         final MutableBoolean result = MutableBoolean.of(true);
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
+            final int sliceSize = (toIndex - fromIndex) / threadNum + ((toIndex - fromIndex) % threadNum == 0 ? 0 : 1);
 
-            for (int i = 0; i < maxThreadNum; i++) {
+            for (int i = 0; i < threadNum; i++) {
                 final int sliceIndex = i;
 
                 futureList.add(asyncExecutor.execute(new Runnable() {
@@ -1267,7 +1278,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
         } else {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
-            for (int i = 0; i < maxThreadNum; i++) {
+            for (int i = 0; i < threadNum; i++) {
                 futureList.add(asyncExecutor.execute(new Runnable() {
                     @Override
                     public void run() {
@@ -1307,14 +1318,15 @@ final class ParallelArrayShortStream extends ArrayShortStream {
             return sequential().findFirst(predicate);
         }
 
-        final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
+        final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
+        final List<CompletableFuture<Void>> futureList = new ArrayList<>(threadNum);
         final Holder<Throwable> eHolder = new Holder<>();
         final Holder<Pair<Integer, Short>> resultHolder = new Holder<>();
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
+            final int sliceSize = (toIndex - fromIndex) / threadNum + ((toIndex - fromIndex) % threadNum == 0 ? 0 : 1);
 
-            for (int i = 0; i < maxThreadNum; i++) {
+            for (int i = 0; i < threadNum; i++) {
                 final int sliceIndex = i;
 
                 futureList.add(asyncExecutor.execute(new Runnable() {
@@ -1348,7 +1360,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
         } else {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
-            for (int i = 0; i < maxThreadNum; i++) {
+            for (int i = 0; i < threadNum; i++) {
                 futureList.add(asyncExecutor.execute(new Runnable() {
                     @Override
                     public void run() {
@@ -1394,14 +1406,15 @@ final class ParallelArrayShortStream extends ArrayShortStream {
             return sequential().findLast(predicate);
         }
 
-        final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
+        final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
+        final List<CompletableFuture<Void>> futureList = new ArrayList<>(threadNum);
         final Holder<Throwable> eHolder = new Holder<>();
         final Holder<Pair<Integer, Short>> resultHolder = new Holder<>();
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
+            final int sliceSize = (toIndex - fromIndex) / threadNum + ((toIndex - fromIndex) % threadNum == 0 ? 0 : 1);
 
-            for (int i = 0; i < maxThreadNum; i++) {
+            for (int i = 0; i < threadNum; i++) {
                 final int sliceIndex = i;
 
                 futureList.add(asyncExecutor.execute(new Runnable() {
@@ -1435,7 +1448,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
         } else {
             final MutableInt cursor = MutableInt.of(toIndex);
 
-            for (int i = 0; i < maxThreadNum; i++) {
+            for (int i = 0; i < threadNum; i++) {
                 futureList.add(asyncExecutor.execute(new Runnable() {
                     @Override
                     public void run() {
@@ -1481,14 +1494,15 @@ final class ParallelArrayShortStream extends ArrayShortStream {
             return sequential().findAny(predicate);
         }
 
-        final List<CompletableFuture<Void>> futureList = new ArrayList<>(maxThreadNum);
+        final int threadNum = N.min(maxThreadNum, (toIndex - fromIndex));
+        final List<CompletableFuture<Void>> futureList = new ArrayList<>(threadNum);
         final Holder<Throwable> eHolder = new Holder<>();
         final Holder<Object> resultHolder = Holder.of(NONE);
 
         if (splitor == Splitor.ARRAY) {
-            final int sliceSize = (toIndex - fromIndex) / maxThreadNum + ((toIndex - fromIndex) % maxThreadNum == 0 ? 0 : 1);
+            final int sliceSize = (toIndex - fromIndex) / threadNum + ((toIndex - fromIndex) % threadNum == 0 ? 0 : 1);
 
-            for (int i = 0; i < maxThreadNum; i++) {
+            for (int i = 0; i < threadNum; i++) {
                 final int sliceIndex = i;
 
                 futureList.add(asyncExecutor.execute(new Runnable() {
@@ -1521,7 +1535,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
         } else {
             final MutableInt cursor = MutableInt.of(fromIndex);
 
-            for (int i = 0; i < maxThreadNum; i++) {
+            for (int i = 0; i < threadNum; i++) {
                 futureList.add(asyncExecutor.execute(new Runnable() {
                     @Override
                     public void run() {

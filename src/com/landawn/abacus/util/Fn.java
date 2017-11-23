@@ -55,6 +55,7 @@ import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
+import com.landawn.abacus.util.function.BooleanSupplier;
 import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.IndexedBiConsumer;
@@ -671,20 +672,20 @@ public final class Fn {
         return (BiPredicate<T, T>) BiPredicates.LESS_EQUAL;
     }
 
-    public static Supplier<Boolean> and(final Supplier<Boolean> first, final Supplier<Boolean> second) {
+    public static Supplier<Boolean> and(final BooleanSupplier first, final BooleanSupplier second) {
         return new Supplier<Boolean>() {
             @Override
             public Boolean get() {
-                return first.get() && second.get();
+                return first.getAsBoolean() && second.getAsBoolean();
             }
         };
     }
 
-    public static Supplier<Boolean> and(final Supplier<Boolean> first, final Supplier<Boolean> second, final Supplier<Boolean> third) {
+    public static Supplier<Boolean> and(final BooleanSupplier first, final BooleanSupplier second, final BooleanSupplier third) {
         return new Supplier<Boolean>() {
             @Override
             public Boolean get() {
-                return first.get() && second.get() && third.get();
+                return first.getAsBoolean() && second.getAsBoolean() && third.getAsBoolean();
             }
         };
     }
@@ -726,20 +727,20 @@ public final class Fn {
         };
     }
 
-    public static Supplier<Boolean> or(final Supplier<Boolean> first, final Supplier<Boolean> second) {
+    public static Supplier<Boolean> or(final BooleanSupplier first, final BooleanSupplier second) {
         return new Supplier<Boolean>() {
             @Override
             public Boolean get() {
-                return first.get() || second.get();
+                return first.getAsBoolean() || second.getAsBoolean();
             }
         };
     }
 
-    public static Supplier<Boolean> or(final Supplier<Boolean> first, final Supplier<Boolean> second, final Supplier<Boolean> third) {
+    public static Supplier<Boolean> or(final BooleanSupplier first, final BooleanSupplier second, final BooleanSupplier third) {
         return new Supplier<Boolean>() {
             @Override
             public Boolean get() {
-                return first.get() || second.get() || third.get();
+                return first.getAsBoolean() || second.getAsBoolean() || third.getAsBoolean();
             }
         };
     }

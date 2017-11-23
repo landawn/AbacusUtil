@@ -24,8 +24,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -222,8 +220,7 @@ public abstract class SQLBuilder {
         }
     }
 
-    private static Collection<String> getPropNamesByClass(final Class<?> entityClass, final boolean includeSubEntityProperties,
-            final Set<String> excludedPropNames) {
+    static Collection<String> getPropNamesByClass(final Class<?> entityClass, final boolean includeSubEntityProperties, final Set<String> excludedPropNames) {
         Set<String> subEntityPropNames = null;
 
         if (N.isNullOrEmpty(excludedPropNames)
@@ -276,7 +273,7 @@ public abstract class SQLBuilder {
      * @param entityClass
      * @return
      */
-    private static List<String> getNonSubEntityPropNames(final Class<?> entityClass) {
+    static List<String> getNonSubEntityPropNames(final Class<?> entityClass) {
         synchronized (entityClass) {
             List<String> nonSubEntityPropNames = classPropNamesPool.get(entityClass);
 
@@ -295,7 +292,7 @@ public abstract class SQLBuilder {
         }
     }
 
-    private static Set<String> getSubEntityPropNames(final Class<?> entityClass) {
+    static Set<String> getSubEntityPropNames(final Class<?> entityClass) {
         synchronized (entityClass) {
             Set<String> subEntityPropNames = subEntityPropNamesPool.get(entityClass);
 
@@ -1674,25 +1671,8 @@ public abstract class SQLBuilder {
      * @param entity
      * @return
      */
-    @SuppressWarnings("deprecation")
     public SQLBuilder set(final Object entity) {
-        if (entity instanceof String) {
-            return set(N.asArray((String) entity));
-        } else if (entity instanceof Map) {
-            return set((Map<String, Object>) entity);
-        } else {
-            if (N.isDirtyMarker(entity.getClass())) {
-                final Map<String, Object> props = new HashMap<>();
-
-                for (String propName : ((DirtyMarker) entity).dirtyPropNames()) {
-                    props.put(propName, ClassUtil.getPropValue(entity, propName));
-                }
-
-                return set(props);
-            } else {
-                return set(Maps.entity2Map(entity));
-            }
-        }
+        return set(entity, null);
     }
 
     /**
@@ -1715,19 +1695,17 @@ public abstract class SQLBuilder {
                 return set(props);
             }
         } else {
-            if (N.isDirtyMarker(entity.getClass())) {
-                final Map<String, Object> props = new HashMap<>();
+            final Collection<String> propNames = getPropNamesByClass(entity.getClass(), false, excludedPropNames);
+            final Set<String> dirtyPropNames = N.isDirtyMarker(entity.getClass()) ? ((DirtyMarker) entity).dirtyPropNames() : null;
+            final Map<String, Object> props = N.newHashMap(N.initHashCapacity(N.isNullOrEmpty(dirtyPropNames) ? propNames.size() : dirtyPropNames.size()));
 
-                for (String propName : ((DirtyMarker) entity).dirtyPropNames()) {
+            for (String propName : propNames) {
+                if (N.isNullOrEmpty(dirtyPropNames) || dirtyPropNames.contains(propName)) {
                     props.put(propName, ClassUtil.getPropValue(entity, propName));
                 }
-
-                Maps.removeAll(props, excludedPropNames);
-
-                return set(props);
-            } else {
-                return set(N.isNullOrEmpty(excludedPropNames) ? Maps.entity2Map(entity) : Maps.entity2Map(entity, excludedPropNames));
             }
+
+            return set(props);
         }
     }
 
@@ -2357,22 +2335,35 @@ public abstract class SQLBuilder {
                 Maps.removeAll(instance.props, excludedPropNames);
             }
         } else {
-            instance.props = N.isNullOrEmpty(excludedPropNames) ? Maps.entity2Map(entity) : Maps.entity2Map(entity, excludedPropNames);
+            final Collection<String> propNames = getPropNamesByClass(entity.getClass(), false, excludedPropNames);
+            final Map<String, Object> map = N.newHashMap(N.initHashCapacity(propNames.size()));
+
+            for (String propName : propNames) {
+                map.put(propName, ClassUtil.getPropValue(entity, propName));
+            }
+
+            instance.props = map;
         }
     }
 
     private static Collection<Map<String, Object>> toInsertPropsList(final Collection<?> propsList) {
-        final Iterator<?> it = propsList.iterator();
-        final Object first = it.next();
+        final Optional<?> first = N.firstNonNull(propsList);
 
-        if (first instanceof Map) {
+        if (first.isPresent() && first.get() instanceof Map) {
             return (List<Map<String, Object>>) propsList;
         } else {
+            final Class<?> cls = first.get().getClass();
+            final Collection<String> propNames = getPropNamesByClass(cls, false, null);
             final List<Map<String, Object>> newPropsList = new ArrayList<>(propsList.size());
-            newPropsList.add(Maps.entity2Map(first));
 
-            while (it.hasNext()) {
-                newPropsList.add(Maps.entity2Map(it.next()));
+            for (Object entity : propsList) {
+                final Map<String, Object> props = N.newHashMap(N.initHashCapacity(propNames.size()));
+
+                for (String propName : propNames) {
+                    props.put(propName, ClassUtil.getPropValue(entity, propName));
+                }
+
+                newPropsList.add(props);
             }
 
             return newPropsList;

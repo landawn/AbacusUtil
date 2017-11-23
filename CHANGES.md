@@ -9,11 +9,9 @@
 
 * Remove `N.asConcurrentMap/asBiMap(...)`, Replace with `BiMap.of(...)`.
 
+* Remove `Stream.biMap/triMap(...)`, replaced with `Stream.slidingMap(mapper, 2, ignoreNotPaired)/slidingMap(mapper, 3, ignoreNotPaired)`
+
 * Refactoring `N.merge`: change `merge(sourceEntity, selectPropNames, targetEntity)` to `merge(sourceEntity, targetEntity, selectPropNames)`.
-
-* Add `Median`.
-
-* Add `Joiner.concat(...)`.
 
 * Add `Fn.tuple1/tuple2/tuple3/tuple4(...)`.
 
@@ -24,6 +22,10 @@
 * Add `Maps.map2Entity(targetClass, map, selectPropNames)`.
 
 * Add `N.newTreeMap(...)`.
+
+* Add `Joiner.concat(...)`.
+
+* Add `Median`.
 
 * Improvements and bug fix.
 

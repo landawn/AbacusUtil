@@ -291,15 +291,15 @@ abstract class AbstractStream<T> extends Stream<T> {
         });
     }
 
-    @Override
-    public <R> Stream<R> biMap(BiFunction<? super T, ? super T, ? extends R> mapper) {
-        return biMap(mapper, false);
-    }
-
-    @Override
-    public <R> Stream<R> triMap(TriFunction<? super T, ? super T, ? super T, ? extends R> mapper) {
-        return triMap(mapper, false);
-    }
+    //    @Override
+    //    public <R> Stream<R> biMap(BiFunction<? super T, ? super T, ? extends R> mapper) {
+    //        return biMap(mapper, false);
+    //    }
+    //
+    //    @Override
+    //    public <R> Stream<R> triMap(TriFunction<? super T, ? super T, ? super T, ? extends R> mapper) {
+    //        return triMap(mapper, false);
+    //    }
 
     @Override
     public <R> Stream<R> slidingMap(BiFunction<? super T, ? super T, R> mapper) {
@@ -307,8 +307,18 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
+    public <R> Stream<R> slidingMap(BiFunction<? super T, ? super T, R> mapper, int increment) {
+        return slidingMap(mapper, increment, false);
+    }
+
+    @Override
     public <R> Stream<R> slidingMap(TriFunction<? super T, ? super T, ? super T, R> mapper) {
         return slidingMap(mapper, 1);
+    }
+
+    @Override
+    public <R> Stream<R> slidingMap(TriFunction<? super T, ? super T, ? super T, R> mapper, int increment) {
+        return slidingMap(mapper, increment, false);
     }
 
     @Override

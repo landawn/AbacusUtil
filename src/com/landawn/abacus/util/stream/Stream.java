@@ -321,43 +321,43 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
 
     public abstract <U, R> Stream<R> map(U seed, BiFunction<? super T, ? super U, ? extends R> mapper);
 
-    public abstract <R> Stream<R> biMap(BiFunction<? super T, ? super T, ? extends R> mapper);
-
-    /**
-     * Returns a stream consisting of the results of applying the given function
-     * to the every two adjacent elements of this stream.
-     * 
-     * <pre>
-     * <code>
-     * Stream.of("a", "b", "c", "d", "e").biMap((i, j) -> i + "-" + j).println();
-     * // print out: [a-b, c-d, e-null]
-     * </code>
-     * </pre>
-     * 
-     * @param mapper
-     * @param ignoreNotPaired flag to identify if need to ignore the last element when the total length of the stream is odd number. Default value is false
-     * @return
-     */
-    public abstract <R> Stream<R> biMap(BiFunction<? super T, ? super T, ? extends R> mapper, boolean ignoreNotPaired);
-
-    public abstract <R> Stream<R> triMap(TriFunction<? super T, ? super T, ? super T, ? extends R> mapper);
-
-    /**
-     * Returns a stream consisting of the results of applying the given function
-     * to the every three adjacent elements of this stream.
-     * 
-     * <pre>
-     * <code>
-     * Stream.of("a", "b", "c", "d", "e").triMap((i, j, k) -> i + "-" + j + "-" + k).println();
-     * // print out: [a-b-c, d-e-null]
-     * </code>
-     * </pre>
-     * 
-     * @param mapper
-     * @param ignoreNotPaired  flag to identify if need to ignore the last one or two elements when the total length of the stream is not multiple of 3. Default value is false
-     * @return
-     */
-    public abstract <R> Stream<R> triMap(TriFunction<? super T, ? super T, ? super T, ? extends R> mapper, boolean ignoreNotPaired);
+    //    public abstract <R> Stream<R> biMap(BiFunction<? super T, ? super T, ? extends R> mapper);
+    //
+    //    /**
+    //     * Returns a stream consisting of the results of applying the given function
+    //     * to the every two adjacent elements of this stream.
+    //     * 
+    //     * <pre>
+    //     * <code>
+    //     * Stream.of("a", "b", "c", "d", "e").biMap((i, j) -> i + "-" + j).println();
+    //     * // print out: [a-b, c-d, e-null]
+    //     * </code>
+    //     * </pre>
+    //     * 
+    //     * @param mapper
+    //     * @param ignoreNotPaired flag to identify if need to ignore the last element when the total length of the stream is odd number. Default value is false
+    //     * @return
+    //     */
+    //    public abstract <R> Stream<R> biMap(BiFunction<? super T, ? super T, ? extends R> mapper, boolean ignoreNotPaired);
+    //
+    //    public abstract <R> Stream<R> triMap(TriFunction<? super T, ? super T, ? super T, ? extends R> mapper);
+    //
+    //    /**
+    //     * Returns a stream consisting of the results of applying the given function
+    //     * to the every three adjacent elements of this stream.
+    //     * 
+    //     * <pre>
+    //     * <code>
+    //     * Stream.of("a", "b", "c", "d", "e").triMap((i, j, k) -> i + "-" + j + "-" + k).println();
+    //     * // print out: [a-b-c, d-e-null]
+    //     * </code>
+    //     * </pre>
+    //     * 
+    //     * @param mapper
+    //     * @param ignoreNotPaired  flag to identify if need to ignore the last one or two elements when the total length of the stream is not multiple of 3. Default value is false
+    //     * @return
+    //     */
+    //    public abstract <R> Stream<R> triMap(TriFunction<? super T, ? super T, ? super T, ? extends R> mapper, boolean ignoreNotPaired);
 
     public abstract <R> Stream<R> slidingMap(BiFunction<? super T, ? super T, R> mapper);
 
@@ -370,6 +370,8 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public abstract <R> Stream<R> slidingMap(BiFunction<? super T, ? super T, R> mapper, int increment);
 
+    public abstract <R> Stream<R> slidingMap(BiFunction<? super T, ? super T, R> mapper, int increment, boolean ignoreNotPaired);
+
     public abstract <R> Stream<R> slidingMap(TriFunction<? super T, ? super T, ? super T, R> mapper);
 
     /**
@@ -380,6 +382,8 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public abstract <R> Stream<R> slidingMap(TriFunction<? super T, ? super T, ? super T, R> mapper, int increment);
+
+    public abstract <R> Stream<R> slidingMap(TriFunction<? super T, ? super T, ? super T, R> mapper, int increment, boolean ignoreNotPaired);
 
     /**
      * Note: copied from StreamEx: https://github.com/amaembo/streamex

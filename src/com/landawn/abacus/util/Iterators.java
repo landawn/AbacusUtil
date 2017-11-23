@@ -29,7 +29,9 @@ import java.util.Set;
 
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
+import com.landawn.abacus.util.function.BooleanSupplier;
 import com.landawn.abacus.util.function.Function;
+import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.function.TriFunction;
 
@@ -1119,6 +1121,34 @@ public final class Iterators {
                 final T result = next;
                 next = null;
                 return result;
+            }
+        };
+    }
+
+    public static <T> ImmutableIterator<T> generate(final BooleanSupplier hasNext, final Supplier<T> next) {
+        return new ImmutableIterator<T>() {
+            @Override
+            public boolean hasNext() {
+                return hasNext.getAsBoolean();
+            }
+
+            @Override
+            public T next() {
+                return next.get();
+            }
+        };
+    }
+
+    public static <T, U> ImmutableIterator<T> generate(final U seed, final Predicate<? super U> hasNext, final Function<? super U, T> next) {
+        return new ImmutableIterator<T>() {
+            @Override
+            public boolean hasNext() {
+                return hasNext.test(seed);
+            }
+
+            @Override
+            public T next() {
+                return next.apply(seed);
             }
         };
     }
