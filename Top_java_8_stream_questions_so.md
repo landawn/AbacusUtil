@@ -16,6 +16,26 @@ Map<String, Choice> result = Stream.of(choices).toMap(Choice::getName, Fn.identi
 // group by
 Map<String, List<Choice>> result = Stream.of(choices).groupTo(Choice::getName);
 ```
+---
+###[`Map<String,List<String>>` to `Pair<String,String>`](https://stackoverflow.com/questions/32189147/mapstring-liststring-to-pairstring-string)
+
+* By Java 8
+```java
+List<Pair<String, String>> result =
+    map.entrySet()
+       .stream()
+       .flatMap(
+           entry -> entry.getValue()
+                         .stream()
+                         .map(string -> new Pair<>(entry.getKey(), string)))
+       .collect(Collectors.toList());
+```
+
+* By Abacus-Util
+```java
+List<Pair<String, String>> result = Stream.of(map)
+        .flatMap(e -> Stream.of(e.getValue()).map(v -> Pair.of(e.getKey(), v))).toList();
+```
 
 ---
 ### [Retrieving a List from a java.util.stream.Stream in Java 8](https://stackoverflow.com/questions/14830313/retrieving-a-list-from-a-java-util-stream-stream-in-java-8)
