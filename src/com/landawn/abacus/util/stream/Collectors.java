@@ -46,6 +46,7 @@ import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collector.Characteristics;
 
 import com.landawn.abacus.DataSet;
 import com.landawn.abacus.util.Array;
@@ -927,7 +928,7 @@ public class Collectors {
         final BiConsumer<C, T> accumulator = BiConsumers.ofAdd();
         final BinaryOperator<C> combiner = BinaryOperators.<T, C> ofAddAll();
 
-        return new CollectorImpl<>(collectionFactory, accumulator, combiner, collectionFactory.get() instanceof Set ? CH_UNORDERED_ID : CH_ID);
+        return new CollectorImpl<>(collectionFactory, accumulator, combiner, CH_ID);
     }
 
     /**
@@ -1041,7 +1042,7 @@ public class Collectors {
             }
         };
 
-        return new CollectorImpl<>(collectionFactory, accumulator, combiner, collectionFactory.get() instanceof Set ? CH_UNORDERED_ID : CH_ID);
+        return new CollectorImpl<>(collectionFactory, accumulator, combiner, CH_ID);
     }
 
     public static <T> Collector<T, ?, List<T>> toList(final int atMostSize) {
@@ -1870,7 +1871,18 @@ public class Collectors {
             }
         };
 
-        return new CollectorImpl<>(supplier, accumulator, combiner, resFinisher, CH_NOID);
+        Set<Characteristics> characteristics = CH_NOID;
+
+        if (N.notNullOrEmpty(c1.characteristics()) && N.notNullOrEmpty(c2.characteristics())) {
+            if ((c1.characteristics() == CH_CONCURRENT_ID || c1.characteristics() == CH_CONCURRENT_NOID)
+                    && (c2.characteristics() == CH_CONCURRENT_ID || c2.characteristics() == CH_CONCURRENT_NOID)) {
+                characteristics = CH_CONCURRENT_NOID;
+            } else if (c1.characteristics().contains(Characteristics.UNORDERED) && c2.characteristics().contains(Characteristics.UNORDERED)) {
+                characteristics = CH_UNORDERED;
+            }
+        }
+
+        return new CollectorImpl<>(supplier, accumulator, combiner, resFinisher, characteristics);
     }
 
     /**

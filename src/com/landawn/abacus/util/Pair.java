@@ -49,6 +49,10 @@ public final class Pair<L, R> implements Map.Entry<L, R> {
         return new Pair<>(l, r);
     }
 
+    public static <K, V> Pair<K, V> copyOf(final Map.Entry<K, V> entry) {
+        return new Pair<>(entry.getKey(), entry.getValue());
+    }
+
     public static <T> Pair<T, T> from(T[] a) {
         if (N.isNullOrEmpty(a)) {
             return new Pair<>(null, null);

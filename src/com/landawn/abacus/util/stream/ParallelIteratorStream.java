@@ -2682,7 +2682,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                 if (container == NONE) {
                     container = future.get();
                 } else {
-                    combiner.apply(container, future.get());
+                    container = combiner.apply(container, future.get());
                 }
             }
         } catch (Exception e) {

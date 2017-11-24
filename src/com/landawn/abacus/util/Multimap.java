@@ -33,6 +33,7 @@ import java.util.Set;
 
 import com.landawn.abacus.annotation.Internal;
 import com.landawn.abacus.util.function.IntFunction;
+import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.EntryStream;
 import com.landawn.abacus.util.stream.Stream;
 
@@ -98,6 +99,57 @@ public class Multimap<K, E, V extends Collection<E>> {
         } else {
             concreteValueType = (Class) valueType;
         }
+    }
+
+    public static <K, E, V extends Collection<E>, M extends Multimap<K, E, V>> M from(final Map<? extends K, ? extends E> map,
+            final Supplier<M> multimapSupplier) {
+        final M multimap = multimapSupplier.get();
+
+        if (N.notNullOrEmpty(map)) {
+            multimap.putAll(map);
+        }
+
+        return multimap;
+    }
+
+    public static <K, E, V extends Collection<E>, M extends Multimap<K, E, V>> M from2(final Map<? extends K, ? extends Collection<? extends E>> map,
+            final Supplier<M> multimapSupplier) {
+        final M multimap = multimapSupplier.get();
+
+        if (N.notNullOrEmpty(map)) {
+            for (Map.Entry<? extends K, ? extends Collection<? extends E>> entry : map.entrySet()) {
+                multimap.putAll(entry.getKey(), entry.getValue());
+            }
+        }
+
+        return multimap;
+    }
+
+    public static <T, K, V extends Collection<T>, M extends Multimap<K, T, V>, X extends Exception> M from(final Collection<? extends T> c,
+            final Try.Function<? super T, ? extends K, X> keyExtractor, final Supplier<M> multimapSupplier) throws X {
+        final M multimap = multimapSupplier.get();
+
+        if (N.notNullOrEmpty(c)) {
+            for (T e : c) {
+                multimap.put(keyExtractor.apply(e), e);
+            }
+        }
+
+        return multimap;
+    }
+
+    public static <T, K, E, V extends Collection<E>, M extends Multimap<K, E, V>, X extends Exception, X2 extends Exception> M from(
+            final Collection<? extends T> c, final Try.Function<? super T, ? extends K, X> keyExtractor,
+            final Try.Function<? super T, ? extends E, X2> valueExtractor, final Supplier<M> multimapSupplier) throws X, X2 {
+        final M multimap = multimapSupplier.get();
+
+        if (N.notNullOrEmpty(c)) {
+            for (T e : c) {
+                multimap.put(keyExtractor.apply(e), valueExtractor.apply(e));
+            }
+        }
+
+        return multimap;
     }
 
     public V get(final Object key) {

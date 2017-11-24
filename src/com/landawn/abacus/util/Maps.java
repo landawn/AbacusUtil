@@ -40,6 +40,7 @@ import java.util.Set;
 
 import com.landawn.abacus.DirtyMarker;
 import com.landawn.abacus.exception.AbacusException;
+import com.landawn.abacus.util.function.IntFunction;
 
 /**
  * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
@@ -50,10 +51,10 @@ import com.landawn.abacus.exception.AbacusException;
  */
 public final class Maps {
     private Maps() {
-        // singleton.
+        // Utility class.
     }
 
-    public static <K, T, E extends Exception> Map<K, T> newMap(Collection<? extends T> c, final Try.Function<? super T, ? extends K, E> keyExtractor) throws E {
+    public static <T, K, E extends Exception> Map<K, T> newMap(Collection<? extends T> c, final Try.Function<? super T, ? extends K, E> keyExtractor) throws E {
         N.requireNonNull(keyExtractor);
 
         if (N.isNullOrEmpty(c)) {
@@ -69,7 +70,7 @@ public final class Maps {
         return result;
     }
 
-    public static <K, T, E extends Exception> Map<K, T> newLinkedHashMap(Collection<? extends T> c, final Try.Function<? super T, ? extends K, E> keyExtractor)
+    public static <T, K, E extends Exception> Map<K, T> newLinkedHashMap(Collection<? extends T> c, final Try.Function<? super T, ? extends K, E> keyExtractor)
             throws E {
         N.requireNonNull(keyExtractor);
 
@@ -81,6 +82,43 @@ public final class Maps {
 
         for (T e : c) {
             result.put(keyExtractor.apply(e), e);
+        }
+
+        return result;
+    }
+
+    public static <T, K, V, E extends Exception, E2 extends Exception> Map<K, V> newMap(Collection<? extends T> c,
+            final Try.Function<? super T, ? extends K, E> keyExtractor, final Try.Function<? super T, ? extends V, E2> valueExtractor) throws E, E2 {
+        N.requireNonNull(keyExtractor);
+        N.requireNonNull(valueExtractor);
+
+        if (N.isNullOrEmpty(c)) {
+            return new HashMap<K, V>();
+        }
+
+        final Map<K, V> result = new HashMap<>(N.initHashCapacity(c.size()));
+
+        for (T e : c) {
+            result.put(keyExtractor.apply(e), valueExtractor.apply(e));
+        }
+
+        return result;
+    }
+
+    public static <T, K, V, M extends Map<K, V>, E extends Exception, E2 extends Exception> M newMap(Collection<? extends T> c,
+            final Try.Function<? super T, ? extends K, E> keyExtractor, final Try.Function<? super T, ? extends V, E2> valueExtractor,
+            final IntFunction<M> mapSupplier) throws E, E2 {
+        N.requireNonNull(keyExtractor);
+        N.requireNonNull(valueExtractor);
+
+        if (N.isNullOrEmpty(c)) {
+            return mapSupplier.apply(0);
+        }
+
+        final M result = mapSupplier.apply(c.size());
+
+        for (T e : c) {
+            result.put(keyExtractor.apply(e), valueExtractor.apply(e));
         }
 
         return result;

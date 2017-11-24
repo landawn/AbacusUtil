@@ -1810,15 +1810,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public String join(CharSequence delimiter) {
-        final Function<T, String> mapper = new Function<T, String>() {
-            @SuppressWarnings("rawtypes")
-            @Override
-            public String apply(T t) {
-                return t instanceof BaseStream ? ((BaseStream) t).join(", ", "[", "]") : N.toString(t);
-            }
-        };
-
-        return this.map(mapper).collect(Collectors.joining(delimiter));
+        return join(delimiter, "", "");
     }
 
     @Override

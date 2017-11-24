@@ -58,6 +58,7 @@ import java.util.EnumSet;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -1122,6 +1123,24 @@ public final class N {
         return new LinkedHashSet<>(c);
     }
 
+    @SuppressWarnings("rawtypes")
+    public static <T extends Comparable> TreeSet<T> newTreeSet() {
+        return new TreeSet<>();
+    }
+
+    public static <T> TreeSet<T> newTreeSet(Comparator<? super T> comparator) {
+        return new TreeSet<>(comparator);
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static <T extends Comparable> TreeSet<T> newTreeSet(Collection<? extends T> c) {
+        return new TreeSet<>(c);
+    }
+
+    public static <T> TreeSet<T> newTreeSet(SortedSet<T> s) {
+        return new TreeSet<>(s);
+    }
+
     public static <K, V> HashMap<K, V> newHashMap() {
         return new HashMap<>();
     }
@@ -1190,23 +1209,6 @@ public final class N {
         return result;
     }
 
-    public static <K, V> ConcurrentHashMap<K, V> newConcurrentHashMap() {
-        return new ConcurrentHashMap<>();
-    }
-
-    /**
-     * 
-     * @param initCapacity multiply 1.25 as the initial capacity of new HashSet
-     * @return
-     */
-    public static <K, V> ConcurrentHashMap<K, V> newConcurrentHashMap(int initialCapacity) {
-        return new ConcurrentHashMap<>(initHashCapacity(initialCapacity));
-    }
-
-    public static <K, V> ConcurrentHashMap<K, V> newConcurrentHashMap(Map<? extends K, ? extends V> m) {
-        return new ConcurrentHashMap<>(m);
-    }
-
     @SuppressWarnings("rawtypes")
     public static <K extends Comparable, V> TreeMap<K, V> newTreeMap() {
         return new TreeMap<>();
@@ -1223,6 +1225,40 @@ public final class N {
 
     public static <K, V> TreeMap<K, V> newTreeMap(SortedMap<K, ? extends V> map) {
         return new TreeMap<>(map);
+    }
+
+    public static <K, V> IdentityHashMap<K, V> newIdentityHashMap() {
+        return new IdentityHashMap<>();
+    }
+
+    /**
+     * 
+     * @param initialCapacity multiply 1.25 as the initial capacity of new HashSet
+     * @return
+     */
+    public static <K, V> IdentityHashMap<K, V> newIdentityHashMap(int initialCapacity) {
+        return new IdentityHashMap<>(initHashCapacity(initialCapacity));
+    }
+
+    public static <K, V> IdentityHashMap<K, V> newIdentityHashMap(Map<? extends K, ? extends V> m) {
+        return new IdentityHashMap<>(m);
+    }
+
+    public static <K, V> ConcurrentHashMap<K, V> newConcurrentHashMap() {
+        return new ConcurrentHashMap<>();
+    }
+
+    /**
+     * 
+     * @param initCapacity multiply 1.25 as the initial capacity of new HashSet
+     * @return
+     */
+    public static <K, V> ConcurrentHashMap<K, V> newConcurrentHashMap(int initialCapacity) {
+        return new ConcurrentHashMap<>(initHashCapacity(initialCapacity));
+    }
+
+    public static <K, V> ConcurrentHashMap<K, V> newConcurrentHashMap(Map<? extends K, ? extends V> m) {
+        return new ConcurrentHashMap<>(m);
     }
 
     public static <K, E> ListMultimap<K, E> newListMultimap() {

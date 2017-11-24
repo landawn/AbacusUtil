@@ -68,13 +68,26 @@ public final class ListMultimap<K, E> extends Multimap<K, E, List<E>> {
         return multimap;
     }
 
-    public static <K, E, X extends Exception> ListMultimap<K, E> from(final Collection<? extends E> c,
-            final Try.Function<? super E, ? extends K, X> keyExtractor) throws X {
+    public static <T, K, X extends Exception> ListMultimap<K, T> from(final Collection<? extends T> c,
+            final Try.Function<? super T, ? extends K, X> keyExtractor) throws X {
+        final ListMultimap<K, T> multimap = N.newListMultimap(N.initHashCapacity(N.min(9, c == null ? 0 : c.size())));
+
+        if (N.notNullOrEmpty(c)) {
+            for (T e : c) {
+                multimap.put(keyExtractor.apply(e), e);
+            }
+        }
+
+        return multimap;
+    }
+
+    public static <T, K, E, X extends Exception, X2 extends Exception> ListMultimap<K, E> from(final Collection<? extends T> c,
+            final Try.Function<? super T, ? extends K, X> keyExtractor, final Try.Function<? super T, ? extends E, X2> valueExtractor) throws X, X2 {
         final ListMultimap<K, E> multimap = N.newListMultimap(N.initHashCapacity(N.min(9, c == null ? 0 : c.size())));
 
         if (N.notNullOrEmpty(c)) {
-            for (E e : c) {
-                multimap.put(keyExtractor.apply(e), e);
+            for (T e : c) {
+                multimap.put(keyExtractor.apply(e), valueExtractor.apply(e));
             }
         }
 

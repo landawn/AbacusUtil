@@ -27,6 +27,7 @@ import com.landawn.abacus.annotation.Beta;
 import com.landawn.abacus.util.Comparators;
 import com.landawn.abacus.util.Fn;
 import com.landawn.abacus.util.ImmutableMap;
+import com.landawn.abacus.util.Joiner;
 import com.landawn.abacus.util.ListMultimap;
 import com.landawn.abacus.util.LongMultiset;
 import com.landawn.abacus.util.Multimap;
@@ -992,6 +993,29 @@ public final class EntryStream<K, V> implements AutoCloseable {
 
     public <R, A, RR> RR collectAndThen(final java.util.stream.Collector<? super Map.Entry<K, V>, A, R> downstream, final Function<R, RR> finisher) {
         return s.collectAndThen(downstream, finisher);
+    }
+
+    public String join(CharSequence delimiter) {
+        return join(delimiter, "", "");
+    }
+
+    public String join(CharSequence delimiter, CharSequence prefix, CharSequence suffix) {
+        return join(delimiter, "=", prefix, suffix);
+    }
+
+    public String join(CharSequence delimiter, CharSequence keyValueDelimiter) {
+        return join(delimiter, keyValueDelimiter, "", "");
+    }
+
+    public String join(CharSequence delimiter, CharSequence keyValueDelimiter, CharSequence prefix, CharSequence suffix) {
+        final Joiner joiner = Joiner.with(delimiter, keyValueDelimiter, prefix, suffix).reuseStringBuilder(true);
+        final Iterator<Entry<K, V>> iter = this.iterator();
+
+        while (iter.hasNext()) {
+            joiner.appendEntry(iter.next());
+        }
+
+        return joiner.toString();
     }
 
     public <K2, V2> EntryStream<K2, V2> chain(Function<? super Stream<Map.Entry<K, V>>, ? extends Stream<Map.Entry<K2, V2>>> transfer) {

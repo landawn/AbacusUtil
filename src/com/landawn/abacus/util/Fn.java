@@ -708,6 +708,21 @@ public final class Fn {
         };
     }
 
+    public static <T> Predicate<T> and(final Collection<Predicate<? super T>> c) {
+        return new Predicate<T>() {
+            @Override
+            public boolean test(T t) {
+                for (Predicate<? super T> p : c) {
+                    if (p.test(t) == false) {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+        };
+    }
+
     public static <T, U> BiPredicate<T, U> and(final BiPredicate<? super T, ? super U> first, final BiPredicate<? super T, ? super U> second) {
         return new BiPredicate<T, U>() {
             @Override
@@ -723,6 +738,21 @@ public final class Fn {
             @Override
             public boolean test(T t, U u) {
                 return first.test(t, u) && second.test(t, u) && third.test(t, u);
+            }
+        };
+    }
+
+    public static <T, U> BiPredicate<T, U> and(final List<BiPredicate<? super T, ? super U>> c) {
+        return new BiPredicate<T, U>() {
+            @Override
+            public boolean test(T t, U u) {
+                for (BiPredicate<? super T, ? super U> p : c) {
+                    if (p.test(t, u) == false) {
+                        return false;
+                    }
+                }
+
+                return true;
             }
         };
     }
@@ -763,6 +793,21 @@ public final class Fn {
         };
     }
 
+    public static <T> Predicate<T> or(final Collection<Predicate<? super T>> c) {
+        return new Predicate<T>() {
+            @Override
+            public boolean test(T t) {
+                for (Predicate<? super T> p : c) {
+                    if (p.test(t)) {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+        };
+    }
+
     public static <T, U> BiPredicate<T, U> or(final BiPredicate<? super T, ? super U> first, final BiPredicate<? super T, ? super U> second) {
         return new BiPredicate<T, U>() {
             @Override
@@ -778,6 +823,21 @@ public final class Fn {
             @Override
             public boolean test(T t, U u) {
                 return first.test(t, u) || second.test(t, u) || third.test(t, u);
+            }
+        };
+    }
+
+    public static <T, U> BiPredicate<T, U> or(final List<BiPredicate<? super T, ? super U>> c) {
+        return new BiPredicate<T, U>() {
+            @Override
+            public boolean test(T t, U u) {
+                for (BiPredicate<? super T, ? super U> p : c) {
+                    if (p.test(t, u)) {
+                        return true;
+                    }
+                }
+
+                return false;
             }
         };
     }

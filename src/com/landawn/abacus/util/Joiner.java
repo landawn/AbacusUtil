@@ -1013,15 +1013,15 @@ public class Joiner {
         return this;
     }
 
-    public Joiner appendAll(final Map<?, ?> m) {
+    public Joiner appendEntries(final Map<?, ?> m) {
         if (N.notNullOrEmpty(m)) {
-            return appendAll(m, 0, m.size());
+            return appendEntries(m, 0, m.size());
         }
 
         return this;
     }
 
-    public Joiner appendAll(final Map<?, ?> m, final int fromIndex, final int toIndex) {
+    public Joiner appendEntries(final Map<?, ?> m, final int fromIndex, final int toIndex) {
         N.checkFromToIndex(fromIndex, toIndex, m == null ? 0 : m.size());
 
         if ((N.isNullOrEmpty(m) && fromIndex == 0 && toIndex == 0) || (fromIndex == toIndex && fromIndex < m.size())) {
@@ -1068,11 +1068,11 @@ public class Joiner {
      * @return
      */
     @SuppressWarnings("rawtypes")
-    public Joiner appendEntity(final Object entity) {
+    public Joiner appendEntries(final Object entity) {
         if (entity == null) {
             return this;
         } else if (entity instanceof Map) {
-            return appendAll((Map) entity);
+            return appendEntries((Map) entity);
         }
 
         N.checkArgument(N.isEntity(entity.getClass()), "'entity' must be entity class with getter/setter methods");
