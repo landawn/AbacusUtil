@@ -2372,6 +2372,12 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     }
 
     @Override
+    public <K, U, A, D, M extends Map<K, D>> M toMap(final Function<? super T, ? extends K> classifier, final Function<? super T, ? extends U> valueMapper,
+            final Collector<? super U, A, D> downstream, final Supplier<M> mapFactory) {
+        return toMap(classifier, Collectors.mapping(valueMapper, downstream), mapFactory);
+    }
+
+    @Override
     public <K, U, V extends Collection<U>, M extends Multimap<K, U, V>> M toMultimap(Function<? super T, ? extends K> keyExtractor,
             Function<? super T, ? extends U> valueMapper, Supplier<M> mapFactory) {
         if (maxThreadNum <= 1) {

@@ -1,3 +1,7 @@
+### 1.1.2
+
+* Replace `Predicate/Consumer/Function` in `Iterators` with `Try.Predicate/Consumer/Function`.
+
 
 ### 1.1.1
 

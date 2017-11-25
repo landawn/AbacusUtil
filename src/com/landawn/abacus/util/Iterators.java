@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BooleanSupplier;
 import com.landawn.abacus.util.function.Function;
@@ -89,7 +88,9 @@ public final class Iterators {
         return c;
     }
 
-    public static <T, K> Map<K, T> toMap(final Iterator<? extends T> iter, final Function<? super T, K> keyExactor) {
+    public static <T, K, E extends Exception> Map<K, T> toMap(final Iterator<? extends T> iter, final Try.Function<? super T, K, E> keyExtractor) throws E {
+        N.requireNonNull(keyExtractor);
+
         if (iter == null) {
             return new HashMap<>();
         }
@@ -99,7 +100,48 @@ public final class Iterators {
 
         while (iter.hasNext()) {
             next = iter.next();
-            result.put(keyExactor.apply(next), next);
+            result.put(keyExtractor.apply(next), next);
+        }
+
+        return result;
+    }
+
+    public static <T, K, V, E extends Exception, E2 extends Exception> Map<K, V> toMap(final Iterator<? extends T> iter,
+            final Try.Function<? super T, K, E> keyExtractor, final Try.Function<? super T, ? extends V, E2> valueExtractor) throws E, E2 {
+        N.requireNonNull(keyExtractor);
+        N.requireNonNull(valueExtractor);
+
+        if (iter == null) {
+            return new HashMap<>();
+        }
+
+        final Map<K, V> result = new HashMap<>();
+        T next = null;
+
+        while (iter.hasNext()) {
+            next = iter.next();
+            result.put(keyExtractor.apply(next), valueExtractor.apply(next));
+        }
+
+        return result;
+    }
+
+    public static <T, K, V, M extends Map<K, V>, E extends Exception, E2 extends Exception> M toMap(final Iterator<? extends T> iter,
+            final Try.Function<? super T, K, E> keyExtractor, final Try.Function<? super T, ? extends V, E2> valueExtractor, final Supplier<M> mapSupplier)
+            throws E, E2 {
+        N.requireNonNull(keyExtractor);
+        N.requireNonNull(valueExtractor);
+
+        if (iter == null) {
+            return mapSupplier.get();
+        }
+
+        final M result = mapSupplier.get();
+        T next = null;
+
+        while (iter.hasNext()) {
+            next = iter.next();
+            result.put(keyExtractor.apply(next), valueExtractor.apply(next));
         }
 
         return result;
@@ -957,7 +999,8 @@ public final class Iterators {
      * @param unzip the second parameter is an output parameter.
      * @return
      */
-    public static <T, L, R> Pair<List<L>, List<R>> unzip(final Iterator<? extends T> iter, final BiConsumer<? super T, Pair<L, R>> unzip) {
+    public static <T, L, R, E extends Exception> Pair<List<L>, List<R>> unzip(final Iterator<? extends T> iter,
+            final Try.BiConsumer<? super T, Pair<L, R>, E> unzip) throws E {
         final List<L> l = new ArrayList<L>();
         final List<R> r = new ArrayList<R>();
         final Pair<L, R> p = new Pair<>();
@@ -981,8 +1024,8 @@ public final class Iterators {
      * @param supplier
      * @return
      */
-    public static <T, L, R, LC extends Collection<L>, RC extends Collection<R>> Pair<LC, RC> unzip(final Iterator<? extends T> iter,
-            final BiConsumer<? super T, Pair<L, R>> unzip, final Supplier<? extends Collection<?>> supplier) {
+    public static <T, L, R, LC extends Collection<L>, RC extends Collection<R>, E extends Exception> Pair<LC, RC> unzip(final Iterator<? extends T> iter,
+            final Try.BiConsumer<? super T, Pair<L, R>, E> unzip, final Supplier<? extends Collection<?>> supplier) throws E {
         final LC l = (LC) supplier.get();
         final RC r = (RC) supplier.get();
 
@@ -1006,7 +1049,8 @@ public final class Iterators {
      * @param unzip the second parameter is an output parameter.
      * @return
      */
-    public static <T, L, M, R> Triple<List<L>, List<M>, List<R>> unzip3(final Iterator<? extends T> iter, final BiConsumer<? super T, Triple<L, M, R>> unzip) {
+    public static <T, L, M, R, E extends Exception> Triple<List<L>, List<M>, List<R>> unzip3(final Iterator<? extends T> iter,
+            final Try.BiConsumer<? super T, Triple<L, M, R>, E> unzip) throws E {
         final List<L> l = new ArrayList<L>();
         final List<M> m = new ArrayList<M>();
         final List<R> r = new ArrayList<R>();
@@ -1032,8 +1076,9 @@ public final class Iterators {
      * @param supplier
      * @return
      */
-    public static <T, L, M, R, LC extends Collection<L>, MC extends Collection<M>, RC extends Collection<R>> Triple<LC, MC, RC> unzip3(
-            final Iterator<? extends T> iter, final BiConsumer<? super T, Triple<L, M, R>> unzip, final Supplier<? extends Collection<?>> supplier) {
+    public static <T, L, M, R, LC extends Collection<L>, MC extends Collection<M>, RC extends Collection<R>, E extends Exception> Triple<LC, MC, RC> unzip3(
+            final Iterator<? extends T> iter, final Try.BiConsumer<? super T, Triple<L, M, R>, E> unzip, final Supplier<? extends Collection<?>> supplier)
+            throws E {
         final LC l = (LC) supplier.get();
         final MC m = (MC) supplier.get();
         final RC r = (RC) supplier.get();

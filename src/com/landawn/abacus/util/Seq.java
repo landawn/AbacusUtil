@@ -2266,6 +2266,51 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
+    @SuppressWarnings("hiding")
+    public <K, U, A, D, E extends Exception, E2 extends Exception> Map<K, D> toMap(Try.Function<? super T, ? extends K, E> classifier,
+            Try.Function<? super T, ? extends U, E2> valueMapper, Collector<? super U, A, D> downstream) throws E, E2 {
+        final Supplier<Map<K, D>> mapFactory = Fn.Suppliers.ofMap();
+
+        return toMap(classifier, valueMapper, downstream, mapFactory);
+    }
+
+    @SuppressWarnings("hiding")
+    public <K, U, A, D, M extends Map<K, D>, E extends Exception, E2 extends Exception> M toMap(final Try.Function<? super T, ? extends K, E> classifier,
+            Try.Function<? super T, ? extends U, E2> valueMapper, final Collector<? super U, A, D> downstream, final Supplier<M> mapFactory) throws E, E2 {
+        final M result = mapFactory.get();
+        final Supplier<A> downstreamSupplier = downstream.supplier();
+        final BiConsumer<A, ? super U> downstreamAccumulator = downstream.accumulator();
+        final Map<K, A> intermediate = (Map<K, A>) result;
+        final Iterator<T> iter = iterator();
+        K key = null;
+        A v = null;
+        T element = null;
+
+        while (iter.hasNext()) {
+            element = iter.next();
+            key = N.requireNonNull(classifier.apply(element), "element cannot be mapped to a null key");
+
+            if ((v = intermediate.get(key)) == null) {
+                if ((v = downstreamSupplier.get()) != null) {
+                    intermediate.put(key, v);
+                }
+            }
+
+            downstreamAccumulator.accept(v, valueMapper.apply(element));
+        }
+
+        final BiFunction<? super K, ? super A, ? extends A> function = new BiFunction<K, A, A>() {
+            @Override
+            public A apply(K k, A v) {
+                return (A) downstream.finisher().apply(v);
+            }
+        };
+
+        replaceAll(intermediate, function);
+
+        return result;
+    }
+
     public <K, E extends Exception> Map<K, List<T>> groupTo(Try.Function<? super T, ? extends K, E> classifier) throws E {
         final Supplier<Map<K, List<T>>> mapFactory = Fn.Suppliers.ofMap();
 
