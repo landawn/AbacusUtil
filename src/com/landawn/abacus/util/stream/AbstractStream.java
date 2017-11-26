@@ -1253,27 +1253,33 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <U> Nullable<T> findFirst(final U seed, final BiPredicate<? super T, ? super U> predicate) {
-        return findFirst(new Predicate<T>() {
+    public <E extends Exception> Nullable<T> findAny(final Try.Predicate<? super T, E> predicate) throws E {
+        return findFirst(predicate);
+    }
+
+    @Override
+    public <U, E extends Exception> Nullable<T> findFirst(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E {
+        return findFirst(new Try.Predicate<T, E>() {
             @Override
-            public boolean test(T t) {
+            public boolean test(T t) throws E {
                 return predicate.test(t, seed);
             }
         });
     }
 
     @Override
-    public <U> Nullable<T> findLast(final U seed, final BiPredicate<? super T, ? super U> predicate) {
-        return findLast(new Predicate<T>() {
+    public <U, E extends Exception> Nullable<T> findLast(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E {
+        return findLast(new Try.Predicate<T, E>() {
             @Override
-            public boolean test(T t) {
+            public boolean test(T t) throws E {
                 return predicate.test(t, seed);
             }
         });
     }
 
     @Override
-    public Nullable<T> findFirstOrLast(final Predicate<? super T> predicateForFirst, final Predicate<? super T> predicateForLast) {
+    public <E extends Exception, E2 extends Exception> Nullable<T> findFirstOrLast(final Try.Predicate<? super T, E> predicateForFirst,
+            final Try.Predicate<? super T, E2> predicateForLast) throws E, E2 {
         final ObjIteratorEx<T> iter = iteratorEx();
         T last = (T) NONE;
         T next = null;
@@ -1292,8 +1298,8 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <U> Nullable<T> findFirstOrLast(final U seed, final BiPredicate<? super T, ? super U> predicateForFirst,
-            final BiPredicate<? super T, ? super U> predicateForLast) {
+    public <U, E extends Exception, E2 extends Exception> Nullable<T> findFirstOrLast(final U seed,
+            final Try.BiPredicate<? super T, ? super U, E> predicateForFirst, final Try.BiPredicate<? super T, ? super U, E2> predicateForLast) throws E, E2 {
         final ObjIteratorEx<T> iter = iteratorEx();
         T last = (T) NONE;
         T next = null;
@@ -1312,8 +1318,8 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <U> Nullable<T> findFirstOrLast(final Function<? super T, U> preFunc, final BiPredicate<? super T, ? super U> predicateForFirst,
-            final BiPredicate<? super T, ? super U> predicateForLast) {
+    public <U, E extends Exception, E2 extends Exception> Nullable<T> findFirstOrLast(final Function<? super T, U> preFunc,
+            final Try.BiPredicate<? super T, ? super U, E> predicateForFirst, final Try.BiPredicate<? super T, ? super U, E2> predicateForLast) throws E, E2 {
         final ObjIteratorEx<T> iter = iteratorEx();
         U seed = null;
         T last = (T) NONE;
@@ -1334,40 +1340,40 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public <U> Nullable<T> findAny(final U seed, final BiPredicate<? super T, ? super U> predicate) {
-        return findAny(new Predicate<T>() {
+    public <U, E extends Exception> Nullable<T> findAny(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E {
+        return findAny(new Try.Predicate<T, E>() {
             @Override
-            public boolean test(T t) {
+            public boolean test(T t) throws E {
                 return predicate.test(t, seed);
             }
         });
     }
 
     @Override
-    public <U> boolean anyMatch(final U seed, final BiPredicate<? super T, ? super U> predicate) {
-        return anyMatch(new Predicate<T>() {
+    public <U, E extends Exception> boolean anyMatch(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E {
+        return anyMatch(new Try.Predicate<T, E>() {
             @Override
-            public boolean test(T t) {
+            public boolean test(T t) throws E {
                 return predicate.test(t, seed);
             }
         });
     }
 
     @Override
-    public <U> boolean allMatch(final U seed, final BiPredicate<? super T, ? super U> predicate) {
-        return allMatch(new Predicate<T>() {
+    public <U, E extends Exception> boolean allMatch(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E {
+        return allMatch(new Try.Predicate<T, E>() {
             @Override
-            public boolean test(T t) {
+            public boolean test(T t) throws E {
                 return predicate.test(t, seed);
             }
         });
     }
 
     @Override
-    public <U> boolean noneMatch(final U seed, final BiPredicate<? super T, ? super U> predicate) {
-        return noneMatch(new Predicate<T>() {
+    public <U, E extends Exception> boolean noneMatch(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E {
+        return noneMatch(new Try.Predicate<T, E>() {
             @Override
-            public boolean test(T t) {
+            public boolean test(T t) throws E {
                 return predicate.test(t, seed);
             }
         });

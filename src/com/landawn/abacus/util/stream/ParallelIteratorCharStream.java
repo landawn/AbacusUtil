@@ -526,7 +526,7 @@ final class ParallelIteratorCharStream extends IteratorCharStream {
             }));
         }
 
-        complete(futureList, eHolder);
+        complete2(futureList, eHolder, (E) null);
     }
 
     @Override
@@ -997,7 +997,7 @@ final class ParallelIteratorCharStream extends IteratorCharStream {
     }
 
     @Override
-    public boolean anyMatch(final CharPredicate predicate) {
+    public <E extends Exception> boolean anyMatch(final Try.CharPredicate<E> predicate) throws E {
         if (maxThreadNum <= 1) {
             return sequential().anyMatch(predicate);
         }
@@ -1034,13 +1034,13 @@ final class ParallelIteratorCharStream extends IteratorCharStream {
             }));
         }
 
-        complete(futureList, eHolder);
+        complete2(futureList, eHolder, (E) null);
 
         return result.value();
     }
 
     @Override
-    public boolean allMatch(final CharPredicate predicate) {
+    public <E extends Exception> boolean allMatch(final Try.CharPredicate<E> predicate) throws E {
         if (maxThreadNum <= 1) {
             return sequential().allMatch(predicate);
         }
@@ -1077,13 +1077,13 @@ final class ParallelIteratorCharStream extends IteratorCharStream {
             }));
         }
 
-        complete(futureList, eHolder);
+        complete2(futureList, eHolder, (E) null);
 
         return result.value();
     }
 
     @Override
-    public boolean noneMatch(final CharPredicate predicate) {
+    public <E extends Exception> boolean noneMatch(final Try.CharPredicate<E> predicate) throws E {
         if (maxThreadNum <= 1) {
             return sequential().noneMatch(predicate);
         }
@@ -1120,13 +1120,13 @@ final class ParallelIteratorCharStream extends IteratorCharStream {
             }));
         }
 
-        complete(futureList, eHolder);
+        complete2(futureList, eHolder, (E) null);
 
         return result.value();
     }
 
     @Override
-    public OptionalChar findFirst(final CharPredicate predicate) {
+    public <E extends Exception> OptionalChar findFirst(final Try.CharPredicate<E> predicate) throws E {
         if (maxThreadNum <= 1) {
             return sequential().findFirst(predicate);
         }
@@ -1170,13 +1170,13 @@ final class ParallelIteratorCharStream extends IteratorCharStream {
             }));
         }
 
-        complete(futureList, eHolder);
+        complete2(futureList, eHolder, (E) null);
 
         return resultHolder.value() == null ? OptionalChar.empty() : OptionalChar.of(resultHolder.value().right);
     }
 
     @Override
-    public OptionalChar findLast(final CharPredicate predicate) {
+    public <E extends Exception> OptionalChar findLast(final Try.CharPredicate<E> predicate) throws E {
         if (maxThreadNum <= 1) {
             return sequential().findLast(predicate);
         }
@@ -1218,13 +1218,13 @@ final class ParallelIteratorCharStream extends IteratorCharStream {
             }));
         }
 
-        complete(futureList, eHolder);
+        complete2(futureList, eHolder, (E) null);
 
         return resultHolder.value() == null ? OptionalChar.empty() : OptionalChar.of(resultHolder.value().right);
     }
 
     @Override
-    public OptionalChar findAny(final CharPredicate predicate) {
+    public <E extends Exception> OptionalChar findAny(final Try.CharPredicate<E> predicate) throws E {
         if (maxThreadNum <= 1) {
             return sequential().findAny(predicate);
         }
@@ -1266,7 +1266,7 @@ final class ParallelIteratorCharStream extends IteratorCharStream {
             }));
         }
 
-        complete(futureList, eHolder);
+        complete2(futureList, eHolder, (E) null);
 
         return resultHolder.value() == NONE ? OptionalChar.empty() : OptionalChar.of((Character) resultHolder.value());
     }

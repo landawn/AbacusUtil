@@ -484,6 +484,21 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
 
     public abstract <E extends Exception> void forEach(final Try.LongConsumer<E> action) throws E;
 
+    public abstract <E extends Exception> boolean anyMatch(final Try.LongPredicate<E> predicate) throws E;
+
+    public abstract <E extends Exception> boolean allMatch(final Try.LongPredicate<E> predicate) throws E;
+
+    public abstract <E extends Exception> boolean noneMatch(final Try.LongPredicate<E> predicate) throws E;
+
+    public abstract <E extends Exception> OptionalLong findFirst(final Try.LongPredicate<E> predicate) throws E;
+
+    public abstract <E extends Exception> OptionalLong findLast(final Try.LongPredicate<E> predicate) throws E;
+
+    public abstract <E extends Exception, E2 extends Exception> OptionalLong findFirstOrLast(Try.LongPredicate<E> predicateForFirst,
+            Try.LongPredicate<E> predicateForLast) throws E, E2;
+
+    public abstract <E extends Exception> OptionalLong findAny(final Try.LongPredicate<E> predicate) throws E;
+
     /**
      * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
      * Don't call any other methods with this stream after head() and tail() are called. 

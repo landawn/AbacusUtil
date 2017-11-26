@@ -560,126 +560,126 @@ public interface BaseStream<T, A, P, C, PL, OT, IT, S extends BaseStream<T, A, P
     //     */
     //    void forEach(C action);
 
-    /**
-     * Returns whether any elements of this stream match the provided
-     * predicate.  May not evaluate the predicate on all elements if not
-     * necessary for determining the result.  If the stream is empty then
-     * {@code false} is returned and the predicate is not evaluated.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">short-circuiting
-     * terminal operation</a>.
-     *
-     * @apiNote
-     * This method evaluates the <em>existential quantification</em> of the
-     * predicate over the elements of the stream (for some x P(x)).
-     *
-     * @param predicate a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *                  <a href="package-summary.html#Statelessness">stateless</a>
-     *                  predicate to apply to elements of this stream
-     * @return {@code true} if any elements of the stream match the provided
-     * predicate, otherwise {@code false}
-     */
-    boolean anyMatch(P predicate);
-
-    /**
-     * Returns whether all elements of this stream match the provided predicate.
-     * May not evaluate the predicate on all elements if not necessary for
-     * determining the result.  If the stream is empty then {@code true} is
-     * returned and the predicate is not evaluated.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">short-circuiting
-     * terminal operation</a>.
-     *
-     * @apiNote
-     * This method evaluates the <em>universal quantification</em> of the
-     * predicate over the elements of the stream (for all x P(x)).  If the
-     * stream is empty, the quantification is said to be <em>vacuously
-     * satisfied</em> and is always {@code true} (regardless of P(x)).
-     *
-     * @param predicate a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *                  <a href="package-summary.html#Statelessness">stateless</a>
-     *                  predicate to apply to elements of this stream
-     * @return {@code true} if either all elements of the stream match the
-     * provided predicate or the stream is empty, otherwise {@code false}
-     */
-    boolean allMatch(P predicate);
-
-    /**
-     * Returns whether no elements of this stream match the provided predicate.
-     * May not evaluate the predicate on all elements if not necessary for
-     * determining the result.  If the stream is empty then {@code true} is
-     * returned and the predicate is not evaluated.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">short-circuiting
-     * terminal operation</a>.
-     *
-     * @apiNote
-     * This method evaluates the <em>universal quantification</em> of the
-     * negated predicate over the elements of the stream (for all x ~P(x)).  If
-     * the stream is empty, the quantification is said to be vacuously satisfied
-     * and is always {@code true}, regardless of P(x).
-     *
-     * @param predicate a <a href="package-summary.html#NonInterference">non-interfering</a>,
-     *                  <a href="package-summary.html#Statelessness">stateless</a>
-     *                  predicate to apply to elements of this stream
-     * @return {@code true} if either no elements of the stream match the
-     * provided predicate or the stream is empty, otherwise {@code false}
-     */
-    boolean noneMatch(P predicate);
-
-    /**
-     * Returns an {@link Optional} describing the first element of this stream,
-     * or an empty {@code Optional} if the stream is empty.  If the stream has
-     * no encounter order, then any element may be returned.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">short-circuiting
-     * terminal operation</a>.
-     *
-     * @return an {@code Optional} describing the first element of this stream,
-     * or an empty {@code Optional} if the stream is empty
-     */
-    OT findFirst(P predicate);
-
-    /**
-     * Sometimes, <code>stream.reverse().findFirst(predicate)</code> has better performance than <code>stream.findLast(predicate)</code>.
-     * 
-     * @param predicate
-     * @return
-     */
-    OT findLast(P predicate);
-
-    /**
-     * Returns the first element which is tested by the specified <code>predicateForFirst</code>,
-     *  or the last element which is tested by the specified <code>predicateForLast</code> if the first element is not found.
-     *  or an empty Optional if both first and last elements are not found. 
-     * 
-     * <br />
-     * This method only run sequentially, even in parallel stream.
-     * 
-     * @param predicateForFirst
-     * @param predicateForLast
-     * @return
-     */
-    OT findFirstOrLast(P predicateForFirst, P predicateForLast);
-
-    /**
-     * Returns an {@link Optional} describing some element of the stream, or an
-     * empty {@code Optional} if the stream is empty.
-     *
-     * <p>This is a <a href="package-summary.html#StreamOps">short-circuiting
-     * terminal operation</a>.
-     *
-     * <p>The behavior of this operation is explicitly nondeterministic; it is
-     * free to select any element in the stream.  This is to allow for maximal
-     * performance in parallel operations; the cost is that multiple invocations
-     * on the same source may not return the same result.  (If a stable result
-     * is desired, use {@link #findFirst()} instead.)
-     *
-     * @return an {@code Optional} describing some element of this stream, or an
-     * empty {@code Optional} if the stream is empty
-     * @see #findFirst()
-     */
-    OT findAny(P predicate);
+    //    /**
+    //     * Returns whether any elements of this stream match the provided
+    //     * predicate.  May not evaluate the predicate on all elements if not
+    //     * necessary for determining the result.  If the stream is empty then
+    //     * {@code false} is returned and the predicate is not evaluated.
+    //     *
+    //     * <p>This is a <a href="package-summary.html#StreamOps">short-circuiting
+    //     * terminal operation</a>.
+    //     *
+    //     * @apiNote
+    //     * This method evaluates the <em>existential quantification</em> of the
+    //     * predicate over the elements of the stream (for some x P(x)).
+    //     *
+    //     * @param predicate a <a href="package-summary.html#NonInterference">non-interfering</a>,
+    //     *                  <a href="package-summary.html#Statelessness">stateless</a>
+    //     *                  predicate to apply to elements of this stream
+    //     * @return {@code true} if any elements of the stream match the provided
+    //     * predicate, otherwise {@code false}
+    //     */
+    //    boolean anyMatch(P predicate);
+    //
+    //    /**
+    //     * Returns whether all elements of this stream match the provided predicate.
+    //     * May not evaluate the predicate on all elements if not necessary for
+    //     * determining the result.  If the stream is empty then {@code true} is
+    //     * returned and the predicate is not evaluated.
+    //     *
+    //     * <p>This is a <a href="package-summary.html#StreamOps">short-circuiting
+    //     * terminal operation</a>.
+    //     *
+    //     * @apiNote
+    //     * This method evaluates the <em>universal quantification</em> of the
+    //     * predicate over the elements of the stream (for all x P(x)).  If the
+    //     * stream is empty, the quantification is said to be <em>vacuously
+    //     * satisfied</em> and is always {@code true} (regardless of P(x)).
+    //     *
+    //     * @param predicate a <a href="package-summary.html#NonInterference">non-interfering</a>,
+    //     *                  <a href="package-summary.html#Statelessness">stateless</a>
+    //     *                  predicate to apply to elements of this stream
+    //     * @return {@code true} if either all elements of the stream match the
+    //     * provided predicate or the stream is empty, otherwise {@code false}
+    //     */
+    //    boolean allMatch(P predicate);
+    //
+    //    /**
+    //     * Returns whether no elements of this stream match the provided predicate.
+    //     * May not evaluate the predicate on all elements if not necessary for
+    //     * determining the result.  If the stream is empty then {@code true} is
+    //     * returned and the predicate is not evaluated.
+    //     *
+    //     * <p>This is a <a href="package-summary.html#StreamOps">short-circuiting
+    //     * terminal operation</a>.
+    //     *
+    //     * @apiNote
+    //     * This method evaluates the <em>universal quantification</em> of the
+    //     * negated predicate over the elements of the stream (for all x ~P(x)).  If
+    //     * the stream is empty, the quantification is said to be vacuously satisfied
+    //     * and is always {@code true}, regardless of P(x).
+    //     *
+    //     * @param predicate a <a href="package-summary.html#NonInterference">non-interfering</a>,
+    //     *                  <a href="package-summary.html#Statelessness">stateless</a>
+    //     *                  predicate to apply to elements of this stream
+    //     * @return {@code true} if either no elements of the stream match the
+    //     * provided predicate or the stream is empty, otherwise {@code false}
+    //     */
+    //    boolean noneMatch(P predicate);
+    //
+    //    /**
+    //     * Returns an {@link Optional} describing the first element of this stream,
+    //     * or an empty {@code Optional} if the stream is empty.  If the stream has
+    //     * no encounter order, then any element may be returned.
+    //     *
+    //     * <p>This is a <a href="package-summary.html#StreamOps">short-circuiting
+    //     * terminal operation</a>.
+    //     *
+    //     * @return an {@code Optional} describing the first element of this stream,
+    //     * or an empty {@code Optional} if the stream is empty
+    //     */
+    //    OT findFirst(P predicate);
+    //
+    //    /**
+    //     * Sometimes, <code>stream.reverse().findFirst(predicate)</code> has better performance than <code>stream.findLast(predicate)</code>.
+    //     * 
+    //     * @param predicate
+    //     * @return
+    //     */
+    //    OT findLast(P predicate);
+    //
+    //    /**
+    //     * Returns the first element which is tested by the specified <code>predicateForFirst</code>,
+    //     *  or the last element which is tested by the specified <code>predicateForLast</code> if the first element is not found.
+    //     *  or an empty Optional if both first and last elements are not found. 
+    //     * 
+    //     * <br />
+    //     * This method only run sequentially, even in parallel stream.
+    //     * 
+    //     * @param predicateForFirst
+    //     * @param predicateForLast
+    //     * @return
+    //     */
+    //    OT findFirstOrLast(P predicateForFirst, P predicateForLast);
+    //
+    //    /**
+    //     * Returns an {@link Optional} describing some element of the stream, or an
+    //     * empty {@code Optional} if the stream is empty.
+    //     *
+    //     * <p>This is a <a href="package-summary.html#StreamOps">short-circuiting
+    //     * terminal operation</a>.
+    //     *
+    //     * <p>The behavior of this operation is explicitly nondeterministic; it is
+    //     * free to select any element in the stream.  This is to allow for maximal
+    //     * performance in parallel operations; the cost is that multiple invocations
+    //     * on the same source may not return the same result.  (If a stable result
+    //     * is desired, use {@link #findFirst()} instead.)
+    //     *
+    //     * @return an {@code Optional} describing some element of this stream, or an
+    //     * empty {@code Optional} if the stream is empty
+    //     * @see #findFirst()
+    //     */
+    //    OT findAny(P predicate);
 
     OT first();
 

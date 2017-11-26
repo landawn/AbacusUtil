@@ -2,6 +2,8 @@
 
 * Replace `Predicate/Consumer/Function` in `Iterators` with `Try.Predicate/Consumer/Function`.
 
+* Replace `Predicate/Consumer/Function` in `Stream/.../IntStream.anyMatch/.../findFirst/findLast/...` with `Try.Predicate/Consumer/Function`.
+
 
 ### 1.1.1
 

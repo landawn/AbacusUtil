@@ -417,7 +417,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
             }
         }
 
-        complete(futureList, eHolder);
+        complete2(futureList, eHolder, (E) null);
     }
 
     @Override
@@ -1094,7 +1094,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
     }
 
     @Override
-    public boolean anyMatch(final ShortPredicate predicate) {
+    public <E extends Exception> boolean anyMatch(final Try.ShortPredicate<E> predicate) throws E {
         if (maxThreadNum <= 1) {
             return sequential().anyMatch(predicate);
         }
@@ -1161,13 +1161,13 @@ final class ParallelArrayShortStream extends ArrayShortStream {
             }
         }
 
-        complete(futureList, eHolder);
+        complete2(futureList, eHolder, (E) null);
 
         return result.value();
     }
 
     @Override
-    public boolean allMatch(final ShortPredicate predicate) {
+    public <E extends Exception> boolean allMatch(final Try.ShortPredicate<E> predicate) throws E {
         if (maxThreadNum <= 1) {
             return sequential().allMatch(predicate);
         }
@@ -1234,13 +1234,13 @@ final class ParallelArrayShortStream extends ArrayShortStream {
             }
         }
 
-        complete(futureList, eHolder);
+        complete2(futureList, eHolder, (E) null);
 
         return result.value();
     }
 
     @Override
-    public boolean noneMatch(final ShortPredicate predicate) {
+    public <E extends Exception> boolean noneMatch(final Try.ShortPredicate<E> predicate) throws E {
         if (maxThreadNum <= 1) {
             return sequential().noneMatch(predicate);
         }
@@ -1307,13 +1307,13 @@ final class ParallelArrayShortStream extends ArrayShortStream {
             }
         }
 
-        complete(futureList, eHolder);
+        complete2(futureList, eHolder, (E) null);
 
         return result.value();
     }
 
     @Override
-    public OptionalShort findFirst(final ShortPredicate predicate) {
+    public <E extends Exception> OptionalShort findFirst(final Try.ShortPredicate<E> predicate) throws E {
         if (maxThreadNum <= 1) {
             return sequential().findFirst(predicate);
         }
@@ -1395,13 +1395,13 @@ final class ParallelArrayShortStream extends ArrayShortStream {
             }
         }
 
-        complete(futureList, eHolder);
+        complete2(futureList, eHolder, (E) null);
 
         return resultHolder.value() == null ? OptionalShort.empty() : OptionalShort.of(resultHolder.value().right);
     }
 
     @Override
-    public OptionalShort findLast(final ShortPredicate predicate) {
+    public <E extends Exception> OptionalShort findLast(final Try.ShortPredicate<E> predicate) throws E {
         if (maxThreadNum <= 1) {
             return sequential().findLast(predicate);
         }
@@ -1483,13 +1483,13 @@ final class ParallelArrayShortStream extends ArrayShortStream {
             }
         }
 
-        complete(futureList, eHolder);
+        complete2(futureList, eHolder, (E) null);
 
         return resultHolder.value() == null ? OptionalShort.empty() : OptionalShort.of(resultHolder.value().right);
     }
 
     @Override
-    public OptionalShort findAny(final ShortPredicate predicate) {
+    public <E extends Exception> OptionalShort findAny(final Try.ShortPredicate<E> predicate) throws E {
         if (maxThreadNum <= 1) {
             return sequential().findAny(predicate);
         }
@@ -1569,7 +1569,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
             }
         }
 
-        complete(futureList, eHolder);
+        complete2(futureList, eHolder, (E) null);
 
         return resultHolder.value() == NONE ? OptionalShort.empty() : OptionalShort.of((Short) resultHolder.value());
     }

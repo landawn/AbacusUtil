@@ -1202,7 +1202,7 @@ class IteratorCharStream extends AbstractCharStream {
     }
 
     @Override
-    public boolean anyMatch(CharPredicate predicate) {
+    public <E extends Exception> boolean anyMatch(final Try.CharPredicate<E> predicate) throws E {
         while (elements.hasNext()) {
             if (predicate.test(elements.nextChar())) {
                 return true;
@@ -1213,7 +1213,7 @@ class IteratorCharStream extends AbstractCharStream {
     }
 
     @Override
-    public boolean allMatch(CharPredicate predicate) {
+    public <E extends Exception> boolean allMatch(final Try.CharPredicate<E> predicate) throws E {
         while (elements.hasNext()) {
             if (predicate.test(elements.nextChar()) == false) {
                 return false;
@@ -1224,7 +1224,7 @@ class IteratorCharStream extends AbstractCharStream {
     }
 
     @Override
-    public boolean noneMatch(CharPredicate predicate) {
+    public <E extends Exception> boolean noneMatch(final Try.CharPredicate<E> predicate) throws E {
         while (elements.hasNext()) {
             if (predicate.test(elements.nextChar())) {
                 return false;
@@ -1235,7 +1235,7 @@ class IteratorCharStream extends AbstractCharStream {
     }
 
     @Override
-    public OptionalChar findFirst(CharPredicate predicate) {
+    public <E extends Exception> OptionalChar findFirst(final Try.CharPredicate<E> predicate) throws E {
         while (elements.hasNext()) {
             char e = elements.nextChar();
 
@@ -1248,7 +1248,7 @@ class IteratorCharStream extends AbstractCharStream {
     }
 
     @Override
-    public OptionalChar findLast(CharPredicate predicate) {
+    public <E extends Exception> OptionalChar findLast(final Try.CharPredicate<E> predicate) throws E {
         if (elements.hasNext() == false) {
             return OptionalChar.empty();
         }

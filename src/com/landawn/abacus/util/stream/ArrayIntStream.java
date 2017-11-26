@@ -1861,7 +1861,7 @@ class ArrayIntStream extends AbstractIntStream {
     }
 
     @Override
-    public boolean anyMatch(final IntPredicate predicate) {
+    public <E extends Exception> boolean anyMatch(final Try.IntPredicate<E> predicate) throws E {
         for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i])) {
                 return true;
@@ -1872,7 +1872,7 @@ class ArrayIntStream extends AbstractIntStream {
     }
 
     @Override
-    public boolean allMatch(final IntPredicate predicate) {
+    public <E extends Exception> boolean allMatch(final Try.IntPredicate<E> predicate) throws E {
         for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i]) == false) {
                 return false;
@@ -1883,7 +1883,7 @@ class ArrayIntStream extends AbstractIntStream {
     }
 
     @Override
-    public boolean noneMatch(final IntPredicate predicate) {
+    public <E extends Exception> boolean noneMatch(final Try.IntPredicate<E> predicate) throws E {
         for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i])) {
                 return false;
@@ -1894,7 +1894,7 @@ class ArrayIntStream extends AbstractIntStream {
     }
 
     @Override
-    public OptionalInt findFirst(final IntPredicate predicate) {
+    public <E extends Exception> OptionalInt findFirst(final Try.IntPredicate<E> predicate) throws E {
         for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i])) {
                 return OptionalInt.of(elements[i]);
@@ -1905,7 +1905,7 @@ class ArrayIntStream extends AbstractIntStream {
     }
 
     @Override
-    public OptionalInt findLast(final IntPredicate predicate) {
+    public <E extends Exception> OptionalInt findLast(final Try.IntPredicate<E> predicate) throws E {
         for (int i = toIndex - 1; i >= fromIndex; i--) {
             if (predicate.test(elements[i])) {
                 return OptionalInt.of(elements[i]);

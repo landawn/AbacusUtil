@@ -2087,7 +2087,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
             }));
         }
 
-        complete(futureList, eHolder);
+        complete2(futureList, eHolder, (E) null);
     }
 
     @Override
@@ -2164,7 +2164,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
             }));
         }
 
-        complete(futureList, eHolder);
+        complete2(futureList, eHolder, (E) null);
     }
 
     @Override
@@ -2242,7 +2242,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
             }));
         }
 
-        complete(futureList, eHolder);
+        complete2(futureList, eHolder, (E) null);
     }
 
     @Override
@@ -2842,7 +2842,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
     }
 
     @Override
-    public boolean anyMatch(final Predicate<? super T> predicate) {
+    public <E extends Exception> boolean anyMatch(final Try.Predicate<? super T, E> predicate) throws E {
         if (maxThreadNum <= 1) {
             return sequential().anyMatch(predicate);
         }
@@ -2879,13 +2879,13 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
             }));
         }
 
-        complete(futureList, eHolder);
+        complete2(futureList, eHolder, (E) null);
 
         return result.value();
     }
 
     @Override
-    public boolean allMatch(final Predicate<? super T> predicate) {
+    public <E extends Exception> boolean allMatch(final Try.Predicate<? super T, E> predicate) throws E {
         if (maxThreadNum <= 1) {
             return sequential().allMatch(predicate);
         }
@@ -2922,13 +2922,13 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
             }));
         }
 
-        complete(futureList, eHolder);
+        complete2(futureList, eHolder, (E) null);
 
         return result.value();
     }
 
     @Override
-    public boolean noneMatch(final Predicate<? super T> predicate) {
+    public <E extends Exception> boolean noneMatch(final Try.Predicate<? super T, E> predicate) throws E {
         if (maxThreadNum <= 1) {
             return sequential().noneMatch(predicate);
         }
@@ -2965,13 +2965,13 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
             }));
         }
 
-        complete(futureList, eHolder);
+        complete2(futureList, eHolder, (E) null);
 
         return result.value();
     }
 
     @Override
-    public Nullable<T> findFirst(final Predicate<? super T> predicate) {
+    public <E extends Exception> Nullable<T> findFirst(final Try.Predicate<? super T, E> predicate) throws E {
         if (maxThreadNum <= 1) {
             return sequential().findFirst(predicate);
         }
@@ -3015,13 +3015,13 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
             }));
         }
 
-        complete(futureList, eHolder);
+        complete2(futureList, eHolder, (E) null);
 
         return resultHolder.value() == null ? (Nullable<T>) Nullable.empty() : Nullable.of(resultHolder.value().right);
     }
 
     @Override
-    public Nullable<T> findLast(final Predicate<? super T> predicate) {
+    public <E extends Exception> Nullable<T> findLast(final Try.Predicate<? super T, E> predicate) throws E {
         if (maxThreadNum <= 1) {
             return sequential().findLast(predicate);
         }
@@ -3063,13 +3063,13 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
             }));
         }
 
-        complete(futureList, eHolder);
+        complete2(futureList, eHolder, (E) null);
 
         return resultHolder.value() == null ? (Nullable<T>) Nullable.empty() : Nullable.of(resultHolder.value().right);
     }
 
     @Override
-    public Nullable<T> findAny(final Predicate<? super T> predicate) {
+    public <E extends Exception> Nullable<T> findAny(final Try.Predicate<? super T, E> predicate) throws E {
         if (maxThreadNum <= 1) {
             return sequential().findAny(predicate);
         }
@@ -3111,7 +3111,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
             }));
         }
 
-        complete(futureList, eHolder);
+        complete2(futureList, eHolder, (E) null);
 
         return resultHolder.value() == NONE ? (Nullable<T>) Nullable.empty() : Nullable.of(resultHolder.value());
     }

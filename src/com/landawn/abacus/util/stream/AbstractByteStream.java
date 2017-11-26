@@ -38,6 +38,7 @@ import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalByte;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
+import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
@@ -386,7 +387,13 @@ abstract class AbstractByteStream extends ByteStream {
     }
 
     @Override
-    public OptionalByte findFirstOrLast(BytePredicate predicateForFirst, BytePredicate predicateForLast) {
+    public <E extends Exception> OptionalByte findAny(final Try.BytePredicate<E> predicate) throws E {
+        return findFirst(predicate);
+    }
+
+    @Override
+    public <E extends Exception, E2 extends Exception> OptionalByte findFirstOrLast(Try.BytePredicate<E> predicateForFirst,
+            Try.BytePredicate<E> predicateForLast) throws E, E2 {
         final ByteIteratorEx iter = iteratorEx();
         MutableByte last = null;
         byte next = 0;

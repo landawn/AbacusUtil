@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -481,10 +482,10 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
         return peek(action);
     }
 
-    @Override
-    public OT findAny(P predicate) {
-        return findFirst(predicate);
-    }
+    //    @Override
+    //    public OT findAny(P predicate) {
+    //        return findFirst(predicate);
+    //    }
 
     @Override
     public Stream<S> sliding(int windowSize) {
@@ -781,9 +782,9 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
         }
     }
 
-    static void throwError(final Holder<Throwable> errorHolder) {
-        throw N.toRuntimeException(errorHolder.value());
-    }
+    //    static void throwError(final Holder<Throwable> errorHolder) {
+    //        throw N.toRuntimeException(errorHolder.value());
+    //    }
 
     static void complete(final List<CompletableFuture<Void>> futureList, final Holder<Throwable> eHolder) {
         if (eHolder.value() != null) {
@@ -793,9 +794,59 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
         try {
             for (CompletableFuture<Void> future : futureList) {
                 future.get();
+
+                if (eHolder.value() != null) {
+                    break;
+                }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
+            if (eHolder.value() != null) {
+                throw N.toRuntimeException(eHolder.value());
+            }
+
             throw N.toRuntimeException(e);
+        }
+
+        if (eHolder.value() != null) {
+            throw N.toRuntimeException(eHolder.value());
+        }
+    }
+
+    static <E extends Exception> void complete2(final List<CompletableFuture<Void>> futureList, final Holder<Throwable> eHolder, E none) throws E {
+        if (eHolder.value() != null) {
+            if (eHolder.value() instanceof Exception) {
+                throw (E) eHolder.value();
+            } else {
+                throw N.toRuntimeException(eHolder.value());
+            }
+        }
+
+        try {
+            for (CompletableFuture<Void> future : futureList) {
+                future.get();
+
+                if (eHolder.value() != null) {
+                    break;
+                }
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            if (eHolder.value() != null) {
+                if (eHolder.value() instanceof Exception) {
+                    throw (E) eHolder.value();
+                } else {
+                    throw N.toRuntimeException(eHolder.value());
+                }
+            }
+
+            throw N.toRuntimeException(e);
+        }
+
+        if (eHolder.value() != null) {
+            if (eHolder.value() instanceof Exception) {
+                throw (E) eHolder.value();
+            } else {
+                throw N.toRuntimeException(eHolder.value());
+            }
         }
     }
 

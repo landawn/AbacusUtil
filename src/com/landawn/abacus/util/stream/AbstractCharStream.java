@@ -38,6 +38,7 @@ import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalChar;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
+import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
@@ -384,7 +385,13 @@ abstract class AbstractCharStream extends CharStream {
     }
 
     @Override
-    public OptionalChar findFirstOrLast(CharPredicate predicateForFirst, CharPredicate predicateForLast) {
+    public <E extends Exception> OptionalChar findAny(final Try.CharPredicate<E> predicate) throws E {
+        return findFirst(predicate);
+    }
+
+    @Override
+    public <E extends Exception, E2 extends Exception> OptionalChar findFirstOrLast(Try.CharPredicate<E> predicateForFirst,
+            Try.CharPredicate<E> predicateForLast) throws E, E2 {
         final CharIteratorEx iter = iteratorEx();
         MutableChar last = null;
         char next = 0;

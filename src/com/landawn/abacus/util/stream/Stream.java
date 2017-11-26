@@ -935,15 +935,20 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public abstract <E extends Exception> void forEachTriple(final Try.TriConsumer<? super T, ? super T, ? super T, E> action, final int increment) throws E;
 
-    /**
-     * <br />
-     * This method only run sequentially, even in parallel stream.
-     * 
-     * @param seed
-     * @param predicate
-     * @return
-     */
-    public abstract <U> Nullable<T> findFirst(final U seed, final BiPredicate<? super T, ? super U> predicate);
+    public abstract <E extends Exception> boolean anyMatch(Try.Predicate<? super T, E> predicate) throws E;
+
+    public abstract <E extends Exception> boolean allMatch(Try.Predicate<? super T, E> predicate) throws E;
+
+    public abstract <E extends Exception> boolean noneMatch(Try.Predicate<? super T, E> predicate) throws E;
+
+    public abstract <E extends Exception> Nullable<T> findFirst(Try.Predicate<? super T, E> predicate) throws E;
+
+    public abstract <E extends Exception> Nullable<T> findLast(Try.Predicate<? super T, E> predicate) throws E;
+
+    public abstract <E extends Exception, E2 extends Exception> Nullable<T> findFirstOrLast(Try.Predicate<? super T, E> predicateForFirst,
+            Try.Predicate<? super T, E2> predicateForLast) throws E, E2;
+
+    public abstract <E extends Exception> Nullable<T> findAny(Try.Predicate<? super T, E> predicate) throws E;
 
     /**
      * <br />
@@ -953,7 +958,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param predicate
      * @return
      */
-    public abstract <U> Nullable<T> findLast(final U seed, final BiPredicate<? super T, ? super U> predicate);
+    public abstract <U, E extends Exception> Nullable<T> findFirst(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E;
 
     /**
      * <br />
@@ -963,7 +968,17 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param predicate
      * @return
      */
-    public abstract <U> Nullable<T> findAny(final U seed, final BiPredicate<? super T, ? super U> predicate);
+    public abstract <U, E extends Exception> Nullable<T> findLast(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E;
+
+    /**
+     * <br />
+     * This method only run sequentially, even in parallel stream.
+     * 
+     * @param seed
+     * @param predicate
+     * @return
+     */
+    public abstract <U, E extends Exception> Nullable<T> findAny(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E;
 
     /**
      * <br />
@@ -974,8 +989,8 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param predicateForLast
      * @return
      */
-    public abstract <U> Nullable<T> findFirstOrLast(final U seed, final BiPredicate<? super T, ? super U> predicateForFirst,
-            final BiPredicate<? super T, ? super U> predicateForLast);
+    public abstract <U, E extends Exception, E2 extends Exception> Nullable<T> findFirstOrLast(final U seed,
+            final Try.BiPredicate<? super T, ? super U, E> predicateForFirst, final Try.BiPredicate<? super T, ? super U, E2> predicateForLast) throws E, E2;
 
     /**
      * <br />
@@ -986,14 +1001,14 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param predicateForLast
      * @return
      */
-    public abstract <U> Nullable<T> findFirstOrLast(final Function<? super T, U> preFunc, final BiPredicate<? super T, ? super U> predicateForFirst,
-            final BiPredicate<? super T, ? super U> predicateForLast);
+    public abstract <U, E extends Exception, E2 extends Exception> Nullable<T> findFirstOrLast(final Function<? super T, U> preFunc,
+            final Try.BiPredicate<? super T, ? super U, E> predicateForFirst, final Try.BiPredicate<? super T, ? super U, E2> predicateForLast) throws E, E2;
 
-    public abstract <U> boolean anyMatch(final U seed, final BiPredicate<? super T, ? super U> predicate);
+    public abstract <U, E extends Exception> boolean anyMatch(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E;
 
-    public abstract <U> boolean allMatch(final U seed, final BiPredicate<? super T, ? super U> predicate);
+    public abstract <U, E extends Exception> boolean allMatch(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E;
 
-    public abstract <U> boolean noneMatch(final U seed, final BiPredicate<? super T, ? super U> predicate);
+    public abstract <U, E extends Exception> boolean noneMatch(final U seed, final Try.BiPredicate<? super T, ? super U, E> predicate) throws E;
 
     public abstract boolean containsAll(T... a);
 

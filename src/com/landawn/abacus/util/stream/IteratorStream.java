@@ -2495,7 +2495,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public boolean anyMatch(Predicate<? super T> predicate) {
+    public <E extends Exception> boolean anyMatch(final Try.Predicate<? super T, E> predicate) throws E {
         while (elements.hasNext()) {
             if (predicate.test(elements.next())) {
                 return true;
@@ -2506,7 +2506,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public boolean allMatch(Predicate<? super T> predicate) {
+    public <E extends Exception> boolean allMatch(final Try.Predicate<? super T, E> predicate) throws E {
         while (elements.hasNext()) {
             if (predicate.test(elements.next()) == false) {
                 return false;
@@ -2517,7 +2517,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public boolean noneMatch(Predicate<? super T> predicate) {
+    public <E extends Exception> boolean noneMatch(final Try.Predicate<? super T, E> predicate) throws E {
         while (elements.hasNext()) {
             if (predicate.test(elements.next())) {
                 return false;
@@ -2528,7 +2528,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Nullable<T> findFirst(Predicate<? super T> predicate) {
+    public <E extends Exception> Nullable<T> findFirst(final Try.Predicate<? super T, E> predicate) throws E {
         while (elements.hasNext()) {
             T e = elements.next();
 
@@ -2541,7 +2541,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Nullable<T> findLast(Predicate<? super T> predicate) {
+    public <E extends Exception> Nullable<T> findLast(final Try.Predicate<? super T, E> predicate) throws E {
         if (elements.hasNext() == false) {
             return (Nullable<T>) Nullable.empty();
         }

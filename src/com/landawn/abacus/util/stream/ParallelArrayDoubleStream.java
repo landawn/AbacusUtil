@@ -482,7 +482,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
             }
         }
 
-        complete(futureList, eHolder);
+        complete2(futureList, eHolder, (E) null);
     }
 
     @Override
@@ -1257,7 +1257,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
     }
 
     @Override
-    public boolean anyMatch(final DoublePredicate predicate) {
+    public <E extends Exception> boolean anyMatch(final Try.DoublePredicate<E> predicate) throws E {
         if (maxThreadNum <= 1) {
             return sequential().anyMatch(predicate);
         }
@@ -1324,13 +1324,13 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
             }
         }
 
-        complete(futureList, eHolder);
+        complete2(futureList, eHolder, (E) null);
 
         return result.value();
     }
 
     @Override
-    public boolean allMatch(final DoublePredicate predicate) {
+    public <E extends Exception> boolean allMatch(final Try.DoublePredicate<E> predicate) throws E {
         if (maxThreadNum <= 1) {
             return sequential().allMatch(predicate);
         }
@@ -1397,13 +1397,13 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
             }
         }
 
-        complete(futureList, eHolder);
+        complete2(futureList, eHolder, (E) null);
 
         return result.value();
     }
 
     @Override
-    public boolean noneMatch(final DoublePredicate predicate) {
+    public <E extends Exception> boolean noneMatch(final Try.DoublePredicate<E> predicate) throws E {
         if (maxThreadNum <= 1) {
             return sequential().noneMatch(predicate);
         }
@@ -1470,13 +1470,13 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
             }
         }
 
-        complete(futureList, eHolder);
+        complete2(futureList, eHolder, (E) null);
 
         return result.value();
     }
 
     @Override
-    public OptionalDouble findFirst(final DoublePredicate predicate) {
+    public <E extends Exception> OptionalDouble findFirst(final Try.DoublePredicate<E> predicate) throws E {
         if (maxThreadNum <= 1) {
             return sequential().findFirst(predicate);
         }
@@ -1558,13 +1558,13 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
             }
         }
 
-        complete(futureList, eHolder);
+        complete2(futureList, eHolder, (E) null);
 
         return resultHolder.value() == null ? OptionalDouble.empty() : OptionalDouble.of(resultHolder.value().right);
     }
 
     @Override
-    public OptionalDouble findLast(final DoublePredicate predicate) {
+    public <E extends Exception> OptionalDouble findLast(final Try.DoublePredicate<E> predicate) throws E {
         if (maxThreadNum <= 1) {
             return sequential().findLast(predicate);
         }
@@ -1646,13 +1646,13 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
             }
         }
 
-        complete(futureList, eHolder);
+        complete2(futureList, eHolder, (E) null);
 
         return resultHolder.value() == null ? OptionalDouble.empty() : OptionalDouble.of(resultHolder.value().right);
     }
 
     @Override
-    public OptionalDouble findAny(final DoublePredicate predicate) {
+    public <E extends Exception> OptionalDouble findAny(final Try.DoublePredicate<E> predicate) throws E {
         if (maxThreadNum <= 1) {
             return sequential().findAny(predicate);
         }
@@ -1732,7 +1732,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
             }
         }
 
-        complete(futureList, eHolder);
+        complete2(futureList, eHolder, (E) null);
 
         return resultHolder.value() == NONE ? OptionalDouble.empty() : OptionalDouble.of((Double) resultHolder.value());
     }

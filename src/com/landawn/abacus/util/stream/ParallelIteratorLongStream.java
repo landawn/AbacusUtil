@@ -605,7 +605,7 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
             }));
         }
 
-        complete(futureList, eHolder);
+        complete2(futureList, eHolder, (E) null);
     }
 
     @Override
@@ -1076,7 +1076,7 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
     }
 
     @Override
-    public boolean anyMatch(final LongPredicate predicate) {
+    public <E extends Exception> boolean anyMatch(final Try.LongPredicate<E> predicate) throws E {
         if (maxThreadNum <= 1) {
             return sequential().anyMatch(predicate);
         }
@@ -1113,13 +1113,13 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
             }));
         }
 
-        complete(futureList, eHolder);
+        complete2(futureList, eHolder, (E) null);
 
         return result.value();
     }
 
     @Override
-    public boolean allMatch(final LongPredicate predicate) {
+    public <E extends Exception> boolean allMatch(final Try.LongPredicate<E> predicate) throws E {
         if (maxThreadNum <= 1) {
             return sequential().allMatch(predicate);
         }
@@ -1156,13 +1156,13 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
             }));
         }
 
-        complete(futureList, eHolder);
+        complete2(futureList, eHolder, (E) null);
 
         return result.value();
     }
 
     @Override
-    public boolean noneMatch(final LongPredicate predicate) {
+    public <E extends Exception> boolean noneMatch(final Try.LongPredicate<E> predicate) throws E {
         if (maxThreadNum <= 1) {
             return sequential().noneMatch(predicate);
         }
@@ -1199,13 +1199,13 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
             }));
         }
 
-        complete(futureList, eHolder);
+        complete2(futureList, eHolder, (E) null);
 
         return result.value();
     }
 
     @Override
-    public OptionalLong findFirst(final LongPredicate predicate) {
+    public <E extends Exception> OptionalLong findFirst(final Try.LongPredicate<E> predicate) throws E {
         if (maxThreadNum <= 1) {
             return sequential().findFirst(predicate);
         }
@@ -1249,13 +1249,13 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
             }));
         }
 
-        complete(futureList, eHolder);
+        complete2(futureList, eHolder, (E) null);
 
         return resultHolder.value() == null ? OptionalLong.empty() : OptionalLong.of(resultHolder.value().right);
     }
 
     @Override
-    public OptionalLong findLast(final LongPredicate predicate) {
+    public <E extends Exception> OptionalLong findLast(final Try.LongPredicate<E> predicate) throws E {
         if (maxThreadNum <= 1) {
             return sequential().findLast(predicate);
         }
@@ -1297,13 +1297,13 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
             }));
         }
 
-        complete(futureList, eHolder);
+        complete2(futureList, eHolder, (E) null);
 
         return resultHolder.value() == null ? OptionalLong.empty() : OptionalLong.of(resultHolder.value().right);
     }
 
     @Override
-    public OptionalLong findAny(final LongPredicate predicate) {
+    public <E extends Exception> OptionalLong findAny(final Try.LongPredicate<E> predicate) throws E {
         if (maxThreadNum <= 1) {
             return sequential().findAny(predicate);
         }
@@ -1345,7 +1345,7 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
             }));
         }
 
-        complete(futureList, eHolder);
+        complete2(futureList, eHolder, (E) null);
 
         return resultHolder.value() == NONE ? OptionalLong.empty() : OptionalLong.of((Long) resultHolder.value());
     }

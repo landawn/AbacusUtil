@@ -1512,7 +1512,7 @@ class ArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public boolean anyMatch(final DoublePredicate predicate) {
+    public <E extends Exception> boolean anyMatch(final Try.DoublePredicate<E> predicate) throws E {
         for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i])) {
                 return true;
@@ -1523,7 +1523,7 @@ class ArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public boolean allMatch(final DoublePredicate predicate) {
+    public <E extends Exception> boolean allMatch(final Try.DoublePredicate<E> predicate) throws E {
         for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i]) == false) {
                 return false;
@@ -1534,7 +1534,7 @@ class ArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public boolean noneMatch(final DoublePredicate predicate) {
+    public <E extends Exception> boolean noneMatch(final Try.DoublePredicate<E> predicate) throws E {
         for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i])) {
                 return false;
@@ -1545,7 +1545,7 @@ class ArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public OptionalDouble findFirst(final DoublePredicate predicate) {
+    public <E extends Exception> OptionalDouble findFirst(final Try.DoublePredicate<E> predicate) throws E {
         for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i])) {
                 return OptionalDouble.of(elements[i]);
@@ -1556,7 +1556,7 @@ class ArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public OptionalDouble findLast(final DoublePredicate predicate) {
+    public <E extends Exception> OptionalDouble findLast(final Try.DoublePredicate<E> predicate) throws E {
         for (int i = toIndex - 1; i >= fromIndex; i--) {
             if (predicate.test(elements[i])) {
                 return OptionalDouble.of(elements[i]);

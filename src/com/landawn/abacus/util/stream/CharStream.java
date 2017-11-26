@@ -437,6 +437,21 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
 
     public abstract <E extends Exception> void forEach(final Try.CharConsumer<E> action) throws E;
 
+    public abstract <E extends Exception> boolean anyMatch(final Try.CharPredicate<E> predicate) throws E;
+
+    public abstract <E extends Exception> boolean allMatch(final Try.CharPredicate<E> predicate) throws E;
+
+    public abstract <E extends Exception> boolean noneMatch(final Try.CharPredicate<E> predicate) throws E;
+
+    public abstract <E extends Exception> OptionalChar findFirst(final Try.CharPredicate<E> predicate) throws E;
+
+    public abstract <E extends Exception> OptionalChar findLast(final Try.CharPredicate<E> predicate) throws E;
+
+    public abstract <E extends Exception, E2 extends Exception> OptionalChar findFirstOrLast(Try.CharPredicate<E> predicateForFirst,
+            Try.CharPredicate<E> predicateForLast) throws E, E2;
+
+    public abstract <E extends Exception> OptionalChar findAny(final Try.CharPredicate<E> predicate) throws E;
+
     /**
      * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
      * Don't call any other methods with this stream after head() and tail() are called. 

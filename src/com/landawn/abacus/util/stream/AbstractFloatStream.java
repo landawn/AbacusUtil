@@ -39,6 +39,7 @@ import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.OptionalFloat;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
+import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
@@ -449,7 +450,13 @@ abstract class AbstractFloatStream extends FloatStream {
     }
 
     @Override
-    public OptionalFloat findFirstOrLast(FloatPredicate predicateForFirst, FloatPredicate predicateForLast) {
+    public <E extends Exception> OptionalFloat findAny(final Try.FloatPredicate<E> predicate) throws E {
+        return findFirst(predicate);
+    }
+
+    @Override
+    public <E extends Exception, E2 extends Exception> OptionalFloat findFirstOrLast(Try.FloatPredicate<E> predicateForFirst,
+            Try.FloatPredicate<E> predicateForLast) throws E, E2 {
         final FloatIteratorEx iter = iteratorEx();
         MutableFloat last = null;
         float next = 0;

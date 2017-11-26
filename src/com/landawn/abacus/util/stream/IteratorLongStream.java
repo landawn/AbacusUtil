@@ -1401,7 +1401,7 @@ class IteratorLongStream extends AbstractLongStream {
     }
 
     @Override
-    public boolean anyMatch(LongPredicate predicate) {
+    public <E extends Exception> boolean anyMatch(final Try.LongPredicate<E> predicate) throws E {
         while (elements.hasNext()) {
             if (predicate.test(elements.nextLong())) {
                 return true;
@@ -1412,7 +1412,7 @@ class IteratorLongStream extends AbstractLongStream {
     }
 
     @Override
-    public boolean allMatch(LongPredicate predicate) {
+    public <E extends Exception> boolean allMatch(final Try.LongPredicate<E> predicate) throws E {
         while (elements.hasNext()) {
             if (predicate.test(elements.nextLong()) == false) {
                 return false;
@@ -1423,7 +1423,7 @@ class IteratorLongStream extends AbstractLongStream {
     }
 
     @Override
-    public boolean noneMatch(LongPredicate predicate) {
+    public <E extends Exception> boolean noneMatch(final Try.LongPredicate<E> predicate) throws E {
         while (elements.hasNext()) {
             if (predicate.test(elements.nextLong())) {
                 return false;
@@ -1434,7 +1434,7 @@ class IteratorLongStream extends AbstractLongStream {
     }
 
     @Override
-    public OptionalLong findFirst(LongPredicate predicate) {
+    public <E extends Exception> OptionalLong findFirst(final Try.LongPredicate<E> predicate) throws E {
         while (elements.hasNext()) {
             long e = elements.nextLong();
 
@@ -1447,7 +1447,7 @@ class IteratorLongStream extends AbstractLongStream {
     }
 
     @Override
-    public OptionalLong findLast(LongPredicate predicate) {
+    public <E extends Exception> OptionalLong findLast(final Try.LongPredicate<E> predicate) throws E {
         if (elements.hasNext() == false) {
             return OptionalLong.empty();
         }

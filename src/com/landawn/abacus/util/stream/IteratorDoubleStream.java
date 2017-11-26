@@ -1372,7 +1372,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public boolean anyMatch(DoublePredicate predicate) {
+    public <E extends Exception> boolean anyMatch(final Try.DoublePredicate<E> predicate) throws E {
         while (elements.hasNext()) {
             if (predicate.test(elements.nextDouble())) {
                 return true;
@@ -1383,7 +1383,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public boolean allMatch(DoublePredicate predicate) {
+    public <E extends Exception> boolean allMatch(final Try.DoublePredicate<E> predicate) throws E {
         while (elements.hasNext()) {
             if (predicate.test(elements.nextDouble()) == false) {
                 return false;
@@ -1394,7 +1394,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public boolean noneMatch(DoublePredicate predicate) {
+    public <E extends Exception> boolean noneMatch(final Try.DoublePredicate<E> predicate) throws E {
         while (elements.hasNext()) {
             if (predicate.test(elements.nextDouble())) {
                 return false;
@@ -1405,7 +1405,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public OptionalDouble findFirst(DoublePredicate predicate) {
+    public <E extends Exception> OptionalDouble findFirst(final Try.DoublePredicate<E> predicate) throws E {
         while (elements.hasNext()) {
             double e = elements.nextDouble();
 
@@ -1418,7 +1418,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public OptionalDouble findLast(DoublePredicate predicate) {
+    public <E extends Exception> OptionalDouble findLast(final Try.DoublePredicate<E> predicate) throws E {
         if (elements.hasNext() == false) {
             return OptionalDouble.empty();
         }

@@ -1214,7 +1214,7 @@ class IteratorShortStream extends AbstractShortStream {
     }
 
     @Override
-    public boolean anyMatch(ShortPredicate predicate) {
+    public <E extends Exception> boolean anyMatch(final Try.ShortPredicate<E> predicate) throws E {
         while (elements.hasNext()) {
             if (predicate.test(elements.nextShort())) {
                 return true;
@@ -1225,7 +1225,7 @@ class IteratorShortStream extends AbstractShortStream {
     }
 
     @Override
-    public boolean allMatch(ShortPredicate predicate) {
+    public <E extends Exception> boolean allMatch(final Try.ShortPredicate<E> predicate) throws E {
         while (elements.hasNext()) {
             if (predicate.test(elements.nextShort()) == false) {
                 return false;
@@ -1236,7 +1236,7 @@ class IteratorShortStream extends AbstractShortStream {
     }
 
     @Override
-    public boolean noneMatch(ShortPredicate predicate) {
+    public <E extends Exception> boolean noneMatch(final Try.ShortPredicate<E> predicate) throws E {
         while (elements.hasNext()) {
             if (predicate.test(elements.nextShort())) {
                 return false;
@@ -1247,7 +1247,7 @@ class IteratorShortStream extends AbstractShortStream {
     }
 
     @Override
-    public OptionalShort findFirst(ShortPredicate predicate) {
+    public <E extends Exception> OptionalShort findFirst(final Try.ShortPredicate<E> predicate) throws E {
         while (elements.hasNext()) {
             short e = elements.nextShort();
 
@@ -1260,7 +1260,7 @@ class IteratorShortStream extends AbstractShortStream {
     }
 
     @Override
-    public OptionalShort findLast(ShortPredicate predicate) {
+    public <E extends Exception> OptionalShort findLast(final Try.ShortPredicate<E> predicate) throws E {
         if (elements.hasNext() == false) {
             return OptionalShort.empty();
         }

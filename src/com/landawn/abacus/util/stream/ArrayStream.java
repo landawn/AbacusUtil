@@ -2523,7 +2523,7 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public boolean anyMatch(final Predicate<? super T> predicate) {
+    public <E extends Exception> boolean anyMatch(final Try.Predicate<? super T, E> predicate) throws E {
         for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i])) {
                 return true;
@@ -2534,7 +2534,7 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public boolean allMatch(final Predicate<? super T> predicate) {
+    public <E extends Exception> boolean allMatch(final Try.Predicate<? super T, E> predicate) throws E {
         for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i]) == false) {
                 return false;
@@ -2545,7 +2545,7 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public boolean noneMatch(final Predicate<? super T> predicate) {
+    public <E extends Exception> boolean noneMatch(final Try.Predicate<? super T, E> predicate) throws E {
         for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i])) {
                 return false;
@@ -2556,7 +2556,7 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Nullable<T> findFirst(final Predicate<? super T> predicate) {
+    public <E extends Exception> Nullable<T> findFirst(final Try.Predicate<? super T, E> predicate) throws E {
         for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i])) {
                 return Nullable.of(elements[i]);
@@ -2567,7 +2567,7 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Nullable<T> findLast(final Predicate<? super T> predicate) {
+    public <E extends Exception> Nullable<T> findLast(final Try.Predicate<? super T, E> predicate) throws E {
         for (int i = toIndex - 1; i >= fromIndex; i--) {
             if (predicate.test(elements[i])) {
                 return Nullable.of(elements[i]);

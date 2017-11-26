@@ -1372,7 +1372,7 @@ class IteratorFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public boolean anyMatch(FloatPredicate predicate) {
+    public <E extends Exception> boolean anyMatch(final Try.FloatPredicate<E> predicate) throws E {
         while (elements.hasNext()) {
             if (predicate.test(elements.nextFloat())) {
                 return true;
@@ -1383,7 +1383,7 @@ class IteratorFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public boolean allMatch(FloatPredicate predicate) {
+    public <E extends Exception> boolean allMatch(final Try.FloatPredicate<E> predicate) throws E {
         while (elements.hasNext()) {
             if (predicate.test(elements.nextFloat()) == false) {
                 return false;
@@ -1394,7 +1394,7 @@ class IteratorFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public boolean noneMatch(FloatPredicate predicate) {
+    public <E extends Exception> boolean noneMatch(final Try.FloatPredicate<E> predicate) throws E {
         while (elements.hasNext()) {
             if (predicate.test(elements.nextFloat())) {
                 return false;
@@ -1405,7 +1405,7 @@ class IteratorFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public OptionalFloat findFirst(FloatPredicate predicate) {
+    public <E extends Exception> OptionalFloat findFirst(final Try.FloatPredicate<E> predicate) throws E {
         while (elements.hasNext()) {
             float e = elements.nextFloat();
 
@@ -1418,7 +1418,7 @@ class IteratorFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public OptionalFloat findLast(FloatPredicate predicate) {
+    public <E extends Exception> OptionalFloat findLast(final Try.FloatPredicate<E> predicate) throws E {
         if (elements.hasNext() == false) {
             return OptionalFloat.empty();
         }

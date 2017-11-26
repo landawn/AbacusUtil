@@ -509,6 +509,21 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
 
     public abstract <E extends Exception> void forEach(final Try.IntConsumer<E> action) throws E;
 
+    public abstract <E extends Exception> boolean anyMatch(final Try.IntPredicate<E> predicate) throws E;
+
+    public abstract <E extends Exception> boolean allMatch(final Try.IntPredicate<E> predicate) throws E;
+
+    public abstract <E extends Exception> boolean noneMatch(final Try.IntPredicate<E> predicate) throws E;
+
+    public abstract <E extends Exception> OptionalInt findFirst(final Try.IntPredicate<E> predicate) throws E;
+
+    public abstract <E extends Exception> OptionalInt findLast(final Try.IntPredicate<E> predicate) throws E;
+
+    public abstract <E extends Exception, E2 extends Exception> OptionalInt findFirstOrLast(Try.IntPredicate<E> predicateForFirst,
+            Try.IntPredicate<E> predicateForLast) throws E, E2;
+
+    public abstract <E extends Exception> OptionalInt findAny(final Try.IntPredicate<E> predicate) throws E;
+
     /**
      * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
      * Don't call any other methods with this stream after head() and tail() are called. 

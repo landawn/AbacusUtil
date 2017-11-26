@@ -1684,7 +1684,7 @@ class IteratorIntStream extends AbstractIntStream {
     }
 
     @Override
-    public boolean anyMatch(IntPredicate predicate) {
+    public <E extends Exception> boolean anyMatch(final Try.IntPredicate<E> predicate) throws E {
         while (elements.hasNext()) {
             if (predicate.test(elements.nextInt())) {
                 return true;
@@ -1695,7 +1695,7 @@ class IteratorIntStream extends AbstractIntStream {
     }
 
     @Override
-    public boolean allMatch(IntPredicate predicate) {
+    public <E extends Exception> boolean allMatch(final Try.IntPredicate<E> predicate) throws E {
         while (elements.hasNext()) {
             if (predicate.test(elements.nextInt()) == false) {
                 return false;
@@ -1706,7 +1706,7 @@ class IteratorIntStream extends AbstractIntStream {
     }
 
     @Override
-    public boolean noneMatch(IntPredicate predicate) {
+    public <E extends Exception> boolean noneMatch(final Try.IntPredicate<E> predicate) throws E {
         while (elements.hasNext()) {
             if (predicate.test(elements.nextInt())) {
                 return false;
@@ -1717,7 +1717,7 @@ class IteratorIntStream extends AbstractIntStream {
     }
 
     @Override
-    public OptionalInt findFirst(IntPredicate predicate) {
+    public <E extends Exception> OptionalInt findFirst(final Try.IntPredicate<E> predicate) throws E {
         while (elements.hasNext()) {
             int e = elements.nextInt();
 
@@ -1730,7 +1730,7 @@ class IteratorIntStream extends AbstractIntStream {
     }
 
     @Override
-    public OptionalInt findLast(IntPredicate predicate) {
+    public <E extends Exception> OptionalInt findLast(final Try.IntPredicate<E> predicate) throws E {
         if (elements.hasNext() == false) {
             return OptionalInt.empty();
         }

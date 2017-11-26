@@ -38,6 +38,7 @@ import com.landawn.abacus.util.ShortIterator;
 import com.landawn.abacus.util.ShortList;
 import com.landawn.abacus.util.ShortMatrix;
 import com.landawn.abacus.util.ShortSummaryStatistics;
+import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
@@ -384,7 +385,12 @@ abstract class AbstractShortStream extends ShortStream {
     }
 
     @Override
-    public OptionalShort findFirstOrLast(ShortPredicate predicateForFirst, ShortPredicate predicateForLast) {
+    public <E extends Exception> OptionalShort findAny(final Try.ShortPredicate<E> predicate) throws E {
+        return findFirst(predicate);
+    }
+
+    public <E extends Exception, E2 extends Exception> OptionalShort findFirstOrLast(Try.ShortPredicate<E> predicateForFirst,
+            Try.ShortPredicate<E> predicateForLast) throws E, E2 {
         final ShortIteratorEx iter = iteratorEx();
         MutableShort last = null;
         short next = 0;

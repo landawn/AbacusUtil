@@ -37,6 +37,7 @@ import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalLong;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
+import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
@@ -383,7 +384,13 @@ abstract class AbstractLongStream extends LongStream {
     }
 
     @Override
-    public OptionalLong findFirstOrLast(LongPredicate predicateForFirst, LongPredicate predicateForLast) {
+    public <E extends Exception> OptionalLong findAny(final Try.LongPredicate<E> predicate) throws E {
+        return findFirst(predicate);
+    }
+
+    @Override
+    public <E extends Exception, E2 extends Exception> OptionalLong findFirstOrLast(Try.LongPredicate<E> predicateForFirst,
+            Try.LongPredicate<E> predicateForLast) throws E, E2 {
         final LongIteratorEx iter = iteratorEx();
         MutableLong last = null;
         long next = 0;

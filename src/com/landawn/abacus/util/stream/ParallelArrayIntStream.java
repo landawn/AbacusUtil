@@ -587,7 +587,7 @@ final class ParallelArrayIntStream extends ArrayIntStream {
             }
         }
 
-        complete(futureList, eHolder);
+        complete2(futureList, eHolder, (E) null);
     }
 
     @Override
@@ -1267,7 +1267,7 @@ final class ParallelArrayIntStream extends ArrayIntStream {
     }
 
     @Override
-    public boolean anyMatch(final IntPredicate predicate) {
+    public <E extends Exception> boolean anyMatch(final Try.IntPredicate<E> predicate) throws E {
         if (maxThreadNum <= 1) {
             return sequential().anyMatch(predicate);
         }
@@ -1335,13 +1335,13 @@ final class ParallelArrayIntStream extends ArrayIntStream {
             }
         }
 
-        complete(futureList, eHolder);
+        complete2(futureList, eHolder, (E) null);
 
         return result.value();
     }
 
     @Override
-    public boolean allMatch(final IntPredicate predicate) {
+    public <E extends Exception> boolean allMatch(final Try.IntPredicate<E> predicate) throws E {
         if (maxThreadNum <= 1) {
             return sequential().allMatch(predicate);
         }
@@ -1409,13 +1409,13 @@ final class ParallelArrayIntStream extends ArrayIntStream {
             }
         }
 
-        complete(futureList, eHolder);
+        complete2(futureList, eHolder, (E) null);
 
         return result.value();
     }
 
     @Override
-    public boolean noneMatch(final IntPredicate predicate) {
+    public <E extends Exception> boolean noneMatch(final Try.IntPredicate<E> predicate) throws E {
         if (maxThreadNum <= 1) {
             return sequential().noneMatch(predicate);
         }
@@ -1483,13 +1483,13 @@ final class ParallelArrayIntStream extends ArrayIntStream {
             }
         }
 
-        complete(futureList, eHolder);
+        complete2(futureList, eHolder, (E) null);
 
         return result.value();
     }
 
     @Override
-    public OptionalInt findFirst(final IntPredicate predicate) {
+    public <E extends Exception> OptionalInt findFirst(final Try.IntPredicate<E> predicate) throws E {
         if (maxThreadNum <= 1) {
             return sequential().findFirst(predicate);
         }
@@ -1571,13 +1571,13 @@ final class ParallelArrayIntStream extends ArrayIntStream {
             }
         }
 
-        complete(futureList, eHolder);
+        complete2(futureList, eHolder, (E) null);
 
         return resultHolder.value() == null ? OptionalInt.empty() : OptionalInt.of(resultHolder.value().right);
     }
 
     @Override
-    public OptionalInt findLast(final IntPredicate predicate) {
+    public <E extends Exception> OptionalInt findLast(final Try.IntPredicate<E> predicate) throws E {
         if (maxThreadNum <= 1) {
             return sequential().findLast(predicate);
         }
@@ -1659,13 +1659,13 @@ final class ParallelArrayIntStream extends ArrayIntStream {
             }
         }
 
-        complete(futureList, eHolder);
+        complete2(futureList, eHolder, (E) null);
 
         return resultHolder.value() == null ? OptionalInt.empty() : OptionalInt.of(resultHolder.value().right);
     }
 
     @Override
-    public OptionalInt findAny(final IntPredicate predicate) {
+    public <E extends Exception> OptionalInt findAny(final Try.IntPredicate<E> predicate) throws E {
         if (maxThreadNum <= 1) {
             return sequential().findAny(predicate);
         }
@@ -1745,7 +1745,7 @@ final class ParallelArrayIntStream extends ArrayIntStream {
             }
         }
 
-        complete(futureList, eHolder);
+        complete2(futureList, eHolder, (E) null);
 
         return resultHolder.value() == NONE ? OptionalInt.empty() : OptionalInt.of((Integer) resultHolder.value());
     }

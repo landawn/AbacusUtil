@@ -38,6 +38,7 @@ import com.landawn.abacus.util.Optional;
 import com.landawn.abacus.util.OptionalInt;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Percentage;
+import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiPredicate;
 import com.landawn.abacus.util.function.BinaryOperator;
@@ -384,7 +385,13 @@ abstract class AbstractIntStream extends IntStream {
     }
 
     @Override
-    public OptionalInt findFirstOrLast(IntPredicate predicateForFirst, IntPredicate predicateForLast) {
+    public <E extends Exception> OptionalInt findAny(final Try.IntPredicate<E> predicate) throws E {
+        return findFirst(predicate);
+    }
+
+    @Override
+    public <E extends Exception, E2 extends Exception> OptionalInt findFirstOrLast(Try.IntPredicate<E> predicateForFirst, Try.IntPredicate<E> predicateForLast)
+            throws E, E2 {
         final IntIteratorEx iter = iteratorEx();
         MutableInt last = null;
         int next = 0;

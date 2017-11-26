@@ -446,6 +446,21 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
 
     public abstract <E extends Exception> void forEach(final Try.ShortConsumer<E> action) throws E;
 
+    public abstract <E extends Exception> boolean anyMatch(final Try.ShortPredicate<E> predicate) throws E;
+
+    public abstract <E extends Exception> boolean allMatch(final Try.ShortPredicate<E> predicate) throws E;
+
+    public abstract <E extends Exception> boolean noneMatch(final Try.ShortPredicate<E> predicate) throws E;
+
+    public abstract <E extends Exception> OptionalShort findFirst(final Try.ShortPredicate<E> predicate) throws E;
+
+    public abstract <E extends Exception> OptionalShort findLast(final Try.ShortPredicate<E> predicate) throws E;
+
+    public abstract <E extends Exception, E2 extends Exception> OptionalShort findFirstOrLast(Try.ShortPredicate<E> predicateForFirst,
+            Try.ShortPredicate<E> predicateForLast) throws E, E2;
+
+    public abstract <E extends Exception> OptionalShort findAny(final Try.ShortPredicate<E> predicate) throws E;
+
     /**
      * Head and tail should be used by pair. If only one is called, should use first() or skip(1) instead.
      * Don't call any other methods with this stream after head() and tail() are called. 

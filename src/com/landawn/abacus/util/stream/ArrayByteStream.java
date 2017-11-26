@@ -1282,7 +1282,7 @@ class ArrayByteStream extends AbstractByteStream {
     }
 
     @Override
-    public boolean anyMatch(final BytePredicate predicate) {
+    public <E extends Exception> boolean anyMatch(final Try.BytePredicate<E> predicate) throws E {
         for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i])) {
                 return true;
@@ -1293,7 +1293,7 @@ class ArrayByteStream extends AbstractByteStream {
     }
 
     @Override
-    public boolean allMatch(final BytePredicate predicate) {
+    public <E extends Exception> boolean allMatch(final Try.BytePredicate<E> predicate) throws E {
         for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i]) == false) {
                 return false;
@@ -1304,7 +1304,7 @@ class ArrayByteStream extends AbstractByteStream {
     }
 
     @Override
-    public boolean noneMatch(final BytePredicate predicate) {
+    public <E extends Exception> boolean noneMatch(final Try.BytePredicate<E> predicate) throws E {
         for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i])) {
                 return false;
@@ -1315,7 +1315,7 @@ class ArrayByteStream extends AbstractByteStream {
     }
 
     @Override
-    public OptionalByte findFirst(final BytePredicate predicate) {
+    public <E extends Exception> OptionalByte findFirst(final Try.BytePredicate<E> predicate) throws E {
         for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i])) {
                 return OptionalByte.of(elements[i]);
@@ -1326,7 +1326,7 @@ class ArrayByteStream extends AbstractByteStream {
     }
 
     @Override
-    public OptionalByte findLast(final BytePredicate predicate) {
+    public <E extends Exception> OptionalByte findLast(final Try.BytePredicate<E> predicate) throws E {
         for (int i = toIndex - 1; i >= fromIndex; i--) {
             if (predicate.test(elements[i])) {
                 return OptionalByte.of(elements[i]);

@@ -1282,7 +1282,7 @@ class ArrayCharStream extends AbstractCharStream {
     }
 
     @Override
-    public boolean anyMatch(final CharPredicate predicate) {
+    public <E extends Exception> boolean anyMatch(final Try.CharPredicate<E> predicate) throws E {
         for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i])) {
                 return true;
@@ -1293,7 +1293,7 @@ class ArrayCharStream extends AbstractCharStream {
     }
 
     @Override
-    public boolean allMatch(final CharPredicate predicate) {
+    public <E extends Exception> boolean allMatch(final Try.CharPredicate<E> predicate) throws E {
         for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i]) == false) {
                 return false;
@@ -1304,7 +1304,7 @@ class ArrayCharStream extends AbstractCharStream {
     }
 
     @Override
-    public boolean noneMatch(final CharPredicate predicate) {
+    public <E extends Exception> boolean noneMatch(final Try.CharPredicate<E> predicate) throws E {
         for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i])) {
                 return false;
@@ -1315,7 +1315,7 @@ class ArrayCharStream extends AbstractCharStream {
     }
 
     @Override
-    public OptionalChar findFirst(final CharPredicate predicate) {
+    public <E extends Exception> OptionalChar findFirst(final Try.CharPredicate<E> predicate) throws E {
         for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i])) {
                 return OptionalChar.of(elements[i]);
@@ -1326,7 +1326,7 @@ class ArrayCharStream extends AbstractCharStream {
     }
 
     @Override
-    public OptionalChar findLast(final CharPredicate predicate) {
+    public <E extends Exception> OptionalChar findLast(final Try.CharPredicate<E> predicate) throws E {
         for (int i = toIndex - 1; i >= fromIndex; i--) {
             if (predicate.test(elements[i])) {
                 return OptionalChar.of(elements[i]);

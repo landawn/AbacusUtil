@@ -1203,7 +1203,7 @@ class IteratorByteStream extends AbstractByteStream {
     }
 
     @Override
-    public boolean anyMatch(BytePredicate predicate) {
+    public <E extends Exception> boolean anyMatch(final Try.BytePredicate<E> predicate) throws E {
         while (elements.hasNext()) {
             if (predicate.test(elements.nextByte())) {
                 return true;
@@ -1214,7 +1214,7 @@ class IteratorByteStream extends AbstractByteStream {
     }
 
     @Override
-    public boolean allMatch(BytePredicate predicate) {
+    public <E extends Exception> boolean allMatch(final Try.BytePredicate<E> predicate) throws E {
         while (elements.hasNext()) {
             if (predicate.test(elements.nextByte()) == false) {
                 return false;
@@ -1225,7 +1225,7 @@ class IteratorByteStream extends AbstractByteStream {
     }
 
     @Override
-    public boolean noneMatch(BytePredicate predicate) {
+    public <E extends Exception> boolean noneMatch(final Try.BytePredicate<E> predicate) throws E {
         while (elements.hasNext()) {
             if (predicate.test(elements.nextByte())) {
                 return false;
@@ -1236,7 +1236,7 @@ class IteratorByteStream extends AbstractByteStream {
     }
 
     @Override
-    public OptionalByte findFirst(BytePredicate predicate) {
+    public <E extends Exception> OptionalByte findFirst(final Try.BytePredicate<E> predicate) throws E {
         while (elements.hasNext()) {
             byte e = elements.nextByte();
 
@@ -1249,7 +1249,7 @@ class IteratorByteStream extends AbstractByteStream {
     }
 
     @Override
-    public OptionalByte findLast(BytePredicate predicate) {
+    public <E extends Exception> OptionalByte findLast(final Try.BytePredicate<E> predicate) throws E {
         if (elements.hasNext() == false) {
             return OptionalByte.empty();
         }

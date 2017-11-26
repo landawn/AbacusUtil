@@ -1301,7 +1301,7 @@ class ArrayShortStream extends AbstractShortStream {
     }
 
     @Override
-    public boolean anyMatch(final ShortPredicate predicate) {
+    public <E extends Exception> boolean anyMatch(final Try.ShortPredicate<E> predicate) throws E {
         for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i])) {
                 return true;
@@ -1312,7 +1312,7 @@ class ArrayShortStream extends AbstractShortStream {
     }
 
     @Override
-    public boolean allMatch(final ShortPredicate predicate) {
+    public <E extends Exception> boolean allMatch(final Try.ShortPredicate<E> predicate) throws E {
         for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i]) == false) {
                 return false;
@@ -1323,7 +1323,7 @@ class ArrayShortStream extends AbstractShortStream {
     }
 
     @Override
-    public boolean noneMatch(final ShortPredicate predicate) {
+    public <E extends Exception> boolean noneMatch(final Try.ShortPredicate<E> predicate) throws E {
         for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i])) {
                 return false;
@@ -1334,7 +1334,7 @@ class ArrayShortStream extends AbstractShortStream {
     }
 
     @Override
-    public OptionalShort findFirst(final ShortPredicate predicate) {
+    public <E extends Exception> OptionalShort findFirst(final Try.ShortPredicate<E> predicate) throws E {
         for (int i = fromIndex; i < toIndex; i++) {
             if (predicate.test(elements[i])) {
                 return OptionalShort.of(elements[i]);
@@ -1345,7 +1345,7 @@ class ArrayShortStream extends AbstractShortStream {
     }
 
     @Override
-    public OptionalShort findLast(final ShortPredicate predicate) {
+    public <E extends Exception> OptionalShort findLast(final Try.ShortPredicate<E> predicate) throws E {
         for (int i = toIndex - 1; i >= fromIndex; i--) {
             if (predicate.test(elements[i])) {
                 return OptionalShort.of(elements[i]);
