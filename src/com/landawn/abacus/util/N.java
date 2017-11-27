@@ -31798,6 +31798,23 @@ public final class N {
     }
 
     /**
+     * Returns a {@code Nullable} with value got from the specified {@code supplier} if {@code b} is {@code true}, 
+     * otherwise returns an empty {@code Nullable} if {@code b} is false.
+     * 
+     * @param b
+     * @param supplier
+     * @return
+     * @throws E
+     */
+    public static <T, E extends Exception> Nullable<T> ifOrEmpty(final boolean b, final Try.Supplier<T, E> supplier) throws E {
+        if (b) {
+            return Nullable.of(supplier.get());
+        } else {
+            return Nullable.empty();
+        }
+    }
+
+    /**
      * 
      * @param b
      * @param actionForTrue do nothing if it's {@code null} even {@code b} is true.

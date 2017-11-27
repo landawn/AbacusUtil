@@ -733,6 +733,34 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
+    public Stream<Entry<Boolean, List<T>>> partitionBy(Predicate<? super T> predicate) {
+        final Map<Boolean, List<T>> map = partitionTo(predicate);
+
+        return newStream(map.entrySet().iterator(), false, null);
+    }
+
+    @Override
+    public <A, D> Stream<Entry<Boolean, D>> partitionBy(Predicate<? super T> predicate, Collector<? super T, A, D> downstream) {
+        final Map<Boolean, D> map = partitionTo(predicate, downstream);
+
+        return newStream(map.entrySet().iterator(), false, null);
+    }
+
+    @Override
+    public EntryStream<Boolean, List<T>> partitionByToEntry(Predicate<? super T> predicate) {
+        final Function<Map.Entry<Boolean, List<T>>, Map.Entry<Boolean, List<T>>> mapper = Fn.identity();
+
+        return partitionBy(predicate).mapToEntry(mapper);
+    }
+
+    @Override
+    public <A, D> EntryStream<Boolean, D> partitionByToEntry(Predicate<? super T> predicate, Collector<? super T, A, D> downstream) {
+        final Function<Map.Entry<Boolean, D>, Map.Entry<Boolean, D>> mapper = Fn.identity();
+
+        return partitionBy(predicate, downstream).mapToEntry(mapper);
+    }
+
+    @Override
     public <K> EntryStream<K, List<T>> groupByToEntry(Function<? super T, ? extends K> classifier) {
         final Function<Map.Entry<K, List<T>>, Map.Entry<K, List<T>>> mapper = Fn.identity();
         final Function<T, K> classifier2 = (Function<T, K>) classifier;
@@ -883,6 +911,16 @@ abstract class AbstractStream<T> extends Stream<T> {
     public <K, U, M extends Map<K, List<U>>> M groupTo(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
             Supplier<M> mapFactory) {
         return toMap(keyExtractor, (Collector<T, ?, List<U>>) (Collector) Collectors.mapping(valueMapper, Collectors.toList()), mapFactory);
+    }
+
+    @Override
+    public Map<Boolean, List<T>> partitionTo(Predicate<? super T> predicate) {
+        return collect(Collectors.partitioningBy(predicate));
+    }
+
+    @Override
+    public <A, D> Map<Boolean, D> partitionTo(Predicate<? super T> predicate, Collector<? super T, A, D> downstream) {
+        return collect(Collectors.partitioningBy(predicate, downstream));
     }
 
     @Override

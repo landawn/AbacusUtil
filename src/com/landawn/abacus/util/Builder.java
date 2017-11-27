@@ -669,7 +669,11 @@ public class Builder<T> {
         }
 
         public ListBuilder<T, L> addAll(int index, Collection<? extends T> c) {
-            val.addAll(index, c);
+            N.checkIndex(index, val.size());
+
+            if (N.notNullOrEmpty(c)) {
+                val.addAll(index, c);
+            }
 
             return this;
         }
@@ -693,7 +697,9 @@ public class Builder<T> {
         }
 
         public CollectionBuilder<T, C> addAll(final Collection<? extends T> c) {
-            val.addAll(c);
+            if (N.notNullOrEmpty(c)) {
+                val.addAll(c);
+            }
 
             return this;
         }
@@ -705,7 +711,9 @@ public class Builder<T> {
         }
 
         public CollectionBuilder<T, C> removeAll(Collection<?> c) {
-            val.removeAll(c);
+            if (N.notNullOrEmpty(c)) {
+                val.removeAll(c);
+            }
 
             return this;
         }
@@ -831,7 +839,9 @@ public class Builder<T> {
         }
 
         public MapBuilder<K, V, M> putAll(Map<? extends K, ? extends V> m) {
-            val.putAll(m);
+            if (N.notNullOrEmpty(m)) {
+                val.putAll(m);
+            }
 
             return this;
         }
@@ -842,9 +852,11 @@ public class Builder<T> {
             return this;
         }
 
-        public MapBuilder<K, V, M> removeAll(Collection<?> c) {
-            for (Object k : c) {
-                val.remove(k);
+        public MapBuilder<K, V, M> removeAll(Collection<?> keysToRemove) {
+            if (N.notNullOrEmpty(keysToRemove)) {
+                for (Object k : keysToRemove) {
+                    val.remove(k);
+                }
             }
 
             return this;
@@ -892,10 +904,8 @@ public class Builder<T> {
             return this;
         }
 
-        public MultimapBuilder<K, E, V, M> removeAll(Collection<? extends K> c) {
-            for (Object k : c) {
-                val.removeAll(k);
-            }
+        public MultimapBuilder<K, E, V, M> removeAll(K k, Collection<?> valuesToRemove) {
+            val.removeAll(k, valuesToRemove);
 
             return this;
         }

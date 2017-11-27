@@ -4,6 +4,15 @@
 
 * Replace `Predicate/Consumer/Function` in `Stream/.../IntStream.anyMatch/.../findFirst/findLast/...` with `Try.Predicate/Consumer/Function`.
 
+* Rename `Maps.inverse` to `Maps.flatInvert`
+
+* Remove `MultimapBuilder.removeAll(Collection<? extends K> keysToRemove)`.
+
+* Add `MultimapBuilder.removeAll(K key, Collection<?> valuesToRemove)`.
+
+* Add `N.ifOrEmpty`.
+
+* Add `Stream.partitionBy/partitionByToEntry/partitionTo`.
 
 ### 1.1.1
 

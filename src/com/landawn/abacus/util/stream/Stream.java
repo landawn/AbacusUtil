@@ -643,6 +643,23 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     public abstract <K, U> Stream<Map.Entry<K, U>> groupBy(final Function<? super T, ? extends K> classifier,
             final Function<? super T, ? extends U> valueMapper, final BinaryOperator<U> mergeFunction, final Supplier<Map<K, U>> mapFactory);
 
+    /**
+     * 
+     * @param predicate
+     * @return
+     * @see Collectors#partitioningBy(Predicate)
+     */
+    public abstract Stream<Map.Entry<Boolean, List<T>>> partitionBy(final Predicate<? super T> predicate);
+
+    /**
+     * 
+     * @param predicate
+     * @param downstream
+     * @return
+     * @see Collectors#partitioningBy(Predicate, Collector)
+     */
+    public abstract <A, D> Stream<Map.Entry<Boolean, D>> partitionBy(final Predicate<? super T> predicate, final Collector<? super T, A, D> downstream);
+
     public abstract <K> EntryStream<K, List<T>> groupByToEntry(final Function<? super T, ? extends K> classifier);
 
     public abstract <K> EntryStream<K, List<T>> groupByToEntry(final Function<? super T, ? extends K> classifier, final Supplier<Map<K, List<T>>> mapFactory);
@@ -683,6 +700,23 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
 
     public abstract <K, U> EntryStream<K, U> groupByToEntry(final Function<? super T, ? extends K> classifier,
             final Function<? super T, ? extends U> valueMapper, final BinaryOperator<U> mergeFunction, final Supplier<Map<K, U>> mapFactory);
+
+    /**
+     * 
+     * @param predicate
+     * @return
+     * @see Collectors#partitioningBy(Predicate)
+     */
+    public abstract EntryStream<Boolean, List<T>> partitionByToEntry(final Predicate<? super T> predicate);
+
+    /**
+     * 
+     * @param predicate
+     * @param downstream
+     * @return
+     * @see Collectors#partitioningBy(Predicate, Collector)
+     */
+    public abstract <A, D> EntryStream<Boolean, D> partitionByToEntry(final Predicate<? super T> predicate, final Collector<? super T, A, D> downstream);
 
     /**
      * Returns Stream of Stream with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
@@ -1149,6 +1183,23 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public abstract <K, U, M extends Map<K, List<U>>> M groupTo(Function<? super T, ? extends K> keyExtractor, Function<? super T, ? extends U> valueMapper,
             Supplier<M> mapFactory);
+
+    /**
+     * 
+     * @param predicate
+     * @return
+     * @see Collectors#partitioningBy(Predicate)
+     */
+    public abstract Map<Boolean, List<T>> partitionTo(final Predicate<? super T> predicate);
+
+    /**
+     * 
+     * @param predicate
+     * @param downstream
+     * @return
+     * @see Collectors#partitioningBy(Predicate, Collector)
+     */
+    public abstract <A, D> Map<Boolean, D> partitionTo(final Predicate<? super T> predicate, final Collector<? super T, A, D> downstream);
 
     /**
      * 

@@ -469,17 +469,17 @@ public final class Maps {
     /**
      * 
      * @param map
-     * @param keys
+     * @param keysToRemove
      * @return <code>true</code> if any key/value was removed, otherwise <code>false</code>.
      */
-    public static boolean removeAll(final Map<?, ?> map, final Collection<?> keys) {
-        if (N.isNullOrEmpty(map) || N.isNullOrEmpty(keys)) {
+    public static boolean removeAll(final Map<?, ?> map, final Collection<?> keysToRemove) {
+        if (N.isNullOrEmpty(map) || N.isNullOrEmpty(keysToRemove)) {
             return false;
         }
 
         final int originalSize = map.size();
 
-        for (Object key : keys) {
+        for (Object key : keysToRemove) {
             map.remove(key);
         }
 
@@ -682,7 +682,7 @@ public final class Maps {
      * concurrency properties.
       *
      * @param key key with which the specified value is associated
-     * @param value value to be associated with the specified key
+     * @param newValue value to be associated with the specified key
      * @return the previous value associated with the specified key, or
      *         {@code null} if there was no mapping for the key.
      *         (A {@code null} return can also indicate that the map
@@ -700,7 +700,7 @@ public final class Maps {
      *         or value prevents it from being stored in this map
      * @since 1.8
      */
-    public static <K, V> V replace(final Map<K, V> map, final K key, final V value) {
+    public static <K, V> V replace(final Map<K, V> map, final K key, final V newValue) {
         if (N.isNullOrEmpty(map)) {
             return null;
         }
@@ -708,7 +708,7 @@ public final class Maps {
         V curValue = null;
 
         if (((curValue = map.get(key)) != null) || map.containsKey(key)) {
-            curValue = map.put(key, value);
+            curValue = map.put(key, newValue);
         }
 
         return curValue;
@@ -1208,7 +1208,7 @@ public final class Maps {
         return result;
     }
 
-    public static <K, V> Map<V, List<K>> inverse(final Map<K, ? extends Collection<V>> map) {
+    public static <K, V> Map<V, List<K>> flatInvert(final Map<K, ? extends Collection<V>> map) {
         if (map == null) {
             return new HashMap<V, List<K>>();
         }
