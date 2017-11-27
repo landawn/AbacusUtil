@@ -1371,4 +1371,21 @@ public class Joiner {
             ObjectFactory.recycle(sb);
         }
     }
+
+    public static Object concat(final Collection<?> c) {
+        if (N.isNullOrEmpty(c)) {
+            return N.EMPTY_STRING;
+        }
+
+        final StringBuilder sb = ObjectFactory.createStringBuilder();
+
+        try {
+            for (Object e : c) {
+                sb.append(N.toString(e));
+            }
+            return sb.toString();
+        } finally {
+            ObjectFactory.recycle(sb);
+        }
+    }
 }

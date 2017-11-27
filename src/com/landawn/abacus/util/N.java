@@ -23845,6 +23845,24 @@ public final class N {
         return result;
     }
 
+    public static <T> List<T> concat(final Collection<? extends T> a, final Collection<? extends T> b, final Collection<? extends T> c) {
+        if (N.isNullOrEmpty(a)) {
+            return concat(b, c);
+        } else if (N.isNullOrEmpty(b)) {
+            return concat(a, c);
+        } else if (N.isNullOrEmpty(c)) {
+            return concat(a, b);
+        }
+
+        final List<T> result = new ArrayList<>(a.size() + b.size() + c.size());
+
+        result.addAll(a);
+        result.addAll(b);
+        result.addAll(c);
+
+        return result;
+    }
+
     public static int replaceAll(final boolean[] a, final boolean oldVal, final boolean newVal) {
         if (N.isNullOrEmpty(a)) {
             return 0;

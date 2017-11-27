@@ -294,6 +294,17 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     public abstract <U> Stream<T> removeWhile(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super T> consumer);
 
     /**
+     * Returns a stream consisting of the elements in this stream which are
+     * instances of given class.
+     * 
+     * @param targetType
+     * @return
+     */
+    public <U> Stream<U> select(Class<U> targetType) {
+        return (Stream<U>) filter(Fn.instanceOf(targetType));
+    }
+
+    /**
      * Returns a stream consisting of the results of applying the given
      * function to the elements of this stream.
      *
@@ -307,17 +318,6 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return the new stream
      */
     public abstract <R> Stream<R> map(Function<? super T, ? extends R> mapper);
-
-    /**
-     * Returns a stream consisting of the elements in this stream which are
-     * instances of given class.
-     * 
-     * @param targetType
-     * @return
-     */
-    public <U> Stream<U> select(Class<U> targetType) {
-        return (Stream<U>) filter(Fn.instanceOf(targetType));
-    }
 
     public abstract <U, R> Stream<R> map(U seed, BiFunction<? super T, ? super U, ? extends R> mapper);
 
@@ -693,42 +693,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param size
      * @return
      */
-    @Override
-    public abstract Stream<List<T>> splitToList(int size);
-
-    /**
-     * Returns Stream of Stream with consecutive sub sequences of the elements, each of the same size (the final sequence may be smaller).
-     * 
-     * <br />
-     * This method only run sequentially, even in parallel stream.
-     * 
-     * @param size
-     * @return
-     */
     public abstract Stream<Set<T>> splitToSet(int size);
-
-    /**
-     * Split the stream by the specified predicate.
-     * 
-     * <pre>
-     * <code>
-     * // split the number sequence by window 5.
-     * Stream.of(1, 2, 3, 5, 7, 9, 10, 11, 19).splitToList(MutableInt.of(5), (e, b) -> e <= b.intValue(), b -> b.addAndGet(5)).forEach(N::println);
-     * </code>
-     * </pre>
-     * 
-     * This stream should be sorted by value which is used to verify the border.
-     * 
-     * <br />
-     * This method only run sequentially, even in parallel stream.
-     * 
-     * @param seed
-     * @param predicate
-     * @param seedUpdate
-     * @return
-     */
-    @Override
-    public abstract <U> Stream<List<T>> splitToList(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super U> seedUpdate);
 
     /**
      * Split the stream by the specified predicate.
@@ -751,12 +716,6 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @return
      */
     public abstract <U> Stream<Set<T>> splitToSet(final U seed, final BiPredicate<? super T, ? super U> predicate, final Consumer<? super U> seedUpdate);
-
-    @Override
-    public abstract Stream<List<T>> slidingToList(int windowSize);
-
-    @Override
-    public abstract Stream<List<T>> slidingToList(int windowSize, int increment);
 
     /**
      * Merge series of adjacent elements which satisfy the given predicate using
@@ -1592,6 +1551,9 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     /**
      * A queue with size up to <code>n</code> will be maintained to filter out the last <code>n</code> elements. 
      * It may cause <code>out of memory error</code> if <code>n</code> is big enough.
+     * 
+     * <br />
+     * This method only run sequentially, even in parallel stream.
      * 
      * @param n
      * @return
@@ -8388,7 +8350,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         SPLIT, SPLIT_TO_LIST, SPLIT_TO_SET, SPLIT_AT, SLIDING, //
         INTERSECTION, DIFFERENCE, SYMMETRIC_DIFFERENCE, //
         REVERSED, SHUFFLED, ROTATED, DISTINCT, HAS_DUPLICATE, //
-        APPEND, PREPEND, CACHED, INDEXED, SKIP, LIMIT, STEP, //
+        APPEND, PREPEND, CACHED, INDEXED, SKIP, SKIP_LAST, LIMIT, STEP, //
         QUEUED, MERGE, ZIP_WITH, PERSIST_FILE_OUTPUT_STREAM_WRITE, //
         COMBINATIONS, PERMUTATIONS, ORDERED_PERMUTATIONS, DISTRIBUTION, //
         CARTESIAN_PRODUCT, INNER_JOIN, FULL_JOIN, LEFT_JOIN, RIGHT_JOIN, //
@@ -8416,7 +8378,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
         SPLIT_BY, SORTED, REVERSE_SORTED, DISTINCT_BY, JOIN, PEEK, //
         GROUP_BY, GROUP_BY_TO_ENTRY, GROUP_TO, TO_MAP, TO_MULTIMAP, //
         MIN, MAX, SUM_INT, SUM_LONG, SUM_DOUBLE, AVERAGE_INT, AVERAGE_LONG, AVERAGE_DOUBLE, SUMMARIZE_, //
-        FOR_EACH, FOR_EACH_PAIR, FOR_EACH_TRIPLE, ANY_MATCH, ALL_MATCH, NONE_MATCH, FIND_FIRST, FIND_LAST, //
+        FOR_EACH, FOR_EACH_PAIR, FOR_EACH_TRIPLE, ANY_MATCH, ALL_MATCH, NONE_MATCH, FIND_FIRST, FIND_LAST, FIND_ANY, //
         REDUCE, COLLECT, PERSIST_DB;
     }
 
