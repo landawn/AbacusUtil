@@ -34,62 +34,152 @@ public class Builder<T> {
         this.val = val;
     }
 
+    /**
+     * 
+     * @param val
+     * @return
+     * @throws NullPointerException if the specified {@code val} is {@code null}.
+     */
     public static final BooleanListBuilder of(BooleanList val) {
         return new BooleanListBuilder(val);
     }
 
+    /**
+     * 
+     * @param val
+     * @return
+     * @throws NullPointerException if the specified {@code val} is {@code null}.
+     */
     public static final CharListBuilder of(CharList val) {
         return new CharListBuilder(val);
     }
 
+    /**
+     * 
+     * @param val
+     * @return
+     * @throws NullPointerException if the specified {@code val} is {@code null}.
+     */
     public static final ByteListBuilder of(ByteList val) {
         return new ByteListBuilder(val);
     }
 
+    /**
+     * 
+     * @param val
+     * @return
+     * @throws NullPointerException if the specified {@code val} is {@code null}.
+     */
     public static final ShortListBuilder of(ShortList val) {
         return new ShortListBuilder(val);
     }
 
+    /**
+     * 
+     * @param val
+     * @return
+     * @throws NullPointerException if the specified {@code val} is {@code null}.
+     */
     public static final IntListBuilder of(IntList val) {
         return new IntListBuilder(val);
     }
 
+    /**
+     * 
+     * @param val
+     * @return
+     * @throws NullPointerException if the specified {@code val} is {@code null}.
+     */
     public static final LongListBuilder of(LongList val) {
         return new LongListBuilder(val);
     }
 
+    /**
+     * 
+     * @param val
+     * @return
+     * @throws NullPointerException if the specified {@code val} is {@code null}.
+     */
     public static final FloatListBuilder of(FloatList val) {
         return new FloatListBuilder(val);
     }
 
+    /**
+     * 
+     * @param val
+     * @return
+     * @throws NullPointerException if the specified {@code val} is {@code null}.
+     */
     public static final DoubleListBuilder of(DoubleList val) {
         return new DoubleListBuilder(val);
     }
 
+    /**
+     * 
+     * @param val
+     * @return
+     * @throws NullPointerException if the specified {@code val} is {@code null}.
+     */
     public static final <T, L extends List<T>> ListBuilder<T, L> of(L val) {
         return new ListBuilder<>(val);
     }
 
+    /**
+     * 
+     * @param val
+     * @return
+     * @throws NullPointerException if the specified {@code val} is {@code null}.
+     */
     public static final <T, C extends Collection<T>> CollectionBuilder<T, C> of(C val) {
         return new CollectionBuilder<>(val);
     }
 
+    /**
+     * 
+     * @param val
+     * @return
+     * @throws NullPointerException if the specified {@code val} is {@code null}.
+     */
     public static final <K, V, M extends Map<K, V>> MapBuilder<K, V, M> of(M val) {
         return new MapBuilder<>(val);
     }
 
+    /**
+     * 
+     * @param val
+     * @return
+     * @throws NullPointerException if the specified {@code val} is {@code null}.
+     */
     public static final <T> MultisetBuilder<T> of(Multiset<T> val) {
         return new MultisetBuilder<>(val);
     }
 
+    /**
+     * 
+     * @param val
+     * @return
+     * @throws NullPointerException if the specified {@code val} is {@code null}.
+     */
     public static final <T> LongMultisetBuilder<T> of(LongMultiset<T> val) {
         return new LongMultisetBuilder<>(val);
     }
 
+    /**
+     * 
+     * @param val
+     * @return
+     * @throws NullPointerException if the specified {@code val} is {@code null}.
+     */
     public static final <K, E, V extends Collection<E>, M extends Multimap<K, E, V>> MultimapBuilder<K, E, V, M> of(M val) {
         return new MultimapBuilder<>(val);
     }
 
+    /**
+     * 
+     * @param val
+     * @return
+     * @throws NullPointerException if the specified {@code val} is {@code null}.
+     */
     public static final <T> Builder<T> of(T val) {
         return new Builder<>(val);
     }

@@ -6,6 +6,10 @@
 
 * Rename `Maps.inverse` to `Maps.flatInvert`
 
+* Rename `Fn.Consumers/BiConsumers/TriConsumers/Functions/BiFunctions/TriFunctions/Predicates.of(...)` to `create(...)`
+
+* Remove `Fn.BiFunctions/TriFunctions.ofTuple()`, replaced with `Fn.tuple2()/tuple3()`.
+
 * Remove `MultimapBuilder.removeAll(Collection<? extends K> keysToRemove)`.
 
 * Add `MultimapBuilder.removeAll(K key, Collection<?> valuesToRemove)`.

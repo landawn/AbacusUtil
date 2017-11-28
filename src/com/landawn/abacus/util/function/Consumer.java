@@ -14,6 +14,7 @@
 
 package com.landawn.abacus.util.function;
 
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -26,4 +27,21 @@ public interface Consumer<T> extends java.util.function.Consumer<T>, Try.Consume
 
     @Override
     void accept(T t);
+
+    public static <T> Consumer<T> of(final Consumer<T> consumer) {
+        N.requireNonNull(consumer);
+
+        return consumer;
+    }
+
+    public static <T, R> Consumer<T> create(final Function<T, R> func) {
+        N.requireNonNull(func);
+
+        return new Consumer<T>() {
+            @Override
+            public void accept(T t) {
+                func.apply(t);
+            }
+        };
+    }
 }

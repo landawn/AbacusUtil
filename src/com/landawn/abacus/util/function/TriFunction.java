@@ -17,6 +17,7 @@ package com.landawn.abacus.util.function;
 import java.util.Objects;
 import java.util.function.Function;
 
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -34,5 +35,24 @@ public interface TriFunction<A, B, C, R> extends Try.TriFunction<A, B, C, R, Run
         Objects.requireNonNull(after);
 
         return (a, b, c) -> after.apply(apply(a, b, c));
+    }
+
+    public static <A, B, C, R> TriFunction<A, B, C, R> of(final TriFunction<A, B, C, R> func) {
+        N.requireNonNull(func);
+
+        return func;
+    }
+
+    public static <A, B, C> TriFunction<A, B, C, Void> create(final TriConsumer<A, B, C> triConsumer) {
+        N.requireNonNull(triConsumer);
+
+        return new TriFunction<A, B, C, Void>() {
+            @Override
+            public Void apply(A a, B b, C c) {
+                triConsumer.accept(a, b, c);
+
+                return null;
+            }
+        };
     }
 }

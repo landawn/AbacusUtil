@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import com.landawn.abacus.util.Fn;
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -27,6 +28,23 @@ import com.landawn.abacus.util.Try;
  * @author Haiyang Li
  */
 public interface BiConsumer<T, U> extends java.util.function.BiConsumer<T, U>, Try.BiConsumer<T, U, RuntimeException> {
+
+    public static <T, U> BiConsumer<T, U> of(final BiConsumer<T, U> biConsumer) {
+        N.requireNonNull(biConsumer);
+
+        return biConsumer;
+    }
+
+    public static <T, U, R> BiConsumer<T, U> create(final BiFunction<T, U, R> func) {
+        N.requireNonNull(func);
+
+        return new BiConsumer<T, U>() {
+            @Override
+            public void accept(T t, U u) {
+                func.apply(t, u);
+            }
+        };
+    }
 
     static <T, U> BiConsumer<T, U> doNothing() {
         return Fn.BiConsumers.doNothing();

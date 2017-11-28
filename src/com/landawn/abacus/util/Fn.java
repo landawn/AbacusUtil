@@ -15,7 +15,6 @@
  */
 package com.landawn.abacus.util;
 
-import java.util.AbstractMap;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -246,12 +245,12 @@ public final class Fn {
         }
     };
 
-    private static final BiFunction<Object, Object, Map.Entry<Object, Object>> ENTRY = new BiFunction<Object, Object, Map.Entry<Object, Object>>() {
-        @Override
-        public Map.Entry<Object, Object> apply(Object key, Object value) {
-            return new AbstractMap.SimpleImmutableEntry<>(key, value);
-        }
-    };
+    //    private static final BiFunction<Object, Object, Map.Entry<Object, Object>> ENTRY = new BiFunction<Object, Object, Map.Entry<Object, Object>>() {
+    //        @Override
+    //        public Map.Entry<Object, Object> apply(Object key, Object value) {
+    //            return new AbstractMap.SimpleImmutableEntry<>(key, value);
+    //        }
+    //    };
 
     private static final BiFunction<Object, Object, Pair<Object, Object>> PAIR = new BiFunction<Object, Object, Pair<Object, Object>>() {
         @Override
@@ -452,7 +451,9 @@ public final class Fn {
 
     @SuppressWarnings("rawtypes")
     public static <K, V> BiFunction<K, V, Map.Entry<K, V>> entry() {
-        return (BiFunction) ENTRY;
+        // return (BiFunction) ENTRY;
+
+        return (BiFunction) PAIR;
     }
 
     @SuppressWarnings("rawtypes")
@@ -672,19 +673,19 @@ public final class Fn {
         return (BiPredicate<T, T>) BiPredicates.LESS_EQUAL;
     }
 
-    public static Supplier<Boolean> and(final BooleanSupplier first, final BooleanSupplier second) {
-        return new Supplier<Boolean>() {
+    public static BooleanSupplier and(final BooleanSupplier first, final BooleanSupplier second) {
+        return new BooleanSupplier() {
             @Override
-            public Boolean get() {
+            public boolean getAsBoolean() {
                 return first.getAsBoolean() && second.getAsBoolean();
             }
         };
     }
 
-    public static Supplier<Boolean> and(final BooleanSupplier first, final BooleanSupplier second, final BooleanSupplier third) {
-        return new Supplier<Boolean>() {
+    public static BooleanSupplier and(final BooleanSupplier first, final BooleanSupplier second, final BooleanSupplier third) {
+        return new BooleanSupplier() {
             @Override
-            public Boolean get() {
+            public boolean getAsBoolean() {
                 return first.getAsBoolean() && second.getAsBoolean() && third.getAsBoolean();
             }
         };
@@ -757,19 +758,19 @@ public final class Fn {
         };
     }
 
-    public static Supplier<Boolean> or(final BooleanSupplier first, final BooleanSupplier second) {
-        return new Supplier<Boolean>() {
+    public static BooleanSupplier or(final BooleanSupplier first, final BooleanSupplier second) {
+        return new BooleanSupplier() {
             @Override
-            public Boolean get() {
+            public boolean getAsBoolean() {
                 return first.getAsBoolean() || second.getAsBoolean();
             }
         };
     }
 
-    public static Supplier<Boolean> or(final BooleanSupplier first, final BooleanSupplier second, final BooleanSupplier third) {
-        return new Supplier<Boolean>() {
+    public static BooleanSupplier or(final BooleanSupplier first, final BooleanSupplier second, final BooleanSupplier third) {
+        return new BooleanSupplier() {
             @Override
-            public Boolean get() {
+            public boolean getAsBoolean() {
                 return first.getAsBoolean() || second.getAsBoolean() || third.getAsBoolean();
             }
         };
@@ -2601,7 +2602,7 @@ public final class Fn {
             // singleton.
         }
 
-        public static <T, U> Predicate<T> of(final U u, final BiPredicate<? super T, ? super U> predicate) {
+        public static <T, U> Predicate<T> create(final U u, final BiPredicate<? super T, ? super U> predicate) {
             Objects.requireNonNull(predicate);
 
             return new Predicate<T>() {
@@ -2757,7 +2758,7 @@ public final class Fn {
             // singleton.
         }
 
-        public static <T, U> Consumer<T> of(final U u, final BiConsumer<? super T, ? super U> action) {
+        public static <T, U> Consumer<T> create(final U u, final BiConsumer<? super T, ? super U> action) {
             Objects.requireNonNull(action);
 
             return new Consumer<T>() {
@@ -2774,7 +2775,7 @@ public final class Fn {
          * @param func
          * @return
          */
-        public static <T> Consumer<T> of(final Function<? super T, ?> func) {
+        public static <T> Consumer<T> create(final Function<? super T, ?> func) {
             return new Consumer<T>() {
                 @Override
                 public void accept(T t) {
@@ -2937,7 +2938,7 @@ public final class Fn {
          * @param func
          * @return
          */
-        public static <T, U> BiConsumer<T, U> of(final BiFunction<? super T, ? super U, ?> func) {
+        public static <T, U> BiConsumer<T, U> create(final BiFunction<? super T, ? super U, ?> func) {
             return new BiConsumer<T, U>() {
                 @Override
                 public void accept(T t, U u) {
@@ -2962,7 +2963,7 @@ public final class Fn {
          * @param func
          * @return
          */
-        public static <A, B, C> TriConsumer<A, B, C> of(final TriFunction<? super A, ? super B, ? super C, ?> func) {
+        public static <A, B, C> TriConsumer<A, B, C> create(final TriFunction<? super A, ? super B, ? super C, ?> func) {
             return new TriConsumer<A, B, C>() {
                 @Override
                 public void accept(A a, B b, C c) {
@@ -2978,7 +2979,7 @@ public final class Fn {
             // singleton.
         }
 
-        public static <T, U, R> Function<T, R> of(final U u, final BiFunction<? super T, ? super U, R> func) {
+        public static <T, U, R> Function<T, R> create(final U u, final BiFunction<? super T, ? super U, R> func) {
             Objects.requireNonNull(func);
 
             return new Function<T, R>() {
@@ -2995,7 +2996,7 @@ public final class Fn {
          * @param action
          * @return
          */
-        public static <T, R> Function<T, Optional<R>> of(final Consumer<? super T> action) {
+        public static <T, R> Function<T, Optional<R>> create(final Consumer<? super T> action) {
             return new Function<T, Optional<R>>() {
                 @Override
                 public Optional<R> apply(T t) {
@@ -3023,14 +3024,6 @@ public final class Fn {
             @Override
             public Object apply(Object t, Object u) {
                 return u;
-            }
-        };
-
-        @SuppressWarnings("rawtypes")
-        private static final BiFunction<Object, Object, Tuple2> TUPLE = new BiFunction<Object, Object, Tuple2>() {
-            @Override
-            public Tuple2 apply(Object t, Object u) {
-                return Tuple.of(t, u);
             }
         };
 
@@ -3134,11 +3127,6 @@ public final class Fn {
             return (BiFunction<T, U, U>) RETURN_SECOND;
         }
 
-        @SuppressWarnings("rawtypes")
-        public static <T, U> BiFunction<T, U, Tuple2<T, U>> ofTuple() {
-            return (BiFunction) TUPLE;
-        }
-
         public static <T, C extends Collection<? super T>> BiFunction<C, T, C> ofAdd() {
             return (BiFunction<C, T, C>) ADD;
         }
@@ -3191,7 +3179,7 @@ public final class Fn {
          * @param action
          * @return
          */
-        public static <T, U, R> BiFunction<T, U, Optional<R>> of(final BiConsumer<? super T, ? super U> action) {
+        public static <T, U, R> BiFunction<T, U, Optional<R>> create(final BiConsumer<? super T, ? super U> action) {
             return new BiFunction<T, U, Optional<R>>() {
                 @Override
                 public Optional<R> apply(T t, U u) {
@@ -3208,21 +3196,8 @@ public final class Fn {
 
     public static final class TriFunctions {
 
-        @SuppressWarnings("rawtypes")
-        private static final TriFunction<Object, Object, Object, Tuple3> TUPLE = new TriFunction<Object, Object, Object, Tuple3>() {
-            @Override
-            public Tuple3 apply(Object a, Object b, Object c) {
-                return Tuple.of(a, b, c);
-            }
-        };
-
         private TriFunctions() {
             // singleton.
-        }
-
-        @SuppressWarnings("rawtypes")
-        public static <A, B, C> TriFunction<A, B, C, Tuple3<A, B, C>> ofTuple() {
-            return (TriFunction) TUPLE;
         }
 
         /**
@@ -3231,7 +3206,7 @@ public final class Fn {
          * @param action
          * @return
          */
-        public static <A, B, C, R> TriFunction<A, B, C, Optional<R>> of(final TriConsumer<? super A, ? super B, ? super C> action) {
+        public static <A, B, C, R> TriFunction<A, B, C, Optional<R>> create(final TriConsumer<? super A, ? super B, ? super C> action) {
             return new TriFunction<A, B, C, Optional<R>>() {
                 @Override
                 public Optional<R> apply(A a, B b, C c) {

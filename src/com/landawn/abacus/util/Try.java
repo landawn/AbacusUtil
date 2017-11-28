@@ -322,6 +322,23 @@ public final class Try<T extends AutoCloseable> {
 
     public static interface Runnable<E extends Exception> {
         void run() throws E;
+
+        public static <E extends Exception> Runnable<E> of(final Runnable<E> runnable) {
+            N.requireNonNull(runnable);
+
+            return runnable;
+        }
+
+        public static <R, E extends Exception> Runnable<E> create(final Callable<R, E> callable) {
+            N.requireNonNull(callable);
+
+            return new Runnable<E>() {
+                @Override
+                public void run() throws E {
+                    callable.call();
+                }
+            };
+        }
     }
 
     public static interface Callable<R, E extends Exception> extends java.util.concurrent.Callable<R> {
@@ -329,7 +346,13 @@ public final class Try<T extends AutoCloseable> {
         @Override
         R call() throws E;
 
-        public static <E extends Exception> Callable<Void, E> of(Runnable<E> cmd) {
+        public static <R, E extends Exception> Callable<R, E> of(final Callable<R, E> callable) {
+            N.requireNonNull(callable);
+
+            return callable;
+        }
+
+        public static <E extends Exception> Callable<Void, E> create(Runnable<E> cmd) {
             N.requireNonNull(cmd);
 
             return new Callable<Void, E>() {
@@ -397,14 +420,71 @@ public final class Try<T extends AutoCloseable> {
 
     public static interface Function<T, R, E extends Exception> {
         R apply(T t) throws E;
+
+        public static <T, R, E extends Exception> Function<T, R, E> of(final Function<T, R, E> func) {
+            N.requireNonNull(func);
+
+            return func;
+        }
+
+        public static <T, E extends Exception> Function<T, Void, E> create(final Consumer<T, E> consumer) {
+            N.requireNonNull(consumer);
+
+            return new Function<T, Void, E>() {
+                @Override
+                public Void apply(T t) throws E {
+                    consumer.accept(t);
+
+                    return null;
+                }
+            };
+        }
     }
 
     public static interface BiFunction<T, U, R, E extends Exception> {
         R apply(T t, U u) throws E;
+
+        public static <T, U, R, E extends Exception> BiFunction<T, U, R, E> of(final BiFunction<T, U, R, E> func) {
+            N.requireNonNull(func);
+
+            return func;
+        }
+
+        public static <T, U, E extends Exception> BiFunction<T, U, Void, E> create(final BiConsumer<T, U, E> biConsumer) {
+            N.requireNonNull(biConsumer);
+
+            return new BiFunction<T, U, Void, E>() {
+                @Override
+                public Void apply(T t, U u) throws E {
+                    biConsumer.accept(t, u);
+
+                    return null;
+                }
+            };
+        }
     }
 
     public static interface TriFunction<A, B, C, R, E extends Exception> {
         R apply(A a, B b, C c) throws E;
+
+        public static <A, B, C, R, E extends Exception> TriFunction<A, B, C, R, E> of(final TriFunction<A, B, C, R, E> func) {
+            N.requireNonNull(func);
+
+            return func;
+        }
+
+        public static <A, B, C, E extends Exception> TriFunction<A, B, C, Void, E> create(final TriConsumer<A, B, C, E> triConsumer) {
+            N.requireNonNull(triConsumer);
+
+            return new TriFunction<A, B, C, Void, E>() {
+                @Override
+                public Void apply(A a, B b, C c) throws E {
+                    triConsumer.accept(a, b, c);
+
+                    return null;
+                }
+            };
+        }
     }
 
     @SuppressWarnings("hiding")
@@ -414,14 +494,65 @@ public final class Try<T extends AutoCloseable> {
 
     public static interface Consumer<T, E extends Exception> {
         void accept(T t) throws E;
+
+        public static <T, E extends Exception> Consumer<T, E> of(final Consumer<T, E> consumer) {
+            N.requireNonNull(consumer);
+
+            return consumer;
+        }
+
+        public static <T, R, E extends Exception> Consumer<T, E> create(final Function<T, R, E> func) {
+            N.requireNonNull(func);
+
+            return new Consumer<T, E>() {
+                @Override
+                public void accept(T t) throws E {
+                    func.apply(t);
+                }
+            };
+        }
     }
 
     public static interface BiConsumer<T, U, E extends Exception> {
         void accept(T t, U u) throws E;
+
+        public static <T, U, E extends Exception> BiConsumer<T, U, E> of(final BiConsumer<T, U, E> biConsumer) {
+            N.requireNonNull(biConsumer);
+
+            return biConsumer;
+        }
+
+        public static <T, U, R, E extends Exception> BiConsumer<T, U, E> create(final BiFunction<T, U, R, E> func) {
+            N.requireNonNull(func);
+
+            return new BiConsumer<T, U, E>() {
+                @Override
+                public void accept(T t, U u) throws E {
+                    func.apply(t, u);
+                }
+            };
+        }
     }
 
     public static interface TriConsumer<A, B, C, E extends Exception> {
         void accept(A a, B b, C c) throws E;
+
+        public static <A, B, C, E extends Exception> TriConsumer<A, B, C, E> of(final TriConsumer<A, B, C, E> triConsumer) {
+            N.requireNonNull(triConsumer);
+
+            return triConsumer;
+        }
+
+        public static <A, B, C, R, E extends Exception> TriConsumer<A, B, C, E> create(final TriFunction<A, B, C, R, E> func) {
+            N.requireNonNull(func);
+
+            return new TriConsumer<A, B, C, E>() {
+                @Override
+                public void accept(A a, B b, C c) throws E {
+                    func.apply(a, b, c);
+                }
+            };
+        }
     }
 
     @SuppressWarnings("hiding")

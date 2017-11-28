@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import com.landawn.abacus.util.Fn;
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -30,6 +31,25 @@ public interface BiFunction<T, U, R> extends java.util.function.BiFunction<T, U,
 
     @Override
     R apply(T t, U u);
+
+    public static <T, U, R> BiFunction<T, U, R> of(final BiFunction<T, U, R> func) {
+        N.requireNonNull(func);
+
+        return func;
+    }
+
+    public static <T, U> BiFunction<T, U, Void> create(final BiConsumer<T, U> biConsumer) {
+        N.requireNonNull(biConsumer);
+
+        return new BiFunction<T, U, Void>() {
+            @Override
+            public Void apply(T t, U u) {
+                biConsumer.accept(t, u);
+
+                return null;
+            }
+        };
+    }
 
     static <T, R extends Collection<? super T>> BiFunction<R, T, R> ofAdd() {
         return Fn.BiFunctions.ofAdd();

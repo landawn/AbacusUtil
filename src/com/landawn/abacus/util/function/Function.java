@@ -15,6 +15,7 @@
 package com.landawn.abacus.util.function;
 
 import com.landawn.abacus.util.Fn;
+import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Try;
 
 /**
@@ -27,5 +28,24 @@ public interface Function<T, R> extends java.util.function.Function<T, R>, Try.F
 
     static <T> Function<T, T> identity() {
         return Fn.identity();
+    }
+
+    public static <T, R> Function<T, R> of(final Function<T, R> func) {
+        N.requireNonNull(func);
+
+        return func;
+    }
+
+    public static <T> Function<T, Void> create(final Consumer<T> consumer) {
+        N.requireNonNull(consumer);
+
+        return new Function<T, Void>() {
+            @Override
+            public Void apply(T t) {
+                consumer.accept(t);
+
+                return null;
+            }
+        };
     }
 }
