@@ -119,6 +119,22 @@ public final class Fn {
     };
 
     @SuppressWarnings("rawtypes")
+    private static final com.landawn.abacus.util.function.Callable EMPTY_CALLABLE = new com.landawn.abacus.util.function.Callable() {
+        @Override
+        public Object call() {
+            return null;
+        }
+    };
+
+    @SuppressWarnings("rawtypes")
+    private static final com.landawn.abacus.util.function.Function EMPTY_FUNCTION = new com.landawn.abacus.util.function.Function() {
+        @Override
+        public Object apply(Object t) {
+            return null;
+        }
+    };
+
+    @SuppressWarnings("rawtypes")
     private static final Consumer DO_NOTHING = new Consumer() {
         @Override
         public void accept(Object value) {
@@ -358,12 +374,30 @@ public final class Fn {
         return Comparators.reversedComparingBy(keyExtractor);
     }
 
+    public static <T> Consumer<T> doNothing() {
+        return DO_NOTHING;
+    }
+
     public static com.landawn.abacus.util.function.Runnable emptyAction() {
         return EMPTY_ACTION;
     }
 
-    public static <T> Consumer<T> doNothing() {
-        return DO_NOTHING;
+    /**
+     * Returns a {@code Callable} which always returns {@code null}.
+     * 
+     * @return
+     */
+    public static <T> com.landawn.abacus.util.function.Callable<T> emptyCallable() {
+        return EMPTY_CALLABLE;
+    }
+
+    /**
+     * Returns a {@code Function} which always returns {@code null}.
+     * 
+     * @return
+     */
+    public static <T, R> com.landawn.abacus.util.function.Function<T, R> emptyFunction() {
+        return EMPTY_FUNCTION;
     }
 
     public static <T> Consumer<T> println() {
@@ -2776,6 +2810,8 @@ public final class Fn {
          * @return
          */
         public static <T> Consumer<T> create(final Function<? super T, ?> func) {
+            Objects.requireNonNull(func);
+
             return new Consumer<T>() {
                 @Override
                 public void accept(T t) {
@@ -2939,6 +2975,8 @@ public final class Fn {
          * @return
          */
         public static <T, U> BiConsumer<T, U> create(final BiFunction<? super T, ? super U, ?> func) {
+            Objects.requireNonNull(func);
+
             return new BiConsumer<T, U>() {
                 @Override
                 public void accept(T t, U u) {
@@ -2964,6 +3002,8 @@ public final class Fn {
          * @return
          */
         public static <A, B, C> TriConsumer<A, B, C> create(final TriFunction<? super A, ? super B, ? super C, ?> func) {
+            Objects.requireNonNull(func);
+
             return new TriConsumer<A, B, C>() {
                 @Override
                 public void accept(A a, B b, C c) {
@@ -2997,6 +3037,8 @@ public final class Fn {
          * @return
          */
         public static <T, R> Function<T, Optional<R>> create(final Consumer<? super T> action) {
+            Objects.requireNonNull(action);
+
             return new Function<T, Optional<R>>() {
                 @Override
                 public Optional<R> apply(T t) {
@@ -3180,6 +3222,8 @@ public final class Fn {
          * @return
          */
         public static <T, U, R> BiFunction<T, U, Optional<R>> create(final BiConsumer<? super T, ? super U> action) {
+            Objects.requireNonNull(action);
+
             return new BiFunction<T, U, Optional<R>>() {
                 @Override
                 public Optional<R> apply(T t, U u) {
@@ -3207,6 +3251,8 @@ public final class Fn {
          * @return
          */
         public static <A, B, C, R> TriFunction<A, B, C, Optional<R>> create(final TriConsumer<? super A, ? super B, ? super C> action) {
+            Objects.requireNonNull(action);
+
             return new TriFunction<A, B, C, Optional<R>>() {
                 @Override
                 public Optional<R> apply(A a, B b, C c) {
