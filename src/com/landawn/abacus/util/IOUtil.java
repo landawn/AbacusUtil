@@ -2379,7 +2379,7 @@ public final class IOUtil {
             try {
                 closeable.close();
             } catch (Exception e) {
-                throw new UncheckedIOException(e);
+                throw N.toRuntimeException(e);
             }
         }
     }

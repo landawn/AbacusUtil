@@ -23,7 +23,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -381,7 +380,7 @@ abstract class AbstractStream<T> extends Stream<T> {
         final Function<T, Map.Entry<K, V>> mapper = new Function<T, Map.Entry<K, V>>() {
             @Override
             public Entry<K, V> apply(T t) {
-                return new AbstractMap.SimpleImmutableEntry<>(keyMapper.apply(t), valueMapper.apply(t));
+                return Pair.of(keyMapper.apply(t), valueMapper.apply(t));
             }
         };
 
@@ -450,6 +449,42 @@ abstract class AbstractStream<T> extends Stream<T> {
             @Override
             public int compare(T o1, T o2) {
                 return N.compare(keyExtractor.apply(o1), keyExtractor.apply(o2));
+            }
+        };
+
+        return sorted(comparator);
+    }
+
+    @Override
+    public Stream<T> sortedByInt(final ToIntFunction<? super T> keyExtractor) {
+        final Comparator<? super T> comparator = new Comparator<T>() {
+            @Override
+            public int compare(T o1, T o2) {
+                return N.compare(keyExtractor.applyAsInt(o1), keyExtractor.applyAsInt(o2));
+            }
+        };
+
+        return sorted(comparator);
+    }
+
+    @Override
+    public Stream<T> sortedByLong(final ToLongFunction<? super T> keyExtractor) {
+        final Comparator<? super T> comparator = new Comparator<T>() {
+            @Override
+            public int compare(T o1, T o2) {
+                return N.compare(keyExtractor.applyAsLong(o1), keyExtractor.applyAsLong(o2));
+            }
+        };
+
+        return sorted(comparator);
+    }
+
+    @Override
+    public Stream<T> sortedByDouble(final ToDoubleFunction<? super T> keyExtractor) {
+        final Comparator<? super T> comparator = new Comparator<T>() {
+            @Override
+            public int compare(T o1, T o2) {
+                return N.compare(keyExtractor.applyAsDouble(o1), keyExtractor.applyAsDouble(o2));
             }
         };
 

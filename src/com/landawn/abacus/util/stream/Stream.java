@@ -890,6 +890,12 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     @SuppressWarnings("rawtypes")
     public abstract Stream<T> sortedBy(Function<? super T, ? extends Comparable> keyExtractor);
 
+    public abstract Stream<T> sortedByInt(ToIntFunction<? super T> keyExtractor);
+
+    public abstract Stream<T> sortedByLong(ToLongFunction<? super T> keyExtractor);
+
+    public abstract Stream<T> sortedByDouble(ToDoubleFunction<? super T> keyExtractor);
+
     public abstract <E extends Exception> void forEach(Try.Consumer<? super T, E> action) throws E;
 
     /**

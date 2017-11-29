@@ -14,7 +14,6 @@
 
 package com.landawn.abacus.util.stream;
 
-import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -35,6 +34,7 @@ import com.landawn.abacus.util.Multiset;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.Nullable;
 import com.landawn.abacus.util.ObjIterator;
+import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.Try;
 import com.landawn.abacus.util.Tuple;
 import com.landawn.abacus.util.function.BiConsumer;
@@ -45,6 +45,9 @@ import com.landawn.abacus.util.function.Consumer;
 import com.landawn.abacus.util.function.Function;
 import com.landawn.abacus.util.function.Predicate;
 import com.landawn.abacus.util.function.Supplier;
+import com.landawn.abacus.util.function.ToDoubleFunction;
+import com.landawn.abacus.util.function.ToIntFunction;
+import com.landawn.abacus.util.function.ToLongFunction;
 
 /**
  * 
@@ -169,7 +172,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
         final BiFunction<K, V, Map.Entry<K, V>> zipFunction = new BiFunction<K, V, Map.Entry<K, V>>() {
             @Override
             public Entry<K, V> apply(K k, V v) {
-                return new AbstractMap.SimpleImmutableEntry<>(k, v);
+                return Pair.of(k, v);
             }
         };
 
@@ -182,7 +185,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
         final BiFunction<K, V, Map.Entry<K, V>> zipFunction = new BiFunction<K, V, Map.Entry<K, V>>() {
             @Override
             public Entry<K, V> apply(K k, V v) {
-                return new AbstractMap.SimpleImmutableEntry<>(k, v);
+                return Pair.of(k, v);
             }
         };
 
@@ -195,7 +198,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
         final BiFunction<K, V, Map.Entry<K, V>> zipFunction = new BiFunction<K, V, Map.Entry<K, V>>() {
             @Override
             public Entry<K, V> apply(K k, V v) {
-                return new AbstractMap.SimpleImmutableEntry<>(k, v);
+                return Pair.of(k, v);
             }
         };
 
@@ -208,7 +211,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
         final BiFunction<K, V, Map.Entry<K, V>> zipFunction = new BiFunction<K, V, Map.Entry<K, V>>() {
             @Override
             public Entry<K, V> apply(K k, V v) {
-                return new AbstractMap.SimpleImmutableEntry<>(k, v);
+                return Pair.of(k, v);
             }
         };
 
@@ -237,7 +240,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
         final Function<Map.Entry<K, V>, Map.Entry<V, K>> mapper = new Function<Map.Entry<K, V>, Map.Entry<V, K>>() {
             @Override
             public Entry<V, K> apply(Entry<K, V> e) {
-                return new AbstractMap.SimpleImmutableEntry<>(e.getValue(), e.getKey());
+                return Pair.of(e.getValue(), e.getKey());
             }
         };
 
@@ -290,7 +293,7 @@ public final class EntryStream<K, V> implements AutoCloseable {
         final Function<Map.Entry<K, V>, Map.Entry<KK, VV>> mapper = new Function<Map.Entry<K, V>, Map.Entry<KK, VV>>() {
             @Override
             public Entry<KK, VV> apply(Entry<K, V> t) {
-                return new AbstractMap.SimpleImmutableEntry<>(keyMapper.apply(t.getKey()), valueMapper.apply(t.getValue()));
+                return Pair.of(keyMapper.apply(t.getKey()), valueMapper.apply(t.getValue()));
             }
         };
 
@@ -324,16 +327,16 @@ public final class EntryStream<K, V> implements AutoCloseable {
         return of(s.flatMap(mapper));
     }
 
-    //    public <KK, VV> EntryStream<KK, VV> flatArray(final Function<? super Map.Entry<K, V>, Map<KK, VV>> mapper) {
-    //        final Function<Map.Entry<K, V>, Stream<Map.Entry<KK, VV>>> mapper2 = new Function<Map.Entry<K, V>, Stream<Map.Entry<KK, VV>>>() {
-    //            @Override
-    //            public Stream<Entry<KK, VV>> apply(Entry<K, V> t) {
-    //                return Stream.of(mapper.apply(t));
-    //            }
-    //        };
-    //
-    //        return flatMap(mapper2);
-    //    }
+    public <KK, VV> EntryStream<KK, VV> flatCollection(final Function<? super Map.Entry<K, V>, Collection<Map.Entry<KK, VV>>> mapper) {
+        final Function<Map.Entry<K, V>, Stream<Map.Entry<KK, VV>>> mapper2 = new Function<Map.Entry<K, V>, Stream<Map.Entry<KK, VV>>>() {
+            @Override
+            public Stream<Entry<KK, VV>> apply(Entry<K, V> t) {
+                return Stream.of(mapper.apply(t));
+            }
+        };
+
+        return flatMap(mapper2);
+    }
 
     public <KK> EntryStream<KK, V> flatMapKey(final Function<? super K, Stream<KK>> keyMapper) {
         final Function<Map.Entry<K, V>, Stream<Map.Entry<KK, V>>> mapper2 = new Function<Map.Entry<K, V>, Stream<Map.Entry<KK, V>>>() {
@@ -342,7 +345,23 @@ public final class EntryStream<K, V> implements AutoCloseable {
                 return keyMapper.apply(e.getKey()).map(new Function<KK, Map.Entry<KK, V>>() {
                     @Override
                     public Map.Entry<KK, V> apply(KK kk) {
-                        return new AbstractMap.SimpleImmutableEntry<>(kk, e.getValue());
+                        return Pair.of(kk, e.getValue());
+                    }
+                });
+            }
+        };
+
+        return flatMap(mapper2);
+    }
+
+    public <KK> EntryStream<KK, V> flatCollectionKey(final Function<? super K, Collection<KK>> keyMapper) {
+        final Function<Map.Entry<K, V>, Stream<Map.Entry<KK, V>>> mapper2 = new Function<Map.Entry<K, V>, Stream<Map.Entry<KK, V>>>() {
+            @Override
+            public Stream<Entry<KK, V>> apply(final Map.Entry<K, V> e) {
+                return Stream.of(keyMapper.apply(e.getKey())).map(new Function<KK, Map.Entry<KK, V>>() {
+                    @Override
+                    public Map.Entry<KK, V> apply(KK kk) {
+                        return Pair.of(kk, e.getValue());
                     }
                 });
             }
@@ -358,7 +377,23 @@ public final class EntryStream<K, V> implements AutoCloseable {
                 return valueMapper.apply(e.getValue()).map(new Function<VV, Map.Entry<K, VV>>() {
                     @Override
                     public Map.Entry<K, VV> apply(VV vv) {
-                        return new AbstractMap.SimpleImmutableEntry<>(e.getKey(), vv);
+                        return Pair.of(e.getKey(), vv);
+                    }
+                });
+            }
+        };
+
+        return flatMap(mapper2);
+    }
+
+    public <VV> EntryStream<K, VV> flatCollectionValue(final Function<? super V, Collection<VV>> valueMapper) {
+        final Function<Map.Entry<K, V>, Stream<Map.Entry<K, VV>>> mapper2 = new Function<Map.Entry<K, V>, Stream<Map.Entry<K, VV>>>() {
+            @Override
+            public Stream<Entry<K, VV>> apply(final Entry<K, V> e) {
+                return Stream.of(valueMapper.apply(e.getValue())).map(new Function<VV, Map.Entry<K, VV>>() {
+                    @Override
+                    public Map.Entry<K, VV> apply(VV vv) {
+                        return Pair.of(e.getKey(), vv);
                     }
                 });
             }
@@ -539,6 +574,39 @@ public final class EntryStream<K, V> implements AutoCloseable {
     @SuppressWarnings("rawtypes")
     public EntryStream<K, V> sortedBy(Function<? super Map.Entry<K, V>, ? extends Comparable> keyExtractor) {
         return of(s.sortedBy(keyExtractor));
+    }
+
+    public EntryStream<K, V> sortedByInt(final ToIntFunction<? super Map.Entry<K, V>> keyExtractor) {
+        final Comparator<? super Map.Entry<K, V>> comparator = new Comparator<Map.Entry<K, V>>() {
+            @Override
+            public int compare(Map.Entry<K, V> o1, Map.Entry<K, V> o2) {
+                return N.compare(keyExtractor.applyAsInt(o1), keyExtractor.applyAsInt(o2));
+            }
+        };
+
+        return sorted(comparator);
+    }
+
+    public EntryStream<K, V> sortedByLong(final ToLongFunction<? super Map.Entry<K, V>> keyExtractor) {
+        final Comparator<? super Map.Entry<K, V>> comparator = new Comparator<Map.Entry<K, V>>() {
+            @Override
+            public int compare(Map.Entry<K, V> o1, Map.Entry<K, V> o2) {
+                return N.compare(keyExtractor.applyAsLong(o1), keyExtractor.applyAsLong(o2));
+            }
+        };
+
+        return sorted(comparator);
+    }
+
+    public EntryStream<K, V> sortedByDouble(final ToDoubleFunction<? super Map.Entry<K, V>> keyExtractor) {
+        final Comparator<? super Map.Entry<K, V>> comparator = new Comparator<Map.Entry<K, V>>() {
+            @Override
+            public int compare(Map.Entry<K, V> o1, Map.Entry<K, V> o2) {
+                return N.compare(keyExtractor.applyAsDouble(o1), keyExtractor.applyAsDouble(o2));
+            }
+        };
+
+        return sorted(comparator);
     }
 
     public EntryStream<K, V> distinct() {

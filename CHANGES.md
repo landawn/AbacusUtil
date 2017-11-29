@@ -14,9 +14,15 @@
 
 * Add `MultimapBuilder.removeAll(K key, Collection<?> valuesToRemove)`.
 
+* Add `Stream.partitionBy/partitionByToEntry/partitionTo`.
+
+* Add `EntryStream/Stream.sortedByInt/sortedByLong/sortedByDouble`.
+
+* Add `EntryStream.flatCollectionKey/flatCollectionValue/flatArrayKey/flatArrayValue`.
+
 * Add `N.ifOrEmpty`.
 
-* Add `Stream.partitionBy/partitionByToEntry/partitionTo`.
+* Add `If/IF`.
 
 ### 1.1.1
 

@@ -271,8 +271,7 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
         clsNum.put(IntList.class, idx++);
         clsNum.put(LongList.class, idx++);
         clsNum.put(FloatList.class, idx++);
-        clsNum.put(DoubleList.class, idx++);
-        clsNum.put(List.class, idx++); // 16
+        clsNum.put(DoubleList.class, idx++); // 15
     }
 
     @SuppressWarnings("rawtypes")
@@ -353,9 +352,6 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
                     case 15:
                         ((DoubleList) t).addAll((DoubleList) u);
                         return t;
-                    case 16:
-                        ((List) t).addAll((List) u);
-                        return t;
 
                     default:
                         throw new RuntimeException(cls.getCanonicalName()
@@ -416,9 +412,6 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
                         break;
                     case 15:
                         ((DoubleList) t).addAll((DoubleList) u);
-                        break;
-                    case 16:
-                        ((List) t).addAll((List) u);
                         break;
 
                     default:

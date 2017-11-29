@@ -119,22 +119,6 @@ public final class Fn {
     };
 
     @SuppressWarnings("rawtypes")
-    private static final com.landawn.abacus.util.function.Callable EMPTY_CALLABLE = new com.landawn.abacus.util.function.Callable() {
-        @Override
-        public Object call() {
-            return null;
-        }
-    };
-
-    @SuppressWarnings("rawtypes")
-    private static final com.landawn.abacus.util.function.Function EMPTY_FUNCTION = new com.landawn.abacus.util.function.Function() {
-        @Override
-        public Object apply(Object t) {
-            return null;
-        }
-    };
-
-    @SuppressWarnings("rawtypes")
     private static final Consumer DO_NOTHING = new Consumer() {
         @Override
         public void accept(Object value) {
@@ -334,11 +318,39 @@ public final class Fn {
         }
     };
 
+    private static final Predicate<CharSequence> IS_NULL_OR_EMPTY = new Predicate<CharSequence>() {
+        @Override
+        public boolean test(CharSequence value) {
+            return value == null || value.length() == 0;
+        }
+    };
+
+    private static final Predicate<CharSequence> IS_NULL_OR_EMPTY_OR_BLANK = new Predicate<CharSequence>() {
+        @Override
+        public boolean test(CharSequence value) {
+            return N.isNullOrEmptyOrBlank(value);
+        }
+    };
+
     @SuppressWarnings("rawtypes")
     private static final Predicate NOT_NULL = new Predicate() {
         @Override
         public boolean test(Object value) {
             return value != null;
+        }
+    };
+
+    private static final Predicate<CharSequence> NOT_NULL_OR_EMPTY = new Predicate<CharSequence>() {
+        @Override
+        public boolean test(CharSequence value) {
+            return value != null && value.length() > 0;
+        }
+    };
+
+    private static final Predicate<CharSequence> NOT_NULL_OR_EMPTY_OR_BLANK = new Predicate<CharSequence>() {
+        @Override
+        public boolean test(CharSequence value) {
+            return N.notNullOrEmptyOrBlank(value);
         }
     };
 
@@ -374,30 +386,12 @@ public final class Fn {
         return Comparators.reversedComparingBy(keyExtractor);
     }
 
-    public static <T> Consumer<T> doNothing() {
-        return DO_NOTHING;
-    }
-
     public static com.landawn.abacus.util.function.Runnable emptyAction() {
         return EMPTY_ACTION;
     }
 
-    /**
-     * Returns a {@code Callable} which always returns {@code null}.
-     * 
-     * @return
-     */
-    public static <T> com.landawn.abacus.util.function.Callable<T> emptyCallable() {
-        return EMPTY_CALLABLE;
-    }
-
-    /**
-     * Returns a {@code Function} which always returns {@code null}.
-     * 
-     * @return
-     */
-    public static <T, R> com.landawn.abacus.util.function.Function<T, R> emptyFunction() {
-        return EMPTY_FUNCTION;
+    public static <T> Consumer<T> doNothing() {
+        return DO_NOTHING;
     }
 
     public static <T> Consumer<T> println() {
@@ -553,8 +547,24 @@ public final class Fn {
         return IS_NULL;
     }
 
+    public static <T extends CharSequence> Predicate<T> isNullOrEmpty() {
+        return (Predicate<T>) IS_NULL_OR_EMPTY;
+    }
+
+    public static <T extends CharSequence> Predicate<T> isNullOrEmptyOrBlank() {
+        return (Predicate<T>) IS_NULL_OR_EMPTY_OR_BLANK;
+    }
+
     public static <T> Predicate<T> notNull() {
         return NOT_NULL;
+    }
+
+    public static <T extends CharSequence> Predicate<T> notNullOrEmpty() {
+        return (Predicate<T>) NOT_NULL_OR_EMPTY;
+    }
+
+    public static <T extends CharSequence> Predicate<T> notNullOrEmptyOrBlank() {
+        return (Predicate<T>) NOT_NULL_OR_EMPTY_OR_BLANK;
     }
 
     public static <T> Predicate<T> equal(final Object target) {

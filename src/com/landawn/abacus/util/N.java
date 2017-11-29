@@ -108,6 +108,7 @@ import com.landawn.abacus.core.EntityManagerUtil;
 import com.landawn.abacus.core.MapEntity;
 import com.landawn.abacus.core.RowDataSet;
 import com.landawn.abacus.exception.AbacusException;
+import com.landawn.abacus.exception.UncheckedException;
 import com.landawn.abacus.exception.UncheckedIOException;
 import com.landawn.abacus.exception.UncheckedSQLException;
 import com.landawn.abacus.logging.Logger;
@@ -9105,10 +9106,6 @@ public final class N {
         return (m == null) || (m.isEmpty());
     }
 
-    public static boolean isNullOrEmpty(final List<?> list) {
-        return (list == null) || (list.isEmpty());
-    }
-
     @SuppressWarnings("rawtypes")
     public static boolean isNullOrEmpty(final PrimitiveList list) {
         return (list == null) || (list.isEmpty());
@@ -9195,10 +9192,6 @@ public final class N {
 
     public static boolean notNullOrEmpty(final Map<?, ?> m) {
         return (m != null) && (m.size() > 0);
-    }
-
-    public static boolean notNullOrEmpty(final List<?> list) {
-        return (list != null) && (list.size() > 0);
     }
 
     @SuppressWarnings("rawtypes")
@@ -31698,13 +31691,13 @@ public final class N {
         if (e instanceof RuntimeException) {
             return (RuntimeException) e;
         } else if (e instanceof ExecutionException || e instanceof InvocationTargetException) {
-            return e.getCause() == null ? new RuntimeException(e) : toRuntimeException(e.getCause());
+            return e.getCause() == null ? new UncheckedException(e) : toRuntimeException(e.getCause());
         } else if (e instanceof IOException) {
-            return new UncheckedIOException(e);
+            return new UncheckedIOException((IOException) e);
         } else if (e instanceof SQLException) {
-            return new UncheckedSQLException(e);
+            return new UncheckedSQLException((SQLException) e);
         } else {
-            return new RuntimeException(e);
+            return new UncheckedException(e);
         }
     }
 

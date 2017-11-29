@@ -85,6 +85,7 @@ import com.landawn.abacus.util.OptionalLong;
 import com.landawn.abacus.util.Pair;
 import com.landawn.abacus.util.ShortList;
 import com.landawn.abacus.util.ShortSummaryStatistics;
+import com.landawn.abacus.util.Tuple;
 import com.landawn.abacus.util.function.BiConsumer;
 import com.landawn.abacus.util.function.BiFunction;
 import com.landawn.abacus.util.function.BiPredicate;
@@ -4586,8 +4587,8 @@ public class Collectors {
             return new AbstractSet<Map.Entry<Boolean, T>>() {
                 @Override
                 public Iterator<Map.Entry<Boolean, T>> iterator() {
-                    Map.Entry<Boolean, T> falseEntry = new SimpleImmutableEntry<>(false, forFalse);
-                    Map.Entry<Boolean, T> trueEntry = new SimpleImmutableEntry<>(true, forTrue);
+                    Map.Entry<Boolean, T> falseEntry = Tuple.of(false, forFalse);
+                    Map.Entry<Boolean, T> trueEntry = Tuple.of(true, forTrue);
                     return Arrays.asList(falseEntry, trueEntry).iterator();
                 }
 
