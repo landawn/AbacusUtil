@@ -747,24 +747,6 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
         }
     }
 
-    static void setError(final Holder<Throwable> errorHolder, Throwable e, final MutableBoolean onGoing) {
-        onGoing.setFalse();
-
-        synchronized (errorHolder) {
-            if (errorHolder.value() == null) {
-                errorHolder.setValue(e);
-            } else {
-                errorHolder.value().addSuppressed(e);
-            }
-        }
-    }
-
-    static void throwError(final Holder<Throwable> errorHolder, final MutableBoolean onGoing) {
-        onGoing.setFalse();
-
-        throw N.toRuntimeException(errorHolder.value());
-    }
-
     static void setError(final Holder<Throwable> errorHolder, Throwable e) {
         synchronized (errorHolder) {
             if (errorHolder.value() == null) {
@@ -775,9 +757,21 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
         }
     }
 
-    //    static void throwError(final Holder<Throwable> errorHolder) {
-    //        throw N.toRuntimeException(errorHolder.value());
-    //    }
+    static void setError(final Holder<Throwable> errorHolder, Throwable e, final MutableBoolean onGoing) {
+        onGoing.setFalse();
+
+        setError(errorHolder, e);
+    }
+
+    static void throwError(final Holder<Throwable> errorHolder, final MutableBoolean onGoing) {
+        onGoing.setFalse();
+
+        synchronized (errorHolder) {
+            if (errorHolder.value() != null) {
+                throw N.toRuntimeException(errorHolder.getAndSet(null));
+            }
+        }
+    }
 
     static void complete(final List<CompletableFuture<Void>> futureList, final Holder<Throwable> eHolder) {
         if (eHolder.value() != null) {

@@ -15,6 +15,8 @@
  */
 package com.landawn.abacus.util;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -3274,6 +3276,7 @@ public final class Fn {
     }
 
     public static final class BinaryOperators {
+
         @SuppressWarnings("rawtypes")
         private static final BinaryOperator THROWING_MERGER = new BinaryOperator() {
             @Override
@@ -3322,47 +3325,137 @@ public final class Fn {
             }
         };
 
+        private static final BinaryOperator<Joiner> MERGE = new BinaryOperator<Joiner>() {
+            @Override
+            public Joiner apply(Joiner t, Joiner u) {
+                return t.merge(u);
+            }
+        };
+
+        private static final BinaryOperator<StringBuilder> APPEND = new BinaryOperator<StringBuilder>() {
+            @Override
+            public StringBuilder apply(StringBuilder t, StringBuilder u) {
+                return t.append(u);
+            }
+        };
+
+        private static final BinaryOperator<String> CONCAT = new BinaryOperator<String>() {
+            @Override
+            public String apply(String t, String u) {
+                return t + u;
+            }
+        };
+
+        private static final BinaryOperator<Integer> ADD_INTEGER = new BinaryOperator<Integer>() {
+            @Override
+            public Integer apply(Integer t, Integer u) {
+                return t.intValue() + u.intValue();
+            }
+        };
+
+        private static final BinaryOperator<Long> ADD_LONG = new BinaryOperator<Long>() {
+            @Override
+            public Long apply(Long t, Long u) {
+                return t.longValue() + u.longValue();
+            }
+        };
+
+        private static final BinaryOperator<Double> ADD_DOUBLE = new BinaryOperator<Double>() {
+            @Override
+            public Double apply(Double t, Double u) {
+                return t.doubleValue() + u.doubleValue();
+            }
+        };
+
+        private static final BinaryOperator<BigInteger> ADD_BIG_INTEGER = new BinaryOperator<BigInteger>() {
+            @Override
+            public BigInteger apply(BigInteger t, BigInteger u) {
+                return t.add(u);
+            }
+        };
+
+        private static final BinaryOperator<BigDecimal> ADD_BIG_DECIMAL = new BinaryOperator<BigDecimal>() {
+            @Override
+            public BigDecimal apply(BigDecimal t, BigDecimal u) {
+                return t.add(u);
+            }
+        };
+
+        @SuppressWarnings({ "rawtypes" })
+        private static final BinaryOperator<Comparable> MIN = new BinaryOperator<Comparable>() {
+            @Override
+            public Comparable apply(Comparable t, Comparable u) {
+                return N.compare(t, u) <= 0 ? t : u;
+            }
+        };
+
+        @SuppressWarnings("rawtypes")
+        private static final BinaryOperator<Comparable> MAX = new BinaryOperator<Comparable>() {
+            @Override
+            public Comparable apply(Comparable t, Comparable u) {
+                return N.compare(t, u) >= 0 ? t : u;
+            }
+        };
+
         private BinaryOperators() {
             // singleton.
         }
 
+        @SuppressWarnings("unchecked")
         public static <T, C extends Collection<T>> BinaryOperator<C> ofAddAll() {
             return (BinaryOperator<C>) ADD_ALL;
         }
 
+        @SuppressWarnings("unchecked")
         public static <T, C extends Collection<T>> BinaryOperator<C> ofRemoveAll() {
             return (BinaryOperator<C>) REMOVE_ALL;
         }
 
+        @SuppressWarnings("unchecked")
         public static <K, V, M extends Map<K, V>> BinaryOperator<M> ofPutAll() {
             return (BinaryOperator<M>) PUT_ALL;
         }
 
         public static BinaryOperator<Joiner> ofMerge() {
-            return new BinaryOperator<Joiner>() {
-                @Override
-                public Joiner apply(Joiner t, Joiner u) {
-                    return t.merge(u);
-                }
-            };
+            return MERGE;
         }
 
         public static BinaryOperator<StringBuilder> ofAppend() {
-            return new BinaryOperator<StringBuilder>() {
-                @Override
-                public StringBuilder apply(StringBuilder t, StringBuilder u) {
-                    return t.append(u);
-                }
-            };
+            return APPEND;
         }
 
-        public static BinaryOperator<String> ofJoin(final String seperator) {
-            return new BinaryOperator<String>() {
-                @Override
-                public String apply(String t, String u) {
-                    return t + seperator + u;
-                }
-            };
+        public static BinaryOperator<String> ofConcat() {
+            return CONCAT;
+        }
+
+        public static BinaryOperator<Integer> ofAddInt() {
+            return ADD_INTEGER;
+        }
+
+        public static BinaryOperator<Long> ofAddLong() {
+            return ADD_LONG;
+        }
+
+        public static BinaryOperator<Double> ofAddDouble() {
+            return ADD_DOUBLE;
+        }
+
+        public static BinaryOperator<BigInteger> ofAddBigInteger() {
+            return ADD_BIG_INTEGER;
+        }
+
+        public static BinaryOperator<BigDecimal> ofAddBigDecimal() {
+            return ADD_BIG_DECIMAL;
+        }
+
+        @SuppressWarnings({ "unchecked", "rawtypes" })
+        public static <T extends Comparable<? super T>> BinaryOperator<T> min() {
+            return (BinaryOperator) MIN;
+        }
+
+        @SuppressWarnings({ "unchecked", "rawtypes" })
+        public static <T extends Comparable<? super T>> BinaryOperator<T> max() {
+            return (BinaryOperator) MAX;
         }
 
         public static <T> BinaryOperator<T> minBy(final Comparator<? super T> comparator) {

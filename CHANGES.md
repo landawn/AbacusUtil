@@ -18,7 +18,7 @@
 
 * Add `EntryStream/Stream.sortedByInt/sortedByLong/sortedByDouble`.
 
-* Add `EntryStream.flatCollectionKey/flatCollectionValue/flatArrayKey/flatArrayValue`.
+* Add `EntryStream.flatCollectionKey/flatCollectionValue`.
 
 * Add `N.ifOrEmpty`.
 
