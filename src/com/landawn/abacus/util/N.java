@@ -17741,6 +17741,8 @@ public final class N {
     }
 
     public static <T, E extends Exception> void forEach(final T[] a, final Try.Consumer<? super T, E> action) throws E {
+        N.requireNonNull(action);
+
         if (N.isNullOrEmpty(a)) {
             return;
         }
@@ -17753,6 +17755,7 @@ public final class N {
     public static <T, E extends Exception> void forEach(final T[] a, final int fromIndex, final int toIndex, final Try.Consumer<? super T, E> action) throws E {
         N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex,
                 a == null ? 0 : a.length);
+        N.requireNonNull(action);
 
         if (N.isNullOrEmpty(a)) {
             return;
@@ -17770,6 +17773,8 @@ public final class N {
     }
 
     public static <T, E extends Exception> void forEach(final T[] a, final Try.IndexedConsumer<? super T, E> action) throws E {
+        N.requireNonNull(action);
+
         if (N.isNullOrEmpty(a)) {
             return;
         }
@@ -17781,6 +17786,7 @@ public final class N {
             throws E {
         N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex,
                 a == null ? 0 : a.length);
+        N.requireNonNull(action);
 
         if (N.isNullOrEmpty(a)) {
             return;
@@ -17799,6 +17805,9 @@ public final class N {
 
     public static <T, R, E extends Exception, E2 extends Exception> R forEach(final T[] a, final R seed, final Try.BiFunction<R, ? super T, R, E> accumulator,
             final Try.BiPredicate<? super R, ? super T, E2> conditionToBreak) throws E, E2 {
+        N.requireNonNull(accumulator);
+        N.requireNonNull(conditionToBreak);
+
         if (N.isNullOrEmpty(a)) {
             return seed;
         }
@@ -17820,6 +17829,8 @@ public final class N {
             final Try.BiFunction<R, ? super T, R, E> accumulator, final Try.BiPredicate<? super R, ? super T, E2> conditionToBreak) throws E, E2 {
         N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex,
                 a == null ? 0 : a.length);
+        N.requireNonNull(accumulator);
+        N.requireNonNull(conditionToBreak);
 
         if (N.isNullOrEmpty(a)) {
             return seed;
@@ -17850,6 +17861,9 @@ public final class N {
 
     public static <T, R, E extends Exception, E2 extends Exception> R forEach(final T[] a, final R seed,
             final Try.IndexedBiFunction<R, ? super T, R, E> accumulator, final Try.BiPredicate<? super R, ? super T, E2> conditionToBreak) throws E, E2 {
+        N.requireNonNull(accumulator);
+        N.requireNonNull(conditionToBreak);
+
         if (N.isNullOrEmpty(a)) {
             return seed;
         }
@@ -17871,6 +17885,8 @@ public final class N {
             final Try.IndexedBiFunction<R, ? super T, R, E> accumulator, final Try.BiPredicate<? super R, ? super T, E2> conditionToBreak) throws E, E2 {
         N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex,
                 a == null ? 0 : a.length);
+        N.requireNonNull(accumulator);
+        N.requireNonNull(conditionToBreak);
 
         if (N.isNullOrEmpty(a)) {
             return seed;
@@ -17900,6 +17916,8 @@ public final class N {
     }
 
     public static <T, C extends Collection<? extends T>, E extends Exception> void forEach(final C c, final Try.Consumer<? super T, E> action) throws E {
+        N.requireNonNull(action);
+
         if (N.isNullOrEmpty(c)) {
             return;
         }
@@ -17925,6 +17943,7 @@ public final class N {
             final Try.Consumer<? super T, E> action) throws E {
         N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex,
                 c == null ? 0 : c.size());
+        N.requireNonNull(action);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return;
@@ -17985,6 +18004,8 @@ public final class N {
     }
 
     public static <T, C extends Collection<? extends T>, E extends Exception> void forEach(final C c, final Try.IndexedConsumer<? super T, E> action) throws E {
+        N.requireNonNull(action);
+
         if (N.isNullOrEmpty(c)) {
             return;
         }
@@ -18011,6 +18032,7 @@ public final class N {
             final Try.IndexedConsumer<? super T, E> action) throws E {
         N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex,
                 c == null ? 0 : c.size());
+        N.requireNonNull(action);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return;
@@ -18072,6 +18094,9 @@ public final class N {
 
     public static <T, C extends Collection<? extends T>, R, E extends Exception, E2 extends Exception> R forEach(final C c, final R seed,
             Try.BiFunction<R, ? super T, R, E> accumulator, final Try.BiPredicate<? super R, ? super T, E2> conditionToBreak) throws E, E2 {
+        N.requireNonNull(accumulator);
+        N.requireNonNull(conditionToBreak);
+
         if (N.isNullOrEmpty(c)) {
             return seed;
         }
@@ -18093,6 +18118,8 @@ public final class N {
             final R seed, final Try.BiFunction<R, ? super T, R, E> accumulator, final Try.BiPredicate<? super R, ? super T, E2> conditionToBreak) throws E, E2 {
         N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex,
                 c == null ? 0 : c.size());
+        N.requireNonNull(accumulator);
+        N.requireNonNull(conditionToBreak);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return seed;
@@ -18177,6 +18204,9 @@ public final class N {
 
     public static <T, C extends Collection<? extends T>, R, E extends Exception, E2 extends Exception> R forEach(final C c, final R seed,
             final Try.IndexedBiFunction<R, ? super T, R, E> accumulator, final Try.BiPredicate<? super R, ? super T, E2> conditionToBreak) throws E, E2 {
+        N.requireNonNull(accumulator);
+        N.requireNonNull(conditionToBreak);
+
         if (N.isNullOrEmpty(c)) {
             return seed;
         }
@@ -18199,6 +18229,8 @@ public final class N {
             throws E, E2 {
         N.checkFromToIndex(fromIndex < toIndex ? fromIndex : (toIndex == -1 ? 0 : toIndex), fromIndex < toIndex ? toIndex : fromIndex,
                 c == null ? 0 : c.size());
+        N.requireNonNull(accumulator);
+        N.requireNonNull(conditionToBreak);
 
         if (N.isNullOrEmpty(c) && fromIndex == 0 && toIndex == 0) {
             return seed;
@@ -18283,6 +18315,9 @@ public final class N {
 
     public static <T, U, E extends Exception, E2 extends Exception> void forEach(final T[] a,
             final Try.Function<? super T, ? extends Collection<U>, E> flatMapper, final Try.BiConsumer<? super T, ? super U, E2> action) throws E, E2 {
+        N.requireNonNull(flatMapper);
+        N.requireNonNull(action);
+
         if (N.isNullOrEmpty(a)) {
             return;
         }
@@ -18300,6 +18335,9 @@ public final class N {
 
     public static <T, U, E extends Exception, E2 extends Exception> void forEach(final Collection<T> c,
             final Try.Function<? super T, ? extends Collection<U>, E> flatMapper, final Try.BiConsumer<? super T, ? super U, E2> action) throws E, E2 {
+        N.requireNonNull(flatMapper);
+        N.requireNonNull(action);
+
         if (N.isNullOrEmpty(c)) {
             return;
         }
@@ -18318,6 +18356,10 @@ public final class N {
     public static <T, T2, T3, E extends Exception, E2 extends Exception, E3 extends Exception> void forEach(final T[] a,
             final Try.Function<? super T, ? extends Collection<T2>, E> flatMapper, final Try.Function<? super T2, ? extends Collection<T3>, E2> flatMapper2,
             final Try.TriConsumer<? super T, ? super T2, ? super T3, E3> action) throws E, E2, E3 {
+        N.requireNonNull(flatMapper);
+        N.requireNonNull(flatMapper2);
+        N.requireNonNull(action);
+
         if (N.isNullOrEmpty(a)) {
             return;
         }
@@ -18342,6 +18384,10 @@ public final class N {
     public static <T, T2, T3, E extends Exception, E2 extends Exception, E3 extends Exception> void forEach(final Collection<T> c,
             final Try.Function<? super T, ? extends Collection<T2>, E> flatMapper, final Try.Function<? super T2, ? extends Collection<T3>, E2> flatMapper2,
             final Try.TriConsumer<? super T, ? super T2, ? super T3, E3> action) throws E, E2, E3 {
+        N.requireNonNull(flatMapper);
+        N.requireNonNull(flatMapper2);
+        N.requireNonNull(action);
+
         if (N.isNullOrEmpty(c)) {
             return;
         }
@@ -18364,6 +18410,8 @@ public final class N {
     }
 
     public static <A, B, E extends Exception> void forEach(final A[] a, final B[] b, final Try.BiConsumer<? super A, ? super B, E> action) throws E {
+        N.requireNonNull(action);
+
         if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
             return;
         }
@@ -18375,6 +18423,8 @@ public final class N {
 
     public static <A, B, E extends Exception> void forEach(final Collection<A> a, final Collection<B> b, final Try.BiConsumer<? super A, ? super B, E> action)
             throws E {
+        N.requireNonNull(action);
+
         if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b)) {
             return;
         }
@@ -18389,6 +18439,8 @@ public final class N {
 
     public static <A, B, C, E extends Exception> void forEach(final A[] a, final B[] b, final C[] c,
             final Try.TriConsumer<? super A, ? super B, ? super C, E> action) throws E {
+        N.requireNonNull(action);
+
         if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b) || N.isNullOrEmpty(c)) {
             return;
         }
@@ -18400,6 +18452,8 @@ public final class N {
 
     public static <A, B, C, E extends Exception> void forEach(final Collection<A> a, final Collection<B> b, final Collection<C> c,
             final Try.TriConsumer<? super A, ? super B, ? super C, E> action) throws E {
+        N.requireNonNull(action);
+
         if (N.isNullOrEmpty(a) || N.isNullOrEmpty(b) || N.isNullOrEmpty(c)) {
             return;
         }
@@ -18415,6 +18469,8 @@ public final class N {
 
     public static <A, B, E extends Exception> void forEach(final A[] a, final B[] b, final A valueForNoneA, final B valueForNoneB,
             final Try.BiConsumer<? super A, ? super B, E> action) throws E {
+        N.requireNonNull(action);
+
         final int lenA = a == null ? 0 : a.length;
         final int lenB = b == null ? 0 : b.length;
 
@@ -18425,6 +18481,7 @@ public final class N {
 
     public static <A, B, E extends Exception> void forEach(final Collection<A> a, final Collection<B> b, final A valueForNoneA, final B valueForNoneB,
             final Try.BiConsumer<? super A, ? super B, E> action) throws E {
+        N.requireNonNull(action);
 
         final Iterator<A> iterA = a == null ? ObjIterator.<A> empty() : a.iterator();
         final Iterator<B> iterB = b == null ? ObjIterator.<B> empty() : b.iterator();
@@ -18438,6 +18495,8 @@ public final class N {
 
     public static <A, B, C, E extends Exception> void forEach(final A[] a, final B[] b, final C[] c, final A valueForNoneA, final B valueForNoneB,
             final C valueForNoneC, final Try.TriConsumer<? super A, ? super B, ? super C, E> action) throws E {
+        N.requireNonNull(action);
+
         final int lenA = a == null ? 0 : a.length;
         final int lenB = b == null ? 0 : b.length;
         final int lenC = c == null ? 0 : c.length;
@@ -18449,6 +18508,7 @@ public final class N {
 
     public static <A, B, C, E extends Exception> void forEach(final Collection<A> a, final Collection<B> b, final Collection<C> c, final A valueForNoneA,
             final B valueForNoneB, final C valueForNoneC, final Try.TriConsumer<? super A, ? super B, ? super C, E> action) throws E {
+        N.requireNonNull(action);
 
         final Iterator<A> iterA = a == null ? ObjIterator.<A> empty() : a.iterator();
         final Iterator<B> iterB = b == null ? ObjIterator.<B> empty() : b.iterator();
@@ -18463,6 +18523,8 @@ public final class N {
     }
 
     //    public static <T, E extends Exception> void forEachNonNull(final T[] a, final Try.Consumer<? super T, E> action) throws E {
+    //        N.requireNonNull(action);
+    //
     //        if (N.isNullOrEmpty(a)) {
     //            return;
     //        }
@@ -18475,6 +18537,8 @@ public final class N {
     //    }
     //
     //    public static <T, C extends Collection<? extends T>> void forEachNonNull(final C c, final Try.Consumer<? super T, E> action) throws E {
+    //        N.requireNonNull(action);
+    //
     //        if (N.isNullOrEmpty(c)) {
     //            return;
     //        }
@@ -18488,6 +18552,9 @@ public final class N {
 
     public static <T, U, E extends Exception, E2 extends Exception> void forEachNonNull(final T[] a,
             final Try.Function<? super T, ? extends Collection<U>, E> flatMapper, final Try.BiConsumer<? super T, ? super U, E2> action) throws E, E2 {
+        N.requireNonNull(flatMapper);
+        N.requireNonNull(action);
+
         if (N.isNullOrEmpty(a)) {
             return;
         }
@@ -18509,6 +18576,9 @@ public final class N {
 
     public static <T, U, E extends Exception, E2 extends Exception> void forEachNonNull(final Collection<T> c,
             final Try.Function<? super T, ? extends Collection<U>, E> flatMapper, final Try.BiConsumer<? super T, ? super U, E2> action) throws E, E2 {
+        N.requireNonNull(flatMapper);
+        N.requireNonNull(action);
+
         if (N.isNullOrEmpty(c)) {
             return;
         }
@@ -18531,6 +18601,10 @@ public final class N {
     public static <T, T2, T3, E extends Exception, E2 extends Exception, E3 extends Exception> void forEachNonNull(final T[] a,
             final Try.Function<? super T, ? extends Collection<T2>, E> flatMapper, final Try.Function<? super T2, ? extends Collection<T3>, E2> flatMapper2,
             final Try.TriConsumer<? super T, ? super T2, ? super T3, E3> action) throws E, E2, E3 {
+        N.requireNonNull(flatMapper);
+        N.requireNonNull(flatMapper2);
+        N.requireNonNull(action);
+
         if (N.isNullOrEmpty(a)) {
             return;
         }
@@ -18561,6 +18635,10 @@ public final class N {
     public static <T, T2, T3, E extends Exception, E2 extends Exception, E3 extends Exception> void forEachNonNull(final Collection<T> c,
             final Try.Function<? super T, ? extends Collection<T2>, E> flatMapper, final Try.Function<? super T2, ? extends Collection<T3>, E2> flatMapper2,
             final Try.TriConsumer<? super T, ? super T2, ? super T3, E3> action) throws E, E2, E3 {
+        N.requireNonNull(flatMapper);
+        N.requireNonNull(flatMapper2);
+        N.requireNonNull(action);
+
         if (N.isNullOrEmpty(c)) {
             return;
         }
@@ -20167,24 +20245,24 @@ public final class N {
         if (N.isNullOrEmpty(a)) {
             return 0;
         }
-    
+
         return sumInt(a, 0, a.length, func);
     }
 
     public static <T, E extends Exception> int sumInt(final T[] a, final int fromIndex, final int toIndex, final Try.ToIntFunction<? super T, E> func)
             throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-    
+
         if (fromIndex == toIndex) {
             return 0;
         }
-    
+
         int result = 0;
-    
+
         for (int i = fromIndex; i < toIndex; i++) {
             result += func.applyAsInt(a[i]);
         }
-    
+
         return result;
     }
 
@@ -20281,24 +20359,24 @@ public final class N {
         if (N.isNullOrEmpty(a)) {
             return 0L;
         }
-    
+
         return sumLong(a, 0, a.length, func);
     }
 
     public static <T, E extends Exception> long sumLong(final T[] a, final int fromIndex, final int toIndex, final Try.ToLongFunction<? super T, E> func)
             throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-    
+
         if (fromIndex == toIndex) {
             return 0L;
         }
-    
+
         long result = 0;
-    
+
         for (int i = fromIndex; i < toIndex; i++) {
             result += func.applyAsLong(a[i]);
         }
-    
+
         return result;
     }
 
@@ -20395,18 +20473,18 @@ public final class N {
         if (N.isNullOrEmpty(a)) {
             return 0D;
         }
-    
+
         return sumDouble(a, 0, a.length, func);
     }
 
     public static <T, E extends Exception> double sumDouble(final T[] a, final int fromIndex, final int toIndex, final Try.ToDoubleFunction<? super T, E> func)
             throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-    
+
         if (fromIndex == toIndex) {
             return 0D;
         }
-    
+
         //        double result = 0;
         //
         //        for (int i = fromIndex; i < toIndex; i++) {
@@ -20414,7 +20492,7 @@ public final class N {
         //        }
         //
         //        return result;
-    
+
         return Stream.of(a, fromIndex, toIndex).mapToDouble(toDoubleFunction(func)).sum();
     }
 
@@ -20515,24 +20593,24 @@ public final class N {
         if (N.isNullOrEmpty(a)) {
             return OptionalDouble.empty();
         }
-    
+
         return averageInt(a, 0, a.length, func);
     }
 
     public static <T, E extends Exception> OptionalDouble averageInt(final T[] a, final int fromIndex, final int toIndex,
             final Try.ToIntFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-    
+
         if (fromIndex == toIndex) {
             return OptionalDouble.empty();
         }
-    
+
         long sum = 0;
-    
+
         for (int i = fromIndex; i < toIndex; i++) {
             sum += func.applyAsInt(a[i]);
         }
-    
+
         return OptionalDouble.of(((double) sum) / (toIndex - fromIndex));
     }
 
@@ -20629,18 +20707,18 @@ public final class N {
         if (N.isNullOrEmpty(a)) {
             return OptionalDouble.empty();
         }
-    
+
         return averageLong(a, 0, a.length, func);
     }
 
     public static <T, E extends Exception> OptionalDouble averageLong(final T[] a, final int fromIndex, final int toIndex,
             final Try.ToLongFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-    
+
         if (fromIndex == toIndex) {
             return OptionalDouble.empty();
         }
-    
+
         return OptionalDouble.of(((double) sumLong(a, fromIndex, toIndex, func)) / (toIndex - fromIndex));
     }
 
@@ -20707,20 +20785,20 @@ public final class N {
         if (N.isNullOrEmpty(a)) {
             return OptionalDouble.empty();
         }
-    
+
         return averageDouble(a, 0, a.length, func);
     }
 
     public static <T, E extends Exception> OptionalDouble averageDouble(final T[] a, final int fromIndex, final int toIndex,
             final Try.ToDoubleFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-    
+
         if (fromIndex == toIndex) {
             return OptionalDouble.empty();
         }
-    
+
         // return OptionalDouble.of(sumDouble(a, fromIndex, toIndex, func) / (toIndex - fromIndex));
-    
+
         return Stream.of(a, fromIndex, toIndex).mapToDouble(toDoubleFunction(func)).average();
     }
 

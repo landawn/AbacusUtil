@@ -21,10 +21,12 @@ import java.util.Set;
 
 /**
  * 
+ * @see N#newSetMultimap()
+ * @see N#newSetMultimap(Class, Class)
+ * 
  * @since 0.9
  * 
  * @author Haiyang Li
- * @see N#newSetMultimap()
  */
 public final class SetMultimap<K, E> extends Multimap<K, E, Set<E>> {
     SetMultimap() {
@@ -93,6 +95,71 @@ public final class SetMultimap<K, E> extends Multimap<K, E, Set<E>> {
         return multimap;
     }
 
+    /**
+     * 
+     * @param map
+     * @return
+     * @see Multimap#invertFrom(Map, com.landawn.abacus.util.function.Supplier)
+     */
+    public static <K, E> SetMultimap<E, K> invertFrom(final Map<K, E> map) {
+        final SetMultimap<E, K> multimap = new SetMultimap<>();
+
+        if (N.notNullOrEmpty(map)) {
+            for (Map.Entry<K, E> entry : map.entrySet()) {
+                multimap.put(entry.getValue(), entry.getKey());
+            }
+        }
+
+        return multimap;
+    }
+
+    /**
+     * 
+     * @param map
+     * @return
+     * @see Multimap#flatInvertFrom(Map, com.landawn.abacus.util.function.Supplier)
+     */
+    public static <K, E> SetMultimap<E, K> flatInvertFrom(final Map<K, ? extends Collection<? extends E>> map) {
+        final SetMultimap<E, K> multimap = new SetMultimap<>();
+
+        if (N.notNullOrEmpty(map)) {
+            for (Map.Entry<K, ? extends Collection<? extends E>> entry : map.entrySet()) {
+                final Collection<? extends E> c = entry.getValue();
+
+                if (N.notNullOrEmpty(c)) {
+                    for (E e : c) {
+                        multimap.put(e, entry.getKey());
+                    }
+                }
+            }
+        }
+
+        return multimap;
+    }
+
+    /**
+     * 
+     * @param map
+     * @return
+     */
+    public static <K, E, V extends Collection<E>> SetMultimap<E, K> invertFrom(final Multimap<K, E, V> map) {
+        final SetMultimap<E, K> multimap = new SetMultimap<>();
+
+        if (N.notNullOrEmpty(map)) {
+            for (Map.Entry<K, V> entry : map.entrySet()) {
+                final V c = entry.getValue();
+
+                if (N.notNullOrEmpty(c)) {
+                    for (E e : c) {
+                        multimap.put(e, entry.getKey());
+                    }
+                }
+            }
+        }
+
+        return multimap;
+    }
+
     @SuppressWarnings("rawtypes")
     public static <K, E, V extends Set<E>> SetMultimap<K, E> wrap(final Map<K, V> map) {
         Class<? extends Set> valueType = HashSet.class;
@@ -106,4 +173,22 @@ public final class SetMultimap<K, E> extends Multimap<K, E, Set<E>> {
 
         return new SetMultimap<K, E>((Map<K, Set<E>>) map, valueType);
     }
+
+    //    public SetMultimap<E, K> inversed() {
+    //        final SetMultimap<E, K> multimap = new SetMultimap<E, K>(valueMap.getClass(), concreteValueType);
+    //
+    //        if (N.notNullOrEmpty(valueMap)) {
+    //            for (Map.Entry<K, ? extends Set<? extends E>> entry : valueMap.entrySet()) {
+    //                final Set<? extends E> c = entry.getValue();
+    //
+    //                if (N.notNullOrEmpty(c)) {
+    //                    for (E e : c) {
+    //                        multimap.put(e, entry.getKey());
+    //                    }
+    //                }
+    //            }
+    //        }
+    //
+    //        return multimap;
+    //    }
 }

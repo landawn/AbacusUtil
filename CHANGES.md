@@ -6,6 +6,7 @@
 
 * Improve `Futures`.
 
+* Improvements and bug fix.
 
 
 ### 1.1.2
@@ -33,6 +34,9 @@
 * Add `N.ifOrEmpty`.
 
 * Add `If/IF`.
+
+* Improvements and bug fix.
+
 
 ### 1.1.1
 

@@ -45,14 +45,19 @@ import com.landawn.abacus.util.stream.Stream;
  * <li>b -> 3
  * </ul>
  *
+ * @see N#newListMultimap()
+ * @see N#newListMultimap(Class, Class)
+ * @see N#newSetMultimap()
+ * @see N#newSetMultimap(Class, Class)
+ *
  * @since 0.8
  *
  * @author Haiyang Li
  */
 public class Multimap<K, E, V extends Collection<E>> {
-    private final Map<K, V> valueMap;
-    private final Class<V> valueType;
-    private final Class<V> concreteValueType;
+    final Map<K, V> valueMap;
+    final Class<V> valueType;
+    final Class<V> concreteValueType;
 
     /**
      * Returns a <code>Multimap<K, E, List<E>></code>
@@ -150,6 +155,77 @@ public class Multimap<K, E, V extends Collection<E>> {
         }
 
         return multimap;
+    }
+
+    /**
+     * 
+     * @param map
+     * @param multimapSupplier
+     * @return
+     * @see ListMultimap#invertFrom(Map)
+     * @see SetMultimap#invertFrom(Map)
+     */
+    public static <K, E, V extends Collection<K>, M extends Multimap<E, K, V>> M invertFrom(final Map<K, E> map, final Supplier<M> multimapSupplier) {
+        final M multimap = multimapSupplier.get();
+
+        if (N.notNullOrEmpty(map)) {
+            for (Map.Entry<K, E> entry : map.entrySet()) {
+                multimap.put(entry.getValue(), entry.getKey());
+            }
+        }
+
+        return multimap;
+    }
+
+    /**
+     * 
+     * @param map
+     * @param multimapSupplier
+     * @return
+     * @see ListMultimap#flatInvertFrom(Map)
+     * @see SetMultimap#flatInvertFrom(Map)
+     */
+    public static <K, E, V extends Collection<K>, M extends Multimap<E, K, V>> M flatInvertFrom(final Map<K, ? extends Collection<? extends E>> map,
+            final Supplier<M> multimapSupplier) {
+        final M multimap = multimapSupplier.get();
+
+        if (N.notNullOrEmpty(map)) {
+            for (Map.Entry<K, ? extends Collection<? extends E>> entry : map.entrySet()) {
+                final Collection<? extends E> c = entry.getValue();
+
+                if (N.notNullOrEmpty(c)) {
+                    for (E e : c) {
+                        multimap.put(e, entry.getKey());
+                    }
+                }
+            }
+        }
+
+        return multimap;
+    }
+
+    /**
+     * 
+     * @param multimap
+     * @return
+     */
+    public static <K, E, V extends Collection<E>, VV extends Collection<K>, M extends Multimap<E, K, VV>> M invertFrom(final Multimap<K, E, V> multimap,
+            final Supplier<M> multimapSupplier) {
+        final M res = multimapSupplier.get();
+
+        if (N.notNullOrEmpty(multimap)) {
+            for (Map.Entry<K, V> entry : multimap.entrySet()) {
+                final V c = entry.getValue();
+
+                if (N.notNullOrEmpty(c)) {
+                    for (E e : c) {
+                        res.put(e, entry.getKey());
+                    }
+                }
+            }
+        }
+
+        return res;
     }
 
     public V get(final Object key) {

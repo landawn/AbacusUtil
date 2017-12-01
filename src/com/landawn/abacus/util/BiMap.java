@@ -358,12 +358,6 @@ public final class BiMap<K, V> implements Map<K, V> {
         };
     }
 
-    @Override
-    public void clear() {
-        keyMap.clear();
-        valueMap.clear();
-    }
-
     /**
      * Returns the inverse view of this BiMap, which maps each of this bimap's values to its associated key. 
      * The two BiMaps are backed by the same data; any changes to one will appear in the other.
@@ -372,6 +366,12 @@ public final class BiMap<K, V> implements Map<K, V> {
      */
     public BiMap<V, K> inversed() {
         return (inverse == null) ? inverse = new BiMap<>(valueMap, keyMap) : inverse;
+    }
+
+    @Override
+    public void clear() {
+        keyMap.clear();
+        valueMap.clear();
     }
 
     @Override

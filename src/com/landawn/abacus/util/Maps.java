@@ -1194,6 +1194,14 @@ public final class Maps {
         return result;
     }
 
+    /**
+     * 
+     * @param map
+     * @return
+     * @see Multimap#invertFrom(Map, com.landawn.abacus.util.function.Supplier)
+     * @see ListMultimap#invertFrom(Map)
+     * @see ListMultimap#invertFrom(Map)
+     */
     public static <K, V> Map<V, K> invert(final Map<K, V> map) {
         if (map == null) {
             return new HashMap<V, K>();
@@ -1208,15 +1216,23 @@ public final class Maps {
         return result;
     }
 
-    public static <K, V> Map<V, List<K>> flatInvert(final Map<K, ? extends Collection<V>> map) {
+    /**
+     * 
+     * @param map
+     * @return
+     * @see Multimap#flatInvertFrom(Map, com.landawn.abacus.util.function.Supplier)
+     * @see ListMultimap#flatInvertFrom(Map)
+     * @see SetMultimap#flatInvertFrom(Map)
+     */
+    public static <K, V> Map<V, List<K>> flatInvert(final Map<K, ? extends Collection<? extends V>> map) {
         if (map == null) {
             return new HashMap<V, List<K>>();
         }
 
         final Map<V, List<K>> result = createResultMap(map.getClass());
 
-        for (Map.Entry<K, ? extends Collection<V>> entry : map.entrySet()) {
-            final Collection<V> c = entry.getValue();
+        for (Map.Entry<K, ? extends Collection<? extends V>> entry : map.entrySet()) {
+            final Collection<? extends V> c = entry.getValue();
 
             if (N.notNullOrEmpty(c)) {
                 for (V v : c) {
