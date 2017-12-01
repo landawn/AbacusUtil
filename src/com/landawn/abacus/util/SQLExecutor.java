@@ -1391,7 +1391,8 @@ public final class SQLExecutor implements Closeable {
         return get(targetClass, sql, null, null, parameters);
     }
 
-    public <T> T get(final Class<T> targetClass, final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
+    @SafeVarargs
+    public final <T> T get(final Class<T> targetClass, final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
             final Object... parameters) {
         return get(targetClass, null, sql, statementSetter, jdbcSettings, parameters);
     }
@@ -1413,8 +1414,9 @@ public final class SQLExecutor implements Closeable {
      * @throws NonUniqueResultException if two or more records are found.
      */
     @SuppressWarnings("unchecked")
-    public <T> T get(final Class<T> targetClass, final Connection conn, final String sql, final StatementSetter statementSetter, JdbcSettings jdbcSettings,
-            final Object... parameters) {
+    @SafeVarargs
+    public final <T> T get(final Class<T> targetClass, final Connection conn, final String sql, final StatementSetter statementSetter,
+            JdbcSettings jdbcSettings, final Object... parameters) {
         jdbcSettings = jdbcSettings == null ? _jdbcSettings.copy() : jdbcSettings.copy();
         jdbcSettings.setCount(2);
 
@@ -1432,7 +1434,8 @@ public final class SQLExecutor implements Closeable {
         return find(targetClass, sql, null, null, parameters);
     }
 
-    public <T> List<T> find(final Class<T> targetClass, final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
+    @SafeVarargs
+    public final <T> List<T> find(final Class<T> targetClass, final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
             final Object... parameters) {
         return find(targetClass, null, sql, statementSetter, jdbcSettings, parameters);
     }
@@ -1453,7 +1456,8 @@ public final class SQLExecutor implements Closeable {
      * @return
      */
     @SuppressWarnings("unchecked")
-    public <T> List<T> find(final Class<T> targetClass, final Connection conn, final String sql, final StatementSetter statementSetter,
+    @SafeVarargs
+    public final <T> List<T> find(final Class<T> targetClass, final Connection conn, final String sql, final StatementSetter statementSetter,
             final JdbcSettings jdbcSettings, final Object... parameters) {
         return (List<T>) query(targetClass, conn, sql, statementSetter, ENTITY_LIST_RESULT_SET_EXTRACTOR, jdbcSettings, parameters);
     }
@@ -1463,7 +1467,8 @@ public final class SQLExecutor implements Closeable {
         return findAll(targetClass, sql, null, jdbcSettings, parameters);
     }
 
-    public <T> List<T> findAll(final Class<T> targetClass, final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
+    @SafeVarargs
+    public final <T> List<T> findAll(final Class<T> targetClass, final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
             final Object... parameters) {
         return findAll(targetClass, null, sql, statementSetter, jdbcSettings, parameters);
     }
@@ -1552,8 +1557,9 @@ public final class SQLExecutor implements Closeable {
         return findAll(targetClass, sqls, null, jdbcSettings, parameters);
     }
 
-    public <T> List<T> findAll(final Class<T> targetClass, final List<String> sqls, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
-            final Object... parameters) {
+    @SafeVarargs
+    public final <T> List<T> findAll(final Class<T> targetClass, final List<String> sqls, final StatementSetter statementSetter,
+            final JdbcSettings jdbcSettings, final Object... parameters) {
         return findAll(targetClass, null, sqls, statementSetter, jdbcSettings, parameters);
     }
 
@@ -1731,7 +1737,8 @@ public final class SQLExecutor implements Closeable {
         return queryForSingleResult(targetClass, sql, null, null, parameters);
     }
 
-    public <T> Nullable<T> queryForSingleResult(final Class<T> targetClass, final String sql, final StatementSetter statementSetter,
+    @SafeVarargs
+    public final <T> Nullable<T> queryForSingleResult(final Class<T> targetClass, final String sql, final StatementSetter statementSetter,
             final JdbcSettings jdbcSettings, final Object... parameters) {
         return queryForSingleResult(targetClass, null, sql, statementSetter, jdbcSettings, parameters);
     }
@@ -1763,8 +1770,9 @@ public final class SQLExecutor implements Closeable {
      * @throws ClassCastException
      */
     @SuppressWarnings("unchecked")
-    public <T> Nullable<T> queryForSingleResult(final Class<T> targetClass, final Connection conn, final String sql, final StatementSetter statementSetter,
-            final JdbcSettings jdbcSettings, final Object... parameters) {
+    @SafeVarargs
+    public final <T> Nullable<T> queryForSingleResult(final Class<T> targetClass, final Connection conn, final String sql,
+            final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object... parameters) {
         final Nullable<?> result = query(conn, sql, statementSetter, SINGLE_RESULT_SET_EXTRACTOR, jdbcSettings, parameters);
 
         return result.isPresent() ? Nullable.of(N.as(targetClass, result.get())) : (Nullable<T>) Nullable.empty();
@@ -1803,8 +1811,9 @@ public final class SQLExecutor implements Closeable {
         return queryForEntity(targetClass, sql, null, null, parameters);
     }
 
-    public <T> Optional<T> queryForEntity(final Class<T> targetClass, final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
-            final Object... parameters) {
+    @SafeVarargs
+    public final <T> Optional<T> queryForEntity(final Class<T> targetClass, final String sql, final StatementSetter statementSetter,
+            final JdbcSettings jdbcSettings, final Object... parameters) {
         return queryForEntity(targetClass, null, sql, statementSetter, jdbcSettings, parameters);
     }
 
@@ -1829,7 +1838,8 @@ public final class SQLExecutor implements Closeable {
      * @return
      */
     @SuppressWarnings("unchecked")
-    public <T> Optional<T> queryForEntity(final Class<T> targetClass, final Connection conn, final String sql, final StatementSetter statementSetter,
+    @SafeVarargs
+    public final <T> Optional<T> queryForEntity(final Class<T> targetClass, final Connection conn, final String sql, final StatementSetter statementSetter,
             final JdbcSettings jdbcSettings, final Object... parameters) {
         final T result = (T) query(targetClass, conn, sql, statementSetter, ENTITY_RESULT_SET_EXTRACTOR, jdbcSettings, parameters);
 
@@ -1888,8 +1898,9 @@ public final class SQLExecutor implements Closeable {
      * @param parameters
      * @return
      */
-    public <T> T query(final String sql, final StatementSetter statementSetter, final ResultSetExtractor<T> resultSetExtractor, final JdbcSettings jdbcSettings,
-            final Object... parameters) {
+    @SafeVarargs
+    public final <T> T query(final String sql, final StatementSetter statementSetter, final ResultSetExtractor<T> resultSetExtractor,
+            final JdbcSettings jdbcSettings, final Object... parameters) {
         return query(null, sql, statementSetter, resultSetExtractor, jdbcSettings, parameters);
     }
 
@@ -1903,7 +1914,8 @@ public final class SQLExecutor implements Closeable {
         return query(conn, sql, statementSetter, null, parameters);
     }
 
-    public <T> T query(final Connection conn, final String sql, final StatementSetter statementSetter, final ResultSetExtractor<T> resultSetExtractor,
+    @SafeVarargs
+    public final <T> T query(final Connection conn, final String sql, final StatementSetter statementSetter, final ResultSetExtractor<T> resultSetExtractor,
             final Object... parameters) {
         return query(conn, sql, statementSetter, resultSetExtractor, null, parameters);
     }
@@ -1939,7 +1951,8 @@ public final class SQLExecutor implements Closeable {
      * @param parameters
      * @return
      */
-    public <T> T query(final Connection conn, final String sql, final StatementSetter statementSetter, final ResultSetExtractor<T> resultSetExtractor,
+    @SafeVarargs
+    public final <T> T query(final Connection conn, final String sql, final StatementSetter statementSetter, final ResultSetExtractor<T> resultSetExtractor,
             final JdbcSettings jdbcSettings, final Object... parameters) {
         return query(null, conn, sql, statementSetter, resultSetExtractor, jdbcSettings, parameters);
     }
@@ -2475,7 +2488,8 @@ public final class SQLExecutor implements Closeable {
      * @param parameters
      * @return
      */
-    public Try<Stream<Object[]>> streamAll(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
+    @SafeVarargs
+    public final Try<Stream<Object[]>> streamAll(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
             final Object... parameters) {
         return streamAll((Connection) null, sql, statementSetter, jdbcSettings, parameters);
     }
@@ -2536,7 +2550,8 @@ public final class SQLExecutor implements Closeable {
      * @param parameters
      * @return
      */
-    public Try<Stream<Object[]>> streamAll(final List<String> sqls, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
+    @SafeVarargs
+    public final Try<Stream<Object[]>> streamAll(final List<String> sqls, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
             final Object... parameters) {
         return streamAll((Connection) null, sqls, statementSetter, jdbcSettings, parameters);
     }
@@ -2602,7 +2617,8 @@ public final class SQLExecutor implements Closeable {
      * @param parameters
      * @return
      */
-    public <T> Try<Stream<T>> stream(final Class<T> targetClass, final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
+    @SafeVarargs
+    public final <T> Try<Stream<T>> stream(final Class<T> targetClass, final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
             final Object... parameters) {
         return stream(targetClass, null, sql, statementSetter, jdbcSettings, parameters);
     }
@@ -2705,8 +2721,9 @@ public final class SQLExecutor implements Closeable {
      * @param parameters
      * @return
      */
-    public <T> Try<Stream<T>> streamAll(final Class<T> targetClass, final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
-            final Object... parameters) {
+    @SafeVarargs
+    public final <T> Try<Stream<T>> streamAll(final Class<T> targetClass, final String sql, final StatementSetter statementSetter,
+            final JdbcSettings jdbcSettings, final Object... parameters) {
         return streamAll(targetClass, null, sql, statementSetter, jdbcSettings, parameters);
     }
 
@@ -2812,7 +2829,8 @@ public final class SQLExecutor implements Closeable {
      * @param parameters
      * @return
      */
-    public <T> Try<Stream<T>> streamAll(final Class<T> targetClass, final List<String> sqls, final StatementSetter statementSetter,
+    @SafeVarargs
+    public final <T> Try<Stream<T>> streamAll(final Class<T> targetClass, final List<String> sqls, final StatementSetter statementSetter,
             final JdbcSettings jdbcSettings, final Object... parameters) {
         return streamAll(targetClass, null, sqls, statementSetter, jdbcSettings, parameters);
     }
@@ -5076,7 +5094,8 @@ public final class SQLExecutor implements Closeable {
 
     public static abstract class AbstractStatementSetter implements StatementSetter {
         @Override
-        public void setParameters(final NamedSQL namedSQL, final PreparedStatement stmt, final Object... parameters) throws SQLException {
+        @SafeVarargs
+        public final void setParameters(final NamedSQL namedSQL, final PreparedStatement stmt, final Object... parameters) throws SQLException {
             final int parameterCount = namedSQL.getParameterCount();
 
             if (parameterCount == 0) {

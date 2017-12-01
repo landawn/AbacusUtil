@@ -5649,16 +5649,16 @@ public final class CodeGenerator {
             + "    public static <T> LinkedHashSet<T> asLinkedHashSet(final T... a) {\r\n" + "        if (a == null) {\r\n"
             + "            return new LinkedHashSet<>();\r\n" + "        }\r\n" + "\r\n"
             + "        final LinkedHashSet<T> set = new LinkedHashSet<T>(initHashCapacity(a.length));\r\n" + "\r\n" + "        for (T e : a) {\r\n"
-            + "            set.add(e);\r\n" + "        }\r\n" + "\r\n" + "        return set;\r\n" + "    }\r\n" + "\r\n" + "    @SafeVarargs\r\n"
-            + "    @SuppressWarnings(\"unchecked\")\r\n" + "    public static <K, V> Map<K, V> asMap(final Object... a) {\r\n" + "        if (a == null) {\r\n"
-            + "            return new HashMap<>();\r\n" + "        }\r\n" + "\r\n"
+            + "            set.add(e);\r\n" + "        }\r\n" + "\r\n" + "        return set;\r\n" + "    }\r\n" + "\r\n"
+            + "    @SuppressWarnings(\"unchecked\")\r\n" + "    @SafeVarargs\r\n" + "    public static <K, V> Map<K, V> asMap(final Object... a) {\r\n"
+            + "        if (a == null) {\r\n" + "            return new HashMap<>();\r\n" + "        }\r\n" + "\r\n"
             + "        final Map<K, V> m = new HashMap<K, V>(initHashCapacity(a.length / 2));\r\n" + "\r\n" + "        for (int i = 0; i < a.length; i++) {\r\n"
             + "            m.put((K) a[i], (V) a[++i]);\r\n" + "        }\r\n" + "\r\n" + "        return m;\r\n" + "    }\r\n" + "\r\n"
-            + "    @SafeVarargs\r\n" + "    @SuppressWarnings(\"unchecked\")\r\n"
+            + "    @SuppressWarnings(\"unchecked\")\r\n" + "    @SafeVarargs\r\n"
             + "    public static <K, V> LinkedHashMap<K, V> asLinkedHashMap(final Object... a) {\r\n" + "        if (a == null) {\r\n"
             + "            return new LinkedHashMap<>();\r\n" + "        }\r\n" + "\r\n"
             + "        final LinkedHashMap<K, V> m = new LinkedHashMap<K, V>(initHashCapacity(a.length / 2));\r\n" + "\r\n"
             + "        for (int i = 0; i < a.length; i++) {\r\n" + "            m.put((K) a[i], (V) a[++i]);\r\n" + "        }\r\n" + "\r\n"
             + "        return m;\r\n" + "    }\r\n" + "\r\n" + "    private static int initHashCapacity(final int size) {\r\n"
-            + "        return size < MAX_HASH_LENGTH ? (int) (size * 1.25) + 1 : MAX_ARRAY_SIZE;\r\n" + "    }\r\n" + "}\r\n";
+            + "        return size < MAX_HASH_LENGTH ? (int) (size * 1.25) + 1 : MAX_ARRAY_SIZE;\r\n" + "    }\r\n" + "}";
 }

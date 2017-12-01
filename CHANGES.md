@@ -1,3 +1,13 @@
+### 1.1.3
+
+* Add `N.sumInt/sumLong/sumDouble/averageInt/averageLong/averageDouble` for `Number` type.
+
+* Add `Fn.numToInt/numToLong/numToDouble`.
+
+* Improve `Futures`.
+
+
+
 ### 1.1.2
 
 * Replace `Predicate/Consumer/Function` in `Iterators` with `Try.Predicate/Consumer/Function`.

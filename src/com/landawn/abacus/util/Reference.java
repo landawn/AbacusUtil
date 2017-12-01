@@ -14,6 +14,7 @@
 
 package com.landawn.abacus.util;
 
+import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -186,7 +187,7 @@ abstract class Reference<T, R extends Reference<T, R>> {
      * @throws NullPointerException if not present or null and
      * {@code exceptionSupplier} is null
      */
-    public <X extends Throwable, E extends Exception> T orThrowIfNull(Try.Supplier<? extends X, E> exceptionSupplier) throws X, E {
+    public <X extends Throwable> T orThrowIfNull(Supplier<? extends X> exceptionSupplier) throws X {
         if (isNotNull()) {
             return value;
         } else {

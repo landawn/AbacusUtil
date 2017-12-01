@@ -59,7 +59,7 @@ public final class Futures {
     public static <T1, T2, R> CompletableFuture<R> zip(final CompletableFuture<T1> cf1, final CompletableFuture<T2> cf2,
             final Try.BiFunction<? super CompletableFuture<T1>, ? super CompletableFuture<T2>, R, Exception> zipFunctionForGet,
             final Try.Function<? super Tuple4<CompletableFuture<T1>, CompletableFuture<T2>, Long, TimeUnit>, R, Exception> zipFunctionTimeoutGet) {
-        final List<CompletableFuture<?>> cfs = N.asList(cf1, cf2);
+        final List<CompletableFuture<?>> cfs = Arrays.asList(cf1, cf2);
 
         return zip(cfs, new Try.Function<Collection<? extends CompletableFuture<?>>, R, Exception>() {
             @SuppressWarnings("rawtypes")
@@ -91,7 +91,7 @@ public final class Futures {
     public static <T1, T2, T3, R> CompletableFuture<R> zip(final CompletableFuture<T1> cf1, final CompletableFuture<T2> cf2, final CompletableFuture<T3> cf3,
             final Try.TriFunction<? super CompletableFuture<T1>, ? super CompletableFuture<T2>, ? super CompletableFuture<T3>, R, Exception> zipFunctionForGet,
             final Try.Function<? super Tuple5<CompletableFuture<T1>, CompletableFuture<T2>, CompletableFuture<T3>, Long, TimeUnit>, R, Exception> zipFunctionTimeoutGet) {
-        final List<CompletableFuture<?>> cfs = N.asList(cf1, cf2, cf3);
+        final List<CompletableFuture<?>> cfs = Arrays.asList(cf1, cf2, cf3);
 
         return zip(cfs, new Try.Function<Collection<? extends CompletableFuture<?>>, R, Exception>() {
             @SuppressWarnings("rawtypes")
@@ -110,19 +110,19 @@ public final class Futures {
         });
     }
 
-    public static <R> CompletableFuture<R> zip(final Collection<? extends CompletableFuture<?>> cfs,
-            final Try.Function<? super Collection<? extends CompletableFuture<?>>, R, Exception> zipFunctionForGet) {
-        return zip(cfs, zipFunctionForGet, new Try.Function<Tuple3<Collection<? extends CompletableFuture<?>>, Long, TimeUnit>, R, Exception>() {
+    public static <T, FC extends Collection<? extends CompletableFuture<? extends T>>, R> CompletableFuture<R> zip(final FC cfs,
+            final Try.Function<? super FC, R, Exception> zipFunctionForGet) {
+        return zip(cfs, zipFunctionForGet, new Try.Function<Tuple3<FC, Long, TimeUnit>, R, Exception>() {
             @Override
-            public R apply(Tuple3<Collection<? extends CompletableFuture<?>>, Long, TimeUnit> t) throws Exception {
+            public R apply(Tuple3<FC, Long, TimeUnit> t) throws Exception {
                 return zipFunctionForGet.apply(t._1);
             }
         });
     }
 
-    public static <R> CompletableFuture<R> zip(final Collection<? extends CompletableFuture<?>> cfs,
-            final Try.Function<? super Collection<? extends CompletableFuture<?>>, R, Exception> zipFunctionForGet,
-            final Try.Function<? super Tuple3<Collection<? extends CompletableFuture<?>>, Long, TimeUnit>, R, Exception> zipFunctionTimeoutGet) {
+    public static <T, FC extends Collection<? extends CompletableFuture<? extends T>>, R> CompletableFuture<R> zip(final FC cfs,
+            final Try.Function<? super FC, R, Exception> zipFunctionForGet,
+            final Try.Function<? super Tuple3<FC, Long, TimeUnit>, R, Exception> zipFunctionTimeoutGet) {
         N.checkArgument(N.notNullOrEmpty(cfs), "'cfs' can't be null or empty");
         N.requireNonNull(zipFunctionForGet);
         N.requireNonNull(zipFunctionTimeoutGet);
@@ -133,7 +133,7 @@ public final class Futures {
                 boolean res = true;
                 RuntimeException exception = null;
 
-                for (CompletableFuture<?> future : cfs) {
+                for (CompletableFuture<? extends T> future : cfs) {
                     try {
                         res = res & future.cancel(mayInterruptIfRunning);
                     } catch (RuntimeException e) {
@@ -187,8 +187,7 @@ public final class Futures {
 
             @Override
             public R get(final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-                @SuppressWarnings("rawtypes")
-                final Tuple3<Collection<? extends CompletableFuture<?>>, Long, TimeUnit> t = (Tuple3) Tuple.of(cfs, timeout, unit);
+                final Tuple3<FC, Long, TimeUnit> t = Tuple.of(cfs, timeout, unit);
 
                 try {
                     return zipFunctionTimeoutGet.apply(t);
@@ -203,7 +202,7 @@ public final class Futures {
 
     public static <T1, T2, E extends Exception> CompletableFuture<Tuple2<T1, T2>> combine(final CompletableFuture<? extends T1> cf1,
             final CompletableFuture<? extends T2> cf2) {
-        return allOf(N.asList(cf1, cf2)).thenApply(new Try.Function<List<Object>, Tuple2<T1, T2>, E>() {
+        return allOf(Arrays.asList(cf1, cf2)).thenApply(new Try.Function<List<Object>, Tuple2<T1, T2>, E>() {
             @Override
             public Tuple2<T1, T2> apply(List<Object> t) throws E {
                 return Tuple.of((T1) t.get(0), (T2) t.get(1));
@@ -213,7 +212,7 @@ public final class Futures {
 
     public static <T1, T2, T3, E extends Exception> CompletableFuture<Tuple3<T1, T2, T3>> combine(final CompletableFuture<? extends T1> cf1,
             final CompletableFuture<? extends T2> cf2, final CompletableFuture<? extends T3> cf3) {
-        return allOf(N.asList(cf1, cf2, cf3)).thenApply(new Try.Function<List<Object>, Tuple3<T1, T2, T3>, E>() {
+        return allOf(Arrays.asList(cf1, cf2, cf3)).thenApply(new Try.Function<List<Object>, Tuple3<T1, T2, T3>, E>() {
             @Override
             public Tuple3<T1, T2, T3> apply(List<Object> t) throws E {
                 return Tuple.of((T1) t.get(0), (T2) t.get(1), (T3) t.get(2));
@@ -223,7 +222,7 @@ public final class Futures {
 
     public static <T1, T2, T3, T4, E extends Exception> CompletableFuture<Tuple4<T1, T2, T3, T4>> combine(final CompletableFuture<? extends T1> cf1,
             final CompletableFuture<? extends T2> cf2, final CompletableFuture<? extends T3> cf3, final CompletableFuture<? extends T4> cf4) {
-        return allOf(N.asList(cf1, cf2, cf3, cf4)).thenApply(new Try.Function<List<Object>, Tuple4<T1, T2, T3, T4>, E>() {
+        return allOf(Arrays.asList(cf1, cf2, cf3, cf4)).thenApply(new Try.Function<List<Object>, Tuple4<T1, T2, T3, T4>, E>() {
             @Override
             public Tuple4<T1, T2, T3, T4> apply(List<Object> t) throws E {
                 return Tuple.of((T1) t.get(0), (T2) t.get(1), (T3) t.get(2), (T4) t.get(3));
@@ -234,7 +233,7 @@ public final class Futures {
     public static <T1, T2, T3, T4, T5, E extends Exception> CompletableFuture<Tuple5<T1, T2, T3, T4, T5>> combine(final CompletableFuture<? extends T1> cf1,
             final CompletableFuture<? extends T2> cf2, final CompletableFuture<? extends T3> cf3, final CompletableFuture<? extends T4> cf4,
             final CompletableFuture<? extends T5> cf5) {
-        return allOf(N.asList(cf1, cf2, cf3, cf4, cf5)).thenApply(new Try.Function<List<Object>, Tuple5<T1, T2, T3, T4, T5>, E>() {
+        return allOf(Arrays.asList(cf1, cf2, cf3, cf4, cf5)).thenApply(new Try.Function<List<Object>, Tuple5<T1, T2, T3, T4, T5>, E>() {
             @Override
             public Tuple5<T1, T2, T3, T4, T5> apply(List<Object> t) throws E {
                 return Tuple.of((T1) t.get(0), (T2) t.get(1), (T3) t.get(2), (T4) t.get(3), (T5) t.get(4));
@@ -245,7 +244,7 @@ public final class Futures {
     public static <T1, T2, T3, T4, T5, T6, E extends Exception> CompletableFuture<Tuple6<T1, T2, T3, T4, T5, T6>> combine(
             final CompletableFuture<? extends T1> cf1, final CompletableFuture<? extends T2> cf2, final CompletableFuture<? extends T3> cf3,
             final CompletableFuture<? extends T4> cf4, final CompletableFuture<? extends T5> cf5, final CompletableFuture<? extends T6> cf6) {
-        return allOf(N.asList(cf1, cf2, cf3, cf4, cf5, cf6)).thenApply(new Try.Function<List<Object>, Tuple6<T1, T2, T3, T4, T5, T6>, E>() {
+        return allOf(Arrays.asList(cf1, cf2, cf3, cf4, cf5, cf6)).thenApply(new Try.Function<List<Object>, Tuple6<T1, T2, T3, T4, T5, T6>, E>() {
             @Override
             public Tuple6<T1, T2, T3, T4, T5, T6> apply(List<Object> t) throws E {
                 return Tuple.of((T1) t.get(0), (T2) t.get(1), (T3) t.get(2), (T4) t.get(3), (T5) t.get(4), (T6) t.get(5));
@@ -257,7 +256,7 @@ public final class Futures {
             final CompletableFuture<? extends T1> cf1, final CompletableFuture<? extends T2> cf2, final CompletableFuture<? extends T3> cf3,
             final CompletableFuture<? extends T4> cf4, final CompletableFuture<? extends T5> cf5, final CompletableFuture<? extends T6> cf6,
             final CompletableFuture<? extends T7> cf7) {
-        return allOf(N.asList(cf1, cf2, cf3, cf4, cf5, cf6, cf7)).thenApply(new Try.Function<List<Object>, Tuple7<T1, T2, T3, T4, T5, T6, T7>, E>() {
+        return allOf(Arrays.asList(cf1, cf2, cf3, cf4, cf5, cf6, cf7)).thenApply(new Try.Function<List<Object>, Tuple7<T1, T2, T3, T4, T5, T6, T7>, E>() {
             @Override
             public Tuple7<T1, T2, T3, T4, T5, T6, T7> apply(List<Object> t) throws E {
                 return Tuple.of((T1) t.get(0), (T2) t.get(1), (T3) t.get(2), (T4) t.get(3), (T5) t.get(4), (T6) t.get(5), (T7) t.get(6));
@@ -267,7 +266,7 @@ public final class Futures {
 
     public static <T1, T2, R, E extends Exception> CompletableFuture<R> combine(final CompletableFuture<? extends T1> cf1,
             final CompletableFuture<? extends T2> cf2, final Try.BiFunction<? super T1, ? super T2, ? extends R, E> action) {
-        return allOf(N.asList(cf1, cf2)).thenApply(new Try.Function<List<Object>, R, E>() {
+        return allOf(Arrays.asList(cf1, cf2)).thenApply(new Try.Function<List<Object>, R, E>() {
             @Override
             public R apply(List<Object> t) throws E {
                 return action.apply((T1) t.get(0), (T2) t.get(1));
@@ -278,7 +277,7 @@ public final class Futures {
     public static <T1, T2, T3, R, E extends Exception> CompletableFuture<R> combine(final CompletableFuture<? extends T1> cf1,
             final CompletableFuture<? extends T2> cf2, final CompletableFuture<? extends T3> cf3,
             final Try.TriFunction<? super T1, ? super T2, ? super T3, ? extends R, E> action) {
-        return allOf(N.asList(cf1, cf2, cf3)).thenApply(new Try.Function<List<Object>, R, E>() {
+        return allOf(Arrays.asList(cf1, cf2, cf3)).thenApply(new Try.Function<List<Object>, R, E>() {
             @Override
             public R apply(List<Object> t) throws E {
                 return action.apply((T1) t.get(0), (T2) t.get(1), (T3) t.get(2));
@@ -286,9 +285,10 @@ public final class Futures {
         });
     }
 
-    public static <R, E extends Exception> CompletableFuture<R> combine(final Collection<? extends CompletableFuture<?>> cfs,
-            final Try.Function<List<Object>, ? extends R, E> action) {
-        return allOf(cfs).thenApply(action);
+    public static <T, R, E extends Exception> CompletableFuture<R> combine(final Collection<? extends CompletableFuture<? extends T>> cfs,
+            final Try.Function<List<T>, ? extends R, E> action) {
+        final CompletableFuture<List<T>> f = allOf(cfs);
+        return f.thenApply(action);
     }
 
     //    public static <T, R> CompletableFuture<R> combine(final List<? extends CompletableFuture<? extends T>> cfs, final Function<List<T>, ? extends R> action) {
@@ -306,7 +306,7 @@ public final class Futures {
      * @return
      */
     @SafeVarargs
-    public static CompletableFuture<List<Object>> allOf(final CompletableFuture<?>... cfs) {
+    public static <T> CompletableFuture<List<T>> allOf(final CompletableFuture<? extends T>... cfs) {
         return allOf2(Arrays.asList(cfs));
     }
 
@@ -319,34 +319,20 @@ public final class Futures {
      * @param cfs
      * @return
      */
-    public static CompletableFuture<List<Object>> allOf(final Collection<? extends CompletableFuture<?>> cfs) {
+    public static <T> CompletableFuture<List<T>> allOf(final Collection<? extends CompletableFuture<? extends T>> cfs) {
         return allOf2(cfs);
     }
 
-    /**
-     * Returns a new CompletableFuture that is completed when all of
-     * the given CompletableFutures complete. If any of the given
-     * CompletableFutures complete exceptionally, then the returned
-     * CompletableFuture also does so.
-     * 
-     * @param cfs
-     * @return
-     */
-    @SuppressWarnings("rawtypes")
-    public static <T> CompletableFuture<List<T>> allOf(final List<? extends CompletableFuture<? extends T>> cfs) {
-        return (CompletableFuture) allOf2(cfs);
-    }
-
-    private static CompletableFuture<List<Object>> allOf2(final Collection<? extends CompletableFuture<?>> cfs) {
+    private static <T> CompletableFuture<List<T>> allOf2(final Collection<? extends CompletableFuture<? extends T>> cfs) {
         N.checkArgument(N.notNullOrEmpty(cfs), "'cfs' can't be null or empty");
 
-        return new CompletableFuture<>(new Future<List<Object>>() {
+        return new CompletableFuture<>(new Future<List<T>>() {
             @Override
             public boolean cancel(boolean mayInterruptIfRunning) {
                 boolean res = true;
                 RuntimeException exception = null;
 
-                for (CompletableFuture<?> future : cfs) {
+                for (CompletableFuture<? extends T> future : cfs) {
                     try {
                         res = res & future.cancel(mayInterruptIfRunning);
                     } catch (RuntimeException e) {
@@ -388,10 +374,10 @@ public final class Futures {
             }
 
             @Override
-            public List<Object> get() throws InterruptedException, ExecutionException {
-                final List<Object> result = new ArrayList<>(cfs.size());
+            public List<T> get() throws InterruptedException, ExecutionException {
+                final List<T> result = new ArrayList<>(cfs.size());
 
-                for (CompletableFuture<?> future : cfs) {
+                for (CompletableFuture<? extends T> future : cfs) {
                     result.add(future.get());
                 }
 
@@ -399,14 +385,14 @@ public final class Futures {
             }
 
             @Override
-            public List<Object> get(final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+            public List<T> get(final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
                 final long timeoutInMillis = unit.toMillis(timeout);
                 final long now = N.currentMillis();
                 final long endTime = timeoutInMillis > Long.MAX_VALUE - now ? Long.MAX_VALUE : now + timeoutInMillis;
 
-                final List<Object> result = new ArrayList<>(cfs.size());
+                final List<T> result = new ArrayList<>(cfs.size());
 
-                for (CompletableFuture<?> future : cfs) {
+                for (CompletableFuture<? extends T> future : cfs) {
                     result.add(future.get(N.max(0, endTime - N.currentMillis()), TimeUnit.MILLISECONDS));
                 }
 
@@ -423,7 +409,7 @@ public final class Futures {
      * @return
      */
     @SafeVarargs
-    public static CompletableFuture<Object> anyOf(final CompletableFuture<?>... cfs) {
+    public static <T> CompletableFuture<T> anyOf(final CompletableFuture<? extends T>... cfs) {
         return anyOf2(Arrays.asList(cfs));
     }
 
@@ -434,31 +420,20 @@ public final class Futures {
      * @param cfs
      * @return
      */
-    public static CompletableFuture<Object> anyOf(final Collection<? extends CompletableFuture<?>> cfs) {
+    public static <T> CompletableFuture<T> anyOf(final Collection<? extends CompletableFuture<? extends T>> cfs) {
         return anyOf2(cfs);
     }
 
-    /**
-     * Returns a new CompletableFuture that, when any of the given CompletableFutures complete normally. 
-     * If all of the given CompletableFutures complete exceptionally, then the returned CompletableFuture also does so.
-     * 
-     * @param cfs
-     * @return
-     */
-    public static <T> CompletableFuture<T> anyOf(final List<? extends CompletableFuture<? extends T>> cfs) {
-        return (CompletableFuture<T>) anyOf2(cfs);
-    }
-
-    private static CompletableFuture<Object> anyOf2(final Collection<? extends CompletableFuture<?>> cfs) {
+    private static <T> CompletableFuture<T> anyOf2(final Collection<? extends CompletableFuture<? extends T>> cfs) {
         N.checkArgument(N.notNullOrEmpty(cfs), "'cfs' can't be null or empty");
 
-        return new CompletableFuture<>(new Future<Object>() {
+        return new CompletableFuture<>(new Future<T>() {
             @Override
             public boolean cancel(boolean mayInterruptIfRunning) {
                 boolean res = true;
                 RuntimeException exception = null;
 
-                for (CompletableFuture<?> future : cfs) {
+                for (CompletableFuture<? extends T> future : cfs) {
                     try {
                         res = res & future.cancel(mayInterruptIfRunning);
                     } catch (RuntimeException e) {
@@ -500,9 +475,9 @@ public final class Futures {
             }
 
             @Override
-            public Object get() throws InterruptedException, ExecutionException {
-                final Iterator<Pair<Object, Exception>> iter = iterate2(cfs);
-                Pair<Object, Exception> result = null;
+            public T get() throws InterruptedException, ExecutionException {
+                final Iterator<Pair<T, Exception>> iter = iterate2(cfs);
+                Pair<T, Exception> result = null;
 
                 while (iter.hasNext()) {
                     result = iter.next();
@@ -516,9 +491,9 @@ public final class Futures {
             }
 
             @Override
-            public Object get(final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-                final Iterator<Pair<Object, Exception>> iter = iterate2(cfs, timeout, unit);
-                Pair<Object, Exception> result = null;
+            public T get(final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+                final Iterator<Pair<T, Exception>> iter = iterate2(cfs, timeout, unit);
+                Pair<T, Exception> result = null;
 
                 while (iter.hasNext()) {
                     result = iter.next();
@@ -534,41 +509,33 @@ public final class Futures {
     }
 
     @SafeVarargs
-    public static Iterator<Object> iterate(final CompletableFuture<?>... cfs) {
-        return iterate02(N.asList(cfs));
+    public static <T> Iterator<T> iterate(final CompletableFuture<? extends T>... cfs) {
+        return iterate02(Arrays.asList(cfs));
     }
 
-    public static Iterator<Object> iterate(final Collection<? extends CompletableFuture<?>> cfs) {
+    public static <T> Iterator<T> iterate(final Collection<? extends CompletableFuture<? extends T>> cfs) {
         return iterate02(cfs);
     }
 
-    public static Iterator<Object> iterate(final Collection<? extends CompletableFuture<?>> cfs, final long timeout, final TimeUnit unit) {
+    public static <T> Iterator<T> iterate(final Collection<? extends CompletableFuture<? extends T>> cfs, final long timeout, final TimeUnit unit) {
         return iterate02(cfs, timeout, unit);
     }
 
-    public static <T> Iterator<T> iterate(final List<? extends CompletableFuture<? extends T>> cfs) {
-        return (Iterator<T>) iterate02(cfs);
-    }
-
-    public static <T> Iterator<T> iterate(final List<? extends CompletableFuture<? extends T>> cfs, final long timeout, final TimeUnit unit) {
-        return (Iterator<T>) iterate02(cfs, timeout, unit);
-    }
-
-    static Iterator<Object> iterate02(final Collection<? extends CompletableFuture<?>> cfs) {
+    private static <T> Iterator<T> iterate02(final Collection<? extends CompletableFuture<? extends T>> cfs) {
         return iterate02(cfs, Long.MAX_VALUE, TimeUnit.MILLISECONDS);
     }
 
-    private static Iterator<Object> iterate02(final Collection<? extends CompletableFuture<?>> cfs, final long timeout, final TimeUnit unit) {
-        final Iterator<Pair<Object, Exception>> iter = iterate22(cfs, timeout, unit);
+    private static <T> Iterator<T> iterate02(final Collection<? extends CompletableFuture<? extends T>> cfs, final long timeout, final TimeUnit unit) {
+        return new Iterator<T>() {
+            private final Iterator<Pair<T, Exception>> iter = iterate22(cfs, timeout, unit);
 
-        return new Iterator<Object>() {
             @Override
             public boolean hasNext() {
                 return iter.hasNext();
             }
 
             @Override
-            public Object next() {
+            public T next() {
                 try {
                     return handle(iter.next());
                 } catch (InterruptedException | ExecutionException e) {
@@ -584,38 +551,30 @@ public final class Futures {
     }
 
     @SafeVarargs
-    public static Iterator<Pair<Object, Exception>> iterate2(final CompletableFuture<?>... cfs) {
-        return iterate22(N.asList(cfs));
+    public static <T> Iterator<Pair<T, Exception>> iterate2(final CompletableFuture<? extends T>... cfs) {
+        return iterate22(Arrays.asList(cfs));
     }
 
-    public static Iterator<Pair<Object, Exception>> iterate2(final Collection<? extends CompletableFuture<?>> cfs) {
+    public static <T> Iterator<Pair<T, Exception>> iterate2(final Collection<? extends CompletableFuture<? extends T>> cfs) {
         return iterate22(cfs);
     }
 
-    public static Iterator<Pair<Object, Exception>> iterate2(final Collection<? extends CompletableFuture<?>> cfs, final long timeout, final TimeUnit unit) {
+    public static <T> Iterator<Pair<T, Exception>> iterate2(final Collection<? extends CompletableFuture<? extends T>> cfs, final long timeout,
+            final TimeUnit unit) {
         return iterate22(cfs, timeout, unit);
     }
 
-    @SuppressWarnings("rawtypes")
-    public static <T> Iterator<Pair<T, Exception>> iterate2(final List<? extends CompletableFuture<? extends T>> cfs) {
-        return (Iterator) iterate22(cfs);
-    }
-
-    @SuppressWarnings("rawtypes")
-    public static <T> Iterator<Pair<T, Exception>> iterate2(final List<? extends CompletableFuture<? extends T>> cfs, final long timeout, final TimeUnit unit) {
-        return (Iterator) iterate22(cfs, timeout, unit);
-    }
-
-    static Iterator<Pair<Object, Exception>> iterate22(final Collection<? extends CompletableFuture<?>> cfs) {
+    private static <T> Iterator<Pair<T, Exception>> iterate22(final Collection<? extends CompletableFuture<? extends T>> cfs) {
         return iterate22(cfs, Long.MAX_VALUE, TimeUnit.MILLISECONDS);
     }
 
-    static Iterator<Pair<Object, Exception>> iterate22(final Collection<? extends CompletableFuture<?>> cfs, final long timeout, final TimeUnit unit) {
+    private static <T> Iterator<Pair<T, Exception>> iterate22(final Collection<? extends CompletableFuture<? extends T>> cfs, final long timeout,
+            final TimeUnit unit) {
         final ExecutorService executor = Executors.newFixedThreadPool(cfs.size());
-        final BlockingQueue<Pair<Object, Exception>> queue = new ArrayBlockingQueue<>(cfs.size());
+        final BlockingQueue<Pair<T, Exception>> queue = new ArrayBlockingQueue<>(cfs.size());
 
-        for (CompletableFuture<?> e : cfs) {
-            final CompletableFuture<Object> futuer = (CompletableFuture<Object>) e;
+        for (CompletableFuture<? extends T> e : cfs) {
+            final CompletableFuture<T> futuer = (CompletableFuture<T>) e;
 
             executor.execute(new Runnable() {
                 @Override
@@ -625,7 +584,7 @@ public final class Futures {
             });
         }
 
-        return new Iterator<Pair<Object, Exception>>() {
+        return new Iterator<Pair<T, Exception>>() {
             private final int end = cfs.size();
             private int cursor = 0;
 
@@ -635,7 +594,7 @@ public final class Futures {
             }
 
             @Override
-            public Pair<Object, Exception> next() {
+            public Pair<T, Exception> next() {
                 if (cursor >= end) {
                     throw new NoSuchElementException();
                 }
@@ -656,7 +615,7 @@ public final class Futures {
         };
     }
 
-    private static Object handle(final Pair<Object, Exception> result) throws InterruptedException, ExecutionException {
+    private static <R> R handle(final Pair<R, Exception> result) throws InterruptedException, ExecutionException {
         if (result.right != null) {
             if (result.right instanceof InterruptedException) {
                 throw ((InterruptedException) result.right);

@@ -855,6 +855,7 @@ public final class CassandraExecutor implements Closeable {
     }
 
     @SuppressWarnings("rawtypes")
+    @SafeVarargs
     public final List<Map<String, Object>> find(final String query, final Object... parameters) {
         return (List) find(Map.class, query, parameters);
     }

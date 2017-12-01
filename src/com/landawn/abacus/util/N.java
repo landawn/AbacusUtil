@@ -20143,29 +20143,69 @@ public final class N {
         return result;
     }
 
+    /**
+     * 
+     * @param a
+     * @return
+     */
+    public static <T extends Number> int sumInt(final T[] a) {
+        return N.sumInt(a, Fn.numToInt());
+    }
+
+    /**
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @return
+     */
+    public static <T extends Number> int sumInt(final T[] a, final int fromIndex, final int toIndex) {
+        return N.sumInt(a, fromIndex, toIndex, Fn.numToInt());
+    }
+
     public static <T, E extends Exception> int sumInt(final T[] a, final Try.ToIntFunction<? super T, E> func) throws E {
         if (N.isNullOrEmpty(a)) {
             return 0;
         }
-
+    
         return sumInt(a, 0, a.length, func);
     }
 
     public static <T, E extends Exception> int sumInt(final T[] a, final int fromIndex, final int toIndex, final Try.ToIntFunction<? super T, E> func)
             throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
+    
         if (fromIndex == toIndex) {
             return 0;
         }
-
+    
         int result = 0;
-
+    
         for (int i = fromIndex; i < toIndex; i++) {
             result += func.applyAsInt(a[i]);
         }
-
+    
         return result;
+    }
+
+    /**
+     * 
+     * @param c
+     * @return
+     */
+    public static <T extends Number> int sumInt(final Collection<? extends T> c) {
+        return N.sumInt(c, Fn.numToInt());
+    }
+
+    /**
+     * 
+     * @param c
+     * @param fromIndex
+     * @param toIndex
+     * @return
+     */
+    public static <T extends Number> int sumInt(final Collection<? extends T> c, final int fromIndex, final int toIndex) {
+        return N.sumInt(c, fromIndex, toIndex, Fn.numToInt());
     }
 
     public static <T, E extends Exception> int sumInt(final Collection<? extends T> c, final Try.ToIntFunction<? super T, E> func) throws E {
@@ -20217,29 +20257,69 @@ public final class N {
         return result;
     }
 
+    /**
+     * 
+     * @param a
+     * @return
+     */
+    public static <T extends Number> long sumLong(final T[] a) {
+        return N.sumLong(a, Fn.numToLong());
+    }
+
+    /**
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @return
+     */
+    public static <T extends Number> long sumLong(final T[] a, final int fromIndex, final int toIndex) {
+        return N.sumLong(a, fromIndex, toIndex, Fn.numToLong());
+    }
+
     public static <T, E extends Exception> long sumLong(final T[] a, final Try.ToLongFunction<? super T, E> func) throws E {
         if (N.isNullOrEmpty(a)) {
             return 0L;
         }
-
+    
         return sumLong(a, 0, a.length, func);
     }
 
     public static <T, E extends Exception> long sumLong(final T[] a, final int fromIndex, final int toIndex, final Try.ToLongFunction<? super T, E> func)
             throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
+    
         if (fromIndex == toIndex) {
             return 0L;
         }
-
+    
         long result = 0;
-
+    
         for (int i = fromIndex; i < toIndex; i++) {
             result += func.applyAsLong(a[i]);
         }
-
+    
         return result;
+    }
+
+    /**
+     * 
+     * @param c
+     * @return
+     */
+    public static <T extends Number> long sumLong(final Collection<? extends T> c) {
+        return N.sumLong(c, Fn.numToLong());
+    }
+
+    /**
+     * 
+     * @param c
+     * @param fromIndex
+     * @param toIndex
+     * @return
+     */
+    public static <T extends Number> long sumLong(final Collection<? extends T> c, final int fromIndex, final int toIndex) {
+        return N.sumLong(c, fromIndex, toIndex, Fn.numToLong());
     }
 
     public static <T, E extends Exception> long sumLong(final Collection<? extends T> c, final Try.ToLongFunction<? super T, E> func) throws E {
@@ -20291,22 +20371,42 @@ public final class N {
         return result;
     }
 
+    /**
+     * 
+     * @param a
+     * @return
+     */
+    public static <T extends Number> double sumDouble(final T[] a) {
+        return N.sumDouble(a, Fn.numToDouble());
+    }
+
+    /**
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @return
+     */
+    public static <T extends Number> double sumDouble(final T[] a, final int fromIndex, final int toIndex) {
+        return N.sumDouble(a, fromIndex, toIndex, Fn.numToDouble());
+    }
+
     public static <T, E extends Exception> double sumDouble(final T[] a, final Try.ToDoubleFunction<? super T, E> func) throws E {
         if (N.isNullOrEmpty(a)) {
             return 0D;
         }
-
+    
         return sumDouble(a, 0, a.length, func);
     }
 
     public static <T, E extends Exception> double sumDouble(final T[] a, final int fromIndex, final int toIndex, final Try.ToDoubleFunction<? super T, E> func)
             throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
+    
         if (fromIndex == toIndex) {
             return 0D;
         }
-
+    
         //        double result = 0;
         //
         //        for (int i = fromIndex; i < toIndex; i++) {
@@ -20314,8 +20414,28 @@ public final class N {
         //        }
         //
         //        return result;
-
+    
         return Stream.of(a, fromIndex, toIndex).mapToDouble(toDoubleFunction(func)).sum();
+    }
+
+    /**
+     * 
+     * @param c
+     * @return
+     */
+    public static <T extends Number> double sumDouble(final Collection<? extends T> c) {
+        return N.sumDouble(c, Fn.numToDouble());
+    }
+
+    /**
+     * 
+     * @param c
+     * @param fromIndex
+     * @param toIndex
+     * @return
+     */
+    public static <T extends Number> double sumDouble(final Collection<? extends T> c, final int fromIndex, final int toIndex) {
+        return N.sumDouble(c, fromIndex, toIndex, Fn.numToDouble());
     }
 
     public static <T, E extends Exception> double sumDouble(final Collection<? extends T> c, final Try.ToDoubleFunction<? super T, E> func) throws E {
@@ -20371,29 +20491,69 @@ public final class N {
         return Stream.of(c, fromIndex, toIndex).mapToDouble(toDoubleFunction(func)).sum();
     }
 
+    /**
+     * 
+     * @param a
+     * @return
+     */
+    public static <T extends Number> OptionalDouble averageInt(final T[] a) {
+        return N.averageInt(a, Fn.numToInt());
+    }
+
+    /**
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @return
+     */
+    public static <T extends Number> OptionalDouble averageInt(final T[] a, final int fromIndex, final int toIndex) {
+        return N.averageInt(a, fromIndex, toIndex, Fn.numToInt());
+    }
+
     public static <T, E extends Exception> OptionalDouble averageInt(final T[] a, final Try.ToIntFunction<? super T, E> func) throws E {
         if (N.isNullOrEmpty(a)) {
             return OptionalDouble.empty();
         }
-
+    
         return averageInt(a, 0, a.length, func);
     }
 
     public static <T, E extends Exception> OptionalDouble averageInt(final T[] a, final int fromIndex, final int toIndex,
             final Try.ToIntFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
+    
         if (fromIndex == toIndex) {
             return OptionalDouble.empty();
         }
-
+    
         long sum = 0;
-
+    
         for (int i = fromIndex; i < toIndex; i++) {
             sum += func.applyAsInt(a[i]);
         }
-
+    
         return OptionalDouble.of(((double) sum) / (toIndex - fromIndex));
+    }
+
+    /**
+     * 
+     * @param c
+     * @return
+     */
+    public static <T extends Number> OptionalDouble averageInt(final Collection<? extends T> c) {
+        return N.averageInt(c, Fn.numToInt());
+    }
+
+    /**
+     * 
+     * @param c
+     * @param fromIndex
+     * @param toIndex
+     * @return
+     */
+    public static <T extends Number> OptionalDouble averageInt(final Collection<? extends T> c, final int fromIndex, final int toIndex) {
+        return N.averageInt(c, fromIndex, toIndex, Fn.numToInt());
     }
 
     public static <T, E extends Exception> OptionalDouble averageInt(final Collection<? extends T> c, final Try.ToIntFunction<? super T, E> func) throws E {
@@ -20445,23 +20605,63 @@ public final class N {
         return OptionalDouble.of(((double) sum) / (toIndex - fromIndex));
     }
 
+    /**
+     * 
+     * @param a
+     * @return
+     */
+    public static <T extends Number> OptionalDouble averageLong(final T[] a) {
+        return N.averageLong(a, Fn.numToLong());
+    }
+
+    /**
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @return
+     */
+    public static <T extends Number> OptionalDouble averageLong(final T[] a, final int fromIndex, final int toIndex) {
+        return N.averageLong(a, fromIndex, toIndex, Fn.numToLong());
+    }
+
     public static <T, E extends Exception> OptionalDouble averageLong(final T[] a, final Try.ToLongFunction<? super T, E> func) throws E {
         if (N.isNullOrEmpty(a)) {
             return OptionalDouble.empty();
         }
-
+    
         return averageLong(a, 0, a.length, func);
     }
 
     public static <T, E extends Exception> OptionalDouble averageLong(final T[] a, final int fromIndex, final int toIndex,
             final Try.ToLongFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
+    
         if (fromIndex == toIndex) {
             return OptionalDouble.empty();
         }
-
+    
         return OptionalDouble.of(((double) sumLong(a, fromIndex, toIndex, func)) / (toIndex - fromIndex));
+    }
+
+    /**
+     * 
+     * @param c
+     * @return
+     */
+    public static <T extends Number> OptionalDouble averageLong(final Collection<? extends T> c) {
+        return N.averageLong(c, Fn.numToLong());
+    }
+
+    /**
+     * 
+     * @param c
+     * @param fromIndex
+     * @param toIndex
+     * @return
+     */
+    public static <T extends Number> OptionalDouble averageLong(final Collection<? extends T> c, final int fromIndex, final int toIndex) {
+        return N.averageLong(c, fromIndex, toIndex, Fn.numToLong());
     }
 
     public static <T, E extends Exception> OptionalDouble averageLong(final Collection<? extends T> c, final Try.ToLongFunction<? super T, E> func) throws E {
@@ -20483,25 +20683,65 @@ public final class N {
         return OptionalDouble.of(((double) sumLong(c, fromIndex, toIndex, func)) / (toIndex - fromIndex));
     }
 
+    /**
+     * 
+     * @param a
+     * @return
+     */
+    public static <T extends Number> OptionalDouble averageDouble(final T[] a) {
+        return N.averageDouble(a, Fn.numToDouble());
+    }
+
+    /**
+     * 
+     * @param a
+     * @param fromIndex
+     * @param toIndex
+     * @return
+     */
+    public static <T extends Number> OptionalDouble averageDouble(final T[] a, final int fromIndex, final int toIndex) {
+        return N.averageDouble(a, fromIndex, toIndex, Fn.numToDouble());
+    }
+
     public static <T, E extends Exception> OptionalDouble averageDouble(final T[] a, final Try.ToDoubleFunction<? super T, E> func) throws E {
         if (N.isNullOrEmpty(a)) {
             return OptionalDouble.empty();
         }
-
+    
         return averageDouble(a, 0, a.length, func);
     }
 
     public static <T, E extends Exception> OptionalDouble averageDouble(final T[] a, final int fromIndex, final int toIndex,
             final Try.ToDoubleFunction<? super T, E> func) throws E {
         checkFromToIndex(fromIndex, toIndex, a == null ? 0 : a.length);
-
+    
         if (fromIndex == toIndex) {
             return OptionalDouble.empty();
         }
-
+    
         // return OptionalDouble.of(sumDouble(a, fromIndex, toIndex, func) / (toIndex - fromIndex));
-
+    
         return Stream.of(a, fromIndex, toIndex).mapToDouble(toDoubleFunction(func)).average();
+    }
+
+    /**
+     * 
+     * @param c
+     * @return
+     */
+    public static <T extends Number> OptionalDouble averageDouble(final Collection<? extends T> c) {
+        return N.averageDouble(c, Fn.numToDouble());
+    }
+
+    /**
+     * 
+     * @param c
+     * @param fromIndex
+     * @param toIndex
+     * @return
+     */
+    public static <T extends Number> OptionalDouble averageDouble(final Collection<? extends T> c, final int fromIndex, final int toIndex) {
+        return N.averageDouble(c, fromIndex, toIndex, Fn.numToDouble());
     }
 
     public static <T, E extends Exception> OptionalDouble averageDouble(final Collection<? extends T> c, final Try.ToDoubleFunction<? super T, E> func)

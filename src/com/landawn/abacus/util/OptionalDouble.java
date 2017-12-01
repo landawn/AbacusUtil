@@ -26,6 +26,7 @@ package com.landawn.abacus.util;
 
 import java.util.NoSuchElementException;
 
+import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.DoubleStream;
 
 /**
@@ -201,7 +202,7 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
      * @throws NullPointerException if no value is present and
      * {@code exceptionSupplier} is null
      */
-    public <X extends Throwable, E extends Exception> double orElseThrow(Try.Supplier<X, E> exceptionSupplier) throws X, E {
+    public <X extends Throwable> double orElseThrow(Supplier<? extends X> exceptionSupplier) throws X {
         if (isPresent()) {
             return value;
         } else {

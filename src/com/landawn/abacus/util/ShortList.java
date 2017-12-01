@@ -421,7 +421,8 @@ public final class ShortList extends PrimitiveList<Short, short[], ShortList> {
     }
 
     @Override
-    public void deleteAll(int... indices) {
+    @SafeVarargs
+    public final void deleteAll(int... indices) {
         N.deleteAll(elementData, indices);
     }
 

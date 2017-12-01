@@ -4072,6 +4072,58 @@ public class Collectors {
         return new CollectorImpl<>(mapFactory, accumulator, combiner, CH_CONCURRENT_ID);
     }
 
+    /**
+     * 
+     * @param classifier
+     * @param downstream
+     * @return
+     * @see Collectors#groupingBy(Function, Collector)
+     */
+    public static <T, K, A, D> Collector<T, ?, Map<K, D>> toMap(final Function<? super T, ? extends K> classifier,
+            final Collector<? super T, A, D> downstream) {
+        return groupingBy(classifier, downstream);
+    }
+
+    /**
+     * 
+     * @param classifier
+     * @param downstream
+     * @param mapFactory
+     * @return
+     * @see Collectors#groupingBy(Function, Collector, Supplier)
+     */
+    public static <T, K, A, D, M extends Map<K, D>> Collector<T, ?, M> toMap(final Function<? super T, ? extends K> classifier,
+            final Collector<? super T, A, D> downstream, final Supplier<M> mapFactory) {
+        return groupingBy(classifier, downstream, mapFactory);
+    }
+
+    /**
+     * 
+     * @param classifier
+     * @param valueMapper
+     * @param downstream
+     * @return
+     * @see Collectors#groupingBy(Function, Collector)
+     */
+    public static <T, K, U, A, D> Collector<T, ?, Map<K, D>> toMap(final Function<? super T, ? extends K> classifier,
+            final Function<? super T, ? extends U> valueMapper, final Collector<? super U, A, D> downstream) {
+        return groupingBy(classifier, mapping(valueMapper, downstream));
+    }
+
+    /**
+     * 
+     * @param classifier
+     * @param valueMapper
+     * @param downstream
+     * @param mapFactory
+     * @return
+     * @see Collectors#groupingBy(Function, Collector, Supplier)
+     */
+    public static <T, K, U, A, D, M extends Map<K, D>> Collector<T, ?, M> toMap(final Function<? super T, ? extends K> classifier,
+            final Function<? super T, ? extends U> valueMapper, final Collector<? super U, A, D> downstream, final Supplier<M> mapFactory) {
+        return groupingBy(classifier, mapping(valueMapper, downstream), mapFactory);
+    }
+
     public static <K, V> Collector<Map.Entry<K, V>, ?, ImmutableMap<K, V>> toImmutableMap() {
         final Collector<Map.Entry<K, V>, ?, Map<K, V>> downstream = toMap();
         @SuppressWarnings("rawtypes")

@@ -72,7 +72,8 @@ public final class AsyncSQLExecutor {
         });
     }
 
-    public <T> CompletableFuture<T> insert(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
+    @SafeVarargs
+    public final <T> CompletableFuture<T> insert(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
             final Object... parameters) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
@@ -105,7 +106,8 @@ public final class AsyncSQLExecutor {
     /**
      * @see SQLExecutor#insert(Connection, String, StatementSetter, JdbcSettings, Object...)
      */
-    public <T> CompletableFuture<T> insert(final Connection conn, final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
+    @SafeVarargs
+    public final <T> CompletableFuture<T> insert(final Connection conn, final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
             final Object... parameters) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
@@ -248,7 +250,8 @@ public final class AsyncSQLExecutor {
         });
     }
 
-    public CompletableFuture<Integer> update(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
+    @SafeVarargs
+    public final CompletableFuture<Integer> update(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
             final Object... parameters) {
         return asyncExecutor.execute(new Callable<Integer>() {
             @Override
@@ -278,7 +281,8 @@ public final class AsyncSQLExecutor {
         });
     }
 
-    public CompletableFuture<Integer> update(final Connection conn, final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
+    @SafeVarargs
+    public final CompletableFuture<Integer> update(final Connection conn, final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
             final Object... parameters) {
         return asyncExecutor.execute(new Callable<Integer>() {
             @Override
@@ -451,7 +455,8 @@ public final class AsyncSQLExecutor {
         });
     }
 
-    public <T> CompletableFuture<T> get(final Class<T> targetClass, final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
+    @SafeVarargs
+    public final <T> CompletableFuture<T> get(final Class<T> targetClass, final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
             final Object... parameters) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
@@ -471,7 +476,8 @@ public final class AsyncSQLExecutor {
         });
     }
 
-    public <T> CompletableFuture<T> get(final Class<T> targetClass, final Connection conn, final String sql, final StatementSetter statementSetter,
+    @SafeVarargs
+    public final <T> CompletableFuture<T> get(final Class<T> targetClass, final Connection conn, final String sql, final StatementSetter statementSetter,
             final JdbcSettings jdbcSettings, final Object... parameters) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
@@ -491,7 +497,8 @@ public final class AsyncSQLExecutor {
         });
     }
 
-    public <T> CompletableFuture<List<T>> find(final Class<T> targetClass, final String sql, final StatementSetter statementSetter,
+    @SafeVarargs
+    public final <T> CompletableFuture<List<T>> find(final Class<T> targetClass, final String sql, final StatementSetter statementSetter,
             final JdbcSettings jdbcSettings, final Object... parameters) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
@@ -511,7 +518,8 @@ public final class AsyncSQLExecutor {
         });
     }
 
-    public <T> CompletableFuture<List<T>> find(final Class<T> targetClass, final Connection conn, final String sql, final StatementSetter statementSetter,
+    @SafeVarargs
+    public final <T> CompletableFuture<List<T>> find(final Class<T> targetClass, final Connection conn, final String sql, final StatementSetter statementSetter,
             final JdbcSettings jdbcSettings, final Object... parameters) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
@@ -531,7 +539,8 @@ public final class AsyncSQLExecutor {
         });
     }
 
-    public <T> CompletableFuture<List<T>> findAll(final Class<T> targetClass, final String sql, final StatementSetter statementSetter,
+    @SafeVarargs
+    public final <T> CompletableFuture<List<T>> findAll(final Class<T> targetClass, final String sql, final StatementSetter statementSetter,
             final JdbcSettings jdbcSettings, final Object... parameters) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
@@ -561,7 +570,8 @@ public final class AsyncSQLExecutor {
         });
     }
 
-    public <T> CompletableFuture<List<T>> findAll(final Class<T> targetClass, final List<String> sqls, final JdbcSettings jdbcSettings,
+    @SafeVarargs
+    public final <T> CompletableFuture<List<T>> findAll(final Class<T> targetClass, final List<String> sqls, final JdbcSettings jdbcSettings,
             final Object... parameters) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
@@ -571,7 +581,8 @@ public final class AsyncSQLExecutor {
         });
     }
 
-    public <T> CompletableFuture<List<T>> findAll(final Class<T> targetClass, final List<String> sqls, final StatementSetter statementSetter,
+    @SafeVarargs
+    public final <T> CompletableFuture<List<T>> findAll(final Class<T> targetClass, final List<String> sqls, final StatementSetter statementSetter,
             final JdbcSettings jdbcSettings, final Object... parameters) {
         return asyncExecutor.execute(new Callable<List<T>>() {
             @Override
@@ -701,7 +712,8 @@ public final class AsyncSQLExecutor {
         });
     }
 
-    public <T> CompletableFuture<Nullable<T>> queryForSingleResult(final Class<T> targetClass, final String sql, final StatementSetter statementSetter,
+    @SafeVarargs
+    public final <T> CompletableFuture<Nullable<T>> queryForSingleResult(final Class<T> targetClass, final String sql, final StatementSetter statementSetter,
             final JdbcSettings jdbcSettings, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Nullable<T>>() {
             @Override
@@ -711,7 +723,8 @@ public final class AsyncSQLExecutor {
         });
     }
 
-    public <T> CompletableFuture<Nullable<T>> queryForSingleResult(final Class<T> targetClass, final Connection conn, final String sql,
+    @SafeVarargs
+    public final <T> CompletableFuture<Nullable<T>> queryForSingleResult(final Class<T> targetClass, final Connection conn, final String sql,
             final Object... parameters) {
         return asyncExecutor.execute(new Callable<Nullable<T>>() {
             @Override
@@ -721,7 +734,8 @@ public final class AsyncSQLExecutor {
         });
     }
 
-    public <T> CompletableFuture<Nullable<T>> queryForSingleResult(final Class<T> targetClass, final Connection conn, final String sql,
+    @SafeVarargs
+    public final <T> CompletableFuture<Nullable<T>> queryForSingleResult(final Class<T> targetClass, final Connection conn, final String sql,
             final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Nullable<T>>() {
             @Override
@@ -778,7 +792,8 @@ public final class AsyncSQLExecutor {
         });
     }
 
-    public <T> CompletableFuture<Optional<T>> queryForEntity(final Class<T> targetClass, final String sql, final StatementSetter statementSetter,
+    @SafeVarargs
+    public final <T> CompletableFuture<Optional<T>> queryForEntity(final Class<T> targetClass, final String sql, final StatementSetter statementSetter,
             final JdbcSettings jdbcSettings, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
@@ -798,7 +813,8 @@ public final class AsyncSQLExecutor {
         });
     }
 
-    public <T> CompletableFuture<Optional<T>> queryForEntity(final Class<T> targetClass, final Connection conn, final String sql,
+    @SafeVarargs
+    public final <T> CompletableFuture<Optional<T>> queryForEntity(final Class<T> targetClass, final Connection conn, final String sql,
             final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
@@ -828,7 +844,8 @@ public final class AsyncSQLExecutor {
         });
     }
 
-    public <T> CompletableFuture<T> query(final String sql, final StatementSetter statementSetter, final ResultSetExtractor<T> resultSetExtractor,
+    @SafeVarargs
+    public final <T> CompletableFuture<T> query(final String sql, final StatementSetter statementSetter, final ResultSetExtractor<T> resultSetExtractor,
             final Object... parameters) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
@@ -838,7 +855,8 @@ public final class AsyncSQLExecutor {
         });
     }
 
-    public <T> CompletableFuture<T> query(final String sql, final StatementSetter statementSetter, final ResultSetExtractor<T> resultSetExtractor,
+    @SafeVarargs
+    public final <T> CompletableFuture<T> query(final String sql, final StatementSetter statementSetter, final ResultSetExtractor<T> resultSetExtractor,
             final JdbcSettings jdbcSettings, final Object... parameters) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
@@ -868,7 +886,8 @@ public final class AsyncSQLExecutor {
         });
     }
 
-    public <T> CompletableFuture<T> query(final Connection conn, final String sql, final StatementSetter statementSetter,
+    @SafeVarargs
+    public final <T> CompletableFuture<T> query(final Connection conn, final String sql, final StatementSetter statementSetter,
             final ResultSetExtractor<T> resultSetExtractor, final Object... parameters) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
@@ -878,7 +897,8 @@ public final class AsyncSQLExecutor {
         });
     }
 
-    public <T> CompletableFuture<T> query(final Connection conn, final String sql, final StatementSetter statementSetter,
+    @SafeVarargs
+    public final <T> CompletableFuture<T> query(final Connection conn, final String sql, final StatementSetter statementSetter,
             final ResultSetExtractor<T> resultSetExtractor, final JdbcSettings jdbcSettings, final Object... parameters) {
         return asyncExecutor.execute(new Callable<T>() {
             @Override
@@ -898,7 +918,8 @@ public final class AsyncSQLExecutor {
         });
     }
 
-    public CompletableFuture<DataSet> queryAll(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
+    @SafeVarargs
+    public final CompletableFuture<DataSet> queryAll(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
             final Object... parameters) {
         return asyncExecutor.execute(new Callable<DataSet>() {
             @Override
@@ -937,7 +958,8 @@ public final class AsyncSQLExecutor {
         });
     }
 
-    public CompletableFuture<DataSet> queryAll(final List<String> sqls, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
+    @SafeVarargs
+    public final CompletableFuture<DataSet> queryAll(final List<String> sqls, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
             final Object... parameters) {
         return asyncExecutor.execute(new Callable<DataSet>() {
             @Override
@@ -1187,7 +1209,8 @@ public final class AsyncSQLExecutor {
      * @param parameters
      * @return
      */
-    public CompletableFuture<Try<Stream<Object[]>>> stream(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
+    @SafeVarargs
+    public final CompletableFuture<Try<Stream<Object[]>>> stream(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
             final Object... parameters) {
         return asyncExecutor.execute(new Callable<Try<Stream<Object[]>>>() {
             @Override
@@ -1255,7 +1278,8 @@ public final class AsyncSQLExecutor {
      * @param parameters
      * @return
      */
-    public CompletableFuture<Try<Stream<Object[]>>> streamAll(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
+    @SafeVarargs
+    public final CompletableFuture<Try<Stream<Object[]>>> streamAll(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
             final Object... parameters) {
         return asyncExecutor.execute(new Callable<Try<Stream<Object[]>>>() {
             @Override
@@ -1314,7 +1338,8 @@ public final class AsyncSQLExecutor {
      * @param parameters
      * @return
      */
-    public CompletableFuture<Try<Stream<Object[]>>> streamAll(final List<String> sqls, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
+    @SafeVarargs
+    public final CompletableFuture<Try<Stream<Object[]>>> streamAll(final List<String> sqls, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
             final Object... parameters) {
         return asyncExecutor.execute(new Callable<Try<Stream<Object[]>>>() {
             @Override
@@ -1365,7 +1390,8 @@ public final class AsyncSQLExecutor {
         });
     }
 
-    public <T> CompletableFuture<Try<Stream<T>>> stream(final Class<T> targetClass, final String sql, final StatementSetter statementSetter,
+    @SafeVarargs
+    public final <T> CompletableFuture<Try<Stream<T>>> stream(final Class<T> targetClass, final String sql, final StatementSetter statementSetter,
             final Object... parameters) {
         return asyncExecutor.execute(new Callable<Try<Stream<T>>>() {
             @Override
@@ -1384,7 +1410,8 @@ public final class AsyncSQLExecutor {
      * @param parameters
      * @return
      */
-    public <T> CompletableFuture<Try<Stream<T>>> stream(final Class<T> targetClass, final String sql, final StatementSetter statementSetter,
+    @SafeVarargs
+    public final <T> CompletableFuture<Try<Stream<T>>> stream(final Class<T> targetClass, final String sql, final StatementSetter statementSetter,
             final JdbcSettings jdbcSettings, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Try<Stream<T>>>() {
             @Override
@@ -1433,7 +1460,8 @@ public final class AsyncSQLExecutor {
         });
     }
 
-    public <T> CompletableFuture<Try<Stream<T>>> streamAll(final Class<T> targetClass, final String sql, final JdbcSettings jdbcSettings,
+    @SafeVarargs
+    public final <T> CompletableFuture<Try<Stream<T>>> streamAll(final Class<T> targetClass, final String sql, final JdbcSettings jdbcSettings,
             final Object... parameters) {
         return asyncExecutor.execute(new Callable<Try<Stream<T>>>() {
             @Override
@@ -1452,7 +1480,8 @@ public final class AsyncSQLExecutor {
      * @param parameters
      * @return
      */
-    public <T> CompletableFuture<Try<Stream<T>>> streamAll(final Class<T> targetClass, final String sql, final StatementSetter statementSetter,
+    @SafeVarargs
+    public final <T> CompletableFuture<Try<Stream<T>>> streamAll(final Class<T> targetClass, final String sql, final StatementSetter statementSetter,
             final JdbcSettings jdbcSettings, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Try<Stream<T>>>() {
             @Override
@@ -1493,7 +1522,8 @@ public final class AsyncSQLExecutor {
         });
     }
 
-    public <T> CompletableFuture<Try<Stream<T>>> streamAll(final Class<T> targetClass, final List<String> sqls, final JdbcSettings jdbcSettings,
+    @SafeVarargs
+    public final <T> CompletableFuture<Try<Stream<T>>> streamAll(final Class<T> targetClass, final List<String> sqls, final JdbcSettings jdbcSettings,
             final Object... parameters) {
         return asyncExecutor.execute(new Callable<Try<Stream<T>>>() {
             @Override
@@ -1512,7 +1542,8 @@ public final class AsyncSQLExecutor {
      * @param parameters
      * @return
      */
-    public <T> CompletableFuture<Try<Stream<T>>> streamAll(final Class<T> targetClass, final List<String> sqls, final StatementSetter statementSetter,
+    @SafeVarargs
+    public final <T> CompletableFuture<Try<Stream<T>>> streamAll(final Class<T> targetClass, final List<String> sqls, final StatementSetter statementSetter,
             final JdbcSettings jdbcSettings, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Try<Stream<T>>>() {
             @Override

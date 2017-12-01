@@ -1453,7 +1453,8 @@ abstract class AbstractStream<T> extends Stream<T> {
     }
 
     @Override
-    public boolean containsAll(final T... a) {
+    @SafeVarargs
+    public final boolean containsAll(final T... a) {
         if (N.isNullOrEmpty(a)) {
             return true;
         } else if (a.length == 1) {

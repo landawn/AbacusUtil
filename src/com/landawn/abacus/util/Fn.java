@@ -356,6 +356,27 @@ public final class Fn {
         }
     };
 
+    private static final ToIntFunction<Number> NUM_TO_INT_FUNC = new ToIntFunction<Number>() {
+        @Override
+        public int applyAsInt(Number value) {
+            return value == null ? 0 : value.intValue();
+        }
+    };
+
+    private static final ToLongFunction<Number> NUM_TO_LONG_FUNC = new ToLongFunction<Number>() {
+        @Override
+        public long applyAsLong(Number value) {
+            return value == null ? 0 : value.longValue();
+        }
+    };
+
+    private static final ToDoubleFunction<Number> NUM_TO_DOUBLE_FUNC = new ToDoubleFunction<Number>() {
+        @Override
+        public double applyAsDouble(Number value) {
+            return value == null ? 0d : value.doubleValue();
+        }
+    };
+
     private static final Object NULL = new Object();
 
     private Fn() {
@@ -1028,6 +1049,21 @@ public final class Fn {
         return ToDoubleFunction.UNBOX;
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public static <T extends Number> ToIntFunction<T> numToInt() {
+        return (ToIntFunction) NUM_TO_INT_FUNC;
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public static <T extends Number> ToLongFunction<T> numToLong() {
+        return (ToLongFunction) NUM_TO_LONG_FUNC;
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public static <T extends Number> ToDoubleFunction<T> numToDouble() {
+        return (ToDoubleFunction) NUM_TO_DOUBLE_FUNC;
+    }
+
     /**
      * 
      * @param predicate
@@ -1389,6 +1425,62 @@ public final class Fn {
     public static <T, K, U, M extends Map<K, U>> Collector<T, ?, M> toMap(final Function<? super T, ? extends K> keyExtractor,
             final Function<? super T, ? extends U> valueMapper, final BinaryOperator<U> mergeFunction, final Supplier<M> mapFactory) {
         return Collectors.toMap(keyExtractor, valueMapper, mergeFunction, mapFactory);
+    }
+
+    /**
+     * 
+     * @param classifier
+     * @param downstream
+     * @return
+     * @see Collectors#groupingBy(Function, Collector)
+     */
+    @SuppressWarnings("hiding")
+    public static <T, K, A, D> Collector<T, ?, Map<K, D>> toMap(final Function<? super T, ? extends K> classifier,
+            final Collector<? super T, A, D> downstream) {
+        return Collectors.toMap(classifier, downstream);
+    }
+
+    /**
+     * 
+     * @param classifier
+     * @param downstream
+     * @param mapFactory
+     * @return
+     * @see Collectors#groupingBy(Function, Collector, Supplier)
+     */
+    @SuppressWarnings("hiding")
+    public static <T, K, A, D, M extends Map<K, D>> Collector<T, ?, M> toMap(final Function<? super T, ? extends K> classifier,
+            final Collector<? super T, A, D> downstream, final Supplier<M> mapFactory) {
+        return Collectors.toMap(classifier, downstream, mapFactory);
+    }
+
+    /**
+     * 
+     * @param classifier
+     * @param valueMapper
+     * @param downstream
+     * @return
+     * @see Collectors#groupingBy(Function, Collector)
+     */
+    @SuppressWarnings("hiding")
+    public static <T, K, U, A, D> Collector<T, ?, Map<K, D>> toMap(final Function<? super T, ? extends K> classifier,
+            final Function<? super T, ? extends U> valueMapper, final Collector<? super U, A, D> downstream) {
+        return Collectors.toMap(classifier, valueMapper, downstream);
+    }
+
+    /**
+     * 
+     * @param classifier
+     * @param valueMapper
+     * @param downstream
+     * @param mapFactory
+     * @return
+     * @see Collectors#groupingBy(Function, Collector, Supplier)
+     */
+    @SuppressWarnings("hiding")
+    public static <T, K, U, A, D, M extends Map<K, D>> Collector<T, ?, M> toMap(final Function<? super T, ? extends K> classifier,
+            final Function<? super T, ? extends U> valueMapper, final Collector<? super U, A, D> downstream, final Supplier<M> mapFactory) {
+        return Collectors.toMap(classifier, valueMapper, downstream, mapFactory);
     }
 
     /**

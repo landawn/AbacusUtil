@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import com.landawn.abacus.annotation.Beta;
+import com.landawn.abacus.util.function.Supplier;
 
 /**
  * This class is mainly designed for functional programming. 
@@ -228,6 +229,16 @@ public final class If {
         return Or.of(b);
     }
 
+    public <E extends Exception> Or thenThrow(final Supplier<? extends E> exceptionSupplier) throws E {
+        N.requireNonNull(exceptionSupplier);
+
+        if (b) {
+            throw exceptionSupplier.get();
+        }
+
+        return Or.of(b);
+    }
+
     //    public <T, E extends Exception> Nullable<T> then(final Try.Callable<T, E> callable) throws E {
     //        return b ? Nullable.of(callable.call()) : Nullable.<T> empty();
     //    }
@@ -267,6 +278,14 @@ public final class If {
 
             if (!b) {
                 action.accept(seed);
+            }
+        }
+
+        public <E extends Exception> void orElseThrow(final Supplier<? extends E> exceptionSupplier) throws E {
+            N.requireNonNull(exceptionSupplier);
+
+            if (!b) {
+                throw exceptionSupplier.get();
             }
         }
     }
@@ -467,6 +486,8 @@ public final class If {
             public abstract <E extends Exception> Nullable<T> orElse(final Try.Callable<T, E> callable) throws E;
 
             public abstract <U, E extends Exception> Nullable<T> orElse(final U seed, final Try.Function<? super U, T, E> func) throws E;
+
+            public abstract <E extends Exception> Nullable<T> orElseThrow(final Supplier<? extends E> exceptionSupplier) throws E;
         }
 
         static final class TrueOr<T> extends Or<T> {
@@ -489,6 +510,13 @@ public final class If {
 
                 return result;
             }
+
+            @Override
+            public <E extends Exception> Nullable<T> orElseThrow(final Supplier<? extends E> exceptionSupplier) throws E {
+                N.requireNonNull(exceptionSupplier);
+
+                return result;
+            }
         }
 
         static final class FalseOr<T> extends Or<T> {
@@ -503,6 +531,11 @@ public final class If {
             @Override
             public <U, E extends Exception> Nullable<T> orElse(final U seed, final Try.Function<? super U, T, E> func) throws E {
                 return Nullable.of(func.apply(seed));
+            }
+
+            @Override
+            public <E extends Exception> Nullable<T> orElseThrow(final Supplier<? extends E> exceptionSupplier) throws E {
+                throw exceptionSupplier.get();
             }
         }
     }

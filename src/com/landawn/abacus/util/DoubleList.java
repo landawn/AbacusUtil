@@ -405,7 +405,8 @@ public final class DoubleList extends PrimitiveList<Double, double[], DoubleList
     }
 
     @Override
-    public void deleteAll(int... indices) {
+    @SafeVarargs
+    public final void deleteAll(int... indices) {
         N.deleteAll(elementData, indices);
     }
 

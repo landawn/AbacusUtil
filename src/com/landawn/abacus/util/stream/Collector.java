@@ -260,6 +260,7 @@ public interface Collector<T, A, R> extends java.util.stream.Collector<T, A, R> 
         return new Collectors.CollectorImpl<>(supplier, accumulator, combiner, finisher, collector.characteristics());
     }
 
+    @SafeVarargs
     public static <T, R> Collector<T, R, R> of(Supplier<R> supplier, BiConsumer<R, T> accumulator, BinaryOperator<R> combiner,
             Characteristics... characteristics) {
         N.requireNonNull(supplier);
@@ -273,6 +274,7 @@ public interface Collector<T, A, R> extends java.util.stream.Collector<T, A, R> 
         return new Collectors.CollectorImpl<>(supplier, accumulator, combiner, cs);
     }
 
+    @SafeVarargs
     public static <T, A, R> Collector<T, A, R> of(Supplier<A> supplier, BiConsumer<A, T> accumulator, BinaryOperator<A> combiner, Function<A, R> finisher,
             Characteristics... characteristics) {
         N.requireNonNull(supplier);

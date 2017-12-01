@@ -421,7 +421,8 @@ public final class LongList extends PrimitiveList<Long, long[], LongList> {
     }
 
     @Override
-    public void deleteAll(int... indices) {
+    @SafeVarargs
+    public final void deleteAll(int... indices) {
         N.deleteAll(elementData, indices);
     }
 

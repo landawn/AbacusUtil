@@ -7,6 +7,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import com.landawn.abacus.annotation.Beta;
+import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.Stream;
 
 @Beta
@@ -312,7 +313,7 @@ public abstract class Any<T> {
      * @throws NullPointerException if no value is present and
      * {@code exceptionSupplier} is null
      */
-    public <X extends Throwable, E extends Exception> T orElseThrow(Try.Supplier<? extends X, E> exceptionSupplier) throws X, E {
+    public <X extends Throwable> T orElseThrow(Supplier<? extends X> exceptionSupplier) throws X {
         if (isPresent()) {
             return value;
         } else {
@@ -355,7 +356,7 @@ public abstract class Any<T> {
      * @throws NullPointerException if not present or null and
      * {@code exceptionSupplier} is null
      */
-    public <X extends Throwable, E extends Exception> T orThrowIfNull(Try.Supplier<? extends X, E> exceptionSupplier) throws X, E {
+    public <X extends Throwable> T orThrowIfNull(Supplier<? extends X> exceptionSupplier) throws X {
         if (isNotNull()) {
             return value;
         } else {

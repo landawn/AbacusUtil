@@ -72,6 +72,7 @@ public final class ImmutableList<E> extends ImmutableCollection<E> implements Li
         return new ImmutableList<>(list);
     }
 
+    @SafeVarargs
     public static <E> ImmutableList<E> copyOf(E... a) {
         if (N.isNullOrEmpty(a)) {
             return empty();

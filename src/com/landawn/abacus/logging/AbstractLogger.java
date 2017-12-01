@@ -35,7 +35,8 @@ public abstract class AbstractLogger implements Logger {
     }
 
     @Override
-    public void trace(String format, Object... args) {
+    @SafeVarargs
+    public final void trace(String format, Object... args) {
         if (isTraceEnabled()) {
             FormattedMessage ft = MessageFormatter.arrayFormat(format, args);
             trace(ft.getMessage(), ft.getThrowable());
@@ -57,7 +58,8 @@ public abstract class AbstractLogger implements Logger {
     }
 
     @Override
-    public void debug(String format, Object... args) {
+    @SafeVarargs
+    public final void debug(String format, Object... args) {
         if (isDebugEnabled()) {
             FormattedMessage ft = MessageFormatter.arrayFormat(format, args);
             debug(ft.getMessage(), ft.getThrowable());
@@ -79,7 +81,8 @@ public abstract class AbstractLogger implements Logger {
     }
 
     @Override
-    public void info(String format, Object... args) {
+    @SafeVarargs
+    public final void info(String format, Object... args) {
         if (isInfoEnabled()) {
             FormattedMessage ft = MessageFormatter.arrayFormat(format, args);
             info(ft.getMessage(), ft.getThrowable());
@@ -101,7 +104,8 @@ public abstract class AbstractLogger implements Logger {
     }
 
     @Override
-    public void warn(String format, Object... args) {
+    @SafeVarargs
+    public final void warn(String format, Object... args) {
         if (isWarnEnabled()) {
             FormattedMessage ft = MessageFormatter.arrayFormat(format, args);
             warn(ft.getMessage(), ft.getThrowable());
@@ -123,7 +127,8 @@ public abstract class AbstractLogger implements Logger {
     }
 
     @Override
-    public void error(String format, Object... args) {
+    @SafeVarargs
+    public final void error(String format, Object... args) {
         if (isErrorEnabled()) {
             FormattedMessage ft = MessageFormatter.arrayFormat(format, args);
             error(ft.getMessage(), ft.getThrowable());

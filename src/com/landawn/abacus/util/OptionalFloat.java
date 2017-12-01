@@ -26,6 +26,7 @@ package com.landawn.abacus.util;
 
 import java.util.NoSuchElementException;
 
+import com.landawn.abacus.util.function.Supplier;
 import com.landawn.abacus.util.stream.FloatStream;
 
 /**
@@ -201,7 +202,7 @@ public final class OptionalFloat implements Comparable<OptionalFloat> {
      * @throws NullPointerException if no value is present and
      * {@code exceptionSupplier} is null
      */
-    public <X extends Throwable, E extends Exception> float orElseThrow(Try.Supplier<X, E> exceptionSupplier) throws X, E {
+    public <X extends Throwable> float orElseThrow(Supplier<? extends X> exceptionSupplier) throws X {
         if (isPresent()) {
             return value;
         } else {

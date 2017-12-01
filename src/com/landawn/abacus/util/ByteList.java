@@ -423,7 +423,8 @@ public final class ByteList extends PrimitiveList<Byte, byte[], ByteList> {
     }
 
     @Override
-    public void deleteAll(int... indices) {
+    @SafeVarargs
+    public final void deleteAll(int... indices) {
         N.deleteAll(elementData, indices);
     }
 

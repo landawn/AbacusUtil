@@ -405,7 +405,8 @@ public final class FloatList extends PrimitiveList<Float, float[], FloatList> {
     }
 
     @Override
-    public void deleteAll(int... indices) {
+    @SafeVarargs
+    public final void deleteAll(int... indices) {
         N.deleteAll(elementData, indices);
     }
 

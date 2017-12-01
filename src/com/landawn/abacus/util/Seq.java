@@ -67,27 +67,6 @@ public final class Seq<T> extends ImmutableCollection<T> {
     @SuppressWarnings("rawtypes")
     private static final Seq EMPTY = new Seq<>(Collections.EMPTY_LIST);
 
-    static final ToIntFunction<Number> NUM_TO_INT_FUNC = new ToIntFunction<Number>() {
-        @Override
-        public int applyAsInt(Number value) {
-            return value == null ? 0 : value.intValue();
-        }
-    };
-
-    static final ToLongFunction<Number> NUM_TO_LONG_FUNC = new ToLongFunction<Number>() {
-        @Override
-        public long applyAsLong(Number value) {
-            return value == null ? 0 : value.longValue();
-        }
-    };
-
-    static final ToDoubleFunction<Number> NUM_TO_DOUBLE_FUNC = new ToDoubleFunction<Number>() {
-        @Override
-        public double applyAsDouble(Number value) {
-            return value == null ? 0d : value.doubleValue();
-        }
-    };
-
     /**
      * The returned <code>Seq</code> and the specified <code>Collection</code> are backed by the same data.
      * Any changes to one will appear in the other.
@@ -394,7 +373,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
             return 0;
         }
 
-        return sumInt((ToIntFunction<T>) NUM_TO_INT_FUNC);
+        return sumInt((ToIntFunction<T>) Fn.numToInt());
     }
 
     public <E extends Exception> int sumInt(final Try.ToIntFunction<? super T, E> mapper) throws E {
@@ -410,7 +389,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
             return 0L;
         }
 
-        return sumLong((ToLongFunction<T>) NUM_TO_LONG_FUNC);
+        return sumLong((ToLongFunction<T>) Fn.numToLong());
     }
 
     public <E extends Exception> long sumLong(final Try.ToLongFunction<? super T, E> mapper) throws E {
@@ -426,7 +405,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
             return 0D;
         }
 
-        return sumDouble((ToDoubleFunction<T>) NUM_TO_DOUBLE_FUNC);
+        return sumDouble((ToDoubleFunction<T>) Fn.numToDouble());
     }
 
     public <E extends Exception> double sumDouble(final Try.ToDoubleFunction<? super T, E> mapper) throws E {
@@ -442,7 +421,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
             return OptionalDouble.empty();
         }
 
-        return averageInt((ToIntFunction<T>) NUM_TO_INT_FUNC);
+        return averageInt((ToIntFunction<T>) Fn.numToInt());
     }
 
     public <E extends Exception> OptionalDouble averageInt(final Try.ToIntFunction<? super T, E> mapper) throws E {
@@ -454,7 +433,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
             return OptionalDouble.empty();
         }
 
-        return averageLong((ToLongFunction<T>) NUM_TO_LONG_FUNC);
+        return averageLong((ToLongFunction<T>) Fn.numToLong());
     }
 
     public <E extends Exception> OptionalDouble averageLong(final Try.ToLongFunction<? super T, E> mapper) throws E {
@@ -466,7 +445,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
             return OptionalDouble.empty();
         }
 
-        return averageDouble((ToDoubleFunction<T>) NUM_TO_DOUBLE_FUNC);
+        return averageDouble((ToDoubleFunction<T>) Fn.numToDouble());
     }
 
     public <E extends Exception> OptionalDouble averageDouble(final Try.ToDoubleFunction<? super T, E> mapper) throws E {
@@ -3276,6 +3255,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
         }
     }
 
+    @SafeVarargs
     public static <T> List<T> concat(final T[]... a) {
         if (N.isNullOrEmpty(a)) {
             return new ArrayList<>();

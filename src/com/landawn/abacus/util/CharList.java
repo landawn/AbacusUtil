@@ -453,7 +453,8 @@ public final class CharList extends PrimitiveList<Character, char[], CharList> {
     }
 
     @Override
-    public void deleteAll(int... indices) {
+    @SafeVarargs
+    public final void deleteAll(int... indices) {
         N.deleteAll(elementData, indices);
     }
 
