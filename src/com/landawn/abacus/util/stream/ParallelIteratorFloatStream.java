@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.FloatIterator;
@@ -798,7 +799,7 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
                     result = op.applyAsFloat(result, future.get());
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         }
 
@@ -869,7 +870,7 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
                     result = accumulator.applyAsFloat(result, tmp);
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         }
 
@@ -927,7 +928,7 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
                     combiner.accept(container, future.get());
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         }
 

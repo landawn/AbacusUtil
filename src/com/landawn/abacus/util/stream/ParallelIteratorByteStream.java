@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 
 import com.landawn.abacus.util.ByteIterator;
 import com.landawn.abacus.util.ByteList;
@@ -719,7 +720,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
                     result = op.applyAsByte(result, future.get());
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         }
 
@@ -790,7 +791,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
                     result = accumulator.applyAsByte(result, tmp);
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         }
 
@@ -848,7 +849,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
                     combiner.accept(container, future.get());
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         }
 

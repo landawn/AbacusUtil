@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 
 import com.landawn.abacus.util.CharList;
 import com.landawn.abacus.util.CharSummaryStatistics;
@@ -630,7 +631,7 @@ final class ParallelArrayCharStream extends ArrayCharStream {
                     result = op.applyAsChar(result, future.get());
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         }
 
@@ -736,7 +737,7 @@ final class ParallelArrayCharStream extends ArrayCharStream {
                     result = accumulator.applyAsChar(result, tmp);
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         }
 
@@ -825,7 +826,7 @@ final class ParallelArrayCharStream extends ArrayCharStream {
                     combiner.accept(container, future.get());
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         }
 
@@ -890,7 +891,7 @@ final class ParallelArrayCharStream extends ArrayCharStream {
                     candidate = tmp;
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         }
 
@@ -936,7 +937,7 @@ final class ParallelArrayCharStream extends ArrayCharStream {
                     candidate = tmp;
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         }
 
@@ -994,7 +995,7 @@ final class ParallelArrayCharStream extends ArrayCharStream {
                     result += tmp.longValue();
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         }
 
@@ -1065,7 +1066,7 @@ final class ParallelArrayCharStream extends ArrayCharStream {
                     result.combine(tmp);
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         }
 

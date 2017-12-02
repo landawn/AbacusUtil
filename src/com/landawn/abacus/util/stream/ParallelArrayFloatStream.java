@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.FloatList;
@@ -718,7 +719,7 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
                     result = op.applyAsFloat(result, future.get());
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         }
 
@@ -824,7 +825,7 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
                     result = accumulator.applyAsFloat(result, tmp);
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         }
 
@@ -913,7 +914,7 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
                     combiner.accept(container, future.get());
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         }
 
@@ -978,7 +979,7 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
                     candidate = tmp;
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         }
 
@@ -1024,7 +1025,7 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
                     candidate = tmp;
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         }
 
@@ -1112,7 +1113,7 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
                     combiner.accept(summation, tmp);
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         }
 
@@ -1189,7 +1190,7 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
                     combiner.accept(avg, tmp);
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         }
 
@@ -1251,7 +1252,7 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
                     result.combine(tmp);
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         }
 

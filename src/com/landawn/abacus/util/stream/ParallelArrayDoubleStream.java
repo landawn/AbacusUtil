@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.DoubleList;
@@ -716,7 +717,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
                     result = op.applyAsDouble(result, future.get());
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         }
 
@@ -822,7 +823,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
                     result = accumulator.applyAsDouble(result, tmp);
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         }
 
@@ -911,7 +912,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
                     combiner.accept(container, future.get());
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         }
 
@@ -976,7 +977,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
                     candidate = tmp;
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         }
 
@@ -1022,7 +1023,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
                     candidate = tmp;
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         }
 
@@ -1110,7 +1111,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
                     combiner.accept(summation, tmp);
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         }
 
@@ -1187,7 +1188,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
                     combiner.accept(avg, tmp);
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         }
 
@@ -1249,7 +1250,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
                     result.combine(tmp);
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         }
 

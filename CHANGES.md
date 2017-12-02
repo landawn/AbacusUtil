@@ -4,6 +4,8 @@
 
 * Add `Fn.numToInt/numToLong/numToDouble`.
 
+* Add `Multimap/ListMultimap/SetMultimap.invertFrom/flatInvertFrom`
+
 * Improve `Futures`.
 
 * Improvements and bug fix.

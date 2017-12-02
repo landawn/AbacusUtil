@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.landawn.abacus.util.ByteIterator;
@@ -2447,7 +2448,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                     result = accumulator.apply(result, future.get());
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         }
 
@@ -2509,7 +2510,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                     result = accumulator.apply(result, tmp);
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         }
 
@@ -2569,7 +2570,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                     result = combiner.apply(result, tmp);
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         }
 
@@ -2627,7 +2628,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                     combiner.accept(container, future.get());
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         }
 
@@ -2691,7 +2692,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
                     container = combiner.apply(container, future.get());
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         }
 

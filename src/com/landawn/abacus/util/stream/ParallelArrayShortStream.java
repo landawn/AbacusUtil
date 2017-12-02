@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 
 import com.landawn.abacus.util.CompletableFuture;
 import com.landawn.abacus.util.Holder;
@@ -651,7 +652,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
                     result = op.applyAsShort(result, future.get());
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         }
 
@@ -757,7 +758,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
                     result = accumulator.applyAsShort(result, tmp);
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         }
 
@@ -846,7 +847,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
                     combiner.accept(container, future.get());
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         }
 
@@ -911,7 +912,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
                     candidate = tmp;
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         }
 
@@ -957,7 +958,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
                     candidate = tmp;
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         }
 
@@ -1015,7 +1016,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
                     result += tmp.longValue();
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         }
 
@@ -1086,7 +1087,7 @@ final class ParallelArrayShortStream extends ArrayShortStream {
                     result.combine(tmp);
                 }
             }
-        } catch (Exception e) {
+        } catch (InterruptedException | ExecutionException e) {
             throw N.toRuntimeException(e);
         }
 
