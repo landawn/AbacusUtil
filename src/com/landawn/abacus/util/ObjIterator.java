@@ -29,7 +29,7 @@ import java.util.NoSuchElementException;
  */
 public abstract class ObjIterator<E> extends ImmutableIterator<E> {
     @SuppressWarnings("rawtypes")
-    public static final ObjIterator EMPTY = new ObjIterator() {
+    private static final ObjIterator EMPTY = new ObjIterator() {
         @Override
         public boolean hasNext() {
             return false;

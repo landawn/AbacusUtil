@@ -29,7 +29,7 @@ import java.util.function.Function;
  * 
  * @author Haiyang Li
  */
-public final class ImmutableMap<K, V> implements Map<K, V> {
+public class ImmutableMap<K, V> implements Map<K, V> {
 
     @SuppressWarnings("rawtypes")
     private static final ImmutableMap EMPTY = new ImmutableMap(Collections.EMPTY_MAP);
@@ -88,15 +88,15 @@ public final class ImmutableMap<K, V> implements Map<K, V> {
      * @param map the elements in this <code>map</code> are shared by the returned ImmutableMap.
      * @return
      */
-    public static <K, V> ImmutableMap<K, V> of(Map<? extends K, ? extends V> map) {
-        if (N.isNullOrEmpty(map)) {
+    public static <K, V> ImmutableMap<K, V> of(final Map<? extends K, ? extends V> map) {
+        if (map == null) {
             return empty();
         }
 
         return new ImmutableMap<>(map);
     }
 
-    public static <K, V> ImmutableMap<K, V> copyOf(Map<? extends K, ? extends V> map) {
+    public static <K, V> ImmutableMap<K, V> copyOf(final Map<? extends K, ? extends V> map) {
         if (N.isNullOrEmpty(map)) {
             return empty();
         }

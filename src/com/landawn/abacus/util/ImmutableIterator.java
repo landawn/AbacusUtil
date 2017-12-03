@@ -16,6 +16,9 @@
 
 package com.landawn.abacus.util;
 
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
 /**
  * 
  * @since 0.9
@@ -23,6 +26,43 @@ package com.landawn.abacus.util;
  * @author Haiyang Li
  */
 public abstract class ImmutableIterator<E> implements java.util.Iterator<E> {
+
+    @SuppressWarnings("rawtypes")
+    private static final ImmutableIterator EMPTY = new ImmutableIterator() {
+        @Override
+        public boolean hasNext() {
+            return false;
+        }
+
+        @Override
+        public Object next() {
+            throw new NoSuchElementException();
+        }
+    };
+
+    public static <E> ImmutableIterator<E> empty() {
+        return EMPTY;
+    }
+
+    public static <E> ImmutableIterator<E> of(final Iterator<E> iter) {
+        if (iter == null) {
+            return empty();
+        } else if (iter instanceof ImmutableIterator) {
+            return (ImmutableIterator<E>) iter;
+        }
+
+        return new ImmutableIterator<E>() {
+            @Override
+            public boolean hasNext() {
+                return iter.hasNext();
+            }
+
+            @Override
+            public E next() {
+                return iter.next();
+            }
+        };
+    }
 
     /**
      * @deprecated - UnsupportedOperationException

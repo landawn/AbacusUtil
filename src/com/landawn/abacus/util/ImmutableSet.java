@@ -25,7 +25,7 @@ import java.util.Set;
  * 
  * @author Haiyang Li
  */
-public final class ImmutableSet<E> extends ImmutableCollection<E> implements Set<E> {
+public class ImmutableSet<E> extends ImmutableCollection<E> implements Set<E> {
 
     @SuppressWarnings("rawtypes")
     private static final ImmutableSet EMPTY = new ImmutableSet(Collections.EMPTY_SET);
@@ -52,8 +52,8 @@ public final class ImmutableSet<E> extends ImmutableCollection<E> implements Set
      * @param set the elements in this <code>Set</code> are shared by the returned ImmutableSet.
      * @return
      */
-    public static <E> ImmutableSet<E> of(Set<? extends E> set) {
-        if (N.isNullOrEmpty(set)) {
+    public static <E> ImmutableSet<E> of(final Set<? extends E> set) {
+        if (set == null) {
             return empty();
         }
 
@@ -65,7 +65,7 @@ public final class ImmutableSet<E> extends ImmutableCollection<E> implements Set
      * @param set
      * @return
      */
-    public static <E> ImmutableSet<E> copyOf(Collection<? extends E> set) {
+    public static <E> ImmutableSet<E> copyOf(final Collection<? extends E> set) {
         if (N.isNullOrEmpty(set)) {
             return empty();
         }

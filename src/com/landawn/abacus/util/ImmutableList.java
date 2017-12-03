@@ -64,8 +64,8 @@ public final class ImmutableList<E> extends ImmutableCollection<E> implements Li
      * @param list the elements in this <code>list</code> are shared by the returned ImmutableList.
      * @return
      */
-    public static <E> ImmutableList<E> of(List<? extends E> list) {
-        if (N.isNullOrEmpty(list)) {
+    public static <E> ImmutableList<E> of(final List<? extends E> list) {
+        if (list == null) {
             return empty();
         }
 
@@ -73,7 +73,7 @@ public final class ImmutableList<E> extends ImmutableCollection<E> implements Li
     }
 
     @SafeVarargs
-    public static <E> ImmutableList<E> copyOf(E... a) {
+    public static <E> ImmutableList<E> copyOf(final E... a) {
         if (N.isNullOrEmpty(a)) {
             return empty();
         }
@@ -81,7 +81,7 @@ public final class ImmutableList<E> extends ImmutableCollection<E> implements Li
         return new ImmutableList<>(Arrays.asList(N.clone(a)));
     }
 
-    public static <E> ImmutableList<E> copyOf(Collection<? extends E> list) {
+    public static <E> ImmutableList<E> copyOf(final Collection<? extends E> list) {
         if (N.isNullOrEmpty(list)) {
             return empty();
         }

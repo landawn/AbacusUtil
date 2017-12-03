@@ -1076,6 +1076,14 @@ public final class Multiset<T> implements Iterable<T> {
         return sortedValues;
     }
 
+    public ImmutableMap<T, Integer> toImmutableMap() {
+        return ImmutableMap.of(toMap());
+    }
+
+    public ImmutableMap<T, Integer> toImmutableMap(final IntFunction<? extends Map<T, Integer>> mapSupplier) {
+        return ImmutableMap.of(toMap(mapSupplier));
+    }
+
     /**
      * 
      * @return a list with all elements, each of them is repeated with the occurrences in this <code>Multiset</code>   

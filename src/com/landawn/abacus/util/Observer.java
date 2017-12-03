@@ -96,7 +96,7 @@ public abstract class Observer<T> {
     }
 
     public static <T> Observer<T> of(final Collection<T> c) {
-        return of(N.isNullOrEmpty(c) ? ObjIterator.EMPTY : c.iterator());
+        return of(N.isNullOrEmpty(c) ? ObjIterator.<T> empty() : c.iterator());
     }
 
     public static <T> Observer<T> of(final Iterator<T> iter) {

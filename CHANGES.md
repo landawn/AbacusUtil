@@ -1,3 +1,13 @@
+
+### 1.1.4
+
+* Add `Multiset/LongMultiset.toImmutableMap`.
+
+* Add `ImmutableSortedSet/ImmutableNavigableSet/ImmutableSortedMap/ImmutableNavigableMap`.
+
+* Improvements and bug fix.
+
+
 ### 1.1.3
 
 * Add `N.sumInt/sumLong/sumDouble/averageInt/averageLong/averageDouble` for `Number` type.

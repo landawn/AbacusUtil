@@ -804,7 +804,7 @@ public final class Iterators {
     @SafeVarargs
     public static <T> ObjIterator<T> concat(final Collection<? extends T>... a) {
         if (N.isNullOrEmpty(a)) {
-            return ObjIterator.EMPTY;
+            return ObjIterator.empty();
         }
 
         final List<Iterator<? extends T>> list = new ArrayList<>(a.length);
@@ -821,7 +821,7 @@ public final class Iterators {
     @SafeVarargs
     public static <T> ObjIterator<T> concat(final Iterator<? extends T>... a) {
         if (N.isNullOrEmpty(a)) {
-            return ObjIterator.EMPTY;
+            return ObjIterator.empty();
         }
 
         return concat(N.asList(a));
@@ -860,8 +860,8 @@ public final class Iterators {
             final BiFunction<? super T, ? super T, Nth> nextSelector) {
 
         return new ObjIterator<T>() {
-            private final Iterator<? extends T> iterA = a == null ? ObjIterator.EMPTY : a;
-            private final Iterator<? extends T> iterB = b == null ? ObjIterator.EMPTY : b;
+            private final Iterator<? extends T> iterA = a == null ? ObjIterator.<T> empty() : a;
+            private final Iterator<? extends T> iterB = b == null ? ObjIterator.<T> empty() : b;
             private T nextA = null;
             private T nextB = null;
             private boolean hasNextA = false;

@@ -2735,7 +2735,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
 
     @Override
     public Iterator<T> iterator() {
-        return coll == null ? ObjIterator.EMPTY : new ObjIterator<T>() {
+        return coll == null ? ObjIterator.<T> empty() : new ObjIterator<T>() {
             private final Iterator<T> iter = coll.iterator();
 
             @Override
@@ -2919,7 +2919,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
 
         @Override
         public Iterator<E> iterator() {
-            final Iterator<E> iter = c == null ? ObjIterator.EMPTY : c.iterator();
+            final Iterator<E> iter = c == null ? ObjIterator.<E> empty() : c.iterator();
 
             if (fromIndex > 0) {
                 int offset = 0;

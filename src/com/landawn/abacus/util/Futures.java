@@ -526,7 +526,7 @@ public final class Futures {
     }
 
     private static <T> Iterator<T> iterate02(final Collection<? extends CompletableFuture<? extends T>> cfs, final long timeout, final TimeUnit unit) {
-        return new Iterator<T>() {
+        return new ImmutableIterator<T>() {
             private final Iterator<Pair<T, Exception>> iter = iterate22(cfs, timeout, unit);
 
             @Override
@@ -541,11 +541,6 @@ public final class Futures {
                 } catch (InterruptedException | ExecutionException e) {
                     throw N.toRuntimeException(e);
                 }
-            }
-
-            @Override
-            public void remove() {
-                iter.remove();
             }
         };
     }
@@ -584,7 +579,7 @@ public final class Futures {
             });
         }
 
-        return new Iterator<Pair<T, Exception>>() {
+        return new ImmutableIterator<Pair<T, Exception>>() {
             private final int end = cfs.size();
             private int cursor = 0;
 
@@ -606,11 +601,6 @@ public final class Futures {
                 } catch (InterruptedException e) {
                     throw N.toRuntimeException(e);
                 }
-            }
-
-            @Override
-            public void remove() {
-                throw new UnsupportedOperationException();
             }
         };
     }
