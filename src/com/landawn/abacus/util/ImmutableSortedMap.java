@@ -137,6 +137,8 @@ public class ImmutableSortedMap<K, V> extends ImmutableMap<K, V> implements Sort
     public static <K, V> ImmutableSortedMap<K, V> copyOf(final SortedMap<? extends K, ? extends V> sortedMap) {
         if (N.isNullOrEmpty(sortedMap)) {
             return empty();
+        } else if (sortedMap instanceof ImmutableSortedMap) {
+            return (ImmutableSortedMap<K, V>) sortedMap;
         }
 
         return of(new TreeMap<>(sortedMap));

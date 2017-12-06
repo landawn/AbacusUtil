@@ -132,6 +132,8 @@ public class ImmutableNavigableMap<K, V> extends ImmutableSortedMap<K, V> implem
     public static <K, V> ImmutableNavigableMap<K, V> of(final NavigableMap<? extends K, ? extends V> navigableMap) {
         if (navigableMap == null) {
             return empty();
+        } else if (navigableMap instanceof ImmutableNavigableMap) {
+            return (ImmutableNavigableMap<K, V>) navigableMap;
         }
 
         return new ImmutableNavigableMap<>(navigableMap);

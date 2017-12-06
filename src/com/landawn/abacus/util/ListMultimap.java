@@ -175,6 +175,45 @@ public final class ListMultimap<K, E> extends Multimap<K, E, List<E>> {
         return new ListMultimap<K, E>((Map<K, List<E>>) map, valueType);
     }
 
+    @Override
+    public <X extends Exception> ListMultimap<K, E> filterByKey(Try.Predicate<? super K, X> filter) throws X {
+        final ListMultimap<K, E> result = new ListMultimap<>(valueMap.getClass(), concreteValueType);
+
+        for (Map.Entry<K, List<E>> entry : valueMap.entrySet()) {
+            if (filter.test(entry.getKey())) {
+                result.valueMap.put(entry.getKey(), entry.getValue());
+            }
+        }
+
+        return result;
+    }
+
+    @Override
+    public <X extends Exception> ListMultimap<K, E> filterByValue(Try.Predicate<? super List<E>, X> filter) throws X {
+        final ListMultimap<K, E> result = new ListMultimap<>(valueMap.getClass(), concreteValueType);
+
+        for (Map.Entry<K, List<E>> entry : valueMap.entrySet()) {
+            if (filter.test(entry.getValue())) {
+                result.valueMap.put(entry.getKey(), entry.getValue());
+            }
+        }
+
+        return result;
+    }
+
+    @Override
+    public <X extends Exception> ListMultimap<K, E> filter(Try.BiPredicate<? super K, ? super List<E>, X> filter) throws X {
+        final ListMultimap<K, E> result = new ListMultimap<>(valueMap.getClass(), concreteValueType);
+
+        for (Map.Entry<K, List<E>> entry : valueMap.entrySet()) {
+            if (filter.test(entry.getKey(), entry.getValue())) {
+                result.valueMap.put(entry.getKey(), entry.getValue());
+            }
+        }
+
+        return result;
+    }
+
     //    public ListMultimap<E, K> inversed() {
     //        final ListMultimap<E, K> multimap = new ListMultimap<E, K>(valueMap.getClass(), concreteValueType);
     //

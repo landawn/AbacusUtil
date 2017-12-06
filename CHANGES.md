@@ -5,6 +5,8 @@
 
 * Add `ImmutableSortedSet/ImmutableNavigableSet/ImmutableSortedMap/ImmutableNavigableMap`.
 
+* Refactoring `Multimap.filterByKey/filterByValue/filter`.
+
 * Improvements and bug fix.
 
 

@@ -174,6 +174,45 @@ public final class SetMultimap<K, E> extends Multimap<K, E, Set<E>> {
         return new SetMultimap<K, E>((Map<K, Set<E>>) map, valueType);
     }
 
+    @Override
+    public <X extends Exception> SetMultimap<K, E> filterByKey(Try.Predicate<? super K, X> filter) throws X {
+        final SetMultimap<K, E> result = new SetMultimap<>(valueMap.getClass(), concreteValueType);
+
+        for (Map.Entry<K, Set<E>> entry : valueMap.entrySet()) {
+            if (filter.test(entry.getKey())) {
+                result.valueMap.put(entry.getKey(), entry.getValue());
+            }
+        }
+
+        return result;
+    }
+
+    @Override
+    public <X extends Exception> SetMultimap<K, E> filterByValue(Try.Predicate<? super Set<E>, X> filter) throws X {
+        final SetMultimap<K, E> result = new SetMultimap<>(valueMap.getClass(), concreteValueType);
+
+        for (Map.Entry<K, Set<E>> entry : valueMap.entrySet()) {
+            if (filter.test(entry.getValue())) {
+                result.valueMap.put(entry.getKey(), entry.getValue());
+            }
+        }
+
+        return result;
+    }
+
+    @Override
+    public <X extends Exception> SetMultimap<K, E> filter(Try.BiPredicate<? super K, ? super Set<E>, X> filter) throws X {
+        final SetMultimap<K, E> result = new SetMultimap<>(valueMap.getClass(), concreteValueType);
+
+        for (Map.Entry<K, Set<E>> entry : valueMap.entrySet()) {
+            if (filter.test(entry.getKey(), entry.getValue())) {
+                result.valueMap.put(entry.getKey(), entry.getValue());
+            }
+        }
+
+        return result;
+    }
+
     //    public SetMultimap<E, K> inversed() {
     //        final SetMultimap<E, K> multimap = new SetMultimap<E, K>(valueMap.getClass(), concreteValueType);
     //

@@ -55,6 +55,8 @@ public class ImmutableSet<E> extends ImmutableCollection<E> implements Set<E> {
     public static <E> ImmutableSet<E> of(final Set<? extends E> set) {
         if (set == null) {
             return empty();
+        } else if (set instanceof ImmutableSet) {
+            return (ImmutableSet<E>) set;
         }
 
         return new ImmutableSet<>(set);

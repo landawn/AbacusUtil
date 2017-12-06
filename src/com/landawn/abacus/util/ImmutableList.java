@@ -67,6 +67,8 @@ public final class ImmutableList<E> extends ImmutableCollection<E> implements Li
     public static <E> ImmutableList<E> of(final List<? extends E> list) {
         if (list == null) {
             return empty();
+        } else if (list instanceof ImmutableList) {
+            return (ImmutableList<E>) list;
         }
 
         return new ImmutableList<>(list);

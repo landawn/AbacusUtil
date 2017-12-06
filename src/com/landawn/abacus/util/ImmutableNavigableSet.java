@@ -59,6 +59,8 @@ public final class ImmutableNavigableSet<E> extends ImmutableSortedSet<E> implem
     public static <E> ImmutableNavigableSet<E> of(final NavigableSet<? extends E> navigableSet) {
         if (navigableSet == null) {
             return empty();
+        } else if (navigableSet instanceof ImmutableNavigableSet) {
+            return (ImmutableNavigableSet<E>) navigableSet;
         }
 
         return new ImmutableNavigableSet<>(navigableSet);

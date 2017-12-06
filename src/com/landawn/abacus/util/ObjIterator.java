@@ -123,22 +123,22 @@ public abstract class ObjIterator<E> extends ImmutableIterator<E> {
         };
     }
 
-    public static <T> ObjIterator<T> of(final Iterator<T> iterA) {
-        if (iterA == null) {
+    public static <T> ObjIterator<T> of(final Iterator<T> iter) {
+        if (iter == null) {
             return empty();
-        } else if (iterA instanceof ObjIterator) {
-            return (ObjIterator<T>) iterA;
+        } else if (iter instanceof ObjIterator) {
+            return (ObjIterator<T>) iter;
         }
 
         return new ObjIterator<T>() {
             @Override
             public boolean hasNext() {
-                return iterA.hasNext();
+                return iter.hasNext();
             }
 
             @Override
             public T next() {
-                return iterA.next();
+                return iter.next();
             }
         };
     }

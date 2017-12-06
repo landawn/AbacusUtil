@@ -58,6 +58,8 @@ public class ImmutableSortedSet<E> extends ImmutableSet<E> implements SortedSet<
     public static <E> ImmutableSortedSet<E> of(final SortedSet<? extends E> sortedSet) {
         if (sortedSet == null) {
             return empty();
+        } else if (sortedSet instanceof ImmutableSortedSet) {
+            return (ImmutableSortedSet<E>) sortedSet;
         }
 
         return new ImmutableSortedSet<>(sortedSet);

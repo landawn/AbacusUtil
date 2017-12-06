@@ -91,6 +91,8 @@ public class ImmutableMap<K, V> implements Map<K, V> {
     public static <K, V> ImmutableMap<K, V> of(final Map<? extends K, ? extends V> map) {
         if (map == null) {
             return empty();
+        } else if (map instanceof ImmutableMap) {
+            return (ImmutableMap<K, V>) map;
         }
 
         return new ImmutableMap<>(map);

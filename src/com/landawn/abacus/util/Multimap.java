@@ -24,7 +24,6 @@ import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -963,7 +962,7 @@ public class Multimap<K, E, V extends Collection<E>> {
     }
 
     /**
-     * Replace the specified value (one occurrence) from the value set associated with keys which satisfy the specified <code>predicate</code>.
+     * Replace the specified value (all occurrences) from the value set associated with keys which satisfy the specified <code>predicate</code>.
      * @param predicate
      * @param oldValues
      * @param newValue
@@ -986,7 +985,7 @@ public class Multimap<K, E, V extends Collection<E>> {
     }
 
     /**
-     * Replace the specified value (one occurrence) from the value set associated with keys which satisfy the specified <code>predicate</code>.
+     * Replace the specified value (all occurrences) from the value set associated with keys which satisfy the specified <code>predicate</code>.
      * @param predicate
      * @param oldValues
      * @param newValue
@@ -1070,36 +1069,36 @@ public class Multimap<K, E, V extends Collection<E>> {
         return val == null ? false : (N.isNullOrEmpty(c) ? true : val.containsAll(c));
     }
 
-    public <X extends Exception> Multimap<K, E, List<E>> filterByKey(Try.Predicate<? super K, X> filter) throws X {
-        final Multimap<K, E, List<E>> result = new Multimap<>(valueMap instanceof IdentityHashMap ? IdentityHashMap.class : LinkedHashMap.class, List.class);
+    public <X extends Exception> Multimap<K, E, V> filterByKey(Try.Predicate<? super K, X> filter) throws X {
+        final Multimap<K, E, V> result = new Multimap<>(valueMap.getClass(), concreteValueType);
 
         for (Map.Entry<K, V> entry : valueMap.entrySet()) {
             if (filter.test(entry.getKey())) {
-                result.putAll(entry.getKey(), entry.getValue());
+                result.valueMap.put(entry.getKey(), entry.getValue());
             }
         }
 
         return result;
     }
 
-    public <X extends Exception> Multimap<K, E, List<E>> filterByValue(Try.Predicate<? super V, X> filter) throws X {
-        final Multimap<K, E, List<E>> result = new Multimap<>(valueMap instanceof IdentityHashMap ? IdentityHashMap.class : LinkedHashMap.class, List.class);
+    public <X extends Exception> Multimap<K, E, V> filterByValue(Try.Predicate<? super V, X> filter) throws X {
+        final Multimap<K, E, V> result = new Multimap<>(valueMap.getClass(), concreteValueType);
 
         for (Map.Entry<K, V> entry : valueMap.entrySet()) {
             if (filter.test(entry.getValue())) {
-                result.putAll(entry.getKey(), entry.getValue());
+                result.valueMap.put(entry.getKey(), entry.getValue());
             }
         }
 
         return result;
     }
 
-    public <X extends Exception> Multimap<K, E, List<E>> filter(Try.BiPredicate<? super K, ? super V, X> filter) throws X {
-        final Multimap<K, E, List<E>> result = new Multimap<>(valueMap instanceof IdentityHashMap ? IdentityHashMap.class : LinkedHashMap.class, List.class);
+    public <X extends Exception> Multimap<K, E, V> filter(Try.BiPredicate<? super K, ? super V, X> filter) throws X {
+        final Multimap<K, E, V> result = new Multimap<>(valueMap.getClass(), concreteValueType);
 
         for (Map.Entry<K, V> entry : valueMap.entrySet()) {
             if (filter.test(entry.getKey(), entry.getValue())) {
-                result.putAll(entry.getKey(), entry.getValue());
+                result.valueMap.put(entry.getKey(), entry.getValue());
             }
         }
 
