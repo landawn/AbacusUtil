@@ -7,6 +7,10 @@
 
 * Refactoring `Multimap.filterByKey/filterByValue/filter`.
 
+* Add `OptionalBoolean/OptionalByte/.../OptionalDouble.ofNullable`.
+
+* Add `Optional<T> SQLExecutor.geT(...)`.
+
 * Improvements and bug fix.
 
 

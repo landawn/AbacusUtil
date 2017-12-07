@@ -99,6 +99,16 @@ public final class OptionalBoolean implements Comparable<OptionalBoolean> {
     }
 
     /**
+     * Returns an empty {@code OptionalBoolean} if the specified {@code Boolean} is null.
+     * 
+     * @param val
+     * @return
+     */
+    public static OptionalBoolean ofNullable(Boolean val) {
+        return val == null ? empty() : OptionalBoolean.of(val);
+    }
+
+    /**
      * Return an {@code OptionalBoolean} with the specified value present.
      *
      * @param value the value to be present

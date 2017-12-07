@@ -234,7 +234,7 @@ public final class Math2 {
             checkNonNegative("n", n);
             return false;
         }
-        if (n == 2 || n == 3 || n == 5 || n == 7 || n == 11 || n == 13) {
+        if (n < 14 && (n == 2 || n == 3 || n == 5 || n == 7 || n == 11 || n == 13)) {
             return true;
         }
 

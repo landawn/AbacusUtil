@@ -99,6 +99,16 @@ public final class OptionalShort implements Comparable<OptionalShort> {
     }
 
     /**
+     * Returns an empty {@code OptionalShort} if the specified {@code Short} is null.
+     * 
+     * @param val
+     * @return
+     */
+    public static OptionalShort ofNullable(Short val) {
+        return val == null ? empty() : OptionalShort.of(val);
+    }
+
+    /**
      * Return an {@code OptionalShort} with the specified value present.
      *
      * @param value the value to be present

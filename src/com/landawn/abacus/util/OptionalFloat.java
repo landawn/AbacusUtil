@@ -99,6 +99,16 @@ public final class OptionalFloat implements Comparable<OptionalFloat> {
     }
 
     /**
+     * Returns an empty {@code OptionalFloat} if the specified {@code Float} is null.
+     * 
+     * @param val
+     * @return
+     */
+    public static OptionalFloat ofNullable(Float val) {
+        return val == null ? empty() : OptionalFloat.of(val);
+    }
+
+    /**
      * Return an {@code OptionalFloat} with the specified value present.
      *
      * @param value the value to be present

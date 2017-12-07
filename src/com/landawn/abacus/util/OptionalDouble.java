@@ -99,6 +99,16 @@ public final class OptionalDouble implements Comparable<OptionalDouble> {
     }
 
     /**
+     * Returns an empty {@code OptionalDouble} if the specified {@code Double} is null.
+     * 
+     * @param val
+     * @return
+     */
+    public static OptionalDouble ofNullable(Double val) {
+        return val == null ? empty() : OptionalDouble.of(val);
+    }
+
+    /**
      * Return an {@code OptionalDouble} with the specified value present.
      *
      * @param value the value to be present

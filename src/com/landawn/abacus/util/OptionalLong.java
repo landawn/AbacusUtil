@@ -99,6 +99,16 @@ public final class OptionalLong implements Comparable<OptionalLong> {
     }
 
     /**
+     * Returns an empty {@code OptionalLong} if the specified {@code Long} is null.
+     * 
+     * @param val
+     * @return
+     */
+    public static OptionalLong ofNullable(Long val) {
+        return val == null ? empty() : OptionalLong.of(val);
+    }
+
+    /**
      * Return an {@code OptionalLong} with the specified value present.
      *
      * @param value the value to be present

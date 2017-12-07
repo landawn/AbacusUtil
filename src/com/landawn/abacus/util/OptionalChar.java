@@ -99,6 +99,16 @@ public final class OptionalChar implements Comparable<OptionalChar> {
     }
 
     /**
+     * Returns an empty {@code OptionalChar} if the specified {@code Character} is null.
+     * 
+     * @param val
+     * @return
+     */
+    public static OptionalChar ofNullable(Character val) {
+        return val == null ? empty() : OptionalChar.of(val);
+    }
+
+    /**
      * Return an {@code OptionalChar} with the specified value present.
      *
      * @param value the value to be present

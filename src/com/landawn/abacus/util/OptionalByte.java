@@ -99,6 +99,16 @@ public final class OptionalByte implements Comparable<OptionalByte> {
     }
 
     /**
+     * Returns an empty {@code OptionalByte} if the specified {@code Byte} is null.
+     * 
+     * @param val
+     * @return
+     */
+    public static OptionalByte ofNullable(Byte val) {
+        return val == null ? empty() : OptionalByte.of(val);
+    }
+
+    /**
      * Return an {@code OptionalByte} with the specified value present.
      *
      * @param value the value to be present

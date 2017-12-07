@@ -1430,6 +1430,28 @@ public final class SQLExecutor implements Closeable {
     }
 
     @SafeVarargs
+    public final <T> Optional<T> geT(final Class<T> targetClass, final String sql, final Object... parameters) {
+        return Optional.ofNullable(this.get(targetClass, sql, parameters));
+    }
+
+    @SafeVarargs
+    public final <T> Optional<T> geT(final Class<T> targetClass, final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
+            final Object... parameters) {
+        return Optional.ofNullable(this.get(targetClass, sql, statementSetter, jdbcSettings, parameters));
+    }
+
+    @SafeVarargs
+    public final <T> Optional<T> geT(final Class<T> targetClass, final Connection conn, final String sql, final Object... parameters) {
+        return Optional.ofNullable(this.get(targetClass, conn, sql, parameters));
+    }
+
+    @SafeVarargs
+    public final <T> Optional<T> geT(final Class<T> targetClass, final Connection conn, final String sql, final StatementSetter statementSetter,
+            JdbcSettings jdbcSettings, final Object... parameters) {
+        return Optional.ofNullable(this.get(targetClass, conn, sql, statementSetter, jdbcSettings, parameters));
+    }
+
+    @SafeVarargs
     public final <T> List<T> find(final Class<T> targetClass, final String sql, final Object... parameters) {
         return find(targetClass, sql, null, null, parameters);
     }
@@ -3676,6 +3698,23 @@ public final class SQLExecutor implements Closeable {
             }
         }
 
+        public Optional<T> geT(final Object id) {
+            return Optional.ofNullable(this.get(id));
+        }
+
+        @SafeVarargs
+        public final Optional<T> geT(final Object id, final String... selectPropNames) {
+            return Optional.ofNullable(this.get(id, selectPropNames));
+        }
+
+        public Optional<T> geT(final Object id, final Collection<String> selectPropNames) {
+            return Optional.ofNullable(this.get(id, selectPropNames));
+        }
+
+        public Optional<T> geT(final Connection conn, final Object id, final Collection<String> selectPropNames) {
+            return Optional.ofNullable(this.get(conn, id, selectPropNames));
+        }
+
         public List<T> find(final Condition whereCause) {
             return find(null, whereCause);
         }
@@ -4478,6 +4517,43 @@ public final class SQLExecutor implements Closeable {
                 @Override
                 public T call() throws Exception {
                     return mapper.get(conn, id, selectPropNames);
+                }
+            });
+        }
+
+        public CompletableFuture<Optional<T>> geT(final Object id) {
+            return asyncExecutor.execute(new Callable<Optional<T>>() {
+                @Override
+                public Optional<T> call() throws Exception {
+                    return mapper.geT(id);
+                }
+            });
+        }
+
+        @SafeVarargs
+        public final CompletableFuture<Optional<T>> geT(final Object id, final String... selectPropNames) {
+            return asyncExecutor.execute(new Callable<Optional<T>>() {
+                @Override
+                public Optional<T> call() throws Exception {
+                    return mapper.geT(id, selectPropNames);
+                }
+            });
+        }
+
+        public CompletableFuture<Optional<T>> geT(final Object id, final Collection<String> selectPropNames) {
+            return asyncExecutor.execute(new Callable<Optional<T>>() {
+                @Override
+                public Optional<T> call() throws Exception {
+                    return mapper.geT(id, selectPropNames);
+                }
+            });
+        }
+
+        public CompletableFuture<Optional<T>> geT(final Connection conn, final Object id, final Collection<String> selectPropNames) {
+            return asyncExecutor.execute(new Callable<Optional<T>>() {
+                @Override
+                public Optional<T> call() throws Exception {
+                    return mapper.geT(conn, id, selectPropNames);
                 }
             });
         }

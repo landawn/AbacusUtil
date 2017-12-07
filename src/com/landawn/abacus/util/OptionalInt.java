@@ -99,6 +99,16 @@ public final class OptionalInt implements Comparable<OptionalInt> {
     }
 
     /**
+     * Returns an empty {@code OptionalInt} if the specified {@code Integer} is null.
+     * 
+     * @param val
+     * @return
+     */
+    public static OptionalInt ofNullable(Integer val) {
+        return val == null ? empty() : OptionalInt.of(val);
+    }
+
+    /**
      * Return an {@code OptionalInt} with the specified value present.
      *
      * @param value the value to be present
