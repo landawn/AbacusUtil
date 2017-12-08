@@ -39,9 +39,9 @@ import java.util.List;
  *  The purpose of copying the code is to re-organize the APIs.
  *
  */
-public final class Math2 {
+public abstract class Math2 {
     private Math2() {
-        // singleton
+        // utility class.
     }
 
     private static final long ONE_BITS = doubleToRawLongBits(1.0);
@@ -2839,6 +2839,12 @@ public final class Math2 {
                 a = squareMod(a, n);
             }
             return true;
+        }
+    }
+
+    public static abstract class Matth extends Math2 {
+        private Matth() {
+            // utility class.
         }
     }
 }

@@ -16,7 +16,7 @@ package com.landawn.abacus.util;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -39,7 +39,7 @@ public class ImmutableSet<E> extends ImmutableCollection<E> implements Set<E> {
     }
 
     @SafeVarargs
-    public static <E> ImmutableSet<E> of(E... a) {
+    public static <E> ImmutableSet<E> from(E... a) {
         if (N.isNullOrEmpty(a)) {
             return empty();
         }
@@ -72,6 +72,6 @@ public class ImmutableSet<E> extends ImmutableCollection<E> implements Set<E> {
             return empty();
         }
 
-        return new ImmutableSet<>(new HashSet<>(set));
+        return new ImmutableSet<>(new LinkedHashSet<>(set));
     }
 }

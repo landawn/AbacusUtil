@@ -42,7 +42,7 @@ public class ImmutableSortedSet<E> extends ImmutableSet<E> implements SortedSet<
     }
 
     @SafeVarargs
-    public static <E extends Comparable<? super E>> ImmutableSortedSet<E> of(final E... a) {
+    public static <E extends Comparable<? super E>> ImmutableSortedSet<E> from(final E... a) {
         if (N.isNullOrEmpty(a)) {
             return empty();
         }

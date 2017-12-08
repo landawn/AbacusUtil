@@ -93,7 +93,7 @@ import com.landawn.abacus.util.stream.Stream;
 public final class CassandraExecutor implements Closeable {
 
     static final String ID = "id";
-    static final ImmutableSet<String> ID_SET = ImmutableSet.of(ID);
+    static final ImmutableSet<String> ID_SET = ImmutableSet.from(ID);
     static final List<String> EXISTS_SELECT_PROP_NAMES = ImmutableList.of("1");
     static final List<String> COUNT_SELECT_PROP_NAMES = ImmutableList.of(NE.COUNT_ALL);
 

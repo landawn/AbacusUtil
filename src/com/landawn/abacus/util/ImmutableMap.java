@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -103,7 +104,16 @@ public class ImmutableMap<K, V> implements Map<K, V> {
             return empty();
         }
 
-        return new ImmutableMap<>(map instanceof IdentityHashMap ? new IdentityHashMap<>(map) : new HashMap<>(map));
+        final Map<K, V> tmp = map instanceof IdentityHashMap ? new IdentityHashMap<>(map)
+                : (map instanceof LinkedHashMap ? new LinkedHashMap<>(map) : new HashMap<>(map));
+
+        return new ImmutableMap<>(tmp);
+    }
+
+    public V getOrDefault(Object key, V defaultValue) {
+        final V val = get(key);
+
+        return val == null && containsKey(key) == false ? defaultValue : val;
     }
 
     /**

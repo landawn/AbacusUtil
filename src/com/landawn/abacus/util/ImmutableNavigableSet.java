@@ -43,7 +43,7 @@ public final class ImmutableNavigableSet<E> extends ImmutableSortedSet<E> implem
     }
 
     @SafeVarargs
-    public static <E extends Comparable<? super E>> ImmutableNavigableSet<E> of(final E... a) {
+    public static <E extends Comparable<? super E>> ImmutableNavigableSet<E> from(final E... a) {
         if (N.isNullOrEmpty(a)) {
             return empty();
         }

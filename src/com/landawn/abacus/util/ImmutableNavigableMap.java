@@ -144,7 +144,7 @@ public class ImmutableNavigableMap<K, V> extends ImmutableSortedMap<K, V> implem
             return empty();
         }
 
-        return of(new TreeMap<>(sortedMap));
+        return new ImmutableNavigableMap<>(new TreeMap<>(sortedMap));
     }
 
     @Override

@@ -1143,11 +1143,11 @@ public final class LongMultiset<T> implements Iterable<T> {
     }
 
     public <E extends Exception> LongMultiset<T> filter(Try.Predicate<? super T, E> filter) throws E {
-        final LongMultiset<T> result = new LongMultiset<>(valueMap instanceof IdentityHashMap ? IdentityHashMap.class : LinkedHashMap.class);
+        final LongMultiset<T> result = new LongMultiset<>(valueMap.getClass());
 
         for (Map.Entry<T, MutableLong> entry : valueMap.entrySet()) {
             if (filter.test(entry.getKey())) {
-                result.add(entry.getKey(), entry.getValue().longValue());
+                result.set(entry.getKey(), entry.getValue().longValue());
             }
         }
 
@@ -1155,11 +1155,11 @@ public final class LongMultiset<T> implements Iterable<T> {
     }
 
     public <E extends Exception> LongMultiset<T> filter(Try.BiPredicate<? super T, Long, E> filter) throws E {
-        final LongMultiset<T> result = new LongMultiset<>(valueMap instanceof IdentityHashMap ? IdentityHashMap.class : LinkedHashMap.class);
+        final LongMultiset<T> result = new LongMultiset<>(valueMap.getClass());
 
         for (Map.Entry<T, MutableLong> entry : valueMap.entrySet()) {
             if (filter.test(entry.getKey(), entry.getValue().longValue())) {
-                result.add(entry.getKey(), entry.getValue().longValue());
+                result.set(entry.getKey(), entry.getValue().longValue());
             }
         }
 

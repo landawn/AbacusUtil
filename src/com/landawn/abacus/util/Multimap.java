@@ -1371,11 +1371,7 @@ public class Multimap<K, E, V extends Collection<E>> {
     }
 
     public Map<K, V> toMap() {
-        if (valueMap instanceof IdentityHashMap) {
-            return new IdentityHashMap<>(valueMap);
-        } else {
-            return new HashMap<>(valueMap);
-        }
+        return valueMap instanceof IdentityHashMap ? new IdentityHashMap<>(valueMap) : new HashMap<>(valueMap);
     }
 
     public <M extends Map<K, V>> M toMap(final IntFunction<M> supplier) {

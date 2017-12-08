@@ -1111,11 +1111,11 @@ public final class Multiset<T> implements Iterable<T> {
     }
 
     public <E extends Exception> Multiset<T> filter(Try.Predicate<? super T, E> filter) throws E {
-        final Multiset<T> result = new Multiset<>(valueMap instanceof IdentityHashMap ? IdentityHashMap.class : LinkedHashMap.class);
+        final Multiset<T> result = new Multiset<>(valueMap.getClass());
 
         for (Map.Entry<T, MutableInt> entry : valueMap.entrySet()) {
             if (filter.test(entry.getKey())) {
-                result.add(entry.getKey(), entry.getValue().intValue());
+                result.set(entry.getKey(), entry.getValue().intValue());
             }
         }
 
@@ -1123,11 +1123,11 @@ public final class Multiset<T> implements Iterable<T> {
     }
 
     public <E extends Exception> Multiset<T> filter(Try.BiPredicate<? super T, Integer, E> filter) throws E {
-        final Multiset<T> result = new Multiset<>(valueMap instanceof IdentityHashMap ? IdentityHashMap.class : LinkedHashMap.class);
+        final Multiset<T> result = new Multiset<>(valueMap.getClass());
 
         for (Map.Entry<T, MutableInt> entry : valueMap.entrySet()) {
             if (filter.test(entry.getKey(), entry.getValue().intValue())) {
-                result.add(entry.getKey(), entry.getValue().intValue());
+                result.set(entry.getKey(), entry.getValue().intValue());
             }
         }
 
