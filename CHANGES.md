@@ -11,8 +11,6 @@
 
 * Add `Optional<T> SQLExecutor.geT(...)`.
 
-* Rename `ImmutableSet.of(E... a)` to `ImmutableSet.from(E... a)`.
-
 * Improvements and bug fix.
 
 

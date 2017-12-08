@@ -39,7 +39,7 @@ public class ImmutableSet<E> extends ImmutableCollection<E> implements Set<E> {
     }
 
     @SafeVarargs
-    public static <E> ImmutableSet<E> from(E... a) {
+    public static <E> ImmutableSet<E> of(E... a) {
         if (N.isNullOrEmpty(a)) {
             return empty();
         }
