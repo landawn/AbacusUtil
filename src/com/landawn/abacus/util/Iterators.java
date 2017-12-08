@@ -1129,6 +1129,57 @@ public final class Iterators {
         };
     }
 
+    public static <T> Nullable<T> first(final Iterator<T> iter) {
+        return iter != null && iter.hasNext() ? Nullable.of(iter.next()) : Nullable.<T> empty();
+    }
+
+    public static <T> Optional<T> firstNonNull(final Iterator<T> iter) {
+        if (iter == null) {
+            return Optional.empty();
+        }
+
+        T next = null;
+
+        while (iter.hasNext()) {
+            if ((next = iter.next()) != null) {
+                return Optional.of(next);
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    public static <T> Nullable<T> last(final Iterator<T> iter) {
+        if (iter == null || iter.hasNext() == false) {
+            return Nullable.empty();
+        }
+
+        T next = null;
+
+        while (iter.hasNext()) {
+            next = iter.next();
+        }
+
+        return Nullable.of(next);
+    }
+
+    public static <T> Optional<T> lastNonNull(final Iterator<T> iter) {
+        if (iter == null) {
+            return Optional.empty();
+        }
+
+        T next = null;
+        T lastNonNull = null;
+
+        while (iter.hasNext()) {
+            if ((next = iter.next()) != null) {
+                lastNonNull = next;
+            }
+        }
+
+        return Optional.ofNullable(lastNonNull);
+    }
+
     public static <T> ObjIterator<T> skipNull(final Iterator<T> iter) {
         if (iter == null) {
             return ObjIterator.empty();

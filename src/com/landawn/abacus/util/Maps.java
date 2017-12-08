@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -41,6 +42,7 @@ import java.util.Set;
 import com.landawn.abacus.DirtyMarker;
 import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.util.function.IntFunction;
+import com.landawn.abacus.util.function.Supplier;
 
 /**
  * Note: It's copied from OpenJDK at: http://hg.openjdk.java.net/jdk8u/hs-dev/jdk
@@ -168,24 +170,11 @@ public final class Maps {
     /**
      * Returns the value to which the specified key is mapped, or
      * {@code defaultValue} if this map contains no mapping for the key.
-     *
-     * @implSpec
-     * The default implementation makes no guarantees about synchronization
-     * or atomicity properties of this method. Any implementation providing
-     * atomicity guarantees must override this method and document its
-     * concurrency properties.
-     *
-     * @param key the key whose associated value is to be returned
-     * @param defaultValue the default mapping of the key
-     * @return the value to which the specified key is mapped, or
-     * {@code defaultValue} if this map contains no mapping for the key
-     * @throws ClassCastException if the key is of an inappropriate type for
-     * this map
-     * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
-     * @throws NullPointerException if the specified key is null and this map
-     * does not permit null keys
-     * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
-     * @since 1.8
+     * 
+     * @param map
+     * @param key
+     * @param defaultValue
+     * @return
      */
     public static <K, V> V getOrDefault(final Map<K, V> map, final Object key, final V defaultValue) {
         if (N.isNullOrEmpty(map)) {
@@ -198,6 +187,50 @@ public final class Maps {
             return val;
         } else {
             return defaultValue;
+        }
+    }
+
+    /**
+     * Returns the value to which the specified key is mapped, or
+     * an empty immutable {@code List} if this map contains no mapping for the key.
+     * 
+     * @param map
+     * @param key
+     * @return
+     */
+    public static <K, E, V extends List<E>> List<E> getOrEmptyList(final Map<K, V> map, final Object key) {
+        if (N.isNullOrEmpty(map)) {
+            return N.<E> emptyList();
+        }
+
+        final V val = map.get(key);
+
+        if (val != null || map.containsKey(key)) {
+            return val;
+        } else {
+            return N.emptyList();
+        }
+    }
+
+    /**
+     * Returns the value to which the specified key is mapped, or
+     * an empty immutable {@code Set} if this map contains no mapping for the key.
+     * 
+     * @param map
+     * @param key
+     * @return
+     */
+    public static <K, E, V extends Set<E>> Set<E> getOrEmptySet(final Map<K, V> map, final Object key) {
+        if (N.isNullOrEmpty(map)) {
+            return N.<E> emptySet();
+        }
+
+        final V val = map.get(key);
+
+        if (val != null || map.containsKey(key)) {
+            return val;
+        } else {
+            return N.emptySet();
         }
     }
 
@@ -222,6 +255,39 @@ public final class Maps {
         }
 
         return result;
+    }
+
+    public static <K, E> List<E> getAndPutListIfAbsent(final Map<K, List<E>> map, final K key) {
+        List<E> v = map.get(key);
+
+        if (v == null) {
+            v = new ArrayList<>();
+            v = map.put(key, v);
+        }
+
+        return v;
+    }
+
+    public static <K, E> Set<E> getAndPutSetIfAbsent(final Map<K, Set<E>> map, final K key) {
+        Set<E> v = map.get(key);
+
+        if (v == null) {
+            v = new HashSet<>();
+            v = map.put(key, v);
+        }
+
+        return v;
+    }
+
+    public static <K, E> Set<E> getAndPutLinkedHashSetIfAbsent(final Map<K, Set<E>> map, final K key) {
+        Set<E> v = map.get(key);
+
+        if (v == null) {
+            v = new LinkedHashSet<>();
+            v = map.put(key, v);
+        }
+
+        return v;
     }
 
     /**
@@ -401,13 +467,22 @@ public final class Maps {
      * @throws IllegalArgumentException if some property of the specified key
      *         or value prevents it from being stored in this map
      *         (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
-     * @since 1.8
      */
     public static <K, V> V putIfAbsent(final Map<K, V> map, K key, final V value) {
         V v = map.get(key);
 
         if (v == null) {
             v = map.put(key, value);
+        }
+
+        return v;
+    }
+
+    public static <K, V> V putIfAbsent(final Map<K, V> map, K key, final Supplier<V> supplier) {
+        V v = map.get(key);
+
+        if (v == null) {
+            v = map.put(key, supplier.get());
         }
 
         return v;

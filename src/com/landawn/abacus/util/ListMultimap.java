@@ -48,6 +48,86 @@ public final class ListMultimap<K, E> extends Multimap<K, E, List<E>> {
         super(valueMap, valueType);
     }
 
+    public static <K, E> ListMultimap<K, E> of(final K k1, final E v1) {
+        final ListMultimap<K, E> map = new ListMultimap<>();
+
+        map.put(k1, v1);
+
+        return map;
+    }
+
+    public static <K, E> ListMultimap<K, E> of(final K k1, final E v1, final K k2, final E v2) {
+        final ListMultimap<K, E> map = new ListMultimap<>();
+
+        map.put(k1, v1);
+        map.put(k2, v2);
+
+        return map;
+    }
+
+    public static <K, E> ListMultimap<K, E> of(final K k1, final E v1, final K k2, final E v2, final K k3, final E v3) {
+        final ListMultimap<K, E> map = new ListMultimap<>();
+
+        map.put(k1, v1);
+        map.put(k2, v2);
+        map.put(k3, v3);
+
+        return map;
+    }
+
+    public static <K, E> ListMultimap<K, E> of(final K k1, final E v1, final K k2, final E v2, final K k3, final E v3, final K k4, final E v4) {
+        final ListMultimap<K, E> map = new ListMultimap<>();
+
+        map.put(k1, v1);
+        map.put(k2, v2);
+        map.put(k3, v3);
+        map.put(k4, v4);
+
+        return map;
+    }
+
+    public static <K, E> ListMultimap<K, E> of(final K k1, final E v1, final K k2, final E v2, final K k3, final E v3, final K k4, final E v4, final K k5,
+            final E v5) {
+        final ListMultimap<K, E> map = new ListMultimap<>();
+
+        map.put(k1, v1);
+        map.put(k2, v2);
+        map.put(k3, v3);
+        map.put(k4, v4);
+        map.put(k5, v5);
+
+        return map;
+    }
+
+    public static <K, E> ListMultimap<K, E> of(final K k1, final E v1, final K k2, final E v2, final K k3, final E v3, final K k4, final E v4, final K k5,
+            final E v5, final K k6, final E v6) {
+        final ListMultimap<K, E> map = new ListMultimap<>();
+
+        map.put(k1, v1);
+        map.put(k2, v2);
+        map.put(k3, v3);
+        map.put(k4, v4);
+        map.put(k5, v5);
+        map.put(k6, v6);
+
+        return map;
+    }
+
+    public static <K, E> ListMultimap<K, E> of(final K k1, final E v1, final K k2, final E v2, final K k3, final E v3, final K k4, final E v4, final K k5,
+            final E v5, final K k6, final E v6, final K k7, final E v7) {
+        final ListMultimap<K, E> map = new ListMultimap<>();
+
+        map.put(k1, v1);
+        map.put(k2, v2);
+        map.put(k3, v3);
+        map.put(k4, v4);
+        map.put(k5, v5);
+        map.put(k6, v6);
+        map.put(k7, v7);
+
+        return map;
+    }
+
     public static <K, E> ListMultimap<K, E> from(final Map<? extends K, ? extends E> map) {
         final ListMultimap<K, E> multimap = new ListMultimap<>(N.initHashCapacity(map == null ? 0 : map.size()));
 

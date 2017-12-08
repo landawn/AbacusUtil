@@ -5,7 +5,9 @@
 
 * Add `ImmutableSortedSet/ImmutableNavigableSet/ImmutableSortedMap/ImmutableNavigableMap`.
 
-* Refactoring `Multimap.filterByKey/filterByValue/filter`.
+* Rename `Multimap.putAllIfAbsent/setAllIfAbsent` to `Multimap.putAllIfKeyAbsent/setAllIfKeyAbsent`.
+
+* Add `Multimap.putIfKeyAbsent/setIfKeyAbsent`.
 
 * Add `OptionalBoolean/OptionalByte/.../OptionalDouble.ofNullable`.
 

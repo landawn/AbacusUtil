@@ -18,6 +18,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import com.landawn.abacus.util.function.Supplier;
+
 /**
  * 
  * @param <T>
@@ -931,6 +933,26 @@ public class Builder<T> {
         public MapBuilder<K, V, M> putAll(Map<? extends K, ? extends V> m) {
             if (N.notNullOrEmpty(m)) {
                 val.putAll(m);
+            }
+
+            return this;
+        }
+
+        public MapBuilder<K, V, M> putIfAbsent(K key, V value) {
+            V v = val.get(key);
+
+            if (v == null) {
+                v = val.put(key, value);
+            }
+
+            return this;
+        }
+
+        public MapBuilder<K, V, M> putIfAbsent(K key, Supplier<V> supplier) {
+            V v = val.get(key);
+
+            if (v == null) {
+                v = val.put(key, supplier.get());
             }
 
             return this;

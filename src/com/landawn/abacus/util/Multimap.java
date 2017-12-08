@@ -263,6 +263,18 @@ public class Multimap<K, E, V extends Collection<E>> {
         return this;
     }
 
+    public Multimap<K, E, V> setIfAbsent(final K key, final E e) {
+        V val = valueMap.get(key);
+
+        if (val == null || val.contains(e) == false) {
+            val = N.newInstance(concreteValueType);
+            val.add(e);
+            valueMap.put(key, val);
+        }
+
+        return this;
+    }
+
     /**
      * Replace the value with the specified element. 
      * 
@@ -270,7 +282,7 @@ public class Multimap<K, E, V extends Collection<E>> {
      * @param e
      * @return
      */
-    public Multimap<K, E, V> setIfAbsent(final K key, final E e) {
+    public Multimap<K, E, V> setIfKeyAbsent(final K key, final E e) {
         V val = valueMap.get(key);
 
         if (val == null) {
@@ -315,7 +327,7 @@ public class Multimap<K, E, V extends Collection<E>> {
      * @param c
      * @return
      */
-    public Multimap<K, E, V> setAllIfAbsent(final K key, final Collection<? extends E> c) {
+    public Multimap<K, E, V> setAllIfKeyAbsent(final K key, final Collection<? extends E> c) {
         V val = valueMap.get(key);
 
         if (val == null && N.notNullOrEmpty(c)) {
@@ -424,6 +436,14 @@ public class Multimap<K, E, V extends Collection<E>> {
         return val.add(e);
     }
 
+    /**
+     * If the specified value is not already associated with the specified key 
+     * associates it with the given key and returns {@code true}, else returns {@code false}.
+     * 
+     * @param key
+     * @param e
+     * @return
+     */
     public boolean putIfAbsent(final K key, final E e) {
         V val = valueMap.get(key);
 
@@ -435,6 +455,27 @@ public class Multimap<K, E, V extends Collection<E>> {
         }
 
         return val.add(e);
+    }
+
+    /**
+     * If the specified key is not already associated with any value (or is mapped
+     * to {@code null}) associates it with the given value and returns {@code true}, else returns {@code false}.
+     * 
+     * @param key
+     * @param e
+     * @return
+     */
+    public boolean putIfKeyAbsent(final K key, final E e) {
+        V val = valueMap.get(key);
+
+        if (val == null) {
+            val = N.newInstance(concreteValueType);
+            val.add(e);
+            valueMap.put(key, val);
+            return true;
+        }
+
+        return false;
     }
 
     public boolean putAll(final K key, final Collection<? extends E> c) {
@@ -452,7 +493,16 @@ public class Multimap<K, E, V extends Collection<E>> {
         return val.addAll(c);
     }
 
-    public boolean putAllIfAbsent(final K key, final Collection<? extends E> c) {
+    /**
+     * If the specified key is not already associated with any value (or is mapped
+     * to {@code null}) associates it with the given values in the specified {@code collection} 
+     * and returns {@code true}, else returns {@code false}.
+     * 
+     * @param key
+     * @param c
+     * @return
+     */
+    public boolean putAllIfKeyAbsent(final K key, final Collection<? extends E> c) {
         if (N.isNullOrEmpty(c)) {
             return false;
         }
