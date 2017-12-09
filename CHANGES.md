@@ -9,7 +9,7 @@
 
 * Rename `Multimap.putAllIfAbsent` to `Multimap.putAllIfKeyAbsent`.
 
-* Add `Multimap.putIfKeyAbsent/setIfKeyAbsent`.
+* Add `Multimap.putIfKeyAbsent`.
 
 * Add `OptionalBoolean/OptionalByte/.../OptionalDouble.ofNullable`.
 
