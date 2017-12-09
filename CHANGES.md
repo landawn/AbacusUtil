@@ -3,9 +3,11 @@
 
 * Add `Multiset/LongMultiset.toImmutableMap`.
 
-* Add `ImmutableSortedSet/ImmutableNavigableSet/ImmutableSortedMap/ImmutableNavigableMap`.
+* Add `ImmutableSortedSet/ImmutableNavigableSet/ImmutableSortedMap/ImmutableNavigableMap/ImmutableBiMap`.
 
-* Rename `Multimap.putAllIfAbsent/setAllIfAbsent` to `Multimap.putAllIfKeyAbsent/setAllIfKeyAbsent`.
+* Remove `Multimap.set/setAll/setIf/setAllIf`.
+
+* Rename `Multimap.putAllIfAbsent` to `Multimap.putAllIfKeyAbsent`.
 
 * Add `Multimap.putIfKeyAbsent/setIfKeyAbsent`.
 

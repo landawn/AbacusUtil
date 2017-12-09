@@ -960,6 +960,33 @@ public final class Sheet<R, C, E> implements Cloneable {
     }
 
     /**
+     * Update all elements based on points
+     * 
+     * @param func
+     */
+    public <X extends Exception> void updateAll(Try.TriFunction<R, C, E, E, X> func) throws X {
+        checkFrozen();
+
+        if (rowLength() > 0 && columnLength() > 0) {
+            this.init();
+
+            final int rowLength = rowLength();
+            int columnIndex = 0;
+            C columnKey = null;
+
+            for (List<E> column : _columnList) {
+                columnKey = _columnKeyIndexMap.getByValue(columnIndex);
+
+                for (int rowIndex = 0; rowIndex < rowLength; rowIndex++) {
+                    column.set(rowIndex, func.apply(_rowKeyIndexMap.getByValue(rowIndex), columnKey, column.get(rowIndex)));
+                }
+
+                columnIndex++;
+            }
+        }
+    }
+
+    /**
      * 
      * @param predicate
      * @param newValue
@@ -971,13 +998,12 @@ public final class Sheet<R, C, E> implements Cloneable {
             this.init();
 
             final int rowLength = rowLength();
-            E val = null;
 
             for (List<E> column : _columnList) {
                 for (int rowIndex = 0; rowIndex < rowLength; rowIndex++) {
-                    val = column.get(rowIndex);
-
-                    column.set(rowIndex, predicate.test(val) ? newValue : val);
+                    if (predicate.test(column.get(rowIndex))) {
+                        column.set(rowIndex, newValue);
+                    }
                 }
             }
         }
@@ -997,13 +1023,47 @@ public final class Sheet<R, C, E> implements Cloneable {
 
             final int rowLength = rowLength();
             int columnIndex = 0;
-            E val = null;
 
             for (List<E> column : _columnList) {
                 for (int rowIndex = 0; rowIndex < rowLength; rowIndex++) {
+                    if (predicate.test(rowIndex, columnIndex)) {
+                        column.set(rowIndex, newValue);
+                    }
+                }
+
+                columnIndex++;
+            }
+        }
+    }
+
+    /**
+     * Replace elements by <code>Predicate.test(i, j)</code> based on points
+     * 
+     * @param predicate
+     * @param newValue
+     */
+    public <X extends Exception> void replaceIf(final Try.TriPredicate<R, C, E, X> predicate, final E newValue) throws X {
+        checkFrozen();
+
+        if (rowLength() > 0 && columnLength() > 0) {
+            this.init();
+
+            final int rowLength = rowLength();
+            int columnIndex = 0;
+            R rowKey = null;
+            C columnKey = null;
+            E val = null;
+
+            for (List<E> column : _columnList) {
+                columnKey = _columnKeyIndexMap.getByValue(columnIndex);
+
+                for (int rowIndex = 0; rowIndex < rowLength; rowIndex++) {
+                    rowKey = _rowKeyIndexMap.getByValue(rowIndex);
                     val = column.get(rowIndex);
 
-                    column.set(rowIndex, predicate.test(rowIndex, columnIndex) ? newValue : val);
+                    if (predicate.test(rowKey, columnKey, val)) {
+                        column.set(rowIndex, newValue);
+                    }
                 }
 
                 columnIndex++;
@@ -2317,7 +2377,7 @@ public final class Sheet<R, C, E> implements Cloneable {
 
         @Override
         public String toString() {
-            return "[" + N.toString(rowKey) + ", " + N.toString(columnKey) + "]=" + N.toString(value);
+            return N.concat("[", N.toString(rowKey), ", ", N.toString(columnKey), "]=", N.toString(value));
         }
     }
 

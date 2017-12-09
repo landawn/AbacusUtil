@@ -888,36 +888,6 @@ public final class Multiset<T> implements Iterable<T> {
         return true;
     }
 
-    /**
-     * The associated elements will be removed if zero or negative occurrences are returned by the specified <code>function</code>.
-     * 
-     * @param function
-     */
-    public <E extends Exception> void replaceAll(Try.BiFunction<? super T, ? super Integer, Integer, E> function) throws E {
-        List<T> keyToRemove = null;
-        Integer newVal = null;
-
-        for (Map.Entry<T, MutableInt> entry : this.valueMap.entrySet()) {
-            newVal = function.apply(entry.getKey(), entry.getValue().value());
-
-            if (newVal == null || newVal.intValue() <= 0) {
-                if (keyToRemove == null) {
-                    keyToRemove = new ArrayList<>();
-                }
-
-                keyToRemove.add(entry.getKey());
-            } else {
-                entry.getValue().setValue(newVal);
-            }
-        }
-
-        if (N.notNullOrEmpty(keyToRemove)) {
-            for (T key : keyToRemove) {
-                valueMap.remove(key);
-            }
-        }
-    }
-
     public <E extends Exception> boolean replaceIf(Try.Predicate<? super T, E> predicate, final int newOccurrences) throws E {
         checkNewOccurrences(newOccurrences);
 
@@ -948,6 +918,36 @@ public final class Multiset<T> implements Iterable<T> {
         }
 
         return modified;
+    }
+
+    /**
+     * The associated elements will be removed if zero or negative occurrences are returned by the specified <code>function</code>.
+     * 
+     * @param function
+     */
+    public <E extends Exception> void replaceAll(Try.BiFunction<? super T, ? super Integer, Integer, E> function) throws E {
+        List<T> keyToRemove = null;
+        Integer newVal = null;
+    
+        for (Map.Entry<T, MutableInt> entry : this.valueMap.entrySet()) {
+            newVal = function.apply(entry.getKey(), entry.getValue().value());
+    
+            if (newVal == null || newVal.intValue() <= 0) {
+                if (keyToRemove == null) {
+                    keyToRemove = new ArrayList<>();
+                }
+    
+                keyToRemove.add(entry.getKey());
+            } else {
+                entry.getValue().setValue(newVal);
+            }
+        }
+    
+        if (N.notNullOrEmpty(keyToRemove)) {
+            for (T key : keyToRemove) {
+                valueMap.remove(key);
+            }
+        }
     }
 
     /**

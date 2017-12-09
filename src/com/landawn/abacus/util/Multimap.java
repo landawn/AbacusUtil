@@ -241,190 +241,6 @@ public class Multimap<K, E, V extends Collection<E>> {
         return value;
     }
 
-    /**
-     * Replace the value with the specified element. 
-     * 
-     * @param key
-     * @param e
-     * @return
-     */
-    public Multimap<K, E, V> set(final K key, final E e) {
-        V val = valueMap.get(key);
-
-        if (val == null) {
-            val = N.newInstance(concreteValueType);
-            valueMap.put(key, val);
-        } else {
-            val.clear();
-        }
-
-        val.add(e);
-
-        return this;
-    }
-
-    public Multimap<K, E, V> setIfAbsent(final K key, final E e) {
-        V val = valueMap.get(key);
-
-        if (val == null || val.contains(e) == false) {
-            val = N.newInstance(concreteValueType);
-            val.add(e);
-            valueMap.put(key, val);
-        }
-
-        return this;
-    }
-
-    /**
-     * Replace the value with the specified element. 
-     * 
-     * @param key
-     * @param e
-     * @return
-     */
-    public Multimap<K, E, V> setIfKeyAbsent(final K key, final E e) {
-        V val = valueMap.get(key);
-
-        if (val == null) {
-            val = N.newInstance(concreteValueType);
-            val.add(e);
-            valueMap.put(key, val);
-        }
-
-        return this;
-    }
-
-    /**
-     * Replace the value with the specified <code>Collection</code>. Remove the key and all values if the specified <code>Collection</code> is null or empty. 
-     * 
-     * @param key
-     * @param c
-     * @return
-     */
-    public Multimap<K, E, V> setAll(final K key, final Collection<? extends E> c) {
-        if (N.isNullOrEmpty(c)) {
-            valueMap.remove(key);
-        } else {
-            V val = valueMap.get(key);
-
-            if (val == null) {
-                val = N.newInstance(concreteValueType);
-                valueMap.put(key, val);
-            } else {
-                val.clear();
-            }
-
-            val.addAll(c);
-        }
-
-        return this;
-    }
-
-    /**
-     * Replace the value with the specified <code>Collection</code>. Remove the key and all values if the specified <code>Collection</code> is null or empty. 
-     * 
-     * @param key
-     * @param c
-     * @return
-     */
-    public Multimap<K, E, V> setAllIfKeyAbsent(final K key, final Collection<? extends E> c) {
-        V val = valueMap.get(key);
-
-        if (val == null && N.notNullOrEmpty(c)) {
-            val = N.newInstance(concreteValueType);
-            val.addAll(c);
-            valueMap.put(key, val);
-        }
-
-        return this;
-    }
-
-    /**
-     * Replace the values for the keys calculated by the specified {@code keyExtractor}.
-     * 
-     * @param c
-     * @param keyExtractor
-     * @return
-     */
-    public <X extends Exception> Multimap<K, E, V> setAll(final Collection<? extends E> c, final Try.Function<? super E, K, X> keyExtractor) throws X {
-        if (N.notNullOrEmpty(c)) {
-            for (E e : c) {
-                set(keyExtractor.apply(e), e);
-            }
-        }
-
-        return this;
-    }
-
-    /**
-     * Replace the values with the values in the specified <code>Map</code>. 
-     * 
-     * @param m
-     * @return
-     */
-    public Multimap<K, E, V> setAll(final Map<? extends K, ? extends E> m) {
-        if (N.isNullOrEmpty(m)) {
-            return this;
-        }
-
-        K key = null;
-        V val = null;
-
-        for (Map.Entry<? extends K, ? extends E> e : m.entrySet()) {
-            key = e.getKey();
-            val = valueMap.get(key);
-
-            if (val == null) {
-                val = N.newInstance(concreteValueType);
-                valueMap.put(key, val);
-            } else {
-                val.clear();
-            }
-
-            val.add(e.getValue());
-        }
-
-        return this;
-    }
-
-    /**
-     * Replace the values with the values in specified <code>Multimap</code>.
-     * Remove the key and all values if the values in the specified <code>Multimap</code> is null or empty.
-     * This should not happen because all the values in <code>Multimap</code> must not be null or empty. 
-     * 
-     * @param m
-     * @return
-     */
-    public Multimap<K, E, V> setAll(final Multimap<? extends K, ? extends E, ? extends Collection<? extends E>> m) {
-        if (N.isNullOrEmpty(m)) {
-            return this;
-        }
-
-        K key = null;
-        V val = null;
-
-        for (Map.Entry<? extends K, ? extends Collection<? extends E>> e : m.entrySet()) {
-            if (N.isNullOrEmpty(e.getValue())) {
-                valueMap.remove(e.getKey());
-                continue;
-            }
-
-            key = e.getKey();
-            val = valueMap.get(key);
-
-            if (val == null) {
-                val = N.newInstance(concreteValueType);
-                valueMap.put(key, val);
-            } else {
-                val.clear();
-            }
-
-            val.addAll(e.getValue());
-        }
-
-        return this;
-    }
-
     public boolean put(final K key, final E e) {
         V val = valueMap.get(key);
 
@@ -517,20 +333,6 @@ public class Multimap<K, E, V extends Collection<E>> {
         }
 
         return false;
-    }
-
-    public <X extends Exception> boolean putAll(final Collection<? extends E> c, final Try.Function<? super E, K, X> keyExtractor) throws X {
-        if (N.isNullOrEmpty(c)) {
-            return false;
-        }
-
-        boolean result = false;
-
-        for (E e : c) {
-            result |= put(keyExtractor.apply(e), e);
-        }
-
-        return result;
     }
 
     public boolean putAll(final Map<? extends K, ? extends E> m) {
@@ -895,7 +697,11 @@ public class Multimap<K, E, V extends Collection<E>> {
      * @return <code>true</code> if this Multimap is modified by this operation, otherwise <code>false</code>.
      */
     public boolean replace(final K key, final Object oldValue, final E newValue) {
-        V val = valueMap.get(key);
+        final V val = valueMap.get(key);
+
+        if (val == null) {
+            return false;
+        }
 
         return replace(val, oldValue, newValue);
     }
@@ -961,7 +767,11 @@ public class Multimap<K, E, V extends Collection<E>> {
      * @return <code>true</code> if this Multimap is modified by this operation, otherwise <code>false</code>.
      */
     public boolean replaceAll(final K key, final Collection<?> oldValues, final E newValue) {
-        V val = valueMap.get(key);
+        final V val = valueMap.get(key);
+
+        if (val == null) {
+            return false;
+        }
 
         if (val.removeAll(oldValues)) {
             val.add(newValue);

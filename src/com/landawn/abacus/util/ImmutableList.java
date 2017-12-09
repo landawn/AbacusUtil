@@ -162,7 +162,7 @@ public final class ImmutableList<E> extends ImmutableCollection<E> implements Li
      */
     @Deprecated
     @Override
-    public void replaceAll(UnaryOperator<E> operator) {
+    public final void replaceAll(UnaryOperator<E> operator) {
         throw new UnsupportedOperationException();
     }
 
@@ -171,7 +171,7 @@ public final class ImmutableList<E> extends ImmutableCollection<E> implements Li
      */
     @Deprecated
     @Override
-    public void sort(Comparator<? super E> c) {
+    public final void sort(Comparator<? super E> c) {
         throw new UnsupportedOperationException();
     }
 }

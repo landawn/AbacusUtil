@@ -48,8 +48,8 @@ public final class BiMap<K, V> implements Map<K, V> {
      * The load factor used when none specified in constructor.
      */
     static final float DEFAULT_LOAD_FACTOR = 0.75f;
-    private final Map<K, V> keyMap;
-    private final Map<V, K> valueMap;
+    final Map<K, V> keyMap;
+    final Map<V, K> valueMap;
     private transient BiMap<V, K> inverse;
 
     public BiMap() {

@@ -110,6 +110,7 @@ public class ImmutableMap<K, V> implements Map<K, V> {
         return new ImmutableMap<>(tmp);
     }
 
+    @Override
     public V getOrDefault(Object key, V defaultValue) {
         final V val = get(key);
 
@@ -148,7 +149,7 @@ public class ImmutableMap<K, V> implements Map<K, V> {
      */
     @Deprecated
     @Override
-    public V putIfAbsent(K key, V value) {
+    public final V putIfAbsent(K key, V value) {
         throw new UnsupportedOperationException();
     }
 
@@ -157,7 +158,7 @@ public class ImmutableMap<K, V> implements Map<K, V> {
      */
     @Deprecated
     @Override
-    public boolean remove(Object key, Object value) {
+    public final boolean remove(Object key, Object value) {
         throw new UnsupportedOperationException();
     }
 
@@ -166,7 +167,7 @@ public class ImmutableMap<K, V> implements Map<K, V> {
      */
     @Deprecated
     @Override
-    public boolean replace(K key, V oldValue, V newValue) {
+    public final boolean replace(K key, V oldValue, V newValue) {
         throw new UnsupportedOperationException();
     }
 
@@ -175,7 +176,7 @@ public class ImmutableMap<K, V> implements Map<K, V> {
      */
     @Deprecated
     @Override
-    public V replace(K key, V value) {
+    public final V replace(K key, V value) {
         throw new UnsupportedOperationException();
     }
 
@@ -184,7 +185,7 @@ public class ImmutableMap<K, V> implements Map<K, V> {
      */
     @Deprecated
     @Override
-    public V computeIfAbsent(K key, Function<? super K, ? extends V> mappingFunction) {
+    public final V computeIfAbsent(K key, Function<? super K, ? extends V> mappingFunction) {
         throw new UnsupportedOperationException();
     }
 
@@ -193,7 +194,7 @@ public class ImmutableMap<K, V> implements Map<K, V> {
      */
     @Deprecated
     @Override
-    public V computeIfPresent(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+    public final V computeIfPresent(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
         throw new UnsupportedOperationException();
     }
 
@@ -202,7 +203,7 @@ public class ImmutableMap<K, V> implements Map<K, V> {
      */
     @Deprecated
     @Override
-    public V compute(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
+    public final V compute(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction) {
         throw new UnsupportedOperationException();
     }
 
@@ -211,7 +212,7 @@ public class ImmutableMap<K, V> implements Map<K, V> {
      */
     @Deprecated
     @Override
-    public V merge(K key, V value, BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
+    public final V merge(K key, V value, BiFunction<? super V, ? super V, ? extends V> remappingFunction) {
         throw new UnsupportedOperationException();
     }
 
