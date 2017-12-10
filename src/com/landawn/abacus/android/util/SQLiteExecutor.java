@@ -49,6 +49,7 @@ import com.landawn.abacus.condition.Junction;
 import com.landawn.abacus.core.RowDataSet;
 import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.exception.NonUniqueResultException;
+import com.landawn.abacus.util.ClassUtil;
 import com.landawn.abacus.util.D;
 import com.landawn.abacus.util.N;
 import com.landawn.abacus.util.NamedSQL;
@@ -65,7 +66,6 @@ import com.landawn.abacus.util.OptionalFloat;
 import com.landawn.abacus.util.OptionalInt;
 import com.landawn.abacus.util.OptionalLong;
 import com.landawn.abacus.util.OptionalShort;
-import com.landawn.abacus.util.ClassUtil;
 import com.landawn.abacus.util.SQLBuilder;
 import com.landawn.abacus.util.SQLBuilder.RE;
 import com.landawn.abacus.util.SQLBuilder.RE2;
@@ -515,6 +515,23 @@ public final class SQLiteExecutor {
         }
 
         return (entities.size() > 0) ? entities.get(0) : null;
+    }
+
+    public <T> Optional<T> gett(Class<T> targetClass, long id) {
+        return gett(targetClass, id, null);
+    }
+
+    /**
+     * Find the entity from table specified by simple class name of the <code>targetClass</code> by the specified <code>id</code>
+     * 
+     * @param targetClass
+     * @param id
+     * @param selectPropNames
+     * @return
+     * @throws NonUniqueResultException if more than one records are found.
+     */
+    public <T> Optional<T> gett(Class<T> targetClass, long id, Collection<String> selectPropNames) {
+        return Optional.ofNullable(get(targetClass, id, selectPropNames));
     }
 
     @SuppressWarnings("deprecation")
@@ -1412,8 +1429,8 @@ public final class SQLiteExecutor {
         //            return N.as(targetClass, rs.absolute(0).get(0));
         //        }
 
-        return queryForSingleResult((Class<T>) ClassUtil.getPropGetMethod(entityClass, columnName).getReturnType(), getTableNameByEntity(entityClass), columnName,
-                whereClause);
+        return queryForSingleResult((Class<T>) ClassUtil.getPropGetMethod(entityClass, columnName).getReturnType(), getTableNameByEntity(entityClass),
+                columnName, whereClause);
     }
 
     //    <T> T queryForEntity(final Class<T> targetClass, String... selectColumnNames) {

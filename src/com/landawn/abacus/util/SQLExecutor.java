@@ -1430,23 +1430,23 @@ public final class SQLExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final <T> Optional<T> geT(final Class<T> targetClass, final String sql, final Object... parameters) {
+    public final <T> Optional<T> gett(final Class<T> targetClass, final String sql, final Object... parameters) {
         return Optional.ofNullable(this.get(targetClass, sql, parameters));
     }
 
     @SafeVarargs
-    public final <T> Optional<T> geT(final Class<T> targetClass, final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
+    public final <T> Optional<T> gett(final Class<T> targetClass, final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
             final Object... parameters) {
         return Optional.ofNullable(this.get(targetClass, sql, statementSetter, jdbcSettings, parameters));
     }
 
     @SafeVarargs
-    public final <T> Optional<T> geT(final Class<T> targetClass, final Connection conn, final String sql, final Object... parameters) {
+    public final <T> Optional<T> gett(final Class<T> targetClass, final Connection conn, final String sql, final Object... parameters) {
         return Optional.ofNullable(this.get(targetClass, conn, sql, parameters));
     }
 
     @SafeVarargs
-    public final <T> Optional<T> geT(final Class<T> targetClass, final Connection conn, final String sql, final StatementSetter statementSetter,
+    public final <T> Optional<T> gett(final Class<T> targetClass, final Connection conn, final String sql, final StatementSetter statementSetter,
             JdbcSettings jdbcSettings, final Object... parameters) {
         return Optional.ofNullable(this.get(targetClass, conn, sql, statementSetter, jdbcSettings, parameters));
     }
@@ -3698,20 +3698,20 @@ public final class SQLExecutor implements Closeable {
             }
         }
 
-        public Optional<T> geT(final Object id) {
+        public Optional<T> gett(final Object id) {
             return Optional.ofNullable(this.get(id));
         }
 
         @SafeVarargs
-        public final Optional<T> geT(final Object id, final String... selectPropNames) {
+        public final Optional<T> gett(final Object id, final String... selectPropNames) {
             return Optional.ofNullable(this.get(id, selectPropNames));
         }
 
-        public Optional<T> geT(final Object id, final Collection<String> selectPropNames) {
+        public Optional<T> gett(final Object id, final Collection<String> selectPropNames) {
             return Optional.ofNullable(this.get(id, selectPropNames));
         }
 
-        public Optional<T> geT(final Connection conn, final Object id, final Collection<String> selectPropNames) {
+        public Optional<T> gett(final Connection conn, final Object id, final Collection<String> selectPropNames) {
             return Optional.ofNullable(this.get(conn, id, selectPropNames));
         }
 
@@ -4521,39 +4521,39 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Optional<T>> geT(final Object id) {
+        public CompletableFuture<Optional<T>> gett(final Object id) {
             return asyncExecutor.execute(new Callable<Optional<T>>() {
                 @Override
                 public Optional<T> call() throws Exception {
-                    return mapper.geT(id);
+                    return mapper.gett(id);
                 }
             });
         }
 
         @SafeVarargs
-        public final CompletableFuture<Optional<T>> geT(final Object id, final String... selectPropNames) {
+        public final CompletableFuture<Optional<T>> gett(final Object id, final String... selectPropNames) {
             return asyncExecutor.execute(new Callable<Optional<T>>() {
                 @Override
                 public Optional<T> call() throws Exception {
-                    return mapper.geT(id, selectPropNames);
+                    return mapper.gett(id, selectPropNames);
                 }
             });
         }
 
-        public CompletableFuture<Optional<T>> geT(final Object id, final Collection<String> selectPropNames) {
+        public CompletableFuture<Optional<T>> gett(final Object id, final Collection<String> selectPropNames) {
             return asyncExecutor.execute(new Callable<Optional<T>>() {
                 @Override
                 public Optional<T> call() throws Exception {
-                    return mapper.geT(id, selectPropNames);
+                    return mapper.gett(id, selectPropNames);
                 }
             });
         }
 
-        public CompletableFuture<Optional<T>> geT(final Connection conn, final Object id, final Collection<String> selectPropNames) {
+        public CompletableFuture<Optional<T>> gett(final Connection conn, final Object id, final Collection<String> selectPropNames) {
             return asyncExecutor.execute(new Callable<Optional<T>>() {
                 @Override
                 public Optional<T> call() throws Exception {
-                    return mapper.geT(conn, id, selectPropNames);
+                    return mapper.gett(conn, id, selectPropNames);
                 }
             });
         }

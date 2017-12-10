@@ -136,6 +136,30 @@ public final class MongoCollectionExecutor {
         return queryForEntity(targetClass, selectPropNames, createFilter(objectId), null).orElse(null);
     }
 
+    public Optional<Document> gett(final String objectId) {
+        return gett(createObjectId(objectId));
+    }
+
+    public Optional<Document> gett(final ObjectId objectId) {
+        return gett(Document.class, objectId);
+    }
+
+    public <T> Optional<T> gett(final Class<T> targetClass, final String objectId) {
+        return gett(targetClass, createObjectId(objectId));
+    }
+
+    public <T> Optional<T> gett(final Class<T> targetClass, final ObjectId objectId) {
+        return gett(targetClass, objectId, null);
+    }
+
+    public <T> Optional<T> gett(final Class<T> targetClass, final String objectId, final Collection<String> selectPropNames) {
+        return gett(targetClass, createObjectId(objectId), selectPropNames);
+    }
+
+    public <T> Optional<T> gett(final Class<T> targetClass, final ObjectId objectId, final Collection<String> selectPropNames) {
+        return queryForEntity(targetClass, selectPropNames, createFilter(objectId), null);
+    }
+
     public <T> Nullable<T> queryForSingleResult(final Class<T> targetClass, final String propName, final Bson filter) {
         final FindIterable<Document> findIterable = query(N.asList(propName), filter, null, 0, 1);
 
@@ -610,7 +634,7 @@ public final class MongoCollectionExecutor {
 
     @Beta
     public Stream<Document> groupBy(final String fieldName) {
-        return aggregate(N.asList(new Document(_$GROUP, new Document(MongoDBExecutor._ID, _$ + fieldName)))) ;
+        return aggregate(N.asList(new Document(_$GROUP, new Document(MongoDBExecutor._ID, _$ + fieldName))));
     }
 
     @Beta
@@ -621,13 +645,12 @@ public final class MongoCollectionExecutor {
             groupFields.put(fieldName, _$ + fieldName);
         }
 
-        return aggregate(N.asList(new Document(_$GROUP, new Document(MongoDBExecutor._ID, groupFields)))) ;
+        return aggregate(N.asList(new Document(_$GROUP, new Document(MongoDBExecutor._ID, groupFields))));
     }
 
     @Beta
     public Stream<Document> groupByAndCount(final String fieldName) {
-        return aggregate(N.asList(new Document(_$GROUP, new Document(MongoDBExecutor._ID, _$ + fieldName).append(_COUNT, new Document(_$SUM, 1)))))
-                 ;
+        return aggregate(N.asList(new Document(_$GROUP, new Document(MongoDBExecutor._ID, _$ + fieldName).append(_COUNT, new Document(_$SUM, 1)))));
     }
 
     @Beta
@@ -638,9 +661,8 @@ public final class MongoCollectionExecutor {
             groupFields.put(fieldName, _$ + fieldName);
         }
 
-        return aggregate(N.asList(new Document(_$GROUP, new Document(MongoDBExecutor._ID, groupFields).append(_COUNT, new Document(_$SUM, 1))))) ;
+        return aggregate(N.asList(new Document(_$GROUP, new Document(MongoDBExecutor._ID, groupFields).append(_COUNT, new Document(_$SUM, 1)))));
     }
- 
 
     //
     //    private String getCollectionName(final Class<?> cls) {

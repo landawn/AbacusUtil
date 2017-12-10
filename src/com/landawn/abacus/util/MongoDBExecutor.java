@@ -638,6 +638,30 @@ public final class MongoDBExecutor {
         return collExecutor(collectionName).get(targetClass, objectId, selectPropNames);
     }
 
+    public Optional<Document> gett(final String collectionName, final String objectId) {
+        return collExecutor(collectionName).gett(objectId);
+    }
+
+    public Optional<Document> gett(final String collectionName, final ObjectId objectId) {
+        return collExecutor(collectionName).gett(objectId);
+    }
+
+    public <T> Optional<T> gett(final Class<T> targetClass, final String collectionName, final String objectId) {
+        return collExecutor(collectionName).gett(targetClass, objectId);
+    }
+
+    public <T> Optional<T> gett(final Class<T> targetClass, final String collectionName, final ObjectId objectId) {
+        return collExecutor(collectionName).gett(targetClass, objectId);
+    }
+
+    public <T> Optional<T> gett(final Class<T> targetClass, final String collectionName, final String objectId, final Collection<String> selectPropNames) {
+        return collExecutor(collectionName).gett(targetClass, objectId, selectPropNames);
+    }
+
+    public <T> Optional<T> gett(final Class<T> targetClass, final String collectionName, final ObjectId objectId, final Collection<String> selectPropNames) {
+        return collExecutor(collectionName).gett(targetClass, objectId, selectPropNames);
+    }
+
     public <T> Nullable<T> queryForSingleResult(final Class<T> targetClass, final String collectionName, final String propName, final Bson filter) {
         return collExecutor(collectionName).queryForSingleResult(targetClass, propName, filter);
     }

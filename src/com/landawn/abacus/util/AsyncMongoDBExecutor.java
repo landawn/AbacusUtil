@@ -164,6 +164,62 @@ public final class AsyncMongoDBExecutor {
         });
     }
 
+    public CompletableFuture<Optional<Document>> gett(final String collectionName, final String objectId) {
+        return asyncExecutor.execute(new Callable<Optional<Document>>() {
+            @Override
+            public Optional<Document> call() throws Exception {
+                return dbExecutor.gett(collectionName, objectId);
+            }
+        });
+    }
+
+    public CompletableFuture<Optional<Document>> gett(final String collectionName, final ObjectId objectId) {
+        return asyncExecutor.execute(new Callable<Optional<Document>>() {
+            @Override
+            public Optional<Document> call() throws Exception {
+                return dbExecutor.gett(collectionName, objectId);
+            }
+        });
+    }
+
+    public <T> CompletableFuture<Optional<T>> gett(final Class<T> targetClass, final String collectionName, final String objectId) {
+        return asyncExecutor.execute(new Callable<Optional<T>>() {
+            @Override
+            public Optional<T> call() throws Exception {
+                return dbExecutor.gett(targetClass, collectionName, objectId);
+            }
+        });
+    }
+
+    public <T> CompletableFuture<Optional<T>> gett(final Class<T> targetClass, final String collectionName, final ObjectId objectId) {
+        return asyncExecutor.execute(new Callable<Optional<T>>() {
+            @Override
+            public Optional<T> call() throws Exception {
+                return dbExecutor.gett(targetClass, collectionName, objectId);
+            }
+        });
+    }
+
+    public <T> CompletableFuture<Optional<T>> gett(final Class<T> targetClass, final String collectionName, final String objectId,
+            final Collection<String> selectPropNames) {
+        return asyncExecutor.execute(new Callable<Optional<T>>() {
+            @Override
+            public Optional<T> call() throws Exception {
+                return dbExecutor.gett(targetClass, collectionName, objectId, selectPropNames);
+            }
+        });
+    }
+
+    public <T> CompletableFuture<Optional<T>> gett(final Class<T> targetClass, final String collectionName, final ObjectId objectId,
+            final Collection<String> selectPropNames) {
+        return asyncExecutor.execute(new Callable<Optional<T>>() {
+            @Override
+            public Optional<T> call() throws Exception {
+                return dbExecutor.gett(targetClass, collectionName, objectId, selectPropNames);
+            }
+        });
+    }
+
     public <T> CompletableFuture<Nullable<T>> queryForSingleResult(final Class<T> targetClass, final String collectionName, final String propName,
             final Bson filter) {
         return asyncExecutor.execute(new Callable<Nullable<T>>() {

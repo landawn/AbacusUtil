@@ -1,4 +1,12 @@
 
+### 1.1.5
+
+* Rename `SQLExecutor.geT` to `SQLExecutor.gett`.
+
+* Add `Optional<T> MongoDBExecutor/CassandraExecutor/CouchbaseExecutor/SQLiteExecutor.gett(...)`.
+
+
+
 ### 1.1.4
 
 * Add `Multiset/LongMultiset.toImmutableMap`.

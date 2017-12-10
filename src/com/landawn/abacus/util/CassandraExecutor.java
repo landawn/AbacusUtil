@@ -458,6 +458,34 @@ public final class CassandraExecutor implements Closeable {
         }
     }
 
+    @SafeVarargs
+    public final <T> Optional<T> gett(final Class<T> targetClass, final Object... ids) throws NonUniqueResultException {
+        return gett(targetClass, null, ids);
+    }
+
+    @SafeVarargs
+    public final <T> Optional<T> gett(final Class<T> targetClass, final Collection<String> selectPropNames, final Object... ids)
+            throws NonUniqueResultException {
+        return gett(targetClass, selectPropNames, ids2Cond(targetClass, ids));
+    }
+
+    public <T> Optional<T> gett(final Class<T> targetClass, final Condition whereCause) throws NonUniqueResultException {
+        return gett(targetClass, null, whereCause);
+    }
+
+    /**
+     * 
+     * @param targetClass
+     * @param selectPropNames
+     * @param whereCause
+     * @return
+     * @throws NonUniqueResultException if more than one record found.
+     */
+    public <T> Optional<T> gett(final Class<T> targetClass, final Collection<String> selectPropNames, final Condition whereCause)
+            throws NonUniqueResultException {
+        return Optional.ofNullable(get(targetClass, selectPropNames, whereCause));
+    }
+
     public ResultSet insert(final Object entity) {
         return insert(entity.getClass(), Maps.entity2Map(entity));
     }
@@ -1009,6 +1037,52 @@ public final class CassandraExecutor implements Closeable {
             @Override
             public T call() throws Exception {
                 return get(targetClass, selectPropNames, whereCause);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final <T> CompletableFuture<Optional<T>> asyncGett(final Class<T> targetClass, final Object... ids) {
+        return asyncExecutor.execute(new Callable<Optional<T>>() {
+            @Override
+            public Optional<T> call() throws Exception {
+                return gett(targetClass, ids);
+            }
+        });
+    }
+
+    @SafeVarargs
+    public final <T> CompletableFuture<Optional<T>> asyncGett(final Class<T> targetClass, final Collection<String> selectPropNames, final Object... ids)
+            throws NonUniqueResultException {
+        return asyncExecutor.execute(new Callable<Optional<T>>() {
+            @Override
+            public Optional<T> call() throws Exception {
+                return gett(targetClass, selectPropNames, ids);
+            }
+        });
+    }
+
+    public <T> CompletableFuture<Optional<T>> asyncGett(final Class<T> targetClass, final Condition whereCause) {
+        return asyncExecutor.execute(new Callable<Optional<T>>() {
+            @Override
+            public Optional<T> call() throws Exception {
+                return gett(targetClass, whereCause);
+            }
+        });
+    }
+
+    /**
+     * 
+     * @param targetClass
+     * @param selectPropNames
+     * @param idNameVal
+     * @return
+     */
+    public <T> CompletableFuture<Optional<T>> asyncGett(final Class<T> targetClass, final Collection<String> selectPropNames, final Condition whereCause) {
+        return asyncExecutor.execute(new Callable<Optional<T>>() {
+            @Override
+            public Optional<T> call() throws Exception {
+                return gett(targetClass, selectPropNames, whereCause);
             }
         });
     }

@@ -488,43 +488,43 @@ public final class AsyncSQLExecutor {
     }
 
     @SafeVarargs
-    public final <T> CompletableFuture<Optional<T>> geT(final Class<T> targetClass, final String sql, final Object... parameters) {
+    public final <T> CompletableFuture<Optional<T>> gett(final Class<T> targetClass, final String sql, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
             public Optional<T> call() throws Exception {
-                return sqlExecutor.geT(targetClass, sql, parameters);
+                return sqlExecutor.gett(targetClass, sql, parameters);
             }
         });
     }
 
     @SafeVarargs
-    public final <T> CompletableFuture<Optional<T>> geT(final Class<T> targetClass, final String sql, final StatementSetter statementSetter,
+    public final <T> CompletableFuture<Optional<T>> gett(final Class<T> targetClass, final String sql, final StatementSetter statementSetter,
             final JdbcSettings jdbcSettings, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
             public Optional<T> call() throws Exception {
-                return sqlExecutor.geT(targetClass, sql, statementSetter, jdbcSettings, parameters);
+                return sqlExecutor.gett(targetClass, sql, statementSetter, jdbcSettings, parameters);
             }
         });
     }
 
     @SafeVarargs
-    public final <T> CompletableFuture<Optional<T>> geT(final Class<T> targetClass, final Connection conn, final String sql, final Object... parameters) {
+    public final <T> CompletableFuture<Optional<T>> gett(final Class<T> targetClass, final Connection conn, final String sql, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
             public Optional<T> call() throws Exception {
-                return sqlExecutor.geT(targetClass, conn, sql, parameters);
+                return sqlExecutor.gett(targetClass, conn, sql, parameters);
             }
         });
     }
 
     @SafeVarargs
-    public final <T> CompletableFuture<Optional<T>> geT(final Class<T> targetClass, final Connection conn, final String sql,
+    public final <T> CompletableFuture<Optional<T>> gett(final Class<T> targetClass, final Connection conn, final String sql,
             final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object... parameters) {
         return asyncExecutor.execute(new Callable<Optional<T>>() {
             @Override
             public Optional<T> call() throws Exception {
-                return sqlExecutor.geT(targetClass, conn, sql, statementSetter, jdbcSettings, parameters);
+                return sqlExecutor.gett(targetClass, conn, sql, statementSetter, jdbcSettings, parameters);
             }
         });
     }
