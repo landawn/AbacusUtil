@@ -1222,7 +1222,7 @@ public final class Fn {
      * @param func
      * @return
      */
-    public static <T, R> Function<T, R> indexeD(final IndexedFunction<T, R> func) {
+    public static <T, R> Function<T, R> indexedd(final IndexedFunction<T, R> func) {
         Objects.requireNonNull(func);
 
         return new Function<T, R>() {
@@ -1241,7 +1241,7 @@ public final class Fn {
      * @param func
      * @return
      */
-    public static <U, T, R> BiFunction<U, T, R> indexeD(final IndexedBiFunction<U, T, R> func) {
+    public static <U, T, R> BiFunction<U, T, R> indexedd(final IndexedBiFunction<U, T, R> func) {
         Objects.requireNonNull(func);
 
         return new BiFunction<U, T, R>() {
@@ -1260,7 +1260,7 @@ public final class Fn {
      * @param action
      * @return
      */
-    public static <T> Consumer<T> indeXed(final IndexedConsumer<T> action) {
+    public static <T> Consumer<T> indexeed(final IndexedConsumer<T> action) {
         Objects.requireNonNull(action);
 
         return new Consumer<T>() {
@@ -1279,7 +1279,7 @@ public final class Fn {
      * @param action
      * @return
      */
-    public static <U, T> BiConsumer<U, T> indeXed(final IndexedBiConsumer<U, T> action) {
+    public static <U, T> BiConsumer<U, T> indexeed(final IndexedBiConsumer<U, T> action) {
         Objects.requireNonNull(action);
 
         return new BiConsumer<U, T>() {
@@ -2925,7 +2925,7 @@ public final class Fn {
         }
 
         public static <T> Consumer<T> indexed(final IndexedConsumer<T> action) {
-            return Fn.indeXed(action);
+            return Fn.indexeed(action);
         }
     }
 
@@ -3090,7 +3090,7 @@ public final class Fn {
         }
 
         public static <U, T> BiConsumer<U, T> indexed(final IndexedBiConsumer<U, T> action) {
-            return Fn.indeXed(action);
+            return Fn.indexeed(action);
         }
     }
 
@@ -3153,7 +3153,7 @@ public final class Fn {
         }
 
         public static <T, R> Function<T, R> indexed(final IndexedFunction<T, R> func) {
-            return Fn.indexeD(func);
+            return Fn.indexedd(func);
         }
     }
 
@@ -3338,7 +3338,7 @@ public final class Fn {
         }
 
         public static <U, T, R> BiFunction<U, T, R> indexed(final IndexedBiFunction<U, T, R> func) {
-            return Fn.indexeD(func);
+            return Fn.indexedd(func);
         }
     }
 

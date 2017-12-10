@@ -1,10 +1,17 @@
 
 ### 1.1.5
 
+* Rename `Fn.indexeD` to `Fn.indexedd`, `Fn.indeXed` to `Fn.indexeed`.
+
 * Rename `SQLExecutor.geT` to `SQLExecutor.gett`.
 
 * Add `Optional<T> MongoDBExecutor/CassandraExecutor/CouchbaseExecutor/SQLiteExecutor.gett(...)`.
 
+* Add `Multimap.toMultiset()`.
+
+* Add `Multiset/LongMultiset/Multimap.synchronizedd()`.
+
+* Add `Multiset/LongMultiset.copy()`.
 
 
 ### 1.1.4

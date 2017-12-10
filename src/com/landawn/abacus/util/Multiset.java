@@ -19,6 +19,7 @@ package com.landawn.abacus.util;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -928,21 +929,21 @@ public final class Multiset<T> implements Iterable<T> {
     public <E extends Exception> void replaceAll(Try.BiFunction<? super T, ? super Integer, Integer, E> function) throws E {
         List<T> keyToRemove = null;
         Integer newVal = null;
-    
+
         for (Map.Entry<T, MutableInt> entry : this.valueMap.entrySet()) {
             newVal = function.apply(entry.getKey(), entry.getValue().value());
-    
+
             if (newVal == null || newVal.intValue() <= 0) {
                 if (keyToRemove == null) {
                     keyToRemove = new ArrayList<>();
                 }
-    
+
                 keyToRemove.add(entry.getKey());
             } else {
                 entry.getValue().setValue(newVal);
             }
         }
-    
+
         if (N.notNullOrEmpty(keyToRemove)) {
             for (T key : keyToRemove) {
                 valueMap.remove(key);
@@ -980,6 +981,14 @@ public final class Multiset<T> implements Iterable<T> {
         }
 
         return N.isNullOrEmpty(others) ? false : removeAll(others, Integer.MAX_VALUE);
+    }
+
+    public Multiset<T> copy() {
+        final Multiset<T> copy = new Multiset<>(valueMap.getClass());
+
+        copy.addAll(this);
+
+        return copy;
     }
 
     public Set<T> elements() {
@@ -1082,6 +1091,10 @@ public final class Multiset<T> implements Iterable<T> {
 
     public ImmutableMap<T, Integer> toImmutableMap(final IntFunction<? extends Map<T, Integer>> mapSupplier) {
         return ImmutableMap.of(toMap(mapSupplier));
+    }
+
+    public Multiset<T> synchronizedd() {
+        return new Multiset<>(Collections.synchronizedMap(valueMap));
     }
 
     /**

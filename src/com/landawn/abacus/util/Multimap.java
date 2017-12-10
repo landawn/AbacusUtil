@@ -20,6 +20,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1238,6 +1239,20 @@ public class Multimap<K, E, V extends Collection<E>> {
         final M map = supplier.apply(size());
         map.putAll(valueMap);
         return map;
+    }
+
+    public Multiset<K> toMultiset() {
+        final Multiset<K> multiset = new Multiset<>(valueMap.getClass());
+
+        for (Map.Entry<K, V> entry : valueMap.entrySet()) {
+            multiset.set(entry.getKey(), entry.getValue().size());
+        }
+
+        return multiset;
+    }
+
+    public Multimap<K, E, V> synchronizedd() {
+        return new Multimap<>(Collections.synchronizedMap(valueMap), valueType);
     }
 
     /**
