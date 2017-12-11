@@ -114,6 +114,18 @@ compile 'com.landawn:abacus-android:1.1.4'
 // Android-SE (Java 1.8 or above) - small edition without Stream/Matrix/Sheet/...:
 compile 'com.landawn:abacus-android-se:1.1.4'
 ```
+#### It's very important to learn Lambdas and Stream APIs in Java 8 to get the best user experiences with APIs provided in AbacusUtil:
+
+[What's New in Java 8](https://leanpub.com/whatsnewinjava8/read)
+
+[An introduction to the java.util.stream library](https://www.ibm.com/developerworks/library/j-java-streams-1-brian-goetz/index.html)
+
+[When to use parallel streams](http://gee.cs.oswego.edu/dl/html/StreamParallelGuidance.html)
+
+[Top Java 8 stream questions on stackoverflow](./Top_java_8_stream_questions_so.md)
+
+[Kotlin vs Java 8 on Collection](./Java_Kotlin.md)
+
 
 ## Usage:
 
@@ -188,17 +200,6 @@ assertEquals(account, account3);
 ```
 
 More see: [Parser](https://static.javadoc.io/com.landawn/abacus-util-all/1.1.4/com/landawn/abacus/parser/Parser.html), [ParserFactory](https://static.javadoc.io/com.landawn/abacus-util-all/1.1.4/com/landawn/abacus/parser/ParserFactory.html)
-
-### Functional Programming
-[What's New in Java 8](https://leanpub.com/whatsnewinjava8/read)
-
-[An introduction to the java.util.stream library](https://www.ibm.com/developerworks/library/j-java-streams-1-brian-goetz/index.html)
-
-[When to use parallel streams](http://gee.cs.oswego.edu/dl/html/StreamParallelGuidance.html)
-
-[Top Java 8 stream questions on stackoverflow](./Top_java_8_stream_questions_so.md)
-
-[Kotlin vs Java 8 on Collection](./Java_Kotlin.md)
 
 ### The Best [SQLBuilder][]/[SQLExecutor][]/[Mapper] Ever
 A simple CRUD(create/read/update/delete) sample by SQLExecutor
