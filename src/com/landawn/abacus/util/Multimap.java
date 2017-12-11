@@ -24,7 +24,6 @@ import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -56,7 +55,6 @@ import com.landawn.abacus.util.stream.Stream;
  */
 public class Multimap<K, E, V extends Collection<E>> {
     final Map<K, V> valueMap;
-    final Class<V> valueType;
     final Class<V> concreteValueType;
 
     /**
@@ -89,7 +87,6 @@ public class Multimap<K, E, V extends Collection<E>> {
     @Internal
     Multimap(final Map<K, V> valueMap, final Class<? extends Collection> valueType) {
         this.valueMap = valueMap;
-        this.valueType = (Class) valueType;
 
         if (Modifier.isAbstract(valueType.getModifiers())) {
             if (List.class.isAssignableFrom(valueType)) {
@@ -931,7 +928,7 @@ public class Multimap<K, E, V extends Collection<E>> {
     }
 
     public <X extends Exception> Multimap<K, E, V> filterByKey(Try.Predicate<? super K, X> filter) throws X {
-        final Multimap<K, E, V> result = new Multimap<>(valueMap.getClass(), concreteValueType);
+        final Multimap<K, E, V> result = new Multimap<>(Maps.newTargetMap(valueMap, 0), concreteValueType);
 
         for (Map.Entry<K, V> entry : valueMap.entrySet()) {
             if (filter.test(entry.getKey())) {
@@ -943,7 +940,7 @@ public class Multimap<K, E, V extends Collection<E>> {
     }
 
     public <X extends Exception> Multimap<K, E, V> filterByValue(Try.Predicate<? super V, X> filter) throws X {
-        final Multimap<K, E, V> result = new Multimap<>(valueMap.getClass(), concreteValueType);
+        final Multimap<K, E, V> result = new Multimap<>(Maps.newTargetMap(valueMap, 0), concreteValueType);
 
         for (Map.Entry<K, V> entry : valueMap.entrySet()) {
             if (filter.test(entry.getValue())) {
@@ -955,7 +952,7 @@ public class Multimap<K, E, V extends Collection<E>> {
     }
 
     public <X extends Exception> Multimap<K, E, V> filter(Try.BiPredicate<? super K, ? super V, X> filter) throws X {
-        final Multimap<K, E, V> result = new Multimap<>(valueMap.getClass(), concreteValueType);
+        final Multimap<K, E, V> result = new Multimap<>(Maps.newTargetMap(valueMap, 0), concreteValueType);
 
         for (Map.Entry<K, V> entry : valueMap.entrySet()) {
             if (filter.test(entry.getKey(), entry.getValue())) {
@@ -1219,6 +1216,14 @@ public class Multimap<K, E, V extends Collection<E>> {
         return newValue;
     }
 
+    public Multimap<K, E, V> copy() {
+        final Multimap<K, E, V> copy = new Multimap<>(Maps.newTargetMap(valueMap), concreteValueType);
+
+        copy.putAll(this);
+
+        return copy;
+    }
+
     public Set<K> keySet() {
         return valueMap.keySet();
     }
@@ -1232,7 +1237,11 @@ public class Multimap<K, E, V extends Collection<E>> {
     }
 
     public Map<K, V> toMap() {
-        return valueMap instanceof IdentityHashMap ? new IdentityHashMap<>(valueMap) : new HashMap<>(valueMap);
+        final Map<K, V> result = Maps.newOrderingMap(valueMap);
+
+        result.putAll(valueMap);
+
+        return result;
     }
 
     public <M extends Map<K, V>> M toMap(final IntFunction<M> supplier) {
@@ -1258,7 +1267,7 @@ public class Multimap<K, E, V extends Collection<E>> {
      * @see Collections#synchronizedMap(Map)
      */
     public Multimap<K, E, V> synchronizedd() {
-        return new Multimap<>(Collections.synchronizedMap(valueMap), valueType);
+        return new Multimap<>(Collections.synchronizedMap(valueMap), concreteValueType);
     }
 
     /**
@@ -1332,6 +1341,6 @@ public class Multimap<K, E, V extends Collection<E>> {
     }
 
     protected Class<V> getCollectionType() {
-        return valueType;
+        return concreteValueType;
     }
 }

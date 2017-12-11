@@ -130,7 +130,7 @@ public final class ListMultimap<K, E> extends Multimap<K, E, List<E>> {
     }
 
     public static <K, E> ListMultimap<K, E> from(final Map<? extends K, ? extends E> map) {
-        final ListMultimap<K, E> multimap = new ListMultimap<>(N.initHashCapacity(map == null ? 0 : map.size()));
+        final ListMultimap<K, E> multimap = new ListMultimap<>(Maps.newTargetMap(map), ArrayList.class);
 
         if (N.notNullOrEmpty(map)) {
             multimap.putAll(map);
@@ -140,7 +140,7 @@ public final class ListMultimap<K, E> extends Multimap<K, E, List<E>> {
     }
 
     public static <K, E> ListMultimap<K, E> from2(final Map<? extends K, ? extends Collection<? extends E>> map) {
-        final ListMultimap<K, E> multimap = new ListMultimap<>(N.initHashCapacity(map == null ? 0 : map.size()));
+        final ListMultimap<K, E> multimap = new ListMultimap<>(Maps.newTargetMap(map), ArrayList.class);
 
         if (N.notNullOrEmpty(map)) {
             for (Map.Entry<? extends K, ? extends Collection<? extends E>> entry : map.entrySet()) {
@@ -184,7 +184,7 @@ public final class ListMultimap<K, E> extends Multimap<K, E, List<E>> {
      * @see Multimap#invertFrom(Map, com.landawn.abacus.util.function.Supplier)
      */
     public static <K, E> ListMultimap<E, K> invertFrom(final Map<K, E> map) {
-        final ListMultimap<E, K> multimap = new ListMultimap<>();
+        final ListMultimap<E, K> multimap = new ListMultimap<>(Maps.newOrderingMap(map), ArrayList.class);
 
         if (N.notNullOrEmpty(map)) {
             for (Map.Entry<K, E> entry : map.entrySet()) {
@@ -202,7 +202,7 @@ public final class ListMultimap<K, E> extends Multimap<K, E, List<E>> {
      * @see Multimap#flatInvertFrom(Map, com.landawn.abacus.util.function.Supplier)
      */
     public static <K, E> ListMultimap<E, K> flatInvertFrom(final Map<K, ? extends Collection<? extends E>> map) {
-        final ListMultimap<E, K> multimap = new ListMultimap<>();
+        final ListMultimap<E, K> multimap = new ListMultimap<>(Maps.newOrderingMap(map), ArrayList.class);
 
         if (N.notNullOrEmpty(map)) {
             for (Map.Entry<K, ? extends Collection<? extends E>> entry : map.entrySet()) {
@@ -225,7 +225,7 @@ public final class ListMultimap<K, E> extends Multimap<K, E, List<E>> {
      * @return
      */
     public static <K, E, V extends Collection<E>> ListMultimap<E, K> invertFrom(final Multimap<K, E, V> map) {
-        final ListMultimap<E, K> multimap = new ListMultimap<>();
+        final ListMultimap<E, K> multimap = new ListMultimap<>(Maps.newOrderingMap(map.valueMap), ArrayList.class);
 
         if (N.notNullOrEmpty(map)) {
             for (Map.Entry<K, V> entry : map.entrySet()) {
@@ -261,7 +261,7 @@ public final class ListMultimap<K, E> extends Multimap<K, E, List<E>> {
 
     @Override
     public <X extends Exception> ListMultimap<K, E> filterByKey(Try.Predicate<? super K, X> filter) throws X {
-        final ListMultimap<K, E> result = new ListMultimap<>(valueMap.getClass(), concreteValueType);
+        final ListMultimap<K, E> result = new ListMultimap<>(Maps.newTargetMap(valueMap, 0), concreteValueType);
 
         for (Map.Entry<K, List<E>> entry : valueMap.entrySet()) {
             if (filter.test(entry.getKey())) {
@@ -274,7 +274,7 @@ public final class ListMultimap<K, E> extends Multimap<K, E, List<E>> {
 
     @Override
     public <X extends Exception> ListMultimap<K, E> filterByValue(Try.Predicate<? super List<E>, X> filter) throws X {
-        final ListMultimap<K, E> result = new ListMultimap<>(valueMap.getClass(), concreteValueType);
+        final ListMultimap<K, E> result = new ListMultimap<>(Maps.newTargetMap(valueMap, 0), concreteValueType);
 
         for (Map.Entry<K, List<E>> entry : valueMap.entrySet()) {
             if (filter.test(entry.getValue())) {
@@ -287,7 +287,7 @@ public final class ListMultimap<K, E> extends Multimap<K, E, List<E>> {
 
     @Override
     public <X extends Exception> ListMultimap<K, E> filter(Try.BiPredicate<? super K, ? super List<E>, X> filter) throws X {
-        final ListMultimap<K, E> result = new ListMultimap<>(valueMap.getClass(), concreteValueType);
+        final ListMultimap<K, E> result = new ListMultimap<>(Maps.newTargetMap(valueMap, 0), concreteValueType);
 
         for (Map.Entry<K, List<E>> entry : valueMap.entrySet()) {
             if (filter.test(entry.getKey(), entry.getValue())) {
@@ -298,6 +298,15 @@ public final class ListMultimap<K, E> extends Multimap<K, E, List<E>> {
         return result;
     }
 
+    @Override
+    public ListMultimap<K, E> copy() {
+        final ListMultimap<K, E> copy = new ListMultimap<>(Maps.newTargetMap(valueMap), concreteValueType);
+
+        copy.putAll(this);
+
+        return copy;
+    }
+
     /**
      * Returns a synchronized {@code ListMultimap} which shares the same internal {@code Map} with this {@code ListMultimap}.
      * That's to say the changes in one of the returned {@code ListMultimap} and this {@code ListMultimap} will impact another one.
@@ -306,7 +315,7 @@ public final class ListMultimap<K, E> extends Multimap<K, E, List<E>> {
      */
     @Override
     public ListMultimap<K, E> synchronizedd() {
-        return new ListMultimap<>(Collections.synchronizedMap(valueMap), valueType);
+        return new ListMultimap<>(Collections.synchronizedMap(valueMap), concreteValueType);
     }
 
     //    public ListMultimap<E, K> inversed() {

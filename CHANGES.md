@@ -7,7 +7,7 @@
 
 * Add `Optional<T> MongoDBExecutor/CassandraExecutor/CouchbaseExecutor/SQLiteExecutor.gett(...)`.
 
-* Add `Multiset/LongMultiset.copy()`.
+* Add `Multiset/LongMultiset/Multimap/ListMultimap/SetMulitmap/BiMap.copy()`.
 
 * Add `Multiset/LongMultiset/Multimap/ListMultimap/SetMultimap.synchronizedd()`.
 

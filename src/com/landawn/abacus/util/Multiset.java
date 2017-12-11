@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -117,7 +116,7 @@ public final class Multiset<T> implements Iterable<T> {
             return new Multiset<T>();
         }
 
-        final Multiset<T> multiset = new Multiset<>(N.initHashCapacity(m.size()));
+        final Multiset<T> multiset = new Multiset<>(Maps.newTargetMap(m));
 
         multiset.setAll(m);
 
@@ -984,7 +983,7 @@ public final class Multiset<T> implements Iterable<T> {
     }
 
     public Multiset<T> copy() {
-        final Multiset<T> copy = new Multiset<>(valueMap.getClass());
+        final Multiset<T> copy = new Multiset<>(Maps.newTargetMap(valueMap));
 
         copy.addAll(this);
 
@@ -1025,8 +1024,7 @@ public final class Multiset<T> implements Iterable<T> {
     }
 
     public Map<T, Integer> toMap() {
-        final Map<T, Integer> result = valueMap instanceof IdentityHashMap ? new IdentityHashMap<T, Integer>(N.initHashCapacity(size()))
-                : new HashMap<T, Integer>(N.initHashCapacity(size()));
+        final Map<T, Integer> result = Maps.newOrderingMap(valueMap);
 
         for (Map.Entry<T, MutableInt> entry : valueMap.entrySet()) {
             result.put(entry.getKey(), entry.getValue().value());
@@ -1124,7 +1122,7 @@ public final class Multiset<T> implements Iterable<T> {
     }
 
     public <E extends Exception> Multiset<T> filter(Try.Predicate<? super T, E> filter) throws E {
-        final Multiset<T> result = new Multiset<>(valueMap.getClass());
+        final Multiset<T> result = new Multiset<>(Maps.newTargetMap(valueMap, 0));
 
         for (Map.Entry<T, MutableInt> entry : valueMap.entrySet()) {
             if (filter.test(entry.getKey())) {
@@ -1136,7 +1134,7 @@ public final class Multiset<T> implements Iterable<T> {
     }
 
     public <E extends Exception> Multiset<T> filter(Try.BiPredicate<? super T, Integer, E> filter) throws E {
-        final Multiset<T> result = new Multiset<>(valueMap.getClass());
+        final Multiset<T> result = new Multiset<>(Maps.newTargetMap(valueMap, 0));
 
         for (Map.Entry<T, MutableInt> entry : valueMap.entrySet()) {
             if (filter.test(entry.getKey(), entry.getValue().intValue())) {

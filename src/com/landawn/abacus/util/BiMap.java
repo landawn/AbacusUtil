@@ -162,7 +162,7 @@ public final class BiMap<K, V> implements Map<K, V> {
     }
 
     public static <K, V> BiMap<K, V> from(final Map<? extends K, ? extends V> map) {
-        final BiMap<K, V> biMap = new BiMap<>(N.initHashCapacity(map.size()));
+        final BiMap<K, V> biMap = new BiMap<>(Maps.newTargetMap(map), Maps.newOrderingMap(map));
 
         biMap.putAll(map);
 
@@ -366,6 +366,14 @@ public final class BiMap<K, V> implements Map<K, V> {
      */
     public BiMap<V, K> inversed() {
         return (inverse == null) ? inverse = new BiMap<>(valueMap, keyMap) : inverse;
+    }
+
+    public BiMap<K, V> copy() {
+        final BiMap<K, V> copy = new BiMap<>(Maps.newTargetMap(keyMap), Maps.newTargetMap(valueMap));
+
+        copy.putAll(keyMap);
+
+        return copy;
     }
 
     @Override

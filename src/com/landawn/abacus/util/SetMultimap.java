@@ -129,7 +129,7 @@ public final class SetMultimap<K, E> extends Multimap<K, E, Set<E>> {
     }
 
     public static <K, E> SetMultimap<K, E> from(final Map<? extends K, ? extends E> map) {
-        final SetMultimap<K, E> multimap = new SetMultimap<>(N.initHashCapacity(map == null ? 0 : map.size()));
+        final SetMultimap<K, E> multimap = new SetMultimap<>(Maps.newTargetMap(map), HashSet.class);
 
         if (N.notNullOrEmpty(map)) {
             multimap.putAll(map);
@@ -139,7 +139,7 @@ public final class SetMultimap<K, E> extends Multimap<K, E, Set<E>> {
     }
 
     public static <K, E> SetMultimap<K, E> from2(final Map<? extends K, ? extends Collection<? extends E>> map) {
-        final SetMultimap<K, E> multimap = new SetMultimap<>(N.initHashCapacity(map == null ? 0 : map.size()));
+        final SetMultimap<K, E> multimap = new SetMultimap<>(Maps.newTargetMap(map), HashSet.class);
 
         if (N.notNullOrEmpty(map)) {
             for (Map.Entry<? extends K, ? extends Collection<? extends E>> entry : map.entrySet()) {
@@ -183,7 +183,7 @@ public final class SetMultimap<K, E> extends Multimap<K, E, Set<E>> {
      * @see Multimap#invertFrom(Map, com.landawn.abacus.util.function.Supplier)
      */
     public static <K, E> SetMultimap<E, K> invertFrom(final Map<K, E> map) {
-        final SetMultimap<E, K> multimap = new SetMultimap<>();
+        final SetMultimap<E, K> multimap = new SetMultimap<>(Maps.newOrderingMap(map), HashSet.class);
 
         if (N.notNullOrEmpty(map)) {
             for (Map.Entry<K, E> entry : map.entrySet()) {
@@ -201,7 +201,7 @@ public final class SetMultimap<K, E> extends Multimap<K, E, Set<E>> {
      * @see Multimap#flatInvertFrom(Map, com.landawn.abacus.util.function.Supplier)
      */
     public static <K, E> SetMultimap<E, K> flatInvertFrom(final Map<K, ? extends Collection<? extends E>> map) {
-        final SetMultimap<E, K> multimap = new SetMultimap<>();
+        final SetMultimap<E, K> multimap = new SetMultimap<>(Maps.newOrderingMap(map), HashSet.class);
 
         if (N.notNullOrEmpty(map)) {
             for (Map.Entry<K, ? extends Collection<? extends E>> entry : map.entrySet()) {
@@ -224,7 +224,7 @@ public final class SetMultimap<K, E> extends Multimap<K, E, Set<E>> {
      * @return
      */
     public static <K, E, V extends Collection<E>> SetMultimap<E, K> invertFrom(final Multimap<K, E, V> map) {
-        final SetMultimap<E, K> multimap = new SetMultimap<>();
+        final SetMultimap<E, K> multimap = new SetMultimap<>(Maps.newOrderingMap(map.valueMap), HashSet.class);
 
         if (N.notNullOrEmpty(map)) {
             for (Map.Entry<K, V> entry : map.entrySet()) {
@@ -260,7 +260,7 @@ public final class SetMultimap<K, E> extends Multimap<K, E, Set<E>> {
 
     @Override
     public <X extends Exception> SetMultimap<K, E> filterByKey(Try.Predicate<? super K, X> filter) throws X {
-        final SetMultimap<K, E> result = new SetMultimap<>(valueMap.getClass(), concreteValueType);
+        final SetMultimap<K, E> result = new SetMultimap<>(Maps.newTargetMap(valueMap, 0), concreteValueType);
 
         for (Map.Entry<K, Set<E>> entry : valueMap.entrySet()) {
             if (filter.test(entry.getKey())) {
@@ -273,7 +273,7 @@ public final class SetMultimap<K, E> extends Multimap<K, E, Set<E>> {
 
     @Override
     public <X extends Exception> SetMultimap<K, E> filterByValue(Try.Predicate<? super Set<E>, X> filter) throws X {
-        final SetMultimap<K, E> result = new SetMultimap<>(valueMap.getClass(), concreteValueType);
+        final SetMultimap<K, E> result = new SetMultimap<>(Maps.newTargetMap(valueMap, 0), concreteValueType);
 
         for (Map.Entry<K, Set<E>> entry : valueMap.entrySet()) {
             if (filter.test(entry.getValue())) {
@@ -286,7 +286,7 @@ public final class SetMultimap<K, E> extends Multimap<K, E, Set<E>> {
 
     @Override
     public <X extends Exception> SetMultimap<K, E> filter(Try.BiPredicate<? super K, ? super Set<E>, X> filter) throws X {
-        final SetMultimap<K, E> result = new SetMultimap<>(valueMap.getClass(), concreteValueType);
+        final SetMultimap<K, E> result = new SetMultimap<>(Maps.newTargetMap(valueMap, 0), concreteValueType);
 
         for (Map.Entry<K, Set<E>> entry : valueMap.entrySet()) {
             if (filter.test(entry.getKey(), entry.getValue())) {
@@ -297,6 +297,15 @@ public final class SetMultimap<K, E> extends Multimap<K, E, Set<E>> {
         return result;
     }
 
+    @Override
+    public SetMultimap<K, E> copy() {
+        final SetMultimap<K, E> copy = new SetMultimap<>(Maps.newTargetMap(valueMap), concreteValueType);
+
+        copy.putAll(this);
+
+        return copy;
+    }
+
     /**
      * Returns a synchronized {@code SetMultimap} which shares the same internal {@code Map} with this {@code SetMultimap}.
      * That's to say the changes in one of the returned {@code SetMultimap} and this {@code SetMultimap} will impact another one.
@@ -305,7 +314,7 @@ public final class SetMultimap<K, E> extends Multimap<K, E, Set<E>> {
      */
     @Override
     public SetMultimap<K, E> synchronizedd() {
-        return new SetMultimap<>(Collections.synchronizedMap(valueMap), valueType);
+        return new SetMultimap<>(Collections.synchronizedMap(valueMap), concreteValueType);
     }
 
     //    public SetMultimap<E, K> inversed() {

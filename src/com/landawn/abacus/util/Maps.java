@@ -38,6 +38,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import com.landawn.abacus.DirtyMarker;
 import com.landawn.abacus.exception.AbacusException;
@@ -124,6 +126,65 @@ public final class Maps {
         }
 
         return result;
+    }
+
+    @SuppressWarnings("rawtypes")
+    static Map newTargetMap(Map<?, ?> m) {
+        return newTargetMap(m, m == null ? 0 : m.size());
+    }
+
+    @SuppressWarnings("rawtypes")
+    static Map newTargetMap(Map<?, ?> m, int size) {
+        if (m == null) {
+            return new HashMap<>();
+        }
+
+        Map res = null;
+
+        if (HashMap.class.equals(m.getClass())) {
+            res = new HashMap<>(N.initHashCapacity(size));
+        } else if (m instanceof SortedMap) {
+            res = new TreeMap<>(((SortedMap) m).comparator());
+        } else if (m instanceof IdentityHashMap) {
+            res = new IdentityHashMap<>(N.initHashCapacity(size));
+        } else if (m instanceof LinkedHashMap) {
+            res = new LinkedHashMap<>(N.initHashCapacity(size));
+        } else {
+            try {
+                res = N.newInstance(m.getClass());
+            } catch (Exception e) {
+                res = new HashMap<>(N.initHashCapacity(size));
+            }
+        }
+
+        return res;
+    }
+
+    @SuppressWarnings("rawtypes")
+    static Map newOrderingMap(Map<?, ?> m) {
+        if (m == null) {
+            return new HashMap<>();
+        }
+
+        Map res = null;
+
+        if (HashMap.class.equals(m.getClass())) {
+            res = new HashMap<>(N.initHashCapacity(m.size()));
+        } else if (m instanceof SortedMap) {
+            res = new LinkedHashMap<>(N.initHashCapacity(m.size()));
+        } else if (m instanceof IdentityHashMap) {
+            res = new IdentityHashMap<>(N.initHashCapacity(m.size()));
+        } else if (m instanceof LinkedHashMap) {
+            res = new LinkedHashMap<>(N.initHashCapacity(m.size()));
+        } else {
+            try {
+                res = N.newInstance(m.getClass());
+            } catch (Exception e) {
+                res = new HashMap<>(N.initHashCapacity(m.size()));
+            }
+        }
+
+        return res;
     }
 
     public static <K, V> Nullable<V> get(final Map<K, V> map, final Object key) {
@@ -1213,7 +1274,7 @@ public final class Maps {
             return new HashMap<K, V>();
         }
 
-        final Map<K, V> result = createResultMap(map.getClass());
+        final Map<K, V> result = newTargetMap(map, 0);
 
         for (Map.Entry<K, V> entry : map.entrySet()) {
             if (predicate.test(entry.getKey(), entry.getValue())) {
@@ -1229,7 +1290,7 @@ public final class Maps {
             return new HashMap<K, V>();
         }
 
-        final Map<K, V> result = createResultMap(map.getClass());
+        final Map<K, V> result = newTargetMap(map, 0);
 
         for (Map.Entry<K, V> entry : map.entrySet()) {
             if (predicate.test(entry.getKey())) {
@@ -1240,25 +1301,12 @@ public final class Maps {
         return result;
     }
 
-    @SuppressWarnings("rawtypes")
-    private static <K, V> Map<K, V> createResultMap(final Class<? extends Map> mapClass) {
-        if (mapClass.equals(HashMap.class)) {
-            return new HashMap<K, V>();
-        }
-
-        try {
-            return N.newInstance(mapClass);
-        } catch (Exception e) {
-            return new HashMap<K, V>();
-        }
-    }
-
     public static <K, V, E extends Exception> Map<K, V> filterByValue(final Map<K, V> map, final Try.Predicate<? super V, E> predicate) throws E {
         if (map == null) {
             return new HashMap<K, V>();
         }
 
-        final Map<K, V> result = createResultMap(map.getClass());
+        final Map<K, V> result = newTargetMap(map, 0);
 
         for (Map.Entry<K, V> entry : map.entrySet()) {
             if (predicate.test(entry.getValue())) {
@@ -1282,7 +1330,7 @@ public final class Maps {
             return new HashMap<V, K>();
         }
 
-        final Map<V, K> result = createResultMap(map.getClass());
+        final Map<V, K> result = newOrderingMap(map);
 
         for (Map.Entry<K, V> entry : map.entrySet()) {
             result.put(entry.getValue(), entry.getKey());
@@ -1304,7 +1352,7 @@ public final class Maps {
             return new HashMap<V, List<K>>();
         }
 
-        final Map<V, List<K>> result = createResultMap(map.getClass());
+        final Map<V, List<K>> result = newOrderingMap(map);
 
         for (Map.Entry<K, ? extends Collection<? extends V>> entry : map.entrySet()) {
             final Collection<? extends V> c = entry.getValue();

@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -117,7 +116,7 @@ public final class LongMultiset<T> implements Iterable<T> {
             return new LongMultiset<T>();
         }
 
-        final LongMultiset<T> multiset = new LongMultiset<>(N.initHashCapacity(m.size()));
+        final LongMultiset<T> multiset = new LongMultiset<>(Maps.newTargetMap(m));
 
         multiset.setAll(m);
 
@@ -129,7 +128,7 @@ public final class LongMultiset<T> implements Iterable<T> {
             return new LongMultiset<T>();
         }
 
-        final LongMultiset<T> multiset = new LongMultiset<>(N.initHashCapacity(m.size()));
+        final LongMultiset<T> multiset = new LongMultiset<>(Maps.newTargetMap(m));
 
         for (Map.Entry<? extends T, Integer> entry : m.entrySet()) {
             checkOccurrences(entry.getValue().intValue());
@@ -147,7 +146,7 @@ public final class LongMultiset<T> implements Iterable<T> {
             return new LongMultiset<T>();
         }
 
-        final LongMultiset<T> result = new LongMultiset<>(N.initHashCapacity(multiset.size()));
+        final LongMultiset<T> result = new LongMultiset<>(Maps.newTargetMap(multiset.valueMap));
 
         for (Map.Entry<? extends T, MutableInt> entry : multiset.valueMap.entrySet()) {
             result.set(entry.getKey(), entry.getValue().intValue());
@@ -1016,7 +1015,7 @@ public final class LongMultiset<T> implements Iterable<T> {
     }
 
     public LongMultiset<T> copy() {
-        final LongMultiset<T> copy = new LongMultiset<>(valueMap.getClass());
+        final LongMultiset<T> copy = new LongMultiset<>(Maps.newTargetMap(valueMap));
 
         copy.addAll(this);
 
@@ -1057,8 +1056,7 @@ public final class LongMultiset<T> implements Iterable<T> {
     }
 
     public Map<T, Long> toMap() {
-        final Map<T, Long> result = valueMap instanceof IdentityHashMap ? new IdentityHashMap<T, Long>(N.initHashCapacity(size()))
-                : new HashMap<T, Long>(N.initHashCapacity(size()));
+        final Map<T, Long> result = Maps.newOrderingMap(valueMap);
 
         for (Map.Entry<T, MutableLong> entry : valueMap.entrySet()) {
             result.put(entry.getKey(), entry.getValue().value());
@@ -1156,7 +1154,7 @@ public final class LongMultiset<T> implements Iterable<T> {
     }
 
     public <E extends Exception> LongMultiset<T> filter(Try.Predicate<? super T, E> filter) throws E {
-        final LongMultiset<T> result = new LongMultiset<>(valueMap.getClass());
+        final LongMultiset<T> result = new LongMultiset<>(Maps.newTargetMap(valueMap, 0));
 
         for (Map.Entry<T, MutableLong> entry : valueMap.entrySet()) {
             if (filter.test(entry.getKey())) {
@@ -1168,7 +1166,7 @@ public final class LongMultiset<T> implements Iterable<T> {
     }
 
     public <E extends Exception> LongMultiset<T> filter(Try.BiPredicate<? super T, Long, E> filter) throws E {
-        final LongMultiset<T> result = new LongMultiset<>(valueMap.getClass());
+        final LongMultiset<T> result = new LongMultiset<>(Maps.newTargetMap(valueMap, 0));
 
         for (Map.Entry<T, MutableLong> entry : valueMap.entrySet()) {
             if (filter.test(entry.getKey(), entry.getValue().longValue())) {

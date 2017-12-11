@@ -8779,6 +8779,14 @@ public final class N {
         return EMPTY_LIST_ITERATOR;
     }
 
+    public static <T> boolean anyNull(final T a, final T b) {
+        return a == null || b == null;
+    }
+
+    public static <T> boolean anyNull(final T a, final T b, final T c) {
+        return a == null || b == null || c == null;
+    }
+
     @SafeVarargs
     public static <T> boolean anyNull(final T... a) {
         if (N.isNullOrEmpty(a)) {
@@ -8806,6 +8814,14 @@ public final class N {
         }
 
         return false;
+    }
+
+    public static <T> boolean allNull(final T a, final T b) {
+        return a == null && b == null;
+    }
+
+    public static <T> boolean allNull(final T a, final T b, final T c) {
+        return a == null && b == null && c == null;
     }
 
     @SafeVarargs
@@ -8837,6 +8853,14 @@ public final class N {
         return true;
     }
 
+    public static <T> Optional<T> firstNonNull(final T a, final T b) {
+        return a != null ? Optional.of(a) : (b != null ? Optional.of(b) : Optional.<T> empty());
+    }
+
+    public static <T> Optional<T> firstNonNull(final T a, final T b, final T c) {
+        return a != null ? Optional.of(a) : (b != null ? Optional.of(b) : (c != null ? Optional.of(c) : Optional.<T> empty()));
+    }
+
     @SafeVarargs
     public static <T> Optional<T> firstNonNull(final T... a) {
         if (N.isNullOrEmpty(a)) {
@@ -8864,6 +8888,14 @@ public final class N {
         }
 
         return Optional.empty();
+    }
+
+    public static <T> Optional<T> lastNonNull(final T a, final T b) {
+        return b != null ? Optional.of(b) : (a != null ? Optional.of(a) : Optional.<T> empty());
+    }
+
+    public static <T> Optional<T> lastNonNull(final T a, final T b, final T c) {
+        return c != null ? Optional.of(c) : (b != null ? Optional.of(b) : (a != null ? Optional.of(a) : Optional.<T> empty()));
     }
 
     @SafeVarargs
