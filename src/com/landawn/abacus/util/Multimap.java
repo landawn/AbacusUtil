@@ -1251,6 +1251,12 @@ public class Multimap<K, E, V extends Collection<E>> {
         return multiset;
     }
 
+    /**
+     * Returns a synchronized {@code Multimap} which shares the same internal {@code Map} with this {@code Multimap}.
+     * That's to say the changes in one of the returned {@code Multimap} and this {@code Multimap} will impact another one.
+     * 
+     * @see Collections#synchronizedMap(Map)
+     */
     public Multimap<K, E, V> synchronizedd() {
         return new Multimap<>(Collections.synchronizedMap(valueMap), valueType);
     }
@@ -1280,6 +1286,21 @@ public class Multimap<K, E, V extends Collection<E>> {
 
     public int size() {
         return valueMap.size();
+    }
+
+    /**
+     * Returns the total count of all the elements in all values.
+     * 
+     * @return
+     */
+    public int totalCountOfValue() {
+        int count = 0;
+
+        for (V v : valueMap.values()) {
+            count += v.size();
+        }
+
+        return count;
     }
 
     public boolean isEmpty() {

@@ -16,6 +16,7 @@ package com.landawn.abacus.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -243,6 +244,9 @@ public final class ListMultimap<K, E> extends Multimap<K, E, List<E>> {
 
     @SuppressWarnings("rawtypes")
     public static <K, E, V extends List<E>> ListMultimap<K, E> wrap(final Map<K, V> map) {
+        N.requireNonNull(map);
+        N.checkArgument(N.anyNull(map.values()), "The specified map contains null value: %s", map);
+
         Class<? extends List> valueType = ArrayList.class;
 
         for (V v : map.values()) {
@@ -292,6 +296,17 @@ public final class ListMultimap<K, E> extends Multimap<K, E, List<E>> {
         }
 
         return result;
+    }
+
+    /**
+     * Returns a synchronized {@code ListMultimap} which shares the same internal {@code Map} with this {@code ListMultimap}.
+     * That's to say the changes in one of the returned {@code ListMultimap} and this {@code ListMultimap} will impact another one.
+     * 
+     * @see Collections#synchronizedMap(Map)
+     */
+    @Override
+    public ListMultimap<K, E> synchronizedd() {
+        return new ListMultimap<>(Collections.synchronizedMap(valueMap), valueType);
     }
 
     //    public ListMultimap<E, K> inversed() {

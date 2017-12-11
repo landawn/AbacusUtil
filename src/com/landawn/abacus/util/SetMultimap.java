@@ -14,6 +14,7 @@
 package com.landawn.abacus.util;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -242,6 +243,9 @@ public final class SetMultimap<K, E> extends Multimap<K, E, Set<E>> {
 
     @SuppressWarnings("rawtypes")
     public static <K, E, V extends Set<E>> SetMultimap<K, E> wrap(final Map<K, V> map) {
+        N.requireNonNull(map);
+        N.checkArgument(N.anyNull(map.values()), "The specified map contains null value: %s", map);
+
         Class<? extends Set> valueType = HashSet.class;
 
         for (V v : map.values()) {
@@ -291,6 +295,17 @@ public final class SetMultimap<K, E> extends Multimap<K, E, Set<E>> {
         }
 
         return result;
+    }
+
+    /**
+     * Returns a synchronized {@code SetMultimap} which shares the same internal {@code Map} with this {@code SetMultimap}.
+     * That's to say the changes in one of the returned {@code SetMultimap} and this {@code SetMultimap} will impact another one.
+     * 
+     * @see Collections#synchronizedMap(Map)
+     */
+    @Override
+    public SetMultimap<K, E> synchronizedd() {
+        return new SetMultimap<>(Collections.synchronizedMap(valueMap), valueType);
     }
 
     //    public SetMultimap<E, K> inversed() {

@@ -8779,7 +8779,8 @@ public final class N {
         return EMPTY_LIST_ITERATOR;
     }
 
-    public static <T> boolean anyNull(final T[] a) {
+    @SafeVarargs
+    public static <T> boolean anyNull(final T... a) {
         if (N.isNullOrEmpty(a)) {
             return false;
         }
@@ -8807,7 +8808,8 @@ public final class N {
         return false;
     }
 
-    public static <T> boolean allNull(final T[] a) {
+    @SafeVarargs
+    public static <T> boolean allNull(final T... a) {
         if (N.isNullOrEmpty(a)) {
             return true;
         }
@@ -8835,7 +8837,8 @@ public final class N {
         return true;
     }
 
-    public static <T> Optional<T> firstNonNull(final T[] a) {
+    @SafeVarargs
+    public static <T> Optional<T> firstNonNull(final T... a) {
         if (N.isNullOrEmpty(a)) {
             return Optional.empty();
         }
@@ -8863,7 +8866,8 @@ public final class N {
         return Optional.empty();
     }
 
-    public static <T> Optional<T> lastNonNull(final T[] a) {
+    @SafeVarargs
+    public static <T> Optional<T> lastNonNull(final T... a) {
         if (N.isNullOrEmpty(a)) {
             return Optional.empty();
         }
