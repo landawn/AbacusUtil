@@ -15,7 +15,9 @@
 package com.landawn.abacus.util;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -76,6 +78,16 @@ public class ImmutableSortedSet<E> extends ImmutableSet<E> implements SortedSet<
         }
 
         return new ImmutableSortedSet<>(new TreeSet<>(sortedSet));
+    }
+
+    @Deprecated
+    public static <E> ImmutableSet<E> of(final Set<? extends E> set) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Deprecated
+    public static <E> ImmutableSet<E> copyOf(final Collection<? extends E> set) {
+        throw new UnsupportedOperationException();
     }
 
     @Override

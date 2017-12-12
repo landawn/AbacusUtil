@@ -79,6 +79,11 @@ public final class ImmutableNavigableSet<E> extends ImmutableSortedSet<E> implem
         return new ImmutableNavigableSet<>(new TreeSet<>(sortedSet));
     }
 
+    @Deprecated
+    public static <E> ImmutableSortedSet<E> of(final SortedSet<? extends E> sortedSet) {
+        throw new UnsupportedOperationException();
+    }
+
     @Override
     public E lower(E e) {
         return navigableSet.lower(e);

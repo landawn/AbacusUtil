@@ -114,7 +114,8 @@ compile 'com.landawn:abacus-android:1.1.4'
 // Android-SE (Java 1.8 or above) - small edition without Stream/Matrix/Sheet/...:
 compile 'com.landawn:abacus-android-se:1.1.4'
 ```
-#### It's very important to learn Lambdas and Stream APIs in Java 8 to get the best user experiences with APIs provided in AbacusUtil:
+### Functional Programming:
+(It's very important to learn Lambdas and Stream APIs in Java 8 to get the best user experiences with the APIs provided in AbacusUtil)
 
 [What's New in Java 8](https://leanpub.com/whatsnewinjava8/read)
 

@@ -14,6 +14,8 @@
 
 package com.landawn.abacus.util;
 
+import java.util.Map;
+
 /**
  * 
  * @since 1.1.4
@@ -95,6 +97,16 @@ public final class ImmutableBiMap<K, V> extends ImmutableMap<K, V> {
         }
 
         return new ImmutableBiMap<>(map.copy());
+    }
+
+    @Deprecated
+    public static <K, V> ImmutableMap<K, V> of(final Map<? extends K, ? extends V> map) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Deprecated
+    public static <K, V> ImmutableMap<K, V> copyOf(final Map<? extends K, ? extends V> map) {
+        throw new UnsupportedOperationException();
     }
 
     public K getByValue(Object value) {

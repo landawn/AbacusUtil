@@ -147,6 +147,11 @@ public class ImmutableNavigableMap<K, V> extends ImmutableSortedMap<K, V> implem
         return new ImmutableNavigableMap<>(new TreeMap<>(sortedMap));
     }
 
+    @Deprecated
+    public static <K, V> ImmutableSortedMap<K, V> of(final SortedMap<? extends K, ? extends V> sortedMap) {
+        throw new UnsupportedOperationException();
+    }
+
     @Override
     public Map.Entry<K, V> lowerEntry(K key) {
         return navigableMap.lowerEntry(key);

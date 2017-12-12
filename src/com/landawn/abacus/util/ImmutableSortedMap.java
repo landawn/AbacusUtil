@@ -14,6 +14,7 @@
 package com.landawn.abacus.util;
 
 import java.util.Comparator;
+import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -142,6 +143,16 @@ public class ImmutableSortedMap<K, V> extends ImmutableMap<K, V> implements Sort
         }
 
         return new ImmutableSortedMap<>(new TreeMap<>(sortedMap));
+    }
+
+    @Deprecated
+    public static <K, V> ImmutableMap<K, V> of(final Map<? extends K, ? extends V> map) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Deprecated
+    public static <K, V> ImmutableMap<K, V> copyOf(final Map<? extends K, ? extends V> map) {
+        throw new UnsupportedOperationException();
     }
 
     @Override
