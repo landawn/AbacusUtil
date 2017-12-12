@@ -20,7 +20,6 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -221,6 +220,27 @@ public class Multimap<K, E, V extends Collection<E>> {
                 }
             }
         }
+
+        return res;
+    }
+
+    public static <K, E, V extends Collection<E>, M extends Multimap<K, E, V>> M concat(final Map<? extends K, ? extends E> a,
+            final Map<? extends K, ? extends E> b, final Supplier<M> multimapSupplier) {
+        final M res = multimapSupplier.get();
+
+        res.putAll(a);
+        res.putAll(b);
+
+        return res;
+    }
+
+    public static <K, E, V extends Collection<E>, M extends Multimap<K, E, V>> M concat(final Map<? extends K, ? extends E> a,
+            final Map<? extends K, ? extends E> b, final Map<? extends K, ? extends E> c, final Supplier<M> multimapSupplier) {
+        final M res = multimapSupplier.get();
+
+        res.putAll(a);
+        res.putAll(b);
+        res.putAll(c);
 
         return res;
     }
@@ -1260,15 +1280,16 @@ public class Multimap<K, E, V extends Collection<E>> {
         return multiset;
     }
 
-    /**
-     * Returns a synchronized {@code Multimap} which shares the same internal {@code Map} with this {@code Multimap}.
-     * That's to say the changes in one of the returned {@code Multimap} and this {@code Multimap} will impact another one.
-     * 
-     * @see Collections#synchronizedMap(Map)
-     */
-    public Multimap<K, E, V> synchronizedd() {
-        return new Multimap<>(Collections.synchronizedMap(valueMap), concreteValueType);
-    }
+    // It won't work.
+    //    /**
+    //     * Returns a synchronized {@code Multimap} which shares the same internal {@code Map} with this {@code Multimap}.
+    //     * That's to say the changes in one of the returned {@code Multimap} and this {@code Multimap} will impact another one.
+    //     * 
+    //     * @see Collections#synchronizedMap(Map)
+    //     */
+    //    public Multimap<K, E, V> synchronizedd() {
+    //        return new Multimap<>(Collections.synchronizedMap(valueMap), concreteValueType);
+    //    }
 
     /**
      * Returns a view of this multimap as a {@code Map} from each distinct key

@@ -21,6 +21,7 @@ import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -105,7 +106,7 @@ public class ImmutableMap<K, V> implements Map<K, V> {
         }
 
         final Map<K, V> tmp = map instanceof IdentityHashMap ? new IdentityHashMap<>(map)
-                : (map instanceof LinkedHashMap ? new LinkedHashMap<>(map) : new HashMap<>(map));
+                : ((map instanceof LinkedHashMap || map instanceof SortedMap) ? new LinkedHashMap<>(map) : new HashMap<>(map));
 
         return new ImmutableMap<>(tmp);
     }

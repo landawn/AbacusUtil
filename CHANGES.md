@@ -9,7 +9,7 @@
 
 * Add `Multiset/LongMultiset/Multimap/ListMultimap/SetMulitmap/BiMap.copy()`.
 
-* Add `Multiset/LongMultiset/Multimap/ListMultimap/SetMultimap.synchronizedd()`.
+* Add `Multimap/ListMultimap/SetMultimap.concat(...)`.
 
 * Add `Multimap.toMultiset()`.
 

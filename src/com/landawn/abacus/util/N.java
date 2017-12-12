@@ -2128,17 +2128,7 @@ public final class N {
 
     @SafeVarargs
     public static <T> Multiset<T> asMultiset(final T... a) {
-        if (N.isNullOrEmpty(a)) {
-            return new Multiset<>();
-        }
-
-        final Multiset<T> multiset = new Multiset<>(new HashMap<T, MutableInt>(initHashCapacity(a.length)));
-
-        for (T e : a) {
-            multiset.add(e);
-        }
-
-        return multiset;
+        return Multiset.of(a);
     }
 
     /**

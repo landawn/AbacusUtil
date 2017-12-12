@@ -16,7 +16,6 @@ package com.landawn.abacus.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -242,6 +241,34 @@ public final class ListMultimap<K, E> extends Multimap<K, E, List<E>> {
         return multimap;
     }
 
+    public static <K, E> ListMultimap<K, E> concat(final Map<? extends K, ? extends E> a, final Map<? extends K, ? extends E> b) {
+        if (a == null) {
+            return b == null ? N.<K, E> newListMultimap() : from(b);
+        } else {
+            final ListMultimap<K, E> res = from(a);
+            res.putAll(b);
+            return res;
+        }
+    }
+
+    public static <K, E> ListMultimap<K, E> concat(final Map<? extends K, ? extends E> a, final Map<? extends K, ? extends E> b,
+            final Map<? extends K, ? extends E> c) {
+        if (a == null) {
+            if (b == null) {
+                return c == null ? N.<K, E> newListMultimap() : from(c);
+            } else {
+                final ListMultimap<K, E> res = from(b);
+                res.putAll(c);
+                return res;
+            }
+        } else {
+            final ListMultimap<K, E> res = from(a);
+            res.putAll(b);
+            res.putAll(c);
+            return res;
+        }
+    }
+
     @SuppressWarnings("rawtypes")
     public static <K, E, V extends List<E>> ListMultimap<K, E> wrap(final Map<K, V> map) {
         N.requireNonNull(map);
@@ -307,16 +334,17 @@ public final class ListMultimap<K, E> extends Multimap<K, E, List<E>> {
         return copy;
     }
 
-    /**
-     * Returns a synchronized {@code ListMultimap} which shares the same internal {@code Map} with this {@code ListMultimap}.
-     * That's to say the changes in one of the returned {@code ListMultimap} and this {@code ListMultimap} will impact another one.
-     * 
-     * @see Collections#synchronizedMap(Map)
-     */
-    @Override
-    public ListMultimap<K, E> synchronizedd() {
-        return new ListMultimap<>(Collections.synchronizedMap(valueMap), concreteValueType);
-    }
+    // It won't work.
+    //    /**
+    //     * Returns a synchronized {@code ListMultimap} which shares the same internal {@code Map} with this {@code ListMultimap}.
+    //     * That's to say the changes in one of the returned {@code ListMultimap} and this {@code ListMultimap} will impact another one.
+    //     * 
+    //     * @see Collections#synchronizedMap(Map)
+    //     */
+    //    @Override
+    //    public ListMultimap<K, E> synchronizedd() {
+    //        return new ListMultimap<>(Collections.synchronizedMap(valueMap), concreteValueType);
+    //    }
 
     //    public ListMultimap<E, K> inversed() {
     //        final ListMultimap<E, K> multimap = new ListMultimap<E, K>(valueMap.getClass(), concreteValueType);

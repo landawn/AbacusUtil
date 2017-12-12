@@ -149,11 +149,13 @@ public final class Maps {
             res = new IdentityHashMap<>(N.initHashCapacity(size));
         } else if (m instanceof LinkedHashMap) {
             res = new LinkedHashMap<>(N.initHashCapacity(size));
+        } else if (m instanceof ImmutableMap) {
+            res = new LinkedHashMap<>(N.initHashCapacity(size));
         } else {
             try {
                 res = N.newInstance(m.getClass());
             } catch (Exception e) {
-                res = new HashMap<>(N.initHashCapacity(size));
+                res = new LinkedHashMap<>(N.initHashCapacity(size));
             }
         }
 
@@ -176,11 +178,13 @@ public final class Maps {
             res = new IdentityHashMap<>(N.initHashCapacity(m.size()));
         } else if (m instanceof LinkedHashMap) {
             res = new LinkedHashMap<>(N.initHashCapacity(m.size()));
+        } else if (m instanceof ImmutableMap) {
+            res = new LinkedHashMap<>(N.initHashCapacity(m.size()));
         } else {
             try {
                 res = N.newInstance(m.getClass());
             } catch (Exception e) {
-                res = new HashMap<>(N.initHashCapacity(m.size()));
+                res = new LinkedHashMap<>(N.initHashCapacity(m.size()));
             }
         }
 

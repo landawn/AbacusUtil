@@ -19,7 +19,6 @@ package com.landawn.abacus.util;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1123,9 +1122,10 @@ public final class LongMultiset<T> implements Iterable<T> {
         return ImmutableMap.of(toMap(mapSupplier));
     }
 
-    public LongMultiset<T> synchronizedd() {
-        return new LongMultiset<>(Collections.synchronizedMap(valueMap));
-    }
+    // It won't work.
+    //    public LongMultiset<T> synchronizedd() {
+    //        return new LongMultiset<>(Collections.synchronizedMap(valueMap));
+    //    }
 
     /**
      * 

@@ -19,7 +19,6 @@ package com.landawn.abacus.util;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1091,9 +1090,10 @@ public final class Multiset<T> implements Iterable<T> {
         return ImmutableMap.of(toMap(mapSupplier));
     }
 
-    public Multiset<T> synchronizedd() {
-        return new Multiset<>(Collections.synchronizedMap(valueMap));
-    }
+    // It won't work.
+    //    public Multiset<T> synchronizedd() {
+    //        return new Multiset<>(Collections.synchronizedMap(valueMap));
+    //    }
 
     /**
      * 

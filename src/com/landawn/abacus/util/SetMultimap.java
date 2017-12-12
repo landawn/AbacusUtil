@@ -14,7 +14,6 @@
 package com.landawn.abacus.util;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -241,6 +240,34 @@ public final class SetMultimap<K, E> extends Multimap<K, E, Set<E>> {
         return multimap;
     }
 
+    public static <K, E> SetMultimap<K, E> concat(final Map<? extends K, ? extends E> a, final Map<? extends K, ? extends E> b) {
+        if (a == null) {
+            return b == null ? N.<K, E> newSetMultimap() : from(b);
+        } else {
+            final SetMultimap<K, E> res = from(a);
+            res.putAll(b);
+            return res;
+        }
+    }
+
+    public static <K, E> SetMultimap<K, E> concat(final Map<? extends K, ? extends E> a, final Map<? extends K, ? extends E> b,
+            final Map<? extends K, ? extends E> c) {
+        if (a == null) {
+            if (b == null) {
+                return c == null ? N.<K, E> newSetMultimap() : from(c);
+            } else {
+                final SetMultimap<K, E> res = from(b);
+                res.putAll(c);
+                return res;
+            }
+        } else {
+            final SetMultimap<K, E> res = from(a);
+            res.putAll(b);
+            res.putAll(c);
+            return res;
+        }
+    }
+
     @SuppressWarnings("rawtypes")
     public static <K, E, V extends Set<E>> SetMultimap<K, E> wrap(final Map<K, V> map) {
         N.requireNonNull(map);
@@ -306,16 +333,17 @@ public final class SetMultimap<K, E> extends Multimap<K, E, Set<E>> {
         return copy;
     }
 
-    /**
-     * Returns a synchronized {@code SetMultimap} which shares the same internal {@code Map} with this {@code SetMultimap}.
-     * That's to say the changes in one of the returned {@code SetMultimap} and this {@code SetMultimap} will impact another one.
-     * 
-     * @see Collections#synchronizedMap(Map)
-     */
-    @Override
-    public SetMultimap<K, E> synchronizedd() {
-        return new SetMultimap<>(Collections.synchronizedMap(valueMap), concreteValueType);
-    }
+    // It won't work.
+    //    /**
+    //     * Returns a synchronized {@code SetMultimap} which shares the same internal {@code Map} with this {@code SetMultimap}.
+    //     * That's to say the changes in one of the returned {@code SetMultimap} and this {@code SetMultimap} will impact another one.
+    //     * 
+    //     * @see Collections#synchronizedMap(Map)
+    //     */
+    //    @Override
+    //    public SetMultimap<K, E> synchronizedd() {
+    //        return new SetMultimap<>(Collections.synchronizedMap(valueMap), concreteValueType);
+    //    }
 
     //    public SetMultimap<E, K> inversed() {
     //        final SetMultimap<E, K> multimap = new SetMultimap<E, K>(valueMap.getClass(), concreteValueType);

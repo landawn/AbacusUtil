@@ -94,9 +94,7 @@ public final class ImmutableBiMap<K, V> extends ImmutableMap<K, V> {
             return empty();
         }
 
-        final BiMap<K, V> tmp = new BiMap<>(map.keyMap.getClass(), map.valueMap.getClass());
-        tmp.putAll(map);
-        return new ImmutableBiMap<>(tmp);
+        return new ImmutableBiMap<>(map.copy());
     }
 
     public K getByValue(Object value) {

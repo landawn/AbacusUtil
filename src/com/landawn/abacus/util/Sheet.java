@@ -231,10 +231,25 @@ public final class Sheet<R, C, E> implements Cloneable {
         return get(point._1, point._2);
     }
 
+    /**
+     * 
+     * @param rowKey
+     * @param columnKey
+     * @param value
+     * @return
+     */
     public E put(R rowKey, C columnKey, E value) {
         checkFrozen();
 
         init();
+
+        if (!containsRow(rowKey)) {
+            addRow(rowKey, null);
+        }
+
+        if (!containsColumn(columnKey)) {
+            addColumn(columnKey, null);
+        }
 
         final int rowIndex = getRowIndex(rowKey);
         final int columnIndex = getColumnIndex(columnKey);
