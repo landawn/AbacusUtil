@@ -22,12 +22,18 @@ import com.landawn.abacus.util.stream.IntStream;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
+ *
+ * @param <A>
+ * @param <PL>
+ * @param <ES> element stream
+ * @param <RS> row/column stream.
+ * @param <X>
  * 
  * @since 0.8
  * 
  * @author Haiyang Li
  */
-public abstract class AbstractMatrix<A, PL, HS, RS, X extends AbstractMatrix<A, PL, HS, RS, X>> {
+public abstract class AbstractMatrix<A, PL, ES, RS, X extends AbstractMatrix<A, PL, ES, RS, X>> {
     static final Random RAND = new SecureRandom();
 
     static final boolean isParallelStreamSupported;
@@ -74,6 +80,10 @@ public abstract class AbstractMatrix<A, PL, HS, RS, X extends AbstractMatrix<A, 
         }
 
         this.count = this.cols * this.rows * 1L;
+    }
+
+    public A[] array() {
+        return a;
     }
 
     public void println() {
@@ -154,6 +164,7 @@ public abstract class AbstractMatrix<A, PL, HS, RS, X extends AbstractMatrix<A, 
      * @param rowRepeats
      * @param colRepeats
      * @return a new matrix
+     * @see <a href="https://www.mathworks.com/help/matlab/ref/repelem.html">https://www.mathworks.com/help/matlab/ref/repelem.html</a>
      */
     public abstract X repelem(int rowRepeats, int colRepeats);
 
@@ -163,6 +174,7 @@ public abstract class AbstractMatrix<A, PL, HS, RS, X extends AbstractMatrix<A, 
      * @param rowRepeats
      * @param colRepeats
      * @return a new matrix
+     * @see <a href="https://www.mathworks.com/help/matlab/ref/repmat.html">https://www.mathworks.com/help/matlab/ref/repmat.html</a>
      */
     public abstract X repmat(int rowRepeats, int colRepeats);
 
@@ -278,21 +290,21 @@ public abstract class AbstractMatrix<A, PL, HS, RS, X extends AbstractMatrix<A, 
         });
     }
 
-    public abstract HS streamLU2RD();
+    public abstract ES streamLU2RD();
 
-    public abstract HS streamRU2LD();
+    public abstract ES streamRU2LD();
 
-    public abstract HS streamH();
+    public abstract ES streamH();
 
-    public abstract HS streamH(final int rowIndex);
+    public abstract ES streamH(final int rowIndex);
 
-    public abstract HS streamH(final int fromRowIndex, final int toRowIndex);
+    public abstract ES streamH(final int fromRowIndex, final int toRowIndex);
 
-    public abstract HS streamV();
+    public abstract ES streamV();
 
-    public abstract HS streamV(final int columnIndex);
+    public abstract ES streamV(final int columnIndex);
 
-    public abstract HS streamV(final int fromColumnIndex, final int toColumnIndex);
+    public abstract ES streamV(final int fromColumnIndex, final int toColumnIndex);
 
     public abstract RS streamR();
 

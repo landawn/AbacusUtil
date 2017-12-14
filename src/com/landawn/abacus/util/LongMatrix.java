@@ -132,10 +132,6 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongStrea
         }
     }
 
-    public long[][] array() {
-        return a;
-    }
-
     public long get(final int i, final int j) {
         return a[i][j];
     }
@@ -615,6 +611,78 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongStrea
         return new LongMatrix(c);
     }
 
+    public LongMatrix extend(final int newRows, final int newCols) {
+        return extend(newRows, newCols, 0);
+    }
+
+    public LongMatrix extend(final int newRows, final int newCols, final long defaultValueForNewCell) {
+        N.checkArgument(newRows >= 0, "The 'newRows' can't be negative %s", newRows);
+        N.checkArgument(newCols >= 0, "The 'newCols' can't be negative %s", newCols);
+
+        if (newRows <= rows && newCols <= cols) {
+            return copy(0, newRows, 0, newCols);
+        } else {
+            final boolean fillDefaultValue = defaultValueForNewCell != 0;
+            final long[][] b = new long[newRows][];
+
+            for (int i = 0; i < newRows; i++) {
+                b[i] = i < rows ? N.copyOf(a[i], newCols) : new long[newCols];
+
+                if (fillDefaultValue) {
+                    if (i >= rows) {
+                        N.fill(b[i], defaultValueForNewCell);
+                    } else if (cols < newCols) {
+                        N.fill(b[i], cols, newCols, defaultValueForNewCell);
+                    }
+                }
+            }
+
+            return new LongMatrix(b);
+        }
+    }
+
+    public LongMatrix extend(final int toUp, final int toDown, final int toLeft, final int toRight) {
+        return extend(toUp, toDown, toLeft, toRight, 0);
+    }
+
+    public LongMatrix extend(final int toUp, final int toDown, final int toLeft, final int toRight, final long defaultValueForNewCell) {
+        N.checkArgument(toUp >= 0, "The 'toUp' can't be negative %s", toUp);
+        N.checkArgument(toDown >= 0, "The 'toDown' can't be negative %s", toDown);
+        N.checkArgument(toLeft >= 0, "The 'toLeft' can't be negative %s", toLeft);
+        N.checkArgument(toRight >= 0, "The 'toRight' can't be negative %s", toRight);
+
+        if (toUp == 0 && toDown == 0 && toLeft == 0 && toRight == 0) {
+            return copy();
+        } else {
+            final int newRows = toUp + rows + toDown;
+            final int newCols = toLeft + cols + toRight;
+            final boolean fillDefaultValue = defaultValueForNewCell != 0;
+            final long[][] b = new long[newRows][newCols];
+
+            for (int i = 0; i < newRows; i++) {
+                if (i >= toUp && i < toUp + rows) {
+                    N.copy(a[i - toUp], 0, b[i], toLeft, cols);
+                }
+
+                if (fillDefaultValue) {
+                    if (i < toUp || i >= toUp + rows) {
+                        N.fill(b[i], defaultValueForNewCell);
+                    } else if (cols < newCols) {
+                        if (toLeft > 0) {
+                            N.fill(b[i], 0, toLeft, defaultValueForNewCell);
+                        }
+
+                        if (toRight > 0) {
+                            N.fill(b[i], cols + toLeft, newCols, defaultValueForNewCell);
+                        }
+                    }
+                }
+            }
+
+            return new LongMatrix(b);
+        }
+    }
+
     public void reverseH() {
         for (int i = 0; i < rows; i++) {
             N.reverse(a[i]);
@@ -632,12 +700,22 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongStrea
         }
     }
 
+    /**
+     * 
+     * @return
+     * @see IntMatrix#flipH()
+     */
     public LongMatrix flipH() {
         final LongMatrix res = this.copy();
         res.reverseH();
         return res;
     }
 
+    /**
+     * 
+     * @return
+     * @see IntMatrix#flipV()
+     */
     public LongMatrix flipV() {
         final LongMatrix res = this.copy();
         res.reverseV();
@@ -752,6 +830,7 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongStrea
      * @param rowRepeats
      * @param colRepeats
      * @return a new matrix
+     * @see IntMatrix#repelem(int, int)
      */
     @Override
     public LongMatrix repelem(final int rowRepeats, final int colRepeats) {
@@ -780,6 +859,7 @@ public final class LongMatrix extends AbstractMatrix<long[], LongList, LongStrea
      * @param rowRepeats
      * @param colRepeats
      * @return a new matrix
+     * @see IntMatrix#repmat(int, int)
      */
     @Override
     public LongMatrix repmat(final int rowRepeats, final int colRepeats) {

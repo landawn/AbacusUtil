@@ -172,7 +172,6 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
         @Override
         public O limit(final long n) {
             return (O) super.limit(n);
-
         }
 
         /*

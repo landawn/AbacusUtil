@@ -17766,6 +17766,47 @@ public final class N {
         return count;
     }
 
+    public static <E extends Exception> void forEach(final int startInclusive, final int endExclusive, Try.IntConsumer<E> action) throws E {
+        forEach(startInclusive, endExclusive, 1, action);
+    }
+
+    public static <E extends Exception> void forEach(final int startInclusive, final int endExclusive, final int step, Try.IntConsumer<E> action) throws E {
+        N.checkArgument(step != 0, "The input parameter 'step' can't be zero");
+
+        if (endExclusive == startInclusive || endExclusive > startInclusive != step > 0) {
+            return;
+        }
+
+        long len = (endExclusive * 1L - startInclusive) / step + ((endExclusive * 1L - startInclusive) % step == 0 ? 0 : 1);
+        int start = startInclusive;
+
+        while (len-- > 0) {
+            action.accept(start);
+            start += step;
+        }
+    }
+
+    public static <T, E extends Exception> void forEach(final int startInclusive, final int endExclusive, final T a, Try.ObjIntConsumer<T, E> action) throws E {
+        forEach(startInclusive, endExclusive, 1, a, action);
+    }
+
+    public static <T, E extends Exception> void forEach(final int startInclusive, final int endExclusive, final int step, final T a,
+            Try.ObjIntConsumer<T, E> action) throws E {
+        N.checkArgument(step != 0, "The input parameter 'step' can't be zero");
+
+        if (endExclusive == startInclusive || endExclusive > startInclusive != step > 0) {
+            return;
+        }
+
+        long len = (endExclusive * 1L - startInclusive) / step + ((endExclusive * 1L - startInclusive) % step == 0 ? 0 : 1);
+        int start = startInclusive;
+
+        while (len-- > 0) {
+            action.accept(a, start);
+            start += step;
+        }
+    }
+
     public static <T, E extends Exception> void forEach(final T[] a, final Try.Consumer<? super T, E> action) throws E {
         N.requireNonNull(action);
 
@@ -32104,20 +32145,6 @@ public final class N {
     }
 
     /**
-     * Returns a {@code Nullable} with the value returned by {@code action} or an empty {@code Nullable} if exception happens.
-     * 
-     * @param cmd
-     * @return
-     */
-    public static <R> Nullable<R> tryOrEmpty(final Callable<R> cmd) {
-        try {
-            return Nullable.of(cmd.call());
-        } catch (Throwable e) {
-            return Nullable.<R> empty();
-        }
-    }
-
-    /**
      * Returns an empty <code>Nullable</code> if {@code val} is {@code null} while {@code targetType} is primitive or can't be assigned to {@code targetType}.
      * Please be aware that {@code null} can be assigned to any {@code Object} type except primitive types: {@code boolean/char/byte/short/int/long/double}.
      * 
@@ -32135,6 +32162,35 @@ public final class N {
     }
 
     /**
+     * Returns a {@code Nullable} with the value returned by {@code action} or an empty {@code Nullable} if exception happens.
+     * 
+     * @param cmd
+     * @return
+     */
+    public static <R> Nullable<R> tryOrEmpty(final Callable<R> cmd) {
+        try {
+            return Nullable.of(cmd.call());
+        } catch (Throwable e) {
+            return Nullable.<R> empty();
+        }
+    }
+
+    /**
+     * Returns a {@code Nullable} with the value returned by {@code func.apply(seed)} or an empty {@code Nullable} if exception happens.
+     * 
+     * @param seed
+     * @param func
+     * @return
+     */
+    public static <T, R, E extends Exception> Nullable<R> tryOrEmpty(final T seed, final Try.Function<T, R, E> func) {
+        try {
+            return Nullable.of(func.apply(seed));
+        } catch (Throwable e) {
+            return Nullable.<R> empty();
+        }
+    }
+
+    /**
      * Returns a {@code Nullable} with value got from the specified {@code supplier} if {@code b} is {@code true}, 
      * otherwise returns an empty {@code Nullable} if {@code b} is false.
      * 
@@ -32143,9 +32199,27 @@ public final class N {
      * @return
      * @throws E
      */
-    public static <T, E extends Exception> Nullable<T> ifOrEmpty(final boolean b, final Try.Supplier<T, E> supplier) throws E {
+    public static <R, E extends Exception> Nullable<R> ifOrEmpty(final boolean b, final Try.Supplier<R, E> supplier) throws E {
         if (b) {
             return Nullable.of(supplier.get());
+        } else {
+            return Nullable.empty();
+        }
+    }
+
+    /**
+     * Returns a {@code Nullable} with value returned by {@code func.apply(seed)} if {@code b} is {@code true}, 
+     * otherwise returns an empty {@code Nullable} if {@code b} is false.
+     * 
+     * @param b
+     * @param seed
+     * @param func
+     * @return
+     * @throws E
+     */
+    public static <T, R, E extends Exception> Nullable<R> ifOrEmpty(final boolean b, final T seed, final Try.Function<T, R, E> func) throws E {
+        if (b) {
+            return Nullable.of(func.apply(seed));
         } else {
             return Nullable.empty();
         }
@@ -32168,6 +32242,28 @@ public final class N {
         } else {
             if (actionForFalse != null) {
                 actionForFalse.run();
+            }
+        }
+    }
+
+    /**
+     * 
+     * @param b
+     * @param seed
+     * @param actionForTrue do nothing if it's {@code null} even {@code b} is true.
+     * @param actionForFalse do nothing if it's {@code null} even {@code b} is false.
+     * @throws E1
+     * @throws E2
+     */
+    public static <T, E1 extends Exception, E2 extends Exception> void ifOrElse(final boolean b, final T seed, final Try.Consumer<T, E1> actionForTrue,
+            final Try.Consumer<T, E2> actionForFalse) throws E1, E2 {
+        if (b) {
+            if (actionForTrue != null) {
+                actionForTrue.accept(seed);
+            }
+        } else {
+            if (actionForFalse != null) {
+                actionForFalse.accept(seed);
             }
         }
     }

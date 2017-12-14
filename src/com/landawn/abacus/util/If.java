@@ -37,12 +37,22 @@ public final class If {
         this.b = b;
     }
 
-    public static If of(boolean b) {
+    public static If of(final boolean b) {
         return b ? TRUE : FALSE;
     }
 
-    public static If not(boolean b) {
+    public static If not(final boolean b) {
         return b ? FALSE : TRUE;
+    }
+
+    /**
+     * {@code true} for {@code index >= 0}, {@code false} for {@code index < 0}.
+     * 
+     * @param index
+     * @return
+     */
+    public static If exists(final int index) {
+        return index >= 0 ? TRUE : FALSE;
     }
 
     public static If isNullOrEmpty(final CharSequence s) {
@@ -311,12 +321,22 @@ public final class If {
             this.b = b;
         }
 
-        public static IF of(boolean b) {
+        public static IF of(final boolean b) {
             return b ? TRUE : FALSE;
         }
 
-        public static IF not(boolean b) {
+        public static IF not(final boolean b) {
             return b ? FALSE : TRUE;
+        }
+
+        /**
+         * {@code true} for {@code index >= 0}, {@code false} for {@code index < 0}.
+         * 
+         * @param index
+         * @return
+         */
+        public static IF exists(final int index) {
+            return index >= 0 ? TRUE : FALSE;
         }
 
         public static IF isNullOrEmpty(final CharSequence s) {

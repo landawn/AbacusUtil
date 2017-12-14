@@ -115,10 +115,6 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
         }
     }
 
-    public char[][] array() {
-        return a;
-    }
-
     public char get(final int i, final int j) {
         return a[i][j];
     }
@@ -598,6 +594,78 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
         return new CharMatrix(c);
     }
 
+    public CharMatrix extend(final int newRows, final int newCols) {
+        return extend(newRows, newCols, f.CHAR_0);
+    }
+
+    public CharMatrix extend(final int newRows, final int newCols, final char defaultValueForNewCell) {
+        N.checkArgument(newRows >= 0, "The 'newRows' can't be negative %s", newRows);
+        N.checkArgument(newCols >= 0, "The 'newCols' can't be negative %s", newCols);
+
+        if (newRows <= rows && newCols <= cols) {
+            return copy(0, newRows, 0, newCols);
+        } else {
+            final boolean fillDefaultValue = defaultValueForNewCell != f.CHAR_0;
+            final char[][] b = new char[newRows][];
+
+            for (int i = 0; i < newRows; i++) {
+                b[i] = i < rows ? N.copyOf(a[i], newCols) : new char[newCols];
+
+                if (fillDefaultValue) {
+                    if (i >= rows) {
+                        N.fill(b[i], defaultValueForNewCell);
+                    } else if (cols < newCols) {
+                        N.fill(b[i], cols, newCols, defaultValueForNewCell);
+                    }
+                }
+            }
+
+            return new CharMatrix(b);
+        }
+    }
+
+    public CharMatrix extend(final int toUp, final int toDown, final int toLeft, final int toRight) {
+        return extend(toUp, toDown, toLeft, toRight, f.CHAR_0);
+    }
+
+    public CharMatrix extend(final int toUp, final int toDown, final int toLeft, final int toRight, final char defaultValueForNewCell) {
+        N.checkArgument(toUp >= 0, "The 'toUp' can't be negative %s", toUp);
+        N.checkArgument(toDown >= 0, "The 'toDown' can't be negative %s", toDown);
+        N.checkArgument(toLeft >= 0, "The 'toLeft' can't be negative %s", toLeft);
+        N.checkArgument(toRight >= 0, "The 'toRight' can't be negative %s", toRight);
+
+        if (toUp == 0 && toDown == 0 && toLeft == 0 && toRight == 0) {
+            return copy();
+        } else {
+            final int newRows = toUp + rows + toDown;
+            final int newCols = toLeft + cols + toRight;
+            final boolean fillDefaultValue = defaultValueForNewCell != f.CHAR_0;
+            final char[][] b = new char[newRows][newCols];
+
+            for (int i = 0; i < newRows; i++) {
+                if (i >= toUp && i < toUp + rows) {
+                    N.copy(a[i - toUp], 0, b[i], toLeft, cols);
+                }
+
+                if (fillDefaultValue) {
+                    if (i < toUp || i >= toUp + rows) {
+                        N.fill(b[i], defaultValueForNewCell);
+                    } else if (cols < newCols) {
+                        if (toLeft > 0) {
+                            N.fill(b[i], 0, toLeft, defaultValueForNewCell);
+                        }
+
+                        if (toRight > 0) {
+                            N.fill(b[i], cols + toLeft, newCols, defaultValueForNewCell);
+                        }
+                    }
+                }
+            }
+
+            return new CharMatrix(b);
+        }
+    }
+
     public void reverseH() {
         for (int i = 0; i < rows; i++) {
             N.reverse(a[i]);
@@ -615,12 +683,22 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
         }
     }
 
+    /**
+     * 
+     * @return
+     * @see IntMatrix#flipH()
+     */
     public CharMatrix flipH() {
         final CharMatrix res = this.copy();
         res.reverseH();
         return res;
     }
 
+    /**
+     * 
+     * @return
+     * @see IntMatrix#flipV()
+     */
     public CharMatrix flipV() {
         final CharMatrix res = this.copy();
         res.reverseV();
@@ -735,6 +813,7 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
      * @param rowRepeats
      * @param colRepeats
      * @return a new matrix
+     * @see IntMatrix#repelem(int, int)
      */
     @Override
     public CharMatrix repelem(final int rowRepeats, final int colRepeats) {
@@ -763,6 +842,7 @@ public final class CharMatrix extends AbstractMatrix<char[], CharList, CharStrea
      * @param rowRepeats
      * @param colRepeats
      * @return a new matrix
+     * @see IntMatrix#repmat(int, int)
      */
     @Override
     public CharMatrix repmat(final int rowRepeats, final int colRepeats) {

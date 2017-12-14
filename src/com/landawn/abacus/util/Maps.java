@@ -395,27 +395,6 @@ public final class Maps {
         return result;
     }
 
-    public static <K, V> Map<K, V> diff(final Map<K, V> map, final Map<? extends K, ? extends V> map2) {
-        if (N.isNullOrEmpty(map)) {
-            return new LinkedHashMap<>();
-        } else if (N.isNullOrEmpty(map2)) {
-            return new LinkedHashMap<>(map);
-        }
-
-        final Map<K, V> result = map instanceof IdentityHashMap ? new IdentityHashMap<K, V>() : new LinkedHashMap<K, V>();
-        Object val = null;
-
-        for (Map.Entry<K, V> entry : map.entrySet()) {
-            val = map2.get(entry.getKey());
-
-            if ((val == null && map2.containsKey(entry.getKey()) == false) || N.equals(val, entry.getValue()) == false) {
-                result.put(entry.getKey(), entry.getValue());
-            }
-        }
-
-        return result;
-    }
-
     public static <K, V> Map<K, Pair<V, Nullable<V>>> difference(final Map<K, V> map, final Map<K, V> map2) {
         if (N.isNullOrEmpty(map)) {
             return new LinkedHashMap<>();

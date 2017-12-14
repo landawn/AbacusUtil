@@ -165,10 +165,6 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntStream, S
         }
     }
 
-    public int[][] array() {
-        return a;
-    }
-
     public int get(final int i, final int j) {
         return a[i][j];
     }
@@ -648,6 +644,78 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntStream, S
         return new IntMatrix(c);
     }
 
+    public IntMatrix extend(final int newRows, final int newCols) {
+        return extend(newRows, newCols, 0);
+    }
+
+    public IntMatrix extend(final int newRows, final int newCols, final int defaultValueForNewCell) {
+        N.checkArgument(newRows >= 0, "The 'newRows' can't be negative %s", newRows);
+        N.checkArgument(newCols >= 0, "The 'newCols' can't be negative %s", newCols);
+
+        if (newRows <= rows && newCols <= cols) {
+            return copy(0, newRows, 0, newCols);
+        } else {
+            final boolean fillDefaultValue = defaultValueForNewCell != 0;
+            final int[][] b = new int[newRows][];
+
+            for (int i = 0; i < newRows; i++) {
+                b[i] = i < rows ? N.copyOf(a[i], newCols) : new int[newCols];
+
+                if (fillDefaultValue) {
+                    if (i >= rows) {
+                        N.fill(b[i], defaultValueForNewCell);
+                    } else if (cols < newCols) {
+                        N.fill(b[i], cols, newCols, defaultValueForNewCell);
+                    }
+                }
+            }
+
+            return new IntMatrix(b);
+        }
+    }
+
+    public IntMatrix extend(final int toUp, final int toDown, final int toLeft, final int toRight) {
+        return extend(toUp, toDown, toLeft, toRight, 0);
+    }
+
+    public IntMatrix extend(final int toUp, final int toDown, final int toLeft, final int toRight, final int defaultValueForNewCell) {
+        N.checkArgument(toUp >= 0, "The 'toUp' can't be negative %s", toUp);
+        N.checkArgument(toDown >= 0, "The 'toDown' can't be negative %s", toDown);
+        N.checkArgument(toLeft >= 0, "The 'toLeft' can't be negative %s", toLeft);
+        N.checkArgument(toRight >= 0, "The 'toRight' can't be negative %s", toRight);
+
+        if (toUp == 0 && toDown == 0 && toLeft == 0 && toRight == 0) {
+            return copy();
+        } else {
+            final int newRows = toUp + rows + toDown;
+            final int newCols = toLeft + cols + toRight;
+            final boolean fillDefaultValue = defaultValueForNewCell != 0;
+            final int[][] b = new int[newRows][newCols];
+
+            for (int i = 0; i < newRows; i++) {
+                if (i >= toUp && i < toUp + rows) {
+                    N.copy(a[i - toUp], 0, b[i], toLeft, cols);
+                }
+
+                if (fillDefaultValue) {
+                    if (i < toUp || i >= toUp + rows) {
+                        N.fill(b[i], defaultValueForNewCell);
+                    } else if (cols < newCols) {
+                        if (toLeft > 0) {
+                            N.fill(b[i], 0, toLeft, defaultValueForNewCell);
+                        }
+
+                        if (toRight > 0) {
+                            N.fill(b[i], cols + toLeft, newCols, defaultValueForNewCell);
+                        }
+                    }
+                }
+            }
+
+            return new IntMatrix(b);
+        }
+    }
+
     public void reverseH() {
         for (int i = 0; i < rows; i++) {
             N.reverse(a[i]);
@@ -665,12 +733,22 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntStream, S
         }
     }
 
+    /**
+     * 
+     * @return
+     * @see <a href="https://www.mathworks.com/help/matlab/ref/flip.html#btz149s-1">https://www.mathworks.com/help/matlab/ref/flip.html#btz149s-1</a>
+     */
     public IntMatrix flipH() {
         final IntMatrix res = this.copy();
         res.reverseH();
         return res;
     }
 
+    /**
+     * 
+     * @return
+     * @see <a href="https://www.mathworks.com/help/matlab/ref/flip.html#btz149s-1">https://www.mathworks.com/help/matlab/ref/flip.html#btz149s-1</a>
+     */
     public IntMatrix flipV() {
         final IntMatrix res = this.copy();
         res.reverseV();
@@ -785,6 +863,7 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntStream, S
      * @param rowRepeats
      * @param colRepeats
      * @return a new matrix
+     * @see <a href="https://www.mathworks.com/help/matlab/ref/repelem.html">https://www.mathworks.com/help/matlab/ref/repelem.html</a>
      */
     @Override
     public IntMatrix repelem(final int rowRepeats, final int colRepeats) {
@@ -813,6 +892,7 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntStream, S
      * @param rowRepeats
      * @param colRepeats
      * @return a new matrix
+     * @see <a href="https://www.mathworks.com/help/matlab/ref/repmat.html">https://www.mathworks.com/help/matlab/ref/repmat.html</a>
      */
     @Override
     public IntMatrix repmat(final int rowRepeats, final int colRepeats) {
@@ -888,7 +968,7 @@ public final class IntMatrix extends AbstractMatrix<int[], IntList, IntStream, S
      * IntMatrix a = IntMatrix.of({{1, 2, 3}, {4, 5, 6});
      * IntMatrix b = IntMatrix.of({{7, 8, 9}, {10, 11, 12});
      * 
-     * IntMatrix c = a.vstack(b);
+     * IntMatrix c = a.hstack(b);
      * 
      * [[1, 2, 3, 7, 8, 9],
      *  [4, 5, 6, 10, 11, 23]]

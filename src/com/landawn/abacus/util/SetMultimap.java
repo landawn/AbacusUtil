@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Supplier;
 
 /**
@@ -392,6 +393,26 @@ public final class SetMultimap<K, E> extends Multimap<K, E, Set<E>> {
         copy.putAll(this);
 
         return copy;
+    }
+
+    public ImmutableMap<K, ImmutableSet<E>> toImmutableMap() {
+        final Map<K, ImmutableSet<E>> map = Maps.newOrderingMap(valueMap);
+
+        for (Map.Entry<K, Set<E>> entry : valueMap.entrySet()) {
+            map.put(entry.getKey(), ImmutableSet.copyOf(entry.getValue()));
+        }
+
+        return ImmutableMap.of(map);
+    }
+
+    public ImmutableMap<K, ImmutableSet<E>> toImmutableMap(final IntFunction<? extends Map<K, ImmutableSet<E>>> mapSupplier) {
+        final Map<K, ImmutableSet<E>> map = mapSupplier.apply(valueMap.size());
+
+        for (Map.Entry<K, Set<E>> entry : valueMap.entrySet()) {
+            map.put(entry.getKey(), ImmutableSet.copyOf(entry.getValue()));
+        }
+
+        return ImmutableMap.of(map);
     }
 
     // It won't work.

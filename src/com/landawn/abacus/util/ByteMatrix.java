@@ -115,10 +115,6 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
         }
     }
 
-    public byte[][] array() {
-        return a;
-    }
-
     public byte get(final int i, final int j) {
         return a[i][j];
     }
@@ -303,6 +299,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
                 });
             } else {
                 IntStream.range(0, cols).parallel().forEach(new Try.IntConsumer<E>() {
+
                     @Override
                     public void accept(final int j) throws E {
                         for (int i = 0; i < rows; i++) {
@@ -313,7 +310,9 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
             }
         } else {
             if (rows <= cols) {
-                for (int i = 0; i < rows; i++) {
+                for (
+
+                        int i = 0; i < rows; i++) {
                     for (int j = 0; j < cols; j++) {
                         a[i][j] = func.applyAsByte(a[i][j]);
                     }
@@ -346,6 +345,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
                 });
             } else {
                 IntStream.range(0, cols).parallel().forEach(new Try.IntConsumer<E>() {
+
                     @Override
                     public void accept(final int j) throws E {
                         for (int i = 0; i < rows; i++) {
@@ -356,7 +356,9 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
             }
         } else {
             if (rows <= cols) {
-                for (int i = 0; i < rows; i++) {
+                for (
+
+                        int i = 0; i < rows; i++) {
                     for (int j = 0; j < cols; j++) {
                         a[i][j] = func.apply(i, j);
                     }
@@ -384,6 +386,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
                 });
             } else {
                 IntStream.range(0, cols).parallel().forEach(new Try.IntConsumer<E>() {
+
                     @Override
                     public void accept(final int j) throws E {
                         for (int i = 0; i < rows; i++) {
@@ -394,7 +397,9 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
             }
         } else {
             if (rows <= cols) {
-                for (int i = 0; i < rows; i++) {
+                for (
+
+                        int i = 0; i < rows; i++) {
                     for (int j = 0; j < cols; j++) {
                         a[i][j] = predicate.test(a[i][j]) ? newValue : a[i][j];
                     }
@@ -428,6 +433,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
                 });
             } else {
                 IntStream.range(0, cols).parallel().forEach(new Try.IntConsumer<E>() {
+
                     @Override
                     public void accept(final int j) throws E {
                         for (int i = 0; i < rows; i++) {
@@ -438,7 +444,9 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
             }
         } else {
             if (rows <= cols) {
-                for (int i = 0; i < rows; i++) {
+                for (
+
+                        int i = 0; i < rows; i++) {
                     for (int j = 0; j < cols; j++) {
                         a[i][j] = predicate.test(i, j) ? newValue : a[i][j];
                     }
@@ -468,6 +476,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
                 });
             } else {
                 IntStream.range(0, cols).parallel().forEach(new Try.IntConsumer<E>() {
+
                     @Override
                     public void accept(final int j) throws E {
                         for (int i = 0; i < rows; i++) {
@@ -478,7 +487,9 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
             }
         } else {
             if (rows <= cols) {
-                for (int i = 0; i < rows; i++) {
+                for (
+
+                        int i = 0; i < rows; i++) {
                     for (int j = 0; j < cols; j++) {
                         c[i][j] = func.applyAsByte(a[i][j]);
                     }
@@ -514,6 +525,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
                 });
             } else {
                 IntStream.range(0, cols).parallel().forEach(new Try.IntConsumer<E>() {
+
                     @Override
                     public void accept(final int j) throws E {
                         for (int i = 0; i < rows; i++) {
@@ -524,7 +536,9 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
             }
         } else {
             if (rows <= cols) {
-                for (int i = 0; i < rows; i++) {
+                for (
+
+                        int i = 0; i < rows; i++) {
                     for (int j = 0; j < cols; j++) {
                         c[i][j] = func.apply(a[i][j]);
                     }
@@ -598,6 +612,78 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
         return new ByteMatrix(c);
     }
 
+    public ByteMatrix extend(final int newRows, final int newCols) {
+        return extend(newRows, newCols, f.BYTE_0);
+    }
+
+    public ByteMatrix extend(final int newRows, final int newCols, final byte defaultValueForNewCell) {
+        N.checkArgument(newRows >= 0, "The 'newRows' can't be negative %s", newRows);
+        N.checkArgument(newCols >= 0, "The 'newCols' can't be negative %s", newCols);
+
+        if (newRows <= rows && newCols <= cols) {
+            return copy(0, newRows, 0, newCols);
+        } else {
+            final boolean fillDefaultValue = defaultValueForNewCell != f.BYTE_0;
+            final byte[][] b = new byte[newRows][];
+
+            for (int i = 0; i < newRows; i++) {
+                b[i] = i < rows ? N.copyOf(a[i], newCols) : new byte[newCols];
+
+                if (fillDefaultValue) {
+                    if (i >= rows) {
+                        N.fill(b[i], defaultValueForNewCell);
+                    } else if (cols < newCols) {
+                        N.fill(b[i], cols, newCols, defaultValueForNewCell);
+                    }
+                }
+            }
+
+            return new ByteMatrix(b);
+        }
+    }
+
+    public ByteMatrix extend(final int toUp, final int toDown, final int toLeft, final int toRight) {
+        return extend(toUp, toDown, toLeft, toRight, f.BYTE_0);
+    }
+
+    public ByteMatrix extend(final int toUp, final int toDown, final int toLeft, final int toRight, final byte defaultValueForNewCell) {
+        N.checkArgument(toUp >= 0, "The 'toUp' can't be negative %s", toUp);
+        N.checkArgument(toDown >= 0, "The 'toDown' can't be negative %s", toDown);
+        N.checkArgument(toLeft >= 0, "The 'toLeft' can't be negative %s", toLeft);
+        N.checkArgument(toRight >= 0, "The 'toRight' can't be negative %s", toRight);
+
+        if (toUp == 0 && toDown == 0 && toLeft == 0 && toRight == 0) {
+            return copy();
+        } else {
+            final int newRows = toUp + rows + toDown;
+            final int newCols = toLeft + cols + toRight;
+            final boolean fillDefaultValue = defaultValueForNewCell != f.BYTE_0;
+            final byte[][] b = new byte[newRows][newCols];
+
+            for (int i = 0; i < newRows; i++) {
+                if (i >= toUp && i < toUp + rows) {
+                    N.copy(a[i - toUp], 0, b[i], toLeft, cols);
+                }
+
+                if (fillDefaultValue) {
+                    if (i < toUp || i >= toUp + rows) {
+                        N.fill(b[i], defaultValueForNewCell);
+                    } else if (cols < newCols) {
+                        if (toLeft > 0) {
+                            N.fill(b[i], 0, toLeft, defaultValueForNewCell);
+                        }
+
+                        if (toRight > 0) {
+                            N.fill(b[i], cols + toLeft, newCols, defaultValueForNewCell);
+                        }
+                    }
+                }
+            }
+
+            return new ByteMatrix(b);
+        }
+    }
+
     public void reverseH() {
         for (int i = 0; i < rows; i++) {
             N.reverse(a[i]);
@@ -615,12 +701,22 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
         }
     }
 
+    /**
+     * 
+     * @return
+     * @see IntMatrix#flipH()
+     */
     public ByteMatrix flipH() {
         final ByteMatrix res = this.copy();
         res.reverseH();
         return res;
     }
 
+    /**
+     * 
+     * @return
+     * @see IntMatrix#flipV()
+     */
     public ByteMatrix flipV() {
         final ByteMatrix res = this.copy();
         res.reverseV();
@@ -735,6 +831,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
      * @param rowRepeats
      * @param colRepeats
      * @return a new matrix
+     * @see IntMatrix#repelem(int, int)
      */
     @Override
     public ByteMatrix repelem(final int rowRepeats, final int colRepeats) {
@@ -763,6 +860,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
      * @param rowRepeats
      * @param colRepeats
      * @return a new matrix
+     * @see IntMatrix#repmat(int, int)
      */
     @Override
     public ByteMatrix repmat(final int rowRepeats, final int colRepeats) {
@@ -855,6 +953,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
                 });
             } else {
                 IntStream.range(0, cols).parallel().forEach(new IntConsumer() {
+
                     @Override
                     public void accept(final int j) {
                         for (int i = 0; i < rows; i++) {
@@ -865,7 +964,9 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
             }
         } else {
             if (rows <= cols) {
-                for (int i = 0; i < rows; i++) {
+                for (
+
+                        int i = 0; i < rows; i++) {
                     for (int j = 0; j < cols; j++) {
                         c[i][j] = (byte) (a[i][j] + b.a[i][j]);
                     }
@@ -899,6 +1000,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
                 });
             } else {
                 IntStream.range(0, cols).parallel().forEach(new IntConsumer() {
+
                     @Override
                     public void accept(final int j) {
                         for (int i = 0; i < rows; i++) {
@@ -909,7 +1011,9 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
             }
         } else {
             if (rows <= cols) {
-                for (int i = 0; i < rows; i++) {
+                for (
+
+                        int i = 0; i < rows; i++) {
                     for (int j = 0; j < cols; j++) {
                         c[i][j] = (byte) (a[i][j] - b.a[i][j]);
                     }
@@ -947,6 +1051,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
                     });
                 } else {
                     IntStream.range(0, rows).parallel().forEach(new IntConsumer() {
+
                         @Override
                         public void accept(final int i) {
                             for (int j = 0; j < b.cols; j++) {
@@ -984,6 +1089,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
             } else {
                 if (N.min(rows, cols) == rows) {
                     IntStream.range(0, b.cols).parallel().forEach(new IntConsumer() {
+
                         @Override
                         public void accept(final int j) {
                             for (int i = 0; i < rows; i++) {
@@ -1009,7 +1115,9 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
         } else {
             if (N.min(rows, cols, b.cols) == rows) {
                 if (N.min(cols, b.cols) == cols) {
-                    for (int i = 0; i < rows; i++) {
+                    for (
+
+                            int i = 0; i < rows; i++) {
                         for (int k = 0; k < cols; k++) {
                             for (int j = 0; j < b.cols; j++) {
                                 c[i][j] += a[i][k] * a2[k][j];
@@ -1169,6 +1277,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
                 });
             } else {
                 IntStream.range(0, cols).parallel().forEach(new Try.IntConsumer<E>() {
+
                     @Override
                     public void accept(final int j) throws E {
                         for (int i = 0; i < rows; i++) {
@@ -1179,7 +1288,9 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
             }
         } else {
             if (rows <= cols) {
-                for (int i = 0; i < rows; i++) {
+                for (
+
+                        int i = 0; i < rows; i++) {
                     for (int j = 0; j < cols; j++) {
                         result[i][j] = zipFunction.apply(a[i][j], b[i][j]);
                     }
@@ -1216,6 +1327,7 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
                 });
             } else {
                 IntStream.range(0, cols).parallel().forEach(new Try.IntConsumer<E>() {
+
                     @Override
                     public void accept(final int j) throws E {
                         for (int i = 0; i < rows; i++) {
@@ -1226,7 +1338,9 @@ public final class ByteMatrix extends AbstractMatrix<byte[], ByteList, ByteStrea
             }
         } else {
             if (rows <= cols) {
-                for (int i = 0; i < rows; i++) {
+                for (
+
+                        int i = 0; i < rows; i++) {
                     for (int j = 0; j < cols; j++) {
                         result[i][j] = zipFunction.apply(a[i][j], b[i][j], c[i][j]);
                     }

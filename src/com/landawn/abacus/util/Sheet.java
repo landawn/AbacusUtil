@@ -275,13 +275,13 @@ public final class Sheet<R, C, E> implements Cloneable {
     public void putAll(Sheet<? extends R, ? extends C, ? extends E> source) {
         checkFrozen();
 
-        if (!this.rowKeySet().containsAll(source.rowKeySet())) {
-            throw new IllegalArgumentException(source.rowKeySet() + " are not all included in this sheet with row key set: " + this.rowKeySet());
-        }
-
-        if (!this.columnKeySet().containsAll(source.columnKeySet())) {
-            throw new IllegalArgumentException(source.columnKeySet() + " are not all included in this sheet with column key set: " + this.columnKeySet());
-        }
+        //    if (!this.rowKeySet().containsAll(source.rowKeySet())) {
+        //        throw new IllegalArgumentException(source.rowKeySet() + " are not all included in this sheet with row key set: " + this.rowKeySet());
+        //    }
+        //
+        //    if (!this.columnKeySet().containsAll(source.columnKeySet())) {
+        //        throw new IllegalArgumentException(source.columnKeySet() + " are not all included in this sheet with column key set: " + this.columnKeySet());
+        //    }
 
         final Sheet<R, C, ? extends E> tmp = (Sheet<R, C, ? extends E>) source;
         for (R r : tmp.rowKeySet()) {
@@ -1173,43 +1173,37 @@ public final class Sheet<R, C, E> implements Cloneable {
         return copy;
     }
 
-    public <X extends Exception> Sheet<R, C, E> merge(Sheet<? extends R, ? extends C, ? extends E> source,
-            Try.BiFunction<? super E, ? super E, E, X> mergeFunction) throws X {
-        final Sheet<R, C, E> result = this.copy();
+    public <EE, X extends Exception> Sheet<R, C, EE> merge(Sheet<? extends R, ? extends C, ? extends E> b,
+            Try.BiFunction<? super E, ? super E, EE, X> mergeFunction) throws X {
+        final Set<R> newRowKeySet = N.newLinkedHashSet(this.rowKeySet());
+        newRowKeySet.addAll(b.rowKeySet());
 
-        for (R rowKey : source.rowKeySet()) {
-            if (result.containsRow(rowKey) == false) {
-                result.addRow(rowKey, null);
-            }
-        }
+        final Set<C> newColumnKeySet = N.newLinkedHashSet(this.columnKeySet());
+        newColumnKeySet.addAll(b.columnKeySet());
 
-        for (C columnKey : source.columnKeySet()) {
-            if (result.containsColumn(columnKey) == false) {
-                result.addColumn(columnKey, null);
-            }
-        }
-
-        final int[] rowKeyIndexes = new int[source.rowLength()];
-        final int[] columnKeyIndexes = new int[source.columnLength()];
+        final Sheet<R, C, EE> result = new Sheet<>(newRowKeySet, newColumnKeySet);
+        final int[] rowIndexes1 = new int[newRowKeySet.size()], rowIndexes2 = new int[newRowKeySet.size()];
+        final int[] columnIndexes1 = new int[newColumnKeySet.size()], columnIndexes2 = new int[newColumnKeySet.size()];
 
         int idx = 0;
-        for (R rowKey : source.rowKeySet()) {
-            rowKeyIndexes[idx++] = result.getRowIndex(rowKey);
+        for (R rowKey : newRowKeySet) {
+            rowIndexes1[idx] = this.containsRow(rowKey) ? this.getRowIndex(rowKey) : -1;
+            rowIndexes2[idx] = b.containsRow(rowKey) ? b.getRowIndex(rowKey) : -1;
         }
 
         idx = 0;
-        for (C columnKey : source.columnKeySet()) {
-            columnKeyIndexes[idx++] = result.getColumnIndex(columnKey);
+        for (C columnKey : newColumnKeySet) {
+            columnIndexes1[idx] = this.containsColumn(columnKey) ? this.getColumnIndex(columnKey) : -1;
+            columnIndexes2[idx] = b.containsColumn(columnKey) ? b.getColumnIndex(columnKey) : -1;
         }
 
-        final Iterator<? extends C> iter = source.columnKeySet().iterator();
+        E e1 = null, e2 = null;
 
-        for (int columnIndex = 0, columnLength = columnKeyIndexes.length; columnIndex < columnLength; columnIndex++) {
-            final List<? extends E> srcColumn = source.getColumn(iter.next());
-            final List<E> targetColumn = result._columnList.get(columnKeyIndexes[columnIndex]);
-
-            for (int rowIndex = 0, rowLength = rowKeyIndexes.length; rowIndex < rowLength; rowIndex++) {
-                targetColumn.set(rowKeyIndexes[rowIndex], mergeFunction.apply(targetColumn.get(rowKeyIndexes[rowIndex]), srcColumn.get(rowIndex)));
+        for (int rowIndex = 0, rowLen = newRowKeySet.size(); rowIndex < rowLen; rowIndex++) {
+            for (int columnIndex = 0, columnLen = newColumnKeySet.size(); columnIndex < columnLen; columnIndex++) {
+                e1 = rowIndexes1[rowIndex] > -1 && columnIndexes1[columnIndex] > -1 ? this.get(rowIndexes1[rowIndex], columnIndexes1[columnIndex]) : null;
+                e2 = rowIndexes2[rowIndex] > -1 && columnIndexes2[columnIndex] > -1 ? b.get(rowIndexes2[rowIndex], columnIndexes2[columnIndex]) : null;
+                result.put(rowIndex, columnIndex, mergeFunction.apply(e1, e2));
             }
         }
 

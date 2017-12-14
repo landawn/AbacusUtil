@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.landawn.abacus.util.function.IntFunction;
 import com.landawn.abacus.util.function.Supplier;
 
 /**
@@ -393,6 +394,26 @@ public final class ListMultimap<K, E> extends Multimap<K, E, List<E>> {
         copy.putAll(this);
 
         return copy;
+    }
+
+    public ImmutableMap<K, ImmutableList<E>> toImmutableMap() {
+        final Map<K, ImmutableList<E>> map = Maps.newOrderingMap(valueMap);
+
+        for (Map.Entry<K, List<E>> entry : valueMap.entrySet()) {
+            map.put(entry.getKey(), ImmutableList.copyOf(entry.getValue()));
+        }
+
+        return ImmutableMap.of(map);
+    }
+
+    public ImmutableMap<K, ImmutableList<E>> toImmutableMap(final IntFunction<? extends Map<K, ImmutableList<E>>> mapSupplier) {
+        final Map<K, ImmutableList<E>> map = mapSupplier.apply(valueMap.size());
+
+        for (Map.Entry<K, List<E>> entry : valueMap.entrySet()) {
+            map.put(entry.getKey(), ImmutableList.copyOf(entry.getValue()));
+        }
+
+        return ImmutableMap.of(map);
     }
 
     // It won't work.

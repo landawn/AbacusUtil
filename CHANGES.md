@@ -1,6 +1,10 @@
 
 ### 1.1.5
 
+* Remove `Maps.diff`.
+
+* Remove `f.matrix(...)`.
+
 * Rename `Fn.indexeD` to `Fn.indexedd`, `Fn.indeXed` to `Fn.indexeed`.
 
 * Rename `SQLExecutor.geT` to `SQLExecutor.gett`.
@@ -14,6 +18,12 @@
 * Add `Multimap.toMultiset()`.
 
 * Add `Multimap.totalCountOfValue()`.
+
+* Add `ListMultimap/SetMulitmap.toImmutableMap`.
+
+* Add `N.forEach(int startInclusive, int endExclusive...)`.
+
+* Add `Matrix/IntMatrix.extend(...)`.
 
 
 ### 1.1.4

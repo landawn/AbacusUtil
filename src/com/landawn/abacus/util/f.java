@@ -22,10 +22,10 @@ public final class f {
 
     private static final String ARRAY_PRINT_SEPERATOR = N.repeat('-', 80);
 
-    private static final char CHAR_0 = (char) 0;
-    private static final byte BYTE_0 = (byte) 0;
-    private static final byte BYTE_1 = (byte) 1;
-    private static final short SHORT_0 = (short) 0;
+    static final char CHAR_0 = (char) 0;
+    static final byte BYTE_0 = (byte) 0;
+    static final byte BYTE_1 = (byte) 1;
+    static final short SHORT_0 = (short) 0;
 
     private f() {
         // utility class.
@@ -1308,44 +1308,6 @@ public final class f {
         return result;
     }
 
-    public static <T> Matrix<T> matrix(final T[][] a) {
-        return matrix(a, len(a), maxLen(a));
-    }
-
-    public static <T> Matrix<T> matrix(final T[][] a, final int m) {
-        return matrix(a, len(a), m);
-    }
-
-    public static <T> Matrix<T> matrix(final T[][] a, final int n, final int m) {
-        return matrix(a, n, m, null);
-    }
-
-    public static <T> Matrix<T> matrix(final T[][] a, final int n, final int m, final T valueForDefault) {
-        N.checkArgument(n >= 0 && m >= 0, "'n' and 'm' can't be negative nubmer: n = %s, m = %s", n, m);
-
-        final int lenA = len(a);
-        final Class<T> componentType = (Class<T>) a.getClass().getComponentType().getComponentType();
-        final T[][] c = N.newArray(a.getClass().getComponentType(), n);
-
-        for (int i = 0, len = c.length; i < len; i++) {
-            if (i >= lenA || N.isNullOrEmpty(a[i])) {
-                c[i] = N.newArray(componentType, m);
-
-                if (m > 0 && valueForDefault != null) {
-                    N.fill(c[i], valueForDefault);
-                }
-            } else {
-                c[i] = N.copyOf(a[i], m);
-
-                if (a[i].length < m && valueForDefault != null) {
-                    N.fill(c[i], a[i].length, m, valueForDefault);
-                }
-            }
-        }
-
-        return Matrix.of(c);
-    }
-
     public static <T> T[] copy(Class<T[]> newType, Object[] a) {
         if (N.isNullOrEmpty(a)) {
             return N.newArray(newType.getComponentType(), 0);
@@ -1885,43 +1847,6 @@ public final class f {
         }
 
         return result;
-    }
-
-    public static BooleanMatrix matrix(final boolean[][] a) {
-        return matrix(a, len(a), maxLen(a));
-    }
-
-    public static BooleanMatrix matrix(final boolean[][] a, final int m) {
-        return matrix(a, len(a), m);
-    }
-
-    public static BooleanMatrix matrix(final boolean[][] a, final int n, final int m) {
-        return matrix(a, n, m, false);
-    }
-
-    public static BooleanMatrix matrix(final boolean[][] a, final int n, final int m, final boolean valueForDefault) {
-        N.checkArgument(n >= 0 && m >= 0, "'n' and 'm' can't be negative nubmer: n = %s, m = %s", n, m);
-
-        final int lenA = len(a);
-        final boolean[][] c = new boolean[n][];
-
-        for (int i = 0, len = c.length; i < len; i++) {
-            if (i >= lenA || N.isNullOrEmpty(a[i])) {
-                c[i] = new boolean[m];
-
-                if (m > 0 && valueForDefault != false) {
-                    N.fill(c[i], valueForDefault);
-                }
-            } else {
-                c[i] = N.copyOf(a[i], m);
-
-                if (a[i].length < m && valueForDefault != false) {
-                    N.fill(c[i], a[i].length, m, valueForDefault);
-                }
-            }
-        }
-
-        return BooleanMatrix.of(c);
     }
 
     public static Boolean[] box(final boolean[] a) {
@@ -2640,43 +2565,6 @@ public final class f {
         }
 
         return result;
-    }
-
-    public static CharMatrix matrix(final char[][] a) {
-        return matrix(a, len(a), maxLen(a));
-    }
-
-    public static CharMatrix matrix(final char[][] a, final int m) {
-        return matrix(a, len(a), m);
-    }
-
-    public static CharMatrix matrix(final char[][] a, final int n, final int m) {
-        return matrix(a, n, m, CHAR_0);
-    }
-
-    public static CharMatrix matrix(final char[][] a, final int n, final int m, final char valueForDefault) {
-        N.checkArgument(n >= 0 && m >= 0, "'n' and 'm' can't be negative nubmer: n = %s, m = %s", n, m);
-
-        final int lenA = len(a);
-        final char[][] c = new char[n][];
-
-        for (int i = 0, len = c.length; i < len; i++) {
-            if (i >= lenA || N.isNullOrEmpty(a[i])) {
-                c[i] = new char[m];
-
-                if (m > 0 && valueForDefault != CHAR_0) {
-                    N.fill(c[i], valueForDefault);
-                }
-            } else {
-                c[i] = N.copyOf(a[i], m);
-
-                if (a[i].length < m && valueForDefault != CHAR_0) {
-                    N.fill(c[i], a[i].length, m, valueForDefault);
-                }
-            }
-        }
-
-        return CharMatrix.of(c);
     }
 
     public static Character[] box(final char[] a) {
@@ -4644,43 +4532,6 @@ public final class f {
         }
 
         return result;
-    }
-
-    public static ByteMatrix matrix(final byte[][] a) {
-        return matrix(a, len(a), maxLen(a));
-    }
-
-    public static ByteMatrix matrix(final byte[][] a, final int m) {
-        return matrix(a, len(a), m);
-    }
-
-    public static ByteMatrix matrix(final byte[][] a, final int n, final int m) {
-        return matrix(a, n, m, BYTE_0);
-    }
-
-    public static ByteMatrix matrix(final byte[][] a, final int n, final int m, final byte valueForDefault) {
-        N.checkArgument(n >= 0 && m >= 0, "'n' and 'm' can't be negative nubmer: n = %s, m = %s", n, m);
-
-        final int lenA = len(a);
-        final byte[][] c = new byte[n][];
-
-        for (int i = 0, len = c.length; i < len; i++) {
-            if (i >= lenA || N.isNullOrEmpty(a[i])) {
-                c[i] = new byte[m];
-
-                if (m > 0 && valueForDefault != BYTE_0) {
-                    N.fill(c[i], valueForDefault);
-                }
-            } else {
-                c[i] = N.copyOf(a[i], m);
-
-                if (a[i].length < m && valueForDefault != BYTE_0) {
-                    N.fill(c[i], a[i].length, m, valueForDefault);
-                }
-            }
-        }
-
-        return ByteMatrix.of(c);
     }
 
     public static Byte[] box(final byte[] a) {
@@ -6655,43 +6506,6 @@ public final class f {
         return result;
     }
 
-    public static ShortMatrix matrix(final short[][] a) {
-        return matrix(a, len(a), maxLen(a));
-    }
-
-    public static ShortMatrix matrix(final short[][] a, final int m) {
-        return matrix(a, len(a), m);
-    }
-
-    public static ShortMatrix matrix(final short[][] a, final int n, final int m) {
-        return matrix(a, n, m, SHORT_0);
-    }
-
-    public static ShortMatrix matrix(final short[][] a, final int n, final int m, final short valueForDefault) {
-        N.checkArgument(n >= 0 && m >= 0, "'n' and 'm' can't be negative nubmer: n = %s, m = %s", n, m);
-
-        final int lenA = len(a);
-        final short[][] c = new short[n][];
-
-        for (int i = 0, len = c.length; i < len; i++) {
-            if (i >= lenA || N.isNullOrEmpty(a[i])) {
-                c[i] = new short[m];
-
-                if (m > 0 && valueForDefault != SHORT_0) {
-                    N.fill(c[i], valueForDefault);
-                }
-            } else {
-                c[i] = N.copyOf(a[i], m);
-
-                if (a[i].length < m && valueForDefault != SHORT_0) {
-                    N.fill(c[i], a[i].length, m, valueForDefault);
-                }
-            }
-        }
-
-        return ShortMatrix.of(c);
-    }
-
     public static Short[] box(final short[] a) {
         return Array.box(a);
     }
@@ -8651,43 +8465,6 @@ public final class f {
         }
 
         return result;
-    }
-
-    public static IntMatrix matrix(final int[][] a) {
-        return matrix(a, len(a), maxLen(a));
-    }
-
-    public static IntMatrix matrix(final int[][] a, final int m) {
-        return matrix(a, len(a), m);
-    }
-
-    public static IntMatrix matrix(final int[][] a, final int n, final int m) {
-        return matrix(a, n, m, 0);
-    }
-
-    public static IntMatrix matrix(final int[][] a, final int n, final int m, final int valueForDefault) {
-        N.checkArgument(n >= 0 && m >= 0, "'n' and 'm' can't be negative nubmer: n = %s, m = %s", n, m);
-
-        final int lenA = len(a);
-        final int[][] c = new int[n][];
-
-        for (int i = 0, len = c.length; i < len; i++) {
-            if (i >= lenA || N.isNullOrEmpty(a[i])) {
-                c[i] = new int[m];
-
-                if (m > 0 && valueForDefault != 0) {
-                    N.fill(c[i], valueForDefault);
-                }
-            } else {
-                c[i] = N.copyOf(a[i], m);
-
-                if (a[i].length < m && valueForDefault != 0) {
-                    N.fill(c[i], a[i].length, m, valueForDefault);
-                }
-            }
-        }
-
-        return IntMatrix.of(c);
     }
 
     public static Integer[] box(final int[] a) {
@@ -10655,43 +10432,6 @@ public final class f {
         }
 
         return result;
-    }
-
-    public static LongMatrix matrix(final long[][] a) {
-        return matrix(a, len(a), maxLen(a));
-    }
-
-    public static LongMatrix matrix(final long[][] a, final int m) {
-        return matrix(a, len(a), m);
-    }
-
-    public static LongMatrix matrix(final long[][] a, final int n, final int m) {
-        return matrix(a, n, m, 0);
-    }
-
-    public static LongMatrix matrix(final long[][] a, final int n, final int m, final long valueForDefault) {
-        N.checkArgument(n >= 0 && m >= 0, "'n' and 'm' can't be negative nubmer: n = %s, m = %s", n, m);
-
-        final int lenA = len(a);
-        final long[][] c = new long[n][];
-
-        for (int i = 0, len = c.length; i < len; i++) {
-            if (i >= lenA || N.isNullOrEmpty(a[i])) {
-                c[i] = new long[m];
-
-                if (m > 0 && valueForDefault != 0) {
-                    N.fill(c[i], valueForDefault);
-                }
-            } else {
-                c[i] = N.copyOf(a[i], m);
-
-                if (a[i].length < m && valueForDefault != 0) {
-                    N.fill(c[i], a[i].length, m, valueForDefault);
-                }
-            }
-        }
-
-        return LongMatrix.of(c);
     }
 
     public static Long[] box(final long[] a) {
@@ -12664,43 +12404,6 @@ public final class f {
         }
 
         return result;
-    }
-
-    public static FloatMatrix matrix(final float[][] a) {
-        return matrix(a, len(a), maxLen(a));
-    }
-
-    public static FloatMatrix matrix(final float[][] a, final int m) {
-        return matrix(a, len(a), m);
-    }
-
-    public static FloatMatrix matrix(final float[][] a, final int n, final int m) {
-        return matrix(a, n, m, 0);
-    }
-
-    public static FloatMatrix matrix(final float[][] a, final int n, final int m, final float valueForDefault) {
-        N.checkArgument(n >= 0 && m >= 0, "'n' and 'm' can't be negative nubmer: n = %s, m = %s", n, m);
-
-        final int lenA = len(a);
-        final float[][] c = new float[n][];
-
-        for (int i = 0, len = c.length; i < len; i++) {
-            if (i >= lenA || N.isNullOrEmpty(a[i])) {
-                c[i] = new float[m];
-
-                if (m > 0 && valueForDefault != 0) {
-                    N.fill(c[i], valueForDefault);
-                }
-            } else {
-                c[i] = N.copyOf(a[i], m);
-
-                if (a[i].length < m && valueForDefault != 0) {
-                    N.fill(c[i], a[i].length, m, valueForDefault);
-                }
-            }
-        }
-
-        return FloatMatrix.of(c);
     }
 
     public static Float[] box(final float[] a) {
@@ -14676,43 +14379,6 @@ public final class f {
         }
 
         return result;
-    }
-
-    public static DoubleMatrix matrix(final double[][] a) {
-        return matrix(a, len(a), maxLen(a));
-    }
-
-    public static DoubleMatrix matrix(final double[][] a, final int m) {
-        return matrix(a, len(a), m);
-    }
-
-    public static DoubleMatrix matrix(final double[][] a, final int n, final int m) {
-        return matrix(a, n, m, 0);
-    }
-
-    public static DoubleMatrix matrix(final double[][] a, final int n, final int m, final double valueForDefault) {
-        N.checkArgument(n >= 0 && m >= 0, "'n' and 'm' can't be negative nubmer: n = %s, m = %s", n, m);
-
-        final int lenA = len(a);
-        final double[][] c = new double[n][];
-
-        for (int i = 0, len = c.length; i < len; i++) {
-            if (i >= lenA || N.isNullOrEmpty(a[i])) {
-                c[i] = new double[m];
-
-                if (m > 0 && valueForDefault != 0) {
-                    N.fill(c[i], valueForDefault);
-                }
-            } else {
-                c[i] = N.copyOf(a[i], m);
-
-                if (a[i].length < m && valueForDefault != 0) {
-                    N.fill(c[i], a[i].length, m, valueForDefault);
-                }
-            }
-        }
-
-        return DoubleMatrix.of(c);
     }
 
     public static Double[] box(final double[] a) {
