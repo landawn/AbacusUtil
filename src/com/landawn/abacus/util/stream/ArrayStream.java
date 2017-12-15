@@ -1522,7 +1522,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<Stream<T>> split(final int size) {
-        N.checkArgument(size > 0, "'size' must be bigger than 0");
+        N.checkArgument(size > 0, "'size' must be bigger than 0. Can't be: %s", size);
 
         return new IteratorStream<>(new ObjIteratorEx<Stream<T>>() {
             private int cursor = fromIndex;
@@ -1557,6 +1557,8 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<List<T>> splitToList(final int size) {
+        N.checkArgument(size > 0, "'size' must be bigger than 0. Can't be: %s", size);
+
         return new IteratorStream<>(new ObjIteratorEx<List<T>>() {
             private int cursor = fromIndex;
 
@@ -1590,6 +1592,8 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<Set<T>> splitToSet(final int size) {
+        N.checkArgument(size > 0, "'size' must be bigger than 0. Can't be: %s", size);
+
         return new IteratorStream<>(new ObjIteratorEx<Set<T>>() {
             private int cursor = fromIndex;
 
@@ -1827,9 +1831,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<Stream<T>> splitAt(final int n) {
-        if (n < 0) {
-            throw new IllegalArgumentException("'n' can't be negative");
-        }
+        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
 
         final Stream<T>[] a = new Stream[2];
         final int middleIndex = n < toIndex - fromIndex ? fromIndex + n : toIndex;
@@ -2029,9 +2031,9 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> limit(long maxSize) {
-        if (maxSize < 0) {
-            throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
-        } else if (maxSize >= toIndex - fromIndex) {
+        N.checkArgument(maxSize >= 0, "'maxSizse' can't be negative: %s", maxSize);
+
+        if (maxSize >= toIndex - fromIndex) {
             return this;
         }
 
@@ -2040,9 +2042,9 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> skip(long n) {
-        if (n < 0) {
-            throw new IllegalArgumentException("The skipped number can't be negative: " + n);
-        } else if (n == 0) {
+        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
+
+        if (n == 0) {
             return this;
         }
 
@@ -2420,7 +2422,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> last(final int n) {
-        N.checkArgument(n >= 0, "'n' can't be negative");
+        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
 
         if (toIndex - fromIndex <= n) {
             return this;
@@ -2431,7 +2433,7 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> skipLast(int n) {
-        N.checkArgument(n >= 0, "'n' can't be negative");
+        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
 
         if (n == 0) {
             return this;

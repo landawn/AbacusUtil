@@ -80,9 +80,9 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
     @Override
     public DoubleStream remove(final long n, final DoubleConsumer action) {
-        if (n < 0) {
-            throw new IllegalArgumentException("'n' can't be less than 0");
-        } else if (n == 0) {
+        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
+
+        if (n == 0) {
             return this;
         }
 
@@ -520,9 +520,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
 
     @Override
     public Stream<DoubleStream> splitAt(final int n) {
-        if (n < 0) {
-            throw new IllegalArgumentException("'n' can't be negative");
-        }
+        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
 
         final DoubleIterator iter = this.iteratorEx();
         final DoubleList list = new DoubleList();

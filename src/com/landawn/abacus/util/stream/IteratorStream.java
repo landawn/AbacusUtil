@@ -1359,6 +1359,8 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<List<T>> splitToList(final int size) {
+        N.checkArgument(size > 0, "'size' must be bigger than 0. Can't be: %s", size);
+
         return new IteratorStream<>(new ObjIteratorEx<List<T>>() {
             @Override
             public boolean hasNext() {
@@ -1397,6 +1399,8 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<Set<T>> splitToSet(final int size) {
+        N.checkArgument(size > 0, "'size' must be bigger than 0. Can't be: %s", size);
+
         return new IteratorStream<>(new ObjIteratorEx<Set<T>>() {
             @Override
             public boolean hasNext() {
@@ -1856,9 +1860,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> limit(final long maxSize) {
-        if (maxSize < 0) {
-            throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
-        }
+        N.checkArgument(maxSize >= 0, "'maxSizse' can't be negative: %s", maxSize);
 
         return new IteratorStream<>(new ObjIteratorEx<T>() {
             private long cnt = 0;
@@ -1887,9 +1889,9 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> skip(final long n) {
-        if (n < 0) {
-            throw new IllegalArgumentException("The skipped number can't be negative: " + n);
-        } else if (n == 0) {
+        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
+
+        if (n == 0) {
             return this;
         }
 
@@ -2342,7 +2344,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> last(final int n) {
-        N.checkArgument(n >= 0, "'n' can't be negative");
+        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
 
         if (n == 0) {
             return new IteratorStream<>(ObjIteratorEx.EMPTY, sorted, cmp, closeHandlers);
@@ -2363,7 +2365,7 @@ class IteratorStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> skipLast(final int n) {
-        N.checkArgument(n >= 0, "'n' can't be negative");
+        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
 
         if (n == 0) {
             return this;

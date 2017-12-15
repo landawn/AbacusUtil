@@ -678,7 +678,7 @@ class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public Stream<FloatList> splitToList(final int size) {
-        N.checkArgument(size > 0, "'size' must be bigger than 0");
+        N.checkArgument(size > 0, "'size' must be bigger than 0. Can't be: %s", size);
 
         return new IteratorStream<>(new ObjIteratorEx<FloatList>() {
             @Override
@@ -966,9 +966,7 @@ class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public FloatStream limit(final long maxSize) {
-        if (maxSize < 0) {
-            throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
-        }
+        N.checkArgument(maxSize >= 0, "'maxSizse' can't be negative: %s", maxSize);
 
         return new IteratorFloatStream(new FloatIteratorEx() {
             private long cnt = 0;
@@ -997,9 +995,9 @@ class IteratorFloatStream extends AbstractFloatStream {
 
     @Override
     public FloatStream skip(final long n) {
-        if (n < 0) {
-            throw new IllegalArgumentException("The skipped number can't be negative: " + n);
-        } else if (n == 0) {
+        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
+
+        if (n == 0) {
             return this;
         }
 

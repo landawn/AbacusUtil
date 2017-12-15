@@ -1961,9 +1961,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public Stream<T> limit(final long maxSize) {
-        if (maxSize < 0) {
-            throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
-        }
+        N.checkArgument(maxSize >= 0, "'maxSizse' can't be negative: %s", maxSize);
 
         return new ParallelIteratorStream<>(new ObjIteratorEx<T>() {
             private long cnt = 0;
@@ -1992,9 +1990,9 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public Stream<T> skip(final long n) {
-        if (n < 0) {
-            throw new IllegalArgumentException("The skipped number can't be negative: " + n);
-        } else if (n == 0) {
+        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
+
+        if (n == 0) {
             return this;
         }
 
@@ -2743,7 +2741,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public Stream<T> last(final int n) {
-        N.checkArgument(n >= 0, "'n' can't be negative");
+        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
 
         if (n == 0) {
             return new ParallelIteratorStream<>(ObjIteratorEx.EMPTY, sorted, cmp, maxThreadNum, splitor, closeHandlers);
@@ -2764,7 +2762,7 @@ final class ParallelIteratorStream<T> extends IteratorStream<T> {
 
     @Override
     public Stream<T> skipLast(final int n) {
-        N.checkArgument(n >= 0, "'n' can't be negative");
+        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
 
         if (n == 0) {
             return this;

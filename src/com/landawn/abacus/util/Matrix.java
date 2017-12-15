@@ -481,7 +481,7 @@ public final class Matrix<T> extends AbstractMatrix<T[], List<T>, Stream<T>, Str
         }
     }
 
-    public <E extends Exception> Matrix<T> map(final Try.Function<? super T, T, E> func) throws E {
+    public <E extends Exception> Matrix<T> map(final Try.UnaryOperator<T, E> func) throws E {
         return map(this.componentType, func);
     }
 

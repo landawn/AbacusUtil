@@ -580,9 +580,7 @@ final class ParallelIteratorIntStream extends IteratorIntStream {
 
     @Override
     public IntStream limit(final long maxSize) {
-        if (maxSize < 0) {
-            throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
-        }
+        N.checkArgument(maxSize >= 0, "'maxSizse' can't be negative: %s", maxSize);
 
         return new ParallelIteratorIntStream(new IntIteratorEx() {
             private long cnt = 0;
@@ -611,9 +609,9 @@ final class ParallelIteratorIntStream extends IteratorIntStream {
 
     @Override
     public IntStream skip(final long n) {
-        if (n < 0) {
-            throw new IllegalArgumentException("The skipped number can't be negative: " + n);
-        } else if (n == 0) {
+        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
+
+        if (n == 0) {
             return this;
         }
 

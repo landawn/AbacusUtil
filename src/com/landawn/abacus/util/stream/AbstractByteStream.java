@@ -80,9 +80,9 @@ abstract class AbstractByteStream extends ByteStream {
 
     @Override
     public ByteStream remove(final long n, final ByteConsumer action) {
-        if (n < 0) {
-            throw new IllegalArgumentException("'n' can't be less than 0");
-        } else if (n == 0) {
+        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
+
+        if (n == 0) {
             return this;
         }
 
@@ -458,9 +458,7 @@ abstract class AbstractByteStream extends ByteStream {
 
     @Override
     public Stream<ByteStream> splitAt(final int n) {
-        if (n < 0) {
-            throw new IllegalArgumentException("'n' can't be negative");
-        }
+        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
 
         final ByteIterator iter = this.iteratorEx();
         final ByteList list = new ByteList();

@@ -195,7 +195,7 @@ public final class f {
         return c;
     }
 
-    public static <T, E extends Exception> T[] map2(final T[] a, final Try.Function<? super T, T, E> func) throws E {
+    public static <T, E extends Exception> T[] map2(final T[] a, final Try.UnaryOperator<T, E> func) throws E {
         if (a == null) {
             return null;
         }
@@ -218,7 +218,7 @@ public final class f {
         return c;
     }
 
-    public static <T, E extends Exception> T[][] map2(final T[][] a, final Try.Function<? super T, T, E> func) throws E {
+    public static <T, E extends Exception> T[][] map2(final T[][] a, final Try.UnaryOperator<T, E> func) throws E {
         if (a == null) {
             return null;
         }
@@ -241,7 +241,7 @@ public final class f {
         return c;
     }
 
-    public static <T, E extends Exception> T[][][] map2(final T[][][] a, final Try.Function<? super T, T, E> func) throws E {
+    public static <T, E extends Exception> T[][][] map2(final T[][][] a, final Try.UnaryOperator<T, E> func) throws E {
         if (a == null) {
             return null;
         }

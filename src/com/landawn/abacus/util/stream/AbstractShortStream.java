@@ -80,9 +80,9 @@ abstract class AbstractShortStream extends ShortStream {
 
     @Override
     public ShortStream remove(final long n, final ShortConsumer action) {
-        if (n < 0) {
-            throw new IllegalArgumentException("'n' can't be less than 0");
-        } else if (n == 0) {
+        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
+
+        if (n == 0) {
             return this;
         }
 
@@ -389,6 +389,7 @@ abstract class AbstractShortStream extends ShortStream {
         return findFirst(predicate);
     }
 
+    @Override
     public <E extends Exception, E2 extends Exception> OptionalShort findFirstOrLast(Try.ShortPredicate<E> predicateForFirst,
             Try.ShortPredicate<E> predicateForLast) throws E, E2 {
         final ShortIteratorEx iter = iteratorEx();
@@ -455,9 +456,7 @@ abstract class AbstractShortStream extends ShortStream {
 
     @Override
     public Stream<ShortStream> splitAt(final int n) {
-        if (n < 0) {
-            throw new IllegalArgumentException("'n' can't be negative");
-        }
+        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
 
         final ShortIterator iter = this.iteratorEx();
         final ShortList list = new ShortList();

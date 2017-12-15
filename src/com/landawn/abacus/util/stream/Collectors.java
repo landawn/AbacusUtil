@@ -1264,7 +1264,7 @@ public class Collectors {
      * @throws UnsupportedOperationException it's used in parallel stream.
      */
     public static <T> Collector<T, ?, List<T>> last(final int n) {
-        N.checkArgument(n >= 0, "'n' can't be negative");
+        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
 
         final Supplier<Deque<T>> supplier = new Supplier<Deque<T>>() {
             private volatile boolean isCalled = false;

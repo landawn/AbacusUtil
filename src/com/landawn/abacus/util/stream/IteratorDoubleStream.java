@@ -678,7 +678,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public Stream<DoubleList> splitToList(final int size) {
-        N.checkArgument(size > 0, "'size' must be bigger than 0");
+        N.checkArgument(size > 0, "'size' must be bigger than 0. Can't be: %s", size);
 
         return new IteratorStream<>(new ObjIteratorEx<DoubleList>() {
             @Override
@@ -966,9 +966,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public DoubleStream limit(final long maxSize) {
-        if (maxSize < 0) {
-            throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
-        }
+        N.checkArgument(maxSize >= 0, "'maxSizse' can't be negative: %s", maxSize);
 
         return new IteratorDoubleStream(new DoubleIteratorEx() {
             private long cnt = 0;
@@ -997,9 +995,9 @@ class IteratorDoubleStream extends AbstractDoubleStream {
 
     @Override
     public DoubleStream skip(final long n) {
-        if (n < 0) {
-            throw new IllegalArgumentException("The skipped number can't be negative: " + n);
-        } else if (n == 0) {
+        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
+
+        if (n == 0) {
             return this;
         }
 

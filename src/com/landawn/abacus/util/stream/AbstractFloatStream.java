@@ -81,9 +81,9 @@ abstract class AbstractFloatStream extends FloatStream {
 
     @Override
     public FloatStream remove(final long n, final FloatConsumer action) {
-        if (n < 0) {
-            throw new IllegalArgumentException("'n' can't be less than 0");
-        } else if (n == 0) {
+        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
+
+        if (n == 0) {
             return this;
         }
 
@@ -521,9 +521,7 @@ abstract class AbstractFloatStream extends FloatStream {
 
     @Override
     public Stream<FloatStream> splitAt(final int n) {
-        if (n < 0) {
-            throw new IllegalArgumentException("'n' can't be negative");
-        }
+        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
 
         final FloatIterator iter = this.iteratorEx();
         final FloatList list = new FloatList();

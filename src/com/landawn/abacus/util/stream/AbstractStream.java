@@ -127,9 +127,9 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<T> remove(final long n, final Consumer<? super T> action) {
-        if (n < 0) {
-            throw new IllegalArgumentException("'n' can't be less than 0");
-        } else if (n == 0) {
+        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
+
+        if (n == 0) {
             return this;
         }
 
@@ -1527,9 +1527,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public Stream<Stream<T>> splitAt(final int n) {
-        if (n < 0) {
-            throw new IllegalArgumentException("'n' can't be negative");
-        }
+        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
 
         final Iterator<T> iter = this.iterator();
         final List<T> list = new ArrayList<>();

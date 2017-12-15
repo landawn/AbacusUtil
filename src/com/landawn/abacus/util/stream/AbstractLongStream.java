@@ -79,9 +79,9 @@ abstract class AbstractLongStream extends LongStream {
 
     @Override
     public LongStream remove(final long n, final LongConsumer action) {
-        if (n < 0) {
-            throw new IllegalArgumentException("'n' can't be less than 0");
-        } else if (n == 0) {
+        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
+
+        if (n == 0) {
             return this;
         }
 
@@ -455,9 +455,7 @@ abstract class AbstractLongStream extends LongStream {
 
     @Override
     public Stream<LongStream> splitAt(final int n) {
-        if (n < 0) {
-            throw new IllegalArgumentException("'n' can't be negative");
-        }
+        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
 
         final LongIterator iter = this.iteratorEx();
         final LongList list = new LongList();

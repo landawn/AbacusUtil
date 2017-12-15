@@ -244,9 +244,7 @@ final class ParallelArrayCharStream extends ArrayCharStream {
 
     @Override
     public Stream<CharStream> splitAt(final int n) {
-        if (n < 0) {
-            throw new IllegalArgumentException("'n' can't be negative");
-        }
+        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
 
         final CharStream[] a = new CharStream[2];
         final int middleIndex = n < toIndex - fromIndex ? fromIndex + n : toIndex;
@@ -311,9 +309,9 @@ final class ParallelArrayCharStream extends ArrayCharStream {
 
     @Override
     public CharStream limit(long maxSize) {
-        if (maxSize < 0) {
-            throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
-        } else if (maxSize >= toIndex - fromIndex) {
+        N.checkArgument(maxSize >= 0, "'maxSizse' can't be negative: %s", maxSize);
+
+        if (maxSize >= toIndex - fromIndex) {
             return this;
         }
 
@@ -322,9 +320,9 @@ final class ParallelArrayCharStream extends ArrayCharStream {
 
     @Override
     public CharStream skip(long n) {
-        if (n < 0) {
-            throw new IllegalArgumentException("The skipped number can't be negative: " + n);
-        } else if (n == 0) {
+        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
+
+        if (n == 0) {
             return this;
         }
 

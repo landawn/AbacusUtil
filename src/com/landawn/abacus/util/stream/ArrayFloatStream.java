@@ -751,7 +751,7 @@ class ArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public Stream<FloatStream> split(final int size) {
-        N.checkArgument(size > 0, "'size' must be bigger than 0");
+        N.checkArgument(size > 0, "'size' must be bigger than 0. Can't be: %s", size);
 
         return new IteratorStream<>(new ObjIteratorEx<FloatStream>() {
             private int cursor = fromIndex;
@@ -786,7 +786,7 @@ class ArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public Stream<FloatList> splitToList(final int size) {
-        N.checkArgument(size > 0, "'size' must be bigger than 0");
+        N.checkArgument(size > 0, "'size' must be bigger than 0. Can't be: %s", size);
 
         return new IteratorStream<>(new ObjIteratorEx<FloatList>() {
             private int cursor = fromIndex;
@@ -970,9 +970,7 @@ class ArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public Stream<FloatStream> splitAt(final int n) {
-        if (n < 0) {
-            throw new IllegalArgumentException("'n' can't be negative");
-        }
+        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
 
         final FloatStream[] a = new FloatStream[2];
         final int middleIndex = n < toIndex - fromIndex ? fromIndex + n : toIndex;
@@ -1167,9 +1165,9 @@ class ArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public FloatStream limit(long maxSize) {
-        if (maxSize < 0) {
-            throw new IllegalArgumentException("'maxSize' can't be negative: " + maxSize);
-        } else if (maxSize >= toIndex - fromIndex) {
+        N.checkArgument(maxSize >= 0, "'maxSizse' can't be negative: %s", maxSize);
+
+        if (maxSize >= toIndex - fromIndex) {
             return this;
         }
 
@@ -1178,9 +1176,9 @@ class ArrayFloatStream extends AbstractFloatStream {
 
     @Override
     public FloatStream skip(long n) {
-        if (n < 0) {
-            throw new IllegalArgumentException("The skipped number can't be negative: " + n);
-        } else if (n == 0) {
+        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
+
+        if (n == 0) {
             return this;
         }
 
