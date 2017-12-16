@@ -21,6 +21,18 @@ public final class FloatTriple {
         return new FloatTriple(_1, _2, _3);
     }
 
+    public static FloatTriple from(final float[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return new FloatTriple();
+        } else if (a.length == 1) {
+            return new FloatTriple(a[0], 0, 0);
+        } else if (a.length == 2) {
+            return new FloatTriple(a[0], a[1], 0);
+        } else {
+            return new FloatTriple(a[0], a[1], a[2]);
+        }
+    }
+
     public float min() {
         return N.min(_1, _2, _3);
     }

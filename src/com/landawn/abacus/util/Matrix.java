@@ -1260,7 +1260,7 @@ public final class Matrix<T> extends AbstractMatrix<T[], List<T>, Stream<T>, Str
      * @return
      * @see IntMatrix#hstack(IntMatrix)
      */
-    public Matrix<T> hstack(final Matrix<T> b) {
+    public Matrix<T> hstack(final Matrix<? extends T> b) {
         N.checkArgument(this.rows == b.rows, "The count of row in this matrix and the specified matrix are not equals");
 
         final T[][] c = N.newArray(arrayType, rows);

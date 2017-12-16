@@ -21,6 +21,18 @@ public final class IntTriple {
         return new IntTriple(_1, _2, _3);
     }
 
+    public static IntTriple from(final int[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return new IntTriple();
+        } else if (a.length == 1) {
+            return new IntTriple(a[0], 0, 0);
+        } else if (a.length == 2) {
+            return new IntTriple(a[0], a[1], 0);
+        } else {
+            return new IntTriple(a[0], a[1], a[2]);
+        }
+    }
+
     public int min() {
         return N.min(_1, _2, _3);
     }

@@ -19,6 +19,16 @@ public class ShortPair {
         return new ShortPair(_1, _2);
     }
 
+    public static ShortPair from(final short[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return new ShortPair();
+        } else if (a.length == 1) {
+            return new ShortPair(a[0], (short) 0);
+        } else {
+            return new ShortPair(a[0], a[1]);
+        }
+    }
+
     public short min() {
         return N.min(_1, _2);
     }

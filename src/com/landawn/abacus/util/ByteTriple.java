@@ -21,6 +21,18 @@ public class ByteTriple {
         return new ByteTriple(_1, _2, _3);
     }
 
+    public static ByteTriple from(final byte[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return new ByteTriple();
+        } else if (a.length == 1) {
+            return new ByteTriple(a[0], (byte) 0, (byte) 0);
+        } else if (a.length == 2) {
+            return new ByteTriple(a[0], a[1], (byte) 0);
+        } else {
+            return new ByteTriple(a[0], a[1], a[2]);
+        }
+    }
+
     public byte min() {
         return N.min(_1, _2, _3);
     }

@@ -19,6 +19,16 @@ public final class DoublePair {
         return new DoublePair(_1, _2);
     }
 
+    public static DoublePair from(final double[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return new DoublePair();
+        } else if (a.length == 1) {
+            return new DoublePair(a[0], 0);
+        } else {
+            return new DoublePair(a[0], a[1]);
+        }
+    }
+
     public double min() {
         return N.min(_1, _2);
     }

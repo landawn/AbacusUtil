@@ -526,10 +526,10 @@ public class CompletableFuture<T> implements Future<T> {
         });
     }
 
-    public <U, E extends Exception> CompletableFuture<U> thenCall(final Try.Callable<U, E> action) {
-        return execute(new Callable<U>() {
+    public <R, E extends Exception> CompletableFuture<R> thenCall(final Try.Callable<R, E> action) {
+        return execute(new Callable<R>() {
             @Override
-            public U call() throws Exception {
+            public R call() throws Exception {
                 get();
                 return action.call();
             }
@@ -591,10 +591,10 @@ public class CompletableFuture<T> implements Future<T> {
         }, other);
     }
 
-    public <U, E extends Exception> CompletableFuture<U> callAfterBoth(final CompletableFuture<?> other, final Try.Callable<U, E> action) {
-        return execute(new Callable<U>() {
+    public <R, E extends Exception> CompletableFuture<R> callAfterBoth(final CompletableFuture<?> other, final Try.Callable<R, E> action) {
+        return execute(new Callable<R>() {
             @Override
-            public U call() throws Exception {
+            public R call() throws Exception {
                 get();
                 other.get();
                 return action.call();
@@ -661,10 +661,10 @@ public class CompletableFuture<T> implements Future<T> {
         }, other);
     }
 
-    public <U, E extends Exception> CompletableFuture<U> callAfterEither(final CompletableFuture<?> other, final Try.Callable<U, RuntimeException> action) {
-        return execute(new Callable<U>() {
+    public <R, E extends Exception> CompletableFuture<R> callAfterEither(final CompletableFuture<?> other, final Try.Callable<R, RuntimeException> action) {
+        return execute(new Callable<R>() {
             @Override
-            public U call() throws Exception {
+            public R call() throws Exception {
                 Futures.anyOf(N.asList(CompletableFuture.this, other)).get();
 
                 return action.call();
@@ -879,11 +879,11 @@ public class CompletableFuture<T> implements Future<T> {
     //        }, asyncExecutor);
     //    }
 
-    private <U> CompletableFuture<U> execute(final Callable<U> command) {
+    private <R> CompletableFuture<R> execute(final Callable<R> command) {
         return execute(command, null);
     }
 
-    private <U> CompletableFuture<U> execute(final Callable<U> command, final CompletableFuture<?> other) {
+    private <R> CompletableFuture<R> execute(final Callable<R> command, final CompletableFuture<?> other) {
         return execute(new FutureTask<>(command), other);
     }
 

@@ -21,6 +21,18 @@ public final class CharTriple {
         return new CharTriple(_1, _2, _3);
     }
 
+    public static CharTriple from(final char[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return new CharTriple();
+        } else if (a.length == 1) {
+            return new CharTriple(a[0], (char) 0, (char) 0);
+        } else if (a.length == 2) {
+            return new CharTriple(a[0], a[1], (char) 0);
+        } else {
+            return new CharTriple(a[0], a[1], a[2]);
+        }
+    }
+
     public char min() {
         return N.min(_1, _2, _3);
     }

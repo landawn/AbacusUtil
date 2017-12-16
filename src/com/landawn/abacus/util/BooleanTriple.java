@@ -21,6 +21,18 @@ public class BooleanTriple {
         return new BooleanTriple(_1, _2, _3);
     }
 
+    public static BooleanTriple from(final boolean[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return new BooleanTriple();
+        } else if (a.length == 1) {
+            return new BooleanTriple(a[0], false, false);
+        } else if (a.length == 2) {
+            return new BooleanTriple(a[0], a[1], false);
+        } else {
+            return new BooleanTriple(a[0], a[1], a[2]);
+        }
+    }
+
     public BooleanTriple reversed() {
         return new BooleanTriple(_3, _2, _1);
     }

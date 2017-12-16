@@ -19,6 +19,16 @@ public final class FloatPair {
         return new FloatPair(_1, _2);
     }
 
+    public static FloatPair from(final float[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return new FloatPair();
+        } else if (a.length == 1) {
+            return new FloatPair(a[0], 0);
+        } else {
+            return new FloatPair(a[0], a[1]);
+        }
+    }
+
     public float min() {
         return N.min(_1, _2);
     }

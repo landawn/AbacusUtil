@@ -19,6 +19,16 @@ public final class IntPair {
         return new IntPair(_1, _2);
     }
 
+    public static IntPair from(final int[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return new IntPair();
+        } else if (a.length == 1) {
+            return new IntPair(a[0], 0);
+        } else {
+            return new IntPair(a[0], a[1]);
+        }
+    }
+
     public int min() {
         return N.min(_1, _2);
     }

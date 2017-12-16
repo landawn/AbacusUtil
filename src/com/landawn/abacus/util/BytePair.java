@@ -19,6 +19,16 @@ public class BytePair {
         return new BytePair(_1, _2);
     }
 
+    public static BytePair from(final byte[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return new BytePair();
+        } else if (a.length == 1) {
+            return new BytePair(a[0], (byte) 0);
+        } else {
+            return new BytePair(a[0], a[1]);
+        }
+    }
+
     public byte min() {
         return N.min(_1, _2);
     }

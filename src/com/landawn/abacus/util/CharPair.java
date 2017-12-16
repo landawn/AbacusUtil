@@ -19,6 +19,16 @@ public final class CharPair {
         return new CharPair(_1, _2);
     }
 
+    public static CharPair from(final char[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return new CharPair();
+        } else if (a.length == 1) {
+            return new CharPair(a[0], (char) 0);
+        } else {
+            return new CharPair(a[0], a[1]);
+        }
+    }
+
     public char min() {
         return N.min(_1, _2);
     }

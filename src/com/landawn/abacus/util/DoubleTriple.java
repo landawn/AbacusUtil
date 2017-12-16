@@ -21,6 +21,18 @@ public final class DoubleTriple {
         return new DoubleTriple(_1, _2, _3);
     }
 
+    public static DoubleTriple from(final double[] a) {
+        if (N.isNullOrEmpty(a)) {
+            return new DoubleTriple();
+        } else if (a.length == 1) {
+            return new DoubleTriple(a[0], 0, 0);
+        } else if (a.length == 2) {
+            return new DoubleTriple(a[0], a[1], 0);
+        } else {
+            return new DoubleTriple(a[0], a[1], a[2]);
+        }
+    }
+
     public double min() {
         return N.min(_1, _2, _3);
     }

@@ -500,10 +500,10 @@ public class CompletableFuture<T> implements Future<T> {
         });
     }
 
-    public <U> CompletableFuture<U> thenCall(final Callable<U> action) {
-        return execute(new Callable<U>() {
+    public <R> CompletableFuture<R> thenCall(final Callable<R> action) {
+        return execute(new Callable<R>() {
             @Override
-            public U call() throws Exception {
+            public R call() throws Exception {
                 get();
 
                 return action.call();
@@ -542,7 +542,7 @@ public class CompletableFuture<T> implements Future<T> {
         return withUIExecutor().thenRun(action);
     }
 
-    public <U> CompletableFuture<U> thenCallOnUI(final Callable<U> action) {
+    public <R> CompletableFuture<R> thenCallOnUI(final Callable<R> action) {
         return withUIExecutor().thenCall(action);
     }
 
@@ -566,7 +566,7 @@ public class CompletableFuture<T> implements Future<T> {
         return withTPExecutor().thenRun(action);
     }
 
-    public <U> CompletableFuture<U> thenCallByTP(final Callable<U> action) {
+    public <R> CompletableFuture<R> thenCallByTP(final Callable<R> action) {
         return withTPExecutor().thenCall(action);
     }
 
@@ -614,10 +614,10 @@ public class CompletableFuture<T> implements Future<T> {
         }, other);
     }
 
-    public <U> CompletableFuture<U> callAfterBoth(final CompletableFuture<?> other, final Callable<U> action) {
-        return execute(new Callable<U>() {
+    public <R> CompletableFuture<R> callAfterBoth(final CompletableFuture<?> other, final Callable<R> action) {
+        return execute(new Callable<R>() {
             @Override
-            public U call() throws Exception {
+            public R call() throws Exception {
                 get();
                 other.get();
                 return action.call();
@@ -660,7 +660,7 @@ public class CompletableFuture<T> implements Future<T> {
         return withUIExecutor().runAfterBoth(other, action);
     }
 
-    public <U> CompletableFuture<U> callOnUIAfterBoth(final CompletableFuture<?> other, final Callable<U> action) {
+    public <R> CompletableFuture<R> callOnUIAfterBoth(final CompletableFuture<?> other, final Callable<R> action) {
         return withUIExecutor().callAfterBoth(other, action);
     }
 
@@ -686,7 +686,7 @@ public class CompletableFuture<T> implements Future<T> {
         return withTPExecutor().runAfterBoth(other, action);
     }
 
-    public <U> CompletableFuture<U> callByTPAfterBoth(final CompletableFuture<?> other, final Callable<U> action) {
+    public <R> CompletableFuture<R> callByTPAfterBoth(final CompletableFuture<?> other, final Callable<R> action) {
         return withTPExecutor().callAfterBoth(other, action);
     }
 
@@ -733,10 +733,10 @@ public class CompletableFuture<T> implements Future<T> {
         }, other);
     }
 
-    public <U> CompletableFuture<U> callAfterEither(final CompletableFuture<?> other, final Callable<U> action) {
-        return execute(new Callable<U>() {
+    public <R> CompletableFuture<R> callAfterEither(final CompletableFuture<?> other, final Callable<R> action) {
+        return execute(new Callable<R>() {
             @Override
-            public U call() throws Exception {
+            public R call() throws Exception {
                 Futures.anyOf(N.asList(CompletableFuture.this, other)).get();
 
                 return action.call();
@@ -782,7 +782,7 @@ public class CompletableFuture<T> implements Future<T> {
         return withUIExecutor().runAfterEither(other, action);
     }
 
-    public <U> CompletableFuture<U> callOnUIAfterEither(final CompletableFuture<?> other, final Callable<U> action) {
+    public <R> CompletableFuture<R> callOnUIAfterEither(final CompletableFuture<?> other, final Callable<R> action) {
         return withUIExecutor().callAfterEither(other, action);
     }
 
@@ -810,7 +810,7 @@ public class CompletableFuture<T> implements Future<T> {
         return withTPExecutor().runAfterEither(other, action);
     }
 
-    public <U> CompletableFuture<U> callByTPAfterEither(final CompletableFuture<?> other, final Callable<U> action) {
+    public <R> CompletableFuture<R> callByTPAfterEither(final CompletableFuture<?> other, final Callable<R> action) {
         return withTPExecutor().callAfterEither(other, action);
     }
 
@@ -1007,11 +1007,11 @@ public class CompletableFuture<T> implements Future<T> {
     //        }, asyncExecutor);
     //    }
 
-    private <U> CompletableFuture<U> execute(final Callable<U> command) {
+    private <R> CompletableFuture<R> execute(final Callable<R> command) {
         return execute(command, null);
     }
 
-    private <U> CompletableFuture<U> execute(final Callable<U> command, final CompletableFuture<?> other) {
+    private <R> CompletableFuture<R> execute(final Callable<R> command, final CompletableFuture<?> other) {
         return execute(new FutureTask<>(command), other);
     }
 
