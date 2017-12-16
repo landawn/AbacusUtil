@@ -8937,10 +8937,11 @@ public final class N {
                 }
             }
         } else {
-            @SuppressWarnings("unchecked")
-            final T[] a = (T[]) c.toArray();
+            //    @SuppressWarnings("unchecked")
+            //    final T[] a = (T[]) c.toArray();
+            //    return lastNonNull(a);
 
-            return lastNonNull(a);
+            Iterators.lastNonNull(c.iterator());
         }
 
         return Optional.empty();

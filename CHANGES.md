@@ -5,6 +5,8 @@
 
 * Remove `f.matrix(...)`.
 
+* Remove `Stream.unzip/unzip3`, replaced by `Seq/Iterators.unzip/unzip3`.
+
 * Rename `Fn.indexeD` to `Fn.indexedd`, `Fn.indeXed` to `Fn.indexeed`.
 
 * Rename `SQLExecutor.geT` to `SQLExecutor.gett`.
