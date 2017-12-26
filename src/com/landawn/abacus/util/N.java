@@ -32092,7 +32092,7 @@ public final class N {
             try {
                 Thread.sleep(millis);
             } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+                throw new UncheckedException(e);
             }
         }
     }

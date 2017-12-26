@@ -214,6 +214,18 @@ public final class Try<T extends AutoCloseable> {
         }
     }
 
+    public static <E extends Exception> Try.Callable<Void, E> callable(final Try.Runnable<E> cmd) {
+        N.requireNonNull(cmd);
+
+        return new Try.Callable<Void, E>() {
+            @Override
+            public Void call() throws E {
+                cmd.run();
+                return null;
+            }
+        };
+    }
+
     public T val() {
         return t;
     }

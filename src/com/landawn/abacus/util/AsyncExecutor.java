@@ -46,6 +46,8 @@ import com.landawn.abacus.util.function.Predicate;
 public class AsyncExecutor {
     private static final Logger logger = LoggerFactory.getLogger(AsyncExecutor.class);
 
+    private static final int CORE_POOL_SIZE = 8;
+
     private static final ScheduledExecutorService SCHEDULED_EXECUTOR;
     static {
         final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(64);
@@ -109,6 +111,10 @@ public class AsyncExecutor {
     }
 
     public CompletableFuture<Void> execute(final Runnable action, final long delay) {
+        return execute(action, delay, TimeUnit.MILLISECONDS);
+    }
+
+    public CompletableFuture<Void> execute(final Runnable action, final long delay, final TimeUnit timeUnit) {
         final ExecutorService executor = getExecutorService();
 
         final Callable<CompletableFuture<Void>> scheduledAction = new Callable<CompletableFuture<Void>>() {
@@ -118,7 +124,7 @@ public class AsyncExecutor {
             }
         };
 
-        final ScheduledFuture<CompletableFuture<Void>> scheduledFuture = SCHEDULED_EXECUTOR.schedule(scheduledAction, delay, TimeUnit.MILLISECONDS);
+        final ScheduledFuture<CompletableFuture<Void>> scheduledFuture = SCHEDULED_EXECUTOR.schedule(scheduledAction, delay, timeUnit);
 
         return new CompletableFuture<>(wrap(scheduledFuture), null, executor);
     }
@@ -157,6 +163,10 @@ public class AsyncExecutor {
     }
 
     public <T> CompletableFuture<T> execute(final Callable<T> action, final long delay) {
+        return execute(action, delay, TimeUnit.MILLISECONDS);
+    }
+
+    public <T> CompletableFuture<T> execute(final Callable<T> action, final long delay, final TimeUnit timeUnit) {
         final ExecutorService executor = getExecutorService();
 
         final Callable<CompletableFuture<T>> scheduledAction = new Callable<CompletableFuture<T>>() {
@@ -166,7 +176,7 @@ public class AsyncExecutor {
             }
         };
 
-        final ScheduledFuture<CompletableFuture<T>> scheduledFuture = SCHEDULED_EXECUTOR.schedule(scheduledAction, delay, TimeUnit.MILLISECONDS);
+        final ScheduledFuture<CompletableFuture<T>> scheduledFuture = SCHEDULED_EXECUTOR.schedule(scheduledAction, delay, timeUnit);
 
         return new CompletableFuture<>(wrap(scheduledFuture), null, executor);
     }
@@ -297,8 +307,8 @@ public class AsyncExecutor {
         if (executorService == null) {
             synchronized (this) {
                 if (executorService == null) {
-                    final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(maxConcurrentThreadNumber, maxConcurrentThreadNumber, keepAliveTime,
-                            unit, new LinkedBlockingQueue<Runnable>());
+                    final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(Math.min(CORE_POOL_SIZE, maxConcurrentThreadNumber),
+                            maxConcurrentThreadNumber, keepAliveTime, unit, new LinkedBlockingQueue<Runnable>());
                     threadPoolExecutor.allowCoreThreadTimeOut(true);
                     executorService = threadPoolExecutor;
                 }
