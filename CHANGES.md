@@ -1,4 +1,9 @@
 
+### 1.1.6
+
+* Add `DataSet.groupBy(..., func)`.
+
+
 ### 1.1.5
 
 * Remove `Maps.diff`.
