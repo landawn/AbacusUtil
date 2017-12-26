@@ -3,6 +3,8 @@
 
 * Add `DataSet.groupBy(..., func)`.
 
+* Improvements and bug fix.
+
 
 ### 1.1.5
 
