@@ -3702,6 +3702,23 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return Triple.of(l, m, r);
     }
 
+    public static <T> List<List<T>> rollup(Collection<? extends T> c) {
+        final List<List<T>> res = new ArrayList<>();
+        res.add(new ArrayList<T>());
+
+        if (N.notNullOrEmpty(c)) {
+            for (T e : c) {
+                final List<T> prev = res.get(res.size() - 1);
+                List<T> cur = new ArrayList<>(prev.size() + 1);
+                cur.addAll(prev);
+                cur.add(e);
+                res.add(cur);
+            }
+        }
+
+        return res;
+    }
+
     /**
      * Note: copy from Google Guava under Apache License v2.
      * <br />

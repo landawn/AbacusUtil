@@ -1079,7 +1079,7 @@ public final class N {
     }
 
     public static <T> ArrayList<T> newArrayList(Collection<? extends T> c) {
-        return new ArrayList<>(c);
+        return N.isNullOrEmpty(c) ? new ArrayList<T>() : new ArrayList<T>(c);
     }
 
     public static <T> LinkedList<T> newLinkedList() {
@@ -1087,7 +1087,7 @@ public final class N {
     }
 
     public static <T> LinkedList<T> newLinkedList(Collection<? extends T> c) {
-        return new LinkedList<>(c);
+        return N.isNullOrEmpty(c) ? new LinkedList<T>() : new LinkedList<>(c);
     }
 
     public static <T> HashSet<T> newHashSet() {
@@ -1104,7 +1104,7 @@ public final class N {
     }
 
     public static <T> HashSet<T> newHashSet(Collection<? extends T> c) {
-        return new HashSet<>(c);
+        return N.isNullOrEmpty(c) ? new HashSet<T>() : new HashSet<>(c);
     }
 
     public static <T> LinkedHashSet<T> newLinkedHashSet() {
@@ -1121,7 +1121,7 @@ public final class N {
     }
 
     public static <T> LinkedHashSet<T> newLinkedHashSet(Collection<? extends T> c) {
-        return new LinkedHashSet<>(c);
+        return N.isNullOrEmpty(c) ? new LinkedHashSet<T>() : new LinkedHashSet<>(c);
     }
 
     @SuppressWarnings("rawtypes")
@@ -1135,11 +1135,11 @@ public final class N {
 
     @SuppressWarnings("rawtypes")
     public static <T extends Comparable> TreeSet<T> newTreeSet(Collection<? extends T> c) {
-        return new TreeSet<>(c);
+        return N.isNullOrEmpty(c) ? new TreeSet<T>() : new TreeSet<>(c);
     }
 
-    public static <T> TreeSet<T> newTreeSet(SortedSet<T> s) {
-        return new TreeSet<>(s);
+    public static <T> TreeSet<T> newTreeSet(SortedSet<T> c) {
+        return N.isNullOrEmpty(c) ? new TreeSet<T>() : new TreeSet<>(c);
     }
 
     public static <K, V> HashMap<K, V> newHashMap() {
@@ -1156,7 +1156,7 @@ public final class N {
     }
 
     public static <K, V> HashMap<K, V> newHashMap(Map<? extends K, ? extends V> m) {
-        return new HashMap<>(m);
+        return N.isNullOrEmpty(m) ? new HashMap<K, V>() : new HashMap<K, V>(m);
     }
 
     public static <K, V, E extends Exception> HashMap<K, V> newHashMap(final Collection<? extends V> c,
@@ -1190,7 +1190,7 @@ public final class N {
     }
 
     public static <K, V> LinkedHashMap<K, V> newLinkedHashMap(Map<? extends K, ? extends V> m) {
-        return new LinkedHashMap<>(m);
+        return N.isNullOrEmpty(m) ? new LinkedHashMap<K, V>() : new LinkedHashMap<K, V>(m);
     }
 
     public static <K, V, E extends Exception> LinkedHashMap<K, V> newLinkedHashMap(final Collection<? extends V> c,
@@ -1221,11 +1221,11 @@ public final class N {
 
     @SuppressWarnings("rawtypes")
     public static <K extends Comparable, V> TreeMap<K, V> newTreeMap(Map<? extends K, ? extends V> m) {
-        return new TreeMap<>(m);
+        return N.isNullOrEmpty(m) ? new TreeMap<K, V>() : new TreeMap<K, V>(m);
     }
 
-    public static <K, V> TreeMap<K, V> newTreeMap(SortedMap<K, ? extends V> map) {
-        return new TreeMap<>(map);
+    public static <K, V> TreeMap<K, V> newTreeMap(SortedMap<K, ? extends V> m) {
+        return N.isNullOrEmpty(m) ? new TreeMap<K, V>() : new TreeMap<K, V>(m);
     }
 
     public static <K, V> IdentityHashMap<K, V> newIdentityHashMap() {
@@ -1242,7 +1242,7 @@ public final class N {
     }
 
     public static <K, V> IdentityHashMap<K, V> newIdentityHashMap(Map<? extends K, ? extends V> m) {
-        return new IdentityHashMap<>(m);
+        return N.isNullOrEmpty(m) ? new IdentityHashMap<K, V>() : new IdentityHashMap<K, V>(m);
     }
 
     public static <K, V> ConcurrentHashMap<K, V> newConcurrentHashMap() {
@@ -1259,7 +1259,7 @@ public final class N {
     }
 
     public static <K, V> ConcurrentHashMap<K, V> newConcurrentHashMap(Map<? extends K, ? extends V> m) {
-        return new ConcurrentHashMap<>(m);
+        return N.isNullOrEmpty(m) ? new ConcurrentHashMap<K, V>() : new ConcurrentHashMap<K, V>(m);
     }
 
     public static <K, E> ListMultimap<K, E> newListMultimap() {
@@ -1373,22 +1373,15 @@ public final class N {
     static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
     static final int MAX_HASH_LENGTH = (int) (MAX_ARRAY_SIZE / 1.25) - 1;
 
-    public static DataSet newDataSet(final String keyColumnName, final String valueColumnName, final Map<?, ?> m) {
-        return newDataSet(null, null, keyColumnName, valueColumnName, m);
-    }
-
     /**
      * Convert the specified Map to a two columns <code>DataSet</code>: one column is for keys and one column is for values
      *
-     * @param entityName
-     * @param entityClass
      * @param keyColumnName
      * @param valueColumnName
      * @param m
      * @return
      */
-    public static DataSet newDataSet(final String entityName, final Class<?> entityClass, final String keyColumnName, final String valueColumnName,
-            final Map<?, ?> m) {
+    public static DataSet newDataSet(final String keyColumnName, final String valueColumnName, final Map<?, ?> m) {
         final List<Object> keyColumn = new ArrayList<>(m.size());
         final List<Object> valueColumn = new ArrayList<>(m.size());
 
