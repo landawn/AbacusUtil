@@ -3,6 +3,8 @@
 
 * Add `DataSet.groupBy(..., func)`.
 
+* Add `Collectors.combine(...)`.
+
 * Improvements and bug fix.
 
 
