@@ -231,6 +231,26 @@ public interface DataSet {
     <T> T get(Class<T> targetClass, String columnName);
 
     /**
+     * Returns the value from the current row and specified column if the specified {@code columnIndex} is equal or bigger than zero, 
+     * or the specified {@code defaultValue} otherwise.
+     * 
+     * @param columnIndex
+     * @param defaultValue
+     * @return
+     */
+    <T> T getOrDefault(int columnIndex, T defaultValue);
+
+    /**
+     * Returns the value from the current row and specified column if the specified {@code columnName} exists, 
+     * or the specified {@code defaultValue} otherwise.
+     * 
+     * @param columnName
+     * @param defaultValue
+     * @return
+     */
+    <T> T getOrDefault(String columnName, T defaultValue);
+
+    /**
      * Return default value (false) if the property is null.
      *
      * @param columnIndex

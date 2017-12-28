@@ -16,6 +16,7 @@
 
 package com.landawn.abacus.util;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Map;
@@ -67,6 +68,29 @@ public final class Comparators {
         @Override
         public int compare(String a, String b) {
             return N.compareIgnoreCase(a, b);
+        }
+    };
+
+    static final Comparator<CharSequence> COMPARING_BY_LENGTH = new Comparator<CharSequence>() {
+        @Override
+        public int compare(CharSequence a, CharSequence b) {
+            return (a == null ? 0 : a.length()) - (b == null ? 0 : b.length());
+        }
+    };
+
+    @SuppressWarnings("rawtypes")
+    static final Comparator<Collection> COMPARING_BY_SIZE = new Comparator<Collection>() {
+        @Override
+        public int compare(Collection a, Collection b) {
+            return (a == null ? 0 : a.size()) - (b == null ? 0 : b.size());
+        }
+    };
+
+    @SuppressWarnings("rawtypes")
+    static final Comparator<Map> COMPARING_BY_SIZEE = new Comparator<Map>() {
+        @Override
+        public int compare(Map a, Map b) {
+            return (a == null ? 0 : a.size()) - (b == null ? 0 : b.size());
         }
     };
 
@@ -338,4 +362,19 @@ public final class Comparators {
             }
         };
     }
+
+    public static <T extends CharSequence> Comparator<T> comparingByLength() {
+        return (Comparator<T>) COMPARING_BY_LENGTH;
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static <T extends Collection> Comparator<T> comparingBySize() {
+        return (Comparator<T>) COMPARING_BY_SIZE;
+    }
+
+    @SuppressWarnings("rawtypes")
+    static <T extends Map> Comparator<T> comparingBySizee() {
+        return (Comparator<T>) COMPARING_BY_SIZEE;
+    }
+
 }

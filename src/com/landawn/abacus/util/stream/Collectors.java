@@ -4741,7 +4741,7 @@ public class Collectors {
         }
     }
 
-    public static <T> Collector<T, ?, List<?>> combine(final List<java.util.stream.Collector<? super T, ?, ?>> collectors) {
+    public static <T> Collector<T, ?, List<?>> combinee(final Collection<java.util.stream.Collector<? super T, ?, ?>> collectors) {
         N.checkArgument(N.notNullOrEmpty(collectors), "The specified 'collectors' can't be null or empty");
 
         @SuppressWarnings("rawtypes")
