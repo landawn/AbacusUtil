@@ -4556,6 +4556,12 @@ public class Collectors {
         }
     }
 
+    /**
+     * 
+     * @param collectors
+     * @return
+     * @see Tuple#from(Collection)
+     */
     public static <T> Collector<T, ?, List<?>> combine(final Collection<Collector<? super T, ?, ?>> collectors) {
         N.checkArgument(N.notNullOrEmpty(collectors), "The specified 'collectors' can't be null or empty");
 
@@ -4741,6 +4747,12 @@ public class Collectors {
         }
     }
 
+    /**
+     * 
+     * @param collectors
+     * @return
+     * @see Tuple#from(Collection)
+     */
     public static <T> Collector<T, ?, List<?>> combinee(final Collection<java.util.stream.Collector<? super T, ?, ?>> collectors) {
         N.checkArgument(N.notNullOrEmpty(collectors), "The specified 'collectors' can't be null or empty");
 

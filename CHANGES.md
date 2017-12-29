@@ -1,9 +1,13 @@
 
 ### 1.1.6
 
-* Add `DataSet.groupBy(..., func)`.
+* Add `DataSet.groupBy(..., func)/getOrDefault(columnName)`.
 
 * Add `Collectors.combine(...)`.
+
+* Add `Comparators.comparingByLength/comparingBySize`.
+
+* Rename `Seq/Iterators.repeat(Collection)` to `Seq/Iterators.repeatt(Collection)`.
 
 * Improvements and bug fix.
 

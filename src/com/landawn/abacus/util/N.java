@@ -1399,23 +1399,22 @@ public final class N {
     /**
      * Converts a list of row(which can be: Map/Entity/Array/Collection) into a <code>DataSet</code>.
      * 
-     * @param rowList
-     * @param rowList list of row which can be: Map/Entity/Array/Collection.
+     * @param rows list of row which can be: Map/Entity/Array/Collection.
      */
-    public static <T> DataSet newDataSet(final List<T> rowList) {
-        return newDataSet(null, rowList);
+    public static <T> DataSet newDataSet(final Collection<T> rows) {
+        return newDataSet(null, rows);
     }
 
     /**
      * Converts a list of row(which can be: Map/Entity/Array/Collection) into a <code>DataSet</code>.
      * 
-     * @param columnNameList
-     * @param rowList list of row which can be: Map/Entity/Array/Collection.
+     * @param columnNames
+     * @param rows list of row which can be: Map/Entity/Array/Collection.
      * @return
      */
     @SuppressWarnings("deprecation")
-    public static <T> DataSet newDataSet(List<String> columnNameList, List<T> rowList) {
-        if (N.isNullOrEmpty(columnNameList) && N.isNullOrEmpty(rowList)) {
+    public static <T> DataSet newDataSet(Collection<String> columnNames, Collection<T> rowList) {
+        if (N.isNullOrEmpty(columnNames) && N.isNullOrEmpty(rowList)) {
             // throw new IllegalArgumentException("Column name list and row list can't be both null or empty");
 
             return new RowDataSet(new ArrayList<String>(0), new ArrayList<List<Object>>(0));
@@ -1423,7 +1422,7 @@ public final class N {
 
         final int rowSize = rowList.size();
 
-        if (N.isNullOrEmpty(columnNameList)) {
+        if (N.isNullOrEmpty(columnNames)) {
             final Set<String> columnNameSet = new LinkedHashSet<>();
             Set<Class<?>> clsSet = null;
             Map<Class<?>, Set<String>> clsSignedPropNameSetMap = new HashMap<>();
@@ -1487,14 +1486,15 @@ public final class N {
                 columnNameSet.addAll(intersecion);
             }
 
-            columnNameList = new ArrayList<>(columnNameSet);
+            columnNames = new ArrayList<>(columnNameSet);
 
-            if (N.isNullOrEmpty(columnNameList)) {
+            if (N.isNullOrEmpty(columnNames)) {
                 throw new IllegalArgumentException("Column name list can't be obtained from row list because it's empty or null");
             }
         }
 
-        final int columnCount = columnNameList.size();
+        final int columnCount = columnNames.size();
+        final List<String> columnNameList = new ArrayList<>(columnNames);
         final List<List<Object>> columnList = new ArrayList<>(columnCount);
         for (int i = 0; i < columnCount; i++) {
             columnList.add(new ArrayList<>(rowSize));
