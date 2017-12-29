@@ -174,7 +174,7 @@ public final class Iterators {
         };
     };
 
-    public static <T> ObjIterator<T> repeat(final Collection<T> c, final int n) {
+    public static <T> ObjIterator<T> repeatt(final Collection<T> c, final int n) {
         N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
 
         if (N.isNullOrEmpty(c) || n == 0) {

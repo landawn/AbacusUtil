@@ -2983,7 +2983,9 @@ public final class Seq<T> extends ImmutableCollection<T> {
     }
 
     public static <T> List<T> repeat(final T value, final int n) {
-        return new ArrayList<>(Arrays.asList(Array.repeat(value, n)));
+        final List<T> res = new ArrayList<>(n);
+        N.fill(res, 0, n, value);
+        return res;
     }
 
     /**
@@ -2996,7 +2998,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @param n
      * @return
      */
-    public static <T> List<T> repeat(final Collection<T> c, final int n) {
+    public static <T> List<T> repeatt(final Collection<T> c, final int n) {
         if (n < 1) {
             throw new IllegalArgumentException("The specified count must be greater than 0");
         }

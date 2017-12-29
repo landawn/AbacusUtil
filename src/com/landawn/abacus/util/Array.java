@@ -1095,7 +1095,14 @@ public final class Array {
         return a;
     }
 
-    public static <T> T[] repeat(final T element, final int n) {
+    /**
+     * 
+     * @param element
+     * @param n
+     * @return
+     * @throws NullPointerException if the specified {@code element} is null.
+     */
+    public static <T> T[] repeat(final T element, final int n) throws NullPointerException {
         final T[] a = N.newArray(element.getClass(), n);
         N.fill(a, element);
         return a;
