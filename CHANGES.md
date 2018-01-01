@@ -1,4 +1,13 @@
 
+### 1.1.7
+
+* Add `DataSet.rollup/cube`.
+
+* Add `Optional/Nullable<T>.or(Try.Supplier<? extends Optional<T>, E> supplier)`.
+
+* Improvements and bug fix.
+
+
 ### 1.1.6
 
 * Add `DataSet.groupBy(..., func)/getOrDefault(columnName)`.

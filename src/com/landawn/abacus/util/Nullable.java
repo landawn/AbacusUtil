@@ -274,6 +274,23 @@ public final class Nullable<T> extends Any<T> {
     }
 
     /**
+     * Returns {@code this} if it's present or call {@code supplier.get()}.
+     * 
+     * @param supplier
+     * @return
+     * @throws E
+     */
+    @Override
+    public <E extends Exception> Nullable<T> or(Try.Supplier<? extends Any<T>, E> supplier) throws E {
+        if (isPresent()) {
+            return this;
+        } else {
+            final Any<T> any = N.requireNonNull(supplier.get());
+            return any instanceof Nullable ? (Nullable<T>) any : (any.isPresent ? Nullable.of(any.get()) : Nullable.<T> empty());
+        }
+    }
+
+    /**
      * Indicates whether some other object is "equal to" this Optional. The other object is considered equal if:
      * <ul>
      * <li>it is also an {@code Nullable} and;

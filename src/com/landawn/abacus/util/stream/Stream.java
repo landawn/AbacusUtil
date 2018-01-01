@@ -140,6 +140,10 @@ import com.landawn.abacus.util.stream.ObjIteratorEx.QueuedIterator;
  * And including methods copied from StreamEx: https://github.com/amaembo/streamex under Apache License, version 2.0.
  * <br />
  * 
+ * <pre>
+ * It's designed to service your purposes: Do what you want and returns what you expected. Try the best to adopt the the design principles of Java 8 Stream APIs, but won't has to obey every rule.
+ * </pre>
+ * 
  * A sequence of elements supporting sequential and parallel aggregate
  * operations.  The following example illustrates an aggregate operation using
  * {@link Stream} and {@link IntStream}:

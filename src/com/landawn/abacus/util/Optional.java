@@ -350,6 +350,17 @@ public final class Optional<T> {
     }
 
     /**
+     * Returns {@code this} if it's present or call {@code supplier.get()}.
+     * 
+     * @param supplier
+     * @return
+     * @throws E
+     */
+    public <E extends Exception> Optional<T> or(Try.Supplier<? extends Optional<T>, E> supplier) throws E {
+        return isPresent() ? this : N.requireNonNull(supplier.get());
+    }
+
+    /**
      * Return the value if present, otherwise return {@code other}.
      *
      * @param other the value to be returned if there is no value present, may

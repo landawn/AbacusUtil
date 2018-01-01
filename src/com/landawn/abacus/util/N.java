@@ -1373,6 +1373,10 @@ public final class N {
     static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
     static final int MAX_HASH_LENGTH = (int) (MAX_ARRAY_SIZE / 1.25) - 1;
 
+    public static DataSet newEmptyDataSet() {
+        return new RowDataSet(new ArrayList<String>(), new ArrayList<List<Object>>());
+    }
+
     /**
      * Convert the specified Map to a two columns <code>DataSet</code>: one column is for keys and one column is for values
      *
