@@ -350,7 +350,7 @@ public final class Optional<T> {
     }
 
     /**
-     * Returns {@code this} if it's present or call {@code supplier.get()}.
+     * If a value is present, returns an Optional describing the value, otherwise returns an Optional produced by the supplying function.
      * 
      * @param supplier
      * @return

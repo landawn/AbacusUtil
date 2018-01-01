@@ -277,7 +277,7 @@ public abstract class Any<T> {
     public abstract <U, E extends Exception> Any<U> flatMapIfNotNull(Try.Function<? super T, ? extends Any<U>, E> mapper) throws E;
 
     /**
-     * Returns {@code this} if it's present or call {@code supplier.get()}.
+     * If a value is present, returns an Optional describing the value, otherwise returns an Optional produced by the supplying function.
      * 
      * @param supplier
      * @return

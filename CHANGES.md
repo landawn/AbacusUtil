@@ -5,6 +5,8 @@
 
 * Add `Optional/Nullable<T>.or(Try.Supplier<? extends Optional<T>, E> supplier)`.
 
+* Rename `DataSet.retainAll/removeAll` to `DataSet.intersectAll/except`.
+
 * Improvements and bug fix.
 
 

@@ -4197,20 +4197,23 @@ public interface DataSet {
     DataSet symmetricDifference(DataSet dataSet);
 
     /**
-     * 
-     * @param dataSet
+     * Returns a new {@code DataSet} with all rows from this DataSet and which also appear in the specified {@code other} in common columns.
+     * This operation doesn't remove duplicate rows from the final result set.
+     *
+     * @param other
      * @return
      * @see java.util.Collection#retainAll(Collection)
      */
-    DataSet retainAll(DataSet dataSet);
+    DataSet intersectAll(DataSet other);
 
     /**
-     * 
-     * @param dataSet
+     * Returns a new {@code DataSet} with all rows from this DataSet and which not appear in the specified {@code other} in common columns.
+     *
+     * @param other
      * @return
      * @see java.util.Collection#removeAll(Collection)
      */
-    DataSet removeAll(DataSet dataSet);
+    DataSet except(DataSet other);
 
     /**
      * Returns a new <code>DataSet</code> by appending the specified <code>from</code> <code>DataSet</code> into this <code>DataSet</code>.
