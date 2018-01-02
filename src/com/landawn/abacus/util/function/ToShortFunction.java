@@ -31,6 +31,13 @@ public interface ToShortFunction<T> extends Try.ToShortFunction<T, RuntimeExcept
         }
     };
 
+    static final ToShortFunction<Number> NUM = new ToShortFunction<Number>() {
+        @Override
+        public short applyAsShort(Number value) {
+            return value == null ? 0 : value.shortValue();
+        }
+    };
+
     @Override
     short applyAsShort(T value);
 }

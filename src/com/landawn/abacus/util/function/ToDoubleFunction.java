@@ -31,6 +31,13 @@ public interface ToDoubleFunction<T> extends java.util.function.ToDoubleFunction
         }
     };
 
+    static final ToDoubleFunction<Number> NUM = new ToDoubleFunction<Number>() {
+        @Override
+        public double applyAsDouble(Number value) {
+            return value == null ? 0 : value.doubleValue();
+        }
+    };
+
     @Override
     double applyAsDouble(T value);
 }

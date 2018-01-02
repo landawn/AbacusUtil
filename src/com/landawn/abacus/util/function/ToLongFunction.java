@@ -31,6 +31,13 @@ public interface ToLongFunction<T> extends java.util.function.ToLongFunction<T>,
         }
     };
 
+    static final ToLongFunction<Number> NUM = new ToLongFunction<Number>() {
+        @Override
+        public long applyAsLong(Number value) {
+            return value == null ? 0 : value.longValue();
+        }
+    };
+
     @Override
     long applyAsLong(T value);
 }

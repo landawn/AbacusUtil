@@ -31,6 +31,13 @@ public interface ToByteFunction<T> extends Try.ToByteFunction<T, RuntimeExceptio
         }
     };
 
+    static final ToByteFunction<Number> NUM = new ToByteFunction<Number>() {
+        @Override
+        public byte applyAsByte(Number value) {
+            return value == null ? 0 : value.byteValue();
+        }
+    };
+
     @Override
     byte applyAsByte(T value);
 }

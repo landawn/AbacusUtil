@@ -27,10 +27,7 @@ import java.util.Map;
 import com.landawn.abacus.util.ImmutableIterator;
 import com.landawn.abacus.util.ListMultimap;
 import com.landawn.abacus.util.Multimap;
-import com.landawn.abacus.util.Multiset;
-import com.landawn.abacus.util.Nullable;
 import com.landawn.abacus.util.Optional;
-import com.landawn.abacus.util.OptionalDouble;
 import com.landawn.abacus.util.Properties;
 import com.landawn.abacus.util.Sheet;
 import com.landawn.abacus.util.Try;
@@ -1263,91 +1260,91 @@ public interface DataSet {
     <K, E, V extends Collection<E>, M extends Multimap<K, E, V>> M toMultimap(IntFunction<? extends E> rowSupplier, String keyColumnName,
             Collection<String> valueColumnNames, int fromRowIndex, int toRowIndex, IntFunction<M> supplier);
 
-    /**
-     *
-     * @param columnName
-     * @return
-     */
-    <T> Multiset<T> toMultiset(String columnName);
-
-    /**
-     *
-     * @param columnName
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @return
-     */
-    <T> Multiset<T> toMultiset(String columnName, int fromRowIndex, int toRowIndex);
-
-    /**
-     * 
-     * @param columnName
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param supplier create <code>Multiset</code> by new <code>Multiset(ArrayHashMap.class)</code> or <code>Multiset(LinkedArrayHashMap.class)</code> if the element is array.
-     * @return
-     */
-    <T> Multiset<T> toMultiset(String columnName, int fromRowIndex, int toRowIndex, IntFunction<Multiset<T>> supplier);
-
-    /**
-     * 
-     * @param rowClass it can be Object[]/List/Set/Map/Entity
-     * @param columnNames
-     * @return
-     */
-    <T> Multiset<T> toMultiset(Class<? extends T> rowClass, Collection<String> columnNames);
-
-    /**
-     * 
-     * @param rowClass it can be Object[]/List/Set/Map/Entity
-     * @param columnNames
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @return
-     */
-    <T> Multiset<T> toMultiset(Class<? extends T> rowClass, Collection<String> columnNames, int fromRowIndex, int toRowIndex);
-
-    /**
-     * 
-     * @param rowClass it can be Object[]/List/Set/Map/Entity
-     * @param columnNames
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param supplier create <code>Multiset</code> by new <code>Multiset(ArrayHashMap.class)</code> or <code>Multiset(LinkedArrayHashMap.class)</code> if <code>rowClass</code> is array.
-     * @return
-     */
-    <T> Multiset<T> toMultiset(Class<? extends T> rowClass, Collection<String> columnNames, int fromRowIndex, int toRowIndex,
-            IntFunction<Multiset<T>> supplier);
-
-    /**
-     * 
-     * @param rowSupplier it can be Object[]/List/Set/Map/Entity
-     * @param columnNames
-     * @return
-     */
-    <T> Multiset<T> toMultiset(IntFunction<? extends T> rowSupplier, Collection<String> columnNames);
-
-    /**
-     * 
-     * @param rowSupplier it can be Object[]/List/Set/Map/Entity
-     * @param columnNames
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @return
-     */
-    <T> Multiset<T> toMultiset(IntFunction<? extends T> rowSupplier, Collection<String> columnNames, int fromRowIndex, int toRowIndex);
-
-    /**
-     * 
-     * @param rowSupplier it can be Object[]/List/Set/Map/Entity
-     * @param columnNames
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param supplier create <code>Multiset</code> by new <code>Multiset(ArrayHashMap.class)</code> or <code>Multiset(LinkedArrayHashMap.class)</code> if <code>rowClass</code> is array.
-     * @return
-     */
-    <T> Multiset<T> toMultiset(IntFunction<? extends T> rowSupplier, Collection<String> columnNames, int fromRowIndex, int toRowIndex,
-            IntFunction<Multiset<T>> supplier);
+    //    /**
+    //     *
+    //     * @param columnName
+    //     * @return
+    //     */
+    //    <T> Multiset<T> toMultiset(String columnName);
+    //
+    //    /**
+    //     *
+    //     * @param columnName
+    //     * @param fromRowIndex
+    //     * @param toRowIndex
+    //     * @return
+    //     */
+    //    <T> Multiset<T> toMultiset(String columnName, int fromRowIndex, int toRowIndex);
+    //
+    //    /**
+    //     * 
+    //     * @param columnName
+    //     * @param fromRowIndex
+    //     * @param toRowIndex
+    //     * @param supplier create <code>Multiset</code> by new <code>Multiset(ArrayHashMap.class)</code> or <code>Multiset(LinkedArrayHashMap.class)</code> if the element is array.
+    //     * @return
+    //     */
+    //    <T> Multiset<T> toMultiset(String columnName, int fromRowIndex, int toRowIndex, IntFunction<Multiset<T>> supplier);
+    //
+    //    /**
+    //     * 
+    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
+    //     * @param columnNames
+    //     * @return
+    //     */
+    //    <T> Multiset<T> toMultiset(Class<? extends T> rowClass, Collection<String> columnNames);
+    //
+    //    /**
+    //     * 
+    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
+    //     * @param columnNames
+    //     * @param fromRowIndex
+    //     * @param toRowIndex
+    //     * @return
+    //     */
+    //    <T> Multiset<T> toMultiset(Class<? extends T> rowClass, Collection<String> columnNames, int fromRowIndex, int toRowIndex);
+    //
+    //    /**
+    //     * 
+    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
+    //     * @param columnNames
+    //     * @param fromRowIndex
+    //     * @param toRowIndex
+    //     * @param supplier create <code>Multiset</code> by new <code>Multiset(ArrayHashMap.class)</code> or <code>Multiset(LinkedArrayHashMap.class)</code> if <code>rowClass</code> is array.
+    //     * @return
+    //     */
+    //    <T> Multiset<T> toMultiset(Class<? extends T> rowClass, Collection<String> columnNames, int fromRowIndex, int toRowIndex,
+    //            IntFunction<Multiset<T>> supplier);
+    //
+    //    /**
+    //     * 
+    //     * @param rowSupplier it can be Object[]/List/Set/Map/Entity
+    //     * @param columnNames
+    //     * @return
+    //     */
+    //    <T> Multiset<T> toMultiset(IntFunction<? extends T> rowSupplier, Collection<String> columnNames);
+    //
+    //    /**
+    //     * 
+    //     * @param rowSupplier it can be Object[]/List/Set/Map/Entity
+    //     * @param columnNames
+    //     * @param fromRowIndex
+    //     * @param toRowIndex
+    //     * @return
+    //     */
+    //    <T> Multiset<T> toMultiset(IntFunction<? extends T> rowSupplier, Collection<String> columnNames, int fromRowIndex, int toRowIndex);
+    //
+    //    /**
+    //     * 
+    //     * @param rowSupplier it can be Object[]/List/Set/Map/Entity
+    //     * @param columnNames
+    //     * @param fromRowIndex
+    //     * @param toRowIndex
+    //     * @param supplier create <code>Multiset</code> by new <code>Multiset(ArrayHashMap.class)</code> or <code>Multiset(LinkedArrayHashMap.class)</code> if <code>rowClass</code> is array.
+    //     * @return
+    //     */
+    //    <T> Multiset<T> toMultiset(IntFunction<? extends T> rowSupplier, Collection<String> columnNames, int fromRowIndex, int toRowIndex,
+    //            IntFunction<Multiset<T>> supplier);
 
     /**
      *
@@ -3497,383 +3494,218 @@ public interface DataSet {
     //     */
     //    <T> List<T> filter(Class<T> rowClass, Collection<String> columnNames, int fromRowIndex, int toRowIndex, Try.Predicate<? super Object[], E> filter, int offset, int count);
 
-    /**
-     *
-     * @param filter
-     * @return
-     */
-    <E extends Exception> int count(Try.Predicate<? super Object[], E> filter) throws E;
-
-    /**
-     *
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param filter
-     * @return
-     */
-    <E extends Exception> int count(int fromRowIndex, int toRowIndex, Try.Predicate<? super Object[], E> filter) throws E;
-
-    /**
-    *
-    * @param columnName
-    * @param filter
-    * @return
-    */
-    <T, E extends Exception> int count(String columnName, Try.Predicate<T, E> filter) throws E;
-
-    /**
-    * count the result by the specified columns {@code columnName} with the specified {@code filter}.
-    *
-    * @param columnName
-    * @param fromRowIndex
-    * @param toRowIndex
-    * @param filter
-    * @return
-    */
-    <T, E extends Exception> int count(String columnName, int fromRowIndex, int toRowIndex, Try.Predicate<T, E> filter) throws E;
-
-    /**
-     *
-     * @param columnNames
-     * @param filter
-     * @return
-     */
-    <E extends Exception> int count(Collection<String> columnNames, Try.Predicate<? super Object[], E> filter) throws E;
-
-    /**
-     * count the result by the specified columns {@code columnNames} with the specified {@code filter}.
-     *
-     * @param columnNames
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param filter
-     * @return
-     */
-    <E extends Exception> int count(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Try.Predicate<? super Object[], E> filter) throws E;
-
-    /**
-     * @param columnName
-     * @return
-     */
-    <T extends Comparable<? super T>> Nullable<T> min(String columnName);
-
-    /**
-     *
-     * @param columnName
-     * @param comparator
-     * @return
-     */
-    <T> Nullable<T> min(String columnName, Comparator<? super T> comparator);
-
-    /**
-     * 
-     * @param columnName
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @return
-     */
-    <T extends Comparable<? super T>> Nullable<T> min(String columnName, int fromRowIndex, int toRowIndex);
-
-    /**
-     * 
-     * @param columnName
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param comparator
-     * @return
-     */
-    <T> Nullable<T> min(String columnName, int fromRowIndex, int toRowIndex, Comparator<? super T> comparator);
-
-    /**
-     * @param columnName
-     * @return
-     */
-    <T extends Comparable<? super T>> Nullable<T> max(String columnName);
-
-    /**
-     *
-     * @param columnName
-     * @param comparator
-     * @return
-     */
-    <T> Nullable<T> max(String columnName, Comparator<? super T> comparator);
-
-    /**
-     * 
-     * @param columnName
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @return
-     */
-    <T extends Comparable<? super T>> Nullable<T> max(String columnName, int fromRowIndex, int toRowIndex);
-
-    /**
-     * 
-     * @param columnName
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param comparator
-     * @return
-     */
-    <T> Nullable<T> max(String columnName, int fromRowIndex, int toRowIndex, Comparator<? super T> comparator);
-
-    /**
-     * @param columnName
-     * @return
-     */
-    <T extends Comparable<? super T>> Nullable<T> median(String columnName);
-
-    /**
-     *
-     * @param columnName
-     * @param comparator
-     * @return
-     */
-    <T> Nullable<T> median(String columnName, Comparator<? super T> comparator);
-
-    /**
-     * 
-     * @param columnName
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @return
-     */
-    <T extends Comparable<? super T>> Nullable<T> median(String columnName, int fromRowIndex, int toRowIndex);
-
-    /**
-     * 
-     * @param columnName
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param comparator
-     * @return
-     */
-    <T> Nullable<T> median(String columnName, int fromRowIndex, int toRowIndex, Comparator<? super T> comparator);
-
-    /**
-     * @param columnName
-     * @param k
-     * @return
-     */
-    <T extends Comparable<? super T>> Nullable<T> kthLargest(String columnName, int k);
-
-    /**
-     *
-     * @param columnName
-     * @param k
-     * @param comparator
-     * @return
-     */
-    <T> Nullable<T> kthLargest(String columnName, int k, Comparator<? super T> comparator);
-
-    /**
-     * 
-     * @param columnName
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param k
-     * @return
-     */
-    <T extends Comparable<? super T>> Nullable<T> kthLargest(String columnName, int fromRowIndex, int toRowIndex, int k);
-
-    /**
-     * 
-     * @param columnName
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param k
-     * @param comparator
-     * @return
-     */
-    <T> Nullable<T> kthLargest(String columnName, int fromRowIndex, int toRowIndex, int k, Comparator<? super T> comparator);
-
-    /**
-     * @param columnName
-     * @return
-     */
-    int sumInt(String columnName);
-
-    /**
-     * 
-     * @param columnName
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @return
-     */
-    int sumInt(String columnName, int fromRowIndex, int toRowIndex);
-
-    /**
-     *
-     * @param columnName
-     * @param mapper
-     * @return
-     */
-    <T, E extends Exception> int sumInt(String columnName, Try.ToIntFunction<T, E> mapper) throws E;
-
-    /**
-     * 
-     * @param columnName
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param mapper
-     * @return
-     */
-    <T, E extends Exception> int sumInt(String columnName, int fromRowIndex, int toRowIndex, Try.ToIntFunction<T, E> mapper) throws E;
-
-    /**
-     * @param columnName
-     * @return
-     */
-    long sumLong(String columnName);
-
-    /**
-     * 
-     * @param columnName
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @return
-     */
-    long sumLong(String columnName, int fromRowIndex, int toRowIndex);
-
-    /**
-     *
-     * @param columnName
-     * @param mapper
-     * @return
-     */
-    <T, E extends Exception> long sumLong(String columnName, Try.ToLongFunction<T, E> mapper) throws E;
-
-    /**
-     * 
-     * @param columnName
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param mapper
-     * @return
-     */
-    <T, E extends Exception> long sumLong(String columnName, int fromRowIndex, int toRowIndex, Try.ToLongFunction<T, E> mapper) throws E;
-
-    /**
-     * @param columnName
-     * @return
-     */
-    double sumDouble(String columnName);
-
-    /**
-     * 
-     * @param columnName
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @return
-     */
-    double sumDouble(String columnName, int fromRowIndex, int toRowIndex);
-
-    /**
-     *
-     * @param columnName
-     * @param mapper
-     * @return
-     */
-    <T, E extends Exception> double sumDouble(String columnName, Try.ToDoubleFunction<T, E> mapper) throws E;
-
-    /**
-     * 
-     * @param columnName
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param mapper
-     * @return
-     */
-    <T, E extends Exception> double sumDouble(String columnName, int fromRowIndex, int toRowIndex, Try.ToDoubleFunction<T, E> mapper) throws E;
-
-    /**
-     * @param columnName
-     * @return
-     */
-    OptionalDouble averageInt(String columnName);
-
-    /**
-     * 
-     * @param columnName
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @return
-     */
-    OptionalDouble averageInt(String columnName, int fromRowIndex, int toRowIndex);
-
-    /**
-     *
-     * @param columnName
-     * @param mapper
-     * @return
-     */
-    <T, E extends Exception> OptionalDouble averageInt(String columnName, Try.ToIntFunction<T, E> mapper) throws E;
-
-    /**
-     * 
-     * @param columnName
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param mapper
-     * @return
-     */
-    <T, E extends Exception> OptionalDouble averageInt(String columnName, int fromRowIndex, int toRowIndex, Try.ToIntFunction<T, E> mapper) throws E;
-
-    /**
-     * @param columnName
-     * @return
-     */
-    OptionalDouble averageLong(String columnName);
-
-    /**
-     * 
-     * @param columnName
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @return
-     */
-    OptionalDouble averageLong(String columnName, int fromRowIndex, int toRowIndex);
-
-    /**
-     *
-     * @param columnName
-     * @param mapper
-     * @return
-     */
-    <T, E extends Exception> OptionalDouble averageLong(String columnName, Try.ToLongFunction<T, E> mapper) throws E;
-
-    /**
-     * 
-     * @param columnName
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param mapper
-     * @return
-     */
-    <T, E extends Exception> OptionalDouble averageLong(String columnName, int fromRowIndex, int toRowIndex, Try.ToLongFunction<T, E> mapper) throws E;
-
-    /**
-     * @param columnName
-     * @return
-     */
-    OptionalDouble averageDouble(String columnName);
-
-    /**
-     * 
-     * @param columnName
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @return
-     */
-    OptionalDouble averageDouble(String columnName, int fromRowIndex, int toRowIndex);
-
+    //    /**
+    //     *
+    //     * @param filter
+    //     * @return
+    //     */
+    //    <E extends Exception> int count(Try.Predicate<? super Object[], E> filter) throws E;
+    //
+    //    /**
+    //     *
+    //     * @param fromRowIndex
+    //     * @param toRowIndex
+    //     * @param filter
+    //     * @return
+    //     */
+    //    <E extends Exception> int count(int fromRowIndex, int toRowIndex, Try.Predicate<? super Object[], E> filter) throws E;
+    //
+    //    /**
+    //    *
+    //    * @param columnName
+    //    * @param filter
+    //    * @return
+    //    */
+    //    <T, E extends Exception> int count(String columnName, Try.Predicate<T, E> filter) throws E;
+    //
+    //    /**
+    //    * count the result by the specified columns {@code columnName} with the specified {@code filter}.
+    //    *
+    //    * @param columnName
+    //    * @param fromRowIndex
+    //    * @param toRowIndex
+    //    * @param filter
+    //    * @return
+    //    */
+    //    <T, E extends Exception> int count(String columnName, int fromRowIndex, int toRowIndex, Try.Predicate<T, E> filter) throws E;
+    //
+    //    /**
+    //     *
+    //     * @param columnNames
+    //     * @param filter
+    //     * @return
+    //     */
+    //    <E extends Exception> int count(Collection<String> columnNames, Try.Predicate<? super Object[], E> filter) throws E;
+    //
+    //    /**
+    //     * count the result by the specified columns {@code columnNames} with the specified {@code filter}.
+    //     *
+    //     * @param columnNames
+    //     * @param fromRowIndex
+    //     * @param toRowIndex
+    //     * @param filter
+    //     * @return
+    //     */
+    //    <E extends Exception> int count(Collection<String> columnNames, int fromRowIndex, int toRowIndex, Try.Predicate<? super Object[], E> filter) throws E;
+    //
+    //    /**
+    //     * @param columnName
+    //     * @return
+    //     */
+    //    <T extends Comparable<? super T>> Nullable<T> min(String columnName);
+    //
+    //    /**
+    //     *
+    //     * @param columnName
+    //     * @param comparator
+    //     * @return
+    //     */
+    //    <T> Nullable<T> min(String columnName, Comparator<? super T> comparator);
+    //
+    //    /**
+    //     * 
+    //     * @param columnName
+    //     * @param fromRowIndex
+    //     * @param toRowIndex
+    //     * @return
+    //     */
+    //    <T extends Comparable<? super T>> Nullable<T> min(String columnName, int fromRowIndex, int toRowIndex);
+    //
+    //    /**
+    //     * 
+    //     * @param columnName
+    //     * @param fromRowIndex
+    //     * @param toRowIndex
+    //     * @param comparator
+    //     * @return
+    //     */
+    //    <T> Nullable<T> min(String columnName, int fromRowIndex, int toRowIndex, Comparator<? super T> comparator);
+    //
+    //    /**
+    //     * @param columnName
+    //     * @return
+    //     */
+    //    <T extends Comparable<? super T>> Nullable<T> max(String columnName);
+    //
+    //    /**
+    //     *
+    //     * @param columnName
+    //     * @param comparator
+    //     * @return
+    //     */
+    //    <T> Nullable<T> max(String columnName, Comparator<? super T> comparator);
+    //
+    //    /**
+    //     * 
+    //     * @param columnName
+    //     * @param fromRowIndex
+    //     * @param toRowIndex
+    //     * @return
+    //     */
+    //    <T extends Comparable<? super T>> Nullable<T> max(String columnName, int fromRowIndex, int toRowIndex);
+    //
+    //    /**
+    //     * 
+    //     * @param columnName
+    //     * @param fromRowIndex
+    //     * @param toRowIndex
+    //     * @param comparator
+    //     * @return
+    //     */
+    //    <T> Nullable<T> max(String columnName, int fromRowIndex, int toRowIndex, Comparator<? super T> comparator);
+    //
+    //    /**
+    //     * @param columnName
+    //     * @return
+    //     */
+    //    <T extends Comparable<? super T>> Nullable<T> median(String columnName);
+    //
+    //    /**
+    //     *
+    //     * @param columnName
+    //     * @param comparator
+    //     * @return
+    //     */
+    //    <T> Nullable<T> median(String columnName, Comparator<? super T> comparator);
+    //
+    //    /**
+    //     * 
+    //     * @param columnName
+    //     * @param fromRowIndex
+    //     * @param toRowIndex
+    //     * @return
+    //     */
+    //    <T extends Comparable<? super T>> Nullable<T> median(String columnName, int fromRowIndex, int toRowIndex);
+    //
+    //    /**
+    //     * 
+    //     * @param columnName
+    //     * @param fromRowIndex
+    //     * @param toRowIndex
+    //     * @param comparator
+    //     * @return
+    //     */
+    //    <T> Nullable<T> median(String columnName, int fromRowIndex, int toRowIndex, Comparator<? super T> comparator);
+    //
+    //    /**
+    //     * @param columnName
+    //     * @param k
+    //     * @return
+    //     */
+    //    <T extends Comparable<? super T>> Nullable<T> kthLargest(String columnName, int k);
+    //
+    //    /**
+    //     *
+    //     * @param columnName
+    //     * @param k
+    //     * @param comparator
+    //     * @return
+    //     */
+    //    <T> Nullable<T> kthLargest(String columnName, int k, Comparator<? super T> comparator);
+    //
+    //    /**
+    //     * 
+    //     * @param columnName
+    //     * @param fromRowIndex
+    //     * @param toRowIndex
+    //     * @param k
+    //     * @return
+    //     */
+    //    <T extends Comparable<? super T>> Nullable<T> kthLargest(String columnName, int fromRowIndex, int toRowIndex, int k);
+    //
+    //    /**
+    //     * 
+    //     * @param columnName
+    //     * @param fromRowIndex
+    //     * @param toRowIndex
+    //     * @param k
+    //     * @param comparator
+    //     * @return
+    //     */
+    //    <T> Nullable<T> kthLargest(String columnName, int fromRowIndex, int toRowIndex, int k, Comparator<? super T> comparator);
+    //
+    //    /**
+    //     * @param columnName
+    //     * @return
+    //     */
+    //    int sumInt(String columnName);
+    //
+    //    /**
+    //     * 
+    //     * @param columnName
+    //     * @param fromRowIndex
+    //     * @param toRowIndex
+    //     * @return
+    //     */
+    //    int sumInt(String columnName, int fromRowIndex, int toRowIndex);
+    //
     //    /**
     //     *
     //     * @param columnName
     //     * @param mapper
     //     * @return
     //     */
-    //    OptionalDouble average(String columnName, Try.ToLongFunction<?> mapper) throws E;
+    //    <T, E extends Exception> int sumInt(String columnName, Try.ToIntFunction<T, E> mapper) throws E;
     //
     //    /**
     //     * 
@@ -3883,25 +3715,190 @@ public interface DataSet {
     //     * @param mapper
     //     * @return
     //     */
-    //    OptionalDouble average(String columnName, int fromRowIndex, int toRowIndex, Try.ToLongFunction<?> mapper) throws E;
-
-    /**
-     *
-     * @param columnName
-     * @param mapper
-     * @return
-     */
-    <T, E extends Exception> OptionalDouble averageDouble(String columnName, Try.ToDoubleFunction<T, E> mapper) throws E;
-
-    /**
-     * 
-     * @param columnName
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param mapper
-     * @return
-     */
-    <T, E extends Exception> OptionalDouble averageDouble(String columnName, int fromRowIndex, int toRowIndex, Try.ToDoubleFunction<T, E> mapper) throws E;
+    //    <T, E extends Exception> int sumInt(String columnName, int fromRowIndex, int toRowIndex, Try.ToIntFunction<T, E> mapper) throws E;
+    //
+    //    /**
+    //     * @param columnName
+    //     * @return
+    //     */
+    //    long sumLong(String columnName);
+    //
+    //    /**
+    //     * 
+    //     * @param columnName
+    //     * @param fromRowIndex
+    //     * @param toRowIndex
+    //     * @return
+    //     */
+    //    long sumLong(String columnName, int fromRowIndex, int toRowIndex);
+    //
+    //    /**
+    //     *
+    //     * @param columnName
+    //     * @param mapper
+    //     * @return
+    //     */
+    //    <T, E extends Exception> long sumLong(String columnName, Try.ToLongFunction<T, E> mapper) throws E;
+    //
+    //    /**
+    //     * 
+    //     * @param columnName
+    //     * @param fromRowIndex
+    //     * @param toRowIndex
+    //     * @param mapper
+    //     * @return
+    //     */
+    //    <T, E extends Exception> long sumLong(String columnName, int fromRowIndex, int toRowIndex, Try.ToLongFunction<T, E> mapper) throws E;
+    //
+    //    /**
+    //     * @param columnName
+    //     * @return
+    //     */
+    //    double sumDouble(String columnName);
+    //
+    //    /**
+    //     * 
+    //     * @param columnName
+    //     * @param fromRowIndex
+    //     * @param toRowIndex
+    //     * @return
+    //     */
+    //    double sumDouble(String columnName, int fromRowIndex, int toRowIndex);
+    //
+    //    /**
+    //     *
+    //     * @param columnName
+    //     * @param mapper
+    //     * @return
+    //     */
+    //    <T, E extends Exception> double sumDouble(String columnName, Try.ToDoubleFunction<T, E> mapper) throws E;
+    //
+    //    /**
+    //     * 
+    //     * @param columnName
+    //     * @param fromRowIndex
+    //     * @param toRowIndex
+    //     * @param mapper
+    //     * @return
+    //     */
+    //    <T, E extends Exception> double sumDouble(String columnName, int fromRowIndex, int toRowIndex, Try.ToDoubleFunction<T, E> mapper) throws E;
+    //
+    //    /**
+    //     * @param columnName
+    //     * @return
+    //     */
+    //    OptionalDouble averageInt(String columnName);
+    //
+    //    /**
+    //     * 
+    //     * @param columnName
+    //     * @param fromRowIndex
+    //     * @param toRowIndex
+    //     * @return
+    //     */
+    //    OptionalDouble averageInt(String columnName, int fromRowIndex, int toRowIndex);
+    //
+    //    /**
+    //     *
+    //     * @param columnName
+    //     * @param mapper
+    //     * @return
+    //     */
+    //    <T, E extends Exception> OptionalDouble averageInt(String columnName, Try.ToIntFunction<T, E> mapper) throws E;
+    //
+    //    /**
+    //     * 
+    //     * @param columnName
+    //     * @param fromRowIndex
+    //     * @param toRowIndex
+    //     * @param mapper
+    //     * @return
+    //     */
+    //    <T, E extends Exception> OptionalDouble averageInt(String columnName, int fromRowIndex, int toRowIndex, Try.ToIntFunction<T, E> mapper) throws E;
+    //
+    //    /**
+    //     * @param columnName
+    //     * @return
+    //     */
+    //    OptionalDouble averageLong(String columnName);
+    //
+    //    /**
+    //     * 
+    //     * @param columnName
+    //     * @param fromRowIndex
+    //     * @param toRowIndex
+    //     * @return
+    //     */
+    //    OptionalDouble averageLong(String columnName, int fromRowIndex, int toRowIndex);
+    //
+    //    /**
+    //     *
+    //     * @param columnName
+    //     * @param mapper
+    //     * @return
+    //     */
+    //    <T, E extends Exception> OptionalDouble averageLong(String columnName, Try.ToLongFunction<T, E> mapper) throws E;
+    //
+    //    /**
+    //     * 
+    //     * @param columnName
+    //     * @param fromRowIndex
+    //     * @param toRowIndex
+    //     * @param mapper
+    //     * @return
+    //     */
+    //    <T, E extends Exception> OptionalDouble averageLong(String columnName, int fromRowIndex, int toRowIndex, Try.ToLongFunction<T, E> mapper) throws E;
+    //
+    //    /**
+    //     * @param columnName
+    //     * @return
+    //     */
+    //    OptionalDouble averageDouble(String columnName);
+    //
+    //    /**
+    //     * 
+    //     * @param columnName
+    //     * @param fromRowIndex
+    //     * @param toRowIndex
+    //     * @return
+    //     */
+    //    OptionalDouble averageDouble(String columnName, int fromRowIndex, int toRowIndex);
+    //
+    //    //    /**
+    //    //     *
+    //    //     * @param columnName
+    //    //     * @param mapper
+    //    //     * @return
+    //    //     */
+    //    //    OptionalDouble average(String columnName, Try.ToLongFunction<?> mapper) throws E;
+    //    //
+    //    //    /**
+    //    //     * 
+    //    //     * @param columnName
+    //    //     * @param fromRowIndex
+    //    //     * @param toRowIndex
+    //    //     * @param mapper
+    //    //     * @return
+    //    //     */
+    //    //    OptionalDouble average(String columnName, int fromRowIndex, int toRowIndex, Try.ToLongFunction<?> mapper) throws E;
+    //
+    //    /**
+    //     *
+    //     * @param columnName
+    //     * @param mapper
+    //     * @return
+    //     */
+    //    <T, E extends Exception> OptionalDouble averageDouble(String columnName, Try.ToDoubleFunction<T, E> mapper) throws E;
+    //
+    //    /**
+    //     * 
+    //     * @param columnName
+    //     * @param fromRowIndex
+    //     * @param toRowIndex
+    //     * @param mapper
+    //     * @return
+    //     */
+    //    <T, E extends Exception> OptionalDouble averageDouble(String columnName, int fromRowIndex, int toRowIndex, Try.ToDoubleFunction<T, E> mapper) throws E;
 
     // TODO
     //    /**

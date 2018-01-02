@@ -31,6 +31,13 @@ public interface ToIntFunction<T> extends java.util.function.ToIntFunction<T>, T
         }
     };
 
+    static final ToIntFunction<Number> NUM = new ToIntFunction<Number>() {
+        @Override
+        public int applyAsInt(Number value) {
+            return value == null ? 0 : value.intValue();
+        }
+    };
+
     @Override
     int applyAsInt(T value);
 }

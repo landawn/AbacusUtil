@@ -7,6 +7,8 @@
 
 * Rename `DataSet.retainAll/removeAll` to `DataSet.intersectAll/except`.
 
+* Remove `DataSet.sum/averageInt/Long/Double/kthLargest/count/toMultiset`, replaced by `DataSet.stream(...).sum/averageInt/Long/Double/kthLargest/count/toMultiset`.
+
 * Improvements and bug fix.
 
 

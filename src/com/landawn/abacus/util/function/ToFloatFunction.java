@@ -31,6 +31,13 @@ public interface ToFloatFunction<T> extends Try.ToFloatFunction<T, RuntimeExcept
         }
     };
 
+    static final ToFloatFunction<Number> NUM = new ToFloatFunction<Number>() {
+        @Override
+        public float applyAsFloat(Number value) {
+            return value == null ? 0 : value.floatValue();
+        }
+    };
+
     @Override
     float applyAsFloat(T value);
 }
