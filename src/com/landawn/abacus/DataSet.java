@@ -899,91 +899,91 @@ public interface DataSet {
             Try.BiFunction<R, ? super Object[], R, E> accumulator, Try.BiPredicate<? super R, ? super Object[], E2> conditionToBreak, boolean shareRowArray)
             throws E, E2;
 
-    /**
-     *
-     * @return
-     */
-    Object[][] toArray();
-
-    /**
-     *
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @return
-     */
-    Object[][] toArray(int fromRowIndex, int toRowIndex);
-
-    /**
-     *
-     * @param rowClass it can be Object[]/List/Set/Map/Entity
-     * @return
-     */
-    <T> T[] toArray(Class<? extends T> rowClass);
-
-    /**
-     *
-     * @param rowClass it can be Object[]/List/Set/Map/Entity the class for the row value.
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @return
-     */
-    <T> T[] toArray(Class<? extends T> rowClass, int fromRowIndex, int toRowIndex);
-
-    /**
-    *
-    * @param rowClass it can be Object[]/List/Set/Map/Entity the class for the row value.
-    * @param columnNames
-    * @param fromRowIndex
-    * @param toRowIndex
-    * @return
-    */
-    <T> T[] toArray(Class<? extends T> rowClass, Collection<String> columnNames);
-
-    /**
-     *
-     * @param rowClass it can be Object[]/List/Set/Map/Entity the class for the row value.
-     * @param columnNames
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @return
-     */
-    <T> T[] toArray(Class<? extends T> rowClass, Collection<String> columnNames, int fromRowIndex, int toRowIndex);
-
-    /**
-     *
-     * @param rowSupplier it can be Object[]/List/Set/Map/Entity the class for the row value.
-     * @return
-     */
-    <T> T[] toArray(IntFunction<? extends T> rowSupplier);
-
-    /**
-     *
-     * @param rowSupplier it can be Object[]/List/Set/Map/Entity the class for the row value.
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @return
-     */
-    <T> T[] toArray(IntFunction<? extends T> rowSupplier, int fromRowIndex, int toRowIndex);
-
-    /**
-    *
-    * @param rowSupplier it can be Object[]/List/Set/Map/Entity the class for the row value.
-    * @param columnNames
-    * @param fromRowIndex
-    * @param toRowIndex
-    * @return
-    */
-    <T> T[] toArray(IntFunction<? extends T> rowSupplier, Collection<String> columnNames);
-
-    /**
-     *
-     * @param rowSupplier it can be Object[]/List/Set/Map/Entity the class for the row value.
-     * @param columnNames
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @return
-     */
-    <T> T[] toArray(IntFunction<? extends T> rowSupplier, Collection<String> columnNames, int fromRowIndex, int toRowIndex);
+    //    /**
+    //     *
+    //     * @return
+    //     */
+    //    Object[][] toArray();
+    //
+    //    /**
+    //     *
+    //     * @param fromRowIndex
+    //     * @param toRowIndex
+    //     * @return
+    //     */
+    //    Object[][] toArray(int fromRowIndex, int toRowIndex);
+    //
+    //    /**
+    //     *
+    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
+    //     * @return
+    //     */
+    //    <T> T[] toArray(Class<? extends T> rowClass);
+    //
+    //    /**
+    //     *
+    //     * @param rowClass it can be Object[]/List/Set/Map/Entity the class for the row value.
+    //     * @param fromRowIndex
+    //     * @param toRowIndex
+    //     * @return
+    //     */
+    //    <T> T[] toArray(Class<? extends T> rowClass, int fromRowIndex, int toRowIndex);
+    //
+    //    /**
+    //    *
+    //    * @param rowClass it can be Object[]/List/Set/Map/Entity the class for the row value.
+    //    * @param columnNames
+    //    * @param fromRowIndex
+    //    * @param toRowIndex
+    //    * @return
+    //    */
+    //    <T> T[] toArray(Class<? extends T> rowClass, Collection<String> columnNames);
+    //
+    //    /**
+    //     *
+    //     * @param rowClass it can be Object[]/List/Set/Map/Entity the class for the row value.
+    //     * @param columnNames
+    //     * @param fromRowIndex
+    //     * @param toRowIndex
+    //     * @return
+    //     */
+    //    <T> T[] toArray(Class<? extends T> rowClass, Collection<String> columnNames, int fromRowIndex, int toRowIndex);
+    //
+    //    /**
+    //     *
+    //     * @param rowSupplier it can be Object[]/List/Set/Map/Entity the class for the row value.
+    //     * @return
+    //     */
+    //    <T> T[] toArray(IntFunction<? extends T> rowSupplier);
+    //
+    //    /**
+    //     *
+    //     * @param rowSupplier it can be Object[]/List/Set/Map/Entity the class for the row value.
+    //     * @param fromRowIndex
+    //     * @param toRowIndex
+    //     * @return
+    //     */
+    //    <T> T[] toArray(IntFunction<? extends T> rowSupplier, int fromRowIndex, int toRowIndex);
+    //
+    //    /**
+    //    *
+    //    * @param rowSupplier it can be Object[]/List/Set/Map/Entity the class for the row value.
+    //    * @param columnNames
+    //    * @param fromRowIndex
+    //    * @param toRowIndex
+    //    * @return
+    //    */
+    //    <T> T[] toArray(IntFunction<? extends T> rowSupplier, Collection<String> columnNames);
+    //
+    //    /**
+    //     *
+    //     * @param rowSupplier it can be Object[]/List/Set/Map/Entity the class for the row value.
+    //     * @param columnNames
+    //     * @param fromRowIndex
+    //     * @param toRowIndex
+    //     * @return
+    //     */
+    //    <T> T[] toArray(IntFunction<? extends T> rowSupplier, Collection<String> columnNames, int fromRowIndex, int toRowIndex);
 
     /**
      *
@@ -4284,89 +4284,89 @@ public interface DataSet {
      */
     List<DataSet> split(Collection<String> columnNames, int fromRowIndex, int toRowIndex, int size);
 
-    /**
-     * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
-     * 
-     * @param rowClass it can be Object[]/List/Set/Map/Entity
-     * @param size
-     * @return
-     */
-    <T> List<List<T>> split(Class<? extends T> rowClass, int size);
-
-    /**
-     * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
-     * 
-     * @param rowClass it can be Object[]/List/Set/Map/Entity
-     * @param size
-     * @param columnNames
-     * @return
-     */
-    <T> List<List<T>> split(Class<? extends T> rowClass, Collection<String> columnNames, int size);
-
-    /**
-     * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
-     * 
-     * @param rowClass it can be Object[]/List/Set/Map/Entity
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param size
-     * @return
-     */
-    <T> List<List<T>> split(Class<? extends T> rowClass, int fromRowIndex, int toRowIndex, int size);
-
-    /**
-     * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
-     * 
-     * @param rowClass it can be Object[]/List/Set/Map/Entity
-     * @param columnNames
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param size
-     * @return
-     */
-    <T> List<List<T>> split(Class<? extends T> rowClass, Collection<String> columnNames, int fromRowIndex, int toRowIndex, int size);
-
-    /**
-     * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
-     * 
-     * @param rowClass it can be Object[]/List/Set/Map/Entity
-     * @param size
-     * @return
-     */
-    <T> List<List<T>> split(IntFunction<? extends T> rowSupplier, int size);
-
-    /**
-     * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
-     * 
-     * @param rowClass it can be Object[]/List/Set/Map/Entity
-     * @param size
-     * @param columnNames
-     * @return
-     */
-    <T> List<List<T>> split(IntFunction<? extends T> rowSupplier, Collection<String> columnNames, int size);
-
-    /**
-     * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
-     * 
-     * @param rowClass it can be Object[]/List/Set/Map/Entity
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param size
-     * @return
-     */
-    <T> List<List<T>> split(IntFunction<? extends T> rowSupplier, int fromRowIndex, int toRowIndex, int size);
-
-    /**
-     * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
-     * 
-     * @param rowClass it can be Object[]/List/Set/Map/Entity
-     * @param columnNames
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param size
-     * @return
-     */
-    <T> List<List<T>> split(IntFunction<? extends T> rowSupplier, Collection<String> columnNames, int fromRowIndex, int toRowIndex, int size);
+    //    /**
+    //     * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
+    //     * 
+    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
+    //     * @param size
+    //     * @return
+    //     */
+    //    <T> List<List<T>> split(Class<? extends T> rowClass, int size);
+    //
+    //    /**
+    //     * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
+    //     * 
+    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
+    //     * @param size
+    //     * @param columnNames
+    //     * @return
+    //     */
+    //    <T> List<List<T>> split(Class<? extends T> rowClass, Collection<String> columnNames, int size);
+    //
+    //    /**
+    //     * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
+    //     * 
+    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
+    //     * @param fromRowIndex
+    //     * @param toRowIndex
+    //     * @param size
+    //     * @return
+    //     */
+    //    <T> List<List<T>> split(Class<? extends T> rowClass, int fromRowIndex, int toRowIndex, int size);
+    //
+    //    /**
+    //     * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
+    //     * 
+    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
+    //     * @param columnNames
+    //     * @param fromRowIndex
+    //     * @param toRowIndex
+    //     * @param size
+    //     * @return
+    //     */
+    //    <T> List<List<T>> split(Class<? extends T> rowClass, Collection<String> columnNames, int fromRowIndex, int toRowIndex, int size);
+    //
+    //    /**
+    //     * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
+    //     * 
+    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
+    //     * @param size
+    //     * @return
+    //     */
+    //    <T> List<List<T>> split(IntFunction<? extends T> rowSupplier, int size);
+    //
+    //    /**
+    //     * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
+    //     * 
+    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
+    //     * @param size
+    //     * @param columnNames
+    //     * @return
+    //     */
+    //    <T> List<List<T>> split(IntFunction<? extends T> rowSupplier, Collection<String> columnNames, int size);
+    //
+    //    /**
+    //     * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
+    //     * 
+    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
+    //     * @param fromRowIndex
+    //     * @param toRowIndex
+    //     * @param size
+    //     * @return
+    //     */
+    //    <T> List<List<T>> split(IntFunction<? extends T> rowSupplier, int fromRowIndex, int toRowIndex, int size);
+    //
+    //    /**
+    //     * Returns consecutive sub lists of this DataSet, each of the same size (the list may be smaller), or an empty List if this DataSet is empty.
+    //     * 
+    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
+    //     * @param columnNames
+    //     * @param fromRowIndex
+    //     * @param toRowIndex
+    //     * @param size
+    //     * @return
+    //     */
+    //    <T> List<List<T>> split(IntFunction<? extends T> rowSupplier, Collection<String> columnNames, int fromRowIndex, int toRowIndex, int size);
 
     ImmutableIterator<Object[]> iterator();
 
