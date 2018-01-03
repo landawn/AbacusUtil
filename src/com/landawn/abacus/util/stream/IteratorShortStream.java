@@ -1083,7 +1083,7 @@ class IteratorShortStream extends AbstractShortStream {
     }
 
     @Override
-    public ShortStream head2() {
+    public ShortStream headd() {
         if (head2 == null) {
             final short[] a = elements.toArray();
             head2 = new ArrayShortStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, closeHandlers);
@@ -1094,7 +1094,7 @@ class IteratorShortStream extends AbstractShortStream {
     }
 
     @Override
-    public OptionalShort tail2() {
+    public OptionalShort taill() {
         if (tail2 == null) {
             final short[] a = elements.toArray();
             head2 = new ArrayShortStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, closeHandlers);

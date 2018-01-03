@@ -587,7 +587,7 @@ abstract class AbstractIntStream extends IntStream {
     }
 
     @Override
-    public Pair<IntSummaryStatistics, Optional<Map<Percentage, Integer>>> summarize2() {
+    public Pair<IntSummaryStatistics, Optional<Map<Percentage, Integer>>> summarizee() {
         final int[] a = sorted().toArray();
 
         if (N.isNullOrEmpty(a)) {
@@ -627,8 +627,8 @@ abstract class AbstractIntStream extends IntStream {
     }
 
     @Override
-    public Pair<IntStream, OptionalInt> headAndTail2() {
-        return Pair.of(head2(), tail2());
+    public Pair<IntStream, OptionalInt> headAndTaill() {
+        return Pair.of(headd(), taill());
     }
 
     @Override

@@ -245,7 +245,7 @@ public class Joiner {
     }
 
     /**
-     * Get the {@code StringBuilder} from object factory to improve performance if it's set to true, and must remember to call {@code toString()/map()/mapIfNotEmpty()/stream()/streamIfNotEmpty()} to recycle the {@code StringBuilder}.
+     * Get the {@code StringBuilder} from object factory to improve performance if it's set to true, and must remember to call {@code toString()/map()/mapIfNotEmpty()/stream()/streamIfNotEmpty()} or {@code close()} to recycle the {@code StringBuilder}.
      * 
      * @param reuseStringBuilder
      * @return

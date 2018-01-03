@@ -172,7 +172,7 @@ public class CompletableFuture<T> implements Future<T> {
         return future.get(timeout, unit);
     }
 
-    public Pair<T, Exception> get2() {
+    public Pair<T, Exception> gett() {
         try {
             return Pair.of(get(), null);
         } catch (Exception e) {
@@ -180,7 +180,7 @@ public class CompletableFuture<T> implements Future<T> {
         }
     }
 
-    public Pair<T, Exception> get2(final long timeout, final TimeUnit unit) {
+    public Pair<T, Exception> gett(final long timeout, final TimeUnit unit) {
         try {
             return Pair.of(get(timeout, unit), null);
         } catch (Exception e) {
@@ -213,12 +213,12 @@ public class CompletableFuture<T> implements Future<T> {
     }
 
     public <U, E extends Exception> U get(final Try.BiFunction<? super T, Exception, ? extends U, E> action) throws E {
-        final Pair<T, Exception> result = get2();
+        final Pair<T, Exception> result = gett();
         return action.apply(result.left, result.right);
     }
 
     public <U, E extends Exception> U get(final long timeout, final TimeUnit unit, final Try.BiFunction<? super T, Exception, ? extends U, E> action) throws E {
-        final Pair<T, Exception> result = get2(timeout, unit);
+        final Pair<T, Exception> result = gett(timeout, unit);
         return action.apply(result.left, result.right);
     }
 
@@ -235,7 +235,7 @@ public class CompletableFuture<T> implements Future<T> {
     //    }
     //
     //    public void complete(Try.BiConsumer<? super T, Exception, E> action)  {
-    //        final Pair<T, Exception> result = get2();
+    //        final Pair<T, Exception> result = gett();
     //        action.accept(result.left, result.right);
     //    }
 
@@ -309,14 +309,14 @@ public class CompletableFuture<T> implements Future<T> {
     //
     //            @Override
     //            public U get() throws InterruptedException, ExecutionException {
-    //                final Pair<T, Exception> result = get2();
+    //                final Pair<T, Exception> result = gett();
     //
     //                return action.apply(result.left, result.right);
     //            }
     //
     //            @Override
     //            public U get(final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-    //                final Pair<T, Exception> result = get2(timeout, unit);
+    //                final Pair<T, Exception> result = gett(timeout, unit);
     //
     //                return action.apply(result.left, result.right);
     //            }
@@ -418,8 +418,8 @@ public class CompletableFuture<T> implements Future<T> {
     //
     //            @Override
     //            public R get() throws InterruptedException, ExecutionException {
-    //                final Pair<T, Exception> result = get2();
-    //                final Pair<? extends U, Exception> result2 = other.get2();
+    //                final Pair<T, Exception> result = gett();
+    //                final Pair<? extends U, Exception> result2 = other.gett();
     //
     //                return action.apply(Tuple.of(result.left, result.right, (U) result2.left, result.right));
     //            }
@@ -430,8 +430,8 @@ public class CompletableFuture<T> implements Future<T> {
     //                final long now = N.currentMillis();
     //                final long endTime = timeoutInMillis > Long.MAX_VALUE - now ? Long.MAX_VALUE : now + timeoutInMillis;
     //
-    //                final Pair<T, Exception> result = CompletableFuture.this.get2(timeout, unit);
-    //                final Pair<? extends U, Exception> result2 = other.get2(N.max(0, endTime - N.currentMillis()), TimeUnit.MILLISECONDS);
+    //                final Pair<T, Exception> result = CompletableFuture.this.gett(timeout, unit);
+    //                final Pair<? extends U, Exception> result2 = other.gett(N.max(0, endTime - N.currentMillis()), TimeUnit.MILLISECONDS);
     //
     //                return action.apply(Tuple.of(result.left, result.right, (U) result2.left, result.right));
     //            }
@@ -493,7 +493,7 @@ public class CompletableFuture<T> implements Future<T> {
         return execute(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
-                final Pair<T, Exception> result = get2();
+                final Pair<T, Exception> result = gett();
                 action.accept(result.left, result.right);
                 return null;
             }
@@ -524,7 +524,7 @@ public class CompletableFuture<T> implements Future<T> {
         return execute(new Callable<R>() {
             @Override
             public R call() throws Exception {
-                final Pair<T, Exception> result = get2();
+                final Pair<T, Exception> result = gett();
                 return action.apply(result.left, result.right);
             }
         });
@@ -605,8 +605,8 @@ public class CompletableFuture<T> implements Future<T> {
         return execute(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
-                final Pair<T, Exception> result = get2();
-                final Pair<U, Exception> result2 = other.get2();
+                final Pair<T, Exception> result = gett();
+                final Pair<U, Exception> result2 = other.gett();
                 action.accept(Tuple.of(result.left, result.right, result2.left, result.right));
 
                 return null;
@@ -639,8 +639,8 @@ public class CompletableFuture<T> implements Future<T> {
         return execute(new Callable<R>() {
             @Override
             public R call() throws Exception {
-                final Pair<T, Exception> result = get2();
-                final Pair<U, Exception> result2 = other.get2();
+                final Pair<T, Exception> result = gett();
+                final Pair<U, Exception> result2 = other.gett();
 
                 return action.apply(Tuple.of(result.left, result.right, result2.left, result.right));
             }
@@ -726,7 +726,7 @@ public class CompletableFuture<T> implements Future<T> {
         return execute(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
-                final Pair<T, Exception> result = Futures.anyOf(N.asList(CompletableFuture.this, other)).get2();
+                final Pair<T, Exception> result = Futures.anyOf(N.asList(CompletableFuture.this, other)).gett();
                 action.accept(result.left, result.right);
                 return null;
             }
@@ -761,7 +761,7 @@ public class CompletableFuture<T> implements Future<T> {
         return execute(new Callable<R>() {
             @Override
             public R call() throws Exception {
-                final Pair<T, Exception> result = Futures.anyOf(N.asList(CompletableFuture.this, other)).get2();
+                final Pair<T, Exception> result = Futures.anyOf(N.asList(CompletableFuture.this, other)).gett();
 
                 return action.apply(result.left, result.right);
             }
@@ -928,7 +928,7 @@ public class CompletableFuture<T> implements Future<T> {
     //
     //            @Override
     //            public T get() throws InterruptedException, ExecutionException {
-    //                final Pair<T, Exception> result = get2();
+    //                final Pair<T, Exception> result = gett();
     //
     //                if (result.right != null) {
     //                    try {
@@ -952,7 +952,7 @@ public class CompletableFuture<T> implements Future<T> {
     //
     //            @Override
     //            public T get(final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-    //                final Pair<T, Exception> result = get2(timeout, unit);
+    //                final Pair<T, Exception> result = gett(timeout, unit);
     //
     //                if (result.right != null) {
     //                    try {
@@ -995,13 +995,13 @@ public class CompletableFuture<T> implements Future<T> {
     //
     //            @Override
     //            public U get() throws InterruptedException, ExecutionException {
-    //                final Pair<T, Exception> result = get2();
+    //                final Pair<T, Exception> result = gett();
     //                return action.apply(result.left, result.right);
     //            }
     //
     //            @Override
     //            public U get(final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-    //                final Pair<T, Exception> result = get2(timeout, unit);
+    //                final Pair<T, Exception> result = gett(timeout, unit);
     //                return action.apply(result.left, result.right);
     //            }
     //        }, asyncExecutor);

@@ -141,7 +141,7 @@ public final class ListMultimap<K, E> extends Multimap<K, E, List<E>> {
         return multimap;
     }
 
-    public static <K, E> ListMultimap<K, E> from2(final Map<? extends K, ? extends Collection<? extends E>> map) {
+    public static <K, E> ListMultimap<K, E> fromm(final Map<? extends K, ? extends Collection<? extends E>> map) {
         final ListMultimap<K, E> multimap = new ListMultimap<>(Maps.newTargetMap(map), ArrayList.class);
 
         if (N.notNullOrEmpty(map)) {
@@ -301,7 +301,7 @@ public final class ListMultimap<K, E> extends Multimap<K, E, List<E>> {
     }
 
     @Deprecated
-    public static <K, E, V extends Collection<E>, M extends Multimap<K, E, V>> M from2(final Map<? extends K, ? extends Collection<? extends E>> map,
+    public static <K, E, V extends Collection<E>, M extends Multimap<K, E, V>> M fromm(final Map<? extends K, ? extends Collection<? extends E>> map,
             final Supplier<M> multimapSupplier) {
         throw new UnsupportedOperationException();
     }

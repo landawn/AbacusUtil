@@ -36,6 +36,15 @@ public interface BiPredicate<T, U> extends java.util.function.BiPredicate<T, U>,
         return Fn.BiPredicates.alwaysFalse();
     }
 
+    /**
+     * Returns the {@code BiPredicate} which always returns {@code false}.
+     * 
+     * @return
+     */
+    static <T, U> BiPredicate<T, U> never() {
+        return Fn.BiPredicates.never();
+    }
+
     static <T, U> BiPredicate<T, U> equal() {
         return Fn.equal();
     }

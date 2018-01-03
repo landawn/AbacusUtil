@@ -1100,7 +1100,7 @@ public final class N {
      * @return
      */
     public static <T> HashSet<T> newHashSet(int initialCapacity) {
-        return new HashSet<>(initHashCapacity(initialCapacity));
+        return new HashSet<>(initialCapacity);
     }
 
     public static <T> HashSet<T> newHashSet(Collection<? extends T> c) {
@@ -1117,7 +1117,7 @@ public final class N {
      * @return
      */
     public static <T> LinkedHashSet<T> newLinkedHashSet(int initialCapacity) {
-        return new LinkedHashSet<>(initHashCapacity(initialCapacity));
+        return new LinkedHashSet<>(initialCapacity);
     }
 
     public static <T> LinkedHashSet<T> newLinkedHashSet(Collection<? extends T> c) {
@@ -1152,7 +1152,7 @@ public final class N {
      * @return
      */
     public static <K, V> HashMap<K, V> newHashMap(int initialCapacity) {
-        return new HashMap<>(initHashCapacity(initialCapacity));
+        return new HashMap<>(initialCapacity);
     }
 
     public static <K, V> HashMap<K, V> newHashMap(Map<? extends K, ? extends V> m) {
@@ -1186,7 +1186,7 @@ public final class N {
      * @return
      */
     public static <K, V> LinkedHashMap<K, V> newLinkedHashMap(int initialCapacity) {
-        return new LinkedHashMap<>(initHashCapacity(initialCapacity));
+        return new LinkedHashMap<>(initialCapacity);
     }
 
     public static <K, V> LinkedHashMap<K, V> newLinkedHashMap(Map<? extends K, ? extends V> m) {
@@ -1238,7 +1238,7 @@ public final class N {
      * @return
      */
     public static <K, V> IdentityHashMap<K, V> newIdentityHashMap(int initialCapacity) {
-        return new IdentityHashMap<>(initHashCapacity(initialCapacity));
+        return new IdentityHashMap<>(initialCapacity);
     }
 
     public static <K, V> IdentityHashMap<K, V> newIdentityHashMap(Map<? extends K, ? extends V> m) {
@@ -1255,7 +1255,7 @@ public final class N {
      * @return
      */
     public static <K, V> ConcurrentHashMap<K, V> newConcurrentHashMap(int initialCapacity) {
-        return new ConcurrentHashMap<>(initHashCapacity(initialCapacity));
+        return new ConcurrentHashMap<>(initialCapacity);
     }
 
     public static <K, V> ConcurrentHashMap<K, V> newConcurrentHashMap(Map<? extends K, ? extends V> m) {
@@ -31972,8 +31972,8 @@ public final class N {
         }
 
         try (final Stream<T> stream = ((readThreadNum > 0 || queueSize > 0)
-                ? Stream.parallelConcat2(iterators, (readThreadNum == 0 ? 1 : readThreadNum), (queueSize == 0 ? 1024 : queueSize))
-                : Stream.concat2(iterators))) {
+                ? Stream.parallelConcatt(iterators, (readThreadNum == 0 ? 1 : readThreadNum), (queueSize == 0 ? 1024 : queueSize))
+                : Stream.concatt(iterators))) {
 
             final Iterator<? extends T> iteratorII = stream.skip(offset).limit(count).iterator();
 

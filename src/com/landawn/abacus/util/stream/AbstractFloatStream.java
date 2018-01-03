@@ -652,7 +652,7 @@ abstract class AbstractFloatStream extends FloatStream {
     }
 
     @Override
-    public Pair<FloatSummaryStatistics, Optional<Map<Percentage, Float>>> summarize2() {
+    public Pair<FloatSummaryStatistics, Optional<Map<Percentage, Float>>> summarizee() {
         final float[] a = sorted().toArray();
 
         if (N.isNullOrEmpty(a)) {
@@ -692,8 +692,8 @@ abstract class AbstractFloatStream extends FloatStream {
     }
 
     @Override
-    public Pair<FloatStream, OptionalFloat> headAndTail2() {
-        return Pair.of(head2(), tail2());
+    public Pair<FloatStream, OptionalFloat> headAndTaill() {
+        return Pair.of(headd(), taill());
     }
 
     @Override

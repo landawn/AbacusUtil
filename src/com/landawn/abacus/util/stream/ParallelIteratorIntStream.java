@@ -705,7 +705,7 @@ final class ParallelIteratorIntStream extends IteratorIntStream {
             }));
         }
 
-        complete2(futureList, eHolder, (E) null);
+        completee(futureList, eHolder, (E) null);
     }
 
     @Override
@@ -1055,7 +1055,7 @@ final class ParallelIteratorIntStream extends IteratorIntStream {
     }
 
     @Override
-    public IntStream head2() {
+    public IntStream headd() {
         if (head2 == null) {
             final int[] a = elements.toArray();
             head2 = new ParallelArrayIntStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, maxThreadNum, splitor, closeHandlers);
@@ -1066,7 +1066,7 @@ final class ParallelIteratorIntStream extends IteratorIntStream {
     }
 
     @Override
-    public OptionalInt tail2() {
+    public OptionalInt taill() {
         if (tail2 == null) {
             final int[] a = elements.toArray();
             head2 = new ParallelArrayIntStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, maxThreadNum, splitor, closeHandlers);
@@ -1213,7 +1213,7 @@ final class ParallelIteratorIntStream extends IteratorIntStream {
             }));
         }
 
-        complete2(futureList, eHolder, (E) null);
+        completee(futureList, eHolder, (E) null);
 
         return result.value();
     }
@@ -1256,7 +1256,7 @@ final class ParallelIteratorIntStream extends IteratorIntStream {
             }));
         }
 
-        complete2(futureList, eHolder, (E) null);
+        completee(futureList, eHolder, (E) null);
 
         return result.value();
     }
@@ -1299,7 +1299,7 @@ final class ParallelIteratorIntStream extends IteratorIntStream {
             }));
         }
 
-        complete2(futureList, eHolder, (E) null);
+        completee(futureList, eHolder, (E) null);
 
         return result.value();
     }
@@ -1349,7 +1349,7 @@ final class ParallelIteratorIntStream extends IteratorIntStream {
             }));
         }
 
-        complete2(futureList, eHolder, (E) null);
+        completee(futureList, eHolder, (E) null);
 
         return resultHolder.value() == null ? OptionalInt.empty() : OptionalInt.of(resultHolder.value().right);
     }
@@ -1397,7 +1397,7 @@ final class ParallelIteratorIntStream extends IteratorIntStream {
             }));
         }
 
-        complete2(futureList, eHolder, (E) null);
+        completee(futureList, eHolder, (E) null);
 
         return resultHolder.value() == null ? OptionalInt.empty() : OptionalInt.of(resultHolder.value().right);
     }
@@ -1445,7 +1445,7 @@ final class ParallelIteratorIntStream extends IteratorIntStream {
             }));
         }
 
-        complete2(futureList, eHolder, (E) null);
+        completee(futureList, eHolder, (E) null);
 
         return resultHolder.value() == NONE ? OptionalInt.empty() : OptionalInt.of((Integer) resultHolder.value());
     }

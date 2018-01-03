@@ -1179,7 +1179,7 @@ class ArrayShortStream extends AbstractShortStream {
     }
 
     @Override
-    public ShortStream head2() {
+    public ShortStream headd() {
         if (fromIndex == toIndex) {
             return this;
         }
@@ -1188,7 +1188,7 @@ class ArrayShortStream extends AbstractShortStream {
     }
 
     @Override
-    public OptionalShort tail2() {
+    public OptionalShort taill() {
         return fromIndex == toIndex ? OptionalShort.empty() : OptionalShort.of(elements[toIndex - 1]);
     }
 

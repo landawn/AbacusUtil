@@ -1072,7 +1072,7 @@ class IteratorByteStream extends AbstractByteStream {
     }
 
     @Override
-    public ByteStream head2() {
+    public ByteStream headd() {
         if (head2 == null) {
             final byte[] a = elements.toArray();
             head2 = new ArrayByteStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, closeHandlers);
@@ -1083,7 +1083,7 @@ class IteratorByteStream extends AbstractByteStream {
     }
 
     @Override
-    public OptionalByte tail2() {
+    public OptionalByte taill() {
         if (tail2 == null) {
             final byte[] a = elements.toArray();
             head2 = new ArrayByteStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, closeHandlers);

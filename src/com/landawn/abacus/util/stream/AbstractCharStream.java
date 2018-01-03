@@ -587,7 +587,7 @@ abstract class AbstractCharStream extends CharStream {
     }
 
     @Override
-    public Pair<CharSummaryStatistics, Optional<Map<Percentage, Character>>> summarize2() {
+    public Pair<CharSummaryStatistics, Optional<Map<Percentage, Character>>> summarizee() {
         final char[] a = sorted().toArray();
 
         if (N.isNullOrEmpty(a)) {
@@ -627,8 +627,8 @@ abstract class AbstractCharStream extends CharStream {
     }
 
     @Override
-    public Pair<CharStream, OptionalChar> headAndTail2() {
-        return Pair.of(head2(), tail2());
+    public Pair<CharStream, OptionalChar> headAndTaill() {
+        return Pair.of(headd(), taill());
     }
 
     @Override

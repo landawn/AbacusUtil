@@ -484,7 +484,7 @@ final class ParallelArrayLongStream extends ArrayLongStream {
             }
         }
 
-        complete2(futureList, eHolder, (E) null);
+        completee(futureList, eHolder, (E) null);
     }
 
     @Override
@@ -930,7 +930,7 @@ final class ParallelArrayLongStream extends ArrayLongStream {
     }
 
     @Override
-    public LongStream head2() {
+    public LongStream headd() {
         if (fromIndex == toIndex) {
             return this;
         }
@@ -1228,7 +1228,7 @@ final class ParallelArrayLongStream extends ArrayLongStream {
             }
         }
 
-        complete2(futureList, eHolder, (E) null);
+        completee(futureList, eHolder, (E) null);
 
         return result.value();
     }
@@ -1301,7 +1301,7 @@ final class ParallelArrayLongStream extends ArrayLongStream {
             }
         }
 
-        complete2(futureList, eHolder, (E) null);
+        completee(futureList, eHolder, (E) null);
 
         return result.value();
     }
@@ -1374,7 +1374,7 @@ final class ParallelArrayLongStream extends ArrayLongStream {
             }
         }
 
-        complete2(futureList, eHolder, (E) null);
+        completee(futureList, eHolder, (E) null);
 
         return result.value();
     }
@@ -1462,7 +1462,7 @@ final class ParallelArrayLongStream extends ArrayLongStream {
             }
         }
 
-        complete2(futureList, eHolder, (E) null);
+        completee(futureList, eHolder, (E) null);
 
         return resultHolder.value() == null ? OptionalLong.empty() : OptionalLong.of(resultHolder.value().right);
     }
@@ -1550,7 +1550,7 @@ final class ParallelArrayLongStream extends ArrayLongStream {
             }
         }
 
-        complete2(futureList, eHolder, (E) null);
+        completee(futureList, eHolder, (E) null);
 
         return resultHolder.value() == null ? OptionalLong.empty() : OptionalLong.of(resultHolder.value().right);
     }
@@ -1636,7 +1636,7 @@ final class ParallelArrayLongStream extends ArrayLongStream {
             }
         }
 
-        complete2(futureList, eHolder, (E) null);
+        completee(futureList, eHolder, (E) null);
 
         return resultHolder.value() == NONE ? OptionalLong.empty() : OptionalLong.of((Long) resultHolder.value());
     }

@@ -1269,7 +1269,7 @@ class IteratorFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public FloatStream head2() {
+    public FloatStream headd() {
         if (head2 == null) {
             final float[] a = elements.toArray();
             head2 = new ArrayFloatStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, closeHandlers);
@@ -1280,7 +1280,7 @@ class IteratorFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public OptionalFloat tail2() {
+    public OptionalFloat taill() {
         if (tail2 == null) {
             final float[] a = elements.toArray();
             head2 = new ArrayFloatStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, closeHandlers);

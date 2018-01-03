@@ -113,7 +113,7 @@ public class Multimap<K, E, V extends Collection<E>> {
         return multimap;
     }
 
-    public static <K, E, V extends Collection<E>, M extends Multimap<K, E, V>> M from2(final Map<? extends K, ? extends Collection<? extends E>> map,
+    public static <K, E, V extends Collection<E>, M extends Multimap<K, E, V>> M fromm(final Map<? extends K, ? extends Collection<? extends E>> map,
             final Supplier<M> multimapSupplier) {
         final M multimap = multimapSupplier.get();
 

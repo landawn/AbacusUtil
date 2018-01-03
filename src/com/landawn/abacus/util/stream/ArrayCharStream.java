@@ -1160,7 +1160,7 @@ class ArrayCharStream extends AbstractCharStream {
     }
 
     @Override
-    public CharStream head2() {
+    public CharStream headd() {
         if (fromIndex == toIndex) {
             return this;
         }
@@ -1169,7 +1169,7 @@ class ArrayCharStream extends AbstractCharStream {
     }
 
     @Override
-    public OptionalChar tail2() {
+    public OptionalChar taill() {
         return fromIndex == toIndex ? OptionalChar.empty() : OptionalChar.of(elements[toIndex - 1]);
     }
 

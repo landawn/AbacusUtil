@@ -1270,7 +1270,7 @@ class IteratorLongStream extends AbstractLongStream {
     }
 
     @Override
-    public LongStream head2() {
+    public LongStream headd() {
         if (head2 == null) {
             final long[] a = elements.toArray();
             head2 = new ArrayLongStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, closeHandlers);
@@ -1281,7 +1281,7 @@ class IteratorLongStream extends AbstractLongStream {
     }
 
     @Override
-    public OptionalLong tail2() {
+    public OptionalLong taill() {
         if (tail2 == null) {
             final long[] a = elements.toArray();
             head2 = new ArrayLongStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, closeHandlers);

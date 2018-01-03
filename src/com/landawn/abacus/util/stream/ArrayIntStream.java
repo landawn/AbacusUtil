@@ -1739,7 +1739,7 @@ class ArrayIntStream extends AbstractIntStream {
     }
 
     @Override
-    public IntStream head2() {
+    public IntStream headd() {
         if (fromIndex == toIndex) {
             return this;
         }
@@ -1748,7 +1748,7 @@ class ArrayIntStream extends AbstractIntStream {
     }
 
     @Override
-    public OptionalInt tail2() {
+    public OptionalInt taill() {
         return fromIndex == toIndex ? OptionalInt.empty() : OptionalInt.of(elements[toIndex - 1]);
     }
 

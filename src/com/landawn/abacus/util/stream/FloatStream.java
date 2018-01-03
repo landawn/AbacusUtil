@@ -527,23 +527,23 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
 
     /**
      * Head2 and tail2 should be used by pair. 
-     * Don't call any other methods with this stream after head2() and tail2() are called.
+     * Don't call any other methods with this stream after headd() and taill() are called.
      * 
      * @return
      */
-    public abstract FloatStream head2();
+    public abstract FloatStream headd();
 
     /**
      * Head2 and tail2 should be used by pair. 
-     * Don't call any other methods with this stream after head2() and tail2() are called. 
+     * Don't call any other methods with this stream after headd() and taill() are called. 
      * 
      * @return
      */
-    public abstract OptionalFloat tail2();
+    public abstract OptionalFloat taill();
 
     public abstract Pair<OptionalFloat, FloatStream> headAndTail();
 
-    public abstract Pair<FloatStream, OptionalFloat> headAndTail2();
+    public abstract Pair<FloatStream, OptionalFloat> headAndTaill();
 
     /**
      * Returns an {@code OptionalFloat} describing the minimum element of this
@@ -665,7 +665,7 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
 
     public abstract FloatSummaryStatistics summarize();
 
-    public abstract Pair<FloatSummaryStatistics, Optional<Map<Percentage, Float>>> summarize2();
+    public abstract Pair<FloatSummaryStatistics, Optional<Map<Percentage, Float>>> summarizee();
 
     /**
      * 

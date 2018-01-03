@@ -140,7 +140,7 @@ public final class SetMultimap<K, E> extends Multimap<K, E, Set<E>> {
         return multimap;
     }
 
-    public static <K, E> SetMultimap<K, E> from2(final Map<? extends K, ? extends Collection<? extends E>> map) {
+    public static <K, E> SetMultimap<K, E> fromm(final Map<? extends K, ? extends Collection<? extends E>> map) {
         final SetMultimap<K, E> multimap = new SetMultimap<>(Maps.newTargetMap(map), HashSet.class);
 
         if (N.notNullOrEmpty(map)) {
@@ -300,7 +300,7 @@ public final class SetMultimap<K, E> extends Multimap<K, E, Set<E>> {
     }
 
     @Deprecated
-    public static <K, E, V extends Collection<E>, M extends Multimap<K, E, V>> M from2(final Map<? extends K, ? extends Collection<? extends E>> map,
+    public static <K, E, V extends Collection<E>, M extends Multimap<K, E, V>> M fromm(final Map<? extends K, ? extends Collection<? extends E>> map,
             final Supplier<M> multimapSupplier) {
         throw new UnsupportedOperationException();
     }

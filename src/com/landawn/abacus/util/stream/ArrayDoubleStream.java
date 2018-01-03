@@ -1402,7 +1402,7 @@ class ArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public DoubleStream head2() {
+    public DoubleStream headd() {
         if (fromIndex == toIndex) {
             return this;
         }
@@ -1411,7 +1411,7 @@ class ArrayDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public OptionalDouble tail2() {
+    public OptionalDouble taill() {
         return fromIndex == toIndex ? OptionalDouble.empty() : OptionalDouble.of(elements[toIndex - 1]);
     }
 

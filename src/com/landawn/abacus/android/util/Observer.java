@@ -1194,16 +1194,16 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
             return this;
         }
 
-        public Disposable onTextChanged2(final Consumer<? super Tuple4<CharSequence, Integer, Integer, Integer>> onNext) {
-            return onTextChanged2(onNext, Fu.ON_ERROR_MISSING);
+        public Disposable onTextChangedd(final Consumer<? super Tuple4<CharSequence, Integer, Integer, Integer>> onNext) {
+            return onTextChangedd(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public Disposable onTextChanged2(final Consumer<? super Tuple4<CharSequence, Integer, Integer, Integer>> onNext,
+        public Disposable onTextChangedd(final Consumer<? super Tuple4<CharSequence, Integer, Integer, Integer>> onNext,
                 final Consumer<? super Exception> onError) {
-            return onTextChanged2(onNext, onError, Fu.EMPTY_ACTION);
+            return onTextChangedd(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public Disposable onTextChanged2(final Consumer<? super Tuple4<CharSequence, Integer, Integer, Integer>> onNext,
+        public Disposable onTextChangedd(final Consumer<? super Tuple4<CharSequence, Integer, Integer, Integer>> onNext,
                 final Consumer<? super Exception> onError, final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
@@ -1318,16 +1318,16 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
             return this;
         }
 
-        public Disposable beforeTextChanged2(final Consumer<? super Tuple4<CharSequence, Integer, Integer, Integer>> onNext) {
-            return beforeTextChanged2(onNext, Fu.ON_ERROR_MISSING);
+        public Disposable beforeTextChangedd(final Consumer<? super Tuple4<CharSequence, Integer, Integer, Integer>> onNext) {
+            return beforeTextChangedd(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public Disposable beforeTextChanged2(final Consumer<? super Tuple4<CharSequence, Integer, Integer, Integer>> onNext,
+        public Disposable beforeTextChangedd(final Consumer<? super Tuple4<CharSequence, Integer, Integer, Integer>> onNext,
                 final Consumer<? super Exception> onError) {
-            return beforeTextChanged2(onNext, onError, Fu.EMPTY_ACTION);
+            return beforeTextChangedd(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public Disposable beforeTextChanged2(final Consumer<? super Tuple4<CharSequence, Integer, Integer, Integer>> onNext,
+        public Disposable beforeTextChangedd(final Consumer<? super Tuple4<CharSequence, Integer, Integer, Integer>> onNext,
                 final Consumer<? super Exception> onError, final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
@@ -1442,15 +1442,15 @@ public abstract class Observer<T> extends com.landawn.abacus.util.Observer<T> {
             return this;
         }
 
-        public Disposable afterTextChanged2(final Consumer<? super Editable> onNext) {
-            return afterTextChanged2(onNext, Fu.ON_ERROR_MISSING);
+        public Disposable afterTextChangedd(final Consumer<? super Editable> onNext) {
+            return afterTextChangedd(onNext, Fu.ON_ERROR_MISSING);
         }
 
-        public Disposable afterTextChanged2(final Consumer<? super Editable> onNext, final Consumer<? super Exception> onError) {
-            return afterTextChanged2(onNext, onError, Fu.EMPTY_ACTION);
+        public Disposable afterTextChangedd(final Consumer<? super Editable> onNext, final Consumer<? super Exception> onError) {
+            return afterTextChangedd(onNext, onError, Fu.EMPTY_ACTION);
         }
 
-        public Disposable afterTextChanged2(final Consumer<? super Editable> onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
+        public Disposable afterTextChangedd(final Consumer<? super Editable> onNext, final Consumer<? super Exception> onError, final Runnable onComplete) {
             N.requireNonNull(onNext, "onNext");
             N.requireNonNull(onError, "onError");
             N.requireNonNull(onComplete, "onComplete");

@@ -586,7 +586,7 @@ abstract class AbstractLongStream extends LongStream {
     }
 
     @Override
-    public Pair<LongSummaryStatistics, Optional<Map<Percentage, Long>>> summarize2() {
+    public Pair<LongSummaryStatistics, Optional<Map<Percentage, Long>>> summarizee() {
         final long[] a = sorted().toArray();
 
         if (N.isNullOrEmpty(a)) {
@@ -626,8 +626,8 @@ abstract class AbstractLongStream extends LongStream {
     }
 
     @Override
-    public Pair<LongStream, OptionalLong> headAndTail2() {
-        return Pair.of(head2(), tail2());
+    public Pair<LongStream, OptionalLong> headAndTaill() {
+        return Pair.of(headd(), taill());
     }
 
     @Override

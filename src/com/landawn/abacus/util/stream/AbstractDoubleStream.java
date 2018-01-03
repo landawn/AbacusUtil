@@ -651,7 +651,7 @@ abstract class AbstractDoubleStream extends DoubleStream {
     }
 
     @Override
-    public Pair<DoubleSummaryStatistics, Optional<Map<Percentage, Double>>> summarize2() {
+    public Pair<DoubleSummaryStatistics, Optional<Map<Percentage, Double>>> summarizee() {
         final double[] a = sorted().toArray();
 
         if (N.isNullOrEmpty(a)) {
@@ -691,8 +691,8 @@ abstract class AbstractDoubleStream extends DoubleStream {
     }
 
     @Override
-    public Pair<DoubleStream, OptionalDouble> headAndTail2() {
-        return Pair.of(head2(), tail2());
+    public Pair<DoubleStream, OptionalDouble> headAndTaill() {
+        return Pair.of(headd(), taill());
     }
 
     @Override

@@ -1553,7 +1553,7 @@ class IteratorIntStream extends AbstractIntStream {
     }
 
     @Override
-    public IntStream head2() {
+    public IntStream headd() {
         if (head2 == null) {
             final int[] a = elements.toArray();
             head2 = new ArrayIntStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, closeHandlers);
@@ -1564,7 +1564,7 @@ class IteratorIntStream extends AbstractIntStream {
     }
 
     @Override
-    public OptionalInt tail2() {
+    public OptionalInt taill() {
         if (tail2 == null) {
             final int[] a = elements.toArray();
             head2 = new ArrayIntStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, closeHandlers);

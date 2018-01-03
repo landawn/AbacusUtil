@@ -931,126 +931,6 @@ public final class Seq<T> extends ImmutableCollection<T> {
         });
     }
 
-    //    public <R> List<R> filterThenMap(Predicate<? super T> filter, final Function<? super T, ? extends R> mapper) {
-    //        if (N.isNullOrEmpty(coll)) {
-    //            return new ArrayList<>();
-    //        }
-    //
-    //        final List<R> res = new ArrayList<>();
-    //
-    //        for (T e : coll) {
-    //            if (filter.test(e)) {
-    //                res.add(mapper.apply(e));
-    //            }
-    //        }
-    //
-    //        return res;
-    //    }
-    //
-    //    public <R> List<R> filterThenFlatMap(Predicate<? super T> filter, final Function<? super T, ? extends Collection<R>> mapper) {
-    //        if (N.isNullOrEmpty(coll)) {
-    //            return new ArrayList<>();
-    //        }
-    //
-    //        final List<R> res = new ArrayList<>();
-    //
-    //        for (T e : coll) {
-    //            if (filter.test(e)) {
-    //                res.addAll(mapper.apply(e));
-    //            }
-    //        }
-    //
-    //        return res;
-    //    }
-    //
-    //    public <R> List<R> filterThenFlatMap2(Predicate<? super T> filter, final Function<? super T, ? extends R[]> mapper) {
-    //        if (N.isNullOrEmpty(coll)) {
-    //            return new ArrayList<>();
-    //        }
-    //
-    //        final List<R> res = new ArrayList<>();
-    //        R[] a = null;
-    //
-    //        for (T e : coll) {
-    //            if (filter.test(e)) {
-    //                a = mapper.apply(e);
-    //
-    //                if (N.notNullOrEmpty(a)) {
-    //                    if (a.length < 9) {
-    //                        for (R r : a) {
-    //                            res.add(r);
-    //                        }
-    //                    } else {
-    //                        res.addAll(Arrays.asList(a));
-    //                    }
-    //                }
-    //            }
-    //        }
-    //
-    //        return res;
-    //    }
-    //
-    //    public Nullable<T> filterThenReduce(Predicate<? super T> filter, final BinaryOperator<T> accumulator) {
-    //        if (N.isNullOrEmpty(coll)) {
-    //            return Nullable.<T> empty();
-    //        }
-    //
-    //        T result = (T) N.NULL_MASK;
-    //
-    //        for (T e : coll) {
-    //            if (filter.test(e)) {
-    //                result = result == N.NULL_MASK ? e : accumulator.apply(result, e);
-    //            }
-    //        }
-    //
-    //        return result == N.NULL_MASK ? Nullable.<T> empty() : Nullable.of(result);
-    //    }
-    //
-    //    public <U> Nullable<U> filterThenReduce(Predicate<? super T> filter, final U identity, final BiFunction<U, ? super T, U> accumulator) {
-    //        if (N.isNullOrEmpty(coll)) {
-    //            return Nullable.of(identity);
-    //        }
-    //
-    //        U result = identity;
-    //
-    //        for (T e : coll) {
-    //            if (filter.test(e)) {
-    //                result = accumulator.apply(result, e);
-    //            }
-    //        }
-    //
-    //        return Nullable.of(result);
-    //    }
-    //
-    //    public <A, R> R filterThenCollect(Predicate<? super T> filter, final Supplier<R> supplier, final BiConsumer<R, ? super T> accumulator) {
-    //        final R result = supplier.get();
-    //
-    //        if (N.notNullOrEmpty(coll)) {
-    //            for (T e : coll) {
-    //                if (filter.test(e)) {
-    //                    accumulator.accept(result, e);
-    //                }
-    //            }
-    //        }
-    //
-    //        return result;
-    //    }
-    //
-    //    public <A, R> R filterThenCollect(Predicate<? super T> filter, final Collector<? super T, A, R> collector) {
-    //        final BiConsumer<A, ? super T> accumulator = collector.accumulator();
-    //        final A result = collector.supplier().get();
-    //
-    //        if (N.notNullOrEmpty(coll)) {
-    //            for (T e : coll) {
-    //                if (filter.test(e)) {
-    //                    accumulator.accept(result, e);
-    //                }
-    //            }
-    //        }
-    //
-    //        return collector.finisher().apply(result);
-    //    }
-
     public <E extends Exception> List<T> takeWhile(Try.Predicate<? super T, E> filter) throws E {
         final List<T> result = new ArrayList<>(N.min(9, size()));
 
@@ -1208,7 +1088,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
-    public <R, E extends Exception> List<R> flatMap2(final Try.Function<? super T, ? extends R[], E> func) throws E {
+    public <R, E extends Exception> List<R> flattMap(final Try.Function<? super T, ? extends R[], E> func) throws E {
         final List<R> result = new ArrayList<>(size() > N.MAX_ARRAY_SIZE / 2 ? N.MAX_ARRAY_SIZE : size() * 2);
 
         if (N.isNullOrEmpty(coll)) {
@@ -1249,7 +1129,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
-    public <E extends Exception> BooleanList flatMapToBoolean2(final Try.Function<? super T, boolean[], E> func) throws E {
+    public <E extends Exception> BooleanList flattMapToBoolean(final Try.Function<? super T, boolean[], E> func) throws E {
         final BooleanList result = new BooleanList(size() > N.MAX_ARRAY_SIZE / 2 ? N.MAX_ARRAY_SIZE : size() * 2);
 
         if (N.isNullOrEmpty(coll)) {
@@ -1279,7 +1159,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
-    public <E extends Exception> CharList flatMapToChar2(final Try.Function<? super T, char[], E> func) throws E {
+    public <E extends Exception> CharList flattMapToChar(final Try.Function<? super T, char[], E> func) throws E {
         final CharList result = new CharList(size() > N.MAX_ARRAY_SIZE / 2 ? N.MAX_ARRAY_SIZE : size() * 2);
 
         if (N.isNullOrEmpty(coll)) {
@@ -1309,7 +1189,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
-    public <E extends Exception> ByteList flatMapToByte2(final Try.Function<? super T, byte[], E> func) throws E {
+    public <E extends Exception> ByteList flattMapToByte(final Try.Function<? super T, byte[], E> func) throws E {
         final ByteList result = new ByteList(size() > N.MAX_ARRAY_SIZE / 2 ? N.MAX_ARRAY_SIZE : size() * 2);
 
         if (N.isNullOrEmpty(coll)) {
@@ -1339,7 +1219,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
-    public <E extends Exception> ShortList flatMapToShort2(final Try.Function<? super T, short[], E> func) throws E {
+    public <E extends Exception> ShortList flattMapToShort(final Try.Function<? super T, short[], E> func) throws E {
         final ShortList result = new ShortList(size() > N.MAX_ARRAY_SIZE / 2 ? N.MAX_ARRAY_SIZE : size() * 2);
 
         if (N.isNullOrEmpty(coll)) {
@@ -1369,7 +1249,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
-    public <E extends Exception> IntList flatMapToInt2(final Try.Function<? super T, int[], E> func) throws E {
+    public <E extends Exception> IntList flattMapToInt(final Try.Function<? super T, int[], E> func) throws E {
         final IntList result = new IntList(size() > N.MAX_ARRAY_SIZE / 2 ? N.MAX_ARRAY_SIZE : size() * 2);
 
         if (N.isNullOrEmpty(coll)) {
@@ -1399,7 +1279,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
-    public <E extends Exception> LongList flatMapToLong2(final Try.Function<? super T, long[], E> func) throws E {
+    public <E extends Exception> LongList flattMapToLong(final Try.Function<? super T, long[], E> func) throws E {
         final LongList result = new LongList(size() > N.MAX_ARRAY_SIZE / 2 ? N.MAX_ARRAY_SIZE : size() * 2);
 
         if (N.isNullOrEmpty(coll)) {
@@ -1429,7 +1309,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
-    public <E extends Exception> FloatList flatMapToFloat2(final Try.Function<? super T, float[], E> func) throws E {
+    public <E extends Exception> FloatList flattMapToFloat(final Try.Function<? super T, float[], E> func) throws E {
         final FloatList result = new FloatList(size() > N.MAX_ARRAY_SIZE / 2 ? N.MAX_ARRAY_SIZE : size() * 2);
 
         if (N.isNullOrEmpty(coll)) {
@@ -1459,7 +1339,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
-    public <E extends Exception> DoubleList flatMapToDouble2(final Try.Function<? super T, double[], E> func) throws E {
+    public <E extends Exception> DoubleList flattMapToDouble(final Try.Function<? super T, double[], E> func) throws E {
         final DoubleList result = new DoubleList(size() > N.MAX_ARRAY_SIZE / 2 ? N.MAX_ARRAY_SIZE : size() * 2);
 
         if (N.isNullOrEmpty(coll)) {
@@ -3243,15 +3123,15 @@ public final class Seq<T> extends ImmutableCollection<T> {
                 return new ArrayList<>();
             } else {
                 final List<T> res = new ArrayList<>(b.length);
-                res.addAll(N.asList(b));
+                res.addAll(Arrays.asList(b));
                 return res;
             }
         } else {
             final List<T> res = new ArrayList<>(a.length + (b == null ? 0 : b.length));
-            res.addAll(N.asList(a));
+            res.addAll(Arrays.asList(a));
 
             if (N.notNullOrEmpty(b)) {
-                res.addAll(N.asList(b));
+                res.addAll(Arrays.asList(b));
             }
             return res;
         }
@@ -3652,7 +3532,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @param unzip the second parameter is an output parameter.
      * @return
      */
-    public static <T, L, M, R, E extends Exception> Triple<List<L>, List<M>, List<R>> unzip3(final Collection<? extends T> c,
+    public static <T, L, M, R, E extends Exception> Triple<List<L>, List<M>, List<R>> unzipp(final Collection<? extends T> c,
             final Try.BiConsumer<? super T, Triple<L, M, R>, E> unzip) throws E {
         final int len = c == null ? 0 : c.size();
 
@@ -3681,7 +3561,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @param supplier
      * @return
      */
-    public static <T, L, M, R, LC extends Collection<L>, MC extends Collection<M>, RC extends Collection<R>, E extends Exception> Triple<LC, MC, RC> unzip3(
+    public static <T, L, M, R, LC extends Collection<L>, MC extends Collection<M>, RC extends Collection<R>, E extends Exception> Triple<LC, MC, RC> unzipp(
             final Collection<? extends T> c, final Try.BiConsumer<? super T, Triple<L, M, R>, E> unzip, final IntFunction<? extends Collection<?>> supplier)
             throws E {
         final int len = c == null ? 0 : c.size();
@@ -3937,7 +3817,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
 
         @Override
         public int size() {
-            return Math2.factorial(inputList.size());
+            return Maths.factorial(inputList.size());
         }
 
         @Override
@@ -4111,7 +3991,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
 
                 if (comparison < 0) {
                     // We move to the next non-repeated element.
-                    permutations *= Math2.binomial(n, r);
+                    permutations *= Maths.binomial(n, r);
                     r = 0;
                     if (!isPositiveInt(permutations)) {
                         return Integer.MAX_VALUE;
@@ -4122,7 +4002,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
                 r++;
             }
 
-            permutations *= Math2.binomial(n, r);
+            permutations *= Maths.binomial(n, r);
 
             if (!isPositiveInt(permutations)) {
                 return Integer.MAX_VALUE;
@@ -4297,7 +4177,7 @@ public final class Seq<T> extends ImmutableCollection<T> {
 
             try {
                 for (int i = axes.length - 1; i >= 0; i--) {
-                    axesSizeProduct[i] = Math2.multiplyExact(axesSizeProduct[i + 1], axes[i].length);
+                    axesSizeProduct[i] = Maths.multiplyExact(axesSizeProduct[i + 1], axes[i].length);
                 }
             } catch (ArithmeticException e) {
                 throw new IllegalArgumentException("Cartesian product too large; must have size at most Integer.MAX_VALUE");

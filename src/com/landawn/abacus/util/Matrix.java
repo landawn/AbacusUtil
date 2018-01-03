@@ -388,55 +388,6 @@ public final class Matrix<T> extends AbstractMatrix<T[], List<T>, Stream<T>, Str
         }
     }
 
-    // Replaced by stream and stream2.
-    //    public Nullable<T> min(final Comparator<? super T> cmp) {
-    //        if (isEmpty()) {
-    //            return Nullable.empty();
-    //        }
-    //
-    //        final Comparator<? super T> comparator = cmp == null ? N.NULL_MIN_COMPARATOR : cmp;
-    //        T candicate = a[0][0];
-    //
-    //        for (int i = 0; i < n; i++) {
-    //            for (int j = 0; j < m; j++) {
-    //                if (comparator.compare(a[i][j], candicate) < 0) {
-    //                    candicate = a[i][j];
-    //                }
-    //            }
-    //        }
-    //
-    //        return Nullable.of(candicate);
-    //    }
-    //
-    //    public Nullable<T> max(final Comparator<? super T> cmp) {
-    //        if (isEmpty()) {
-    //            return Nullable.empty();
-    //        }
-    //
-    //        final Comparator<? super T> comparator = cmp == null ? N.NULL_MIN_COMPARATOR : cmp;
-    //        T candicate = a[0][0];
-    //
-    //        for (int i = 0; i < n; i++) {
-    //            for (int j = 0; j < m; j++) {
-    //                if (comparator.compare(a[i][j], candicate) > 0) {
-    //                    candicate = a[i][j];
-    //                }
-    //            }
-    //        }
-    //
-    //        return Nullable.of(candicate);
-    //    }
-    //
-    //    @Override
-    //    public List<T> row(final int i) {
-    //        return List.of(a[i].clone());
-    //    }
-    //
-    //    @Override
-    //    public List<T> column(final int j) {
-    //        return List.of(column2(j));
-    //    }
-
     /**
      * Replace elements by <code>Predicate.test(i, j)</code> based on points
      * 

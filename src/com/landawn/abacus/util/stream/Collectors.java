@@ -821,16 +821,16 @@ public class Collectors {
         }
     };
 
-    static final BiConsumer<OptionalBox2<Object, Object>, Object> Reducing_Accumulator_2 = new BiConsumer<OptionalBox2<Object, Object>, Object>() {
+    static final BiConsumer<OptionalBoxx<Object, Object>, Object> Reducing_Accumulator_2 = new BiConsumer<OptionalBoxx<Object, Object>, Object>() {
         @Override
-        public void accept(OptionalBox2<Object, Object> a, Object t) {
+        public void accept(OptionalBoxx<Object, Object> a, Object t) {
             a.accept(t);
         }
     };
 
-    static final BinaryOperator<OptionalBox2<Object, Object>> Reducing_Combiner_2 = new BinaryOperator<OptionalBox2<Object, Object>>() {
+    static final BinaryOperator<OptionalBoxx<Object, Object>> Reducing_Combiner_2 = new BinaryOperator<OptionalBoxx<Object, Object>>() {
         @Override
-        public OptionalBox2<Object, Object> apply(OptionalBox2<Object, Object> a, OptionalBox2<Object, Object> b) {
+        public OptionalBoxx<Object, Object> apply(OptionalBoxx<Object, Object> a, OptionalBoxx<Object, Object> b) {
             if (b.present) {
                 if (a.present) {
                     a.value = a.op.apply(a.value, b.value);
@@ -844,9 +844,9 @@ public class Collectors {
         }
     };
 
-    static final Function<OptionalBox2<Object, Object>, Nullable<Object>> Reducing_Finisher_2 = new Function<OptionalBox2<Object, Object>, Nullable<Object>>() {
+    static final Function<OptionalBoxx<Object, Object>, Nullable<Object>> Reducing_Finisher_2 = new Function<OptionalBoxx<Object, Object>, Nullable<Object>>() {
         @Override
-        public Nullable<Object> apply(OptionalBox2<Object, Object> a) {
+        public Nullable<Object> apply(OptionalBoxx<Object, Object> a) {
             return a.present ? Nullable.of(a.value) : (Nullable<Object>) Nullable.empty();
         }
     };
@@ -2294,7 +2294,7 @@ public class Collectors {
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
     }
 
-    public static <T> Collector<T, ?, OptionalInt> summingInt2(final ToIntFunction<? super T> mapper) {
+    public static <T> Collector<T, ?, OptionalInt> summingIntt(final ToIntFunction<? super T> mapper) {
         final Supplier<int[]> supplier = SummingInt_Supplier_2;
 
         final BiConsumer<int[], T> accumulator = new BiConsumer<int[], T>() {
@@ -2335,7 +2335,7 @@ public class Collectors {
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
     }
 
-    public static <T> Collector<T, ?, OptionalLong> summingLong2(final ToLongFunction<? super T> mapper) {
+    public static <T> Collector<T, ?, OptionalLong> summingLongg(final ToLongFunction<? super T> mapper) {
         final Supplier<long[]> supplier = SummingLong_Supplier_2;
 
         final BiConsumer<long[], T> accumulator = new BiConsumer<long[], T>() {
@@ -2403,7 +2403,7 @@ public class Collectors {
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
     }
 
-    public static <T> Collector<T, ?, OptionalDouble> summingDouble2(final ToDoubleFunction<? super T> mapper) {
+    public static <T> Collector<T, ?, OptionalDouble> summingDoublee(final ToDoubleFunction<? super T> mapper) {
         /*
          * In the arrays allocated for the collect operation, index 0
          * holds the high-order bits of the running sum, index 1 holds
@@ -2502,7 +2502,7 @@ public class Collectors {
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
     }
 
-    public static <T> Collector<T, ?, OptionalDouble> averagingInt2(final ToIntFunction<? super T> mapper) {
+    public static <T> Collector<T, ?, OptionalDouble> averagingIntt(final ToIntFunction<? super T> mapper) {
         final Supplier<long[]> supplier = AveragingInt_Supplier;
 
         final BiConsumer<long[], T> accumulator = new BiConsumer<long[], T>() {
@@ -2545,7 +2545,7 @@ public class Collectors {
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
     }
 
-    public static <T> Collector<T, ?, OptionalDouble> averagingLong2(final ToLongFunction<? super T> mapper) {
+    public static <T> Collector<T, ?, OptionalDouble> averagingLongg(final ToLongFunction<? super T> mapper) {
         final Supplier<long[]> supplier = AveragingLong_Supplier;
 
         final BiConsumer<long[], T> accumulator = new BiConsumer<long[], T>() {
@@ -2616,7 +2616,7 @@ public class Collectors {
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
     }
 
-    public static <T> Collector<T, ?, OptionalDouble> averagingDouble2(final ToDoubleFunction<? super T> mapper) {
+    public static <T> Collector<T, ?, OptionalDouble> averagingDoublee(final ToDoubleFunction<? super T> mapper) {
         final Supplier<double[]> supplier = AveragingDouble_Supplier;
 
         final BiConsumer<double[], T> accumulator = new BiConsumer<double[], T>() {
@@ -2998,27 +2998,27 @@ public class Collectors {
 
     @SuppressWarnings("rawtypes")
     public static <T, U> Collector<T, ?, Nullable<U>> reducing(final Function<? super T, ? extends U> mapper, final BinaryOperator<U> op) {
-        final Supplier<OptionalBox2<T, U>> supplier = new Supplier<OptionalBox2<T, U>>() {
+        final Supplier<OptionalBoxx<T, U>> supplier = new Supplier<OptionalBoxx<T, U>>() {
             @Override
-            public OptionalBox2<T, U> get() {
-                return new OptionalBox2<T, U>(mapper, op);
+            public OptionalBoxx<T, U> get() {
+                return new OptionalBoxx<T, U>(mapper, op);
             }
         };
 
-        final BiConsumer<OptionalBox2<T, U>, T> accumulator = (BiConsumer) Reducing_Accumulator_2;
-        final BinaryOperator<OptionalBox2<T, U>> combiner = (BinaryOperator) Reducing_Combiner_2;
-        final Function<OptionalBox2<T, U>, Nullable<U>> finisher = (Function) Reducing_Finisher_2;
+        final BiConsumer<OptionalBoxx<T, U>, T> accumulator = (BiConsumer) Reducing_Accumulator_2;
+        final BinaryOperator<OptionalBoxx<T, U>> combiner = (BinaryOperator) Reducing_Combiner_2;
+        final Function<OptionalBoxx<T, U>, Nullable<U>> finisher = (Function) Reducing_Finisher_2;
 
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
     }
 
-    private static class OptionalBox2<T, U> implements Consumer<T> {
+    private static class OptionalBoxx<T, U> implements Consumer<T> {
         Function<? super T, ? extends U> mapper;
         BinaryOperator<U> op;
         U value = null;
         boolean present = false;
 
-        OptionalBox2(final Function<? super T, ? extends U> mapper, final BinaryOperator<U> op) {
+        OptionalBoxx(final Function<? super T, ? extends U> mapper, final BinaryOperator<U> op) {
             this.mapper = mapper;
             this.op = op;
         }
@@ -3037,18 +3037,18 @@ public class Collectors {
     @SuppressWarnings("rawtypes")
     public static <T, U> Collector<T, ?, U> reducingOrGet(final Function<? super T, ? extends U> mapper, final BinaryOperator<U> op,
             final Supplier<? extends U> other) {
-        final Supplier<OptionalBox2<T, U>> supplier = new Supplier<OptionalBox2<T, U>>() {
+        final Supplier<OptionalBoxx<T, U>> supplier = new Supplier<OptionalBoxx<T, U>>() {
             @Override
-            public OptionalBox2<T, U> get() {
-                return new OptionalBox2<T, U>(mapper, op);
+            public OptionalBoxx<T, U> get() {
+                return new OptionalBoxx<T, U>(mapper, op);
             }
         };
 
-        final BiConsumer<OptionalBox2<T, U>, T> accumulator = (BiConsumer) Reducing_Accumulator_2;
-        final BinaryOperator<OptionalBox2<T, U>> combiner = (BinaryOperator) Reducing_Combiner_2;
-        final Function<OptionalBox2<T, U>, U> finisher = new Function<OptionalBox2<T, U>, U>() {
+        final BiConsumer<OptionalBoxx<T, U>, T> accumulator = (BiConsumer) Reducing_Accumulator_2;
+        final BinaryOperator<OptionalBoxx<T, U>> combiner = (BinaryOperator) Reducing_Combiner_2;
+        final Function<OptionalBoxx<T, U>, U> finisher = new Function<OptionalBoxx<T, U>, U>() {
             @Override
-            public U apply(OptionalBox2<T, U> a) {
+            public U apply(OptionalBoxx<T, U> a) {
                 return a.present ? a.value : other.get();
             }
         };
@@ -3059,18 +3059,18 @@ public class Collectors {
     @SuppressWarnings("rawtypes")
     public static <T, U, X extends RuntimeException> Collector<T, ?, U> reducingOrThrow(final Function<? super T, ? extends U> mapper,
             final BinaryOperator<U> op, final Supplier<? extends X> exceptionSupplier) {
-        final Supplier<OptionalBox2<T, U>> supplier = new Supplier<OptionalBox2<T, U>>() {
+        final Supplier<OptionalBoxx<T, U>> supplier = new Supplier<OptionalBoxx<T, U>>() {
             @Override
-            public OptionalBox2<T, U> get() {
-                return new OptionalBox2<T, U>(mapper, op);
+            public OptionalBoxx<T, U> get() {
+                return new OptionalBoxx<T, U>(mapper, op);
             }
         };
 
-        final BiConsumer<OptionalBox2<T, U>, T> accumulator = (BiConsumer) Reducing_Accumulator_2;
-        final BinaryOperator<OptionalBox2<T, U>> combiner = (BinaryOperator) Reducing_Combiner_2;
-        final Function<OptionalBox2<T, U>, U> finisher = new Function<OptionalBox2<T, U>, U>() {
+        final BiConsumer<OptionalBoxx<T, U>, T> accumulator = (BiConsumer) Reducing_Accumulator_2;
+        final BinaryOperator<OptionalBoxx<T, U>> combiner = (BinaryOperator) Reducing_Combiner_2;
+        final Function<OptionalBoxx<T, U>, U> finisher = new Function<OptionalBoxx<T, U>, U>() {
             @Override
-            public U apply(OptionalBox2<T, U> a) {
+            public U apply(OptionalBoxx<T, U> a) {
                 if (a.present) {
                     return a.value;
                 } else {

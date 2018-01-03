@@ -31,7 +31,7 @@ public final class f {
         // utility class.
     }
 
-    public static <T, E extends Exception> void replaceAll2(final T[] a, final Try.UnaryOperator<T, E> operator) throws E {
+    public static <T, E extends Exception> void replaceAlll(final T[] a, final Try.UnaryOperator<T, E> operator) throws E {
         if (N.isNullOrEmpty(a)) {
             return;
         }
@@ -41,27 +41,27 @@ public final class f {
         }
     }
 
-    public static <T, E extends Exception> void replaceAll2(final T[][] a, final Try.UnaryOperator<T, E> operator) throws E {
+    public static <T, E extends Exception> void replaceAlll(final T[][] a, final Try.UnaryOperator<T, E> operator) throws E {
         if (N.isNullOrEmpty(a)) {
             return;
         }
 
         for (int i = 0, n = a.length; i < n; i++) {
-            replaceAll2(a[i], operator);
+            replaceAlll(a[i], operator);
         }
     }
 
-    public static <T, E extends Exception> void replaceAll2(final T[][][] a, final Try.UnaryOperator<T, E> operator) throws E {
+    public static <T, E extends Exception> void replaceAlll(final T[][][] a, final Try.UnaryOperator<T, E> operator) throws E {
         if (N.isNullOrEmpty(a)) {
             return;
         }
 
         for (int i = 0, n = a.length; i < n; i++) {
-            replaceAll2(a[i], operator);
+            replaceAlll(a[i], operator);
         }
     }
 
-    public static <T, E extends Exception> void replaceIf2(final T[] a, final Try.Predicate<? super T, E> predicate, final T newValue) throws E {
+    public static <T, E extends Exception> void replaceIff(final T[] a, final Try.Predicate<? super T, E> predicate, final T newValue) throws E {
         if (N.isNullOrEmpty(a)) {
             return;
         }
@@ -73,27 +73,27 @@ public final class f {
         }
     }
 
-    public static <T, E extends Exception> void replaceIf2(final T[][] a, final Try.Predicate<? super T, E> predicate, final T newValue) throws E {
+    public static <T, E extends Exception> void replaceIff(final T[][] a, final Try.Predicate<? super T, E> predicate, final T newValue) throws E {
         if (N.isNullOrEmpty(a)) {
             return;
         }
 
         for (int i = 0, n = a.length; i < n; i++) {
-            replaceIf2(a[i], predicate, newValue);
+            replaceIff(a[i], predicate, newValue);
         }
     }
 
-    public static <T, E extends Exception> void replaceIf2(final T[][][] a, final Try.Predicate<? super T, E> predicate, final T newValue) throws E {
+    public static <T, E extends Exception> void replaceIff(final T[][][] a, final Try.Predicate<? super T, E> predicate, final T newValue) throws E {
         if (N.isNullOrEmpty(a)) {
             return;
         }
 
         for (int i = 0, n = a.length; i < n; i++) {
-            replaceIf2(a[i], predicate, newValue);
+            replaceIff(a[i], predicate, newValue);
         }
     }
 
-    public static <T> T[] flatten2(final T[][] a) {
+    public static <T> T[] flattenn(final T[][] a) {
         int count = 0;
 
         for (int i = 0, n = a.length; i < n; i++) {
@@ -116,7 +116,7 @@ public final class f {
         return c;
     }
 
-    public static <T> T[] flatten2(final T[][][] a) {
+    public static <T> T[] flattenn(final T[][][] a) {
         int count = 0;
 
         for (int i = 0, n = a.length; i < n; i++) {
@@ -155,7 +155,7 @@ public final class f {
         return c;
     }
 
-    public static <T> T[][] reshape2(final T[] a, final int m) {
+    public static <T> T[][] reshapee(final T[] a, final int m) {
         N.checkArgument(m > 0, "'m' must be positive number: m = %s", m);
 
         //        if (N.isNullOrEmpty(a)) {
@@ -163,7 +163,7 @@ public final class f {
         //        }
 
         final int len = a.length;
-        final int n = Math2.divide(len, m, RoundingMode.CEILING);
+        final int n = Maths.divide(len, m, RoundingMode.CEILING);
         final T[][] c = N.newArray(a.getClass(), n);
 
         for (int i = 0, from = 0; i < n; i++, from += m) {
@@ -173,7 +173,7 @@ public final class f {
         return c;
     }
 
-    public static <T> T[][][] reshape2(final T[] a, final int m, final int l) {
+    public static <T> T[][][] reshapee(final T[] a, final int m, final int l) {
         N.checkArgument(m > 0 && l > 0, "'m'  and 'l' must be positive number: m = %s, l = %s", m, l);
 
         //        if (N.isNullOrEmpty(a)) {
@@ -181,11 +181,11 @@ public final class f {
         //        }
 
         final int len = a.length;
-        final int n = Math2.divide(len, m * l, RoundingMode.CEILING);
+        final int n = Maths.divide(len, m * l, RoundingMode.CEILING);
         final T[][][] c = N.newArray(N.newArray(a.getClass(), 0).getClass(), n);
 
         for (int i = 0, from = 0; i < n; i++) {
-            c[i] = N.newArray(a.getClass(), N.min(m, Math2.divide(len - from, l, RoundingMode.CEILING)));
+            c[i] = N.newArray(a.getClass(), N.min(m, Maths.divide(len - from, l, RoundingMode.CEILING)));
 
             for (int j = 0, y = c[i].length; j < y; j++, from += l) {
                 c[i][j] = N.copyOfRange(a, from, from + N.min(len - from, l));
@@ -195,7 +195,7 @@ public final class f {
         return c;
     }
 
-    public static <T, E extends Exception> T[] map2(final T[] a, final Try.UnaryOperator<T, E> func) throws E {
+    public static <T, E extends Exception> T[] mapp(final T[] a, final Try.UnaryOperator<T, E> func) throws E {
         if (a == null) {
             return null;
         }
@@ -218,7 +218,7 @@ public final class f {
         return c;
     }
 
-    public static <T, E extends Exception> T[][] map2(final T[][] a, final Try.UnaryOperator<T, E> func) throws E {
+    public static <T, E extends Exception> T[][] mapp(final T[][] a, final Try.UnaryOperator<T, E> func) throws E {
         if (a == null) {
             return null;
         }
@@ -241,7 +241,7 @@ public final class f {
         return c;
     }
 
-    public static <T, E extends Exception> T[][][] map2(final T[][][] a, final Try.UnaryOperator<T, E> func) throws E {
+    public static <T, E extends Exception> T[][][] mapp(final T[][][] a, final Try.UnaryOperator<T, E> func) throws E {
         if (a == null) {
             return null;
         }
@@ -986,7 +986,7 @@ public final class f {
         return result;
     }
 
-    public static <A, B, E extends Exception> A[] zip2(final A[] a, final B[] b, final Try.BiFunction<? super A, ? super B, A, E> zipFunction) throws E {
+    public static <A, B, E extends Exception> A[] zipp(final A[] a, final B[] b, final Try.BiFunction<? super A, ? super B, A, E> zipFunction) throws E {
         return zip((Class<A>) a.getClass().getComponentType(), a, b, zipFunction);
     }
 
@@ -1004,7 +1004,7 @@ public final class f {
         return result;
     }
 
-    public static <A, B, E extends Exception> A[] zip2(final A[] a, final B[] b, final A valueForNoneA, final B valueForNoneB,
+    public static <A, B, E extends Exception> A[] zipp(final A[] a, final B[] b, final A valueForNoneA, final B valueForNoneB,
             final Try.BiFunction<? super A, ? super B, A, E> zipFunction) throws E {
         return zip((Class<A>) a.getClass().getComponentType(), a, b, valueForNoneA, valueForNoneB, zipFunction);
     }
@@ -1047,7 +1047,7 @@ public final class f {
         return result;
     }
 
-    public static <A, B, C, E extends Exception> A[] zip2(final A[] a, final B[] b, final C[] c,
+    public static <A, B, C, E extends Exception> A[] zipp(final A[] a, final B[] b, final C[] c,
             final Try.TriFunction<? super A, ? super B, ? super C, A, E> zipFunction) throws E {
         return zip((Class<A>) a.getClass().getComponentType(), a, b, c, zipFunction);
     }
@@ -1067,7 +1067,7 @@ public final class f {
         return result;
     }
 
-    public static <A, B, C, E extends Exception> A[] zip2(final A[] a, final B[] b, final C[] c, final A valueForNoneA, final B valueForNoneB,
+    public static <A, B, C, E extends Exception> A[] zipp(final A[] a, final B[] b, final C[] c, final A valueForNoneA, final B valueForNoneB,
             final C valueForNoneC, final Try.TriFunction<? super A, ? super B, ? super C, A, E> zipFunction) throws E {
         return zip((Class<A>) a.getClass().getComponentType(), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
     }
@@ -1102,7 +1102,7 @@ public final class f {
         return result;
     }
 
-    public static <A, B, E extends Exception> A[][] zip2(final A[][] a, final B[][] b, final Try.BiFunction<? super A, ? super B, A, E> zipFunction) throws E {
+    public static <A, B, E extends Exception> A[][] zipp(final A[][] a, final B[][] b, final Try.BiFunction<? super A, ? super B, A, E> zipFunction) throws E {
         return zip((Class<A>) a.getClass().getComponentType().getComponentType(), a, b, zipFunction);
     }
 
@@ -1120,7 +1120,7 @@ public final class f {
         return result;
     }
 
-    public static <A, B, E extends Exception> A[][] zip2(final A[][] a, final B[][] b, final A valueForNoneA, final B valueForNoneB,
+    public static <A, B, E extends Exception> A[][] zipp(final A[][] a, final B[][] b, final A valueForNoneA, final B valueForNoneB,
             final Try.BiFunction<? super A, ? super B, A, E> zipFunction) throws E {
         return zip((Class<A>) a.getClass().getComponentType().getComponentType(), a, b, valueForNoneA, valueForNoneB, zipFunction);
     }
@@ -1160,7 +1160,7 @@ public final class f {
         return result;
     }
 
-    public static <A, B, C, E extends Exception> A[][] zip2(final A[][] a, final B[][] b, final C[][] c,
+    public static <A, B, C, E extends Exception> A[][] zipp(final A[][] a, final B[][] b, final C[][] c,
             final Try.TriFunction<? super A, ? super B, ? super C, A, E> zipFunction) throws E {
         return zip((Class<A>) a.getClass().getComponentType().getComponentType(), a, b, c, zipFunction);
     }
@@ -1180,7 +1180,7 @@ public final class f {
         return result;
     }
 
-    public static <A, B, C, E extends Exception> A[][] zip2(final A[][] a, final B[][] b, final C[][] c, final A valueForNoneA, final B valueForNoneB,
+    public static <A, B, C, E extends Exception> A[][] zipp(final A[][] a, final B[][] b, final C[][] c, final A valueForNoneA, final B valueForNoneB,
             final C valueForNoneC, final Try.TriFunction<? super A, ? super B, ? super C, A, E> zipFunction) throws E {
         return zip((Class<A>) a.getClass().getComponentType().getComponentType(), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
     }
@@ -1214,7 +1214,7 @@ public final class f {
         return result;
     }
 
-    public static <A, B, E extends Exception> A[][][] zip2(final A[][][] a, final B[][][] b, final Try.BiFunction<? super A, ? super B, A, E> zipFunction)
+    public static <A, B, E extends Exception> A[][][] zipp(final A[][][] a, final B[][][] b, final Try.BiFunction<? super A, ? super B, A, E> zipFunction)
             throws E {
         return zip((Class<A>) a.getClass().getComponentType().getComponentType().getComponentType(), a, b, zipFunction);
     }
@@ -1233,7 +1233,7 @@ public final class f {
         return result;
     }
 
-    public static <A, B, E extends Exception> A[][][] zip2(final A[][][] a, final B[][][] b, final A valueForNoneA, final B valueForNoneB,
+    public static <A, B, E extends Exception> A[][][] zipp(final A[][][] a, final B[][][] b, final A valueForNoneA, final B valueForNoneB,
             final Try.BiFunction<? super A, ? super B, A, E> zipFunction) throws E {
         return zip((Class<A>) a.getClass().getComponentType().getComponentType().getComponentType(), a, b, valueForNoneA, valueForNoneB, zipFunction);
     }
@@ -1262,7 +1262,7 @@ public final class f {
         return result;
     }
 
-    public static <A, B, C, E extends Exception> A[][][] zip2(final A[][][] a, final B[][][] b, final C[][][] c,
+    public static <A, B, C, E extends Exception> A[][][] zipp(final A[][][] a, final B[][][] b, final C[][][] c,
             final Try.TriFunction<? super A, ? super B, ? super C, A, E> zipFunction) throws E {
         return zip((Class<A>) a.getClass().getComponentType().getComponentType().getComponentType(), a, b, c, zipFunction);
     }
@@ -1282,7 +1282,7 @@ public final class f {
         return result;
     }
 
-    public static <A, B, C, E extends Exception> A[][][] zip2(final A[][][] a, final B[][][] b, final C[][][] c, final A valueForNoneA, final B valueForNoneB,
+    public static <A, B, C, E extends Exception> A[][][] zipp(final A[][][] a, final B[][][] b, final C[][][] c, final A valueForNoneA, final B valueForNoneB,
             final C valueForNoneC, final Try.TriFunction<? super A, ? super B, ? super C, A, E> zipFunction) throws E {
         return zip((Class<A>) a.getClass().getComponentType().getComponentType().getComponentType(), a, b, c, valueForNoneA, valueForNoneB, valueForNoneC,
                 zipFunction);
@@ -1557,7 +1557,7 @@ public final class f {
         }
 
         final int len = a.length;
-        final int n = Math2.divide(len, m, RoundingMode.CEILING);
+        final int n = Maths.divide(len, m, RoundingMode.CEILING);
         final boolean[][] c = new boolean[n][];
 
         for (int i = 0, from = 0; i < n; i++, from += m) {
@@ -1575,11 +1575,11 @@ public final class f {
         }
 
         final int len = a.length;
-        final int n = Math2.divide(len, m * l, RoundingMode.CEILING);
+        final int n = Maths.divide(len, m * l, RoundingMode.CEILING);
         final boolean[][][] c = new boolean[n][][];
 
         for (int i = 0, from = 0; i < n; i++) {
-            c[i] = new boolean[N.min(m, Math2.divide(len - from, l, RoundingMode.CEILING))][];
+            c[i] = new boolean[N.min(m, Maths.divide(len - from, l, RoundingMode.CEILING))][];
 
             for (int j = 0, y = c[i].length; j < y; j++, from += l) {
                 c[i][j] = N.copyOfRange(a, from, from + N.min(len - from, l));
@@ -2278,7 +2278,7 @@ public final class f {
         }
 
         final int len = a.length;
-        final int n = Math2.divide(len, m, RoundingMode.CEILING);
+        final int n = Maths.divide(len, m, RoundingMode.CEILING);
         final char[][] c = new char[n][];
 
         for (int i = 0, from = 0; i < n; i++, from += m) {
@@ -2296,11 +2296,11 @@ public final class f {
         }
 
         final int len = a.length;
-        final int n = Math2.divide(len, m * l, RoundingMode.CEILING);
+        final int n = Maths.divide(len, m * l, RoundingMode.CEILING);
         final char[][][] c = new char[n][][];
 
         for (int i = 0, from = 0; i < n; i++) {
-            c[i] = new char[N.min(m, Math2.divide(len - from, l, RoundingMode.CEILING))][];
+            c[i] = new char[N.min(m, Maths.divide(len - from, l, RoundingMode.CEILING))][];
 
             for (int j = 0, y = c[i].length; j < y; j++, from += l) {
                 c[i][j] = N.copyOfRange(a, from, from + N.min(len - from, l));
@@ -2996,7 +2996,7 @@ public final class f {
         }
 
         final int len = a.length;
-        final int n = Math2.divide(len, m, RoundingMode.CEILING);
+        final int n = Maths.divide(len, m, RoundingMode.CEILING);
         final byte[][] c = new byte[n][];
 
         for (int i = 0, from = 0; i < n; i++, from += m) {
@@ -3014,11 +3014,11 @@ public final class f {
         }
 
         final int len = a.length;
-        final int n = Math2.divide(len, m * l, RoundingMode.CEILING);
+        final int n = Maths.divide(len, m * l, RoundingMode.CEILING);
         final byte[][][] c = new byte[n][][];
 
         for (int i = 0, from = 0; i < n; i++) {
-            c[i] = new byte[N.min(m, Math2.divide(len - from, l, RoundingMode.CEILING))][];
+            c[i] = new byte[N.min(m, Maths.divide(len - from, l, RoundingMode.CEILING))][];
 
             for (int j = 0, y = c[i].length; j < y; j++, from += l) {
                 c[i][j] = N.copyOfRange(a, from, from + N.min(len - from, l));
@@ -4963,7 +4963,7 @@ public final class f {
         }
 
         final int len = a.length;
-        final int n = Math2.divide(len, m, RoundingMode.CEILING);
+        final int n = Maths.divide(len, m, RoundingMode.CEILING);
         final short[][] c = new short[n][];
 
         for (int i = 0, from = 0; i < n; i++, from += m) {
@@ -4981,11 +4981,11 @@ public final class f {
         }
 
         final int len = a.length;
-        final int n = Math2.divide(len, m * l, RoundingMode.CEILING);
+        final int n = Maths.divide(len, m * l, RoundingMode.CEILING);
         final short[][][] c = new short[n][][];
 
         for (int i = 0, from = 0; i < n; i++) {
-            c[i] = new short[N.min(m, Math2.divide(len - from, l, RoundingMode.CEILING))][];
+            c[i] = new short[N.min(m, Maths.divide(len - from, l, RoundingMode.CEILING))][];
 
             for (int j = 0, y = c[i].length; j < y; j++, from += l) {
                 c[i][j] = N.copyOfRange(a, from, from + N.min(len - from, l));
@@ -6935,7 +6935,7 @@ public final class f {
         }
 
         final int len = a.length;
-        final int n = Math2.divide(len, m, RoundingMode.CEILING);
+        final int n = Maths.divide(len, m, RoundingMode.CEILING);
         final int[][] c = new int[n][];
 
         for (int i = 0, from = 0; i < n; i++, from += m) {
@@ -6953,11 +6953,11 @@ public final class f {
         }
 
         final int len = a.length;
-        final int n = Math2.divide(len, m * l, RoundingMode.CEILING);
+        final int n = Maths.divide(len, m * l, RoundingMode.CEILING);
         final int[][][] c = new int[n][][];
 
         for (int i = 0, from = 0; i < n; i++) {
-            c[i] = new int[N.min(m, Math2.divide(len - from, l, RoundingMode.CEILING))][];
+            c[i] = new int[N.min(m, Maths.divide(len - from, l, RoundingMode.CEILING))][];
 
             for (int j = 0, y = c[i].length; j < y; j++, from += l) {
                 c[i][j] = N.copyOfRange(a, from, from + N.min(len - from, l));
@@ -8896,7 +8896,7 @@ public final class f {
         }
 
         final int len = a.length;
-        final int n = Math2.divide(len, m, RoundingMode.CEILING);
+        final int n = Maths.divide(len, m, RoundingMode.CEILING);
         final long[][] c = new long[n][];
 
         for (int i = 0, from = 0; i < n; i++, from += m) {
@@ -8914,11 +8914,11 @@ public final class f {
         }
 
         final int len = a.length;
-        final int n = Math2.divide(len, m * l, RoundingMode.CEILING);
+        final int n = Maths.divide(len, m * l, RoundingMode.CEILING);
         final long[][][] c = new long[n][][];
 
         for (int i = 0, from = 0; i < n; i++) {
-            c[i] = new long[N.min(m, Math2.divide(len - from, l, RoundingMode.CEILING))][];
+            c[i] = new long[N.min(m, Maths.divide(len - from, l, RoundingMode.CEILING))][];
 
             for (int j = 0, y = c[i].length; j < y; j++, from += l) {
                 c[i][j] = N.copyOfRange(a, from, from + N.min(len - from, l));
@@ -10863,7 +10863,7 @@ public final class f {
         }
 
         final int len = a.length;
-        final int n = Math2.divide(len, m, RoundingMode.CEILING);
+        final int n = Maths.divide(len, m, RoundingMode.CEILING);
         final float[][] c = new float[n][];
 
         for (int i = 0, from = 0; i < n; i++, from += m) {
@@ -10881,11 +10881,11 @@ public final class f {
         }
 
         final int len = a.length;
-        final int n = Math2.divide(len, m * l, RoundingMode.CEILING);
+        final int n = Maths.divide(len, m * l, RoundingMode.CEILING);
         final float[][][] c = new float[n][][];
 
         for (int i = 0, from = 0; i < n; i++) {
-            c[i] = new float[N.min(m, Math2.divide(len - from, l, RoundingMode.CEILING))][];
+            c[i] = new float[N.min(m, Maths.divide(len - from, l, RoundingMode.CEILING))][];
 
             for (int j = 0, y = c[i].length; j < y; j++, from += l) {
                 c[i][j] = N.copyOfRange(a, from, from + N.min(len - from, l));
@@ -12835,7 +12835,7 @@ public final class f {
         }
 
         final int len = a.length;
-        final int n = Math2.divide(len, m, RoundingMode.CEILING);
+        final int n = Maths.divide(len, m, RoundingMode.CEILING);
         final double[][] c = new double[n][];
 
         for (int i = 0, from = 0; i < n; i++, from += m) {
@@ -12853,11 +12853,11 @@ public final class f {
         }
 
         final int len = a.length;
-        final int n = Math2.divide(len, m * l, RoundingMode.CEILING);
+        final int n = Maths.divide(len, m * l, RoundingMode.CEILING);
         final double[][][] c = new double[n][][];
 
         for (int i = 0, from = 0; i < n; i++) {
-            c[i] = new double[N.min(m, Math2.divide(len - from, l, RoundingMode.CEILING))][];
+            c[i] = new double[N.min(m, Maths.divide(len - from, l, RoundingMode.CEILING))][];
 
             for (int j = 0, y = c[i].length; j < y; j++, from += l) {
                 c[i][j] = N.copyOfRange(a, from, from + N.min(len - from, l));

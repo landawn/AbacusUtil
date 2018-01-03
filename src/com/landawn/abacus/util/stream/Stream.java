@@ -1566,25 +1566,25 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
 
     /**
      * Head2 and tail2 should be used by pair. 
-     * Don't call any other methods with this stream after head2() or tail2() is called.
+     * Don't call any other methods with this stream after headd() or taill() is called.
      * 
      * <br />
      * All elements will be loaded to memory.
      * 
      * @return
      */
-    public abstract Stream<T> head2();
+    public abstract Stream<T> headd();
 
     /**
      * Head2 and tail2 should be used by pair. 
-     * Don't call any other methods with this stream after head2() or tail2() is called. 
+     * Don't call any other methods with this stream after headd() or taill() is called. 
      * 
      * <br />
      * All elements will be loaded to memory.
      * 
      * @return
      */
-    public abstract Nullable<T> tail2();
+    public abstract Nullable<T> taill();
 
     public abstract Pair<Nullable<T>, Stream<T>> headAndTail();
 
@@ -1595,7 +1595,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * 
      * @return
      */
-    public abstract Pair<Stream<T>, Nullable<T>> headAndTail2();
+    public abstract Pair<Stream<T>, Nullable<T>> headAndTaill();
 
     /**
      * A queue with size up to <code>n</code> will be maintained to filter out the last <code>n</code> elements. 
@@ -3313,7 +3313,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
             return empty();
         }
 
-        return concat2(N.asList(a));
+        return concatt(N.asList(a));
     }
 
     @SafeVarargs
@@ -3336,10 +3336,10 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
             iterList.add(e.iterator());
         }
 
-        return concat2(iterList).onClose(newCloseHandler(c));
+        return concatt(iterList).onClose(newCloseHandler(c));
     }
 
-    public static <T> Stream<T> concat2(final Collection<? extends Iterator<? extends T>> c) {
+    public static <T> Stream<T> concatt(final Collection<? extends Iterator<? extends T>> c) {
         if (N.isNullOrEmpty(c)) {
             return empty();
         }
@@ -3499,7 +3499,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
             return empty();
         }
 
-        return parallelConcat2(N.asList(a), readThreadNum, queueSize);
+        return parallelConcatt(N.asList(a), readThreadNum, queueSize);
     }
 
     /**
@@ -3603,7 +3603,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
             iterList.add(e.iterator());
         }
 
-        return parallelConcat2(iterList, readThreadNum, queueSize).onClose(newCloseHandler(c));
+        return parallelConcatt(iterList, readThreadNum, queueSize).onClose(newCloseHandler(c));
     }
 
     /**
@@ -3618,8 +3618,8 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param c
      * @return
      */
-    public static <T> Stream<T> parallelConcat2(final Collection<? extends Iterator<? extends T>> c) {
-        return parallelConcat2(c, DEFAULT_READING_THREAD_NUM);
+    public static <T> Stream<T> parallelConcatt(final Collection<? extends Iterator<? extends T>> c) {
+        return parallelConcatt(c, DEFAULT_READING_THREAD_NUM);
     }
 
     /**
@@ -3635,8 +3635,8 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param readThreadNum
      * @return
      */
-    public static <T> Stream<T> parallelConcat2(final Collection<? extends Iterator<? extends T>> c, final int readThreadNum) {
-        return parallelConcat2(c, readThreadNum, calculateQueueSize(c.size()));
+    public static <T> Stream<T> parallelConcatt(final Collection<? extends Iterator<? extends T>> c, final int readThreadNum) {
+        return parallelConcatt(c, readThreadNum, calculateQueueSize(c.size()));
     }
 
     /**
@@ -3655,7 +3655,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param queueSize Default value is N.min(128, c.size() * 16)
      * @return
      */
-    public static <T> Stream<T> parallelConcat2(final Collection<? extends Iterator<? extends T>> c, final int readThreadNum, final int queueSize) {
+    public static <T> Stream<T> parallelConcatt(final Collection<? extends Iterator<? extends T>> c, final int readThreadNum, final int queueSize) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
@@ -6234,10 +6234,10 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
             iterList.add(e.iterator());
         }
 
-        return zip2(iterList, zipFunction).onClose(newCloseHandler(c));
+        return zipp(iterList, zipFunction).onClose(newCloseHandler(c));
     }
 
-    public static <T, R> Stream<R> zip2(final Collection<? extends Iterator<? extends T>> c, final Function<? super List<? extends T>, R> zipFunction) {
+    public static <T, R> Stream<R> zipp(final Collection<? extends Iterator<? extends T>> c, final Function<? super List<? extends T>, R> zipFunction) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
         }
@@ -6463,7 +6463,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
             iterList.add(e.iterator());
         }
 
-        return zip2(iterList, valuesForNone, zipFunction).onClose(newCloseHandler(c));
+        return zipp(iterList, valuesForNone, zipFunction).onClose(newCloseHandler(c));
     }
 
     /**
@@ -6473,7 +6473,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param zipFunction
      * @return
      */
-    public static <T, R> Stream<R> zip2(final Collection<? extends Iterator<? extends T>> c, final Object[] valuesForNone,
+    public static <T, R> Stream<R> zipp(final Collection<? extends Iterator<? extends T>> c, final Object[] valuesForNone,
             final Function<? super List<? extends T>, R> zipFunction) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
@@ -6987,7 +6987,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
             iterList.add(e.iterator());
         }
 
-        return parallelZip2(iterList, zipFunction, queueSize).onClose(newCloseHandler(c));
+        return parallelZipp(iterList, zipFunction, queueSize).onClose(newCloseHandler(c));
     }
 
     /**
@@ -7003,8 +7003,8 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param zipFunction
      * @return
      */
-    public static <T, R> Stream<R> parallelZip2(final Collection<? extends Iterator<? extends T>> c, final Function<? super List<? extends T>, R> zipFunction) {
-        return parallelZip2(c, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
+    public static <T, R> Stream<R> parallelZipp(final Collection<? extends Iterator<? extends T>> c, final Function<? super List<? extends T>, R> zipFunction) {
+        return parallelZipp(c, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
     }
 
     /**
@@ -7023,7 +7023,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param queueSize for each iterator. Default value is 8
      * @return
      */
-    public static <T, R> Stream<R> parallelZip2(final Collection<? extends Iterator<? extends T>> c, final Function<? super List<? extends T>, R> zipFunction,
+    public static <T, R> Stream<R> parallelZipp(final Collection<? extends Iterator<? extends T>> c, final Function<? super List<? extends T>, R> zipFunction,
             final int queueSize) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
@@ -7674,7 +7674,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
             iterList.add(e.iterator());
         }
 
-        return parallelZip2(iterList, valuesForNone, zipFunction, queueSize).onClose(newCloseHandler(c));
+        return parallelZipp(iterList, valuesForNone, zipFunction, queueSize).onClose(newCloseHandler(c));
     }
 
     /**
@@ -7691,9 +7691,9 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param zipFunction
      * @return
      */
-    public static <T, R> Stream<R> parallelZip2(final Collection<? extends Iterator<? extends T>> c, final Object[] valuesForNone,
+    public static <T, R> Stream<R> parallelZipp(final Collection<? extends Iterator<? extends T>> c, final Object[] valuesForNone,
             Function<? super List<? extends T>, R> zipFunction) {
-        return parallelZip2(c, valuesForNone, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
+        return parallelZipp(c, valuesForNone, zipFunction, DEFAULT_QUEUE_SIZE_PER_ITERATOR);
     }
 
     /**
@@ -7711,7 +7711,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param queueSize for each iterator. Default value is 8
      * @return
      */
-    public static <T, R> Stream<R> parallelZip2(final Collection<? extends Iterator<? extends T>> c, final Object[] valuesForNone,
+    public static <T, R> Stream<R> parallelZipp(final Collection<? extends Iterator<? extends T>> c, final Object[] valuesForNone,
             final Function<? super List<? extends T>, R> zipFunction, final int queueSize) {
         if (N.isNullOrEmpty(c)) {
             return Stream.empty();
@@ -7823,9 +7823,9 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     //     * @param unzip the second parameter is an output parameter.
     //     * @return
     //     */
-    //    public static <T, L, M, R> Triple<Stream<L>, Stream<M>, Stream<R>> unzip3(final Collection<? extends T> c,
+    //    public static <T, L, M, R> Triple<Stream<L>, Stream<M>, Stream<R>> unzipp(final Collection<? extends T> c,
     //            final BiConsumer<? super T, Triple<L, M, R>> unzip) {
-    //        final Triple<List<L>, List<M>, List<R>> p = Seq.unzip3(c, unzip);
+    //        final Triple<List<L>, List<M>, List<R>> p = Seq.unzipp(c, unzip);
     //
     //        return Triple.of(Stream.of(p.left), Stream.of(p.middle), Stream.of(p.right));
     //    }
@@ -7836,9 +7836,9 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     //     * @param unzip the second parameter is an output parameter.
     //     * @return
     //     */
-    //    public static <T, L, M, R> Triple<Stream<L>, Stream<M>, Stream<R>> unzip3(final Iterator<? extends T> iter,
+    //    public static <T, L, M, R> Triple<Stream<L>, Stream<M>, Stream<R>> unzipp(final Iterator<? extends T> iter,
     //            final BiConsumer<? super T, Triple<L, M, R>> unzip) {
-    //        final Triple<List<L>, List<M>, List<R>> p = Iterators.unzip3(iter, unzip);
+    //        final Triple<List<L>, List<M>, List<R>> p = Iterators.unzipp(iter, unzip);
     //
     //        return Triple.of(Stream.of(p.left), Stream.of(p.middle), Stream.of(p.right));
     //    }
@@ -8054,7 +8054,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
             iterList.add(e.iterator());
         }
 
-        return merge2(iterList, nextSelector).onClose(newCloseHandler(c));
+        return mergee(iterList, nextSelector).onClose(newCloseHandler(c));
     }
 
     /**
@@ -8063,7 +8063,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
      * @return
      */
-    public static <T> Stream<T> merge2(final Collection<? extends Iterator<? extends T>> c, final BiFunction<? super T, ? super T, Nth> nextSelector) {
+    public static <T> Stream<T> mergee(final Collection<? extends Iterator<? extends T>> c, final BiFunction<? super T, ? super T, Nth> nextSelector) {
         N.requireNonNull(nextSelector);
 
         if (N.isNullOrEmpty(c)) {
@@ -8122,7 +8122,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
             iterList.add(e.iterator());
         }
 
-        return parallelMerge2(iterList, nextSelector, maxThreadNum).onClose(newCloseHandler(c));
+        return parallelMergee(iterList, nextSelector, maxThreadNum).onClose(newCloseHandler(c));
     }
 
     /**
@@ -8131,8 +8131,8 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
      * @return
      */
-    public static <T> Stream<T> parallelMerge2(final Collection<? extends Iterator<? extends T>> c, final BiFunction<? super T, ? super T, Nth> nextSelector) {
-        return parallelMerge2(c, nextSelector, DEFAULT_MAX_THREAD_NUM);
+    public static <T> Stream<T> parallelMergee(final Collection<? extends Iterator<? extends T>> c, final BiFunction<? super T, ? super T, Nth> nextSelector) {
+        return parallelMergee(c, nextSelector, DEFAULT_MAX_THREAD_NUM);
     }
 
     /**
@@ -8142,7 +8142,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param maxThreadNum
      * @return
      */
-    public static <T> Stream<T> parallelMerge2(final Collection<? extends Iterator<? extends T>> c, final BiFunction<? super T, ? super T, Nth> nextSelector,
+    public static <T> Stream<T> parallelMergee(final Collection<? extends Iterator<? extends T>> c, final BiFunction<? super T, ? super T, Nth> nextSelector,
             final int maxThreadNum) {
         if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
             throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);

@@ -1402,7 +1402,7 @@ class ArrayFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public FloatStream head2() {
+    public FloatStream headd() {
         if (fromIndex == toIndex) {
             return this;
         }
@@ -1411,7 +1411,7 @@ class ArrayFloatStream extends AbstractFloatStream {
     }
 
     @Override
-    public OptionalFloat tail2() {
+    public OptionalFloat taill() {
         return fromIndex == toIndex ? OptionalFloat.empty() : OptionalFloat.of(elements[toIndex - 1]);
     }
 

@@ -1312,7 +1312,7 @@ public final class Sheet<R, C, E> implements Cloneable {
                 final int rowIndex = (int) (cursor / columnLength);
                 final int columnIndex = (int) (cursor++ % columnLength);
 
-                return new Cell0<>(_rowKeyIndexMap.getByValue(rowIndex), _columnKeyIndexMap.getByValue(columnIndex),
+                return new CellImpl<>(_rowKeyIndexMap.getByValue(rowIndex), _columnKeyIndexMap.getByValue(columnIndex),
                         _initialized ? _columnList.get(columnIndex).get(rowIndex) : null);
             }
 
@@ -1381,7 +1381,7 @@ public final class Sheet<R, C, E> implements Cloneable {
                 final int rowIndex = (int) (cursor % rowLength);
                 final int columnIndex = (int) (cursor++ / rowLength);
 
-                return new Cell0<>(_rowKeyIndexMap.getByValue(rowIndex), _columnKeyIndexMap.getByValue(columnIndex),
+                return new CellImpl<>(_rowKeyIndexMap.getByValue(rowIndex), _columnKeyIndexMap.getByValue(columnIndex),
                         _initialized ? _columnList.get(columnIndex).get(rowIndex) : null);
             }
 
@@ -1452,7 +1452,7 @@ public final class Sheet<R, C, E> implements Cloneable {
 
                         final int curColumnIndex = columnIndex++;
 
-                        return new Cell0<>(r, _columnKeyIndexMap.getByValue(curColumnIndex),
+                        return new CellImpl<>(r, _columnKeyIndexMap.getByValue(curColumnIndex),
                                 _initialized ? _columnList.get(curColumnIndex).get(curRowIndex) : null);
                     }
 
@@ -1526,14 +1526,14 @@ public final class Sheet<R, C, E> implements Cloneable {
                     return IntStream.range(0, rowLength).mapToObj(new IntFunction<Cell<R, C, E>>() {
                         @Override
                         public Cell<R, C, E> apply(int rowIndex) {
-                            return new Cell0<>(_rowKeyIndexMap.getByValue(rowIndex), c, column.get(rowIndex));
+                            return new CellImpl<>(_rowKeyIndexMap.getByValue(rowIndex), c, column.get(rowIndex));
                         }
                     });
                 } else {
                     return IntStream.range(0, rowLength).mapToObj(new IntFunction<Cell<R, C, E>>() {
                         @Override
                         public Cell<R, C, E> apply(int rowIndex) {
-                            return new Cell0<>(_rowKeyIndexMap.getByValue(rowIndex), c, null);
+                            return new CellImpl<>(_rowKeyIndexMap.getByValue(rowIndex), c, null);
                         }
                     });
                 }
@@ -2335,12 +2335,12 @@ public final class Sheet<R, C, E> implements Cloneable {
         }
     }
 
-    static class Cell0<R, C, E> implements Sheet.Cell<R, C, E> {
+    static class CellImpl<R, C, E> implements Sheet.Cell<R, C, E> {
         private final R rowKey;
         private final C columnKey;
         private final E value;
 
-        public Cell0(R rowKey, C columnKey, E value) {
+        public CellImpl(R rowKey, C columnKey, E value) {
             this.rowKey = rowKey;
             this.columnKey = columnKey;
             this.value = value;
@@ -2375,8 +2375,8 @@ public final class Sheet<R, C, E> implements Cloneable {
                 return true;
             }
 
-            if (obj instanceof Cell0) {
-                final Cell0<R, C, E> other = (Cell0<R, C, E>) obj;
+            if (obj instanceof CellImpl) {
+                final CellImpl<R, C, E> other = (CellImpl<R, C, E>) obj;
 
                 return N.equals(rowKey, other.rowKey) && N.equals(columnKey, other.columnKey) && N.equals(value, other.value);
             }

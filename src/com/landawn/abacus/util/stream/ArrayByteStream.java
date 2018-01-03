@@ -1160,7 +1160,7 @@ class ArrayByteStream extends AbstractByteStream {
     }
 
     @Override
-    public ByteStream head2() {
+    public ByteStream headd() {
         if (fromIndex == toIndex) {
             return this;
         }
@@ -1169,7 +1169,7 @@ class ArrayByteStream extends AbstractByteStream {
     }
 
     @Override
-    public OptionalByte tail2() {
+    public OptionalByte taill() {
         return fromIndex == toIndex ? OptionalByte.empty() : OptionalByte.of(elements[toIndex - 1]);
     }
 

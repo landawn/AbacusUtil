@@ -2740,6 +2740,15 @@ public final class Fn {
             // singleton.
         }
 
+        /**
+         * Returns the {@code Predicate} which always returns {@code false}.
+         * 
+         * @return
+         */
+        public static <T> Predicate<T> never() {
+            return Fn.ALWAYS_FALSE;
+        }
+
         public static <T, U> Predicate<T> create(final U u, final BiPredicate<? super T, ? super U> predicate) {
             Objects.requireNonNull(predicate);
 
@@ -2850,6 +2859,15 @@ public final class Fn {
         }
 
         public static <T, U> BiPredicate<T, U> alwaysFalse() {
+            return ALWAYS_FALSE;
+        }
+
+        /**
+         * Returns the {@code BiPredicate} which always returns {@code false}.
+         * 
+         * @return
+         */
+        public static <T, U> BiPredicate<T, U> never() {
             return ALWAYS_FALSE;
         }
 
@@ -3035,7 +3053,7 @@ public final class Fn {
         }
 
         @SuppressWarnings("rawtypes")
-        public static <T extends PrimitiveList> BiConsumer<T, T> ofAddAll2() {
+        public static <T extends PrimitiveList> BiConsumer<T, T> ofAddAlll() {
             return (BiConsumer<T, T>) ADD_ALL_2;
         }
 
@@ -3048,7 +3066,7 @@ public final class Fn {
         }
 
         @SuppressWarnings("rawtypes")
-        public static <T extends PrimitiveList> BiConsumer<T, T> ofRemoveAll2() {
+        public static <T extends PrimitiveList> BiConsumer<T, T> ofRemoveAlll() {
             return (BiConsumer<T, T>) REMOVE_ALL_2;
         }
 
@@ -3282,7 +3300,7 @@ public final class Fn {
         }
 
         @SuppressWarnings("rawtypes")
-        public static <T extends PrimitiveList> BiFunction<T, T, T> ofAddAll2() {
+        public static <T extends PrimitiveList> BiFunction<T, T, T> ofAddAlll() {
             return (BiFunction<T, T, T>) ADD_ALL_2;
         }
 
@@ -3295,7 +3313,7 @@ public final class Fn {
         }
 
         @SuppressWarnings("rawtypes")
-        public static <T extends PrimitiveList> BiFunction<T, T, T> ofRemoveAll2() {
+        public static <T extends PrimitiveList> BiFunction<T, T, T> ofRemoveAlll() {
             return (BiFunction<T, T, T>) REMOVE_ALL_2;
         }
 

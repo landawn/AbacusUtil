@@ -2321,7 +2321,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Stream<T> head2() {
+    public Stream<T> headd() {
         if (head2 == null) {
             final Object[] a = this.toArray();
             head2 = new ArrayStream<>((T[]) a, 0, a.length == 0 ? 0 : a.length - 1, sorted, cmp, closeHandlers);
@@ -2332,7 +2332,7 @@ class IteratorStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Nullable<T> tail2() {
+    public Nullable<T> taill() {
         if (tail2 == null) {
             final Object[] a = this.toArray();
             head2 = new ArrayStream<>((T[]) a, 0, a.length == 0 ? 0 : a.length - 1, sorted, cmp, closeHandlers);
@@ -2578,7 +2578,7 @@ class IteratorStream<T> extends AbstractStream<T> {
         if (iter instanceof QueuedIterator && ((QueuedIterator<? extends T>) iter).max() >= queueSize) {
             return this;
         } else {
-            return new IteratorStream<>(Stream.parallelConcat2(Arrays.asList(iter), 1, queueSize), sorted, cmp, closeHandlers);
+            return new IteratorStream<>(Stream.parallelConcatt(Arrays.asList(iter), 1, queueSize), sorted, cmp, closeHandlers);
         }
     }
 

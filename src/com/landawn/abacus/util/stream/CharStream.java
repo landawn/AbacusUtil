@@ -470,23 +470,23 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
 
     /**
      * Head2 and tail2 should be used by pair. 
-     * Don't call any other methods with this stream after head2() and tail2() are called.
+     * Don't call any other methods with this stream after headd() and taill() are called.
      * 
      * @return
      */
-    public abstract CharStream head2();
+    public abstract CharStream headd();
 
     /**
      * Head2 and tail2 should be used by pair. 
-     * Don't call any other methods with this stream after head2() and tail2() are called.
+     * Don't call any other methods with this stream after headd() and taill() are called.
      * 
      * @return
      */
-    public abstract OptionalChar tail2();
+    public abstract OptionalChar taill();
 
     public abstract Pair<OptionalChar, CharStream> headAndTail();
 
-    public abstract Pair<CharStream, OptionalChar> headAndTail2();
+    public abstract Pair<CharStream, OptionalChar> headAndTaill();
 
     /**
      * Returns an {@code OptionalChar} describing the minimum element of this
@@ -534,7 +534,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
 
     public abstract CharSummaryStatistics summarize();
 
-    public abstract Pair<CharSummaryStatistics, Optional<Map<Percentage, Character>>> summarize2();
+    public abstract Pair<CharSummaryStatistics, Optional<Map<Percentage, Character>>> summarizee();
 
     /**
      * 

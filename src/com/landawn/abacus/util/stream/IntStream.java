@@ -542,23 +542,23 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
 
     /**
      * Head2 and tail2 should be used by pair. 
-     * Don't call any other methods with this stream after head2() and tail2() are called.
+     * Don't call any other methods with this stream after headd() and taill() are called.
      * 
      * @return
      */
-    public abstract IntStream head2();
+    public abstract IntStream headd();
 
     /**
      * Head2 and tail2 should be used by pair. 
-     * Don't call any other methods with this stream after head2() and tail2() are called.
+     * Don't call any other methods with this stream after headd() and taill() are called.
      * 
      * @return
      */
-    public abstract OptionalInt tail2();
+    public abstract OptionalInt taill();
 
     public abstract Pair<OptionalInt, IntStream> headAndTail();
 
-    public abstract Pair<IntStream, OptionalInt> headAndTail2();
+    public abstract Pair<IntStream, OptionalInt> headAndTaill();
 
     /**
      * Returns an {@code OptionalInt} describing the minimum element of this
@@ -631,7 +631,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
 
     public abstract IntSummaryStatistics summarize();
 
-    public abstract Pair<IntSummaryStatistics, Optional<Map<Percentage, Integer>>> summarize2();
+    public abstract Pair<IntSummaryStatistics, Optional<Map<Percentage, Integer>>> summarizee();
 
     /**
      * 

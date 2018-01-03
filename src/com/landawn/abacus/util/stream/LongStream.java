@@ -517,23 +517,23 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
 
     /**
      * Head2 and tail2 should be used by pair. 
-     * Don't call any other methods with this stream after head2() and tail2() are called. 
+     * Don't call any other methods with this stream after headd() and taill() are called. 
      * 
      * @return
      */
-    public abstract LongStream head2();
+    public abstract LongStream headd();
 
     /**
      * Head2 and tail2 should be used by pair. 
-     * Don't call any other methods with this stream after head2() and tail2() are called.
+     * Don't call any other methods with this stream after headd() and taill() are called.
      * 
      * @return
      */
-    public abstract OptionalLong tail2();
+    public abstract OptionalLong taill();
 
     public abstract Pair<OptionalLong, LongStream> headAndTail();
 
-    public abstract Pair<LongStream, OptionalLong> headAndTail2();
+    public abstract Pair<LongStream, OptionalLong> headAndTaill();
 
     /**
      * Returns an {@code OptionalLong} describing the minimum element of this
@@ -606,7 +606,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
 
     public abstract LongSummaryStatistics summarize();
 
-    public abstract Pair<LongSummaryStatistics, Optional<Map<Percentage, Long>>> summarize2();
+    public abstract Pair<LongSummaryStatistics, Optional<Map<Percentage, Long>>> summarizee();
 
     /**
      * 

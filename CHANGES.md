@@ -1,13 +1,18 @@
 
 ### 1.1.7
 
+* Add `DataSetUtil`.
+
 * Add `DataSet.rollup/cube`.
 
 * Add `Optional/Nullable<T>.or(Try.Supplier<? extends Optional<T>, E> supplier)`.
 
+* Rename `xyz0/1/2(...)` to `xyzz(...)`.
+
 * Rename `DataSet.retainAll/removeAll` to `DataSet.intersectAll/except`.
 
 * Remove `DataSet.sum/averageInt/Long/Double/kthLargest/count/toMultiset/toArray/split`, replaced by `DataSet.stream(...).sum/averageInt/Long/Double/kthLargest/count/toMultiset/toArray/split`.
+
 
 * Improvements and bug fix.
 

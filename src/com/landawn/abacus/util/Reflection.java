@@ -157,9 +157,9 @@ public final class Reflection<T> {
     }
 
     @SafeVarargs
-    public final Reflection<T> invoke2(String methodName, Object... args) {
+    public final Reflection<T> invokee(String methodName, Object... args) {
         if (reflectASM != null) {
-            reflectASM.invoke2(methodName, args);
+            reflectASM.invokee(methodName, args);
         } else {
             invoke(methodName, args);
         }

@@ -379,7 +379,7 @@ public final class Multiset<T> implements Iterable<T> {
         long sum = 0;
 
         for (MutableInt count : valueMap.values()) {
-            sum = Math2.addExact(sum, count.value());
+            sum = Maths.addExact(sum, count.value());
         }
 
         return sum;

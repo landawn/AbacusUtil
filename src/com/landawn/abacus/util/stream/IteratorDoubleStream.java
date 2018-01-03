@@ -1269,7 +1269,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public DoubleStream head2() {
+    public DoubleStream headd() {
         if (head2 == null) {
             final double[] a = elements.toArray();
             head2 = new ArrayDoubleStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, closeHandlers);
@@ -1280,7 +1280,7 @@ class IteratorDoubleStream extends AbstractDoubleStream {
     }
 
     @Override
-    public OptionalDouble tail2() {
+    public OptionalDouble taill() {
         if (tail2 == null) {
             final double[] a = elements.toArray();
             head2 = new ArrayDoubleStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, closeHandlers);

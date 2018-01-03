@@ -479,23 +479,23 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
 
     /**
      * Head2 and tail2 should be used by pair. 
-     * Don't call any other methods with this stream after head2() and tail2() are called. 
+     * Don't call any other methods with this stream after headd() and taill() are called. 
      * 
      * @return
      */
-    public abstract ShortStream head2();
+    public abstract ShortStream headd();
 
     /**
      * Head2 and tail2 should be used by pair. 
-     * Don't call any other methods with this stream after head2() and tail2() are called. 
+     * Don't call any other methods with this stream after headd() and taill() are called. 
      * 
      * @return
      */
-    public abstract OptionalShort tail2();
+    public abstract OptionalShort taill();
 
     public abstract Pair<OptionalShort, ShortStream> headAndTail();
 
-    public abstract Pair<ShortStream, OptionalShort> headAndTail2();
+    public abstract Pair<ShortStream, OptionalShort> headAndTaill();
 
     /**
      * Returns an {@code OptionalShort} describing the minimum element of this
@@ -543,7 +543,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
 
     public abstract ShortSummaryStatistics summarize();
 
-    public abstract Pair<ShortSummaryStatistics, Optional<Map<Percentage, Short>>> summarize2();
+    public abstract Pair<ShortSummaryStatistics, Optional<Map<Percentage, Short>>> summarizee();
 
     /**
      * 

@@ -42,6 +42,10 @@ import com.landawn.abacus.util.stream.Stream;
  * @since 0.8
  * 
  * @author Haiyang Li
+ * 
+ * @see com.landawn.abacus.util.DataSetUtil
+ * @see com.landawn.abacus.util.JdbcUtil
+ * @see com.landawn.abacus.util.CSVUtil
  */
 public interface DataSet {
 
@@ -1807,6 +1811,210 @@ public interface DataSet {
 
     /**
      *
+     * @param columnName
+     * @param n
+     * @return
+     */
+    DataSet top(String columnName, int n);
+
+    /**
+     *
+     * @param columnName
+     * @param n
+     * @param cmp
+     * @return
+     */
+    <T> DataSet top(String columnName, int n, Comparator<T> cmp);
+
+    /**
+     *
+     * @param columnName
+     * @param fromRowIndex
+     * @param toRowIndex
+     * @param n
+     * @param cmp
+     * @return
+     */
+    <T> DataSet top(String columnName, int fromRowIndex, int toRowIndex, int n, Comparator<T> cmp);
+
+    /**
+    *
+    * @param columnNames
+    * @param n
+    * @return
+    */
+    DataSet top(Collection<String> columnNames, int n);
+
+    /**
+     *
+     * @param columnNames
+     * @param n
+     * @param cmp
+     * @return
+     */
+    DataSet top(Collection<String> columnNames, int n, Comparator<? super Object[]> cmp);
+
+    /**
+     *
+     * @param columnNames
+     * @param fromRowIndex
+     * @param toRowIndex
+     * @param n
+     * @param cmp
+     * @return
+     */
+    DataSet top(Collection<String> columnNames, int fromRowIndex, int toRowIndex, int n, Comparator<? super Object[]> cmp);
+
+    //    /**
+    //     *
+    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
+    //     * @param columnName
+    //     * @param n
+    //     * @return
+    //     */
+    //    <T> List<T> top(Class<T> rowClass, String columnName, int n);
+    //
+    //    /**
+    //     *
+    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
+    //     * @param columnName
+    //     * @param n
+    //     * @param cmp
+    //     * @return
+    //     */
+    //    <T> List<T> top(Class<T> rowClass, String columnName, int n, Comparator<T> cmp);
+    //
+    //    /**
+    //     *
+    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
+    //     * @param columnName
+    //     * @param fromRowIndex
+    //     * @param toRowIndex
+    //     * @param n
+    //     * @param cmp
+    //     * @return
+    //     */
+    //    <T> List<T> top(Class<T> rowClass, String columnName, int fromRowIndex, int toRowIndex, int n, Comparator<T> cmp);
+    //
+    //    /**
+    //     *
+    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
+    //     * @param columnNames
+    //     * @param n
+    //     * @return
+    //     */
+    //    <T> List<T> top(Class<T> rowClass, Collection<String> columnNames, int n);
+    //
+    //    /**
+    //     *
+    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
+    //     * @param columnNames
+    //     * @param n
+    //     * @param cmp
+    //     * @return
+    //     */
+    //    <T> List<T> top(Class<T> rowClass, Collection<String> columnNames, int n, Comparator<? super Object[]> cmp);
+    //
+    //    /**
+    //     *
+    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
+    //     * @param columnNames
+    //     * @param fromRowIndex
+    //     * @param toRowIndex
+    //     * @param n
+    //     * @param cmp
+    //     * @return
+    //     */
+    //    <T> List<T> top(Class<T> rowClass, Collection<String> columnNames, int fromRowIndex, int toRowIndex, int n, Comparator<? super Object[]> cmp);
+
+    /**
+     * Returns a new <code>DataSet</code> with the rows de-duplicated by the values in all columns
+     *
+     * @return a new DataSet
+     */
+    DataSet distinct();
+
+    /**
+     * Returns a new <code>DataSet</code> with the rows de-duplicated by the value in the specified column
+     *
+     * @param columnName
+     * @return a new DataSet
+     */
+    DataSet distinct(String columnName);
+
+    /**
+     * Returns a new <code>DataSet</code> with the rows de-duplicated by the value in the specified column from the specified <code>fromRowIndex</code> to <code>toRowIndex</code>
+     *
+     * @param columnName
+     * @param fromRowIndex
+     * @param toRowIndex
+     * @return a new DataSet
+     */
+    DataSet distinct(String columnName, int fromRowIndex, int toRowIndex);
+
+    /**
+     * Returns a new <code>DataSet</code> with the rows de-duplicated by the values in the specified columns
+     *
+     * @param columnNames
+     * @return a new DataSet
+     */
+    DataSet distinct(Collection<String> columnNames);
+
+    /**
+     *Returns a new <code>DataSet</code> with the rows de-duplicated by the values in the specified columns from the specified <code>fromRowIndex</code> to <code>toRowIndex</code>
+     *
+     * @param columnNames
+     * @param fromRowIndex
+     * @param toRowIndex
+     * @return
+     */
+    DataSet distinct(Collection<String> columnNames, int fromRowIndex, int toRowIndex);
+
+    /**
+     * Returns a new <code>DataSet</code> with the rows de-duplicated by the value in the specified column from the specified <code>fromRowIndex</code> to <code>toRowIndex</code>
+     * 
+     * @param columnName
+     * @param keyExtractor don't change value of the input parameter.
+     * @return
+     */
+    <K, E extends Exception> DataSet distinctBy(String columnName, Try.Function<K, ?, E> keyExtractor) throws E;
+
+    /**
+     * Returns a new <code>DataSet</code> with the rows de-duplicated by the value in the specified column from the specified <code>fromRowIndex</code> to <code>toRowIndex</code>
+     * 
+     * @param columnName
+     * @param fromRowIndex
+     * @param toRowIndex
+     * @param keyExtractor don't change value of the input parameter.
+     * @return
+     */
+    <K, E extends Exception> DataSet distinctBy(String columnName, int fromRowIndex, int toRowIndex, Try.Function<K, ?, E> keyExtractor) throws E;
+
+    /**
+     * Returns a new <code>DataSet</code> with the rows de-duplicated by the values in the specified columns from the specified <code>fromRowIndex</code> to <code>toRowIndex</code>
+     * 
+     * @param columnNames
+     * @param fromRowIndex
+     * @param toRowIndex
+     * @param keyExtractor don't change value of the input parameter.
+     * @return
+     */
+    <E extends Exception> DataSet distinctBy(Collection<String> columnNames, Try.Function<? super Object[], ?, E> keyExtractor) throws E;
+
+    /**
+     * Returns a new <code>DataSet</code> with the rows de-duplicated by the values in the specified columns from the specified <code>fromRowIndex</code> to <code>toRowIndex</code>
+     * 
+     * @param columnNames
+     * @param fromRowIndex
+     * @param toRowIndex
+     * @param keyExtractor don't change value of the input parameter.
+     * @return
+     */
+    <E extends Exception> DataSet distinctBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex,
+            Try.Function<? super Object[], ?, E> keyExtractor) throws E;
+
+    /**
+     *
      * @param columnName specifying the column to group by.
      * @return
      */
@@ -3007,210 +3215,6 @@ public interface DataSet {
 
     /**
      *
-     * @param columnName
-     * @param n
-     * @return
-     */
-    DataSet top(String columnName, int n);
-
-    /**
-     *
-     * @param columnName
-     * @param n
-     * @param cmp
-     * @return
-     */
-    <T> DataSet top(String columnName, int n, Comparator<T> cmp);
-
-    /**
-     *
-     * @param columnName
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param n
-     * @param cmp
-     * @return
-     */
-    <T> DataSet top(String columnName, int fromRowIndex, int toRowIndex, int n, Comparator<T> cmp);
-
-    /**
-    *
-    * @param columnNames
-    * @param n
-    * @return
-    */
-    DataSet top(Collection<String> columnNames, int n);
-
-    /**
-     *
-     * @param columnNames
-     * @param n
-     * @param cmp
-     * @return
-     */
-    DataSet top(Collection<String> columnNames, int n, Comparator<? super Object[]> cmp);
-
-    /**
-     *
-     * @param columnNames
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param n
-     * @param cmp
-     * @return
-     */
-    DataSet top(Collection<String> columnNames, int fromRowIndex, int toRowIndex, int n, Comparator<? super Object[]> cmp);
-
-    //    /**
-    //     *
-    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
-    //     * @param columnName
-    //     * @param n
-    //     * @return
-    //     */
-    //    <T> List<T> top(Class<T> rowClass, String columnName, int n);
-    //
-    //    /**
-    //     *
-    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
-    //     * @param columnName
-    //     * @param n
-    //     * @param cmp
-    //     * @return
-    //     */
-    //    <T> List<T> top(Class<T> rowClass, String columnName, int n, Comparator<T> cmp);
-    //
-    //    /**
-    //     *
-    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
-    //     * @param columnName
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @param n
-    //     * @param cmp
-    //     * @return
-    //     */
-    //    <T> List<T> top(Class<T> rowClass, String columnName, int fromRowIndex, int toRowIndex, int n, Comparator<T> cmp);
-    //
-    //    /**
-    //     *
-    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
-    //     * @param columnNames
-    //     * @param n
-    //     * @return
-    //     */
-    //    <T> List<T> top(Class<T> rowClass, Collection<String> columnNames, int n);
-    //
-    //    /**
-    //     *
-    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
-    //     * @param columnNames
-    //     * @param n
-    //     * @param cmp
-    //     * @return
-    //     */
-    //    <T> List<T> top(Class<T> rowClass, Collection<String> columnNames, int n, Comparator<? super Object[]> cmp);
-    //
-    //    /**
-    //     *
-    //     * @param rowClass it can be Object[]/List/Set/Map/Entity
-    //     * @param columnNames
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @param n
-    //     * @param cmp
-    //     * @return
-    //     */
-    //    <T> List<T> top(Class<T> rowClass, Collection<String> columnNames, int fromRowIndex, int toRowIndex, int n, Comparator<? super Object[]> cmp);
-
-    /**
-     * Returns a new <code>DataSet</code> with the rows de-duplicated by the values in all columns
-     *
-     * @return a new DataSet
-     */
-    DataSet distinct();
-
-    /**
-     * Returns a new <code>DataSet</code> with the rows de-duplicated by the value in the specified column
-     *
-     * @param columnName
-     * @return a new DataSet
-     */
-    DataSet distinct(String columnName);
-
-    /**
-     * Returns a new <code>DataSet</code> with the rows de-duplicated by the value in the specified column from the specified <code>fromRowIndex</code> to <code>toRowIndex</code>
-     *
-     * @param columnName
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @return a new DataSet
-     */
-    DataSet distinct(String columnName, int fromRowIndex, int toRowIndex);
-
-    /**
-     * Returns a new <code>DataSet</code> with the rows de-duplicated by the values in the specified columns
-     *
-     * @param columnNames
-     * @return a new DataSet
-     */
-    DataSet distinct(Collection<String> columnNames);
-
-    /**
-     *Returns a new <code>DataSet</code> with the rows de-duplicated by the values in the specified columns from the specified <code>fromRowIndex</code> to <code>toRowIndex</code>
-     *
-     * @param columnNames
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @return
-     */
-    DataSet distinct(Collection<String> columnNames, int fromRowIndex, int toRowIndex);
-
-    /**
-     * Returns a new <code>DataSet</code> with the rows de-duplicated by the value in the specified column from the specified <code>fromRowIndex</code> to <code>toRowIndex</code>
-     * 
-     * @param columnName
-     * @param keyExtractor don't change value of the input parameter.
-     * @return
-     */
-    <K, E extends Exception> DataSet distinctBy(String columnName, Try.Function<K, ?, E> keyExtractor) throws E;
-
-    /**
-     * Returns a new <code>DataSet</code> with the rows de-duplicated by the value in the specified column from the specified <code>fromRowIndex</code> to <code>toRowIndex</code>
-     * 
-     * @param columnName
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param keyExtractor don't change value of the input parameter.
-     * @return
-     */
-    <K, E extends Exception> DataSet distinctBy(String columnName, int fromRowIndex, int toRowIndex, Try.Function<K, ?, E> keyExtractor) throws E;
-
-    /**
-     * Returns a new <code>DataSet</code> with the rows de-duplicated by the values in the specified columns from the specified <code>fromRowIndex</code> to <code>toRowIndex</code>
-     * 
-     * @param columnNames
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param keyExtractor don't change value of the input parameter.
-     * @return
-     */
-    <E extends Exception> DataSet distinctBy(Collection<String> columnNames, Try.Function<? super Object[], ?, E> keyExtractor) throws E;
-
-    /**
-     * Returns a new <code>DataSet</code> with the rows de-duplicated by the values in the specified columns from the specified <code>fromRowIndex</code> to <code>toRowIndex</code>
-     * 
-     * @param columnNames
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @param keyExtractor don't change value of the input parameter.
-     * @return
-     */
-    <E extends Exception> DataSet distinctBy(Collection<String> columnNames, int fromRowIndex, int toRowIndex,
-            Try.Function<? super Object[], ?, E> keyExtractor) throws E;
-
-    /**
-     *
      * @param filter
      * @return
      */
@@ -3900,85 +3904,6 @@ public interface DataSet {
     //     */
     //    <T, E extends Exception> OptionalDouble averageDouble(String columnName, int fromRowIndex, int toRowIndex, Try.ToDoubleFunction<T, E> mapper) throws E;
 
-    // TODO
-    //    /**
-    //     * @param columnNames
-    //     * @return a copy of this DataSet
-    //     * @see List#subList(int, int).
-    //     */
-    //    DataSet slice(Collection<String> columnNames);
-    //
-    //    /**
-    //     *
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @return a copy of this DataSet
-    //     * @see List#subList(int, int).
-    //     */
-    //    DataSet slice(int fromRowIndex, int toRowIndex);
-    //
-    //    /**
-    //     *
-    //     * @param columnNames
-    //     * @param fromRowIndex
-    //     * @param toRowIndex
-    //     * @return a copy of this DataSet
-    //     * @see List#subList(int, int).
-    //     */
-    //    DataSet slice(Collection<String> columnNames, int fromRowIndex, int toRowIndex);
-
-    /**
-     * Returns the copy of this <code>DataSet</code>.
-     * The frozen status of the copy will always be false, even the original <code>DataSet</code> is frozen.
-     *
-     * @return a copy of this DataSet
-     */
-    DataSet copy();
-
-    /**
-     * Returns the copy of this <code>DataSet</code> with specified column name list.
-     * The frozen status of the copy will always be false, even the original <code>DataSet</code> is frozen.
-     *
-     * @param columnNames
-     * @return a copy of this DataSet
-     */
-    DataSet copy(Collection<String> columnNames);
-
-    /**
-     * Returns the copy of this <code>DataSet</code> from the specified <code>fromRowIndex</code> to <code>toRowIndex</code>.
-     * The frozen status of the copy will always be false, even the original <code>DataSet</code> is frozen.
-     *
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @return a copy of this DataSet
-     */
-    DataSet copy(int fromRowIndex, int toRowIndex);
-
-    /**
-     * Returns the copy of this <code>DataSet</code> with specified column name list from the specified <code>fromRowIndex</code> to <code>toRowIndex</code>.
-     * The frozen status of the copy will always be false, even the original <code>DataSet</code> is frozen.
-     *
-     * @param columnNames
-     * @param fromRowIndex
-     * @param toRowIndex
-     * @return a copy of this DataSet
-     */
-    DataSet copy(Collection<String> columnNames, int fromRowIndex, int toRowIndex);
-
-    /**
-     * Deeply copy each element in this <code>DataSet</code> by Serialization/Deserialization.
-     * 
-     * @return
-     */
-    DataSet clone();
-
-    /**
-     * Deeply copy each element in this <code>DataSet</code> by Serialization/Deserialization.
-     * 
-     * @return
-     */
-    DataSet clone(boolean freeze);
-
     /**
      * Returns a new <code>DataSet</code> that is limited to the rows where there is a match in both <code>this DataSet</code> and <code>right DataSet</code>.
      *
@@ -4367,6 +4292,84 @@ public interface DataSet {
     //     * @return
     //     */
     //    <T> List<List<T>> split(IntFunction<? extends T> rowSupplier, Collection<String> columnNames, int fromRowIndex, int toRowIndex, int size);
+    // TODO
+    //    /**
+    //     * @param columnNames
+    //     * @return a copy of this DataSet
+    //     * @see List#subList(int, int).
+    //     */
+    //    DataSet slice(Collection<String> columnNames);
+    //
+    //    /**
+    //     *
+    //     * @param fromRowIndex
+    //     * @param toRowIndex
+    //     * @return a copy of this DataSet
+    //     * @see List#subList(int, int).
+    //     */
+    //    DataSet slice(int fromRowIndex, int toRowIndex);
+    //
+    //    /**
+    //     *
+    //     * @param columnNames
+    //     * @param fromRowIndex
+    //     * @param toRowIndex
+    //     * @return a copy of this DataSet
+    //     * @see List#subList(int, int).
+    //     */
+    //    DataSet slice(Collection<String> columnNames, int fromRowIndex, int toRowIndex);
+
+    /**
+     * Returns the copy of this <code>DataSet</code>.
+     * The frozen status of the copy will always be false, even the original <code>DataSet</code> is frozen.
+     *
+     * @return a copy of this DataSet
+     */
+    DataSet copy();
+
+    /**
+     * Returns the copy of this <code>DataSet</code> with specified column name list.
+     * The frozen status of the copy will always be false, even the original <code>DataSet</code> is frozen.
+     *
+     * @param columnNames
+     * @return a copy of this DataSet
+     */
+    DataSet copy(Collection<String> columnNames);
+
+    /**
+     * Returns the copy of this <code>DataSet</code> from the specified <code>fromRowIndex</code> to <code>toRowIndex</code>.
+     * The frozen status of the copy will always be false, even the original <code>DataSet</code> is frozen.
+     *
+     * @param fromRowIndex
+     * @param toRowIndex
+     * @return a copy of this DataSet
+     */
+    DataSet copy(int fromRowIndex, int toRowIndex);
+
+    /**
+     * Returns the copy of this <code>DataSet</code> with specified column name list from the specified <code>fromRowIndex</code> to <code>toRowIndex</code>.
+     * The frozen status of the copy will always be false, even the original <code>DataSet</code> is frozen.
+     *
+     * @param columnNames
+     * @param fromRowIndex
+     * @param toRowIndex
+     * @return a copy of this DataSet
+     */
+    DataSet copy(Collection<String> columnNames, int fromRowIndex, int toRowIndex);
+
+    /**
+     * Deeply copy each element in this <code>DataSet</code> by Serialization/Deserialization.
+     * 
+     * @return
+     */
+    DataSet clone();
+
+    /**
+     * Deeply copy each element in this <code>DataSet</code> by Serialization/Deserialization.
+     * 
+     * @return
+     */
+    DataSet clone(boolean freeze);
 
     ImmutableIterator<Object[]> iterator();
 

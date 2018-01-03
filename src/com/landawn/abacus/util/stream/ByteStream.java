@@ -470,23 +470,23 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
 
     /**
      * Head2 and tail2 should be used by pair. 
-     * Don't call any other methods with this stream after head2() and tail2() are called.
+     * Don't call any other methods with this stream after headd() and taill() are called.
      * 
      * @return
      */
-    public abstract ByteStream head2();
+    public abstract ByteStream headd();
 
     /**
      * Head2 and tail2 should be used by pair. 
-     * Don't call any other methods with this stream after head2() and tail2() are called.
+     * Don't call any other methods with this stream after headd() and taill() are called.
      * 
      * @return
      */
-    public abstract OptionalByte tail2();
+    public abstract OptionalByte taill();
 
     public abstract Pair<OptionalByte, ByteStream> headAndTail();
 
-    public abstract Pair<ByteStream, OptionalByte> headAndTail2();
+    public abstract Pair<ByteStream, OptionalByte> headAndTaill();
 
     /**
      * Returns an {@code OptionalByte} describing the minimum element of this
@@ -538,7 +538,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
 
     public abstract ByteSummaryStatistics summarize();
 
-    public abstract Pair<ByteSummaryStatistics, Optional<Map<Percentage, Byte>>> summarize2();
+    public abstract Pair<ByteSummaryStatistics, Optional<Map<Percentage, Byte>>> summarizee();
 
     /**
      * 

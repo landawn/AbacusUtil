@@ -589,7 +589,7 @@ abstract class AbstractByteStream extends ByteStream {
     }
 
     @Override
-    public Pair<ByteSummaryStatistics, Optional<Map<Percentage, Byte>>> summarize2() {
+    public Pair<ByteSummaryStatistics, Optional<Map<Percentage, Byte>>> summarizee() {
         final byte[] a = sorted().toArray();
 
         if (N.isNullOrEmpty(a)) {
@@ -629,8 +629,8 @@ abstract class AbstractByteStream extends ByteStream {
     }
 
     @Override
-    public Pair<ByteStream, OptionalByte> headAndTail2() {
-        return Pair.of(head2(), tail2());
+    public Pair<ByteStream, OptionalByte> headAndTaill() {
+        return Pair.of(headd(), taill());
     }
 
     @Override

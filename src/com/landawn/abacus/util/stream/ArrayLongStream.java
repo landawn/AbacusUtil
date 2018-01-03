@@ -1403,7 +1403,7 @@ class ArrayLongStream extends AbstractLongStream {
     }
 
     @Override
-    public LongStream head2() {
+    public LongStream headd() {
         if (fromIndex == toIndex) {
             return this;
         }
@@ -1412,7 +1412,7 @@ class ArrayLongStream extends AbstractLongStream {
     }
 
     @Override
-    public OptionalLong tail2() {
+    public OptionalLong taill() {
         return fromIndex == toIndex ? OptionalLong.empty() : OptionalLong.of(elements[toIndex - 1]);
     }
 

@@ -525,7 +525,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
             }));
         }
 
-        complete2(futureList, eHolder, (E) null);
+        completee(futureList, eHolder, (E) null);
     }
 
     @Override
@@ -875,7 +875,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
     }
 
     @Override
-    public ByteStream head2() {
+    public ByteStream headd() {
         if (head2 == null) {
             final byte[] a = elements.toArray();
             head2 = new ParallelArrayByteStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, maxThreadNum, splitor, closeHandlers);
@@ -886,7 +886,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
     }
 
     @Override
-    public OptionalByte tail2() {
+    public OptionalByte taill() {
         if (tail2 == null) {
             final byte[] a = elements.toArray();
             head2 = new ParallelArrayByteStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, maxThreadNum, splitor, closeHandlers);
@@ -1033,7 +1033,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
             }));
         }
 
-        complete2(futureList, eHolder, (E) null);
+        completee(futureList, eHolder, (E) null);
 
         return result.value();
     }
@@ -1076,7 +1076,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
             }));
         }
 
-        complete2(futureList, eHolder, (E) null);
+        completee(futureList, eHolder, (E) null);
 
         return result.value();
     }
@@ -1119,7 +1119,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
             }));
         }
 
-        complete2(futureList, eHolder, (E) null);
+        completee(futureList, eHolder, (E) null);
 
         return result.value();
     }
@@ -1169,7 +1169,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
             }));
         }
 
-        complete2(futureList, eHolder, (E) null);
+        completee(futureList, eHolder, (E) null);
 
         return resultHolder.value() == null ? OptionalByte.empty() : OptionalByte.of(resultHolder.value().right);
     }
@@ -1217,7 +1217,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
             }));
         }
 
-        complete2(futureList, eHolder, (E) null);
+        completee(futureList, eHolder, (E) null);
 
         return resultHolder.value() == null ? OptionalByte.empty() : OptionalByte.of(resultHolder.value().right);
     }
@@ -1265,7 +1265,7 @@ final class ParallelIteratorByteStream extends IteratorByteStream {
             }));
         }
 
-        complete2(futureList, eHolder, (E) null);
+        completee(futureList, eHolder, (E) null);
 
         return resultHolder.value() == NONE ? OptionalByte.empty() : OptionalByte.of((Byte) resultHolder.value());
     }

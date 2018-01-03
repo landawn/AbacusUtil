@@ -603,7 +603,7 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
             }));
         }
 
-        complete2(futureList, eHolder, (E) null);
+        completee(futureList, eHolder, (E) null);
     }
 
     @Override
@@ -953,7 +953,7 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
     }
 
     @Override
-    public DoubleStream head2() {
+    public DoubleStream headd() {
         if (head2 == null) {
             final double[] a = elements.toArray();
             head2 = new ParallelArrayDoubleStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, maxThreadNum, splitor, closeHandlers);
@@ -964,7 +964,7 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
     }
 
     @Override
-    public OptionalDouble tail2() {
+    public OptionalDouble taill() {
         if (tail2 == null) {
             final double[] a = elements.toArray();
             head2 = new ParallelArrayDoubleStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, maxThreadNum, splitor, closeHandlers);
@@ -1095,7 +1095,7 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
             }));
         }
 
-        complete2(futureList, eHolder, (E) null);
+        completee(futureList, eHolder, (E) null);
 
         return result.value();
     }
@@ -1138,7 +1138,7 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
             }));
         }
 
-        complete2(futureList, eHolder, (E) null);
+        completee(futureList, eHolder, (E) null);
 
         return result.value();
     }
@@ -1181,7 +1181,7 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
             }));
         }
 
-        complete2(futureList, eHolder, (E) null);
+        completee(futureList, eHolder, (E) null);
 
         return result.value();
     }
@@ -1231,7 +1231,7 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
             }));
         }
 
-        complete2(futureList, eHolder, (E) null);
+        completee(futureList, eHolder, (E) null);
 
         return resultHolder.value() == null ? OptionalDouble.empty() : OptionalDouble.of(resultHolder.value().right);
     }
@@ -1279,7 +1279,7 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
             }));
         }
 
-        complete2(futureList, eHolder, (E) null);
+        completee(futureList, eHolder, (E) null);
 
         return resultHolder.value() == null ? OptionalDouble.empty() : OptionalDouble.of(resultHolder.value().right);
     }
@@ -1327,7 +1327,7 @@ final class ParallelIteratorDoubleStream extends IteratorDoubleStream {
             }));
         }
 
-        complete2(futureList, eHolder, (E) null);
+        completee(futureList, eHolder, (E) null);
 
         return resultHolder.value() == NONE ? OptionalDouble.empty() : OptionalDouble.of((Double) resultHolder.value());
     }

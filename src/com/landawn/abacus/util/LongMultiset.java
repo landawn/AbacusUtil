@@ -122,7 +122,7 @@ public final class LongMultiset<T> implements Iterable<T> {
         return multiset;
     }
 
-    public static <T> LongMultiset<T> from2(final Map<? extends T, Integer> m) {
+    public static <T> LongMultiset<T> fromm(final Map<? extends T, Integer> m) {
         if (N.isNullOrEmpty(m)) {
             return new LongMultiset<T>();
         }
@@ -411,7 +411,7 @@ public final class LongMultiset<T> implements Iterable<T> {
         long sum = 0;
 
         for (MutableLong count : valueMap.values()) {
-            sum = Math2.addExact(sum, count.value());
+            sum = Maths.addExact(sum, count.value());
         }
 
         return sum;

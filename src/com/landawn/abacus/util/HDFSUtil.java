@@ -22,4 +22,7 @@ package com.landawn.abacus.util;
  */
 public final class HDFSUtil {
 
+    private HDFSUtil() {
+        // utility class.
+    }
 }

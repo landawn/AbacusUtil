@@ -483,7 +483,7 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
             }
         }
 
-        complete2(futureList, eHolder, (E) null);
+        completee(futureList, eHolder, (E) null);
     }
 
     @Override
@@ -929,7 +929,7 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
     }
 
     @Override
-    public FloatStream head2() {
+    public FloatStream headd() {
         if (fromIndex == toIndex) {
             return this;
         }
@@ -1325,7 +1325,7 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
             }
         }
 
-        complete2(futureList, eHolder, (E) null);
+        completee(futureList, eHolder, (E) null);
 
         return result.value();
     }
@@ -1398,7 +1398,7 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
             }
         }
 
-        complete2(futureList, eHolder, (E) null);
+        completee(futureList, eHolder, (E) null);
 
         return result.value();
     }
@@ -1471,7 +1471,7 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
             }
         }
 
-        complete2(futureList, eHolder, (E) null);
+        completee(futureList, eHolder, (E) null);
 
         return result.value();
     }
@@ -1559,7 +1559,7 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
             }
         }
 
-        complete2(futureList, eHolder, (E) null);
+        completee(futureList, eHolder, (E) null);
 
         return resultHolder.value() == null ? OptionalFloat.empty() : OptionalFloat.of(resultHolder.value().right);
     }
@@ -1647,7 +1647,7 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
             }
         }
 
-        complete2(futureList, eHolder, (E) null);
+        completee(futureList, eHolder, (E) null);
 
         return resultHolder.value() == null ? OptionalFloat.empty() : OptionalFloat.of(resultHolder.value().right);
     }
@@ -1733,7 +1733,7 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
             }
         }
 
-        complete2(futureList, eHolder, (E) null);
+        completee(futureList, eHolder, (E) null);
 
         return resultHolder.value() == NONE ? OptionalFloat.empty() : OptionalFloat.of((Float) resultHolder.value());
     }

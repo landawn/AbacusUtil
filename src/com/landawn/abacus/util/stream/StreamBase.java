@@ -799,7 +799,7 @@ abstract class StreamBase<T, A, P, C, PL, OT, IT, S extends StreamBase<T, A, P, 
         }
     }
 
-    static <E extends Exception> void complete2(final List<CompletableFuture<Void>> futureList, final Holder<Throwable> eHolder, E none) throws E {
+    static <E extends Exception> void completee(final List<CompletableFuture<Void>> futureList, final Holder<Throwable> eHolder, E none) throws E {
         if (eHolder.value() != null) {
             if (eHolder.value() instanceof Exception) {
                 throw (E) eHolder.value();

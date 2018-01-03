@@ -476,7 +476,7 @@ public final class Futures {
 
             @Override
             public T get() throws InterruptedException, ExecutionException {
-                final Iterator<Pair<T, Exception>> iter = iterate2(cfs);
+                final Iterator<Pair<T, Exception>> iter = iteratee(cfs);
                 Pair<T, Exception> result = null;
 
                 while (iter.hasNext()) {
@@ -492,7 +492,7 @@ public final class Futures {
 
             @Override
             public T get(final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-                final Iterator<Pair<T, Exception>> iter = iterate2(cfs, timeout, unit);
+                final Iterator<Pair<T, Exception>> iter = iteratee(cfs, timeout, unit);
                 Pair<T, Exception> result = null;
 
                 while (iter.hasNext()) {
@@ -546,15 +546,15 @@ public final class Futures {
     }
 
     @SafeVarargs
-    public static <T> Iterator<Pair<T, Exception>> iterate2(final CompletableFuture<? extends T>... cfs) {
+    public static <T> Iterator<Pair<T, Exception>> iteratee(final CompletableFuture<? extends T>... cfs) {
         return iterate22(Arrays.asList(cfs));
     }
 
-    public static <T> Iterator<Pair<T, Exception>> iterate2(final Collection<? extends CompletableFuture<? extends T>> cfs) {
+    public static <T> Iterator<Pair<T, Exception>> iteratee(final Collection<? extends CompletableFuture<? extends T>> cfs) {
         return iterate22(cfs);
     }
 
-    public static <T> Iterator<Pair<T, Exception>> iterate2(final Collection<? extends CompletableFuture<? extends T>> cfs, final long timeout,
+    public static <T> Iterator<Pair<T, Exception>> iteratee(final Collection<? extends CompletableFuture<? extends T>> cfs, final long timeout,
             final TimeUnit unit) {
         return iterate22(cfs, timeout, unit);
     }
@@ -574,7 +574,7 @@ public final class Futures {
             executor.execute(new Runnable() {
                 @Override
                 public void run() {
-                    queue.offer(futuer.get2(timeout, unit));
+                    queue.offer(futuer.gett(timeout, unit));
                 }
             });
         }

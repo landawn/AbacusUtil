@@ -527,23 +527,23 @@ public abstract class DoubleStream
 
     /**
      * Head2 and tail2 should be used by pair. 
-     * Don't call any other methods with this stream after head2() and tail2() are called.
+     * Don't call any other methods with this stream after headd() and taill() are called.
      * 
      * @return
      */
-    public abstract DoubleStream head2();
+    public abstract DoubleStream headd();
 
     /**
      * Head2 and tail2 should be used by pair. 
-     * Don't call any other methods with this stream after head2() and tail2() are called. 
+     * Don't call any other methods with this stream after headd() and taill() are called. 
      * 
      * @return
      */
-    public abstract OptionalDouble tail2();
+    public abstract OptionalDouble taill();
 
     public abstract Pair<OptionalDouble, DoubleStream> headAndTail();
 
-    public abstract Pair<DoubleStream, OptionalDouble> headAndTail2();
+    public abstract Pair<DoubleStream, OptionalDouble> headAndTaill();
 
     /**
      * Returns an {@code OptionalDouble} describing the minimum element of this
@@ -665,7 +665,7 @@ public abstract class DoubleStream
 
     public abstract DoubleSummaryStatistics summarize();
 
-    public abstract Pair<DoubleSummaryStatistics, Optional<Map<Percentage, Double>>> summarize2();
+    public abstract Pair<DoubleSummaryStatistics, Optional<Map<Percentage, Double>>> summarizee();
 
     /**
      * 

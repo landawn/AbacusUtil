@@ -2407,7 +2407,7 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Stream<T> head2() {
+    public Stream<T> headd() {
         if (fromIndex == toIndex) {
             return this;
         }
@@ -2416,7 +2416,7 @@ class ArrayStream<T> extends AbstractStream<T> {
     }
 
     @Override
-    public Nullable<T> tail2() {
+    public Nullable<T> taill() {
         return fromIndex == toIndex ? Nullable.<T> empty() : Nullable.of(elements[toIndex - 1]);
     }
 

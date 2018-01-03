@@ -1071,7 +1071,7 @@ class IteratorCharStream extends AbstractCharStream {
     }
 
     @Override
-    public CharStream head2() {
+    public CharStream headd() {
         if (head2 == null) {
             final char[] a = elements.toArray();
             head2 = new ArrayCharStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, closeHandlers);
@@ -1082,7 +1082,7 @@ class IteratorCharStream extends AbstractCharStream {
     }
 
     @Override
-    public OptionalChar tail2() {
+    public OptionalChar taill() {
         if (tail2 == null) {
             final char[] a = elements.toArray();
             head2 = new ArrayCharStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, closeHandlers);

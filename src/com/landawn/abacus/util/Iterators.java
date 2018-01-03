@@ -1049,7 +1049,7 @@ public final class Iterators {
      * @param unzip the second parameter is an output parameter.
      * @return
      */
-    public static <T, L, M, R, E extends Exception> Triple<List<L>, List<M>, List<R>> unzip3(final Iterator<? extends T> iter,
+    public static <T, L, M, R, E extends Exception> Triple<List<L>, List<M>, List<R>> unzipp(final Iterator<? extends T> iter,
             final Try.BiConsumer<? super T, Triple<L, M, R>, E> unzip) throws E {
         final List<L> l = new ArrayList<L>();
         final List<M> m = new ArrayList<M>();
@@ -1076,7 +1076,7 @@ public final class Iterators {
      * @param supplier
      * @return
      */
-    public static <T, L, M, R, LC extends Collection<L>, MC extends Collection<M>, RC extends Collection<R>, E extends Exception> Triple<LC, MC, RC> unzip3(
+    public static <T, L, M, R, LC extends Collection<L>, MC extends Collection<M>, RC extends Collection<R>, E extends Exception> Triple<LC, MC, RC> unzipp(
             final Iterator<? extends T> iter, final Try.BiConsumer<? super T, Triple<L, M, R>, E> unzip, final Supplier<? extends Collection<?>> supplier)
             throws E {
         final LC l = (LC) supplier.get();

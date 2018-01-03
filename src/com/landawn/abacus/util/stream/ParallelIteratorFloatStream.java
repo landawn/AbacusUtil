@@ -604,7 +604,7 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
             }));
         }
 
-        complete2(futureList, eHolder, (E) null);
+        completee(futureList, eHolder, (E) null);
     }
 
     @Override
@@ -954,7 +954,7 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
     }
 
     @Override
-    public FloatStream head2() {
+    public FloatStream headd() {
         if (head2 == null) {
             final float[] a = elements.toArray();
             head2 = new ParallelArrayFloatStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, maxThreadNum, splitor, closeHandlers);
@@ -965,7 +965,7 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
     }
 
     @Override
-    public OptionalFloat tail2() {
+    public OptionalFloat taill() {
         if (tail2 == null) {
             final float[] a = elements.toArray();
             head2 = new ParallelArrayFloatStream(a, 0, a.length == 0 ? 0 : a.length - 1, sorted, maxThreadNum, splitor, closeHandlers);
@@ -1102,7 +1102,7 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
             }));
         }
 
-        complete2(futureList, eHolder, (E) null);
+        completee(futureList, eHolder, (E) null);
 
         return result.value();
     }
@@ -1145,7 +1145,7 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
             }));
         }
 
-        complete2(futureList, eHolder, (E) null);
+        completee(futureList, eHolder, (E) null);
 
         return result.value();
     }
@@ -1188,7 +1188,7 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
             }));
         }
 
-        complete2(futureList, eHolder, (E) null);
+        completee(futureList, eHolder, (E) null);
 
         return result.value();
     }
@@ -1238,7 +1238,7 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
             }));
         }
 
-        complete2(futureList, eHolder, (E) null);
+        completee(futureList, eHolder, (E) null);
 
         return resultHolder.value() == null ? OptionalFloat.empty() : OptionalFloat.of(resultHolder.value().right);
     }
@@ -1286,7 +1286,7 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
             }));
         }
 
-        complete2(futureList, eHolder, (E) null);
+        completee(futureList, eHolder, (E) null);
 
         return resultHolder.value() == null ? OptionalFloat.empty() : OptionalFloat.of(resultHolder.value().right);
     }
@@ -1334,7 +1334,7 @@ final class ParallelIteratorFloatStream extends IteratorFloatStream {
             }));
         }
 
-        complete2(futureList, eHolder, (E) null);
+        completee(futureList, eHolder, (E) null);
 
         return resultHolder.value() == NONE ? OptionalFloat.empty() : OptionalFloat.of((Float) resultHolder.value());
     }
