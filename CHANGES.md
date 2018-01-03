@@ -7,6 +7,8 @@
 
 * Add `Optional/Nullable<T>.or(Try.Supplier<? extends Optional<T>, E> supplier)`.
 
+* Rename `Math2` to `Maths`.
+
 * Rename `xyz0/1/2(...)` to `xyzz(...)`.
 
 * Rename `DataSet.retainAll/removeAll` to `DataSet.intersectAll/except`.
