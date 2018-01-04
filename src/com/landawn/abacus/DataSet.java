@@ -37,7 +37,6 @@ import com.landawn.abacus.util.stream.Collector;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
- * Uses <code>IntFunction rowSupplier</code> to identity row for generic types.
  *
  * @since 0.8
  * 
@@ -46,6 +45,10 @@ import com.landawn.abacus.util.stream.Stream;
  * @see com.landawn.abacus.util.DataSetUtil
  * @see com.landawn.abacus.util.JdbcUtil
  * @see com.landawn.abacus.util.CSVUtil
+ * @see com.landawn.abacus.util.function.IntFunction
+ * @see com.landawn.abacus.util.Fn.Factory
+ * @see com.landawn.abacus.util.Clazz
+ * 
  */
 public interface DataSet {
 
@@ -507,7 +510,7 @@ public interface DataSet {
      * @param columnNames
      * @param func
      */
-    <T, E extends Exception> void updateColumn(Collection<String> columnNames, Try.Function<T, ?, E> func) throws E;
+    <T, E extends Exception> void updateColumn(Collection<String> columnNames, Try.Function<?, ?, E> func) throws E;
 
     /**
      * Convert the specified column to target type.

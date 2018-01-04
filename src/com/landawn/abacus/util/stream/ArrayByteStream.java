@@ -1393,10 +1393,6 @@ class ArrayByteStream extends AbstractByteStream {
 
     @Override
     public ByteStream parallel(int maxThreadNum, Splitor splitor) {
-        if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
-            throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
-        }
-
         return new ParallelArrayByteStream(elements, fromIndex, toIndex, sorted, maxThreadNum, splitor, closeHandlers);
     }
 

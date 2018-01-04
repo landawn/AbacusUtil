@@ -81,7 +81,7 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
             final Collection<Runnable> closeHandlers) {
         super(values, fromIndex, toIndex, sorted, closeHandlers);
 
-        this.maxThreadNum = N.min(maxThreadNum, MAX_THREAD_NUM_PER_OPERATION);
+        this.maxThreadNum = checkMaxThreadNum(maxThreadNum);
         this.splitor = splitor == null ? DEFAULT_SPLITOR : splitor;
     }
 
@@ -1854,11 +1854,7 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
 
     @Override
     public FloatStream parallel(int maxThreadNum, Splitor splitor) {
-        if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
-            throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
-        }
-
-        if (this.maxThreadNum == maxThreadNum && this.splitor == splitor) {
+        if (this.maxThreadNum == checkMaxThreadNum(maxThreadNum) && this.splitor == splitor) {
             return this;
         }
 
@@ -1872,11 +1868,7 @@ final class ParallelArrayFloatStream extends ArrayFloatStream {
 
     @Override
     public FloatStream maxThreadNum(int maxThreadNum) {
-        if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
-            throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
-        }
-
-        if (this.maxThreadNum == maxThreadNum) {
+        if (this.maxThreadNum == checkMaxThreadNum(maxThreadNum)) {
             return this;
         }
 

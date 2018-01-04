@@ -1970,9 +1970,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
      * @return
      */
     public static IntStream parallelMerge(final Collection<? extends IntStream> c, final IntBiFunction<Nth> nextSelector, final int maxThreadNum) {
-        if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
-            throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
-        }
+        checkMaxThreadNum(maxThreadNum);
 
         if (N.isNullOrEmpty(c)) {
             return empty();

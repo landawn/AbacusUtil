@@ -2603,10 +2603,6 @@ class ArrayStream<T> extends AbstractStream<T> {
 
     @Override
     public Stream<T> parallel(int maxThreadNum, BaseStream.Splitor splitor) {
-        if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
-            throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
-        }
-
         return new ParallelArrayStream<>(elements, fromIndex, toIndex, sorted, cmp, maxThreadNum, splitor, closeHandlers);
     }
 

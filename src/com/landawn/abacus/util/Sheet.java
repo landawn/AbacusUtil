@@ -53,8 +53,7 @@ public final class Sheet<R, C, E> implements Cloneable {
     private boolean _initialized = false;
     private boolean _isFrozen = false;
 
-    // For Kryo.
-    Sheet() {
+    public Sheet() {
         this(N.EMPTY_LIST, N.EMPTY_LIST);
     }
 

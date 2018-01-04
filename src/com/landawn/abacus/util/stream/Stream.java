@@ -8105,10 +8105,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     public static <T> Stream<T> parallelMerge(final Collection<? extends Stream<? extends T>> c, final BiFunction<? super T, ? super T, Nth> nextSelector,
             final int maxThreadNum) {
         N.requireNonNull(nextSelector);
-
-        if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
-            throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
-        }
+        checkMaxThreadNum(maxThreadNum);
 
         if (N.isNullOrEmpty(c)) {
             return empty();
@@ -8144,9 +8141,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      */
     public static <T> Stream<T> parallelMergee(final Collection<? extends Iterator<? extends T>> c, final BiFunction<? super T, ? super T, Nth> nextSelector,
             final int maxThreadNum) {
-        if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
-            throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
-        }
+        checkMaxThreadNum(maxThreadNum);
 
         if (N.isNullOrEmpty(c)) {
             return empty();

@@ -1670,9 +1670,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
      * @return
      */
     public static CharStream parallelMerge(final Collection<? extends CharStream> c, final CharBiFunction<Nth> nextSelector, final int maxThreadNum) {
-        if (maxThreadNum < 1 || maxThreadNum > MAX_THREAD_NUM_PER_OPERATION) {
-            throw new IllegalArgumentException("'maxThreadNum' must not less than 1 or exceeded: " + MAX_THREAD_NUM_PER_OPERATION);
-        }
+        checkMaxThreadNum(maxThreadNum);
 
         if (N.isNullOrEmpty(c)) {
             return empty();

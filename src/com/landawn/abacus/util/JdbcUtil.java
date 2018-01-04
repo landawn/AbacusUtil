@@ -81,6 +81,7 @@ import com.landawn.abacus.exception.UncheckedSQLException;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
 import com.landawn.abacus.type.Type;
+import com.landawn.abacus.util.stream.Stream;
 
 /**
  *
@@ -902,6 +903,104 @@ public final class JdbcUtil {
         } finally {
             if (closeResultSet) {
                 closeQuietly(rs);
+            }
+        }
+    }
+
+    @SafeVarargs
+    public static Try<Stream<Object[]>> stream(final Connection conn, final String sql, final Object... parameters) {
+        return stream2(null, conn, sql, parameters);
+    }
+
+    /**
+     * 
+     * @param targetType {@code Map} or {@code Entity} class with getter/setter methods.
+     * @param conn
+     * @param sql
+     * @param parameters
+     * @return
+     */
+    @SafeVarargs
+    public static <T> Try<Stream<T>> stream(final Class<T> targetType, final Connection conn, final String sql, final Object... parameters) {
+        N.requireNonNull(targetType);
+
+        return stream2(targetType, conn, sql, parameters);
+    }
+
+    @SafeVarargs
+    private static <T> Try<Stream<T>> stream2(final Class<T> targetType, final Connection conn, final String sql, final Object... parameters) {
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        boolean isOK = false;
+
+        try {
+            stmt = JdbcUtil.prepareStatement(conn, sql, parameters);
+            rs = stmt.executeQuery();
+
+            final PreparedStatement _stmt = stmt;
+            final ResultSet _rs = rs;
+
+            @SuppressWarnings("unchecked")
+            final Try<Stream<T>> res = (targetType == null ? (Stream<T>) Stream.of(rs) : Stream.of(targetType, rs)).onClose(new Runnable() {
+                @Override
+                public void run() {
+                    JdbcUtil.closeQuietly(_rs, _stmt);
+                }
+            }).tried();
+
+            isOK = true;
+
+            return res;
+        } catch (SQLException e) {
+            throw new UncheckedSQLException(e);
+        } finally {
+            if (!isOK) {
+                JdbcUtil.closeQuietly(rs, stmt);
+            }
+        }
+    }
+
+    public static Try<Stream<Object[]>> stream(final PreparedStatement stmt) {
+        return stream2(null, stmt);
+    }
+
+    /**
+     * 
+     * @param targetType {@code Map} or {@code Entity} class with getter/setter methods.
+     * @param stmt
+     * @return
+     */
+    public static <T> Try<Stream<T>> stream(final Class<T> targetType, final PreparedStatement stmt) {
+        N.requireNonNull(targetType);
+
+        return stream2(targetType, stmt);
+    }
+
+    private static <T> Try<Stream<T>> stream2(final Class<T> targetType, final PreparedStatement stmt) {
+        ResultSet rs = null;
+        boolean isOK = false;
+
+        try {
+            rs = stmt.executeQuery();
+
+            final ResultSet _rs = rs;
+
+            @SuppressWarnings("unchecked")
+            final Try<Stream<T>> res = (targetType == null ? (Stream<T>) Stream.of(rs) : Stream.of(targetType, rs)).onClose(new Runnable() {
+                @Override
+                public void run() {
+                    JdbcUtil.closeQuietly(_rs);
+                }
+            }).tried();
+
+            isOK = true;
+
+            return res;
+        } catch (SQLException e) {
+            throw new UncheckedSQLException(e);
+        } finally {
+            if (!isOK) {
+                JdbcUtil.closeQuietly(rs);
             }
         }
     }

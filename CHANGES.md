@@ -1,3 +1,10 @@
+### 1.1.8
+
+* Add `JdbcUtil.stream(...)`.
+
+* Improvements and bug fix.
+
+
 ### 1.1.7
 
 * Add `DataSetUtil`.
@@ -13,7 +20,6 @@
 * Rename `DataSet.retainAll/removeAll` to `DataSet.intersectAll/except`.
 
 * Remove `DataSet.sum/averageInt/Long/Double/kthLargest/count/toMultiset/toArray/split`, replaced by `DataSet.stream(...).sum/averageInt/Long/Double/kthLargest/count/toMultiset/toArray/split`.
-
 
 * Improvements and bug fix.
 

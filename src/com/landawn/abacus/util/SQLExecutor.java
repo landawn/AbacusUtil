@@ -34,7 +34,6 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import com.landawn.abacus.DataSet;
 import com.landawn.abacus.DataSource;
@@ -299,7 +298,9 @@ public final class SQLExecutor implements Closeable {
         }
     };
 
-    private static final int SQL_CACHE_SIZE = 3000;
+    private static final int factor = Math.min(Math.max(1, IOUtil.MAX_MEMORY_IN_MB / 1024), 8);
+    private static final int CACHED_SQL_LENGTH = 1024 * factor;
+    private static final int SQL_CACHE_SIZE = 1000 * factor;
 
     private static final Map<String, List<String>> _sqlColumnLabelPool = new ConcurrentHashMap<>();
     private final Map<String, List<String>> _tableColumnNamePool = new ConcurrentHashMap<>();
@@ -1513,65 +1514,7 @@ public final class SQLExecutor implements Closeable {
      */
     <T> List<T> findAll(final Class<T> targetClass, final Connection conn, final String sql, final StatementSetter statementSetter, JdbcSettings jdbcSettings,
             final Object... parameters) {
-        if (jdbcSettings == null) {
-            jdbcSettings = _jdbcSettings.copy();
-        }
-
-        final JdbcSettings newJdbcSettings = jdbcSettings.copy().setOffset(0).setCount(Long.MAX_VALUE);
-        final List<RowIterator> iterators = this.iterateAll(conn, sql, statementSetter, newJdbcSettings, parameters);
-
-        try (final Stream<Object[]> stream = (jdbcSettings.isQueryInParallel() ? Stream.parallelConcatt(iterators, iterators.size())
-                : Stream.concatt(iterators)).skip(jdbcSettings.getOffset()).limit(jdbcSettings.getCount())) {
-
-            final NamedSQL namedSQL = getNamedSQL(sql);
-            final ResultSet rs = iterators.get(0).resultSet();
-            final String[] columnLabels = getColumnLabelList(namedSQL.getPureSQL(), rs).toArray(new String[0]);
-            final int columnCount = columnLabels.length;
-            final boolean isMap = Map.class.isAssignableFrom(targetClass);
-            final boolean isDirtyMarker = N.isDirtyMarker(targetClass);
-            final List<T> resultList = new ArrayList<>();
-
-            stream.forEach(new Consumer<Object[]>() {
-                @Override
-                public void accept(Object[] a) {
-                    if (isMap) {
-                        final Map<String, Object> m = (Map<String, Object>) N.newInstance(targetClass);
-
-                        for (int i = 0; i < columnCount; i++) {
-                            m.put(columnLabels[i], a[i]);
-                        }
-
-                        resultList.add((T) m);
-                    } else {
-                        final Object entity = N.newInstance(targetClass);
-
-                        for (int i = 0; i < columnCount; i++) {
-                            if (columnLabels[i] == null) {
-                                continue;
-                            }
-
-                            if (ClassUtil.setPropValue(entity, columnLabels[i], a[i], true) == false) {
-                                columnLabels[i] = null;
-                            }
-                        }
-
-                        if (isDirtyMarker) {
-                            ((DirtyMarker) entity).markDirty(false);
-                        }
-
-                        resultList.add((T) entity);
-                    }
-                }
-            });
-
-            return resultList;
-        } catch (
-
-        SQLException e) {
-            throw new UncheckedSQLException(e);
-        } finally {
-            IOUtil.closeAllQuietly(iterators);
-        }
+        return queryAll(conn, sql, statementSetter, jdbcSettings, parameters).toList(targetClass);
     }
 
     @SafeVarargs
@@ -1604,65 +1547,7 @@ public final class SQLExecutor implements Closeable {
      */
     <T> List<T> findAll(final Class<T> targetClass, final Connection conn, final List<String> sqls, final StatementSetter statementSetter,
             JdbcSettings jdbcSettings, final Object... parameters) {
-        if (jdbcSettings == null) {
-            jdbcSettings = _jdbcSettings.copy();
-        }
-
-        final JdbcSettings newJdbcSettings = jdbcSettings.copy().setOffset(0).setCount(Long.MAX_VALUE);
-        final List<RowIterator> iterators = this.iterateAll(conn, sqls, statementSetter, newJdbcSettings, parameters);
-
-        try (final Stream<Object[]> stream = (jdbcSettings.isQueryInParallel() ? Stream.parallelConcatt(iterators, iterators.size())
-                : Stream.concatt(iterators)).skip(jdbcSettings.getOffset()).limit(jdbcSettings.getCount())) {
-
-            final NamedSQL namedSQL = getNamedSQL(sqls.get(0));
-            final ResultSet rs = iterators.get(0).resultSet();
-            final String[] columnLabels = getColumnLabelList(namedSQL.getPureSQL(), rs).toArray(new String[0]);
-            final int columnCount = columnLabels.length;
-            final boolean isMap = Map.class.isAssignableFrom(targetClass);
-            final boolean isDirtyMarker = N.isDirtyMarker(targetClass);
-            final List<T> resultList = new ArrayList<>();
-
-            stream.forEach(new Consumer<Object[]>() {
-                @Override
-                public void accept(Object[] a) {
-                    if (isMap) {
-                        final Map<String, Object> m = (Map<String, Object>) N.newInstance(targetClass);
-
-                        for (int i = 0; i < columnCount; i++) {
-                            m.put(columnLabels[i], a[i]);
-                        }
-
-                        resultList.add((T) m);
-                    } else {
-                        final Object entity = N.newInstance(targetClass);
-
-                        for (int i = 0; i < columnCount; i++) {
-                            if (columnLabels[i] == null) {
-                                continue;
-                            }
-
-                            if (ClassUtil.setPropValue(entity, columnLabels[i], a[i], true) == false) {
-                                columnLabels[i] = null;
-                            }
-                        }
-
-                        if (isDirtyMarker) {
-                            ((DirtyMarker) entity).markDirty(false);
-                        }
-
-                        resultList.add((T) entity);
-                    }
-                }
-            });
-
-            return resultList;
-        } catch (
-
-        SQLException e) {
-            throw new UncheckedSQLException(e);
-        } finally {
-            IOUtil.closeAllQuietly(iterators);
-        }
+        return queryAll(conn, sqls, statementSetter, jdbcSettings, parameters).toList(targetClass);
     }
 
     /**
@@ -2044,42 +1929,21 @@ public final class SQLExecutor implements Closeable {
      * @return
      */
     DataSet queryAll(final Connection conn, final String sql, final StatementSetter statementSetter, JdbcSettings jdbcSettings, final Object... parameters) {
+        // TODO the specified connection will be closed if Stream is closed. that means the specified connection can't be held independently.
+        N.checkArgument(conn == null, "Must not specified connection");
+
         if (jdbcSettings == null) {
             jdbcSettings = _jdbcSettings.copy();
         }
 
-        final JdbcSettings newJdbcSettings = jdbcSettings.copy().setOffset(0).setCount(Long.MAX_VALUE);
-        final List<RowIterator> iterators = this.iterateAll(conn, sql, statementSetter, newJdbcSettings, parameters);
+        if (N.isNullOrEmpty(jdbcSettings.getQueryWithDataSources())) {
+            return query(conn, sql, statementSetter, jdbcSettings, parameters);
+        } else {
+            final List<String> columnNames = new ArrayList<>();
 
-        try (final Stream<Object[]> stream = (jdbcSettings.isQueryInParallel() ? Stream.parallelConcatt(iterators, iterators.size())
-                : Stream.concatt(iterators)).skip(jdbcSettings.getOffset()).limit(jdbcSettings.getCount())) {
-
-            final NamedSQL namedSQL = getNamedSQL(sql);
-            final ResultSet rs = iterators.get(0).resultSet();
-            final List<String> columnLabelList = getColumnLabelList(namedSQL.getPureSQL(), rs);
-            final int columnCount = columnLabelList.size();
-            final List<String> columnNameList = new ArrayList<>(columnCount);
-            final List<List<Object>> columnList = new ArrayList<>(columnCount);
-
-            for (int i = 0; i < columnCount; i++) {
-                columnNameList.add(columnLabelList.get(i));
-                columnList.add(new ArrayList<>());
+            try (final Stream<Object[]> s = streamAll(columnNames, conn, sql, statementSetter, jdbcSettings, parameters)) {
+                return toDataSet(columnNames, s);
             }
-
-            stream.forEach(new Consumer<Object[]>() {
-                @Override
-                public void accept(Object[] a) {
-                    for (int i = 0; i < columnCount; i++) {
-                        columnList.get(i).add(a[i]);
-                    }
-                }
-            });
-
-            return new RowDataSet(columnNameList, columnList);
-        } catch (SQLException e) {
-            throw new UncheckedSQLException(e);
-        } finally {
-            IOUtil.closeAllQuietly(iterators);
         }
     }
 
@@ -2110,326 +1974,113 @@ public final class SQLExecutor implements Closeable {
      */
     DataSet queryAll(final Connection conn, final List<String> sqls, final StatementSetter statementSetter, JdbcSettings jdbcSettings,
             final Object... parameters) {
+        // TODO the specified connection will be closed if Stream is closed. that means the specified connection can't be held independently.
+        N.checkArgument(conn == null, "Must not specified connection");
+
+        N.checkArgument(N.notNullOrEmpty(sqls), "'sqls' can't be null or empty");
+
         if (jdbcSettings == null) {
             jdbcSettings = _jdbcSettings.copy();
         }
 
         final JdbcSettings newJdbcSettings = jdbcSettings.copy().setOffset(0).setCount(Long.MAX_VALUE);
-        final List<RowIterator> iterators = this.iterateAll(conn, sqls, statementSetter, newJdbcSettings, parameters);
+        final List<String> columnNames = new ArrayList<>();
 
-        try (final Stream<Object[]> stream = (jdbcSettings.isQueryInParallel() ? Stream.parallelConcatt(iterators, iterators.size())
-                : Stream.concatt(iterators)).skip(jdbcSettings.getOffset()).limit(jdbcSettings.getCount())) {
-
-            final NamedSQL namedSQL = getNamedSQL(sqls.get(0));
-            final ResultSet rs = iterators.get(0).resultSet();
-            final List<String> columnLabelList = getColumnLabelList(namedSQL.getPureSQL(), rs);
-            final int columnCount = columnLabelList.size();
-            final List<String> columnNameList = new ArrayList<>(columnCount);
-            final List<List<Object>> columnList = new ArrayList<>(columnCount);
-
-            for (int i = 0; i < columnCount; i++) {
-                columnNameList.add(columnLabelList.get(i));
-                columnList.add(new ArrayList<>());
-            }
-
-            stream.forEach(new Consumer<Object[]>() {
-                @Override
-                public void accept(Object[] a) {
-                    for (int i = 0; i < columnCount; i++) {
-                        columnList.get(i).add(a[i]);
-                    }
-                }
-            });
-
-            return new RowDataSet(columnNameList, columnList);
-        } catch (SQLException e) {
-            throw new UncheckedSQLException(e);
-        } finally {
-            IOUtil.closeAllQuietly(iterators);
-        }
-    }
-
-    //
-    //    public Map<String, Object> queryForMap(String sql, Object... parameters) {
-    //        return queryForMap(sql, null, parameters);
-    //    }
-    //
-    //    public Map<String, Object> queryForMap(String sql, StatementSetter statementSetter, Object... parameters) {
-    //        return queryForMap(null, sql, statementSetter, parameters);
-    //    }
-    //
-    //    public Map<String, Object> queryForMap(final Connection conn, final String sql, Object... parameters) {
-    //        return queryForMap(conn, sql, null, parameters);
-    //    }
-    //
-    //    /**
-    //     * Just fetch the result in the 1st row. {@code null} is returned if no result is found.
-    //     *
-    //     * Remember to add {@code limit} condition if big result will be returned by the query.
-    //     *
-    //     * @param conn
-    //     * @param sql
-    //     * @param statementSetter
-    //     * @param parameters
-    //     * @return
-    //     */
-    //    public Map<String, Object> queryForMap(final Connection conn, final String sql, StatementSetter statementSetter, Object... parameters) {
-    //        return query(conn, sql, statementSetter, MAP_RESULT_SET_EXTRACTOR, null, parameters);
-    //    }
-
-    RowIterator iterate(final String sql, final Object... parameters) {
-        return iterate(sql, null, parameters);
-    }
-
-    RowIterator iterate(final String sql, final StatementSetter statementSetter, final Object... parameters) {
-        return iterate(sql, statementSetter, null, parameters);
-    }
-
-    /**
-     * Remember to close the returned <code>RowIterator</code> to close the underlying <code>ResultSet</code>.
-     * 
-     * @param sql
-     * @param statementSetter
-     * @param jdbcSettings
-     * @param parameters
-     * @return
-     */
-    RowIterator iterate(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object... parameters) {
-        return iterate(null, sql, statementSetter, jdbcSettings, parameters);
-    }
-
-    RowIterator iterate(final Connection conn, final String sql, final Object... parameters) {
-        return iterate(conn, sql, null, parameters);
-    }
-
-    RowIterator iterate(final Connection conn, final String sql, final StatementSetter statementSetter, final Object... parameters) {
-        return iterate(conn, sql, statementSetter, null, parameters);
-    }
-
-    /**
-     * Remember to close the returned <code>RowIterator</code> to close the underlying <code>ResultSet</code>.
-     *
-     * @param conn
-     * @param sql
-     * @param statementSetter
-     * @param jdbcSettings
-     * @param parameters
-     * @return
-     */
-    RowIterator iterate(final Connection conn, final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
-            final Object... parameters) {
-        // TODO the specified connection will be closed if RowIterator is closed. that means the specified connection can't be held independently.
-
-        return query(conn, sql, statementSetter, ROW_ITERATOR_RESULT_SET_EXTRACTOR, jdbcSettings, parameters);
-    }
-
-    List<RowIterator> iterateAll(final String sql, final JdbcSettings jdbcSettings, final Object... parameters) {
-        return iterateAll(sql, null, jdbcSettings, parameters);
-    }
-
-    /**
-     * Remember to close the returned <code>RowIterator</code> list to close the underlying <code>ResultSet</code> list.
-     * 
-     * @param sql
-     * @param statementSetter
-     * @param jdbcSettings
-     * @param parameters
-     * @return
-     */
-    List<RowIterator> iterateAll(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object... parameters) {
-        return iterateAll(null, sql, statementSetter, jdbcSettings, parameters);
-    }
-
-    List<RowIterator> iterateAll(final Connection conn, final String sql, final JdbcSettings jdbcSettings, final Object... parameters) {
-        return iterateAll(conn, sql, null, jdbcSettings, parameters);
-    }
-
-    /**
-     * Returns the merged ResultSet acquired by querying with the specified sql in parallel. Mostly it's designed
-     * for partition to query the partitioning table in more than one databases.
-     *
-     * @param conn
-     * @param sql
-     * @param statementSetter
-     * @param jdbcSettings set multiple data sources by method: <code>setQueryWithDataSources</code>
-     * @param parameters
-     * @return
-     */
-    List<RowIterator> iterateAll(final Connection conn, final String sql, final StatementSetter statementSetter, JdbcSettings jdbcSettings,
-            final Object... parameters) {
-        if (jdbcSettings != null && (jdbcSettings.getOffset() != 0 || jdbcSettings.getCount() != Long.MAX_VALUE)) {
-            throw new IllegalArgumentException("Can't specify 'offset' or 'count' for iterateAll method");
-        }
-
-        if (jdbcSettings == null) {
-            jdbcSettings = _jdbcSettings;
-        }
-
-        if (jdbcSettings == null || N.isNullOrEmpty(jdbcSettings.getQueryWithDataSources())) {
-            return N.asList(iterate(conn, sql, statementSetter, jdbcSettings, parameters));
-        } else {
-            final List<RowIterator> iterators = new ArrayList<>();
-            final Holder<Throwable> errorHolder = new Holder<>();
-            final AtomicInteger activeThreadNum = new AtomicInteger(0);
-
-            for (String dataSource : jdbcSettings.getQueryWithDataSources()) {
-                final JdbcSettings newJdbcSettings = jdbcSettings == null ? _jdbcSettings.copy() : jdbcSettings.copy();
-                newJdbcSettings.setOffset(0).setCount(Long.MAX_VALUE);
-
-                newJdbcSettings.setQueryWithDataSource(dataSource);
-
-                final Runnable cmd = new Runnable() {
+        try (final Stream<Object[]> s = skipAndLimit((newJdbcSettings.isQueryInParallel() ? Stream.of(sqls).parallel(sqls.size()) : Stream.of(sqls))
+                .flatMap(new Function<String, Stream<Object[]>>() {
                     @Override
-                    public void run() {
-                        try {
-                            if (errorHolder.value() != null) {
-                                return;
-                            }
-
-                            final RowIterator tmp = iterate(conn, sql, statementSetter, newJdbcSettings, parameters);
-
-                            synchronized (iterators) {
-                                iterators.add(tmp);
-                            }
-                        } catch (Throwable e) {
-                            if (JdbcUtil.isTableNotExistsException(e)) {
-                                // ignore;
-                            } else {
-                                setException(errorHolder, e);
-                            }
-                        } finally {
-                            activeThreadNum.decrementAndGet();
-                        }
+                    public Stream<Object[]> apply(String sql) {
+                        return streamAll(columnNames, conn, sql, statementSetter, newJdbcSettings, parameters);
                     }
-                };
+                }), jdbcSettings)) {
 
-                activeThreadNum.incrementAndGet();
-
-                if (newJdbcSettings.isQueryInParallel()) {
-                    _asyncExecutor.execute(cmd);
-                } else {
-                    cmd.run();
-                }
-            }
-
-            while (activeThreadNum.get() > 0) {
-                N.sleep(1);
-            }
-
-            if (errorHolder.value() != null) {
-                try {
-                    throw N.toRuntimeException(errorHolder.value());
-                } finally {
-                    IOUtil.closeAllQuietly(iterators);
-                }
-            }
-
-            return iterators;
+            return toDataSet(columnNames, s);
         }
     }
 
-    List<RowIterator> iterateAll(final List<String> sqls, final JdbcSettings jdbcSettings, final Object... parameters) {
-        return iterateAll(sqls, null, jdbcSettings, parameters);
-    }
-
-    /**
-     * Remember to close the returned <code>RowIterator</code> list to close the underlying <code>ResultSet</code> list.
-     * 
-     * @param sqls
-     * @param statementSetter
-     * @param jdbcSettings
-     * @param parameters
-     * @return
-     */
-    List<RowIterator> iterateAll(final List<String> sqls, final StatementSetter statementSetter, final JdbcSettings jdbcSettings, final Object... parameters) {
-        return iterateAll(null, sqls, statementSetter, jdbcSettings, parameters);
-    }
-
-    List<RowIterator> iterateAll(final Connection conn, final List<String> sqls, final JdbcSettings jdbcSettings, final Object... parameters) {
-        return iterateAll(conn, sqls, null, jdbcSettings, parameters);
-    }
-
-    /**
-     * Returns the merged ResultSet acquired by querying with the specified sql list in parallel. Mostly it's designed
-     * for partition to query multiple partitioning tables in one or more databases.
-     *
-     * @param conn
-     * @param sqls
-     * @param statementSetter
-     * @param jdbcSettings set multiple data sources by method: <code>setQueryWithDataSources</code>
-     * @param parameters
-     * @return
-     */
-    List<RowIterator> iterateAll(final Connection conn, final List<String> sqls, final StatementSetter statementSetter, JdbcSettings jdbcSettings,
+    private RowIterator iterate(final Connection conn, final String sql, final StatementSetter statementSetter, final JdbcSettings newJdbcSettings,
             final Object... parameters) {
-        // TODO the specified connection will be closed if RowIterator is closed. that means the specified connection can't be held independently.
+        return query(conn, sql, statementSetter, ROW_ITERATOR_RESULT_SET_EXTRACTOR, newJdbcSettings, parameters);
+    }
 
-        N.checkNullOrEmpty(sqls, "sqls");
+    private Stream<Object[]> streamAll(final List<String> columnNames, final Connection conn, final String sql, final StatementSetter statementSetter,
+            JdbcSettings jdbcSettings, final Object... parameters) {
+        final Collection<String> dataSources = N.isNullOrEmpty(jdbcSettings.getQueryWithDataSources()) ? N.asList(jdbcSettings.getQueryWithDataSource())
+                : jdbcSettings.getQueryWithDataSources();
+        final JdbcSettings newJdbcSettings = jdbcSettings.copy().setOffset(0).setCount(Long.MAX_VALUE).setQueryWithDataSources(null);
 
-        if (jdbcSettings != null && (jdbcSettings.getOffset() != 0 || jdbcSettings.getCount() != Long.MAX_VALUE)) {
-            throw new IllegalArgumentException("Can't specify 'offset' or 'count' for iterateAll method");
+        final Stream<Object[]> s = (newJdbcSettings.isQueryInParallel() ? Stream.of(dataSources).parallel(dataSources.size()) : Stream.of(dataSources))
+                .flatMap(new Function<String, Stream<Object[]>>() {
+                    @Override
+                    public Stream<Object[]> apply(String t) {
+                        final RowIterator iter = iterate(conn, sql, statementSetter, newJdbcSettings.copy().setQueryWithDataSource(t), parameters);
+
+                        synchronized (columnNames) {
+                            if (columnNames.size() == 0) {
+                                try {
+                                    columnNames.addAll(getColumnLabelList(sql, iter.resultSet()));
+                                } catch (SQLException e) {
+                                    IOUtil.closeQuietly(iter);
+                                    throw new UncheckedSQLException(e);
+                                }
+                            }
+                        }
+
+                        return Stream.of(iter).onClose(new Runnable() {
+                            private volatile boolean isClosed = false;
+
+                            @Override
+                            public void run() {
+                                if (isClosed) {
+                                    return;
+                                }
+
+                                isClosed = true;
+                                IOUtil.closeQuietly(iter);
+                            }
+                        });
+                    }
+                });
+
+        return skipAndLimit(s, jdbcSettings);
+    }
+
+    private <T> Stream<T> skipAndLimit(Stream<T> s, JdbcSettings jdbcSettings) {
+        if (jdbcSettings.getOffset() > 0) {
+            s = s.skip(jdbcSettings.getOffset());
         }
 
-        if (jdbcSettings == null) {
-            jdbcSettings = _jdbcSettings;
+        if (jdbcSettings.getCount() < Long.MAX_VALUE) {
+            s = s.limit(jdbcSettings.getCount());
         }
 
-        final List<RowIterator> iterators = new ArrayList<>();
-        final Holder<Throwable> errorHolder = new Holder<>();
-        final AtomicInteger activeThreadNum = new AtomicInteger(0);
+        return s;
+    }
 
-        for (String e : sqls) {
-            final String sql = e;
-            final JdbcSettings newJdbcSettings = jdbcSettings == null ? _jdbcSettings.copy() : jdbcSettings.copy();
-            newJdbcSettings.setOffset(0).setCount(Long.MAX_VALUE);
+    private DataSet toDataSet(final List<String> columnNames, final Stream<Object[]> s) {
+        final List<String> columnNameList = new ArrayList<>();
+        final List<List<Object>> columnList = new ArrayList<>();
+        final MutableInt columnCount = MutableInt.of(0);
 
-            final Runnable cmd = new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        if (errorHolder.value() != null) {
-                            return;
-                        }
+        s.sequential().forEach(new Consumer<Object[]>() {
+            @Override
+            public void accept(Object[] a) {
+                if (columnCount.value() == 0) {
+                    columnCount.setValue(columnNames.size());
+                    columnNameList.addAll(columnNames);
 
-                        final List<RowIterator> tmp = iterateAll(conn, sql, statementSetter, newJdbcSettings, parameters);
-
-                        synchronized (iterators) {
-                            iterators.addAll(tmp);
-                        }
-                    } catch (Throwable e) {
-                        if (JdbcUtil.isTableNotExistsException(e)) {
-                            // ignore;
-                        } else {
-                            setException(errorHolder, e);
-                        }
-                    } finally {
-                        activeThreadNum.decrementAndGet();
+                    for (int i = 0, len = columnCount.value(); i < len; i++) {
+                        columnList.add(new ArrayList<>());
                     }
                 }
-            };
 
-            activeThreadNum.incrementAndGet();
-
-            if (newJdbcSettings.isQueryInParallel()) {
-                _asyncExecutor.execute(cmd);
-            } else {
-                cmd.run();
+                for (int i = 0, len = columnCount.value(); i < len; i++) {
+                    columnList.get(i).add(a[i]);
+                }
             }
-        }
+        });
 
-        while (activeThreadNum.get() > 0) {
-            N.sleep(1);
-        }
-
-        if (errorHolder.value() != null) {
-            try {
-                throw N.toRuntimeException(errorHolder.value());
-            } finally {
-                IOUtil.closeAllQuietly(iterators);
-            }
-        }
-
-        return iterators;
+        return new RowDataSet(columnNameList, columnList);
     }
 
     @SafeVarargs
@@ -2478,146 +2129,9 @@ public final class SQLExecutor implements Closeable {
     Try<Stream<Object[]>> stream(final Connection conn, final String sql, final StatementSetter statementSetter, JdbcSettings jdbcSettings,
             final Object... parameters) {
         // TODO the specified connection will be closed if Stream is closed. that means the specified connection can't be held independently.
+        N.checkArgument(conn == null, "Must not specified connection");
 
-        final RowIterator iterator = this.iterate(conn, sql, statementSetter, jdbcSettings, parameters);
-
-        return Stream.of(iterator).onClose(new Runnable() {
-            private volatile boolean isClosed = false;
-
-            @Override
-            public void run() {
-                if (isClosed) {
-                    return;
-                }
-
-                isClosed = true;
-                IOUtil.closeQuietly(iterator);
-            }
-        }).tried();
-    }
-
-    @SafeVarargs
-    public final Try<Stream<Object[]>> streamAll(final String sql, final JdbcSettings jdbcSettings, final Object... parameters) {
-        return streamAll(sql, null, jdbcSettings, parameters);
-    }
-
-    /**
-     * Remember to close the returned <code>Stream</code> list to close the underlying <code>ResultSet</code> list.
-     * 
-     * @param sql
-     * @param statementSetter
-     * @param jdbcSettings
-     * @param parameters
-     * @return
-     */
-    @SafeVarargs
-    public final Try<Stream<Object[]>> streamAll(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
-            final Object... parameters) {
-        return streamAll((Connection) null, sql, statementSetter, jdbcSettings, parameters);
-    }
-
-    Try<Stream<Object[]>> streamAll(final Connection conn, final String sql, final JdbcSettings jdbcSettings, final Object... parameters) {
-        return streamAll(conn, sql, null, jdbcSettings, parameters);
-    }
-
-    /**
-     * Returns the merged ResultSet acquired by querying with the specified sql in parallel. Mostly it's designed
-     * for partition to query the partitioning table in more than one databases.
-     *
-     * @param conn
-     * @param sql
-     * @param statementSetter
-     * @param jdbcSettings set multiple data sources by method: <code>setQueryWithDataSources</code>
-     * @param parameters
-     * @return
-     */
-    Try<Stream<Object[]>> streamAll(final Connection conn, final String sql, final StatementSetter statementSetter, JdbcSettings jdbcSettings,
-            final Object... parameters) {
-        // TODO the specified connection will be closed if Stream is closed. that means the specified connection can't be held independently.
-
-        if (jdbcSettings == null) {
-            jdbcSettings = _jdbcSettings.copy();
-        }
-
-        final JdbcSettings newJdbcSettings = jdbcSettings.copy().setOffset(0).setCount(Long.MAX_VALUE);
-        final List<RowIterator> iterators = this.iterateAll(conn, sql, statementSetter, newJdbcSettings, parameters);
-
-        return (jdbcSettings.isQueryInParallel() ? Stream.parallelConcatt(iterators, iterators.size()) : Stream.concatt(iterators))
-                .skip(jdbcSettings.getOffset()).limit(jdbcSettings.getCount()).onClose(new Runnable() {
-                    private volatile boolean isClosed = false;
-
-                    @Override
-                    public void run() {
-                        if (isClosed) {
-                            return;
-                        }
-
-                        isClosed = true;
-                        IOUtil.closeAllQuietly(iterators);
-                    }
-                }).tried();
-    }
-
-    @SafeVarargs
-    public final Try<Stream<Object[]>> streamAll(final List<String> sqls, final JdbcSettings jdbcSettings, final Object... parameters) {
-        return streamAll(sqls, null, jdbcSettings, parameters);
-    }
-
-    /**
-     * Remember to close the returned <code>Stream</code> list to close the underlying <code>ResultSet</code> list.
-     * 
-     * @param sqls
-     * @param statementSetter
-     * @param jdbcSettings
-     * @param parameters
-     * @return
-     */
-    @SafeVarargs
-    public final Try<Stream<Object[]>> streamAll(final List<String> sqls, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
-            final Object... parameters) {
-        return streamAll((Connection) null, sqls, statementSetter, jdbcSettings, parameters);
-    }
-
-    Try<Stream<Object[]>> streamAll(final Connection conn, final List<String> sqls, final JdbcSettings jdbcSettings, final Object... parameters) {
-        return streamAll(conn, sqls, null, jdbcSettings, parameters);
-    }
-
-    /**
-     * Returns the merged ResultSet acquired by querying with the specified sql list in parallel. Mostly it's designed
-     * for partition to query multiple partitioning tables in one or more databases.
-     *
-     * @param conn
-     * @param sqls
-     * @param statementSetter
-     * @param jdbcSettings set multiple data sources by method: <code>setQueryWithDataSources</code>
-     * @param parameters
-     * @return
-     */
-    Try<Stream<Object[]>> streamAll(final Connection conn, final List<String> sqls, final StatementSetter statementSetter, JdbcSettings jdbcSettings,
-            final Object... parameters) {
-        // TODO the specified connection will be closed if Stream is closed. that means the specified connection can't be held independently.
-
-        if (jdbcSettings == null) {
-            jdbcSettings = _jdbcSettings.copy();
-        }
-
-        final JdbcSettings newJdbcSettings = jdbcSettings.copy().setOffset(0).setCount(Long.MAX_VALUE);
-        final List<RowIterator> iterators = this.iterateAll(conn, sqls, statementSetter, newJdbcSettings, parameters);
-
-        return (jdbcSettings.isQueryInParallel() ? Stream.parallelConcatt(iterators, iterators.size()) : Stream.concatt(iterators))
-                .skip(jdbcSettings.getOffset()).limit(jdbcSettings.getCount()).onClose(new Runnable() {
-                    private volatile boolean isClosed = false;
-
-                    @Override
-                    public void run() {
-                        if (isClosed) {
-                            return;
-                        }
-
-                        isClosed = true;
-                        IOUtil.closeAllQuietly(iterators);
-                    }
-                }).tried();
+        return stream2(null, conn, sql, statementSetter, jdbcSettings, parameters);
     }
 
     @SafeVarargs
@@ -2667,9 +2181,39 @@ public final class SQLExecutor implements Closeable {
     <T> Try<Stream<T>> stream(final Class<T> targetClass, final Connection conn, final String sql, final StatementSetter statementSetter,
             final JdbcSettings jdbcSettings, final Object... parameters) {
         // TODO the specified connection will be closed if Stream is closed. that means the specified connection can't be held independently.
+        N.checkArgument(conn == null, "Must not specified connection");
 
-        final RowIterator iterator = this.iterate(conn, sql, statementSetter, jdbcSettings, parameters);
+        N.requireNonNull(targetClass);
 
+        return stream2(targetClass, conn, sql, statementSetter, jdbcSettings, parameters);
+    }
+
+    private <T> Try<Stream<T>> stream2(final Class<T> targetClass, final Connection conn, final String sql, final StatementSetter statementSetter,
+            JdbcSettings jdbcSettings, final Object... parameters) {
+        if (jdbcSettings == null) {
+            jdbcSettings = _jdbcSettings.copy();
+        }
+
+        final JdbcSettings newJdbcSettings = jdbcSettings.copy().setOffset(0).setCount(Long.MAX_VALUE);
+        final RowIterator iterator = this.iterate(conn, sql, statementSetter, newJdbcSettings, parameters);
+        final Stream<Object[]> s = skipAndLimit(Stream.of(iterator), jdbcSettings);
+
+        return (targetClass == null ? (Stream<T>) s : s.map(newMapper(targetClass, sql, iterator))).onClose(new Runnable() {
+            private volatile boolean isClosed = false;
+
+            @Override
+            public void run() {
+                if (isClosed) {
+                    return;
+                }
+
+                isClosed = true;
+                IOUtil.closeQuietly(iterator);
+            }
+        }).tried();
+    }
+
+    private <T> Function<Object[], T> newMapper(final Class<? extends T> targetClass, final String sql, final RowIterator iterator) {
         try {
             final NamedSQL namedSQL = getNamedSQL(sql);
             final ResultSet rs = iterator.resultSet();
@@ -2678,7 +2222,7 @@ public final class SQLExecutor implements Closeable {
             final boolean isMap = Map.class.isAssignableFrom(targetClass);
             final boolean isDirtyMarker = N.isDirtyMarker(targetClass);
 
-            return Stream.of(iterator).map(new Function<Object[], T>() {
+            return new Function<Object[], T>() {
                 @Override
                 public T apply(Object[] a) {
                     if (isMap) {
@@ -2709,24 +2253,54 @@ public final class SQLExecutor implements Closeable {
                         return (T) entity;
                     }
                 }
-            }).onClose(new Runnable() {
-                private volatile boolean isClosed = false;
-
-                @Override
-                public void run() {
-                    if (isClosed) {
-                        return;
-                    }
-
-                    isClosed = true;
-                    IOUtil.closeQuietly(iterator);
-                }
-            }).tried();
+            };
         } catch (SQLException e) {
             IOUtil.closeQuietly(iterator);
-
             throw new UncheckedSQLException(e);
         }
+    }
+
+    @SafeVarargs
+    public final Try<Stream<Object[]>> streamAll(final String sql, final JdbcSettings jdbcSettings, final Object... parameters) {
+        return streamAll(sql, null, jdbcSettings, parameters);
+    }
+
+    /**
+     * Remember to close the returned <code>Stream</code> list to close the underlying <code>ResultSet</code> list.
+     * 
+     * @param sql
+     * @param statementSetter
+     * @param jdbcSettings
+     * @param parameters
+     * @return
+     */
+    @SafeVarargs
+    public final Try<Stream<Object[]>> streamAll(final String sql, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
+            final Object... parameters) {
+        return streamAll((Connection) null, sql, statementSetter, jdbcSettings, parameters);
+    }
+
+    Try<Stream<Object[]>> streamAll(final Connection conn, final String sql, final JdbcSettings jdbcSettings, final Object... parameters) {
+        return streamAll(conn, sql, null, jdbcSettings, parameters);
+    }
+
+    /**
+     * Returns the merged ResultSet acquired by querying with the specified sql in parallel. Mostly it's designed
+     * for partition to query the partitioning table in more than one databases.
+     *
+     * @param conn
+     * @param sql
+     * @param statementSetter
+     * @param jdbcSettings set multiple data sources by method: <code>setQueryWithDataSources</code>
+     * @param parameters
+     * @return
+     */
+    Try<Stream<Object[]>> streamAll(final Connection conn, final String sql, final StatementSetter statementSetter, JdbcSettings jdbcSettings,
+            final Object... parameters) {
+        // TODO the specified connection will be closed if Stream is closed. that means the specified connection can't be held independently.
+        N.checkArgument(conn == null, "Must not specified connection");
+
+        return streamAll2(null, conn, sql, statementSetter, jdbcSettings, parameters);
     }
 
     @SafeVarargs
@@ -2768,72 +2342,78 @@ public final class SQLExecutor implements Closeable {
     <T> Try<Stream<T>> streamAll(final Class<T> targetClass, final Connection conn, final String sql, final StatementSetter statementSetter,
             JdbcSettings jdbcSettings, final Object... parameters) {
         // TODO the specified connection will be closed if Stream is closed. that means the specified connection can't be held independently.
+        N.checkArgument(conn == null, "Must not specified connection");
 
+        N.requireNonNull(targetClass);
+
+        return streamAll2(targetClass, conn, sql, statementSetter, jdbcSettings, parameters);
+    }
+
+    private <T> Try<Stream<T>> streamAll2(final Class<T> targetClass, final Connection conn, final String sql, final StatementSetter statementSetter,
+            JdbcSettings jdbcSettings, final Object... parameters) {
         if (jdbcSettings == null) {
             jdbcSettings = _jdbcSettings.copy();
         }
 
-        final JdbcSettings newJdbcSettings = jdbcSettings.copy().setOffset(0).setCount(Long.MAX_VALUE);
-        final List<RowIterator> iterators = this.iterateAll(conn, sql, statementSetter, newJdbcSettings, parameters);
+        if (N.isNullOrEmpty(jdbcSettings.getQueryWithDataSources())) {
+            return stream2(targetClass, conn, sql, statementSetter, jdbcSettings, parameters);
+        } else {
+            final Collection<String> dataSources = jdbcSettings.getQueryWithDataSources();
+            final JdbcSettings newJdbcSettings = jdbcSettings.copy().setOffset(0).setCount(Long.MAX_VALUE).setQueryWithDataSources(null);
 
-        try {
-            final NamedSQL namedSQL = getNamedSQL(sql);
-            final ResultSet rs = iterators.get(0).resultSet();
-            final String[] columnLabels = getColumnLabelList(namedSQL.getPureSQL(), rs).toArray(new String[0]);
-            final int columnCount = columnLabels.length;
-            final boolean isMap = Map.class.isAssignableFrom(targetClass);
-            final boolean isDirtyMarker = N.isDirtyMarker(targetClass);
-
-            return (jdbcSettings.isQueryInParallel() ? Stream.parallelConcatt(iterators, iterators.size()) : Stream.concatt(iterators))
-                    .skip(jdbcSettings.getOffset()).limit(jdbcSettings.getCount()).map(new Function<Object[], T>() {
+            final Stream<T> s = (newJdbcSettings.isQueryInParallel() ? Stream.of(dataSources).parallel(dataSources.size()) : Stream.of(dataSources))
+                    .flatMap(new Function<String, Stream<T>>() {
                         @Override
-                        public T apply(Object[] a) {
-                            if (isMap) {
-                                final Map<String, Object> m = (Map<String, Object>) N.newInstance(targetClass);
-
-                                for (int i = 0; i < columnCount; i++) {
-                                    m.put(columnLabels[i], a[i]);
-                                }
-
-                                return (T) m;
-                            } else {
-                                final Object entity = N.newInstance(targetClass);
-
-                                for (int i = 0; i < columnCount; i++) {
-                                    if (columnLabels[i] == null) {
-                                        continue;
-                                    }
-
-                                    if (ClassUtil.setPropValue(entity, columnLabels[i], a[i], true) == false) {
-                                        columnLabels[i] = null;
-                                    }
-                                }
-
-                                if (isDirtyMarker) {
-                                    ((DirtyMarker) entity).markDirty(false);
-                                }
-
-                                return (T) entity;
-                            }
+                        public Stream<T> apply(String t) {
+                            return stream2(targetClass, conn, sql, statementSetter, newJdbcSettings.copy().setQueryWithDataSource(t), parameters).val();
                         }
-                    }).onClose(new Runnable() {
-                        private volatile boolean isClosed = false;
+                    });
 
-                        @Override
-                        public void run() {
-                            if (isClosed) {
-                                return;
-                            }
-
-                            isClosed = true;
-                            IOUtil.closeAllQuietly(iterators);
-                        }
-                    }).tried();
-        } catch (SQLException e) {
-            IOUtil.closeAllQuietly(iterators);
-
-            throw new UncheckedSQLException(e);
+            return skipAndLimit(s, jdbcSettings).tried();
         }
+    }
+
+    @SafeVarargs
+    public final Try<Stream<Object[]>> streamAll(final List<String> sqls, final JdbcSettings jdbcSettings, final Object... parameters) {
+        return streamAll(sqls, null, jdbcSettings, parameters);
+    }
+
+    /**
+     * Remember to close the returned <code>Stream</code> list to close the underlying <code>ResultSet</code> list.
+     * 
+     * @param sqls
+     * @param statementSetter
+     * @param jdbcSettings
+     * @param parameters
+     * @return
+     */
+    @SafeVarargs
+    public final Try<Stream<Object[]>> streamAll(final List<String> sqls, final StatementSetter statementSetter, final JdbcSettings jdbcSettings,
+            final Object... parameters) {
+        return streamAll((Connection) null, sqls, statementSetter, jdbcSettings, parameters);
+    }
+
+    Try<Stream<Object[]>> streamAll(final Connection conn, final List<String> sqls, final JdbcSettings jdbcSettings, final Object... parameters) {
+        return streamAll(conn, sqls, null, jdbcSettings, parameters);
+    }
+
+    /**
+     * Returns the merged ResultSet acquired by querying with the specified sql list in parallel. Mostly it's designed
+     * for partition to query multiple partitioning tables in one or more databases.
+     *
+     * @param conn
+     * @param sqls
+     * @param statementSetter
+     * @param jdbcSettings set multiple data sources by method: <code>setQueryWithDataSources</code>
+     * @param parameters
+     * @return
+     */
+    Try<Stream<Object[]>> streamAll(final Connection conn, final List<String> sqls, final StatementSetter statementSetter, JdbcSettings jdbcSettings,
+            final Object... parameters) {
+        // TODO the specified connection will be closed if Stream is closed. that means the specified connection can't be held independently.
+        N.checkArgument(conn == null, "Must not specified connection");
+
+        return this.streamAll2(null, conn, sqls, statementSetter, jdbcSettings, parameters);
     }
 
     @SafeVarargs
@@ -2876,82 +2456,32 @@ public final class SQLExecutor implements Closeable {
     <T> Try<Stream<T>> streamAll(final Class<T> targetClass, final Connection conn, final List<String> sqls, final StatementSetter statementSetter,
             JdbcSettings jdbcSettings, final Object... parameters) {
         // TODO the specified connection will be closed if Stream is closed. that means the specified connection can't be held independently.
+        N.checkArgument(conn == null, "Must not specified connection");
+
+        N.requireNonNull(targetClass);
+
+        return streamAll2(targetClass, conn, sqls, statementSetter, jdbcSettings, parameters);
+    }
+
+    private <T> Try<Stream<T>> streamAll2(final Class<T> targetClass, final Connection conn, final List<String> sqls, final StatementSetter statementSetter,
+            JdbcSettings jdbcSettings, final Object... parameters) {
+        N.checkArgument(N.notNullOrEmpty(sqls), "'sqls' can't be null or empty");
 
         if (jdbcSettings == null) {
             jdbcSettings = _jdbcSettings.copy();
         }
 
         final JdbcSettings newJdbcSettings = jdbcSettings.copy().setOffset(0).setCount(Long.MAX_VALUE);
-        final List<RowIterator> iterators = this.iterateAll(conn, sqls, statementSetter, newJdbcSettings, parameters);
 
-        try {
-            final NamedSQL namedSQL = getNamedSQL(sqls.get(0));
-            final ResultSet rs = iterators.get(0).resultSet();
-            final String[] columnLabels = getColumnLabelList(namedSQL.getPureSQL(), rs).toArray(new String[0]);
-            final int columnCount = columnLabels.length;
-            final boolean isMap = Map.class.isAssignableFrom(targetClass);
-            final boolean isDirtyMarker = N.isDirtyMarker(targetClass);
+        final Stream<T> s = (newJdbcSettings.isQueryInParallel() ? Stream.of(sqls).parallel(sqls.size()) : Stream.of(sqls))
+                .flatMap(new Function<String, Stream<T>>() {
+                    @Override
+                    public Stream<T> apply(String sql) {
+                        return streamAll2(targetClass, conn, sql, statementSetter, newJdbcSettings, parameters).val();
+                    }
+                });
 
-            return (jdbcSettings.isQueryInParallel() ? Stream.parallelConcatt(iterators, iterators.size()) : Stream.concatt(iterators))
-                    .skip(jdbcSettings.getOffset()).limit(jdbcSettings.getCount()).map(new Function<Object[], T>() {
-                        @Override
-                        public T apply(Object[] a) {
-                            if (isMap) {
-                                final Map<String, Object> m = (Map<String, Object>) N.newInstance(targetClass);
-
-                                for (int i = 0; i < columnCount; i++) {
-                                    m.put(columnLabels[i], a[i]);
-                                }
-
-                                return (T) m;
-                            } else {
-                                final Object entity = N.newInstance(targetClass);
-
-                                for (int i = 0; i < columnCount; i++) {
-                                    if (columnLabels[i] == null) {
-                                        continue;
-                                    }
-
-                                    if (ClassUtil.setPropValue(entity, columnLabels[i], a[i], true) == false) {
-                                        columnLabels[i] = null;
-                                    }
-                                }
-
-                                if (isDirtyMarker) {
-                                    ((DirtyMarker) entity).markDirty(false);
-                                }
-
-                                return (T) entity;
-                            }
-                        }
-                    }).onClose(new Runnable() {
-                        private volatile boolean isClosed = false;
-
-                        @Override
-                        public void run() {
-                            if (isClosed) {
-                                return;
-                            }
-
-                            isClosed = true;
-                            IOUtil.closeAllQuietly(iterators);
-                        }
-                    }).tried();
-        } catch (SQLException e) {
-            IOUtil.closeAllQuietly(iterators);
-
-            throw new UncheckedSQLException(e);
-        }
-    }
-
-    private void setException(final Holder<Throwable> errorHolder, Throwable e) {
-        synchronized (errorHolder) {
-            if (errorHolder.value() == null) {
-                errorHolder.setValue(e);
-            } else {
-                errorHolder.value().addSuppressed(e);
-            }
-        }
+        return skipAndLimit(s, jdbcSettings).tried();
     }
 
     /**
@@ -3490,7 +3020,7 @@ public final class SQLExecutor implements Closeable {
     }
 
     protected static List<String> getColumnLabelList(final String sql, final ResultSet rs) throws SQLException {
-        List<String> labelList = _sqlColumnLabelPool.get(sql);
+        List<String> labelList = N.notNullOrEmpty(sql) ? _sqlColumnLabelPool.get(sql) : null;
 
         if (labelList == null) {
             ResultSetMetaData metaData = rs.getMetaData();
@@ -3515,7 +3045,7 @@ public final class SQLExecutor implements Closeable {
             //            }
             //
             //            if (isCachable) {
-            if (sql.length() < 4098) {
+            if (N.notNullOrEmpty(sql) && sql.length() <= CACHED_SQL_LENGTH) {
                 labelList = ImmutableList.of(labelList);
 
                 if (_sqlColumnLabelPool.size() >= SQL_CACHE_SIZE) {
@@ -5344,7 +4874,7 @@ public final class SQLExecutor implements Closeable {
         private String generatedIdPropName = null;
         private String queryWithDataSource;
         private Collection<String> queryWithDataSources;
-        private boolean queryInParallel = true;
+        private boolean queryInParallel = false;
 
         private boolean fozen = false;
 
