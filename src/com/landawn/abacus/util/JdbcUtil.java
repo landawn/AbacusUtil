@@ -81,6 +81,7 @@ import com.landawn.abacus.exception.UncheckedSQLException;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
 import com.landawn.abacus.type.Type;
+import com.landawn.abacus.util.SQLExecutor.JdbcSettings;
 import com.landawn.abacus.util.stream.Stream;
 
 /**
@@ -412,7 +413,7 @@ public final class JdbcUtil {
         }
     }
 
-    public static void close(final ResultSet rs) {
+    public static void close(final ResultSet rs) throws UncheckedSQLException {
         if (rs != null) {
             try {
                 rs.close();
@@ -422,7 +423,7 @@ public final class JdbcUtil {
         }
     }
 
-    public static void close(final Statement stmt) {
+    public static void close(final Statement stmt) throws UncheckedSQLException {
         if (stmt != null) {
             try {
                 if (stmt instanceof PreparedStatement) {
@@ -440,7 +441,7 @@ public final class JdbcUtil {
         }
     }
 
-    public static void close(final Connection conn) {
+    public static void close(final Connection conn) throws UncheckedSQLException {
         if (conn != null) {
             try {
                 conn.close();
@@ -450,7 +451,7 @@ public final class JdbcUtil {
         }
     }
 
-    public static void close(final ResultSet rs, final Statement stmt) {
+    public static void close(final ResultSet rs, final Statement stmt) throws UncheckedSQLException {
         try {
             if (rs != null) {
                 rs.close();
@@ -475,7 +476,7 @@ public final class JdbcUtil {
         }
     }
 
-    public static void close(final Statement stmt, final Connection conn) {
+    public static void close(final Statement stmt, final Connection conn) throws UncheckedSQLException {
         try {
             if (stmt != null) {
                 if (stmt instanceof PreparedStatement) {
@@ -500,7 +501,7 @@ public final class JdbcUtil {
         }
     }
 
-    public static void close(final ResultSet rs, final Statement stmt, final Connection conn) {
+    public static void close(final ResultSet rs, final Statement stmt, final Connection conn) throws UncheckedSQLException {
         try {
             if (rs != null) {
                 rs.close();
@@ -659,17 +660,6 @@ public final class JdbcUtil {
         return stmt;
     }
 
-    //    static PreparedStatement prepareStatement(final Connection conn, final String sql, final List<?> parameters) throws SQLException {
-    //        final NamedSQL namedSQL = NamedSQL.parse(sql);
-    //        final PreparedStatement stmt = conn.prepareStatement(namedSQL.getPureSQL());
-    //
-    //        if (N.notNullOrEmpty(parameters)) {
-    //            SQLExecutor.DEFAULT_STATEMENT_SETTER.setParameters(namedSQL, stmt, parameters);
-    //        }
-    //
-    //        return stmt;
-    //    }
-
     @SafeVarargs
     public static CallableStatement prepareCall(final Connection conn, final String sql, final Object... parameters) throws SQLException {
         final NamedSQL namedSQL = NamedSQL.parse(sql);
@@ -681,17 +671,6 @@ public final class JdbcUtil {
 
         return stmt;
     }
-
-    //    static CallableStatement prepareCall(final Connection conn, final String sql, final List<?> parameters) throws SQLException {
-    //        final NamedSQL namedSQL = NamedSQL.parse(sql);
-    //        final CallableStatement stmt = conn.prepareCall(namedSQL.getPureSQL());
-    //
-    //        if (N.notNullOrEmpty(parameters)) {
-    //            SQLExecutor.DEFAULT_STATEMENT_SETTER.setParameters(namedSQL, stmt, parameters);
-    //        }
-    //
-    //        return stmt;
-    //    }
 
     public static PreparedStatement batchPrepareStatement(final Connection conn, final String sql, final List<?> parametersList) throws SQLException {
         final NamedSQL namedSQL = NamedSQL.parse(sql);
@@ -718,7 +697,7 @@ public final class JdbcUtil {
     }
 
     @SafeVarargs
-    public static DataSet executeQuery(final Connection conn, final String sql, final Object... parameters) {
+    public static DataSet executeQuery(final Connection conn, final String sql, final Object... parameters) throws UncheckedSQLException {
         PreparedStatement stmt = null;
         ResultSet rs = null;
 
@@ -734,23 +713,7 @@ public final class JdbcUtil {
         }
     }
 
-    //    static DataSet executeQuery(final Connection conn, final String sql, final List<?> parameters) {
-    //        PreparedStatement stmt = null;
-    //        ResultSet rs = null;
-    //
-    //        try {
-    //            stmt = prepareStatement(conn, sql, parameters);
-    //            rs = stmt.executeQuery();
-    //
-    //            return extractData(rs);
-    //        } catch (SQLException e) {
-    //            throw new UncheckedSQLException(e);
-    //        } finally {
-    //            closeQuietly(rs, stmt);
-    //        }
-    //    }
-
-    public static DataSet executeQuery(final PreparedStatement stmt) {
+    public static DataSet executeQuery(final PreparedStatement stmt) throws UncheckedSQLException {
         ResultSet rs = null;
 
         try {
@@ -765,7 +728,7 @@ public final class JdbcUtil {
     }
 
     @SafeVarargs
-    public static int executeUpdate(final Connection conn, final String sql, final Object... parameters) {
+    public static int executeUpdate(final Connection conn, final String sql, final Object... parameters) throws UncheckedSQLException {
         PreparedStatement stmt = null;
 
         try {
@@ -779,21 +742,7 @@ public final class JdbcUtil {
         }
     }
 
-    //    static int executeUpdate(final Connection conn, final String sql, final List<?> parameters) {
-    //        PreparedStatement stmt = null;
-    //
-    //        try {
-    //            stmt = prepareStatement(conn, sql, parameters);
-    //
-    //            return stmt.executeUpdate();
-    //        } catch (SQLException e) {
-    //            throw new UncheckedSQLException(e);
-    //        } finally {
-    //            closeQuietly(stmt);
-    //        }
-    //    }
-
-    public static int executeUpdate(final PreparedStatement stmt) {
+    public static int executeUpdate(final PreparedStatement stmt) throws UncheckedSQLException {
         try {
             return stmt.executeUpdate();
         } catch (SQLException e) {
@@ -801,8 +750,69 @@ public final class JdbcUtil {
         }
     }
 
+    /**
+     * 
+     * @param conn
+     * @param sql
+     * @param batchParametersList
+     * @return
+     */
+    public static int executeBatchUpdate(final Connection conn, final String sql, final List<?> batchParametersList) throws UncheckedSQLException {
+        return executeBatchUpdate(conn, sql, batchParametersList, JdbcSettings.DEFAULT_BATCH_SIZE);
+    }
+
+    /**
+     * 
+     * @param conn
+     * @param sql
+     * @param batchParametersList
+     * @param batchSize.
+     * @return 
+     */
+    public static int executeBatchUpdate(final Connection conn, final String sql, final List<?> batchParametersList, final int batchSize)
+            throws UncheckedSQLException {
+        N.requireNonNull(conn);
+        N.requireNonNull(sql);
+        N.checkArgument(batchSize > 0, "'batchSize' can't be 0 or negative");
+
+        if (N.isNullOrEmpty(batchParametersList)) {
+            return 0;
+        }
+
+        final NamedSQL namedSQL = NamedSQL.parse(sql);
+        PreparedStatement stmt = null;
+
+        try {
+            stmt = conn.prepareStatement(namedSQL.getPureSQL());
+
+            int res = 0;
+            int idx = 0;
+
+            for (Object parameters : batchParametersList) {
+                SQLExecutor.DEFAULT_STATEMENT_SETTER.setParameters(namedSQL, stmt, parameters);
+                stmt.addBatch();
+
+                if (++idx % batchSize == 0) {
+                    res += stmt.executeUpdate();
+                    stmt.clearBatch();
+                }
+            }
+
+            if (idx % batchSize != 0) {
+                res += stmt.executeUpdate();
+                stmt.clearBatch();
+            }
+
+            return res;
+        } catch (SQLException e) {
+            throw new UncheckedSQLException(e);
+        } finally {
+            JdbcUtil.close(stmt);
+        }
+    }
+
     @SafeVarargs
-    public static boolean execute(final Connection conn, final String sql, final Object... parameters) {
+    public static boolean execute(final Connection conn, final String sql, final Object... parameters) throws UncheckedSQLException {
         PreparedStatement stmt = null;
 
         try {
@@ -816,21 +826,7 @@ public final class JdbcUtil {
         }
     }
 
-    //    static boolean execute(final Connection conn, final String sql, final List<?> parameters) {
-    //        PreparedStatement stmt = null;
-    //
-    //        try {
-    //            stmt = prepareStatement(conn, sql, parameters);
-    //
-    //            return stmt.execute();
-    //        } catch (SQLException e) {
-    //            throw new UncheckedSQLException(e);
-    //        } finally {
-    //            closeQuietly(stmt);
-    //        }
-    //    }
-
-    public static boolean execute(final PreparedStatement stmt) {
+    public static boolean execute(final PreparedStatement stmt) throws UncheckedSQLException {
         try {
             return stmt.execute();
         } catch (SQLException e) {
@@ -841,9 +837,50 @@ public final class JdbcUtil {
     /**
      * 
      * @param rs
+     * @param offset
+     * @throws SQLException
+     */
+    public static void absolute(final ResultSet rs, int offset) throws UncheckedSQLException {
+        absolute(rs, (long) offset);
+    }
+
+    /**
+     * 
+     * @param rs
+     * @param offset
+     * @throws SQLException
+     * @see {@link ResultSet#absolute(int)}
+     */
+    public static void absolute(final ResultSet rs, long offset) throws UncheckedSQLException {
+        if (offset > 0L) {
+            if (offset <= Integer.MAX_VALUE) {
+                try {
+                    rs.absolute((int) offset);
+                } catch (SQLException e) {
+                    try {
+                        while (offset-- > 0L && rs.next()) {
+                        }
+                    } catch (SQLException e1) {
+                        throw new UncheckedSQLException(e);
+                    }
+                }
+            } else {
+                try {
+                    while (offset-- > 0L && rs.next()) {
+                    }
+                } catch (SQLException e) {
+                    throw new UncheckedSQLException(e);
+                }
+            }
+        }
+    }
+
+    /**
+     * 
+     * @param rs
      */
     public static RowIterator iterate(final ResultSet rs) {
-        return new RowIterator(rs);
+        return new RowIterator(rs, false, false);
     }
 
     public static DataSet extractData(final ResultSet rs) {
@@ -876,9 +913,7 @@ public final class JdbcUtil {
                 columnList.add(new ArrayList<>());
             }
 
-            while (offset-- > 0 && rs.next()) {
-
-            }
+            JdbcUtil.absolute(rs, offset);
 
             final Object[] row = new Object[columnCount];
 
@@ -907,12 +942,21 @@ public final class JdbcUtil {
         }
     }
 
+    /**
+     * Don’t close the specified Connection before the returned {@code Stream} is consumed/collected/terminated.
+     * 
+     * @param conn
+     * @param sql
+     * @param parameters
+     * @return
+     */
     @SafeVarargs
     public static Try<Stream<Object[]>> stream(final Connection conn, final String sql, final Object... parameters) {
         return stream2(null, conn, sql, parameters);
     }
 
     /**
+     * Don’t close the specified Connection before the returned {@code Stream} is consumed/collected/terminated.
      * 
      * @param targetType {@code Map} or {@code Entity} class with getter/setter methods.
      * @param conn
@@ -960,11 +1004,18 @@ public final class JdbcUtil {
         }
     }
 
+    /**
+     * Don’t close the specified statement before the returned {@code Stream} is consumed/collected/terminated.
+     * 
+     * @param stmt
+     * @return
+     */
     public static Try<Stream<Object[]>> stream(final PreparedStatement stmt) {
         return stream2(null, stmt);
     }
 
     /**
+     * Don’t close the specified statement before the returned {@code Stream} is consumed/collected/terminated.
      * 
      * @param targetType {@code Map} or {@code Entity} class with getter/setter methods.
      * @param stmt
@@ -2148,7 +2199,7 @@ public final class JdbcUtil {
      */
     public static <E extends Exception, E2 extends Exception> void parse(final ResultSet rs, long offset, long count, final int processThreadNum,
             final int queueSize, final Try.Consumer<Object[], E> rowParser, final Try.Runnable<E2> onComplete) throws E, E2 {
-        N.parse(new RowIterator(rs), offset, count, processThreadNum, queueSize, rowParser, onComplete);
+        N.parse(new RowIterator(rs, false, false), offset, count, processThreadNum, queueSize, rowParser, onComplete);
     }
 
     public static long copy(final Connection sourceConn, final String selectSql, final Connection targetConn, final String insertSql) {

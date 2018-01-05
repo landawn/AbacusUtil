@@ -37,6 +37,7 @@ public final class SQLTransaction implements Transaction {
     private Connection conn;
     private final IsolationLevel isolationLevel;
     private final int originalIsolationLevel;
+    private final boolean originalAutoCommit;
     private Status status;
 
     public SQLTransaction(Connection conn, IsolationLevel isolationLevel) {
@@ -47,6 +48,7 @@ public final class SQLTransaction implements Transaction {
 
         try {
             originalIsolationLevel = conn.getTransactionIsolation();
+            originalAutoCommit = conn.getAutoCommit();
             conn.setAutoCommit(false);
 
             if ((isolationLevel == null) || (isolationLevel == IsolationLevel.DEFAULT)) {
@@ -107,8 +109,8 @@ public final class SQLTransaction implements Transaction {
                 logger.error("Failed to rollback after error happened during committing", e2);
             }
 
-            throw new UncheckedSQLException("Failed to commit transaction with id: " + id + ". and " + (rollback ? "rollback sucessfully" : "failed to rollback"),
-                    e);
+            throw new UncheckedSQLException(
+                    "Failed to commit transaction with id: " + id + ". and " + (rollback ? "rollback sucessfully" : "failed to rollback"), e);
         } finally {
             closeConnection();
         }
@@ -135,7 +137,7 @@ public final class SQLTransaction implements Transaction {
 
     private void closeConnection() {
         try {
-            conn.setAutoCommit(true);
+            conn.setAutoCommit(originalAutoCommit);
             conn.setTransactionIsolation(originalIsolationLevel);
         } catch (SQLException e) {
             throw new UncheckedSQLException(e);

@@ -1,6 +1,6 @@
 ### 1.1.8
 
-* Add `JdbcUtil.stream(...)`.
+* Add `JdbcUtil.stream/executeBatchUpdate/absolute(...)`.
 
 * Improvements and bug fix.
 

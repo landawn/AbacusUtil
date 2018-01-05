@@ -2156,7 +2156,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
     static Stream<Object[]> of(final ResultSet resultSet, long startIndex, long endIndex) {
         N.requireNonNull(resultSet);
 
-        return of(new RowIterator(resultSet, startIndex, endIndex));
+        return of(new RowIterator(resultSet, startIndex, endIndex, false, false));
     }
 
     static <T> Stream<T> of(final Class<T> targetClass, final ResultSet resultSet, long startIndex, long endIndex) {

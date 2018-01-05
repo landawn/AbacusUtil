@@ -164,7 +164,7 @@ public final class SQLExecutor implements Closeable {
     static final ResultSetExtractor<RowIterator> ROW_ITERATOR_RESULT_SET_EXTRACTOR = new AbstractResultSetExtractor<RowIterator>() {
         @Override
         public RowIterator extractData(final Class<?> cls, final NamedSQL namedSQL, final ResultSet rs, final JdbcSettings jdbcSettings) throws SQLException {
-            return RowIterator.of(rs, jdbcSettings.getOffset(), jdbcSettings.getCount());
+            return RowIterator.of(rs, jdbcSettings.getOffset(), jdbcSettings.getCount(), true, true);
         }
     };
 
@@ -1939,10 +1939,12 @@ public final class SQLExecutor implements Closeable {
         if (N.isNullOrEmpty(jdbcSettings.getQueryWithDataSources())) {
             return query(conn, sql, statementSetter, jdbcSettings, parameters);
         } else {
+
+            final JdbcSettings newJdbcSettings = jdbcSettings.copy().setOffset(0).setCount(Long.MAX_VALUE);
             final List<String> columnNames = new ArrayList<>();
 
-            try (final Stream<Object[]> s = streamAll(columnNames, conn, sql, statementSetter, jdbcSettings, parameters)) {
-                return toDataSet(columnNames, s);
+            try (final Stream<Object[]> s = streamAlll(columnNames, sql, statementSetter, newJdbcSettings, parameters)) {
+                return toDataSet(columnNames, skipAndLimit(s, jdbcSettings));
             }
         }
     }
@@ -1986,34 +1988,32 @@ public final class SQLExecutor implements Closeable {
         final JdbcSettings newJdbcSettings = jdbcSettings.copy().setOffset(0).setCount(Long.MAX_VALUE);
         final List<String> columnNames = new ArrayList<>();
 
-        try (final Stream<Object[]> s = skipAndLimit((newJdbcSettings.isQueryInParallel() ? Stream.of(sqls).parallel(sqls.size()) : Stream.of(sqls))
+        try (final Stream<Object[]> s = (newJdbcSettings.isQueryInParallel() ? Stream.of(sqls).parallel(sqls.size()) : Stream.of(sqls))
                 .flatMap(new Function<String, Stream<Object[]>>() {
                     @Override
                     public Stream<Object[]> apply(String sql) {
-                        return streamAll(columnNames, conn, sql, statementSetter, newJdbcSettings, parameters);
+                        return streamAlll(columnNames, sql, statementSetter, newJdbcSettings, parameters);
                     }
-                }), jdbcSettings)) {
+                })) {
 
-            return toDataSet(columnNames, s);
+            return toDataSet(columnNames, skipAndLimit(s, jdbcSettings));
         }
     }
 
-    private RowIterator iterate(final Connection conn, final String sql, final StatementSetter statementSetter, final JdbcSettings newJdbcSettings,
-            final Object... parameters) {
-        return query(conn, sql, statementSetter, ROW_ITERATOR_RESULT_SET_EXTRACTOR, newJdbcSettings, parameters);
+    private RowIterator iterate(final String sql, final StatementSetter statementSetter, final JdbcSettings newJdbcSettings, final Object... parameters) {
+        return query(sql, statementSetter, ROW_ITERATOR_RESULT_SET_EXTRACTOR, newJdbcSettings, parameters);
     }
 
-    private Stream<Object[]> streamAll(final List<String> columnNames, final Connection conn, final String sql, final StatementSetter statementSetter,
-            JdbcSettings jdbcSettings, final Object... parameters) {
-        final Collection<String> dataSources = N.isNullOrEmpty(jdbcSettings.getQueryWithDataSources()) ? N.asList(jdbcSettings.getQueryWithDataSource())
-                : jdbcSettings.getQueryWithDataSources();
-        final JdbcSettings newJdbcSettings = jdbcSettings.copy().setOffset(0).setCount(Long.MAX_VALUE).setQueryWithDataSources(null);
+    private Stream<Object[]> streamAlll(final List<String> columnNames, final String sql, final StatementSetter statementSetter,
+            final JdbcSettings newJdbcSettings, final Object... parameters) {
+        final Collection<String> dataSources = N.isNullOrEmpty(newJdbcSettings.getQueryWithDataSources()) ? N.asList(newJdbcSettings.getQueryWithDataSource())
+                : newJdbcSettings.getQueryWithDataSources();
 
-        final Stream<Object[]> s = (newJdbcSettings.isQueryInParallel() ? Stream.of(dataSources).parallel(dataSources.size()) : Stream.of(dataSources))
+        return (newJdbcSettings.isQueryInParallel() ? Stream.of(dataSources).parallel(dataSources.size()) : Stream.of(dataSources))
                 .flatMap(new Function<String, Stream<Object[]>>() {
                     @Override
                     public Stream<Object[]> apply(String t) {
-                        final RowIterator iter = iterate(conn, sql, statementSetter, newJdbcSettings.copy().setQueryWithDataSource(t), parameters);
+                        final RowIterator iter = iterate(sql, statementSetter, newJdbcSettings.copy().setQueryWithDataSource(t), parameters);
 
                         synchronized (columnNames) {
                             if (columnNames.size() == 0) {
@@ -2041,8 +2041,6 @@ public final class SQLExecutor implements Closeable {
                         });
                     }
                 });
-
-        return skipAndLimit(s, jdbcSettings);
     }
 
     private <T> Stream<T> skipAndLimit(Stream<T> s, JdbcSettings jdbcSettings) {
@@ -2131,7 +2129,7 @@ public final class SQLExecutor implements Closeable {
         // TODO the specified connection will be closed if Stream is closed. that means the specified connection can't be held independently.
         N.checkArgument(conn == null, "Must not specified connection");
 
-        return stream2(null, conn, sql, statementSetter, jdbcSettings, parameters);
+        return stream2(null, sql, statementSetter, jdbcSettings, parameters);
     }
 
     @SafeVarargs
@@ -2185,17 +2183,17 @@ public final class SQLExecutor implements Closeable {
 
         N.requireNonNull(targetClass);
 
-        return stream2(targetClass, conn, sql, statementSetter, jdbcSettings, parameters);
+        return stream2(targetClass, sql, statementSetter, jdbcSettings, parameters);
     }
 
-    private <T> Try<Stream<T>> stream2(final Class<T> targetClass, final Connection conn, final String sql, final StatementSetter statementSetter,
-            JdbcSettings jdbcSettings, final Object... parameters) {
+    private <T> Try<Stream<T>> stream2(final Class<T> targetClass, final String sql, final StatementSetter statementSetter, JdbcSettings jdbcSettings,
+            final Object... parameters) {
         if (jdbcSettings == null) {
             jdbcSettings = _jdbcSettings.copy();
         }
 
         final JdbcSettings newJdbcSettings = jdbcSettings.copy().setOffset(0).setCount(Long.MAX_VALUE);
-        final RowIterator iterator = this.iterate(conn, sql, statementSetter, newJdbcSettings, parameters);
+        final RowIterator iterator = this.iterate(sql, statementSetter, newJdbcSettings, parameters);
         final Stream<Object[]> s = skipAndLimit(Stream.of(iterator), jdbcSettings);
 
         return (targetClass == null ? (Stream<T>) s : s.map(newMapper(targetClass, sql, iterator))).onClose(new Runnable() {
@@ -2300,7 +2298,7 @@ public final class SQLExecutor implements Closeable {
         // TODO the specified connection will be closed if Stream is closed. that means the specified connection can't be held independently.
         N.checkArgument(conn == null, "Must not specified connection");
 
-        return streamAll2(null, conn, sql, statementSetter, jdbcSettings, parameters);
+        return streamAll2(null, sql, statementSetter, jdbcSettings, parameters);
     }
 
     @SafeVarargs
@@ -2346,17 +2344,17 @@ public final class SQLExecutor implements Closeable {
 
         N.requireNonNull(targetClass);
 
-        return streamAll2(targetClass, conn, sql, statementSetter, jdbcSettings, parameters);
+        return streamAll2(targetClass, sql, statementSetter, jdbcSettings, parameters);
     }
 
-    private <T> Try<Stream<T>> streamAll2(final Class<T> targetClass, final Connection conn, final String sql, final StatementSetter statementSetter,
-            JdbcSettings jdbcSettings, final Object... parameters) {
+    private <T> Try<Stream<T>> streamAll2(final Class<T> targetClass, final String sql, final StatementSetter statementSetter, JdbcSettings jdbcSettings,
+            final Object... parameters) {
         if (jdbcSettings == null) {
             jdbcSettings = _jdbcSettings.copy();
         }
 
         if (N.isNullOrEmpty(jdbcSettings.getQueryWithDataSources())) {
-            return stream2(targetClass, conn, sql, statementSetter, jdbcSettings, parameters);
+            return stream2(targetClass, sql, statementSetter, jdbcSettings, parameters);
         } else {
             final Collection<String> dataSources = jdbcSettings.getQueryWithDataSources();
             final JdbcSettings newJdbcSettings = jdbcSettings.copy().setOffset(0).setCount(Long.MAX_VALUE).setQueryWithDataSources(null);
@@ -2365,7 +2363,7 @@ public final class SQLExecutor implements Closeable {
                     .flatMap(new Function<String, Stream<T>>() {
                         @Override
                         public Stream<T> apply(String t) {
-                            return stream2(targetClass, conn, sql, statementSetter, newJdbcSettings.copy().setQueryWithDataSource(t), parameters).val();
+                            return stream2(targetClass, sql, statementSetter, newJdbcSettings.copy().setQueryWithDataSource(t), parameters).val();
                         }
                     });
 
@@ -2413,7 +2411,7 @@ public final class SQLExecutor implements Closeable {
         // TODO the specified connection will be closed if Stream is closed. that means the specified connection can't be held independently.
         N.checkArgument(conn == null, "Must not specified connection");
 
-        return this.streamAll2(null, conn, sqls, statementSetter, jdbcSettings, parameters);
+        return this.streamAll2(null, sqls, statementSetter, jdbcSettings, parameters);
     }
 
     @SafeVarargs
@@ -2460,11 +2458,11 @@ public final class SQLExecutor implements Closeable {
 
         N.requireNonNull(targetClass);
 
-        return streamAll2(targetClass, conn, sqls, statementSetter, jdbcSettings, parameters);
+        return streamAll2(targetClass, sqls, statementSetter, jdbcSettings, parameters);
     }
 
-    private <T> Try<Stream<T>> streamAll2(final Class<T> targetClass, final Connection conn, final List<String> sqls, final StatementSetter statementSetter,
-            JdbcSettings jdbcSettings, final Object... parameters) {
+    private <T> Try<Stream<T>> streamAll2(final Class<T> targetClass, final List<String> sqls, final StatementSetter statementSetter, JdbcSettings jdbcSettings,
+            final Object... parameters) {
         N.checkArgument(N.notNullOrEmpty(sqls), "'sqls' can't be null or empty");
 
         if (jdbcSettings == null) {
@@ -2477,7 +2475,7 @@ public final class SQLExecutor implements Closeable {
                 .flatMap(new Function<String, Stream<T>>() {
                     @Override
                     public Stream<T> apply(String sql) {
-                        return streamAll2(targetClass, conn, sql, statementSetter, newJdbcSettings, parameters).val();
+                        return streamAll2(targetClass, sql, statementSetter, newJdbcSettings, parameters).val();
                     }
                 });
 
@@ -4845,17 +4843,11 @@ public final class SQLExecutor implements Closeable {
     public static class JdbcSettings {
         public static final String DEFAULT_GENERATED_ID_PROP_NAME = "id";
         public static final int DEFAULT_BATCH_SIZE = 200;
-        public static final int DEFAULT_QUERY_TIMEOUT = 0;
         public static final int DEFAULT_NO_GENERATED_KEYS = Statement.NO_GENERATED_KEYS;
-        public static final int DEFAULT_MAX_ROWS = 0;
-        public static final int DEFAULT_MAX_FIELD_SIZE = 0;
-        public static final int DEFAULT_FETCH_SIZE = 0;
         public static final int DEFAULT_FETCH_DIRECTION = ResultSet.FETCH_FORWARD;
         public static final int DEFAULT_RESULT_SET_TYPE = ResultSet.TYPE_FORWARD_ONLY;
         public static final int DEFAULT_RESULT_SET_CONCURRENCY = ResultSet.CONCUR_READ_ONLY;
         public static final int DEFAULT_RESULT_SET_HOLDABILITY = ResultSet.HOLD_CURSORS_OVER_COMMIT;
-        public static final long DEFAULT_OFFSET = 0;
-        public static final long DEFAULT_COUNT = Long.MAX_VALUE;
         private boolean logSQL = false;
         private int batchSize = -1;
         private int queryTimeout = -1;
@@ -4869,8 +4861,8 @@ public final class SQLExecutor implements Closeable {
         private int resultSetType = -1;
         private int resultSetConcurrency = -1;
         private int resultSetHoldability = -1;
-        private long offset = DEFAULT_OFFSET;
-        private long count = DEFAULT_COUNT;
+        private long offset = 0;
+        private long count = Long.MAX_VALUE;
         private String generatedIdPropName = null;
         private String queryWithDataSource;
         private Collection<String> queryWithDataSources;
