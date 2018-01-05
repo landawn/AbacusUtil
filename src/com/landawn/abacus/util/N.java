@@ -5041,7 +5041,7 @@ public final class N {
                 char ch = str.charAt(i);
 
                 if (Character.isUpperCase(ch)) {
-                    if (i > 0 && (Character.isLowerCase(str.charAt(i - 1)) || (i < len - 1 && Character.isLowerCase(str.charAt(i + 1))))) {
+                    if (i > 0 && (!Character.isUpperCase(str.charAt(i - 1)) || (i < len - 1 && Character.isLowerCase(str.charAt(i + 1))))) {
                         sb.append(D._UNDERSCORE);
                     }
 
@@ -5142,7 +5142,7 @@ public final class N {
                 char ch = str.charAt(i);
 
                 if (Character.isUpperCase(ch)) {
-                    if (i > 0 && (Character.isLowerCase(str.charAt(i - 1)) || (i < len - 1 && Character.isLowerCase(str.charAt(i + 1))))) {
+                    if (i > 0 && (!Character.isUpperCase(str.charAt(i - 1)) || (i < len - 1 && Character.isLowerCase(str.charAt(i + 1))))) {
                         sb.append(D._UNDERSCORE);
                     }
 
