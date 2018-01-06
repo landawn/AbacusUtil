@@ -3142,8 +3142,8 @@ public final class SQLExecutor implements Closeable {
 
         private final Class<T> targetClass;
         private final Type<T> targetType;
-        private final List<String> allPropNameList;
-        private final Set<String> allPropNameSet;
+        private final List<String> propNameList;
+        private final Set<String> propNameSet;
         private final SQLExecutor sqlExecutor;
         private final NamingPolicy namingPolicy;
         private final String idName;
@@ -3209,8 +3209,8 @@ public final class SQLExecutor implements Closeable {
 
             this.targetClass = targetClass;
             this.targetType = N.typeOf(targetClass);
-            this.allPropNameList = ImmutableList.copyOf(ClassUtil.getPropGetMethodList(targetClass).keySet());
-            this.allPropNameSet = ImmutableSet.of(N.newLinkedHashSet(ClassUtil.getPropGetMethodList(targetClass).keySet()));
+            this.propNameList = ImmutableList.copyOf(ClassUtil.getPropGetMethodList(targetClass).keySet());
+            this.propNameSet = ImmutableSet.of(N.newLinkedHashSet(ClassUtil.getPropGetMethodList(targetClass).keySet()));
             this.sqlExecutor = sqlExecutor;
             this.namingPolicy = namingPolicy;
             this.idName = Maps.getOrDefault(entityIdMap, targetClass, SQLExecutor.ID);
@@ -3290,12 +3290,12 @@ public final class SQLExecutor implements Closeable {
             return idName;
         }
 
-        public List<String> allPropNameList() {
-            return allPropNameList;
+        public List<String> propNameList() {
+            return propNameList;
         }
 
-        public Set<String> allPropNameSet() {
-            return allPropNameSet;
+        public Set<String> propNameSet() {
+            return propNameSet;
         }
 
         public AsyncMapper<T> async() {
@@ -3805,11 +3805,11 @@ public final class SQLExecutor implements Closeable {
         }
 
         public int update(final Object id, final Map<String, Object> props) {
-            return update(L.eq(idName, id), props);
+            return update(props, L.eq(idName, id));
         }
 
-        public int update(final Condition whereCause, final Map<String, Object> props) {
-            return update(null, whereCause, props);
+        public int update(final Map<String, Object> props, final Condition whereCause) {
+            return update(null, props, whereCause);
         }
 
         public int update(final Connection conn, final Object entity) {
@@ -3825,10 +3825,10 @@ public final class SQLExecutor implements Closeable {
         }
 
         public int update(final Connection conn, final Object id, final Map<String, Object> props) {
-            return update(conn, L.eq(idName, id), props);
+            return update(conn, props, L.eq(idName, id));
         }
 
-        public int update(final Connection conn, final Condition whereCause, final Map<String, Object> props) {
+        public int update(final Connection conn, final Map<String, Object> props, final Condition whereCause) {
             final SP pair = prepareUpdate(whereCause, props);
 
             return sqlExecutor.update(conn, pair.sql, pair.parameters.toArray());
@@ -4792,11 +4792,11 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Integer> update(final Condition whereCause, final Map<String, Object> props) {
+        public CompletableFuture<Integer> update(final Map<String, Object> props, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
-                    return mapper.update(whereCause, props);
+                    return mapper.update(props, whereCause);
                 }
             });
         }
@@ -4819,11 +4819,11 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Integer> update(final Connection conn, final Condition whereCause, final Map<String, Object> props) {
+        public CompletableFuture<Integer> update(final Connection conn, final Map<String, Object> props, final Condition whereCause) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
-                    return mapper.update(conn, whereCause, props);
+                    return mapper.update(conn, props, whereCause);
                 }
             });
         }
