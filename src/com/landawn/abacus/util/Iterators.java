@@ -177,7 +177,7 @@ public final class Iterators {
     public static <T> ObjIterator<T> repeatt(final Collection<T> c, final int n) {
         N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
 
-        if (N.isNullOrEmpty(c) || n == 0) {
+        if (n == 0 || N.isNullOrEmpty(c)) {
             return ObjIterator.empty();
         }
 
@@ -243,7 +243,7 @@ public final class Iterators {
     public static <T> ObjIterator<T> nRepeat(final Collection<T> c, final int n) {
         N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
 
-        if (N.isNullOrEmpty(c) || n == 0) {
+        if (n == 0 || N.isNullOrEmpty(c)) {
             return ObjIterator.empty();
         }
 

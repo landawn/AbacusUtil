@@ -2879,11 +2879,9 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @return
      */
     public static <T> List<T> repeatt(final Collection<T> c, final int n) {
-        if (n < 1) {
-            throw new IllegalArgumentException("The specified count must be greater than 0");
-        }
+        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
 
-        if (N.isNullOrEmpty(c)) {
+        if (n == 0 || N.isNullOrEmpty(c)) {
             return new ArrayList<T>();
         }
 
@@ -2910,11 +2908,9 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @return
      */
     public static <T> List<T> nRepeat(final Collection<T> c, final int n) {
-        if (n < 1) {
-            throw new IllegalArgumentException("The specified count must be greater than 0");
-        }
+        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
 
-        if (N.isNullOrEmpty(c)) {
+        if (n == 0 || N.isNullOrEmpty(c)) {
             return new ArrayList<T>();
         }
 
@@ -2942,13 +2938,10 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @return
      */
     public static <T> List<T> repeatToSize(final Collection<T> c, final int size) {
-        if (size < 1) {
-            throw new IllegalArgumentException("The specified size must be greater than 0");
-        } else if (N.isNullOrEmpty(c) && size > 0) {
-            throw new IllegalArgumentException("The specified collection can't be null or empty when size > 0");
-        }
+        N.checkArgument(size >= 0, "'size' can't be negative: %s", size);
+        N.checkArgument(size == 0 || N.notNullOrEmpty(c), "Collection can't be empty or null when size > 0");
 
-        if (N.isNullOrEmpty(c)) {
+        if (size == 0 || N.isNullOrEmpty(c)) {
             return new ArrayList<T>();
         }
 
@@ -2983,13 +2976,10 @@ public final class Seq<T> extends ImmutableCollection<T> {
      * @return
      */
     public static <T> List<T> nRepeatToSize(final Collection<T> c, final int size) {
-        if (size < 1) {
-            throw new IllegalArgumentException("The specified size must be greater than 0");
-        } else if (N.isNullOrEmpty(c) && size > 0) {
-            throw new IllegalArgumentException("The specified collection can't be null or empty when size > 0");
-        }
+        N.checkArgument(size >= 0, "'size' can't be negative: %s", size);
+        N.checkArgument(size == 0 || N.notNullOrEmpty(c), "Collection can't be empty or null when size > 0");
 
-        if (N.isNullOrEmpty(c)) {
+        if (size == 0 || N.isNullOrEmpty(c)) {
             return new ArrayList<T>();
         }
 

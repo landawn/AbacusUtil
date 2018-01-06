@@ -4865,44 +4865,40 @@ public final class N {
         }
     }
 
-    public static String repeat(final char ch, final int repeat) {
-        if (repeat < 1) {
-            throw new IllegalArgumentException("The specified count must be greater than 0");
-        }
+    public static String repeat(final char ch, final int n) {
+        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
 
-        if (repeat == 1) {
+        if (n == 0) {
+            return N.EMPTY_STRING;
+        } else if (n == 1) {
             return String.valueOf(ch);
         }
 
-        if (repeat < 16) {
-            final char[] array = new char[repeat];
+        if (n < 16) {
+            final char[] array = new char[n];
             Arrays.fill(array, ch);
 
             return N.newString(array, true);
         } else {
-            final char[] array = new char[repeat];
+            final char[] array = new char[n];
             array[0] = ch;
 
-            int n = 1;
+            int cnt = 1;
 
-            for (; n < repeat - n; n <<= 1) {
-                copy(array, 0, array, n, n);
+            for (; cnt < n - cnt; cnt <<= 1) {
+                copy(array, 0, array, cnt, cnt);
             }
 
-            if (n < repeat) {
-                copy(array, 0, array, n, repeat - n);
+            if (cnt < n) {
+                copy(array, 0, array, cnt, n - cnt);
             }
 
             return N.newString(array, true);
         }
     }
 
-    public static String repeat(final char ch, final int repeat, final char delimiter) {
-        if (repeat < 1) {
-            throw new IllegalArgumentException("The specified count must be greater than 0");
-        }
-
-        return repeat(String.valueOf(ch), repeat, String.valueOf(delimiter));
+    public static String repeat(final char ch, final int n, final char delimiter) {
+        return repeat(String.valueOf(ch), n, String.valueOf(delimiter));
     }
 
     /**
@@ -4915,44 +4911,39 @@ public final class N {
         return repeat(str, repeat, N.EMPTY_STRING);
     }
 
-    public static String repeat(final String str, final int repeat, final String delimiter) {
-        if (N.isNullOrEmpty(str)) {
-            throw new IllegalArgumentException("The specified String can't be null or empty");
-        }
+    public static String repeat(String str, final int n, String delimiter) {
+        N.checkArgument(n >= 0, "'n' can't be negative: %s", n);
 
-        if (delimiter == null) {
-            throw new IllegalArgumentException("The specified delimiter can't be null");
-        }
+        str = str == null ? N.EMPTY_STRING : str;
+        delimiter = delimiter == null ? N.EMPTY_STRING : delimiter;
 
-        if (repeat < 1) {
-            throw new IllegalArgumentException("The specified count must be greater than 0");
-        }
-
-        if (repeat == 1) {
+        if (n == 0 || (N.isNullOrEmpty(str) && N.isNullOrEmpty(delimiter))) {
+            return N.EMPTY_STRING;
+        } else if (n == 1) {
             return str;
         }
 
         final int strLen = str.length();
         final int delimiterLen = delimiter.length();
         final int len = strLen + delimiterLen;
-        if (Integer.MAX_VALUE / len < repeat) {
-            throw new ArrayIndexOutOfBoundsException("Required array size too large: " + 1L * len * repeat);
+        if (Integer.MAX_VALUE / len < n) {
+            throw new ArrayIndexOutOfBoundsException("Required array size too large: " + 1L * len * n);
         }
 
-        final int size = len * repeat - delimiterLen;
+        final int size = len * n - delimiterLen;
         final char[] cbuf = new char[size];
 
         str.getChars(0, strLen, cbuf, 0);
         delimiter.getChars(0, delimiterLen, cbuf, strLen);
 
-        int n = 0;
+        int cnt = 0;
 
-        for (n = len; n < size - n; n <<= 1) {
-            copy(cbuf, 0, cbuf, n, n);
+        for (cnt = len; cnt < size - cnt; cnt <<= 1) {
+            copy(cbuf, 0, cbuf, cnt, cnt);
         }
 
-        if (n < size) {
-            copy(cbuf, 0, cbuf, n, size - n);
+        if (cnt < size) {
+            copy(cbuf, 0, cbuf, cnt, size - cnt);
         }
 
         return newString(cbuf, true);
@@ -15761,7 +15752,7 @@ public final class N {
     /**
      * 
      * @param str
-     * @param delimiterOfExclusiveBeginIndex {@code exclusiveBeginIndex <- str.lastIndexOf(delimiterOfExclusiveBeginIndex, exclusiveEndIndex - 1) if exclusiveEndIndex > 0}
+     * @param delimiterOfExclusiveBeginIndex {@code exclusiveBeginIndex <- str.lastIndexOf(delimiterOfExclusiveBeginIndex, exclusiveEndIndex - 1) + delimiterOfExclusiveBeginIndex.length() - 1 if exclusiveEndIndex > 0}
      * @param exclusiveEndIndex
      * @return
      * @see #between(String, int, int)
@@ -15771,7 +15762,10 @@ public final class N {
             return Optional.<String> empty();
         }
 
-        return between(str, str.lastIndexOf(delimiterOfExclusiveBeginIndex, exclusiveEndIndex - 1), exclusiveEndIndex);
+        final int index = str.lastIndexOf(delimiterOfExclusiveBeginIndex, exclusiveEndIndex - 1);
+        final int exclusiveBeginIndex = index >= 0 ? index + delimiterOfExclusiveBeginIndex.length() - 1 : index;
+
+        return between(str, exclusiveBeginIndex, exclusiveEndIndex);
     }
 
     /**
@@ -32104,30 +32098,6 @@ public final class N {
         System.out.println(str);
         return obj;
     }
-
-    //    public static <T> T println(final T obj, final int repeat) {
-    //        final String str = N.repeat(N.deepToString(obj), repeat);
-    //        System.out.println(str);
-    //        return obj;
-    //    }
-
-    //    public static void println(final Object key, final Object value) {
-    //        final StringBuilder sb = ObjectFactory.createStringBuilder();
-    //        try {
-    //            System.out.println(sb.append(N.deepToString(key)).append(" : ").append(N.deepToString(value)).toString());
-    //        } finally {
-    //            ObjectFactory.recycle(sb);
-    //        }
-    //    }
-    //    
-    //    public static void println(final Object a, final Object b, final Object c) {
-    //        final StringBuilder sb = ObjectFactory.createStringBuilder();
-    //        try {
-    //            System.out.println(sb.append(N.deepToString(a)).append(" : ").append(N.deepToString(b)).append(" : ").append(N.deepToString(c)).toString());
-    //        } finally {
-    //            ObjectFactory.recycle(sb);
-    //        }
-    //    }
 
     /**
      * 

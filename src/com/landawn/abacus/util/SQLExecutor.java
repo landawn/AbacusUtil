@@ -14,8 +14,16 @@
 
 package com.landawn.abacus.util;
 
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
 import java.io.Closeable;
 import java.io.IOException;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.Driver;
@@ -28,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -52,6 +61,7 @@ import com.landawn.abacus.exception.NonUniqueResultException;
 import com.landawn.abacus.exception.UncheckedSQLException;
 import com.landawn.abacus.logging.Logger;
 import com.landawn.abacus.logging.LoggerFactory;
+import com.landawn.abacus.type.Type;
 import com.landawn.abacus.util.Options.Query;
 import com.landawn.abacus.util.SQLBuilder.NE;
 import com.landawn.abacus.util.SQLBuilder.NE2;
@@ -808,6 +818,7 @@ public final class SQLExecutor implements Closeable {
         DataSource ds = null;
         Connection localConn = null;
         PreparedStatement stmt = null;
+        int isolationLevel = 0;
         boolean autoCommit = true;
 
         try {
@@ -816,6 +827,7 @@ public final class SQLExecutor implements Closeable {
             localConn = (conn == null) ? ds.getConnection() : conn;
 
             try {
+                isolationLevel = localConn.getTransactionIsolation();
                 autoCommit = localConn.getAutoCommit();
             } catch (SQLException e) {
                 closeQuietly(null, localConn, conn);
@@ -824,6 +836,12 @@ public final class SQLExecutor implements Closeable {
 
             if ((conn == null) && (len > batchSize)) {
                 localConn.setAutoCommit(false);
+
+                if (jdbcSettings.getIsolationLevel() == null || jdbcSettings.getIsolationLevel() == IsolationLevel.DEFAULT) {
+                    // ignore. by default
+                } else {
+                    localConn.setTransactionIsolation(jdbcSettings.getIsolationLevel().intValue());
+                }
             }
 
             stmt = prepareStatement(ds, localConn, namedSQL, statementSetter, jdbcSettings, Statement.RETURN_GENERATED_KEYS, true, batchParameters);
@@ -881,6 +899,7 @@ public final class SQLExecutor implements Closeable {
             if ((conn == null) && (len > batchSize)) {
                 try {
                     localConn.setAutoCommit(autoCommit);
+                    localConn.setTransactionIsolation(isolationLevel);
                 } catch (SQLException e) {
                     logger.error("Failed to reset AutoCommit", e);
                 }
@@ -1111,6 +1130,7 @@ public final class SQLExecutor implements Closeable {
         DataSource ds = null;
         Connection localConn = null;
         PreparedStatement stmt = null;
+        int isolationLevel = 0;
         boolean autoCommit = true;
 
         try {
@@ -1119,6 +1139,7 @@ public final class SQLExecutor implements Closeable {
             localConn = (conn == null) ? ds.getConnection() : conn;
 
             try {
+                isolationLevel = localConn.getTransactionIsolation();
                 autoCommit = localConn.getAutoCommit();
             } catch (SQLException e) {
                 closeQuietly(null, localConn, conn);
@@ -1127,6 +1148,12 @@ public final class SQLExecutor implements Closeable {
 
             if ((conn == null) && (len > batchSize)) {
                 localConn.setAutoCommit(false);
+
+                if (jdbcSettings.getIsolationLevel() == null || jdbcSettings.getIsolationLevel() == IsolationLevel.DEFAULT) {
+                    // ignore. by default
+                } else {
+                    localConn.setTransactionIsolation(jdbcSettings.getIsolationLevel().intValue());
+                }
             }
 
             stmt = prepareStatement(ds, localConn, namedSQL, statementSetter, jdbcSettings, Statement.NO_GENERATED_KEYS, true, batchParameters);
@@ -1188,6 +1215,7 @@ public final class SQLExecutor implements Closeable {
             if ((conn == null) && (len > batchSize)) {
                 try {
                     localConn.setAutoCommit(autoCommit);
+                    localConn.setTransactionIsolation(isolationLevel);
                 } catch (SQLException e) {
                     logger.error("Failed to reset AutoCommit", e);
                 }
@@ -2711,7 +2739,7 @@ public final class SQLExecutor implements Closeable {
      * 
      * @param rs
      */
-    public void closeQuietly(final ResultSet rs) {
+    void closeQuietly(final ResultSet rs) {
         closeQuietly(rs, null, null);
     }
 
@@ -2723,7 +2751,7 @@ public final class SQLExecutor implements Closeable {
      * 
      * @param stmt
      */
-    public void closeQuietly(final PreparedStatement stmt) {
+    void closeQuietly(final PreparedStatement stmt) {
         closeQuietly(null, stmt, null);
     }
 
@@ -2749,7 +2777,7 @@ public final class SQLExecutor implements Closeable {
      * @param stmt
      * @param conn
      */
-    public void closeQuietly(final ResultSet rs, final PreparedStatement stmt) {
+    void closeQuietly(final ResultSet rs, final PreparedStatement stmt) {
         closeQuietly(rs, stmt, null);
     }
 
@@ -2763,7 +2791,7 @@ public final class SQLExecutor implements Closeable {
      * @param stmt
      * @param conn
      */
-    public void closeQuietly(final PreparedStatement stmt, final Connection conn) {
+    void closeQuietly(final PreparedStatement stmt, final Connection conn) {
         closeQuietly(null, stmt, conn);
     }
 
@@ -2777,8 +2805,16 @@ public final class SQLExecutor implements Closeable {
      * @param stmt
      * @param conn
      */
-    public void closeQuietly(final ResultSet rs, final PreparedStatement stmt, final Connection conn) {
+    void closeQuietly(final ResultSet rs, final PreparedStatement stmt, final Connection conn) {
         closeQuietly(rs, stmt, conn, null);
+    }
+
+    protected void closeQuietly(final PreparedStatement stmt, final Connection localConn, final Connection inputConn) {
+        closeQuietly(null, stmt, localConn, inputConn);
+    }
+
+    protected void closeQuietly(final ResultSet rs, final PreparedStatement stmt, final Connection localConn, final Connection inputConn) {
+        JdbcUtil.closeQuietly(rs, stmt, inputConn == null ? localConn : null);
     }
 
     /**
@@ -3009,14 +3045,6 @@ public final class SQLExecutor implements Closeable {
         return stmt;
     }
 
-    protected void closeQuietly(final PreparedStatement stmt, final Connection localConn, final Connection inputConn) {
-        closeQuietly(null, stmt, localConn, inputConn);
-    }
-
-    protected void closeQuietly(final ResultSet rs, final PreparedStatement stmt, final Connection localConn, final Connection inputConn) {
-        JdbcUtil.closeQuietly(rs, stmt, inputConn == null ? localConn : null);
-    }
-
     protected static List<String> getColumnLabelList(final String sql, final ResultSet rs) throws SQLException {
         List<String> labelList = N.notNullOrEmpty(sql) ? _sqlColumnLabelPool.get(sql) : null;
 
@@ -3086,6 +3114,26 @@ public final class SQLExecutor implements Closeable {
      * @param <T>
      */
     public static final class Mapper<T> {
+        @Documented
+        @Target(value = { FIELD, METHOD })
+        @Retention(RUNTIME)
+        public static @interface Id {
+        }
+
+        /** The properties will be excluded by add/addAll/batchAdd and update/updateAll/batchUpdate operations if the input is an entity. */
+        @Documented
+        @Target(value = { FIELD, METHOD })
+        @Retention(RUNTIME)
+        public static @interface ReadOnly {
+        }
+
+        /** The properties will be ignored by update/updateAll/batchUpdate operations if the input is an entity. */
+        @Documented
+        @Target(value = { FIELD, METHOD })
+        @Retention(RUNTIME)
+        public static @interface WriteOnly {
+        }
+
         static final List<String> EXISTS_SELECT_PROP_NAMES = ImmutableList.of(NE._1);
         static final List<String> COUNT_SELECT_PROP_NAMES = ImmutableList.of(NE.COUNT_ALL);
         static final Map<Class<?>, String> entityIdMap = new ConcurrentHashMap<>();
@@ -3093,19 +3141,80 @@ public final class SQLExecutor implements Closeable {
         static final Map<Class<?>, Set<String>> readOrWriteOnlyPropNamesMap = new ConcurrentHashMap<>();
 
         private final Class<T> targetClass;
+        private final Type<T> targetType;
+        private final List<String> allPropNameList;
+        private final Set<String> allPropNameSet;
         private final SQLExecutor sqlExecutor;
         private final NamingPolicy namingPolicy;
         private final String idName;
+        private final String sql_exists_by_id;
         private final String sql_get_by_id;
         private final String sql_delete_by_id;
         private final AsyncMapper<T> asyncMapper;
         // TODO cache more sqls to improve performance.
 
         Mapper(final Class<T> targetClass, final SQLExecutor sqlExecutor, final NamingPolicy namingPolicy) {
+            final List<String> readOnlyPropNames = new ArrayList<>();
+            final List<String> writeOnlyPropNames = new ArrayList<>();
+            String idPropName = null;
+
+            final Field[] fields = targetClass.getDeclaredFields();
+            if (N.notNullOrEmpty(fields)) {
+                for (Field field : fields) {
+                    if (field.isAnnotationPresent(Id.class)) {
+                        idPropName = field.getName();
+                    }
+
+                    if (field.isAnnotationPresent(ReadOnly.class)) {
+                        readOnlyPropNames.add(field.getName());
+                    }
+
+                    if (field.isAnnotationPresent(WriteOnly.class)) {
+                        writeOnlyPropNames.add(field.getName());
+                    }
+                }
+            }
+
+            final Iterator<Map.Entry<String, Method>> iter = Iterators.concat(ClassUtil.getPropGetMethodList(targetClass).entrySet(),
+                    ClassUtil.getPropSetMethodList(targetClass).entrySet());
+            Map.Entry<String, Method> entry = null;
+
+            while (iter.hasNext()) {
+                entry = iter.next();
+
+                if (entry.getValue().isAnnotationPresent(Id.class)) {
+                    idPropName = entry.getKey();
+                }
+
+                if (entry.getValue().isAnnotationPresent(ReadOnly.class)) {
+                    readOnlyPropNames.add(entry.getKey());
+                }
+
+                if (entry.getValue().isAnnotationPresent(WriteOnly.class)) {
+                    writeOnlyPropNames.add(entry.getKey());
+                }
+            }
+
+            if (N.notNullOrEmpty(idPropName) && !entityIdMap.containsKey(targetClass)) {
+                registerEntityId(targetClass, idPropName);
+            }
+
+            if (N.notNullOrEmpty(readOnlyPropNames) && !readOnlyPropNamesMap.containsKey(targetClass)) {
+                registerReadOnlyProps(targetClass, readOnlyPropNames);
+            }
+
+            if (N.notNullOrEmpty(writeOnlyPropNames) && !readOrWriteOnlyPropNamesMap.containsKey(targetClass)) {
+                registerWriteOnlyProps(targetClass, writeOnlyPropNames);
+            }
+
             this.targetClass = targetClass;
+            this.targetType = N.typeOf(targetClass);
+            this.allPropNameList = ImmutableList.copyOf(ClassUtil.getPropGetMethodList(targetClass).keySet());
+            this.allPropNameSet = ImmutableSet.of(N.newLinkedHashSet(ClassUtil.getPropGetMethodList(targetClass).keySet()));
             this.sqlExecutor = sqlExecutor;
             this.namingPolicy = namingPolicy;
-            this.idName = Maps.getOrDefault(entityIdMap, targetClass, ID);
+            this.idName = Maps.getOrDefault(entityIdMap, targetClass, SQLExecutor.ID);
+            this.sql_exists_by_id = this.prepareQuery(SQLBuilder._1_list, L.eq(idName)).sql;
             this.sql_get_by_id = this.prepareQuery(null, L.eq(idName)).sql;
             this.sql_delete_by_id = this.prepareDelete(L.eq(idName)).sql;
             this.asyncMapper = new AsyncMapper<T>(this, sqlExecutor._asyncExecutor);
@@ -3127,7 +3236,7 @@ public final class SQLExecutor implements Closeable {
             N.checkArgument(N.isEntity(targetClass), ClassUtil.getCanonicalClassName(targetClass) + " is not an entity class with getter/setter methods");
             N.checkNullOrEmpty(readOnlyPropNames, "'readOnlyPropNames'");
 
-            final Set<String> set = new HashSet<String>();
+            final Set<String> set = new HashSet<>();
 
             for (String propName : readOnlyPropNames) {
                 set.add(ClassUtil.getPropNameByMethod(ClassUtil.getPropGetMethod(targetClass, propName)));
@@ -3135,10 +3244,12 @@ public final class SQLExecutor implements Closeable {
 
             readOnlyPropNamesMap.put(targetClass, set);
 
-            if (readOrWriteOnlyPropNamesMap.containsKey(targetClass)) {
-                readOrWriteOnlyPropNamesMap.get(targetClass).addAll(set);
-            } else {
-                readOrWriteOnlyPropNamesMap.put(targetClass, new HashSet<>(set));
+            synchronized (readOrWriteOnlyPropNamesMap) {
+                if (readOrWriteOnlyPropNamesMap.containsKey(targetClass)) {
+                    readOrWriteOnlyPropNamesMap.get(targetClass).addAll(set);
+                } else {
+                    readOrWriteOnlyPropNamesMap.put(targetClass, new HashSet<>(set));
+                }
             }
         }
 
@@ -3152,17 +3263,39 @@ public final class SQLExecutor implements Closeable {
             N.checkArgument(N.isEntity(targetClass), ClassUtil.getCanonicalClassName(targetClass) + " is not an entity class with getter/setter methods");
             N.checkNullOrEmpty(writeOnlyPropNames, "'writeOnlyPropNames'");
 
-            final Set<String> set = new HashSet<String>();
+            final Set<String> set = new HashSet<>();
 
             for (String propName : writeOnlyPropNames) {
                 set.add(ClassUtil.getPropNameByMethod(ClassUtil.getPropGetMethod(targetClass, propName)));
             }
 
-            if (readOrWriteOnlyPropNamesMap.containsKey(targetClass)) {
-                readOrWriteOnlyPropNamesMap.get(targetClass).addAll(set);
-            } else {
-                readOrWriteOnlyPropNamesMap.put(targetClass, new HashSet<>(set));
+            synchronized (readOrWriteOnlyPropNamesMap) {
+                if (readOrWriteOnlyPropNamesMap.containsKey(targetClass)) {
+                    readOrWriteOnlyPropNamesMap.get(targetClass).addAll(set);
+                } else {
+                    readOrWriteOnlyPropNamesMap.put(targetClass, new HashSet<>(set));
+                }
             }
+        }
+
+        public Class<T> targetClass() {
+            return targetClass;
+        }
+
+        public Type<T> targetType() {
+            return targetType;
+        }
+
+        public String idPropName() {
+            return idName;
+        }
+
+        public List<String> allPropNameList() {
+            return allPropNameList;
+        }
+
+        public Set<String> allPropNameSet() {
+            return allPropNameSet;
         }
 
         public AsyncMapper<T> async() {
@@ -3170,7 +3303,7 @@ public final class SQLExecutor implements Closeable {
         }
 
         public boolean exists(final Object id) {
-            return exists(L.eq(idName, id));
+            return sqlExecutor.queryForInt(sql_exists_by_id, id).orElse(0) > 0;
         }
 
         public boolean exists(final Condition whereCause) {
@@ -3251,12 +3384,12 @@ public final class SQLExecutor implements Closeable {
             return find(selectPropNames, whereCause, null);
         }
 
-        public List<T> find(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause) {
-            return find(conn, selectPropNames, whereCause, null);
-        }
-
         public List<T> find(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
             return find(null, selectPropNames, whereCause, jdbcSettings);
+        }
+
+        public List<T> find(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause) {
+            return find(conn, selectPropNames, whereCause, null);
         }
 
         public List<T> find(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
@@ -3273,12 +3406,12 @@ public final class SQLExecutor implements Closeable {
             return query(selectPropNames, whereCause, null);
         }
 
-        public DataSet query(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause) {
-            return query(conn, selectPropNames, whereCause, null);
-        }
-
         public DataSet query(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
             return query(null, selectPropNames, whereCause, jdbcSettings);
+        }
+
+        public DataSet query(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause) {
+            return query(conn, selectPropNames, whereCause, null);
         }
 
         public DataSet query(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
@@ -3343,13 +3476,13 @@ public final class SQLExecutor implements Closeable {
             return queryForSingleResult(targetValueClass, propName, whereCause, null);
         }
 
-        public <E> Nullable<E> queryForSingleResult(final Class<E> targetValueClass, final Connection conn, final String propName, final Condition whereCause) {
-            return queryForSingleResult(targetValueClass, conn, propName, whereCause, null);
-        }
-
         public <E> Nullable<E> queryForSingleResult(final Class<E> targetValueClass, final String propName, final Condition whereCause,
                 final JdbcSettings jdbcSettings) {
             return queryForSingleResult(targetValueClass, null, propName, whereCause, jdbcSettings);
+        }
+
+        public <E> Nullable<E> queryForSingleResult(final Class<E> targetValueClass, final Connection conn, final String propName, final Condition whereCause) {
+            return queryForSingleResult(targetValueClass, conn, propName, whereCause, null);
         }
 
         public <E> Nullable<E> queryForSingleResult(final Class<E> targetValueClass, final Connection conn, final String propName, final Condition whereCause,
@@ -3367,12 +3500,12 @@ public final class SQLExecutor implements Closeable {
             return queryForEntity(selectPropNames, whereCause, null);
         }
 
-        public Optional<T> queryForEntity(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause) {
-            return queryForEntity(conn, selectPropNames, whereCause, null);
-        }
-
         public Optional<T> queryForEntity(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
             return queryForEntity(null, selectPropNames, whereCause, jdbcSettings);
+        }
+
+        public Optional<T> queryForEntity(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause) {
+            return queryForEntity(conn, selectPropNames, whereCause, null);
         }
 
         public Optional<T> queryForEntity(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause,
@@ -3390,12 +3523,12 @@ public final class SQLExecutor implements Closeable {
             return stream(selectPropNames, whereCause, null);
         }
 
-        public Try<Stream<T>> stream(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause) {
-            return stream(conn, selectPropNames, whereCause, null);
-        }
-
         public Try<Stream<T>> stream(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
             return stream(null, selectPropNames, whereCause, jdbcSettings);
+        }
+
+        public Try<Stream<T>> stream(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause) {
+            return stream(conn, selectPropNames, whereCause, null);
         }
 
         public Try<Stream<T>> stream(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause,
@@ -3445,7 +3578,7 @@ public final class SQLExecutor implements Closeable {
             }
 
             if (count > 0) {
-                switch (sqlExecutor._dbVersion) {
+                switch (sqlExecutor.dbVersion()) {
                     case ORACLE:
                     case SQL_SERVER:
                         // Do nothing because limit is not supported.
@@ -3470,6 +3603,15 @@ public final class SQLExecutor implements Closeable {
             return add(null, entity);
         }
 
+        /**
+         * 
+         * @param props
+         * @return the auto-generated id or null if there is no auto-generated id.
+         */
+        public <E> E add(final Map<String, Object> props) {
+            return add(null, props);
+        }
+
         public <E> E add(final Connection conn, final Object entity) {
             final SP pair = prepareAdd(entity);
 
@@ -3478,15 +3620,6 @@ public final class SQLExecutor implements Closeable {
             postAdd(entity, id);
 
             return id;
-        }
-
-        /**
-         * 
-         * @param props
-         * @return the auto-generated id or null if there is no auto-generated id.
-         */
-        public <E> E add(final Map<String, Object> props) {
-            return add(null, props);
         }
 
         /**
@@ -3542,7 +3675,18 @@ public final class SQLExecutor implements Closeable {
             return result;
         }
 
+        /**
+         * Insert All the records one by one with specified {@code Connection}.
+         * 
+         * @param conn
+         * @param entities
+         * @return
+         */
         public <E> List<E> addAll(final Connection conn, final Collection<?> entities) {
+            if (conn == null) {
+                return addAll(entities);
+            }
+
             final List<E> result = new ArrayList<>(entities.size());
 
             for (Object entity : entities) {
@@ -3562,12 +3706,16 @@ public final class SQLExecutor implements Closeable {
             return batchAdd(entities, JdbcSettings.DEFAULT_BATCH_SIZE);
         }
 
-        public <E> List<E> batchAdd(final Connection conn, final Collection<?> entities) {
-            return batchAdd(conn, entities, JdbcSettings.DEFAULT_BATCH_SIZE);
+        public <E> List<E> batchAdd(final Collection<?> entities, final int batchSize) {
+            return batchAdd(entities, batchSize, IsolationLevel.DEFAULT);
         }
 
-        public <E> List<E> batchAdd(final Collection<?> entities, int batchSize) {
+        public <E> List<E> batchAdd(final Collection<?> entities, final int batchSize, final IsolationLevel isolationLevel) {
             return batchAdd(null, entities, batchSize);
+        }
+
+        public <E> List<E> batchAdd(final Connection conn, final Collection<?> entities) {
+            return batchAdd(conn, entities, JdbcSettings.DEFAULT_BATCH_SIZE);
         }
 
         /**
@@ -3577,11 +3725,15 @@ public final class SQLExecutor implements Closeable {
          * @param batchSize Default value is 200.
          * @return the auto-generated id list or an empty list if there is no auto-generated id.
          */
-        public <E> List<E> batchAdd(final Connection conn, final Collection<?> entities, int batchSize) {
+        public <E> List<E> batchAdd(final Connection conn, final Collection<?> entities, final int batchSize) {
+            return batchAdd(conn, entities, batchSize, IsolationLevel.DEFAULT);
+        }
+
+        private <E> List<E> batchAdd(final Connection conn, final Collection<?> entities, final int batchSize, final IsolationLevel isolationLevel) {
             N.checkArgument(batchSize > 0, "Invalid batch size: %s", batchSize);
 
             final SP pair = prepareAdd(entities.iterator().next());
-            final JdbcSettings jdbcSettings = batchSize == JdbcSettings.DEFAULT_BATCH_SIZE ? null : JdbcSettings.create().setBatchSize(batchSize);
+            final JdbcSettings jdbcSettings = JdbcSettings.create().setBatchSize(batchSize).setIsolationLevel(isolationLevel);
             final List<?> batchParameters = entities instanceof List ? (List<?>) entities : new ArrayList<>(entities);
 
             final List<E> ids = sqlExecutor.batchInsert(conn, pair.sql, null, jdbcSettings, batchParameters);
@@ -3652,6 +3804,14 @@ public final class SQLExecutor implements Closeable {
             return update(null, entity);
         }
 
+        public int update(final Object id, final Map<String, Object> props) {
+            return update(L.eq(idName, id), props);
+        }
+
+        public int update(final Condition whereCause, final Map<String, Object> props) {
+            return update(null, whereCause, props);
+        }
+
         public int update(final Connection conn, final Object entity) {
             final SP pair = prepareUpdate(entity);
 
@@ -3664,16 +3824,8 @@ public final class SQLExecutor implements Closeable {
             return updateCount;
         }
 
-        public int update(final Object id, final Map<String, Object> props) {
-            return update(L.eq(idName, id), props);
-        }
-
         public int update(final Connection conn, final Object id, final Map<String, Object> props) {
             return update(conn, L.eq(idName, id), props);
-        }
-
-        public int update(final Condition whereCause, final Map<String, Object> props) {
-            return update(null, whereCause, props);
         }
 
         public int update(final Connection conn, final Condition whereCause, final Map<String, Object> props) {
@@ -3725,7 +3877,18 @@ public final class SQLExecutor implements Closeable {
             return result;
         }
 
+        /**
+         * Update All the records one by one with specified {@code Connection}.
+         * 
+         * @param conn
+         * @param entities
+         * @return
+         */
         public int updateAll(final Connection conn, final Collection<?> entities) {
+            if (conn == null) {
+                return updateAll(entities);
+            }
+
             int result = 0;
 
             for (Object entity : entities) {
@@ -3745,10 +3908,6 @@ public final class SQLExecutor implements Closeable {
             return batchUpdate(entities, JdbcSettings.DEFAULT_BATCH_SIZE);
         }
 
-        public int batchUpdate(final Connection conn, final Collection<?> entities) {
-            return batchUpdate(conn, entities, JdbcSettings.DEFAULT_BATCH_SIZE);
-        }
-
         /**
          * Update All the records by batch operation.
          * 
@@ -3756,15 +3915,27 @@ public final class SQLExecutor implements Closeable {
          * @param batchSize Default value is 200.
          * @return
          */
-        public int batchUpdate(final Collection<?> entities, int batchSize) {
-            return batchUpdate(null, entities, batchSize);
+        public int batchUpdate(final Collection<?> entities, final int batchSize) {
+            return batchUpdate(entities, batchSize, IsolationLevel.DEFAULT);
         }
 
-        public int batchUpdate(final Connection conn, final Collection<?> entities, int batchSize) {
+        public int batchUpdate(final Collection<?> entities, final int batchSize, final IsolationLevel isolationLevel) {
+            return batchUpdate(null, entities, batchSize, isolationLevel);
+        }
+
+        public int batchUpdate(final Connection conn, final Collection<?> entities) {
+            return batchUpdate(conn, entities, JdbcSettings.DEFAULT_BATCH_SIZE);
+        }
+
+        public int batchUpdate(final Connection conn, final Collection<?> entities, final int batchSize) {
+            return batchUpdate(conn, entities, batchSize, IsolationLevel.DEFAULT);
+        }
+
+        private int batchUpdate(final Connection conn, final Collection<?> entities, final int batchSize, final IsolationLevel isolationLevel) {
             N.checkArgument(batchSize > 0, "Invalid batch size: %s", batchSize);
 
             final SP pair = prepareUpdate(entities.iterator().next());
-            final JdbcSettings jdbcSettings = batchSize == JdbcSettings.DEFAULT_BATCH_SIZE ? null : JdbcSettings.create().setBatchSize(batchSize);
+            final JdbcSettings jdbcSettings = JdbcSettings.create().setBatchSize(batchSize).setIsolationLevel(isolationLevel);
             final List<?> batchParameters = entities instanceof List ? (List<?>) entities : new ArrayList<>(entities);
 
             final int updateCount = sqlExecutor.batchUpdate(conn, pair.sql, null, jdbcSettings, batchParameters);
@@ -3831,6 +4002,10 @@ public final class SQLExecutor implements Closeable {
             return delete(null, idOrEntity);
         }
 
+        public int delete(final Condition whereCause) {
+            return delete(null, whereCause);
+        }
+
         public int delete(final Connection conn, final Object idOrEntity) {
             checkEntity(idOrEntity);
 
@@ -3838,10 +4013,6 @@ public final class SQLExecutor implements Closeable {
             final Object idVal = N.isEntity(cls) ? getId(idOrEntity) : idOrEntity;
 
             return delete(conn, L.eq(idName, idVal));
-        }
-
-        public int delete(final Condition whereCause) {
-            return delete(null, whereCause);
         }
 
         public int delete(final Connection conn, final Condition whereCause) {
@@ -3897,11 +4068,124 @@ public final class SQLExecutor implements Closeable {
             return result;
         }
 
+        /**
+         * Delete All records by ids or entities with specified {@code Connection}.
+         * 
+         * @param conn
+         * @param idsOrEntities
+         * @return
+         */
         public int deleteAll(final Connection conn, final Collection<?> idsOrEntities) {
+            if (conn == null) {
+                return deleteAll(idsOrEntities);
+            }
+
             int result = 0;
 
             for (Object idOrEntity : idsOrEntities) {
                 result += delete(conn, idOrEntity);
+            }
+
+            return result;
+        }
+
+        /**
+         * Delete all the records by batch operation.
+         * 
+         * @param idsOrEntities
+         * @return
+         */
+        public int batchDelete(final Collection<?> idsOrEntities) {
+            return batchDelete(idsOrEntities, JdbcSettings.DEFAULT_BATCH_SIZE);
+        }
+
+        /**
+         * Delete all the records by batch operation.
+         * 
+         * @param idsOrEntities
+         * @param batchSize Default value is 200.
+         * @return
+         */
+        public int batchDelete(final Collection<?> idsOrEntities, final int batchSize) {
+            return batchDelete(idsOrEntities, batchSize, IsolationLevel.DEFAULT);
+        }
+
+        /**
+         * Delete all the records by batch operation.
+         * 
+         * @param idsOrEntities
+         * @param batchSize Default value is 200.
+         * @param isolationLevel
+         * @return
+         */
+        public int batchDelete(final Collection<?> idsOrEntities, final int batchSize, final IsolationLevel isolationLevel) {
+            return batchDelete(null, idsOrEntities, batchSize, isolationLevel);
+        }
+
+        /**
+         * Delete all the records by batch operation.
+         * 
+         * @param conn
+         * @param idsOrEntities
+         * @return
+         */
+        public int batchDelete(final Connection conn, final Collection<?> idsOrEntities) {
+            return batchDelete(conn, idsOrEntities, JdbcSettings.DEFAULT_BATCH_SIZE);
+        }
+
+        /**
+         * Delete all the records by batch operation.
+         * 
+         * @param conn
+         * @param idsOrEntities
+         * @param batchSize
+         * @return
+         */
+        public int batchDelete(final Connection conn, final Collection<?> idsOrEntities, final int batchSize) {
+            return batchDelete(conn, idsOrEntities, batchSize, IsolationLevel.DEFAULT);
+        }
+
+        private int batchDelete(final Connection conn, final Collection<?> idsOrEntities, final int batchSize, final IsolationLevel isolationLevel) {
+            N.checkArgument(batchSize > 0, "Invalid batch size: %s", batchSize);
+
+            final List<Object> ids = new ArrayList<>(idsOrEntities.size());
+
+            for (Object idOrEntity : idsOrEntities) {
+                ids.add(N.isEntity(idOrEntity.getClass()) ? getId(idOrEntity) : idOrEntity);
+            }
+
+            final SQLTransaction tran = conn == null ? sqlExecutor.beginTransaction(isolationLevel) : null;
+            final Connection localConn = tran == null ? conn : tran.connection();
+            int result = 0;
+            boolean isOk = false;
+
+            try {
+                if (ids.size() >= batchSize) {
+                    final String batchSQL = sql_delete_by_id
+                            + N.repeat(" OR" + N.between(sql_delete_by_id, "WHERE", sql_delete_by_id.length()).get(), batchSize - 1);
+
+                    for (int i = 0, len = ids.size(); i + batchSize <= len; i += batchSize) {
+                        result += sqlExecutor.update(localConn, batchSQL, ids.subList(i, i + batchSize).toArray());
+                    }
+                }
+
+                if (ids.size() % batchSize != 0) {
+                    final int remaining = ids.size() % batchSize;
+                    final String batchSQL = sql_delete_by_id
+                            + N.repeat(" OR" + N.between(sql_delete_by_id, "WHERE", sql_delete_by_id.length()).get(), remaining - 1);
+
+                    result += sqlExecutor.update(localConn, batchSQL, ids.subList(ids.size() - remaining, ids.size()).toArray());
+                }
+
+                isOk = true;
+            } finally {
+                if (tran != null) {
+                    if (isOk) {
+                        tran.commit();
+                    } else {
+                        tran.rollback();
+                    }
+                }
             }
 
             return result;
@@ -3954,7 +4238,7 @@ public final class SQLExecutor implements Closeable {
         }
 
         public String toStirng() {
-            return "Mapper: " + ClassUtil.getCanonicalClassName(targetClass);
+            return "Mapper[" + ClassUtil.getCanonicalClassName(targetClass) + "]";
         }
     }
 
@@ -4104,20 +4388,20 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<List<T>> find(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause) {
-            return asyncExecutor.execute(new Callable<List<T>>() {
-                @Override
-                public List<T> call() throws Exception {
-                    return mapper.find(conn, selectPropNames, whereCause);
-                }
-            });
-        }
-
         public CompletableFuture<List<T>> find(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<List<T>>() {
                 @Override
                 public List<T> call() throws Exception {
                     return mapper.find(selectPropNames, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public CompletableFuture<List<T>> find(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<List<T>>() {
+                @Override
+                public List<T> call() throws Exception {
+                    return mapper.find(conn, selectPropNames, whereCause);
                 }
             });
         }
@@ -4150,20 +4434,20 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<DataSet> query(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause) {
-            return asyncExecutor.execute(new Callable<DataSet>() {
-                @Override
-                public DataSet call() throws Exception {
-                    return mapper.query(conn, selectPropNames, whereCause);
-                }
-            });
-        }
-
         public CompletableFuture<DataSet> query(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<DataSet>() {
                 @Override
                 public DataSet call() throws Exception {
                     return mapper.query(selectPropNames, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public CompletableFuture<DataSet> query(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<DataSet>() {
+                @Override
+                public DataSet call() throws Exception {
+                    return mapper.query(conn, selectPropNames, whereCause);
                 }
             });
         }
@@ -4259,22 +4543,22 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public <E> CompletableFuture<Nullable<E>> queryForSingleResult(final Class<E> targetValueClass, final Connection conn, final String propName,
-                final Condition whereCause) {
-            return asyncExecutor.execute(new Callable<Nullable<E>>() {
-                @Override
-                public Nullable<E> call() throws Exception {
-                    return mapper.queryForSingleResult(targetValueClass, conn, propName, whereCause);
-                }
-            });
-        }
-
         public <E> CompletableFuture<Nullable<E>> queryForSingleResult(final Class<E> targetValueClass, final String propName, final Condition whereCause,
                 final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<Nullable<E>>() {
                 @Override
                 public Nullable<E> call() throws Exception {
                     return mapper.queryForSingleResult(targetValueClass, propName, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public <E> CompletableFuture<Nullable<E>> queryForSingleResult(final Class<E> targetValueClass, final Connection conn, final String propName,
+                final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<Nullable<E>>() {
+                @Override
+                public Nullable<E> call() throws Exception {
+                    return mapper.queryForSingleResult(targetValueClass, conn, propName, whereCause);
                 }
             });
         }
@@ -4307,21 +4591,21 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Optional<T>> queryForEntity(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause) {
-            return asyncExecutor.execute(new Callable<Optional<T>>() {
-                @Override
-                public Optional<T> call() throws Exception {
-                    return mapper.queryForEntity(conn, selectPropNames, whereCause);
-                }
-            });
-        }
-
         public CompletableFuture<Optional<T>> queryForEntity(final Collection<String> selectPropNames, final Condition whereCause,
                 final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<Optional<T>>() {
                 @Override
                 public Optional<T> call() throws Exception {
                     return mapper.queryForEntity(selectPropNames, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public CompletableFuture<Optional<T>> queryForEntity(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<Optional<T>>() {
+                @Override
+                public Optional<T> call() throws Exception {
+                    return mapper.queryForEntity(conn, selectPropNames, whereCause);
                 }
             });
         }
@@ -4354,20 +4638,20 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Try<Stream<T>>> stream(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause) {
-            return asyncExecutor.execute(new Callable<Try<Stream<T>>>() {
-                @Override
-                public Try<Stream<T>> call() throws Exception {
-                    return mapper.stream(conn, selectPropNames, whereCause);
-                }
-            });
-        }
-
         public CompletableFuture<Try<Stream<T>>> stream(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
             return asyncExecutor.execute(new Callable<Try<Stream<T>>>() {
                 @Override
                 public Try<Stream<T>> call() throws Exception {
                     return mapper.stream(selectPropNames, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public CompletableFuture<Try<Stream<T>>> stream(final Connection conn, final Collection<String> selectPropNames, final Condition whereCause) {
+            return asyncExecutor.execute(new Callable<Try<Stream<T>>>() {
+                @Override
+                public Try<Stream<T>> call() throws Exception {
+                    return mapper.stream(conn, selectPropNames, whereCause);
                 }
             });
         }
@@ -4391,20 +4675,20 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public <E> CompletableFuture<E> add(final Connection conn, final Object entity) {
-            return asyncExecutor.execute(new Callable<E>() {
-                @Override
-                public E call() throws Exception {
-                    return mapper.add(conn, entity);
-                }
-            });
-        }
-
         public <E> CompletableFuture<E> add(final Map<String, Object> props) {
             return asyncExecutor.execute(new Callable<E>() {
                 @Override
                 public E call() throws Exception {
                     return mapper.add(props);
+                }
+            });
+        }
+
+        public <E> CompletableFuture<E> add(final Connection conn, final Object entity) {
+            return asyncExecutor.execute(new Callable<E>() {
+                @Override
+                public E call() throws Exception {
+                    return mapper.add(conn, entity);
                 }
             });
         }
@@ -4454,20 +4738,29 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public <E> CompletableFuture<List<E>> batchAdd(final Connection conn, final Collection<?> entities) {
-            return asyncExecutor.execute(new Callable<List<E>>() {
-                @Override
-                public List<E> call() throws Exception {
-                    return mapper.batchAdd(conn, entities);
-                }
-            });
-        }
-
         public <E> CompletableFuture<List<E>> batchAdd(final Collection<?> entities, final int batchSize) {
             return asyncExecutor.execute(new Callable<List<E>>() {
                 @Override
                 public List<E> call() throws Exception {
                     return mapper.batchAdd(entities, batchSize);
+                }
+            });
+        }
+
+        public <E> CompletableFuture<List<E>> batchAdd(final Collection<?> entities, final int batchSize, final IsolationLevel isolationLevel) {
+            return asyncExecutor.execute(new Callable<List<E>>() {
+                @Override
+                public List<E> call() throws Exception {
+                    return mapper.batchAdd(entities, batchSize, isolationLevel);
+                }
+            });
+        }
+
+        public <E> CompletableFuture<List<E>> batchAdd(final Connection conn, final Collection<?> entities) {
+            return asyncExecutor.execute(new Callable<List<E>>() {
+                @Override
+                public List<E> call() throws Exception {
+                    return mapper.batchAdd(conn, entities);
                 }
             });
         }
@@ -4490,15 +4783,6 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Integer> update(final Connection conn, final Object entity) {
-            return asyncExecutor.execute(new Callable<Integer>() {
-                @Override
-                public Integer call() throws Exception {
-                    return mapper.update(conn, entity);
-                }
-            });
-        }
-
         public CompletableFuture<Integer> update(final Object id, final Map<String, Object> props) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
@@ -4508,20 +4792,29 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Integer> update(final Connection conn, final Object id, final Map<String, Object> props) {
-            return asyncExecutor.execute(new Callable<Integer>() {
-                @Override
-                public Integer call() throws Exception {
-                    return mapper.update(conn, id, props);
-                }
-            });
-        }
-
         public CompletableFuture<Integer> update(final Condition whereCause, final Map<String, Object> props) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
                     return mapper.update(whereCause, props);
+                }
+            });
+        }
+
+        public CompletableFuture<Integer> update(final Connection conn, final Object entity) {
+            return asyncExecutor.execute(new Callable<Integer>() {
+                @Override
+                public Integer call() throws Exception {
+                    return mapper.update(conn, entity);
+                }
+            });
+        }
+
+        public CompletableFuture<Integer> update(final Connection conn, final Object id, final Map<String, Object> props) {
+            return asyncExecutor.execute(new Callable<Integer>() {
+                @Override
+                public Integer call() throws Exception {
+                    return mapper.update(conn, id, props);
                 }
             });
         }
@@ -4571,20 +4864,29 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Integer> batchUpdate(final Connection conn, final Collection<?> entities) {
-            return asyncExecutor.execute(new Callable<Integer>() {
-                @Override
-                public Integer call() throws Exception {
-                    return mapper.batchUpdate(conn, entities);
-                }
-            });
-        }
-
         public CompletableFuture<Integer> batchUpdate(final Collection<?> entities, final int batchSize) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
                     return mapper.batchUpdate(entities, batchSize);
+                }
+            });
+        }
+
+        public CompletableFuture<Integer> batchUpdate(final Collection<?> entities, final int batchSize, final IsolationLevel isolationLevel) {
+            return asyncExecutor.execute(new Callable<Integer>() {
+                @Override
+                public Integer call() throws Exception {
+                    return mapper.batchUpdate(entities, batchSize, isolationLevel);
+                }
+            });
+        }
+
+        public CompletableFuture<Integer> batchUpdate(final Connection conn, final Collection<?> entities) {
+            return asyncExecutor.execute(new Callable<Integer>() {
+                @Override
+                public Integer call() throws Exception {
+                    return mapper.batchUpdate(conn, entities);
                 }
             });
         }
@@ -4607,20 +4909,20 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
-        public CompletableFuture<Integer> delete(final Connection conn, final Object idOrEntity) {
-            return asyncExecutor.execute(new Callable<Integer>() {
-                @Override
-                public Integer call() throws Exception {
-                    return mapper.delete(conn, idOrEntity);
-                }
-            });
-        }
-
         public CompletableFuture<Integer> delete(final Condition whereCause) {
             return asyncExecutor.execute(new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
                     return mapper.delete(whereCause);
+                }
+            });
+        }
+
+        public CompletableFuture<Integer> delete(final Connection conn, final Object idOrEntity) {
+            return asyncExecutor.execute(new Callable<Integer>() {
+                @Override
+                public Integer call() throws Exception {
+                    return mapper.delete(conn, idOrEntity);
                 }
             });
         }
@@ -4657,6 +4959,51 @@ public final class SQLExecutor implements Closeable {
                 @Override
                 public Integer call() throws Exception {
                     return mapper.deleteAll(conn, idsOrEntities);
+                }
+            });
+        }
+
+        public CompletableFuture<Integer> batchDelete(final Collection<?> idsOrEntities) {
+            return asyncExecutor.execute(new Callable<Integer>() {
+                @Override
+                public Integer call() throws Exception {
+                    return mapper.batchDelete(idsOrEntities);
+                }
+            });
+        }
+
+        public CompletableFuture<Integer> batchDelete(final Collection<?> idsOrEntities, final int batchSize) {
+            return asyncExecutor.execute(new Callable<Integer>() {
+                @Override
+                public Integer call() throws Exception {
+                    return mapper.batchDelete(idsOrEntities, batchSize);
+                }
+            });
+        }
+
+        public CompletableFuture<Integer> batchDelete(final Collection<?> idsOrEntities, final int batchSize, final IsolationLevel isolationLevel) {
+            return asyncExecutor.execute(new Callable<Integer>() {
+                @Override
+                public Integer call() throws Exception {
+                    return mapper.batchDelete(idsOrEntities, batchSize, isolationLevel);
+                }
+            });
+        }
+
+        public CompletableFuture<Integer> batchDelete(final Connection conn, final Collection<?> idsOrEntities) {
+            return asyncExecutor.execute(new Callable<Integer>() {
+                @Override
+                public Integer call() throws Exception {
+                    return mapper.batchDelete(conn, idsOrEntities);
+                }
+            });
+        }
+
+        public CompletableFuture<Integer> batchDelete(final Connection conn, final Collection<?> idsOrEntities, final int batchSize) {
+            return asyncExecutor.execute(new Callable<Integer>() {
+                @Override
+                public Integer call() throws Exception {
+                    return mapper.batchDelete(conn, idsOrEntities, batchSize);
                 }
             });
         }
@@ -4867,6 +5214,7 @@ public final class SQLExecutor implements Closeable {
         private String queryWithDataSource;
         private Collection<String> queryWithDataSources;
         private boolean queryInParallel = false;
+        private IsolationLevel isolationLevel = null;
 
         private boolean fozen = false;
 
@@ -5138,6 +5486,18 @@ public final class SQLExecutor implements Closeable {
             return this;
         }
 
+        public IsolationLevel getIsolationLevel() {
+            return isolationLevel;
+        }
+
+        public JdbcSettings setIsolationLevel(IsolationLevel isolationLevel) {
+            assertNotFrozen();
+
+            this.isolationLevel = isolationLevel;
+
+            return this;
+        }
+
         void freeze() {
             fozen = true;
         }
@@ -5171,6 +5531,7 @@ public final class SQLExecutor implements Closeable {
             result = (prime * result) + ((queryWithDataSource == null) ? 0 : queryWithDataSource.hashCode());
             result = (prime * result) + ((queryWithDataSources == null) ? 0 : queryWithDataSources.hashCode());
             result = (prime * result) + (queryInParallel ? 1231 : 1237);
+            result = (prime * result) + ((isolationLevel == null) ? 0 : isolationLevel.hashCode());
 
             return result;
         }
@@ -5191,7 +5552,8 @@ public final class SQLExecutor implements Closeable {
                         && N.equals(resultSetType, other.resultSetType) && N.equals(resultSetConcurrency, other.resultSetConcurrency)
                         && N.equals(resultSetHoldability, other.resultSetHoldability) && N.equals(offset, other.offset) && N.equals(count, other.count)
                         && N.equals(generatedIdPropName, other.generatedIdPropName) && N.equals(queryWithDataSource, other.queryWithDataSource)
-                        && N.equals(queryWithDataSources, other.queryWithDataSources) && N.equals(queryInParallel, other.queryInParallel);
+                        && N.equals(queryWithDataSources, other.queryWithDataSources) && N.equals(queryInParallel, other.queryInParallel)
+                        && N.equals(isolationLevel, other.isolationLevel);
             }
 
             return false;
@@ -5204,7 +5566,7 @@ public final class SQLExecutor implements Closeable {
                     + maxFieldSize + ", fetchSize=" + fetchSize + ", fetchDirection=" + fetchDirection + ", resultSetType=" + resultSetType
                     + ", resultSetConcurrency=" + resultSetConcurrency + ", resultSetHoldability=" + resultSetHoldability + ", offset=" + offset + ", count="
                     + count + ", generatedIdPropName=" + generatedIdPropName + ", queryWithDataSource=" + queryWithDataSource + ", queryWithDataSources="
-                    + queryWithDataSources + ", queryInParallel=" + queryInParallel + "}";
+                    + queryWithDataSources + ", queryInParallel=" + queryInParallel + ", isolationLevel=" + isolationLevel + "}";
         }
     }
 
