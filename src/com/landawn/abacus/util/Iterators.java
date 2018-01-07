@@ -856,6 +856,36 @@ public final class Iterators {
         };
     }
 
+    public static <T> ObjIterator<T> concatt(final Collection<? extends Collection<? extends T>> c) {
+        if (N.isNullOrEmpty(c)) {
+            return ObjIterator.empty();
+        }
+
+        return new ObjIterator<T>() {
+            private final Iterator<? extends Collection<? extends T>> iter = c.iterator();
+            private Iterator<? extends T> cur;
+
+            @Override
+            public boolean hasNext() {
+                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
+                    final Collection<? extends T> c = iter.next();
+                    cur = N.isNullOrEmpty(c) ? null : c.iterator();
+                }
+
+                return cur != null && cur.hasNext();
+            }
+
+            @Override
+            public T next() {
+                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
+                    throw new NoSuchElementException();
+                }
+
+                return cur.next();
+            }
+        };
+    }
+
     public static <T> ObjIterator<T> merge(final Iterator<? extends T> a, final Iterator<? extends T> b,
             final BiFunction<? super T, ? super T, Nth> nextSelector) {
 

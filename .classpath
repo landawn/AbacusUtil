@@ -4,7 +4,7 @@
 	<classpathentry kind="src" path="samples"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
-	<classpathentry kind="lib" path="lib/abacus-util-1.1.8.jar"/>
+	<classpathentry kind="lib" path="lib/abacus-util-1.1.9.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2-api-2.3.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-api-2.3.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-core-2.3.jar"/>

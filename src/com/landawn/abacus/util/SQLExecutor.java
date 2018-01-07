@@ -3131,14 +3131,14 @@ public final class SQLExecutor implements Closeable {
         @Documented
         @Target(value = { FIELD, METHOD })
         @Retention(RUNTIME)
-        public static @interface WriteOnly {
+        public static @interface NonUpdatable {
         }
 
         static final List<String> EXISTS_SELECT_PROP_NAMES = ImmutableList.of(NE._1);
         static final List<String> COUNT_SELECT_PROP_NAMES = ImmutableList.of(NE.COUNT_ALL);
         static final Map<Class<?>, String> entityIdMap = new ConcurrentHashMap<>();
         static final Map<Class<?>, Set<String>> readOnlyPropNamesMap = new ConcurrentHashMap<>();
-        static final Map<Class<?>, Set<String>> readOrWriteOnlyPropNamesMap = new ConcurrentHashMap<>();
+        static final Map<Class<?>, Set<String>> nonUpdatablePropNamesMap = new ConcurrentHashMap<>();
 
         private final Class<T> targetClass;
         private final Type<T> targetType;
@@ -3169,7 +3169,7 @@ public final class SQLExecutor implements Closeable {
                         readOnlyPropNames.add(field.getName());
                     }
 
-                    if (field.isAnnotationPresent(WriteOnly.class)) {
+                    if (field.isAnnotationPresent(NonUpdatable.class)) {
                         writeOnlyPropNames.add(field.getName());
                     }
                 }
@@ -3190,7 +3190,7 @@ public final class SQLExecutor implements Closeable {
                     readOnlyPropNames.add(entry.getKey());
                 }
 
-                if (entry.getValue().isAnnotationPresent(WriteOnly.class)) {
+                if (entry.getValue().isAnnotationPresent(NonUpdatable.class)) {
                     writeOnlyPropNames.add(entry.getKey());
                 }
             }
@@ -3203,8 +3203,8 @@ public final class SQLExecutor implements Closeable {
                 registerReadOnlyProps(targetClass, readOnlyPropNames);
             }
 
-            if (N.notNullOrEmpty(writeOnlyPropNames) && !readOrWriteOnlyPropNamesMap.containsKey(targetClass)) {
-                registerWriteOnlyProps(targetClass, writeOnlyPropNames);
+            if (N.notNullOrEmpty(writeOnlyPropNames) && !nonUpdatablePropNamesMap.containsKey(targetClass)) {
+                registerNonUpdatableProps(targetClass, writeOnlyPropNames);
             }
 
             this.targetClass = targetClass;
@@ -3244,11 +3244,11 @@ public final class SQLExecutor implements Closeable {
 
             readOnlyPropNamesMap.put(targetClass, set);
 
-            synchronized (readOrWriteOnlyPropNamesMap) {
-                if (readOrWriteOnlyPropNamesMap.containsKey(targetClass)) {
-                    readOrWriteOnlyPropNamesMap.get(targetClass).addAll(set);
+            synchronized (nonUpdatablePropNamesMap) {
+                if (nonUpdatablePropNamesMap.containsKey(targetClass)) {
+                    nonUpdatablePropNamesMap.get(targetClass).addAll(set);
                 } else {
-                    readOrWriteOnlyPropNamesMap.put(targetClass, new HashSet<>(set));
+                    nonUpdatablePropNamesMap.put(targetClass, new HashSet<>(set));
                 }
             }
         }
@@ -3259,7 +3259,7 @@ public final class SQLExecutor implements Closeable {
          * @param targetClass
          * @param writeOnlyPropNames
          */
-        public static void registerWriteOnlyProps(Class<?> targetClass, Collection<String> writeOnlyPropNames) {
+        public static void registerNonUpdatableProps(Class<?> targetClass, Collection<String> writeOnlyPropNames) {
             N.checkArgument(N.isEntity(targetClass), ClassUtil.getCanonicalClassName(targetClass) + " is not an entity class with getter/setter methods");
             N.checkNullOrEmpty(writeOnlyPropNames, "'writeOnlyPropNames'");
 
@@ -3269,11 +3269,11 @@ public final class SQLExecutor implements Closeable {
                 set.add(ClassUtil.getPropNameByMethod(ClassUtil.getPropGetMethod(targetClass, propName)));
             }
 
-            synchronized (readOrWriteOnlyPropNamesMap) {
-                if (readOrWriteOnlyPropNamesMap.containsKey(targetClass)) {
-                    readOrWriteOnlyPropNamesMap.get(targetClass).addAll(set);
+            synchronized (nonUpdatablePropNamesMap) {
+                if (nonUpdatablePropNamesMap.containsKey(targetClass)) {
+                    nonUpdatablePropNamesMap.get(targetClass).addAll(set);
                 } else {
-                    readOrWriteOnlyPropNamesMap.put(targetClass, new HashSet<>(set));
+                    nonUpdatablePropNamesMap.put(targetClass, new HashSet<>(set));
                 }
             }
         }
@@ -3398,6 +3398,33 @@ public final class SQLExecutor implements Closeable {
             return sqlExecutor.find(targetClass, conn, pair.sql, null, jdbcSettings, pair.parameters.toArray());
         }
 
+        /**
+         * Query from multiple data sources specified in {@code JdbcSettings}.
+         * 
+         * @param whereCause
+         * @param jdbcSettings
+         * @return
+         * @see SQLExecutor#findAll(Class, String, StatementSetter, JdbcSettings, Object...)
+         */
+        public List<T> findAll(final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return findAll(propNameList(), whereCause, jdbcSettings);
+        }
+
+        /**
+         * Query from multiple data sources specified in {@code JdbcSettings}.
+         * 
+         * @param selectPropNames
+         * @param whereCause
+         * @param jdbcSettings
+         * @return
+         * @see SQLExecutor#findAll(Class, String, StatementSetter, JdbcSettings, Object...)
+         */
+        public List<T> findAll(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
+            final SP pair = prepareQuery(selectPropNames, whereCause);
+
+            return sqlExecutor.findAll(targetClass, pair.sql, null, jdbcSettings, pair.parameters.toArray());
+        }
+
         public DataSet query(final Condition whereCause) {
             return query(null, whereCause);
         }
@@ -3418,6 +3445,33 @@ public final class SQLExecutor implements Closeable {
             final SP pair = prepareQuery(selectPropNames, whereCause);
 
             return sqlExecutor.query(conn, pair.sql, null, null, jdbcSettings, pair.parameters.toArray());
+        }
+
+        /**
+         * Query from multiple data sources specified in {@code JdbcSettings}.
+         * 
+         * @param whereCause
+         * @param jdbcSettings
+         * @return
+         * @see SQLExecutor#queryAll(String, StatementSetter, JdbcSettings, Object...)
+         */
+        public DataSet queryAll(final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return queryAll(propNameList(), whereCause, jdbcSettings);
+        }
+
+        /**
+         * Query from multiple data sources specified in {@code JdbcSettings}.
+         * 
+         * @param selectPropNames
+         * @param whereCause
+         * @param jdbcSettings
+         * @return
+         * @see SQLExecutor#queryAll(String, StatementSetter, JdbcSettings, Object...)
+         */
+        public DataSet queryAll(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
+            final SP pair = prepareQuery(selectPropNames, whereCause);
+
+            return sqlExecutor.queryAll(pair.sql, null, jdbcSettings, pair.parameters.toArray());
         }
 
         public OptionalBoolean queryForBoolean(final String propName, final Condition whereCause) {
@@ -3536,6 +3590,33 @@ public final class SQLExecutor implements Closeable {
             final SP pair = prepareQuery(selectPropNames, whereCause);
 
             return sqlExecutor.stream(targetClass, conn, pair.sql, null, jdbcSettings, pair.parameters.toArray());
+        }
+
+        /**
+         * Query from multiple data sources specified in {@code JdbcSettings}.
+         * 
+         * @param whereCause
+         * @param jdbcSettings
+         * @return
+         * @see SQLExecutor#streamAll(Class, String, StatementSetter, JdbcSettings, Object...)
+         */
+        public Try<Stream<T>> streamAll(final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return streamAll(propNameList(), whereCause, jdbcSettings);
+        }
+
+        /**
+         * Query from multiple data sources specified in {@code JdbcSettings}.
+         * 
+         * @param selectPropNames
+         * @param whereCause
+         * @param jdbcSettings
+         * @return
+         * @see SQLExecutor#streamAll(Class, String, StatementSetter, JdbcSettings, Object...)
+         */
+        public Try<Stream<T>> streamAll(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
+            final SP pair = prepareQuery(selectPropNames, whereCause);
+
+            return sqlExecutor.streamAll(targetClass, pair.sql, null, jdbcSettings, pair.parameters.toArray());
         }
 
         private SP prepareQuery(final Collection<String> selectPropNames, final Condition whereCause) {
@@ -3954,8 +4035,8 @@ public final class SQLExecutor implements Closeable {
             checkEntity(entity);
 
             final Class<?> cls = entity.getClass();
-            final Set<String> readOrWriteOnlyPropNames = readOrWriteOnlyPropNamesMap.get(cls);
-            final Collection<String> propNames = SQLBuilder.getPropNamesByClass(cls, false, readOrWriteOnlyPropNames);
+            final Set<String> nonUpdatablePropNames = nonUpdatablePropNamesMap.get(cls);
+            final Collection<String> propNames = SQLBuilder.getPropNamesByClass(cls, false, nonUpdatablePropNames);
             final Set<String> dirtyPropNames = N.isDirtyMarker(cls) ? ((DirtyMarker) entity).dirtyPropNames() : null;
             final Map<String, Object> props = N.newHashMap(N.initHashCapacity(N.isNullOrEmpty(dirtyPropNames) ? propNames.size() : dirtyPropNames.size()));
 
@@ -4160,21 +4241,27 @@ public final class SQLExecutor implements Closeable {
             boolean isOk = false;
 
             try {
-                if (ids.size() >= batchSize) {
-                    final String batchSQL = sql_delete_by_id
-                            + N.repeat(" OR" + N.between(sql_delete_by_id, "WHERE", sql_delete_by_id.length()).get(), batchSize - 1);
-
-                    for (int i = 0, len = ids.size(); i + batchSize <= len; i += batchSize) {
-                        result += sqlExecutor.update(localConn, batchSQL, ids.subList(i, i + batchSize).toArray());
+                if (batchSize == 1) {
+                    for (Object id : ids) {
+                        result += sqlExecutor.update(localConn, sql_delete_by_id, id);
                     }
-                }
+                } else {
+                    if (ids.size() >= batchSize) {
+                        final String batchSQL = batchSize == 1 ? sql_delete_by_id
+                                : (sql_delete_by_id + N.repeat(" OR" + N.between(sql_delete_by_id, "WHERE", sql_delete_by_id.length()).get(), batchSize - 1));
 
-                if (ids.size() % batchSize != 0) {
-                    final int remaining = ids.size() % batchSize;
-                    final String batchSQL = sql_delete_by_id
-                            + N.repeat(" OR" + N.between(sql_delete_by_id, "WHERE", sql_delete_by_id.length()).get(), remaining - 1);
+                        for (int i = 0, len = ids.size(); i + batchSize <= len; i += batchSize) {
+                            result += sqlExecutor.update(localConn, batchSQL, ids.subList(i, i + batchSize).toArray());
+                        }
+                    }
 
-                    result += sqlExecutor.update(localConn, batchSQL, ids.subList(ids.size() - remaining, ids.size()).toArray());
+                    if (ids.size() % batchSize != 0) {
+                        final int remaining = ids.size() % batchSize;
+                        final String batchSQL = remaining == 1 ? sql_delete_by_id
+                                : (sql_delete_by_id + N.repeat(" OR" + N.between(sql_delete_by_id, "WHERE", sql_delete_by_id.length()).get(), remaining - 1));
+
+                        result += sqlExecutor.update(localConn, batchSQL, ids.subList(ids.size() - remaining, ids.size()).toArray());
+                    }
                 }
 
                 isOk = true;
@@ -4416,6 +4503,24 @@ public final class SQLExecutor implements Closeable {
             });
         }
 
+        public CompletableFuture<List<T>> findAll(final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<List<T>>() {
+                @Override
+                public List<T> call() throws Exception {
+                    return mapper.findAll(whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public CompletableFuture<List<T>> findAll(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<List<T>>() {
+                @Override
+                public List<T> call() throws Exception {
+                    return mapper.findAll(selectPropNames, whereCause, jdbcSettings);
+                }
+            });
+        }
+
         public CompletableFuture<DataSet> query(final Condition whereCause) {
             return asyncExecutor.execute(new Callable<DataSet>() {
                 @Override
@@ -4458,6 +4563,24 @@ public final class SQLExecutor implements Closeable {
                 @Override
                 public DataSet call() throws Exception {
                     return mapper.query(conn, selectPropNames, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public CompletableFuture<DataSet> queryAll(final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<DataSet>() {
+                @Override
+                public DataSet call() throws Exception {
+                    return mapper.queryAll(whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public CompletableFuture<DataSet> queryAll(final Collection<String> selectPropNames, final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<DataSet>() {
+                @Override
+                public DataSet call() throws Exception {
+                    return mapper.queryAll(selectPropNames, whereCause, jdbcSettings);
                 }
             });
         }
@@ -4662,6 +4785,25 @@ public final class SQLExecutor implements Closeable {
                 @Override
                 public Try<Stream<T>> call() throws Exception {
                     return mapper.stream(conn, selectPropNames, whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public CompletableFuture<Try<Stream<T>>> streamAll(final Condition whereCause, final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<Try<Stream<T>>>() {
+                @Override
+                public Try<Stream<T>> call() throws Exception {
+                    return mapper.streamAll(whereCause, jdbcSettings);
+                }
+            });
+        }
+
+        public CompletableFuture<Try<Stream<T>>> streamAll(final Collection<String> selectPropNames, final Condition whereCause,
+                final JdbcSettings jdbcSettings) {
+            return asyncExecutor.execute(new Callable<Try<Stream<T>>>() {
+                @Override
+                public Try<Stream<T>> call() throws Exception {
+                    return mapper.streamAll(selectPropNames, whereCause, jdbcSettings);
                 }
             });
         }

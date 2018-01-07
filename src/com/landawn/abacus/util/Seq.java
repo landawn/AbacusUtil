@@ -3195,44 +3195,36 @@ public final class Seq<T> extends ImmutableCollection<T> {
         return result;
     }
 
+    /**
+     * 
+     * @param a
+     * @return
+     * @see Iterators#concat(Object[]...)
+     */
     @SafeVarargs
     public static <T> ObjIterator<T> iterate(final T[]... a) {
         return Iterators.concat(a);
     }
 
+    /**
+     * 
+     * @param a
+     * @return
+     * @see Iterators#concat(Collection)
+     */
     @SafeVarargs
     public static <T> ObjIterator<T> iterate(final Collection<? extends T>... a) {
         return Iterators.concat(a);
     }
 
+    /**
+     * 
+     * @param c
+     * @return
+     * @see Iterators#concatt(Collection)
+     */
     public static <T> ObjIterator<T> iterate(final Collection<? extends Collection<? extends T>> c) {
-        if (N.isNullOrEmpty(c)) {
-            return ObjIterator.empty();
-        }
-
-        return new ObjIterator<T>() {
-            private final Iterator<? extends Collection<? extends T>> iter = c.iterator();
-            private Iterator<? extends T> cur;
-
-            @Override
-            public boolean hasNext() {
-                while ((cur == null || cur.hasNext() == false) && iter.hasNext()) {
-                    final Collection<? extends T> c = iter.next();
-                    cur = N.isNullOrEmpty(c) ? null : c.iterator();
-                }
-
-                return cur != null && cur.hasNext();
-            }
-
-            @Override
-            public T next() {
-                if ((cur == null || cur.hasNext() == false) && hasNext() == false) {
-                    throw new NoSuchElementException();
-                }
-
-                return cur.next();
-            }
-        };
+        return Iterators.concatt(c);
     }
 
     public static <T, E extends Exception> List<T> merge(final T[] a, final T[] b, final Try.BiFunction<? super T, ? super T, Nth, E> nextSelector) throws E {

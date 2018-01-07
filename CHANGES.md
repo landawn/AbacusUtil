@@ -1,3 +1,12 @@
+### 1.1.9
+
+* Rename `Mapper.WriteOnly/registerWriteOnlyProps` to `Mapper.NonUpdatable/registerNonUpdatableProps`
+
+* Add `Mapper.findAll/queryAll/streamAll`.
+
+* Improvements and bug fix.
+
+
 ### 1.1.8
 
 * Add `JdbcUtil.stream/executeBatchUpdate/absolute(...)`.

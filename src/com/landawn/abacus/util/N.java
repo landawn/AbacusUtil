@@ -32236,56 +32236,37 @@ public final class N {
         }
     }
 
-    //    /**
-    //     * 
-    //     * @param supplier
-    //     * @param actionForTrue do nothing if it's {@code null} even {@code b} is true.
-    //     * @param actionForFalse do nothing if it's {@code null} even {@code b} is false.
-    //     * @throws E0
-    //     * @throws E1
-    //     * @throws E2
-    //     */
-    //    public static <E0 extends Exception, E1 extends Exception, E2 extends Exception> void ifOrElse(final Try.Supplier<Boolean, E0> supplier,
-    //            final Try.Runnable<E1> actionForTrue, final Try.Runnable<E2> actionForFalse) throws E0, E1, E2 {
-    //        if (supplier.get()) {
-    //            if (actionForTrue != null) {
-    //                actionForTrue.run();
-    //            }
-    //        } else {
-    //            if (actionForFalse != null) {
-    //                actionForFalse.run();
-    //            }
-    //        }
-    //    }
+    /**
+     * 
+     * @param a
+     * @return
+     * @see Iterators#concat(Object[]...)
+     */
+    @SafeVarargs
+    public static <T> ObjIterator<T> iterate(final T[]... a) {
+        return Iterators.concat(a);
+    }
 
-    //    /**
-    //     * Returns an empty {@code Optional} if {@code cmd} is executed successfully, otherwise a {@code Optional} with the exception threw.
-    //     * 
-    //     * @param cmd
-    //     * @return
-    //     */
-    //    public static Optional<Exception> run(final Try.Runnable<? extends Exception> cmd) {
-    //        try {
-    //            cmd.run();
-    //            return Optional.empty();
-    //        } catch (Exception e) {
-    //            return Optional.of(e);
-    //        }
-    //    }
-    //
-    //    /**
-    //     * Returns a {@code Pair} with {@code left=returnedValue, right=null} if {@code cmd} is executed successfully, otherwise a {@code Pair} with {@code left=null, right=exception}.
-    //     * 
-    //     * @param cmd
-    //     * @return
-    //     */
-    //    public static <R> Pair<R, Exception> call(final Callable<R> cmd) {
-    //        try {
-    //            return Pair.of(cmd.call(), null);
-    //        } catch (Exception e) {
-    //            return Pair.of(null, e);
-    //        }
-    //    }
+    /**
+     * 
+     * @param a
+     * @return
+     * @see Iterators#concat(Collection)
+     */
+    @SafeVarargs
+    public static <T> ObjIterator<T> iterate(final Collection<? extends T>... a) {
+        return Iterators.concat(a);
+    }
+
+    /**
+     * 
+     * @param c
+     * @return
+     * @see Iterators#concatt(Collection)
+     */
+    public static <T> ObjIterator<T> iterate(final Collection<? extends Collection<? extends T>> c) {
+        return Iterators.concatt(c);
+    }
 
     static <T> T createMask(final Class<T> interfaceClass) {
         InvocationHandler h = new InvocationHandler() {
