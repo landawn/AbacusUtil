@@ -15,7 +15,7 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 
 * Programming in Android: [SQLiteExecutor][], [SQLBuilder][], [Async][], [CompletableFuture][CompletableFuture_Android], [Futures][Futures_Android], [EventBus][], [Observer][], [ObserverX][] and [Fu][]
 
-* SQL Builder/ORM: [SQLExecutor][], [SQLBuilder][], [DataSet][], [JdbcUtil][], [CSVUtil][]...
+* SQL Builder/ORM: [SQLExecutor][], [Mapper](https://static.javadoc.io/com.landawn/abacus-util/1.1.8/com/landawn/abacus/util/SQLExecutor.Mapper.html), [SQLBuilder][], [DataSet][], [JdbcUtil][], [CSVUtil][]...
 
 * ORMs for NoSQL: [MongoDBExecutor][], [CassandraExecutor][] with [CQLBuilder][], [CouchbaseExecutor][], [HBaseExecutor][], [DynamoDBExecutor][] and [Neo4jExecutor][]
 
