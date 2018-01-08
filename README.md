@@ -49,6 +49,7 @@ A general programming library in Java/Android. It's easy to learn and simple to 
 [BooleanIterator](https://static.javadoc.io/com.landawn/abacus-util/1.1.8/com/landawn/abacus/util/BooleanIterator.html)
 ...
 [DoubleIterator](https://static.javadoc.io/com.landawn/abacus-util/1.1.8/com/landawn/abacus/util/DoubleIterator.html),
+[ObjIterator](https://static.javadoc.io/com.landawn/abacus-util/1.1.8/com/landawn/abacus/util/ObjIterator.html),
 [Nullable](https://static.javadoc.io/com.landawn/abacus-util/1.1.8/com/landawn/abacus/util/Nullable.html),
 [Optional](https://static.javadoc.io/com.landawn/abacus-util/1.1.8/com/landawn/abacus/util/Optional.html),
 [OptionalBoolean](https://static.javadoc.io/com.landawn/abacus-util/1.1.8/com/landawn/abacus/util/OptionalBoolean.html)
