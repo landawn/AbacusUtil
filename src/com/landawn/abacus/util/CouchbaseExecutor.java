@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -167,19 +168,55 @@ public final class CouchbaseExecutor implements Closeable {
         final List<QueryRow> allRows = resultSet.allRows();
 
         if (N.isNullOrEmpty(allRows)) {
-            final List<String> columnNameList = new ArrayList<>();
-            final List<List<Object>> columnList = new ArrayList<>();
-            return new RowDataSet(columnNameList, columnList);
+            return N.newEmptyDataSet();
         }
 
-        final List<String> columnNameList = new ArrayList<>(allRows.get(0).value().getNames());
-        final List<Object> rowList = new ArrayList<>(allRows.size());
+        final Set<String> columnNames = new LinkedHashSet<>();
 
         for (QueryRow row : allRows) {
-            rowList.add(toEntity(targetClass, row.value()));
+            columnNames.addAll(row.value().getNames());
         }
 
-        return N.newDataSet(columnNameList, rowList);
+        final int rowCount = allRows.size();
+        final int columnCount = columnNames.size();
+        final List<String> columnNameList = new ArrayList<>(columnNames);
+
+        if (Map.class.isAssignableFrom(targetClass)) {
+            final List<List<Object>> columnList = new ArrayList<>(columnCount);
+
+            for (int i = 0; i < columnCount; i++) {
+                columnList.add(new ArrayList<>(rowCount));
+            }
+
+            JsonObject value = null;
+            Object propValue = null;
+
+            for (QueryRow row : allRows) {
+                value = row.value();
+
+                for (int i = 0; i < columnCount; i++) {
+                    propValue = value.get(columnNameList.get(i));
+
+                    if (propValue instanceof JsonObject) {
+                        columnList.get(i).add(((JsonObject) propValue).toMap());
+                    } else if (propValue instanceof JsonArray) {
+                        columnList.get(i).add(((JsonArray) propValue).toList());
+                    } else {
+                        columnList.get(i).add(propValue);
+                    }
+                }
+            }
+
+            return new RowDataSet(columnNameList, columnList);
+        } else {
+            final List<Object> rowList = new ArrayList<>(rowCount);
+
+            for (QueryRow row : allRows) {
+                rowList.add(toEntity(targetClass, row.value()));
+            }
+
+            return N.newDataSet(columnNameList, rowList);
+        }
     }
 
     /**

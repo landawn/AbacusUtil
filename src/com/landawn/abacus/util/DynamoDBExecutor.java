@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -55,6 +56,7 @@ import com.amazonaws.services.dynamodbv2.model.UpdateItemResult;
 import com.amazonaws.services.dynamodbv2.model.WriteRequest;
 import com.landawn.abacus.DataSet;
 import com.landawn.abacus.DirtyMarker;
+import com.landawn.abacus.core.RowDataSet;
 import com.landawn.abacus.exception.AbacusException;
 import com.landawn.abacus.parser.ParserUtil;
 import com.landawn.abacus.parser.ParserUtil.EntityInfo;
@@ -279,26 +281,36 @@ public final class DynamoDBExecutor implements Closeable {
     }
 
     static DataSet extractData(final List<Map<String, AttributeValue>> items, int offset, int count) {
-        if (offset < 0 || count < 0) {
-            throw new IllegalArgumentException("Offset and count can't be negative");
+        N.checkArgument(offset >= 0 && count >= 0, "'offset' and 'count' can't be negative: %s, %s", offset, count);
+
+        if (N.isNullOrEmpty(items) || count == 0 || offset >= items.size()) {
+            return N.newEmptyDataSet();
         }
 
-        final List<Map<String, Object>> rowList = new ArrayList<>(items == null ? 0 : items.size());
+        final Set<String> columnNames = new LinkedHashSet<>();
 
-        if (N.notNullOrEmpty(items)) {
-            for (int i = offset, to = items.size(); i < to && count > 0; i++, count--) {
-                final Map<String, AttributeValue> item = items.get(i);
-                final Map<String, Object> row = new HashMap<>(N.initHashCapacity(item.size()));
+        for (int i = offset, to = items.size(); i < to && count > 0; i++, count--) {
+            columnNames.addAll(items.get(i).keySet());
+        }
 
-                for (Map.Entry<String, AttributeValue> entry : item.entrySet()) {
-                    row.put(entry.getKey(), toValue(entry.getValue()));
-                }
+        final int rowCount = N.min(count, items.size() - offset);
+        final int columnCount = columnNames.size();
+        final List<String> columnNameList = new ArrayList<>(columnNames);
+        final List<List<Object>> columnList = new ArrayList<>(columnCount);
 
-                rowList.add(row);
+        for (int i = 0; i < columnCount; i++) {
+            columnList.add(new ArrayList<>(rowCount));
+        }
+
+        for (int i = offset, to = items.size(); i < to && count > 0; i++, count--) {
+            final Map<String, AttributeValue> item = items.get(i);
+
+            for (int j = 0; j < columnCount; j++) {
+                columnList.get(j).add(toValue(item.get(columnList.get(j))));
             }
         }
 
-        return N.newDataSet(rowList);
+        return new RowDataSet(columnNameList, columnList);
     }
 
     /**
@@ -1067,7 +1079,25 @@ public final class DynamoDBExecutor implements Closeable {
      * @see #find(Class, QueryRequest)
      */
     public DataSet query(final Class<?> targetClass, final QueryRequest queryRequest) {
-        return N.newDataSet(find(targetClass, queryRequest));
+        if (targetClass == null || Map.class.isAssignableFrom(targetClass)) {
+            final QueryResult queryResult = dynamoDB.query(queryRequest);
+            final List<Map<String, AttributeValue>> items = queryResult.getItems();
+
+            if (N.notNullOrEmpty(queryResult.getLastEvaluatedKey()) && N.isNullOrEmpty(queryRequest.getExclusiveStartKey())) {
+                final QueryRequest newQueryRequest = queryRequest.clone();
+                QueryResult newQueryResult = queryResult;
+
+                while (N.notNullOrEmpty(newQueryResult.getLastEvaluatedKey())) {
+                    newQueryRequest.setExclusiveStartKey(newQueryResult.getLastEvaluatedKey());
+                    newQueryResult = dynamoDB.query(newQueryRequest);
+                    items.addAll(newQueryResult.getItems());
+                }
+            }
+
+            return extractData(items, 0, items.size());
+        } else {
+            return N.newDataSet(find(targetClass, queryRequest));
+        }
     }
 
     //    /**

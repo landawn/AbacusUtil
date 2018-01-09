@@ -918,6 +918,16 @@ public final class CassandraExecutor implements Closeable {
         return stream(targetClass, pair.cql, pair.parameters.toArray());
     }
 
+    public <T> Stream<Object[]> streamm(final Class<T> targetClass, final Condition whereCause) {
+        return streamm(targetClass, null, whereCause);
+    }
+
+    public <T> Stream<Object[]> streamm(final Class<T> targetClass, final Collection<String> selectPropNames, final Condition whereCause) {
+        final CP pair = prepareQuery(targetClass, selectPropNames, whereCause);
+
+        return stream(pair.cql, pair.parameters.toArray());
+    }
+
     /**
      * Always remember to set "<code>LIMIT 1</code>" in the cql statement for better performance.
      *
@@ -1461,6 +1471,25 @@ public final class CassandraExecutor implements Closeable {
             @Override
             public Stream<T> call() throws Exception {
                 return stream(targetClass, selectPropName, whereCause);
+            }
+        });
+    }
+
+    public <T> CompletableFuture<Stream<Object[]>> asyncStreamm(final Class<T> targetClass, final Condition whereCause) {
+        return asyncExecutor.execute(new Callable<Stream<Object[]>>() {
+            @Override
+            public Stream<Object[]> call() throws Exception {
+                return streamm(targetClass, whereCause);
+            }
+        });
+    }
+
+    public <T> CompletableFuture<Stream<Object[]>> asyncStreamm(final Class<T> targetClass, final Collection<String> selectPropName,
+            final Condition whereCause) {
+        return asyncExecutor.execute(new Callable<Stream<Object[]>>() {
+            @Override
+            public Stream<Object[]> call() throws Exception {
+                return streamm(targetClass, selectPropName, whereCause);
             }
         });
     }

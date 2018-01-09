@@ -85,9 +85,7 @@ public final class Clazz {
     /**
      * @param cls
      * @return
-     * @Deprecated To be removed in version 1.2.0 because it doesn't work as expected.
      */
-    @Deprecated
     @SuppressWarnings("rawtypes")
     public static <T> Class<T> of(Class<? super T> cls) {
         return (Class) cls;
