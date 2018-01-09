@@ -589,7 +589,7 @@ abstract class AbstractByteStream extends ByteStream {
     }
 
     @Override
-    public Pair<ByteSummaryStatistics, Optional<Map<Percentage, Byte>>> summarizee() {
+    public Pair<ByteSummaryStatistics, Optional<Map<Percentage, Byte>>> summarizze() {
         final byte[] a = sorted().toArray();
 
         if (N.isNullOrEmpty(a)) {

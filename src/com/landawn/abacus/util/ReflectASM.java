@@ -81,7 +81,7 @@ final class ReflectASM<T> {
     }
 
     @SafeVarargs
-    public final ReflectASM<T> invokee(String methodName, Object... args) {
+    public final ReflectASM<T> invokke(String methodName, Object... args) {
         invoke(methodName, args);
 
         return this;

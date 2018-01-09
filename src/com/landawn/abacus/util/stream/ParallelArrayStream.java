@@ -2827,7 +2827,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         }
 
-        completee(futureList, eHolder, (E) null);
+        complette(futureList, eHolder, (E) null);
     }
 
     @Override
@@ -2882,7 +2882,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }));
         }
 
-        completee(futureList, eHolder, (E) null);
+        complette(futureList, eHolder, (E) null);
     }
 
     @Override
@@ -2928,7 +2928,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }));
         }
 
-        completee(futureList, eHolder, (E) null);
+        complette(futureList, eHolder, (E) null);
     }
 
     @Override
@@ -3741,7 +3741,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         }
 
-        completee(futureList, eHolder, (E) null);
+        complette(futureList, eHolder, (E) null);
 
         return result.value();
     }
@@ -3816,7 +3816,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         }
 
-        completee(futureList, eHolder, (E) null);
+        complette(futureList, eHolder, (E) null);
 
         return result.value();
     }
@@ -3891,7 +3891,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         }
 
-        completee(futureList, eHolder, (E) null);
+        complette(futureList, eHolder, (E) null);
 
         return result.value();
     }
@@ -3981,7 +3981,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         }
 
-        completee(futureList, eHolder, (E) null);
+        complette(futureList, eHolder, (E) null);
 
         return resultHolder.value() == null ? (Nullable<T>) Nullable.empty() : Nullable.of(resultHolder.value().right);
     }
@@ -4071,7 +4071,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         }
 
-        completee(futureList, eHolder, (E) null);
+        complette(futureList, eHolder, (E) null);
 
         return resultHolder.value() == null ? (Nullable<T>) Nullable.empty() : Nullable.of(resultHolder.value().right);
     }
@@ -4159,7 +4159,7 @@ final class ParallelArrayStream<T> extends ArrayStream<T> {
             }
         }
 
-        completee(futureList, eHolder, (E) null);
+        complette(futureList, eHolder, (E) null);
 
         return resultHolder.value() == NONE ? (Nullable<T>) Nullable.empty() : Nullable.of(resultHolder.value());
     }

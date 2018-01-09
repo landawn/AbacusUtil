@@ -1027,7 +1027,7 @@ abstract class AbstractStream<T> extends Stream<T> {
 
     @Override
     public OptionalDouble averageDouble(ToDoubleFunction<? super T> mapper) {
-        return collect(Collectors.averagingDoublee(mapper));
+        return collect(Collectors.averagingDoubble(mapper));
     }
 
     @Override

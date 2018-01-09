@@ -587,7 +587,7 @@ abstract class AbstractIntStream extends IntStream {
     }
 
     @Override
-    public Pair<IntSummaryStatistics, Optional<Map<Percentage, Integer>>> summarizee() {
+    public Pair<IntSummaryStatistics, Optional<Map<Percentage, Integer>>> summarizze() {
         final int[] a = sorted().toArray();
 
         if (N.isNullOrEmpty(a)) {

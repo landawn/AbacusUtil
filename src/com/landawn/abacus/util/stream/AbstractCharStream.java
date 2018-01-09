@@ -587,7 +587,7 @@ abstract class AbstractCharStream extends CharStream {
     }
 
     @Override
-    public Pair<CharSummaryStatistics, Optional<Map<Percentage, Character>>> summarizee() {
+    public Pair<CharSummaryStatistics, Optional<Map<Percentage, Character>>> summarizze() {
         final char[] a = sorted().toArray();
 
         if (N.isNullOrEmpty(a)) {

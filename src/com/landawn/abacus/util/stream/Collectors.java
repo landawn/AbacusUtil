@@ -2403,7 +2403,7 @@ public class Collectors {
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
     }
 
-    public static <T> Collector<T, ?, OptionalDouble> summingDoublee(final ToDoubleFunction<? super T> mapper) {
+    public static <T> Collector<T, ?, OptionalDouble> summingDoubble(final ToDoubleFunction<? super T> mapper) {
         /*
          * In the arrays allocated for the collect operation, index 0
          * holds the high-order bits of the running sum, index 1 holds
@@ -2616,7 +2616,7 @@ public class Collectors {
         return new CollectorImpl<>(supplier, accumulator, combiner, finisher, CH_CONCURRENT_NOID);
     }
 
-    public static <T> Collector<T, ?, OptionalDouble> averagingDoublee(final ToDoubleFunction<? super T> mapper) {
+    public static <T> Collector<T, ?, OptionalDouble> averagingDoubble(final ToDoubleFunction<? super T> mapper) {
         final Supplier<double[]> supplier = AveragingDouble_Supplier;
 
         final BiConsumer<double[], T> accumulator = new BiConsumer<double[], T>() {

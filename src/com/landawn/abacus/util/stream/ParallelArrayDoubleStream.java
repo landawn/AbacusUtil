@@ -481,7 +481,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
             }
         }
 
-        completee(futureList, eHolder, (E) null);
+        complette(futureList, eHolder, (E) null);
     }
 
     @Override
@@ -1323,7 +1323,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
             }
         }
 
-        completee(futureList, eHolder, (E) null);
+        complette(futureList, eHolder, (E) null);
 
         return result.value();
     }
@@ -1396,7 +1396,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
             }
         }
 
-        completee(futureList, eHolder, (E) null);
+        complette(futureList, eHolder, (E) null);
 
         return result.value();
     }
@@ -1469,7 +1469,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
             }
         }
 
-        completee(futureList, eHolder, (E) null);
+        complette(futureList, eHolder, (E) null);
 
         return result.value();
     }
@@ -1557,7 +1557,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
             }
         }
 
-        completee(futureList, eHolder, (E) null);
+        complette(futureList, eHolder, (E) null);
 
         return resultHolder.value() == null ? OptionalDouble.empty() : OptionalDouble.of(resultHolder.value().right);
     }
@@ -1645,7 +1645,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
             }
         }
 
-        completee(futureList, eHolder, (E) null);
+        complette(futureList, eHolder, (E) null);
 
         return resultHolder.value() == null ? OptionalDouble.empty() : OptionalDouble.of(resultHolder.value().right);
     }
@@ -1731,7 +1731,7 @@ final class ParallelArrayDoubleStream extends ArrayDoubleStream {
             }
         }
 
-        completee(futureList, eHolder, (E) null);
+        complette(futureList, eHolder, (E) null);
 
         return resultHolder.value() == NONE ? OptionalDouble.empty() : OptionalDouble.of((Double) resultHolder.value());
     }

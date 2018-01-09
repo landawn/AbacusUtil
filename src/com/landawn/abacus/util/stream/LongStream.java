@@ -606,7 +606,7 @@ public abstract class LongStream extends StreamBase<Long, long[], LongPredicate,
 
     public abstract LongSummaryStatistics summarize();
 
-    public abstract Pair<LongSummaryStatistics, Optional<Map<Percentage, Long>>> summarizee();
+    public abstract Pair<LongSummaryStatistics, Optional<Map<Percentage, Long>>> summarizze();
 
     /**
      * 

@@ -8054,7 +8054,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
             iterList.add(e.iterator());
         }
 
-        return mergee(iterList, nextSelector).onClose(newCloseHandler(c));
+        return mergge(iterList, nextSelector).onClose(newCloseHandler(c));
     }
 
     /**
@@ -8063,7 +8063,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
      * @return
      */
-    public static <T> Stream<T> mergee(final Collection<? extends Iterator<? extends T>> c, final BiFunction<? super T, ? super T, Nth> nextSelector) {
+    public static <T> Stream<T> mergge(final Collection<? extends Iterator<? extends T>> c, final BiFunction<? super T, ? super T, Nth> nextSelector) {
         N.requireNonNull(nextSelector);
 
         if (N.isNullOrEmpty(c)) {
@@ -8119,7 +8119,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
             iterList.add(e.iterator());
         }
 
-        return parallelMergee(iterList, nextSelector, maxThreadNum).onClose(newCloseHandler(c));
+        return parallelMergge(iterList, nextSelector, maxThreadNum).onClose(newCloseHandler(c));
     }
 
     /**
@@ -8128,8 +8128,8 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param nextSelector first parameter is selected if <code>Nth.FIRST</code> is returned, otherwise the second parameter is selected.
      * @return
      */
-    public static <T> Stream<T> parallelMergee(final Collection<? extends Iterator<? extends T>> c, final BiFunction<? super T, ? super T, Nth> nextSelector) {
-        return parallelMergee(c, nextSelector, DEFAULT_MAX_THREAD_NUM);
+    public static <T> Stream<T> parallelMergge(final Collection<? extends Iterator<? extends T>> c, final BiFunction<? super T, ? super T, Nth> nextSelector) {
+        return parallelMergge(c, nextSelector, DEFAULT_MAX_THREAD_NUM);
     }
 
     /**
@@ -8139,7 +8139,7 @@ public abstract class Stream<T> extends StreamBase<T, Object[], Predicate<? supe
      * @param maxThreadNum
      * @return
      */
-    public static <T> Stream<T> parallelMergee(final Collection<? extends Iterator<? extends T>> c, final BiFunction<? super T, ? super T, Nth> nextSelector,
+    public static <T> Stream<T> parallelMergge(final Collection<? extends Iterator<? extends T>> c, final BiFunction<? super T, ? super T, Nth> nextSelector,
             final int maxThreadNum) {
         checkMaxThreadNum(maxThreadNum);
 

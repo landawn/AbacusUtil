@@ -476,7 +476,7 @@ public final class Futures {
 
             @Override
             public T get() throws InterruptedException, ExecutionException {
-                final Iterator<Pair<T, Exception>> iter = iteratee(cfs);
+                final Iterator<Pair<T, Exception>> iter = iteratte(cfs);
                 Pair<T, Exception> result = null;
 
                 while (iter.hasNext()) {
@@ -492,7 +492,7 @@ public final class Futures {
 
             @Override
             public T get(final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-                final Iterator<Pair<T, Exception>> iter = iteratee(cfs, timeout, unit);
+                final Iterator<Pair<T, Exception>> iter = iteratte(cfs, timeout, unit);
                 Pair<T, Exception> result = null;
 
                 while (iter.hasNext()) {
@@ -546,15 +546,15 @@ public final class Futures {
     }
 
     @SafeVarargs
-    public static <T> Iterator<Pair<T, Exception>> iteratee(final CompletableFuture<? extends T>... cfs) {
+    public static <T> Iterator<Pair<T, Exception>> iteratte(final CompletableFuture<? extends T>... cfs) {
         return iterate22(Arrays.asList(cfs));
     }
 
-    public static <T> Iterator<Pair<T, Exception>> iteratee(final Collection<? extends CompletableFuture<? extends T>> cfs) {
+    public static <T> Iterator<Pair<T, Exception>> iteratte(final Collection<? extends CompletableFuture<? extends T>> cfs) {
         return iterate22(cfs);
     }
 
-    public static <T> Iterator<Pair<T, Exception>> iteratee(final Collection<? extends CompletableFuture<? extends T>> cfs, final long timeout,
+    public static <T> Iterator<Pair<T, Exception>> iteratte(final Collection<? extends CompletableFuture<? extends T>> cfs, final long timeout,
             final TimeUnit unit) {
         return iterate22(cfs, timeout, unit);
     }

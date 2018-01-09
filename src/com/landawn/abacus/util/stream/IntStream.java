@@ -631,7 +631,7 @@ public abstract class IntStream extends StreamBase<Integer, int[], IntPredicate,
 
     public abstract IntSummaryStatistics summarize();
 
-    public abstract Pair<IntSummaryStatistics, Optional<Map<Percentage, Integer>>> summarizee();
+    public abstract Pair<IntSummaryStatistics, Optional<Map<Percentage, Integer>>> summarizze();
 
     /**
      * 

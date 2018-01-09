@@ -543,7 +543,7 @@ public abstract class ShortStream extends StreamBase<Short, short[], ShortPredic
 
     public abstract ShortSummaryStatistics summarize();
 
-    public abstract Pair<ShortSummaryStatistics, Optional<Map<Percentage, Short>>> summarizee();
+    public abstract Pair<ShortSummaryStatistics, Optional<Map<Percentage, Short>>> summarizze();
 
     /**
      * 

@@ -1078,7 +1078,7 @@ public final class Fn {
 
             @Override
             public boolean test(T t) {
-                return predicate.test(t) && counter.decrementAndGet() >= 0;
+                return counter.getAndDecrement() > 0 && predicate.test(t);
             }
         };
     }
@@ -1097,7 +1097,7 @@ public final class Fn {
 
             @Override
             public boolean test(T t) {
-                return predicate.test(t) && counter.decrementAndGet() >= 0;
+                return counter.getAndDecrement() > 0 && predicate.test(t);
             }
         };
     }
@@ -1116,7 +1116,7 @@ public final class Fn {
 
             @Override
             public boolean test(T t, U u) {
-                return predicate.test(t, u) && counter.decrementAndGet() >= 0;
+                return counter.getAndDecrement() > 0 && predicate.test(t, u);
             }
         };
     }
@@ -1135,7 +1135,7 @@ public final class Fn {
 
             @Override
             public boolean test(T t, U u) {
-                return predicate.test(t, u) && counter.decrementAndGet() >= 0;
+                return counter.getAndDecrement() > 0 && predicate.test(t, u);
             }
         };
     }
@@ -1154,7 +1154,7 @@ public final class Fn {
 
             @Override
             public boolean test(A a, B b, C c) {
-                return predicate.test(a, b, c) && counter.decrementAndGet() >= 0;
+                return counter.getAndDecrement() > 0 && predicate.test(a, b, c);
             }
         };
     }
@@ -1173,7 +1173,7 @@ public final class Fn {
 
             @Override
             public boolean test(A a, B b, C c) {
-                return predicate.test(a, b, c) && counter.decrementAndGet() >= 0;
+                return counter.getAndDecrement() > 0 && predicate.test(a, b, c);
             }
         };
     }

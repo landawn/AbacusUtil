@@ -534,7 +534,7 @@ public abstract class CharStream extends StreamBase<Character, char[], CharPredi
 
     public abstract CharSummaryStatistics summarize();
 
-    public abstract Pair<CharSummaryStatistics, Optional<Map<Percentage, Character>>> summarizee();
+    public abstract Pair<CharSummaryStatistics, Optional<Map<Percentage, Character>>> summarizze();
 
     /**
      * 

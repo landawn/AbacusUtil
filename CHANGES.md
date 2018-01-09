@@ -1,6 +1,8 @@
 ### 1.1.9
 
-* Rename `Mapper.WriteOnly/registerWriteOnlyProps` to `Mapper.NonUpdatable/registerNonUpdatableProps`
+* Rename `Mapper.WriteOnly/registerWriteOnlyProps` to `Mapper.NonUpdatable/registerNonUpdatableProps`.
+
+* Rename `iteratee/mergee/parallelMergee/summarizee/summingDoublee/averagingDoublee/reshapee/invokee/onTextChangedd/beforeTextChangedd/afterTextChangedd` to `iteratte/mergge/parallelMergge/summarizze/summingDoubble/averagingDoubble/reshappe/invokke/onTextChangged/beforeTextChangged/afterTextChangged`.
 
 * Add `Mapper.findAll/queryAll/streamAll`.
 

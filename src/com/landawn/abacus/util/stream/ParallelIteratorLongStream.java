@@ -604,7 +604,7 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
             }));
         }
 
-        completee(futureList, eHolder, (E) null);
+        complette(futureList, eHolder, (E) null);
     }
 
     @Override
@@ -1112,7 +1112,7 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
             }));
         }
 
-        completee(futureList, eHolder, (E) null);
+        complette(futureList, eHolder, (E) null);
 
         return result.value();
     }
@@ -1155,7 +1155,7 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
             }));
         }
 
-        completee(futureList, eHolder, (E) null);
+        complette(futureList, eHolder, (E) null);
 
         return result.value();
     }
@@ -1198,7 +1198,7 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
             }));
         }
 
-        completee(futureList, eHolder, (E) null);
+        complette(futureList, eHolder, (E) null);
 
         return result.value();
     }
@@ -1248,7 +1248,7 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
             }));
         }
 
-        completee(futureList, eHolder, (E) null);
+        complette(futureList, eHolder, (E) null);
 
         return resultHolder.value() == null ? OptionalLong.empty() : OptionalLong.of(resultHolder.value().right);
     }
@@ -1296,7 +1296,7 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
             }));
         }
 
-        completee(futureList, eHolder, (E) null);
+        complette(futureList, eHolder, (E) null);
 
         return resultHolder.value() == null ? OptionalLong.empty() : OptionalLong.of(resultHolder.value().right);
     }
@@ -1344,7 +1344,7 @@ final class ParallelIteratorLongStream extends IteratorLongStream {
             }));
         }
 
-        completee(futureList, eHolder, (E) null);
+        complette(futureList, eHolder, (E) null);
 
         return resultHolder.value() == NONE ? OptionalLong.empty() : OptionalLong.of((Long) resultHolder.value());
     }

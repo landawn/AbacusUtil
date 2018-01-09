@@ -587,7 +587,7 @@ abstract class AbstractShortStream extends ShortStream {
     }
 
     @Override
-    public Pair<ShortSummaryStatistics, Optional<Map<Percentage, Short>>> summarizee() {
+    public Pair<ShortSummaryStatistics, Optional<Map<Percentage, Short>>> summarizze() {
         final short[] a = sorted().toArray();
 
         if (N.isNullOrEmpty(a)) {

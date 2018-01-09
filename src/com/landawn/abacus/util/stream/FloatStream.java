@@ -665,7 +665,7 @@ public abstract class FloatStream extends StreamBase<Float, float[], FloatPredic
 
     public abstract FloatSummaryStatistics summarize();
 
-    public abstract Pair<FloatSummaryStatistics, Optional<Map<Percentage, Float>>> summarizee();
+    public abstract Pair<FloatSummaryStatistics, Optional<Map<Percentage, Float>>> summarizze();
 
     /**
      * 

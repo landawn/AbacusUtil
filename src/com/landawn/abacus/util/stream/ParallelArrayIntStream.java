@@ -586,7 +586,7 @@ final class ParallelArrayIntStream extends ArrayIntStream {
             }
         }
 
-        completee(futureList, eHolder, (E) null);
+        complette(futureList, eHolder, (E) null);
     }
 
     @Override
@@ -1334,7 +1334,7 @@ final class ParallelArrayIntStream extends ArrayIntStream {
             }
         }
 
-        completee(futureList, eHolder, (E) null);
+        complette(futureList, eHolder, (E) null);
 
         return result.value();
     }
@@ -1408,7 +1408,7 @@ final class ParallelArrayIntStream extends ArrayIntStream {
             }
         }
 
-        completee(futureList, eHolder, (E) null);
+        complette(futureList, eHolder, (E) null);
 
         return result.value();
     }
@@ -1482,7 +1482,7 @@ final class ParallelArrayIntStream extends ArrayIntStream {
             }
         }
 
-        completee(futureList, eHolder, (E) null);
+        complette(futureList, eHolder, (E) null);
 
         return result.value();
     }
@@ -1570,7 +1570,7 @@ final class ParallelArrayIntStream extends ArrayIntStream {
             }
         }
 
-        completee(futureList, eHolder, (E) null);
+        complette(futureList, eHolder, (E) null);
 
         return resultHolder.value() == null ? OptionalInt.empty() : OptionalInt.of(resultHolder.value().right);
     }
@@ -1658,7 +1658,7 @@ final class ParallelArrayIntStream extends ArrayIntStream {
             }
         }
 
-        completee(futureList, eHolder, (E) null);
+        complette(futureList, eHolder, (E) null);
 
         return resultHolder.value() == null ? OptionalInt.empty() : OptionalInt.of(resultHolder.value().right);
     }
@@ -1744,7 +1744,7 @@ final class ParallelArrayIntStream extends ArrayIntStream {
             }
         }
 
-        completee(futureList, eHolder, (E) null);
+        complette(futureList, eHolder, (E) null);
 
         return resultHolder.value() == NONE ? OptionalInt.empty() : OptionalInt.of((Integer) resultHolder.value());
     }

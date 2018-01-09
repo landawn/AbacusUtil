@@ -160,7 +160,11 @@ public final class CassandraExecutor implements Closeable {
     }
 
     public CassandraExecutor(final Session session, final StatementSettings settings) {
-        this(session, settings, null);
+        this(session, settings, (AsyncExecutor) null);
+    }
+
+    public CassandraExecutor(final Session session, final StatementSettings settings, final AsyncExecutor asyncExecutor) {
+        this(session, settings, null, null, asyncExecutor);
     }
 
     public CassandraExecutor(final Session session, final StatementSettings settings, final CQLMapper cqlMapper) {

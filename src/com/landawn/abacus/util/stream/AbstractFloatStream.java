@@ -652,7 +652,7 @@ abstract class AbstractFloatStream extends FloatStream {
     }
 
     @Override
-    public Pair<FloatSummaryStatistics, Optional<Map<Percentage, Float>>> summarizee() {
+    public Pair<FloatSummaryStatistics, Optional<Map<Percentage, Float>>> summarizze() {
         final float[] a = sorted().toArray();
 
         if (N.isNullOrEmpty(a)) {

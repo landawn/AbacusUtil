@@ -665,7 +665,7 @@ public abstract class DoubleStream
 
     public abstract DoubleSummaryStatistics summarize();
 
-    public abstract Pair<DoubleSummaryStatistics, Optional<Map<Percentage, Double>>> summarizee();
+    public abstract Pair<DoubleSummaryStatistics, Optional<Map<Percentage, Double>>> summarizze();
 
     /**
      * 

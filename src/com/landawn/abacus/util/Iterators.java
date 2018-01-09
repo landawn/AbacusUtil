@@ -886,8 +886,18 @@ public final class Iterators {
         };
     }
 
+    public static <T> ObjIterator<T> merge(final Collection<? extends T> a, final Collection<? extends T> b,
+            final BiFunction<? super T, ? super T, Nth> nextSelector) {
+        final Iterator<T> iterA = N.isNullOrEmpty(a) ? ObjIterator.<T> empty() : (Iterator<T>) a.iterator();
+        final Iterator<T> iterB = N.isNullOrEmpty(b) ? ObjIterator.<T> empty() : (Iterator<T>) b.iterator();
+
+        return merge(iterA, iterB, nextSelector);
+
+    }
+
     public static <T> ObjIterator<T> merge(final Iterator<? extends T> a, final Iterator<? extends T> b,
             final BiFunction<? super T, ? super T, Nth> nextSelector) {
+        N.requireNonNull(nextSelector);
 
         return new ObjIterator<T>() {
             private final Iterator<? extends T> iterA = a == null ? ObjIterator.<T> empty() : a;
@@ -949,7 +959,16 @@ public final class Iterators {
         };
     }
 
+    public static <A, B, R> ObjIterator<R> zip(final Collection<A> a, final Collection<B> b, final BiFunction<? super A, ? super B, R> zipFunction) {
+        final Iterator<A> iterA = N.isNullOrEmpty(a) ? ObjIterator.<A> empty() : a.iterator();
+        final Iterator<B> iterB = N.isNullOrEmpty(b) ? ObjIterator.<B> empty() : b.iterator();
+
+        return zip(iterA, iterB, zipFunction);
+    }
+
     public static <A, B, R> ObjIterator<R> zip(final Iterator<A> a, final Iterator<B> b, final BiFunction<? super A, ? super B, R> zipFunction) {
+        N.requireNonNull(zipFunction);
+
         return new ObjIterator<R>() {
             private final Iterator<A> iterA = a == null ? ObjIterator.<A> empty() : a;
             private final Iterator<B> iterB = b == null ? ObjIterator.<B> empty() : b;
@@ -966,8 +985,19 @@ public final class Iterators {
         };
     }
 
+    public static <A, B, C, R> ObjIterator<R> zip(final Collection<A> a, final Collection<B> b, final Collection<C> c,
+            final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
+        final Iterator<A> iterA = N.isNullOrEmpty(a) ? ObjIterator.<A> empty() : a.iterator();
+        final Iterator<B> iterB = N.isNullOrEmpty(b) ? ObjIterator.<B> empty() : b.iterator();
+        final Iterator<C> iterC = N.isNullOrEmpty(c) ? ObjIterator.<C> empty() : c.iterator();
+
+        return zip(iterA, iterB, iterC, zipFunction);
+    }
+
     public static <A, B, C, R> ObjIterator<R> zip(final Iterator<A> a, final Iterator<B> b, final Iterator<C> c,
             final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
+        N.requireNonNull(zipFunction);
+
         return new ObjIterator<R>() {
             private final Iterator<A> iterA = a == null ? ObjIterator.<A> empty() : a;
             private final Iterator<B> iterB = b == null ? ObjIterator.<B> empty() : b;
@@ -985,8 +1015,18 @@ public final class Iterators {
         };
     }
 
+    public static <A, B, R> ObjIterator<R> zip(final Collection<A> a, final Collection<B> b, final A valueForNoneA, final B valueForNoneB,
+            final BiFunction<? super A, ? super B, R> zipFunction) {
+        final Iterator<A> iterA = N.isNullOrEmpty(a) ? ObjIterator.<A> empty() : a.iterator();
+        final Iterator<B> iterB = N.isNullOrEmpty(b) ? ObjIterator.<B> empty() : b.iterator();
+
+        return zip(iterA, iterB, valueForNoneA, valueForNoneB, zipFunction);
+    }
+
     public static <A, B, R> ObjIterator<R> zip(final Iterator<A> a, final Iterator<B> b, final A valueForNoneA, final B valueForNoneB,
             final BiFunction<? super A, ? super B, R> zipFunction) {
+        N.requireNonNull(zipFunction);
+
         return new ObjIterator<R>() {
             private final Iterator<A> iterA = a == null ? ObjIterator.<A> empty() : a;
             private final Iterator<B> iterB = b == null ? ObjIterator.<B> empty() : b;
@@ -1001,6 +1041,15 @@ public final class Iterators {
                 return zipFunction.apply(iterA.hasNext() ? iterA.next() : valueForNoneA, iterB.hasNext() ? iterB.next() : valueForNoneB);
             }
         };
+    }
+
+    public static <A, B, C, R> ObjIterator<R> zip(final Collection<A> a, final Collection<B> b, final Collection<C> c, final A valueForNoneA,
+            final B valueForNoneB, final C valueForNoneC, final TriFunction<? super A, ? super B, ? super C, R> zipFunction) {
+        final Iterator<A> iterA = N.isNullOrEmpty(a) ? ObjIterator.<A> empty() : a.iterator();
+        final Iterator<B> iterB = N.isNullOrEmpty(b) ? ObjIterator.<B> empty() : b.iterator();
+        final Iterator<C> iterC = N.isNullOrEmpty(c) ? ObjIterator.<C> empty() : c.iterator();
+
+        return zip(iterA, iterB, iterC, valueForNoneA, valueForNoneB, valueForNoneC, zipFunction);
     }
 
     public static <A, B, C, R> ObjIterator<R> zip(final Iterator<A> a, final Iterator<B> b, final Iterator<C> c, final A valueForNoneA, final B valueForNoneB,

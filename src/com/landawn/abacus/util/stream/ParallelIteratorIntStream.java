@@ -705,7 +705,7 @@ final class ParallelIteratorIntStream extends IteratorIntStream {
             }));
         }
 
-        completee(futureList, eHolder, (E) null);
+        complette(futureList, eHolder, (E) null);
     }
 
     @Override
@@ -1213,7 +1213,7 @@ final class ParallelIteratorIntStream extends IteratorIntStream {
             }));
         }
 
-        completee(futureList, eHolder, (E) null);
+        complette(futureList, eHolder, (E) null);
 
         return result.value();
     }
@@ -1256,7 +1256,7 @@ final class ParallelIteratorIntStream extends IteratorIntStream {
             }));
         }
 
-        completee(futureList, eHolder, (E) null);
+        complette(futureList, eHolder, (E) null);
 
         return result.value();
     }
@@ -1299,7 +1299,7 @@ final class ParallelIteratorIntStream extends IteratorIntStream {
             }));
         }
 
-        completee(futureList, eHolder, (E) null);
+        complette(futureList, eHolder, (E) null);
 
         return result.value();
     }
@@ -1349,7 +1349,7 @@ final class ParallelIteratorIntStream extends IteratorIntStream {
             }));
         }
 
-        completee(futureList, eHolder, (E) null);
+        complette(futureList, eHolder, (E) null);
 
         return resultHolder.value() == null ? OptionalInt.empty() : OptionalInt.of(resultHolder.value().right);
     }
@@ -1397,7 +1397,7 @@ final class ParallelIteratorIntStream extends IteratorIntStream {
             }));
         }
 
-        completee(futureList, eHolder, (E) null);
+        complette(futureList, eHolder, (E) null);
 
         return resultHolder.value() == null ? OptionalInt.empty() : OptionalInt.of(resultHolder.value().right);
     }
@@ -1445,7 +1445,7 @@ final class ParallelIteratorIntStream extends IteratorIntStream {
             }));
         }
 
-        completee(futureList, eHolder, (E) null);
+        complette(futureList, eHolder, (E) null);
 
         return resultHolder.value() == NONE ? OptionalInt.empty() : OptionalInt.of((Integer) resultHolder.value());
     }

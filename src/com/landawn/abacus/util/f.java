@@ -155,7 +155,7 @@ public final class f {
         return c;
     }
 
-    public static <T> T[][] reshapee(final T[] a, final int m) {
+    public static <T> T[][] reshappe(final T[] a, final int m) {
         N.checkArgument(m > 0, "'m' must be positive number: m = %s", m);
 
         //        if (N.isNullOrEmpty(a)) {
@@ -173,7 +173,7 @@ public final class f {
         return c;
     }
 
-    public static <T> T[][][] reshapee(final T[] a, final int m, final int l) {
+    public static <T> T[][][] reshappe(final T[] a, final int m, final int l) {
         N.checkArgument(m > 0 && l > 0, "'m'  and 'l' must be positive number: m = %s, l = %s", m, l);
 
         //        if (N.isNullOrEmpty(a)) {

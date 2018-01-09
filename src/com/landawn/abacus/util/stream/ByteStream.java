@@ -538,7 +538,7 @@ public abstract class ByteStream extends StreamBase<Byte, byte[], BytePredicate,
 
     public abstract ByteSummaryStatistics summarize();
 
-    public abstract Pair<ByteSummaryStatistics, Optional<Map<Percentage, Byte>>> summarizee();
+    public abstract Pair<ByteSummaryStatistics, Optional<Map<Percentage, Byte>>> summarizze();
 
     /**
      * 
