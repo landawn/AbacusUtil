@@ -63,6 +63,7 @@ import com.landawn.abacus.DirtyMarker;
 import com.landawn.abacus.condition.And;
 import com.landawn.abacus.condition.Condition;
 import com.landawn.abacus.condition.ConditionFactory.L;
+import com.landawn.abacus.core.RowDataSet;
 import com.landawn.abacus.exception.NonUniqueResultException;
 import com.landawn.abacus.pool.KeyedObjectPool;
 import com.landawn.abacus.pool.PoolFactory;
@@ -217,7 +218,7 @@ public final class CassandraExecutor implements Closeable {
     }
 
     public static DataSet extractData(final ResultSet resultSet) {
-        return extractData(Map.class, resultSet);
+        return extractData(null, resultSet);
     }
 
     /**
@@ -227,26 +228,99 @@ public final class CassandraExecutor implements Closeable {
      * @return
      */
     public static DataSet extractData(final Class<?> targetClass, final ResultSet resultSet) {
-        checkTargetClass(targetClass);
-
+        final boolean isEntity = targetClass != null && N.isEntity(targetClass);
+        final boolean isMap = targetClass != null && Map.class.isAssignableFrom(targetClass);
         final ColumnDefinitions columnDefinitions = resultSet.getColumnDefinitions();
         final int columnCount = columnDefinitions.size();
         final List<Row> rowList = resultSet.all();
         final int rowCount = N.isNullOrEmpty(rowList) ? 0 : rowList.size();
 
         final List<String> columnNameList = new ArrayList<>(columnCount);
+        final List<List<Object>> columnList = new ArrayList<>(columnCount);
+        final Class<?>[] columnClasses = new Class<?>[columnCount];
 
         for (int i = 0; i < columnCount; i++) {
             columnNameList.add(columnDefinitions.getName(i));
+            columnList.add(new ArrayList<>(rowCount));
+            columnClasses[i] = isEntity ? ClassUtil.getPropGetMethod(targetClass, columnNameList.get(i)).getReturnType() : (isMap ? Map.class : Object[].class);
         }
 
-        final List<Object> entityList = new ArrayList<>(rowCount);
+        Object propValue = null;
 
         for (Row row : rowList) {
-            entityList.add(toEntity(targetClass, row));
+            for (int i = 0; i < columnCount; i++) {
+                propValue = row.getObject(i);
+
+                if (propValue instanceof Row && (columnClasses[i] == null || !columnClasses[i].isAssignableFrom(Row.class))) {
+                    columnList.get(i).add(readRow(columnClasses[i], (Row) propValue));
+                } else if (propValue == null || targetClass == null || isMap || columnClasses[i] == null
+                        || columnClasses[i].isAssignableFrom(propValue.getClass())) {
+                    columnList.get(i).add(propValue);
+                } else {
+                    columnList.get(i).add(N.as(columnClasses[i], propValue));
+                }
+            }
         }
 
-        return N.newDataSet(columnNameList, entityList);
+        return new RowDataSet(columnNameList, columnList);
+    }
+
+    private static Object readRow(final Class<?> rowClass, final Row row) {
+        final Type<?> rowType = rowClass == null ? null : N.typeOf(rowClass);
+        final ColumnDefinitions columnDefinitions = row.getColumnDefinitions();
+        final int columnCount = columnDefinitions.size();
+        Object res = null;
+        Object propValue = null;
+
+        if (rowType == null || rowType.isObjectArray()) {
+            final Object[] a = new Object[columnCount];
+
+            for (int i = 0; i < columnCount; i++) {
+                propValue = row.getObject(i);
+
+                if (propValue instanceof Row) {
+                    a[i] = readRow(Object[].class, (Row) propValue);
+                } else {
+                    a[i] = propValue;
+                }
+            }
+
+            res = a;
+        } else if (rowType.isCollection()) {
+            final Collection<Object> c = (Collection<Object>) N.newInstance(rowClass);
+
+            for (int i = 0; i < columnCount; i++) {
+                propValue = row.getObject(i);
+
+                if (propValue instanceof Row) {
+                    c.add(readRow(List.class, (Row) propValue));
+                } else {
+                    c.add(propValue);
+                }
+            }
+
+            res = c;
+        } else if (rowType.isMap()) {
+            final Map<String, Object> m = (Map<String, Object>) N.newInstance(rowClass);
+
+            for (int i = 0; i < columnCount; i++) {
+                propValue = row.getObject(i);
+
+                if (propValue instanceof Row) {
+                    m.put(columnDefinitions.getName(i), readRow(Map.class, (Row) propValue));
+                } else {
+                    m.put(columnDefinitions.getName(i), propValue);
+                }
+            }
+
+            res = m;
+        } else if (rowType.isEntity()) {
+            res = toEntity(rowClass, row);
+        } else {
+            throw new IllegalArgumentException("Unsupported row/column type: " + ClassUtil.getCanonicalClassName(rowClass));
+        }
+
+        return res;
     }
 
     /**
@@ -319,7 +393,7 @@ public final class CassandraExecutor implements Closeable {
                 propValue = row.getObject(i);
 
                 if (propValue instanceof Row) {
-                    map.put(propName, toEntity(targetClass, (Row) propValue));
+                    map.put(propName, toEntity(Map.class, (Row) propValue));
                 } else {
                     map.put(propName, propValue);
                 }
@@ -917,10 +991,34 @@ public final class CassandraExecutor implements Closeable {
         return extractData(targetClass, execute(query, parameters));
     }
 
-    @SuppressWarnings("rawtypes")
     @SafeVarargs
-    public final Stream<Map<String, Object>> stream(final String query, final Object... parameters) {
-        return (Stream) stream(Map.class, query, parameters);
+    public final Stream<Object[]> stream(final String query, final Object... parameters) {
+        final MutableInt columnCount = MutableInt.of(0);
+
+        return Stream.of(execute(query, parameters).iterator()).map(new Function<Row, Object[]>() {
+            @Override
+            public Object[] apply(Row row) {
+                if (columnCount.value() == 0) {
+                    final ColumnDefinitions columnDefinitions = row.getColumnDefinitions();
+                    columnCount.setAndGet(columnDefinitions.size());
+                }
+
+                final Object[] a = new Object[columnCount.value()];
+                Object propValue = null;
+
+                for (int i = 0, len = a.length; i < len; i++) {
+                    propValue = row.getObject(i);
+
+                    if (propValue instanceof Row) {
+                        a[i] = readRow(Object[].class, (Row) propValue);
+                    } else {
+                        a[i] = propValue;
+                    }
+                }
+
+                return a;
+            }
+        });
     }
 
     /**
@@ -1451,10 +1549,10 @@ public final class CassandraExecutor implements Closeable {
     }
 
     @SafeVarargs
-    public final CompletableFuture<Stream<Map<String, Object>>> asyncStream(final String query, final Object... parameters) {
-        return asyncExecutor.execute(new Callable<Stream<Map<String, Object>>>() {
+    public final CompletableFuture<Stream<Object[]>> asyncStream(final String query, final Object... parameters) {
+        return asyncExecutor.execute(new Callable<Stream<Object[]>>() {
             @Override
-            public Stream<Map<String, Object>> call() throws Exception {
+            public Stream<Object[]> call() throws Exception {
                 return stream(query, parameters);
             }
         });

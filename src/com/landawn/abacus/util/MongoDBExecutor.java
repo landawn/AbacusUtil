@@ -18,6 +18,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -50,9 +51,7 @@ import com.landawn.abacus.util.stream.Stream;
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.bulk.BulkWriteResult;
-import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoIterable;
 import com.mongodb.client.model.BulkWriteOptions;
@@ -170,7 +169,7 @@ public final class MongoDBExecutor {
     }
 
     public static DataSet extractData(final MongoIterable<?> findIterable) {
-        return extractData(Document.class, findIterable);
+        return extractData(Map.class, findIterable);
     }
 
     /**
@@ -180,9 +179,7 @@ public final class MongoDBExecutor {
      * @return
      */
     public static DataSet extractData(final Class<?> targetClass, final MongoIterable<?> findIterable) {
-        checkTargetClass(targetClass);
-
-        return N.newDataSet(null, toList(targetClass, findIterable));
+        return extractData(targetClass, null, findIterable);
     }
 
     /**
@@ -192,10 +189,62 @@ public final class MongoDBExecutor {
      * @param findIterable
      * @return
      */
-    static DataSet extractData(final Class<?> targetClass, final Collection<String> selectPropNames, final FindIterable<?> findIterable) {
+    static DataSet extractData(final Class<?> targetClass, final Collection<String> selectPropNames, final MongoIterable<?> findIterable) {
         checkTargetClass(targetClass);
 
-        return N.newDataSet(new ArrayList<>(selectPropNames), toList(targetClass, findIterable));
+        final List<Object> rowList = findIterable.into(new ArrayList<>());
+        final Optional<Object> first = N.firstNonNull(rowList);
+
+        if (first.isPresent()) {
+            /*
+            if (Map.class.isAssignableFrom(first.get().getClass())) {
+                if (N.isNullOrEmpty(selectPropNames)) {
+                    final Set<String> columnNames = new LinkedHashSet<>();
+                    @SuppressWarnings("rawtypes")
+                    final List<Map<String, Object>> tmp = (List) rowList;
+            
+                    for (Map<String, Object> row : tmp) {
+                        columnNames.addAll(row.keySet());
+                    }
+            
+                    return N.newDataSet(columnNames, rowList);
+                } else {
+                    return N.newDataSet(selectPropNames, rowList);
+                }                
+            } else {
+                return N.newDataSet(rowList);
+            }
+            */
+
+            if (Map.class.isAssignableFrom(targetClass) && Map.class.isAssignableFrom(first.get().getClass())) {
+                if (N.isNullOrEmpty(selectPropNames)) {
+                    final Set<String> columnNames = new LinkedHashSet<>();
+                    @SuppressWarnings("rawtypes")
+                    final List<Map<String, Object>> tmp = (List) rowList;
+
+                    for (Map<String, Object> row : tmp) {
+                        columnNames.addAll(row.keySet());
+                    }
+
+                    return N.newDataSet(columnNames, rowList);
+                } else {
+                    return N.newDataSet(selectPropNames, rowList);
+                }
+            } else if (Document.class.isAssignableFrom(first.get().getClass())) {
+                final List<Object> newRowList = new ArrayList<>(rowList.size());
+
+                for (Object row : rowList) {
+                    newRowList.add(toEntity(targetClass, (Document) row));
+                }
+
+                return N.newDataSet(selectPropNames, newRowList);
+            } else {
+                return N.newDataSet(selectPropNames, rowList);
+            }
+
+        } else {
+            return N.newEmptyDataSet();
+        }
     }
 
     /**
@@ -204,65 +253,54 @@ public final class MongoDBExecutor {
      * @param findIterable
      * @return
      */
+    @SuppressWarnings("rawtypes")
     public static <T> List<T> toList(final Class<T> targetClass, final MongoIterable<?> findIterable) {
         final Type<T> type = N.typeOf(targetClass);
-        final List<Object> resultList = new ArrayList<>();
-        final MongoCursor<?> it = findIterable.iterator();
-        Object first = null;
+        final List<Object> rowList = findIterable.into(new ArrayList<>());
+        final Optional<Object> first = N.firstNonNull(rowList);
 
-        try {
-            if (it.hasNext()) {
-                first = it.next();
-            }
+        if (first.isPresent()) {
+            if (targetClass.isAssignableFrom(first.getClass())) {
+                return (List<T>) rowList;
+            } else {
+                final List<Object> resultList = new ArrayList<>(rowList.size());
 
-            if (first != null) {
-                if (targetClass.isAssignableFrom(first.getClass())) {
-                    resultList.add(first);
-
-                    while (it.hasNext()) {
-                        resultList.add(it.next());
-                    }
-                } else if (type.isEntity() || type.isMap()) {
-                    if (first instanceof Document) {
-                        resultList.add(toEntity(targetClass, (Document) first));
-
-                        while (it.hasNext()) {
-                            resultList.add(toEntity(targetClass, (Document) it.next()));
+                if (type.isEntity() || type.isMap()) {
+                    if (first.get() instanceof Document) {
+                        for (Object row : rowList) {
+                            resultList.add(toEntity(targetClass, (Document) row));
+                        }
+                    } else if (type.isMap()) {
+                        for (Object row : rowList) {
+                            resultList.add(Maps.entity2Map((Map) N.newInstance(targetClass), row));
                         }
                     } else {
-                        resultList.add(N.copy(targetClass, first));
-
-                        while (it.hasNext()) {
-                            resultList.add(N.copy(targetClass, it.next()));
+                        for (Object row : rowList) {
+                            resultList.add(N.copy(targetClass, row));
                         }
                     }
-                } else if (Map.class.isAssignableFrom(first.getClass()) && ((Map<String, Object>) first).size() == 1) {
-                    final Map<String, Object> m = (Map<String, Object>) first;
+                } else if (first.get() instanceof Map && ((Map<String, Object>) first.get()).size() == 1) {
+                    final Map<String, Object> m = (Map<String, Object>) first.get();
                     final String propName = m.keySet().iterator().next();
 
                     if (m.get(propName) != null && targetClass.isAssignableFrom(m.get(propName).getClass())) {
-                        resultList.add(m.get(propName));
-
-                        while (it.hasNext()) {
-                            resultList.add(((Map<String, Object>) it.next()).get(propName));
+                        for (Object row : rowList) {
+                            resultList.add(((Map<String, Object>) row).get(propName));
                         }
                     } else {
-                        resultList.add(N.as(targetClass, m.get(propName)));
-
-                        while (it.hasNext()) {
-                            resultList.add(N.as(targetClass, ((Map<String, Object>) it.next()).get(propName)));
+                        for (Object row : rowList) {
+                            resultList.add(N.as(targetClass, ((Map<String, Object>) row).get(propName)));
                         }
                     }
                 } else {
                     throw new IllegalArgumentException(
                             "Can't covert document: " + first.toString() + " to class: " + ClassUtil.getCanonicalClassName(targetClass));
                 }
+                return (List<T>) resultList;
             }
-        } finally {
-            it.close();
+        } else {
+            return new ArrayList<>();
         }
-
-        return (List<T>) resultList;
     }
 
     /**

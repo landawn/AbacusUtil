@@ -17,9 +17,13 @@
 package com.landawn.abacus.util;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
+
+import com.landawn.abacus.util.function.Supplier;
 
 /**
  * 
@@ -159,5 +163,35 @@ public abstract class ObjIterator<E> extends ImmutableIterator<E> {
         }
 
         return list;
+    }
+
+    public List<E> toList(final Supplier<List<E>> supplier) {
+        final List<E> list = supplier.get();
+
+        while (hasNext()) {
+            list.add(next());
+        }
+
+        return list;
+    }
+
+    public Set<E> toSet() {
+        final Set<E> set = new HashSet<>();
+
+        while (hasNext()) {
+            set.add(next());
+        }
+
+        return set;
+    }
+
+    public Set<E> toSet(final Supplier<Set<E>> supplier) {
+        final Set<E> set = supplier.get();
+
+        while (hasNext()) {
+            set.add(next());
+        }
+
+        return set;
     }
 }

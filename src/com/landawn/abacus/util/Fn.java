@@ -1179,6 +1179,22 @@ public final class Fn {
     }
 
     /**
+     * Returns a stateful <code>Function</code> which should not be used in parallel stream.
+     * 
+     * @return
+     */
+    public static <T> Function<T, Indexed<T>> indexed() {
+        return new Function<T, Indexed<T>>() {
+            private final MutableLong idx = new MutableLong(0);
+
+            @Override
+            public Indexed<T> apply(T t) {
+                return Indexed.of(t, idx.getAndIncrement());
+            }
+        };
+    }
+
+    /**
      * Returns a stateful <code>Predicate</code> which should not be used in parallel stream.
      * 
      * @param predicate
@@ -1188,7 +1204,7 @@ public final class Fn {
         Objects.requireNonNull(predicate);
 
         return new Predicate<T>() {
-            private final AtomicInteger idx = new AtomicInteger(0);
+            private final MutableInt idx = new MutableInt(0);
 
             @Override
             public boolean test(T t) {
@@ -1207,7 +1223,7 @@ public final class Fn {
         Objects.requireNonNull(predicate);
 
         return new BiPredicate<U, T>() {
-            private final AtomicInteger idx = new AtomicInteger(0);
+            private final MutableInt idx = new MutableInt(0);
 
             @Override
             public boolean test(U u, T t) {
@@ -1226,7 +1242,7 @@ public final class Fn {
         Objects.requireNonNull(func);
 
         return new Function<T, R>() {
-            private final AtomicInteger idx = new AtomicInteger(0);
+            private final MutableInt idx = new MutableInt(0);
 
             @Override
             public R apply(T t) {
@@ -1245,7 +1261,7 @@ public final class Fn {
         Objects.requireNonNull(func);
 
         return new BiFunction<U, T, R>() {
-            private final AtomicInteger idx = new AtomicInteger(0);
+            private final MutableInt idx = new MutableInt(0);
 
             @Override
             public R apply(U u, T t) {
@@ -1264,7 +1280,7 @@ public final class Fn {
         Objects.requireNonNull(action);
 
         return new Consumer<T>() {
-            private final AtomicInteger idx = new AtomicInteger(0);
+            private final MutableInt idx = new MutableInt(0);
 
             @Override
             public void accept(T t) {
@@ -1283,7 +1299,7 @@ public final class Fn {
         Objects.requireNonNull(action);
 
         return new BiConsumer<U, T>() {
-            private final AtomicInteger idx = new AtomicInteger(0);
+            private final MutableInt idx = new MutableInt(0);
 
             @Override
             public void accept(U u, T t) {
